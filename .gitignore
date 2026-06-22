@@ -1,0 +1,18 @@
+# Obsidian internal workspace files (often changes and causes sync conflicts)
+.obsidian/workspace
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/graph.json
+.obsidian/cache/
+
+# Smart Connections and AI cache / vector database folders (recreatable/large files)
+.smart-env/
+.obsidian/plugins/smart-connections/.smart-connections/
+.obsidian/plugins/smart-connections/embeddings.json
+.obsidian/plugins/smart-connections/embeddings.db
+.obsidian/plugins/smart-connections/smart-connections-cache.json
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
