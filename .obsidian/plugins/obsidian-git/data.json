@@ -1,0 +1,12 @@
+{
+  "commitInterval": 10,
+  "autoPullInterval": 0,
+  "autoPushInterval": 10,
+  "pullOnStartup": true,
+  "pushOnBackup": true,
+  "commitMessage": "brain backup: {{date}} (auto)",
+  "showStatusBar": true,
+  "disablePush": false,
+  "listIgnoredFiles": false,
+  "showCopyLink": false
+}
