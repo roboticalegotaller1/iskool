@@ -1,45 +1,12 @@
 ---
-tags: [iskool, arquitectura, automatizado]
+tags: [iskool, arquitectura, smart-connections]
 archivo_origen: "schema.sql"
-ultima_sincronizacion: "2026-06-21T05:43:37.615Z"
+fecha_sincronizacion: "2026-06-23T20:09:16.670Z"
 ---
 
-# Esquema de Base de Datos - Módulo Académico
+# schema.sql
 
-## 📊 Resumen del Esquema
-
-Este esquema de base de datos define el módulo escolar académico central, controlando perfiles, inscripciones, periodos, calificaciones y asistencias.
-
-- **Tabla `public.profiles`**: Almacena la información de perfil para todos los roles de usuario en el sistema.
-  - *Relaciones*: Extiende `auth.users` (1:1). Relación 1:1 con `students`. Referenciado en `teacher_assignments`, `parent_student`, `attendance`.
-- **Tabla `public.schools`**: Representa planteles o escuelas administradas bajo el sistema ISkool.
-  - *Relaciones*: Raíz de datos escolares. Padre de `academic_years`, `groups`, `subjects`, `students`.
-- **Tabla `public.academic_years`**: Define los ciclos escolares anuales (e.g., 2025-2026).
-  - *Relaciones*: Pertenece a `schools` (N:1). Padre de `academic_periods` y `groups`.
-- **Tabla `public.academic_periods`**: Bloques de evaluación formativa bimestral o semestral.
-  - *Relaciones*: Pertenece a `academic_years` (N:1). Referenciado en `grades` (1:N).
-- **Tabla `public.levels_grades`**: Catálogo estático de niveles educativos y sus correspondientes grados académicos (SEP).
-  - *Relaciones*: Padre de `groups` (1:N) y `subjects` (1:N).
-- **Tabla `public.groups`**: Grupos y secciones asignadas a un grado escolar y plantel (e.g., 4º "A").
-  - *Relaciones*: Vinculado a `schools` (N:1), `levels_grades` (N:1), y `academic_years` (N:1). Padre de `enrollments` y `teacher_assignments`.
-- **Tabla `public.subjects`**: Asignaturas curriculares oficiales o institucionales.
-  - *Relaciones*: Vinculado a `schools` (N:1), `levels_grades` (N:1). Padre de `teacher_assignments`, `attendance`, `grades`, y `missions`.
-- **Tabla `public.students`**: Fichas académicas específicas para estudiantes.
-  - *Relaciones*: Vinculado a `profiles` (1:1) y `schools` (N:1). Padre de `enrollments`, `attendance`, `grades`, `student_stats`, `student_avatars`.
-- **Tabla `public.parent_student`**: Relación entre padres o tutores y sus respectivos hijos estudiantes.
-  - *Relaciones*: Vincula `profiles` (N:1) (del padre/tutor) con `students` (N:1).
-- **Tabla `public.enrollments`**: Historial de inscripciones de estudiantes en grupos para ciclos específicos.
-  - *Relaciones*: Vincula `students` (N:1) con `groups` (N:1).
-- **Tabla `public.teacher_assignments`**: Mapeo de docentes a materias y grupos específicos (carga horaria).
-  - *Relaciones*: Vincula `profiles` (N:1) (del docente), `groups` (N:1), y `subjects` (N:1).
-- **Tabla `public.attendance`**: Asistencia diaria por grupo y materia.
-  - *Relaciones*: Vincula `students` (N:1), `groups` (N:1), `subjects` (N:1) (opcional), y `profiles` (N:1) (del docente evaluador).
-- **Tabla `public.grades`**: Calificaciones cuantitativas de exámenes u ordinarias (SEP).
-  - *Relaciones*: Vincula `students` (N:1), `subjects` (N:1), y `academic_periods` (N:1).
-
----
-
-## 🗄️ Sentencias de Creación SQL
+Este archivo contiene el código fuente de arquitectura para **schema.sql**.
 
 ```sql
 -- ISkool Academic Module Schema

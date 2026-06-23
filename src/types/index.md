@@ -1,32 +1,28 @@
 ---
-tags: [iskool, arquitectura, automatizado]
+tags: [iskool, arquitectura, smart-connections]
 archivo_origen: "src/types/index.ts"
-ultima_sincronizacion: "2026-06-21T05:43:37.621Z"
+fecha_sincronizacion: "2026-06-23T20:09:16.681Z"
 ---
 
-# Definiciones de Tipos y Modelos (TypeScript)
+# index.ts
 
-## 💻 Resumen de Modelos y Tipos
-
-Este archivo define la estructura de datos compartida entre el backend (PostgreSQL/Supabase) y el frontend en Next.js.
-
-### Type: `UserRole`
-
-* **Descripción:** Define los roles de usuario autorizados en el sistema escolar.
-* **Impacto en Estado:** Determina los permisos en el frontend, accesibilidad de rutas y control RLS.
+Este archivo contiene el código fuente de arquitectura para **index.ts**.
 
 ```typescript
+/**
+ * @typedef {('superadmin' | 'admin' | 'director' | 'coordinator' | 'teacher' | 'student' | 'parent')} UserRole
+ * @description Define los roles de usuario autorizados en el sistema escolar.
+ * @stateImpact Determina los permisos en el frontend, accesibilidad de rutas y control RLS.
+ */
 export type UserRole = 'superadmin' | 'admin' | 'director' | 'coordinator' | 'teacher' | 'student' | 'parent';
-```
 
-### Interface: `UserProfile`
-
-* **Descripción:** Datos básicos del perfil general de cualquier usuario.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.profiles`.
-* **Relaciones:** Relación 1:1 con `auth.users` de Supabase. Referenciado en `Student` y `TeacherAssignment`.
-* **Impacto en Estado:** Almacenado en `AuthContext` tras el inicio de sesión del usuario.
-
-```typescript
+/**
+ * @interface UserProfile
+ * @description Datos básicos del perfil general de cualquier usuario.
+ * @database Mapea a la tabla `public.profiles`.
+ * @relation Relación 1:1 con `auth.users` de Supabase. Referenciado en `Student` y `TeacherAssignment`.
+ * @stateImpact Almacenado en `AuthContext` tras el inicio de sesión del usuario.
+ */
 export interface UserProfile {
   id: string;
   first_name: string;
@@ -37,16 +33,14 @@ export interface UserProfile {
   created_at: string;
   updated_at: string;
 }
-```
 
-### Interface: `School`
-
-* **Descripción:** Representa un plantel o escuela en el sistema.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.schools`.
-* **Relaciones:** Raíz jerárquica. Padre de `AcademicYear`, `Group`, `Subject`.
-* **Impacto en Estado:** Leído en configuraciones iniciales por `useSchoolAdminStore`.
-
-```typescript
+/**
+ * @interface School
+ * @description Representa un plantel o escuela en el sistema.
+ * @database Mapea a la tabla `public.schools`.
+ * @relation Raíz jerárquica. Padre de `AcademicYear`, `Group`, `Subject`.
+ * @stateImpact Leído en configuraciones iniciales por `useSchoolAdminStore`.
+ */
 export interface School {
   id: string;
   name: string;
@@ -55,16 +49,14 @@ export interface School {
   phone?: string;
   created_at: string;
 }
-```
 
-### Interface: `AcademicYear`
-
-* **Descripción:** Representa un ciclo escolar (e.g., 2025-2026).
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.academic_years`.
-* **Relaciones:** Pertenece a `School` (N:1). Padre de `AcademicPeriod` y `Group`.
-* **Impacto en Estado:** Define el ciclo activo en `useSchoolAdminStore`.
-
-```typescript
+/**
+ * @interface AcademicYear
+ * @description Representa un ciclo escolar (e.g., 2025-2026).
+ * @database Mapea a la tabla `public.academic_years`.
+ * @relation Pertenece a `School` (N:1). Padre de `AcademicPeriod` y `Group`.
+ * @stateImpact Define el ciclo activo en `useSchoolAdminStore`.
+ */
 export interface AcademicYear {
   id: string;
   school_id: string;
@@ -74,16 +66,14 @@ export interface AcademicYear {
   is_active: boolean;
   created_at: string;
 }
-```
 
-### Interface: `AcademicPeriod`
-
-* **Descripción:** Representa bloques de evaluación dentro de un ciclo escolar (e.g., Bimestre 1).
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.academic_periods`.
-* **Relaciones:** Pertenece a `AcademicYear` (N:1). Usado para filtrar `Grade`.
-* **Impacto en Estado:** Utilizado para segmentar boletas formativas en el panel docente.
-
-```typescript
+/**
+ * @interface AcademicPeriod
+ * @description Representa bloques de evaluación dentro de un ciclo escolar (e.g., Bimestre 1).
+ * @database Mapea a la tabla `public.academic_periods`.
+ * @relation Pertenece a `AcademicYear` (N:1). Usado para filtrar `Grade`.
+ * @stateImpact Utilizado para segmentar boletas formativas en el panel docente.
+ */
 export interface AcademicPeriod {
   id: string;
   academic_year_id: string;
@@ -92,32 +82,28 @@ export interface AcademicPeriod {
   end_date: string;
   created_at: string;
 }
-```
 
-### Interface: `LevelGrade`
-
-* **Descripción:** Cataloga niveles educativos (primaria, secundaria, preparatoria) y sus grados respectivos.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.levels_grades`.
-* **Relaciones:** Referenciado en `Group` y `Subject`.
-* **Impacto en Estado:** Determina la UI adaptada (Mascota, RPG, Créditos de Financiamiento) que verá el estudiante.
-
-```typescript
+/**
+ * @interface LevelGrade
+ * @description Cataloga niveles educativos (primaria, secundaria, preparatoria) y sus grados respectivos.
+ * @database Mapea a la tabla `public.levels_grades`.
+ * @relation Referenciado en `Group` y `Subject`.
+ * @stateImpact Determina la UI adaptada (Mascota, RPG, Créditos de Financiamiento) que verá el estudiante.
+ */
 export interface LevelGrade {
   id: string;
   level_name: 'primaria' | 'secundaria' | 'preparatoria';
   grade_name: string; // e.g., "1º", "2º", "3º", "1º Semestre"
   created_at: string;
 }
-```
 
-### Interface: `Group`
-
-* **Descripción:** Define un grupo escolar (e.g., 4º "A").
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.groups`.
-* **Relaciones:** Vinculado a `School` (N:1), `LevelGrade` (N:1), y `AcademicYear` (N:1). Contiene múltiples `Enrollment`.
-* **Impacto en Estado:** Utilizado en RLS de profesores para filtrar alumnos evaluados.
-
-```typescript
+/**
+ * @interface Group
+ * @description Define un grupo escolar (e.g., 4º "A").
+ * @database Mapea a la tabla `public.groups`.
+ * @relation Vinculado a `School` (N:1), `LevelGrade` (N:1), y `AcademicYear` (N:1). Contiene múltiples `Enrollment`.
+ * @stateImpact Utilizado en RLS de profesores para filtrar alumnos evaluados.
+ */
 export interface Group {
   id: string;
   school_id: string;
@@ -130,16 +116,14 @@ export interface Group {
   level_grade?: LevelGrade;
   academic_year?: AcademicYear;
 }
-```
 
-### Interface: `Subject`
-
-* **Descripción:** Materia académica dictada en el colegio (e.g., Matemáticas).
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.subjects`.
-* **Relaciones:** Vinculado a `School` (N:1) y `LevelGrade` (N:1). Referenciada en `Mission` y `Grade`.
-* **Impacto en Estado:** Filtra el mapa de misiones y la segmentación de evidencias en el portafolio del estudiante.
-
-```typescript
+/**
+ * @interface Subject
+ * @description Materia académica dictada en el colegio (e.g., Matemáticas).
+ * @database Mapea a la tabla `public.subjects`.
+ * @relation Vinculado a `School` (N:1) y `LevelGrade` (N:1). Referenciada en `Mission` y `Grade`.
+ * @stateImpact Filtra el mapa de misiones y la segmentación de evidencias en el portafolio del estudiante.
+ */
 export interface Subject {
   id: string;
   school_id: string;
@@ -148,16 +132,14 @@ export interface Subject {
   sep_code?: string;
   created_at: string;
 }
-```
 
-### Interface: `Student`
-
-* **Descripción:** Perfil específico del rol estudiante.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.students`.
-* **Relaciones:** Vinculado a `UserProfile` (1:1), `School` (N:1). Tiene 1:N `Enrollment` e `Inventory`.
-* **Impacto en Estado:** Identificador clave de acceso para RLS en consultas de stats y portafolio.
-
-```typescript
+/**
+ * @interface Student
+ * @description Perfil específico del rol estudiante.
+ * @database Mapea a la tabla `public.students`.
+ * @relation Vinculado a `UserProfile` (1:1), `School` (N:1). Tiene 1:N `Enrollment` e `Inventory`.
+ * @stateImpact Identificador clave de acceso para RLS en consultas de stats y portafolio.
+ */
 export interface Student {
   id: string; // references UserProfile
   school_id: string;
@@ -169,31 +151,27 @@ export interface Student {
   // Relaciones opcionales
   profile?: UserProfile;
 }
-```
 
-### Interface: `ParentStudent`
-
-* **Descripción:** Relación de vinculación entre un tutor y un estudiante.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.parent_students`.
-* **Relaciones:** Vincula `UserProfile` del padre (N:1) con `Student` (N:1).
-* **Impacto en Estado:** Permite al portal de tutores visualizar únicamente los logros del estudiante vinculado.
-
-```typescript
+/**
+ * @interface ParentStudent
+ * @description Relación de vinculación entre un tutor y un estudiante.
+ * @database Mapea a la tabla `public.parent_students`.
+ * @relation Vincula `UserProfile` del padre (N:1) con `Student` (N:1).
+ * @stateImpact Permite al portal de tutores visualizar únicamente los logros del estudiante vinculado.
+ */
 export interface ParentStudent {
   parent_id: string;
   student_id: string;
   relationship: string; // "Padre", "Madre", "Tutor"
 }
-```
 
-### Interface: `Enrollment`
-
-* **Descripción:** Inscripción de un estudiante en un grupo específico para un ciclo escolar.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.enrollments`.
-* **Relaciones:** Vincula `Student` (N:1) con `Group` (N:1).
-* **Impacto en Estado:** Utilizado por `useSchoolAdminStore` para la distribución grupal.
-
-```typescript
+/**
+ * @interface Enrollment
+ * @description Inscripción de un estudiante en un grupo específico para un ciclo escolar.
+ * @database Mapea a la tabla `public.enrollments`.
+ * @relation Vincula `Student` (N:1) con `Group` (N:1).
+ * @stateImpact Utilizado por `useSchoolAdminStore` para la distribución grupal.
+ */
 export interface Enrollment {
   id: string;
   student_id: string;
@@ -204,16 +182,14 @@ export interface Enrollment {
   student?: Student;
   group?: Group;
 }
-```
 
-### Interface: `TeacherAssignment`
-
-* **Descripción:** Asignación que define qué docente imparte qué materia en qué grupo.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.teacher_assignments`.
-* **Relaciones:** Vincula `UserProfile` del profesor (N:1), `Group` (N:1), y `Subject` (N:1).
-* **Impacto en Estado:** Validado en RLS para certificar qué grupos puede consultar un docente.
-
-```typescript
+/**
+ * @interface TeacherAssignment
+ * @description Asignación que define qué docente imparte qué materia en qué grupo.
+ * @database Mapea a la tabla `public.teacher_assignments`.
+ * @relation Vincula `UserProfile` del profesor (N:1), `Group` (N:1), y `Subject` (N:1).
+ * @stateImpact Validado en RLS para certificar qué grupos puede consultar un docente.
+ */
 export interface TeacherAssignment {
   id: string;
   teacher_id: string; // references UserProfile
@@ -226,24 +202,20 @@ export interface TeacherAssignment {
   group?: Group;
   subject?: Subject;
 }
-```
 
-### Type: `AttendanceStatus`
-
-* **Descripción:** Opciones de registro de asistencia diaria.
-
-```typescript
+/**
+ * @typedef {('presente' | 'falta' | 'retardo' | 'justificado')} AttendanceStatus
+ * @description Opciones de registro de asistencia diaria.
+ */
 export type AttendanceStatus = 'presente' | 'falta' | 'retardo' | 'justificado';
-```
 
-### Interface: `Attendance`
-
-* **Descripción:** Registro de asistencia de un estudiante en una fecha determinada.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.attendance`.
-* **Relaciones:** Vincula `Student` (N:1) y `Group` (N:1). Registrado por un `UserProfile` docente.
-* **Impacto en Estado:** Controlado y actualizado por el panel del docente en `useSchoolAdminStore`.
-
-```typescript
+/**
+ * @interface Attendance
+ * @description Registro de asistencia de un estudiante en una fecha determinada.
+ * @database Mapea a la tabla `public.attendance`.
+ * @relation Vincula `Student` (N:1) y `Group` (N:1). Registrado por un `UserProfile` docente.
+ * @stateImpact Controlado y actualizado por el panel del docente en `useSchoolAdminStore`.
+ */
 export interface Attendance {
   id: string;
   student_id: string;
@@ -255,16 +227,14 @@ export interface Attendance {
   registered_by: string; // references UserProfile
   created_at: string;
 }
-```
 
-### Interface: `Grade`
-
-* **Descripción:** Calificación cuantitativa ordinaria asignada a un estudiante en una materia y periodo.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.grades`.
-* **Relaciones:** Vincula `Student` (N:1), `Subject` (N:1), y `AcademicPeriod` (N:1).
-* **Impacto en Estado:** Traducido y consolidado para la boleta SEP oficial en `useSchoolAdminStore`.
-
-```typescript
+/**
+ * @interface Grade
+ * @description Calificación cuantitativa ordinaria asignada a un estudiante en una materia y periodo.
+ * @database Mapea a la tabla `public.grades`.
+ * @relation Vincula `Student` (N:1), `Subject` (N:1), y `AcademicPeriod` (N:1).
+ * @stateImpact Traducido y consolidado para la boleta SEP oficial en `useSchoolAdminStore`.
+ */
 export interface Grade {
   id: string;
   student_id: string;
@@ -275,16 +245,14 @@ export interface Grade {
   created_at: string;
   updated_at: string;
 }
-```
 
-### Interface: `StudentStats`
-
-* **Descripción:** Estadísticas de gamificación y progresión de nivel de un estudiante.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.student_stats`.
-* **Relaciones:** Vinculado a `Student` (1:1).
-* **Impacto en Estado:** Actualizado por acciones del almacén (`useStudentStore`, `addXpAndCoins`). Validado bajo políticas RLS por estudiante y docente.
-
-```typescript
+/**
+ * @interface StudentStats
+ * @description Estadísticas de gamificación y progresión de nivel de un estudiante.
+ * @database Mapea a la tabla `public.student_stats`.
+ * @relation Vinculado a `Student` (1:1).
+ * @stateImpact Actualizado por acciones del almacén (`useStudentStore`, `addXpAndCoins`). Validado bajo políticas RLS por estudiante y docente.
+ */
 export interface StudentStats {
   student_id: string;
   xp: number;
@@ -305,16 +273,14 @@ export interface StudentStats {
   // Preparatoria (Proyectos Productivos)
   funding_credits?: number;
 }
-```
 
-### Interface: `StudentAvatar`
-
-* **Descripción:** Configuración estética del avatar del alumno y el estado de su mascota.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.student_avatars`.
-* **Relaciones:** Vinculado a `Student` (1:1).
-* **Impacto en Estado:** Almacenado y editado mediante `changeAvatar` en `useStudentStore`.
-
-```typescript
+/**
+ * @interface StudentAvatar
+ * @description Configuración estética del avatar del alumno y el estado de su mascota.
+ * @database Mapea a la tabla `public.student_avatars`.
+ * @relation Vinculado a `Student` (1:1).
+ * @stateImpact Almacenado y editado mediante `changeAvatar` en `useStudentStore`.
+ */
 export interface StudentAvatar {
   student_id: string;
   avatar_name: string;
@@ -340,24 +306,20 @@ export interface StudentAvatar {
   head_type?: string;
   skin_tone?: string;
 }
-```
 
-### Type: `BadgeCategory`
-
-* **Descripción:** Categorías de medallas e insignias escolares.
-
-```typescript
+/**
+ * @typedef {('academic' | 'social' | 'persistence' | 'creative')} BadgeCategory
+ * @description Categorías de medallas e insignias escolares.
+ */
 export type BadgeCategory = 'academic' | 'social' | 'persistence' | 'creative';
-```
 
-### Interface: `Badge`
-
-* **Descripción:** Catálogo de insignias que un estudiante puede ganar.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.badges`.
-* **Relaciones:** Referenciada en `StudentBadge` (1:N).
-* **Impacto en Estado:** Listado global en la tienda de medallas de `useGamificationStore`.
-
-```typescript
+/**
+ * @interface Badge
+ * @description Catálogo de insignias que un estudiante puede ganar.
+ * @database Mapea a la tabla `public.badges`.
+ * @relation Referenciada en `StudentBadge` (1:N).
+ * @stateImpact Listado global en la tienda de medallas de `useGamificationStore`.
+ */
 export interface Badge {
   id: string;
   name: string;
@@ -367,32 +329,28 @@ export interface Badge {
   xp_required: number;
   created_at: string;
 }
-```
 
-### Interface: `StudentBadge`
-
-* **Descripción:** Registro de insignias obtenidas por un estudiante.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.student_badges`.
-* **Relaciones:** Vincula `Student` (N:1) y `Badge` (N:1).
-* **Impacto en Estado:** Administrado por `unlockBadge` en `useGamificationStore`.
-
-```typescript
+/**
+ * @interface StudentBadge
+ * @description Registro de insignias obtenidas por un estudiante.
+ * @database Mapea a la tabla `public.student_badges`.
+ * @relation Vincula `Student` (N:1) y `Badge` (N:1).
+ * @stateImpact Administrado por `unlockBadge` en `useGamificationStore`.
+ */
 export interface StudentBadge {
   student_id: string;
   badge_id: string;
   earned_at: string;
   badge?: Badge; // Relación anidada para renderizado directo
 }
-```
 
-### Interface: `Mission`
-
-* **Descripción:** Misión del mapa de aprendizaje que engloba una narrativa y varios retos.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.missions`.
-* **Relaciones:** Vinculado a `School` (N:1), `Subject` (N:1), y `LevelGrade` (N:1). Padre de `Quest`.
-* **Impacto en Estado:** Cargado dinámicamente mediante `fetchMissions` en `useGamificationStore`.
-
-```typescript
+/**
+ * @interface Mission
+ * @description Misión del mapa de aprendizaje que engloba una narrativa y varios retos.
+ * @database Mapea a la tabla `public.missions`.
+ * @relation Vinculado a `School` (N:1), `Subject` (N:1), y `LevelGrade` (N:1). Padre de `Quest`.
+ * @stateImpact Cargado dinámicamente mediante `fetchMissions` en `useGamificationStore`.
+ */
 export interface Mission {
   id: string;
   school_id: string;
@@ -410,21 +368,17 @@ export interface Mission {
   subject?: Subject;
   quests?: Quest[];
 }
-```
 
-### Type: `QuestType`
-
-* **Descripción:** Tipos de retos escolares soportados.
-
-```typescript
+/**
+ * @typedef {('quiz' | 'portfolio_submission' | 'exam')} QuestType
+ * @description Tipos de retos escolares soportados.
+ */
 export type QuestType = 'quiz' | 'portfolio_submission' | 'exam';
-```
 
-### Interface: `QuizQuestion`
-
-* **Descripción:** Pregunta de opción múltiple con explicaciones retroalimentarias.
-
-```typescript
+/**
+ * @interface QuizQuestion
+ * @description Pregunta de opción múltiple con explicaciones retroalimentarias.
+ */
 export interface QuizQuestion {
   id: string;
   question: string;
@@ -432,23 +386,19 @@ export interface QuizQuestion {
   correctAnswerIndex: number;
   explanation: string;
 }
-```
 
-### Interface: `QuizContent`
-
-* **Descripción:** Estructura de cuestionario común para Quests de tipo 'quiz'.
-
-```typescript
+/**
+ * @interface QuizContent
+ * @description Estructura de cuestionario común para Quests de tipo 'quiz'.
+ */
 export interface QuizContent {
   questions: QuizQuestion[];
 }
-```
 
-### Interface: `ExamContent`
-
-* **Descripción:** Reto especial tipo jefe de gremio (Boss Battle RPG) para exámenes.
-
-```typescript
+/**
+ * @interface ExamContent
+ * @description Reto especial tipo jefe de gremio (Boss Battle RPG) para exámenes.
+ */
 export interface ExamContent {
   questions: QuizQuestion[];
   bossName: string;
@@ -456,27 +406,23 @@ export interface ExamContent {
   bossMaxDmg: number;
   storyIntro: string;
 }
-```
 
-### Interface: `SubmissionContent`
-
-* **Descripción:** Parámetros y formatos aceptados para retos de entrega de evidencias.
-
-```typescript
+/**
+ * @interface SubmissionContent
+ * @description Parámetros y formatos aceptados para retos de entrega de evidencias.
+ */
 export interface SubmissionContent {
   instructions: string;
   acceptedFormats: string[]; // e.g., ["image", "audio", "video"]
 }
-```
 
-### Interface: `Quest`
-
-* **Descripción:** Reto o actividad dentro de una misión académica.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.quests`.
-* **Relaciones:** Pertenece a `Mission` (N:1). Referenciado en `QuestAttempt` y `PortfolioItem`.
-* **Impacto en Estado:** Define el contenido de las preguntas y formatos de evidencias que lee la UI del estudiante.
-
-```typescript
+/**
+ * @interface Quest
+ * @description Reto o actividad dentro de una misión académica.
+ * @database Mapea a la tabla `public.quests`.
+ * @relation Pertenece a `Mission` (N:1). Referenciado en `QuestAttempt` y `PortfolioItem`.
+ * @stateImpact Define el contenido de las preguntas y formatos de evidencias que lee la UI del estudiante.
+ */
 export interface Quest {
   id: string;
   mission_id: string;
@@ -492,16 +438,14 @@ export interface Quest {
   ejes_articuladores?: string[];
   pdas?: string[];
 }
-```
 
-### Interface: `QuestAttempt`
-
-* **Descripción:** Registro detallado del intento de resolución de un reto por un estudiante.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.quest_attempts`.
-* **Relaciones:** Vincula `Student` (N:1) y `Quest` (N:1).
-* **Impacto en Estado:** Actualizado por `submitQuiz` y `submitExam` en `useGamificationStore`.
-
-```typescript
+/**
+ * @interface QuestAttempt
+ * @description Registro detallado del intento de resolución de un reto por un estudiante.
+ * @database Mapea a la tabla `public.quest_attempts`.
+ * @relation Vincula `Student` (N:1) y `Quest` (N:1).
+ * @stateImpact Actualizado por `submitQuiz` y `submitExam` en `useGamificationStore`.
+ */
 export interface QuestAttempt {
   id: string;
   student_id: string;
@@ -512,32 +456,26 @@ export interface QuestAttempt {
   feedback?: string;
   created_at: string;
 }
-```
 
-### Type: `PortfolioItemStatus`
-
-* **Descripción:** Estado de revisión formativa de una evidencia.
-
-```typescript
+/**
+ * @typedef {('draft' | 'submitted' | 'approved' | 'needs_revision')} PortfolioItemStatus
+ * @description Estado de revisión formativa de una evidencia.
+ */
 export type PortfolioItemStatus = 'draft' | 'submitted' | 'approved' | 'needs_revision';
-```
 
-### Type: `PortfolioFileType`
-
-* **Descripción:** Formato multimedia de la evidencia cargada.
-
-```typescript
+/**
+ * @typedef {('image' | 'audio' | 'video' | 'pdf' | 'link')} PortfolioFileType
+ * @description Formato multimedia de la evidencia cargada.
+ */
 export type PortfolioFileType = 'image' | 'audio' | 'video' | 'pdf' | 'link';
-```
 
-### Interface: `PortfolioItem`
-
-* **Descripción:** Evidencia de aprendizaje cargada por el estudiante para evaluación del docente.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.portfolio_items`.
-* **Relaciones:** Vincula `Student` (N:1), `Subject` (N:1), y opcionalmente `Quest` (N:1). Contiene 1:N `PortfolioFeedback`.
-* **Impacto en Estado:** Almacenado en `usePortfolioStore`. Sujeto a políticas RLS por estudiante (ver propios) y docente (filtrado por group_id).
-
-```typescript
+/**
+ * @interface PortfolioItem
+ * @description Evidencia de aprendizaje cargada por el estudiante para evaluación del docente.
+ * @database Mapea a la tabla `public.portfolio_items`.
+ * @relation Vincula `Student` (N:1), `Subject` (N:1), y opcionalmente `Quest` (N:1). Contiene 1:N `PortfolioFeedback`.
+ * @stateImpact Almacenado en `usePortfolioStore`. Sujeto a políticas RLS por estudiante (ver propios) y docente (filtrado por group_id).
+ */
 export interface PortfolioItem {
   id: string;
   student_id: string;
@@ -576,24 +514,20 @@ export interface PortfolioItem {
   quest?: Quest;
   feedbacks?: PortfolioFeedback[];
 }
-```
 
-### Type: `FeedbackAuthorRole`
-
-* **Descripción:** Rol del autor que emite una retroalimentación formativa.
-
-```typescript
+/**
+ * @typedef {('teacher' | 'parent' | 'student' | 'peer')} FeedbackAuthorRole
+ * @description Rol del autor que emite una retroalimentación formativa.
+ */
 export type FeedbackAuthorRole = 'teacher' | 'parent' | 'student' | 'peer';
-```
 
-### Interface: `PortfolioFeedback`
-
-* **Descripción:** Retroalimentación o comentarios añadidos a una evidencia del portafolio.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.portfolio_feedbacks`.
-* **Relaciones:** Pertenece a `PortfolioItem` (N:1). Escrito por un `UserProfile` (N:1).
-* **Impacto en Estado:** Actualizado por `addPortfolioFeedback` en `usePortfolioStore`.
-
-```typescript
+/**
+ * @interface PortfolioFeedback
+ * @description Retroalimentación o comentarios añadidos a una evidencia del portafolio.
+ * @database Mapea a la tabla `public.portfolio_feedbacks`.
+ * @relation Pertenece a `PortfolioItem` (N:1). Escrito por un `UserProfile` (N:1).
+ * @stateImpact Actualizado por `addPortfolioFeedback` en `usePortfolioStore`.
+ */
 export interface PortfolioFeedback {
   id: string;
   portfolio_item_id: string;
@@ -604,15 +538,13 @@ export interface PortfolioFeedback {
   created_at: string;
   author_profile?: UserProfile; // Relación anidada
 }
-```
 
-### Interface: `GuildBoss`
-
-* **Descripción:** Parámetros de vida y recompensa del jefe grupal activo en una batalla de examen.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.guild_bosses`.
-* **Impacto en Estado:** Controla el renderizado de la barra de vida colectiva en `useGamificationStore`.
-
-```typescript
+/**
+ * @interface GuildBoss
+ * @description Parámetros de vida y recompensa del jefe grupal activo en una batalla de examen.
+ * @database Mapea a la tabla `public.guild_bosses`.
+ * @stateImpact Controla el renderizado de la barra de vida colectiva en `useGamificationStore`.
+ */
 export interface GuildBoss {
   id: string;
   name: string;
@@ -620,13 +552,11 @@ export interface GuildBoss {
   hp_actual: number;
   xp_reward: number;
 }
-```
 
-### Interface: `GuildMemberSubmission`
-
-* **Descripción:** Estado de cumplimiento de tareas de un alumno dentro de un gremio cooperativo.
-
-```typescript
+/**
+ * @interface GuildMemberSubmission
+ * @description Estado de cumplimiento de tareas de un alumno dentro de un gremio cooperativo.
+ */
 export interface GuildMemberSubmission {
   student_id: string;
   student_name: string;
@@ -635,15 +565,13 @@ export interface GuildMemberSubmission {
   status: 'pending' | 'submitted_on_time' | 'submitted_late';
   submitted_at?: string;
 }
-```
 
-### Interface: `SchoolSettings`
-
-* **Descripción:** Configuraciones generales de personalización visual e identidad escolar.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.school_settings` (o config escolar en Supabase).
-* **Impacto en Estado:** Determina la paleta de colores dinámicos inyectada al DOM en `useSchoolAdminStore`.
-
-```typescript
+/**
+ * @interface SchoolSettings
+ * @description Configuraciones generales de personalización visual e identidad escolar.
+ * @database Mapea a la tabla `public.school_settings` (o config escolar en Supabase).
+ * @stateImpact Determina la paleta de colores dinámicos inyectada al DOM en `useSchoolAdminStore`.
+ */
 export interface SchoolSettings {
   isConfigured: boolean;
   name: string;
@@ -660,15 +588,13 @@ export interface SchoolSettings {
     accent: string;     // Color de acento (Formato HSL o HEX)
   };
 }
-```
 
-### Interface: `DetailedStudent`
-
-* **Descripción:** Expediente escolar extendido para el control del coordinador escolar.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.students` y join con perfiles médicos e historiales de conducta.
-* **Impacto en Estado:** Utilizado para listados de control y emisión de reportes en `useSchoolAdminStore`.
-
-```typescript
+/**
+ * @interface DetailedStudent
+ * @description Expediente escolar extendido para el control del coordinador escolar.
+ * @database Mapea a la tabla `public.students` y join con perfiles médicos e historiales de conducta.
+ * @stateImpact Utilizado para listados de control y emisión de reportes en `useSchoolAdminStore`.
+ */
 export interface DetailedStudent {
   id: string;
   first_name: string;
@@ -711,16 +637,14 @@ export interface DetailedStudent {
   behavior_reports?: { date: string; description: string; reporter: string }[];
   teacher_notes?: { date: string; note: string; teacher_name: string }[];
 }
-```
 
-### Interface: `ClassSchedule`
-
-* **Descripción:** Programación o bloque de horario de una materia y docente para un grupo.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.class_schedules`.
-* **Relaciones:** Vincula `Group` (N:1), `Subject` (N:1), y `UserProfile` del docente (N:1).
-* **Impacto en Estado:** Determina el horario escolar renderizado en el portal del administrador y docente.
-
-```typescript
+/**
+ * @interface ClassSchedule
+ * @description Programación o bloque de horario de una materia y docente para un grupo.
+ * @database Mapea a la tabla `public.class_schedules`.
+ * @relation Vincula `Group` (N:1), `Subject` (N:1), y `UserProfile` del docente (N:1).
+ * @stateImpact Determina el horario escolar renderizado en el portal del administrador y docente.
+ */
 export interface ClassSchedule {
   id: string;
   groupId: string;
@@ -729,16 +653,14 @@ export interface ClassSchedule {
   dayOfWeek: 'Lunes' | 'Martes' | 'Miércoles' | 'Jueves' | 'Viernes';
   timeSlot: string;
 }
-```
 
-### Interface: `ParentMessage`
-
-* **Descripción:** Mensaje o alerta formal enviada al tutor sobre el desempeño del estudiante.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.parent_messages`.
-* **Relaciones:** Vincula `UserProfile` del padre (N:1), `Student` (N:1), `UserProfile` del docente (N:1) y `Subject` (N:1).
-* **Impacto en Estado:** Controlado por `sendParentMessage` en `useSchoolAdminStore`.
-
-```typescript
+/**
+ * @interface ParentMessage
+ * @description Mensaje o alerta formal enviada al tutor sobre el desempeño del estudiante.
+ * @database Mapea a la tabla `public.parent_messages`.
+ * @relation Vincula `UserProfile` del padre (N:1), `Student` (N:1), `UserProfile` del docente (N:1) y `Subject` (N:1).
+ * @stateImpact Controlado por `sendParentMessage` en `useSchoolAdminStore`.
+ */
 export interface ParentMessage {
   id: string;
   parent_id: string;
@@ -756,15 +678,13 @@ export interface ParentMessage {
   parent_reply?: string;
   replied_at?: string;
 }
-```
 
-### Interface: `ShopArtifact`
-
-* **Descripción:** Objeto mágico disponible para compra en la Tienda del estudiante.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.shop_artifacts`.
-* **Impacto en Estado:** Listado en la tienda de `useGamificationStore`. Adquirible mediante las monedas ganadas por el alumno.
-
-```typescript
+/**
+ * @interface ShopArtifact
+ * @description Objeto mágico disponible para compra en la Tienda del estudiante.
+ * @database Mapea a la tabla `public.shop_artifacts`.
+ * @stateImpact Listado en la tienda de `useGamificationStore`. Adquirible mediante las monedas ganadas por el alumno.
+ */
 export interface ShopArtifact {
   id: string;
   name: string;
@@ -774,16 +694,14 @@ export interface ShopArtifact {
   effect: string;
   created_by?: string;
 }
-```
 
-### Interface: `StudentMessage`
-
-* **Descripción:** Notificaciones internas de gamificación enviadas al buzón del alumno.
-* **Mapeo de Base de Datos:** Mapea a la tabla `public.student_messages`.
-* **Relaciones:** Vinculado a `Student` (N:1).
-* **Impacto en Estado:** Renderizado en el buzón del estudiante de `useStudentStore`.
-
-```typescript
+/**
+ * @interface StudentMessage
+ * @description Notificaciones internas de gamificación enviadas al buzón del alumno.
+ * @database Mapea a la tabla `public.student_messages`.
+ * @relation Vinculado a `Student` (N:1).
+ * @stateImpact Renderizado en el buzón del estudiante de `useStudentStore`.
+ */
 export interface StudentMessage {
   id: string;
   student_id: string;
@@ -796,4 +714,3 @@ export interface StudentMessage {
   reason?: string;
 }
 ```
-

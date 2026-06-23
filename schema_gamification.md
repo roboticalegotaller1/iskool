@@ -1,37 +1,12 @@
 ---
-tags: [iskool, arquitectura, automatizado]
+tags: [iskool, arquitectura, smart-connections]
 archivo_origen: "schema_gamification.sql"
-ultima_sincronizacion: "2026-06-21T05:43:37.619Z"
+fecha_sincronizacion: "2026-06-23T20:09:16.675Z"
 ---
 
-# Esquema de Base de Datos - Gamificación y Portafolio
+# schema_gamification.sql
 
-## 📊 Resumen del Esquema
-
-Este esquema de base de datos define las mecánicas de gamificación, progresión, medallas, misiones y portafolio formativo (estilo Seesaw).
-
-- **Tabla `public.student_stats`**: Almacena las estadísticas de gamificación y progresión de nivel de un estudiante. Contiene datos de RPG (Secundaria) y financiamiento (Preparatoria).
-  - *Relaciones*: Vinculado a `public.students` (1:1) mediante `student_id` con cascada de eliminación.
-- **Tabla `public.student_avatars`**: Configuración estética del avatar del alumno (personalización) y estado de su mascota virtual (exclusivo para Primaria Baja).
-  - *Relaciones*: Vinculado a `public.students` (1:1) mediante `student_id` con cascada de eliminación.
-- **Tabla `public.badges`**: Catálogo global de insignias y medallas académicas, sociales, de persistencia y creativas.
-  - *Relaciones*: Referenciado por `public.student_badges` (1:N) para mapear medallas ganadas.
-- **Tabla `public.student_badges`**: Relación de unión que registra qué insignias ha obtenido cada estudiante y la fecha de obtención.
-  - *Relaciones*: Vincula `public.students` (N:1) y `public.badges` (N:1).
-- **Tabla `public.missions`**: Misión del mapa de aprendizaje narrativo de una materia para un grado específico.
-  - *Relaciones*: Pertenece a `public.schools` (N:1), `public.subjects` (N:1), y `public.levels_grades` (N:1). Padre de `public.quests` (1:N).
-- **Tabla `public.quests`**: Reto o actividad académica (cuestionario, examen o entrega de portafolio) dentro de una misión.
-  - *Relaciones*: Pertenece a `public.missions` (N:1). Referenciado por `public.quest_attempts` (1:N) y `public.portfolio_items` (1:N).
-- **Tabla `public.quest_attempts`**: Registro histórico de los intentos realizados por un estudiante para resolver un reto (quest). Permite registrar el progreso, respuestas y feedback.
-  - *Relaciones*: Vincula `public.students` (N:1) y `public.quests` (N:1).
-- **Tabla `public.portfolio_items`**: Portafolio digital de evidencias de aprendizaje (estilo Seesaw) donde los estudiantes suben tareas para evaluación docente.
-  - *Relaciones*: Vincula `public.students` (N:1), `public.subjects` (N:1), y opcionalmente `public.quests` (N:1). Padre de `public.portfolio_feedback` (1:N).
-- **Tabla `public.portfolio_feedback`**: Retroalimentación formativa y multidireccional (de profesores, padres o compañeros) a una evidencia del portafolio.
-  - *Relaciones*: Pertenece a `public.portfolio_items` (N:1). Escrito por un perfil de usuario en `public.profiles` (N:1).
-
----
-
-## 🗄️ Sentencias de Creación SQL
+Este archivo contiene el código fuente de arquitectura para **schema_gamification.sql**.
 
 ```sql
 -- ISkool Academic Gamification and Portfolio Schema Extension
