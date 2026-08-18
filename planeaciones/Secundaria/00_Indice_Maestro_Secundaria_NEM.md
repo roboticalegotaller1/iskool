@@ -2,14 +2,14 @@
 tags: [iskool, indice_maestro, moc, segundo_cerebro, fase6_secundaria]
 titulo: "Mapa de Nodos Curriculares: Secundaria NEM 2022"
 docente: "Prof. Israel López Ángeles"
-total_planeaciones: 74
-fecha_actualizacion: "2026-08-18T05:03:32.019Z"
+total_planeaciones: 78
+fecha_actualizacion: "2026-08-18T05:40:35.119Z"
 ---
 
 # 🗺️ Mapa de Nodos Curriculares: Secundaria NEM 2022 (Fase 6)
 **Super Usuario Creador:** Prof. Israel López Ángeles  
 **Institución:** Colegio Anglo Mexicano / Plataforma ISkool  
-**Total de Nodos Curriculares:** 74 Planeaciones Especializadas  
+**Total de Nodos Curriculares:** 78 Planeaciones Especializadas  
 
 Este nodo actúa como el **Centro de Enlace (Map of Content - MOC)** y Segundo Cerebro de la Bóveda de Obsidian, estructurando y vinculando mediante enlaces bidireccionales cada una de las planeaciones didácticas de Secundaria bajo la **Nueva Escuela Mexicana (NEM 2022)** con dosificación exacta de **50 minutos**.
 
@@ -20,10 +20,10 @@ Este nodo actúa como el **Centro de Enlace (Map of Content - MOC)** y Segundo C
 | Campo Formativo | Asignaturas Vinculadas | Nodos Activos | Dosificación |
 | :--- | :--- | :---: | :---: |
 | **🗣️ Lenguajes** | Español, Inglés, Artes | 17 | Bloques de 50 min |
-| **🧬 Saberes y Pensamiento Científico** | Matemáticas, Biología, Física, Química | 28 | Bloques de 50 min |
-| **🌍 Ética, Naturaleza y Sociedades** | Geografía, Historia, Formación Cívica y Ética | 16 | Bloques de 50 min |
+| **🧬 Saberes y Pensamiento Científico** | Matemáticas, Biología, Física, Química | 30 | Bloques de 50 min |
+| **🌍 Ética, Naturaleza y Sociedades** | Geografía, Historia, Formación Cívica y Ética | 18 | Bloques de 50 min |
 | **🤝 De lo Humano y lo Comunitario** | Tecnología, Educación Física, Tutoría Socioemocional | 13 | Bloques de 50 min |
-| **TOTAL** | **13 Asignaturas de Secundaria** | **74 Nodos** | **100% Cobertura NEM** |
+| **TOTAL** | **13 Asignaturas de Secundaria** | **78 Nodos** | **100% Cobertura NEM** |
 
 ---
 
@@ -154,6 +154,10 @@ Este nodo actúa como el **Centro de Enlace (Map of Content - MOC)** y Segundo C
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)  
   - *PDA:* `Fase 6 (1º Secundaria) - Representa y explica la transferencia de materia y energía en los ciclos biogeoquímic...`  
 
+- **1º de Secundaria:** [[1er_Grado/Biologia/Planeacion_Radiografia_de_los_Ultraprocesados_Etiquetado_Frontal_Balance_Calorico_y_Huella_Metabolica|Radiografía de los Ultraprocesados: Etiquetado Frontal, Balance Calórico y Huella Metabólica]]  
+  - *Tema:* Prevención de enfermedades relacionadas con la alimentación y el consumo de alimentos ultraprocesados  
+  - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)  
+
 - **1º de Secundaria:** [[1er_Grado/Biologia/Planeacion_Redes_de_Control_Como_el_Cerebro_y_las_Hormonas_Gobiernan_Nuestro_Cuerpo|Redes de Control: Cómo el Cerebro y las Hormonas Gobiernan Nuestro Cuerpo]]  
   - *Tema:* Funcionamiento del cuerpo humano coordinado por los sistemas nervioso y endocrino  
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)  
@@ -278,6 +282,10 @@ Este nodo actúa como el **Centro de Enlace (Map of Content - MOC)** y Segundo C
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)  
   - *PDA:* `Fase 6 (3º Secundaria) - Reconoce y modela reacciones químicas mediante el lenguaje simbólico de las ecuacione...`  
 
+- **3º de Secundaria:** [[3er_Grado/Quimica/Planeacion_Quimica_Ambiental_Medicion_en_Partes_por_Millon_ppm_y_Mitigacion_de_Contaminantes_en_Agua_y_Suelo|Química Ambiental: Medición en Partes por Millón (ppm) y Mitigación de Contaminantes en Agua y Suelo]]  
+  - *Tema:* Presencia de contaminantes y su concentración, relacionada con la degradación y contaminación ambiental en la comunidad  
+  - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)  
+
 
 ## 🌍 Campo Formativo: Etica, Naturaleza y Sociedades
 
@@ -325,6 +333,10 @@ Este nodo actúa como el **Centro de Enlace (Map of Content - MOC)** y Segundo C
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)  
   - *PDA:* `Fase 6 (1º Secundaria) - Compara procesos productivos (sectores primario, secundario y terciario) en diversos ...`  
 
+- **1º de Secundaria:** [[1er_Grado/Geografia/Planeacion_La_Tierra_en_Movimiento_Dinamica_de_Placas_Tectonicas_Cinturon_de_Fuego_del_Pacifico_y_Cultura_Sismica_en_Mexico|La Tierra en Movimiento: Dinámica de Placas Tectónicas, Cinturón de Fuego del Pacífico y Cultura Sísmica en México]]  
+  - *Tema:* La relación de las placas tectónicas con el relieve, la sismicidad y el vulcanismo  
+  - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)  
+
 - **1º de Secundaria:** [[1er_Grado/Geografia/Planeacion_Mexico_Pluricultural_Identidades_Juveniles_Pueblos_Originarios_y_Cohesion_Social|México Pluricultural: Identidades Juveniles, Pueblos Originarios y Cohesión Social]]  
   - *Tema:* La diversidad de grupos sociales y culturales en México  
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)  
@@ -351,6 +363,10 @@ Este nodo actúa como el **Centro de Enlace (Map of Content - MOC)** y Segundo C
   - *Tema:* La conformación de las metrópolis y los sistemas de dominación (La Colonia)  
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)  
   - *PDA:* `Fase 6 (2º Secundaria) - Analiza las formas de dominación, evangelización, extracción económica (encomienda, m...`  
+
+- **2º de Secundaria:** [[2do_Grado/Historia/Planeacion_Voces_de_Tlatelolco_Juventudes_Cronicas_Testimoniales_y_el_Movimiento_Estudiantil_de_1968|Voces de Tlatelolco: Juventudes, Crónicas Testimoniales y el Movimiento Estudiantil de 1968]]  
+  - *Tema:* Las tensiones en el siglo XX: El Movimiento Estudiantil de 1968 y la Lucha por las Libertades Democráticas  
+  - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)  
 
 - **3º de Secundaria:** [[3er_Grado/Historia/Planeacion_El_Siglo_de_los_Conflictos_Globales_Fascismo_Holocausto_y_la_Guerra_Fria|El Siglo de los Conflictos Globales: Fascismo, Holocausto y la Guerra Fría]]  
   - *Tema:* Las tensiones en siglo XX (Guerras Mundiales y Guerra Fría)  
