@@ -1,7 +1,7 @@
 ---
 tags: [iskool, arquitectura, smart-connections]
 archivo_origen: "src/types/index.ts"
-fecha_sincronizacion: "2026-06-23T20:09:16.681Z"
+fecha_sincronizacion: "2026-08-12T07:41:42.986Z"
 ---
 
 # index.ts
@@ -14,7 +14,7 @@ Este archivo contiene el código fuente de arquitectura para **index.ts**.
  * @description Define los roles de usuario autorizados en el sistema escolar.
  * @stateImpact Determina los permisos en el frontend, accesibilidad de rutas y control RLS.
  */
-export type UserRole = 'superadmin' | 'admin' | 'director' | 'coordinator' | 'teacher' | 'student' | 'parent';
+export type UserRole = 'superadmin' | 'admin' | 'director' | 'coordinator' | 'teacher' | 'student' | 'parent' | 'tutor';
 
 /**
  * @interface UserProfile
@@ -272,6 +272,17 @@ export interface StudentStats {
 
   // Preparatoria (Proyectos Productivos)
   funding_credits?: number;
+
+  // Tamagotchi RPG Mascotas
+  pet_stage?: 'egg' | 'baby' | 'adult' | 'mystic';
+  pet_energy?: number;
+  pet_happiness?: number;
+
+  // Afinidades Elementales / Stats NEM (Nueva Escuela Mexicana)
+  stat_lenguajes?: number;
+  stat_saberes?: number;
+  stat_etica?: number;
+  stat_de_lo_humano?: number;
 }
 
 /**
@@ -363,6 +374,8 @@ export interface Mission {
   map_position_y: number;
   is_active: boolean;
   created_at: string;
+  campo_formativo_id?: string;
+  pda_ids?: string[];
   
   // Relaciones opcionales cargadas
   subject?: Subject;
@@ -405,6 +418,12 @@ export interface ExamContent {
   bossHp: number;
   bossMaxDmg: number;
   storyIntro: string;
+  statBoost?: {
+    strength?: number;
+    intelligence?: number;
+    defense?: number;
+  };
+  customLoot?: string;
 }
 
 /**
@@ -434,9 +453,12 @@ export interface Quest {
   coins_reward: number;
   content: QuizContent | SubmissionContent | ExamContent;
   created_at: string;
+  campo_formativo_id?: string;
+  pda_ids?: string[];
   campos_formativos?: string[];
   ejes_articuladores?: string[];
   pdas?: string[];
+  required_level?: number;
 }
 
 /**
@@ -507,6 +529,7 @@ export interface PortfolioItem {
   
   created_at: string;
   updated_at: string;
+  isNewRealtime?: boolean;
 
   // Relaciones anidadas opcionales
   student_profile?: UserProfile;
@@ -519,7 +542,7 @@ export interface PortfolioItem {
  * @typedef {('teacher' | 'parent' | 'student' | 'peer')} FeedbackAuthorRole
  * @description Rol del autor que emite una retroalimentación formativa.
  */
-export type FeedbackAuthorRole = 'teacher' | 'parent' | 'student' | 'peer';
+export type FeedbackAuthorRole = 'teacher' | 'parent' | 'student' | 'peer' | 'tutor';
 
 /**
  * @interface PortfolioFeedback
@@ -634,8 +657,8 @@ export interface DetailedStudent {
 
   // Campos adicionales del expediente
   pending_payments?: string[];
-  behavior_reports?: { date: string; description: string; reporter: string }[];
-  teacher_notes?: { date: string; note: string; teacher_name: string }[];
+  behavior_reports?: { id?: string; date: string; description: string; reporter: string; parent_reply?: string; replied_at?: string }[];
+  teacher_notes?: { id?: string; date: string; note: string; teacher_name: string; parent_reply?: string; replied_at?: string }[];
 }
 
 /**
@@ -712,5 +735,96 @@ export interface StudentMessage {
   type?: 'general' | 'revocation';
   revoked_artifact?: string;
   reason?: string;
+}
+
+/**
+ * @interface CanvasActivityQuestion
+ * @description Estructura de reactivos/preguntas para actividades de Estudio ISkool.
+ */
+export interface CanvasActivityQuestion {
+  question: string;
+  options: string[];
+  correctIndex: number; // Índice de la respuesta correcta (0-3)
+  imageUrl?: string; // Referencia visual opcional para soporte en múltiples plantillas
+}
+export type StudioActivityQuestion = CanvasActivityQuestion;
+
+/**
+ * @interface CanvasActivityJSON
+ * @description Estructura JSON compacta y optimizada en consumo de tokens generada por el LLM para Estudio ISkool.
+ */
+export interface CanvasActivityJSON {
+  title: string;
+  description: string;
+  questions: CanvasActivityQuestion[];
+}
+export type StudioActivityJSON = CanvasActivityJSON;
+
+/**
+ * @interface ISkoolTemplateDefinition
+ * @description Estructura para el catálogo escalable de plantillas del Estudio ISkool.
+ */
+export interface ISkoolTemplateDefinition {
+  id: string;
+  name: string;
+  description: string;
+  iconName: string;
+  category: 'quiz' | 'visual' | 'puzzle' | 'challenge';
+  supportsImages: boolean;
+  isAvailable: boolean;
+}
+
+/**
+ * Catálogo escalable de las 20 plantillas educativas interactivas para Estudio ISkool.
+ */
+export const ISKOOL_TEMPLATES: ISkoolTemplateDefinition[] = [
+  { id: 'trivia', name: 'Trivia de Preguntas', description: 'Cuestionario interactivo con retroalimentación inmediata y ranking de estrellas', iconName: 'BrainCircuit', category: 'quiz', supportsImages: true, isAvailable: true },
+  { id: 'memorama', name: 'Memorama Visual', description: 'Encuentra las parejas de preguntas, conceptos e imágenes clave', iconName: 'Grid', category: 'visual', supportsImages: true, isAvailable: true },
+  { id: 'ahorcado', name: 'Ahorcado Educativo', description: 'Descubre la palabra o concepto oculto antes de agotar tus intentos', iconName: 'HelpCircle', category: 'puzzle', supportsImages: true, isAvailable: true },
+  { id: 'flashcards', name: 'Flashcards Animadas', description: 'Tarjetas de estudio interactivas con efecto de giro 3D', iconName: 'Layers', category: 'visual', supportsImages: true, isAvailable: true },
+  { id: 'match', name: 'Emparejamiento (Match)', description: 'Arrastra y conecta cada concepto con su definición adecuada', iconName: 'Link2', category: 'puzzle', supportsImages: true, isAvailable: true },
+  { id: 'ruleta', name: 'Ruleta de Conceptos', description: 'Gira la ruleta mágica y responde la pregunta del sector seleccionado', iconName: 'Disc', category: 'quiz', supportsImages: true, isAvailable: true },
+  { id: 'carrera_math', name: 'Carrera Matemática', description: 'Acelera respondiendo operaciones y conceptos a máxima velocidad', iconName: 'Trophy', category: 'challenge', supportsImages: false, isAvailable: true },
+  { id: 'tf_explosivo', name: 'Verdadero / Falso Explosivo', description: 'Decide antes de que el temporizador se agote si la premisa es verdadera', iconName: 'Flame', category: 'challenge', supportsImages: true, isAvailable: true },
+  { id: 'sentence_builder', name: 'Constructor de Oraciones', description: 'Ordena las palabras clave para formar la definición precisa', iconName: 'AlignLeft', category: 'puzzle', supportsImages: false, isAvailable: true },
+  { id: 'escape_room', name: 'Escape Room Lógico', description: 'Resuelve acertijos pedagógicos para desbloquear cada puerta de salida', iconName: 'KeyRound', category: 'puzzle', supportsImages: true, isAvailable: true },
+  { id: 'simon_says', name: 'Simón Dice Educativo', description: 'Memoriza la secuencia de respuestas y repítela correctamente', iconName: 'Gamepad2', category: 'challenge', supportsImages: false, isAvailable: true },
+  { id: 'batalla_respuestas', name: 'Batalla de Respuestas', description: 'Desafío contrarreloj para poner a prueba la agilidad mental', iconName: 'Zap', category: 'challenge', supportsImages: true, isAvailable: true },
+  { id: 'ordenamiento', name: 'Ordenamiento Cronológico', description: 'Ordena la secuencia correcta de eventos históricos o pasos técnicos', iconName: 'ListOrdered', category: 'quiz', supportsImages: true, isAvailable: true },
+  { id: 'crucigrama', name: 'Crucigrama de Saberes', description: 'Completa las palabras cruzadas con pistas pedagógicas', iconName: 'FileText', category: 'puzzle', supportsImages: false, isAvailable: true },
+  { id: 'rompecabezas', name: 'Rompecabezas Guiado', description: 'Reconstruye la imagen del proyecto respondiendo reactivos', iconName: 'Puzzle', category: 'visual', supportsImages: true, isAvailable: true },
+  { id: 'word_detective', name: 'Detectives de Palabras', description: 'Identifica los errores o sesgos en el texto pedagógico', iconName: 'Search', category: 'puzzle', supportsImages: false, isAvailable: true },
+  { id: 'sopa_letras', name: 'Sopa de Letras', description: 'Encuentra los términos principales en la cuadrícula de saberes', iconName: 'Grid3X3', category: 'puzzle', supportsImages: false, isAvailable: true },
+  { id: 'mapa_interactivo', name: 'Mapa Interactivo', description: 'Ubica elementos y conceptos en un diagrama visual', iconName: 'MapPin', category: 'visual', supportsImages: true, isAvailable: true },
+  { id: 'treasure_hunt', name: 'Caza-Tesoros', description: 'Encuentra las pistas escondidas en el aula virtual', iconName: 'Compass', category: 'challenge', supportsImages: true, isAvailable: true },
+  { id: 'clasificacion', name: 'Desafío de Clasificación', description: 'Agrupa conceptos en sus categorías o campos formativos correspondientes', iconName: 'FolderKanban', category: 'puzzle', supportsImages: true, isAvailable: true }
+];
+
+/**
+ * @interface CommunityActivity
+ * @description Actividad o plantilla gamificada compartida en la comunidad docente.
+ * @database Mapea a la tabla `public.community_activities`.
+ */
+export interface CommunityActivity {
+  id: string;
+  teacher_id: string;
+  title: string;
+  template_type: string; // 'trivia' | 'memorama' | etc.
+  content_json: CanvasActivityJSON;
+  upvotes: number;
+  created_at: string;
+  teacher_name?: string;
+  user_has_voted?: boolean;
+}
+
+/**
+ * @interface ActivityVote
+ * @description Voto individual docente (Llave primaria compuesta anti-fraude).
+ * @database Mapea a la tabla `public.activity_votes`.
+ */
+export interface ActivityVote {
+  activity_id: string;
+  voter_teacher_id: string;
+  created_at: string;
 }
 ```

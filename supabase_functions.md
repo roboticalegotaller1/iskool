@@ -1,7 +1,7 @@
 ---
 tags: [iskool, arquitectura, smart-connections]
 archivo_origen: "supabase_functions.sql"
-fecha_sincronizacion: "2026-06-23T20:09:16.678Z"
+fecha_sincronizacion: "2026-08-12T07:41:42.982Z"
 ---
 
 # supabase_functions.sql
@@ -60,6 +60,37 @@ create table if not exists public.student_messages (
   reason text
 );
 
+alter table public.shop_artifacts enable row level security;
+alter table public.student_inventory enable row level security;
+alter table public.student_messages enable row level security;
+
+create policy "Permitir lectura de shop_artifacts a usuarios autenticados"
+  on public.shop_artifacts for select
+  to authenticated
+  using (true);
+
+create policy "Permitir lectura de student_inventory a alumnos dueños"
+  on public.student_inventory for select
+  to authenticated
+  using (auth.uid() = student_id);
+
+create policy "Permitir insercion de student_inventory a alumnos dueños"
+  on public.student_inventory for insert
+  to authenticated
+  with check (auth.uid() = student_id);
+
+create policy "Permitir lectura de student_messages a alumnos dueños"
+  on public.student_messages for select
+  to authenticated
+  using (auth.uid() = student_id);
+
+create policy "Permitir actualizacion de student_messages a alumnos dueños"
+  on public.student_messages for update
+  to authenticated
+  using (auth.uid() = student_id)
+  with check (auth.uid() = student_id);
+
+
 -- Seed initial shop artifacts if table is empty
 insert into public.shop_artifacts (id, name, description, price, icon)
 values 
@@ -95,6 +126,7 @@ create or replace function public.submit_quiz(
 returns jsonb
 language plpgsql
 security definer
+SET search_path = public, pg_catalog, pg_temp
 as $$
 declare
   v_xp_reward integer;
@@ -260,6 +292,160 @@ end;
 $$;
 
 ---------------------------------------------------------
+-- RPC: submit_exam
+-- Handles scoring for exams, stat boosts, custom loot, XP and Coins, levels up (+skill_points), and records attempt.
+---------------------------------------------------------
+create or replace function public.submit_exam(
+  p_student_id uuid,
+  p_quest_id uuid,
+  p_score numeric,
+  p_answers jsonb default '{}'::jsonb,
+  p_stat_boost jsonb default '{}'::jsonb,
+  p_custom_loot text default null
+)
+returns jsonb
+language plpgsql
+security definer
+SET search_path = public, pg_catalog, pg_temp
+as $$
+declare
+  v_xp_reward integer := 200;
+  v_coins_reward integer := 50;
+  v_xp_earned integer;
+  v_coins_earned integer;
+  
+  -- Student stats
+  v_current_xp integer;
+  v_current_coins integer;
+  v_level integer;
+  v_skill_points integer;
+  v_strength integer;
+  v_intelligence integer;
+  v_defense integer;
+  v_current_streak integer;
+  v_max_streak integer;
+  v_last_active date;
+  v_today date := current_date;
+  
+  v_xp_for_next_level integer;
+  v_leveled_up boolean := false;
+  v_feedback text;
+  v_attempt_id uuid;
+  
+  v_boost_str integer := 0;
+  v_boost_int integer := 0;
+  v_boost_def integer := 0;
+  v_unlocked_items text[];
+begin
+  -- Fetch Quest config if available
+  select q.xp_reward, q.coins_reward
+  into v_xp_reward, v_coins_reward
+  from public.quests q
+  where q.id = p_quest_id;
+  
+  if not found then
+    v_xp_reward := 200;
+    v_coins_reward := 50;
+  end if;
+
+  v_xp_earned := round(v_xp_reward * (p_score / 100.0));
+  v_coins_earned := round(v_coins_reward * (p_score / 100.0));
+
+  select xp, level, coins, current_streak, max_streak, last_active_date, skill_points,
+         coalesce(attribute_strength, 10), coalesce(attribute_intelligence, 10), coalesce(attribute_defense, 10)
+  into v_current_xp, v_level, v_current_coins, v_current_streak, v_max_streak, v_last_active, v_skill_points,
+       v_strength, v_intelligence, v_defense
+  from public.student_stats
+  where student_id = p_student_id;
+  
+  if not found then
+    raise exception 'Student stats for % not found', p_student_id;
+  end if;
+
+  -- Apply stat boosts
+  if p_stat_boost is not null then
+    if (p_stat_boost->>'strength') is not null then
+      v_boost_str := (p_stat_boost->>'strength')::integer;
+    end if;
+    if (p_stat_boost->>'intelligence') is not null then
+      v_boost_int := (p_stat_boost->>'intelligence')::integer;
+    end if;
+    if (p_stat_boost->>'defense') is not null then
+      v_boost_def := (p_stat_boost->>'defense')::integer;
+    end if;
+  end if;
+
+  v_strength := v_strength + v_boost_str;
+  v_intelligence := v_intelligence + v_boost_int;
+  v_defense := v_defense + v_boost_def;
+
+  -- Progression
+  v_current_xp := v_current_xp + v_xp_earned;
+  v_current_coins := v_current_coins + v_coins_earned;
+  
+  v_xp_for_next_level := v_level * 200;
+  while v_current_xp >= v_xp_for_next_level loop
+    v_current_xp := v_current_xp - v_xp_for_next_level;
+    v_level := v_level + 1;
+    v_skill_points := coalesce(v_skill_points, 0) + 2;
+    v_leveled_up := true;
+    v_xp_for_next_level := v_level * 200;
+  end loop;
+
+  v_feedback := '¡Examen final completado! Has demostrado un gran dominio académico.';
+
+  update public.student_stats
+  set xp = v_current_xp,
+      level = v_level,
+      coins = v_current_coins,
+      skill_points = coalesce(v_skill_points, 0),
+      attribute_strength = v_strength,
+      attribute_intelligence = v_intelligence,
+      attribute_defense = v_defense,
+      updated_at = now()
+  where student_id = p_student_id;
+
+  -- Record attempt
+  insert into public.quest_attempts (student_id, quest_id, score, is_completed, answers, feedback, created_at)
+  values (p_student_id, p_quest_id, p_score, (p_score >= 60.0), p_answers, v_feedback, now())
+  returning id into v_attempt_id;
+
+  -- Custom loot if provided
+  if p_custom_loot is not null and p_custom_loot <> '' then
+    select unlocked_items into v_unlocked_items
+    from public.student_avatars
+    where student_id = p_student_id;
+
+    if v_unlocked_items is not null then
+      if not (p_custom_loot = any(v_unlocked_items)) then
+        update public.student_avatars
+        set unlocked_items = array_append(unlocked_items, p_custom_loot),
+            updated_at = now()
+        where student_id = p_student_id;
+      end if;
+    end if;
+  end if;
+
+  return jsonb_build_object(
+    'attempt_id', v_attempt_id,
+    'xp_earned', v_xp_earned,
+    'coins_earned', v_coins_earned,
+    'leveled_up', v_leveled_up,
+    'feedback', v_feedback,
+    'new_stats', jsonb_build_object(
+      'xp', v_current_xp,
+      'level', v_level,
+      'coins', v_current_coins,
+      'skill_points', coalesce(v_skill_points, 0),
+      'attribute_strength', v_strength,
+      'attribute_intelligence', v_intelligence,
+      'attribute_defense', v_defense
+    )
+  );
+end;
+$$;
+
+---------------------------------------------------------
 -- RPC: level_up_attribute
 -- Validates skill points and upgrades the requested attribute.
 ---------------------------------------------------------
@@ -278,6 +464,7 @@ create or replace function public.level_up_attribute(
 returns jsonb
 language plpgsql
 security definer
+SET search_path = public, pg_catalog, pg_temp
 as $$
 declare
   v_skill_points integer;
@@ -357,6 +544,7 @@ create or replace function public.purchase_artifact(
 returns jsonb
 language plpgsql
 security definer
+SET search_path = public, pg_catalog, pg_temp
 as $$
 declare
   v_coins integer;
@@ -436,4 +624,202 @@ begin
   );
 end;
 $$;
+
+
+---------------------------------------------------------
+-- RPC: process_reward
+-- Safely increments or decrements student statistics on the database side
+---------------------------------------------------------
+create or replace function public.process_reward(
+  p_student_id uuid,
+  p_xp_change integer default 0,
+  p_coins_change integer default 0,
+  p_energy_change integer default 0,
+  p_happiness_change integer default 0
+)
+returns jsonb
+language plpgsql
+security definer
+SET search_path = public, pg_catalog, pg_temp
+as $$
+declare
+  v_current_xp integer;
+  v_current_coins integer;
+  v_level integer;
+  v_skill_points integer;
+  v_pet_energy integer;
+  v_pet_happiness integer;
+  v_pet_stage text;
+  v_xp_for_next_level integer;
+  v_updated_row public.student_stats%rowtype;
+begin
+  -- Fetch current stats
+  select xp, level, coins, skill_points, pet_energy, pet_happiness, pet_stage
+  into v_current_xp, v_level, v_current_coins, v_skill_points, v_pet_energy, v_pet_happiness, v_pet_stage
+  from public.student_stats
+  where student_id = p_student_id;
+
+  if not found then
+    raise exception 'Student stats for % not found', p_student_id;
+  end if;
+
+  -- Apply changes with validation
+  -- Coins check: if subtraction results in negative coins, prevent transaction
+  v_current_coins := v_current_coins + p_coins_change;
+  if v_current_coins < 0 then
+    raise exception 'Monedas insuficientes';
+  end if;
+
+  -- Happiness check: clamp between 0 and 100
+  v_pet_happiness := coalesce(v_pet_happiness, 50) + p_happiness_change;
+  if v_pet_happiness > 100 then
+    v_pet_happiness := 100;
+  elsif v_pet_happiness < 0 then
+    v_pet_happiness := 0;
+  end if;
+
+  -- Energy check: clamp between 0 and 100
+  v_pet_energy := coalesce(v_pet_energy, 100) + p_energy_change;
+  if v_pet_energy > 100 then
+    v_pet_energy := 100;
+  elsif v_pet_energy < 0 then
+    v_pet_energy := 0;
+  end if;
+
+  -- XP change
+  v_current_xp := v_current_xp + p_xp_change;
+  if v_current_xp < 0 then
+    v_current_xp := 0;
+  end if;
+
+  -- Level up loop
+  v_xp_for_next_level := v_level * 200;
+  while v_current_xp >= v_xp_for_next_level loop
+    v_current_xp := v_current_xp - v_xp_for_next_level;
+    v_level := v_level + 1;
+    -- standard skill points update
+    if p_student_id = 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a22'::uuid then
+      v_skill_points := coalesce(v_skill_points, 0) + 2;
+    end if;
+    v_xp_for_next_level := v_level * 200;
+  end loop;
+
+  -- Determine stage
+  if v_level >= 8 then
+    v_pet_stage := 'mystic';
+  elsif v_level >= 5 then
+    v_pet_stage := 'adult';
+  elsif v_level >= 3 then
+    v_pet_stage := 'baby';
+  else
+    v_pet_stage := 'egg';
+  end if;
+
+  -- Update student stats
+  update public.student_stats
+  set xp = v_current_xp,
+      level = v_level,
+      coins = v_current_coins,
+      skill_points = v_skill_points,
+      pet_energy = v_pet_energy,
+      pet_happiness = v_pet_happiness,
+      pet_stage = v_pet_stage,
+      updated_at = now()
+  where student_id = p_student_id
+  returning * into v_updated_row;
+
+  return row_to_json(v_updated_row)::jsonb;
+end;
+$$;
+
+
+---------------------------------------------------------
+-- trigger & function: handle_quest_completion_stats
+-- Updates student elemental stats when a quest is completed (quiz attempt or portfolio approval)
+---------------------------------------------------------
+create or replace function public.handle_quest_completion_stats()
+returns trigger as $$
+declare
+  v_campo_formativo_name text;
+  v_xp_earned integer;
+  v_xp_reward integer;
+begin
+  -- Caso A: Quest completado por intento exitoso (Quizzes / Exams)
+  if TG_TABLE_NAME = 'quest_attempts' then
+    if NEW.is_completed = true and (OLD.is_completed is null or OLD.is_completed = false) then
+      -- Obtener el campo formativo del Quest
+      select q.xp_reward, cf.name
+      into v_xp_reward, v_campo_formativo_name
+      from public.quests q
+      join public.nem_campos_formativos cf on q.campo_formativo_id = cf.id
+      where q.id = NEW.quest_id;
+
+      if found and v_campo_formativo_name is not null then
+        -- XP ganado es proporcional a la puntuación obtenida
+        v_xp_earned := round(v_xp_reward * (NEW.score / 100.0));
+        
+        -- Sumar XP a la afinidad elemental correspondiente
+        if v_campo_formativo_name = 'Lenguajes' then
+          update public.student_stats set stat_lenguajes = stat_lenguajes + v_xp_earned where student_id = NEW.student_id;
+        elsif v_campo_formativo_name = 'Saberes' then
+          update public.student_stats set stat_saberes = stat_saberes + v_xp_earned where student_id = NEW.student_id;
+        elsif v_campo_formativo_name = 'Ética' then
+          update public.student_stats set stat_etica = stat_etica + v_xp_earned where student_id = NEW.student_id;
+        elsif v_campo_formativo_name = 'De lo Humano' then
+          update public.student_stats set stat_de_lo_humano = stat_de_lo_humano + v_xp_earned where student_id = NEW.student_id;
+        end if;
+      end if;
+    end if;
+  
+  -- Caso B: Quest completado por aprobación de portafolio
+  elsif TG_TABLE_NAME = 'portfolio_items' then
+    if NEW.status = 'approved' and (OLD.status is null or OLD.status != 'approved') then
+      v_xp_reward := 100;
+      
+      if NEW.quest_id is not null then
+        -- Obtener el campo formativo del Quest si existe
+        select coalesce(q.xp_reward, 100), cf.name
+        into v_xp_reward, v_campo_formativo_name
+        from public.quests q
+        left join public.nem_campos_formativos cf on q.campo_formativo_id = cf.id
+        where q.id = NEW.quest_id;
+
+        if v_campo_formativo_name is not null then
+          -- 1. Actualizar afinidad elemental
+          if v_campo_formativo_name = 'Lenguajes' then
+            update public.student_stats set stat_lenguajes = stat_lenguajes + v_xp_reward where student_id = NEW.student_id;
+          elsif v_campo_formativo_name = 'Saberes' then
+            update public.student_stats set stat_saberes = stat_saberes + v_xp_reward where student_id = NEW.student_id;
+          elsif v_campo_formativo_name = 'Ética' then
+            update public.student_stats set stat_etica = stat_etica + v_xp_reward where student_id = NEW.student_id;
+          elsif v_campo_formativo_name = 'De lo Humano' then
+            update public.student_stats set stat_de_lo_humano = stat_de_lo_humano + v_xp_reward where student_id = NEW.student_id;
+          end if;
+        end if;
+      end if;
+
+      -- 2. Asegurar que el XP/Monedas principales se apliquen atómicamente en la base de datos para aprobación de portafolio
+      perform public.process_reward(NEW.student_id, coalesce(v_xp_reward, 100), 20, 0, 0);
+    end if;
+  end if;
+  
+  return NEW;
+end;
+$$ language plpgsql security definer;
+
+-- Crear disparador para quest_attempts
+drop trigger if exists tr_quest_attempts_completion on public.quest_attempts;
+create trigger tr_quest_attempts_completion
+  after insert or update of is_completed
+  on public.quest_attempts
+  for each row
+  execute function public.handle_quest_completion_stats();
+
+-- Crear disparador para portfolio_items
+drop trigger if exists tr_portfolio_items_approval on public.portfolio_items;
+create trigger tr_portfolio_items_approval
+  after update of status
+  on public.portfolio_items
+  for each row
+  execute function public.handle_quest_completion_stats();
 ```

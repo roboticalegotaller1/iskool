@@ -1,7 +1,7 @@
 ---
 tags: [iskool, arquitectura, smart-connections]
 archivo_origen: "schema_gamification.sql"
-fecha_sincronizacion: "2026-06-23T20:09:16.675Z"
+fecha_sincronizacion: "2026-08-12T07:41:42.974Z"
 ---
 
 # schema_gamification.sql
@@ -37,6 +37,17 @@ create table public.student_stats (
   
   -- Financiamiento (Preparatoria)
   funding_credits integer default 1000 check (funding_credits >= 0),
+  
+  -- Tamagotchi RPG Mascotas (Secundaria)
+  pet_stage varchar default 'egg' check (pet_stage in ('egg', 'baby', 'adult', 'mystic')),
+  pet_energy integer default 100 check (pet_energy >= 0 and pet_energy <= 100),
+  pet_happiness integer default 50 check (pet_happiness >= 0 and pet_happiness <= 100),
+  
+  -- Afinidades Elementales / Stats NEM (Nueva Escuela Mexicana)
+  stat_lenguajes integer default 0 not null check (stat_lenguajes >= 0),
+  stat_saberes integer default 0 not null check (stat_saberes >= 0),
+  stat_etica integer default 0 not null check (stat_etica >= 0),
+  stat_de_lo_humano integer default 0 not null check (stat_de_lo_humano >= 0),
   
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
@@ -108,6 +119,33 @@ create table public.student_badges (
 
 alter table public.student_badges enable row level security;
 
+-- 4.5. NEM Catalog Tables (Nueva Escuela Mexicana)
+/**
+ * @table nem_campos_formativos
+ * @description Catálogo estático de campos formativos según el plan de estudios NEM.
+ */
+create table public.nem_campos_formativos (
+  id uuid default uuid_generate_v4() primary key,
+  name text not null unique,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.nem_campos_formativos enable row level security;
+
+/**
+ * @table nem_pdas
+ * @description Procesos de Desarrollo de Aprendizaje (PDAs) asociados a campos formativos.
+ */
+create table public.nem_pdas (
+  id uuid default uuid_generate_v4() primary key,
+  campo_formativo_id uuid references public.nem_campos_formativos(id) on delete cascade not null,
+  code text,
+  description text not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.nem_pdas enable row level security;
+
 -- 5. Missions / Misiones Académicas (Narrativa de aprendizaje)
 /**
  * @table missions
@@ -120,6 +158,8 @@ create table public.missions (
   school_id uuid references public.schools(id) on delete cascade not null,
   subject_id uuid references public.subjects(id) on delete cascade not null,
   level_grade_id uuid references public.levels_grades(id) on delete cascade not null,
+  campo_formativo_id uuid references public.nem_campos_formativos(id) on delete set null,
+  pda_ids uuid[],
   title text not null,
   description text not null,
   story_intro text not null, -- Texto introductorio de la narrativa
@@ -141,6 +181,8 @@ alter table public.missions enable row level security;
 create table public.quests (
   id uuid default uuid_generate_v4() primary key,
   mission_id uuid references public.missions(id) on delete cascade not null,
+  campo_formativo_id uuid references public.nem_campos_formativos(id) on delete set null,
+  pda_ids uuid[],
   title text not null,
   description text not null,
   type text not null check (type in ('quiz', 'portfolio_submission')),
@@ -185,7 +227,7 @@ create table public.portfolio_items (
   id uuid default uuid_generate_v4() primary key,
   student_id uuid references public.students(id) on delete cascade not null,
   subject_id uuid references public.subjects(id) on delete cascade not null,
-  quest_id uuid references public.quests(id) on delete set null, -- Opcional
+  quest_id uuid references public.quests(id) on delete cascade, -- Opcional
   title text not null,
   description text,
   file_url text not null,
@@ -230,4 +272,163 @@ insert into public.badges (name, description, icon_name, category, xp_required) 
   ('Creador de Universos', 'Sube una evidencia artística o dibujo digital de alta calidad.', 'Palette', 'creative', 150),
   ('Compañero Estelar', 'Realiza una coevaluación constructiva para un compañero.', 'Users', 'social', 100),
   ('Racha del Sol', 'Mantén una racha de actividad diaria de 5 días seguidos.', 'Flame', 'persistence', 300);
+
+-- ==========================================
+-- 10. Coop Parties (Sesiones Cooperativas)
+-- ==========================================
+create table public.coop_parties (
+  id uuid default uuid_generate_v4() primary key,
+  mission_id uuid references public.missions(id) on delete cascade not null,
+  created_by uuid references public.students(id) on delete cascade not null,
+  status text not null default 'active' check (status in ('active', 'completed', 'failed')),
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.coop_parties enable row level security;
+
+-- Políticas RLS para coop_parties
+create policy "Permitir lectura de coop_parties a usuarios autenticados"
+  on public.coop_parties for select
+  to authenticated
+  using (true);
+
+create policy "Permitir a estudiantes crear su propia party"
+  on public.coop_parties for insert
+  to authenticated
+  with check (auth.uid() = created_by);
+
+create policy "Permitir a creadores y miembros actualizar el estado de la party"
+  on public.coop_parties for update
+  to authenticated
+  using (
+    auth.uid() = created_by 
+    or exists (
+      select 1 from public.party_members 
+      where party_members.party_id = coop_parties.id 
+        and party_members.student_id = auth.uid()
+    )
+  );
+
+
+-- ==========================================
+-- 11. Party Members (Miembros de la Party)
+-- ==========================================
+create table public.party_members (
+  party_id uuid references public.coop_parties(id) on delete cascade not null,
+  student_id uuid references public.students(id) on delete cascade not null,
+  joined_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  primary key (party_id, student_id)
+);
+
+alter table public.party_members enable row level security;
+
+-- Políticas RLS para party_members
+create policy "Permitir lectura de party_members a usuarios autenticados"
+  on public.party_members for select
+  to authenticated
+  using (true);
+
+create policy "Permitir a estudiantes unirse a una party"
+  on public.party_members for insert
+  to authenticated
+  with check (auth.uid() = student_id);
+
+create policy "Permitir a estudiantes salir de una party"
+  on public.party_members for delete
+  to authenticated
+  using (auth.uid() = student_id);
+
+
+-- ==========================================
+-- 12. Party Actions (Acciones/Ataques en Tiempo Real)
+-- ==========================================
+create table public.party_actions (
+  id uuid default uuid_generate_v4() primary key,
+  party_id uuid references public.coop_parties(id) on delete cascade not null,
+  student_id uuid references public.students(id) on delete cascade not null,
+  damage_dealt integer not null check (damage_dealt >= 0),
+  action_type text not null, -- e.g., 'attack', 'heal', 'spell'
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.party_actions enable row level security;
+
+-- Políticas RLS para party_actions
+create policy "Permitir lectura de party_actions a usuarios autenticados"
+  on public.party_actions for select
+  to authenticated
+  using (true);
+
+create policy "Permitir a miembros registrar sus propias acciones"
+  on public.party_actions for insert
+  to authenticated
+  with check (
+    auth.uid() = student_id 
+    and exists (
+      select 1 from public.party_members 
+      where party_members.party_id = party_actions.party_id 
+        and party_members.student_id = auth.uid()
+    )
+  );
+
+-- Habilitar Supabase Realtime para la tabla party_actions
+alter publication supabase_realtime add table public.party_actions;
+
+-- ==========================================
+-- 13. RPC Function: Join Party
+-- ==========================================
+create or replace function public.join_party(party_id_param uuid)
+returns void as $$
+declare
+  v_mission_id uuid;
+  v_mission_active boolean;
+  v_party_status text;
+  v_student_id uuid;
+begin
+  -- Obtener el ID del estudiante desde la sesión activa
+  v_student_id := auth.uid();
+  if v_student_id is null then
+    raise exception 'Usuario no autenticado';
+  end if;
+
+  -- Validar si la party existe y su estado
+  select mission_id, status into v_mission_id, v_party_status
+  from public.coop_parties
+  where id = party_id_param;
+
+  if not found then
+    raise exception 'La sala a la que intentas unirte ya no existe o ha caducado';
+  end if;
+
+  if v_party_status != 'active' then
+    raise exception 'La sala a la que intentas unirte ya no existe o ha caducado';
+  end if;
+
+  -- Validar si la misión está activa
+  select is_active into v_mission_active
+  from public.missions
+  where id = v_mission_id;
+
+  if not found or not v_mission_active then
+    raise exception 'La misión asociada a esta sala no está activa';
+  end if;
+
+  -- Validar si el alumno ya pertenece a otra sesión activa
+  if exists (
+    select 1 
+    from public.party_members pm
+    join public.coop_parties cp on pm.party_id = cp.id
+    where pm.student_id = v_student_id
+      and cp.status = 'active'
+      and cp.id != party_id_param
+  ) then
+    raise exception 'Ya perteneces a otra sesión activa de party';
+  end if;
+
+  -- Registrar al alumno en la party
+  insert into public.party_members (party_id, student_id)
+  values (party_id_param, v_student_id)
+  on conflict (party_id, student_id) do nothing;
+end;
+$$ language plpgsql security definer SET search_path = public, pg_catalog, pg_temp;
 ```

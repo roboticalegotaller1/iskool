@@ -1,7 +1,7 @@
 ---
 tags: [iskool, arquitectura, smart-connections]
 archivo_origen: "schema.sql"
-fecha_sincronizacion: "2026-06-23T20:09:16.670Z"
+fecha_sincronizacion: "2026-08-12T07:41:42.969Z"
 ---
 
 # schema.sql
@@ -156,6 +156,14 @@ create table public.parent_student (
   relationship text not null, -- e.g., "Padre", "Madre", "Tutor"
   primary key (parent_id, student_id)
 );
+
+alter table public.parent_student enable row level security;
+
+create policy "Permitir lectura de relacion a padres o alumnos vinculados"
+  on public.parent_student for select
+  to authenticated
+  using (auth.uid() = parent_id or auth.uid() = student_id);
+
 
 /**
  * @table enrollments
