@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Formas de ser, pensar, actuar y autoconcepto positivo"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.122Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.122Z"
 ---
 
 # El Espejo Mágico: Autoconocimiento, Singularidad y Autoestima Positiva

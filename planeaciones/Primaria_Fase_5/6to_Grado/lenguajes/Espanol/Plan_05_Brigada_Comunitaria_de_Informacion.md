@@ -6,7 +6,7 @@ grado: "6º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Elaboración de un tríptico informativo sobre la prevención de algún problema colectivo"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.734Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.734Z"
 ---
 
 # Brigada Comunitaria de Información: Trípticos para la Prevención y la Salud

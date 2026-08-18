@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Propiedades de los materiales: masa y longitud"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.047Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.047Z"
 ---
 
 # La Balanza del Aula: Medición de Masa con el Kilogramo y Longitud con el Metro

@@ -6,7 +6,7 @@ grado: "5º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Las familias como espacio para el desarrollo del sentido de pertenencia y convivencia"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.794Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.794Z"
 ---
 
 # Árbol de la Convivencia: Tradiciones, Vínculos Familiares y Sentido de Pertenencia

@@ -6,7 +6,7 @@ grado: "2do Grado"
 nivel: "Secundaria (Fase 6)"
 tema: "Herramientas, máquinas e instrumentos como extensión corporal"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:00:10.430Z"
+fecha_creacion: "18 de agosto de 2026"T05:00:10.430Z"
 ---
 
 # Evolución Técnica: De la Mano Humana a los Sistemas Automatizados

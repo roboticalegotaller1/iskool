@@ -6,7 +6,7 @@ grado: "1º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Prevención de enfermedades relacionadas con la alimentación y el consumo de alimentos ultraprocesados"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:40:31.593Z"
+fecha_creacion: "18 de agosto de 2026"T05:40:31.593Z"
 ---
 
 # Radiografía de los Ultraprocesados: Etiquetado Frontal, Balance Calórico y Huella Metabólica

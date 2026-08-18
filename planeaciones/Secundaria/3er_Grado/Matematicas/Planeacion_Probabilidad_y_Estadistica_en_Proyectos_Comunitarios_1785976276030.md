@@ -4,7 +4,7 @@ nivel: "Secundaria"
 grado: "3er Grado"
 asignatura: "Matematicas"
 campo_formativo: "Saberes y Pensamiento Cientifico"
-fecha_creacion: "2026-08-06T00:31:16.030Z"
+fecha_creacion: "18 de agosto de 2026"T00:31:16.030Z"
 ---
 
 # Probabilidad y Estadistica en Proyectos Comunitarios

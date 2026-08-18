@@ -7,8 +7,8 @@ total_planeaciones: 200
 profesor_titular: "Prof. Israel López Ángeles"
 profesor_id: "usr-teacher-1"
 ciclo_escolar: "2025-2026"
-created_at: "2026-08-18"
-updated_at: "2026-08-18"
+created_at: "18 de agosto de 2026"
+updated_at: "18 de agosto de 2026"
 tags:
   - moc
   - indice_maestro

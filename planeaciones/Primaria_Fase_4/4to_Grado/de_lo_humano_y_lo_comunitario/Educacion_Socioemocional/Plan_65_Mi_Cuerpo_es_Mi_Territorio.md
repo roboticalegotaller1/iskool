@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Educación Integral en Sexualidad: respeto al cuerpo y expresión de afectos"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.127Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.127Z"
 ---
 
 # Mi Cuerpo es Mi Territorio: Límites Personales, Respeto y Autocuidado

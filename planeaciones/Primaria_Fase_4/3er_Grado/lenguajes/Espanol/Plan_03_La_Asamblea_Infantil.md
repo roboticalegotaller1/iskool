@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Diálogo para la toma de acuerdos y el intercambio de puntos de vista"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.000Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.000Z"
 ---
 
 # La Asamblea Infantil: El Bastón de la Palabra y la Escucha Activa

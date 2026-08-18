@@ -6,7 +6,7 @@ grado: "2º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Los géneros periodísticos y sus recursos para comunicar sucesos significativos"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:03.518Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:03.518Z"
 ---
 
 # Periodistas de la Comunidad: Crónica y Reportaje Escolar

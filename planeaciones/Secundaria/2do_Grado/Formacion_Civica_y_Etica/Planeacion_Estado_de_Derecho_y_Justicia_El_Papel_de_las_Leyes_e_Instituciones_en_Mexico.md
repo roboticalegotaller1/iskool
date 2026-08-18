@@ -6,7 +6,7 @@ grado: "2º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Normas, leyes e instituciones encargadas de proteger y defender los derechos humanos"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:13.817Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:13.817Z"
 ---
 
 # Estado de Derecho y Justicia: El Papel de las Leyes e Instituciones en México

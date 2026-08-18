@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Composición pluricultural y derechos de pueblos indígenas y afromexicanos"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.116Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.116Z"
 ---
 
 # México Plural: 68 Lenguas Originarias, Pueblos Afromexicanos y Garantías Constitucionales

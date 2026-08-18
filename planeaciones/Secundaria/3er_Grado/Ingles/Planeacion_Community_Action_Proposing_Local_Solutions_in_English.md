@@ -6,7 +6,7 @@ grado: "3º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "El uso del inglés para expresar necesidades, intereses y problemas de la comunidad"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:03.528Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:03.528Z"
 ---
 
 # Community Action: Proposing Local Solutions in English

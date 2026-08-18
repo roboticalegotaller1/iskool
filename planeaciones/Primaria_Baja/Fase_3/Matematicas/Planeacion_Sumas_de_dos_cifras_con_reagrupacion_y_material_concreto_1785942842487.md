@@ -3,7 +3,7 @@ tags: [iskool, planeacion_nem, segundo_cerebro]
 asignatura: "Matemáticas / Saberes Científicos"
 nivel: "Primaria Baja (1º a 3º Grado)"
 campo_formativo: "Saberes y Pensamiento Científico"
-fecha_creacion: "2026-08-05T15:14:02.487Z"
+fecha_creacion: "18 de agosto de 2026"T15:14:02.487Z"
 ---
 
 # Sumas de dos cifras con reagrupación y material concreto

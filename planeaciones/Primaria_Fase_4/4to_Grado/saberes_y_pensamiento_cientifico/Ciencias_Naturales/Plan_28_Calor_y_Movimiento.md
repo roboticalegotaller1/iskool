@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Efectos del calor y de las fuerzas sobre los objetos (fricción)"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.054Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.054Z"
 ---
 
 # Calor y Movimiento: Fricción, Conducción Térmica y el Molinete de Calor

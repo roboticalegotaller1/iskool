@@ -6,7 +6,7 @@ grado: "6º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Interpretación y valoración de manifestaciones culturales y artísticas"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.748Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.748Z"
 ---
 
 # Galería de Identidades: Simbolismo, Rituales y Significado en el Arte Popular Mexicano

@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Comprensión y producción de textos expositivos (problema-solución, causa-consecuencia)"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.008Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.008Z"
 ---
 
 # Eco-Periodistas: Textos Expositivos de Problema-Solución en la Escuela

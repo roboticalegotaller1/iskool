@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Indagación, reelaboración y difusión de notas informativas"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.023Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.023Z"
 ---
 
 # La Gaceta Escolar: Hechos, Opiniones y Estructura de la Noticia

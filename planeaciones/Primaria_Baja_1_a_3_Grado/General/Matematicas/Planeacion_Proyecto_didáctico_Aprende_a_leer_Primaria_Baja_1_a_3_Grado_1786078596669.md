@@ -4,7 +4,7 @@ nivel: "Primaria Baja (1º a 3º Grado)"
 grado: ""
 asignatura: "Matemáticas"
 campo_formativo: "Saberes y Pensamiento Científico"
-fecha_creacion: "2026-08-07T04:56:36.669Z"
+fecha_creacion: "18 de agosto de 2026"T04:56:36.669Z"
 ---
 
 # Proyecto didáctico: Aprende a leer — Primaria Baja (1º a 3º Grado)

@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Multiplicación de 3x2 cifras y división con cociente y residuo"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.068Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.068Z"
 ---
 
 # Algoritmos de Precisión: Multiplicación de 3 por 2 Cifras y Divisiones con Residuo

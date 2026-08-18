@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Análisis e intercambio de comentarios sobre empaques y publicidad"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.021Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.021Z"
 ---
 
 # Consumidores Críticos: Sellos de Advertencia y Contra-Publicidad

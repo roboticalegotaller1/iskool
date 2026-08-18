@@ -6,7 +6,7 @@ grado: "6º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Apropiación e intervención artística en el espacio comunitario"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.746Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.746Z"
 ---
 
 # Murales y Espacios Vivos: Arte Urbano Transformador para el Bienestar Escolar

@@ -6,7 +6,7 @@ grado: "2do Grado"
 nivel: "Secundaria (Fase 6)"
 tema: "Medición y cálculo en diferentes contextos (Teorema de Pitágoras y razones trigonométricas)"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:00:10.415Z"
+fecha_creacion: "18 de agosto de 2026"T05:00:10.415Z"
 ---
 
 # Ingeniería en el Patio Escolar: Aplicando el Teorema de Pitágoras en la Vida Real

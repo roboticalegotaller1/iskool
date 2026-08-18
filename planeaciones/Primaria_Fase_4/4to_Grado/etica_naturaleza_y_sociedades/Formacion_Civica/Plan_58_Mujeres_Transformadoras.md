@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Historia de la lucha por la igualdad de género y derechos laborales y educativos"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.112Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.112Z"
 ---
 
 # Mujeres Transformadoras: Historia de la Lucha por la Educación y el Voto Femenino en México

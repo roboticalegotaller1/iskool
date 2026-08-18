@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Retos en la satisfacción de necesidades básicas y derechos humanos"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.103Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.103Z"
 ---
 
 # Vida Digna: Necesidades Básicas, Derechos de la Niñez y Justicia Social

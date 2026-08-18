@@ -6,7 +6,7 @@ grado: "1º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "La diversidad de lenguas y su uso en la comunicación familiar, escolar y comunitaria"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:03.486Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:03.486Z"
 ---
 
 # Mosaico Lingüístico: Palabras y Raíces de Nuestra Comunidad

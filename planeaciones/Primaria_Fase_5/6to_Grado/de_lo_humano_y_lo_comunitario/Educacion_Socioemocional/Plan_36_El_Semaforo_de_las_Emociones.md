@@ -6,7 +6,7 @@ grado: "6º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Los afectos, gestión emocional, autorregulación y asertividad"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.805Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.805Z"
 ---
 
 # El Semáforo de las Emociones: Autorregulación, Empatía y Comunicación Asertiva

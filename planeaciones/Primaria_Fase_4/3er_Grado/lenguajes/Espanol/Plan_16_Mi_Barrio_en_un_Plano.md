@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Uso de croquis y mapas para describir trayectos o localizar lugares"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.028Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.028Z"
 ---
 
 # Mi Barrio en un Plano: Croquis, Puntos Cardinales y Rutas Seguras

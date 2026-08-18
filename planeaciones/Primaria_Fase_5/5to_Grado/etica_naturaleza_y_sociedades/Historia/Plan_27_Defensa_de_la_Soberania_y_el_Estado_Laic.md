@@ -6,7 +6,7 @@ grado: "5º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "México independiente: invasiones extranjeras, defensa de la soberanía y Leyes de Reforma"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.784Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.784Z"
 ---
 
 # Defensa de la Soberanía y el Estado Laico: De las Intervenciones Extranjeras a las Leyes de Reforma

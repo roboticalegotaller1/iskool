@@ -6,7 +6,7 @@ grado: "2º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Regularidades, Patrones e Introducción al álgebra (Ecuaciones lineales y cuadráticas)"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:06.916Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:06.916Z"
 ---
 
 # El Lenguaje Secreto de las Ecuaciones: Del Patrón Visual a la Incógnita Despejada

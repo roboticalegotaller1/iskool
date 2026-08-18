@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Reconocimiento de necesidades y características propias y de las demás personas"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.149Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.149Z"
 ---
 
 # El Mosaico del Aula: Reconocimiento Mutuo, Necesidades Especiales y Solidaridad

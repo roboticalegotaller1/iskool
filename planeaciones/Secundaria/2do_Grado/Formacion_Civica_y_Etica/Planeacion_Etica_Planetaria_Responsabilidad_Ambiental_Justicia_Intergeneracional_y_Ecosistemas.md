@@ -6,7 +6,7 @@ grado: "2º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Principios éticos como referente para un desarrollo sustentable"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:13.822Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:13.822Z"
 ---
 
 # Ética Planetaria: Responsabilidad Ambiental, Justicia Intergeneracional y Ecosistemas

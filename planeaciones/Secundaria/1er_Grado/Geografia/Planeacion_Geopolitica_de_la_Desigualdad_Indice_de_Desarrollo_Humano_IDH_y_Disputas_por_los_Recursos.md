@@ -6,7 +6,7 @@ grado: "1º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Desigualdades socioeconómicas y conflictos territoriales actuales"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:13.802Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:13.802Z"
 ---
 
 # Geopolítica de la Desigualdad: Índice de Desarrollo Humano (IDH) y Disputas por los Recursos

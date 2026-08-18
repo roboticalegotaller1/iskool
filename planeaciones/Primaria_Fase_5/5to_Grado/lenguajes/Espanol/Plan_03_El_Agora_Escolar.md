@@ -6,7 +6,7 @@ grado: "5º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Participación en debates sobre temas de interés común"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.702Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.702Z"
 ---
 
 # El Ágora Escolar: Diálogo, Argumentación y Consensos en Debate Democrático

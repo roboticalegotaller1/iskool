@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Posibilidades expresivas del cuerpo y códigos no verbales"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.145Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.145Z"
 ---
 
 # Cuerpo en Movimiento: Mímica, Expresión Corporal y Danza de las Emociones

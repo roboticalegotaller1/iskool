@@ -26,8 +26,8 @@ tags:
   - nem_2024
   - etica_naturaleza_y_sociedades
   - formaci_n_c_vica_y__tica
-created_at: "2026-08-18"
-updated_at: "2026-08-18"
+created_at: "18 de agosto de 2026"
+updated_at: "18 de agosto de 2026"
 synced_iskool_db: true
 ---
 

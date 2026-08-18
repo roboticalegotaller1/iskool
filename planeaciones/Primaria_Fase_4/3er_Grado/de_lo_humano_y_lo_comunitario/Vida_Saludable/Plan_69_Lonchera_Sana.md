@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Hábitos saludables, hidratación con agua pura y refrigerios nutritivos"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.134Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.134Z"
 ---
 
 # Lonchera Sana: Hidratación Inteligente, Frutas de Temporada y Cero Azúcares

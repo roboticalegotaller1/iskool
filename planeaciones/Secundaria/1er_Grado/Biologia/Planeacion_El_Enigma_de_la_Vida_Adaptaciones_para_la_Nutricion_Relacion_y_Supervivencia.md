@@ -6,7 +6,7 @@ grado: "1º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Los procesos vitales de los seres vivos: nutrición, relación con el medio y reproducción"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:06.931Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:06.931Z"
 ---
 
 # El Enigma de la Vida: Adaptaciones para la Nutrición, Relación y Supervivencia

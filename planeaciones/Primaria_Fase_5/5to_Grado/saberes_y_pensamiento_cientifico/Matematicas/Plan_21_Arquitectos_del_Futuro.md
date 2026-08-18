@@ -6,7 +6,7 @@ grado: "5º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Cuerpos geométricos (prismas y pirámides) y cálculo de perímetro y área"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.769Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.769Z"
 ---
 
 # Arquitectos del Futuro: Prismas, Pirámides y Fórmulas de Área y Perímetro

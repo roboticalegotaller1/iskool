@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Entrevistas con personas de la comunidad para conocer diversos temas"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.012Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.012Z"
 ---
 
 # Micrófono Abierto: Planificación, Preguntas Abiertas y Reporte de Entrevista Testimonial

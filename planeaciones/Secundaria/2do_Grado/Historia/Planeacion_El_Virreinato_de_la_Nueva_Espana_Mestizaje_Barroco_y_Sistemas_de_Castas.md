@@ -6,7 +6,7 @@ grado: "2º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "La conformación de las metrópolis y los sistemas de dominación (La Colonia)"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:13.809Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:13.809Z"
 ---
 
 # El Virreinato de la Nueva España: Mestizaje, Barroco y Sistemas de Castas

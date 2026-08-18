@@ -6,7 +6,7 @@ grado: "1º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "El espacio geográfico como un producto social"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:13.773Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:13.773Z"
 ---
 
 # Diagnóstico Territorial: Nuestra Colonia a Través del Espacio Geográfico

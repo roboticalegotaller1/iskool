@@ -6,7 +6,7 @@ grado: "6º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Transformaciones de la energía eléctrica y circuitos térmicos"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.763Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.763Z"
 ---
 
 # Energía en Movimiento: Circuitos Eléctricos, Cargas y Conductores en la Vida Tecnológica

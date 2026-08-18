@@ -24,8 +24,8 @@ tags:
   - nem_2024
   - de_lo_humano_y_lo_comunitario
   - tecnolog_a
-created_at: "2026-08-18"
-updated_at: "2026-08-18"
+created_at: "18 de agosto de 2026"
+updated_at: "18 de agosto de 2026"
 synced_iskool_db: true
 ---
 

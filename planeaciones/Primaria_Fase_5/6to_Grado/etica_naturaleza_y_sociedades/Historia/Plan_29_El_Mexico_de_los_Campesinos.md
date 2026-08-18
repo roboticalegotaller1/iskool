@@ -6,7 +6,7 @@ grado: "6º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "México posrevolucionario (1917-1940), Escuela Rural Mexicana, Cardenismo y Expropiación Petrolera"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.789Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.789Z"
 ---
 
 # El México de los Campesinos: Escuela Rural, Cardenismo y la Soberanía del Petróleo

@@ -6,7 +6,7 @@ grado: "6º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "La Revolución Mexicana de 1910 y la Constitución de 1917"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.787Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.787Z"
 ---
 
 # Tierra y Libertad: La Revolución Mexicana, las Mujeres Zapatistas y la Constitución de 1917

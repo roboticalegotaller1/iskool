@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Medición del tiempo y escalas temporales (lustros, décadas, siglos)"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.075Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.075Z"
 ---
 
 # Líneas del Tiempo: Segundos, Horas, Lustros, Décadas y Siglos en la Historia

@@ -6,7 +6,7 @@ grado: "6º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Estilos de vida activos, saludables y hábitos alimentarios sostenibles"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.803Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.803Z"
 ---
 
 # Circuito Vital: Activación Física Diaria, Higiene Sostenible y Prevención del Sedentarismo

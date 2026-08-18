@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Prevención de adicciones y campañas escolares contra el tabaquismo y alcohol"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.144Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.144Z"
 ---
 
 # Decisiones Libres: La Ciencia contra las Adicciones y el Cuidado de la Salud Integral

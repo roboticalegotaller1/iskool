@@ -6,7 +6,7 @@ grado: "3º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Las luchas de las mujeres y grupos históricamente discriminados por sus derechos"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:13.813Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:13.813Z"
 ---
 
 # Voces por la Igualdad: Las Sufragistas, los Derechos Civiles y la Lucha Feminista en México

@@ -6,7 +6,7 @@ grado: "1º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Las vacunas y su relevancia en el control de enfermedades infecciosas"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:06.937Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:06.937Z"
 ---
 
 # Escudos Biológicos: El Sistema Inmunológico y el Impacto Social de las Vacunas

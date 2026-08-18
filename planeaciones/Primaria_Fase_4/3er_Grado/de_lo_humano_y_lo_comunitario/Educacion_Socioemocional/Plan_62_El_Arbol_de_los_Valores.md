@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Las familias como espacio de protección, afecto y valores compartidos"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.120Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.120Z"
 ---
 
 # El Árbol de los Valores: Cuidados Afectivos y Tradición Familiar

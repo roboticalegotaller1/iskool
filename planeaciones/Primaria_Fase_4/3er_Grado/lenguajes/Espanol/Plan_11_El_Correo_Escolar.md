@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Comunicación a distancia con personas y propósitos diversos"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.019Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.019Z"
 ---
 
 # El Correo Escolar: Cartas Personales, Estampillas y Protección de Datos

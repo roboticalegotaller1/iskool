@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Multiplicación y división como operaciones inversas (factores de 1 cifra)"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.066Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.066Z"
 ---
 
 # La Tabla Pitagórica: Arreglos Rectangulares, Multiplicación y Reparto Equitativo

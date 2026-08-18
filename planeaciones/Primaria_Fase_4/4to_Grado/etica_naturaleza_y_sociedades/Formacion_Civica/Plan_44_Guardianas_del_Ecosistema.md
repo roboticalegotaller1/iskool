@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Cuidado de los ecosistemas, especies endémicas y el papel de las mujeres"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.087Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.087Z"
 ---
 
 # Guardianas del Ecosistema: Especies Endémicas de México y Liderazgo Femenino Ambiental

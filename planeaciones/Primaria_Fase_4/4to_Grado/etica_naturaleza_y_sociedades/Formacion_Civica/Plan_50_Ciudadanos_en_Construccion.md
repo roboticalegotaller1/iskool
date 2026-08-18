@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Democracia en la vida cotidiana: normas, leyes justas y autoridades"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.098Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.098Z"
 ---
 
 # Ciudadanos en Construcción: Reglas Justas, Asambleas y Elección Democrática

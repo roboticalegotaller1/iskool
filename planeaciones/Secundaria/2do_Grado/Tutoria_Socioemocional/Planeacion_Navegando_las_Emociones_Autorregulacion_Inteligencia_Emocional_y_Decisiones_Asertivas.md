@@ -6,7 +6,7 @@ grado: "2º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Los sentimientos y su influencia en la toma de decisiones"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:13.840Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:13.840Z"
 ---
 
 # Navegando las Emociones: Autorregulación, Inteligencia Emocional y Decisiones Asertivas

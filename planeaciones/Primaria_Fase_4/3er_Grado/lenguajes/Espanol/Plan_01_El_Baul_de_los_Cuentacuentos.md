@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Narración de sucesos del pasado y del presente"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:23.994Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:23.994Z"
 ---
 
 # El Baúl de los Cuentacuentos: Estructuras Narrativas Circulares y Recuerdos Escolares

@@ -6,7 +6,7 @@ grado: "6º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Migración interna y externa: causas, consecuencias y derechos humanos"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.791Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.791Z"
 ---
 
 # Caminos de Esperanza: Geografía de la Migración, Empatía y Protección de los Derechos Humanos

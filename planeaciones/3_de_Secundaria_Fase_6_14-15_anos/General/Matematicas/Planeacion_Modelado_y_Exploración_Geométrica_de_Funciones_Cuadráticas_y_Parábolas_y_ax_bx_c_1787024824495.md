@@ -4,7 +4,7 @@ nivel: "3º de Secundaria • Fase 6 (14-15 años)"
 grado: ""
 asignatura: "Matemáticas"
 campo_formativo: "Saberes y Pensamiento Científico"
-fecha_creacion: "2026-08-18T03:47:04.495Z"
+fecha_creacion: "18 de agosto de 2026"T03:47:04.495Z"
 ---
 
 # Modelado y Exploración Geométrica de Funciones Cuadráticas y Parábolas (y = ax² + bx + c)

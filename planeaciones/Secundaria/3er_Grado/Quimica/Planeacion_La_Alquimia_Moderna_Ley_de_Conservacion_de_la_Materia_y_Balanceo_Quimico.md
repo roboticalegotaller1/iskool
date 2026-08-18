@@ -6,7 +6,7 @@ grado: "3º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Las reacciones químicas: ecuaciones, manifestaciones y propiedades"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:10.132Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:10.132Z"
 ---
 
 # La Alquimia Moderna: Ley de Conservación de la Materia y Balanceo Químico

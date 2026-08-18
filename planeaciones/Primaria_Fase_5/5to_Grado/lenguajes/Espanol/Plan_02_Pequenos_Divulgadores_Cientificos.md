@@ -6,7 +6,7 @@ grado: "5º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Comprensión y producción de textos explicativos"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.700Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.700Z"
 ---
 
 # Pequeños Divulgadores Científicos: ¿Por Qué Ocurren los Fenómenos de la Naturaleza?

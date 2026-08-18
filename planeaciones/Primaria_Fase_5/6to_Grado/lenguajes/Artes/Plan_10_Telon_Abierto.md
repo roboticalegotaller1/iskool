@@ -6,7 +6,7 @@ grado: "6º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Análisis y representación de guiones teatrales"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.744Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.744Z"
 ---
 
 # Telón Abierto: Montaje, Acotaciones y Escenificación de Teatro Escolar

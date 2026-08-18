@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Experimentación con elementos visuales y sonoros en producciones colectivas"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.034Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.034Z"
 ---
 
 # El Cuaderno Mágico: Animación Cuadro por Cuadro y Folioscopio (Flipbook)

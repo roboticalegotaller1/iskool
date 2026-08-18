@@ -6,7 +6,7 @@ grado: "6º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Relaciones de proporcionalidad, valor unitario y cálculo de porcentajes (50%, 25%, 10%, 1%)"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.773Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.773Z"
 ---
 
 # Feria Comercial y Porcentajes: Descuentos, IVA y Razones Matemáticas en el Mercado

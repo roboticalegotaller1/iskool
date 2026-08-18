@@ -6,7 +6,7 @@ grado: "1º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Los albores de la humanidad: los pueblos antiguos del mundo y su devenir"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:13.806Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:13.806Z"
 ---
 
 # El Amanecer de la Civilización: Del Nomadismo a las Primeras Ciudades de Mesopotamia y Mesoamérica

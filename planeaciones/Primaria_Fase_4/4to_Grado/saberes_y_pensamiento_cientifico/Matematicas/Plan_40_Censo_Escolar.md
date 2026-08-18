@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Organización e interpretación de datos: tablas de frecuencia, gráficas de barras y moda"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.077Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.077Z"
 ---
 
 # Censo Escolar: Tablas de Frecuencia, Gráficas de Barras y Cálculo de la Moda

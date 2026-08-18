@@ -6,7 +6,7 @@ grado: "3º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Interacción motriz y fomento a la convivencia"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:13.836Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:13.836Z"
 ---
 
 # Comunidad en Movimiento: Juegos Cooperativos Tradicionales y Convivencia Escolar

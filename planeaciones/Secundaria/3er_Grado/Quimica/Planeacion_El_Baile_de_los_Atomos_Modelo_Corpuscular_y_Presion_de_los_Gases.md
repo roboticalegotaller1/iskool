@@ -6,7 +6,7 @@ grado: "3º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "El modelo corpuscular de la materia en sólidos, líquidos y gases"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:10.127Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:10.127Z"
 ---
 
 # El Baile de los Átomos: Modelo Corpuscular y Presión de los Gases

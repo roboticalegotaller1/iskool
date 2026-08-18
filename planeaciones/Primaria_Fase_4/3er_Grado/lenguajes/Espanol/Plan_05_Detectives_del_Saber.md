@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Búsqueda y manejo reflexivo de información"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.005Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.005Z"
 ---
 
 # Detectives del Saber: El Diccionario, Signos de Interrogación y Fuentes Vivas

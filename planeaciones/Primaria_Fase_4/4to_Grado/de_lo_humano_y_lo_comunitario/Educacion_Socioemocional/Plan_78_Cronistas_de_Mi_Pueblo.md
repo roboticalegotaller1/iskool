@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Sentido de pertenencia, memoria histórica e identidad comunitaria"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.150Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.150Z"
 ---
 
 # Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario

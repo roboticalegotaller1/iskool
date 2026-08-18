@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "La invasión española, resistencia indígena y el México colonial (leyes de castas)"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.093Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.093Z"
 ---
 
 # Memoria y Resistencia: La Conquista, el Virreinato y el Sistema de Castas

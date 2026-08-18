@@ -6,7 +6,7 @@ grado: "3º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Propiedades extensivas e intensivas y composición de las mezclas (homogéneas y heterogéneas)"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:10.125Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:10.125Z"
 ---
 
 # Laboratorio de Materia: Propiedades Físicas y Métodos de Separación de Mezclas

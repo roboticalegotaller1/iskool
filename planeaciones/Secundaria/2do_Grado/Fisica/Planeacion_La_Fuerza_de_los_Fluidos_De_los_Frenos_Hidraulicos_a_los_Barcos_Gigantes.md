@@ -6,7 +6,7 @@ grado: "2º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Principios de Pascal y de Arquímedes"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:10.115Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:10.115Z"
 ---
 
 # La Fuerza de los Fluidos: De los Frenos Hidráulicos a los Barcos Gigantes

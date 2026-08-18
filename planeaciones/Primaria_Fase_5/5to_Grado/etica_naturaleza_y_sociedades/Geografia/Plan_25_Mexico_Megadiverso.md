@@ -6,7 +6,7 @@ grado: "5º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Valoración de la biodiversidad en México y patrimonio biocultural"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.779Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.779Z"
 ---
 
 # México Megadiverso: Patrimonio Biocultural, Ecosistemas y Tradición Comunitaria

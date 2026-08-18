@@ -6,7 +6,7 @@ grado: "3º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Presencia de contaminantes y su concentración, relacionada con la degradación y contaminación ambiental en la comunidad"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:40:31.598Z"
+fecha_creacion: "18 de agosto de 2026"T05:40:31.598Z"
 ---
 
 # Química Ambiental: Medición en Partes por Millón (ppm) y Mitigación de Contaminantes en Agua y Suelo

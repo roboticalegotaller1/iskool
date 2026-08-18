@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Derecho a la protección contra maltrato, abuso, bullying y explotación"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.096Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.096Z"
 ---
 
 # Escudo Protector: Derecho a la Integridad Física, Emocional y Redes de Ayuda

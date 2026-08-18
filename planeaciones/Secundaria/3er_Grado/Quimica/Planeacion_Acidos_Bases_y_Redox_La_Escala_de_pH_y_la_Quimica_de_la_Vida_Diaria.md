@@ -6,7 +6,7 @@ grado: "3º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Propiedades de los ácidos y bases, y reacciones de óxido-reducción (redox)"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:10.133Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:10.133Z"
 ---
 
 # Ácidos, Bases y Redox: La Escala de pH y la Química de la Vida Diaria

@@ -6,7 +6,7 @@ grado: "5º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Narración de sucesos autobiográficos"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.695Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.695Z"
 ---
 
 # El Libro de Mi Vida: Crónicas, Emociones y Memorias de la Infancia

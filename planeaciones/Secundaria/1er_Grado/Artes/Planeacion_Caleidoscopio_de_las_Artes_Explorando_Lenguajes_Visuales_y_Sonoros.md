@@ -6,7 +6,7 @@ grado: "1º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Diversidad de lenguajes artísticos en la riqueza pluricultural de México y del mundo"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:03.534Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:03.534Z"
 ---
 
 # Caleidoscopio de las Artes: Explorando Lenguajes Visuales y Sonoros

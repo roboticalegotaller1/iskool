@@ -6,7 +6,7 @@ grado: "1º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "La relación de las placas tectónicas con el relieve, la sismicidad y el vulcanismo"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:40:31.602Z"
+fecha_creacion: "18 de agosto de 2026"T05:40:31.602Z"
 ---
 
 # La Tierra en Movimiento: Dinámica de Placas Tectónicas, Cinturón de Fuego del Pacífico y Cultura Sísmica en México

@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Cálculo de perímetro y área en retículas cuadradas"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.074Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.074Z"
 ---
 
 # Diseñadores de Planos: Perímetro (Contorno) vs Área (Superficie) en Cuadrículas

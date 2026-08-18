@@ -6,7 +6,7 @@ grado: "6º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Seguimiento crítico de noticias en diferentes medios de comunicación escrita"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.732Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.732Z"
 ---
 
 # Detectives de la Información: Análisis Crítico de Medios, Sesgos y Fake News

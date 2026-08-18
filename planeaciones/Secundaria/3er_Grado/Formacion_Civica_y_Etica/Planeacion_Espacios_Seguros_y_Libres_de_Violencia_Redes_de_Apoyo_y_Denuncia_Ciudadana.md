@@ -6,7 +6,7 @@ grado: "3º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Medidas de protección y mecanismos de denuncia en el rechazo a la violencia"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:13.823Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:13.823Z"
 ---
 
 # Espacios Seguros y Libres de Violencia: Redes de Apoyo y Denuncia Ciudadana

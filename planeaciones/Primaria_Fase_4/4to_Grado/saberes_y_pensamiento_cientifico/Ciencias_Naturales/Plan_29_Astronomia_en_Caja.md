@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Sistema Tierra-Luna-Sol: fases y eclipses solares y lunares"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.056Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.056Z"
 ---
 
 # Astronomía en Caja: Simulador de Eclipses, Fases Lunares y Sombras Espaciales

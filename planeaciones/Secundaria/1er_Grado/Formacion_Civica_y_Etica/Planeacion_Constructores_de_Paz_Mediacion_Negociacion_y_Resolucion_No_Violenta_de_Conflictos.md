@@ -6,7 +6,7 @@ grado: "1º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "El conflicto en la convivencia humana y la cultura de la paz"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:13.820Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:13.820Z"
 ---
 
 # Constructores de Paz: Mediación, Negociación y Resolución No Violenta de Conflictos

@@ -6,7 +6,7 @@ grado: "2º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Medición y cálculo en diferentes contextos (Teorema de Pitágoras y razones trigonométricas)"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:06.922Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:06.922Z"
 ---
 
 # Ingeniería en el Patio Escolar: Teorema de Pitágoras y Razones Trigonométricas

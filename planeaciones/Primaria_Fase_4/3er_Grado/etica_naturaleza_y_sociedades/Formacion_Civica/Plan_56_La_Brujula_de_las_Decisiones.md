@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Toma de decisiones ante situaciones cotidianas y valoración de consecuencias"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.109Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.109Z"
 ---
 
 # La Brújula de las Decisiones: Consecuencias, Responsabilidad y Dignidad

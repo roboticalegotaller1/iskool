@@ -6,7 +6,7 @@ grado: "6º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Construcción del proyecto de vida y autoevaluación de metas"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.801Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.801Z"
 ---
 
 # Mi Brújula de Vida: Autoconcepto, Metas a Futuro y Transición Exitosa a la Secundaria

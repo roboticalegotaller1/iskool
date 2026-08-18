@@ -6,7 +6,7 @@ grado: "5º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Alimentación saludable: características de la dieta correcta y riesgos de los ultraprocesados"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.753Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.753Z"
 ---
 
 # El Plato del Buen Comer y la Dieta de la Milpa: Nutrición Consciente contra Enfermedades Crónicas

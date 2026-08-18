@@ -4,7 +4,7 @@ nivel: "Primaria Alta (4º a 6º Grado)"
 grado: ""
 asignatura: "Matemáticas"
 campo_formativo: "Saberes y Pensamiento Científico"
-fecha_creacion: "2026-08-18T03:36:00.760Z"
+fecha_creacion: "18 de agosto de 2026"T03:36:00.760Z"
 ---
 
 # Proyecto didáctico: Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)

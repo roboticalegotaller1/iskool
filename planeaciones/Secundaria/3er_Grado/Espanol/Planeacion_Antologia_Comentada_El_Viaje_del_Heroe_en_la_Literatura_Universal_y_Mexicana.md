@@ -6,7 +6,7 @@ grado: "3º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Textos literarios escritos en español o traducidos (creaciones tradicionales y contemporáneas)"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:03.517Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:03.517Z"
 ---
 
 # Antología Comentada: El Viaje del Héroe en la Literatura Universal y Mexicana

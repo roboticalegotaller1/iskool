@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Estructura y funcionamiento del cuerpo humano: sistema digestivo"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.041Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.041Z"
 ---
 
 # El Viaje del Alimento: Ingestión, Digestión, Absorción y Jugos Gástricos

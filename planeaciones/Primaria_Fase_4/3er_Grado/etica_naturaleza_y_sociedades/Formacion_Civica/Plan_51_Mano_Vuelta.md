@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Organización comunitaria del pasado y presente (tequio, faena y colaboración)"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.100Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.100Z"
 ---
 
 # Mano Vuelta: El Tequio, la Faena y el Trabajo Solidario Comunitario

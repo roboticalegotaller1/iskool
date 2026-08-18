@@ -6,7 +6,7 @@ grado: "3º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Textos de divulgación científica y mensajes para promover una vida saludable"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:03.522Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:03.522Z"
 ---
 
 # Ciencia Accesible: Revista Juvenil de Salud y Bienestar Comunitario

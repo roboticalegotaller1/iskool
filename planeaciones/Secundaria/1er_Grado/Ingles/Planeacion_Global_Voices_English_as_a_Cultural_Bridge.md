@@ -6,7 +6,7 @@ grado: "1º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "La diversidad lingüística y sus formas de expresión en México y el mundo"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:03.524Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:03.524Z"
 ---
 
 # Global Voices: English as a Cultural Bridge

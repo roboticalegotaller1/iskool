@@ -6,7 +6,7 @@ grado: "1º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "El calentamiento global por la alteración de los ciclos biogeoquímicos"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:06.935Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:06.935Z"
 ---
 
 # Planeta en Crisis: Los Ciclos del Carbono, Agua y Nitrógeno ante el Cambio Climático

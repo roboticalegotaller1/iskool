@@ -6,7 +6,7 @@ grado: "6º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Multiplicación y división de fracciones y números decimales"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.772Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.772Z"
 ---
 
 # Reparto Proporcional y División Fraccionaria en la Vida Económica Comunitaria

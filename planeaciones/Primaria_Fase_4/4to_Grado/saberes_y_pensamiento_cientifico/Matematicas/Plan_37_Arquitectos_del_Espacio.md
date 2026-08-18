@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Cuerpos geométricos: prismas rectos y desarrollo plano del cubo"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.072Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.072Z"
 ---
 
 # Arquitectos del Espacio: Prismas Rectos, Cuadriláteros y el Cubo Desplegado

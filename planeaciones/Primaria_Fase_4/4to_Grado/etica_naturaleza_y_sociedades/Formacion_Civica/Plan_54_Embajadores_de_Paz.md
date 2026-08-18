@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "La construcción colectiva de la paz y mediación de conflictos"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.106Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.106Z"
 ---
 
 # Embajadores de Paz: Comunicación Asertiva, Mediación Escolar y Acuerdos sin Violencia

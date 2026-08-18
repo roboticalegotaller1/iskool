@@ -6,7 +6,7 @@ grado: "5º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Movimientos sociales en el México del siglo XIX: La Independencia de México"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.781Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.781Z"
 ---
 
 # Rutas de Libertad: Protagonistas, Ideales y Héroes Invisibilizados de la Independencia

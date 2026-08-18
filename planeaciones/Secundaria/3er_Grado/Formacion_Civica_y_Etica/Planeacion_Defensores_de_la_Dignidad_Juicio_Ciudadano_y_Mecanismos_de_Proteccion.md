@@ -6,7 +6,7 @@ grado: "3er Grado"
 nivel: "Secundaria (Fase 6)"
 tema: "Los derechos humanos en México y en el mundo como valores compartidos"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:00:10.427Z"
+fecha_creacion: "18 de agosto de 2026"T05:00:10.427Z"
 ---
 
 # Defensores de la Dignidad: Juicio Ciudadano y Mecanismos de Protección

@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Entendimiento mutuo, empatía y negociación en el aula"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.140Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.140Z"
 ---
 
 # En los Zapatos del Otro: Empatía, Escucha sin Juicios y Acuerdos de Grupo

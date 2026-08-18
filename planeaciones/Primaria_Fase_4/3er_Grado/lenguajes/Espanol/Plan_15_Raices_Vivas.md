@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Indagación sobre la diversidad lingüística de la comunidad y del país"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.026Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.026Z"
 ---
 
 # Raíces Vivas: Toponimias Indígenas y Palabras de Origen Originario

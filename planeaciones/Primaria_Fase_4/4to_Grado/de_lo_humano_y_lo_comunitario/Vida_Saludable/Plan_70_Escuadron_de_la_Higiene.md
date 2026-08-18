@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Higiene personal, lavado de manos y saneamiento escolar"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.136Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.136Z"
 ---
 
 # Escuadrón de la Higiene: El Lavado Clínico de Manos y el Cuidado del Entorno Escolar

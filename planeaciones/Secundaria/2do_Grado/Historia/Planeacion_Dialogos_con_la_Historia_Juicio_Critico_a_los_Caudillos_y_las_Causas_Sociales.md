@@ -6,7 +6,7 @@ grado: "2º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Las revoluciones modernas y sus tendencias (Independencia y Revolución Mexicana)"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:13.810Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:13.810Z"
 ---
 
 # Diálogos con la Historia: Juicio Crítico a los Caudillos y las Causas Sociales

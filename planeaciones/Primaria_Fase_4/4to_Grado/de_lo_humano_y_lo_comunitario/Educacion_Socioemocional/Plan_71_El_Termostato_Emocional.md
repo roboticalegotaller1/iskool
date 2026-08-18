@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Los afectos y autorregulación emocional ante situaciones de frustración y enojo"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.138Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.138Z"
 ---
 
 # El Termostato Emocional: Autorregulación, Técnica del Semáforo y Asertividad

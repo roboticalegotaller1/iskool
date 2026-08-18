@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Interculturalidad y sustentabilidad: cosmovisiones de pueblos originarios y la milpa"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.085Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.085Z"
 ---
 
 # La Sabiduría de la Tierra: Cosmovisión Indígena, Respeto a la Naturaleza y la Milpa

@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Estructura y funcionamiento del cuerpo humano: sistema locomotor"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.039Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.039Z"
 ---
 
 # El Esqueleto Móvil: Huesos, Músculos, Articulaciones y Postura Saludable

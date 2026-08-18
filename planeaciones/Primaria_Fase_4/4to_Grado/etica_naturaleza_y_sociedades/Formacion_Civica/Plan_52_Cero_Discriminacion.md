@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Situaciones de discriminación y promoción de ambientes igualitarios"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.102Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.102Z"
 ---
 
 # Cero Discriminación: Respeto a la Diversidad Étnica, Lingüística y de Género

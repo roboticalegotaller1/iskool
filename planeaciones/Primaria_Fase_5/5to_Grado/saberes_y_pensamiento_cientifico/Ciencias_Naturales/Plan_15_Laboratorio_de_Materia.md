@@ -6,7 +6,7 @@ grado: "5º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Propiedades de los materiales: dureza, flexibilidad, permeabilidad y caracterización de gases"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.755Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.755Z"
 ---
 
 # Laboratorio de Materia: Dureza, Flexibilidad y Permeabilidad en la Vida Cotidiana

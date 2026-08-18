@@ -6,7 +6,7 @@ grado: "1º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Extensión de los números a positivos y negativos y su orden"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:06.912Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:06.912Z"
 ---
 
 # El Termómetro Financiero: Dominando los Enteros en la Vida Diaria

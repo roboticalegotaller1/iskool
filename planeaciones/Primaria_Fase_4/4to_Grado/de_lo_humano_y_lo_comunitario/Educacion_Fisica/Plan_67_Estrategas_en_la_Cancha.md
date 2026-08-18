@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Pensamiento lúdico, estratégico y creativo en juegos modificados"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.130Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.130Z"
 ---
 
 # Estrategas en la Cancha: Juegos Modificados, Tácticas de Equipo y Creatividad

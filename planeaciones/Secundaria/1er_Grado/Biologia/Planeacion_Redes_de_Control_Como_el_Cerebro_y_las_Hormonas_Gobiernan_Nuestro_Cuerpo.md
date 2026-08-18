@@ -6,7 +6,7 @@ grado: "1º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Funcionamiento del cuerpo humano coordinado por los sistemas nervioso y endocrino"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:06.928Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:06.928Z"
 ---
 
 # Redes de Control: Cómo el Cerebro y las Hormonas Gobiernan Nuestro Cuerpo

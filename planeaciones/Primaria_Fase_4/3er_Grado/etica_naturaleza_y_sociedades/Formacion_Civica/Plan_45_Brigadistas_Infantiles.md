@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Prevención de riesgos ante desastres y mochila de emergencia"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.088Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.088Z"
 ---
 
 # Brigadistas Infantiles: Cultura de Prevención, Rutas de Evacuación y Mochila de Emergencia

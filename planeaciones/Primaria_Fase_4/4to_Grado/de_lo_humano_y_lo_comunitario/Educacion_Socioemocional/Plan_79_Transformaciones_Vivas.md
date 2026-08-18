@@ -6,7 +6,7 @@ grado: "4º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Efectos en la vida derivados de cambios sociales, culturales y en la salud"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.152Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.152Z"
 ---
 
 # Transformaciones Vivas: Resiliencia Comunitaria, Cambios Sociales y Salud Familiar

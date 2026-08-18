@@ -6,7 +6,7 @@ grado: "3º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Las tensiones en siglo XX (Guerras Mundiales y Guerra Fría)"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:13.812Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:13.812Z"
 ---
 
 # El Siglo de los Conflictos Globales: Fascismo, Holocausto y la Guerra Fría

@@ -3,7 +3,7 @@ tags: [iskool, planeacion_nem, segundo_cerebro]
 asignatura: "Matematicas"
 nivel: "Primaria Alta"
 campo_formativo: "Saberes y Pensamiento Cientifico"
-fecha_creacion: "2026-08-05T14:41:06.590Z"
+fecha_creacion: "18 de agosto de 2026"T14:41:06.590Z"
 ---
 
 # Fracciones Equivalentes con Arte

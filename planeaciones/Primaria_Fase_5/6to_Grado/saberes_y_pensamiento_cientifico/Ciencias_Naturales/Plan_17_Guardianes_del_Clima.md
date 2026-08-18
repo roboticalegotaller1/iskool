@@ -6,7 +6,7 @@ grado: "6º de Primaria"
 nivel: "Primaria (Fase 5)"
 tema: "Biodiversidad, problemas medioambientales y efecto invernadero"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:32:32.761Z"
+fecha_creacion: "18 de agosto de 2026"T18:32:32.761Z"
 ---
 
 # Guardianes del Clima: Efecto Invernadero, Huella de Carbono y Restauración Ecológica

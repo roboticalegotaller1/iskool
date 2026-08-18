@@ -6,7 +6,7 @@ grado: "1º de Secundaria"
 nivel: "Secundaria (Fase 6)"
 tema: "Valor estético de la naturaleza, de la vida cotidiana y de diferentes manifestaciones"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T05:03:03.539Z"
+fecha_creacion: "18 de agosto de 2026"T05:03:03.539Z"
 ---
 
 # La Estética de lo Cotidiano: Diario Visual y Fotografía Documental

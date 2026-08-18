@@ -6,7 +6,7 @@ grado: "3º de Primaria"
 nivel: "Primaria (Fase 4)"
 tema: "Suma y resta con algoritmos convencionales y reagrupamiento"
 docente: "Prof. Israel López Ángeles"
-fecha_creacion: "2026-08-18T18:46:24.062Z"
+fecha_creacion: "18 de agosto de 2026"T18:46:24.062Z"
 ---
 
 # Cajeros Expertos: Suma, Resta con Transformación y Cálculo Mental
