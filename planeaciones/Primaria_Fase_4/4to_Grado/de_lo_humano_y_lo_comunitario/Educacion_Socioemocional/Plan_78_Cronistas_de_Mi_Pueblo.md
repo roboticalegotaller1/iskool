@@ -9,220 +9,223 @@ campo_formativo: "De lo Humano y lo Comunitario"
 tema: "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario"
 duracion: "10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)"
 ejes_articuladores: ["Pensamiento Crítico", "Inclusión", "Vida Saludable", "Apropiación de las Culturas a través de la Lectura y la Escritura"]
-producto_integrador: "Muestra Científica Escolar con experimentos en vivo, prototipos demostrativos, infografías explicativas y bitácoras de campo detalladas."
-fecha_elaboracion: "25 de agosto de 2026"
-created_at: "25 de agosto de 2026"
-updated_at: "25 de agosto de 2026"
+producto_integrador: "Montaje de la "Ofrenda Tradicional Viva de Nuestra Entidad" en el patio escolar, con módulos de elementos bioculturales (cempasúchil, gastronomía regional), exposición de tapetes artesanales, antología ilustrada de calaveritas literarias y tertulia de relatos con familias y adultos mayores."
+fecha_elaboracion: "2 de septiembre de 2026"
+created_at: "2 de septiembre de 2026"
+updated_at: "2 de septiembre de 2026"
 ---
 
 # 📚 Proyecto Didáctico Integral: Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario
 
-> **Docente Titular:** [[Prof_Israel_Lopez_Angeles|Prof. Israel López Ángeles]]
-> **Nivel y Fase:** PRIMARIA-MEDIA • Fase 4 (4º de Primaria)
-> **Campo Formativo:** De lo Humano y lo Comunitario
-> **Asignatura:** Educación Socioemocional
-> **Temporalidad:** 10 sesiones de 50 minutos (Total: 500 min)
-> **Producto Central Integrador:** *Muestra Científica Escolar con experimentos en vivo, prototipos demostrativos, infografías explicativas y bitácoras de campo detalladas.*
-> **Índice Curricular:** [[00_Indice_Maestro_Boveda_Curricular|Bóveda Curricular Central]]
+> **Docente Titular:** [[Prof_Israel_Lopez_Angeles|Prof. Israel López Ángeles]]  
+> **Nivel y Fase:** PRIMARIA-MEDIA • Fase 4 (4º de Primaria)  
+> **Campo Formativo:** De lo Humano y lo Comunitario  
+> **Asignatura:** Educación Socioemocional  
+> **Temporalidad:** 10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)  
+> **Producto Central Integrador:** *Montaje de la "Ofrenda Tradicional Viva de Nuestra Entidad" en el patio escolar, con módulos de elementos bioculturales (cempasúchil, gastronomía regional), exposición de tapetes artesanales, antología ilustrada de calaveritas literarias y tertulia de relatos con familias y adultos mayores.*  
+> **Índice Curricular:** [[00_Indice_Maestro_Boveda_Curricular|Bóveda Curricular Central]]  
 
 ---
 
 ## 🎯 I. Proceso de Desarrollo de Aprendizaje (PDA Principal)
 
 ```yaml
-PDA: "Comprende, sintetiza y redacta textos expositivos, informativos y esquemas visuales sobre 'Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario' para divulgar en el aula y la escuela."
+PDA: "Identifica eventos y celebraciones importantes de la historia familiar y comunitaria, reconociendo que fortalecen la identidad colectiva, el sentido de pertenencia y la transmisión intergeneracional de saberes y afectos."
 ```
 
 ### 🔗 Articulación Curricular con otros Campos Formativos:
-**1. Lenguajes (Primaria Media - Fase 4):**
-- *PDA:* Comprende, sintetiza y redacta textos expositivos, informativos y esquemas visuales sobre "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario" para divulgar en el aula y la escuela.
-- *Vínculo formativo:* Comprensión lectora analítica, redacción en párrafos estructurados y uso correcto de signos de puntuación.
+**1. Ética, Naturaleza y Sociedades (La Entidad donde Vivo - Fase 4):**
+- *PDA:* Reconoce y valora las prácticas culturales, expresiones artísticas, rituales, ofrendas y celebraciones tradicionales (como Día de Muertos) como parte del patrimonio biocultural y la memoria colectiva de su entidad federativa y pueblos originarios.
+- *Vínculo formativo:* Patrimonio biocultural regional, memoria histórica estatal y valoración de la diversidad de pueblos originarios.
 
-**2. Saberes y Pensamiento Científico:**
-- *PDA:* Resuelve situaciones problemáticas vinculadas a "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario" mediante operaciones básicas, fracciones, cálculo de áreas y experimentos sencillos.
-- *Vínculo formativo:* Razonamiento lógico-matemático, análisis de datos en tablas y pensamiento indagatorio.
+**2. Lenguajes:**
+- *PDA:* Lee, comprende y produce calaveritas literarias y coplas populares, explorando la rima, el ritmo lírico, la sátira humorística y las figuras retóricas de la tradición lírica mexicana.
+- *Vínculo formativo:* Comprensión y creación lírica tradicional, juego poético, métrica popular y uso de la sátira respetuosa.
 
-**3. Ética, Naturaleza y Sociedades:**
-- *PDA:* Analiza la diversidad natural y sociocultural de su entidad en torno a "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario", valorando la justicia y los derechos de todos.
-- *Vínculo formativo:* Conocimiento del entorno regional, cuidado del medio ambiente y participación cívica.
-
-**4. De lo Humano y lo Comunitario:**
-- *PDA:* Diseña estrategias cooperativas para prevenir riesgos y resolver conflictos escolares al trabajar proyectos sobre "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario".
-- *Vínculo formativo:* Toma de decisiones consensuadas, vida saludable y bienestar socioemocional.
+**3. Saberes y Pensamiento Científico:**
+- *PDA:* Indaga y describe las propiedades botánicas y usos de flores tradicionales (cempasúchil, terciopelo), semillas y frutos de temporada en las expresiones culturales de la región, reconociendo su ciclo biológico y los cambios de estado físico de la materia (fusión de cera, combustión de incienso y copal).
+- *Vínculo formativo:* Botánica regional aplicada, transformaciones físicas de la materia y preservación de la biodiversidad local.
 
 ---
 
 ## 🏘️ II. Diagnóstico Comunitario y Propuesta de Proyecto Integrador
 
-**Problemática Situada:**
-Necesidad de fomentar la curiosidad científica, la indagación sistemática y la aplicación de saberes escolares para entender y transformar fenómenos relacionados con "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario".
+**Problemática Situada:**  
+En nuestra comunidad escolar y en el entorno local se ha debilitado la transmisión oral de los saberes ancestrales y el significado profundo del patrimonio biocultural y lírico de nuestra entidad en torno a "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario".
 
-**Propósito del Proyecto:**
-Diseñar y ejecutar una investigación experimental y de campo que culmine en prototipos funcionales y propuestas sustentables para la comunidad.
+**Propósito del Proyecto:**  
+Investigar en fuentes familiares, comunitarias y libros de texto de la SEP (Proyectos Escolares / Cartografía de México) el origen, los elementos bioculturales (flores nativas, copal, alimentos de temporada) y las manifestaciones literarias (calaveritas y relatos orales) para montar una ofrenda viva comunitaria y recital tradicional.
 
-**Impacto Social y Transformador:**
-Promueve el pensamiento científico, la resolución de problemas locales y la participación ciudadana informada.
-
----
-
-## 📅 III. Secuencia Didáctica Completa (Dosificación en 10 Bloques de 50 Minutos)
-
-### 📌 SESIÓN 1 (50 minutos): Planteamiento del Reto Comunitario y Activación de Saberes sobre "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario"
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Dinámica detonadora "La Caja de Saberes". El docente plantea la pregunta central y conflicto cognitivo sobre "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario". Los alumnos comparten sus experiencias cotidianas y registran en el pizarrón lo que ya saben.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Exploración con material manipulable y organizadores gráficos en equipos de 4 alumnos. Cada equipo analiza una situación real vinculada a "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario" y elabora su primer registro diagnóstico.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Puesta en común de hallazgos iniciales. Cada equipo expresa en una frase su meta de aprendizaje. Registro individual en bitácora: "¿Qué descubrí hoy sobre Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario?".
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿En qué momentos de nuestra vida cotidiana o en nuestra comunidad observamos o utilizamos "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario"?
-  2. ¿Qué problema podríamos resolver en la escuela o en casa si dominamos este conocimiento?
-- **📖 Libro de Texto SEP:** Cartografía de México y el Mundo (4º Grado) (Págs. 24 a la 26) — *Mapas temáticos, relieve y regiones geográficas*
-- **📦 Materiales:** Papel bond blanco, Plumones de colores, Material concreto o interactivo, Cuaderno del alumno
-- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #1: Diagnóstico inicial de saberes previos y mapa mental grupal sobre "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario".
-
-### 📌 SESIÓN 2 (50 minutos): Indagación Conceptual y Exploración Guiada en Libros de Texto SEP
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Breve retroalimentación mediante ruleta de preguntas rápidas y apertura del libro de texto gratuito de la SEP.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Lectura guiada y analítica en el libro de texto oficial de la SEP. Los alumnos identifican conceptos clave, subrayan definiciones y resuelven en parejas las actividades formativas del libro.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Dinámica del "Semáforo del Aprendizaje" (Verde: comprendido, Amarillo: dudas, Rojo: apoyo). Aclaración de dudas en plenaria.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué conceptos nuevos aprendimos hoy en el libro de la SEP respecto a "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario"?
-  2. ¿Cómo se relacionan estas definiciones con los ejemplos que analizamos en la sesión anterior?
-- **📖 Libro de Texto SEP:** Nuestros Saberes 4º Grado (Págs. 66 a la 68) — *Saberes integrados y formación ética*
-- **📦 Materiales:** Libro de texto gratuito SEP asignado, Colores y marcatextos, Cuaderno del alumno
-- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #2: Resumen visual o mapa conceptual con las ideas clave extraídas del libro de la SEP.
-
-### 📌 SESIÓN 3 (50 minutos): Modelación Práctica y Estaciones de Trabajo Concreto / Experimental
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Presentación de los materiales de la sesión y asignación de roles en los equipos de trabajo (coordinador, relator, materiales, vocero).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Trabajo en estaciones rotativas de indagación y manipulación práctica. Los alumnos aplican procedimientos directos, tabulan datos o construyen representaciones tangibles sobre "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario".
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Síntesis grupal. El portavoz de una estación comparte los resultados y conclusiones obtenidas.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué estrategia fue la más eficiente para resolver los retos prácticos de las estaciones?
-  2. ¿Qué dificultades encontramos al aplicar el procedimiento y cómo las superamos?
-- **📖 Libro de Texto SEP:** Cartografía de México y el Mundo (4º Grado) (Págs. 28 a la 30) — *Mapas temáticos, relieve y regiones geográficas*
-- **📦 Materiales:** Estaciones con material manipulable o instrumental didáctico, Hojas de registro
-- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #3: Hoja de registro de las estaciones con procedimientos, esquemas y conclusiones.
-
-### 📌 SESIÓN 4 (50 minutos): Resolución de Problemas Situados en el Contexto Escolar y Comunitario
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Planteamiento de una problemática real de la comunidad escolar vinculada a "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario".
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Trabajo en parejas para resolver 3 situaciones problemáticas contextualizadas paso a paso, justificando por escrito el razonamiento empleado.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Debate en plenaria sobre las diferentes rutas de solución y validación formativa por parte del docente.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Por qué existen diferentes formas de resolver el mismo problema sobre "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario"?
-  2. ¿Cuál es el método más claro para explicar tu respuesta a los demás?
-- **📖 Libro de Texto SEP:** Nuestros Saberes 4º Grado (Págs. 70 a la 72) — *Saberes integrados y formación ética*
-- **📦 Materiales:** Cuaderno de trabajo, Hojas de problemas contextualizados, Lápiz y goma
-- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #4: Resolución analítica y argumentada de los problemas comunitarios.
-
-### 📌 SESIÓN 5 (50 minutos): Organización de Información y Diseño del Primer Borrador del Proyecto
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Presentación de la estructura del producto integrador intermedio y revisión de los criterios de calidad.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): En equipos, los alumnos estructuran el primer borrador de su producto integrador, organizando datos, textos, ilustraciones o maquetas.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Registro del porcentaje de avance en el termómetro del proyecto grupal.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué información clave no puede faltar en nuestro producto sobre "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario"?
-  2. ¿Cómo organizamos los datos para que cualquier persona de la comunidad los entienda con claridad?
-- **📖 Libro de Texto SEP:** Cartografía de México y el Mundo (4º Grado) (Págs. 32 a la 34) — *Mapas temáticos, relieve y regiones geográficas*
-- **📦 Materiales:** Cartulinas o pliegos de papel, Colores y reglas, Borradores de trabajo
-- **📄 Entregable de la Sesión:** 📄 Entregable Intermedio: Primer borrador estructurado del producto del proyecto con datos organizados.
-
-### 📌 SESIÓN 6 (50 minutos): Profundización Curricular y Vinculación Interdisciplinaria
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Conexión explícita con los campos formativos articulados (Lenguajes, Saberes, Ética y De lo Humano).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Actividad integradora que combina "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario" con la expresión artística, el análisis ético o la redacción formal de propuestas comunitarias.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Mini-exposición de 2 minutos por equipo destacando la conexión interdisciplinaria lograda.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Cómo nos ayuda este tema a ser más empáticos, solidarios o analíticos con nuestra comunidad?
-  2. ¿Qué otros conocimientos de la escuela se relacionan directamente con lo que estamos construyendo?
-- **📖 Libro de Texto SEP:** Nuestros Saberes 4º Grado (Págs. 74 a la 76) — *Saberes integrados y formación ética*
-- **📦 Materiales:** Material artístico / cartulinas, Textos informativos complementarios, Plumones
-- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #6: Producto interdisciplinario que vincula Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario con la vida comunitaria.
-
-### 📌 SESIÓN 7 (50 minutos): Taller de Coevaluación entre Pares y Retroalimentación Formativa
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Explicación de la rúbrica analítica y de la importancia de la crítica constructiva entre compañeros basada en el respeto mutuo.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Dinámica de intercambio de proyectos entre equipos ("Taller de Galería"). Cada equipo revisa el trabajo de otro equipo con una lista de cotejo constructiva.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Devolución de los trabajos con comentarios amables y claros para orientar la mejora.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué aprendimos al observar el trabajo de nuestros compañeros?
-  2. ¿Cómo podemos mejorar la claridad y presentación de nuestro producto final?
-- **📖 Libro de Texto SEP:** Cartografía de México y el Mundo (4º Grado) (Págs. 24 a la 26) — *Mapas temáticos, relieve y regiones geográficas*
-- **📦 Materiales:** Instrumentos de coevaluación impresos, Notas adhesivas de colores, Borradores de los proyectos
-- **📄 Entregable de la Sesión:** 📄 Instrumento de Coevaluación: Lista de cotejo con retroalimentación entre pares debidamente firmada.
-
-### 📌 SESIÓN 8 (50 minutos): Ajuste, Corrección y Elaboración del Producto Final Tangible
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Revisión de las sugerencias recibidas en la coevaluación y asignación de tareas específicas para la versión definitiva.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Sesión intensiva de producción final. Los alumnos aplican correcciones ortográficas, precisión en cálculos, orden estético y claridad en su producto entregable.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Verificación final de calidad con la rúbrica oficial antes de la entrega final. Visto bueno del docente.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué cambios hicimos en nuestro producto que lo hicieron más profesional y comprensible?
-  2. ¿Nos sentimos orgullosos del trabajo que vamos a presentar a la comunidad escolar?
-- **📖 Libro de Texto SEP:** Nuestros Saberes 4º Grado (Págs. 66 a la 68) — *Saberes integrados y formación ética*
-- **📦 Materiales:** Materiales finales de exposición (cartulinas, modelos, maquetas, sobres, trípticos), Tijeras, pegamento, plumones
-- **📄 Entregable de la Sesión:** 📄 Producto Final Terminado: Versión definitiva del proyecto didáctico lista para su exposición comunitaria.
-
-### 📌 SESIÓN 9 (50 minutos): Ensayo General y Preparación de la Socialización Comunitaria
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Organización del espacio del aula o patio escolar para la muestra pedagógica. Establecimiento de tiempos y turnos de presentación.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Simulación y ensayo de las exposiciones orales. Cada alumno practica su explicación con seguridad, lenguaje claro y uso de sus apoyos visuales y materiales concretos.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Ronda de recomendaciones finales y palabras de motivación para la presentación oficial.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Cómo podemos explicar conceptos de "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario" de manera sencilla para que cualquiera los entienda?
-  2. ¿Qué tono de voz y postura corporal transmiten seguridad y entusiasmo en nuestra presentación?
-- **📖 Libro de Texto SEP:** Cartografía de México y el Mundo (4º Grado) (Págs. 28 a la 30) — *Mapas temáticos, relieve y regiones geográficas*
-- **📦 Materiales:** Guiones de exposición, Materiales de exhibición terminados, Espacio escolar acondicionado
-- **📄 Entregable de la Sesión:** 📄 Guion de Exposición: Ficha con los puntos clave que cada integrante explicará durante la muestra.
-
-### 📌 SESIÓN 10 (50 minutos): Feria de Aprendizajes Comunitarios, Evaluación Formativa y Compromisos
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Bienvenida a la muestra de aprendizajes. Palabras de apertura por parte de los alumnos y del docente.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Presentación de la Feria de Aprendizajes ante compañeros de otros grupos, docentes o padres de familia. Demostración práctica de los conocimientos adquiridos sobre "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario".
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Aplicación de la rúbrica analítica de autoevaluación final. Firma del "Árbol de Compromisos de Aprendizaje" y felicitación grupal.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Cuál fue el aprendizaje más significativo y transformador que obtuviste a lo largo de estas 10 sesiones?
-  2. ¿Cómo vas a seguir utilizando este conocimiento sobre "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario" en tu vida diaria?
-- **📖 Libro de Texto SEP:** Nuestros Saberes 4º Grado (Págs. 70 a la 72) — *Saberes integrados y formación ética*
-- **📦 Materiales:** Rúbricas analíticas individuales, Mural escolar de compromisos, Diplomas simbólicos o distintivos de logro
-- **📄 Entregable de la Sesión:** 🏆 Evidencia Final Integradora: Rúbrica analítica completada, bitácora del proyecto y registro de la feria comunitaria.
+**Impacto Social y Transformador:**  
+Fortalece el sentido de pertenencia y arraigo cultural en las niñas y niños, dignifica la memoria de los antepasados y estrecha los lazos afectivos y solidarios entre la escuela y las familias de la comunidad.
 
 ---
 
-## 📊 IV. Rúbrica Analítica Formativa de Evaluación (NEM 2024)
+## ❓ III. Preguntas Detonadoras para el Salón (Apertura y Conflicto Cognitivo)
+1. ¿Qué elementos bioculturales (flores nativas, alimentos de temporada, cerámicas) se utilizan en nuestra entidad para conmemorar "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario" y qué simbolismo guardan?
+2. ¿Por qué los relatos orales de nuestros abuelos y personas mayores son indispensables para comprender el sentido profundo de "Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario" frente a modas foráneas?
+3. ¿Cómo redactamos calaveritas literarias y elaboramos representaciones artísticas que combinen el ingenio, el humor respetuoso y la identidad cultural sin ofender a nadie?
+
+---
+
+## 📅 IV. Secuencia Didáctica Completa (Dosificación en 10 Bloques de 50 Minutos)
+
+### 📌 SESIÓN 1 (50 minutos): Apertura del Reto: ¿Por qué conmemoramos a nuestros antepasados? La memoria oral y el patrimonio biocultural
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Dinámica detonadora "El Baúl de la Memoria". El docente presenta elementos simbólicos de la temporada (flor de cempasúchil, copal, pan de muerto) y plantea la pregunta central: "¿Qué significan los altares de muertos y por qué son patrimonio de nuestra entidad?".
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): En equipos de 4, las y los alumnos exploran fotografías, relatos familiares y dialogan sobre cómo se vive la tradición en sus hogares y colonias. Registran en un papel bond sus saberes previos y dibujan el mapa de recuerdos de su localidad.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Puesta en común de saberes familiares. Cada equipo formula una pregunta que investigará con sus abuelos o personas mayores de la comunidad.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué relatos o recuerdos guardan en casa sobre las personas queridas que ya no están?  
+  2. ¿Por qué decimos que las tradiciones nos unen como comunidad y nos dan identidad?
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 4º Grado (Págs. 28 a la 30) — *Proyecto Comunitario: "Nuestras tradiciones y el patrimonio biocultural" — Ofrendas tradicionales, flora nativa (cempasúchil), calaveritas y memoria oral*
+- **📦 Materiales:** Muestras de elementos tradicionales, Papel bond, Plumones de colores, Cuaderno del alumno
+- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #1: Diagnóstico inicial "Las tradiciones de mi comunidad" y preguntas de indagación familiar.
+
+### 📌 SESIÓN 2 (50 minutos): Exploración en Libros SEP: Los cuatro elementos del altar tradicional y su simbolismo biocultural
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Ruleta de preguntas sobre la sesión anterior y apertura de los libros de texto gratuitos de la SEP (Proyectos Comunitarios / Nuestros Saberes).
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Lectura analítica guiada sobre el origen de las ofrendas. Los alumnos identifican y relacionan los 4 elementos naturales: 1) Tierra (frutos y semillas), 2) Agua (para mitigar la sed), 3) Fuego (velas y luz guía), y 4) Viento (papel picado e incienso). En parejas completan un esquema rotulado.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Plenaria formativa: Cada pareja comparte el elemento que más le llamó la atención y su significado cultural en su entidad federativa.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué representa cada nivel y cada elemento que se coloca en el altar tradicional?  
+  2. ¿Cómo se relacionan estos elementos con la naturaleza y el cuidado de los recursos de nuestro entorno?
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 4º Grado (Págs. 29 a la 31) — *Proyecto Comunitario: "Nuestras tradiciones y el patrimonio biocultural" — Ofrendas tradicionales, flora nativa (cempasúchil), calaveritas y memoria oral*
+- **📦 Materiales:** Libros de texto gratuitos de la SEP, Colores y marcatextos, Esquemas ilustrados
+- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #2: Esquema rotulado y analítico "Los 4 elementos naturales y el simbolismo del altar".
+
+### 📌 SESIÓN 3 (50 minutos): Saberes Bioculturales: Propiedades del cempasúchil, semillas nativas y cambios físicos de la materia
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Exploración sensorial guiada con pétalos de cempasúchil, copal y veladoras de cera. Observación con lupas escolares.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Indagación científica escolar. Registro botánico del cempasúchil (ciclo otoñal, pigmentos carotenoides y propiedades repelentes). Observación de cambios de estado: la cera que se funde con el calor (fusión) y el copal que desprende aroma (combustión y sublimación).
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Conclusiones en plenaria: Registro en bitácora de cómo la ciencia y los saberes ancestrales explican los fenómenos del altar.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Por qué florece el cempasúchil justamente en los meses de octubre y noviembre en México?  
+  2. ¿Qué transformaciones físicas le ocurren a la cera de las velas y a los aromas al calentarse?
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 4º Grado (Págs. 30 a la 32) — *Proyecto Comunitario: "Nuestras tradiciones y el patrimonio biocultural" — Ofrendas tradicionales, flora nativa (cempasúchil), calaveritas y memoria oral*
+- **📦 Materiales:** Flores de cempasúchil, Lupas escolares, Trozos de cera o plastilina, Bitácora científica
+- **📄 Entregable de la Sesión:** 📄 Ficha Científica #4: Registro botánico y tabla de transformaciones físicas observadas en los materiales del altar.
+
+### 📌 SESIÓN 4 (50 minutos): Taller de Arte Popular: Papel picado tradicional, catrinas artesanales y tapetes florales
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Muestra de papel picado artesanal y análisis geométrico de simetría axial en los dobleces y calados.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Taller manual. Doblez y calado de papel china con figuras tradicionales (calaveras, flores, palomas). Modelado de calaveritas de plastilina o masa de sal y diseño de cenefas para el altar colectivo.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Tendedero visual en el salón de clases: exhibición de los pliegos de papel picado creados por el grupo.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Cómo ayuda la simetría y la paciencia para que el papel picado quede armónico y detallado?  
+  2. ¿Qué historias de nuestra comunidad podemos representar en los grabados y figuras populares?
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 4º Grado (Págs. 31 a la 33) — *Proyecto Comunitario: "Nuestras tradiciones y el patrimonio biocultural" — Ofrendas tradicionales, flora nativa (cempasúchil), calaveritas y memoria oral*
+- **📦 Materiales:** Papel china de colores vivos, Tijeras de punta redonda, Masa o plastilina, Cuerda para colgar
+- **📄 Entregable de la Sesión:** 🎨 Artefacto Plástico #5: Pliego de papel picado artesanal y figura en relieve terminada para la ofrenda escolar.
+
+### 📌 SESIÓN 5 (50 minutos): Taller de Arte Popular: Papel picado tradicional, catrinas artesanales y tapetes florales
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Muestra de papel picado artesanal y análisis geométrico de simetría axial en los dobleces y calados.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Taller manual. Doblez y calado de papel china con figuras tradicionales (calaveras, flores, palomas). Modelado de calaveritas de plastilina o masa de sal y diseño de cenefas para el altar colectivo.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Tendedero visual en el salón de clases: exhibición de los pliegos de papel picado creados por el grupo.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Cómo ayuda la simetría y la paciencia para que el papel picado quede armónico y detallado?  
+  2. ¿Qué historias de nuestra comunidad podemos representar en los grabados y figuras populares?
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 4º Grado (Págs. 33 a la 35) — *Proyecto Comunitario: "Nuestras tradiciones y el patrimonio biocultural" — Ofrendas tradicionales, flora nativa (cempasúchil), calaveritas y memoria oral*
+- **📦 Materiales:** Papel china de colores vivos, Tijeras de punta redonda, Masa o plastilina, Cuerda para colgar
+- **📄 Entregable de la Sesión:** 🎨 Artefacto Plástico #5: Pliego de papel picado artesanal y figura en relieve terminada para la ofrenda escolar.
+
+### 📌 SESIÓN 6 (50 minutos): Tradición Oral y Memoria Comunitaria: Entrevistas sobre relatos, leyendas y costumbres de antes
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Planteamiento: "¿Cómo podemos documentar los saberes de los abuelos antes de que se olviden?".
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Los alumnos organizan en equipos la información recabada en sus entrevistas familiares. Redactan un breve texto testimonial o leyenda comunitaria sobre cómo se conmemoraba a los fieles difuntos en su región en décadas pasadas.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Círculo de la palabra: lectura de fragmentos testimoniales más emotivos y registro de saberes en el periódico mural.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué costumbres se mantienen vivas y cuáles han cambiado a lo largo del tiempo en nuestra entidad?  
+  2. ¿Por qué escuchar a los adultos mayores enriquece nuestro conocimiento y nos enseña a valorar la vida?
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 4º Grado (Págs. 34 a la 36) — *Proyecto Comunitario: "Nuestras tradiciones y el patrimonio biocultural" — Ofrendas tradicionales, flora nativa (cempasúchil), calaveritas y memoria oral*
+- **📦 Materiales:** Notas de entrevistas familiares, Cartulinas de colores, Plumones
+- **📄 Entregable de la Sesión:** 📄 Ficha Testimonial #6: Transcripción ilustrada de la entrevista comunitaria sobre tradiciones de la entidad.
+
+### 📌 SESIÓN 7 (50 minutos): Organización del Altar Colectivo: Boceto espacial, distribución de niveles y asignación de comisiones
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Presentación del plano del espacio escolar donde se montará la ofrenda tradicional comunitaria.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Trabajo colaborativo por comisiones: 1) Estructura y niveles del altar, 2) Módulo de elementos bioculturales (flores y frutos), 3) Módulo lírico de calaveritas, y 4) Módulo de papel picado y arte popular. Elaboración del croquis a escala.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Firma de la lista de responsabilidades y verificación de materiales para el montaje final.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Cómo nos organizamos equitativamente para que todos participen con gusto y nadie se quede sin tarea?  
+  2. ¿Qué medidas de seguridad y cuidado debemos mantener durante el montaje de las estructuras?
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 4º Grado (Págs. 35 a la 37) — *Proyecto Comunitario: "Nuestras tradiciones y el patrimonio biocultural" — Ofrendas tradicionales, flora nativa (cempasúchil), calaveritas y memoria oral*
+- **📦 Materiales:** Croquis impreso, Caja organizadora de materiales, Lista de comisiones
+- **📄 Entregable de la Sesión:** 📄 Plan de Montaje #7: Croquis espacial a escala y cédula de responsabilidades por equipo.
+
+### 📌 SESIÓN 8 (50 minutos): Ensayo General de la Muestra Cultural: Declamación lírica, guion museográfico y atención a visitantes
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Técnica de respiración y modulación de la voz: "¿Cómo hablar con seguridad ante un público numeroso?".
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Ensayo general. Cada alumno ensaya su intervención: recitar su calaverita, explicar el significado del cempasúchil, o narrar el simbolismo del pan de muerto a los visitantes. Retroalimentación constructiva entre compañeros.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Dinámica de motivación colectiva y colocación de distintivos de mediadores culturales escolares.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué palabras clave debemos recordar al explicar nuestra ofrenda a las familias?  
+  2. ¿Cómo demostramos empatía y calidez al recibir a los visitantes de nuestra escuela?
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 4º Grado (Págs. 37 a la 39) — *Proyecto Comunitario: "Nuestras tradiciones y el patrimonio biocultural" — Ofrendas tradicionales, flora nativa (cempasúchil), calaveritas y memoria oral*
+- **📦 Materiales:** Tarjetas guía con notas clave, Gafetes de mediador cultural elaborados en clase
+- **📄 Entregable de la Sesión:** 📄 Guion Expositivo #8: Tarjeta síntesis con los puntos que cada estudiante explicará en la ofrenda.
+
+### 📌 SESIÓN 9 (50 minutos): Ensayo General de la Muestra Cultural: Declamación lírica, guion museográfico y atención a visitantes
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Técnica de respiración y modulación de la voz: "¿Cómo hablar con seguridad ante un público numeroso?".
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Ensayo general. Cada alumno ensaya su intervención: recitar su calaverita, explicar el significado del cempasúchil, o narrar el simbolismo del pan de muerto a los visitantes. Retroalimentación constructiva entre compañeros.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Dinámica de motivación colectiva y colocación de distintivos de mediadores culturales escolares.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué palabras clave debemos recordar al explicar nuestra ofrenda a las familias?  
+  2. ¿Cómo demostramos empatía y calidez al recibir a los visitantes de nuestra escuela?
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 4º Grado (Págs. 38 a la 40) — *Proyecto Comunitario: "Nuestras tradiciones y el patrimonio biocultural" — Ofrendas tradicionales, flora nativa (cempasúchil), calaveritas y memoria oral*
+- **📦 Materiales:** Tarjetas guía con notas clave, Gafetes de mediador cultural elaborados en clase
+- **📄 Entregable de la Sesión:** 📄 Guion Expositivo #8: Tarjeta síntesis con los puntos que cada estudiante explicará en la ofrenda.
+
+### 📌 SESIÓN 10 (50 minutos): Encuentro Comunitario de Tradiciones con Familias: Recorrido cultural, recital y evaluación formativa
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Palabras de bienvenida y apertura de la Muestra Cultural Comunitaria ante familias, docentes y directivos.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Recorrido guiado por las estaciones de la ofrenda conducido por los propios alumnos. Recital de calaveritas literarias, degustación simbólica y firma del "Libro de Oro de la Memoria Escolar".
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Aplicación de la rúbrica analítica formativa de 3 niveles, palabras de agradecimiento de una madre/padre de familia y aplauso comunitario.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué emoción o aprendizaje nuevo se llevan las familias de nuestra muestra escolar?  
+  2. ¿Cómo nos sentimos al haber logrado un proyecto tan significativo y qué aprendimos sobre nosotros mismos?
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 4º Grado (Págs. 39 a la 41) — *Proyecto Comunitario: "Nuestras tradiciones y el patrimonio biocultural" — Ofrendas tradicionales, flora nativa (cempasúchil), calaveritas y memoria oral*
+- **📦 Materiales:** Ofrenda montada, Libro de firmas comunitarias, Rúbricas analíticas formativas impresas
+- **📄 Entregable de la Sesión:** 🏆 Evidencia Final Integradora: Muestra cultural comunitaria culminada, recital presentado y rúbrica analítica evaluada.
+
+---
+
+## 📊 V. Rúbrica Analítica Formativa de Evaluación (NEM 2024)
 
 | Criterio Pedagógico | Nivel Sobresaliente (3 pts) | Nivel Satisfactorio (2 pts) | Nivel En Proceso (1 pt) |
 | :--- | :--- | :--- | :--- |
-| **Metodología de Indagación y Rigor Conceptual** | Plantea hipótesis claras, registra datos experimentales con precisión y formula conclusiones sólidas basadas en evidencia. | Sigue los pasos del método experimental y presenta resultados ordenados. | El registro de datos es incompleto o las conclusiones carecen de sustento. |
-| **Calidad del Prototipo y Presentación Visual** | El prototipo es funcional, seguro, creativo y está acompañado de infografías científicas de alta calidad. | El prototipo funciona adecuadamente y los apoyos visuales son claros. | El prototipo no funciona o la presentación visual es descuidada. |
-| **Divulgación Científica y Comunicación Oral** | Comunica conceptos científicos complejos con sencillez, elocuencia y dominio ante audiencias diversas. | Explica su experimento con claridad y vocabulario científico adecuado. | Dificultad para explicar el funcionamiento o la utilidad de su investigación. |
+| **Indagación del Patrimonio Biocultural y Tradición Oral** | Recupera con profundidad relatos familiares, el simbolismo de los altares y el uso de flora nativa (cempasúchil) y alimentos de temporada con base en fuentes comunitarias y libros SEP. | Identifica los elementos principales del altar tradicional y explica su significado con apoyo de lecturas e indagación familiar. | Presenta dificultades para explicar el origen o significado de los elementos tradicionales. |
+| **Producción Literaria y Artística Tradicional (Calaveritas y Ofrenda)** | Crea calaveritas literarias con excelente métrica, rima consonante, humor respetuoso y elabora piezas plásticas para el altar con alta calidad estética y simbólica. | Elabora calaveritas o dibujos para el altar con orden, rima básica y apego a la temática de la festividad. | Los textos o trabajos plásticos carecen de relación con la lírica o simbolismo tradicional. |
+| **Participación en el Montaje Comunitario y Convivencia Afectiva** | Colabora con entusiasmo, respeto y liderazgo solidario en el montaje y atención de la ofrenda, dialogando cordialmente con familias y visitantes. | Participa activamente en su equipo y explica su sección de la ofrenda con claridad y amabilidad. | Muestra poca disposición para colaborar en equipo o atender el evento escolar. |
 
 ---
 
-## 🛠️ V. Recursos y Materiales Didácticos
-- Libros de Texto Gratuitos Oficiales de la SEP asignados con páginas y dinámicas.
-- Materiales manipulables y de indagación escolar.
-- Evidencia final del proyecto: **Muestra Científica Escolar con experimentos en vivo, prototipos demostrativos, infografías explicativas y bitácoras de campo detalladas.**.
+## 🛠️ VI. Recursos y Materiales Didácticos
+- Libros de Texto Gratuitos Oficiales de la SEP asignados con páginas específicas y dinámicas formativas.
+- Materiales manipulables y de indagación comunitaria.
+- Evidencia final del proyecto: **Montaje de la "Ofrenda Tradicional Viva de Nuestra Entidad" en el patio escolar, con módulos de elementos bioculturales (cempasúchil, gastronomía regional), exposición de tapetes artesanales, antología ilustrada de calaveritas literarias y tertulia de relatos con familias y adultos mayores.**.
 
 ---
 *Documento Curricular Oficial generado para ISkool • Bóveda Central de Conocimiento.*

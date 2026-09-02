@@ -6,223 +6,226 @@ fase_nem: "Fase 6"
 grado: "3º de Secundaria"
 asignatura: "General"
 campo_formativo: "Saberes y Pensamiento Científico"
-tema: "Consciencia y Futuro: La Verdad sobre el Fentanilo, Drogas Sintéticas y Salud Integral"
+tema: "El Plato del Bien Comer y Hábitos Saludables"
 duracion: "10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)"
 ejes_articuladores: ["Pensamiento Crítico", "Inclusión", "Vida Saludable", "Apropiación de las Culturas a través de la Lectura y la Escritura"]
-producto_integrador: "Montaje del "Buzón Postal Comunitario" en el aula y patio cívico escolar, con sobres decorados a mano, estampillas postales elaboradas por los alumnos y una jornada de reparto de cartas en la comunidad escolar con lectura en voz alta."
-fecha_elaboracion: "25 de agosto de 2026"
-created_at: "25 de agosto de 2026"
-updated_at: "25 de agosto de 2026"
+producto_integrador: "Montaje de la "Feria de la Salud Escolar" con puestos de degustación de colaciones nutritivas locales, recetario escolar ilustrado, infografías del sistema digestivo/circulatorio y estación de toma de signos vitales guiada."
+fecha_elaboracion: "2 de septiembre de 2026"
+created_at: "2 de septiembre de 2026"
+updated_at: "2 de septiembre de 2026"
 ---
 
-# 📚 Proyecto Didáctico Integral: Consciencia y Futuro: La Verdad sobre el Fentanilo, Drogas Sintéticas y Salud Integral
+# 📚 Proyecto Didáctico Integral: El Plato del Bien Comer y Hábitos Saludables
 
-> **Docente Titular:** [[Prof_Israel_Lopez_Angeles|Prof. Israel López Ángeles]]
-> **Nivel y Fase:** SECUNDARIA • Fase 6 (3º de Secundaria)
-> **Campo Formativo:** Saberes y Pensamiento Científico
-> **Asignatura:** General
-> **Temporalidad:** 10 sesiones de 50 minutos (Total: 500 min)
-> **Producto Central Integrador:** *Montaje del "Buzón Postal Comunitario" en el aula y patio cívico escolar, con sobres decorados a mano, estampillas postales elaboradas por los alumnos y una jornada de reparto de cartas en la comunidad escolar con lectura en voz alta.*
-> **Índice Curricular:** [[00_Indice_Maestro_Boveda_Curricular|Bóveda Curricular Central]]
+> **Docente Titular:** [[Prof_Israel_Lopez_Angeles|Prof. Israel López Ángeles]]  
+> **Nivel y Fase:** SECUNDARIA • Fase 6 (3º de Secundaria)  
+> **Campo Formativo:** Saberes y Pensamiento Científico  
+> **Asignatura:** General  
+> **Temporalidad:** 10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)  
+> **Producto Central Integrador:** *Montaje de la "Feria de la Salud Escolar" con puestos de degustación de colaciones nutritivas locales, recetario escolar ilustrado, infografías del sistema digestivo/circulatorio y estación de toma de signos vitales guiada.*  
+> **Índice Curricular:** [[00_Indice_Maestro_Boveda_Curricular|Bóveda Curricular Central]]  
 
 ---
 
 ## 🎯 I. Proceso de Desarrollo de Aprendizaje (PDA Principal)
 
 ```yaml
-PDA: "Produce y lee textos epistolares (cartas personales y formales) dirigidas a familiares, docentes y compañeros, reconociendo la estructura canónica (lugar, fecha, saludo, cuerpo, despedida y firma)."
+PDA: "Experimenta con el proceso de germinación, nutrición vegetal y la importancia del Plato del Bien Comer frente a los alimentos ultraprocesados."
 ```
 
 ### 🔗 Articulación Curricular con otros Campos Formativos:
-**1. Lenguajes (Español):**
-- *PDA:* Produce y lee textos epistolares (cartas personales y formales) dirigidas a familiares, docentes y compañeros, reconociendo la estructura canónica (lugar, fecha, saludo, cuerpo, despedida y firma).
-- *Vínculo formativo:* Desarrollo de la escritura autónoma, correspondencia grafofonética y expresión de afectos e ideas con propósito comunicativo real.
+**1. Lenguajes (Divulgación Científica):**
+- *PDA:* Elabora bitácoras de campo, infografías y carteles ilustrados para divulgar hallazgos científicos y promover la educación ambiental en la escuela.
+- *Vínculo formativo:* Redacción de textos explicativos, síntesis de datos experimentales y comunicación visual asertiva.
 
-**2. Saberes y Pensamiento Científico:**
-- *PDA:* Organiza datos numéricos, códigos postales, fechas en el calendario y conteo de piezas postales depositadas en el buzón escolar.
-- *Vínculo formativo:* Uso del calendario, secuencias temporales, numeración y clasificación de correspondencia.
+**2. Ética, Naturaleza y Sociedades:**
+- *PDA:* Evalúa el impacto de las actividades humanas en los ecosistemas locales y propone acuerdos comunitarios para la conservación del entorno y la sustentabilidad.
+- *Vínculo formativo:* Conciencia ecológica bioética, justicia ambiental y defensa del derecho a un medio ambiente sano.
 
-**3. Ética, Naturaleza y Sociedades:**
-- *PDA:* Reconoce el papel histórico de los medios de comunicación escrita y los servicios postales en la cohesión de las familias y pueblos de México.
-- *Vínculo formativo:* Apreciación del patrimonio cultural, respeto a la privacidad de la correspondencia y convivencia pacífica.
-
-**4. De lo Humano y lo Comunitario:**
-- *PDA:* Expresa emociones, agradecimientos y acuerdos de resolución pacífica de conflictos a través de mensajes escritos en el buzón del aula.
-- *Vínculo formativo:* Fortalecimiento de la empatía, los lazos afectivos intergeneracionales y la autorregulación emocional.
+**3. De lo Humano y lo Comunitario:**
+- *PDA:* Organiza brigadas escolares para el mantenimiento del huerto, el ahorro de agua y la adopción de estilos de vida saludables en su comunidad.
+- *Vínculo formativo:* Responsabilidad social compartida, vida saludable y trabajo comunitario transformador.
 
 ---
 
 ## 🏘️ II. Diagnóstico Comunitario y Propuesta de Proyecto Integrador
 
-**Problemática Situada:**
-En el contexto escolar actual, la comunicación digital inmediata ha desplazado la correspondencia escrita, provocando que las niñas y niños desconozcan la función social de la carta formal e informal, sus componentes estructurales (fecha, lugar, destinatario, saludo, cuerpo, despedida, firma y remitente) y el valor de expresar afecto, agradecimiento o peticiones ciudadanas mediante la palabra escrita.
+**Problemática Situada:**  
+Elevada incidencia de consumo de alimentos ultraprocesados, hábitos sedentarios y falta de información accesible sobre el cuidado integral del cuerpo humano en torno a "El Plato del Bien Comer y Hábitos Saludables".
 
-**Propósito del Proyecto:**
-Que las y los estudiantes desarrollen competencias comunicativas integrales de lectoescritura con sentido social real, elaboren cartas personalizadas para miembros de la comunidad escolar y sus familias, y diseñen un buzón postal funcional para dinamizar la correspondencia en la escuela.
+**Propósito del Proyecto:**  
+Analizar los grupos nutrimentales del Plato del Bien Comer, el funcionamiento de los sistemas del cuerpo y elaborar propuestas de menús saludables y rutinas de bienestar (Libro SEP: Nuestros Saberes / Proyectos Comunitarios).
 
-**Impacto Social y Transformador:**
-Fortalece los vínculos afectivos e intergeneracionales con abuelos y familias, rescata el patrimonio cultural de la correspondencia postal mexicana, fomenta la empatía y la resolución pacífica de conflictos mediante el diálogo escrito, y estimula la lectoescritura con propósito comunitario.
+**Impacto Social y Transformador:**  
+Modifica positivamente los hábitos de alimentación familiar, disminuye el consumo de comida chatarra en la cooperativa escolar y previene enfermedades crónicas tempranas.
 
 ---
 
-## 📅 III. Secuencia Didáctica Completa (Dosificación en 10 Bloques de 50 Minutos)
+## ❓ III. Preguntas Detonadoras para el Salón (Apertura y Conflicto Cognitivo)
+1. ¿Cómo influyen los determinantes socioeconómicos y la publicidad de la industria alimentaria en la prevalencia de enfermedades crónicas no transmisibles en México?
+2. ¿Qué procesos metabólicos y fisiológicos explican la relación entre el estrés crónico, el sedentarismo y la salud cardiovascular en la juventud?
+3. ¿Qué políticas de salud pública y soberanía alimentaria comunitaria pueden revertir el daño a la salud de la población?
 
-### 📌 SESIÓN 1 (50 minutos): Planteamiento del Problema, Conflicto Cognitivo y Formulación de Hipótesis sobre "Consciencia y Futuro: La Verdad sobre el Fentanilo, Drogas Sintéticas y Salud Integral"
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Presentación de una discrepancia experimental o dilema socio-científico real. Los estudiantes formulan preguntas de indagación e hipótesis contrastables.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): En equipos de trabajo colaborativo, delimitan las variables del problema, diseñan el plan de experimentación o investigación documental y revisan fuentes científicas.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Plenaria de validación de hipótesis ante el grupo y retroalimentación metodológica del docente.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Cuáles son las variables dependientes e independientes que intervienen en el fenómeno de "Consciencia y Futuro: La Verdad sobre el Fentanilo, Drogas Sintéticas y Salud Integral"?
-  2. ¿Qué evidencias empíricas necesitamos para validar o refutar nuestras hipótesis iniciales?
-- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades Secundaria (Págs. 62 a la 64) — *Historia crítica de México, derechos humanos y soberanía*
-- **📦 Materiales:** Cuaderno de laboratorio / bitácora científica, Guía de diseño experimental, Artículos de divulgación
-- **📄 Entregable de la Sesión:** 📄 Protocolo de Investigación #1: Formulación del problema, variables e hipótesis de trabajo.
+---
 
-### 📌 SESIÓN 2 (50 minutos): Indagación en Textos Disciplinares SEP y Contrastación Teórica
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Activación teórica y apertura de los libros de texto de la SEP (Saberes Disciplinares / Lenguajes).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Análisis crítico de lecturas científicas o históricas oficiales. Elaboración de diagramas de flujo, tablas de datos o cuadros comparativos en el cuaderno.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Síntesis grupal mediante organizadores gráficos digitales o en pizarrón.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué leyes, principios o hechos históricos explican con rigor el fenómeno de "Consciencia y Futuro: La Verdad sobre el Fentanilo, Drogas Sintéticas y Salud Integral"?
-  2. ¿Cómo contrastan estos hallazgos con las ideas previas del equipo?
-- **📖 Libro de Texto SEP:** De lo Humano y lo Comunitario Secundaria (Págs. 46 a la 48) — *Tecnología, proyectos productivos, educación socioemocional y salud*
-- **📦 Materiales:** Libros de texto gratuitos SEP de Secundaria, Fichas de trabajo analítico, Calculadora / regla
-- **📄 Entregable de la Sesión:** 📄 Ficha Teórica #2: Cuadro comparativo y síntesis analítica con citas bibliográficas oficiales.
+## 📅 IV. Secuencia Didáctica Completa (Dosificación en 10 Bloques de 50 Minutos)
 
-### 📌 SESIÓN 3 (50 minutos): Indagación en Textos Disciplinares SEP y Contrastación Teórica
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Activación teórica y apertura de los libros de texto de la SEP (Saberes Disciplinares / Lenguajes).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Análisis crítico de lecturas científicas o históricas oficiales. Elaboración de diagramas de flujo, tablas de datos o cuadros comparativos en el cuaderno.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Síntesis grupal mediante organizadores gráficos digitales o en pizarrón.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué leyes, principios o hechos históricos explican con rigor el fenómeno de "Consciencia y Futuro: La Verdad sobre el Fentanilo, Drogas Sintéticas y Salud Integral"?
-  2. ¿Cómo contrastan estos hallazgos con las ideas previas del equipo?
-- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades Secundaria (Págs. 66 a la 68) — *Historia crítica de México, derechos humanos y soberanía*
-- **📦 Materiales:** Libros de texto gratuitos SEP de Secundaria, Fichas de trabajo analítico, Calculadora / regla
-- **📄 Entregable de la Sesión:** 📄 Ficha Teórica #2: Cuadro comparativo y síntesis analítica con citas bibliográficas oficiales.
+### 📌 SESIÓN 1 (50 minutos): Planteamiento del Problema Sociocrítico y Delimitación Científica de "El Plato del Bien Comer y Hábitos Saludables"
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Presentación de un caso de estudio real o discrepancia conceptual sobre "El Plato del Bien Comer y Hábitos Saludables". Debate inicial en plenaria guiado con preguntas de conflicto cognitivo.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): En mesas de trabajo analíticas, los estudiantes delimitan el problema de investigación, formulan hipótesis sustentadas y diseñan una matriz de análisis de fuentes.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Síntesis metodológica. Cada mesa expone su hipótesis de trabajo y se registran los acuerdos en la bitácora científica.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Cuáles son los factores estructurales que originan las problemáticas en torno a "El Plato del Bien Comer y Hábitos Saludables"?  
+  2. ¿Qué metodología de investigación nos permitirá contrastar nuestras hipótesis con rigor?
+- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Biología 1º de Secundaria (Págs. 63 a la 65) — *Proyecto de Salud: "Prevención de enfermedades y etiquetado frontal NOM-051" — Metabolismo, alimentos ultraprocesados y estilo de vida saludable*
+- **📦 Materiales:** Artículos científicos o fuentes primarias, Matriz de análisis documental, Bitácora de investigación
+- **📄 Entregable de la Sesión:** 📄 Protocolo de Indagación #1: Planteamiento del problema, hipótesis formuladas y justificación comunitaria.
 
-### 📌 SESIÓN 4 (50 minutos): Indagación en Textos Disciplinares SEP y Contrastación Teórica
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Activación teórica y apertura de los libros de texto de la SEP (Saberes Disciplinares / Lenguajes).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Análisis crítico de lecturas científicas o históricas oficiales. Elaboración de diagramas de flujo, tablas de datos o cuadros comparativos en el cuaderno.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Síntesis grupal mediante organizadores gráficos digitales o en pizarrón.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué leyes, principios o hechos históricos explican con rigor el fenómeno de "Consciencia y Futuro: La Verdad sobre el Fentanilo, Drogas Sintéticas y Salud Integral"?
-  2. ¿Cómo contrastan estos hallazgos con las ideas previas del equipo?
-- **📖 Libro de Texto SEP:** De lo Humano y lo Comunitario Secundaria (Págs. 50 a la 52) — *Tecnología, proyectos productivos, educación socioemocional y salud*
-- **📦 Materiales:** Libros de texto gratuitos SEP de Secundaria, Fichas de trabajo analítico, Calculadora / regla
-- **📄 Entregable de la Sesión:** 📄 Ficha Teórica #2: Cuadro comparativo y síntesis analítica con citas bibliográficas oficiales.
+### 📌 SESIÓN 2 (50 minutos): Análisis de Fuentes Primarias, Modelación Cuantitativa y Libros SEP
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Recuperación de saberes previos y orientación para el análisis crítico de textos y datos estadísticos en libros de la SEP.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Análisis riguroso de fuentes documentales, gráficas, ecuaciones o modelos conceptuales. Los estudiantes contrastan autores y formulan conclusiones preliminares sustentadas.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Ronda de preguntas socráticas para evaluar el nivel de profundidad analítica alcanzado.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué inconsistencias o consensos encontramos entre las distintas fuentes analizadas?  
+  2. ¿Cómo fundamentamos con datos cuantitativos o citas textuales nuestras afirmaciones?
+- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Biología 1º de Secundaria (Págs. 64 a la 66) — *Proyecto de Salud: "Prevención de enfermedades y etiquetado frontal NOM-051" — Metabolismo, alimentos ultraprocesados y estilo de vida saludable*
+- **📦 Materiales:** Libros de texto gratuitos SEP de Secundaria, Gráficas estadísticas o modelos matemáticos, Fichas de trabajo analíticas
+- **📄 Entregable de la Sesión:** 📄 Reporte Analítico #2: Cuadro comparativo de fuentes, análisis de datos y fichas de síntesis crítica.
 
-### 📌 SESIÓN 5 (50 minutos): Práctica de Laboratorio / Taller de Modelación Cuantitativa y Experimental
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Verificación de normas de seguridad, preparación de instrumentos o ecuaciones de modelado.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, toma de lecturas, tabulación de datos y modelado algebraico/gráfico de los resultados.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Análisis de posibles fuentes de error experimental y validación cruzada con otros equipos.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué comportamiento matemático o físico describen los datos obtenidos en la práctica?
-  2. ¿Qué correlación existe entre las variables analizadas?
-- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades Secundaria (Págs. 70 a la 72) — *Historia crítica de México, derechos humanos y soberanía*
-- **📦 Materiales:** Instrumental de laboratorio o simuladores digitales, Hojas de tabulación milimétricas, Bitácora
-- **📄 Entregable de la Sesión:** 📄 Reporte de Práctica #3: Tabulación rigurosa de datos, gráficas de comportamiento y análisis cuantitativo.
+### 📌 SESIÓN 3 (50 minutos): Experimentación en Laboratorio / Taller de Prototipado y Modelación
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Verificación de protocolos de seguridad y calibración de instrumentos para el experimento o simulación.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, desarrollo de modelos algebraicos/geométricos o ensamblaje de prototipos funcionales vinculados a "El Plato del Bien Comer y Hábitos Saludables". Registro sistemático de variables.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Discusión de resultados experimentales y control de márgenes de error.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿De qué manera los resultados empíricos validan o refutan las hipótesis iniciales?  
+  2. ¿Qué variables influyeron en el comportamiento del modelo o prototipo?
+- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Biología 1º de Secundaria (Págs. 66 a la 68) — *Proyecto de Salud: "Prevención de enfermedades y etiquetado frontal NOM-051" — Metabolismo, alimentos ultraprocesados y estilo de vida saludable*
+- **📦 Materiales:** Instrumental de laboratorio / materiales de prototipado, Hojas de registro de datos experimentales
+- **📄 Entregable de la Sesión:** 📄 Reporte Experimental #3: Gráficas de resultados, análisis de variables y memoria técnica del prototipo.
 
-### 📌 SESIÓN 6 (50 minutos): Práctica de Laboratorio / Taller de Modelación Cuantitativa y Experimental (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Verificación de normas de seguridad, preparación de instrumentos o ecuaciones de modelado.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, toma de lecturas, tabulación de datos y modelado algebraico/gráfico de los resultados.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Análisis de posibles fuentes de error experimental y validación cruzada con otros equipos.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué comportamiento matemático o físico describen los datos obtenidos en la práctica?
-  2. ¿Qué correlación existe entre las variables analizadas?
-- **📖 Libro de Texto SEP:** De lo Humano y lo Comunitario Secundaria (Págs. 54 a la 56) — *Tecnología, proyectos productivos, educación socioemocional y salud*
-- **📦 Materiales:** Instrumental de laboratorio o simuladores digitales, Hojas de tabulación milimétricas, Bitácora
-- **📄 Entregable de la Sesión:** 📄 Reporte de Práctica #3: Tabulación rigurosa de datos, gráficas de comportamiento y análisis cuantitativo.
+### 📌 SESIÓN 4 (50 minutos): Experimentación en Laboratorio / Taller de Prototipado y Modelación
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Verificación de protocolos de seguridad y calibración de instrumentos para el experimento o simulación.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, desarrollo de modelos algebraicos/geométricos o ensamblaje de prototipos funcionales vinculados a "El Plato del Bien Comer y Hábitos Saludables". Registro sistemático de variables.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Discusión de resultados experimentales y control de márgenes de error.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿De qué manera los resultados empíricos validan o refutan las hipótesis iniciales?  
+  2. ¿Qué variables influyeron en el comportamiento del modelo o prototipo?
+- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Biología 1º de Secundaria (Págs. 67 a la 69) — *Proyecto de Salud: "Prevención de enfermedades y etiquetado frontal NOM-051" — Metabolismo, alimentos ultraprocesados y estilo de vida saludable*
+- **📦 Materiales:** Instrumental de laboratorio / materiales de prototipado, Hojas de registro de datos experimentales
+- **📄 Entregable de la Sesión:** 📄 Reporte Experimental #3: Gráficas de resultados, análisis de variables y memoria técnica del prototipo.
 
-### 📌 SESIÓN 7 (50 minutos): Mesa Redonda, Debate Crítico y Coevaluación Técnica (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal y asignación de posturas o moderación.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Debate estructurado con argumentación fundamentada sobre las implicaciones éticas, sociales o tecnológicas de "Consciencia y Futuro: La Verdad sobre el Fentanilo, Drogas Sintéticas y Salud Integral". Coevaluación con rúbrica técnica.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Conclusiones consensuadas y redacción del posicionamiento ético del grupo.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?
-  2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "Consciencia y Futuro: La Verdad sobre el Fentanilo, Drogas Sintéticas y Salud Integral"?
-- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades Secundaria (Págs. 74 a la 76) — *Historia crítica de México, derechos humanos y soberanía*
+### 📌 SESIÓN 5 (50 minutos): Experimentación en Laboratorio / Taller de Prototipado y Modelación
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Verificación de protocolos de seguridad y calibración de instrumentos para el experimento o simulación.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, desarrollo de modelos algebraicos/geométricos o ensamblaje de prototipos funcionales vinculados a "El Plato del Bien Comer y Hábitos Saludables". Registro sistemático de variables.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Discusión de resultados experimentales y control de márgenes de error.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿De qué manera los resultados empíricos validan o refutan las hipótesis iniciales?  
+  2. ¿Qué variables influyeron en el comportamiento del modelo o prototipo?
+- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Biología 1º de Secundaria (Págs. 69 a la 71) — *Proyecto de Salud: "Prevención de enfermedades y etiquetado frontal NOM-051" — Metabolismo, alimentos ultraprocesados y estilo de vida saludable*
+- **📦 Materiales:** Instrumental de laboratorio / materiales de prototipado, Hojas de registro de datos experimentales
+- **📄 Entregable de la Sesión:** 📄 Reporte Experimental #3: Gráficas de resultados, análisis de variables y memoria técnica del prototipo.
+
+### 📌 SESIÓN 6 (50 minutos): Mesa Redonda / Debate Crítico Argumentativo entre Facciones o Posturas (Fase de Profundización y Taller Práctico - Parte 2)
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal: turnos de réplica, uso del tiempo y respeto a la diversidad ideológica.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Realización del debate argumentativo. Los equipos defienden posturas fundamentadas con evidencias científicas, históricas o éticas sobre "El Plato del Bien Comer y Hábitos Saludables".
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Dictamen de conclusiones por el comité relator y reflexión sobre la construcción democrática del conocimiento.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?  
+  2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "El Plato del Bien Comer y Hábitos Saludables"?
+- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Biología 1º de Secundaria (Págs. 71 a la 73) — *Proyecto de Salud: "Prevención de enfermedades y etiquetado frontal NOM-051" — Metabolismo, alimentos ultraprocesados y estilo de vida saludable*
 - **📦 Materiales:** Rúbricas técnicas de evaluación entre pares, Guiones de argumentación
 - **📄 Entregable de la Sesión:** 📄 Acta de Debate y Rúbrica de Coevaluación con argumentos fundamentados.
 
-### 📌 SESIÓN 8 (50 minutos): Mesa Redonda, Debate Crítico y Coevaluación Técnica (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal y asignación de posturas o moderación.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Debate estructurado con argumentación fundamentada sobre las implicaciones éticas, sociales o tecnológicas de "Consciencia y Futuro: La Verdad sobre el Fentanilo, Drogas Sintéticas y Salud Integral". Coevaluación con rúbrica técnica.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Conclusiones consensuadas y redacción del posicionamiento ético del grupo.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?
-  2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "Consciencia y Futuro: La Verdad sobre el Fentanilo, Drogas Sintéticas y Salud Integral"?
-- **📖 Libro de Texto SEP:** De lo Humano y lo Comunitario Secundaria (Págs. 46 a la 48) — *Tecnología, proyectos productivos, educación socioemocional y salud*
+### 📌 SESIÓN 7 (50 minutos): Mesa Redonda / Debate Crítico Argumentativo entre Facciones o Posturas (Fase de Profundización y Taller Práctico - Parte 2)
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal: turnos de réplica, uso del tiempo y respeto a la diversidad ideológica.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Realización del debate argumentativo. Los equipos defienden posturas fundamentadas con evidencias científicas, históricas o éticas sobre "El Plato del Bien Comer y Hábitos Saludables".
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Dictamen de conclusiones por el comité relator y reflexión sobre la construcción democrática del conocimiento.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?  
+  2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "El Plato del Bien Comer y Hábitos Saludables"?
+- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Biología 1º de Secundaria (Págs. 72 a la 74) — *Proyecto de Salud: "Prevención de enfermedades y etiquetado frontal NOM-051" — Metabolismo, alimentos ultraprocesados y estilo de vida saludable*
 - **📦 Materiales:** Rúbricas técnicas de evaluación entre pares, Guiones de argumentación
 - **📄 Entregable de la Sesión:** 📄 Acta de Debate y Rúbrica de Coevaluación con argumentos fundamentados.
 
-### 📌 SESIÓN 9 (50 minutos): Mesa Redonda, Debate Crítico y Coevaluación Técnica (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal y asignación de posturas o moderación.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Debate estructurado con argumentación fundamentada sobre las implicaciones éticas, sociales o tecnológicas de "Consciencia y Futuro: La Verdad sobre el Fentanilo, Drogas Sintéticas y Salud Integral". Coevaluación con rúbrica técnica.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Conclusiones consensuadas y redacción del posicionamiento ético del grupo.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?
-  2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "Consciencia y Futuro: La Verdad sobre el Fentanilo, Drogas Sintéticas y Salud Integral"?
-- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades Secundaria (Págs. 62 a la 64) — *Historia crítica de México, derechos humanos y soberanía*
+### 📌 SESIÓN 8 (50 minutos): Mesa Redonda / Debate Crítico Argumentativo entre Facciones o Posturas (Fase de Profundización y Taller Práctico - Parte 2)
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal: turnos de réplica, uso del tiempo y respeto a la diversidad ideológica.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Realización del debate argumentativo. Los equipos defienden posturas fundamentadas con evidencias científicas, históricas o éticas sobre "El Plato del Bien Comer y Hábitos Saludables".
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Dictamen de conclusiones por el comité relator y reflexión sobre la construcción democrática del conocimiento.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?  
+  2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "El Plato del Bien Comer y Hábitos Saludables"?
+- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Biología 1º de Secundaria (Págs. 74 a la 76) — *Proyecto de Salud: "Prevención de enfermedades y etiquetado frontal NOM-051" — Metabolismo, alimentos ultraprocesados y estilo de vida saludable*
+- **📦 Materiales:** Rúbricas técnicas de evaluación entre pares, Guiones de argumentación
+- **📄 Entregable de la Sesión:** 📄 Acta de Debate y Rúbrica de Coevaluación con argumentos fundamentados.
+
+### 📌 SESIÓN 9 (50 minutos): Mesa Redonda / Debate Crítico Argumentativo entre Facciones o Posturas (Fase de Profundización y Taller Práctico - Parte 2)
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal: turnos de réplica, uso del tiempo y respeto a la diversidad ideológica.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Realización del debate argumentativo. Los equipos defienden posturas fundamentadas con evidencias científicas, históricas o éticas sobre "El Plato del Bien Comer y Hábitos Saludables".
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Dictamen de conclusiones por el comité relator y reflexión sobre la construcción democrática del conocimiento.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?  
+  2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "El Plato del Bien Comer y Hábitos Saludables"?
+- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Biología 1º de Secundaria (Págs. 75 a la 77) — *Proyecto de Salud: "Prevención de enfermedades y etiquetado frontal NOM-051" — Metabolismo, alimentos ultraprocesados y estilo de vida saludable*
 - **📦 Materiales:** Rúbricas técnicas de evaluación entre pares, Guiones de argumentación
 - **📄 Entregable de la Sesión:** 📄 Acta de Debate y Rúbrica de Coevaluación con argumentos fundamentados.
 
 ### 📌 SESIÓN 10 (50 minutos): Coloquio Estudiantil de Ciencias y Humanidades: Defensa del Proyecto y Evaluación (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Apertura solemne del Coloquio Académico Escolar ante la comunidad y docentes invitados.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): Exposición oral en atril con apoyo de diapositivas o stands demostrativos. Ronda de preguntas y respuestas técnicas.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Evaluación sumativa y formativa con rúbrica analítica oficial y retroalimentación docente.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿De qué manera nuestro proyecto contribuye a resolver un problema real de la comunidad?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿De qué manera nuestro proyecto contribuye a resolver un problema real de la comunidad?  
   2. ¿Qué competencias científicas y comunicativas consolidamos durante el proceso?
-- **📖 Libro de Texto SEP:** De lo Humano y lo Comunitario Secundaria (Págs. 50 a la 52) — *Tecnología, proyectos productivos, educación socioemocional y salud*
+- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Biología 1º de Secundaria (Págs. 77 a la 79) — *Proyecto de Salud: "Prevención de enfermedades y etiquetado frontal NOM-051" — Metabolismo, alimentos ultraprocesados y estilo de vida saludable*
 - **📦 Materiales:** Proyector o stands de exposición, Rúbricas analíticas oficiales, Prototipos terminados
 - **📄 Entregable de la Sesión:** 🏆 Producto Final de Secundaria: Reporte formal de investigación, prototipo funcional evaluado y sustentación oral.
 
 ---
 
-## 📊 IV. Rúbrica Analítica Formativa de Evaluación (NEM 2024)
+## 📊 V. Rúbrica Analítica Formativa de Evaluación (NEM 2024)
 
 | Criterio Pedagógico | Nivel Sobresaliente (3 pts) | Nivel Satisfactorio (2 pts) | Nivel En Proceso (1 pt) |
 | :--- | :--- | :--- | :--- |
-| **Estructura Epistolar y Calidad del Mensaje Escrito** | La carta incluye con absoluta claridad y precisión sus 6 partes (fecha/lugar, destinatario, saludo, cuerpo en párrafos organizados, despedida y firma), con excelente caligrafía y ortografía. | La carta contiene la mayoría de los elementos de la estructura epistolar con redacción comprensible y pocas faltas ortográficas. | El texto carece de encabezado o despedida, las ideas están desordenadas o presenta dificultades notables en la escritura autónoma. |
-| **Diseño del Sobre, Estampilla y Rotulación Postal** | El sobre está impecablemente rotulado con remitente y destinatario en las posiciones correctas, incluye código postal y una estampilla artística original y creativa. | El sobre contiene los datos principales de remitente y destinatario con buena presentación general. | El sobre confunde el remitente con el destinatario o carece de datos indispensables para la entrega postal. |
-| **Participación en la Jornada del Buzón Comunitario** | Participa con entusiasmo y empatía en la construcción del buzón, asume con responsabilidad su rol de cartero y lee con elocuencia y respeto ante la comunidad. | Colabora adecuadamente en el montaje del buzón y entrega su correspondencia a tiempo con amabilidad. | Muestra poco interés en la entrega comunitaria o dificultad para integrarse en las actividades del equipo. |
+| **Comprensión Nutricional y Fisiológica del Cuerpo** | Explica con precisión la función de los nutrientes, los riesgos del consumo excesivo de azúcares y grasas, y la fisiología del cuerpo humano frente a "El Plato del Bien Comer y Hábitos Saludables". | Identifica los grupos del Plato del Bien Comer y propone opciones de menús balanceados. | Confunde los grupos nutrimentales o desconoce la función básica de los órganos. |
+| **Elaboración del Recetario y Recursos Didácticos** | Crea recetas nutritivas con ingredientes económicos de la región, rotuladas con tablas de valor calórico y presentación gráfica impecable. | Presenta sus recetas y carteles con orden, limpieza e información comprensible. | Las recetas son poco saludables o los materiales visuales carecen de claridad. |
+| **Promoción de la Salud y Diálogo con las Familias** | Orienta con amabilidad y argumentos fundamentados a las familias en la feria de la salud, promoviendo compromisos de vida saludable. | Atiende su módulo con cordialidad y explica las recomendaciones nutricionales. | Muestra timidez o dificultad para dialogar sobre los hábitos saludables. |
 
 ---
 
-## 🛠️ V. Recursos y Materiales Didácticos
-- Libros de Texto Gratuitos Oficiales de la SEP asignados con páginas y dinámicas.
-- Materiales manipulables y de indagación escolar.
-- Evidencia final del proyecto: **Montaje del "Buzón Postal Comunitario" en el aula y patio cívico escolar, con sobres decorados a mano, estampillas postales elaboradas por los alumnos y una jornada de reparto de cartas en la comunidad escolar con lectura en voz alta.**.
+## 🛠️ VI. Recursos y Materiales Didácticos
+- Libros de Texto Gratuitos Oficiales de la SEP asignados con páginas específicas y dinámicas formativas.
+- Materiales manipulables y de indagación comunitaria.
+- Evidencia final del proyecto: **Montaje de la "Feria de la Salud Escolar" con puestos de degustación de colaciones nutritivas locales, recetario escolar ilustrado, infografías del sistema digestivo/circulatorio y estación de toma de signos vitales guiada.**.
 
 ---
 *Documento Curricular Oficial generado para ISkool • Bóveda Central de Conocimiento.*

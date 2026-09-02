@@ -9,220 +9,223 @@ campo_formativo: "Saberes y Pensamiento Científico"
 tema: "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana"
 duracion: "10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)"
 ejes_articuladores: ["Pensamiento Crítico", "Inclusión", "Vida Saludable", "Apropiación de las Culturas a través de la Lectura y la Escritura"]
-producto_integrador: "Muestra Científica Escolar con experimentos en vivo, prototipos demostrativos, infografías explicativas y bitácoras de campo detalladas."
-fecha_elaboracion: "25 de agosto de 2026"
-created_at: "25 de agosto de 2026"
-updated_at: "25 de agosto de 2026"
+producto_integrador: "Realización de la "Asamblea Escolar de la Convivencia y la Paz", con aprobación del Decálogo de Aula, instalación de carteles interactivos de mediación de conflictos y firma de compromisos colectivos."
+fecha_elaboracion: "2 de septiembre de 2026"
+created_at: "2 de septiembre de 2026"
+updated_at: "2 de septiembre de 2026"
 ---
 
 # 📚 Proyecto Didáctico Integral: Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana
 
-> **Docente Titular:** [[Prof_Israel_Lopez_Angeles|Prof. Israel López Ángeles]]
-> **Nivel y Fase:** SECUNDARIA • Fase 6 (1º de Secundaria)
-> **Campo Formativo:** Saberes y Pensamiento Científico
-> **Asignatura:** General
-> **Temporalidad:** 10 sesiones de 50 minutos (Total: 500 min)
-> **Producto Central Integrador:** *Muestra Científica Escolar con experimentos en vivo, prototipos demostrativos, infografías explicativas y bitácoras de campo detalladas.*
-> **Índice Curricular:** [[00_Indice_Maestro_Boveda_Curricular|Bóveda Curricular Central]]
+> **Docente Titular:** [[Prof_Israel_Lopez_Angeles|Prof. Israel López Ángeles]]  
+> **Nivel y Fase:** SECUNDARIA • Fase 6 (1º de Secundaria)  
+> **Campo Formativo:** Saberes y Pensamiento Científico  
+> **Asignatura:** General  
+> **Temporalidad:** 10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)  
+> **Producto Central Integrador:** *Realización de la "Asamblea Escolar de la Convivencia y la Paz", con aprobación del Decálogo de Aula, instalación de carteles interactivos de mediación de conflictos y firma de compromisos colectivos.*  
+> **Índice Curricular:** [[00_Indice_Maestro_Boveda_Curricular|Bóveda Curricular Central]]  
 
 ---
 
 ## 🎯 I. Proceso de Desarrollo de Aprendizaje (PDA Principal)
 
 ```yaml
-PDA: "Modela situaciones y fenómenos reales relacionados con 'Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana' mediante expresiones algebraicas, gráficas, funciones y contrastación experimental de laboratorio."
+PDA: "Recaba y organiza datos en encuestas sobre la convivencia escolar, analizando en tablas las necesidades prioritarias del grupo."
 ```
 
 ### 🔗 Articulación Curricular con otros Campos Formativos:
-**1. Saberes y Pensamiento Científico (Secundaria - Fase 6):**
-- *PDA:* Modela situaciones y fenómenos reales relacionados con "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana" mediante expresiones algebraicas, gráficas, funciones y contrastación experimental de laboratorio.
-- *Vínculo formativo:* Rigor cuantitativo, formulación de modelos matemáticos y leyes científicas fundamentales.
+**1. Ética, Naturaleza y Sociedades:**
+- *PDA:* Reconoce los derechos fundamentales de las niñas y los niños, promueve la igualdad de género y participa en la construcción de acuerdos de convivencia pacífica en el aula.
+- *Vínculo formativo:* Formación cívica y ética, defensa de los derechos humanos y erradicación de toda forma de discriminación.
 
-**2. Lenguajes (Español / Lengua Extranjera):**
-- *PDA:* Produce ensayos académicos, artículos de divulgación y participa en mesas redondas formales sobre "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana" con rigor metodológico y citas textuales.
-- *Vínculo formativo:* Argumentación crítica avanzada, dialéctica y divulgación del conocimiento científico.
+**2. Lenguajes (Diálogo y Mediación):**
+- *PDA:* Utiliza el diálogo empático, la asamblea escolar y la redacción de acuerdos para mediar desacuerdos y expresar propuestas de mejora para su escuela.
+- *Vínculo formativo:* Oratoria asertiva, escucha activa y elaboración de reglamentos y acuerdos colectivos.
 
-**3. Ética, Naturaleza y Sociedades:**
-- *PDA:* Analiza críticamente las causas estructurales, históricas y éticas de las problemáticas socioambientales ligadas a "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana".
-- *Vínculo formativo:* Conciencia histórica crítica, geopolítica, sostenibilidad y justicia social transformadora.
-
-**4. De lo Humano y lo Comunitario:**
-- *PDA:* Diseña prototipos tecnológicos y propuestas productivas comunitarias orientadas a la innovación y el proyecto de vida en torno a "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana".
-- *Vínculo formativo:* Innovación técnica, vocación productiva, salud integral y proyecto de vida.
+**3. De lo Humano y lo Comunitario:**
+- *PDA:* Desarrolla habilidades socioemocionales de autorregulación, empatía y resolución no violenta de conflictos en actividades lúdicas y colaborativas.
+- *Vínculo formativo:* Cultura de paz, inteligencia emocional y fortalecimiento de lazos de amistad y solidaridad.
 
 ---
 
 ## 🏘️ II. Diagnóstico Comunitario y Propuesta de Proyecto Integrador
 
-**Problemática Situada:**
-Necesidad de fomentar la curiosidad científica, la indagación sistemática y la aplicación de saberes escolares para entender y transformar fenómenos relacionados con "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana".
+**Problemática Situada:**  
+Conflictos recurrentes en la convivencia escolar y necesidad de fortalecer la cultura del diálogo, el conocimiento de los derechos humanos y la resolución pacífica de controversias sobre "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana".
 
-**Propósito del Proyecto:**
-Diseñar y ejecutar una investigación experimental y de campo que culmine en prototipos funcionales y propuestas sustentables para la comunidad.
+**Propósito del Proyecto:**  
+Construir consensos democráticos a través de asambleas de aula, redactar un decálogo de convivencia y diseñar una campaña escolar de cultura de paz (Libro SEP: Ética, Naturaleza y Sociedades / Proyectos de Aula).
 
-**Impacto Social y Transformador:**
-Promueve el pensamiento científico, la resolución de problemas locales y la participación ciudadana informada.
+**Impacto Social y Transformador:**  
+Reduce incidentes de exclusión o violencia en el aula, fortalece el tejido social escolar y promueve la ciudadanía democrática activa desde la infancia.
 
 ---
 
-## 📅 III. Secuencia Didáctica Completa (Dosificación en 10 Bloques de 50 Minutos)
+## ❓ III. Preguntas Detonadoras para el Salón (Apertura y Conflicto Cognitivo)
+1. ¿Cómo se articulan los derechos humanos, el estado de derecho y la justicia restaurativa en la resolución de controversias sociales sobre "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana"?
+2. ¿Qué dilemas éticos contemporáneos desafían la construcción de una cultura de paz y no violencia en los espacios públicos juveniles?
+3. ¿Qué mecanismos de participación ciudadana y mediación institucional fortalecen el tejido social y la convivencia democrática?
 
-### 📌 SESIÓN 1 (50 minutos): Planteamiento del Problema, Conflicto Cognitivo y Formulación de Hipótesis sobre "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana"
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Presentación de una discrepancia experimental o dilema socio-científico real. Los estudiantes formulan preguntas de indagación e hipótesis contrastables.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): En equipos de trabajo colaborativo, delimitan las variables del problema, diseñan el plan de experimentación o investigación documental y revisan fuentes científicas.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Plenaria de validación de hipótesis ante el grupo y retroalimentación metodológica del docente.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Cuáles son las variables dependientes e independientes que intervienen en el fenómeno de "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana"?
-  2. ¿Qué evidencias empíricas necesitamos para validar o refutar nuestras hipótesis iniciales?
-- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades Secundaria (Págs. 62 a la 64) — *Historia crítica de México, derechos humanos y soberanía*
-- **📦 Materiales:** Cuaderno de laboratorio / bitácora científica, Guía de diseño experimental, Artículos de divulgación
-- **📄 Entregable de la Sesión:** 📄 Protocolo de Investigación #1: Formulación del problema, variables e hipótesis de trabajo.
+---
 
-### 📌 SESIÓN 2 (50 minutos): Indagación en Textos Disciplinares SEP y Contrastación Teórica
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Activación teórica y apertura de los libros de texto de la SEP (Saberes Disciplinares / Lenguajes).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Análisis crítico de lecturas científicas o históricas oficiales. Elaboración de diagramas de flujo, tablas de datos o cuadros comparativos en el cuaderno.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Síntesis grupal mediante organizadores gráficos digitales o en pizarrón.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué leyes, principios o hechos históricos explican con rigor el fenómeno de "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana"?
-  2. ¿Cómo contrastan estos hallazgos con las ideas previas del equipo?
-- **📖 Libro de Texto SEP:** De lo Humano y lo Comunitario Secundaria (Págs. 46 a la 48) — *Tecnología, proyectos productivos, educación socioemocional y salud*
-- **📦 Materiales:** Libros de texto gratuitos SEP de Secundaria, Fichas de trabajo analítico, Calculadora / regla
-- **📄 Entregable de la Sesión:** 📄 Ficha Teórica #2: Cuadro comparativo y síntesis analítica con citas bibliográficas oficiales.
+## 📅 IV. Secuencia Didáctica Completa (Dosificación en 10 Bloques de 50 Minutos)
 
-### 📌 SESIÓN 3 (50 minutos): Indagación en Textos Disciplinares SEP y Contrastación Teórica
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Activación teórica y apertura de los libros de texto de la SEP (Saberes Disciplinares / Lenguajes).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Análisis crítico de lecturas científicas o históricas oficiales. Elaboración de diagramas de flujo, tablas de datos o cuadros comparativos en el cuaderno.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Síntesis grupal mediante organizadores gráficos digitales o en pizarrón.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué leyes, principios o hechos históricos explican con rigor el fenómeno de "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana"?
-  2. ¿Cómo contrastan estos hallazgos con las ideas previas del equipo?
-- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades Secundaria (Págs. 66 a la 68) — *Historia crítica de México, derechos humanos y soberanía*
-- **📦 Materiales:** Libros de texto gratuitos SEP de Secundaria, Fichas de trabajo analítico, Calculadora / regla
-- **📄 Entregable de la Sesión:** 📄 Ficha Teórica #2: Cuadro comparativo y síntesis analítica con citas bibliográficas oficiales.
+### 📌 SESIÓN 1 (50 minutos): Planteamiento del Problema Sociocrítico y Delimitación Científica de "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana"
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Presentación de un caso de estudio real o discrepancia conceptual sobre "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana". Debate inicial en plenaria guiado con preguntas de conflicto cognitivo.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): En mesas de trabajo analíticas, los estudiantes delimitan el problema de investigación, formulan hipótesis sustentadas y diseñan una matriz de análisis de fuentes.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Síntesis metodológica. Cada mesa expone su hipótesis de trabajo y se registran los acuerdos en la bitácora científica.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Cuáles son los factores estructurales que originan las problemáticas en torno a "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana"?  
+  2. ¿Qué metodología de investigación nos permitirá contrastar nuestras hipótesis con rigor?
+- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades 1º de Secundaria (Geografía) (Págs. 56 a la 58) — *Espacio geográfico, recursos naturales y sustentabilidad*
+- **📦 Materiales:** Artículos científicos o fuentes primarias, Matriz de análisis documental, Bitácora de investigación
+- **📄 Entregable de la Sesión:** 📄 Protocolo de Indagación #1: Planteamiento del problema, hipótesis formuladas y justificación comunitaria.
 
-### 📌 SESIÓN 4 (50 minutos): Indagación en Textos Disciplinares SEP y Contrastación Teórica
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Activación teórica y apertura de los libros de texto de la SEP (Saberes Disciplinares / Lenguajes).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Análisis crítico de lecturas científicas o históricas oficiales. Elaboración de diagramas de flujo, tablas de datos o cuadros comparativos en el cuaderno.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Síntesis grupal mediante organizadores gráficos digitales o en pizarrón.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué leyes, principios o hechos históricos explican con rigor el fenómeno de "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana"?
-  2. ¿Cómo contrastan estos hallazgos con las ideas previas del equipo?
+### 📌 SESIÓN 2 (50 minutos): Análisis de Fuentes Primarias, Modelación Cuantitativa y Libros SEP
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Recuperación de saberes previos y orientación para el análisis crítico de textos y datos estadísticos en libros de la SEP.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Análisis riguroso de fuentes documentales, gráficas, ecuaciones o modelos conceptuales. Los estudiantes contrastan autores y formulan conclusiones preliminares sustentadas.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Ronda de preguntas socráticas para evaluar el nivel de profundidad analítica alcanzado.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué inconsistencias o consensos encontramos entre las distintas fuentes analizadas?  
+  2. ¿Cómo fundamentamos con datos cuantitativos o citas textuales nuestras afirmaciones?
+- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades 2º de Secundaria (Historia) (Págs. 80 a la 82) — *México prehispánico, virreinato e independencia nacional*
+- **📦 Materiales:** Libros de texto gratuitos SEP de Secundaria, Gráficas estadísticas o modelos matemáticos, Fichas de trabajo analíticas
+- **📄 Entregable de la Sesión:** 📄 Reporte Analítico #2: Cuadro comparativo de fuentes, análisis de datos y fichas de síntesis crítica.
+
+### 📌 SESIÓN 3 (50 minutos): Experimentación en Laboratorio / Taller de Prototipado y Modelación
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Verificación de protocolos de seguridad y calibración de instrumentos para el experimento o simulación.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, desarrollo de modelos algebraicos/geométricos o ensamblaje de prototipos funcionales vinculados a "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana". Registro sistemático de variables.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Discusión de resultados experimentales y control de márgenes de error.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿De qué manera los resultados empíricos validan o refutan las hipótesis iniciales?  
+  2. ¿Qué variables influyeron en el comportamiento del modelo o prototipo?
+- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades 3º de Secundaria (Historia y FCE) (Págs. 124 a la 126) — *Revolución Mexicana, democracia, derechos humanos y estado de derecho*
+- **📦 Materiales:** Instrumental de laboratorio / materiales de prototipado, Hojas de registro de datos experimentales
+- **📄 Entregable de la Sesión:** 📄 Reporte Experimental #3: Gráficas de resultados, análisis de variables y memoria técnica del prototipo.
+
+### 📌 SESIÓN 4 (50 minutos): Experimentación en Laboratorio / Taller de Prototipado y Modelación
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Verificación de protocolos de seguridad y calibración de instrumentos para el experimento o simulación.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, desarrollo de modelos algebraicos/geométricos o ensamblaje de prototipos funcionales vinculados a "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana". Registro sistemático de variables.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Discusión de resultados experimentales y control de márgenes de error.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿De qué manera los resultados empíricos validan o refutan las hipótesis iniciales?  
+  2. ¿Qué variables influyeron en el comportamiento del modelo o prototipo?
 - **📖 Libro de Texto SEP:** De lo Humano y lo Comunitario Secundaria (Págs. 50 a la 52) — *Tecnología, proyectos productivos, educación socioemocional y salud*
-- **📦 Materiales:** Libros de texto gratuitos SEP de Secundaria, Fichas de trabajo analítico, Calculadora / regla
-- **📄 Entregable de la Sesión:** 📄 Ficha Teórica #2: Cuadro comparativo y síntesis analítica con citas bibliográficas oficiales.
+- **📦 Materiales:** Instrumental de laboratorio / materiales de prototipado, Hojas de registro de datos experimentales
+- **📄 Entregable de la Sesión:** 📄 Reporte Experimental #3: Gráficas de resultados, análisis de variables y memoria técnica del prototipo.
 
-### 📌 SESIÓN 5 (50 minutos): Práctica de Laboratorio / Taller de Modelación Cuantitativa y Experimental
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Verificación de normas de seguridad, preparación de instrumentos o ecuaciones de modelado.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, toma de lecturas, tabulación de datos y modelado algebraico/gráfico de los resultados.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Análisis de posibles fuentes de error experimental y validación cruzada con otros equipos.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué comportamiento matemático o físico describen los datos obtenidos en la práctica?
-  2. ¿Qué correlación existe entre las variables analizadas?
-- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades Secundaria (Págs. 70 a la 72) — *Historia crítica de México, derechos humanos y soberanía*
-- **📦 Materiales:** Instrumental de laboratorio o simuladores digitales, Hojas de tabulación milimétricas, Bitácora
-- **📄 Entregable de la Sesión:** 📄 Reporte de Práctica #3: Tabulación rigurosa de datos, gráficas de comportamiento y análisis cuantitativo.
+### 📌 SESIÓN 5 (50 minutos): Experimentación en Laboratorio / Taller de Prototipado y Modelación
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Verificación de protocolos de seguridad y calibración de instrumentos para el experimento o simulación.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, desarrollo de modelos algebraicos/geométricos o ensamblaje de prototipos funcionales vinculados a "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana". Registro sistemático de variables.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Discusión de resultados experimentales y control de márgenes de error.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿De qué manera los resultados empíricos validan o refutan las hipótesis iniciales?  
+  2. ¿Qué variables influyeron en el comportamiento del modelo o prototipo?
+- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades 1º de Secundaria (Geografía) (Págs. 64 a la 66) — *Espacio geográfico, recursos naturales y sustentabilidad*
+- **📦 Materiales:** Instrumental de laboratorio / materiales de prototipado, Hojas de registro de datos experimentales
+- **📄 Entregable de la Sesión:** 📄 Reporte Experimental #3: Gráficas de resultados, análisis de variables y memoria técnica del prototipo.
 
-### 📌 SESIÓN 6 (50 minutos): Práctica de Laboratorio / Taller de Modelación Cuantitativa y Experimental (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Verificación de normas de seguridad, preparación de instrumentos o ecuaciones de modelado.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, toma de lecturas, tabulación de datos y modelado algebraico/gráfico de los resultados.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Análisis de posibles fuentes de error experimental y validación cruzada con otros equipos.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué comportamiento matemático o físico describen los datos obtenidos en la práctica?
-  2. ¿Qué correlación existe entre las variables analizadas?
-- **📖 Libro de Texto SEP:** De lo Humano y lo Comunitario Secundaria (Págs. 54 a la 56) — *Tecnología, proyectos productivos, educación socioemocional y salud*
-- **📦 Materiales:** Instrumental de laboratorio o simuladores digitales, Hojas de tabulación milimétricas, Bitácora
-- **📄 Entregable de la Sesión:** 📄 Reporte de Práctica #3: Tabulación rigurosa de datos, gráficas de comportamiento y análisis cuantitativo.
-
-### 📌 SESIÓN 7 (50 minutos): Mesa Redonda, Debate Crítico y Coevaluación Técnica (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal y asignación de posturas o moderación.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Debate estructurado con argumentación fundamentada sobre las implicaciones éticas, sociales o tecnológicas de "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana". Coevaluación con rúbrica técnica.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Conclusiones consensuadas y redacción del posicionamiento ético del grupo.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?
+### 📌 SESIÓN 6 (50 minutos): Mesa Redonda / Debate Crítico Argumentativo entre Facciones o Posturas (Fase de Profundización y Taller Práctico - Parte 2)
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal: turnos de réplica, uso del tiempo y respeto a la diversidad ideológica.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Realización del debate argumentativo. Los equipos defienden posturas fundamentadas con evidencias científicas, históricas o éticas sobre "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana".
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Dictamen de conclusiones por el comité relator y reflexión sobre la construcción democrática del conocimiento.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?  
   2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana"?
-- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades Secundaria (Págs. 74 a la 76) — *Historia crítica de México, derechos humanos y soberanía*
+- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades 2º de Secundaria (Historia) (Págs. 88 a la 90) — *México prehispánico, virreinato e independencia nacional*
 - **📦 Materiales:** Rúbricas técnicas de evaluación entre pares, Guiones de argumentación
 - **📄 Entregable de la Sesión:** 📄 Acta de Debate y Rúbrica de Coevaluación con argumentos fundamentados.
 
-### 📌 SESIÓN 8 (50 minutos): Mesa Redonda, Debate Crítico y Coevaluación Técnica (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal y asignación de posturas o moderación.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Debate estructurado con argumentación fundamentada sobre las implicaciones éticas, sociales o tecnológicas de "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana". Coevaluación con rúbrica técnica.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Conclusiones consensuadas y redacción del posicionamiento ético del grupo.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?
+### 📌 SESIÓN 7 (50 minutos): Mesa Redonda / Debate Crítico Argumentativo entre Facciones o Posturas (Fase de Profundización y Taller Práctico - Parte 2)
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal: turnos de réplica, uso del tiempo y respeto a la diversidad ideológica.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Realización del debate argumentativo. Los equipos defienden posturas fundamentadas con evidencias científicas, históricas o éticas sobre "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana".
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Dictamen de conclusiones por el comité relator y reflexión sobre la construcción democrática del conocimiento.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?  
+  2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana"?
+- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades 3º de Secundaria (Historia y FCE) (Págs. 132 a la 134) — *Revolución Mexicana, democracia, derechos humanos y estado de derecho*
+- **📦 Materiales:** Rúbricas técnicas de evaluación entre pares, Guiones de argumentación
+- **📄 Entregable de la Sesión:** 📄 Acta de Debate y Rúbrica de Coevaluación con argumentos fundamentados.
+
+### 📌 SESIÓN 8 (50 minutos): Mesa Redonda / Debate Crítico Argumentativo entre Facciones o Posturas (Fase de Profundización y Taller Práctico - Parte 2)
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal: turnos de réplica, uso del tiempo y respeto a la diversidad ideológica.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Realización del debate argumentativo. Los equipos defienden posturas fundamentadas con evidencias científicas, históricas o éticas sobre "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana".
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Dictamen de conclusiones por el comité relator y reflexión sobre la construcción democrática del conocimiento.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?  
   2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana"?
 - **📖 Libro de Texto SEP:** De lo Humano y lo Comunitario Secundaria (Págs. 46 a la 48) — *Tecnología, proyectos productivos, educación socioemocional y salud*
 - **📦 Materiales:** Rúbricas técnicas de evaluación entre pares, Guiones de argumentación
 - **📄 Entregable de la Sesión:** 📄 Acta de Debate y Rúbrica de Coevaluación con argumentos fundamentados.
 
-### 📌 SESIÓN 9 (50 minutos): Mesa Redonda, Debate Crítico y Coevaluación Técnica (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal y asignación de posturas o moderación.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Debate estructurado con argumentación fundamentada sobre las implicaciones éticas, sociales o tecnológicas de "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana". Coevaluación con rúbrica técnica.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Conclusiones consensuadas y redacción del posicionamiento ético del grupo.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?
+### 📌 SESIÓN 9 (50 minutos): Mesa Redonda / Debate Crítico Argumentativo entre Facciones o Posturas (Fase de Profundización y Taller Práctico - Parte 2)
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal: turnos de réplica, uso del tiempo y respeto a la diversidad ideológica.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Realización del debate argumentativo. Los equipos defienden posturas fundamentadas con evidencias científicas, históricas o éticas sobre "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana".
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Dictamen de conclusiones por el comité relator y reflexión sobre la construcción democrática del conocimiento.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?  
   2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana"?
-- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades Secundaria (Págs. 62 a la 64) — *Historia crítica de México, derechos humanos y soberanía*
+- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades 1º de Secundaria (Geografía) (Págs. 56 a la 58) — *Espacio geográfico, recursos naturales y sustentabilidad*
 - **📦 Materiales:** Rúbricas técnicas de evaluación entre pares, Guiones de argumentación
 - **📄 Entregable de la Sesión:** 📄 Acta de Debate y Rúbrica de Coevaluación con argumentos fundamentados.
 
 ### 📌 SESIÓN 10 (50 minutos): Coloquio Estudiantil de Ciencias y Humanidades: Defensa del Proyecto y Evaluación (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Apertura solemne del Coloquio Académico Escolar ante la comunidad y docentes invitados.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): Exposición oral en atril con apoyo de diapositivas o stands demostrativos. Ronda de preguntas y respuestas técnicas.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Evaluación sumativa y formativa con rúbrica analítica oficial y retroalimentación docente.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿De qué manera nuestro proyecto contribuye a resolver un problema real de la comunidad?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿De qué manera nuestro proyecto contribuye a resolver un problema real de la comunidad?  
   2. ¿Qué competencias científicas y comunicativas consolidamos durante el proceso?
-- **📖 Libro de Texto SEP:** De lo Humano y lo Comunitario Secundaria (Págs. 50 a la 52) — *Tecnología, proyectos productivos, educación socioemocional y salud*
+- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades 2º de Secundaria (Historia) (Págs. 80 a la 82) — *México prehispánico, virreinato e independencia nacional*
 - **📦 Materiales:** Proyector o stands de exposición, Rúbricas analíticas oficiales, Prototipos terminados
 - **📄 Entregable de la Sesión:** 🏆 Producto Final de Secundaria: Reporte formal de investigación, prototipo funcional evaluado y sustentación oral.
 
 ---
 
-## 📊 IV. Rúbrica Analítica Formativa de Evaluación (NEM 2024)
+## 📊 V. Rúbrica Analítica Formativa de Evaluación (NEM 2024)
 
 | Criterio Pedagógico | Nivel Sobresaliente (3 pts) | Nivel Satisfactorio (2 pts) | Nivel En Proceso (1 pt) |
 | :--- | :--- | :--- | :--- |
-| **Metodología de Indagación y Rigor Conceptual** | Plantea hipótesis claras, registra datos experimentales con precisión y formula conclusiones sólidas basadas en evidencia. | Sigue los pasos del método experimental y presenta resultados ordenados. | El registro de datos es incompleto o las conclusiones carecen de sustento. |
-| **Calidad del Prototipo y Presentación Visual** | El prototipo es funcional, seguro, creativo y está acompañado de infografías científicas de alta calidad. | El prototipo funciona adecuadamente y los apoyos visuales son claros. | El prototipo no funciona o la presentación visual es descuidada. |
-| **Divulgación Científica y Comunicación Oral** | Comunica conceptos científicos complejos con sencillez, elocuencia y dominio ante audiencias diversas. | Explica su experimento con claridad y vocabulario científico adecuado. | Dificultad para explicar el funcionamiento o la utilidad de su investigación. |
+| **Comprensión y Defensa de los Derechos y la Igualdad** | Reconoce y fundamenta con claridad los derechos de las niñas y niños (expresión, inclusión, respeto a las diferencias) en torno a "Mano Vuelta: El Tequio Oaxaqueño, la Comunalidad y la Solidaridad Ciudadana". | Identifica los derechos principales y explica su importancia para la convivencia pacífica. | Confunde derechos con obligaciones o desconoce las normas básicas de convivencia. |
+| **Elaboración de Acuerdos y Decálogo de Convivencia** | Redacta acuerdos inclusivos, propositivos y consensuados con excelente redacción, ilustrándolos de forma creativa y visible para todos. | Participa en la redacción de normas claras para el bienestar del salón de clases. | Propone normas punitivas o no respeta los consensos del grupo. |
+| **Habilidades de Mediación y Diálogo Asertivo** | Aplica la escucha activa y el diálogo constructivo para mediar diferencias entre compañeros, fomentando la empatía y la reconciliación. | Participa con respeto en las asambleas y acata los acuerdos pactados. | Muestra dificultad para dialogar pacíficamente ante desacuerdos. |
 
 ---
 
-## 🛠️ V. Recursos y Materiales Didácticos
-- Libros de Texto Gratuitos Oficiales de la SEP asignados con páginas y dinámicas.
-- Materiales manipulables y de indagación escolar.
-- Evidencia final del proyecto: **Muestra Científica Escolar con experimentos en vivo, prototipos demostrativos, infografías explicativas y bitácoras de campo detalladas.**.
+## 🛠️ VI. Recursos y Materiales Didácticos
+- Libros de Texto Gratuitos Oficiales de la SEP asignados con páginas específicas y dinámicas formativas.
+- Materiales manipulables y de indagación comunitaria.
+- Evidencia final del proyecto: **Realización de la "Asamblea Escolar de la Convivencia y la Paz", con aprobación del Decálogo de Aula, instalación de carteles interactivos de mediación de conflictos y firma de compromisos colectivos.**.
 
 ---
 *Documento Curricular Oficial generado para ISkool • Bóveda Central de Conocimiento.*

@@ -9,220 +9,223 @@ campo_formativo: "Saberes y Pensamiento Científico"
 tema: "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio"
 duracion: "10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)"
 ejes_articuladores: ["Pensamiento Crítico", "Inclusión", "Vida Saludable", "Apropiación de las Culturas a través de la Lectura y la Escritura"]
-producto_integrador: "Muestra Científica Escolar con experimentos en vivo, prototipos demostrativos, infografías explicativas y bitácoras de campo detalladas."
-fecha_elaboracion: "25 de agosto de 2026"
-created_at: "25 de agosto de 2026"
-updated_at: "25 de agosto de 2026"
+producto_integrador: "Coloquio estudiantil "Voces y Debates sobre Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio" con ponencias argumentadas, revista digital facsimilar y podcast de divulgación histórica comunitaria."
+fecha_elaboracion: "2 de septiembre de 2026"
+created_at: "2 de septiembre de 2026"
+updated_at: "2 de septiembre de 2026"
 ---
 
 # 📚 Proyecto Didáctico Integral: Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio
 
-> **Docente Titular:** [[Prof_Israel_Lopez_Angeles|Prof. Israel López Ángeles]]
-> **Nivel y Fase:** SECUNDARIA • Fase 6 (2º de Secundaria)
-> **Campo Formativo:** Saberes y Pensamiento Científico
-> **Asignatura:** General
-> **Temporalidad:** 10 sesiones de 50 minutos (Total: 500 min)
-> **Producto Central Integrador:** *Muestra Científica Escolar con experimentos en vivo, prototipos demostrativos, infografías explicativas y bitácoras de campo detalladas.*
-> **Índice Curricular:** [[00_Indice_Maestro_Boveda_Curricular|Bóveda Curricular Central]]
+> **Docente Titular:** [[Prof_Israel_Lopez_Angeles|Prof. Israel López Ángeles]]  
+> **Nivel y Fase:** SECUNDARIA • Fase 6 (2º de Secundaria)  
+> **Campo Formativo:** Saberes y Pensamiento Científico  
+> **Asignatura:** General  
+> **Temporalidad:** 10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)  
+> **Producto Central Integrador:** *Coloquio estudiantil "Voces y Debates sobre Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio" con ponencias argumentadas, revista digital facsimilar y podcast de divulgación histórica comunitaria.*  
+> **Índice Curricular:** [[00_Indice_Maestro_Boveda_Curricular|Bóveda Curricular Central]]  
 
 ---
 
 ## 🎯 I. Proceso de Desarrollo de Aprendizaje (PDA Principal)
 
 ```yaml
-PDA: "Modela situaciones y fenómenos reales relacionados con 'Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio' mediante expresiones algebraicas, gráficas, funciones y contrastación experimental de laboratorio."
+PDA: "Indaga el ciclo hidrológico, las propiedades físicas del agua y diseña prototipos de filtración y captación pluvial para el cuidado hídrico en la escuela."
 ```
 
 ### 🔗 Articulación Curricular con otros Campos Formativos:
-**1. Saberes y Pensamiento Científico (Secundaria - Fase 6):**
-- *PDA:* Modela situaciones y fenómenos reales relacionados con "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio" mediante expresiones algebraicas, gráficas, funciones y contrastación experimental de laboratorio.
-- *Vínculo formativo:* Rigor cuantitativo, formulación de modelos matemáticos y leyes científicas fundamentales.
+**1. Lenguajes (Divulgación Científica):**
+- *PDA:* Elabora bitácoras de campo, infografías y carteles ilustrados para divulgar hallazgos científicos y promover la educación ambiental en la escuela.
+- *Vínculo formativo:* Redacción de textos explicativos, síntesis de datos experimentales y comunicación visual asertiva.
 
-**2. Lenguajes (Español / Lengua Extranjera):**
-- *PDA:* Produce ensayos académicos, artículos de divulgación y participa en mesas redondas formales sobre "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio" con rigor metodológico y citas textuales.
-- *Vínculo formativo:* Argumentación crítica avanzada, dialéctica y divulgación del conocimiento científico.
+**2. Ética, Naturaleza y Sociedades:**
+- *PDA:* Evalúa el impacto de las actividades humanas en los ecosistemas locales y propone acuerdos comunitarios para la conservación del entorno y la sustentabilidad.
+- *Vínculo formativo:* Conciencia ecológica bioética, justicia ambiental y defensa del derecho a un medio ambiente sano.
 
-**3. Ética, Naturaleza y Sociedades:**
-- *PDA:* Analiza críticamente las causas estructurales, históricas y éticas de las problemáticas socioambientales ligadas a "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio".
-- *Vínculo formativo:* Conciencia histórica crítica, geopolítica, sostenibilidad y justicia social transformadora.
-
-**4. De lo Humano y lo Comunitario:**
-- *PDA:* Diseña prototipos tecnológicos y propuestas productivas comunitarias orientadas a la innovación y el proyecto de vida en torno a "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio".
-- *Vínculo formativo:* Innovación técnica, vocación productiva, salud integral y proyecto de vida.
+**3. De lo Humano y lo Comunitario:**
+- *PDA:* Organiza brigadas escolares para el mantenimiento del huerto, el ahorro de agua y la adopción de estilos de vida saludables en su comunidad.
+- *Vínculo formativo:* Responsabilidad social compartida, vida saludable y trabajo comunitario transformador.
 
 ---
 
 ## 🏘️ II. Diagnóstico Comunitario y Propuesta de Proyecto Integrador
 
-**Problemática Situada:**
-Necesidad de fomentar la curiosidad científica, la indagación sistemática y la aplicación de saberes escolares para entender y transformar fenómenos relacionados con "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio".
+**Problemática Situada:**  
+Necesidad de examinar críticamente las contradicciones estructurales, los proyectos de nación en disputa y el grado de cumplimiento de los derechos sociales vinculados a "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio" en el México actual.
 
-**Propósito del Proyecto:**
-Diseñar y ejecutar una investigación experimental y de campo que culmine en prototipos funcionales y propuestas sustentables para la comunidad.
+**Propósito del Proyecto:**  
+Desarrollar una investigación historiográfica rigurosa que culmine en un simposio académico estudiantil y la publicación de una revista histórica digital para la comunidad (Colección Ximhai / MCCEMS).
 
-**Impacto Social y Transformador:**
-Promueve el pensamiento científico, la resolución de problemas locales y la participación ciudadana informada.
+**Impacto Social y Transformador:**  
+Fomenta la conciencia histórica transformadora, la cultura de la legalidad y el compromiso cívico de la juventud con su entorno sociopolítico.
 
 ---
 
-## 📅 III. Secuencia Didáctica Completa (Dosificación en 10 Bloques de 50 Minutos)
+## ❓ III. Preguntas Detonadoras para el Salón (Apertura y Conflicto Cognitivo)
+1. ¿Qué contradicciones socioeconómicas territoriales y disputas ideológicas determinaron el desarrollo y desenlace de "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio"?
+2. ¿De qué forma las fuentes primarias facsimilares y los debates historiográficos contemporáneos desmienten las versiones oficiales lineales sobre "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio"?
+3. ¿Qué demandas históricas de justicia social, soberanía y democracia consagradas en esa época siguen siendo retos vigentes en el México del siglo XXI?
 
-### 📌 SESIÓN 1 (50 minutos): Planteamiento del Problema, Conflicto Cognitivo y Formulación de Hipótesis sobre "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio"
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Presentación de una discrepancia experimental o dilema socio-científico real. Los estudiantes formulan preguntas de indagación e hipótesis contrastables.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): En equipos de trabajo colaborativo, delimitan las variables del problema, diseñan el plan de experimentación o investigación documental y revisan fuentes científicas.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Plenaria de validación de hipótesis ante el grupo y retroalimentación metodológica del docente.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Cuáles son las variables dependientes e independientes que intervienen en el fenómeno de "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio"?
-  2. ¿Qué evidencias empíricas necesitamos para validar o refutar nuestras hipótesis iniciales?
-- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades Secundaria (Págs. 62 a la 64) — *Historia crítica de México, derechos humanos y soberanía*
-- **📦 Materiales:** Cuaderno de laboratorio / bitácora científica, Guía de diseño experimental, Artículos de divulgación
-- **📄 Entregable de la Sesión:** 📄 Protocolo de Investigación #1: Formulación del problema, variables e hipótesis de trabajo.
+---
 
-### 📌 SESIÓN 2 (50 minutos): Indagación en Textos Disciplinares SEP y Contrastación Teórica
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Activación teórica y apertura de los libros de texto de la SEP (Saberes Disciplinares / Lenguajes).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Análisis crítico de lecturas científicas o históricas oficiales. Elaboración de diagramas de flujo, tablas de datos o cuadros comparativos en el cuaderno.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Síntesis grupal mediante organizadores gráficos digitales o en pizarrón.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué leyes, principios o hechos históricos explican con rigor el fenómeno de "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio"?
-  2. ¿Cómo contrastan estos hallazgos con las ideas previas del equipo?
-- **📖 Libro de Texto SEP:** De lo Humano y lo Comunitario Secundaria (Págs. 46 a la 48) — *Tecnología, proyectos productivos, educación socioemocional y salud*
-- **📦 Materiales:** Libros de texto gratuitos SEP de Secundaria, Fichas de trabajo analítico, Calculadora / regla
-- **📄 Entregable de la Sesión:** 📄 Ficha Teórica #2: Cuadro comparativo y síntesis analítica con citas bibliográficas oficiales.
+## 📅 IV. Secuencia Didáctica Completa (Dosificación en 10 Bloques de 50 Minutos)
 
-### 📌 SESIÓN 3 (50 minutos): Indagación en Textos Disciplinares SEP y Contrastación Teórica
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Activación teórica y apertura de los libros de texto de la SEP (Saberes Disciplinares / Lenguajes).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Análisis crítico de lecturas científicas o históricas oficiales. Elaboración de diagramas de flujo, tablas de datos o cuadros comparativos en el cuaderno.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Síntesis grupal mediante organizadores gráficos digitales o en pizarrón.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué leyes, principios o hechos históricos explican con rigor el fenómeno de "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio"?
-  2. ¿Cómo contrastan estos hallazgos con las ideas previas del equipo?
-- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades Secundaria (Págs. 66 a la 68) — *Historia crítica de México, derechos humanos y soberanía*
-- **📦 Materiales:** Libros de texto gratuitos SEP de Secundaria, Fichas de trabajo analítico, Calculadora / regla
-- **📄 Entregable de la Sesión:** 📄 Ficha Teórica #2: Cuadro comparativo y síntesis analítica con citas bibliográficas oficiales.
+### 📌 SESIÓN 1 (50 minutos): Planteamiento del Problema Sociocrítico y Delimitación Científica de "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio"
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Presentación de un caso de estudio real o discrepancia conceptual sobre "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio". Debate inicial en plenaria guiado con preguntas de conflicto cognitivo.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): En mesas de trabajo analíticas, los estudiantes delimitan el problema de investigación, formulan hipótesis sustentadas y diseñan una matriz de análisis de fuentes.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Síntesis metodológica. Cada mesa expone su hipótesis de trabajo y se registran los acuerdos en la bitácora científica.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Cuáles son los factores estructurales que originan las problemáticas en torno a "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio"?  
+  2. ¿Qué metodología de investigación nos permitirá contrastar nuestras hipótesis con rigor?
+- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades 1º de Secundaria (Geografía) (Págs. 56 a la 58) — *Espacio geográfico, recursos naturales y sustentabilidad*
+- **📦 Materiales:** Artículos científicos o fuentes primarias, Matriz de análisis documental, Bitácora de investigación
+- **📄 Entregable de la Sesión:** 📄 Protocolo de Indagación #1: Planteamiento del problema, hipótesis formuladas y justificación comunitaria.
 
-### 📌 SESIÓN 4 (50 minutos): Indagación en Textos Disciplinares SEP y Contrastación Teórica
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Activación teórica y apertura de los libros de texto de la SEP (Saberes Disciplinares / Lenguajes).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Análisis crítico de lecturas científicas o históricas oficiales. Elaboración de diagramas de flujo, tablas de datos o cuadros comparativos en el cuaderno.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Síntesis grupal mediante organizadores gráficos digitales o en pizarrón.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué leyes, principios o hechos históricos explican con rigor el fenómeno de "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio"?
-  2. ¿Cómo contrastan estos hallazgos con las ideas previas del equipo?
+### 📌 SESIÓN 2 (50 minutos): Análisis de Fuentes Primarias, Modelación Cuantitativa y Libros SEP
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Recuperación de saberes previos y orientación para el análisis crítico de textos y datos estadísticos en libros de la SEP.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Análisis riguroso de fuentes documentales, gráficas, ecuaciones o modelos conceptuales. Los estudiantes contrastan autores y formulan conclusiones preliminares sustentadas.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Ronda de preguntas socráticas para evaluar el nivel de profundidad analítica alcanzado.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué inconsistencias o consensos encontramos entre las distintas fuentes analizadas?  
+  2. ¿Cómo fundamentamos con datos cuantitativos o citas textuales nuestras afirmaciones?
+- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades 2º de Secundaria (Historia) (Págs. 80 a la 82) — *México prehispánico, virreinato e independencia nacional*
+- **📦 Materiales:** Libros de texto gratuitos SEP de Secundaria, Gráficas estadísticas o modelos matemáticos, Fichas de trabajo analíticas
+- **📄 Entregable de la Sesión:** 📄 Reporte Analítico #2: Cuadro comparativo de fuentes, análisis de datos y fichas de síntesis crítica.
+
+### 📌 SESIÓN 3 (50 minutos): Experimentación en Laboratorio / Taller de Prototipado y Modelación
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Verificación de protocolos de seguridad y calibración de instrumentos para el experimento o simulación.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, desarrollo de modelos algebraicos/geométricos o ensamblaje de prototipos funcionales vinculados a "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio". Registro sistemático de variables.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Discusión de resultados experimentales y control de márgenes de error.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿De qué manera los resultados empíricos validan o refutan las hipótesis iniciales?  
+  2. ¿Qué variables influyeron en el comportamiento del modelo o prototipo?
+- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades 3º de Secundaria (Historia y FCE) (Págs. 124 a la 126) — *Revolución Mexicana, democracia, derechos humanos y estado de derecho*
+- **📦 Materiales:** Instrumental de laboratorio / materiales de prototipado, Hojas de registro de datos experimentales
+- **📄 Entregable de la Sesión:** 📄 Reporte Experimental #3: Gráficas de resultados, análisis de variables y memoria técnica del prototipo.
+
+### 📌 SESIÓN 4 (50 minutos): Experimentación en Laboratorio / Taller de Prototipado y Modelación
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Verificación de protocolos de seguridad y calibración de instrumentos para el experimento o simulación.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, desarrollo de modelos algebraicos/geométricos o ensamblaje de prototipos funcionales vinculados a "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio". Registro sistemático de variables.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Discusión de resultados experimentales y control de márgenes de error.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿De qué manera los resultados empíricos validan o refutan las hipótesis iniciales?  
+  2. ¿Qué variables influyeron en el comportamiento del modelo o prototipo?
 - **📖 Libro de Texto SEP:** De lo Humano y lo Comunitario Secundaria (Págs. 50 a la 52) — *Tecnología, proyectos productivos, educación socioemocional y salud*
-- **📦 Materiales:** Libros de texto gratuitos SEP de Secundaria, Fichas de trabajo analítico, Calculadora / regla
-- **📄 Entregable de la Sesión:** 📄 Ficha Teórica #2: Cuadro comparativo y síntesis analítica con citas bibliográficas oficiales.
+- **📦 Materiales:** Instrumental de laboratorio / materiales de prototipado, Hojas de registro de datos experimentales
+- **📄 Entregable de la Sesión:** 📄 Reporte Experimental #3: Gráficas de resultados, análisis de variables y memoria técnica del prototipo.
 
-### 📌 SESIÓN 5 (50 minutos): Práctica de Laboratorio / Taller de Modelación Cuantitativa y Experimental
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Verificación de normas de seguridad, preparación de instrumentos o ecuaciones de modelado.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, toma de lecturas, tabulación de datos y modelado algebraico/gráfico de los resultados.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Análisis de posibles fuentes de error experimental y validación cruzada con otros equipos.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué comportamiento matemático o físico describen los datos obtenidos en la práctica?
-  2. ¿Qué correlación existe entre las variables analizadas?
-- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades Secundaria (Págs. 70 a la 72) — *Historia crítica de México, derechos humanos y soberanía*
-- **📦 Materiales:** Instrumental de laboratorio o simuladores digitales, Hojas de tabulación milimétricas, Bitácora
-- **📄 Entregable de la Sesión:** 📄 Reporte de Práctica #3: Tabulación rigurosa de datos, gráficas de comportamiento y análisis cuantitativo.
+### 📌 SESIÓN 5 (50 minutos): Experimentación en Laboratorio / Taller de Prototipado y Modelación
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Verificación de protocolos de seguridad y calibración de instrumentos para el experimento o simulación.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, desarrollo de modelos algebraicos/geométricos o ensamblaje de prototipos funcionales vinculados a "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio". Registro sistemático de variables.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Discusión de resultados experimentales y control de márgenes de error.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿De qué manera los resultados empíricos validan o refutan las hipótesis iniciales?  
+  2. ¿Qué variables influyeron en el comportamiento del modelo o prototipo?
+- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades 1º de Secundaria (Geografía) (Págs. 64 a la 66) — *Espacio geográfico, recursos naturales y sustentabilidad*
+- **📦 Materiales:** Instrumental de laboratorio / materiales de prototipado, Hojas de registro de datos experimentales
+- **📄 Entregable de la Sesión:** 📄 Reporte Experimental #3: Gráficas de resultados, análisis de variables y memoria técnica del prototipo.
 
-### 📌 SESIÓN 6 (50 minutos): Práctica de Laboratorio / Taller de Modelación Cuantitativa y Experimental (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Verificación de normas de seguridad, preparación de instrumentos o ecuaciones de modelado.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, toma de lecturas, tabulación de datos y modelado algebraico/gráfico de los resultados.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Análisis de posibles fuentes de error experimental y validación cruzada con otros equipos.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué comportamiento matemático o físico describen los datos obtenidos en la práctica?
-  2. ¿Qué correlación existe entre las variables analizadas?
-- **📖 Libro de Texto SEP:** De lo Humano y lo Comunitario Secundaria (Págs. 54 a la 56) — *Tecnología, proyectos productivos, educación socioemocional y salud*
-- **📦 Materiales:** Instrumental de laboratorio o simuladores digitales, Hojas de tabulación milimétricas, Bitácora
-- **📄 Entregable de la Sesión:** 📄 Reporte de Práctica #3: Tabulación rigurosa de datos, gráficas de comportamiento y análisis cuantitativo.
-
-### 📌 SESIÓN 7 (50 minutos): Mesa Redonda, Debate Crítico y Coevaluación Técnica (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal y asignación de posturas o moderación.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Debate estructurado con argumentación fundamentada sobre las implicaciones éticas, sociales o tecnológicas de "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio". Coevaluación con rúbrica técnica.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Conclusiones consensuadas y redacción del posicionamiento ético del grupo.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?
+### 📌 SESIÓN 6 (50 minutos): Mesa Redonda / Debate Crítico Argumentativo entre Facciones o Posturas (Fase de Profundización y Taller Práctico - Parte 2)
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal: turnos de réplica, uso del tiempo y respeto a la diversidad ideológica.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Realización del debate argumentativo. Los equipos defienden posturas fundamentadas con evidencias científicas, históricas o éticas sobre "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio".
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Dictamen de conclusiones por el comité relator y reflexión sobre la construcción democrática del conocimiento.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?  
   2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio"?
-- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades Secundaria (Págs. 74 a la 76) — *Historia crítica de México, derechos humanos y soberanía*
+- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades 2º de Secundaria (Historia) (Págs. 88 a la 90) — *México prehispánico, virreinato e independencia nacional*
 - **📦 Materiales:** Rúbricas técnicas de evaluación entre pares, Guiones de argumentación
 - **📄 Entregable de la Sesión:** 📄 Acta de Debate y Rúbrica de Coevaluación con argumentos fundamentados.
 
-### 📌 SESIÓN 8 (50 minutos): Mesa Redonda, Debate Crítico y Coevaluación Técnica (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal y asignación de posturas o moderación.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Debate estructurado con argumentación fundamentada sobre las implicaciones éticas, sociales o tecnológicas de "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio". Coevaluación con rúbrica técnica.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Conclusiones consensuadas y redacción del posicionamiento ético del grupo.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?
+### 📌 SESIÓN 7 (50 minutos): Mesa Redonda / Debate Crítico Argumentativo entre Facciones o Posturas (Fase de Profundización y Taller Práctico - Parte 2)
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal: turnos de réplica, uso del tiempo y respeto a la diversidad ideológica.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Realización del debate argumentativo. Los equipos defienden posturas fundamentadas con evidencias científicas, históricas o éticas sobre "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio".
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Dictamen de conclusiones por el comité relator y reflexión sobre la construcción democrática del conocimiento.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?  
+  2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio"?
+- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades 3º de Secundaria (Historia y FCE) (Págs. 132 a la 134) — *Revolución Mexicana, democracia, derechos humanos y estado de derecho*
+- **📦 Materiales:** Rúbricas técnicas de evaluación entre pares, Guiones de argumentación
+- **📄 Entregable de la Sesión:** 📄 Acta de Debate y Rúbrica de Coevaluación con argumentos fundamentados.
+
+### 📌 SESIÓN 8 (50 minutos): Mesa Redonda / Debate Crítico Argumentativo entre Facciones o Posturas (Fase de Profundización y Taller Práctico - Parte 2)
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal: turnos de réplica, uso del tiempo y respeto a la diversidad ideológica.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Realización del debate argumentativo. Los equipos defienden posturas fundamentadas con evidencias científicas, históricas o éticas sobre "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio".
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Dictamen de conclusiones por el comité relator y reflexión sobre la construcción democrática del conocimiento.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?  
   2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio"?
 - **📖 Libro de Texto SEP:** De lo Humano y lo Comunitario Secundaria (Págs. 46 a la 48) — *Tecnología, proyectos productivos, educación socioemocional y salud*
 - **📦 Materiales:** Rúbricas técnicas de evaluación entre pares, Guiones de argumentación
 - **📄 Entregable de la Sesión:** 📄 Acta de Debate y Rúbrica de Coevaluación con argumentos fundamentados.
 
-### 📌 SESIÓN 9 (50 minutos): Mesa Redonda, Debate Crítico y Coevaluación Técnica (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal y asignación de posturas o moderación.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Debate estructurado con argumentación fundamentada sobre las implicaciones éticas, sociales o tecnológicas de "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio". Coevaluación con rúbrica técnica.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Conclusiones consensuadas y redacción del posicionamiento ético del grupo.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?
+### 📌 SESIÓN 9 (50 minutos): Mesa Redonda / Debate Crítico Argumentativo entre Facciones o Posturas (Fase de Profundización y Taller Práctico - Parte 2)
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal: turnos de réplica, uso del tiempo y respeto a la diversidad ideológica.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Realización del debate argumentativo. Los equipos defienden posturas fundamentadas con evidencias científicas, históricas o éticas sobre "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio".
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Dictamen de conclusiones por el comité relator y reflexión sobre la construcción democrática del conocimiento.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?  
   2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio"?
-- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades Secundaria (Págs. 62 a la 64) — *Historia crítica de México, derechos humanos y soberanía*
+- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades 1º de Secundaria (Geografía) (Págs. 56 a la 58) — *Espacio geográfico, recursos naturales y sustentabilidad*
 - **📦 Materiales:** Rúbricas técnicas de evaluación entre pares, Guiones de argumentación
 - **📄 Entregable de la Sesión:** 📄 Acta de Debate y Rúbrica de Coevaluación con argumentos fundamentados.
 
 ### 📌 SESIÓN 10 (50 minutos): Coloquio Estudiantil de Ciencias y Humanidades: Defensa del Proyecto y Evaluación (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Apertura solemne del Coloquio Académico Escolar ante la comunidad y docentes invitados.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): Exposición oral en atril con apoyo de diapositivas o stands demostrativos. Ronda de preguntas y respuestas técnicas.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Evaluación sumativa y formativa con rúbrica analítica oficial y retroalimentación docente.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿De qué manera nuestro proyecto contribuye a resolver un problema real de la comunidad?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿De qué manera nuestro proyecto contribuye a resolver un problema real de la comunidad?  
   2. ¿Qué competencias científicas y comunicativas consolidamos durante el proceso?
-- **📖 Libro de Texto SEP:** De lo Humano y lo Comunitario Secundaria (Págs. 50 a la 52) — *Tecnología, proyectos productivos, educación socioemocional y salud*
+- **📖 Libro de Texto SEP:** Ética, Naturaleza y Sociedades 2º de Secundaria (Historia) (Págs. 80 a la 82) — *México prehispánico, virreinato e independencia nacional*
 - **📦 Materiales:** Proyector o stands de exposición, Rúbricas analíticas oficiales, Prototipos terminados
 - **📄 Entregable de la Sesión:** 🏆 Producto Final de Secundaria: Reporte formal de investigación, prototipo funcional evaluado y sustentación oral.
 
 ---
 
-## 📊 IV. Rúbrica Analítica Formativa de Evaluación (NEM 2024)
+## 📊 V. Rúbrica Analítica Formativa de Evaluación (NEM 2024)
 
 | Criterio Pedagógico | Nivel Sobresaliente (3 pts) | Nivel Satisfactorio (2 pts) | Nivel En Proceso (1 pt) |
 | :--- | :--- | :--- | :--- |
-| **Metodología de Indagación y Rigor Conceptual** | Plantea hipótesis claras, registra datos experimentales con precisión y formula conclusiones sólidas basadas en evidencia. | Sigue los pasos del método experimental y presenta resultados ordenados. | El registro de datos es incompleto o las conclusiones carecen de sustento. |
-| **Calidad del Prototipo y Presentación Visual** | El prototipo es funcional, seguro, creativo y está acompañado de infografías científicas de alta calidad. | El prototipo funciona adecuadamente y los apoyos visuales son claros. | El prototipo no funciona o la presentación visual es descuidada. |
-| **Divulgación Científica y Comunicación Oral** | Comunica conceptos científicos complejos con sencillez, elocuencia y dominio ante audiencias diversas. | Explica su experimento con claridad y vocabulario científico adecuado. | Dificultad para explicar el funcionamiento o la utilidad de su investigación. |
+| **Rigor Historiográfico y Aparato Crítico** | Analiza fuentes primarias y secundarias con metodología historiográfica rigurosa, citando fuentes documentales y contrastando corrientes interpretativas sobre "Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio". | Sustenta su ensayo histórico con bibliografía adecuada y argumentos estructurados. | Carece de aparato crítico o muestra sesgo sin sustento documental. |
+| **Discurso Argumentativo y Ponencia Académica** | Defiende su tesis con dominio oratorio, solvencia conceptual y capacidad dialéctica en el simposio ante la comunidad. | Expone su ponencia con fluidez y responde a las preguntas del panel adecuadamente. | Lectura plana del texto sin interacción ni profundidad argumentativa. |
+| **Compromiso Ético y Propuestas de Incidencia Social** | Formula propuestas concretas de incidencia cívica vinculando los ideales históricos con la justicia social contemporánea. | Relaciona adecuadamente el tema histórico con la realidad comunitaria actual. | No logra vincular el análisis histórico con el contexto presente. |
 
 ---
 
-## 🛠️ V. Recursos y Materiales Didácticos
-- Libros de Texto Gratuitos Oficiales de la SEP asignados con páginas y dinámicas.
-- Materiales manipulables y de indagación escolar.
-- Evidencia final del proyecto: **Muestra Científica Escolar con experimentos en vivo, prototipos demostrativos, infografías explicativas y bitácoras de campo detalladas.**.
+## 🛠️ VI. Recursos y Materiales Didácticos
+- Libros de Texto Gratuitos Oficiales de la SEP asignados con páginas específicas y dinámicas formativas.
+- Materiales manipulables y de indagación comunitaria.
+- Evidencia final del proyecto: **Coloquio estudiantil "Voces y Debates sobre Soberanía Inquebrantable: El 5 de Mayo de 1862, la Resistencia Republicana y el Segundo Imperio" con ponencias argumentadas, revista digital facsimilar y podcast de divulgación histórica comunitaria.**.
 
 ---
 *Documento Curricular Oficial generado para ISkool • Bóveda Central de Conocimiento.*

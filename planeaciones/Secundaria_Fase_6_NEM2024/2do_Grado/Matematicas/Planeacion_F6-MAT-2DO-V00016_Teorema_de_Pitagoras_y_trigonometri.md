@@ -6,223 +6,226 @@ fase_nem: "Fase 6"
 grado: "2º de Secundaria"
 asignatura: "Matematicas"
 campo_formativo: "Saberes y Pensamiento Científico"
-tema: "Teorema de Pitágoras y trigonometría básica - Variante 16 (Fronterizo e Intercultural)"
+tema: "Teorema de Pitágoras y trigonometría básica"
 duracion: "10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)"
 ejes_articuladores: ["Pensamiento Crítico", "Inclusión", "Vida Saludable", "Apropiación de las Culturas a través de la Lectura y la Escritura"]
-producto_integrador: "Feria de Retos y Juegos Matemáticos con estaciones interactivas, modelos manipulables y guía de resolución de problemas elaborada por los estudiantes."
-fecha_elaboracion: "25 de agosto de 2026"
-created_at: "25 de agosto de 2026"
-updated_at: "25 de agosto de 2026"
+producto_integrador: "Simulación del "Mercado Cooperativo Escolar" con puestos de productos, lista de precios calculada por los alumnos, billetes y monedas didácticas, libro de contabilidad escolar y guía de compra inteligente para las familias."
+fecha_elaboracion: "2 de septiembre de 2026"
+created_at: "2 de septiembre de 2026"
+updated_at: "2 de septiembre de 2026"
 ---
 
-# 📚 Proyecto Didáctico Integral: Teorema de Pitágoras y trigonometría básica - Variante 16 (Fronterizo e Intercultural)
+# 📚 Proyecto Didáctico Integral: Teorema de Pitágoras y trigonometría básica
 
-> **Docente Titular:** [[Prof_Israel_Lopez_Angeles|Prof. Israel López Ángeles]]
-> **Nivel y Fase:** SECUNDARIA • Fase 6 (2º de Secundaria)
-> **Campo Formativo:** Saberes y Pensamiento Científico
-> **Asignatura:** Matematicas
-> **Temporalidad:** 10 sesiones de 50 minutos (Total: 500 min)
-> **Producto Central Integrador:** *Feria de Retos y Juegos Matemáticos con estaciones interactivas, modelos manipulables y guía de resolución de problemas elaborada por los estudiantes.*
-> **Índice Curricular:** [[00_Indice_Maestro_Boveda_Curricular|Bóveda Curricular Central]]
+> **Docente Titular:** [[Prof_Israel_Lopez_Angeles|Prof. Israel López Ángeles]]  
+> **Nivel y Fase:** SECUNDARIA • Fase 6 (2º de Secundaria)  
+> **Campo Formativo:** Saberes y Pensamiento Científico  
+> **Asignatura:** Matematicas  
+> **Temporalidad:** 10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)  
+> **Producto Central Integrador:** *Simulación del "Mercado Cooperativo Escolar" con puestos de productos, lista de precios calculada por los alumnos, billetes y monedas didácticas, libro de contabilidad escolar y guía de compra inteligente para las familias.*  
+> **Índice Curricular:** [[00_Indice_Maestro_Boveda_Curricular|Bóveda Curricular Central]]  
 
 ---
 
 ## 🎯 I. Proceso de Desarrollo de Aprendizaje (PDA Principal)
 
 ```yaml
-PDA: "Modela situaciones y fenómenos reales relacionados con 'Teorema de Pitágoras y trigonometría básica - Variante 16 (Fronterizo e Intercultural)' mediante expresiones algebraicas, gráficas, funciones y contrastación experimental de laboratorio."
+PDA: "Modela situaciones y fenómenos reales relacionados con "Teorema de Pitágoras y trigonometría básica" mediante expresiones algebraicas, gráficas, funciones y contrastación experimental de laboratorio."
 ```
 
 ### 🔗 Articulación Curricular con otros Campos Formativos:
-**1. Saberes y Pensamiento Científico (Secundaria - Fase 6):**
-- *PDA:* Modela situaciones y fenómenos reales relacionados con "Teorema de Pitágoras y trigonometría básica - Variante 16 (Fronterizo e Intercultural)" mediante expresiones algebraicas, gráficas, funciones y contrastación experimental de laboratorio.
-- *Vínculo formativo:* Rigor cuantitativo, formulación de modelos matemáticos y leyes científicas fundamentales.
-
-**2. Lenguajes (Español / Lengua Extranjera):**
-- *PDA:* Produce ensayos académicos, artículos de divulgación y participa en mesas redondas formales sobre "Teorema de Pitágoras y trigonometría básica - Variante 16 (Fronterizo e Intercultural)" con rigor metodológico y citas textuales.
+**1. Lenguajes (Español / Lengua Extranjera):**
+- *PDA:* Produce ensayos académicos, artículos de divulgación y participa en mesas redondas formales sobre "Teorema de Pitágoras y trigonometría básica" con rigor metodológico y citas textuales.
 - *Vínculo formativo:* Argumentación crítica avanzada, dialéctica y divulgación del conocimiento científico.
 
-**3. Ética, Naturaleza y Sociedades:**
-- *PDA:* Analiza críticamente las causas estructurales, históricas y éticas de las problemáticas socioambientales ligadas a "Teorema de Pitágoras y trigonometría básica - Variante 16 (Fronterizo e Intercultural)".
+**2. Ética, Naturaleza y Sociedades:**
+- *PDA:* Analiza críticamente las causas estructurales, históricas y éticas de las problemáticas socioambientales ligadas a "Teorema de Pitágoras y trigonometría básica".
 - *Vínculo formativo:* Conciencia histórica crítica, geopolítica, sostenibilidad y justicia social transformadora.
 
-**4. De lo Humano y lo Comunitario:**
-- *PDA:* Diseña prototipos tecnológicos y propuestas productivas comunitarias orientadas a la innovación y el proyecto de vida en torno a "Teorema de Pitágoras y trigonometría básica - Variante 16 (Fronterizo e Intercultural)".
+**3. De lo Humano y lo Comunitario:**
+- *PDA:* Diseña prototipos tecnológicos y propuestas productivas comunitarias orientadas a la innovación y el proyecto de vida en torno a "Teorema de Pitágoras y trigonometría básica".
 - *Vínculo formativo:* Innovación técnica, vocación productiva, salud integral y proyecto de vida.
 
 ---
 
 ## 🏘️ II. Diagnóstico Comunitario y Propuesta de Proyecto Integrador
 
-**Problemática Situada:**
-Los estudiantes requieren fortalecer el razonamiento lógico-matemático aplicado a situaciones de la vida real relacionadas con "Teorema de Pitágoras y trigonometría básica - Variante 16 (Fronterizo e Intercultural)" para resolver retos del entorno.
+**Problemática Situada:**  
+Los estudiantes requieren fortalecer el cálculo mental, la comprensión del valor posicional del dinero y el desarrollo de hábitos de consumo responsable y finanzas solidarias en torno a "Teorema de Pitágoras y trigonometría básica".
 
-**Propósito del Proyecto:**
-Aplicar conceptos matemáticos, cálculo y modelación para diseñar soluciones cuantitativas y juegos didácticos interactivos.
+**Propósito del Proyecto:**  
+Diseñar e instalar una tiendita escolar cooperativa utilizando billetes y monedas didácticos para resolver problemas de adición, sustracción, cálculo de cambio y presupuesto familiar (Libro SEP: Nuestros Saberes / Proyectos de Aula).
 
-**Impacto Social y Transformador:**
-Desmitifica el aprendizaje de las matemáticas, haciéndolo lúdico, accesible y relevante para toda la comunidad escolar.
+**Impacto Social y Transformador:**  
+Fomenta la educación financiera temprana, el comercio justo, el consumo de alimentos locales y el ahorro familiar responsable.
 
 ---
 
-## 📅 III. Secuencia Didáctica Completa (Dosificación en 10 Bloques de 50 Minutos)
+## ❓ III. Preguntas Detonadoras para el Salón (Apertura y Conflicto Cognitivo)
+1. ¿Cómo se modelan matemáticamente los presupuestos, el valor del dinero en el tiempo y el interés en proyectos socioeconómicos comunitarios sobre "Teorema de Pitágoras y trigonometría básica"?
+2. ¿Qué indicadores estadísticos nos permiten evaluar la rentabilidad social y el balance costo-beneficio en una iniciativa productiva escolar?
+3. ¿De qué forma el razonamiento cuantitativo y la educación financiera previenen el consumo desmedido y promueven la economía solidaria?
 
-### 📌 SESIÓN 1 (50 minutos): Planteamiento del Problema, Conflicto Cognitivo y Formulación de Hipótesis sobre "Teorema de Pitágoras y trigonometría básica - Variante 16 (Fronterizo e Intercultural)"
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Presentación de una discrepancia experimental o dilema socio-científico real. Los estudiantes formulan preguntas de indagación e hipótesis contrastables.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): En equipos de trabajo colaborativo, delimitan las variables del problema, diseñan el plan de experimentación o investigación documental y revisan fuentes científicas.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Plenaria de validación de hipótesis ante el grupo y retroalimentación metodológica del docente.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Cuáles son las variables dependientes e independientes que intervienen en el fenómeno de "Teorema de Pitágoras y trigonometría básica - Variante 16 (Fronterizo e Intercultural)"?
-  2. ¿Qué evidencias empíricas necesitamos para validar o refutar nuestras hipótesis iniciales?
-- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Matemáticas (1º, 2º y 3º Secundaria) (Págs. 84 a la 86) — *Álgebra, funciones lineales y cuadráticas, teorema de Pitágoras y probabilidad*
-- **📦 Materiales:** Cuaderno de laboratorio / bitácora científica, Guía de diseño experimental, Artículos de divulgación
-- **📄 Entregable de la Sesión:** 📄 Protocolo de Investigación #1: Formulación del problema, variables e hipótesis de trabajo.
+---
 
-### 📌 SESIÓN 2 (50 minutos): Indagación en Textos Disciplinares SEP y Contrastación Teórica
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Activación teórica y apertura de los libros de texto de la SEP (Saberes Disciplinares / Lenguajes).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Análisis crítico de lecturas científicas o históricas oficiales. Elaboración de diagramas de flujo, tablas de datos o cuadros comparativos en el cuaderno.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Síntesis grupal mediante organizadores gráficos digitales o en pizarrón.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué leyes, principios o hechos históricos explican con rigor el fenómeno de "Teorema de Pitágoras y trigonometría básica - Variante 16 (Fronterizo e Intercultural)"?
-  2. ¿Cómo contrastan estos hallazgos con las ideas previas del equipo?
-- **📖 Libro de Texto SEP:** Colección Ximhai / Sk’asolil Matemáticas Secundaria (Págs. 138 a la 140) — *Modelación algebraica y resolución de problemas situados*
-- **📦 Materiales:** Libros de texto gratuitos SEP de Secundaria, Fichas de trabajo analítico, Calculadora / regla
-- **📄 Entregable de la Sesión:** 📄 Ficha Teórica #2: Cuadro comparativo y síntesis analítica con citas bibliográficas oficiales.
+## 📅 IV. Secuencia Didáctica Completa (Dosificación en 10 Bloques de 50 Minutos)
 
-### 📌 SESIÓN 3 (50 minutos): Indagación en Textos Disciplinares SEP y Contrastación Teórica
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Activación teórica y apertura de los libros de texto de la SEP (Saberes Disciplinares / Lenguajes).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Análisis crítico de lecturas científicas o históricas oficiales. Elaboración de diagramas de flujo, tablas de datos o cuadros comparativos en el cuaderno.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Síntesis grupal mediante organizadores gráficos digitales o en pizarrón.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué leyes, principios o hechos históricos explican con rigor el fenómeno de "Teorema de Pitágoras y trigonometría básica - Variante 16 (Fronterizo e Intercultural)"?
-  2. ¿Cómo contrastan estos hallazgos con las ideas previas del equipo?
-- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Matemáticas (1º, 2º y 3º Secundaria) (Págs. 88 a la 90) — *Álgebra, funciones lineales y cuadráticas, teorema de Pitágoras y probabilidad*
-- **📦 Materiales:** Libros de texto gratuitos SEP de Secundaria, Fichas de trabajo analítico, Calculadora / regla
-- **📄 Entregable de la Sesión:** 📄 Ficha Teórica #2: Cuadro comparativo y síntesis analítica con citas bibliográficas oficiales.
+### 📌 SESIÓN 1 (50 minutos): Planteamiento del Problema Sociocrítico y Delimitación Científica de "Teorema de Pitágoras y trigonometría básica"
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Presentación de un caso de estudio real o discrepancia conceptual sobre "Teorema de Pitágoras y trigonometría básica". Debate inicial en plenaria guiado con preguntas de conflicto cognitivo.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): En mesas de trabajo analíticas, los estudiantes delimitan el problema de investigación, formulan hipótesis sustentadas y diseñan una matriz de análisis de fuentes.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Síntesis metodológica. Cada mesa expone su hipótesis de trabajo y se registran los acuerdos en la bitácora científica.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Cuáles son los factores estructurales que originan las problemáticas en torno a "Teorema de Pitágoras y trigonometría básica"?  
+  2. ¿Qué metodología de investigación nos permitirá contrastar nuestras hipótesis con rigor?
+- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Matemáticas 1º de Secundaria (Págs. 84 a la 86) — *Álgebra, ecuaciones lineales, proporcionalidad y geometría*
+- **📦 Materiales:** Artículos científicos o fuentes primarias, Matriz de análisis documental, Bitácora de investigación
+- **📄 Entregable de la Sesión:** 📄 Protocolo de Indagación #1: Planteamiento del problema, hipótesis formuladas y justificación comunitaria.
 
-### 📌 SESIÓN 4 (50 minutos): Indagación en Textos Disciplinares SEP y Contrastación Teórica
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Activación teórica y apertura de los libros de texto de la SEP (Saberes Disciplinares / Lenguajes).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Análisis crítico de lecturas científicas o históricas oficiales. Elaboración de diagramas de flujo, tablas de datos o cuadros comparativos en el cuaderno.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Síntesis grupal mediante organizadores gráficos digitales o en pizarrón.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué leyes, principios o hechos históricos explican con rigor el fenómeno de "Teorema de Pitágoras y trigonometría básica - Variante 16 (Fronterizo e Intercultural)"?
-  2. ¿Cómo contrastan estos hallazgos con las ideas previas del equipo?
-- **📖 Libro de Texto SEP:** Colección Ximhai / Sk’asolil Matemáticas Secundaria (Págs. 142 a la 144) — *Modelación algebraica y resolución de problemas situados*
-- **📦 Materiales:** Libros de texto gratuitos SEP de Secundaria, Fichas de trabajo analítico, Calculadora / regla
-- **📄 Entregable de la Sesión:** 📄 Ficha Teórica #2: Cuadro comparativo y síntesis analítica con citas bibliográficas oficiales.
+### 📌 SESIÓN 2 (50 minutos): Análisis de Fuentes Primarias, Modelación Cuantitativa y Libros SEP
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Recuperación de saberes previos y orientación para el análisis crítico de textos y datos estadísticos en libros de la SEP.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Análisis riguroso de fuentes documentales, gráficas, ecuaciones o modelos conceptuales. Los estudiantes contrastan autores y formulan conclusiones preliminares sustentadas.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Ronda de preguntas socráticas para evaluar el nivel de profundidad analítica alcanzado.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué inconsistencias o consensos encontramos entre las distintas fuentes analizadas?  
+  2. ¿Cómo fundamentamos con datos cuantitativos o citas textuales nuestras afirmaciones?
+- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Matemáticas 2º de Secundaria (Págs. 114 a la 116) — *Sistemas de ecuaciones, teorema de Pitágoras y probabilidad*
+- **📦 Materiales:** Libros de texto gratuitos SEP de Secundaria, Gráficas estadísticas o modelos matemáticos, Fichas de trabajo analíticas
+- **📄 Entregable de la Sesión:** 📄 Reporte Analítico #2: Cuadro comparativo de fuentes, análisis de datos y fichas de síntesis crítica.
 
-### 📌 SESIÓN 5 (50 minutos): Práctica de Laboratorio / Taller de Modelación Cuantitativa y Experimental
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Verificación de normas de seguridad, preparación de instrumentos o ecuaciones de modelado.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, toma de lecturas, tabulación de datos y modelado algebraico/gráfico de los resultados.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Análisis de posibles fuentes de error experimental y validación cruzada con otros equipos.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué comportamiento matemático o físico describen los datos obtenidos en la práctica?
-  2. ¿Qué correlación existe entre las variables analizadas?
-- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Matemáticas (1º, 2º y 3º Secundaria) (Págs. 92 a la 94) — *Álgebra, funciones lineales y cuadráticas, teorema de Pitágoras y probabilidad*
-- **📦 Materiales:** Instrumental de laboratorio o simuladores digitales, Hojas de tabulación milimétricas, Bitácora
-- **📄 Entregable de la Sesión:** 📄 Reporte de Práctica #3: Tabulación rigurosa de datos, gráficas de comportamiento y análisis cuantitativo.
+### 📌 SESIÓN 3 (50 minutos): Experimentación en Laboratorio / Taller de Prototipado y Modelación
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Verificación de protocolos de seguridad y calibración de instrumentos para el experimento o simulación.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, desarrollo de modelos algebraicos/geométricos o ensamblaje de prototipos funcionales vinculados a "Teorema de Pitágoras y trigonometría básica". Registro sistemático de variables.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Discusión de resultados experimentales y control de márgenes de error.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿De qué manera los resultados empíricos validan o refutan las hipótesis iniciales?  
+  2. ¿Qué variables influyeron en el comportamiento del modelo o prototipo?
+- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Matemáticas 3º de Secundaria (Págs. 140 a la 142) — *Funciones cuadráticas, trigonometría y modelación matemática*
+- **📦 Materiales:** Instrumental de laboratorio / materiales de prototipado, Hojas de registro de datos experimentales
+- **📄 Entregable de la Sesión:** 📄 Reporte Experimental #3: Gráficas de resultados, análisis de variables y memoria técnica del prototipo.
 
-### 📌 SESIÓN 6 (50 minutos): Práctica de Laboratorio / Taller de Modelación Cuantitativa y Experimental (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Verificación de normas de seguridad, preparación de instrumentos o ecuaciones de modelado.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, toma de lecturas, tabulación de datos y modelado algebraico/gráfico de los resultados.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Análisis de posibles fuentes de error experimental y validación cruzada con otros equipos.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué comportamiento matemático o físico describen los datos obtenidos en la práctica?
-  2. ¿Qué correlación existe entre las variables analizadas?
-- **📖 Libro de Texto SEP:** Colección Ximhai / Sk’asolil Matemáticas Secundaria (Págs. 146 a la 148) — *Modelación algebraica y resolución de problemas situados*
-- **📦 Materiales:** Instrumental de laboratorio o simuladores digitales, Hojas de tabulación milimétricas, Bitácora
-- **📄 Entregable de la Sesión:** 📄 Reporte de Práctica #3: Tabulación rigurosa de datos, gráficas de comportamiento y análisis cuantitativo.
+### 📌 SESIÓN 4 (50 minutos): Experimentación en Laboratorio / Taller de Prototipado y Modelación
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Verificación de protocolos de seguridad y calibración de instrumentos para el experimento o simulación.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, desarrollo de modelos algebraicos/geométricos o ensamblaje de prototipos funcionales vinculados a "Teorema de Pitágoras y trigonometría básica". Registro sistemático de variables.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Discusión de resultados experimentales y control de márgenes de error.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿De qué manera los resultados empíricos validan o refutan las hipótesis iniciales?  
+  2. ¿Qué variables influyeron en el comportamiento del modelo o prototipo?
+- **📖 Libro de Texto SEP:** Colección Ximhai: Matemáticas Secundaria (Págs. 146 a la 148) — *Modelación algebraica y resolución de problemas situados*
+- **📦 Materiales:** Instrumental de laboratorio / materiales de prototipado, Hojas de registro de datos experimentales
+- **📄 Entregable de la Sesión:** 📄 Reporte Experimental #3: Gráficas de resultados, análisis de variables y memoria técnica del prototipo.
 
-### 📌 SESIÓN 7 (50 minutos): Mesa Redonda, Debate Crítico y Coevaluación Técnica (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal y asignación de posturas o moderación.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Debate estructurado con argumentación fundamentada sobre las implicaciones éticas, sociales o tecnológicas de "Teorema de Pitágoras y trigonometría básica - Variante 16 (Fronterizo e Intercultural)". Coevaluación con rúbrica técnica.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Conclusiones consensuadas y redacción del posicionamiento ético del grupo.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?
-  2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "Teorema de Pitágoras y trigonometría básica - Variante 16 (Fronterizo e Intercultural)"?
-- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Matemáticas (1º, 2º y 3º Secundaria) (Págs. 96 a la 98) — *Álgebra, funciones lineales y cuadráticas, teorema de Pitágoras y probabilidad*
+### 📌 SESIÓN 5 (50 minutos): Experimentación en Laboratorio / Taller de Prototipado y Modelación
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Verificación de protocolos de seguridad y calibración de instrumentos para el experimento o simulación.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Ejecución de la práctica experimental, desarrollo de modelos algebraicos/geométricos o ensamblaje de prototipos funcionales vinculados a "Teorema de Pitágoras y trigonometría básica". Registro sistemático de variables.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Discusión de resultados experimentales y control de márgenes de error.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿De qué manera los resultados empíricos validan o refutan las hipótesis iniciales?  
+  2. ¿Qué variables influyeron en el comportamiento del modelo o prototipo?
+- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Matemáticas 1º de Secundaria (Págs. 92 a la 94) — *Álgebra, ecuaciones lineales, proporcionalidad y geometría*
+- **📦 Materiales:** Instrumental de laboratorio / materiales de prototipado, Hojas de registro de datos experimentales
+- **📄 Entregable de la Sesión:** 📄 Reporte Experimental #3: Gráficas de resultados, análisis de variables y memoria técnica del prototipo.
+
+### 📌 SESIÓN 6 (50 minutos): Mesa Redonda / Debate Crítico Argumentativo entre Facciones o Posturas (Fase de Profundización y Taller Práctico - Parte 2)
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal: turnos de réplica, uso del tiempo y respeto a la diversidad ideológica.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Realización del debate argumentativo. Los equipos defienden posturas fundamentadas con evidencias científicas, históricas o éticas sobre "Teorema de Pitágoras y trigonometría básica".
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Dictamen de conclusiones por el comité relator y reflexión sobre la construcción democrática del conocimiento.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?  
+  2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "Teorema de Pitágoras y trigonometría básica"?
+- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Matemáticas 2º de Secundaria (Págs. 122 a la 124) — *Sistemas de ecuaciones, teorema de Pitágoras y probabilidad*
 - **📦 Materiales:** Rúbricas técnicas de evaluación entre pares, Guiones de argumentación
 - **📄 Entregable de la Sesión:** 📄 Acta de Debate y Rúbrica de Coevaluación con argumentos fundamentados.
 
-### 📌 SESIÓN 8 (50 minutos): Mesa Redonda, Debate Crítico y Coevaluación Técnica (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal y asignación de posturas o moderación.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Debate estructurado con argumentación fundamentada sobre las implicaciones éticas, sociales o tecnológicas de "Teorema de Pitágoras y trigonometría básica - Variante 16 (Fronterizo e Intercultural)". Coevaluación con rúbrica técnica.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Conclusiones consensuadas y redacción del posicionamiento ético del grupo.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?
-  2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "Teorema de Pitágoras y trigonometría básica - Variante 16 (Fronterizo e Intercultural)"?
-- **📖 Libro de Texto SEP:** Colección Ximhai / Sk’asolil Matemáticas Secundaria (Págs. 150 a la 152) — *Modelación algebraica y resolución de problemas situados*
+### 📌 SESIÓN 7 (50 minutos): Mesa Redonda / Debate Crítico Argumentativo entre Facciones o Posturas (Fase de Profundización y Taller Práctico - Parte 2)
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal: turnos de réplica, uso del tiempo y respeto a la diversidad ideológica.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Realización del debate argumentativo. Los equipos defienden posturas fundamentadas con evidencias científicas, históricas o éticas sobre "Teorema de Pitágoras y trigonometría básica".
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Dictamen de conclusiones por el comité relator y reflexión sobre la construcción democrática del conocimiento.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?  
+  2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "Teorema de Pitágoras y trigonometría básica"?
+- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Matemáticas 3º de Secundaria (Págs. 148 a la 150) — *Funciones cuadráticas, trigonometría y modelación matemática*
 - **📦 Materiales:** Rúbricas técnicas de evaluación entre pares, Guiones de argumentación
 - **📄 Entregable de la Sesión:** 📄 Acta de Debate y Rúbrica de Coevaluación con argumentos fundamentados.
 
-### 📌 SESIÓN 9 (50 minutos): Mesa Redonda, Debate Crítico y Coevaluación Técnica (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal y asignación de posturas o moderación.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Debate estructurado con argumentación fundamentada sobre las implicaciones éticas, sociales o tecnológicas de "Teorema de Pitágoras y trigonometría básica - Variante 16 (Fronterizo e Intercultural)". Coevaluación con rúbrica técnica.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Conclusiones consensuadas y redacción del posicionamiento ético del grupo.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?
-  2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "Teorema de Pitágoras y trigonometría básica - Variante 16 (Fronterizo e Intercultural)"?
-- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Matemáticas (1º, 2º y 3º Secundaria) (Págs. 84 a la 86) — *Álgebra, funciones lineales y cuadráticas, teorema de Pitágoras y probabilidad*
+### 📌 SESIÓN 8 (50 minutos): Mesa Redonda / Debate Crítico Argumentativo entre Facciones o Posturas (Fase de Profundización y Taller Práctico - Parte 2)
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal: turnos de réplica, uso del tiempo y respeto a la diversidad ideológica.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Realización del debate argumentativo. Los equipos defienden posturas fundamentadas con evidencias científicas, históricas o éticas sobre "Teorema de Pitágoras y trigonometría básica".
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Dictamen de conclusiones por el comité relator y reflexión sobre la construcción democrática del conocimiento.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?  
+  2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "Teorema de Pitágoras y trigonometría básica"?
+- **📖 Libro de Texto SEP:** Colección Ximhai: Matemáticas Secundaria (Págs. 154 a la 156) — *Modelación algebraica y resolución de problemas situados*
+- **📦 Materiales:** Rúbricas técnicas de evaluación entre pares, Guiones de argumentación
+- **📄 Entregable de la Sesión:** 📄 Acta de Debate y Rúbrica de Coevaluación con argumentos fundamentados.
+
+### 📌 SESIÓN 9 (50 minutos): Mesa Redonda / Debate Crítico Argumentativo entre Facciones o Posturas (Fase de Profundización y Taller Práctico - Parte 2)
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Establecimiento de las reglas del debate formal: turnos de réplica, uso del tiempo y respeto a la diversidad ideológica.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Realización del debate argumentativo. Los equipos defienden posturas fundamentadas con evidencias científicas, históricas o éticas sobre "Teorema de Pitágoras y trigonometría básica".
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Dictamen de conclusiones por el comité relator y reflexión sobre la construcción democrática del conocimiento.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué argumentos demostraron mayor solidez y rigor conceptual durante la discusión?  
+  2. ¿Cuál es la responsabilidad social de la ciencia y la tecnología en torno a "Teorema de Pitágoras y trigonometría básica"?
+- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Matemáticas 1º de Secundaria (Págs. 84 a la 86) — *Álgebra, ecuaciones lineales, proporcionalidad y geometría*
 - **📦 Materiales:** Rúbricas técnicas de evaluación entre pares, Guiones de argumentación
 - **📄 Entregable de la Sesión:** 📄 Acta de Debate y Rúbrica de Coevaluación con argumentos fundamentados.
 
 ### 📌 SESIÓN 10 (50 minutos): Coloquio Estudiantil de Ciencias y Humanidades: Defensa del Proyecto y Evaluación (Fase de Profundización y Taller Práctico - Parte 2)
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Apertura solemne del Coloquio Académico Escolar ante la comunidad y docentes invitados.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): Exposición oral en atril con apoyo de diapositivas o stands demostrativos. Ronda de preguntas y respuestas técnicas.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Evaluación sumativa y formativa con rúbrica analítica oficial y retroalimentación docente.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿De qué manera nuestro proyecto contribuye a resolver un problema real de la comunidad?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿De qué manera nuestro proyecto contribuye a resolver un problema real de la comunidad?  
   2. ¿Qué competencias científicas y comunicativas consolidamos durante el proceso?
-- **📖 Libro de Texto SEP:** Colección Ximhai / Sk’asolil Matemáticas Secundaria (Págs. 138 a la 140) — *Modelación algebraica y resolución de problemas situados*
+- **📖 Libro de Texto SEP:** Saberes y Pensamiento Científico: Matemáticas 2º de Secundaria (Págs. 114 a la 116) — *Sistemas de ecuaciones, teorema de Pitágoras y probabilidad*
 - **📦 Materiales:** Proyector o stands de exposición, Rúbricas analíticas oficiales, Prototipos terminados
 - **📄 Entregable de la Sesión:** 🏆 Producto Final de Secundaria: Reporte formal de investigación, prototipo funcional evaluado y sustentación oral.
 
 ---
 
-## 📊 IV. Rúbrica Analítica Formativa de Evaluación (NEM 2024)
+## 📊 V. Rúbrica Analítica Formativa de Evaluación (NEM 2024)
 
 | Criterio Pedagógico | Nivel Sobresaliente (3 pts) | Nivel Satisfactorio (2 pts) | Nivel En Proceso (1 pt) |
 | :--- | :--- | :--- | :--- |
-| **Precisión en Procedimientos y Cálculos Matemáticos** | Aplica algoritmos y razonamiento lógico sin errores, justificando con claridad cada paso de la solución. | Resuelve los problemas matemáticos correctamente con procedimientos comprensibles. | Presenta errores constantes de cálculo o dificultad para elegir la operación adecuada. |
-| **Diseño y Funcionalidad del Material Manipulable** | El material didáctico es innovador, resistente, estético y facilita la comprensión inmediata del concepto. | El material es funcional y permite resolver los retos de forma ordenada. | El material es frágil o confuso para los usuarios. |
-| **Conducción de la Estación y Mediación Lúdica** | Guía con paciencia, entusiasmo y claridad pedagógica a los participantes de su estación en la feria. | Explica las reglas del juego y acompaña a los participantes con amabilidad. | Muestra dificultad para explicar la dinámica o desinterés en la atención de su estación. |
+| **Cálculo de Precios, Operaciones y Cálculo de Cambio** | Realiza transacciones con exactitud, aplica estrategias de cálculo mental eficientes y calcula el cambio correspondiente con rapidez y sin errores. | Calcula totales y cambios de forma correcta apoyándose en el registro escrito o material manipulable. | Presenta dificultades para sumar cantidades monetarias o calcular el cambio exacto. |
+| **Organización del Puesto y Clasificación Numérica** | Etiqueta productos con claridad, organiza listas de precios ordenadas por valor y promueve productos sanos y sustentables. | Mantiene su puesto ordenado y con precios visibles para los compradores. | Los precios son confusos o el puesto presenta desorganización en los datos numéricos. |
+| **Atención al Cliente y Trabajo en Equipo** | Atiende con empatía, amabilidad y honestidad a los compradores, promoviendo el consumo ético y el ahorro solidario. | Colabora en la atención de su puesto y se comunica con respeto con los clientes. | Muestra desinterés en la atención de la tiendita o dificultad para trabajar con sus pares. |
 
 ---
 
-## 🛠️ V. Recursos y Materiales Didácticos
-- Libros de Texto Gratuitos Oficiales de la SEP asignados con páginas y dinámicas.
-- Materiales manipulables y de indagación escolar.
-- Evidencia final del proyecto: **Feria de Retos y Juegos Matemáticos con estaciones interactivas, modelos manipulables y guía de resolución de problemas elaborada por los estudiantes.**.
+## 🛠️ VI. Recursos y Materiales Didácticos
+- Libros de Texto Gratuitos Oficiales de la SEP asignados con páginas específicas y dinámicas formativas.
+- Materiales manipulables y de indagación comunitaria.
+- Evidencia final del proyecto: **Simulación del "Mercado Cooperativo Escolar" con puestos de productos, lista de precios calculada por los alumnos, billetes y monedas didácticas, libro de contabilidad escolar y guía de compra inteligente para las familias.**.
 
 ---
 *Documento Curricular Oficial generado para ISkool • Bóveda Central de Conocimiento.*

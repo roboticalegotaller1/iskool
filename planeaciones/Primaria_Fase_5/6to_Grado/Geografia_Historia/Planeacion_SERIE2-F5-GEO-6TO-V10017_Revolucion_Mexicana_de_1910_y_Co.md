@@ -6,223 +6,226 @@ fase_nem: "Fase 5"
 grado: "6º de Primaria"
 asignatura: "Geografia_Historia"
 campo_formativo: "Ética, Naturaleza y Sociedades"
-tema: "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)"
+tema: "Revolución Mexicana"
 duracion: "10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)"
 ejes_articuladores: ["Pensamiento Crítico", "Inclusión", "Vida Saludable", "Apropiación de las Culturas a través de la Lectura y la Escritura"]
-producto_integrador: "Muestra Científica Escolar con experimentos en vivo, prototipos demostrativos, infografías explicativas y bitácoras de campo detalladas."
-fecha_elaboracion: "25 de agosto de 2026"
-created_at: "25 de agosto de 2026"
-updated_at: "25 de agosto de 2026"
+producto_integrador: "Montaje del "Museo Viviente y Galería Histórica de Revolución Mexicana" en el patio escolar, con módulos atendidos por alumnos caracterizados, líneas de tiempo ilustradas, mapas de batallas o rutas y periódico facsimilar de época."
+fecha_elaboracion: "2 de septiembre de 2026"
+created_at: "2 de septiembre de 2026"
+updated_at: "2 de septiembre de 2026"
 ---
 
-# 📚 Proyecto Didáctico Integral: 🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)
+# 📚 Proyecto Didáctico Integral: Revolución Mexicana
 
-> **Docente Titular:** [[Prof_Israel_Lopez_Angeles|Prof. Israel López Ángeles]]
-> **Nivel y Fase:** PRIMARIA-ALTA • Fase 5 (6º de Primaria)
-> **Campo Formativo:** Ética, Naturaleza y Sociedades
-> **Asignatura:** Geografia_Historia
-> **Temporalidad:** 10 sesiones de 50 minutos (Total: 500 min)
-> **Producto Central Integrador:** *Muestra Científica Escolar con experimentos en vivo, prototipos demostrativos, infografías explicativas y bitácoras de campo detalladas.*
-> **Índice Curricular:** [[00_Indice_Maestro_Boveda_Curricular|Bóveda Curricular Central]]
+> **Docente Titular:** [[Prof_Israel_Lopez_Angeles|Prof. Israel López Ángeles]]  
+> **Nivel y Fase:** PRIMARIA-ALTA • Fase 5 (6º de Primaria)  
+> **Campo Formativo:** Ética, Naturaleza y Sociedades  
+> **Asignatura:** Geografia_Historia  
+> **Temporalidad:** 10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)  
+> **Producto Central Integrador:** *Montaje del "Museo Viviente y Galería Histórica de Revolución Mexicana" en el patio escolar, con módulos atendidos por alumnos caracterizados, líneas de tiempo ilustradas, mapas de batallas o rutas y periódico facsimilar de época.*  
+> **Índice Curricular:** [[00_Indice_Maestro_Boveda_Curricular|Bóveda Curricular Central]]  
 
 ---
 
 ## 🎯 I. Proceso de Desarrollo de Aprendizaje (PDA Principal)
 
 ```yaml
-PDA: "Elabora ensayos breves, reseñas críticas y participa en debates formales sobre '🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)', sustentando sus argumentos en fuentes confiables."
+PDA: "Analiza críticamente las causas del estallido de 1910, la promulgación de la Constitución de 1917 y la vigencia de las garantías sociales (Artículos 3º, 27 y 123) en el México actual."
 ```
 
 ### 🔗 Articulación Curricular con otros Campos Formativos:
 **1. Lenguajes (Primaria Alta - Fase 5):**
-- *PDA:* Elabora ensayos breves, reseñas críticas y participa en debates formales sobre "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)", sustentando sus argumentos en fuentes confiables.
-- *Vínculo formativo:* Pensamiento crítico discursivo, análisis literario e informativo y comunicación oral asertiva.
+- *PDA:* Elabora ensayos históricos, periódicos murales y debates fundamentados sobre las distintas corrientes ideológicas (maderismo, zapatismo, villismo y carrancismo) de la Revolución Mexicana.
+- *Vínculo formativo:* Pensamiento discursivo crítico, análisis de fuentes primarias y secundarias y argumentación oral rigurosa.
 
 **2. Saberes y Pensamiento Científico:**
-- *PDA:* Aplica modelos matemáticos (porcentajes, volumen, proporcionalidad) y el método experimental para investigar fenómenos asociados a "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)".
-- *Vínculo formativo:* Pensamiento probabilístico, pensamiento STEM y experimentación científica rigurosa.
+- *PDA:* Analiza censos poblacionales, variaciones porcentuales en la tenencia de la tierra y calcula proporciones socioeconómicas del México de 1910 en comparación con el presente.
+- *Vínculo formativo:* Aplicación de porcentajes, proporcionalidad y análisis cuantitativo de la realidad sociohistórica.
 
-**3. Ética, Naturaleza y Sociedades:**
-- *PDA:* Evalúa críticamente los procesos históricos y problemáticas ambientales vinculadas a "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)" a nivel nacional y global.
-- *Vínculo formativo:* Conciencia histórica de México, soberanía, sustentabilidad ecológica y derechos humanos.
-
-**4. De lo Humano y lo Comunitario:**
-- *PDA:* Lidera proyectos comunitarios colaborativos orientados a la salud integral y la equidad social en torno a "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)".
-- *Vínculo formativo:* Liderazgo transformador, resiliencia comunitaria y cultura de paz.
+**3. De lo Humano y lo Comunitario:**
+- *PDA:* Diseña propuestas comunitarias orientadas a la equidad, los derechos laborales y la erradicación de la discriminación, inspiradas en los ideales de justicia social.
+- *Vínculo formativo:* Liderazgo social transformador, empatía histórica y promoción de los derechos humanos.
 
 ---
 
 ## 🏘️ II. Diagnóstico Comunitario y Propuesta de Proyecto Integrador
 
-**Problemática Situada:**
-Necesidad de fomentar la curiosidad científica, la indagación sistemática y la aplicación de saberes escolares para entender y transformar fenómenos relacionados con "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)".
+**Problemática Situada:**  
+Los estudiantes requieren profundizar en el análisis crítico de las causas sociales, territoriales y humanas vinculadas a "Revolución Mexicana", valorando cómo las luchas del pasado forjaron los derechos cívicos y educativos de nuestra entidad.
 
-**Propósito del Proyecto:**
-Diseñar y ejecutar una investigación experimental y de campo que culmine en prototipos funcionales y propuestas sustentables para la comunidad.
+**Propósito del Proyecto:**  
+Analizar fuentes primarias (cartas, testimonios orales, mapas históricos) y libros de texto de la SEP (Proyectos Escolares y Cartografía de México) para montar estaciones interactivas del museo viviente escolar sobre "Revolución Mexicana".
 
-**Impacto Social y Transformador:**
-Promueve el pensamiento científico, la resolución de problemas locales y la participación ciudadana informada.
+**Impacto Social y Transformador:**  
+Sensibiliza a la comunidad escolar sobre la importancia de la memoria histórica, la justicia social y el cuidado de los derechos ciudadanos en el México contemporáneo.
 
 ---
 
-## 📅 III. Secuencia Didáctica Completa (Dosificación en 10 Bloques de 50 Minutos)
+## ❓ III. Preguntas Detonadoras para el Salón (Apertura y Conflicto Cognitivo)
+1. ¿Cuáles fueron las principales causas sociales, territoriales y de injusticia que impulsaron a las personas de nuestra entidad a participar en "Revolución Mexicana"?
+2. ¿Cómo nos ayuda el análisis de cartas, fotografías antiguas y testimonios en los libros de la SEP a distinguir lo que realmente sucedió de los mitos sobre "Revolución Mexicana"?
+3. ¿Qué derechos, libertades y leyes que hoy nos protegen en la escuela y en nuestra familia nacieron a partir de las luchas históricas de "Revolución Mexicana"?
 
-### 📌 SESIÓN 1 (50 minutos): Planteamiento del Reto Comunitario y Activación de Saberes sobre "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)"
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Dinámica detonadora "La Caja de Saberes". El docente plantea la pregunta central y conflicto cognitivo sobre "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)". Los alumnos comparten sus experiencias cotidianas y registran en el pizarrón lo que ya saben.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Exploración con material manipulable y organizadores gráficos en equipos de 4 alumnos. Cada equipo analiza una situación real vinculada a "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)" y elabora su primer registro diagnóstico.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Puesta en común de hallazgos iniciales. Cada equipo expresa en una frase su meta de aprendizaje. Registro individual en bitácora: "¿Qué descubrí hoy sobre 🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)?".
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿En qué momentos de nuestra vida cotidiana o en nuestra comunidad observamos o utilizamos "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)"?
-  2. ¿Qué problema podríamos resolver en la escuela o en casa si dominamos este conocimiento?
-- **📖 Libro de Texto SEP:** Cartografía de México y el Mundo (5º y 6º) (Págs. 42 a la 44) — *Dinámica poblacional, desastres naturales y sostenibilidad*
+---
+
+## 📅 IV. Secuencia Didáctica Completa (Dosificación en 10 Bloques de 50 Minutos)
+
+### 📌 SESIÓN 1 (50 minutos): Planteamiento del Reto Comunitario y Activación de Saberes sobre "Revolución Mexicana"
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Activación temática y exploración de saberes previos. El docente plantea la pregunta central y conflicto cognitivo sobre "Revolución Mexicana". Los alumnos comparten sus experiencias cotidianas y registran en el pizarrón lo que ya saben.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Exploración con material manipulable y organizadores gráficos en equipos de 4 alumnos. Cada equipo analiza una situación real vinculada a "Revolución Mexicana" y elabora su primer registro diagnóstico.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Puesta en común de hallazgos iniciales. Cada equipo expresa en una frase su meta de aprendizaje. Registro individual en bitácora: "¿Qué descubrí hoy sobre Revolución Mexicana?".
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿En qué momentos de nuestra vida cotidiana o en nuestra comunidad observamos situaciones sobre "Revolución Mexicana"?  
+  2. ¿Qué reto o problema podemos resolver en la escuela si investigamos este tema en equipo?
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 5º Grado (Págs. 192 a la 194) — *Proyecto Histórico: "Voces de la Revolución Mexicana y la Constitución de 1917" — Demandas agrarias, laborales, Artículo 3º y 123 y memoria histórica*
 - **📦 Materiales:** Papel bond blanco, Plumones de colores, Material concreto o interactivo, Cuaderno del alumno
-- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #1: Diagnóstico inicial de saberes previos y mapa mental grupal sobre "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)".
+- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #1: Diagnóstico inicial de saberes previos y mapa mental grupal sobre "Revolución Mexicana".
 
 ### 📌 SESIÓN 2 (50 minutos): Indagación Conceptual y Exploración Guiada en Libros de Texto SEP
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Breve retroalimentación mediante ruleta de preguntas rápidas y apertura del libro de texto gratuito de la SEP.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): Lectura guiada y analítica en el libro de texto oficial de la SEP. Los alumnos identifican conceptos clave, subrayan definiciones y resuelven en parejas las actividades formativas del libro.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Dinámica del "Semáforo del Aprendizaje" (Verde: comprendido, Amarillo: dudas, Rojo: apoyo). Aclaración de dudas en plenaria.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué conceptos nuevos aprendimos hoy en el libro de la SEP respecto a "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)"?
-  2. ¿Cómo se relacionan estas definiciones con los ejemplos que analizamos en la sesión anterior?
-- **📖 Libro de Texto SEP:** Nuestros Saberes 6º Grado (Págs. 90 a la 92) — *Ciudadanía global, derechos humanos y cultura de paz*
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué ideas y explicaciones nuevas encontramos hoy en el libro de la SEP respecto a "Revolución Mexicana"?  
+  2. ¿Cómo se relacionan estas lecturas con los ejemplos que observamos en nuestra comunidad?
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 5º Grado (Págs. 193 a la 195) — *Proyecto Histórico: "Voces de la Revolución Mexicana y la Constitución de 1917" — Demandas agrarias, laborales, Artículo 3º y 123 y memoria histórica*
 - **📦 Materiales:** Libro de texto gratuito SEP asignado, Colores y marcatextos, Cuaderno del alumno
 - **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #2: Resumen visual o mapa conceptual con las ideas clave extraídas del libro de la SEP.
 
-### 📌 SESIÓN 3 (50 minutos): Modelación Práctica y Estaciones de Trabajo Concreto / Experimental
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Presentación de los materiales de la sesión y asignación de roles en los equipos de trabajo (coordinador, relator, materiales, vocero).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Trabajo en estaciones rotativas de indagación y manipulación práctica. Los alumnos aplican procedimientos directos, tabulan datos o construyen representaciones tangibles sobre "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)".
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Síntesis grupal. El portavoz de una estación comparte los resultados y conclusiones obtenidas.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué estrategia fue la más eficiente para resolver los retos prácticos de las estaciones?
-  2. ¿Qué dificultades encontramos al aplicar el procedimiento y cómo las superamos?
-- **📖 Libro de Texto SEP:** Cartografía de México y el Mundo (5º y 6º) (Págs. 46 a la 48) — *Dinámica poblacional, desastres naturales y sostenibilidad*
-- **📦 Materiales:** Estaciones con material manipulable o instrumental didáctico, Hojas de registro
-- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #3: Hoja de registro de las estaciones con procedimientos, esquemas y conclusiones.
-
-### 📌 SESIÓN 4 (50 minutos): Resolución de Problemas Situados en el Contexto Escolar y Comunitario
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Planteamiento de una problemática real de la comunidad escolar vinculada a "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)".
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Trabajo en parejas para resolver 3 situaciones problemáticas contextualizadas paso a paso, justificando por escrito el razonamiento empleado.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Debate en plenaria sobre las diferentes rutas de solución y validación formativa por parte del docente.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Por qué existen diferentes formas de resolver el mismo problema sobre "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)"?
-  2. ¿Cuál es el método más claro para explicar tu respuesta a los demás?
-- **📖 Libro de Texto SEP:** Nuestros Saberes 6º Grado (Págs. 94 a la 96) — *Ciudadanía global, derechos humanos y cultura de paz*
+### 📌 SESIÓN 3 (50 minutos): Resolución de Problemas Situados en el Contexto Escolar y Comunitario
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Planteamiento de una problemática real de la comunidad escolar vinculada a "Revolución Mexicana".
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Trabajo en parejas para resolver situaciones problemáticas contextualizadas paso a paso, justificando por escrito el razonamiento empleado.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Puesta en común sobre las diferentes formas de resolver el reto y retroalimentación docente.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Por qué existen diferentes formas de resolver un mismo problema sobre "Revolución Mexicana"?  
+  2. ¿Cuál es la forma más clara de explicar nuestro razonamiento a los demás compañeros?
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 5º Grado (Págs. 195 a la 197) — *Proyecto Histórico: "Voces de la Revolución Mexicana y la Constitución de 1917" — Demandas agrarias, laborales, Artículo 3º y 123 y memoria histórica*
 - **📦 Materiales:** Cuaderno de trabajo, Hojas de problemas contextualizados, Lápiz y goma
 - **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #4: Resolución analítica y argumentada de los problemas comunitarios.
 
-### 📌 SESIÓN 5 (50 minutos): Organización de Información y Diseño del Primer Borrador del Proyecto
-- **⏱️ Inicio (10 min):**
+### 📌 SESIÓN 4 (50 minutos): Organización de Información y Diseño del Primer Borrador del Proyecto
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Presentación de la estructura del producto integrador intermedio y revisión de los criterios de calidad.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): En equipos, los alumnos estructuran el primer borrador de su producto integrador, organizando datos, textos, ilustraciones o maquetas.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Registro del porcentaje de avance en el termómetro del proyecto grupal.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué información clave no puede faltar en nuestro producto sobre "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)"?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué información clave no puede faltar en nuestro producto sobre "Revolución Mexicana"?  
   2. ¿Cómo organizamos los datos para que cualquier persona de la comunidad los entienda con claridad?
-- **📖 Libro de Texto SEP:** Cartografía de México y el Mundo (5º y 6º) (Págs. 50 a la 52) — *Dinámica poblacional, desastres naturales y sostenibilidad*
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 5º Grado (Págs. 196 a la 198) — *Proyecto Histórico: "Voces de la Revolución Mexicana y la Constitución de 1917" — Demandas agrarias, laborales, Artículo 3º y 123 y memoria histórica*
+- **📦 Materiales:** Cartulinas o pliegos de papel, Colores y reglas, Borradores de trabajo
+- **📄 Entregable de la Sesión:** 📄 Entregable Intermedio: Primer borrador estructurado del producto del proyecto con datos organizados.
+
+### 📌 SESIÓN 5 (50 minutos): Organización de Información y Diseño del Primer Borrador del Proyecto
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Presentación de la estructura del producto integrador intermedio y revisión de los criterios de calidad.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): En equipos, los alumnos estructuran el primer borrador de su producto integrador, organizando datos, textos, ilustraciones o maquetas.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Registro del porcentaje de avance en el termómetro del proyecto grupal.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué información clave no puede faltar en nuestro producto sobre "Revolución Mexicana"?  
+  2. ¿Cómo organizamos los datos para que cualquier persona de la comunidad los entienda con claridad?
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 5º Grado (Págs. 198 a la 200) — *Proyecto Histórico: "Voces de la Revolución Mexicana y la Constitución de 1917" — Demandas agrarias, laborales, Artículo 3º y 123 y memoria histórica*
 - **📦 Materiales:** Cartulinas o pliegos de papel, Colores y reglas, Borradores de trabajo
 - **📄 Entregable de la Sesión:** 📄 Entregable Intermedio: Primer borrador estructurado del producto del proyecto con datos organizados.
 
 ### 📌 SESIÓN 6 (50 minutos): Profundización Curricular y Vinculación Interdisciplinaria
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Conexión explícita con los campos formativos articulados (Lenguajes, Saberes, Ética y De lo Humano).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Actividad integradora que combina "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)" con la expresión artística, el análisis ético o la redacción formal de propuestas comunitarias.
-- **🌟 Cierre (10 min):**
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Actividad integradora que combina "Revolución Mexicana" con la expresión artística, el análisis ético o la redacción formal de propuestas comunitarias.
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Mini-exposición de 2 minutos por equipo destacando la conexión interdisciplinaria lograda.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Cómo nos ayuda este tema a ser más empáticos, solidarios o analíticos con nuestra comunidad?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Cómo nos ayuda este tema a ser más empáticos, solidarios o analíticos con nuestra comunidad?  
   2. ¿Qué otros conocimientos de la escuela se relacionan directamente con lo que estamos construyendo?
-- **📖 Libro de Texto SEP:** Nuestros Saberes 6º Grado (Págs. 98 a la 100) — *Ciudadanía global, derechos humanos y cultura de paz*
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 5º Grado (Págs. 199 a la 201) — *Proyecto Histórico: "Voces de la Revolución Mexicana y la Constitución de 1917" — Demandas agrarias, laborales, Artículo 3º y 123 y memoria histórica*
 - **📦 Materiales:** Material artístico / cartulinas, Textos informativos complementarios, Plumones
-- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #6: Producto interdisciplinario que vincula 🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales) con la vida comunitaria.
+- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #6: Producto interdisciplinario que vincula Revolución Mexicana con la vida comunitaria.
 
 ### 📌 SESIÓN 7 (50 minutos): Taller de Coevaluación entre Pares y Retroalimentación Formativa
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Explicación de la rúbrica analítica y de la importancia de la crítica constructiva entre compañeros basada en el respeto mutuo.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): Dinámica de intercambio de proyectos entre equipos ("Taller de Galería"). Cada equipo revisa el trabajo de otro equipo con una lista de cotejo constructiva.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Devolución de los trabajos con comentarios amables y claros para orientar la mejora.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué aprendimos al observar el trabajo de nuestros compañeros?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué aprendimos al observar el trabajo de nuestros compañeros?  
   2. ¿Cómo podemos mejorar la claridad y presentación de nuestro producto final?
-- **📖 Libro de Texto SEP:** Cartografía de México y el Mundo (5º y 6º) (Págs. 54 a la 56) — *Dinámica poblacional, desastres naturales y sostenibilidad*
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 5º Grado (Págs. 201 a la 203) — *Proyecto Histórico: "Voces de la Revolución Mexicana y la Constitución de 1917" — Demandas agrarias, laborales, Artículo 3º y 123 y memoria histórica*
 - **📦 Materiales:** Instrumentos de coevaluación impresos, Notas adhesivas de colores, Borradores de los proyectos
 - **📄 Entregable de la Sesión:** 📄 Instrumento de Coevaluación: Lista de cotejo con retroalimentación entre pares debidamente firmada.
 
 ### 📌 SESIÓN 8 (50 minutos): Ajuste, Corrección y Elaboración del Producto Final Tangible
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Revisión de las sugerencias recibidas en la coevaluación y asignación de tareas específicas para la versión definitiva.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): Sesión intensiva de producción final. Los alumnos aplican correcciones ortográficas, precisión en cálculos, orden estético y claridad en su producto entregable.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Verificación final de calidad con la rúbrica oficial antes de la entrega final. Visto bueno del docente.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué cambios hicimos en nuestro producto que lo hicieron más profesional y comprensible?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué cambios hicimos en nuestro producto que lo hicieron más claro y completo?  
   2. ¿Nos sentimos orgullosos del trabajo que vamos a presentar a la comunidad escolar?
-- **📖 Libro de Texto SEP:** Nuestros Saberes 6º Grado (Págs. 90 a la 92) — *Ciudadanía global, derechos humanos y cultura de paz*
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 5º Grado (Págs. 202 a la 204) — *Proyecto Histórico: "Voces de la Revolución Mexicana y la Constitución de 1917" — Demandas agrarias, laborales, Artículo 3º y 123 y memoria histórica*
 - **📦 Materiales:** Materiales finales de exposición (cartulinas, modelos, maquetas, sobres, trípticos), Tijeras, pegamento, plumones
 - **📄 Entregable de la Sesión:** 📄 Producto Final Terminado: Versión definitiva del proyecto didáctico lista para su exposición comunitaria.
 
-### 📌 SESIÓN 9 (50 minutos): Ensayo General y Preparación de la Socialización Comunitaria
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Organización del espacio del aula o patio escolar para la muestra pedagógica. Establecimiento de tiempos y turnos de presentación.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Simulación y ensayo de las exposiciones orales. Cada alumno practica su explicación con seguridad, lenguaje claro y uso de sus apoyos visuales y materiales concretos.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Ronda de recomendaciones finales y palabras de motivación para la presentación oficial.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Cómo podemos explicar conceptos de "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)" de manera sencilla para que cualquiera los entienda?
-  2. ¿Qué tono de voz y postura corporal transmiten seguridad y entusiasmo en nuestra presentación?
-- **📖 Libro de Texto SEP:** Cartografía de México y el Mundo (5º y 6º) (Págs. 42 a la 44) — *Dinámica poblacional, desastres naturales y sostenibilidad*
-- **📦 Materiales:** Guiones de exposición, Materiales de exhibición terminados, Espacio escolar acondicionado
-- **📄 Entregable de la Sesión:** 📄 Guion de Exposición: Ficha con los puntos clave que cada integrante explicará durante la muestra.
+### 📌 SESIÓN 9 (50 minutos): Ajuste, Corrección y Elaboración del Producto Final Tangible
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Revisión de las sugerencias recibidas en la coevaluación y asignación de tareas específicas para la versión definitiva.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Sesión intensiva de producción final. Los alumnos aplican correcciones ortográficas, precisión en cálculos, orden estético y claridad en su producto entregable.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Verificación final de calidad con la rúbrica oficial antes de la entrega final. Visto bueno del docente.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué cambios hicimos en nuestro producto que lo hicieron más claro y completo?  
+  2. ¿Nos sentimos orgullosos del trabajo que vamos a presentar a la comunidad escolar?
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 5º Grado (Págs. 204 a la 206) — *Proyecto Histórico: "Voces de la Revolución Mexicana y la Constitución de 1917" — Demandas agrarias, laborales, Artículo 3º y 123 y memoria histórica*
+- **📦 Materiales:** Materiales finales de exposición (cartulinas, modelos, maquetas, sobres, trípticos), Tijeras, pegamento, plumones
+- **📄 Entregable de la Sesión:** 📄 Producto Final Terminado: Versión definitiva del proyecto didáctico lista para su exposición comunitaria.
 
 ### 📌 SESIÓN 10 (50 minutos): Feria de Aprendizajes Comunitarios, Evaluación Formativa y Compromisos
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Bienvenida a la muestra de aprendizajes. Palabras de apertura por parte de los alumnos y del docente.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Presentación de la Feria de Aprendizajes ante compañeros de otros grupos, docentes o padres de familia. Demostración práctica de los conocimientos adquiridos sobre "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)".
-- **🌟 Cierre (10 min):**
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Presentación de la Feria de Aprendizajes ante compañeros de otros grupos, docentes o padres de familia. Demostración práctica de los conocimientos adquiridos sobre "Revolución Mexicana".
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Aplicación de la rúbrica analítica de autoevaluación final. Firma del "Árbol de Compromisos de Aprendizaje" y felicitación grupal.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Cuál fue el aprendizaje más significativo y transformador que obtuviste a lo largo de estas 10 sesiones?
-  2. ¿Cómo vas a seguir utilizando este conocimiento sobre "🚀 Proyecto de Codiseño Comunitario: Revolución Mexicana de 1910 y Constitución de 1917 - Modalidad Innovadora 17 (Zona Costera y de Humedales)" en tu vida diaria?
-- **📖 Libro de Texto SEP:** Nuestros Saberes 6º Grado (Págs. 94 a la 96) — *Ciudadanía global, derechos humanos y cultura de paz*
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Cuál fue el aprendizaje más valioso que obtuviste a lo largo de este proyecto?  
+  2. ¿Cómo vas a seguir utilizando lo que aprendiste sobre "Revolución Mexicana" en tu vida diaria?
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 5º Grado (Págs. 205 a la 207) — *Proyecto Histórico: "Voces de la Revolución Mexicana y la Constitución de 1917" — Demandas agrarias, laborales, Artículo 3º y 123 y memoria histórica*
 - **📦 Materiales:** Rúbricas analíticas individuales, Mural escolar de compromisos, Diplomas simbólicos o distintivos de logro
 - **📄 Entregable de la Sesión:** 🏆 Evidencia Final Integradora: Rúbrica analítica completada, bitácora del proyecto y registro de la feria comunitaria.
 
 ---
 
-## 📊 IV. Rúbrica Analítica Formativa de Evaluación (NEM 2024)
+## 📊 V. Rúbrica Analítica Formativa de Evaluación (NEM 2024)
 
 | Criterio Pedagógico | Nivel Sobresaliente (3 pts) | Nivel Satisfactorio (2 pts) | Nivel En Proceso (1 pt) |
 | :--- | :--- | :--- | :--- |
-| **Metodología de Indagación y Rigor Conceptual** | Plantea hipótesis claras, registra datos experimentales con precisión y formula conclusiones sólidas basadas en evidencia. | Sigue los pasos del método experimental y presenta resultados ordenados. | El registro de datos es incompleto o las conclusiones carecen de sustento. |
-| **Calidad del Prototipo y Presentación Visual** | El prototipo es funcional, seguro, creativo y está acompañado de infografías científicas de alta calidad. | El prototipo funciona adecuadamente y los apoyos visuales son claros. | El prototipo no funciona o la presentación visual es descuidada. |
-| **Divulgación Científica y Comunicación Oral** | Comunica conceptos científicos complejos con sencillez, elocuencia y dominio ante audiencias diversas. | Explica su experimento con claridad y vocabulario científico adecuado. | Dificultad para explicar el funcionamiento o la utilidad de su investigación. |
+| **Indagación Histórica y Manejo de Fuentes** | Contrasta información de libros SEP y testimonios orales, explicando con claridad causas, desarrollo y consecuencias de "Revolución Mexicana". | Identifica los acontecimientos y personajes principales apoyándose en las lecturas del libro de texto. | Presenta dificultades para ordenar cronológicamente los hechos o explicar sus causas. |
+| **Caracterización y Producción Museográfica** | Diseña cédulas museográficas impecables, vestuario de época representativo y periódicos facsimilares con alta creatividad y fidelidad histórica. | Elabora su material museográfico con orden, limpieza y datos históricos correctos. | El material es descuidado o contiene errores cronológicos notorios. |
+| **Conducción del Museo y Diálogo Cívico** | Explica con elocuencia, empatía y respeto su módulo a los visitantes, respondiendo dudas y vinculando los hechos con la vida actual. | Atiende su estación de forma adecuada y comparte lo aprendido con amabilidad. | Muestra timidez o dificultad para comunicar sus ideas ante el público. |
 
 ---
 
-## 🛠️ V. Recursos y Materiales Didácticos
-- Libros de Texto Gratuitos Oficiales de la SEP asignados con páginas y dinámicas.
-- Materiales manipulables y de indagación escolar.
-- Evidencia final del proyecto: **Muestra Científica Escolar con experimentos en vivo, prototipos demostrativos, infografías explicativas y bitácoras de campo detalladas.**.
+## 🛠️ VI. Recursos y Materiales Didácticos
+- Libros de Texto Gratuitos Oficiales de la SEP asignados con páginas específicas y dinámicas formativas.
+- Materiales manipulables y de indagación comunitaria.
+- Evidencia final del proyecto: **Montaje del "Museo Viviente y Galería Histórica de Revolución Mexicana" en el patio escolar, con módulos atendidos por alumnos caracterizados, líneas de tiempo ilustradas, mapas de batallas o rutas y periódico facsimilar de época.**.
 
 ---
 *Documento Curricular Oficial generado para ISkool • Bóveda Central de Conocimiento.*

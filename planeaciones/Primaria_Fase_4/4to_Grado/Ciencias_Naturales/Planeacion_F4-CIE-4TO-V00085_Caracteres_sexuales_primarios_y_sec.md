@@ -6,223 +6,226 @@ fase_nem: "Fase 5"
 grado: "4º de Primaria"
 asignatura: "Ciencias_Naturales"
 campo_formativo: "Saberes y Pensamiento Científico"
-tema: "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)"
+tema: "Caracteres sexuales primarios y secundarios en pubertad"
 duracion: "10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)"
 ejes_articuladores: ["Pensamiento Crítico", "Inclusión", "Vida Saludable", "Apropiación de las Culturas a través de la Lectura y la Escritura"]
-producto_integrador: "Muestra Científica Escolar con experimentos en vivo, prototipos demostrativos, infografías explicativas y bitácoras de campo detalladas."
-fecha_elaboracion: "25 de agosto de 2026"
-created_at: "25 de agosto de 2026"
-updated_at: "25 de agosto de 2026"
+producto_integrador: "Plaquette poética ilustrada y recital en vivo en el patio escolar con acompañamiento rítmico, micrófonos y declamación abierta a familias y docentes."
+fecha_elaboracion: "2 de septiembre de 2026"
+created_at: "2 de septiembre de 2026"
+updated_at: "2 de septiembre de 2026"
 ---
 
-# 📚 Proyecto Didáctico Integral: Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)
+# 📚 Proyecto Didáctico Integral: Caracteres sexuales primarios y secundarios en pubertad
 
-> **Docente Titular:** [[Prof_Israel_Lopez_Angeles|Prof. Israel López Ángeles]]
-> **Nivel y Fase:** PRIMARIA-ALTA • Fase 5 (4º de Primaria)
-> **Campo Formativo:** Saberes y Pensamiento Científico
-> **Asignatura:** Ciencias_Naturales
-> **Temporalidad:** 10 sesiones de 50 minutos (Total: 500 min)
-> **Producto Central Integrador:** *Muestra Científica Escolar con experimentos en vivo, prototipos demostrativos, infografías explicativas y bitácoras de campo detalladas.*
-> **Índice Curricular:** [[00_Indice_Maestro_Boveda_Curricular|Bóveda Curricular Central]]
+> **Docente Titular:** [[Prof_Israel_Lopez_Angeles|Prof. Israel López Ángeles]]  
+> **Nivel y Fase:** PRIMARIA-ALTA • Fase 5 (4º de Primaria)  
+> **Campo Formativo:** Saberes y Pensamiento Científico  
+> **Asignatura:** Ciencias_Naturales  
+> **Temporalidad:** 10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)  
+> **Producto Central Integrador:** *Plaquette poética ilustrada y recital en vivo en el patio escolar con acompañamiento rítmico, micrófonos y declamación abierta a familias y docentes.*  
+> **Índice Curricular:** [[00_Indice_Maestro_Boveda_Curricular|Bóveda Curricular Central]]  
 
 ---
 
 ## 🎯 I. Proceso de Desarrollo de Aprendizaje (PDA Principal)
 
 ```yaml
-PDA: "Elabora ensayos breves, reseñas críticas y participa en debates formales sobre 'Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)', sustentando sus argumentos en fuentes confiables."
+PDA: "Organiza la secuencia cronológica de los acontecimientos en una línea temporal y cuantifica elementos y personajes de los relatos populares."
 ```
 
 ### 🔗 Articulación Curricular con otros Campos Formativos:
-**1. Lenguajes (Primaria Alta - Fase 5):**
-- *PDA:* Elabora ensayos breves, reseñas críticas y participa en debates formales sobre "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)", sustentando sus argumentos en fuentes confiables.
-- *Vínculo formativo:* Pensamiento crítico discursivo, análisis literario e informativo y comunicación oral asertiva.
+**1. Lenguajes (Literatura y Tradición Oral):**
+- *PDA:* Lee, recrea y produce relatos, fábulas y leyendas locales identificando su estructura narrativa (inicio, desarrollo, nudo y desenlace), empleando signos de puntuación y descripciones detalladas.
+- *Vínculo formativo:* Comprensión lectora profunda, enriquecimiento del léxico y creación literaria autónoma.
 
-**2. Saberes y Pensamiento Científico:**
-- *PDA:* Aplica modelos matemáticos (porcentajes, volumen, proporcionalidad) y el método experimental para investigar fenómenos asociados a "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)".
-- *Vínculo formativo:* Pensamiento probabilístico, pensamiento STEM y experimentación científica rigurosa.
+**2. Ética, Naturaleza y Sociedades:**
+- *PDA:* Indaga con los adultos mayores los mitos y leyendas que explican el origen y la cosmovisión de su comunidad, reconociendo el valor del patrimonio cultural intangible.
+- *Vínculo formativo:* Rescate de la memoria comunitaria, respeto a la diversidad cultural y diálogo intergeneracional.
 
-**3. Ética, Naturaleza y Sociedades:**
-- *PDA:* Evalúa críticamente los procesos históricos y problemáticas ambientales vinculadas a "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)" a nivel nacional y global.
-- *Vínculo formativo:* Conciencia histórica de México, soberanía, sustentabilidad ecológica y derechos humanos.
-
-**4. De lo Humano y lo Comunitario:**
-- *PDA:* Lidera proyectos comunitarios colaborativos orientados a la salud integral y la equidad social en torno a "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)".
-- *Vínculo formativo:* Liderazgo transformador, resiliencia comunitaria y cultura de paz.
+**3. De lo Humano y lo Comunitario:**
+- *PDA:* Dramatiza cuentos y fábulas en equipo, asumiendo roles con empatía y reflexionando sobre las moralejas y valores de solidaridad y respeto.
+- *Vínculo formativo:* Expresión corporal, desarrollo socioemocional y trabajo cooperativo sin exclusión.
 
 ---
 
 ## 🏘️ II. Diagnóstico Comunitario y Propuesta de Proyecto Integrador
 
-**Problemática Situada:**
-Necesidad de fomentar la curiosidad científica, la indagación sistemática y la aplicación de saberes escolares para entender y transformar fenómenos relacionados con "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)".
+**Problemática Situada:**  
+Escaso acercamiento de los estudiantes al lenguaje poético, el ritmo métrico y los recursos sonoros del idioma en su vida cotidiana escolar.
 
-**Propósito del Proyecto:**
-Diseñar y ejecutar una investigación experimental y de campo que culmine en prototipos funcionales y propuestas sustentables para la comunidad.
+**Propósito del Proyecto:**  
+Explorar la lírica tradicional mexicana (calaveritas, coplas, rondas, décimas) y crear poemas originales para un recital escolar poético (Libro SEP: Múltiples Lenguajes / Proyectos Escolares).
 
-**Impacto Social y Transformador:**
-Promueve el pensamiento científico, la resolución de problemas locales y la participación ciudadana informada.
+**Impacto Social y Transformador:**  
+Enriquece la sensibilidad estética, el vocabulario poético y fortalece la autoestima oral y la apreciación de la lírica tradicional mexicana.
 
 ---
 
-## 📅 III. Secuencia Didáctica Completa (Dosificación en 10 Bloques de 50 Minutos)
+## ❓ III. Preguntas Detonadoras para el Salón (Apertura y Conflicto Cognitivo)
+1. ¿Cómo utilizamos la rima consonante, el conteo de sílabas y las metáforas para darle musicalidad a nuestros versos sobre "Caracteres sexuales primarios y secundarios en pubertad"?
+2. ¿Qué diferencia existe entre un texto escrito en prosa y un poema estructurado en versos y estrofas?
+3. ¿De qué manera la declamación poética nos ayuda a vencer la timidez y comunicar emociones profundas ante nuestra comunidad?
 
-### 📌 SESIÓN 1 (50 minutos): Planteamiento del Reto Comunitario y Activación de Saberes sobre "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)"
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Dinámica detonadora "La Caja de Saberes". El docente plantea la pregunta central y conflicto cognitivo sobre "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)". Los alumnos comparten sus experiencias cotidianas y registran en el pizarrón lo que ya saben.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Exploración con material manipulable y organizadores gráficos en equipos de 4 alumnos. Cada equipo analiza una situación real vinculada a "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)" y elabora su primer registro diagnóstico.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Puesta en común de hallazgos iniciales. Cada equipo expresa en una frase su meta de aprendizaje. Registro individual en bitácora: "¿Qué descubrí hoy sobre Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)?".
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿En qué momentos de nuestra vida cotidiana o en nuestra comunidad observamos o utilizamos "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)"?
-  2. ¿Qué problema podríamos resolver en la escuela o en casa si dominamos este conocimiento?
-- **📖 Libro de Texto SEP:** Nuestros Saberes 5º y 6º Grado (Págs. 118 a la 120) — *Sistemas del cuerpo humano, biodiversidad y energías limpias*
+---
+
+## 📅 IV. Secuencia Didáctica Completa (Dosificación en 10 Bloques de 50 Minutos)
+
+### 📌 SESIÓN 1 (50 minutos): Planteamiento del Reto Comunitario y Activación de Saberes sobre "Caracteres sexuales primarios y secundarios en pubertad"
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Activación temática y exploración de saberes previos. El docente plantea la pregunta central y conflicto cognitivo sobre "Caracteres sexuales primarios y secundarios en pubertad". Los alumnos comparten sus experiencias cotidianas y registran en el pizarrón lo que ya saben.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Exploración con material manipulable y organizadores gráficos en equipos de 4 alumnos. Cada equipo analiza una situación real vinculada a "Caracteres sexuales primarios y secundarios en pubertad" y elabora su primer registro diagnóstico.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Puesta en común de hallazgos iniciales. Cada equipo expresa en una frase su meta de aprendizaje. Registro individual en bitácora: "¿Qué descubrí hoy sobre Caracteres sexuales primarios y secundarios en pubertad?".
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿En qué momentos de nuestra vida cotidiana o en nuestra comunidad observamos situaciones sobre "Caracteres sexuales primarios y secundarios en pubertad"?  
+  2. ¿Qué reto o problema podemos resolver en la escuela si investigamos este tema en equipo?
+- **📖 Libro de Texto SEP:** Nuestros Saberes 6º Grado (Págs. 118 a la 120) — *Circuitos eléctricos, conductores, energía y biodiversidad*
 - **📦 Materiales:** Papel bond blanco, Plumones de colores, Material concreto o interactivo, Cuaderno del alumno
-- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #1: Diagnóstico inicial de saberes previos y mapa mental grupal sobre "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)".
+- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #1: Diagnóstico inicial de saberes previos y mapa mental grupal sobre "Caracteres sexuales primarios y secundarios en pubertad".
 
 ### 📌 SESIÓN 2 (50 minutos): Indagación Conceptual y Exploración Guiada en Libros de Texto SEP
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Breve retroalimentación mediante ruleta de preguntas rápidas y apertura del libro de texto gratuito de la SEP.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): Lectura guiada y analítica en el libro de texto oficial de la SEP. Los alumnos identifican conceptos clave, subrayan definiciones y resuelven en parejas las actividades formativas del libro.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Dinámica del "Semáforo del Aprendizaje" (Verde: comprendido, Amarillo: dudas, Rojo: apoyo). Aclaración de dudas en plenaria.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué conceptos nuevos aprendimos hoy en el libro de la SEP respecto a "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)"?
-  2. ¿Cómo se relacionan estas definiciones con los ejemplos que analizamos en la sesión anterior?
-- **📖 Libro de Texto SEP:** Proyectos Comunitarios 6º Grado (Págs. 170 a la 172) — *Biodigestores, huellas ecológicas y energías renovables*
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué ideas y explicaciones nuevas encontramos hoy en el libro de la SEP respecto a "Caracteres sexuales primarios y secundarios en pubertad"?  
+  2. ¿Cómo se relacionan estas lecturas con los ejemplos que observamos en nuestra comunidad?
+- **📖 Libro de Texto SEP:** Nuestros Saberes 5º Grado (Págs. 98 a la 100) — *Sistemas del cuerpo humano, estilo de vida saludable y medio ambiente*
 - **📦 Materiales:** Libro de texto gratuito SEP asignado, Colores y marcatextos, Cuaderno del alumno
 - **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #2: Resumen visual o mapa conceptual con las ideas clave extraídas del libro de la SEP.
 
-### 📌 SESIÓN 3 (50 minutos): Modelación Práctica y Estaciones de Trabajo Concreto / Experimental
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Presentación de los materiales de la sesión y asignación de roles en los equipos de trabajo (coordinador, relator, materiales, vocero).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Trabajo en estaciones rotativas de indagación y manipulación práctica. Los alumnos aplican procedimientos directos, tabulan datos o construyen representaciones tangibles sobre "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)".
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Síntesis grupal. El portavoz de una estación comparte los resultados y conclusiones obtenidas.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué estrategia fue la más eficiente para resolver los retos prácticos de las estaciones?
-  2. ¿Qué dificultades encontramos al aplicar el procedimiento y cómo las superamos?
-- **📖 Libro de Texto SEP:** Nuestros Saberes 5º y 6º Grado (Págs. 122 a la 124) — *Sistemas del cuerpo humano, biodiversidad y energías limpias*
-- **📦 Materiales:** Estaciones con material manipulable o instrumental didáctico, Hojas de registro
-- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #3: Hoja de registro de las estaciones con procedimientos, esquemas y conclusiones.
-
-### 📌 SESIÓN 4 (50 minutos): Resolución de Problemas Situados en el Contexto Escolar y Comunitario
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Planteamiento de una problemática real de la comunidad escolar vinculada a "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)".
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Trabajo en parejas para resolver 3 situaciones problemáticas contextualizadas paso a paso, justificando por escrito el razonamiento empleado.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Debate en plenaria sobre las diferentes rutas de solución y validación formativa por parte del docente.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Por qué existen diferentes formas de resolver el mismo problema sobre "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)"?
-  2. ¿Cuál es el método más claro para explicar tu respuesta a los demás?
-- **📖 Libro de Texto SEP:** Proyectos Comunitarios 6º Grado (Págs. 174 a la 176) — *Biodigestores, huellas ecológicas y energías renovables*
+### 📌 SESIÓN 3 (50 minutos): Resolución de Problemas Situados en el Contexto Escolar y Comunitario
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Planteamiento de una problemática real de la comunidad escolar vinculada a "Caracteres sexuales primarios y secundarios en pubertad".
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Trabajo en parejas para resolver situaciones problemáticas contextualizadas paso a paso, justificando por escrito el razonamiento empleado.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Puesta en común sobre las diferentes formas de resolver el reto y retroalimentación docente.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Por qué existen diferentes formas de resolver un mismo problema sobre "Caracteres sexuales primarios y secundarios en pubertad"?  
+  2. ¿Cuál es la forma más clara de explicar nuestro razonamiento a los demás compañeros?
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 6º Grado (Págs. 172 a la 174) — *Biodigestores, huellas ecológicas y energías renovables*
 - **📦 Materiales:** Cuaderno de trabajo, Hojas de problemas contextualizados, Lápiz y goma
 - **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #4: Resolución analítica y argumentada de los problemas comunitarios.
 
-### 📌 SESIÓN 5 (50 minutos): Organización de Información y Diseño del Primer Borrador del Proyecto
-- **⏱️ Inicio (10 min):**
+### 📌 SESIÓN 4 (50 minutos): Organización de Información y Diseño del Primer Borrador del Proyecto
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Presentación de la estructura del producto integrador intermedio y revisión de los criterios de calidad.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): En equipos, los alumnos estructuran el primer borrador de su producto integrador, organizando datos, textos, ilustraciones o maquetas.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Registro del porcentaje de avance en el termómetro del proyecto grupal.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué información clave no puede faltar en nuestro producto sobre "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)"?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué información clave no puede faltar en nuestro producto sobre "Caracteres sexuales primarios y secundarios en pubertad"?  
   2. ¿Cómo organizamos los datos para que cualquier persona de la comunidad los entienda con claridad?
-- **📖 Libro de Texto SEP:** Nuestros Saberes 5º y 6º Grado (Págs. 126 a la 128) — *Sistemas del cuerpo humano, biodiversidad y energías limpias*
+- **📖 Libro de Texto SEP:** Nuestros Saberes 6º Grado (Págs. 124 a la 126) — *Circuitos eléctricos, conductores, energía y biodiversidad*
+- **📦 Materiales:** Cartulinas o pliegos de papel, Colores y reglas, Borradores de trabajo
+- **📄 Entregable de la Sesión:** 📄 Entregable Intermedio: Primer borrador estructurado del producto del proyecto con datos organizados.
+
+### 📌 SESIÓN 5 (50 minutos): Organización de Información y Diseño del Primer Borrador del Proyecto
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Presentación de la estructura del producto integrador intermedio y revisión de los criterios de calidad.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): En equipos, los alumnos estructuran el primer borrador de su producto integrador, organizando datos, textos, ilustraciones o maquetas.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Registro del porcentaje de avance en el termómetro del proyecto grupal.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué información clave no puede faltar en nuestro producto sobre "Caracteres sexuales primarios y secundarios en pubertad"?  
+  2. ¿Cómo organizamos los datos para que cualquier persona de la comunidad los entienda con claridad?
+- **📖 Libro de Texto SEP:** Nuestros Saberes 5º Grado (Págs. 104 a la 106) — *Sistemas del cuerpo humano, estilo de vida saludable y medio ambiente*
 - **📦 Materiales:** Cartulinas o pliegos de papel, Colores y reglas, Borradores de trabajo
 - **📄 Entregable de la Sesión:** 📄 Entregable Intermedio: Primer borrador estructurado del producto del proyecto con datos organizados.
 
 ### 📌 SESIÓN 6 (50 minutos): Profundización Curricular y Vinculación Interdisciplinaria
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Conexión explícita con los campos formativos articulados (Lenguajes, Saberes, Ética y De lo Humano).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Actividad integradora que combina "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)" con la expresión artística, el análisis ético o la redacción formal de propuestas comunitarias.
-- **🌟 Cierre (10 min):**
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Actividad integradora que combina "Caracteres sexuales primarios y secundarios en pubertad" con la expresión artística, el análisis ético o la redacción formal de propuestas comunitarias.
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Mini-exposición de 2 minutos por equipo destacando la conexión interdisciplinaria lograda.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Cómo nos ayuda este tema a ser más empáticos, solidarios o analíticos con nuestra comunidad?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Cómo nos ayuda este tema a ser más empáticos, solidarios o analíticos con nuestra comunidad?  
   2. ¿Qué otros conocimientos de la escuela se relacionan directamente con lo que estamos construyendo?
 - **📖 Libro de Texto SEP:** Proyectos Comunitarios 6º Grado (Págs. 178 a la 180) — *Biodigestores, huellas ecológicas y energías renovables*
 - **📦 Materiales:** Material artístico / cartulinas, Textos informativos complementarios, Plumones
-- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #6: Producto interdisciplinario que vincula Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial) con la vida comunitaria.
+- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #6: Producto interdisciplinario que vincula Caracteres sexuales primarios y secundarios en pubertad con la vida comunitaria.
 
 ### 📌 SESIÓN 7 (50 minutos): Taller de Coevaluación entre Pares y Retroalimentación Formativa
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Explicación de la rúbrica analítica y de la importancia de la crítica constructiva entre compañeros basada en el respeto mutuo.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): Dinámica de intercambio de proyectos entre equipos ("Taller de Galería"). Cada equipo revisa el trabajo de otro equipo con una lista de cotejo constructiva.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Devolución de los trabajos con comentarios amables y claros para orientar la mejora.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué aprendimos al observar el trabajo de nuestros compañeros?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué aprendimos al observar el trabajo de nuestros compañeros?  
   2. ¿Cómo podemos mejorar la claridad y presentación de nuestro producto final?
-- **📖 Libro de Texto SEP:** Nuestros Saberes 5º y 6º Grado (Págs. 130 a la 132) — *Sistemas del cuerpo humano, biodiversidad y energías limpias*
+- **📖 Libro de Texto SEP:** Nuestros Saberes 6º Grado (Págs. 130 a la 132) — *Circuitos eléctricos, conductores, energía y biodiversidad*
 - **📦 Materiales:** Instrumentos de coevaluación impresos, Notas adhesivas de colores, Borradores de los proyectos
 - **📄 Entregable de la Sesión:** 📄 Instrumento de Coevaluación: Lista de cotejo con retroalimentación entre pares debidamente firmada.
 
 ### 📌 SESIÓN 8 (50 minutos): Ajuste, Corrección y Elaboración del Producto Final Tangible
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Revisión de las sugerencias recibidas en la coevaluación y asignación de tareas específicas para la versión definitiva.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): Sesión intensiva de producción final. Los alumnos aplican correcciones ortográficas, precisión en cálculos, orden estético y claridad en su producto entregable.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Verificación final de calidad con la rúbrica oficial antes de la entrega final. Visto bueno del docente.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué cambios hicimos en nuestro producto que lo hicieron más profesional y comprensible?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué cambios hicimos en nuestro producto que lo hicieron más claro y completo?  
   2. ¿Nos sentimos orgullosos del trabajo que vamos a presentar a la comunidad escolar?
-- **📖 Libro de Texto SEP:** Proyectos Comunitarios 6º Grado (Págs. 182 a la 184) — *Biodigestores, huellas ecológicas y energías renovables*
+- **📖 Libro de Texto SEP:** Nuestros Saberes 5º Grado (Págs. 110 a la 112) — *Sistemas del cuerpo humano, estilo de vida saludable y medio ambiente*
 - **📦 Materiales:** Materiales finales de exposición (cartulinas, modelos, maquetas, sobres, trípticos), Tijeras, pegamento, plumones
 - **📄 Entregable de la Sesión:** 📄 Producto Final Terminado: Versión definitiva del proyecto didáctico lista para su exposición comunitaria.
 
-### 📌 SESIÓN 9 (50 minutos): Ensayo General y Preparación de la Socialización Comunitaria
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Organización del espacio del aula o patio escolar para la muestra pedagógica. Establecimiento de tiempos y turnos de presentación.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Simulación y ensayo de las exposiciones orales. Cada alumno practica su explicación con seguridad, lenguaje claro y uso de sus apoyos visuales y materiales concretos.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Ronda de recomendaciones finales y palabras de motivación para la presentación oficial.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Cómo podemos explicar conceptos de "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)" de manera sencilla para que cualquiera los entienda?
-  2. ¿Qué tono de voz y postura corporal transmiten seguridad y entusiasmo en nuestra presentación?
-- **📖 Libro de Texto SEP:** Nuestros Saberes 5º y 6º Grado (Págs. 118 a la 120) — *Sistemas del cuerpo humano, biodiversidad y energías limpias*
-- **📦 Materiales:** Guiones de exposición, Materiales de exhibición terminados, Espacio escolar acondicionado
-- **📄 Entregable de la Sesión:** 📄 Guion de Exposición: Ficha con los puntos clave que cada integrante explicará durante la muestra.
+### 📌 SESIÓN 9 (50 minutos): Ajuste, Corrección y Elaboración del Producto Final Tangible
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Revisión de las sugerencias recibidas en la coevaluación y asignación de tareas específicas para la versión definitiva.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Sesión intensiva de producción final. Los alumnos aplican correcciones ortográficas, precisión en cálculos, orden estético y claridad en su producto entregable.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Verificación final de calidad con la rúbrica oficial antes de la entrega final. Visto bueno del docente.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué cambios hicimos en nuestro producto que lo hicieron más claro y completo?  
+  2. ¿Nos sentimos orgullosos del trabajo que vamos a presentar a la comunidad escolar?
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 6º Grado (Págs. 168 a la 170) — *Biodigestores, huellas ecológicas y energías renovables*
+- **📦 Materiales:** Materiales finales de exposición (cartulinas, modelos, maquetas, sobres, trípticos), Tijeras, pegamento, plumones
+- **📄 Entregable de la Sesión:** 📄 Producto Final Terminado: Versión definitiva del proyecto didáctico lista para su exposición comunitaria.
 
 ### 📌 SESIÓN 10 (50 minutos): Feria de Aprendizajes Comunitarios, Evaluación Formativa y Compromisos
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Bienvenida a la muestra de aprendizajes. Palabras de apertura por parte de los alumnos y del docente.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Presentación de la Feria de Aprendizajes ante compañeros de otros grupos, docentes o padres de familia. Demostración práctica de los conocimientos adquiridos sobre "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)".
-- **🌟 Cierre (10 min):**
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Presentación de la Feria de Aprendizajes ante compañeros de otros grupos, docentes o padres de familia. Demostración práctica de los conocimientos adquiridos sobre "Caracteres sexuales primarios y secundarios en pubertad".
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Aplicación de la rúbrica analítica de autoevaluación final. Firma del "Árbol de Compromisos de Aprendizaje" y felicitación grupal.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Cuál fue el aprendizaje más significativo y transformador que obtuviste a lo largo de estas 10 sesiones?
-  2. ¿Cómo vas a seguir utilizando este conocimiento sobre "Caracteres sexuales primarios y secundarios en pubertad - Variante 85 (Semiurbano e Industrial)" en tu vida diaria?
-- **📖 Libro de Texto SEP:** Proyectos Comunitarios 6º Grado (Págs. 170 a la 172) — *Biodigestores, huellas ecológicas y energías renovables*
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Cuál fue el aprendizaje más valioso que obtuviste a lo largo de este proyecto?  
+  2. ¿Cómo vas a seguir utilizando lo que aprendiste sobre "Caracteres sexuales primarios y secundarios en pubertad" en tu vida diaria?
+- **📖 Libro de Texto SEP:** Nuestros Saberes 6º Grado (Págs. 120 a la 122) — *Circuitos eléctricos, conductores, energía y biodiversidad*
 - **📦 Materiales:** Rúbricas analíticas individuales, Mural escolar de compromisos, Diplomas simbólicos o distintivos de logro
 - **📄 Entregable de la Sesión:** 🏆 Evidencia Final Integradora: Rúbrica analítica completada, bitácora del proyecto y registro de la feria comunitaria.
 
 ---
 
-## 📊 IV. Rúbrica Analítica Formativa de Evaluación (NEM 2024)
+## 📊 V. Rúbrica Analítica Formativa de Evaluación (NEM 2024)
 
 | Criterio Pedagógico | Nivel Sobresaliente (3 pts) | Nivel Satisfactorio (2 pts) | Nivel En Proceso (1 pt) |
 | :--- | :--- | :--- | :--- |
-| **Metodología de Indagación y Rigor Conceptual** | Plantea hipótesis claras, registra datos experimentales con precisión y formula conclusiones sólidas basadas en evidencia. | Sigue los pasos del método experimental y presenta resultados ordenados. | El registro de datos es incompleto o las conclusiones carecen de sustento. |
-| **Calidad del Prototipo y Presentación Visual** | El prototipo es funcional, seguro, creativo y está acompañado de infografías científicas de alta calidad. | El prototipo funciona adecuadamente y los apoyos visuales son claros. | El prototipo no funciona o la presentación visual es descuidada. |
-| **Divulgación Científica y Comunicación Oral** | Comunica conceptos científicos complejos con sencillez, elocuencia y dominio ante audiencias diversas. | Explica su experimento con claridad y vocabulario científico adecuado. | Dificultad para explicar el funcionamiento o la utilidad de su investigación. |
+| **Métrica, Rima y Recursos Poéticos** | Emplea rima consonante o asonante, metáforas creativas y ritmo musical bien estructurado en sus estrofas poéticas sobre "Caracteres sexuales primarios y secundarios en pubertad". | Construye versos con rima y sentido poético básico con apego al tema. | Los versos carecen de musicalidad o se leen como texto en prosa sin ritmo. |
+| **Diseño Editorial de la Plaquette Poética** | Diseña un poemario ilustrado con caligrafía artística, grecas decorativas y excelente presentación visual. | Presenta su hoja poética con limpieza, orden e ilustraciones pertinentes. | El diseño es descuidado o la letra es poco legible. |
+| **Declamación y Expresión Lírica en el Recital** | Declama con entonación emotiva, volumen adecuado, modulación y seguridad escénica ante la comunidad escolar. | Lee su poema en voz alta con claridad y postura adecuada. | Muestra timidez excesiva o dificultad para proyectar la voz ante el público. |
 
 ---
 
-## 🛠️ V. Recursos y Materiales Didácticos
-- Libros de Texto Gratuitos Oficiales de la SEP asignados con páginas y dinámicas.
-- Materiales manipulables y de indagación escolar.
-- Evidencia final del proyecto: **Muestra Científica Escolar con experimentos en vivo, prototipos demostrativos, infografías explicativas y bitácoras de campo detalladas.**.
+## 🛠️ VI. Recursos y Materiales Didácticos
+- Libros de Texto Gratuitos Oficiales de la SEP asignados con páginas específicas y dinámicas formativas.
+- Materiales manipulables y de indagación comunitaria.
+- Evidencia final del proyecto: **Plaquette poética ilustrada y recital en vivo en el patio escolar con acompañamiento rítmico, micrófonos y declamación abierta a familias y docentes.**.
 
 ---
 *Documento Curricular Oficial generado para ISkool • Bóveda Central de Conocimiento.*

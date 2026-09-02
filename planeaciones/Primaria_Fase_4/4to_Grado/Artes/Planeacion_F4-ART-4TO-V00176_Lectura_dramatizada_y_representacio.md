@@ -6,223 +6,226 @@ fase_nem: "Fase 5"
 grado: "4º de Primaria"
 asignatura: "Artes"
 campo_formativo: "Lenguajes"
-tema: "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)"
+tema: "Lectura dramatizada y representación teatral"
 duracion: "10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)"
 ejes_articuladores: ["Pensamiento Crítico", "Inclusión", "Vida Saludable", "Apropiación de las Culturas a través de la Lectura y la Escritura"]
-producto_integrador: "Muestra Científica Escolar con experimentos en vivo, prototipos demostrativos, infografías explicativas y bitácoras de campo detalladas."
-fecha_elaboracion: "25 de agosto de 2026"
-created_at: "25 de agosto de 2026"
-updated_at: "25 de agosto de 2026"
+producto_integrador: "Libro cartonero antológico encuadernado y decorado a mano con material reciclable, presentado en una tertulia literaria comunitaria con lectura en atril y tendedero de cuentos en el patio escolar."
+fecha_elaboracion: "2 de septiembre de 2026"
+created_at: "2 de septiembre de 2026"
+updated_at: "2 de septiembre de 2026"
 ---
 
-# 📚 Proyecto Didáctico Integral: Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)
+# 📚 Proyecto Didáctico Integral: Lectura dramatizada y representación teatral
 
-> **Docente Titular:** [[Prof_Israel_Lopez_Angeles|Prof. Israel López Ángeles]]
-> **Nivel y Fase:** PRIMARIA-ALTA • Fase 5 (4º de Primaria)
-> **Campo Formativo:** Lenguajes
-> **Asignatura:** Artes
-> **Temporalidad:** 10 sesiones de 50 minutos (Total: 500 min)
-> **Producto Central Integrador:** *Muestra Científica Escolar con experimentos en vivo, prototipos demostrativos, infografías explicativas y bitácoras de campo detalladas.*
-> **Índice Curricular:** [[00_Indice_Maestro_Boveda_Curricular|Bóveda Curricular Central]]
+> **Docente Titular:** [[Prof_Israel_Lopez_Angeles|Prof. Israel López Ángeles]]  
+> **Nivel y Fase:** PRIMARIA-ALTA • Fase 5 (4º de Primaria)  
+> **Campo Formativo:** Lenguajes  
+> **Asignatura:** Artes  
+> **Temporalidad:** 10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)  
+> **Producto Central Integrador:** *Libro cartonero antológico encuadernado y decorado a mano con material reciclable, presentado en una tertulia literaria comunitaria con lectura en atril y tendedero de cuentos en el patio escolar.*  
+> **Índice Curricular:** [[00_Indice_Maestro_Boveda_Curricular|Bóveda Curricular Central]]  
 
 ---
 
 ## 🎯 I. Proceso de Desarrollo de Aprendizaje (PDA Principal)
 
 ```yaml
-PDA: "Elabora ensayos breves, reseñas críticas y participa en debates formales sobre 'Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)', sustentando sus argumentos en fuentes confiables."
+PDA: "Lee, recrea y produce relatos, fábulas y leyendas locales identificando su estructura narrativa (inicio, desarrollo, nudo y desenlace), empleando signos de puntuación y descripciones detalladas."
 ```
 
 ### 🔗 Articulación Curricular con otros Campos Formativos:
-**1. Lenguajes (Primaria Alta - Fase 5):**
-- *PDA:* Elabora ensayos breves, reseñas críticas y participa en debates formales sobre "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)", sustentando sus argumentos en fuentes confiables.
-- *Vínculo formativo:* Pensamiento crítico discursivo, análisis literario e informativo y comunicación oral asertiva.
+**1. Saberes y Pensamiento Científico:**
+- *PDA:* Organiza la secuencia cronológica de los acontecimientos en una línea temporal y cuantifica elementos y personajes de los relatos populares.
+- *Vínculo formativo:* Estructuración temporal lógica, seriación y resolución de retos de ordenación.
 
-**2. Saberes y Pensamiento Científico:**
-- *PDA:* Aplica modelos matemáticos (porcentajes, volumen, proporcionalidad) y el método experimental para investigar fenómenos asociados a "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)".
-- *Vínculo formativo:* Pensamiento probabilístico, pensamiento STEM y experimentación científica rigurosa.
+**2. Ética, Naturaleza y Sociedades:**
+- *PDA:* Indaga con los adultos mayores los mitos y leyendas que explican el origen y la cosmovisión de su comunidad, reconociendo el valor del patrimonio cultural intangible.
+- *Vínculo formativo:* Rescate de la memoria comunitaria, respeto a la diversidad cultural y diálogo intergeneracional.
 
-**3. Ética, Naturaleza y Sociedades:**
-- *PDA:* Evalúa críticamente los procesos históricos y problemáticas ambientales vinculadas a "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)" a nivel nacional y global.
-- *Vínculo formativo:* Conciencia histórica de México, soberanía, sustentabilidad ecológica y derechos humanos.
-
-**4. De lo Humano y lo Comunitario:**
-- *PDA:* Lidera proyectos comunitarios colaborativos orientados a la salud integral y la equidad social en torno a "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)".
-- *Vínculo formativo:* Liderazgo transformador, resiliencia comunitaria y cultura de paz.
+**3. De lo Humano y lo Comunitario:**
+- *PDA:* Dramatiza cuentos y fábulas en equipo, asumiendo roles con empatía y reflexionando sobre las moralejas y valores de solidaridad y respeto.
+- *Vínculo formativo:* Expresión corporal, desarrollo socioemocional y trabajo cooperativo sin exclusión.
 
 ---
 
 ## 🏘️ II. Diagnóstico Comunitario y Propuesta de Proyecto Integrador
 
-**Problemática Situada:**
-Necesidad de fomentar la curiosidad científica, la indagación sistemática y la aplicación de saberes escolares para entender y transformar fenómenos relacionados con "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)".
+**Problemática Situada:**  
+Pérdida paulatina de la tradición oral comunitaria y escaso hábito de creación literaria autónoma, lo que limita la imaginación y la comprensión lectora en el entorno escolar.
 
-**Propósito del Proyecto:**
-Diseñar y ejecutar una investigación experimental y de campo que culmine en prototipos funcionales y propuestas sustentables para la comunidad.
+**Propósito del Proyecto:**  
+Rescatar y recrear relatos locales mediante la producción colectiva de una antología de cuentos ilustrados con estructura narrativa formal (planteamiento, nudo y desenlace), utilizando libros SEP (Proyectos de Aula / Múltiples Lenguajes).
 
-**Impacto Social y Transformador:**
-Promueve el pensamiento científico, la resolución de problemas locales y la participación ciudadana informada.
+**Impacto Social y Transformador:**  
+Fomenta el amor por la lectura comunitaria, recupera la memoria colectiva y dota a la biblioteca de aula de un acervo literario creado por las y los alumnos.
 
 ---
 
-## 📅 III. Secuencia Didáctica Completa (Dosificación en 10 Bloques de 50 Minutos)
+## ❓ III. Preguntas Detonadoras para el Salón (Apertura y Conflicto Cognitivo)
+1. ¿Qué estructura narrativa (planteamiento, nudo, clímax y desenlace) hace que un relato atrape el interés y la emoción del lector en "Lectura dramatizada y representación teatral"?
+2. ¿Cómo nos ayudan las descripciones detalladas de escenarios y los diálogos directos a transmitir la personalidad de los personajes?
+3. ¿De qué manera la elaboración de un libro cartonero escolar fomenta el amor por la lectura y el cuidado del medio ambiente?
 
-### 📌 SESIÓN 1 (50 minutos): Planteamiento del Reto Comunitario y Activación de Saberes sobre "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)"
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Dinámica detonadora "La Caja de Saberes". El docente plantea la pregunta central y conflicto cognitivo sobre "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)". Los alumnos comparten sus experiencias cotidianas y registran en el pizarrón lo que ya saben.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Exploración con material manipulable y organizadores gráficos en equipos de 4 alumnos. Cada equipo analiza una situación real vinculada a "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)" y elabora su primer registro diagnóstico.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Puesta en común de hallazgos iniciales. Cada equipo expresa en una frase su meta de aprendizaje. Registro individual en bitácora: "¿Qué descubrí hoy sobre Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)?".
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿En qué momentos de nuestra vida cotidiana o en nuestra comunidad observamos o utilizamos "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)"?
-  2. ¿Qué problema podríamos resolver en la escuela o en casa si dominamos este conocimiento?
-- **📖 Libro de Texto SEP:** Múltiples Lenguajes 5º y 6º Grado (Págs. 46 a la 48) — *Ensayos, reseñas críticas, crónicas y cartas de opinión*
+---
+
+## 📅 IV. Secuencia Didáctica Completa (Dosificación en 10 Bloques de 50 Minutos)
+
+### 📌 SESIÓN 1 (50 minutos): Planteamiento del Reto Comunitario y Activación de Saberes sobre "Lectura dramatizada y representación teatral"
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Activación temática y exploración de saberes previos. El docente plantea la pregunta central y conflicto cognitivo sobre "Lectura dramatizada y representación teatral". Los alumnos comparten sus experiencias cotidianas y registran en el pizarrón lo que ya saben.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Exploración con material manipulable y organizadores gráficos en equipos de 4 alumnos. Cada equipo analiza una situación real vinculada a "Lectura dramatizada y representación teatral" y elabora su primer registro diagnóstico.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Puesta en común de hallazgos iniciales. Cada equipo expresa en una frase su meta de aprendizaje. Registro individual en bitácora: "¿Qué descubrí hoy sobre Lectura dramatizada y representación teatral?".
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿En qué momentos de nuestra vida cotidiana o en nuestra comunidad observamos situaciones sobre "Lectura dramatizada y representación teatral"?  
+  2. ¿Qué reto o problema podemos resolver en la escuela si investigamos este tema en equipo?
+- **📖 Libro de Texto SEP:** Múltiples Lenguajes 6º Grado (Págs. 46 a la 48) — *Ensayos, reseñas críticas, crónicas y cartas de opinión*
 - **📦 Materiales:** Papel bond blanco, Plumones de colores, Material concreto o interactivo, Cuaderno del alumno
-- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #1: Diagnóstico inicial de saberes previos y mapa mental grupal sobre "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)".
+- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #1: Diagnóstico inicial de saberes previos y mapa mental grupal sobre "Lectura dramatizada y representación teatral".
 
 ### 📌 SESIÓN 2 (50 minutos): Indagación Conceptual y Exploración Guiada en Libros de Texto SEP
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Breve retroalimentación mediante ruleta de preguntas rápidas y apertura del libro de texto gratuito de la SEP.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): Lectura guiada y analítica en el libro de texto oficial de la SEP. Los alumnos identifican conceptos clave, subrayan definiciones y resuelven en parejas las actividades formativas del libro.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Dinámica del "Semáforo del Aprendizaje" (Verde: comprendido, Amarillo: dudas, Rojo: apoyo). Aclaración de dudas en plenaria.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué conceptos nuevos aprendimos hoy en el libro de la SEP respecto a "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)"?
-  2. ¿Cómo se relacionan estas definiciones con los ejemplos que analizamos en la sesión anterior?
-- **📖 Libro de Texto SEP:** Proyectos Escolares 6º Grado (Págs. 100 a la 102) — *Periódico escolar digital y mesas redondas*
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué ideas y explicaciones nuevas encontramos hoy en el libro de la SEP respecto a "Lectura dramatizada y representación teatral"?  
+  2. ¿Cómo se relacionan estas lecturas con los ejemplos que observamos en nuestra comunidad?
+- **📖 Libro de Texto SEP:** Proyectos Escolares 6º Grado (Págs. 100 a la 102) — *Periódico escolar digital, mesas redondas y debates*
 - **📦 Materiales:** Libro de texto gratuito SEP asignado, Colores y marcatextos, Cuaderno del alumno
 - **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #2: Resumen visual o mapa conceptual con las ideas clave extraídas del libro de la SEP.
 
-### 📌 SESIÓN 3 (50 minutos): Modelación Práctica y Estaciones de Trabajo Concreto / Experimental
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Presentación de los materiales de la sesión y asignación de roles en los equipos de trabajo (coordinador, relator, materiales, vocero).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Trabajo en estaciones rotativas de indagación y manipulación práctica. Los alumnos aplican procedimientos directos, tabulan datos o construyen representaciones tangibles sobre "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)".
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Síntesis grupal. El portavoz de una estación comparte los resultados y conclusiones obtenidas.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué estrategia fue la más eficiente para resolver los retos prácticos de las estaciones?
-  2. ¿Qué dificultades encontramos al aplicar el procedimiento y cómo las superamos?
-- **📖 Libro de Texto SEP:** Múltiples Lenguajes 5º y 6º Grado (Págs. 50 a la 52) — *Ensayos, reseñas críticas, crónicas y cartas de opinión*
-- **📦 Materiales:** Estaciones con material manipulable o instrumental didáctico, Hojas de registro
-- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #3: Hoja de registro de las estaciones con procedimientos, esquemas y conclusiones.
-
-### 📌 SESIÓN 4 (50 minutos): Resolución de Problemas Situados en el Contexto Escolar y Comunitario
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Planteamiento de una problemática real de la comunidad escolar vinculada a "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)".
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Trabajo en parejas para resolver 3 situaciones problemáticas contextualizadas paso a paso, justificando por escrito el razonamiento empleado.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Debate en plenaria sobre las diferentes rutas de solución y validación formativa por parte del docente.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Por qué existen diferentes formas de resolver el mismo problema sobre "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)"?
-  2. ¿Cuál es el método más claro para explicar tu respuesta a los demás?
-- **📖 Libro de Texto SEP:** Proyectos Escolares 6º Grado (Págs. 104 a la 106) — *Periódico escolar digital y mesas redondas*
+### 📌 SESIÓN 3 (50 minutos): Resolución de Problemas Situados en el Contexto Escolar y Comunitario
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Planteamiento de una problemática real de la comunidad escolar vinculada a "Lectura dramatizada y representación teatral".
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Trabajo en parejas para resolver situaciones problemáticas contextualizadas paso a paso, justificando por escrito el razonamiento empleado.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Puesta en común sobre las diferentes formas de resolver el reto y retroalimentación docente.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Por qué existen diferentes formas de resolver un mismo problema sobre "Lectura dramatizada y representación teatral"?  
+  2. ¿Cuál es la forma más clara de explicar nuestro razonamiento a los demás compañeros?
+- **📖 Libro de Texto SEP:** Nuestros Saberes 5º Grado (Págs. 32 a la 34) — *Textos argumentativos, fuentes confiables y citas*
 - **📦 Materiales:** Cuaderno de trabajo, Hojas de problemas contextualizados, Lápiz y goma
 - **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #4: Resolución analítica y argumentada de los problemas comunitarios.
 
-### 📌 SESIÓN 5 (50 minutos): Organización de Información y Diseño del Primer Borrador del Proyecto
-- **⏱️ Inicio (10 min):**
+### 📌 SESIÓN 4 (50 minutos): Organización de Información y Diseño del Primer Borrador del Proyecto
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Presentación de la estructura del producto integrador intermedio y revisión de los criterios de calidad.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): En equipos, los alumnos estructuran el primer borrador de su producto integrador, organizando datos, textos, ilustraciones o maquetas.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Registro del porcentaje de avance en el termómetro del proyecto grupal.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué información clave no puede faltar en nuestro producto sobre "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)"?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué información clave no puede faltar en nuestro producto sobre "Lectura dramatizada y representación teatral"?  
   2. ¿Cómo organizamos los datos para que cualquier persona de la comunidad los entienda con claridad?
-- **📖 Libro de Texto SEP:** Múltiples Lenguajes 5º y 6º Grado (Págs. 54 a la 56) — *Ensayos, reseñas críticas, crónicas y cartas de opinión*
+- **📖 Libro de Texto SEP:** Múltiples Lenguajes 6º Grado (Págs. 52 a la 54) — *Ensayos, reseñas críticas, crónicas y cartas de opinión*
+- **📦 Materiales:** Cartulinas o pliegos de papel, Colores y reglas, Borradores de trabajo
+- **📄 Entregable de la Sesión:** 📄 Entregable Intermedio: Primer borrador estructurado del producto del proyecto con datos organizados.
+
+### 📌 SESIÓN 5 (50 minutos): Organización de Información y Diseño del Primer Borrador del Proyecto
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Presentación de la estructura del producto integrador intermedio y revisión de los criterios de calidad.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): En equipos, los alumnos estructuran el primer borrador de su producto integrador, organizando datos, textos, ilustraciones o maquetas.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Registro del porcentaje de avance en el termómetro del proyecto grupal.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué información clave no puede faltar en nuestro producto sobre "Lectura dramatizada y representación teatral"?  
+  2. ¿Cómo organizamos los datos para que cualquier persona de la comunidad los entienda con claridad?
+- **📖 Libro de Texto SEP:** Proyectos Escolares 6º Grado (Págs. 106 a la 108) — *Periódico escolar digital, mesas redondas y debates*
 - **📦 Materiales:** Cartulinas o pliegos de papel, Colores y reglas, Borradores de trabajo
 - **📄 Entregable de la Sesión:** 📄 Entregable Intermedio: Primer borrador estructurado del producto del proyecto con datos organizados.
 
 ### 📌 SESIÓN 6 (50 minutos): Profundización Curricular y Vinculación Interdisciplinaria
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Conexión explícita con los campos formativos articulados (Lenguajes, Saberes, Ética y De lo Humano).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Actividad integradora que combina "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)" con la expresión artística, el análisis ético o la redacción formal de propuestas comunitarias.
-- **🌟 Cierre (10 min):**
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Actividad integradora que combina "Lectura dramatizada y representación teatral" con la expresión artística, el análisis ético o la redacción formal de propuestas comunitarias.
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Mini-exposición de 2 minutos por equipo destacando la conexión interdisciplinaria lograda.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Cómo nos ayuda este tema a ser más empáticos, solidarios o analíticos con nuestra comunidad?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Cómo nos ayuda este tema a ser más empáticos, solidarios o analíticos con nuestra comunidad?  
   2. ¿Qué otros conocimientos de la escuela se relacionan directamente con lo que estamos construyendo?
-- **📖 Libro de Texto SEP:** Proyectos Escolares 6º Grado (Págs. 108 a la 110) — *Periódico escolar digital y mesas redondas*
+- **📖 Libro de Texto SEP:** Nuestros Saberes 5º Grado (Págs. 38 a la 40) — *Textos argumentativos, fuentes confiables y citas*
 - **📦 Materiales:** Material artístico / cartulinas, Textos informativos complementarios, Plumones
-- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #6: Producto interdisciplinario que vincula Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural) con la vida comunitaria.
+- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #6: Producto interdisciplinario que vincula Lectura dramatizada y representación teatral con la vida comunitaria.
 
 ### 📌 SESIÓN 7 (50 minutos): Taller de Coevaluación entre Pares y Retroalimentación Formativa
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Explicación de la rúbrica analítica y de la importancia de la crítica constructiva entre compañeros basada en el respeto mutuo.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): Dinámica de intercambio de proyectos entre equipos ("Taller de Galería"). Cada equipo revisa el trabajo de otro equipo con una lista de cotejo constructiva.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Devolución de los trabajos con comentarios amables y claros para orientar la mejora.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué aprendimos al observar el trabajo de nuestros compañeros?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué aprendimos al observar el trabajo de nuestros compañeros?  
   2. ¿Cómo podemos mejorar la claridad y presentación de nuestro producto final?
-- **📖 Libro de Texto SEP:** Múltiples Lenguajes 5º y 6º Grado (Págs. 46 a la 48) — *Ensayos, reseñas críticas, crónicas y cartas de opinión*
+- **📖 Libro de Texto SEP:** Múltiples Lenguajes 6º Grado (Págs. 46 a la 48) — *Ensayos, reseñas críticas, crónicas y cartas de opinión*
 - **📦 Materiales:** Instrumentos de coevaluación impresos, Notas adhesivas de colores, Borradores de los proyectos
 - **📄 Entregable de la Sesión:** 📄 Instrumento de Coevaluación: Lista de cotejo con retroalimentación entre pares debidamente firmada.
 
 ### 📌 SESIÓN 8 (50 minutos): Ajuste, Corrección y Elaboración del Producto Final Tangible
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Revisión de las sugerencias recibidas en la coevaluación y asignación de tareas específicas para la versión definitiva.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): Sesión intensiva de producción final. Los alumnos aplican correcciones ortográficas, precisión en cálculos, orden estético y claridad en su producto entregable.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Verificación final de calidad con la rúbrica oficial antes de la entrega final. Visto bueno del docente.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué cambios hicimos en nuestro producto que lo hicieron más profesional y comprensible?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué cambios hicimos en nuestro producto que lo hicieron más claro y completo?  
   2. ¿Nos sentimos orgullosos del trabajo que vamos a presentar a la comunidad escolar?
-- **📖 Libro de Texto SEP:** Proyectos Escolares 6º Grado (Págs. 112 a la 114) — *Periódico escolar digital y mesas redondas*
+- **📖 Libro de Texto SEP:** Proyectos Escolares 6º Grado (Págs. 112 a la 114) — *Periódico escolar digital, mesas redondas y debates*
 - **📦 Materiales:** Materiales finales de exposición (cartulinas, modelos, maquetas, sobres, trípticos), Tijeras, pegamento, plumones
 - **📄 Entregable de la Sesión:** 📄 Producto Final Terminado: Versión definitiva del proyecto didáctico lista para su exposición comunitaria.
 
-### 📌 SESIÓN 9 (50 minutos): Ensayo General y Preparación de la Socialización Comunitaria
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Organización del espacio del aula o patio escolar para la muestra pedagógica. Establecimiento de tiempos y turnos de presentación.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Simulación y ensayo de las exposiciones orales. Cada alumno practica su explicación con seguridad, lenguaje claro y uso de sus apoyos visuales y materiales concretos.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Ronda de recomendaciones finales y palabras de motivación para la presentación oficial.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Cómo podemos explicar conceptos de "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)" de manera sencilla para que cualquiera los entienda?
-  2. ¿Qué tono de voz y postura corporal transmiten seguridad y entusiasmo en nuestra presentación?
-- **📖 Libro de Texto SEP:** Múltiples Lenguajes 5º y 6º Grado (Págs. 50 a la 52) — *Ensayos, reseñas críticas, crónicas y cartas de opinión*
-- **📦 Materiales:** Guiones de exposición, Materiales de exhibición terminados, Espacio escolar acondicionado
-- **📄 Entregable de la Sesión:** 📄 Guion de Exposición: Ficha con los puntos clave que cada integrante explicará durante la muestra.
+### 📌 SESIÓN 9 (50 minutos): Ajuste, Corrección y Elaboración del Producto Final Tangible
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Revisión de las sugerencias recibidas en la coevaluación y asignación de tareas específicas para la versión definitiva.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Sesión intensiva de producción final. Los alumnos aplican correcciones ortográficas, precisión en cálculos, orden estético y claridad en su producto entregable.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Verificación final de calidad con la rúbrica oficial antes de la entrega final. Visto bueno del docente.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué cambios hicimos en nuestro producto que lo hicieron más claro y completo?  
+  2. ¿Nos sentimos orgullosos del trabajo que vamos a presentar a la comunidad escolar?
+- **📖 Libro de Texto SEP:** Nuestros Saberes 5º Grado (Págs. 32 a la 34) — *Textos argumentativos, fuentes confiables y citas*
+- **📦 Materiales:** Materiales finales de exposición (cartulinas, modelos, maquetas, sobres, trípticos), Tijeras, pegamento, plumones
+- **📄 Entregable de la Sesión:** 📄 Producto Final Terminado: Versión definitiva del proyecto didáctico lista para su exposición comunitaria.
 
 ### 📌 SESIÓN 10 (50 minutos): Feria de Aprendizajes Comunitarios, Evaluación Formativa y Compromisos
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Bienvenida a la muestra de aprendizajes. Palabras de apertura por parte de los alumnos y del docente.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Presentación de la Feria de Aprendizajes ante compañeros de otros grupos, docentes o padres de familia. Demostración práctica de los conocimientos adquiridos sobre "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)".
-- **🌟 Cierre (10 min):**
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Presentación de la Feria de Aprendizajes ante compañeros de otros grupos, docentes o padres de familia. Demostración práctica de los conocimientos adquiridos sobre "Lectura dramatizada y representación teatral".
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Aplicación de la rúbrica analítica de autoevaluación final. Firma del "Árbol de Compromisos de Aprendizaje" y felicitación grupal.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Cuál fue el aprendizaje más significativo y transformador que obtuviste a lo largo de estas 10 sesiones?
-  2. ¿Cómo vas a seguir utilizando este conocimiento sobre "Lectura dramatizada y representación teatral - Variante 176 (Fronterizo e Intercultural)" en tu vida diaria?
-- **📖 Libro de Texto SEP:** Proyectos Escolares 6º Grado (Págs. 100 a la 102) — *Periódico escolar digital y mesas redondas*
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Cuál fue el aprendizaje más valioso que obtuviste a lo largo de este proyecto?  
+  2. ¿Cómo vas a seguir utilizando lo que aprendiste sobre "Lectura dramatizada y representación teatral" en tu vida diaria?
+- **📖 Libro de Texto SEP:** Múltiples Lenguajes 6º Grado (Págs. 52 a la 54) — *Ensayos, reseñas críticas, crónicas y cartas de opinión*
 - **📦 Materiales:** Rúbricas analíticas individuales, Mural escolar de compromisos, Diplomas simbólicos o distintivos de logro
 - **📄 Entregable de la Sesión:** 🏆 Evidencia Final Integradora: Rúbrica analítica completada, bitácora del proyecto y registro de la feria comunitaria.
 
 ---
 
-## 📊 IV. Rúbrica Analítica Formativa de Evaluación (NEM 2024)
+## 📊 V. Rúbrica Analítica Formativa de Evaluación (NEM 2024)
 
 | Criterio Pedagógico | Nivel Sobresaliente (3 pts) | Nivel Satisfactorio (2 pts) | Nivel En Proceso (1 pt) |
 | :--- | :--- | :--- | :--- |
-| **Metodología de Indagación y Rigor Conceptual** | Plantea hipótesis claras, registra datos experimentales con precisión y formula conclusiones sólidas basadas en evidencia. | Sigue los pasos del método experimental y presenta resultados ordenados. | El registro de datos es incompleto o las conclusiones carecen de sustento. |
-| **Calidad del Prototipo y Presentación Visual** | El prototipo es funcional, seguro, creativo y está acompañado de infografías científicas de alta calidad. | El prototipo funciona adecuadamente y los apoyos visuales son claros. | El prototipo no funciona o la presentación visual es descuidada. |
-| **Divulgación Científica y Comunicación Oral** | Comunica conceptos científicos complejos con sencillez, elocuencia y dominio ante audiencias diversas. | Explica su experimento con claridad y vocabulario científico adecuado. | Dificultad para explicar el funcionamiento o la utilidad de su investigación. |
+| **Estructura Narrativa y Creatividad Literaria** | Desarrolla una trama original con personajes bien caracterizados, conflicto claro y desenlace creativo, empleando conectores temporales y adjetivos descriptivos sobre "Lectura dramatizada y representación teatral". | El relato presenta inicio, desarrollo y final comprensibles con adecuada estructura de párrafos. | La narración no tiene una secuencia lógica clara o queda inconclusa. |
+| **Confección del Libro Cartonero y Expresión Plástica** | El libro cartonero está sólidamente encuadernado, con portadas artísticas llamativas e ilustraciones que enriquecen profundamente el texto. | El libro cartonero cumple con los requisitos de armado e ilustración con limpieza y orden. | El encuadernado es frágil o las ilustraciones carecen de relación con el texto. |
+| **Socialización y Lectura en Atril** | Lee con fluidez, modulación de voz adecuada y expresión corporal que cautiva a la audiencia en la tertulia literaria. | Realiza su lectura en voz alta con claridad y volumen audible ante el público. | Muestra inseguridad o tono de voz inaudible durante la presentación oral. |
 
 ---
 
-## 🛠️ V. Recursos y Materiales Didácticos
-- Libros de Texto Gratuitos Oficiales de la SEP asignados con páginas y dinámicas.
-- Materiales manipulables y de indagación escolar.
-- Evidencia final del proyecto: **Muestra Científica Escolar con experimentos en vivo, prototipos demostrativos, infografías explicativas y bitácoras de campo detalladas.**.
+## 🛠️ VI. Recursos y Materiales Didácticos
+- Libros de Texto Gratuitos Oficiales de la SEP asignados con páginas específicas y dinámicas formativas.
+- Materiales manipulables y de indagación comunitaria.
+- Evidencia final del proyecto: **Libro cartonero antológico encuadernado y decorado a mano con material reciclable, presentado en una tertulia literaria comunitaria con lectura en atril y tendedero de cuentos en el patio escolar.**.
 
 ---
 *Documento Curricular Oficial generado para ISkool • Bóveda Central de Conocimiento.*

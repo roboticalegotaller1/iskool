@@ -1,228 +1,231 @@
 ---
-tags: [iskool, planeacion_nem, segundo_cerebro, boveda_curricular, nivel_primaria_alta, materia_matematicas, grado_no_especificado]
+tags: [iskool, planeacion_nem, segundo_cerebro, boveda_curricular, nivel_primaria_alta, materia_matematicas, grado_6_de_primaria]
 docente: "Prof. Israel López Ángeles"
 nivel: "primaria-alta"
 fase_nem: "Fase 5"
-grado: "No especificado"
+grado: "6º de Primaria"
 asignatura: "Matemáticas"
 campo_formativo: "Saberes y Pensamiento Científico"
-tema: "Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)"
+tema: "Cuidado y Filtración del Agua"
 duracion: "10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)"
 ejes_articuladores: ["Pensamiento Crítico", "Inclusión", "Vida Saludable", "Apropiación de las Culturas a través de la Lectura y la Escritura"]
-producto_integrador: "Instalación del huerto escolar agroecológico con sistema de riego por goteo casero, compostero y guía comunitaria ilustrada de cuidado ambiental."
-fecha_elaboracion: "25 de agosto de 2026"
-created_at: "25 de agosto de 2026"
-updated_at: "25 de agosto de 2026"
+producto_integrador: "Simulación del "Mercado Cooperativo Escolar" con puestos de productos, lista de precios calculada por los alumnos, billetes y monedas didácticas, libro de contabilidad escolar y guía de compra inteligente para las familias."
+fecha_elaboracion: "2 de septiembre de 2026"
+created_at: "2 de septiembre de 2026"
+updated_at: "2 de septiembre de 2026"
 ---
 
-# 📚 Proyecto Didáctico Integral: Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)
+# 📚 Proyecto Didáctico Integral: Cuidado y Filtración del Agua
 
-> **Docente Titular:** [[Prof_Israel_Lopez_Angeles|Prof. Israel López Ángeles]]
-> **Nivel y Fase:** PRIMARIA-ALTA • Fase 5 (No especificado)
-> **Campo Formativo:** Saberes y Pensamiento Científico
-> **Asignatura:** Matemáticas
-> **Temporalidad:** 10 sesiones de 50 minutos (Total: 500 min)
-> **Producto Central Integrador:** *Instalación del huerto escolar agroecológico con sistema de riego por goteo casero, compostero y guía comunitaria ilustrada de cuidado ambiental.*
-> **Índice Curricular:** [[00_Indice_Maestro_Boveda_Curricular|Bóveda Curricular Central]]
+> **Docente Titular:** [[Prof_Israel_Lopez_Angeles|Prof. Israel López Ángeles]]  
+> **Nivel y Fase:** PRIMARIA-ALTA • Fase 5 (6º de Primaria)  
+> **Campo Formativo:** Saberes y Pensamiento Científico  
+> **Asignatura:** Matemáticas  
+> **Temporalidad:** 10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)  
+> **Producto Central Integrador:** *Simulación del "Mercado Cooperativo Escolar" con puestos de productos, lista de precios calculada por los alumnos, billetes y monedas didácticas, libro de contabilidad escolar y guía de compra inteligente para las familias.*  
+> **Índice Curricular:** [[00_Indice_Maestro_Boveda_Curricular|Bóveda Curricular Central]]  
 
 ---
 
 ## 🎯 I. Proceso de Desarrollo de Aprendizaje (PDA Principal)
 
 ```yaml
-PDA: "Elabora ensayos breves, reseñas críticas y participa en debates formales sobre 'Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)', sustentando sus argumentos en fuentes confiables."
+PDA: "Indaga el ciclo hidrológico, las propiedades físicas del agua y diseña prototipos de filtración y captación pluvial para el cuidado hídrico en la escuela."
 ```
 
 ### 🔗 Articulación Curricular con otros Campos Formativos:
-**1. Lenguajes (Primaria Alta - Fase 5):**
-- *PDA:* Elabora ensayos breves, reseñas críticas y participa en debates formales sobre "Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)", sustentando sus argumentos en fuentes confiables.
-- *Vínculo formativo:* Pensamiento crítico discursivo, análisis literario e informativo y comunicación oral asertiva.
+**1. Lenguajes (Divulgación Científica):**
+- *PDA:* Elabora bitácoras de campo, infografías y carteles ilustrados para divulgar hallazgos científicos y promover la educación ambiental en la escuela.
+- *Vínculo formativo:* Redacción de textos explicativos, síntesis de datos experimentales y comunicación visual asertiva.
 
-**2. Saberes y Pensamiento Científico:**
-- *PDA:* Aplica modelos matemáticos (porcentajes, volumen, proporcionalidad) y el método experimental para investigar fenómenos asociados a "Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)".
-- *Vínculo formativo:* Pensamiento probabilístico, pensamiento STEM y experimentación científica rigurosa.
+**2. Ética, Naturaleza y Sociedades:**
+- *PDA:* Evalúa el impacto de las actividades humanas en los ecosistemas locales y propone acuerdos comunitarios para la conservación del entorno y la sustentabilidad.
+- *Vínculo formativo:* Conciencia ecológica bioética, justicia ambiental y defensa del derecho a un medio ambiente sano.
 
-**3. Ética, Naturaleza y Sociedades:**
-- *PDA:* Evalúa críticamente los procesos históricos y problemáticas ambientales vinculadas a "Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)" a nivel nacional y global.
-- *Vínculo formativo:* Conciencia histórica de México, soberanía, sustentabilidad ecológica y derechos humanos.
-
-**4. De lo Humano y lo Comunitario:**
-- *PDA:* Lidera proyectos comunitarios colaborativos orientados a la salud integral y la equidad social en torno a "Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)".
-- *Vínculo formativo:* Liderazgo transformador, resiliencia comunitaria y cultura de paz.
+**3. De lo Humano y lo Comunitario:**
+- *PDA:* Organiza brigadas escolares para el mantenimiento del huerto, el ahorro de agua y la adopción de estilos de vida saludables en su comunidad.
+- *Vínculo formativo:* Responsabilidad social compartida, vida saludable y trabajo comunitario transformador.
 
 ---
 
 ## 🏘️ II. Diagnóstico Comunitario y Propuesta de Proyecto Integrador
 
-**Problemática Situada:**
-Desperdicio de recursos naturales en la escuela y falta de conciencia sobre la soberanía alimentaria y la conservación de la biodiversidad local.
+**Problemática Situada:**  
+Los estudiantes requieren fortalecer el cálculo mental, la comprensión del valor posicional del dinero y el desarrollo de hábitos de consumo responsable y finanzas solidarias en torno a "Cuidado y Filtración del Agua".
 
-**Propósito del Proyecto:**
-Diseñar e implementar un sistema sustentable de cultivo escolar y captación/reúso de agua mediante la indagación científica comunitaria.
+**Propósito del Proyecto:**  
+Diseñar e instalar una tiendita escolar cooperativa utilizando billetes y monedas didácticos para resolver problemas de adición, sustracción, cálculo de cambio y presupuesto familiar (Libro SEP: Nuestros Saberes / Proyectos de Aula).
 
-**Impacto Social y Transformador:**
-Fomenta la educación ambiental práctica, produce alimentos sanos para el comedor escolar y reduce la huella ecológica de la institución.
+**Impacto Social y Transformador:**  
+Fomenta la educación financiera temprana, el comercio justo, el consumo de alimentos locales y el ahorro familiar responsable.
 
 ---
 
-## 📅 III. Secuencia Didáctica Completa (Dosificación en 10 Bloques de 50 Minutos)
+## ❓ III. Preguntas Detonadoras para el Salón (Apertura y Conflicto Cognitivo)
+1. ¿Cómo nos ayuda el cálculo mental y el valor posicional a verificar rápidamente el costo total y el cambio en una compra comunitaria sobre "Cuidado y Filtración del Agua"?
+2. ¿Qué diferencia existe entre un gasto necesario para el bienestar y un gasto impulsivo al planear el presupuesto de nuestra cooperativa escolar?
+3. ¿De qué manera las operaciones matemáticas (multiplicación, división, porcentajes) nos permiten calcular descuentos y comparar precios con justicia?
 
-### 📌 SESIÓN 1 (50 minutos): Planteamiento del Reto Comunitario y Activación de Saberes sobre "Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)"
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Dinámica detonadora "La Caja de Saberes". El docente plantea la pregunta central y conflicto cognitivo sobre "Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)". Los alumnos comparten sus experiencias cotidianas y registran en el pizarrón lo que ya saben.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Exploración con material manipulable y organizadores gráficos en equipos de 4 alumnos. Cada equipo analiza una situación real vinculada a "Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)" y elabora su primer registro diagnóstico.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Puesta en común de hallazgos iniciales. Cada equipo expresa en una frase su meta de aprendizaje. Registro individual en bitácora: "¿Qué descubrí hoy sobre Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)?".
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿En qué momentos de nuestra vida cotidiana o en nuestra comunidad observamos o utilizamos "Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)"?
-  2. ¿Qué problema podríamos resolver en la escuela o en casa si dominamos este conocimiento?
-- **📖 Libro de Texto SEP:** Proyectos Comunitarios 6º Grado (Págs. 168 a la 170) — *Proyecto Comunitario: "Biodigestores y energías limpias para la escuela" — Aprovechamiento de biomasa, producción de biogás y huella ecológica*
+---
+
+## 📅 IV. Secuencia Didáctica Completa (Dosificación en 10 Bloques de 50 Minutos)
+
+### 📌 SESIÓN 1 (50 minutos): Planteamiento del Reto Comunitario y Activación de Saberes sobre "Cuidado y Filtración del Agua"
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Activación temática y exploración de saberes previos. El docente plantea la pregunta central y conflicto cognitivo sobre "Cuidado y Filtración del Agua". Los alumnos comparten sus experiencias cotidianas y registran en el pizarrón lo que ya saben.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Exploración con material manipulable y organizadores gráficos en equipos de 4 alumnos. Cada equipo analiza una situación real vinculada a "Cuidado y Filtración del Agua" y elabora su primer registro diagnóstico.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Puesta en común de hallazgos iniciales. Cada equipo expresa en una frase su meta de aprendizaje. Registro individual en bitácora: "¿Qué descubrí hoy sobre Cuidado y Filtración del Agua?".
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿En qué momentos de nuestra vida cotidiana o en nuestra comunidad observamos situaciones sobre "Cuidado y Filtración del Agua"?  
+  2. ¿Qué reto o problema podemos resolver en la escuela si investigamos este tema en equipo?
+- **📖 Libro de Texto SEP:** Nuestros Saberes 5º Grado (Págs. 78 a la 80) — *Porcentajes, fracciones con distinto denominador y proporcionalidad*
 - **📦 Materiales:** Papel bond blanco, Plumones de colores, Material concreto o interactivo, Cuaderno del alumno
-- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #1: Diagnóstico inicial de saberes previos y mapa mental grupal sobre "Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)".
+- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #1: Diagnóstico inicial de saberes previos y mapa mental grupal sobre "Cuidado y Filtración del Agua".
 
 ### 📌 SESIÓN 2 (50 minutos): Indagación Conceptual y Exploración Guiada en Libros de Texto SEP
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Breve retroalimentación mediante ruleta de preguntas rápidas y apertura del libro de texto gratuito de la SEP.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): Lectura guiada y analítica en el libro de texto oficial de la SEP. Los alumnos identifican conceptos clave, subrayan definiciones y resuelven en parejas las actividades formativas del libro.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Dinámica del "Semáforo del Aprendizaje" (Verde: comprendido, Amarillo: dudas, Rojo: apoyo). Aclaración de dudas en plenaria.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué conceptos nuevos aprendimos hoy en el libro de la SEP respecto a "Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)"?
-  2. ¿Cómo se relacionan estas definiciones con los ejemplos que analizamos en la sesión anterior?
-- **📖 Libro de Texto SEP:** Proyectos Comunitarios 6º Grado (Págs. 169 a la 171) — *Proyecto Comunitario: "Biodigestores y energías limpias para la escuela" — Aprovechamiento de biomasa, producción de biogás y huella ecológica*
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué ideas y explicaciones nuevas encontramos hoy en el libro de la SEP respecto a "Cuidado y Filtración del Agua"?  
+  2. ¿Cómo se relacionan estas lecturas con los ejemplos que observamos en nuestra comunidad?
+- **📖 Libro de Texto SEP:** Nuestros Saberes 6º Grado (Págs. 86 a la 88) — *Geometría del círculo, valor aproximado de Pi, volumen y plano cartesiano*
 - **📦 Materiales:** Libro de texto gratuito SEP asignado, Colores y marcatextos, Cuaderno del alumno
 - **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #2: Resumen visual o mapa conceptual con las ideas clave extraídas del libro de la SEP.
 
-### 📌 SESIÓN 3 (50 minutos): Modelación Práctica y Estaciones de Trabajo Concreto / Experimental
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Presentación de los materiales de la sesión y asignación de roles en los equipos de trabajo (coordinador, relator, materiales, vocero).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Trabajo en estaciones rotativas de indagación y manipulación práctica. Los alumnos aplican procedimientos directos, tabulan datos o construyen representaciones tangibles sobre "Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)".
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Síntesis grupal. El portavoz de una estación comparte los resultados y conclusiones obtenidas.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué estrategia fue la más eficiente para resolver los retos prácticos de las estaciones?
-  2. ¿Qué dificultades encontramos al aplicar el procedimiento y cómo las superamos?
-- **📖 Libro de Texto SEP:** Proyectos Comunitarios 6º Grado (Págs. 171 a la 173) — *Proyecto Comunitario: "Biodigestores y energías limpias para la escuela" — Aprovechamiento de biomasa, producción de biogás y huella ecológica*
-- **📦 Materiales:** Estaciones con material manipulable o instrumental didáctico, Hojas de registro
-- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #3: Hoja de registro de las estaciones con procedimientos, esquemas y conclusiones.
-
-### 📌 SESIÓN 4 (50 minutos): Resolución de Problemas Situados en el Contexto Escolar y Comunitario
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Planteamiento de una problemática real de la comunidad escolar vinculada a "Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)".
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Trabajo en parejas para resolver 3 situaciones problemáticas contextualizadas paso a paso, justificando por escrito el razonamiento empleado.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Debate en plenaria sobre las diferentes rutas de solución y validación formativa por parte del docente.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Por qué existen diferentes formas de resolver el mismo problema sobre "Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)"?
-  2. ¿Cuál es el método más claro para explicar tu respuesta a los demás?
-- **📖 Libro de Texto SEP:** Proyectos Comunitarios 6º Grado (Págs. 172 a la 174) — *Proyecto Comunitario: "Biodigestores y energías limpias para la escuela" — Aprovechamiento de biomasa, producción de biogás y huella ecológica*
+### 📌 SESIÓN 3 (50 minutos): Resolución de Problemas Situados en el Contexto Escolar y Comunitario
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Planteamiento de una problemática real de la comunidad escolar vinculada a "Cuidado y Filtración del Agua".
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Trabajo en parejas para resolver situaciones problemáticas contextualizadas paso a paso, justificando por escrito el razonamiento empleado.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Puesta en común sobre las diferentes formas de resolver el reto y retroalimentación docente.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Por qué existen diferentes formas de resolver un mismo problema sobre "Cuidado y Filtración del Agua"?  
+  2. ¿Cuál es la forma más clara de explicar nuestro razonamiento a los demás compañeros?
+- **📖 Libro de Texto SEP:** Proyectos de Aula 6º Grado (Págs. 132 a la 134) — *Modelación matemática y finanzas comunitarias*
 - **📦 Materiales:** Cuaderno de trabajo, Hojas de problemas contextualizados, Lápiz y goma
 - **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #4: Resolución analítica y argumentada de los problemas comunitarios.
 
-### 📌 SESIÓN 5 (50 minutos): Organización de Información y Diseño del Primer Borrador del Proyecto
-- **⏱️ Inicio (10 min):**
+### 📌 SESIÓN 4 (50 minutos): Organización de Información y Diseño del Primer Borrador del Proyecto
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Presentación de la estructura del producto integrador intermedio y revisión de los criterios de calidad.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): En equipos, los alumnos estructuran el primer borrador de su producto integrador, organizando datos, textos, ilustraciones o maquetas.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Registro del porcentaje de avance en el termómetro del proyecto grupal.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué información clave no puede faltar en nuestro producto sobre "Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)"?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué información clave no puede faltar en nuestro producto sobre "Cuidado y Filtración del Agua"?  
   2. ¿Cómo organizamos los datos para que cualquier persona de la comunidad los entienda con claridad?
-- **📖 Libro de Texto SEP:** Proyectos Comunitarios 6º Grado (Págs. 174 a la 176) — *Proyecto Comunitario: "Biodigestores y energías limpias para la escuela" — Aprovechamiento de biomasa, producción de biogás y huella ecológica*
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 5º Grado (Págs. 162 a la 164) — *Estadística comunitaria, media, moda y gráficas circulares*
+- **📦 Materiales:** Cartulinas o pliegos de papel, Colores y reglas, Borradores de trabajo
+- **📄 Entregable de la Sesión:** 📄 Entregable Intermedio: Primer borrador estructurado del producto del proyecto con datos organizados.
+
+### 📌 SESIÓN 5 (50 minutos): Organización de Información y Diseño del Primer Borrador del Proyecto
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Presentación de la estructura del producto integrador intermedio y revisión de los criterios de calidad.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): En equipos, los alumnos estructuran el primer borrador de su producto integrador, organizando datos, textos, ilustraciones o maquetas.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Registro del porcentaje de avance en el termómetro del proyecto grupal.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué información clave no puede faltar en nuestro producto sobre "Cuidado y Filtración del Agua"?  
+  2. ¿Cómo organizamos los datos para que cualquier persona de la comunidad los entienda con claridad?
+- **📖 Libro de Texto SEP:** Nuestros Saberes 5º Grado (Págs. 86 a la 88) — *Porcentajes, fracciones con distinto denominador y proporcionalidad*
 - **📦 Materiales:** Cartulinas o pliegos de papel, Colores y reglas, Borradores de trabajo
 - **📄 Entregable de la Sesión:** 📄 Entregable Intermedio: Primer borrador estructurado del producto del proyecto con datos organizados.
 
 ### 📌 SESIÓN 6 (50 minutos): Profundización Curricular y Vinculación Interdisciplinaria
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Conexión explícita con los campos formativos articulados (Lenguajes, Saberes, Ética y De lo Humano).
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Actividad integradora que combina "Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)" con la expresión artística, el análisis ético o la redacción formal de propuestas comunitarias.
-- **🌟 Cierre (10 min):**
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Actividad integradora que combina "Cuidado y Filtración del Agua" con la expresión artística, el análisis ético o la redacción formal de propuestas comunitarias.
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Mini-exposición de 2 minutos por equipo destacando la conexión interdisciplinaria lograda.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Cómo nos ayuda este tema a ser más empáticos, solidarios o analíticos con nuestra comunidad?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Cómo nos ayuda este tema a ser más empáticos, solidarios o analíticos con nuestra comunidad?  
   2. ¿Qué otros conocimientos de la escuela se relacionan directamente con lo que estamos construyendo?
-- **📖 Libro de Texto SEP:** Proyectos Comunitarios 6º Grado (Págs. 175 a la 177) — *Proyecto Comunitario: "Biodigestores y energías limpias para la escuela" — Aprovechamiento de biomasa, producción de biogás y huella ecológica*
+- **📖 Libro de Texto SEP:** Nuestros Saberes 6º Grado (Págs. 94 a la 96) — *Geometría del círculo, valor aproximado de Pi, volumen y plano cartesiano*
 - **📦 Materiales:** Material artístico / cartulinas, Textos informativos complementarios, Plumones
-- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #6: Producto interdisciplinario que vincula Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado) con la vida comunitaria.
+- **📄 Entregable de la Sesión:** 📄 Ficha de Trabajo #6: Producto interdisciplinario que vincula Cuidado y Filtración del Agua con la vida comunitaria.
 
 ### 📌 SESIÓN 7 (50 minutos): Taller de Coevaluación entre Pares y Retroalimentación Formativa
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Explicación de la rúbrica analítica y de la importancia de la crítica constructiva entre compañeros basada en el respeto mutuo.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): Dinámica de intercambio de proyectos entre equipos ("Taller de Galería"). Cada equipo revisa el trabajo de otro equipo con una lista de cotejo constructiva.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Devolución de los trabajos con comentarios amables y claros para orientar la mejora.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué aprendimos al observar el trabajo de nuestros compañeros?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué aprendimos al observar el trabajo de nuestros compañeros?  
   2. ¿Cómo podemos mejorar la claridad y presentación de nuestro producto final?
-- **📖 Libro de Texto SEP:** Proyectos Comunitarios 6º Grado (Págs. 177 a la 179) — *Proyecto Comunitario: "Biodigestores y energías limpias para la escuela" — Aprovechamiento de biomasa, producción de biogás y huella ecológica*
+- **📖 Libro de Texto SEP:** Proyectos de Aula 6º Grado (Págs. 140 a la 142) — *Modelación matemática y finanzas comunitarias*
 - **📦 Materiales:** Instrumentos de coevaluación impresos, Notas adhesivas de colores, Borradores de los proyectos
 - **📄 Entregable de la Sesión:** 📄 Instrumento de Coevaluación: Lista de cotejo con retroalimentación entre pares debidamente firmada.
 
 ### 📌 SESIÓN 8 (50 minutos): Ajuste, Corrección y Elaboración del Producto Final Tangible
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Revisión de las sugerencias recibidas en la coevaluación y asignación de tareas específicas para la versión definitiva.
-- **🔬 Desarrollo (30 min):**
+- **🔬 Desarrollo (30 min):**  
   ⏱️ DESARROLLO (30 min): Sesión intensiva de producción final. Los alumnos aplican correcciones ortográficas, precisión en cálculos, orden estético y claridad en su producto entregable.
-- **🌟 Cierre (10 min):**
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Verificación final de calidad con la rúbrica oficial antes de la entrega final. Visto bueno del docente.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Qué cambios hicimos en nuestro producto que lo hicieron más profesional y comprensible?
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué cambios hicimos en nuestro producto que lo hicieron más claro y completo?  
   2. ¿Nos sentimos orgullosos del trabajo que vamos a presentar a la comunidad escolar?
-- **📖 Libro de Texto SEP:** Proyectos Comunitarios 6º Grado (Págs. 178 a la 180) — *Proyecto Comunitario: "Biodigestores y energías limpias para la escuela" — Aprovechamiento de biomasa, producción de biogás y huella ecológica*
+- **📖 Libro de Texto SEP:** Proyectos Comunitarios 5º Grado (Págs. 170 a la 172) — *Estadística comunitaria, media, moda y gráficas circulares*
 - **📦 Materiales:** Materiales finales de exposición (cartulinas, modelos, maquetas, sobres, trípticos), Tijeras, pegamento, plumones
 - **📄 Entregable de la Sesión:** 📄 Producto Final Terminado: Versión definitiva del proyecto didáctico lista para su exposición comunitaria.
 
-### 📌 SESIÓN 9 (50 minutos): Ensayo General y Preparación de la Socialización Comunitaria
-- **⏱️ Inicio (10 min):**
-  ⏱️ INICIO (10 min): Organización del espacio del aula o patio escolar para la muestra pedagógica. Establecimiento de tiempos y turnos de presentación.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Simulación y ensayo de las exposiciones orales. Cada alumno practica su explicación con seguridad, lenguaje claro y uso de sus apoyos visuales y materiales concretos.
-- **🌟 Cierre (10 min):**
-  ⏱️ CIERRE (10 min): Ronda de recomendaciones finales y palabras de motivación para la presentación oficial.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Cómo podemos explicar conceptos de "Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)" de manera sencilla para que cualquiera los entienda?
-  2. ¿Qué tono de voz y postura corporal transmiten seguridad y entusiasmo en nuestra presentación?
-- **📖 Libro de Texto SEP:** Proyectos Comunitarios 6º Grado (Págs. 180 a la 182) — *Proyecto Comunitario: "Biodigestores y energías limpias para la escuela" — Aprovechamiento de biomasa, producción de biogás y huella ecológica*
-- **📦 Materiales:** Guiones de exposición, Materiales de exhibición terminados, Espacio escolar acondicionado
-- **📄 Entregable de la Sesión:** 📄 Guion de Exposición: Ficha con los puntos clave que cada integrante explicará durante la muestra.
+### 📌 SESIÓN 9 (50 minutos): Ajuste, Corrección y Elaboración del Producto Final Tangible
+- **⏱️ Inicio (10 min):**  
+  ⏱️ INICIO (10 min): Revisión de las sugerencias recibidas en la coevaluación y asignación de tareas específicas para la versión definitiva.
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Sesión intensiva de producción final. Los alumnos aplican correcciones ortográficas, precisión en cálculos, orden estético y claridad en su producto entregable.
+- **🌟 Cierre (10 min):**  
+  ⏱️ CIERRE (10 min): Verificación final de calidad con la rúbrica oficial antes de la entrega final. Visto bueno del docente.
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Qué cambios hicimos en nuestro producto que lo hicieron más claro y completo?  
+  2. ¿Nos sentimos orgullosos del trabajo que vamos a presentar a la comunidad escolar?
+- **📖 Libro de Texto SEP:** Nuestros Saberes 5º Grado (Págs. 78 a la 80) — *Porcentajes, fracciones con distinto denominador y proporcionalidad*
+- **📦 Materiales:** Materiales finales de exposición (cartulinas, modelos, maquetas, sobres, trípticos), Tijeras, pegamento, plumones
+- **📄 Entregable de la Sesión:** 📄 Producto Final Terminado: Versión definitiva del proyecto didáctico lista para su exposición comunitaria.
 
 ### 📌 SESIÓN 10 (50 minutos): Feria de Aprendizajes Comunitarios, Evaluación Formativa y Compromisos
-- **⏱️ Inicio (10 min):**
+- **⏱️ Inicio (10 min):**  
   ⏱️ INICIO (10 min): Bienvenida a la muestra de aprendizajes. Palabras de apertura por parte de los alumnos y del docente.
-- **🔬 Desarrollo (30 min):**
-  ⏱️ DESARROLLO (30 min): Presentación de la Feria de Aprendizajes ante compañeros de otros grupos, docentes o padres de familia. Demostración práctica de los conocimientos adquiridos sobre "Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)".
-- **🌟 Cierre (10 min):**
+- **🔬 Desarrollo (30 min):**  
+  ⏱️ DESARROLLO (30 min): Presentación de la Feria de Aprendizajes ante compañeros de otros grupos, docentes o padres de familia. Demostración práctica de los conocimientos adquiridos sobre "Cuidado y Filtración del Agua".
+- **🌟 Cierre (10 min):**  
   ⏱️ CIERRE (10 min): Aplicación de la rúbrica analítica de autoevaluación final. Firma del "Árbol de Compromisos de Aprendizaje" y felicitación grupal.
-- **❓ Preguntas Clave de la Sesión:**
-  1. ¿Cuál fue el aprendizaje más significativo y transformador que obtuviste a lo largo de estas 10 sesiones?
-  2. ¿Cómo vas a seguir utilizando este conocimiento sobre "Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado)" en tu vida diaria?
-- **📖 Libro de Texto SEP:** Proyectos Comunitarios 6º Grado (Págs. 181 a la 183) — *Proyecto Comunitario: "Biodigestores y energías limpias para la escuela" — Aprovechamiento de biomasa, producción de biogás y huella ecológica*
+- **❓ Preguntas Clave de la Sesión:**  
+  1. ¿Cuál fue el aprendizaje más valioso que obtuviste a lo largo de este proyecto?  
+  2. ¿Cómo vas a seguir utilizando lo que aprendiste sobre "Cuidado y Filtración del Agua" en tu vida diaria?
+- **📖 Libro de Texto SEP:** Nuestros Saberes 6º Grado (Págs. 86 a la 88) — *Geometría del círculo, valor aproximado de Pi, volumen y plano cartesiano*
 - **📦 Materiales:** Rúbricas analíticas individuales, Mural escolar de compromisos, Diplomas simbólicos o distintivos de logro
 - **📄 Entregable de la Sesión:** 🏆 Evidencia Final Integradora: Rúbrica analítica completada, bitácora del proyecto y registro de la feria comunitaria.
 
 ---
 
-## 📊 IV. Rúbrica Analítica Formativa de Evaluación (NEM 2024)
+## 📊 V. Rúbrica Analítica Formativa de Evaluación (NEM 2024)
 
 | Criterio Pedagógico | Nivel Sobresaliente (3 pts) | Nivel Satisfactorio (2 pts) | Nivel En Proceso (1 pt) |
 | :--- | :--- | :--- | :--- |
-| **Indagación Científica y Comprensión Biológica** | Explica detalladamente los ciclos biológicos, necesidades de las plantas y métodos de conservación del agua con base en experimentos. | Identifica las partes de las plantas y los cuidados del huerto con claridad. | Muestra confusión sobre los factores bióticos y abióticos necesarios para el cultivo. |
-| **Implementación Técnica del Huerto y Riego** | Construye camas de siembra sustentables y un sistema de riego por goteo funcional con materiales reciclados. | Participa activamente en la siembra y armado del compostero escolar con orden. | Muestra desinterés en el mantenimiento de las plantas o el armado del prototipo. |
-| **Compromiso Comunitario y Divulgación Ecológica** | Diseña infografías de alto impacto y sensibiliza activamente a la comunidad escolar sobre el cuidado del agua. | Comparte información sobre el cuidado del huerto con compañeros de otros grupos. | Participa pasivamente en las actividades de difusión ambiental. |
+| **Cálculo de Precios, Operaciones y Cálculo de Cambio** | Realiza transacciones con exactitud, aplica estrategias de cálculo mental eficientes y calcula el cambio correspondiente con rapidez y sin errores. | Calcula totales y cambios de forma correcta apoyándose en el registro escrito o material manipulable. | Presenta dificultades para sumar cantidades monetarias o calcular el cambio exacto. |
+| **Organización del Puesto y Clasificación Numérica** | Etiqueta productos con claridad, organiza listas de precios ordenadas por valor y promueve productos sanos y sustentables. | Mantiene su puesto ordenado y con precios visibles para los compradores. | Los precios son confusos o el puesto presenta desorganización en los datos numéricos. |
+| **Atención al Cliente y Trabajo en Equipo** | Atiende con empatía, amabilidad y honestidad a los compradores, promoviendo el consumo ético y el ahorro solidario. | Colabora en la atención de su puesto y se comunica con respeto con los clientes. | Muestra desinterés en la atención de la tiendita o dificultad para trabajar con sus pares. |
 
 ---
 
-## 🛠️ V. Recursos y Materiales Didácticos
-- Libros de Texto Gratuitos Oficiales de la SEP asignados con páginas y dinámicas.
-- Materiales manipulables y de indagación escolar.
-- Evidencia final del proyecto: **Instalación del huerto escolar agroecológico con sistema de riego por goteo casero, compostero y guía comunitaria ilustrada de cuidado ambiental.**.
+## 🛠️ VI. Recursos y Materiales Didácticos
+- Libros de Texto Gratuitos Oficiales de la SEP asignados con páginas específicas y dinámicas formativas.
+- Materiales manipulables y de indagación comunitaria.
+- Evidencia final del proyecto: **Simulación del "Mercado Cooperativo Escolar" con puestos de productos, lista de precios calculada por los alumnos, billetes y monedas didácticas, libro de contabilidad escolar y guía de compra inteligente para las familias.**.
 
 ---
 *Documento Curricular Oficial generado para ISkool • Bóveda Central de Conocimiento.*
