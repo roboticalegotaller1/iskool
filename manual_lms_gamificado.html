@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Manual de Funciones - Creador de Actividades LMS ISkool</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+
+    @page {
+      size: A4;
+      margin: 1.8cm 1.5cm 2cm 1.5cm;
+      @bottom-right {
+        content: "Página " counter(page);
+        font-family: 'Inter', sans-serif;
+        font-size: 8pt;
+        color: #94a3b8;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 10pt;
+      line-height: 1.55;
+      color: #1e293b;
+      background: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1, h2, h3, h4, h5 {
+      font-family: 'Outfit', sans-serif;
+      color: #0f172a;
+      margin-top: 0;
+      letter-spacing: -0.02em;
+    }
+
+    /* Portada */
+    .cover-page {
+      page-break-after: always;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 3rem 1rem;
+      border: 3px solid #7c3aed;
+      border-radius: 24px;
+      background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #ede9fe 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cover-badge {
+      display: inline-block;
+      background: #7c3aed;
+      color: white;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 10pt;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 6px 16px;
+      border-radius: 999px;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+    }
+
+    .cover-title {
+      font-size: 32pt;
+      font-weight: 900;
+      line-height: 1.15;
+      color: #3b0764;
+      margin: 1.5rem 0 1rem 0;
+    }
+
+    .cover-subtitle {
+      font-size: 13pt;
+      font-weight: 500;
+      color: #581c87;
+      line-height: 1.5;
+      max-width: 90%;
+    }
+
+    .cover-meta {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      background: white;
+      padding: 1.5rem;
+      border-radius: 16px;
+      border: 1px solid #d8b4fe;
+      box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.1);
+    }
+
+    .cover-meta-item strong {
+      display: block;
+      font-size: 8pt;
+      text-transform: uppercase;
+      color: #7c3aed;
+      letter-spacing: 0.05em;
+    }
+
+    .cover-meta-item span {
+      font-size: 10pt;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    /* Secciones */
+    .section-title {
+      font-size: 18pt;
+      font-weight: 800;
+      color: #3b0764;
+      border-bottom: 2px solid #e9d5ff;
+      padding-bottom: 0.5rem;
+      margin-top: 2rem;
+      margin-bottom: 1.2rem;
+      page-break-after: avoid;
+    }
+
+    .category-header {
+      background: linear-gradient(90deg, #7c3aed, #4f46e5);
+      color: white;
+      padding: 10px 16px;
+      border-radius: 12px;
+      margin: 1.8rem 0 1rem 0;
+      font-size: 13pt;
+      font-weight: 800;
+      page-break-after: avoid;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .category-badge {
+      background: rgba(255, 255, 255, 0.2);
+      font-size: 8pt;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    /* Tarjetas de Función / Bloque */
+    .block-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-left: 5px solid #7c3aed;
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin-bottom: 1.2rem;
+      page-break-inside: avoid;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+
+    .block-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .block-title {
+      font-size: 12pt;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+    }
+
+    .block-tag {
+      font-size: 7.5pt;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    .block-desc {
+      font-size: 9.5pt;
+      color: #334155;
+      margin-bottom: 10px;
+    }
+
+    .example-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 9pt;
+      color: #1e293b;
+    }
+
+    .example-title {
+      font-weight: 800;
+      font-size: 8.5pt;
+      text-transform: uppercase;
+      color: #6366f1;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .example-content {
+      font-family: 'Inter', sans-serif;
+      color: #334155;
+    }
+
+    .example-content code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8pt;
+      background: #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #0f172a;
+    }
+
+    /* Tablas */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 9pt;
+      page-break-inside: avoid;
+    }
+
+    th {
+      background: #f1f5f9;
+      color: #0f172a;
+      font-weight: 800;
+      text-align: left;
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+    }
+
+    td {
+      padding: 8px 12px;
+      border: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+
+    tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    /* Grids de Características */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin: 1rem 0;
+    }
+
+    .feature-item {
+      background: #fdf4ff;
+      border: 1px solid #f0abfc;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .feature-item h4 {
+      margin: 0 0 4px 0;
+      color: #86198f;
+      font-size: 10pt;
+      font-weight: 800;
+    }
+
+    .feature-item p {
+      margin: 0;
+      font-size: 8.5pt;
+      color: #701a75;
+    }
+
+    .page-break {
+      page-break-after: always;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PORTADA -->
+  <div class="cover-page">
+    <div>
+      <span class="cover-badge">Ecosistema Educativo ISkool • Versión 2026</span>
+      <h1 class="cover-title">Manual Maestro de Funciones Didácticas</h1>
+      <p class="cover-subtitle">
+        Guía integral y ejemplos prácticos de las 16 mecánicas interactivas y pedagógicas del nuevo creador de actividades gamificado.
+      </p>
+    </div>
+
+    <div class="cover-meta">
+      <div class="cover-meta-item">
+        <strong>Institución</strong>
+        <span>Colegio Anglo Mexicano</span>
+      </div>
+      <div class="cover-meta-item">
+        <strong>Módulo</strong>
+        <span>Estudio Docente & Creador de Actividades</span>
+      </div>
+      <div class="cover-meta-item">
+        <strong>Enfoque</strong>
+        <span>Gamificación RPG & Nueva Escuela Mexicana (NEM)</span>
+      </div>
+      <div class="cover-meta-item">
+        <strong>Mecánicas Incluidas</strong>
+        <span>16 Bloques de Aprendizaje Interactivo</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 1: INTRODUCCIÓN Y ARQUITECTURA -->
+  <div>
+    <h2 class="section-title">1. Visión General y Arquitectura del Estudio</h2>
+    <p>
+      El nuevo creador de actividades de <strong>ISkool</strong> transforma la experiencia pedagógica de un simple editor de preguntas en un <strong>Taller de Creación Gamificado</strong> estructurado por bloques interactivos secuenciales. Cada actividad combina instrucción, experimentación en vivo, retos competitivos y recompensas formativas.
+    </p>
+
+    <div class="feature-grid">
+      <div class="feature-item">
+        <h4>🧭 Dock de Acceso Rápido (4 Esenciales)</h4>
+        <p>Ubicado a la izquierda del espacio de trabajo. Ofrece acceso instantáneo a las herramientas de mayor uso diario: preguntas, lecturas, cofres y combates contra Bosses.</p>
+      </div>
+      <div class="feature-item">
+        <h4>🌟 Catálogo Extendido (+) (16 Mecánicas)</h4>
+        <p>Panel inferior deslizante con buscador en tiempo real y 4 categorías pedagógicas para integrar laboratorios en vivo, escape rooms, autoevaluaciones y diplomas.</p>
+      </div>
+    </div>
+
+    <h3 style="font-size: 12pt; font-weight: 800; margin-top: 1.5rem; color: #3b0764;">
+      🎮 Motor de Simulación en Vivo (StudioFlowPlayer)
+    </h3>
+    <p>
+      Al hacer clic en <strong>Probar Juego</strong>, el docente o alumno experimenta la actividad en una secuencia interactiva completa:
+    </p>
+    <ul>
+      <li><strong>Marcador en Vivo:</strong> Puntos de Experiencia (XP), Monedas de Oro y 3 Vidas representadas con corazones interactivos.</li>
+      <li><strong>Retroalimentación Sonora (Web Audio API):</strong> Efectos de acierto (C5-G5), error, fanfarrias de victoria y sonidos de ataque sintetizados nativamente en el navegador.</li>
+      <li><strong>Multiplicadores de Racha:</strong> Bonificaciones de XP al encadenar respuestas correctas consecutivas.</li>
+    </ul>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECCIÓN 2: CATÁLOGO DE LAS 16 MECÁNICAS -->
+  <h2 class="section-title">2. Catálogo de Mecánicas Didácticas y Ejemplos</h2>
+
+  <!-- CATEGORÍA 1 -->
+  <div class="category-header">
+    <span>⚡ CATEGORÍA 1: Evaluaciones Avanzadas e Interactividad</span>
+    <span class="category-badge">5 Mecánicas</span>
+  </div>
+
+  <!-- 1. Drag & Drop Match -->
+  <div class="block-card" style="border-left-color: #8b5cf6;">
+    <div class="block-header">
+      <h3 class="block-title">🔗 1. Emparejamiento / Drag & Drop (drag_drop_match)</h3>
+      <span class="block-tag" style="background: #ede9fe; color: #6d28d9;">Estilo Quizizz & Nearpod</span>
+    </div>
+    <p class="block-desc">
+      Permite al alumno relacionar dos columnas interactivas (términos con definiciones, causas con efectos, o conceptos con fórmulas). Valida pares en tiempo real y otorga puntos formativos al completar todas las conexiones.
+    </p>
+    <div class="example-box">
+      <div class="example-title">💡 Ejemplo de Implementación en el Aula: Física Fundamental</div>
+      <div class="example-content">
+        <strong>Instrucción:</strong> "Conecta cada concepto de la dinámica clásica con su definición correspondiente:"<br>
+        • <code>Fuerza</code> ↔️ "Interacción que altera el estado de reposo o movimiento de un cuerpo."<br>
+        • <code>Inercia</code> ↔️ "Propiedad de los cuerpos de resistirse a cambiar su estado de movimiento."<br>
+        • <code>Masa</code> ↔️ "Medida cuantitativa de la cantidad de materia e inercia que posee un objeto."
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Ordering Sequence -->
+  <div class="block-card" style="border-left-color: #3b82f6;">
+    <div class="block-header">
+      <h3 class="block-title">🔢 2. Ordenar Secuencia / Cronología (ordering_sequence)</h3>
+      <span class="block-tag" style="background: #dbeafe; color: #1d4ed8;">Tipo Kahoot Reorder</span>
+    </div>
+    <p class="block-desc">
+      El alumno debe ordenar una serie de pasos, fases o eventos temporales barajados al azar. Ideal para enseñar métodos científicos, algoritmos matemáticos o líneas de tiempo históricas.
+    </p>
+    <div class="example-box">
+      <div class="example-title">💡 Ejemplo de Implementación en el Aula: Historia de México</div>
+      <div class="example-content">
+        <strong>Instrucción:</strong> "Ordena cronológicamente los acontecimientos del inicio de la Independencia:"<br>
+        1. <code>Conspiración de Querétaro (Septiembre 1810)</code><br>
+        2. <code>Grito de Dolores por Miguel Hidalgo (16 de Septiembre de 1810)</code><br>
+        3. <code>Toma de la Alhóndiga de Granaditas (28 de Septiembre de 1810)</code><br>
+        4. <code>Batalla del Monte de las Cruces (30 de Octubre de 1810)</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Fill in Blanks -->
+  <div class="block-card" style="border-left-color: #14b8a6;">
+    <div class="block-header">
+      <h3 class="block-title">✍️ 3. Completar Espacios / Texto Mutilado (fill_in_blanks)</h3>
+      <span class="block-tag" style="background: #ccfbf1; color: #0f766e;">Estilo Duolingo</span>
+    </div>
+    <p class="block-desc">
+      Presenta un texto pedagógico con palabras clave ocultas mediante la sintaxis <code>[palabra]</code>. El sistema genera automáticamente un banco de opciones interactivas para que el alumno complete el enunciado.
+    </p>
+    <div class="example-box">
+      <div class="example-title">💡 Ejemplo de Implementación en el Aula: Ciencias Naturales</div>
+      <div class="example-content">
+        <strong>Plantilla Docente:</strong> "La <code>[gravedad]</code> es la fuerza que atrae a los objetos hacia el centro de la <code>[Tierra]</code> con una aceleración constante de 9.8 m/s²."<br>
+        <strong>Banco de Palabras Generado:</strong> <code>gravedad</code>, <code>Tierra</code>, <code>fricción</code>, <code>energía</code> (incluye distractores).
+      </div>
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- 4. Open Poll Wordcloud -->
+  <div class="block-card" style="border-left-color: #d946ef;">
+    <div class="block-header">
+      <h3 class="block-title">💡 4. Pregunta Abierta & Reflexión IA (open_poll_wordcloud)</h3>
+      <span class="block-tag" style="background: #fae8ff; color: #86198f;">Evaluación Formativa NEM</span>
+    </div>
+    <p class="block-desc">
+      Promueve el pensamiento crítico y la argumentación. El alumno redacta su respuesta y recibe retroalimentación formativa inmediata impulsada por IA pedagógica con base en una rúbrica docente.
+    </p>
+    <div class="example-box">
+      <div class="example-title">💡 Ejemplo de Implementación en el Aula: Formación Cívica y Ética</div>
+      <div class="example-content">
+        <strong>Detonador:</strong> "¿Por qué es indispensable que existan leyes de convivencia en una sociedad democrática?"<br>
+        <strong>Rúbrica de IA:</strong> Evalúa mención de resolución pacífica de conflictos, justicia social y derechos humanos.
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Quiz Question -->
+  <div class="block-card" style="border-left-color: #7c3aed;">
+    <div class="block-header">
+      <h3 class="block-title">❓ 5. Pregunta de Opción Múltiple (quiz_question)</h3>
+      <span class="block-tag" style="background: #ede9fe; color: #5b21b6;">Estándar Gamificado</span>
+    </div>
+    <p class="block-desc">
+      Reactivo clásico de selección simple con tiempo límite configurable, ilustración visual y explicación didáctica posterior a la respuesta para reforzar el aprendizaje.
+    </p>
+    <div class="example-box">
+      <div class="example-title">💡 Ejemplo de Implementación en el Aula: Matemáticas</div>
+      <div class="example-content">
+        <strong>Pregunta:</strong> "En un triángulo rectángulo cuyos catetos miden 3 cm y 4 cm, ¿cuánto mide la hipotenusa?"<br>
+        <strong>Opciones:</strong> A) 5 cm (Correcta) | B) 7 cm | C) 12 cm | D) 25 cm.<br>
+        <strong>Explicación:</strong> "Por Teorema de Pitágoras: h² = 3² + 4² = 9 + 16 = 25, por lo tanto h = 5 cm."
+      </div>
+    </div>
+  </div>
+
+  <!-- CATEGORÍA 2 -->
+  <div class="category-header" style="background: linear-gradient(90deg, #dc2626, #0284c7);">
+    <span>🎬 CATEGORÍA 2: Multimedia & Laboratorios Vivos</span>
+    <span class="category-badge">3 Mecánicas</span>
+  </div>
+
+  <!-- 6. YouTube Video -->
+  <div class="block-card" style="border-left-color: #ef4444;">
+    <div class="block-header">
+      <h3 class="block-title">🎥 6. Video Interactivo de YouTube (youtube_video)</h3>
+      <span class="block-tag" style="background: #fee2e2; color: #b91c1c;">Tipo Edpuzzle</span>
+    </div>
+    <p class="block-desc">
+      Incrusta cápsulas audiovisuales con soporte universal de URLs y marcas de tiempo (ej. <code>&t=76s</code>). Reproduce el video directamente dentro del flujo de la lección antes de pasar a la siguiente actividad.
+    </p>
+    <div class="example-box">
+      <div class="example-title">💡 Ejemplo de Implementación en el Aula: Física y Movimiento</div>
+      <div class="example-content">
+        <strong>Enlace:</strong> <code>https://www.youtube.com/watch?v=wmC0wF8WuqU&t=76s</code><br>
+        <strong>Título:</strong> "Cápsula: Elementos y tipos de fuerzas explicados en 3 minutos."
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. External Embed -->
+  <div class="block-card" style="border-left-color: #06b6d4;">
+    <div class="block-header">
+      <h3 class="block-title">🌐 7. Simulador / Laboratorio Web (external_embed)</h3>
+      <span class="block-tag" style="background: #cffafe; color: #0e7490;">PhET & GeoGebra Live</span>
+    </div>
+    <p class="block-desc">
+      Integra simuladores científicos interactivos (PhET Colorado, GeoGebra, Scratch, Desmos) mediante un iframe seguro con sandbox. Los alumnos interactúan con variables físicas o matemáticas reales.
+    </p>
+    <div class="example-box">
+      <div class="example-title">💡 Ejemplo de Implementación en el Aula: Laboratorio PhET</div>
+      <div class="example-content">
+        <strong>Simulador:</strong> <code>https://phet.colorado.edu/sims/html/forces-and-motion-basics/latest/forces-and-motion-basics_es.html</code><br>
+        <strong>Instrucción:</strong> "Aplica una fuerza de 100 N sobre la caja de 50 kg y observa cómo cambia el vector aceleración."
+      </div>
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- 8. Audio SFX -->
+  <div class="block-card" style="border-left-color: #8b5cf6;">
+    <div class="block-header">
+      <h3 class="block-title">🎺 8. Efecto de Audio / Fanfarria (audio_sfx)</h3>
+      <span class="block-tag" style="background: #ede9fe; color: #6d28d9;">Inmersión Sonora</span>
+    </div>
+    <p class="block-desc">
+      Reproduce pistas y fanfarrias sonoras de victoria, tambores de batalla o misterio para enriquecer la narrativa lúdica de la sesión de aprendizaje.
+    </p>
+    <div class="example-box">
+      <div class="example-title">💡 Ejemplo de Implementación en el Aula: Fanfarria Triunfal</div>
+      <div class="example-content">
+        <strong>Tipo de Sonido:</strong> Fanfarria de Victoria (<code>victory_fanfare</code>) al superar un reto complejo de ciencias.
+      </div>
+    </div>
+  </div>
+
+  <!-- CATEGORÍA 3 -->
+  <div class="category-header" style="background: linear-gradient(90deg, #f59e0b, #e11d48);">
+    <span>🎮 CATEGORÍA 3: Gamificación, Retos & Recompensas</span>
+    <span class="category-badge">5 Mecánicas</span>
+  </div>
+
+  <!-- 9. Secret Code Puzzle -->
+  <div class="block-card" style="border-left-color: #f59e0b;">
+    <div class="block-header">
+      <h3 class="block-title">🗝️ 9. Misterio & Código Secreto (secret_code_puzzle)</h3>
+      <span class="block-tag" style="background: #fef3c7; color: #b45309;">Escape Room Didáctico</span>
+    </div>
+    <p class="block-desc">
+      Plantea un enigma o criptograma con un candado virtual. Los alumnos deben descifrar la palabra secreta o combinación numérica para desbloquear la fase posterior de la misión.
+    </p>
+    <div class="example-box">
+      <div class="example-title">💡 Ejemplo de Implementación en el Aula: Acertijo de Ciencias</div>
+      <div class="example-content">
+        <strong>Pista Principal:</strong> "Para abrir la bóveda de Newton, descifra la palabra de 6 letras: F _ _ _ Z A"<br>
+        <strong>Código Secreto:</strong> <code>FUERZA</code><br>
+        <strong>Pista de Auxilio:</strong> "Magnitud vectorial que se mide en Newtons (N)."
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. Boss Enemy -->
+  <div class="block-card" style="border-left-color: #e11d48;">
+    <div class="block-header">
+      <h3 class="block-title">⚔️ 10. Encuentro Pixi contra Boss (boss_enemy)</h3>
+      <span class="block-tag" style="background: #ffe4e6; color: #be123c;">Combate RPG por Turnos</span>
+    </div>
+    <p class="block-desc">
+      Enfrentamiento épico contra un monstruo o jefe animado con barra de vida (HP). El alumno selecciona ataques críticos, hechizos didácticos o pociones de enfoque para derrotar al enemigo.
+    </p>
+    <div class="example-box">
+      <div class="example-title">💡 Ejemplo de Implementación en el Aula: Batalla Final de Unidad</div>
+      <div class="example-content">
+        <strong>Jefe:</strong> "El Dragón de la Duda (100 HP)"<br>
+        <strong>Acciones del Alumno:</strong> Ataque Crítico de Sabiduría (-40 HP), Hechizo Didáctico (-45 HP) o Poción de Enfoque (+1 Vida, -25 HP).
+      </div>
+    </div>
+  </div>
+
+  <!-- 11. Minigame Action -->
+  <div class="block-card" style="border-left-color: #10b981;">
+    <div class="block-header">
+      <h3 class="block-title">🎲 11. Minijuego Arcade Gamificado (minigame_action)</h3>
+      <span class="block-tag" style="background: #d1fae5; color: #047857;">Tipo Wordwall & Blooket</span>
+    </div>
+    <p class="block-desc">
+      Añade dinámicas de juego rápido como ruletas de saberes, memoramas de tarjetas o retos de agilidad mental para romper la monotonía y motivar la participación.
+    </p>
+    <div class="example-box">
+      <div class="example-title">💡 Ejemplo de Implementación en el Aula: Ruleta de la Fortuna</div>
+      <div class="example-content">
+        <strong>Opciones de la Ruleta:</strong> "+50 XP de Sabiduría", "Escudo de Enfoque", "Gema Épica de Maestría", "+30 Monedas de Oro".
+      </div>
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- 12. Reward Chest -->
+  <div class="block-card" style="border-left-color: #f59e0b;">
+    <div class="block-header">
+      <h3 class="block-title">🎁 12. Cofre Épico de Recompensas (reward_chest)</h3>
+      <span class="block-tag" style="background: #fef3c7; color: #92400e;">Economía de Clase</span>
+    </div>
+    <p class="block-desc">
+      Otorga paquetes de experiencia (XP), monedas de oro para personalizar avatares y desbloqueo de insignias digitales coleccionables al alcanzar hitos clave.
+    </p>
+    <div class="example-box">
+      <div class="example-title">💡 Ejemplo de Implementación en el Aula: Botín de Misión</div>
+      <div class="example-content">
+        <strong>Recompensa:</strong> <code>+150 XP</code>, <code>+35 Monedas de Oro</code> e Insignia <code>"Maestro del Movimiento"</code>.
+      </div>
+    </div>
+  </div>
+
+  <!-- 13. Badge Certificate -->
+  <div class="block-card" style="border-left-color: #eab308;">
+    <div class="block-header">
+      <h3 class="block-title">📜 13. Diploma & Certificado de Honor (badge_certificate)</h3>
+      <span class="block-tag" style="background: #fef9c3; color: #854d0e;">Acreditación Digital</span>
+    </div>
+    <p class="block-desc">
+      Genera un reconocimiento de honor digital con orla dorada, título del mérito, grado de maestría alcanzado y firma del docente titular o academia.
+    </p>
+    <div class="example-box">
+      <div class="example-title">💡 Ejemplo de Implementación en el Aula: Certificación de Trimestre</div>
+      <div class="example-content">
+        <strong>Título:</strong> "Diploma de Honor en Ciencias Naturales"<br>
+        <strong>Grado:</strong> "Gran Maestro de la Física y la Energía"<br>
+        <strong>Firma:</strong> "Academia de Ciencias - Colegio Anglo Mexicano"
+      </div>
+    </div>
+  </div>
+
+  <!-- CATEGORÍA 4 -->
+  <div class="category-header" style="background: linear-gradient(90deg, #4f46e5, #0f172a);">
+    <span>🔀 CATEGORÍA 4: Estructura Pedagógica & Rutas Adaptativas</span>
+    <span class="category-badge">3 Mecánicas</span>
+  </div>
+
+  <!-- 14. Logic Branch -->
+  <div class="block-card" style="border-left-color: #6366f1;">
+    <div class="block-header">
+      <h3 class="block-title">🔀 14. Ramificación Adaptativa Condicional (logic_branch)</h3>
+      <span class="block-tag" style="background: #e0e7ff; color: #3730a3;">Mastery Learning</span>
+    </div>
+    <p class="block-desc">
+      Personaliza el trayecto pedagógico: si el estudiante obtiene un rendimiento superior al umbral configurado (ej. &ge; 80%), avanza hacia un desafío avanzado; si no, se le canaliza a una cápsula de refuerzo.
+    </p>
+    <div class="example-box">
+      <div class="example-title">💡 Ejemplo de Implementación en el Aula: Trayecto Personalizado</div>
+      <div class="example-content">
+        <strong>Condición:</strong> Si aciertos &ge; 70% ➔ Desbloquear Batalla contra el Boss Final.<br>
+        <strong>En caso contrario:</strong> ➔ Redirigir a video explicativo de repaso.
+      </div>
+    </div>
+  </div>
+
+  <!-- 15. Checkpoint Gate -->
+  <div class="block-card" style="border-left-color: #334155;">
+    <div class="block-header">
+      <h3 class="block-title">🛡️ 15. Punto de Control & Autoevaluación (checkpoint_gate)</h3>
+      <span class="block-tag" style="background: #f1f5f9; color: #1e293b;">Metacognición NEM</span>
+    </div>
+    <p class="block-desc">
+      Pausa reflexiva obligatoria donde el alumno evalúa su nivel de dominio mediante una escala de 5 estrellas antes de continuar con la siguiente fase de la actividad.
+    </p>
+    <div class="example-box">
+      <div class="example-title">💡 Ejemplo de Implementación en el Aula: Reflexión de Cierre</div>
+      <div class="example-content">
+        <strong>Pregunta de Autoevaluación:</strong> "¿Qué tan seguro te sientes aplicando las 3 leyes de Newton en situaciones de la vida real?" (Calificación en 5 estrellas).
+      </div>
+    </div>
+  </div>
+
+  <!-- 16. Text Narrative -->
+  <div class="block-card" style="border-left-color: #2563eb;">
+    <div class="block-header">
+      <h3 class="block-title">📖 16. Texto, Guía o Fragmento Lore (text_narrative)</h3>
+      <span class="block-tag" style="background: #eff6ff; color: #1d4ed8;">Storytelling Pedagógico</span>
+    </div>
+    <p class="block-desc">
+      Inserta fragmentos de lectura, instrucciones del docente o diálogos de personajes de la historia para contextualizar el aprendizaje dentro de una narrativa envolvente.
+    </p>
+    <div class="example-box">
+      <div class="example-title">💡 Ejemplo de Implementación en el Aula: Introducción a la Misión</div>
+      <div class="example-content">
+        <strong>Personaje:</strong> Profesor Guía Galileo<br>
+        <strong>Mensaje:</strong> "¡Atención cadetes del espacio! Nuestra nave ha entrado en un campo gravitacional desconocido. Deberán resolver los desafíos de fuerza para recalibrar los motores."
+      </div>
+    </div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- SECCIÓN 3: GUÍA PASO A PASO PARA EL DOCENTE -->
+  <h2 class="section-title">3. Guía Práctica: Cómo Crear una Actividad en 5 Pasos</h2>
+  <p>
+    Sigue esta metodología recomendada para construir actividades pedagógicas gamificadas de alto impacto en menos de 5 minutos:
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 15%;">Paso</th>
+        <th style="width: 30%;">Acción</th>
+        <th style="width: 55%;">Buenas Prácticas Pedagógicas</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Paso 1</strong></td>
+        <td><strong>Establecer el Propósito y PDA</strong></td>
+        <td>Haz clic en <strong>Ajustes Pedagógicos</strong> para definir el título, descripción, Campo Formativo y Proceso de Desarrollo de Aprendizaje (PDA).</td>
+      </tr>
+      <tr>
+        <td><strong>Paso 2</strong></td>
+        <td><strong>Iniciar con Storytelling</strong></td>
+        <td>Añade un bloque de <code>Texto / Narrativa</code> o un <code>Video de YouTube</code> corto para contextualizar el tema y despertar la curiosidad del alumno.</td>
+      </tr>
+      <tr>
+        <td><strong>Paso 3</strong></td>
+        <td><strong>Experimentación y Retos</strong></td>
+        <td>Abre el menú <strong>(+)</strong> e inserta un <code>Simulador PhET</code> o un ejercicio de <code>Emparejamiento / Drag & Drop</code> para aplicar los conocimientos de forma práctica.</td>
+      </tr>
+      <tr>
+        <td><strong>Paso 4</strong></td>
+        <td><strong>Desafío RPG o Escape Room</strong></td>
+        <td>Incorpora un <code>Combate con Boss Pixi</code> o un <code>Misterio & Código Secreto</code> para fomentar la emoción y el logro formativo.</td>
+      </tr>
+      <tr>
+        <td><strong>Paso 5</strong></td>
+        <td><strong>Recompensa y Cierre</strong></td>
+        <td>Finaliza con un <code>Cofre de Recompensas</code>, un <code>Punto de Control</code> de autoevaluación o un <code>Diploma de Honor</code>, y prueba la lección con el botón <strong>Probar Juego</strong>.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECCIÓN 4: CONCLUSIÓN -->
+  <h2 class="section-title">4. Conclusión</h2>
+  <p>
+    Con la integración de estas <strong>16 mecánicas pedagógicas</strong> y el nuevo motor interactivo, el <strong>Colegio Anglo Mexicano</strong> se posiciona a la vanguardia educativa internacional, combinando el rigor curricular de la Nueva Escuela Mexicana con la motivación de la gamificación moderna.
+  </p>
+
+  <div style="margin-top: 2rem; padding: 1rem; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; text-align: center; font-size: 8.5pt; color: #64748b;">
+    Documento oficial generado para el claustro docente de <strong>ISkool / Colegio Anglo Mexicano</strong> • © 2026 Todos los derechos reservados.
+  </div>
+
+</body>
+</html>

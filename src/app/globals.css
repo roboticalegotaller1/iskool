@@ -1,0 +1,199 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+  
+  /* Fuente Institucional de Alta Precisión */
+  --font-sans: var(--font-plus-jakarta, 'Plus Jakarta Sans'), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-jetbrains-mono, 'JetBrains Mono'), monospace;
+
+  /* Valores HSL institucionales base */
+  --color-primary-hsl: 221 83% 53%;   /* Azul Zafiro (Rigor, Estructura, Académico) */
+  --color-secondary-hsl: 268 85% 58%; /* Púrpura / Violeta Mágico (Magia, Poder, Transformación - Min 6:25) */
+  --color-accent-hsl: 158 72% 40%;    /* Verde Esmeralda (Crecimiento, Bienestar, Comunidad) */
+
+  /* Identidades Cromáticas por Área Funcional (Psicología del Color en Educación) */
+  --area-planning-hsl: 221 83% 53%;   /* Planeación Curricular NEM (Azul Cobalto) */
+  --area-studio-hsl: 268 85% 58%;     /* Estudio Creador & IA (Violeta Neón / Mágico) */
+  --area-classroom-hsl: 238 82% 59%;  /* Aula Digital & Gremio (Índigo Profundo) */
+  --area-community-hsl: 158 72% 40%;  /* Red Docente & Comunidad (Verde Esmeralda) */
+  --area-evaluation-hsl: 38 92% 50%;  /* Evaluación Formativa & XP (Ámbar Dorado) */
+  --area-tasks-hsl: 24 94% 53%;       /* Tareas, Retos & Rachas (Naranja Dinámico) */
+  --area-attendance-hsl: 199 89% 48%; /* Asistencia & Control (Cian / Celeste) */
+  --area-alert-hsl: 350 89% 60%;      /* SOS & Alertas Urgentes (Coral Carmín) */
+
+  /* Variables computadas */
+  --color-primary: hsl(var(--color-primary-hsl));
+  --color-secondary: hsl(var(--color-secondary-hsl));
+  --color-accent: hsl(var(--color-accent-hsl));
+
+  --area-planning: hsl(var(--area-planning-hsl));
+  --area-studio: hsl(var(--area-studio-hsl));
+  --area-classroom: hsl(var(--area-classroom-hsl));
+  --area-community: hsl(var(--area-community-hsl));
+  --area-evaluation: hsl(var(--area-evaluation-hsl));
+  --area-tasks: hsl(var(--area-tasks-hsl));
+  --area-attendance: hsl(var(--area-attendance-hsl));
+  --area-alert: hsl(var(--area-alert-hsl));
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  
+  /* Registrar las variables en el motor de Tailwind v4 */
+  --color-brand-primary: var(--color-primary);
+  --color-brand-secondary: var(--color-secondary);
+  --color-brand-accent: var(--color-accent);
+
+  --color-area-planning: var(--area-planning);
+  --color-area-studio: var(--area-studio);
+  --color-area-classroom: var(--area-classroom);
+  --color-area-community: var(--area-community);
+  --color-area-evaluation: var(--area-evaluation);
+  --color-area-tasks: var(--area-tasks);
+  --color-area-attendance: var(--area-attendance);
+  --color-area-alert: var(--area-alert);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #09090b;
+    --foreground: #f8fafc;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  letter-spacing: -0.011em;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility animate-fade-in {
+  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(245, 158, 11, 0.75);
+  }
+}
+
+@utility animate-glow-pulse {
+  animation: glowPulse 2.5s infinite ease-in-out;
+}
+
+/* Utilidades de Aceleración por Hardware (GPU) */
+@utility gpu-layer {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+@utility will-change-transform {
+  will-change: transform;
+}
+
+/* Optimización para Listas y Tablas Largas (DOM Virtualizado por Motor del Navegador) */
+@utility content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 250px;
+}
+
+/* =========================================================================
+   SISTEMA DE EFECTOS CROMÁTICOS GAMIFICADOS POR ÁREA (PSICOLOGÍA DEL COLOR)
+   ========================================================================= */
+
+/* Estudio Creador & IA (Violeta Neón / Magia y Exclusividad - Minuto 6:25) */
+@utility glow-studio {
+  box-shadow: 0 0 20px -3px rgba(168, 85, 247, 0.45), 0 0 8px -2px rgba(234, 179, 8, 0.3);
+}
+
+/* Oro y Puntos de Experiencia XP (Celebración, Recompensas y Maestría) */
+@utility glow-gold {
+  box-shadow: 0 0 18px -2px rgba(245, 158, 11, 0.45);
+}
+
+/* Red Docente & Comunidad (Verde Esmeralda / Crecimiento y Bienestar) */
+@utility glow-emerald {
+  box-shadow: 0 0 18px -2px rgba(16, 185, 129, 0.4);
+}
+
+/* Aula Digital & Gremio (Índigo Profundo / Aventura y Dinamismo) */
+@utility glow-indigo {
+  box-shadow: 0 0 18px -2px rgba(99, 102, 241, 0.4);
+}
+
+/* Planeación Didáctica Oficial (Azul Zafiro / Rigor y Estructura) */
+@utility glow-blue {
+  box-shadow: 0 0 18px -2px rgba(37, 99, 235, 0.4);
+}
+
+/* Retos Activos y Llamadas a la Acción (Naranja Fuego) */
+@utility glow-orange {
+  box-shadow: 0 0 18px -2px rgba(249, 115, 22, 0.45);
+}
+
+/* Insignias de Rango Gamificado */
+@utility badge-legendary {
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.2) 0%, rgba(245, 158, 11, 0.25) 100%);
+  border: 1px solid rgba(234, 179, 8, 0.5);
+  color: #fbbf24;
+}
+
+@utility badge-heroic {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(6, 182, 212, 0.25) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  color: #38bdf8;
+}
+
+@utility badge-apprentice {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(20, 184, 166, 0.25) 100%);
+  border: 1px solid rgba(52, 211, 153, 0.5);
+  color: #34d399;
+}
+
+@utility badge-initiate {
+  background: linear-gradient(135deg, rgba(100, 116, 139, 0.2) 0%, rgba(148, 163, 184, 0.2) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  color: #cbd5e1;
+}
+
+/* Tarjeta interactiva con relieve gamificado */
+@utility card-glass-interactive {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .card-glass-interactive {
+    background: rgba(24, 24, 27, 0.85);
+    border-color: rgba(63, 63, 70, 0.7);
+  }
+}
+
+
+

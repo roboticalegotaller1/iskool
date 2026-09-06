@@ -1,0 +1,1234 @@
+"use client";
+
+import React, { useState, useEffect, useRef } from 'react';
+import { useStudentStore, useCurrentStudentStats, useCurrentStudentAvatar, useCurrentStudentAcademicPower } from '@/store/useStudentStore';
+import { useGamificationStore } from '@/store/useGamificationStore';
+import { AnimeAvatarSprite } from './AnimeAvatarSprite';
+import { BruxaPixiSprite } from './BruxaPixiSprite';
+import { 
+  Volume2, VolumeX, Shield, Swords, Sparkles, HelpCircle, 
+  Briefcase, Zap, RotateCcw, Award, Heart, Brain, Play, RefreshCw, AlertCircle
+} from 'lucide-react';
+// Lista de sprites de dragones en /images/rpg/enemies/
+const DRAGON_ENEMIES_SPRITES = [
+  '/images/rpg/enemies/blood_dragon.png',
+  '/images/rpg/enemies/crimson_dragon.png',
+  '/images/rpg/enemies/emberheart_dragon.png',
+  '/images/rpg/enemies/glacialserpent.png',
+  '/images/rpg/enemies/luminous_dragon.png',
+  '/images/rpg/enemies/moonshadow_dragon.png',
+  '/images/rpg/enemies/thunderwing_drake_nosparks.png',
+];
+
+export const getDragonSpriteForQuest = (questId: string, idx: number = 0): string => {
+  if (!questId) return DRAGON_ENEMIES_SPRITES[idx % DRAGON_ENEMIES_SPRITES.length];
+  const charSum = questId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return DRAGON_ENEMIES_SPRITES[(charSum + idx) % DRAGON_ENEMIES_SPRITES.length];
+};
+// Motor de Audio Avanzado sintetizado con Música de Fondo Retro y Control de Volumen Master
+class RetroSoundEngine {
+  private ctx: AudioContext | null = null;
+  private noiseBuffer: AudioBuffer | null = null;
+  private bgMusicInterval: any = null;
+  private isMusicPlaying = false;
+  private masterGain: GainNode | null = null;
+  private volumeLevel = 0.5; // Por defecto al 50%
+
+  private init() {
+    if (this.ctx) return;
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioCtx) {
+        this.ctx = new AudioCtx();
+        
+        // Crear Nodo de Ganancia Master
+        this.masterGain = this.ctx.createGain();
+        this.masterGain.gain.setValueAtTime(this.volumeLevel, this.ctx.currentTime);
+        this.masterGain.connect(this.ctx.destination);
+        
+        // Generar buffer de ruido para explosiones digitales
+        const bufferSize = this.ctx.sampleRate * 0.45;
+        this.noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = this.noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+      }
+    } catch (e) {
+      console.warn("Web Audio API no está soportado en este navegador.", e);
+    }
+  }
+
+  public setVolume(volume: number) {
+    this.volumeLevel = volume;
+    this.init(); // Asegurar inicialización
+    if (this.masterGain && this.ctx) {
+      this.masterGain.gain.setValueAtTime(volume, this.ctx.currentTime);
+    }
+  }
+
+  public startBackgroundMusic() {
+    this.init();
+    if (!this.ctx || this.isMusicPlaying) return;
+
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+
+    this.isMusicPlaying = true;
+    let step = 0;
+    
+    // Secuenciador retro chiptune loop
+    const bassline = [73.42, 73.42, 87.31, 98.00, 73.42, 73.42, 110.00, 98.00]; // D2, D2, F2, G2, D2, D2, A2, G2
+    const melody = [293.66, 0, 349.23, 392.00, 293.66, 440.00, 392.00, 0]; // D4, F4, G4, A4
+    
+    this.bgMusicInterval = setInterval(() => {
+      if (!this.ctx || this.ctx.state === 'suspended') return;
+      const now = this.ctx.currentTime;
+      
+      // Nota de Bajo (Sintetizador analógico de onda sierra con filtro de paso bajo)
+      const bassOsc = this.ctx.createOscillator();
+      const bassGain = this.ctx.createGain();
+      const bassFilter = this.ctx.createBiquadFilter();
+      
+      bassOsc.type = 'sawtooth';
+      bassOsc.frequency.value = bassline[step % bassline.length];
+      
+      bassFilter.type = 'lowpass';
+      bassFilter.frequency.setValueAtTime(350, now);
+      
+      bassGain.gain.setValueAtTime(0.04, now);
+      bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+      
+      bassOsc.connect(bassFilter);
+      bassFilter.connect(bassGain);
+      bassGain.connect(this.masterGain || this.ctx.destination);
+      
+      bassOsc.start(now);
+      bassOsc.stop(now + 0.24);
+      
+      // Melodía principal
+      const melFreq = melody[step % melody.length];
+      if (melFreq > 0 && step % 2 === 0) {
+        const melOsc = this.ctx.createOscillator();
+        const melGain = this.ctx.createGain();
+        const melDelay = this.ctx.createDelay();
+        const delayGain = this.ctx.createGain();
+
+        melOsc.type = 'square';
+        melOsc.frequency.value = melFreq;
+        
+        melGain.gain.setValueAtTime(0.012, now);
+        melGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        
+        melDelay.delayTime.value = 0.15;
+        delayGain.gain.value = 0.4; // Feedback
+        
+        melOsc.connect(melGain);
+        melGain.connect(this.masterGain || this.ctx.destination);
+        
+        // Efecto delay retro
+        melGain.connect(melDelay);
+        melDelay.connect(delayGain);
+        delayGain.connect(this.masterGain || this.ctx.destination);
+        
+        melOsc.start(now);
+        melOsc.stop(now + 0.45);
+      }
+      
+      step++;
+    }, 240); // BPM ~125
+  }
+
+  public stopBackgroundMusic() {
+    if (this.bgMusicInterval) {
+      clearInterval(this.bgMusicInterval);
+      this.bgMusicInterval = null;
+    }
+    this.isMusicPlaying = false;
+  }
+
+  public play(type: 'laser' | 'hit' | 'victory' | 'defeat' | 'error' | 'powerup' | 'charge') {
+    this.init();
+    if (!this.ctx) return;
+    
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+
+    const now = this.ctx.currentTime;
+
+    switch (type) {
+      case 'charge': {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(120, now);
+        osc.frequency.exponentialRampToValueAtTime(900, now + 0.5);
+        
+        gain.gain.setValueAtTime(0.01, now);
+        gain.gain.exponentialRampToValueAtTime(0.12, now + 0.5);
+        
+        osc.connect(gain);
+        gain.connect(this.masterGain || this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.5);
+        break;
+      }
+      case 'laser': {
+        const osc1 = this.ctx.createOscillator();
+        const osc2 = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const filter = this.ctx.createBiquadFilter();
+
+        osc1.type = 'sawtooth';
+        osc2.type = 'square';
+        
+        osc1.frequency.setValueAtTime(850, now);
+        osc1.frequency.exponentialRampToValueAtTime(150, now + 0.35);
+        osc2.frequency.setValueAtTime(830, now);
+        osc2.frequency.exponentialRampToValueAtTime(140, now + 0.35);
+
+        filter.type = 'lowpass';
+        filter.Q.value = 5;
+        filter.frequency.setValueAtTime(2500, now);
+        filter.frequency.exponentialRampToValueAtTime(300, now + 0.35);
+
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+        osc1.connect(filter);
+        osc2.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain || this.ctx.destination);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 0.36);
+        osc2.stop(now + 0.36);
+        break;
+      }
+      case 'hit': {
+        const osc = this.ctx.createOscillator();
+        const oscGain = this.ctx.createGain();
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.linearRampToValueAtTime(20, now + 0.4);
+        
+        oscGain.gain.setValueAtTime(0.3, now);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        
+        osc.connect(oscGain);
+        oscGain.connect(this.masterGain || this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.41);
+
+        if (this.noiseBuffer) {
+          const noiseSource = this.ctx.createBufferSource();
+          const noiseGain = this.ctx.createGain();
+          const noiseFilter = this.ctx.createBiquadFilter();
+
+          noiseSource.buffer = this.noiseBuffer;
+          
+          noiseFilter.type = 'bandpass';
+          noiseFilter.Q.value = 4.0;
+          noiseFilter.frequency.setValueAtTime(1100, now);
+          noiseFilter.frequency.exponentialRampToValueAtTime(100, now + 0.35);
+
+          noiseGain.gain.setValueAtTime(0.25, now);
+          noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+          noiseSource.connect(noiseFilter);
+          noiseFilter.connect(noiseGain);
+          noiseGain.connect(this.masterGain || this.ctx.destination);
+
+          noiseSource.start(now);
+          noiseSource.stop(now + 0.36);
+        }
+        break;
+      }
+      case 'victory': {
+        const chords = [
+          [261.63, 329.63, 392.00], 
+          [349.23, 440.00, 523.25], 
+          [392.00, 493.88, 587.33], 
+          [523.25, 659.25, 783.99, 1046.50]
+        ];
+        const durations = [0.15, 0.15, 0.15, 0.6];
+        let time = now;
+        
+        chords.forEach((freqs, idx) => {
+          freqs.forEach((freq) => {
+            if (!this.ctx) return;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            
+            osc.type = idx === 3 ? 'sine' : 'square';
+            osc.frequency.setValueAtTime(freq, time);
+            
+            gain.gain.setValueAtTime(0.06, time);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + durations[idx] - 0.02);
+            
+            osc.connect(gain);
+            gain.connect(this.masterGain || this.ctx.destination);
+            
+            osc.start(time);
+            osc.stop(time + durations[idx]);
+          });
+          time += durations[idx] * 0.9;
+        });
+        break;
+      }
+      case 'defeat': {
+        const notes = [196.00, 164.81, 130.81, 98.00];
+        const durations = [0.2, 0.2, 0.2, 0.5];
+        let time = now;
+        notes.forEach((freq, idx) => {
+          if (!this.ctx) return;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(freq, time);
+          
+          gain.gain.setValueAtTime(0.15, time);
+          gain.gain.exponentialRampToValueAtTime(0.001, time + durations[idx] - 0.02);
+          
+          osc.connect(gain);
+          gain.connect(this.masterGain || this.ctx.destination);
+          
+          osc.start(time);
+          osc.stop(time + durations[idx]);
+          time += durations[idx] * 0.95;
+        });
+        break;
+      }
+      case 'error': {
+        const osc1 = this.ctx.createOscillator();
+        const osc2 = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        
+        osc1.type = 'sawtooth';
+        osc1.frequency.setValueAtTime(130, now);
+        osc1.frequency.linearRampToValueAtTime(110, now + 0.3);
+        
+        osc2.type = 'sawtooth';
+        osc2.frequency.setValueAtTime(133, now);
+        osc2.frequency.linearRampToValueAtTime(113, now + 0.3);
+
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(this.masterGain || this.ctx.destination);
+        
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + 0.31);
+        osc2.stop(now + 0.31);
+        break;
+      }
+      case 'powerup': {
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        const durations = [0.08, 0.08, 0.08, 0.3];
+        let time = now;
+        notes.forEach((freq, idx) => {
+          if (!this.ctx) return;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, time);
+          gain.gain.setValueAtTime(0.12, time);
+          gain.gain.exponentialRampToValueAtTime(0.001, time + durations[idx] - 0.01);
+          osc.connect(gain);
+          gain.connect(this.masterGain || this.ctx.destination);
+          osc.start(time);
+          osc.stop(time + durations[idx]);
+          time += durations[idx] * 0.7;
+        });
+        break;
+      }
+    }
+  }
+}
+
+const soundEngine = new RetroSoundEngine();
+
+export function RpgCombatViewport() {
+  const missions = useGamificationStore(state => state.missionsList);
+  const questAttempts = useGamificationStore(state => state.questAttempts);
+  const submitExam = useGamificationStore(state => state.submitExam);
+  const shopArtifacts = useGamificationStore(state => state.shopArtifacts);
+  const guildBoss = useGamificationStore(state => state.guildBoss);
+  const triggerGuildAttack = useGamificationStore(state => state.triggerGuildAttack);
+  const fetchActiveGuildBoss = useGamificationStore(state => state.fetchActiveGuildBoss);
+  const subscribeToGuildChanges = useGamificationStore(state => state.subscribeToGuildChanges);
+
+  const activeStudentId = useStudentStore(state => state.activeStudentId);
+  const studentInventoryMap = useStudentStore(state => state.studentInventoryMap);
+  const stats = useCurrentStudentStats();
+  const avatar = useCurrentStudentAvatar();
+
+  // Control de volumen e hilo musical
+  const [volume, setVolume] = useState(0.3);
+  const [prevVolume, setPrevVolume] = useState(0.3);
+  useEffect(() => {
+    soundEngine.setVolume(volume);
+    if (volume > 0 && battlePhase === 'fight') {
+      soundEngine.startBackgroundMusic();
+    } else {
+      soundEngine.stopBackgroundMusic();
+    }
+    return () => {
+      soundEngine.stopBackgroundMusic();
+    };
+  }, [volume]);
+
+  const playSound = (type: 'laser' | 'hit' | 'victory' | 'defeat' | 'error' | 'powerup' | 'charge') => {
+    if (volume > 0) {
+      soundEngine.play(type);
+    }
+  };
+
+  // Misiones y filtrado
+  const [selectedMissionId, setSelectedMissionId] = useState<string>('mis-fractions');
+  const activeMission = missions.find(m => m.id === selectedMissionId) || missions[0];
+
+  // Identificar tareas y el examen (boss)
+  const homeworkQuests = activeMission?.quests?.filter(q => q.type !== 'exam') || [];
+  
+  // Si la misión tiene examen lo usamos, si no creamos uno dinámico
+  const missionExamQuest = activeMission?.quests?.find(q => q.type === 'exam') || {
+    id: `exam-${selectedMissionId}`,
+    mission_id: selectedMissionId,
+    title: `Examen de ${activeMission?.title.split(' ')[2] || 'Materia'}`,
+    description: "Desafía al guardián final con todo tu conocimiento acumulado.",
+    type: "exam",
+    sequence_order: homeworkQuests.length + 1,
+    xp_reward: 300,
+    coins_reward: 50,
+    content: {
+      bossName: `Guardián de ${activeMission?.title.split(' ')[2] || 'Materia'}`,
+      bossHp: 180,
+      bossMaxDmg: 25,
+      storyIntro: "¡Solo quienes hayan realizado sus tareas obtendrán el poder para vencerme!"
+    }
+  };
+
+  const examContent = missionExamQuest.content as any;
+
+  // Cálculo Dinámico de Poder Académico (Nivel/XP, Misiones, Artefactos, Tareas Misión)
+  const academicPowerData = useCurrentStudentAcademicPower(activeMission?.quests || []);
+  const { effectivePower, totalBasePower, percentage: battlePowerPercent, breakdown } = academicPowerData;
+  const { completedHomeworkCount, totalHomeworkCount, homeworkMultiplier } = breakdown;
+
+  // Estados de Combate JRPG
+  const [battlePhase, setBattlePhase] = useState<'idle' | 'fight' | 'victory' | 'defeat'>('idle');
+  const [sombraText, setSombraText] = useState('Sombra: Selecciona una misión y prepárate. Las tareas completadas recargan tus núcleos de daño contra el Jefe de Examen.');
+  const [turnCount, setTurnCount] = useState(0);
+  const [playerHp, setPlayerHp] = useState(100);
+  const [bossHp, setBossHp] = useState(180);
+  const [bossMaxHp, setBossMaxHp] = useState(180);
+  const [combatState, setCombatState] = useState<'idle' | 'player_attack' | 'boss_attack' | 'boss_hurt' | 'player_hurt' | 'victory' | 'defeat'>('idle');
+  
+  // Sincronización en tiempo real del jefe de gremio
+  useEffect(() => {
+    fetchActiveGuildBoss();
+    const unsubscribe = subscribeToGuildChanges();
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [fetchActiveGuildBoss, subscribeToGuildChanges]);
+
+  // Actualizar HP local cuando el jefe cambie en tiempo real en el store
+  useEffect(() => {
+    if (guildBoss && guildBoss.id) {
+      setBossHp(guildBoss.hp_actual);
+      setBossMaxHp(guildBoss.hp_max);
+    }
+  }, [guildBoss]);
+  
+  // Retries e Inventario
+  const ownedArtifactIds = studentInventoryMap[activeStudentId] || [];
+  const ownedArtifacts = shopArtifacts.filter(a => ownedArtifactIds.includes(a.id));
+  
+  const [usedAttempts, setUsedAttempts] = useState(0);
+  const totalAttemptsAllowed = 1 + ownedArtifacts.length;
+
+  // Números flotantes y efectos
+  const [damageNumber, setDamageNumber] = useState<{ amount: number; isBoss: boolean } | null>(null);
+  const [activeShield, setActiveShield] = useState(false);
+  const [bonusDamage, setBonusDamage] = useState(0);
+
+  // Seleccionar misión resetea el combate
+  useEffect(() => {
+    handleReset();
+  }, [selectedMissionId]);
+
+  const handleReset = () => {
+    setBattlePhase('idle');
+    setCombatState('idle');
+    setTurnCount(0);
+    setPlayerHp(100);
+    if (guildBoss && guildBoss.id) {
+      setBossHp(guildBoss.hp_actual);
+      setBossMaxHp(guildBoss.hp_max);
+    } else {
+      setBossHp(examContent?.bossHp || 150);
+      setBossMaxHp(examContent?.bossHp || 150);
+    }
+    setUsedAttempts(0);
+    setActiveShield(false);
+    setBonusDamage(0);
+    setSombraText('Sombra: ¡El portal de examen está listo! Si tu poder académico es 0%, no podrás dañar al jefe.');
+    soundEngine.stopBackgroundMusic();
+  };
+
+  const startFight = () => {
+    setPlayerHp(100);
+    if (guildBoss && guildBoss.id) {
+      setBossHp(guildBoss.hp_actual);
+      setBossMaxHp(guildBoss.hp_max);
+    } else {
+      setBossHp(examContent?.bossHp || 150);
+      setBossMaxHp(examContent?.bossHp || 150);
+    }
+    setTurnCount(1);
+    setActiveShield(false);
+    setBonusDamage(0);
+    setBattlePhase('fight');
+    setCombatState('idle');
+    setSombraText(`Sombra: ¡Comienza el desafío! Turno 1. Lanza tu ataque científico.`);
+    if (volume > 0) {
+      soundEngine.startBackgroundMusic();
+    }
+  };
+
+  // ATAQUE DEL JUGADOR
+  const handlePlayerAttack = (actionType: 'normal' | 'skill') => {
+    if (combatState !== 'idle' || bossHp <= 0 || playerHp <= 0) return;
+
+    // Calcular daño basado en Battle Power
+    if (battlePowerPercent === 0) {
+      playSound('error');
+      setSombraText("Sombra: ⚠️ ¡Poder Académico en 0%! Tu ataque no hace daño. ¡Haz tus tareas!");
+      setDamageNumber({ amount: 0, isBoss: true });
+      setTimeout(() => setDamageNumber(null), 1000);
+      
+      // Contraataque inmediato del boss
+      triggerBossTurn();
+      return;
+    }
+
+    setCombatState('player_attack');
+    playSound('charge');
+
+    setTimeout(() => {
+      // Calcular daño dinámico en función del Poder Académico Efectivo (Nivel, XP, Misiones, Artefactos, Tareas)
+      const actionBase = actionType === 'skill' ? 35 : 20;
+      const statBonus = actionType === 'skill' 
+        ? (stats.attribute_intelligence || 10) * 1.3 
+        : (stats.attribute_strength || 10) * 1.3;
+
+      // El daño escala directamente con el Poder Académico Efectivo del alumno
+      const powerDamageBonus = Math.round(effectivePower / 3.5);
+      let finalDamage = Math.round((actionBase + statBonus + powerDamageBonus + bonusDamage) * (0.85 + Math.random() * 0.3));
+      
+      const newBossHp = Math.max(0, bossHp - finalDamage);
+      setBossHp(newBossHp);
+      triggerGuildAttack(finalDamage);
+      setDamageNumber({ amount: finalDamage, isBoss: true });
+      playSound('laser');
+      setCombatState('boss_hurt');
+      setSombraText(`Sombra: ${actionType === 'skill' ? '🔮 ¡Hechizo Lógico!' : '⚔️ ¡Tajo de Energía!'} Infliges ${finalDamage} de daño al jefe.`);
+
+      setTimeout(() => {
+        setDamageNumber(null);
+        setBonusDamage(0); // Consumir bonus
+        
+        if (newBossHp <= 0) {
+          handleVictory();
+        } else {
+          triggerBossTurn();
+        }
+      }, 1000);
+
+    }, 600);
+  };
+
+  // TURNO DEL ENEMIGO (BOSS)
+  const triggerBossTurn = () => {
+    setCombatState('boss_attack');
+    
+    setTimeout(() => {
+      // Daño del boss
+      const maxDmg = examContent?.bossMaxDmg || 20;
+      let incomingDmg = Math.round(maxDmg * (0.7 + Math.random() * 0.6));
+      
+      // Mitigación por defensa y escudo
+      const defenseMitigation = Math.round((stats.attribute_defense || 10) * 0.6);
+      incomingDmg = Math.max(4, incomingDmg - defenseMitigation);
+      
+      // MECÁNICA MASCOTA FELIZ: Si felicidad > 80, cada 3 turnos se reduce el daño del boss en 15%
+      const petHappiness = stats?.pet_happiness ?? 50;
+      const isPetDefending = petHappiness > 80 && turnCount % 3 === 0;
+      if (isPetDefending) {
+        incomingDmg = Math.round(incomingDmg * 0.85);
+      }
+      
+      if (activeShield) {
+        incomingDmg = Math.round(incomingDmg * 0.4); // Reducir 60%
+        setSombraText(isPetDefending
+          ? `Sombra: 🛡️ ¡El Escudo de Concentración y la barrera de tu mascota redujeron el daño enormemente!`
+          : "Sombra: 🛡️ ¡El Escudo de Concentración bloqueó gran parte del daño!");
+      } else if (isPetDefending) {
+        setSombraText(`Sombra: 🛡️ ¡${avatar?.pet_name || 'Tu mascota'} lanzó una barrera mística que redujo el daño del jefe en un 15%!`);
+      }
+
+      const newPlayerHp = Math.max(0, playerHp - incomingDmg);
+      setPlayerHp(newPlayerHp);
+      setDamageNumber({ amount: incomingDmg, isBoss: false });
+      playSound('hit');
+      setCombatState('player_hurt');
+
+      setTimeout(() => {
+        setDamageNumber(null);
+        
+        if (newPlayerHp <= 0) {
+          handleDefeat();
+        } else {
+          setTurnCount(prev => prev + 1);
+          setCombatState('idle');
+          setSombraText(`Sombra: Turno del Gremio escolar. ¡Diseña tu siguiente movimiento!`);
+        }
+      }, 1000);
+
+    }, 800);
+  };
+
+  // USAR UN ARTEFACTO EN COMBATE
+  const [isUsingItem, setIsUsingItem] = useState(false);
+  const handleUseItem = (artifact: any) => {
+    setIsUsingItem(false);
+    playSound('powerup');
+    
+    // Aplicar efectos según el artefacto
+    if (artifact.id.includes('shield') || artifact.id.includes('cape')) {
+      setActiveShield(true);
+      setSombraText(`Sombra: 🛡️ Usaste "${artifact.name}". Tu defensa se eleva para el próximo ataque.`);
+    } else if (artifact.id.includes('potion') || artifact.id.includes('water') || artifact.id.includes('heart')) {
+      setPlayerHp(prev => Math.min(100, prev + 50));
+      setSombraText(`Sombra: ❤️ Usaste "${artifact.name}". Te has curado +50 HP.`);
+    } else if (artifact.id.includes('wand') || artifact.id.includes('dumbbell') || artifact.id.includes('pen')) {
+      setBonusDamage(30);
+      setSombraText(`Sombra: 💥 Usaste "${artifact.name}". Tu próximo ataque tendrá +30 de daño bonus.`);
+    } else {
+      setPlayerHp(prev => Math.min(100, prev + 25));
+      setBonusDamage(15);
+      setSombraText(`Sombra: ✨ Usaste "${artifact.name}". Curado +25 HP y +15 de daño bonus.`);
+    }
+
+    // Trigger turno boss inmediatamente después de usar item
+    setTimeout(() => {
+      triggerBossTurn();
+    }, 1200);
+  };
+
+  // MANEJAR VICTORIA Y CALIFICACIÓN
+  const handleVictory = async () => {
+    setBattlePhase('victory');
+    setCombatState('victory');
+    soundEngine.stopBackgroundMusic();
+    playSound('victory');
+
+    // Calcular calificación basada en turnos
+    let grade = 6;
+    if (turnCount <= 3) grade = 10;
+    else if (turnCount <= 5) grade = 9;
+    else if (turnCount <= 7) grade = 8;
+    else if (turnCount <= 9) grade = 7;
+    else grade = 6;
+
+    // Calcular recompensas
+    const coinsReward = grade * 10;
+    const xpReward = missionExamQuest.xp_reward || 200;
+
+    // Enviar calificación
+    await submitExam(
+      missionExamQuest.id, 
+      grade * 10, // Pasa score (60-100)
+      {}, 
+      { intelligence: 2, defense: 1 }, 
+      'corona_boss'
+    );
+
+    setSombraText(`Sombra: ¡Felicidades! Derrotaste al jefe en ${turnCount} turnos. Tu calificación académica es de ${grade}/10.`);
+  };
+
+  // MANEJAR DERROTA
+  const handleDefeat = () => {
+    setBattlePhase('defeat');
+    setCombatState('defeat');
+    soundEngine.stopBackgroundMusic();
+    playSound('defeat');
+    setSombraText("Sombra: ¡Has caído! Tus puntos de vida llegaron a cero.");
+  };
+
+  // REINTENTO DE BATALLA (CONSUME RETRY)
+  const handleRetryBattle = () => {
+    if (usedAttempts < totalAttemptsAllowed - 1) {
+      setUsedAttempts(prev => prev + 1);
+      startFight();
+      setSombraText(`Sombra: ¡Oportunidad extra activada! Oportunidad usada: ${usedAttempts + 1}/${totalAttemptsAllowed - 1}. ¡A pelear!`);
+    } else {
+      playSound('error');
+      alert("No tienes más oportunidades. Compra artefactos en la tienda académica.");
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-6">
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes JRPG-float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-6px); }
+          100% { transform: translateY(0px); }
+        }
+        @keyframes slash-hit {
+          0% { transform: scale(1) rotate(0deg); opacity: 0; }
+          50% { transform: scale(1.4) rotate(45deg); opacity: 1; }
+          100% { transform: scale(1) rotate(90deg); opacity: 0; }
+        }
+        @keyframes firefly-up {
+          0% { transform: translateY(0px) scale(0.8); opacity: 0; }
+          50% { opacity: 0.8; }
+          100% { transform: translateY(-30px) scale(1.2); opacity: 0; }
+        }
+        @keyframes treeSwaySoft {
+          0%, 100% { transform: rotate(0deg) skewX(0deg); }
+          50% { transform: rotate(1.8deg) skewX(0.8deg); }
+        }
+        @keyframes treeSwayAlt {
+          0%, 100% { transform: rotate(0deg) skewX(0deg); }
+          50% { transform: rotate(-1.8deg) skewX(-0.8deg); }
+        }
+        .jrpg-idle { animation: JRPG-float 2.5s ease-in-out infinite; }
+        .slash-effect { animation: slash-hit 0.3s ease-out forwards; }
+        .combat-firefly { animation: firefly-up 4s ease-in-out infinite; }
+        .tree-sway-1 { transform-origin: bottom center; animation: treeSwaySoft 5.5s ease-in-out infinite; }
+        .tree-sway-2 { transform-origin: bottom center; animation: treeSwayAlt 6.8s ease-in-out infinite; }
+        .tree-sway-3 { transform-origin: bottom center; animation: treeSwaySoft 4.8s ease-in-out infinite 1.2s; }
+        .tree-sway-4 { transform-origin: bottom center; animation: treeSwayAlt 7.2s ease-in-out infinite 0.5s; }
+      `}} />
+
+      {/* Contenedor del Celular de la Presentación */}
+      <div className="relative w-full max-w-4xl mx-auto rounded-[46px] bg-zinc-950 border-[14px] border-slate-800 shadow-2xl overflow-hidden aspect-[16/9] flex flex-col justify-between p-3 pb-2 text-white font-sans select-none">
+        
+        {/* Notch en lateral izquierdo */}
+        <div className="absolute top-1/2 left-0 -translate-y-1/2 w-4 h-20 bg-slate-800 rounded-r-2xl z-50 flex flex-col justify-center items-center gap-1.5 shadow-inner">
+          <div className="w-2 h-2 rounded-full bg-zinc-900 border border-zinc-700" />
+          <div className="w-1.5 h-6 rounded-full bg-zinc-900 border border-zinc-700" />
+        </div>
+
+        {/* Top Header UI */}
+        <div className="flex justify-between items-start w-full px-4 z-20 mt-1 h-[15%]">
+          {/* Selector de Asignatura */}
+          <div className="flex items-center gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-purple-500/20">
+            <span className="text-[9px] font-black text-purple-400 uppercase tracking-widest">ASIGNATURA:</span>
+            <select 
+              disabled={battlePhase === 'fight'}
+              value={selectedMissionId}
+              onChange={(e) => setSelectedMissionId(e.target.value)}
+              className="bg-transparent text-[10px] font-black border-none text-zinc-100 focus:outline-none cursor-pointer uppercase tracking-wider"
+            >
+              {missions.map(m => (
+                <option key={m.id} value={m.id} className="bg-zinc-900 text-zinc-100">{m.title}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Regulador de Volumen y Reset */}
+          <div className="flex gap-2 bg-slate-900/85 backdrop-blur-md px-2.5 py-1 rounded-xl border border-slate-800/40 shadow-lg items-center">
+            <button 
+              onClick={() => {
+                if (volume > 0) {
+                  setPrevVolume(volume);
+                  setVolume(0);
+                } else {
+                  setVolume(prevVolume > 0 ? prevVolume : 0.3);
+                }
+              }}
+              className="p-1 rounded bg-zinc-950 border border-slate-800 hover:bg-slate-800 transition-all"
+            >
+              {volume === 0 ? <VolumeX className="h-3 w-3 text-rose-500" /> : <Volume2 className="h-3 w-3 text-emerald-400" />}
+            </button>
+            <input 
+              type="range" 
+              min="0" 
+              max="1" 
+              step="0.05" 
+              value={volume} 
+              onChange={(e) => setVolume(parseFloat(e.target.value))}
+              className="w-12 md:w-16 h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-purple-400"
+            />
+            <button 
+              onClick={handleReset}
+              className="p-1 rounded bg-zinc-950 border border-slate-800 hover:bg-slate-850 text-zinc-400 hover:text-white transition-all ml-1"
+              title="Reiniciar batalla"
+            >
+              <RotateCcw className="h-3 w-3" />
+            </button>
+          </div>
+
+          {/* Poder de Batalla Dinámico HUD */}
+          <div 
+            className="flex items-center gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-emerald-500/30 group relative cursor-help"
+            title={`Poder Base: ${totalBasePower} | Multiplicador Tareas: ${Math.round(homeworkMultiplier * 100)}% | Poder Efectivo: ${effectivePower}`}
+          >
+            <Zap className="h-3.5 w-3.5 text-emerald-400 fill-current animate-pulse" />
+            <div className="flex flex-col text-left">
+              <span className="text-[10px] font-black text-zinc-100 uppercase tracking-widest leading-none flex items-center gap-1.5">
+                PODER ACADÉMICO: <strong className="text-emerald-400 font-extrabold">{effectivePower} PTS</strong>
+                <span className="text-[9px] px-1 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono">({battlePowerPercent}%)</span>
+              </span>
+              <span className="text-[8px] text-zinc-400 font-medium leading-tight">
+                Nivel ({breakdown.levelPower}p) + Misiones ({breakdown.questPower}p) + Artefactos ({breakdown.artifactPower}p)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* CAMPO DE BATALLA SIDE-VIEW (Classic JRPG) */}
+        <div className="relative h-[55%] w-full flex items-center justify-between px-10 bg-gradient-to-b from-indigo-950 via-emerald-950/50 to-zinc-950 border-y border-zinc-900 overflow-hidden">
+          
+          {/* Base Background Image Layer */}
+          <div className="absolute inset-0 pointer-events-none z-0">
+            <img 
+              src="/images/rpg/background/Background.png" 
+              alt="Forest Background Base" 
+              className="w-full h-full object-cover opacity-85"
+            />
+            {/* Subtle Gradient Overlays for contrast */}
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-indigo-950/30 mix-blend-multiply" />
+            <div className="absolute inset-0 bg-gradient-to-b from-purple-950/30 via-transparent to-zinc-950/70" />
+          </div>
+
+          {/* Layered Animated Forest Trees Layer */}
+          <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden flex items-end">
+            
+            {/* Background Trees (Distant, Smaller, Subtle Opacity) */}
+            <img 
+              src="/images/rpg/background/Dark-Tree.png" 
+              alt="Dark Tree" 
+              className="tree-sway-2 absolute bottom-[2%] left-[1%] h-40 opacity-75 object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)]"
+            />
+            <img 
+              src="/images/rpg/background/Red-Tree.png" 
+              alt="Red Tree" 
+              className="tree-sway-1 absolute bottom-[5%] left-[15%] h-36 opacity-80 object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)]"
+            />
+            <img 
+              src="/images/rpg/background/Green-Tree.png" 
+              alt="Green Tree" 
+              className="tree-sway-3 absolute bottom-[6%] left-[32%] h-40 opacity-80 object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)]"
+            />
+            <img 
+              src="/images/rpg/background/Yellow-Tree.png" 
+              alt="Yellow Tree" 
+              className="tree-sway-4 absolute bottom-[4%] left-[50%] h-38 opacity-75 object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)]"
+            />
+            <img 
+              src="/images/rpg/background/Golden-Tree.png" 
+              alt="Golden Tree" 
+              className="tree-sway-2 absolute bottom-[7%] left-[68%] h-42 opacity-80 object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)]"
+            />
+            <img 
+              src="/images/rpg/background/Dark-Tree.png" 
+              alt="Dark Tree Right" 
+              className="tree-sway-1 absolute bottom-[2%] right-[1%] h-44 opacity-75 object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)]"
+            />
+
+            {/* Midground Frame Trees */}
+            <img 
+              src="/images/rpg/background/Green-Tree.png" 
+              alt="Foreground Green Tree" 
+              className="tree-sway-3 absolute -bottom-[6%] -left-[4%] h-56 opacity-90 object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.85)] z-10"
+            />
+            <img 
+              src="/images/rpg/background/Golden-Tree.png" 
+              alt="Foreground Golden Tree" 
+              className="tree-sway-4 absolute -bottom-[5%] -right-[4%] h-60 opacity-90 object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.85)] z-10"
+            />
+          </div>
+
+          {/* Floating Firefly Particles */}
+          <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+            <div className="combat-firefly absolute left-[15%] top-[70%] w-1.5 h-1.5 rounded-full bg-yellow-400 blur-[0.5px]" style={{ animationDelay: '0s' }} />
+            <div className="combat-firefly absolute left-[28%] top-[60%] w-1 h-1 rounded-full bg-emerald-400 blur-[0.5px]" style={{ animationDelay: '1.2s' }} />
+            <div className="combat-firefly absolute left-[42%] top-[80%] w-2 h-2 rounded-full bg-yellow-300 blur-[1px]" style={{ animationDelay: '0.5s' }} />
+            <div className="combat-firefly absolute left-[60%] top-[65%] w-1.5 h-1.5 rounded-full bg-yellow-400 blur-[0.5px]" style={{ animationDelay: '2s' }} />
+            <div className="combat-firefly absolute left-[75%] top-[75%] w-1 h-1 rounded-full bg-emerald-300 blur-[0.5px]" style={{ animationDelay: '3s' }} />
+            <div className="combat-firefly absolute left-[88%] top-[55%] w-2 h-2 rounded-full bg-yellow-300 blur-[1px]" style={{ animationDelay: '1.7s' }} />
+          </div>
+          
+          {/* EFECTO DE DAÑO FLOTANTE */}
+          {damageNumber && (
+            <div 
+              className={`absolute top-[40%] z-50 px-3 py-1 bg-red-600 border border-white text-white font-extrabold text-sm rounded-xl shadow-lg animate-ping`}
+              style={{ left: damageNumber.isBoss ? '70%' : '25%' }}
+            >
+              -{damageNumber.amount} HP
+            </div>
+          )}
+
+          {/* SHIELD EFFECT ON PLAYER */}
+          {activeShield && combatState === 'player_hurt' && (
+            <div className="absolute left-[20%] top-[45%] z-40 h-20 w-20 border-4 border-cyan-400/80 rounded-full animate-pulse flex items-center justify-center bg-cyan-950/20">
+              <Shield className="h-10 w-10 text-cyan-400 animate-spin" />
+            </div>
+          )}
+
+          {/* LADO IZQUIERDO: ALUMNOS (HUD SIN BORDES INTEGRADO DE ALTA FIDELIDAD) */}
+          <div className="flex items-end gap-6 z-20 self-end mb-2">
+            {/* Elena (Mago / Bruja Pixi.js) */}
+            <div className={`flex items-end gap-3 relative jrpg-idle ${combatState === 'player_attack' ? 'translate-x-6 -translate-y-4 scale-110 duration-200' : 'duration-500'}`}>
+              <div className="relative h-28 w-24 overflow-visible flex items-center justify-center ml-2">
+                <BruxaPixiSprite className="w-24 h-28" width={96} height={112} />
+              </div>
+              <div className="flex flex-col mb-1 text-left select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] min-w-[70px] gap-1">
+                <span className="text-[10px] font-black uppercase text-purple-300 tracking-wider">Elena</span>
+                {/* HP */}
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex justify-between items-center text-[7.5px] font-bold text-zinc-200 font-mono">
+                    <span>HP</span>
+                    <span>{playerHp}/100</span>
+                  </div>
+                  <div className="h-1 w-16 bg-zinc-950/80 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-300" style={{ width: `${playerHp}%` }} />
+                  </div>
+                </div>
+                {/* MP */}
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex justify-between items-center text-[7.5px] font-bold text-cyan-400 font-mono">
+                    <span>MP</span>
+                    <span>85/100</span>
+                  </div>
+                  <div className="h-1 w-16 bg-zinc-950/80 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-500" style={{ width: '85%' }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Santi (Guerrero) */}
+            <div className="flex items-end gap-3 relative jrpg-idle opacity-95">
+              <div className="relative h-28 w-24 overflow-visible">
+                <img 
+                  src="/images/rpg/santi_sprite.png" 
+                  alt="Santi (Warrior)" 
+                  className="w-full h-full object-contain filter drop-shadow-[0_6px_8px_rgba(0,0,0,0.65)]"
+                />
+              </div>
+              <div className="flex flex-col mb-1 text-left select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] min-w-[70px] gap-1">
+                <span className="text-[10px] font-black uppercase text-rose-300 tracking-wider">Santi</span>
+                {/* HP */}
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex justify-between items-center text-[7.5px] font-bold text-zinc-200 font-mono">
+                    <span>HP</span>
+                    <span>100/100</span>
+                  </div>
+                  <div className="h-1 w-16 bg-zinc-950/80 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-rose-500 to-red-500" style={{ width: '100%' }} />
+                  </div>
+                </div>
+                {/* MP */}
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex justify-between items-center text-[7.5px] font-bold text-cyan-400 font-mono">
+                    <span>MP</span>
+                    <span>65/100</span>
+                  </div>
+                  <div className="h-1 w-16 bg-zinc-950/80 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-500" style={{ width: '65%' }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Lucas (Explorador) */}
+            <div className="flex items-end gap-3 relative jrpg-idle opacity-90">
+              <div className="relative h-28 w-24 overflow-visible">
+                <img 
+                  src="/images/rpg/lucas_sprite.png" 
+                  alt="Lucas (Scout)" 
+                  className="w-full h-full object-contain filter drop-shadow-[0_6px_8px_rgba(0,0,0,0.65)]"
+                />
+              </div>
+              <div className="flex flex-col mb-1 text-left select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] min-w-[70px] gap-1">
+                <span className="text-[10px] font-black uppercase text-emerald-300 tracking-wider">Lucas</span>
+                {/* HP */}
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex justify-between items-center text-[7.5px] font-bold text-zinc-200 font-mono">
+                    <span>HP</span>
+                    <span>100/100</span>
+                  </div>
+                  <div className="h-1 w-16 bg-zinc-950/80 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500" style={{ width: '100%' }} />
+                  </div>
+                </div>
+                {/* MP */}
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex justify-between items-center text-[7.5px] font-bold text-cyan-400 font-mono">
+                    <span>MP</span>
+                    <span>90/100</span>
+                  </div>
+                  <div className="h-1 w-16 bg-zinc-950/80 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-500" style={{ width: '90%' }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          {/* VS INDICATOR */}
+          <div className="text-zinc-700 font-black text-xl font-mono tracking-widest select-none">VS</div>
+
+          {/* LADO DERECHO: ENEMIGOS (TAREAS Y BOSS) */}
+          <div className="flex flex-col items-end gap-3 z-20">
+            {battlePhase !== 'fight' ? (
+              // Vista de Tareas Pendientes como Monstruos
+              <div className="flex flex-row gap-4">
+                {homeworkQuests.map((quest, idx) => {
+                  const status = questAttempts.some(a => a.quest_id === quest.id && (a.is_completed || a.score >= 60)) ? 'completed' : 'pending';
+                  const isMath = activeMission.subject_id === 'sub-math';
+                  
+                  return (
+                    <div key={quest.id} className="flex flex-col items-center gap-1.5 bg-slate-900/60 p-2.5 rounded-2xl border border-slate-800">
+                      <div className="relative h-32 w-32 flex items-center justify-center">
+                        {status === 'completed' ? (
+                          // Enemigo Derrotado
+                          <div className="opacity-45 text-center flex flex-col items-center">
+                            <span className="text-4xl grayscale">☠️</span>
+                            <span className="text-[9px] text-emerald-400 font-black uppercase tracking-wider block mt-1">Vencido</span>
+                          </div>
+                        ) : (
+                          // Tarea Activa (Dragón Gigante)
+                          <div className="jrpg-idle flex flex-col items-center relative">
+                            <img 
+                              src={getDragonSpriteForQuest(quest.id, idx)} 
+                              alt={quest.title} 
+                              className="w-32 h-32 object-contain filter drop-shadow-[0_4px_16px_rgba(239,68,68,0.85)]"
+                            />
+                            {/* HP Bar */}
+                            <div className="w-20 h-2 bg-red-950 border border-slate-800 rounded-full mt-1 overflow-hidden">
+                              <div className="h-full bg-red-500 w-full" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-[9px] font-bold text-zinc-300 text-center truncate w-28">{quest.title}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              // Vista en Combate: Examen Boss Final Activo
+              <div className={`flex flex-col items-center relative gap-2 duration-300 ${combatState === 'boss_attack' ? '-translate-x-20 scale-105 duration-200' : ''}`}>
+                
+                {/* Sprite del Jefe Final Dragón (Gigante) */}
+                <div className={`relative ${combatState === 'boss_hurt' ? 'animate-bounce opacity-85' : 'jrpg-idle'}`}>
+                  <img 
+                    src={getDragonSpriteForQuest(selectedMissionId, 0)} 
+                    alt={examContent.bossName || "Dragón Jefe Examen"} 
+                    className="w-72 h-72 object-contain filter drop-shadow-[0_0_40px_rgba(239,68,68,0.95)]"
+                  />
+                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-yellow-500/20 border border-yellow-400/40 backdrop-blur-sm px-3 py-0.5 rounded-full flex items-center gap-1 shadow-lg animate-bounce">
+                    <span className="text-base">👑</span>
+                    <span className="text-[10px] font-black text-yellow-300 uppercase tracking-widest">Jefe Boss</span>
+                  </div>
+
+                  {/* Glitch Overlay en daño */}
+                  {combatState === 'boss_hurt' && (
+                    <div className="absolute inset-0 bg-red-500/30 mix-blend-color-dodge animate-ping" />
+                  )}
+                </div>
+
+                {/* HP Bar del Jefe */}
+                <div className="w-44 bg-zinc-950 p-2 rounded-xl border border-purple-950/60 shadow-lg text-center">
+                  <div className="flex justify-between items-center text-[8.5px] font-black text-purple-300 uppercase tracking-widest mb-1">
+                    <span>{examContent?.bossName || 'EXAMEN FINAL'}</span>
+                    <span>HP {bossHp}/{bossMaxHp}</span>
+                  </div>
+                  <div className="h-2 w-full bg-zinc-900 rounded-full overflow-hidden border border-zinc-800">
+                    <div 
+                      className="h-full bg-gradient-to-r from-red-600 to-rose-500 transition-all duration-300"
+                      style={{ width: `${(bossHp / bossMaxHp) * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+              </div>
+            )}
+          </div>
+
+        </div>
+
+        {/* CONTROLES Y DIALOGO DE COMBATE (h-[30%]) */}
+        <div className="w-full h-[30%] flex flex-col justify-between px-3 pb-1 z-20">
+          
+          {/* Diálogo */}
+          <div className="relative bg-zinc-950/95 border border-purple-500/40 rounded-xl p-2 flex gap-2.5 items-center backdrop-blur-md shadow-[0_0_12px_rgba(168,85,247,0.15)]">
+            <div className="absolute -top-3 left-4 px-2.5 py-0.5 bg-purple-500 text-[8px] font-black uppercase tracking-wider text-white rounded-t-md rounded-br-md shadow-lg">
+              SOMBRA LOG
+            </div>
+            
+            <div className="h-6 w-6 rounded bg-purple-950/80 border border-purple-400/50 flex items-center justify-center text-[10px] animate-bounce shrink-0">
+              💡
+            </div>
+            <div className="flex-1 overflow-y-auto max-h-[35px]">
+              <p className="text-[9.5px] md:text-xs text-zinc-200 font-medium leading-tight">
+                {sombraText}
+              </p>
+            </div>
+          </div>
+
+          {/* Menú de Botones e Interacciones */}
+          <div className="flex justify-between items-center gap-4">
+            {/* Opciones en reposo */}
+            {battlePhase === 'idle' && (
+              <div className="flex gap-2">
+                <button
+                  onClick={startFight}
+                  className="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-[10px] md:text-xs font-black tracking-widest uppercase rounded-xl transition-all shadow-md shadow-indigo-650/35 flex items-center gap-1.5 border border-purple-500/20"
+                >
+                  <Swords className="h-4.5 w-4.5" />
+                  Iniciar Examen Boss ⚔_
+                </button>
+                <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 px-3 py-1 rounded-xl text-[9px] font-bold text-zinc-400">
+                  <AlertCircle className="h-3.5 w-3.5 text-zinc-500" />
+                  {completedHomeworkCount}/{totalHomeworkCount} Tareas completas
+                </div>
+              </div>
+            )}
+
+            {/* Opciones en Combate */}
+            {battlePhase === 'fight' && (
+              <div className="flex items-center gap-2 w-full justify-between">
+                {/* Comandos del Jugador */}
+                <div className="flex gap-2">
+                  <button 
+                    disabled={combatState !== 'idle'}
+                    onClick={() => handlePlayerAttack('normal')}
+                    className="px-4 py-2 bg-purple-800 hover:bg-purple-700 disabled:opacity-40 text-[9px] md:text-xs font-black rounded-lg border border-purple-500/30 tracking-wider transition-all uppercase text-white shadow"
+                  >
+                    [ ⚔️ Atacar ]
+                  </button>
+                  <button 
+                    disabled={combatState !== 'idle'}
+                    onClick={() => handlePlayerAttack('skill')}
+                    className="px-4 py-2 bg-indigo-800 hover:bg-indigo-700 disabled:opacity-40 text-[9px] md:text-xs font-black rounded-lg border border-indigo-500/30 tracking-wider transition-all uppercase text-white shadow"
+                  >
+                    [ 🔮 Habilidad ]
+                  </button>
+                  <button 
+                    disabled={combatState !== 'idle' || ownedArtifacts.length === 0}
+                    onClick={() => setIsUsingItem(prev => !prev)}
+                    className="px-4 py-2 bg-amber-800 hover:bg-amber-700 disabled:opacity-40 text-[9px] md:text-xs font-black rounded-lg border border-amber-500/30 tracking-wider transition-all uppercase text-white shadow"
+                  >
+                    [ 🎒 Objetos ({ownedArtifacts.length}) ]
+                  </button>
+                </div>
+
+                <div className="text-[10px] font-bold text-purple-400 bg-purple-950/45 px-2.5 py-1 rounded border border-purple-900/40">
+                  Ronda: {turnCount}
+                </div>
+              </div>
+            )}
+
+            {/* Pantalla de Victoria */}
+            {battlePhase === 'victory' && (
+              <div className="flex items-center gap-3 w-full justify-between">
+                <div className="flex items-center gap-2">
+                  <Award className="h-5 w-5 text-yellow-400" />
+                  <span className="text-xs font-black text-emerald-400 uppercase">¡EXAMEN APROBADO!</span>
+                </div>
+                <div className="flex gap-2">
+                  {usedAttempts < totalAttemptsAllowed - 1 && (
+                    <button
+                      onClick={handleRetryBattle}
+                      className="px-4 py-1.5 bg-yellow-600 hover:bg-yellow-500 text-[10px] font-black uppercase text-white rounded-lg transition-all"
+                    >
+                      Reintentar Examen (Oportunidad)
+                    </button>
+                  )}
+                  <button 
+                    onClick={handleReset}
+                    className="px-4 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-[10px] font-black uppercase text-zinc-300 rounded-lg transition-all"
+                  >
+                    Continuar
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Pantalla de Derrota */}
+            {battlePhase === 'defeat' && (
+              <div className="flex items-center gap-3 w-full justify-between">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-red-500" />
+                  <span className="text-xs font-black text-red-500 uppercase">Derrota Académica</span>
+                </div>
+                <div className="flex gap-2">
+                  {usedAttempts < totalAttemptsAllowed - 1 ? (
+                    <button
+                      onClick={handleRetryBattle}
+                      className="px-4 py-1.5 bg-purple-600 hover:bg-purple-500 text-[10px] font-black uppercase text-white rounded-lg transition-all"
+                    >
+                      Usar Oportunidad ({usedAttempts + 1}/{totalAttemptsAllowed - 1})
+                    </button>
+                  ) : (
+                    <div className="text-[9px] text-zinc-500 font-bold bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-lg">
+                      Oportunidades agotadas. Consigue monedas y compra artefactos en la Tienda.
+                    </div>
+                  )}
+                  <button 
+                    onClick={handleReset}
+                    className="px-4 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-[10px] font-black uppercase text-zinc-300 rounded-lg transition-all"
+                  >
+                    Salir
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Dropdown de Items para usar */}
+        {isUsingItem && battlePhase === 'fight' && (
+          <div className="absolute left-[38%] bottom-[35%] z-50 w-64 bg-zinc-900 border border-amber-500/40 rounded-xl p-3 shadow-2xl flex flex-col gap-2 max-h-40 overflow-y-auto">
+            <span className="text-[9px] font-black text-amber-500 uppercase border-b border-zinc-800 pb-1">Selecciona un artefacto:</span>
+            {ownedArtifacts.map((art) => (
+              <button
+                key={art.id}
+                onClick={() => handleUseItem(art)}
+                className="flex items-center justify-between p-1.5 rounded bg-zinc-950/80 hover:bg-zinc-800 text-left text-[9px] text-zinc-200 hover:text-white transition-all font-semibold"
+              >
+                <span>{art.name}</span>
+                <span className="text-[8px] text-amber-400 italic font-medium">{art.effect === 'extra_attempt' ? 'Oportunidad' : 'Efecto'}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Indicador inferior */}
+        <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 text-[8px] font-bold text-slate-600 tracking-widest uppercase pointer-events-none">
+          one-hand interactive
+        </div>
+      </div>
+
+
+    </div>
+  );
+}

@@ -1,0 +1,40 @@
+{
+  "name": "iskool-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "cross-env NODE_OPTIONS=\"--max-old-space-size=32768\" next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "sync-obsidian": "node sync-obsidian.js"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@supabase/supabase-js": "^2.108.2",
+    "framer-motion": "^13.1.0",
+    "lucide-react": "^1.17.0",
+    "next": "16.2.9",
+    "pixi.js": "^8.19.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "xlsx": "^0.18.5",
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "cross-env": "^10.1.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "puppeteer": "^25.5.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
