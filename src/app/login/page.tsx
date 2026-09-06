@@ -52,10 +52,26 @@ const DEMO_ACCOUNTS = [
   {
     name: "Lic. Beatriz Morales",
     role: "coordinator",
-    grade: "Coordinación y Cobranza",
+    grade: "Coordinación y Control Escolar",
     email: "coordinacion@iskool.edu.mx",
     avatarColor: "bg-indigo-600",
     id: "usr-coord-1"
+  },
+  {
+    name: "C.P. Mónica Suárez",
+    role: "billing",
+    grade: "Cobranza y Finanzas Escolares",
+    email: "cobranza@iskool.edu.mx",
+    avatarColor: "bg-emerald-600",
+    id: "usr-billing-1"
+  },
+  {
+    name: "Lic. Roberto Garza",
+    role: "director",
+    grade: "Director de Plantel (Gobernanza & Supervisión)",
+    email: "director@iskool.edu.mx",
+    avatarColor: "bg-purple-600",
+    id: "usr-dir-1"
   },
   {
     name: "Familia López Mendoza",
@@ -66,11 +82,19 @@ const DEMO_ACCOUNTS = [
     id: "usr-parent-001"
   },
   {
+    name: "Don Alejandro Vargas",
+    role: "owner",
+    grade: "Dueño de Empresa (Presidencia Corporativa)",
+    email: "dueno@jjrosseau.edu.mx",
+    avatarColor: "bg-blue-600",
+    id: "usr-owner-1"
+  },
+  {
     name: "Admin",
     role: "admin",
-    grade: "Super Usuario (Acceso Total a Todo el Sistema)",
-    email: "admin",
-    avatarColor: "bg-slate-800",
+    grade: "Super Usuario (Acceso Total al Sistema)",
+    email: "admin@iskool.edu.mx",
+    avatarColor: "bg-slate-700",
     id: "usr-admin-1"
   }
 ];
@@ -93,14 +117,22 @@ export default function LoginPage() {
     }
 
     switch (role) {
+      case 'owner':
       case 'admin':
+      case 'superadmin':
         router.push('/admin');
         break;
-      case 'teacher':
-        router.push('/teacher');
+      case 'director':
+        router.push('/director');
+        break;
+      case 'billing':
+        router.push('/coordinator/billing');
         break;
       case 'coordinator':
         router.push('/coordinator');
+        break;
+      case 'teacher':
+        router.push('/teacher');
         break;
       case 'parent':
         router.push('/parent');
@@ -305,7 +337,7 @@ export default function LoginPage() {
                 </div>
                 
                 <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-400 group-hover:bg-blue-500/10 group-hover:text-blue-400 transition-colors uppercase">
-                  {demo.role === 'teacher' ? 'Docente' : demo.role === 'coordinator' ? 'Coordinador' : demo.role === 'parent' ? 'Tutor' : demo.role === 'admin' ? 'Dirección' : 'Alumno'}
+                  {demo.role === 'owner' ? 'Dueño' : demo.role === 'director' ? 'Director' : demo.role === 'billing' ? 'Cobranza' : demo.role === 'coordinator' ? 'Coordinador' : demo.role === 'teacher' ? 'Docente' : demo.role === 'parent' ? 'Tutor' : demo.role === 'admin' ? 'Admin' : 'Alumno'}
                 </span>
               </button>
             ))}

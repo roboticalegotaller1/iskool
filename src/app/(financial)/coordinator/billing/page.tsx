@@ -7,6 +7,8 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import { 
   Building2, 
   TrendingUp, 
@@ -40,19 +42,23 @@ import {
   Sliders,
   Award,
   Sparkles,
-  GraduationCap
+  GraduationCap,
+  Lock
 } from 'lucide-react';
 import { 
   useSchoolAdminStore, 
   getTuitionFeeForStudent, 
   getSchoolBillingRecords, 
   getSchoolTuitionPricings, 
-  getSchoolStudents 
+  getSchoolStudents,
+  getSchoolGovernance
 } from '@/store/useSchoolAdminStore';
 import { FamilyBillingRecord, TuitionPricing, DetailedStudent } from '@/types';
 import { TUITION_PRICINGS_SEED, BILLING_RECORDS_SEED } from '@/store/seeds';
 
 export default function CoordinatorBillingDashboardPage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
   const [selectedGrade, setSelectedGrade] = useState<string>('all');
@@ -64,11 +70,16 @@ export default function CoordinatorBillingDashboardPage() {
     billingRecords: storeBillingRecords,
     tuitionPricings: storeTuitionPricings,
     detailedStudents: storeDetailedStudents,
+    schoolGovernance,
     activeSchoolId,
     updateTuitionPricing,
     assignScholarship,
     recordBillingPayment
   } = useSchoolAdminStore();
+
+  const currentGovernance = useMemo(() => {
+    return getSchoolGovernance(schoolGovernance, activeSchoolId);
+  }, [schoolGovernance, activeSchoolId]);
 
   const detailedStudents = useMemo(() => {
     return getSchoolStudents(storeDetailedStudents, activeSchoolId);
@@ -353,6 +364,62 @@ export default function CoordinatorBillingDashboardPage() {
   const scholarshipDiscountCalculated = (baseFeeForModal * (Number(scholarshipPercent) || 0)) / 100;
   const netMonthlyCalculated = Math.max(0, baseFeeForModal - scholarshipDiscountCalculated);
 
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center p-6 text-slate-800">
+        <div className="flex flex-col items-center gap-3">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-indigo-600" />
+          <p className="text-xs font-bold text-slate-500">Verificando autorización financiera...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const isFinancialAuthorized = ['billing', 'director', 'admin', 'superadmin', 'owner'].includes(user.role) ||
+    (user.role === 'coordinator' && currentGovernance.allowCoordinatorBilling);
+
+  if (!isFinancialAuthorized) {
+    const getRedirectInfo = () => {
+      switch (user.role) {
+        case 'coordinator':
+          return { label: 'Volver a Control Escolar', path: '/coordinator' };
+        case 'student':
+          return { label: 'Ir a mi Portal de Alumno', path: '/student' };
+        case 'teacher':
+          return { label: 'Ir a mi Portal Docente', path: '/teacher' };
+        case 'parent':
+        case 'tutor':
+          return { label: 'Ir a mi Portal Familiar', path: '/parent' };
+        default:
+          return { label: 'Iniciar Sesión', path: '/login' };
+      }
+    };
+
+    const redirectInfo = getRedirectInfo();
+
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center p-6">
+        <div className="max-w-md w-full p-8 rounded-3xl bg-slate-900 border border-white/10 text-center space-y-4 shadow-2xl text-white">
+          <div className="h-16 w-16 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 mx-auto flex items-center justify-center">
+            <Lock className="h-8 w-8" />
+          </div>
+          <h2 className="text-xl font-black text-white">Acceso Financiero Restringido</h2>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            {user.role === 'coordinator'
+              ? 'La Dirección del Colegio ha restringido el módulo de Cobranza y Aranceles para las cuentas de Coordinación. Para cualquier gestión financiera, consulte directamente con Dirección de Plantel o Presidencia Corporativa.'
+              : 'Este módulo contiene información confidencial de facturación, becas y cobranza institucional reservada exclusivamente para el departamento de Finanzas y Dirección.'}
+          </p>
+          <Link
+            href={redirectInfo.path}
+            className="inline-block w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-lg shadow-indigo-600/30 cursor-pointer transition-all"
+          >
+            {redirectInfo.label}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 font-sans">
       
@@ -399,6 +466,17 @@ export default function CoordinatorBillingDashboardPage() {
             <ShieldCheck className="w-4 h-4 text-blue-700" />
             <span>Facturación SAT CFDI 4.0</span>
           </Link>
+
+          {(user?.role === 'owner' || user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'director') && (
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white font-semibold px-4 py-2.5 rounded-lg transition-all text-xs shadow-sm"
+              title="Ir al Portal de Finanzas y Nóminas del Personal del Dueño"
+            >
+              <Landmark className="w-4 h-4 text-purple-200" />
+              <span>Nóminas del Personal (Dueño)</span>
+            </Link>
+          )}
 
           <Link
             href="/coordinator"

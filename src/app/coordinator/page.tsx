@@ -10,7 +10,9 @@ import {
   getSchoolGroups, 
   getSchoolSubjects, 
   getSchoolTeachers, 
-  getSchoolSchedules 
+  getSchoolSchedules,
+  getSchoolGovernance,
+  getSchoolEmailDomain
 } from '@/store/useSchoolAdminStore';
 import { SUBJECTS_SEED } from '@/store/seeds';
 import { Header } from '@/components/Header';
@@ -28,6 +30,8 @@ export default function CoordinatorDashboard() {
   const router = useRouter();
 
   const activeSchoolId = useSchoolAdminStore(state => state.activeSchoolId);
+  const institutionsList = useSchoolAdminStore(state => state.institutionsList);
+  const schoolGovernance = useSchoolAdminStore(state => state.schoolGovernance);
   const campusesList = useSchoolAdminStore(state => state.campusesList);
   const detailedStudentsRaw = useSchoolAdminStore(state => state.detailedStudents);
   const groupsListRaw = useSchoolAdminStore(state => state.groupsList);
@@ -35,6 +39,22 @@ export default function CoordinatorDashboard() {
   const subjectsListRaw = useSchoolAdminStore(state => state.subjectsList);
   const teachersListRaw = useSchoolAdminStore(state => state.teachersList);
   const schoolSettings = useSchoolAdminStore(state => state.schoolSettings);
+
+  const schoolInfo = React.useMemo(() => {
+    return institutionsList.find(i => i.id === activeSchoolId) || institutionsList[0] || {
+      id: 'sch-jjrosseau',
+      name: 'UP Juan Jacobo Rosseau',
+      website: 'https://jjrosseau.edu.mx'
+    };
+  }, [institutionsList, activeSchoolId]);
+
+  const schoolDomain = React.useMemo(() => {
+    return getSchoolEmailDomain(schoolInfo);
+  }, [schoolInfo]);
+
+  const currentGovernance = React.useMemo(() => {
+    return getSchoolGovernance(schoolGovernance, activeSchoolId);
+  }, [schoolGovernance, activeSchoolId]);
 
   // Aislamiento Multi-Colegio Estricto: Ningún dato de otro colegio es visible para este coordinador
   const schoolCampuses = React.useMemo(() => {
@@ -323,10 +343,10 @@ export default function CoordinatorDashboard() {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState('08:00 - 09:30');
 
   // Lista de profesores del store
-  const TEACHERS = teachersList.map(t => ({
+  const TEACHERS = React.useMemo(() => teachersList.map(t => ({
     id: t.id,
     name: `${t.first_name} ${t.last_name} (${t.email})`
-  }));
+  })), [teachersList]);
 
   // Horarios de tiempo disponibles
   const TIME_SLOTS = [
@@ -393,14 +413,21 @@ export default function CoordinatorDashboard() {
     const curpVal = newStudentData.curp || `SIM-${Date.now()}`;
     const enrolVal = newStudentData.enrollment_id || `MAT-${Date.now().toString().slice(-4)}`;
 
+    const prefix = (newStudentData.email && newStudentData.email.includes('@') 
+      ? newStudentData.email.split('@')[0] 
+      : `${newStudentData.first_name.toLowerCase().replace(/[^a-z0-9]/g, '')}.${newStudentData.last_name_1.toLowerCase().replace(/[^a-z0-9]/g, '')}`).trim();
+    const studentEmail = `${prefix}@${schoolDomain}`;
+
     registerStudent({
       ...newStudentData,
+      school_id: activeSchoolId || undefined,
+      email: studentEmail,
       curp: curpVal,
       enrollment_id: enrolVal,
       status: 'activo'
     });
 
-    alert(`¡Alumno ${newStudentData.first_name} registrado exitosamente!`);
+    alert(`¡Alumno ${newStudentData.first_name} registrado exitosamente con correo ${studentEmail}!`);
     setIsRegisterModalOpen(false);
 
     // Limpiar formulario
@@ -435,46 +462,50 @@ export default function CoordinatorDashboard() {
   const [sortField, setSortField] = useState<'enrollment_id' | 'name' | 'age' | 'level' | 'group' | 'status'>('name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  // Filtrado de alumnos
-  const filteredStudents = detailedStudents.filter(s => {
-    const fullName = `${s.first_name} ${s.second_name || ''} ${s.last_name_1} ${s.last_name_2 || ''}`.toLowerCase();
-    const matchesSearch = fullName.includes(searchQuery.toLowerCase()) || 
-                          (s.curp && s.curp.toLowerCase().includes(searchQuery.toLowerCase())) ||
-                          (s.enrollment_id && s.enrollment_id.toLowerCase().includes(searchQuery.toLowerCase()));
+  // Filtrado de alumnos memoizado para alta velocidad
+  const filteredStudents = React.useMemo(() => {
+    return detailedStudents.filter(s => {
+      const fullName = `${s.first_name} ${s.second_name || ''} ${s.last_name_1} ${s.last_name_2 || ''}`.toLowerCase();
+      const matchesSearch = fullName.includes(searchQuery.toLowerCase()) || 
+                            (s.curp && s.curp.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                            (s.enrollment_id && s.enrollment_id.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const matchesLevel = levelFilter === 'all' || s.level === levelFilter;
+      const matchesLevel = levelFilter === 'all' || s.level === levelFilter;
 
-    let matchesGroup = true;
-    if (groupFilter === 'assigned') matchesGroup = !!s.group_id;
-    if (groupFilter === 'unassigned') matchesGroup = !s.group_id;
+      let matchesGroup = true;
+      if (groupFilter === 'assigned') matchesGroup = !!s.group_id;
+      if (groupFilter === 'unassigned') matchesGroup = !s.group_id;
 
-    return matchesSearch && matchesLevel && matchesGroup;
-  });
+      return matchesSearch && matchesLevel && matchesGroup;
+    });
+  }, [detailedStudents, searchQuery, levelFilter, groupFilter]);
 
   // Ordenar filteredStudents dinámicamente según columna seleccionada
-  const sortedStudents = [...filteredStudents].sort((a, b) => {
-    let comparison = 0;
-    
-    if (sortField === 'enrollment_id') {
-      comparison = (a.enrollment_id || '').localeCompare(b.enrollment_id || '');
-    } else if (sortField === 'name') {
-      comparison = formatStudentName(a).localeCompare(formatStudentName(b));
-    } else if (sortField === 'age') {
-      comparison = calculateAge(a.birth_date) - calculateAge(b.birth_date);
-    } else if (sortField === 'level') {
-      const lvlA = `${a.level} ${a.grade}`;
-      const lvlB = `${b.level} ${b.grade}`;
-      comparison = lvlA.localeCompare(lvlB);
-    } else if (sortField === 'group') {
-      const gpA = groupsList.find(g => g.id === a.group_id)?.name || 'Sin grupo';
-      const gpB = groupsList.find(g => g.id === b.group_id)?.name || 'Sin grupo';
-      comparison = gpA.localeCompare(gpB);
-    } else if (sortField === 'status') {
-      comparison = (a.status || '').localeCompare(b.status || '');
-    }
+  const sortedStudents = React.useMemo(() => {
+    return [...filteredStudents].sort((a, b) => {
+      let comparison = 0;
+      
+      if (sortField === 'enrollment_id') {
+        comparison = (a.enrollment_id || '').localeCompare(b.enrollment_id || '');
+      } else if (sortField === 'name') {
+        comparison = formatStudentName(a).localeCompare(formatStudentName(b));
+      } else if (sortField === 'age') {
+        comparison = calculateAge(a.birth_date) - calculateAge(b.birth_date);
+      } else if (sortField === 'level') {
+        const lvlA = `${a.level} ${a.grade}`;
+        const lvlB = `${b.level} ${b.grade}`;
+        comparison = lvlA.localeCompare(lvlB);
+      } else if (sortField === 'group') {
+        const gpA = groupsList.find(g => g.id === a.group_id)?.name || 'Sin grupo';
+        const gpB = groupsList.find(g => g.id === b.group_id)?.name || 'Sin grupo';
+        comparison = gpA.localeCompare(gpB);
+      } else if (sortField === 'status') {
+        comparison = (a.status || '').localeCompare(b.status || '');
+      }
 
-    return sortDirection === 'asc' ? comparison : -comparison;
-  });
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }, [filteredStudents, sortField, sortDirection, groupsList]);
 
   // Manejador de clic en cabecera
   const handleSortClick = (field: typeof sortField) => {
@@ -562,7 +593,27 @@ export default function CoordinatorDashboard() {
     );
   }
 
-  if (user && user.role === 'student') {
+  const isCoordinatorOrHigher = user && ['coordinator', 'director', 'admin', 'superadmin', 'owner'].includes(user.role);
+
+  if (!isCoordinatorOrHigher) {
+    const getRedirectInfo = () => {
+      switch (user?.role) {
+        case 'student':
+          return { label: 'Ir a mi Portal de Alumno', path: '/student' };
+        case 'teacher':
+          return { label: 'Ir a mi Portal Docente', path: '/teacher' };
+        case 'billing':
+          return { label: 'Ir a mi Portal de Cobranza', path: '/coordinator/billing' };
+        case 'parent':
+        case 'tutor':
+          return { label: 'Ir a mi Portal Familiar', path: '/parent' };
+        default:
+          return { label: 'Iniciar Sesión', path: '/login' };
+      }
+    };
+
+    const redirectInfo = getRedirectInfo();
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white p-6">
         <div className="max-w-md w-full p-8 rounded-3xl bg-zinc-900 border border-white/10 text-center space-y-4 shadow-2xl">
@@ -570,12 +621,12 @@ export default function CoordinatorDashboard() {
             <Lock className="h-7 w-7" />
           </div>
           <h2 className="text-lg font-black text-white">Acceso Restringido</h2>
-          <p className="text-xs text-zinc-400">El módulo de Coordinación y Control Escolar es de uso administrativo. Como alumno dispones de tu propio portal de misiones.</p>
+          <p className="text-xs text-zinc-400">El módulo de Coordinación y Control Escolar es de uso exclusivo para Coordinadores Académicos y Dirección de Plantel.</p>
           <button
-            onClick={() => router.push('/student')}
+            onClick={() => router.push(redirectInfo.path)}
             className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-black text-xs shadow-lg shadow-violet-600/30 cursor-pointer transition-all"
           >
-            Ir a mi Portal de Alumno
+            {redirectInfo.label}
           </button>
         </div>
       </div>
@@ -594,7 +645,7 @@ export default function CoordinatorDashboard() {
             <span className="text-xs font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest bg-violet-50 dark:bg-violet-950/50 px-2.5 py-1 rounded-md">Panel de Control de Coordinación</span>
             <h1 className="text-2xl font-black text-zinc-950 dark:text-white mt-2">Módulo de Administración Académica</h1>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              Escuela: <strong>Colegio Anglo Mexicano</strong> | Administra altas, conforma grupos y define horarios.
+              Escuela: <strong>{schoolInfo.name}</strong> (<span className="font-mono text-violet-500">@{schoolDomain}</span>) | Administra altas, conforma grupos y define horarios.
             </p>
           </div>
 
@@ -644,13 +695,25 @@ export default function CoordinatorDashboard() {
             >
               Identidad de Escuela
             </button>
-            <Link
-              href="/coordinator/billing"
-              className="px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-blue-700 hover:bg-blue-600 text-white flex items-center gap-1.5 shadow-sm"
-            >
-              <Landmark className="w-3.5 h-3.5" />
-              <span>Cobranza</span>
-            </Link>
+            {currentGovernance.allowCoordinatorBilling ? (
+              <Link
+                href="/coordinator/billing"
+                className="px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-blue-700 hover:bg-blue-600 text-white flex items-center gap-1.5 shadow-sm cursor-pointer"
+              >
+                <Landmark className="w-3.5 h-3.5" />
+                <span>Cobranza</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => alert("🔒 La función de Cobranza y Aranceles ha sido restringida para Coordinación por la Dirección del Colegio.")}
+                title="Acceso restringido por la Dirección"
+                className="px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 flex items-center gap-1.5 cursor-not-allowed opacity-80"
+              >
+                <Lock className="w-3.5 h-3.5 text-amber-500" />
+                <span>Cobranza (Bloqueado)</span>
+              </button>
+            )}
             <Link
               href="/coordinator/fiscal"
               className="px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-emerald-700 hover:bg-emerald-600 text-white flex items-center gap-1.5 shadow-sm"
@@ -1338,29 +1401,37 @@ export default function CoordinatorDashboard() {
                     </div>
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Correo Electrónico</label>
-                    <input
-                      type="email"
-                      id="new-teacher-email"
-                      placeholder="ejemplo@iskool.edu.mx"
-                      className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-850 dark:text-zinc-100 focus:outline-none focus:border-violet-500"
-                    />
+                    <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Correo Institucional Oficial</label>
+                    <div className="flex items-center">
+                      <input
+                        type="text"
+                        id="new-teacher-email-prefix"
+                        placeholder="profesor.apellido"
+                        className="flex-1 text-xs p-2.5 rounded-l-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-850 dark:text-zinc-100 focus:outline-none focus:border-violet-500 font-mono"
+                      />
+                      <span className="bg-violet-100 dark:bg-violet-950/70 text-violet-700 dark:text-violet-300 border border-l-0 border-zinc-200 dark:border-zinc-800 text-xs px-2.5 py-2.5 rounded-r-xl font-mono font-bold">
+                        @{schoolDomain}
+                      </span>
+                    </div>
                   </div>
                   <button
                     onClick={() => {
                       const firstInput = document.getElementById('new-teacher-first-name') as HTMLInputElement;
                       const lastInput = document.getElementById('new-teacher-last-name') as HTMLInputElement;
-                      const emailInput = document.getElementById('new-teacher-email') as HTMLInputElement;
+                      const prefixInput = document.getElementById('new-teacher-email-prefix') as HTMLInputElement;
                       if (!firstInput.value.trim() || !lastInput.value.trim()) return alert('Nombre y apellidos requeridos');
-                      if (!emailInput.value.trim() || !emailInput.value.includes('@')) return alert('Correo electrónico válido requerido');
+                      const rawPrefix = prefixInput?.value.trim().split('@')[0] || `${firstInput.value.trim().toLowerCase().replace(/[^a-z0-9]/g, '')}.${lastInput.value.trim().toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+                      const teacherEmail = `${rawPrefix}@${schoolDomain}`;
                       registerTeacher({
                         first_name: firstInput.value.trim(),
                         last_name: lastInput.value.trim(),
-                        email: emailInput.value.trim()
+                        school_id: activeSchoolId || undefined,
+                        email: teacherEmail
                       });
                       firstInput.value = '';
                       lastInput.value = '';
-                      emailInput.value = '';
+                      if (prefixInput) prefixInput.value = '';
+                      alert(`✅ Docente registrado exitosamente con correo ${teacherEmail}`);
                     }}
                     className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/10 flex items-center justify-center gap-1.5 cursor-pointer"
                   >
@@ -2648,14 +2719,25 @@ export default function CoordinatorDashboard() {
                     />
                   </div>
                   <div>
-                    <label className="text-[9.5px] font-bold text-zinc-400 uppercase">Correo de Contacto</label>
-                    <input
-                      type="email"
-                      value={newStudentData.email}
-                      onChange={(e) => setNewStudentData(prev => ({ ...prev, email: e.target.value }))}
-                      placeholder="correo@ejemplo.com"
-                      className="w-full text-xs p-2 rounded-lg border border-zinc-200 dark:border-zinc-850 bg-transparent text-zinc-900 dark:text-white focus:outline-none focus:border-violet-500"
-                    />
+                    <label className="text-[9.5px] font-bold text-zinc-400 uppercase">Correo Institucional Oficial *</label>
+                    <div className="flex items-center">
+                      <input
+                        type="text"
+                        value={newStudentData.email ? newStudentData.email.split('@')[0] : ''}
+                        onChange={(e) => {
+                          const prefix = e.target.value.toLowerCase().replace(/[^a-z0-9.]/g, '');
+                          setNewStudentData(prev => ({ ...prev, email: prefix ? `${prefix}@${schoolDomain}` : '' }));
+                        }}
+                        placeholder={newStudentData.first_name ? `${newStudentData.first_name.toLowerCase().replace(/[^a-z0-9]/g, '')}.${(newStudentData.last_name_1 || '').toLowerCase().replace(/[^a-z0-9]/g, '')}` : "nombre.apellido"}
+                        className="flex-1 text-xs p-2 rounded-l-lg border border-zinc-200 dark:border-zinc-850 bg-transparent text-zinc-900 dark:text-white font-mono focus:outline-none focus:border-violet-500"
+                      />
+                      <span className="bg-violet-100 dark:bg-violet-950/70 text-violet-700 dark:text-violet-300 border border-l-0 border-zinc-200 dark:border-zinc-850 text-xs px-2.5 py-2 rounded-r-lg font-mono font-bold">
+                        @{schoolDomain}
+                      </span>
+                    </div>
+                    <span className="text-[9px] text-zinc-400 mt-0.5 block">
+                      Obligatorio: Pertenece estrictamente al dominio de su colegio (@{schoolDomain}).
+                    </span>
                   </div>
 
                 </div>

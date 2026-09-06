@@ -21,8 +21,19 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const getDemoUser = (email: string): UserProfile => {
   const emailLower = email.toLowerCase().trim();
 
-  // 1. Verificar si coincide con profesores registrados en el Super Usuario
+  // 1. Verificar si coincide con personal administrativo registrado (Director, Coordinador, Cobranza)
   try {
+    const adminStaff = useSchoolAdminStore.getState().staffUsers || [];
+    const matchedStaff = adminStaff.find(s =>
+      s.email.toLowerCase() === emailLower ||
+      s.id === emailLower ||
+      `${s.first_name.toLowerCase()}.${s.last_name.toLowerCase()}` === emailLower.replace(/@.*$/, '')
+    );
+    if (matchedStaff) {
+      return matchedStaff;
+    }
+
+    // 2. Verificar si coincide con profesores registrados en el Super Usuario
     const adminTeachers = useSchoolAdminStore.getState().teachersList || [];
     const matchedTeacher = adminTeachers.find(t => 
       t.email.toLowerCase() === emailLower || 
@@ -36,7 +47,7 @@ const getDemoUser = (email: string): UserProfile => {
       };
     }
 
-    // 2. Verificar si coincide con alumnos registrados en el Super Usuario
+    // 3. Verificar si coincide con alumnos registrados en el Super Usuario
     const adminStudents = useSchoolAdminStore.getState().detailedStudents || [];
     const matchedStudent = adminStudents.find(s => 
       s.email?.toLowerCase() === emailLower || 
@@ -51,6 +62,7 @@ const getDemoUser = (email: string): UserProfile => {
         first_name: matchedStudent.first_name,
         last_name: `${matchedStudent.last_name_1} ${matchedStudent.last_name_2 || ''}`.trim(),
         role: 'student',
+        school_id: matchedStudent.school_id,
         email: matchedStudent.email || emailLower,
         is_blocked: matchedStudent.is_blocked || matchedStudent.status === 'suspendido',
         created_at: (matchedStudent as any).created_at || new Date().toISOString(),
@@ -61,7 +73,66 @@ const getDemoUser = (email: string): UserProfile => {
     // fallback si store no está montado
   }
 
-  // 3. Super Usuario Demo (Coincidencia exacta)
+  // 4. Director Demo (Coincidencia exacta)
+  if (
+    emailLower === 'director' ||
+    emailLower === 'director@iskool.edu.mx' ||
+    emailLower === 'director.garza@jjrosseau.edu.mx' ||
+    emailLower === 'director.demo@iskool.edu.mx'
+  ) {
+    return {
+      id: 'usr-dir-1',
+      school_id: 'sch-jjrosseau',
+      first_name: 'Roberto',
+      last_name: 'Garza Hernández (Dirección)',
+      role: 'director',
+      email: 'director@iskool.edu.mx',
+      temporary_password: 'DIR2026',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  // 5. Cobranza Demo (Coincidencia exacta)
+  if (
+    emailLower === 'cobranza' ||
+    emailLower === 'cobranza@iskool.edu.mx' ||
+    emailLower === 'finanzas@iskool.edu.mx'
+  ) {
+    return {
+      id: 'usr-billing-1',
+      school_id: 'sch-test-case',
+      first_name: 'Mónica',
+      last_name: 'Suárez Pérez (Cobranza)',
+      role: 'billing',
+      email: 'cobranza@iskool.edu.mx',
+      temporary_password: 'COB2026',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  // 6. Dueño de Empresa / Presidencia Demo (Coincidencia exacta)
+  if (
+    emailLower === 'dueno' ||
+    emailLower === 'owner' ||
+    emailLower === 'dueno@jjrosseau.edu.mx' ||
+    emailLower === 'dueno@iskool.edu.mx'
+  ) {
+    return {
+      id: 'usr-owner-1',
+      school_id: 'sch-jjrosseau',
+      first_name: 'Don Alejandro',
+      last_name: 'Vargas Robles (Dueño de Empresa)',
+      role: 'owner',
+      email: 'dueno@jjrosseau.edu.mx',
+      temporary_password: 'DUE2026',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  // 7. Super Usuario Demo (Coincidencia exacta)
   if (
     emailLower === 'admin' || 
     emailLower === 'admin@jjrosseau.edu.mx' || 
@@ -158,15 +229,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(currentSession);
         if (currentSession?.user) {
           const u = currentSession.user;
-          setUser({
+          const restoredUser: UserProfile = {
             id: u.id,
             first_name: u.user_metadata?.first_name || 'Usuario',
             last_name: u.user_metadata?.last_name || '',
             role: (u.user_metadata?.role || 'student') as any,
             email: u.email || '',
+            school_id: u.user_metadata?.school_id,
             created_at: u.created_at,
             updated_at: new Date().toISOString()
-          });
+          };
+          setUser(restoredUser);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('iskool_session_user', JSON.stringify(restoredUser));
+          }
+          return;
+        }
+
+        // Recuperación de sesión local en modo offline / fallback
+        if (typeof window !== 'undefined') {
+          const saved = localStorage.getItem('iskool_session_user');
+          if (saved) {
+            try {
+              const parsed = JSON.parse(saved);
+              if (parsed && parsed.id && parsed.role) {
+                setUser(parsed);
+                setSession({
+                  access_token: 'mock-token-restored-offline-session',
+                  user: {
+                    id: parsed.id,
+                    email: parsed.email,
+                    user_metadata: {
+                      first_name: parsed.first_name,
+                      last_name: parsed.last_name,
+                      role: parsed.role,
+                      school_id: parsed.school_id
+                    }
+                  }
+                });
+              }
+            } catch {
+              localStorage.removeItem('iskool_session_user');
+            }
+          }
         }
       } catch (err) {
         console.warn("Supabase auth offline fallback:", err);
@@ -227,6 +332,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           error: 'Contraseña incorrecta. Introduce la clave asignada (008805).'
         };
       }
+
+      if (resolvedUser.temporary_password && 
+          userPassword !== resolvedUser.temporary_password && 
+          userPassword !== 'ISkoolPassword2026!' && 
+          userPassword !== '008805') {
+        setLoading(false);
+        return {
+          success: false,
+          error: `Contraseña incorrecta para ${resolvedUser.first_name}. Introduce tu clave asignada (${resolvedUser.temporary_password}).`
+        };
+      }
     }
 
     const password = userPassword || 'ISkoolPassword2026!';
@@ -265,18 +381,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         last_name: userObj.user_metadata?.last_name || resolvedUser.last_name,
         role: (userObj.user_metadata?.role || resolvedUser.role) as any,
         email: userObj.email || resolvedUser.email,
+        school_id: userObj.user_metadata?.school_id || resolvedUser.school_id,
         created_at: userObj.created_at || new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
 
       setSession(sessionObj);
       setUser(finalUser);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('iskool_session_user', JSON.stringify(finalUser));
+      }
 
       setLoading(false);
       return { success: true, user: finalUser };
     } catch (err: any) {
       console.warn("Acceso libre activado de contingencia:", err);
       setUser(resolvedUser);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('iskool_session_user', JSON.stringify(resolvedUser));
+      }
       setSession({
         access_token: 'mock-token-free-access-contingency',
         user: {
@@ -296,7 +419,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     setLoading(true);
-    await supabase.auth.signOut();
+    await supabase.auth.signOut().catch(() => null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('iskool_session_user');
+    }
     setSession(null);
     setUser(null);
     setLoading(false);

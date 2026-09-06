@@ -69,6 +69,12 @@ export default function StudentDashboard() {
   const recordSocioemotionalCheckin = useClassroomStore(state => state.recordSocioemotionalCheckin);
   const [studentMoodFeedback, setStudentMoodFeedback] = useState<string | null>(null);
 
+  React.useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
   const rawStats = useCurrentStudentStats();
   const rawAvatar = useCurrentStudentAvatar();
 
@@ -919,6 +925,17 @@ export default function StudentDashboard() {
       </div>
     );
   };
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
+        <div className="flex flex-col items-center gap-3">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-indigo-500" />
+          <p className="text-xs font-bold text-zinc-400">Verificando sesión del alumno...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-950">

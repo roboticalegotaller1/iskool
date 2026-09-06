@@ -9,7 +9,7 @@ import { STATS_MAP_SEED, AVATAR_MAP_SEED } from '@/store/seeds';
 import { Header } from '@/components/Header';
 import { 
   Award, CheckCircle2, Settings, Save, Info, Sparkles, Swords, 
-  X, MapPin, Phone, Mail, User, Activity, Dumbbell, Brain, Shield, ChevronDown, ChevronUp, Coins
+  X, MapPin, Phone, Mail, User, Activity, Dumbbell, Brain, Shield, ChevronDown, ChevronUp, Coins, Lock
 } from 'lucide-react';
 import { DetailedStudent, StudentStats } from '@/types';
 import { getStudentAvatarUrl } from '@/utils/studentAvatar';
@@ -245,6 +245,55 @@ export default function TeacherGrades() {
     if (norm === 'std-prep') return '4º Semestre Preparatoria';
     return getStudentAcademicLevelInfo({ level: 'primaria', grade: '1º' }).fullGradeLabel;
   };
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
+        <div className="flex flex-col items-center gap-3">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-amber-500" />
+          <p className="text-sm font-medium text-zinc-400">Verificando sesión docente...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const isTeacherOrStaff = ['teacher', 'coordinator', 'director', 'admin', 'superadmin', 'owner'].includes(user.role);
+
+  if (!isTeacherOrStaff) {
+    const getRedirectInfo = () => {
+      switch (user.role) {
+        case 'student':
+          return { label: 'Ir a mi Portal de Alumno', path: '/student' };
+        case 'parent':
+        case 'tutor':
+          return { label: 'Ir a mi Portal Familiar', path: '/parent' };
+        case 'billing':
+          return { label: 'Ir a mi Portal de Cobranza', path: '/coordinator/billing' };
+        default:
+          return { label: 'Iniciar Sesión', path: '/login' };
+      }
+    };
+
+    const redirectInfo = getRedirectInfo();
+
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white p-6">
+        <div className="max-w-md w-full p-6 rounded-3xl bg-zinc-900 border border-white/10 text-center space-y-4">
+          <div className="h-14 w-14 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 mx-auto flex items-center justify-center">
+            <Lock className="h-7 w-7" />
+          </div>
+          <h2 className="text-lg font-black text-white">Acceso Restringido</h2>
+          <p className="text-xs text-zinc-400">Esta sección de calificaciones y rúbricas es exclusiva para el personal docente.</p>
+          <button
+            onClick={() => router.push(redirectInfo.path)}
+            className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-black text-xs shadow-lg cursor-pointer"
+          >
+            {redirectInfo.label}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-zinc-950 text-white font-sans relative overflow-hidden">

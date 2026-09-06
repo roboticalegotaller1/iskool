@@ -556,7 +556,25 @@ export default function TeacherDashboard() {
     );
   }
 
-  if (user && user.role === 'student') {
+  const isTeacherOrStaff = user && ['teacher', 'coordinator', 'director', 'admin', 'superadmin', 'owner'].includes(user.role);
+
+  if (!isTeacherOrStaff) {
+    const getRedirectInfo = () => {
+      switch (user?.role) {
+        case 'student':
+          return { label: 'Ir a mi Portal de Alumno', path: '/student' };
+        case 'parent':
+        case 'tutor':
+          return { label: 'Ir a mi Portal Familiar', path: '/parent' };
+        case 'billing':
+          return { label: 'Ir a mi Portal de Cobranza', path: '/coordinator/billing' };
+        default:
+          return { label: 'Iniciar Sesión', path: '/login' };
+      }
+    };
+
+    const redirectInfo = getRedirectInfo();
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white p-6">
         <div className="max-w-md w-full p-6 rounded-3xl bg-zinc-900 border border-white/10 text-center space-y-4">
@@ -564,12 +582,12 @@ export default function TeacherDashboard() {
             <Lock className="h-7 w-7" />
           </div>
           <h2 className="text-lg font-black text-white">Acceso Restringido</h2>
-          <p className="text-xs text-zinc-400">Esta sección es exclusiva para el personal docente. Como alumno dispones de tu propio portal de misiones y recompensas.</p>
+          <p className="text-xs text-zinc-400">Esta sección es exclusiva para el personal docente y dirección pedagógica. No dispones de permisos de profesor en este grupo.</p>
           <button
-            onClick={() => router.push('/student')}
+            onClick={() => router.push(redirectInfo.path)}
             className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-lg cursor-pointer"
           >
-            Ir a mi Portal de Alumno
+            {redirectInfo.label}
           </button>
         </div>
       </div>

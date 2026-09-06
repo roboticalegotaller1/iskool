@@ -46,7 +46,17 @@ import {
   ExternalLink,
   X,
   Edit3,
-  Save
+  DollarSign,
+  Crown,
+  Save,
+  Sliders,
+  Landmark,
+  Receipt,
+  Printer,
+  AlertCircle,
+  TrendingUp,
+  CreditCard,
+  ArrowUpRight
 } from 'lucide-react';
 import { 
   useSchoolAdminStore, 
@@ -55,11 +65,16 @@ import {
   getSchoolStudents,
   getSchoolTeachers,
   getSchoolGroups,
-  getSchoolSubjects
+  getSchoolSubjects,
+  getSchoolStaff,
+  getSchoolEmailDomain,
+  getDirectorLimits,
+  getSchoolPayroll,
+  getSchoolBillingRecords
 } from '@/store/useSchoolAdminStore';
-import { DetailedStudent, Subject, GroupAnnualPlan, SyllabusTopic, Campus, Group } from '@/types';
+import { DetailedStudent, Subject, GroupAnnualPlan, SyllabusTopic, Campus, Group, canManageTargetRole, StaffPayrollRecord } from '@/types';
 
-type AdminTab = 'overview' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config';
+type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll';
 
 export default function SuperUserAdminPage() {
   const { user, loading: authLoading } = useAuth();
@@ -92,7 +107,20 @@ export default function SuperUserAdminPage() {
     deleteCampus,
     createGroup,
     updateGroup,
-    deleteGroup
+    deleteGroup,
+    staffUsers,
+    staffPayroll: storeStaffPayroll,
+    billingRecords: storeBillingRecords,
+    registerStaffAccount,
+    updateStaffAccount,
+    deleteStaffAccount,
+    toggleStaffBlock,
+    changeStaffPassword,
+    directorLimits,
+    updateDirectorLimits,
+    updatePayrollRecord,
+    dispersePayrollBatch,
+    adjustSalary
   } = useSchoolAdminStore();
 
   useEffect(() => {
@@ -109,6 +137,7 @@ export default function SuperUserAdminPage() {
 
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [selectedCampus, setSelectedCampus] = useState<string>('all');
+  const [selectedLimitsSchoolId, setSelectedLimitsSchoolId] = useState<string>('sch-jjrosseau');
   
   // Modales Multi-Colegios
   const [showAddSchoolModal, setShowAddSchoolModal] = useState(false);
@@ -225,6 +254,36 @@ export default function SuperUserAdminPage() {
     assigned_subjects: 'Matemáticas, Robótica',
     assigned_groups: '1ºA Jardines'
   });
+
+  // Estados para Personal Administrativo (Directores, Coordinadores, Cobranza)
+  const [staffRoleFilter, setStaffRoleFilter] = useState<'all' | 'director' | 'coordinator' | 'billing'>('all');
+  const [staffSearchQuery, setStaffSearchQuery] = useState('');
+  const [showAddStaffModal, setShowAddStaffModal] = useState(false);
+  const [copiedStaffPasswordId, setCopiedStaffPasswordId] = useState<string | null>(null);
+  const [newStaffForm, setNewStaffForm] = useState({
+    first_name: '',
+    last_name: '',
+    role: 'director' as 'director' | 'coordinator' | 'billing',
+    school_id: activeSchoolId || 'sch-jjrosseau',
+    campus_name: '',
+    email: '',
+    phone: '',
+    temporary_password: ''
+  });
+
+  // Estados para Finanzas & Nóminas del Personal (Portal del Dueño)
+  const [payrollSearchTerm, setPayrollSearchTerm] = useState('');
+  const [payrollDepartmentFilter, setPayrollDepartmentFilter] = useState('all');
+  const [payrollStatusFilter, setPayrollStatusFilter] = useState('all');
+  const [selectedPayrollRecordForStub, setSelectedPayrollRecordForStub] = useState<StaffPayrollRecord | null>(null);
+  const [selectedPayrollRecordForAdjust, setSelectedPayrollRecordForAdjust] = useState<StaffPayrollRecord | null>(null);
+  const [adjustSalaryForm, setAdjustSalaryForm] = useState({
+    base_salary: 0,
+    bonuses: 0,
+    deductions: 0,
+    notes: ''
+  });
+  const [isDispersingPayroll, setIsDispersingPayroll] = useState(false);
 
   // Formulario de Materia Curricular Simple
   const [newSubjectForm, setNewSubjectForm] = useState({
@@ -511,6 +570,207 @@ export default function SuperUserAdminPage() {
   const schoolSubjects = useMemo(() => {
     return getSchoolSubjects(subjectsList, activeSchoolId, schoolCampuses);
   }, [subjectsList, activeSchoolId, schoolCampuses]);
+
+  // Personal Administrativo Filtrado
+  const schoolStaff = useMemo(() => {
+    return getSchoolStaff(staffUsers, activeSchoolId);
+  }, [staffUsers, activeSchoolId]);
+
+  const filteredStaffList = useMemo(() => {
+    return schoolStaff.filter(s => {
+      const matchRole = staffRoleFilter === 'all' || s.role === staffRoleFilter;
+      const q = staffSearchQuery.toLowerCase().trim();
+      const matchQuery = !q ||
+        s.first_name.toLowerCase().includes(q) ||
+        s.last_name.toLowerCase().includes(q) ||
+        s.email.toLowerCase().includes(q) ||
+        (s.phone && s.phone.includes(q)) ||
+        (s.campus_name && s.campus_name.toLowerCase().includes(q));
+      return matchRole && matchQuery;
+    });
+  }, [schoolStaff, staffRoleFilter, staffSearchQuery]);
+
+  // Nómina y Finanzas del Colegio (Supervisión del Dueño)
+  const schoolPayroll = useMemo(() => {
+    return getSchoolPayroll(storeStaffPayroll, activeSchoolId, selectedCampus);
+  }, [storeStaffPayroll, activeSchoolId, selectedCampus]);
+
+  const schoolBilling = useMemo(() => {
+    return getSchoolBillingRecords(storeBillingRecords, activeSchoolId, schoolStudents);
+  }, [storeBillingRecords, activeSchoolId, schoolStudents]);
+
+  const filteredPayroll = useMemo(() => {
+    return schoolPayroll.filter(p => {
+      const matchDept = payrollDepartmentFilter === 'all' || 
+        p.department === payrollDepartmentFilter || 
+        (payrollDepartmentFilter === 'docentes' && p.role === 'teacher') || 
+        (payrollDepartmentFilter === 'directivos' && (p.role === 'director' || p.role === 'coordinator')) ||
+        (payrollDepartmentFilter === 'cobranza' && p.role === 'billing');
+      const matchStatus = payrollStatusFilter === 'all' || p.status === payrollStatusFilter;
+      const q = payrollSearchTerm.toLowerCase().trim();
+      const matchQuery = !q ||
+        p.employee_name.toLowerCase().includes(q) ||
+        p.position_title.toLowerCase().includes(q) ||
+        p.department.toLowerCase().includes(q) ||
+        (p.rfc && p.rfc.toLowerCase().includes(q)) ||
+        (p.curp && p.curp.toLowerCase().includes(q)) ||
+        (p.receipt_folio && p.receipt_folio.toLowerCase().includes(q));
+      return matchDept && matchStatus && matchQuery;
+    });
+  }, [schoolPayroll, payrollDepartmentFilter, payrollStatusFilter, payrollSearchTerm]);
+
+  const payrollMetrics = useMemo(() => {
+    const totalPayroll = schoolPayroll.reduce((sum, p) => sum + p.net_salary, 0);
+    const paidPayroll = schoolPayroll.filter(p => p.status === 'pagado').reduce((sum, p) => sum + p.net_salary, 0);
+    const pendingPayroll = schoolPayroll.filter(p => p.status !== 'pagado').reduce((sum, p) => sum + p.net_salary, 0);
+    const avgSalary = schoolPayroll.length > 0 ? totalPayroll / schoolPayroll.length : 0;
+    
+    // Ingresos por colegiaturas recaudadas del colegio
+    const totalTuitionIncome = schoolBilling.filter(b => b.status === 'paid').reduce((sum, b) => sum + (b.amount || 0), 0);
+    const pendingTuitionIncome = schoolBilling.filter(b => b.status !== 'paid').reduce((sum, b) => sum + (b.amount || 0), 0);
+    
+    // Margen operativo institucional neto
+    const netOperatingMargin = totalTuitionIncome - totalPayroll;
+
+    return {
+      totalPayroll,
+      paidPayroll,
+      pendingPayroll,
+      avgSalary,
+      totalTuitionIncome,
+      pendingTuitionIncome,
+      netOperatingMargin,
+      totalEmployees: schoolPayroll.length,
+      pendingDispersionsCount: schoolPayroll.filter(p => p.status !== 'pagado').length
+    };
+  }, [schoolPayroll, schoolBilling]);
+
+  const handleBatchDisperse = () => {
+    const pending = schoolPayroll.filter(p => p.status !== 'pagado');
+    if (pending.length === 0) {
+      showToast('ℹ️ No hay nóminas pendientes por dispersar en este momento.');
+      return;
+    }
+    setIsDispersingPayroll(true);
+    setTimeout(() => {
+      dispersePayrollBatch(pending.map(p => p.id));
+      setIsDispersingPayroll(false);
+      showToast(`✅ Dispersión bancaria SPEI procesada exitosamente para ${pending.length} colaboradores.`);
+    }, 600);
+  };
+
+  const handleExportPayrollCSV = () => {
+    const headers = [
+      'Folio Recibo',
+      'Colaborador',
+      'Rol',
+      'Departamento / Puesto',
+      'Campus',
+      'RFC',
+      'CURP',
+      'Banco',
+      'Cuenta CLABE',
+      'Periodo',
+      'Sueldo Base',
+      'Bonos / Percepciones',
+      'Deducciones / Retenciones',
+      'Sueldo Neto',
+      'Estatus Pago',
+      'Fecha Pago'
+    ];
+    const rows = schoolPayroll.map(p => [
+      p.receipt_folio || 'PENDIENTE',
+      `"${p.employee_name}"`,
+      p.role,
+      `"${p.position_title}"`,
+      `"${p.campus_name || ''}"`,
+      p.rfc || '',
+      p.curp || '',
+      `"${p.bank_name || ''}"`,
+      p.account_clabe || '',
+      `"${p.payment_period}"`,
+      p.base_salary,
+      p.bonuses,
+      p.deductions,
+      p.net_salary,
+      p.status,
+      p.payment_date || ''
+    ]);
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `Nomina_Personal_${activeSchoolId || 'colegio'}_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('📊 Reporte contable de nómina descargado en CSV.');
+  };
+
+  const handleOpenAdjustSalary = (rec: StaffPayrollRecord) => {
+    setSelectedPayrollRecordForAdjust(rec);
+    setAdjustSalaryForm({
+      base_salary: rec.base_salary,
+      bonuses: rec.bonuses,
+      deductions: rec.deductions,
+      notes: rec.notes || ''
+    });
+  };
+
+  const handleSaveAdjustSalary = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedPayrollRecordForAdjust) return;
+    adjustSalary(
+      selectedPayrollRecordForAdjust.employee_id,
+      Number(adjustSalaryForm.base_salary) || 0,
+      Number(adjustSalaryForm.bonuses) || 0,
+      Number(adjustSalaryForm.deductions) || 0
+    );
+    if (adjustSalaryForm.notes !== selectedPayrollRecordForAdjust.notes) {
+      updatePayrollRecord(selectedPayrollRecordForAdjust.id, { notes: adjustSalaryForm.notes });
+    }
+    showToast(`✏️ Compensaciones actualizadas para ${selectedPayrollRecordForAdjust.employee_name}.`);
+    setSelectedPayrollRecordForAdjust(null);
+  };
+
+  const handleCreateStaff = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStaffForm.first_name.trim() || !newStaffForm.last_name.trim()) {
+      alert('Por favor introduce el nombre y apellido.');
+      return;
+    }
+
+    const targetSchoolId = newStaffForm.school_id || activeSchoolId || 'sch-jjrosseau';
+    const schoolObj = institutionsList.find(i => i.id === targetSchoolId);
+    const domain = getSchoolEmailDomain(schoolObj);
+    const emailPrefix = newStaffForm.email.trim() ? newStaffForm.email.trim().split('@')[0] : `${newStaffForm.first_name.toLowerCase().replace(/[^a-z0-9]/g, '')}.${newStaffForm.last_name.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+    const email = `${emailPrefix}@${domain}`;
+    const tempPass = newStaffForm.temporary_password.trim() || generateRandomPassword(6);
+
+    const created = registerStaffAccount({
+      first_name: newStaffForm.first_name.trim(),
+      last_name: newStaffForm.last_name.trim(),
+      role: newStaffForm.role,
+      school_id: targetSchoolId,
+      campus_name: newStaffForm.campus_name.trim() || (newStaffForm.role === 'director' ? 'Dirección General' : newStaffForm.role === 'billing' ? 'Departamento de Cobranza' : 'Coordinación Escolar'),
+      email,
+      phone: newStaffForm.phone.trim() || '55-0000-0000',
+      temporary_password: tempPass
+    });
+
+    showToast(`✅ Cuenta de ${newStaffForm.role.toUpperCase()} para ${created.first_name} ${created.last_name} registrada exitosamente.`);
+    setShowAddStaffModal(false);
+    setNewStaffForm({
+      first_name: '',
+      last_name: '',
+      role: 'director',
+      school_id: activeSchoolId || institutionsList[0]?.id || 'sch-jjrosseau',
+      campus_name: '',
+      email: '',
+      phone: '',
+      temporary_password: ''
+    });
+  };
 
   // Filtrado de Alumnos (dentro del colegio activo)
   const filteredStudents = useMemo(() => {
@@ -990,7 +1250,31 @@ export default function SuperUserAdminPage() {
     );
   }
 
-  if (user && (user.role === 'student' || user.role === 'teacher')) {
+  const isSuperOrOwner = user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'owner');
+
+  if (!isSuperOrOwner) {
+    const getRedirectInfo = () => {
+      switch (user?.role) {
+        case 'director':
+          return { label: 'Ir a mi Portal de Director', path: '/director' };
+        case 'coordinator':
+          return { label: 'Ir a mi Portal de Coordinador', path: '/coordinator' };
+        case 'billing':
+          return { label: 'Ir a mi Portal de Finanzas & Cobranza', path: '/coordinator/billing' };
+        case 'teacher':
+          return { label: 'Ir a mi Portal Docente', path: '/teacher' };
+        case 'student':
+          return { label: 'Ir a mi Portal de Alumno', path: '/student' };
+        case 'parent':
+        case 'tutor':
+          return { label: 'Ir a mi Portal Familiar', path: '/parent' };
+        default:
+          return { label: 'Iniciar Sesión', path: '/login' };
+      }
+    };
+
+    const redirectInfo = getRedirectInfo();
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white p-6">
         <div className="max-w-md w-full p-8 rounded-3xl bg-slate-900 border border-white/10 text-center space-y-4 shadow-2xl">
@@ -999,15 +1283,13 @@ export default function SuperUserAdminPage() {
           </div>
           <h2 className="text-lg font-black text-white">Acceso Denegado</h2>
           <p className="text-xs text-slate-400">
-            {user.role === 'student' 
-              ? 'Esta consola es exclusiva para la Dirección Escolar (Super Usuario). Como alumno dispones de tu propio portal de misiones y recompensas.'
-              : 'Esta consola es exclusiva para la Dirección Escolar. Como docente dispones de tu Portal Académico.'}
+            Esta consola es exclusiva para la Dirección General y Presidencia (Dueño de Empresa / Super Usuario). No tienes permisos para gestionar la administración central ni nóminas maestras.
           </p>
           <button
-            onClick={() => router.push(user.role === 'student' ? '/student' : '/teacher')}
+            onClick={() => router.push(redirectInfo.path)}
             className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-lg shadow-indigo-600/30 cursor-pointer transition-all"
           >
-            {user.role === 'student' ? 'Ir a mi Portal de Alumno' : 'Ir a mi Portal Docente'}
+            {redirectInfo.label}
           </button>
         </div>
       </div>
@@ -1036,9 +1318,9 @@ export default function SuperUserAdminPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-lg font-black tracking-tight text-white">Directorio Central de Instituciones</h1>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                    SUPER USUARIO · RED MULTI-COLEGIOS 2026
+                  <h1 className="text-lg font-black tracking-tight text-white">Presidencia Corporativa & Directorio Escolar</h1>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                    🏢 DUEÑO DE EMPRESA · SUPER USUARIO
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">
@@ -1456,6 +1738,17 @@ export default function SuperUserAdminPage() {
               </button>
 
               <button
+                onClick={() => setActiveTab('staff')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  activeTab === 'staff'
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                }`}
+              >
+                <ShieldCheck className="h-4 w-4 text-purple-400" /> Personal & Roles ({schoolStaff.length})
+              </button>
+
+              <button
                 onClick={() => setActiveTab('campuses')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   activeTab === 'campuses'
@@ -1508,6 +1801,17 @@ export default function SuperUserAdminPage() {
                 }`}
               >
                 <ShieldCheck className="h-4 w-4" /> Institución & Seguridad
+              </button>
+
+              <button
+                onClick={() => setActiveTab('payroll')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  activeTab === 'payroll'
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
+                    : 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10'
+                }`}
+              >
+                <DollarSign className="h-4 w-4 text-emerald-400" /> Finanzas & Nóminas ({schoolPayroll.length})
               </button>
             </div>
 
@@ -1599,6 +1903,74 @@ export default function SuperUserAdminPage() {
                   <p className="text-[11px] text-slate-400 mt-1 truncate">
                     {schoolCampuses.map(c => c.name).join(' · ') || 'Planteles Institucionales'}
                   </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Executive Financial & Payroll Balance Banner (Dueño de Empresa) */}
+            <div className="p-6 rounded-3xl bg-gradient-to-r from-slate-900 via-slate-900 to-emerald-950/30 border border-emerald-500/20 shadow-2xl relative overflow-hidden">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5">
+                      <Landmark className="h-3 w-3" /> Balance Operativo Institucional
+                    </span>
+                    <span className="text-xs text-slate-400">· Periodo Quincenal Vigente</span>
+                  </div>
+                  <h3 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
+                    Finanzas & Nómina del Personal Escolar
+                  </h3>
+                  <p className="text-xs text-slate-300 max-w-2xl">
+                    Supervisión corporativa de recaudación por colegiaturas versus costos de nómina para directivos, coordinadores, docentes y cobranza.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setActiveTab('payroll')}
+                    className="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black shadow-lg shadow-emerald-600/30 flex items-center gap-2 hover:scale-102 transition-all cursor-pointer"
+                  >
+                    <DollarSign className="h-4 w-4" /> Ver Nómina Detallada ({schoolPayroll.length}) <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Financial Balance Summary Strip */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-white/10">
+                <div className="p-4 rounded-2xl bg-slate-950/60 border border-white/5 space-y-1">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <TrendingUp className="h-3.5 w-3.5 text-blue-400" /> Ingresos por Colegiaturas
+                  </span>
+                  <div className="text-xl font-black text-blue-400 font-mono">
+                    ${payrollMetrics.totalTuitionIncome.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                  </div>
+                  <span className="text-[10px] text-slate-500 block">
+                    Por cobrar: ${payrollMetrics.pendingTuitionIncome.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-950/60 border border-white/5 space-y-1">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <CreditCard className="h-3.5 w-3.5 text-rose-400" /> Egresos por Nómina
+                  </span>
+                  <div className="text-xl font-black text-rose-400 font-mono">
+                    ${payrollMetrics.totalPayroll.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                  </div>
+                  <span className="text-[10px] text-slate-500 block">
+                    Dispersado: ${payrollMetrics.paidPayroll.toLocaleString('es-MX', { minimumFractionDigits: 2 })} · {payrollMetrics.totalEmployees} colaboradores
+                  </span>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-950/60 border border-white/5 space-y-1">
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <DollarSign className="h-3.5 w-3.5 text-emerald-400" /> Margen Operativo Neto
+                  </span>
+                  <div className={`text-xl font-black font-mono ${payrollMetrics.netOperatingMargin >= 0 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                    ${payrollMetrics.netOperatingMargin.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                  </div>
+                  <span className="text-[10px] text-emerald-500/80 block font-semibold">
+                    {payrollMetrics.netOperatingMargin >= 0 ? '✓ Superávit operativo saludable' : '⚠ Atención contable requerida'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -1995,6 +2367,716 @@ export default function SuperUserAdminPage() {
                 </table>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* TAB PERSONAL & ROLES ADMINISTRATIVOS (DIRECTOR, COORDINADOR, COBRANZA) */}
+        {activeTab === 'staff' && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Header del Tab */}
+            <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-900/90 backdrop-blur-md p-6 rounded-3xl border border-white/10 shadow-xl">
+              <div>
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                    <ShieldCheck className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-lg font-black text-white tracking-tight">
+                    Cuentas de Personal Administrativo & Gobernanza
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-400 mt-1 max-w-2xl">
+                  Registro oficial de directores de colegio, coordinadores académicos y encargados de cobranza. Asigna credenciales de acceso institucional, define colegios y gestiona el estado de cada cuenta.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    setNewStaffForm({
+                      first_name: '',
+                      last_name: '',
+                      role: 'director',
+                      school_id: activeSchoolId || institutionsList[0]?.id || 'sch-jjrosseau',
+                      campus_name: 'Dirección General de Plantel',
+                      email: '',
+                      phone: '55-4160-8800',
+                      temporary_password: generateRandomPassword(6)
+                    });
+                    setShowAddStaffModal(true);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black shadow-lg shadow-purple-600/30 transition-all cursor-pointer hover:scale-102"
+                >
+                  <Plus className="h-4 w-4" /> Registrar Personal Administrativo
+                </button>
+              </div>
+            </div>
+
+            {/* KPI Counter Pills */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-4 rounded-2xl bg-slate-900/80 border border-white/10 shadow-md flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Total Personal</span>
+                  <span className="text-2xl font-black text-white">{schoolStaff.length}</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-white/5 text-slate-300">
+                  <Users className="h-5 w-5" />
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-900/80 border border-purple-500/20 shadow-md flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-purple-400 block">Directores de Plantel</span>
+                  <span className="text-2xl font-black text-purple-300">
+                    {schoolStaff.filter(s => s.role === 'director').length}
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-purple-500/15 text-purple-400 border border-purple-500/30">
+                  <Crown className="h-5 w-5" />
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-900/80 border border-blue-500/20 shadow-md flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-blue-400 block">Coordinadores</span>
+                  <span className="text-2xl font-black text-blue-300">
+                    {schoolStaff.filter(s => s.role === 'coordinator').length}
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                  <BookOpen className="h-5 w-5" />
+                </div>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-900/80 border border-emerald-500/20 shadow-md flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400 block">Cobranza & Finanzas</span>
+                  <span className="text-2xl font-black text-emerald-300">
+                    {schoolStaff.filter(s => s.role === 'billing').length}
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                  <DollarSign className="h-5 w-5" />
+                </div>
+              </div>
+            </div>
+
+            {/* PANEL DE GOBERNANZA CORPORATIVA: LÍMITES PARA DIRECTORES DE PLANTEL */}
+            {(() => {
+              const currentDirectorLimits = getDirectorLimits(directorLimits, selectedLimitsSchoolId);
+              return (
+                <div className="p-6 rounded-3xl bg-gradient-to-r from-slate-900 via-purple-950/40 to-slate-900 border border-purple-500/20 shadow-xl space-y-5">
+                  <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/5 pb-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Crown className="h-5 w-5 text-purple-400" />
+                        <h4 className="text-sm font-black text-white uppercase tracking-wider">
+                          Gobernanza Corporativa: Límites para Directores de Plantel
+                        </h4>
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                          Mando Supremo
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400">
+                        Como Dueño de Empresa, defines qué facultades directivas están habilitadas o restringidas para los Directores en cada colegio.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-300">Colegio a Regular:</span>
+                      <select
+                        value={selectedLimitsSchoolId}
+                        onChange={(e) => setSelectedLimitsSchoolId(e.target.value)}
+                        className="bg-slate-950 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
+                      >
+                        {institutionsList.map(inst => (
+                          <option key={inst.id} value={inst.id} className="bg-slate-900 text-white">
+                            {inst.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Switch 1: Crear/Eliminar Planteles */}
+                    <div className="p-4 rounded-2xl bg-slate-950/80 border border-white/5 flex items-center justify-between gap-3">
+                      <div>
+                        <span className="text-xs font-bold text-white block">Crear / Suprimir Planteles</span>
+                        <span className="text-[10px] text-slate-400 block mt-0.5">
+                          {currentDirectorLimits.canManageCampuses ? 'Habilitado para Dirección' : 'Exclusivo del Dueño'}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          updateDirectorLimits(selectedLimitsSchoolId, {
+                            canManageCampuses: !currentDirectorLimits.canManageCampuses
+                          });
+                          showToast(`Límites actualizados para ${selectedLimitsSchoolId}`);
+                        }}
+                        className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+                          currentDirectorLimits.canManageCampuses ? 'bg-purple-600' : 'bg-slate-700'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 rounded-full bg-white transition-transform absolute top-1 ${
+                          currentDirectorLimits.canManageCampuses ? 'left-6' : 'left-1'
+                        }`} />
+                      </button>
+                    </div>
+
+                    {/* Switch 2: Modificar Aranceles */}
+                    <div className="p-4 rounded-2xl bg-slate-950/80 border border-white/5 flex items-center justify-between gap-3">
+                      <div>
+                        <span className="text-xs font-bold text-white block">Modificar Aranceles</span>
+                        <span className="text-[10px] text-slate-400 block mt-0.5">
+                          {currentDirectorLimits.canModifyTuitionFees ? 'Autorizado al Director' : 'Fijado por Presidencia'}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          updateDirectorLimits(selectedLimitsSchoolId, {
+                            canModifyTuitionFees: !currentDirectorLimits.canModifyTuitionFees
+                          });
+                          showToast(`Límites actualizados para ${selectedLimitsSchoolId}`);
+                        }}
+                        className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+                          currentDirectorLimits.canModifyTuitionFees ? 'bg-purple-600' : 'bg-slate-700'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 rounded-full bg-white transition-transform absolute top-1 ${
+                          currentDirectorLimits.canModifyTuitionFees ? 'left-6' : 'left-1'
+                        }`} />
+                      </button>
+                    </div>
+
+                    {/* Switch 3: Alta de Coordinadores */}
+                    <div className="p-4 rounded-2xl bg-slate-950/80 border border-white/5 flex items-center justify-between gap-3">
+                      <div>
+                        <span className="text-xs font-bold text-white block">Alta de Coordinadores</span>
+                        <span className="text-[10px] text-slate-400 block mt-0.5">
+                          {currentDirectorLimits.canRegisterCoordinators ? 'Director puede registrar' : 'Solo Dueño de Empresa'}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          updateDirectorLimits(selectedLimitsSchoolId, {
+                            canRegisterCoordinators: !currentDirectorLimits.canRegisterCoordinators
+                          });
+                          showToast(`Límites actualizados para ${selectedLimitsSchoolId}`);
+                        }}
+                        className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+                          currentDirectorLimits.canRegisterCoordinators ? 'bg-purple-600' : 'bg-slate-700'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 rounded-full bg-white transition-transform absolute top-1 ${
+                          currentDirectorLimits.canRegisterCoordinators ? 'left-6' : 'left-1'
+                        }`} />
+                      </button>
+                    </div>
+
+                    {/* Selector 4: Tope de Beca Directa */}
+                    <div className="p-4 rounded-2xl bg-slate-950/80 border border-white/5 flex items-center justify-between gap-3">
+                      <div>
+                        <span className="text-xs font-bold text-white block">Tope Beca Directiva</span>
+                        <span className="text-[10px] text-slate-400 block mt-0.5">
+                          Máx. beca sin autorización
+                        </span>
+                      </div>
+                      <select
+                        value={currentDirectorLimits.maxScholarshipDiscountPercent}
+                        onChange={(e) => {
+                          updateDirectorLimits(selectedLimitsSchoolId, {
+                            maxScholarshipDiscountPercent: Number(e.target.value)
+                          });
+                          showToast(`Tope de beca directiva fijado en ${e.target.value}%`);
+                        }}
+                        className="bg-slate-900 border border-white/10 rounded-xl px-2.5 py-1 text-xs font-black text-amber-300 focus:outline-none focus:border-purple-500 cursor-pointer"
+                      >
+                        <option value={20}>20% Máx</option>
+                        <option value={30}>30% Máx</option>
+                        <option value={50}>50% Máx</option>
+                        <option value={75}>75% Máx</option>
+                        <option value={100}>100% Total</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Barra de Filtros & Búsqueda */}
+            <div className="p-4 rounded-2xl bg-slate-900 border border-white/10 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+                <button
+                  onClick={() => setStaffRoleFilter('all')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    staffRoleFilter === 'all'
+                      ? 'bg-white text-slate-900 shadow-md'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  Todos ({schoolStaff.length})
+                </button>
+                <button
+                  onClick={() => setStaffRoleFilter('director')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    staffRoleFilter === 'director'
+                      ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Crown className="h-3.5 w-3.5" /> Directores ({schoolStaff.filter(s => s.role === 'director').length})
+                </button>
+                <button
+                  onClick={() => setStaffRoleFilter('coordinator')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    staffRoleFilter === 'coordinator'
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <BookOpen className="h-3.5 w-3.5" /> Coordinadores ({schoolStaff.filter(s => s.role === 'coordinator').length})
+                </button>
+                <button
+                  onClick={() => setStaffRoleFilter('billing')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    staffRoleFilter === 'billing'
+                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <DollarSign className="h-3.5 w-3.5" /> Cobranza ({schoolStaff.filter(s => s.role === 'billing').length})
+                </button>
+              </div>
+
+              <div className="relative flex-1 min-w-[240px] max-w-md">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                <input
+                  type="text"
+                  value={staffSearchQuery}
+                  onChange={(e) => setStaffSearchQuery(e.target.value)}
+                  placeholder="Buscar por nombre, correo, campus o rol..."
+                  className="w-full bg-slate-950/80 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-all"
+                />
+              </div>
+            </div>
+
+            {/* Listado / Tabla de Cuentas */}
+            <div className="bg-slate-900 rounded-3xl border border-white/10 overflow-hidden shadow-xl">
+              {filteredStaffList.length === 0 ? (
+                <div className="p-12 text-center space-y-3">
+                  <div className="inline-flex p-4 rounded-2xl bg-white/5 text-slate-400">
+                    <ShieldCheck className="h-8 w-8" />
+                  </div>
+                  <h4 className="text-sm font-bold text-white">No se encontraron cuentas de personal</h4>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                    {staffSearchQuery ? 'No hay resultados que coincidan con tu búsqueda actual.' : 'Aún no hay personal registrado con los filtros seleccionados.'}
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-white/10 bg-slate-950/60 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th className="p-4">Personal / Identidad</th>
+                        <th className="p-4">Rol & Nivel</th>
+                        <th className="p-4">Colegio & Área</th>
+                        <th className="p-4">Contacto Institucional</th>
+                        <th className="p-4">Contraseña Temporal</th>
+                        <th className="p-4">Estado</th>
+                        <th className="p-4 text-right">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5 text-xs text-slate-300">
+                      {filteredStaffList.map((staff) => {
+                        const assignedSchool = institutionsList.find(i => i.id === staff.school_id);
+                        const isDirector = staff.role === 'director';
+                        const isBilling = staff.role === 'billing';
+                        const isBlocked = !!staff.is_blocked;
+                        const tempPass = staff.temporary_password || 'ISkool2026!';
+
+                        return (
+                          <tr key={staff.id} className="hover:bg-white/[0.02] transition-colors">
+                            <td className="p-4">
+                              <div className="flex items-center gap-3">
+                                <div className={`h-10 w-10 rounded-xl flex items-center justify-center font-black text-sm text-white shadow-md shrink-0 ${
+                                  isDirector 
+                                    ? 'bg-gradient-to-br from-purple-500 to-indigo-600 shadow-purple-500/25' 
+                                    : isBilling 
+                                    ? 'bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-500/25'
+                                    : 'bg-gradient-to-br from-blue-500 to-cyan-600 shadow-blue-500/25'
+                                }`}>
+                                  {staff.first_name[0]}{staff.last_name[0]}
+                                </div>
+                                <div>
+                                  <span className="font-bold text-white block text-sm">
+                                    {staff.first_name} {staff.last_name}
+                                  </span>
+                                  <span className="text-[11px] text-slate-400 font-mono">
+                                    ID: {staff.id}
+                                  </span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-4">
+                              {isDirector ? (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                                  <Crown className="h-3 w-3" /> Director General
+                                </span>
+                              ) : isBilling ? (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                                  <DollarSign className="h-3 w-3" /> Cobranza / Finanzas
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/15 text-blue-300 border border-blue-500/30">
+                                  <BookOpen className="h-3 w-3" /> Coordinador Escolar
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-4">
+                              <div className="space-y-0.5">
+                                <span className="font-bold text-slate-200 block">
+                                  {assignedSchool?.name || 'Dirección General / Multi-Colegio'}
+                                </span>
+                                <span className="text-[11px] text-slate-400 block">
+                                  {staff.campus_name || 'Plantel Central'}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="p-4">
+                              <div className="space-y-1 text-[11px]">
+                                <p className="flex items-center gap-1.5 text-slate-300 font-mono">
+                                  <Mail className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                                  <span>{staff.email}</span>
+                                </p>
+                                {staff.phone && (
+                                  <p className="flex items-center gap-1.5 text-slate-400 font-mono">
+                                    <Phone className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                                    <span>{staff.phone}</span>
+                                  </p>
+                                )}
+                              </div>
+                            </td>
+                            <td className="p-4">
+                              <div className="inline-flex items-center gap-1.5 bg-slate-950/80 px-2.5 py-1.5 rounded-xl border border-white/10">
+                                <KeyRound className="h-3.5 w-3.5 text-amber-400" />
+                                <span className="font-mono font-bold text-amber-300 text-xs">
+                                  {tempPass}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(tempPass);
+                                    setCopiedStaffPasswordId(staff.id);
+                                    setTimeout(() => setCopiedStaffPasswordId(null), 2000);
+                                  }}
+                                  title="Copiar contraseña"
+                                  className="ml-1 p-1 hover:bg-white/10 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
+                                >
+                                  {copiedStaffPasswordId === staff.id ? (
+                                    <Check className="h-3.5 w-3.5 text-emerald-400" />
+                                  ) : (
+                                    <Copy className="h-3.5 w-3.5" />
+                                  )}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const newP = changeStaffPassword(staff.id);
+                                    showToast(`🔑 Nueva contraseña generada para ${staff.first_name}: ${newP}`);
+                                  }}
+                                  title="Regenerar contraseña aleatoria"
+                                  className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-amber-400 transition-colors cursor-pointer"
+                                >
+                                  <RefreshCw className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                            <td className="p-4">
+                              {isBlocked ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-red-500/20 text-red-400 border border-red-500/30">
+                                  <Lock className="h-3 w-3" /> Bloqueado
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                  <CheckCircle2 className="h-3 w-3" /> Activo
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-4 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    toggleStaffBlock(staff.id, !isBlocked);
+                                    showToast(isBlocked ? `✅ Cuenta de ${staff.first_name} reactivada.` : `⛔ Cuenta de ${staff.first_name} suspendida.`);
+                                  }}
+                                  title={isBlocked ? "Reactivar Acceso" : "Suspender Acceso"}
+                                  className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                                    isBlocked
+                                      ? 'bg-emerald-600/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-600/30'
+                                      : 'bg-amber-600/20 text-amber-400 border-amber-500/30 hover:bg-amber-600/30'
+                                  }`}
+                                >
+                                  {isBlocked ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (confirm(`¿Estás seguro de dar de baja la cuenta de ${staff.first_name} ${staff.last_name}?`)) {
+                                      deleteStaffAccount(staff.id);
+                                      showToast(`🗑️ Cuenta de ${staff.first_name} eliminada.`);
+                                    }
+                                  }}
+                                  title="Eliminar Cuenta"
+                                  className="p-2 rounded-xl bg-red-600/20 text-red-400 border border-red-500/30 hover:bg-red-600/30 transition-all cursor-pointer"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* MODAL: REGISTRAR NUEVA CUENTA ADMINISTRATIVA */}
+            {showAddStaffModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+                <div className="relative w-full max-w-xl bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-white/10 p-6 space-y-5">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                        <Plus className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-base font-black text-white">Alta de Personal Administrativo</h4>
+                        <p className="text-xs text-slate-400">Registrar cuenta oficial con credenciales institucionales</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddStaffModal(false)}
+                      className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleCreateStaff} className="space-y-4">
+                    {/* Selector de Rol */}
+                    <div>
+                      <label className="text-xs font-bold text-slate-300 block mb-1.5">
+                        Rol Institucional a Asignar *
+                      </label>
+                      <div className="grid grid-cols-3 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setNewStaffForm(prev => ({ ...prev, role: 'director', campus_name: 'Dirección General de Plantel' }))}
+                          className={`p-3 rounded-xl border text-center transition-all cursor-pointer ${
+                            newStaffForm.role === 'director'
+                              ? 'bg-purple-600/30 border-purple-500 text-purple-200 ring-2 ring-purple-500/50'
+                              : 'bg-slate-950/60 border-white/10 text-slate-400 hover:bg-white/5'
+                          }`}
+                        >
+                          <Crown className="h-5 w-5 mx-auto mb-1 text-purple-400" />
+                          <span className="text-xs font-bold block">Director</span>
+                          <span className="text-[10px] text-slate-400 block mt-0.5">Gobernanza Total</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setNewStaffForm(prev => ({ ...prev, role: 'coordinator', campus_name: 'Coordinación Académica' }))}
+                          className={`p-3 rounded-xl border text-center transition-all cursor-pointer ${
+                            newStaffForm.role === 'coordinator'
+                              ? 'bg-blue-600/30 border-blue-500 text-blue-200 ring-2 ring-blue-500/50'
+                              : 'bg-slate-950/60 border-white/10 text-slate-400 hover:bg-white/5'
+                          }`}
+                        >
+                          <BookOpen className="h-5 w-5 mx-auto mb-1 text-blue-400" />
+                          <span className="text-xs font-bold block">Coordinador</span>
+                          <span className="text-[10px] text-slate-400 block mt-0.5">Control Escolar</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setNewStaffForm(prev => ({ ...prev, role: 'billing', campus_name: 'Departamento de Cobranza' }))}
+                          className={`p-3 rounded-xl border text-center transition-all cursor-pointer ${
+                            newStaffForm.role === 'billing'
+                              ? 'bg-emerald-600/30 border-emerald-500 text-emerald-200 ring-2 ring-emerald-500/50'
+                              : 'bg-slate-950/60 border-white/10 text-slate-400 hover:bg-white/5'
+                          }`}
+                        >
+                          <DollarSign className="h-5 w-5 mx-auto mb-1 text-emerald-400" />
+                          <span className="text-xs font-bold block">Cobranza</span>
+                          <span className="text-[10px] text-slate-400 block mt-0.5">Finanzas y Pagos</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Colegio e Institución */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-bold text-slate-300 block mb-1">
+                          Colegio Asignado *
+                        </label>
+                        <select
+                          value={newStaffForm.school_id}
+                          onChange={(e) => setNewStaffForm(prev => ({ ...prev, school_id: e.target.value }))}
+                          className="w-full bg-slate-950/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
+                        >
+                          {institutionsList.map(inst => (
+                            <option key={inst.id} value={inst.id} className="bg-slate-900 text-white">
+                              {inst.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold text-slate-300 block mb-1">
+                          Plantel / Área Operativa
+                        </label>
+                        <input
+                          type="text"
+                          value={newStaffForm.campus_name}
+                          onChange={(e) => setNewStaffForm(prev => ({ ...prev, campus_name: e.target.value }))}
+                          placeholder="Ej. Dirección General, Primaria Jardines"
+                          className="w-full bg-slate-950/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Nombre y Apellidos */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-bold text-slate-300 block mb-1">
+                          Nombre(s) *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={newStaffForm.first_name}
+                          onChange={(e) => setNewStaffForm(prev => ({ ...prev, first_name: e.target.value }))}
+                          placeholder="Ej. Roberto"
+                          className="w-full bg-slate-950/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold text-slate-300 block mb-1">
+                          Apellidos *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={newStaffForm.last_name}
+                          onChange={(e) => setNewStaffForm(prev => ({ ...prev, last_name: e.target.value }))}
+                          placeholder="Ej. Garza Hernández"
+                          className="w-full bg-slate-950/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Correo y Teléfono */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-xs font-bold text-slate-300">
+                            Correo Electrónico *
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-mono text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">
+                              @{getSchoolEmailDomain(institutionsList.find(i => i.id === (newStaffForm.school_id || activeSchoolId || 'sch-jjrosseau')))}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const targetSchoolId = newStaffForm.school_id || activeSchoolId || 'sch-jjrosseau';
+                                const schoolObj = institutionsList.find(i => i.id === targetSchoolId);
+                                const domain = getSchoolEmailDomain(schoolObj);
+                                if (newStaffForm.first_name) {
+                                  const generated = `${newStaffForm.first_name.toLowerCase().replace(/[^a-z0-9]/g, '')}.${newStaffForm.last_name.toLowerCase().replace(/[^a-z0-9]/g, '')}@${domain}`;
+                                  setNewStaffForm(prev => ({ ...prev, email: generated }));
+                                }
+                              }}
+                              className="text-[10px] text-purple-400 hover:text-purple-300 underline cursor-pointer"
+                            >
+                              Auto-generar
+                            </button>
+                          </div>
+                        </div>
+                        <input
+                          type="email"
+                          value={newStaffForm.email}
+                          onChange={(e) => setNewStaffForm(prev => ({ ...prev, email: e.target.value }))}
+                          placeholder={`usuario@${getSchoolEmailDomain(institutionsList.find(i => i.id === (newStaffForm.school_id || activeSchoolId || 'sch-jjrosseau')))}`}
+                          className="w-full bg-slate-950/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold text-slate-300 block mb-1">
+                          Teléfono Institucional
+                        </label>
+                        <input
+                          type="text"
+                          value={newStaffForm.phone}
+                          onChange={(e) => setNewStaffForm(prev => ({ ...prev, phone: e.target.value }))}
+                          placeholder="55-4160-8800"
+                          className="w-full bg-slate-950/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Contraseña Temporal */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs font-bold text-slate-300">
+                          Contraseña Temporal de Acceso
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setNewStaffForm(prev => ({ ...prev, temporary_password: generateRandomPassword(6) }))}
+                          className="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1 cursor-pointer"
+                        >
+                          <RefreshCw className="h-3 w-3" /> Generar otra
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        value={newStaffForm.temporary_password}
+                        onChange={(e) => setNewStaffForm(prev => ({ ...prev, temporary_password: e.target.value }))}
+                        className="w-full bg-slate-950/80 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-amber-300 focus:outline-none focus:border-amber-500"
+                      />
+                    </div>
+
+                    {/* Botones de Acción */}
+                    <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+                      <button
+                        type="button"
+                        onClick={() => setShowAddStaffModal(false)}
+                        className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-lg shadow-purple-600/30 transition-all cursor-pointer hover:scale-102"
+                      >
+                        Guardar Cuenta de Personal
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -2529,6 +3611,341 @@ export default function SuperUserAdminPage() {
                 <li>Los profesores registrados disponen únicamente de acceso al panel docente (`/teacher`).</li>
                 <li>Sincronización en segundo plano con la base de datos central en Supabase.</li>
               </ul>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 7: FINANZAS & NÓMINAS DEL PERSONAL (DUEÑO DE EMPRESA) */}
+        {activeTab === 'payroll' && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Header del Módulo Financiero */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-slate-900 border border-white/10 shadow-xl">
+              <div>
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2.5 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    <DollarSign className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-black text-white tracking-tight">Finanzas & Nóminas del Personal</h2>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        Presidencia Corporativa
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Control institucional de percepciones, bonos por desempeño, retenciones y dispersión de nómina por SPEI.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2.5">
+                <button
+                  onClick={handleExportPayrollCSV}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold border border-white/10 transition-all cursor-pointer shadow-sm hover:scale-102"
+                >
+                  <FileDown className="h-4 w-4 text-emerald-400" /> Exportar Reporte CSV
+                </button>
+
+                <button
+                  onClick={handleBatchDisperse}
+                  disabled={isDispersingPayroll || payrollMetrics.pendingDispersionsCount === 0}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black shadow-lg transition-all cursor-pointer ${
+                    payrollMetrics.pendingDispersionsCount > 0
+                      ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/30 hover:scale-102'
+                      : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-white/5'
+                  }`}
+                >
+                  {isDispersingPayroll ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 animate-spin text-white" /> Dispersando SPEI...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 text-white" /> Dispersar Nómina Pendiente ({payrollMetrics.pendingDispersionsCount})
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* 4 Tarjetas de Métricas Ejecutivas */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-5 rounded-2xl bg-slate-900/90 border border-white/10 shadow-lg flex flex-col justify-between hover:border-emerald-500/40 transition-all">
+                <div className="flex items-center justify-between text-slate-400">
+                  <span className="text-xs font-bold uppercase tracking-wider">Nómina Neta Quincenal</span>
+                  <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400">
+                    <CreditCard className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <span className="text-2xl font-black text-rose-400 font-mono">
+                    ${payrollMetrics.totalPayroll.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                  </span>
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1">
+                    <span>Dispersado: <strong className="text-emerald-400 font-mono">${payrollMetrics.paidPayroll.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</strong></span>
+                  </div>
+                  <div className="text-[10px] text-amber-400/90 mt-0.5">
+                    Por dispersar: <strong className="font-mono">${payrollMetrics.pendingPayroll.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-slate-900/90 border border-white/10 shadow-lg flex flex-col justify-between hover:border-blue-500/40 transition-all">
+                <div className="flex items-center justify-between text-slate-400">
+                  <span className="text-xs font-bold uppercase tracking-wider">Ingresos por Colegiaturas</span>
+                  <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400">
+                    <TrendingUp className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <span className="text-2xl font-black text-blue-400 font-mono">
+                    ${payrollMetrics.totalTuitionIncome.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                  </span>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Recaudación cobrada en cuenta institucional
+                  </p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">
+                    Pendiente cobrar: ${payrollMetrics.pendingTuitionIncome.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-slate-900/90 border border-white/10 shadow-lg flex flex-col justify-between hover:border-emerald-500/40 transition-all">
+                <div className="flex items-center justify-between text-slate-400">
+                  <span className="text-xs font-bold uppercase tracking-wider">Margen Operativo Neto</span>
+                  <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+                    <Landmark className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <span className={`text-2xl font-black font-mono ${payrollMetrics.netOperatingMargin >= 0 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                    ${payrollMetrics.netOperatingMargin.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                  </span>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Colegiaturas menos costo total de nómina
+                  </p>
+                  <span className="text-[10px] text-emerald-500/90 font-semibold block mt-0.5">
+                    {payrollMetrics.netOperatingMargin >= 0 ? '✓ Utilidad operativa positiva' : '⚠ Revisar metas de cobranza'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-slate-900/90 border border-white/10 shadow-lg flex flex-col justify-between hover:border-amber-500/40 transition-all">
+                <div className="flex items-center justify-between text-slate-400">
+                  <span className="text-xs font-bold uppercase tracking-wider">Plantilla en Nómina</span>
+                  <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+                    <Users className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <span className="text-2xl font-black text-white">
+                    {payrollMetrics.totalEmployees} colaboradores
+                  </span>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Sueldo promedio: <strong className="text-slate-200 font-mono">${payrollMetrics.avgSalary.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</strong>
+                  </p>
+                  <p className="text-[10px] text-purple-400 mt-0.5">
+                    {schoolPayroll.filter(p => p.bonuses > 0).length} colaboradores con bonos pedagógicos
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Barra de Filtros y Búsqueda */}
+            <div className="p-4 rounded-2xl bg-slate-900/80 border border-white/10 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <div className="relative min-w-[240px]">
+                  <Search className="h-4 w-4 absolute left-3 top-3 text-slate-400" />
+                  <input
+                    type="text"
+                    value={payrollSearchTerm}
+                    onChange={(e) => setPayrollSearchTerm(e.target.value)}
+                    placeholder="Buscar por colaborador, RFC o cargo..."
+                    className="w-full bg-slate-950 border border-white/10 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-emerald-500 transition-all"
+                  />
+                  {payrollSearchTerm && (
+                    <button
+                      onClick={() => setPayrollSearchTerm('')}
+                      className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white cursor-pointer"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Filtro por Departamento */}
+                <select
+                  value={payrollDepartmentFilter}
+                  onChange={(e) => setPayrollDepartmentFilter(e.target.value)}
+                  className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs font-bold text-slate-200 outline-none focus:border-emerald-500 transition-all cursor-pointer"
+                >
+                  <option value="all">🏢 Todos los Departamentos</option>
+                  <option value="directivos">🎓 Directores y Coordinadores</option>
+                  <option value="docentes">👨‍🏫 Cuerpo Docente</option>
+                  <option value="cobranza">💼 Cobranza y Finanzas</option>
+                </select>
+
+                {/* Filtro por Estatus */}
+                <select
+                  value={payrollStatusFilter}
+                  onChange={(e) => setPayrollStatusFilter(e.target.value)}
+                  className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs font-bold text-slate-200 outline-none focus:border-emerald-500 transition-all cursor-pointer"
+                >
+                  <option value="all">⚡ Todos los Estatus</option>
+                  <option value="pagado">✓ Pagado (Dispersado)</option>
+                  <option value="en_dispersion">⏳ En Dispersión</option>
+                  <option value="pendiente">⚠ Pendiente de Pago</option>
+                </select>
+              </div>
+
+              <div className="text-xs text-slate-400">
+                Mostrando <strong className="text-white">{filteredPayroll.length}</strong> de <strong className="text-white">{schoolPayroll.length}</strong> colaboradores
+              </div>
+            </div>
+
+            {/* Tabla Principal de Nómina */}
+            <div className="rounded-2xl bg-slate-900 border border-white/10 shadow-xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-white/10 bg-slate-950/80 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                      <th className="p-4">Colaborador / Identidad</th>
+                      <th className="p-4">Cargo / Departamento</th>
+                      <th className="p-4 text-right">Sueldo Base</th>
+                      <th className="p-4 text-right">Bonos / Percep.</th>
+                      <th className="p-4 text-right">Deducciones</th>
+                      <th className="p-4 text-right">Sueldo Neto</th>
+                      <th className="p-4">Dispersión & Banco</th>
+                      <th className="p-4 text-center">Estatus</th>
+                      <th className="p-4 text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-xs text-slate-300">
+                    {filteredPayroll.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="p-8 text-center text-slate-400">
+                          <AlertCircle className="h-8 w-8 text-slate-500 mx-auto mb-2" />
+                          No se encontraron registros de nómina con los filtros seleccionados.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredPayroll.map(record => (
+                        <tr key={record.id} className="hover:bg-white/[0.02] transition-colors">
+                          {/* Colaborador */}
+                          <td className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center text-white font-bold text-xs uppercase shrink-0">
+                                {record.employee_name.substring(0, 2)}
+                              </div>
+                              <div>
+                                <span className="font-bold text-white block text-sm">{record.employee_name}</span>
+                                <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                                  <span>RFC: <strong className="text-slate-300 font-mono">{record.rfc || 'No registrado'}</strong></span>
+                                  <span>·</span>
+                                  <span className="font-mono text-purple-300">{record.receipt_folio || 'Sin folio'}</span>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Cargo */}
+                          <td className="p-4">
+                            <span className="font-bold text-slate-200 block">{record.position_title}</span>
+                            <span className="text-[10px] text-slate-400 block">{record.department}</span>
+                            {record.campus_name && (
+                              <span className="text-[10px] text-indigo-300 block">{record.campus_name}</span>
+                            )}
+                          </td>
+
+                          {/* Sueldo Base */}
+                          <td className="p-4 text-right font-mono font-medium text-slate-300">
+                            ${(record.base_salary || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                          </td>
+
+                          {/* Bonos */}
+                          <td className="p-4 text-right font-mono text-emerald-400 font-medium">
+                            {record.bonuses > 0 ? `+$${record.bonuses.toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : '$0.00'}
+                          </td>
+
+                          {/* Deducciones */}
+                          <td className="p-4 text-right font-mono text-rose-400 font-medium">
+                            {record.deductions > 0 ? `-$${record.deductions.toLocaleString('es-MX', { minimumFractionDigits: 2 })}` : '$0.00'}
+                          </td>
+
+                          {/* Sueldo Neto */}
+                          <td className="p-4 text-right font-mono font-black text-emerald-300 text-sm">
+                            ${(record.net_salary || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                          </td>
+
+                          {/* Cuenta y Banco */}
+                          <td className="p-4 text-xs">
+                            <span className="font-bold text-slate-200 block">{record.bank_name || 'SPEI Institucional'}</span>
+                            <span className="font-mono text-[10px] text-slate-400 block">
+                              CLABE: {record.account_clabe ? `${record.account_clabe.substring(0, 6)}...${record.account_clabe.substring(14)}` : 'Pendiente'}
+                            </span>
+                            <span className="text-[10px] text-slate-500 block">{record.payment_period}</span>
+                          </td>
+
+                          {/* Estatus */}
+                          <td className="p-4 text-center">
+                            {record.status === 'pagado' ? (
+                              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                <CheckCircle2 className="h-3 w-3" /> Pagado
+                              </div>
+                            ) : record.status === 'en_dispersion' ? (
+                              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                                <RefreshCw className="h-3 w-3 animate-spin" /> En Dispersión
+                              </div>
+                            ) : (
+                              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                <AlertCircle className="h-3 w-3" /> Pendiente
+                              </div>
+                            )}
+                          </td>
+
+                          {/* Acciones */}
+                          <td className="p-4 text-center">
+                            <div className="flex items-center justify-center gap-1.5">
+                              {/* Botón Ver Recibo Formal */}
+                              <button
+                                onClick={() => setSelectedPayrollRecordForStub(record)}
+                                title="Ver Recibo Digital de Nómina"
+                                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+                              >
+                                <Receipt className="h-4 w-4 text-indigo-400" />
+                              </button>
+
+                              {/* Botón Ajustar Compensación */}
+                              <button
+                                onClick={() => handleOpenAdjustSalary(record)}
+                                title="Ajustar Sueldo Base o Bonos"
+                                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+                              >
+                                <Edit3 className="h-4 w-4 text-amber-400" />
+                              </button>
+
+                              {/* Dispersión Unitaria */}
+                              {record.status !== 'pagado' && (
+                                <button
+                                  onClick={() => {
+                                    dispersePayrollBatch([record.id]);
+                                    showToast(`✅ Dispersión SPEI procesada para ${record.employee_name}`);
+                                  }}
+                                  title="Dispersar Pago Ahora"
+                                  className="p-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/30 transition-all cursor-pointer"
+                                >
+                                  <Check className="h-4 w-4" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
@@ -4576,6 +5993,303 @@ export default function SuperUserAdminPage() {
                   className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black shadow-lg cursor-pointer"
                 >
                   Guardar Cambios
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: RECIBO DIGITAL OFICIAL DE NÓMINA INSTITUCIONAL */}
+      {selectedPayrollRecordForStub && (
+        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 print:p-0">
+          <div className="w-full max-w-2xl bg-slate-900 border border-white/15 rounded-3xl p-6 shadow-2xl space-y-6 max-h-[92vh] overflow-y-auto print:bg-white print:text-black print:border-none print:shadow-none print:max-h-none print:p-8">
+            
+            {/* Encabezado del Recibo */}
+            <div className="flex items-start justify-between border-b border-white/10 print:border-black/20 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-md print:border print:border-black">
+                  <Building2 className="h-6 w-6 text-white print:text-black" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white print:text-black">
+                    {currentSchool?.name || schoolSettings.name}
+                  </h3>
+                  <p className="text-xs text-slate-400 print:text-slate-600">
+                    CCT: <strong className="text-slate-300 print:text-black font-mono">{currentSchool?.cct || schoolSettings.cct}</strong> · RFC: <strong className="text-slate-300 print:text-black font-mono">UPJ260115-R89</strong>
+                  </p>
+                  <p className="text-[10px] text-slate-500 print:text-slate-600">
+                    Régimen de Personas Morales con Fines No Lucrativos · Comprobante Interno de Nómina
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-right">
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-purple-500/20 text-purple-300 print:text-black border border-purple-500/30 print:border-black block mb-1">
+                  {selectedPayrollRecordForStub.receipt_folio || 'REC-NOM-2026-0901'}
+                </span>
+                <span className="text-[10px] text-slate-400 print:text-slate-600 block">
+                  {selectedPayrollRecordForStub.payment_period}
+                </span>
+                <span className="text-[9px] text-emerald-400 print:text-emerald-700 font-bold block">
+                  {selectedPayrollRecordForStub.status === 'pagado' ? '✓ DISPERSADO POR SPEI' : '⏳ PENDIENTE DE DISPERSIÓN'}
+                </span>
+              </div>
+            </div>
+
+            {/* Ficha del Colaborador */}
+            <div className="p-4 rounded-2xl bg-slate-950/70 border border-white/5 print:bg-slate-50 print:border-black/10 grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+              <div>
+                <span className="text-[10px] text-slate-500 uppercase font-bold block">Colaborador</span>
+                <strong className="text-white print:text-black text-sm">{selectedPayrollRecordForStub.employee_name}</strong>
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-500 uppercase font-bold block">Puesto / Cargo</span>
+                <span className="text-slate-300 print:text-black font-medium">{selectedPayrollRecordForStub.position_title}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-500 uppercase font-bold block">Departamento / Campus</span>
+                <span className="text-slate-300 print:text-black font-medium">{selectedPayrollRecordForStub.campus_name || selectedPayrollRecordForStub.department}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-500 uppercase font-bold block">RFC</span>
+                <span className="text-slate-300 print:text-black font-mono">{selectedPayrollRecordForStub.rfc || 'No capturado'}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-500 uppercase font-bold block">CURP</span>
+                <span className="text-slate-300 print:text-black font-mono">{selectedPayrollRecordForStub.curp || 'No capturado'}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-500 uppercase font-bold block">Institución Bancaria & CLABE</span>
+                <span className="text-slate-300 print:text-black font-mono">
+                  {selectedPayrollRecordForStub.bank_name || 'BBVA'} · {selectedPayrollRecordForStub.account_clabe ? selectedPayrollRecordForStub.account_clabe.substring(0, 8) + '...' : 'Pendiente'}
+                </span>
+              </div>
+            </div>
+
+            {/* Desglose de Percepciones y Deducciones (2 Columnas) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              {/* Percepciones */}
+              <div className="p-4 rounded-2xl bg-slate-950/50 border border-emerald-500/20 print:border-black/20 space-y-2">
+                <div className="flex items-center justify-between border-b border-emerald-500/20 pb-2">
+                  <span className="font-bold text-emerald-400 print:text-emerald-800 uppercase text-[11px] flex items-center gap-1.5">
+                    <TrendingUp className="h-3.5 w-3.5" /> Percepciones
+                  </span>
+                  <span className="text-[10px] text-slate-400 print:text-slate-600 font-mono">Importe</span>
+                </div>
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between text-slate-300 print:text-black">
+                    <span>001 - Sueldo Base Quincenal</span>
+                    <span className="font-mono">${(selectedPayrollRecordForStub.base_salary || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  {selectedPayrollRecordForStub.bonuses > 0 && (
+                    <div className="flex items-center justify-between text-emerald-300 print:text-emerald-700">
+                      <span>038 - Bonos Pedagógicos / Desempeño</span>
+                      <span className="font-mono">+${selectedPayrollRecordForStub.bonuses.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="pt-3 border-t border-white/5 flex items-center justify-between font-bold text-white print:text-black">
+                  <span>Total Percepciones:</span>
+                  <span className="font-mono text-emerald-400 print:text-emerald-800">
+                    ${((selectedPayrollRecordForStub.base_salary || 0) + (selectedPayrollRecordForStub.bonuses || 0)).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
+
+              {/* Deducciones */}
+              <div className="p-4 rounded-2xl bg-slate-950/50 border border-rose-500/20 print:border-black/20 space-y-2">
+                <div className="flex items-center justify-between border-b border-rose-500/20 pb-2">
+                  <span className="font-bold text-rose-400 print:text-rose-800 uppercase text-[11px] flex items-center gap-1.5">
+                    <CreditCard className="h-3.5 w-3.5" /> Deducciones & Retenciones
+                  </span>
+                  <span className="text-[10px] text-slate-400 print:text-slate-600 font-mono">Importe</span>
+                </div>
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between text-slate-300 print:text-black">
+                    <span>001 - Retención de Impuestos (ISR)</span>
+                    <span className="font-mono text-rose-400 print:text-rose-700">
+                      -${((selectedPayrollRecordForStub.deductions || 0) * 0.65).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-slate-300 print:text-black">
+                    <span>002 - Aportación IMSS / Seguridad Social</span>
+                    <span className="font-mono text-rose-400 print:text-rose-700">
+                      -${((selectedPayrollRecordForStub.deductions || 0) * 0.35).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </div>
+                <div className="pt-3 border-t border-white/5 flex items-center justify-between font-bold text-white print:text-black">
+                  <span>Total Retenciones:</span>
+                  <span className="font-mono text-rose-400 print:text-rose-800">
+                    -${(selectedPayrollRecordForStub.deductions || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Sueldo Neto a Dispersar */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-950 via-emerald-950/20 to-slate-950 border border-emerald-500/30 print:bg-slate-100 print:border-black/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 print:text-slate-600">
+                  Importe Neto a Recibir
+                </span>
+                <div className="text-2xl font-black text-emerald-400 print:text-emerald-900 font-mono">
+                  ${(selectedPayrollRecordForStub.net_salary || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN
+                </div>
+                <p className="text-[10px] text-slate-400 print:text-slate-600 mt-0.5">
+                  Método de Pago: {selectedPayrollRecordForStub.payment_method || 'SPEI / Transferencia Bancaria'}
+                </p>
+              </div>
+
+              {selectedPayrollRecordForStub.notes && (
+                <div className="text-right sm:max-w-xs">
+                  <span className="text-[10px] font-bold text-purple-300 print:text-purple-800 block">Observaciones Pedagógicas:</span>
+                  <span className="text-[11px] text-slate-300 print:text-black italic">{selectedPayrollRecordForStub.notes}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Cadena Digital & Sello Institucional */}
+            <div className="p-3 rounded-xl bg-slate-950 border border-white/5 print:border-black/10 text-[9px] font-mono text-slate-400 print:text-slate-600 space-y-1">
+              <div>
+                <strong className="text-slate-300 print:text-black">Cadena de Certificación Digital Institucional:</strong> ||1.1|{selectedPayrollRecordForStub.receipt_folio || 'REC-NOM-2026-0901'}|{selectedPayrollRecordForStub.payment_date || new Date().toISOString()}|{selectedPayrollRecordForStub.net_salary}|UPJ260115-R89||
+              </div>
+              <div className="truncate">
+                <strong className="text-slate-300 print:text-black">Sello Digital:</strong> aB9xK89mZ1pQ4vL72d9X8Y7w1m3k8qL0p9Z1w2e3r4t5y6u7i8o9p0a1s2d3f4g5h6j7k8l9
+              </div>
+            </div>
+
+            {/* Acciones del Modal */}
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10 print:hidden">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                <Printer className="h-4 w-4 text-emerald-400" /> Imprimir Recibo
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedPayrollRecordForStub(null)}
+                className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-lg shadow-indigo-600/30 transition-all cursor-pointer"
+              >
+                Cerrar
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: AJUSTAR COMPENSACIONES Y SUELDO (DUEÑO DE EMPRESA) */}
+      {selectedPayrollRecordForAdjust && (
+        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="w-full max-w-lg bg-slate-900 border border-white/15 rounded-3xl p-6 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                  <Edit3 className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white">Ajustar Sueldo y Bonos</h3>
+                  <p className="text-xs text-slate-400">
+                    Colaborador: <strong className="text-slate-200">{selectedPayrollRecordForAdjust.employee_name}</strong>
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedPayrollRecordForAdjust(null)}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveAdjustSalary} className="space-y-4 text-xs">
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">
+                  Sueldo Base Quincenal ($ MXN)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="100"
+                  required
+                  value={adjustSalaryForm.base_salary}
+                  onChange={(e) => setAdjustSalaryForm({ ...adjustSalaryForm, base_salary: parseFloat(e.target.value) || 0 })}
+                  className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-mono text-sm outline-none focus:border-amber-500 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">
+                  Bonos Pedagógicos / Desempeño ($ MXN)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="50"
+                  value={adjustSalaryForm.bonuses}
+                  onChange={(e) => setAdjustSalaryForm({ ...adjustSalaryForm, bonuses: parseFloat(e.target.value) || 0 })}
+                  className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-mono text-sm outline-none focus:border-amber-500 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">
+                  Retenciones y Deducciones de Ley ($ MXN)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="50"
+                  value={adjustSalaryForm.deductions}
+                  onChange={(e) => setAdjustSalaryForm({ ...adjustSalaryForm, deductions: parseFloat(e.target.value) || 0 })}
+                  className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-mono text-sm outline-none focus:border-amber-500 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="text-slate-300 font-bold block mb-1">
+                  Notas / Justificación del Ajuste
+                </label>
+                <textarea
+                  rows={2}
+                  value={adjustSalaryForm.notes}
+                  onChange={(e) => setAdjustSalaryForm({ ...adjustSalaryForm, notes: e.target.value })}
+                  placeholder="Ej: Bono otorgado por metas alcanzadas en NEM 2024..."
+                  className="w-full bg-slate-950 border border-white/10 rounded-xl p-3 text-slate-200 outline-none focus:border-amber-500 transition-all"
+                />
+              </div>
+
+              {/* Cálculo en Vivo del Sueldo Neto */}
+              <div className="p-3.5 rounded-xl bg-slate-950 border border-amber-500/20 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Nuevo Sueldo Neto a Dispersar:</span>
+                  <span className="text-lg font-black text-emerald-400 font-mono">
+                    ${Math.max(0, adjustSalaryForm.base_salary + adjustSalaryForm.bonuses - adjustSalaryForm.deductions).toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN
+                  </span>
+                </div>
+                <div className="text-[10px] text-slate-500 text-right">
+                  Base (${adjustSalaryForm.base_salary}) + Bono (${adjustSalaryForm.bonuses}) - Retención (${adjustSalaryForm.deductions})
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setSelectedPayrollRecordForAdjust(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black shadow-lg cursor-pointer transition-all hover:scale-102"
+                >
+                  Guardar Compensaciones
                 </button>
               </div>
             </form>

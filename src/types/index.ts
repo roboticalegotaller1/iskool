@@ -3,7 +3,63 @@
  * @description Define los roles de usuario autorizados en el sistema escolar.
  * @stateImpact Determina los permisos en el frontend, accesibilidad de rutas y control RLS.
  */
-export type UserRole = 'superadmin' | 'admin' | 'director' | 'coordinator' | 'teacher' | 'student' | 'parent' | 'tutor';
+export type UserRole = 'owner' | 'superadmin' | 'admin' | 'director' | 'coordinator' | 'billing' | 'teacher' | 'student' | 'parent' | 'tutor';
+
+export const ROLE_HIERARCHY_LEVEL: Record<UserRole, number> = {
+  owner: 1,
+  superadmin: 1,
+  admin: 1,
+  director: 2,
+  coordinator: 3,
+  billing: 3,
+  teacher: 4,
+  student: 5,
+  parent: 5,
+  tutor: 5
+};
+
+/**
+ * Regla de Mando Inmediato Superior:
+ * Un operador solo puede gestionar, supervisar o restringir cuentas con nivel jerárquico estrictamente inferior.
+ */
+export const canManageTargetRole = (operatorRole: UserRole, targetRole: UserRole): boolean => {
+  const operatorLevel = ROLE_HIERARCHY_LEVEL[operatorRole] ?? 99;
+  const targetLevel = ROLE_HIERARCHY_LEVEL[targetRole] ?? 99;
+  return operatorLevel < targetLevel;
+};
+
+export interface RestrictedTopicItem {
+  id: string;
+  topicTitle: string;
+  subjectName?: string;
+  grade?: string;
+  reason?: string;
+  restrictedAt: string;
+  status: 'bloqueado' | 'requiere_revision';
+}
+
+/**
+ * Límites que el Dueño de Empresa impone a los Directores de Plantel
+ */
+export interface DirectorLimitsSettings {
+  canManageCampuses: boolean;             // Si el director puede crear/eliminar campus
+  canModifyTuitionFees: boolean;          // Si el director puede cambiar costos de colegiatura
+  canRegisterCoordinators: boolean;       // Si el director puede registrar nuevos coordinadores
+  canPurgeCurricularVault: boolean;       // Si el director puede purgar contenidos de la Bóveda Curricular
+  maxScholarshipDiscountPercent: number;  // Porcentaje tope de beca directa autorizable por dirección (default 50%)
+}
+
+export interface SchoolGovernanceSettings {
+  allowCoordinatorBilling: boolean;       // Acceso de coordinadores a cobranza
+  allowCoordinatorDelete?: boolean;      // Permiso para que coordinadores den de baja alumnos/grupos
+  allowTeacherGradeEditing: boolean;     // Modificación de boletas por docentes
+  allowStudentGamification: boolean;     // Tienda mágica y recompensas
+  allowAiAssistantTeachers: boolean;     // Motor de IA Pedagógica para docentes
+  allowAiAssistantStudents: boolean;     // Motor de IA Pedagógica para alumnos
+  restrictParentContactForTeachers: boolean; // Ocultar datos de contacto familiares a docentes
+  requirePlanningApproval: boolean;      // Aprobación previa de planeaciones en la Bóveda Curricular
+  restrictedTopics: RestrictedTopicItem[]; // Temáticas curriculares restringidas
+}
 
 /**
  * @interface UserProfile
@@ -79,6 +135,8 @@ export interface Institution {
   aiTokensConsumed: number;
   currency?: string;
   settings?: SchoolSettings;
+  governance?: SchoolGovernanceSettings;
+  directorLimits?: DirectorLimitsSettings;
 }
 
 /**
@@ -703,6 +761,7 @@ export interface SchoolSettings {
     secondary: string;  // Color secundario (Formato HSL o HEX)
     accent: string;     // Color de acento (Formato HSL o HEX)
   };
+  governance?: SchoolGovernanceSettings;
 }
 
 /**
@@ -1421,5 +1480,37 @@ export interface SubmitReadingQuestResult {
     icon_name: string;
   } | null;
 }
+
+/**
+ * @interface StaffPayrollRecord
+ * @description Registro contable de nómina y compensaciones para directores, coordinadores, docentes y administrativos.
+ * @stateImpact Supervisado exclusivamente por el Dueño de Empresa / Super Usuario en el portal financiero.
+ */
+export interface StaffPayrollRecord {
+  id: string;
+  employee_id: string;
+  employee_name: string;
+  role: UserRole;
+  department: string; // 'Dirección General' | 'Coordinación Académica' | 'Cuerpo Docente' | 'Cobranza y Finanzas'
+  position_title: string;
+  school_id: string;
+  campus_name?: string;
+  base_salary: number;
+  bonuses: number; // Bonos pedagógicos, puntualidad, desempeño
+  deductions: number; // Retenciones IMSS, ISR, aportaciones
+  net_salary: number; // base_salary + bonuses - deductions
+  payment_period: string; // Ej: "1ª Quincena Septiembre 2026"
+  period_type: 'quincenal' | 'mensual';
+  payment_date?: string;
+  status: 'pagado' | 'en_dispersion' | 'pendiente';
+  payment_method: string; // 'SPEI / Transferencia Bancaria', 'BBVA', etc.
+  account_clabe?: string;
+  bank_name?: string;
+  rfc?: string;
+  curp?: string;
+  receipt_folio?: string;
+  notes?: string;
+}
+
 
 

@@ -864,7 +864,7 @@ export function PlanningTab({ currentTeacher, subjects, schedulesList, groupsLis
           authHeaders['Authorization'] = `Bearer ${sessionData.session.access_token}`;
         }
 
-        const obsRes = await fetch(`/api/obsidian?q=${encodeURIComponent(inputText.trim())}&level=${encodeURIComponent(selectedLevel)}&subject=${encodeURIComponent(currKey)}&sessions=${encodeURIComponent(sessionCount.toString())}&_t=${Date.now()}`, {
+        const obsRes = await fetch(`/api/vault?q=${encodeURIComponent(inputText.trim())}&level=${encodeURIComponent(selectedLevel)}&subject=${encodeURIComponent(currKey)}&sessions=${encodeURIComponent(sessionCount.toString())}&_t=${Date.now()}`, {
           cache: 'no-store',
           headers: authHeaders
         });
@@ -960,7 +960,7 @@ export function PlanningTab({ currentTeacher, subjects, schedulesList, groupsLis
           headers['Authorization'] = `Bearer ${sessionData.session.access_token}`;
         }
 
-        const obsSaveRes = await fetch('/api/obsidian', {
+        const obsSaveRes = await fetch('/api/vault', {
           method: 'POST',
           headers,
           body: JSON.stringify({

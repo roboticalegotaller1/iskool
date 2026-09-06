@@ -170,7 +170,28 @@ export default function ParentDashboard() {
     );
   }
 
-  if (user && user.role === 'student') {
+  const isParentOrAdmin = user && ['parent', 'tutor', 'admin', 'superadmin', 'owner'].includes(user.role);
+
+  if (!isParentOrAdmin) {
+    const getRedirectInfo = () => {
+      switch (user?.role) {
+        case 'student':
+          return { label: 'Ir a mi Portal de Alumno', path: '/student' };
+        case 'teacher':
+          return { label: 'Ir a mi Portal Docente', path: '/teacher' };
+        case 'coordinator':
+          return { label: 'Ir a mi Portal de Coordinador', path: '/coordinator' };
+        case 'director':
+          return { label: 'Ir a mi Portal de Director', path: '/director' };
+        case 'billing':
+          return { label: 'Ir a mi Portal de Cobranza', path: '/coordinator/billing' };
+        default:
+          return { label: 'Iniciar Sesión', path: '/login' };
+      }
+    };
+
+    const redirectInfo = getRedirectInfo();
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white p-6">
         <div className="max-w-md w-full p-8 rounded-3xl bg-zinc-900 border border-white/10 text-center space-y-4 shadow-2xl">
@@ -178,12 +199,12 @@ export default function ParentDashboard() {
             <Lock className="h-7 w-7" />
           </div>
           <h2 className="text-lg font-black text-white">Acceso Restringido</h2>
-          <p className="text-xs text-zinc-400">El portal de tutores es de uso exclusivo para padres de familia. Como alumno dispones de tu propio portal de misiones.</p>
+          <p className="text-xs text-zinc-400">El portal familiar es de uso exclusivo para padres de familia y tutores autorizados.</p>
           <button
-            onClick={() => router.push('/student')}
+            onClick={() => router.push(redirectInfo.path)}
             className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-600/30 cursor-pointer transition-all"
           >
-            Ir a mi Portal de Alumno
+            {redirectInfo.label}
           </button>
         </div>
       </div>

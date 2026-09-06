@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { SchoolSettings, DetailedStudent, Group, ClassSchedule, Attendance, ParentMessage, Subject, UserProfile, Campus, TuitionPricing, FamilyBillingRecord, Institution } from '../types';
-import { DETAILED_STUDENTS_SEED, GROUPS_SEED, SCHEDULES_SEED, ATTENDANCE_SEED, PARENT_MESSAGES_SEED, TEACHERS_LIST_SEED, SUBJECTS_SEED, CAMPUSES_SEED, TUITION_PRICINGS_SEED, BILLING_RECORDS_SEED, INSTITUTIONS_SEED } from './seeds';
+import { SchoolSettings, DetailedStudent, Group, ClassSchedule, Attendance, ParentMessage, Subject, UserProfile, Campus, TuitionPricing, FamilyBillingRecord, Institution, SchoolGovernanceSettings, RestrictedTopicItem, DirectorLimitsSettings, ROLE_HIERARCHY_LEVEL, canManageTargetRole, StaffPayrollRecord } from '../types';
+import { DETAILED_STUDENTS_SEED, GROUPS_SEED, SCHEDULES_SEED, ATTENDANCE_SEED, PARENT_MESSAGES_SEED, TEACHERS_LIST_SEED, SUBJECTS_SEED, CAMPUSES_SEED, TUITION_PRICINGS_SEED, BILLING_RECORDS_SEED, INSTITUTIONS_SEED, STAFF_USERS_SEED, DEFAULT_GOVERNANCE_SETTINGS, DEFAULT_DIRECTOR_LIMITS, STAFF_PAYROLL_SEED } from './seeds';
 import { useStudentStore } from './useStudentStore';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -273,6 +273,88 @@ export const getSchoolSchedules = (schedulesList: ClassSchedule[], schoolId: str
   });
 };
 
+export const getSchoolStaff = (staffList: UserProfile[], schoolId: string | null): UserProfile[] => {
+  const allStaff = (staffList && staffList.length > 0) ? staffList : STAFF_USERS_SEED;
+  if (!schoolId) return allStaff;
+  return allStaff.filter(u => !u.school_id || u.school_id === schoolId);
+};
+
+export const getSchoolPayroll = (
+  payrollList: StaffPayrollRecord[], 
+  schoolId: string | null, 
+  campusName?: string
+): StaffPayrollRecord[] => {
+  const allPayroll = (payrollList && payrollList.length > 0) ? payrollList : STAFF_PAYROLL_SEED;
+  if (!schoolId) return allPayroll;
+
+  return allPayroll.filter(rec => {
+    const matchesSchool = !rec.school_id || rec.school_id === schoolId || (schoolId === 'sch-jjrosseau' && rec.school_id === 'sch-jjr');
+    if (!matchesSchool) return false;
+    if (campusName && campusName !== 'all') {
+      return (rec.campus_name || '').toLowerCase() === campusName.toLowerCase();
+    }
+    return true;
+  });
+};
+
+export const getSchoolGovernance = (governanceMap: Record<string, SchoolGovernanceSettings> | undefined, schoolId: string | null): SchoolGovernanceSettings => {
+  if (!schoolId || !governanceMap || !governanceMap[schoolId]) {
+    return DEFAULT_GOVERNANCE_SETTINGS;
+  }
+  return governanceMap[schoolId];
+};
+
+export const getDirectorLimits = (limitsMap: Record<string, DirectorLimitsSettings> | undefined, schoolId: string | null): DirectorLimitsSettings => {
+  if (!schoolId || !limitsMap || !limitsMap[schoolId]) {
+    return DEFAULT_DIRECTOR_LIMITS;
+  }
+  return limitsMap[schoolId];
+};
+
+/**
+ * Generador Estricto de Dominios de Correo por Colegio:
+ * Garantiza que cualquier cuenta creada pertenezca estrictamente al dominio @(nombre-escuela.edu.mx).
+ */
+export const getSchoolEmailDomain = (school: { name?: string; website?: string; id?: string } | null | undefined): string => {
+  if (!school) return 'colegio.edu.mx';
+  
+  // 1. Si la institución tiene website con .edu.mx, extraer su host oficial
+  if (school.website) {
+    try {
+      const cleanWeb = school.website.replace(/^https?:\/\//i, '').replace(/\/.*$/, '').trim().toLowerCase();
+      if (cleanWeb.endsWith('.edu.mx')) {
+        return cleanWeb;
+      }
+    } catch (e) {}
+  }
+
+  // 2. Mapeos específicos por ID conocido
+  if (school.id === 'sch-jjrosseau' || (school.name && school.name.toLowerCase().includes('rosseau'))) {
+    return 'jjrosseau.edu.mx';
+  }
+  if (school.id === 'sch-montessori' || (school.name && school.name.toLowerCase().includes('montessori'))) {
+    return 'montessoridelvalle.edu.mx';
+  }
+  if (school.id === 'sch-test-case' || (school.name && school.name.toLowerCase().includes('laboratorio'))) {
+    return 'laboratoriopedagogico.edu.mx';
+  }
+
+  // 3. Normalizar nombre institucional a slug .edu.mx
+  if (school.name) {
+    const slug = school.name
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Quitar acentos
+      .replace(/[^a-z0-9]/g, '')       // Solo alfanuméricos
+      .trim();
+    if (slug) {
+      return `${slug}.edu.mx`;
+    }
+  }
+
+  return 'colegio.edu.mx';
+};
+
 interface SchoolAdminStoreState {
   institutionsList: Institution[];
   activeSchoolId: string | null; // null = Directorio General Multi-Colegios
@@ -287,6 +369,10 @@ interface SchoolAdminStoreState {
   parentMessages: ParentMessage[];
   tuitionPricings: TuitionPricing[];
   billingRecords: FamilyBillingRecord[];
+  staffUsers: UserProfile[];
+  staffPayroll: StaffPayrollRecord[];
+  schoolGovernance: Record<string, SchoolGovernanceSettings>;
+  directorLimits: Record<string, DirectorLimitsSettings>;
   syncError: string | null;
 
   // Multi-School Actions
@@ -311,6 +397,12 @@ interface SchoolAdminStoreState {
   assignScholarship: (studentId: string, scholarship: { percentage: number; type?: string; notes?: string }) => void;
   recordBillingPayment: (recordId: string, paymentData?: { method?: string; reference?: string; notes?: string }) => void;
   createManualBillingCharge: (charge: Omit<FamilyBillingRecord, 'id' | 'invoiceNumber'>) => FamilyBillingRecord;
+
+  // Staff Payroll Actions (Finanzas & Nóminas del Dueño)
+  updatePayrollRecord: (recordId: string, updates: Partial<StaffPayrollRecord>) => void;
+  dispersePayrollBatch: (recordIds: string[]) => void;
+  addPayrollRecord: (record: Omit<StaffPayrollRecord, 'id'>) => StaffPayrollRecord;
+  adjustSalary: (employeeId: string, newBaseSalary: number, bonus: number, deductions: number) => void;
 
   // Actions
   saveSchoolSettings: (settings: SchoolSettings) => void;
@@ -352,6 +444,17 @@ interface SchoolAdminStoreState {
   addBehaviorReport: (studentId: string, report: { id?: string; date: string; description: string; reporter: string; parent_reply?: string; replied_at?: string }) => void;
   deleteBehaviorReport: (studentId: string, index: number) => void;
   deleteTeacherNote: (studentId: string, index: number) => void;
+
+  // Staff and Governance Actions
+  registerStaffAccount: (data: Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>) => UserProfile;
+  updateStaffAccount: (id: string, data: Partial<UserProfile>) => void;
+  deleteStaffAccount: (id: string) => void;
+  toggleStaffBlock: (id: string, isBlocked: boolean) => void;
+  changeStaffPassword: (id: string, newPassword?: string) => string;
+  updateSchoolGovernance: (schoolId: string, settings: Partial<SchoolGovernanceSettings>) => void;
+  updateDirectorLimits: (schoolId: string, limits: Partial<DirectorLimitsSettings>) => void;
+  addRestrictedTopic: (schoolId: string, topic: Omit<RestrictedTopicItem, 'id' | 'restrictedAt'>) => void;
+  removeRestrictedTopic: (schoolId: string, topicId: string) => void;
   
   resetSchoolAdminStore: () => void;
 }
@@ -413,6 +516,18 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
       parentMessages: PARENT_MESSAGES_SEED,
       tuitionPricings: TUITION_PRICINGS_SEED,
       billingRecords: BILLING_RECORDS_SEED,
+      staffUsers: STAFF_USERS_SEED,
+      staffPayroll: STAFF_PAYROLL_SEED,
+      schoolGovernance: {
+        'sch-jjrosseau': DEFAULT_GOVERNANCE_SETTINGS,
+        'sch-test-case': DEFAULT_GOVERNANCE_SETTINGS,
+        'sch-montessori': DEFAULT_GOVERNANCE_SETTINGS
+      },
+      directorLimits: {
+        'sch-jjrosseau': DEFAULT_DIRECTOR_LIMITS,
+        'sch-test-case': DEFAULT_DIRECTOR_LIMITS,
+        'sch-montessori': DEFAULT_DIRECTOR_LIMITS
+      },
       syncError: null,
 
       selectSchool: (schoolId) => {
@@ -629,6 +744,79 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
         return newRecord;
       },
 
+      updatePayrollRecord: (recordId, updates) => {
+        set(state => ({
+          staffPayroll: (state.staffPayroll || []).map(p => {
+            if (p.id === recordId) {
+              const base = updates.base_salary !== undefined ? updates.base_salary : p.base_salary;
+              const bon = updates.bonuses !== undefined ? updates.bonuses : p.bonuses;
+              const ded = updates.deductions !== undefined ? updates.deductions : p.deductions;
+              const net = base + bon - ded;
+              return {
+                ...p,
+                ...updates,
+                base_salary: base,
+                bonuses: bon,
+                deductions: ded,
+                net_salary: net
+              };
+            }
+            return p;
+          })
+        }));
+      },
+
+      dispersePayrollBatch: (recordIds) => {
+        const idSet = new Set(recordIds);
+        const now = new Date().toISOString();
+        set(state => ({
+          staffPayroll: (state.staffPayroll || []).map(p => {
+            if (idSet.has(p.id)) {
+              const folio = p.receipt_folio || `REC-NOM-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+              return {
+                ...p,
+                status: 'pagado' as const,
+                payment_date: now,
+                receipt_folio: folio
+              };
+            }
+            return p;
+          })
+        }));
+      },
+
+      addPayrollRecord: (recordData) => {
+        const id = `pay-custom-${Date.now()}`;
+        const net = recordData.base_salary + recordData.bonuses - recordData.deductions;
+        const newRecord: StaffPayrollRecord = {
+          ...recordData,
+          id,
+          net_salary: net
+        };
+        set(state => ({
+          staffPayroll: [newRecord, ...(state.staffPayroll || [])]
+        }));
+        return newRecord;
+      },
+
+      adjustSalary: (employeeId, newBaseSalary, bonus, deductions) => {
+        const net = newBaseSalary + bonus - deductions;
+        set(state => ({
+          staffPayroll: (state.staffPayroll || []).map(p => {
+            if (p.employee_id === employeeId) {
+              return {
+                ...p,
+                base_salary: newBaseSalary,
+                bonuses: bonus,
+                deductions: deductions,
+                net_salary: net
+              };
+            }
+            return p;
+          })
+        }));
+      },
+
       saveSchoolSettings: (settings) => {
         applyThemeCssVariables(settings.themeColors);
         set({ schoolSettings: settings, syncError: null });
@@ -666,7 +854,9 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
       registerStudent: (studentData) => {
         const newId = (studentData as any).id || `std-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
         const tempPassword = studentData.temporary_password || generateRandomPassword(6);
-        const activeSchool = get().activeSchoolId || 'sch-jjrosseau';
+        const activeSchool = studentData.school_id || get().activeSchoolId || 'sch-jjrosseau';
+        const schoolObj = (get().institutionsList || []).find(i => i.id === activeSchool);
+        const schoolDomain = getSchoolEmailDomain(schoolObj);
         
         let campusName = studentData.campus_name || 'Primaria Jardines';
         if (studentData.level === 'secundaria' && !studentData.campus_name) {
@@ -680,10 +870,20 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
         const discount = ((studentData.scholarship_percentage || 0) / 100) * baseFee;
         const finalAmount = Math.max(0, baseFee - discount);
 
+        // Derivar correo institucional estrictamente con @(nombre-escuela.edu.mx)
+        let studentEmail = studentData.email ? studentData.email.trim() : '';
+        if (!studentEmail) {
+          studentEmail = `${studentData.first_name.toLowerCase().replace(/[^a-z0-9]/g, '')}.${studentData.last_name_1.toLowerCase().replace(/[^a-z0-9]/g, '')}@${schoolDomain}`;
+        } else {
+          const parts = studentEmail.split('@');
+          studentEmail = `${parts[0].trim()}@${schoolDomain}`;
+        }
+
         const newStudent: DetailedStudent = {
           ...studentData,
           id: newId,
-          school_id: studentData.school_id || activeSchool,
+          email: studentEmail,
+          school_id: activeSchool,
           campus_id: campusObj?.id || 'cmp-pri-jardines',
           campus_name: campusName,
           temporary_password: tempPassword,
@@ -696,12 +896,12 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
         // Generar folio de cobro en el portal de finanzas institucional
         const newBillingRecord: FamilyBillingRecord = {
           id: `inv-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-          school_id: newStudent.school_id || activeSchool,
+          school_id: activeSchool,
           invoiceNumber: `COL-2026-${Math.floor(10000 + Math.random() * 90000)}`,
           studentId: newId,
           parentName: newStudent.tutor_name || newStudent.father_name || newStudent.mother_name || `${newStudent.last_name_1} ${newStudent.last_name_2 || ''}`.trim() || 'Tutor Familiar',
           parentPhone: newStudent.emergency_contact_phone || newStudent.phone || '55-4160-8800',
-          parentEmail: newStudent.email ? `tutor.${newStudent.email}` : 'tutor@jjrosseau.edu.mx',
+          parentEmail: newStudent.email ? `tutor.${studentEmail}` : `tutor@${schoolDomain}`,
           studentName: `${newStudent.first_name} ${newStudent.second_name || ''} ${newStudent.last_name_1} ${newStudent.last_name_2 || ''}`.replace(/\s+/g, ' ').trim(),
           level: newStudent.level === 'primaria' ? 'Primaria' : newStudent.level === 'secundaria' ? 'Secundaria' : 'Preparatoria',
           grade: newStudent.grade,
@@ -773,6 +973,11 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           const discount = ((st.scholarship_percentage || 0) / 100) * baseFee;
           const finalAmount = Math.max(0, baseFee - discount);
 
+          const schoolObj = (get().institutionsList || []).find(i => i.id === (st.school_id || activeSchool));
+          const schoolDomain = getSchoolEmailDomain(schoolObj);
+          const prefix = (st.email ? st.email.split('@')[0] : `${st.first_name.toLowerCase().replace(/[^a-z0-9]/g, '')}.${st.last_name_1.toLowerCase().replace(/[^a-z0-9]/g, '')}`).trim();
+          const studentEmail = `${prefix}@${schoolDomain}`;
+
           const newStudent: DetailedStudent = {
             id: newId,
             school_id: st.school_id || activeSchool,
@@ -793,7 +998,7 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
             group_id: st.group_id || 'grp-jar-1a',
             campus_id: campusObj?.id || 'cmp-pri-jardines',
             campus_name: campusName,
-            email: st.email || `${st.first_name.toLowerCase().replace(/[^a-z0-9]/g, '')}.${st.last_name_1.toLowerCase().replace(/[^a-z0-9]/g, '')}@jjrosseau.edu.mx`,
+            email: studentEmail,
             phone: st.phone || '55-0000-0000',
             address: st.address || 'Ciudad de México',
             photo_url: '/images/students/default.png',
@@ -811,7 +1016,7 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
             studentId: newId,
             parentName: newStudent.tutor_name || newStudent.father_name || newStudent.mother_name || `${newStudent.last_name_1} ${newStudent.last_name_2 || ''}`.trim() || 'Tutor Familiar',
             parentPhone: newStudent.emergency_contact_phone || newStudent.phone || '55-4160-8800',
-            parentEmail: newStudent.email ? `tutor.${newStudent.email}` : 'tutor@jjrosseau.edu.mx',
+            parentEmail: `tutor.${studentEmail}`,
             studentName: `${newStudent.first_name} ${newStudent.second_name || ''} ${newStudent.last_name_1} ${newStudent.last_name_2 || ''}`.replace(/\s+/g, ' ').trim(),
             level: newStudent.level === 'primaria' ? 'Primaria' : newStudent.level === 'secundaria' ? 'Secundaria' : 'Preparatoria',
             grade: newStudent.grade,
@@ -1413,15 +1618,27 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
   },
 
       registerTeacher: (teacherData) => {
-        const activeSchool = get().activeSchoolId || 'sch-jjrosseau';
+        const activeSchool = teacherData.school_id || get().activeSchoolId || 'sch-jjrosseau';
+        const schoolObj = (get().institutionsList || []).find(i => i.id === activeSchool);
+        const schoolDomain = getSchoolEmailDomain(schoolObj);
+
+        let teacherEmail = teacherData.email ? teacherData.email.trim() : '';
+        if (!teacherEmail) {
+          teacherEmail = `${teacherData.first_name.toLowerCase().replace(/[^a-z0-9]/g, '')}.${teacherData.last_name.toLowerCase().replace(/[^a-z0-9]/g, '')}@${schoolDomain}`;
+        } else {
+          const parts = teacherEmail.split('@');
+          teacherEmail = `${parts[0].trim()}@${schoolDomain}`;
+        }
+
         const newTeacher: UserProfile = {
           ...teacherData,
+          email: teacherEmail,
           id: `usr-teacher-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-          school_id: teacherData.school_id || activeSchool,
+          school_id: activeSchool,
           role: 'teacher',
           ai_tokens_consumed: 0,
           is_blocked: false,
-          temporary_password: generateRandomPassword(6),
+          temporary_password: teacherData.temporary_password || generateRandomPassword(6),
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
@@ -1487,6 +1704,122 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
         });
       },
 
+      registerStaffAccount: (data) => {
+        const targetSchoolId = data.school_id || get().activeSchoolId || 'sch-jjrosseau';
+        const targetSchool = (get().institutionsList || []).find(i => i.id === targetSchoolId);
+        const schoolDomain = getSchoolEmailDomain(targetSchool);
+
+        let staffEmail = data.email ? data.email.trim() : '';
+        if (!staffEmail) {
+          staffEmail = `${data.first_name.toLowerCase().replace(/[^a-z0-9]/g, '')}.${data.last_name.toLowerCase().replace(/[^a-z0-9]/g, '')}@${schoolDomain}`;
+        } else {
+          const parts = staffEmail.split('@');
+          staffEmail = `${parts[0].trim()}@${schoolDomain}`;
+        }
+
+        const tempPassword = data.temporary_password || generateRandomPassword(6);
+        const newStaff: UserProfile = {
+          ...data,
+          email: staffEmail,
+          school_id: targetSchoolId,
+          id: `usr-staff-${Date.now()}`,
+          temporary_password: tempPassword,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        set(state => ({
+          staffUsers: [newStaff, ...(state.staffUsers || [])]
+        }));
+        return newStaff;
+      },
+
+      updateStaffAccount: (id, data) => {
+        set(state => ({
+          staffUsers: (state.staffUsers || []).map(u => u.id === id ? { ...u, ...data, updated_at: new Date().toISOString() } : u)
+        }));
+      },
+
+      deleteStaffAccount: (id) => {
+        set(state => ({
+          staffUsers: (state.staffUsers || []).filter(u => u.id !== id)
+        }));
+      },
+
+      toggleStaffBlock: (id, isBlocked) => {
+        set(state => ({
+          staffUsers: (state.staffUsers || []).map(u => u.id === id ? { ...u, is_blocked: isBlocked, updated_at: new Date().toISOString() } : u)
+        }));
+      },
+
+      changeStaffPassword: (id, newPassword) => {
+        const pass = newPassword || generateRandomPassword(6);
+        set(state => ({
+          staffUsers: (state.staffUsers || []).map(u => u.id === id ? { ...u, temporary_password: pass, updated_at: new Date().toISOString() } : u)
+        }));
+        return pass;
+      },
+
+      updateSchoolGovernance: (schoolId, settings) => {
+        set(state => {
+          const current = state.schoolGovernance?.[schoolId] || DEFAULT_GOVERNANCE_SETTINGS;
+          const updated = { ...current, ...settings };
+          return {
+            schoolGovernance: {
+              ...(state.schoolGovernance || {}),
+              [schoolId]: updated
+            }
+          };
+        });
+      },
+
+      updateDirectorLimits: (schoolId, limits) => {
+        set(state => {
+          const current = state.directorLimits?.[schoolId] || DEFAULT_DIRECTOR_LIMITS;
+          const updated = { ...current, ...limits };
+          return {
+            directorLimits: {
+              ...(state.directorLimits || {}),
+              [schoolId]: updated
+            }
+          };
+        });
+      },
+
+      addRestrictedTopic: (schoolId, topicData) => {
+        set(state => {
+          const current = state.schoolGovernance?.[schoolId] || DEFAULT_GOVERNANCE_SETTINGS;
+          const newTopic: RestrictedTopicItem = {
+            ...topicData,
+            id: `top-restr-${Date.now()}`,
+            restrictedAt: new Date().toISOString()
+          };
+          return {
+            schoolGovernance: {
+              ...(state.schoolGovernance || {}),
+              [schoolId]: {
+                ...current,
+                restrictedTopics: [newTopic, ...(current.restrictedTopics || [])]
+              }
+            }
+          };
+        });
+      },
+
+      removeRestrictedTopic: (schoolId, topicId) => {
+        set(state => {
+          const current = state.schoolGovernance?.[schoolId] || DEFAULT_GOVERNANCE_SETTINGS;
+          return {
+            schoolGovernance: {
+              ...(state.schoolGovernance || {}),
+              [schoolId]: {
+                ...current,
+                restrictedTopics: (current.restrictedTopics || []).filter(t => t.id !== topicId)
+              }
+            }
+          };
+        });
+      },
+
       resetSchoolAdminStore: () => {
         set({
           institutionsList: INSTITUTIONS_SEED,
@@ -1517,6 +1850,18 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           parentMessages: PARENT_MESSAGES_SEED,
           tuitionPricings: TUITION_PRICINGS_SEED,
           billingRecords: BILLING_RECORDS_SEED,
+          staffUsers: STAFF_USERS_SEED,
+          staffPayroll: STAFF_PAYROLL_SEED,
+          schoolGovernance: {
+            'sch-jjrosseau': DEFAULT_GOVERNANCE_SETTINGS,
+            'sch-test-case': DEFAULT_GOVERNANCE_SETTINGS,
+            'sch-montessori': DEFAULT_GOVERNANCE_SETTINGS
+          },
+          directorLimits: {
+            'sch-jjrosseau': DEFAULT_DIRECTOR_LIMITS,
+            'sch-test-case': DEFAULT_DIRECTOR_LIMITS,
+            'sch-montessori': DEFAULT_DIRECTOR_LIMITS
+          },
           syncError: null
         });
       }
@@ -1534,7 +1879,11 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
         subjectsList: state.subjectsList,
         teachersList: state.teachersList,
         tuitionPricings: state.tuitionPricings,
-        billingRecords: state.billingRecords
+        billingRecords: state.billingRecords,
+        staffUsers: state.staffUsers,
+        staffPayroll: state.staffPayroll,
+        schoolGovernance: state.schoolGovernance,
+        directorLimits: state.directorLimits
       })
     }
   )

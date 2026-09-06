@@ -54,6 +54,8 @@ export const Header: React.FC = () => {
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   const getRoleFromPath = () => {
+    if (pathname.startsWith('/director')) return 'director';
+    if (pathname.startsWith('/admin')) return 'admin';
     if (pathname.startsWith('/student')) return 'student';
     if (pathname.startsWith('/teacher')) return 'teacher';
     if (pathname.startsWith('/parent')) return 'parent';
@@ -95,6 +97,14 @@ export const Header: React.FC = () => {
         { href: '/parent/financial', label: 'Estado de Cuenta & Pagos', icon: '💳' },
       ];
     }
+    if (currentRole === 'director' || (user?.role === 'director' && pathname.startsWith('/director'))) {
+      return [
+        { href: '/director', label: 'Dashboard Director', icon: '🏛️' },
+        { href: '/coordinator', label: 'Control Escolar', icon: '📚' },
+        { href: '/coordinator/billing', label: 'Cobranza & Finanzas', icon: '💵' },
+        { href: '/teacher/grades', label: 'Supervisión SEP', icon: '⭐' },
+      ];
+    }
     if (currentRole === 'coordinator') {
       const links = [
         { href: '/coordinator', label: 'Control Escolar', icon: '📚' },
@@ -112,6 +122,7 @@ export const Header: React.FC = () => {
   // Destino del enlace institucional: sólo el Super Usuario (admin) puede ver todas las opciones
   const getHomeHref = () => {
     if (user?.role === 'admin') return '/';
+    if (user?.role === 'director' || currentRole === 'director') return '/director';
     if (user?.role === 'student' || currentRole === 'student') return '/student';
     if (user?.role === 'teacher' || currentRole === 'teacher') return '/teacher';
     if (user?.role === 'parent' || currentRole === 'parent') return '/parent';
@@ -253,6 +264,17 @@ export const Header: React.FC = () => {
               >
                 Coord.
               </Link>
+              <Link
+                href="/director"
+                aria-label="Cambiar vista a Director"
+                className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  currentRole === 'director'
+                    ? 'bg-purple-600 text-white shadow-xs'
+                    : 'text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40'
+                }`}
+              >
+                Director
+              </Link>
               {user?.role === 'admin' && (
                 <Link
                   href="/admin"
@@ -286,6 +308,7 @@ export const Header: React.FC = () => {
                 <option value="teacher">Profesor</option>
                 <option value="parent">Tutor</option>
                 <option value="coordinator">Coord.</option>
+                <option value="director">Director</option>
                 {user?.role === 'admin' && <option value="admin">Colegios</option>}
               </select>
             </div>
