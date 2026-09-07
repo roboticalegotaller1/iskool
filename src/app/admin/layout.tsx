@@ -11,7 +11,7 @@ export default function AdminLayout({
 }) {
   return (
     <Suspense fallback={<Loader message="Cargando portal de super usuario..." />}>
-      <RoleGuard allowedRoles={['admin']}>
+      <RoleGuard allowedRoles={['admin', 'superadmin', 'owner']}>
         {children}
       </RoleGuard>
     </Suspense>

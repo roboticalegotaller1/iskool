@@ -17,9 +17,27 @@ import util from 'util';
 
 const execPromise = util.promisify(exec);
 
-const OBSIDIAN_VAULT_PATH = process.env.OBSIDIAN_VAULT_PATH || 'C:\\Users\\kami-\\Desktop\\2025-2026\\iskool\\obsidean\\brain\\iskool';
+function getVaultRootPath(): string {
+  const envPath = process.env.OBSIDIAN_VAULT_PATH || process.env.VAULT_PATH;
+  if (envPath && fs.existsSync(envPath)) return envPath;
 
-const ObsidianQuerySchema = z.object({
+  const projectPlannings = path.join(process.cwd(), 'planeaciones');
+  if (fs.existsSync(projectPlannings)) return process.cwd();
+
+  const localDesktop = 'C:\\Users\\kami-\\Desktop\\2025-2026\\iskool\\obsidean\\brain\\iskool';
+  if (fs.existsSync(localDesktop)) return localDesktop;
+
+  return process.cwd();
+}
+
+function getVaultPlanningsDir(): string {
+  const root = getVaultRootPath();
+  const direct = path.join(root, 'planeaciones');
+  if (fs.existsSync(direct)) return direct;
+  return root;
+}
+
+const VaultQuerySchema = z.object({
   q: z.string().trim().min(1, 'El parámetro de búsqueda "q" es requerido').max(300),
   level: z.string().trim().max(100).optional().default(''),
   grade: z.string().trim().max(100).optional().default(''),
@@ -27,7 +45,7 @@ const ObsidianQuerySchema = z.object({
   sessions: z.string().trim().max(10).optional().default('10')
 });
 
-const ObsidianPlanningSchema = z.object({
+const VaultPlanningSchema = z.object({
   title: z.string().trim().min(2, 'El título es obligatorio y debe contener al menos 2 caracteres').max(250),
   teacherName: z.string().trim().max(150).optional(),
   levelName: z.string().trim().max(100).optional(),
@@ -162,7 +180,7 @@ export async function GET(request: NextRequest) {
 
     // 2. Sanitización y validación de parámetros con Zod
     const { searchParams } = new URL(request.url);
-    const parsedQuery = ObsidianQuerySchema.safeParse({
+    const parsedQuery = VaultQuerySchema.safeParse({
       q: searchParams.get('q') || '',
       level: searchParams.get('level') || '',
       grade: searchParams.get('grade') || '',
@@ -179,49 +197,13 @@ export async function GET(request: NextRequest) {
 
     const { q: query, level: levelParam, grade: gradeParam, subject: subjectParam, sessions: sessionsParam } = parsedQuery.data;
     const sessionCount = parseInt(sessionsParam || '10', 10) || 10;
+
+    const cleanQuery = cleanString(query);
+    const queryWords = cleanQuery.split(/\s+/).filter(w => w.length >= 2 && !SPANISH_STOPWORDS.has(w));
+    const isSearchingIndependence = /independ|hidalgo|morelos|allende|aldama|josefa|iturbide|dolores|insurg/i.test(cleanQuery);
+    const isSearchingRevolution = !isSearchingIndependence && /revoluc|madero|zapata|villa|carranza|porfir/i.test(cleanQuery);
     
-    if (!fs.existsSync(OBSIDIAN_VAULT_PATH)) {
-      return NextResponse.json({ found: false, note: null });
-    }
-
-    const isSearchingIndependence = /independ|hidalgo|morelos|allende|aldama|josefa|iturbide|dolores/i.test(query);
-    const isSearchingRevolution = !isSearchingIndependence && /revoluc|madero|zapata|villa|carranza|porfir/i.test(query);
-
-    let cleanQuery = cleanString(query);
-    if (isSearchingIndependence) {
-      cleanQuery = cleanQuery.replace(/independ[a-z]*/i, 'independencia');
-    }
-    if (isSearchingRevolution) {
-      cleanQuery = cleanQuery.replace(/revoluc[a-z]*/i, 'revolucion');
-    }
-
-    let queryWords = cleanQuery
-      .split(/[\s,;+-_/]+/)
-      .map(w => w.trim())
-      .filter(w => w.length >= 3 && !SPANISH_STOPWORDS.has(w));
-
-    if (isSearchingIndependence && !queryWords.includes('independencia')) {
-      queryWords.push('independencia');
-    }
-    if (isSearchingRevolution && !queryWords.includes('revolucion')) {
-      queryWords.push('revolucion');
-    }
-
-    // Expansión semántica para términos matemáticos y científicos
-    if (/(?:x\^?\{?2\}?|x²|x2|cuadrat)/i.test(query)) {
-      queryWords.push('cuadratica', 'cuadraticas', 'algebra');
-    }
-    if (/(?:pi|π|circulo|circunf)/i.test(query)) {
-      queryWords.push('circunferencia', 'circulo', 'pi');
-    }
-    if (/(?:pitagoras|trigono)/i.test(query)) {
-      queryWords.push('pitagoras', 'triangulo', 'trigonometria');
-    }
-    if (/(?:ph|acido|base)/i.test(query)) {
-      queryWords.push('acidos', 'bases', 'neutralizacion');
-    }
-
-    const planningsDir = path.join(OBSIDIAN_VAULT_PATH, 'planeaciones');
+    const planningsDir = getVaultPlanningsDir();
     if (!fs.existsSync(planningsDir)) {
       return NextResponse.json({ found: false, note: null }, { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0' } });
     }
@@ -468,7 +450,7 @@ export async function POST(request: NextRequest) {
 
     // 2. Sanitización y validación con Zod
     const body = await request.json().catch(() => null);
-    const parsedPlanning = ObsidianPlanningSchema.safeParse(body);
+    const parsedPlanning = VaultPlanningSchema.safeParse(body);
 
     if (!parsedPlanning.success) {
       return NextResponse.json(
@@ -478,8 +460,9 @@ export async function POST(request: NextRequest) {
     }
 
     const planning = parsedPlanning.data;
+    const vaultRoot = getVaultRootPath();
 
-    if (!fs.existsSync(OBSIDIAN_VAULT_PATH)) {
+    if (!fs.existsSync(vaultRoot)) {
       return NextResponse.json({ success: false, error: 'Bóveda Curricular no encontrada' }, { status: 404 });
     }
 
@@ -489,15 +472,19 @@ export async function POST(request: NextRequest) {
     const subjectFolder = sanitizeFolderName(planning.subjectName || planning.asignatura || 'General');
 
     // Directorio de destino estructurado dentro de la bóveda
-    const targetDir = path.join(OBSIDIAN_VAULT_PATH, 'planeaciones', levelFolder, gradeFolder, subjectFolder);
+    const targetDir = path.join(vaultRoot, 'planeaciones', levelFolder, gradeFolder, subjectFolder);
     
     // Verificación de seguridad de ruta (evita Path Traversal)
     const resolvedPath = path.resolve(targetDir);
-    if (!resolvedPath.startsWith(path.resolve(OBSIDIAN_VAULT_PATH))) {
+    if (!resolvedPath.startsWith(path.resolve(vaultRoot))) {
       return NextResponse.json({ success: false, error: 'Ruta no permitida' }, { status: 403 });
     }
 
-    fs.mkdirSync(targetDir, { recursive: true });
+    try {
+      fs.mkdirSync(targetDir, { recursive: true });
+    } catch (mkdirErr: any) {
+      console.warn("Aviso de creación de directorio en Bóveda Curricular:", mkdirErr?.message);
+    }
 
     const safeTitle = planning.title.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s_-]/g, '').trim().replace(/\s+/g, '_');
     const filename = `Planeacion_${safeTitle}_${Date.now()}.md`;
@@ -554,9 +541,13 @@ ${planning.evaluacion || ''}
 ${planning.materiales || ''}
 `;
 
-    fs.writeFileSync(filePath, markdownContent, 'utf8');
-    vaultIndexCache = null; // Invalidar caché en memoria para refrescar búsquedas inmediatamente
-    console.log(`✅ Planeación guardada en Bóveda Curricular estructurada por Nivel/Grado/Materia: ${filePath}`);
+    try {
+      fs.writeFileSync(filePath, markdownContent, 'utf8');
+      vaultIndexCache = null; // Invalidar caché en memoria para refrescar búsquedas inmediatamente
+      console.log(`✅ Planeación guardada en Bóveda Curricular estructurada por Nivel/Grado/Materia: ${filePath}`);
+    } catch (writeErr: any) {
+      console.warn("Aviso de guardado en disco (entorno serverless sin persistencia de archivos local):", writeErr?.message);
+    }
 
     // Sincronización Automática con Repositorio Remoto
     let gitSyncStatus = 'skipped';
@@ -568,12 +559,12 @@ ${planning.materiales || ''}
         const safeCommitTitle = planning.title.replace(/["`$]/g, '').trim();
         const commitMsg = `feat(planeacion): ${safeCommitTitle} - ${planning.teacherName || 'Prof. Israel López Ángeles'} (IA NEM)`;
         
-        await execPromise(`git -C "${OBSIDIAN_VAULT_PATH}" add -A`);
-        await execPromise(`git -C "${OBSIDIAN_VAULT_PATH}" commit -m "${commitMsg}"`).catch((e) => {
+        await execPromise(`git -C "${vaultRoot}" add -A`);
+        await execPromise(`git -C "${vaultRoot}" commit -m "${commitMsg}"`).catch((e) => {
           // Si no hay cambios nuevos para commitear, no es un error crítico
           console.log('Git commit notice:', e.message);
         });
-        await execPromise(`git -C "${OBSIDIAN_VAULT_PATH}" push origin main`);
+        await execPromise(`git -C "${vaultRoot}" push origin main`);
         gitSyncStatus = 'synced_and_pushed';
         gitMessage = 'Sincronizado y publicado en Repositorio Central (Bóveda Curricular)';
         console.log(`🚀 [Auto-Push]: Planeación "${planning.title}" sincronizada y enviada al repositorio central.`);

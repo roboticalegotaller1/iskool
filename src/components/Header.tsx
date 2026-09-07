@@ -65,8 +65,8 @@ export const Header: React.FC = () => {
 
   const currentRole = getRoleFromPath();
 
-  // Únicamente el Super Usuario (admin) puede alternar vistas para pruebas de supervisión
-  const canSwitchRoles = user?.role === 'admin';
+  // Super Usuario, Dueño de Empresa y Administradores pueden alternar vistas para supervisión
+  const canSwitchRoles = user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'owner';
 
   const getStudentLevelLabel = (id: string) => {
     const studentProfile = detailedStudents?.find(s => s.id === id);
@@ -111,7 +111,7 @@ export const Header: React.FC = () => {
         { href: '/coordinator/billing', label: 'Cobranza', icon: '💵' },
         { href: '/coordinator/fiscal', label: 'Facturación SAT', icon: '📑' },
       ];
-      if (user?.role === 'admin') {
+      if (canSwitchRoles) {
         links.push({ href: '/admin', label: 'Panel Administrador', icon: '🏫' });
       }
       return links;
@@ -119,9 +119,9 @@ export const Header: React.FC = () => {
     return [];
   };
 
-  // Destino del enlace institucional: sólo el Super Usuario (admin) puede ver todas las opciones
+  // Destino del enlace institucional: Super Usuario y Dueño van a /admin, los demás a su portal específico
   const getHomeHref = () => {
-    if (user?.role === 'admin') return '/';
+    if (canSwitchRoles) return '/admin';
     if (user?.role === 'director' || currentRole === 'director') return '/director';
     if (user?.role === 'student' || currentRole === 'student') return '/student';
     if (user?.role === 'teacher' || currentRole === 'teacher') return '/teacher';
@@ -275,7 +275,7 @@ export const Header: React.FC = () => {
               >
                 Director
               </Link>
-              {user?.role === 'admin' && (
+              {canSwitchRoles && (
                 <Link
                   href="/admin"
                   aria-label="Directorio Central de Colegios"
@@ -309,7 +309,7 @@ export const Header: React.FC = () => {
                 <option value="parent">Tutor</option>
                 <option value="coordinator">Coord.</option>
                 <option value="director">Director</option>
-                {user?.role === 'admin' && <option value="admin">Colegios</option>}
+                {canSwitchRoles && <option value="admin">Colegios</option>}
               </select>
             </div>
           )}

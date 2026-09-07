@@ -1512,5 +1512,4 @@ export interface StaffPayrollRecord {
   notes?: string;
 }
 
-
-
+export * from './teacherGamification';

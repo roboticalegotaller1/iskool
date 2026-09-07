@@ -14,7 +14,9 @@ export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  const isAllowed = user && (user.role === 'admin' || allowedRoles.includes(user.role));
+  // Superadministradores, Dueños/Propietarios y Administradores tienen permisos de supervisión institucional global
+  const isSuperExecutive = user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'owner');
+  const isAllowed = user && (isSuperExecutive || allowedRoles.includes(user.role));
 
   useEffect(() => {
     if (!loading) {
@@ -27,11 +29,20 @@ export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
             router.push('/teacher');
             break;
           case 'parent':
+          case 'tutor':
             router.push('/parent');
             break;
           case 'coordinator':
             router.push('/coordinator');
             break;
+          case 'billing':
+            router.push('/coordinator/billing');
+            break;
+          case 'director':
+            router.push('/director');
+            break;
+          case 'owner':
+          case 'superadmin':
           case 'admin':
             router.push('/admin');
             break;

@@ -1083,21 +1083,30 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
     });
 
     try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${aiApiKey}`, {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (sessionData?.session?.access_token) {
+        headers['Authorization'] = `Bearer ${sessionData.session.access_token}`;
+      }
+
+      const response = await fetch('/api/ai/planning', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
-          contents: [
-            { parts: requestParts }
-          ]
+          promptText,
+          level,
+          subject,
+          count,
+          imageBase64,
+          targetPda,
+          userApiKey: aiApiKey
         })
       });
 
       if (response.ok) {
         const data = await response.json();
-        let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-        const parsed = JSON.parse(text);
+        const parsed = data.planning;
+        if (!parsed) throw new Error('No planning data returned');
 
         const effectiveTopic = cleanCoreTopicName(parsed.detectedTopic || promptText || parsed.title || 'Tema Curricular Situado');
         const fallbackSessions = generateChronometerSessions(level, subject, effectiveTopic, count);
