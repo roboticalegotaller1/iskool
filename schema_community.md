@@ -1,7 +1,7 @@
 ---
 tags: [iskool, arquitectura, smart-connections]
 archivo_origen: "schema_community.sql"
-fecha_sincronizacion: "2026-08-31T16:55:57.965Z"
+fecha_sincronizacion: "2026-09-07T03:59:13.450Z"
 ---
 
 # schema_community.sql
@@ -9,7 +9,7 @@ fecha_sincronizacion: "2026-08-31T16:55:57.965Z"
 Este archivo contiene el código fuente de arquitectura para **schema_community.sql**.
 
 ```sql
--- Schema Community: ISkool Lienzo Digital y Comunidad Docente
+-- Schema Community: ISkool Canvas y Comunidad Docente
 -- Incluye prevención de fraude en votaciones mediante Llave Primaria Compuesta, RLS y Trigger SECURITY DEFINER.
 
 -- 1. Tabla community_activities

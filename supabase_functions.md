@@ -1,7 +1,7 @@
 ---
 tags: [iskool, arquitectura, smart-connections]
 archivo_origen: "supabase_functions.sql"
-fecha_sincronizacion: "2026-08-31T16:55:57.970Z"
+fecha_sincronizacion: "2026-09-07T03:59:13.453Z"
 ---
 
 # supabase_functions.sql
@@ -93,7 +93,7 @@ create policy "Permitir actualizacion de student_messages a alumnos dueños"
 
 -- Seed initial shop artifacts if table is empty
 insert into public.shop_artifacts (id, name, description, price, icon)
-values
+values 
   ('art-boots', 'Botas de Velocidad Escolar', 'Añade una oportunidad extra de reintento en el próximo examen.', 25, 'Footprints'),
   ('art-shield', 'Escudo Protector de Promedios', 'Protege tus puntos de racha en caso de inactividad de un día.', 40, 'Shield'),
   ('art-elixir', 'Elixir del Fénix Sabio', 'Restaura el 100% de la felicidad y salud de tu mascota de rol.', 15, 'GlassWater'),
@@ -134,7 +134,7 @@ declare
   v_xp_earned integer;
   v_coins_earned integer;
   v_subject_id uuid;
-
+  
   -- Student stats
   v_current_xp integer;
   v_current_coins integer;
@@ -144,12 +144,12 @@ declare
   v_max_streak integer;
   v_last_active date;
   v_today date := current_date;
-
+  
   v_xp_for_next_level integer;
   v_leveled_up boolean := false;
   v_feedback text;
   v_attempt_id uuid;
-
+  
   -- Badges & Rewards
   v_badge_earned_id uuid := null;
   v_badge_earned_name text := null;
@@ -162,7 +162,7 @@ begin
   from public.quests q
   join public.missions m on m.id = q.mission_id
   where q.id = p_quest_id;
-
+  
   if not found then
     raise exception 'Quest % not found', p_quest_id;
   end if;
@@ -180,7 +180,7 @@ begin
   into v_current_xp, v_level, v_current_coins, v_current_streak, v_max_streak, v_last_active, v_skill_points
   from public.student_stats
   where student_id = p_student_id;
-
+  
   if not found then
     raise exception 'Student stats for % not found', p_student_id;
   end if;
@@ -195,7 +195,7 @@ begin
   else
     v_current_streak := 1; -- Broke streak
   end if;
-
+  
   if v_current_streak > v_max_streak then
     v_max_streak := v_current_streak;
   end if;
@@ -203,7 +203,7 @@ begin
   -- 5. Calculate XP progression and Level Up
   v_current_xp := v_current_xp + v_xp_earned;
   v_current_coins := v_current_coins + v_coins_earned;
-
+  
   v_xp_for_next_level := v_level * 200;
   if v_current_xp >= v_xp_for_next_level then
     v_current_xp := v_current_xp - v_xp_for_next_level;
@@ -243,15 +243,15 @@ begin
   -- 9. Check and unlock badges
   -- Case A: Perfect score in Math (Bronze Mathmage)
   if p_score = 100.0 and exists (
-    select 1 from public.subjects s
-    join public.missions m on m.subject_id = s.id
-    join public.quests q on q.mission_id = m.id
+    select 1 from public.subjects s 
+    join public.missions m on m.subject_id = s.id 
+    join public.quests q on q.mission_id = m.id 
     where q.id = p_quest_id and s.name ilike '%matemáticas%'
   ) then
     -- Check if badge already unlocked
     select id, name, description, icon_name into v_badge_earned_id, v_badge_earned_name, v_badge_earned_desc, v_badge_earned_icon
     from public.badges where name ilike '%matemago%';
-
+    
     if v_badge_earned_id is not null and not exists (
       select 1 from public.student_badges where student_id = p_student_id and badge_id = v_badge_earned_id
     ) then
@@ -278,7 +278,7 @@ begin
       'max_streak', v_max_streak,
       'skill_points', v_skill_points
     ),
-    'badge_earned', case
+    'badge_earned', case 
       when v_badge_earned_id is not null then jsonb_build_object(
         'id', v_badge_earned_id,
         'name', v_badge_earned_name,
@@ -313,7 +313,7 @@ declare
   v_coins_reward integer := 50;
   v_xp_earned integer;
   v_coins_earned integer;
-
+  
   -- Student stats
   v_current_xp integer;
   v_current_coins integer;
@@ -326,12 +326,12 @@ declare
   v_max_streak integer;
   v_last_active date;
   v_today date := current_date;
-
+  
   v_xp_for_next_level integer;
   v_leveled_up boolean := false;
   v_feedback text;
   v_attempt_id uuid;
-
+  
   v_boost_str integer := 0;
   v_boost_int integer := 0;
   v_boost_def integer := 0;
@@ -342,7 +342,7 @@ begin
   into v_xp_reward, v_coins_reward
   from public.quests q
   where q.id = p_quest_id;
-
+  
   if not found then
     v_xp_reward := 200;
     v_coins_reward := 50;
@@ -357,7 +357,7 @@ begin
        v_strength, v_intelligence, v_defense
   from public.student_stats
   where student_id = p_student_id;
-
+  
   if not found then
     raise exception 'Student stats for % not found', p_student_id;
   end if;
@@ -382,7 +382,7 @@ begin
   -- Progression
   v_current_xp := v_current_xp + v_xp_earned;
   v_current_coins := v_current_coins + v_coins_earned;
-
+  
   v_xp_for_next_level := v_level * 200;
   while v_current_xp >= v_xp_for_next_level loop
     v_current_xp := v_current_xp - v_xp_for_next_level;
@@ -757,7 +757,7 @@ begin
       if found and v_campo_formativo_name is not null then
         -- XP ganado es proporcional a la puntuación obtenida
         v_xp_earned := round(v_xp_reward * (NEW.score / 100.0));
-
+        
         -- Sumar XP a la afinidad elemental correspondiente
         if v_campo_formativo_name = 'Lenguajes' then
           update public.student_stats set stat_lenguajes = stat_lenguajes + v_xp_earned where student_id = NEW.student_id;
@@ -770,12 +770,12 @@ begin
         end if;
       end if;
     end if;
-
+  
   -- Caso B: Quest completado por aprobación de portafolio
   elsif TG_TABLE_NAME = 'portfolio_items' then
     if NEW.status = 'approved' and (OLD.status is null or OLD.status != 'approved') then
       v_xp_reward := 100;
-
+      
       if NEW.quest_id is not null then
         -- Obtener el campo formativo del Quest si existe
         select coalesce(q.xp_reward, 100), cf.name
@@ -802,7 +802,7 @@ begin
       perform public.process_reward(NEW.student_id, coalesce(v_xp_reward, 100), 20, 0, 0);
     end if;
   end if;
-
+  
   return NEW;
 end;
 $$ language plpgsql security definer;
@@ -880,7 +880,7 @@ declare
   v_comprehension_ratio numeric;
   v_xp_earned integer;
   v_coins_earned integer;
-
+  
   -- Datos de student_stats
   v_current_xp integer;
   v_current_coins integer;
@@ -891,14 +891,14 @@ declare
   v_last_active date;
   v_today date := current_date;
   v_stat_lenguajes integer;
-
+  
   -- Progresión
   v_xp_for_next_level integer;
   v_leveled_up boolean := false;
   v_feedback text;
   v_reading_metric_id uuid;
   v_attempt_id uuid := null;
-
+  
   -- Insignias
   v_badge_earned_id uuid := null;
   v_badge_earned_name text := null;

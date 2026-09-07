@@ -1,7 +1,7 @@
 ---
 tags: [iskool, arquitectura, smart-connections]
 archivo_origen: "src/types/index.ts"
-fecha_sincronizacion: "2026-08-31T16:55:57.975Z"
+fecha_sincronizacion: "2026-09-07T03:59:13.456Z"
 ---
 
 # index.ts
@@ -14,7 +14,63 @@ Este archivo contiene el código fuente de arquitectura para **index.ts**.
  * @description Define los roles de usuario autorizados en el sistema escolar.
  * @stateImpact Determina los permisos en el frontend, accesibilidad de rutas y control RLS.
  */
-export type UserRole = 'superadmin' | 'admin' | 'director' | 'coordinator' | 'teacher' | 'student' | 'parent' | 'tutor';
+export type UserRole = 'owner' | 'superadmin' | 'admin' | 'director' | 'coordinator' | 'billing' | 'teacher' | 'student' | 'parent' | 'tutor';
+
+export const ROLE_HIERARCHY_LEVEL: Record<UserRole, number> = {
+  owner: 1,
+  superadmin: 1,
+  admin: 1,
+  director: 2,
+  coordinator: 3,
+  billing: 3,
+  teacher: 4,
+  student: 5,
+  parent: 5,
+  tutor: 5
+};
+
+/**
+ * Regla de Mando Inmediato Superior:
+ * Un operador solo puede gestionar, supervisar o restringir cuentas con nivel jerárquico estrictamente inferior.
+ */
+export const canManageTargetRole = (operatorRole: UserRole, targetRole: UserRole): boolean => {
+  const operatorLevel = ROLE_HIERARCHY_LEVEL[operatorRole] ?? 99;
+  const targetLevel = ROLE_HIERARCHY_LEVEL[targetRole] ?? 99;
+  return operatorLevel < targetLevel;
+};
+
+export interface RestrictedTopicItem {
+  id: string;
+  topicTitle: string;
+  subjectName?: string;
+  grade?: string;
+  reason?: string;
+  restrictedAt: string;
+  status: 'bloqueado' | 'requiere_revision';
+}
+
+/**
+ * Límites que el Dueño de Empresa impone a los Directores de Plantel
+ */
+export interface DirectorLimitsSettings {
+  canManageCampuses: boolean;             // Si el director puede crear/eliminar campus
+  canModifyTuitionFees: boolean;          // Si el director puede cambiar costos de colegiatura
+  canRegisterCoordinators: boolean;       // Si el director puede registrar nuevos coordinadores
+  canPurgeCurricularVault: boolean;       // Si el director puede purgar contenidos de la Bóveda Curricular
+  maxScholarshipDiscountPercent: number;  // Porcentaje tope de beca directa autorizable por dirección (default 50%)
+}
+
+export interface SchoolGovernanceSettings {
+  allowCoordinatorBilling: boolean;       // Acceso de coordinadores a cobranza
+  allowCoordinatorDelete?: boolean;      // Permiso para que coordinadores den de baja alumnos/grupos
+  allowTeacherGradeEditing: boolean;     // Modificación de boletas por docentes
+  allowStudentGamification: boolean;     // Tienda mágica y recompensas
+  allowAiAssistantTeachers: boolean;     // Motor de IA Pedagógica para docentes
+  allowAiAssistantStudents: boolean;     // Motor de IA Pedagógica para alumnos
+  restrictParentContactForTeachers: boolean; // Ocultar datos de contacto familiares a docentes
+  requirePlanningApproval: boolean;      // Aprobación previa de planeaciones en la Bóveda Curricular
+  restrictedTopics: RestrictedTopicItem[]; // Temáticas curriculares restringidas
+}
 
 /**
  * @interface UserProfile
@@ -23,13 +79,32 @@ export type UserRole = 'superadmin' | 'admin' | 'director' | 'coordinator' | 'te
  * @relation Relación 1:1 con `auth.users` de Supabase. Referenciado en `Student` y `TeacherAssignment`.
  * @stateImpact Almacenado en `AuthContext` tras el inicio de sesión del usuario.
  */
+export interface Campus {
+  id: string;
+  school_id: string;
+  name: string; // e.g. "Primaria Jardines", "Primaria Torres", "Secundaria Torres"
+  level: 'primaria' | 'secundaria' | 'preparatoria';
+  grades: string[]; // e.g. ["1º", "2º", "3º", "4º", "5º", "6º"]
+  address?: string;
+  phone?: string;
+  created_at: string;
+}
+
 export interface UserProfile {
   id: string;
+  school_id?: string;
   first_name: string;
   last_name: string;
   role: UserRole;
   email: string;
   phone?: string;
+  campus_id?: string;
+  campus_name?: string;
+  ai_tokens_consumed?: number; // Contador de tokens consumidos del Asistente Pedagógico IA
+  is_blocked?: boolean; // Estado de bloqueo/cancelación de cuenta
+  temporary_password?: string; // Contraseña de acceso (6 caracteres alfanuméricos)
+  assigned_subjects?: string[];
+  assigned_groups?: string[];
   created_at: string;
   updated_at: string;
 }
@@ -47,7 +122,32 @@ export interface School {
   cct?: string; // Clave de Centro de Trabajo (SEP)
   address?: string;
   phone?: string;
+  logoUrl?: string;
+  campuses?: Campus[];
   created_at: string;
+}
+
+export interface Institution {
+  id: string;
+  name: string;
+  tagline?: string;
+  cct: string;
+  logoUrl?: string;
+  isTestCase?: boolean;
+  status: 'active' | 'inactive' | 'trial';
+  createdAt: string;
+  address?: string;
+  phone?: string;
+  website?: string;
+  coordinatorName?: string;
+  campusesCount: number;
+  studentsCount: number;
+  teachersCount: number;
+  aiTokensConsumed: number;
+  currency?: string;
+  settings?: SchoolSettings;
+  governance?: SchoolGovernanceSettings;
+  directorLimits?: DirectorLimitsSettings;
 }
 
 /**
@@ -107,11 +207,13 @@ export interface LevelGrade {
 export interface Group {
   id: string;
   school_id: string;
+  campus_id?: string;
+  campus_name?: string; // "Primaria Jardines", "Primaria Torres", "Secundaria Torres"
   level_grade_id: string;
   academic_year_id: string;
   name: string; // e.g., "A", "B"
   created_at: string;
-
+  
   level?: string;
   grade?: string;
   student_ids?: string[];
@@ -121,9 +223,33 @@ export interface Group {
   academic_year?: AcademicYear;
 }
 
+export interface GroupAnnualPlan {
+  group_id: string;
+  group_name: string;
+  campus_name: string;
+  grade: string;
+  plan_title: string;
+  term_1: string;
+  term_2: string;
+  term_3: string;
+  pda_focus?: string;
+  project_title?: string;
+  file_url?: string;
+  file_name?: string;
+  updated_at: string;
+}
+
+export interface SyllabusTopic {
+  block: string;
+  title: string;
+  weeks: string;
+  description: string;
+  deliverable?: string;
+}
+
 /**
  * @interface Subject
- * @description Materia académica dictada en el colegio (e.g., Matemáticas).
+ * @description Materia académica dictada en el colegio (e.g., Matemáticas, Robótica).
  * @database Mapea a la tabla `public.subjects`.
  * @relation Vinculado a `School` (N:1) y `LevelGrade` (N:1). Referenciada en `Mission` y `Grade`.
  * @stateImpact Filtra el mapa de misiones y la segmentación de evidencias en el portafolio del estudiante.
@@ -131,9 +257,23 @@ export interface Group {
 export interface Subject {
   id: string;
   school_id: string;
+  campus_id?: string;
+  campus_name?: string;
   level_grade_id: string;
-  name: string; // e.g., "Matemáticas"
+  name: string; // e.g., "Matemáticas", "Robótica", "Basquetbol"
   sep_code?: string;
+  is_elective?: boolean; // true para materias optativas (Actividad Física, Basquetbol, Música, Robótica, Danza)
+  category?: 'curricular' | 'optativa';
+  workshop_category?: 'deportivo' | 'tecnologico' | 'artistico' | 'academico' | 'cientifico';
+  description?: string;
+  instructor_name?: string;
+  schedule?: string;
+  image_url?: string; // Portada o logotipo personalizado del taller
+  syllabus_url?: string; // Archivo del temario / plan de estudio subido
+  syllabus_filename?: string; // Nombre del archivo del temario
+  syllabus_topics?: SyllabusTopic[];
+  group_annual_plans?: Record<string, GroupAnnualPlan>;
+  assigned_group_ids?: string[];
   created_at: string;
 }
 
@@ -222,6 +362,7 @@ export type AttendanceStatus = 'presente' | 'falta' | 'retardo' | 'justificado';
  */
 export interface Attendance {
   id: string;
+  school_id?: string;
   student_id: string;
   group_id: string;
   subject_id?: string; // null para asistencia general del día, o específico por materia
@@ -241,6 +382,7 @@ export interface Attendance {
  */
 export interface Grade {
   id: string;
+  school_id?: string;
   student_id: string;
   subject_id: string;
   period_id: string; // references AcademicPeriod
@@ -259,6 +401,7 @@ export interface Grade {
  */
 export interface StudentStats {
   student_id: string;
+  school_id?: string;
   xp: number;
   level: number;
   coins: number;
@@ -380,7 +523,7 @@ export interface Mission {
   created_at: string;
   campo_formativo_id?: string;
   pda_ids?: string[];
-
+  
   // Relaciones opcionales cargadas
   subject?: Subject;
   quests?: Quest[];
@@ -528,16 +671,16 @@ export interface PortfolioItem {
   file_type: PortfolioFileType;
   status: PortfolioItemStatus;
   self_reflection?: string;
-
+  
   // Coevaluación (Preparatoria)
   peer_review_score?: number;
   peer_review_comments?: string;
-
+  
   // Metadatos formativos (NEM)
   campos_formativos?: string[];
   pdas?: string[];
   ejes_articuladores?: string[];
-
+  
   // Desglose de XP otorgado
   xp_breakdown?: {
     scientific?: number;
@@ -545,7 +688,7 @@ export interface PortfolioItem {
     collaborative?: number;
     communication?: number;
   };
-
+  
   created_at: string;
   updated_at: string;
   isNewRealtime?: boolean;
@@ -629,6 +772,7 @@ export interface SchoolSettings {
     secondary: string;  // Color secundario (Formato HSL o HEX)
     accent: string;     // Color de acento (Formato HSL o HEX)
   };
+  governance?: SchoolGovernanceSettings;
 }
 
 /**
@@ -651,33 +795,78 @@ export interface DetailedStudent {
   status: 'activo' | 'inactivo' | 'baja' | 'suspendido';
   previous_school?: string;
   photo_url?: string;
-
+  
   // Contacto
   address?: string;
   phone?: string;
   email?: string;
-
+  
   // Familiares
   father_name?: string;
   mother_name?: string;
   tutor_name?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
-
+  
   // Médicos
   blood_type?: string;
   medical_notes?: string;
-
+  
   // Académicos
+  school_id?: string;
   academic_notes?: string;
   level: 'primaria' | 'secundaria' | 'preparatoria';
   grade: string;
   group_id?: string;
+  campus_id?: string;
+  campus_name?: string; // "Primaria Jardines", "Primaria Torres", "Secundaria Torres"
+  temporary_password?: string; // Contraseña generada de 6 dígitos alfanuméricos
+  is_blocked?: boolean;
 
-  // Campos adicionales del expediente
+  // Campos adicionales del expediente y finanzas
   pending_payments?: string[];
+  scholarship_percentage?: number; // 0, 10, 25, 50, 75, 100
+  scholarship_type?: 'ninguna' | 'academica' | 'deportiva' | 'hermanos' | 'sep' | 'socioeconomica';
+  scholarship_notes?: string;
+  monthly_tuition_override?: number;
   behavior_reports?: { id?: string; date: string; description: string; reporter: string; parent_reply?: string; replied_at?: string }[];
   teacher_notes?: { id?: string; date: string; note: string; teacher_name: string; parent_reply?: string; replied_at?: string }[];
+}
+
+export interface TuitionPricing {
+  id: string;
+  school_id?: string;
+  level: 'primaria_baja' | 'primaria_alta' | 'secundaria' | 'preparatoria';
+  name: string;
+  description: string;
+  monthly_fee: number;
+  annual_inscription: number;
+  materials_fee: number;
+  due_day: number;
+}
+
+export interface FamilyBillingRecord {
+  id: string;
+  school_id?: string;
+  invoiceNumber: string;
+  studentId?: string;
+  parentName: string;
+  parentPhone: string;
+  parentEmail: string;
+  studentName: string;
+  level: string; // 'Primaria' | 'Secundaria' | 'Preparatoria'
+  grade: string; // '1º', '2º', '3º', '4º'
+  group: string; // 'A' | 'B'
+  concept: string;
+  baseAmount?: number;
+  discountAmount?: number;
+  scholarshipPercentage?: number;
+  scholarshipType?: string;
+  amount: number;
+  dueDate: string;
+  status: 'paid' | 'pending' | 'overdue';
+  autoInvoice: boolean;
+  paidAt?: string;
 }
 
 /**
@@ -689,6 +878,7 @@ export interface DetailedStudent {
  */
 export interface ClassSchedule {
   id: string;
+  school_id?: string;
   groupId: string;
   subjectId: string;
   teacherId: string;
@@ -705,6 +895,7 @@ export interface ClassSchedule {
  */
 export interface ParentMessage {
   id: string;
+  school_id?: string;
   parent_id: string;
   student_id: string;
   student_name: string;
@@ -777,6 +968,12 @@ export interface StudioActivityJSON {
   title: string;
   description: string;
   questions: StudioActivityQuestion[];
+  task_type?: string;
+  blocks?: any[];
+  connections?: any[];
+  startNodeId?: string | null;
+  metadata?: any;
+  logicChallengeData?: any;
 }
 export type CanvasActivityJSON = StudioActivityJSON;
 
@@ -857,7 +1054,7 @@ export interface ActivityVote {
  * @typedef {('601' | '603' | '605' | '606' | '608' | '612' | '616' | '621' | '625' | '626')} TaxRegimeCode
  * @description Regímenes fiscales oficiales del SAT (México).
  */
-export type TaxRegimeCode =
+export type TaxRegimeCode = 
   | '601' // General de Ley Personas Morales
   | '603' // Personas Morales con Fines no Lucrativos
   | '605' // Sueldos y Salarios e Ingresos Asimilados a Salarios
@@ -873,7 +1070,7 @@ export type TaxRegimeCode =
  * @typedef {('D10' | 'G01' | 'G02' | 'G03' | 'S01' | 'CP01')} CfdiUseCode
  * @description Usos de CFDI oficiales aplicables a servicios educativos y cobranza.
  */
-export type CfdiUseCode =
+export type CfdiUseCode = 
   | 'D10' // Pagos por servicios educativos (colegiaturas) - Deducción personal
   | 'G01' // Adquisición de mercancías
   | 'G02' // Devoluciones, descuentos o bonificaciones
@@ -897,7 +1094,7 @@ export interface BillingProfile {
   postal_code: string; // Código Postal Fiscal del emisor/receptor
   cfdi_use: CfdiUseCode | string; // Uso de CFDI (Default: 'D10' para colegiaturas)
   billing_email: string; // Correo de recepción de XML y PDF fiscal
-
+  
   // Domicilio fiscal complementario (opcional)
   street?: string;
   exterior_number?: string;
@@ -905,7 +1102,7 @@ export interface BillingProfile {
   neighborhood?: string;
   city?: string;
   state?: string;
-
+  
   is_default: boolean;
   auto_invoice_on_payment?: boolean; // Timbrado automático inmediato al acreditarse el pago
   created_at: string;
@@ -920,7 +1117,7 @@ export interface BillingProfile {
  * @typedef {('tuition' | 'enrollment' | 'materials' | 'uniform' | 'cafeteria' | 'extracurricular' | 'exam_fee' | 'other')} InvoiceCategory
  * @description Categoría o concepto del cargo escolar.
  */
-export type InvoiceCategory =
+export type InvoiceCategory = 
   | 'tuition'        // Colegiatura mensual
   | 'enrollment'     // Inscripción o Reinscripción anual
   | 'materials'      // Paquete de libros / materiales didácticos
@@ -948,23 +1145,23 @@ export interface Invoice {
   parent_id: string; // references UserProfile (tutor responsable del pago)
   student_id: string; // references Student (alumno al que corresponde el concepto)
   academic_year_id?: string; // references AcademicYear
-
+  
   invoice_number: string; // Folio de control escolar (e.g. "COL-2026-00452")
   concept: string; // Descripción formal (e.g. "Colegiatura Septiembre 2026 - 3º Secundaria")
   category: InvoiceCategory;
-
+  
   // Desglose monetario en moneda local
   subtotal: number;
   discount_amount: number; // Descuento por beca o pronto pago
   surcharge_amount: number; // Recargo por mora o pago extemporáneo
   total_amount: number; // Monto final neto exigible
   currency: string; // "MXN"
-
+  
   issue_date: string; // Fecha de emisión (YYYY-MM-DD)
   due_date: string; // Fecha límite de pago sin recargo (YYYY-MM-DD)
   status: InvoiceStatus;
   paid_at?: string; // Fecha y hora exacta de liquidación
-
+  
   metadata?: Record<string, any>;
   created_at: string;
   updated_at: string;
@@ -981,7 +1178,7 @@ export interface Invoice {
  * @typedef {('credit_card' | 'debit_card' | 'spei' | 'bank_transfer' | 'cash_store' | 'direct_debit')} PaymentMethod
  * @description Métodos de pago electrónicos procesados por el proveedor financiero.
  */
-export type PaymentMethod =
+export type PaymentMethod = 
   | 'credit_card'   // Tarjeta de crédito (Visa, Mastercard, AMEX)
   | 'debit_card'    // Tarjeta de débito bancaria
   | 'spei'          // Transferencia electrónica interbancaria SPEI inmediata
@@ -1006,26 +1203,26 @@ export interface PaymentHistoryItem {
   school_id: string;
   invoice_id: string;
   parent_id: string;
-
+  
   amount: number;
   currency: string; // "MXN"
   payment_method: PaymentMethod;
   status: PaymentStatus;
-
+  
   // Abstracción genérica de pasarela financiera (Marca Blanca)
   gateway_provider: string; // "PaymentGateway"
   gateway_transaction_id: string; // Identificador único de transacción del procesador
   gateway_fee?: number; // Comisión de pasarela
   net_amount: number; // Monto neto recibido por el colegio
-
+  
   receipt_number: string; // Folio de recibo de caja institucional
   receipt_url?: string; // URL del comprobante de pago digital
-
+  
   // Datos de Facturación Electrónica SAT (si fue timbrada)
   cfdi_uuid?: string; // Folio Fiscal SAT (UUID 36 caracteres)
   cfdi_xml_url?: string;
   cfdi_pdf_url?: string;
-
+  
   paid_at: string;
   metadata?: Record<string, any>;
   created_at: string;
@@ -1047,11 +1244,11 @@ export interface MagicLink {
   school_id: string;
   parent_id: string;
   invoice_id: string;
-
+  
   expires_at: string; // Timestamp ISO de caducidad (ej. 72 horas)
   is_used: boolean; // Flag de un solo uso
   used_at?: string;
-
+  
   ip_address?: string;
   user_agent?: string;
   metadata?: Record<string, any>;
@@ -1111,7 +1308,7 @@ export interface PaymentWebhookPayload {
  * @typedef {('Preescolar' | 'Primaria' | 'Secundaria' | 'Profesional tecnico' | 'Bachillerato o su equivalente')} IeduEducationLevel
  * @description Niveles educativos oficiales para el Complemento IEDU del SAT.
  */
-export type IeduEducationLevel =
+export type IeduEducationLevel = 
   | 'Preescolar'
   | 'Primaria'
   | 'Secundaria'
@@ -1294,4 +1491,37 @@ export interface SubmitReadingQuestResult {
     icon_name: string;
   } | null;
 }
+
+/**
+ * @interface StaffPayrollRecord
+ * @description Registro contable de nómina y compensaciones para directores, coordinadores, docentes y administrativos.
+ * @stateImpact Supervisado exclusivamente por el Dueño de Empresa / Super Usuario en el portal financiero.
+ */
+export interface StaffPayrollRecord {
+  id: string;
+  employee_id: string;
+  employee_name: string;
+  role: UserRole;
+  department: string; // 'Dirección General' | 'Coordinación Académica' | 'Cuerpo Docente' | 'Cobranza y Finanzas'
+  position_title: string;
+  school_id: string;
+  campus_name?: string;
+  base_salary: number;
+  bonuses: number; // Bonos pedagógicos, puntualidad, desempeño
+  deductions: number; // Retenciones IMSS, ISR, aportaciones
+  net_salary: number; // base_salary + bonuses - deductions
+  payment_period: string; // Ej: "1ª Quincena Septiembre 2026"
+  period_type: 'quincenal' | 'mensual';
+  payment_date?: string;
+  status: 'pagado' | 'en_dispersion' | 'pendiente';
+  payment_method: string; // 'SPEI / Transferencia Bancaria', 'BBVA', etc.
+  account_clabe?: string;
+  bank_name?: string;
+  rfc?: string;
+  curp?: string;
+  receipt_folio?: string;
+  notes?: string;
+}
+
+export * from './teacherGamification';
 ```

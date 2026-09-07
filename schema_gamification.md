@@ -1,7 +1,7 @@
 ---
 tags: [iskool, arquitectura, smart-connections]
 archivo_origen: "schema_gamification.sql"
-fecha_sincronizacion: "2026-08-31T16:55:57.960Z"
+fecha_sincronizacion: "2026-09-07T03:59:13.448Z"
 ---
 
 # schema_gamification.sql
@@ -27,43 +27,50 @@ create table public.student_stats (
   current_streak integer default 0 not null check (current_streak >= 0),
   max_streak integer default 0 not null check (max_streak >= 0),
   last_active_date date,
-
+  
   -- Atributos RPG (Secundaria)
   rpg_class text check (rpg_class in ('guerrero', 'mago', 'curandero', 'explorador')),
   attribute_strength integer default 10 check (attribute_strength >= 0),
   attribute_intelligence integer default 10 check (attribute_intelligence >= 0),
   attribute_defense integer default 10 check (attribute_defense >= 0),
   skill_points integer default 0 check (skill_points >= 0),
-
+  
   -- Financiamiento (Preparatoria)
   funding_credits integer default 1000 check (funding_credits >= 0),
-
+  
   -- Tamagotchi RPG Mascotas (Secundaria)
   pet_stage varchar default 'egg' check (pet_stage in ('egg', 'baby', 'adult', 'mystic')),
   pet_energy integer default 100 check (pet_energy >= 0 and pet_energy <= 100),
   pet_happiness integer default 50 check (pet_happiness >= 0 and pet_happiness <= 100),
-
+  
   -- Afinidades Elementales / Stats NEM (Nueva Escuela Mexicana)
   stat_lenguajes integer default 0 not null check (stat_lenguajes >= 0),
   stat_saberes integer default 0 not null check (stat_saberes >= 0),
   stat_etica integer default 0 not null check (stat_etica >= 0),
   stat_de_lo_humano integer default 0 not null check (stat_de_lo_humano >= 0),
-
+  
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
 alter table public.student_stats enable row level security;
 
--- Políticas RLS para student_stats (Protección de datos y atributos individuales)
-create policy "Permitir lectura de student_stats a alumnos dueños, docentes y administradores"
+-- Políticas RLS para student_stats (Aislamiento por colegio)
+create policy "Aislamiento estricto de student_stats por colegio"
   on public.student_stats for select
   to authenticated
   using (
-    auth.uid() = student_id
+    auth.uid() = student_id 
     or exists (
-      select 1 from public.profiles
-      where profiles.id = auth.uid()
-        and profiles.role in ('teacher', 'admin', 'director', 'superadmin')
+      select 1 from public.profiles p
+      where p.id = auth.uid() 
+        and p.role = 'superadmin'
+    )
+    or exists (
+      select 1 from public.students s
+      join public.profiles p on p.school_id = s.school_id
+      where s.id = student_stats.student_id
+        and p.id = auth.uid()
+        and p.role in ('teacher', 'admin', 'director', 'coordinator')
     )
   );
 
@@ -95,14 +102,14 @@ create table public.student_avatars (
   outfit_color text not null default '#3B82F6',
   background_style text not null default 'nebula',
   unlocked_items text[] default array['classic', 'happy', 'space_suit', 'nebula']::text[] not null,
-
+  
   -- Mascota Virtual (Primaria Baja)
   pet_type text default 'dragon' check (pet_type in ('dragon', 'gatito', 'osito')),
   pet_name text default 'Chispas' not null,
   pet_hunger integer default 50 check (pet_hunger >= 0 and pet_hunger <= 100),
   pet_happiness integer default 50 check (pet_happiness >= 0 and pet_happiness <= 100),
   pet_outfit text default 'none',
-
+  
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -292,16 +299,23 @@ create table public.quest_attempts (
 
 alter table public.quest_attempts enable row level security;
 
--- Políticas RLS para quest_attempts (Aislamiento de intentos por estudiante)
-create policy "Permitir lectura de intentos al propio alumno, docentes o administradores"
+-- Políticas RLS para quest_attempts (Aislamiento por colegio)
+create policy "Aislamiento estricto de quest_attempts por colegio"
   on public.quest_attempts for select
   to authenticated
   using (
-    auth.uid() = student_id
+    auth.uid() = student_id 
     or exists (
-      select 1 from public.profiles
-      where profiles.id = auth.uid()
-        and profiles.role in ('teacher', 'admin', 'director', 'superadmin')
+      select 1 from public.profiles p
+      where p.id = auth.uid() 
+        and p.role = 'superadmin'
+    )
+    or exists (
+      select 1 from public.students s
+      join public.profiles p on p.school_id = s.school_id
+      where s.id = quest_attempts.student_id
+        and p.id = auth.uid()
+        and p.role in ('teacher', 'admin', 'director', 'coordinator')
     )
   );
 
@@ -334,27 +348,39 @@ create table public.portfolio_items (
   file_type text not null check (file_type in ('image', 'audio', 'video', 'pdf', 'link')),
   status text not null default 'submitted' check (status in ('draft', 'submitted', 'approved', 'needs_revision')),
   self_reflection text, -- Reflexión del propio alumno (Autoevaluación)
-
+  
   -- Coevaluación y Proyectos de Preparatoria
   peer_review_score numeric(3,1) check (peer_review_score >= 0.0 and peer_review_score <= 10.0),
   peer_review_comments text,
-
+  
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
 alter table public.portfolio_items enable row level security;
 
--- Políticas RLS para portfolio_items (Aislamiento de portafolio entre alumnos)
-create policy "Permitir lectura de evidencias al estudiante dueño, docentes o tutores"
+-- Políticas RLS para portfolio_items (Aislamiento de portafolio por colegio)
+create policy "Aislamiento estricto de portfolio_items por colegio"
   on public.portfolio_items for select
   to authenticated
   using (
-    auth.uid() = student_id
+    auth.uid() = student_id 
     or exists (
-      select 1 from public.profiles
-      where profiles.id = auth.uid()
-        and profiles.role in ('teacher', 'admin', 'director', 'superadmin', 'parent')
+      select 1 from public.profiles p
+      where p.id = auth.uid() 
+        and p.role = 'superadmin'
+    )
+    or exists (
+      select 1 from public.students s
+      join public.profiles p on p.school_id = s.school_id
+      where s.id = portfolio_items.student_id
+        and p.id = auth.uid()
+        and p.role in ('teacher', 'admin', 'director', 'coordinator')
+    )
+    or exists (
+      select 1 from public.parent_student ps
+      where ps.student_id = portfolio_items.student_id 
+        and ps.parent_id = auth.uid()
     )
     or peer_review_score is not null
   );
@@ -368,10 +394,10 @@ create policy "Permitir a estudiantes editar sus evidencias o docentes calificar
   on public.portfolio_items for update
   to authenticated
   using (
-    auth.uid() = student_id
+    auth.uid() = student_id 
     or exists (
-      select 1 from public.profiles
-      where profiles.id = auth.uid()
+      select 1 from public.profiles 
+      where profiles.id = auth.uid() 
         and profiles.role in ('teacher', 'admin', 'director', 'superadmin')
     )
   );
@@ -459,10 +485,10 @@ create policy "Permitir a creadores y miembros actualizar el estado de la party"
   on public.coop_parties for update
   to authenticated
   using (
-    auth.uid() = created_by
+    auth.uid() = created_by 
     or exists (
-      select 1 from public.party_members
-      where party_members.party_id = coop_parties.id
+      select 1 from public.party_members 
+      where party_members.party_id = coop_parties.id 
         and party_members.student_id = auth.uid()
     )
   );
@@ -521,10 +547,10 @@ create policy "Permitir a miembros registrar sus propias acciones"
   on public.party_actions for insert
   to authenticated
   with check (
-    auth.uid() = student_id
+    auth.uid() = student_id 
     and exists (
-      select 1 from public.party_members
-      where party_members.party_id = party_actions.party_id
+      select 1 from public.party_members 
+      where party_members.party_id = party_actions.party_id 
         and party_members.student_id = auth.uid()
     )
   );
@@ -573,7 +599,7 @@ begin
 
   -- Validar si el alumno ya pertenece a otra sesión activa
   if exists (
-    select 1
+    select 1 
     from public.party_members pm
     join public.coop_parties cp on pm.party_id = cp.id
     where pm.student_id = v_student_id
@@ -616,10 +642,10 @@ create policy "Permitir lectura de métricas de lectura al propio alumno, docent
   on public.reading_metrics for select
   to authenticated
   using (
-    auth.uid() = student_id
+    auth.uid() = student_id 
     or exists (
-      select 1 from public.profiles
-      where profiles.id = auth.uid()
+      select 1 from public.profiles 
+      where profiles.id = auth.uid() 
         and profiles.role in ('teacher', 'coordinator', 'admin', 'director', 'superadmin', 'parent')
     )
   );
@@ -689,7 +715,7 @@ declare
   v_comprehension_ratio numeric;
   v_xp_earned integer;
   v_coins_earned integer;
-
+  
   -- Datos de student_stats
   v_current_xp integer;
   v_current_coins integer;
@@ -700,14 +726,14 @@ declare
   v_last_active date;
   v_today date := current_date;
   v_stat_lenguajes integer;
-
+  
   -- Progresión
   v_xp_for_next_level integer;
   v_leveled_up boolean := false;
   v_feedback text;
   v_reading_metric_id uuid;
   v_attempt_id uuid := null;
-
+  
   -- Insignias
   v_badge_earned_id uuid := null;
   v_badge_earned_name text := null;
