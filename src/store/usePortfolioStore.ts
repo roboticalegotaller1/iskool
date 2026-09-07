@@ -3,7 +3,7 @@ import { PortfolioItem, FeedbackAuthorRole, PortfolioItemStatus, PortfolioFeedba
 import { PORTFOLIO_SEED, SUBJECTS_SEED, TEACHER_SEED, PARENT_SEED, STUDENTS_LIST_SEED, BADGES_SEED } from './seeds';
 import { useStudentStore, normalizeStudentId, mapStudentIdToUuid } from './useStudentStore';
 import { useGamificationStore } from './useGamificationStore';
-import { useSchoolAdminStore, getSchoolStudents } from './useSchoolAdminStore';
+import { useSchoolAdminStore, getSchoolStudents, resolveEffectiveSchoolId } from './useSchoolAdminStore';
 import { supabase } from '@/lib/supabaseClient';
 
 const isUuid = (str?: string): boolean => {
@@ -589,7 +589,14 @@ export const usePortfolioStore = create<PortfolioStoreState>((set, get) => ({
     }
     try {
       const schoolAdminStore = useSchoolAdminStore.getState();
-      const activeSchoolId = schoolAdminStore.activeSchoolId;
+      let sessionUser: any = null;
+      try {
+        if (typeof localStorage !== 'undefined') {
+          const stored = localStorage.getItem('iskool_session_user') || localStorage.getItem('auth_current_user');
+          if (stored) sessionUser = JSON.parse(stored);
+        }
+      } catch (e) {}
+      const activeSchoolId = resolveEffectiveSchoolId(sessionUser, schoolAdminStore.activeSchoolId, 'sch-jjrosseau');
       const schoolStudents = activeSchoolId 
         ? getSchoolStudents(schoolAdminStore.detailedStudents, activeSchoolId, schoolAdminStore.campusesList)
         : schoolAdminStore.detailedStudents;

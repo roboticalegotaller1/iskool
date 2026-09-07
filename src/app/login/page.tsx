@@ -127,20 +127,41 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
   {
     name: "Don Alejandro Vargas",
     role: "owner",
-    grade: "Presidencia y Consejo Escolar",
+    grade: "Dueño de Colegio (UP Juan Jacobo Rosseau - Aislado)",
     email: "dueno@jjrosseau.edu.mx",
     avatarColor: "bg-blue-600",
     id: "usr-owner-1",
     defaultPass: "DUE2026",
     category: "gestion"
   },
+  // Directivos de ISkool (Únicas 3 Cuentas de Super Usuario de Plataforma)
   {
-    name: "Super Usuario Institucional",
+    name: "Dirección General ISkool",
     role: "admin",
-    grade: "Administración Central del Sistema",
+    grade: "Directivo ISkool (Super Usuario Global)",
     email: "admin@iskool.edu.mx",
-    avatarColor: "bg-slate-700",
-    id: "usr-admin-1",
+    avatarColor: "bg-slate-800",
+    id: "usr-superadmin-1",
+    defaultPass: "008805",
+    category: "gestion"
+  },
+  {
+    name: "Dirección de Tecnología ISkool",
+    role: "admin",
+    grade: "Directivo ISkool (Super Usuario Infraestructura)",
+    email: "tecnologia@iskool.edu.mx",
+    avatarColor: "bg-cyan-700",
+    id: "usr-superadmin-2",
+    defaultPass: "008805",
+    category: "gestion"
+  },
+  {
+    name: "Dirección Pedagógica ISkool",
+    role: "admin",
+    grade: "Directivo ISkool (Super Usuario Curricular)",
+    email: "pedagogia@iskool.edu.mx",
+    avatarColor: "bg-emerald-700",
+    id: "usr-superadmin-3",
     defaultPass: "008805",
     category: "gestion"
   }

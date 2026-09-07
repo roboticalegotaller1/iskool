@@ -9,6 +9,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { Header } from '@/components/Header';
 import { 
   Building2, 
   TrendingUp, 
@@ -77,23 +78,29 @@ export default function CoordinatorBillingDashboardPage() {
     recordBillingPayment
   } = useSchoolAdminStore();
 
+  const effectiveSchoolId = useMemo(() => {
+    if (user?.school_id) return user.school_id;
+    if (activeSchoolId) return activeSchoolId;
+    return 'sch-test-case';
+  }, [user, activeSchoolId]);
+
   const currentGovernance = useMemo(() => {
-    return getSchoolGovernance(schoolGovernance, activeSchoolId);
-  }, [schoolGovernance, activeSchoolId]);
+    return getSchoolGovernance(schoolGovernance, effectiveSchoolId);
+  }, [schoolGovernance, effectiveSchoolId]);
 
   const detailedStudents = useMemo(() => {
-    return getSchoolStudents(storeDetailedStudents, activeSchoolId);
-  }, [storeDetailedStudents, activeSchoolId]);
+    return getSchoolStudents(storeDetailedStudents, effectiveSchoolId);
+  }, [storeDetailedStudents, effectiveSchoolId]);
 
   const records = useMemo(() => {
     const raw = storeBillingRecords && storeBillingRecords.length > 0 ? storeBillingRecords : BILLING_RECORDS_SEED;
-    return getSchoolBillingRecords(raw, activeSchoolId, detailedStudents);
-  }, [storeBillingRecords, activeSchoolId, detailedStudents]);
+    return getSchoolBillingRecords(raw, effectiveSchoolId, detailedStudents);
+  }, [storeBillingRecords, effectiveSchoolId, detailedStudents]);
 
   const tuitionPricings = useMemo(() => {
     const raw = storeTuitionPricings && storeTuitionPricings.length > 0 ? storeTuitionPricings : TUITION_PRICINGS_SEED;
-    return getSchoolTuitionPricings(raw, activeSchoolId);
-  }, [storeTuitionPricings, activeSchoolId]);
+    return getSchoolTuitionPricings(raw, effectiveSchoolId);
+  }, [storeTuitionPricings, effectiveSchoolId]);
 
   // Estado del modal de recordatorio Magic Link
   const [activeModalRecord, setActiveModalRecord] = useState<FamilyBillingRecord | null>(null);
@@ -108,11 +115,23 @@ export default function CoordinatorBillingDashboardPage() {
 
   // Modal: Configuración de Aranceles & Colegiaturas por Nivel
   const [showPricingModal, setShowPricingModal] = useState(false);
-  const [editingPricings, setEditingPricings] = useState<TuitionPricing[]>(tuitionPricings);
+  const [editingPricings, setEditingPricings] = useState<TuitionPricing[]>([]);
 
   useEffect(() => {
-    setEditingPricings(tuitionPricings);
-  }, [tuitionPricings]);
+    if (tuitionPricings && tuitionPricings.length > 0) {
+      setEditingPricings(tuitionPricings);
+    } else {
+      setEditingPricings(getSchoolTuitionPricings([], effectiveSchoolId));
+    }
+  }, [tuitionPricings, effectiveSchoolId]);
+
+  const handleOpenPricingModal = () => {
+    const listToEdit = (tuitionPricings && tuitionPricings.length > 0)
+      ? tuitionPricings
+      : getSchoolTuitionPricings([], effectiveSchoolId);
+    setEditingPricings(listToEdit);
+    setShowPricingModal(true);
+  };
 
   // Modal: Expediente Financiero & Asignación de Beca
   const [activeScholarshipStudent, setActiveScholarshipStudent] = useState<{
@@ -214,10 +233,14 @@ export default function CoordinatorBillingDashboardPage() {
 
   // Guardar edición de aranceles
   const handleSavePricings = () => {
-    editingPricings.forEach(p => {
+    const listToSave = editingPricings.length > 0
+      ? editingPricings
+      : getSchoolTuitionPricings([], effectiveSchoolId);
+
+    listToSave.forEach(p => {
       updateTuitionPricing(p.id, {
         ...p,
-        school_id: p.school_id || activeSchoolId || 'sch-test-case'
+        school_id: p.school_id || effectiveSchoolId
       });
     });
     showToast('Catálogo de aranceles y colegiaturas actualizado exitosamente.');
@@ -421,7 +444,9 @@ export default function CoordinatorBillingDashboardPage() {
   }
 
   return (
-    <div className="space-y-6 font-sans">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-50 font-sans">
+      <Header />
+      <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       
       {/* Toast Formal de Notificación */}
       {toastMessage && (
@@ -448,10 +473,7 @@ export default function CoordinatorBillingDashboardPage() {
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Botón Estratégico para Configuración de Precios / Aranceles */}
           <button
-            onClick={() => {
-              setEditingPricings(tuitionPricings);
-              setShowPricingModal(true);
-            }}
+            onClick={handleOpenPricingModal}
             className="inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold px-4 py-2.5 rounded-lg transition-all text-xs shadow-sm hover:shadow-md"
             title="Configurar los precios y cuotas mensuales por cada nivel educativo"
           >
@@ -563,10 +585,7 @@ export default function CoordinatorBillingDashboardPage() {
             <p className="text-xs text-slate-300 mt-0.5">Precios base oficiales aplicados automáticamente al matricular nuevos alumnos.</p>
           </div>
           <button
-            onClick={() => {
-              setEditingPricings(tuitionPricings);
-              setShowPricingModal(true);
-            }}
+            onClick={handleOpenPricingModal}
             className="inline-flex items-center gap-1.5 bg-blue-600/30 hover:bg-blue-600/50 border border-blue-400/30 text-blue-100 font-semibold px-3 py-1.5 rounded-lg text-xs transition-colors self-start md:self-auto"
           >
             <Sliders className="w-3.5 h-3.5" />
@@ -847,8 +866,21 @@ export default function CoordinatorBillingDashboardPage() {
 
             {/* Listado de Niveles Editables */}
             <div className="space-y-4">
-              {editingPricings.map((pricing, index) => (
-                <div key={pricing.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-3">
+              {editingPricings.length === 0 ? (
+                <div className="p-8 text-center rounded-xl border border-dashed border-slate-300 bg-slate-50 space-y-3">
+                  <DollarSign className="w-10 h-10 text-emerald-600 mx-auto" />
+                  <p className="text-sm font-semibold text-slate-700">Cargando aranceles institucionales...</p>
+                  <button
+                    type="button"
+                    onClick={() => setEditingPricings(getSchoolTuitionPricings([], effectiveSchoolId))}
+                    className="px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-500 transition-colors cursor-pointer"
+                  >
+                    Cargar Niveles Educativos
+                  </button>
+                </div>
+              ) : (
+                editingPricings.map((pricing, index) => (
+                  <div key={pricing.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <GraduationCap className="w-4 h-4 text-blue-700" />
@@ -917,7 +949,7 @@ export default function CoordinatorBillingDashboardPage() {
                     </div>
                   </div>
                 </div>
-              ))}
+              )))}
             </div>
 
             {/* Acciones */}
@@ -1135,7 +1167,7 @@ export default function CoordinatorBillingDashboardPage() {
             {isSendingLink ? (
               <div className="py-10 text-center space-y-3">
                 <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                <div className="text-xs text-slate-600 font-medium">Generando enlace institucional con token firmado...</div>
+                <div className="text-xs text-slate-600 font-medium">Generando enlace institucional de pago seguro...</div>
               </div>
             ) : magicLinkResult ? (
               <div className="space-y-4 text-xs">
@@ -1461,6 +1493,7 @@ export default function CoordinatorBillingDashboardPage() {
         </div>
       )}
 
+    </div>
     </div>
   );
 }

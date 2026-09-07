@@ -8,6 +8,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { Header } from '@/components/Header';
+import { useAuth } from '@/context/AuthContext';
+import { useSchoolAdminStore, resolveEffectiveSchoolId } from '@/store/useSchoolAdminStore';
 import { 
   Building2, 
   ShieldCheck, 
@@ -53,6 +56,16 @@ interface StoredFiscalRecord {
 }
 
 export default function CoordinatorFiscalPage() {
+  const { user } = useAuth();
+  const activeSchoolId = useSchoolAdminStore(state => state.activeSchoolId);
+  const institutionsList = useSchoolAdminStore(state => state.institutionsList);
+  const effectiveSchoolId = React.useMemo(() => {
+    return resolveEffectiveSchoolId(user, activeSchoolId, 'sch-jjrosseau');
+  }, [user, activeSchoolId]);
+  const currentInstitution = React.useMemo(() => {
+    return institutionsList.find(i => i.id === effectiveSchoolId) || institutionsList[0];
+  }, [institutionsList, effectiveSchoolId]);
+
   const [activeTab, setActiveTab] = useState<'log' | 'manual_stamp' | 'config'>('log');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'Vigente' | 'Cancelado'>('all');
@@ -135,10 +148,14 @@ export default function CoordinatorFiscalPage() {
   const [isStamping, setIsStamping] = useState(false);
   const [lastStampedResult, setLastStampedResult] = useState<any>(null);
 
+  const defaultRfc = currentInstitution?.id === 'sch-test-case' 
+    ? 'CPB260901XX4' 
+    : (currentInstitution?.id === 'sch-montessori' ? 'IMV180512MK3' : 'UPJ980115XX1');
+
   // Configuración del Plantel
   const [schoolConfig, setSchoolConfig] = useState({
-    rfcEmisor: 'CAM180312AB9',
-    razonSocial: 'COLEGIO ANGLO MEXICANO S.C.',
+    rfcEmisor: defaultRfc,
+    razonSocial: currentInstitution?.name || 'UP Juan Jacobo Rosseau',
     regimenFiscal: '603',
     codigoPostal: '06700',
     rvoePreescolar: 'SEP-RVOE-2022-PRE-012',
@@ -151,6 +168,18 @@ export default function CoordinatorFiscalPage() {
     csdExpiresAt: '2028-12-31',
     autoInvoiceOnPayment: true
   });
+
+  useEffect(() => {
+    if (currentInstitution) {
+      setSchoolConfig(prev => ({
+        ...prev,
+        razonSocial: currentInstitution.name || prev.razonSocial,
+        rfcEmisor: currentInstitution.id === 'sch-test-case' 
+          ? 'CPB260901XX4' 
+          : (currentInstitution.id === 'sch-montessori' ? 'IMV180512MK3' : 'UPJ980115XX1')
+      }));
+    }
+  }, [currentInstitution]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -290,7 +319,9 @@ export default function CoordinatorFiscalPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-50 font-sans">
+      <Header />
+      <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       
       {/* Toast Notification */}
       {toastMessage && (
@@ -931,7 +962,7 @@ export default function CoordinatorFiscalPage() {
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Clave de API / Token del PAC:</label>
+                  <label className="block text-slate-700 font-semibold mb-1">Clave de API / Llave de Acceso del PAC:</label>
                   <div className="flex items-center gap-2 bg-white border border-slate-300 rounded-lg p-2">
                     <Lock className="w-3.5 h-3.5 text-slate-400" />
                     <input
@@ -1071,6 +1102,7 @@ export default function CoordinatorFiscalPage() {
         </div>
       )}
 
+    </div>
     </div>
   );
 }

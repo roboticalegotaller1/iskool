@@ -12,7 +12,8 @@ import {
   getSchoolTeachers, 
   getSchoolSchedules,
   getSchoolGovernance,
-  getSchoolEmailDomain
+  getSchoolEmailDomain,
+  resolveEffectiveSchoolId
 } from '@/store/useSchoolAdminStore';
 import { SUBJECTS_SEED } from '@/store/seeds';
 import { Header } from '@/components/Header';
@@ -30,6 +31,10 @@ export default function CoordinatorDashboard() {
   const router = useRouter();
 
   const activeSchoolId = useSchoolAdminStore(state => state.activeSchoolId);
+  const effectiveSchoolId = React.useMemo(() => {
+    return resolveEffectiveSchoolId(user, activeSchoolId, 'sch-jjrosseau');
+  }, [user, activeSchoolId]);
+
   const institutionsList = useSchoolAdminStore(state => state.institutionsList);
   const schoolGovernance = useSchoolAdminStore(state => state.schoolGovernance);
   const campusesList = useSchoolAdminStore(state => state.campusesList);
@@ -41,45 +46,45 @@ export default function CoordinatorDashboard() {
   const schoolSettings = useSchoolAdminStore(state => state.schoolSettings);
 
   const schoolInfo = React.useMemo(() => {
-    return institutionsList.find(i => i.id === activeSchoolId) || institutionsList[0] || {
+    return institutionsList.find(i => i.id === effectiveSchoolId) || institutionsList[0] || {
       id: 'sch-jjrosseau',
       name: 'UP Juan Jacobo Rosseau',
       website: 'https://jjrosseau.edu.mx'
     };
-  }, [institutionsList, activeSchoolId]);
+  }, [institutionsList, effectiveSchoolId]);
 
   const schoolDomain = React.useMemo(() => {
     return getSchoolEmailDomain(schoolInfo);
   }, [schoolInfo]);
 
   const currentGovernance = React.useMemo(() => {
-    return getSchoolGovernance(schoolGovernance, activeSchoolId);
-  }, [schoolGovernance, activeSchoolId]);
+    return getSchoolGovernance(schoolGovernance, effectiveSchoolId);
+  }, [schoolGovernance, effectiveSchoolId]);
 
   // Aislamiento Multi-Colegio Estricto: Ningún dato de otro colegio es visible para este coordinador
   const schoolCampuses = React.useMemo(() => {
-    return getSchoolCampuses(campusesList, activeSchoolId);
-  }, [campusesList, activeSchoolId]);
+    return getSchoolCampuses(campusesList, effectiveSchoolId);
+  }, [campusesList, effectiveSchoolId]);
 
   const detailedStudents = React.useMemo(() => {
-    return getSchoolStudents(detailedStudentsRaw, activeSchoolId, schoolCampuses);
-  }, [detailedStudentsRaw, activeSchoolId, schoolCampuses]);
+    return getSchoolStudents(detailedStudentsRaw, effectiveSchoolId, schoolCampuses);
+  }, [detailedStudentsRaw, effectiveSchoolId, schoolCampuses]);
 
   const groupsList = React.useMemo(() => {
-    return getSchoolGroups(groupsListRaw, activeSchoolId, schoolCampuses);
-  }, [groupsListRaw, activeSchoolId, schoolCampuses]);
+    return getSchoolGroups(groupsListRaw, effectiveSchoolId, schoolCampuses);
+  }, [groupsListRaw, effectiveSchoolId, schoolCampuses]);
 
   const subjectsList = React.useMemo(() => {
-    return getSchoolSubjects(subjectsListRaw, activeSchoolId, schoolCampuses);
-  }, [subjectsListRaw, activeSchoolId, schoolCampuses]);
+    return getSchoolSubjects(subjectsListRaw, effectiveSchoolId, schoolCampuses);
+  }, [subjectsListRaw, effectiveSchoolId, schoolCampuses]);
 
   const teachersList = React.useMemo(() => {
-    return getSchoolTeachers(teachersListRaw, activeSchoolId, schoolCampuses);
-  }, [teachersListRaw, activeSchoolId, schoolCampuses]);
+    return getSchoolTeachers(teachersListRaw, effectiveSchoolId, schoolCampuses);
+  }, [teachersListRaw, effectiveSchoolId, schoolCampuses]);
 
   const schedulesList = React.useMemo(() => {
-    return getSchoolSchedules(schedulesListRaw, activeSchoolId, groupsList);
-  }, [schedulesListRaw, activeSchoolId, groupsList]);
+    return getSchoolSchedules(schedulesListRaw, effectiveSchoolId, groupsList);
+  }, [schedulesListRaw, effectiveSchoolId, groupsList]);
 
   const registerStudent = useSchoolAdminStore(state => state.registerStudent);
   const generateGroupsForGrade = useSchoolAdminStore(state => state.generateGroupsForGrade);
@@ -420,7 +425,7 @@ export default function CoordinatorDashboard() {
 
     registerStudent({
       ...newStudentData,
-      school_id: activeSchoolId || undefined,
+      school_id: effectiveSchoolId,
       email: studentEmail,
       curp: curpVal,
       enrollment_id: enrolVal,
@@ -1425,7 +1430,7 @@ export default function CoordinatorDashboard() {
                       registerTeacher({
                         first_name: firstInput.value.trim(),
                         last_name: lastInput.value.trim(),
-                        school_id: activeSchoolId || undefined,
+                        school_id: effectiveSchoolId,
                         email: teacherEmail
                       });
                       firstInput.value = '';

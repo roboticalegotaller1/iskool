@@ -2865,6 +2865,50 @@ export const TUITION_PRICINGS_SEED: import('../types').TuitionPricing[] = [
     annual_inscription: 5600.00,
     materials_fee: 1800.00,
     due_day: 10
+  },
+  {
+    id: 'prc-test-pri-baja',
+    school_id: 'sch-test-case',
+    level: 'primaria_baja',
+    name: 'Primaria Baja (1º a 3º Grado)',
+    description: 'Colegio Experimental Sandbox · Jornada regular con materias base y talleres formativos iniciales.',
+    monthly_fee: 3100.00,
+    annual_inscription: 4200.00,
+    materials_fee: 1100.00,
+    due_day: 10
+  },
+  {
+    id: 'prc-test-pri-alta',
+    school_id: 'sch-test-case',
+    level: 'primaria_alta',
+    name: 'Primaria Alta (4º a 6º Grado)',
+    description: 'Colegio Experimental Sandbox · Incluye laboratorio de ciencias, robótica y talleres optativos.',
+    monthly_fee: 3350.00,
+    annual_inscription: 4500.00,
+    materials_fee: 1300.00,
+    due_day: 10
+  },
+  {
+    id: 'prc-test-sec',
+    school_id: 'sch-test-case',
+    level: 'secundaria',
+    name: 'Secundaria Sandbox (1º a 3º Grado)',
+    description: 'Colegio Experimental Sandbox · Especialidades técnicas, laboratorio avanzado y robótica.',
+    monthly_fee: 3800.00,
+    annual_inscription: 5000.00,
+    materials_fee: 1500.00,
+    due_day: 10
+  },
+  {
+    id: 'prc-test-prep',
+    school_id: 'sch-test-case',
+    level: 'preparatoria',
+    name: 'Preparatoria / Bachillerato Sandbox',
+    description: 'Colegio Experimental Sandbox · Bachillerato general con orientación propedéutica.',
+    monthly_fee: 4000.00,
+    annual_inscription: 5400.00,
+    materials_fee: 1700.00,
+    due_day: 10
   }
 ];
 
@@ -3102,6 +3146,45 @@ export const DEFAULT_GOVERNANCE_SETTINGS: import('../types').SchoolGovernanceSet
     }
   ]
 };
+
+export const SUPER_USERS_ISKOOL_SEED: import('../types').UserProfile[] = [
+  {
+    id: 'usr-superadmin-1',
+    first_name: 'Dirección General',
+    last_name: 'ISkool (Super Usuario)',
+    role: 'superadmin',
+    email: 'admin@iskool.edu.mx',
+    phone: '55-1000-0001',
+    campus_name: 'Sede Central Matriz ISkool',
+    temporary_password: '008805',
+    created_at: '2026-01-01T08:00:00.000Z',
+    updated_at: '2026-01-01T08:00:00.000Z'
+  },
+  {
+    id: 'usr-superadmin-2',
+    first_name: 'Dirección de Tecnología',
+    last_name: 'ISkool (Super Usuario)',
+    role: 'superadmin',
+    email: 'tecnologia@iskool.edu.mx',
+    phone: '55-1000-0002',
+    campus_name: 'Sede Central Matriz ISkool',
+    temporary_password: '008805',
+    created_at: '2026-01-01T08:00:00.000Z',
+    updated_at: '2026-01-01T08:00:00.000Z'
+  },
+  {
+    id: 'usr-superadmin-3',
+    first_name: 'Dirección Pedagógica',
+    last_name: 'ISkool (Super Usuario)',
+    role: 'superadmin',
+    email: 'pedagogia@iskool.edu.mx',
+    phone: '55-1000-0003',
+    campus_name: 'Sede Central Matriz ISkool',
+    temporary_password: '008805',
+    created_at: '2026-01-01T08:00:00.000Z',
+    updated_at: '2026-01-01T08:00:00.000Z'
+  }
+];
 
 export const STAFF_USERS_SEED: import('../types').UserProfile[] = [
   {

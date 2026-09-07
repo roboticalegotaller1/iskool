@@ -4,12 +4,13 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useStudentStore, useCurrentStudentStats, useCurrentStudentAcademicLevel } from '../store/useStudentStore';
-import { useSchoolAdminStore, applyThemeCssVariables } from '../store/useSchoolAdminStore';
+import { useSchoolAdminStore, applyThemeCssVariables, resolveEffectiveSchoolId } from '../store/useSchoolAdminStore';
 import { getStudentAcademicLevelInfo } from '@/lib/academicLevels';
 import { useGamificationStore } from '../store/useGamificationStore';
 import { usePortfolioStore } from '../store/usePortfolioStore';
 import { Flame, Coins, Trophy, RefreshCw, GraduationCap, Users, User, ArrowRight, LogOut, HelpCircle, Menu, X } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { isPlatformSuperUser } from '@/types';
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
@@ -21,7 +22,13 @@ export const Header: React.FC = () => {
   const stats = useCurrentStudentStats();
   const currentAcademicLevel = useCurrentStudentAcademicLevel();
   const detailedStudents = useSchoolAdminStore(state => state.detailedStudents);
-  const schoolSettings = useSchoolAdminStore(state => state.schoolSettings);
+  const activeSchoolId = useSchoolAdminStore(state => state.activeSchoolId);
+  const institutionsList = useSchoolAdminStore(state => state.institutionsList);
+  const rawSchoolSettings = useSchoolAdminStore(state => state.schoolSettings);
+
+  const effectiveSchoolId = resolveEffectiveSchoolId(user, activeSchoolId, 'sch-jjrosseau');
+  const currentInstitution = institutionsList.find(i => i.id === effectiveSchoolId);
+  const schoolSettings = currentInstitution?.settings || rawSchoolSettings;
 
   useEffect(() => {
     if (schoolSettings?.themeColors) {
@@ -65,8 +72,9 @@ export const Header: React.FC = () => {
 
   const currentRole = getRoleFromPath();
 
-  // Super Usuario, Dueño de Empresa y Administradores pueden alternar vistas para supervisión
-  const canSwitchRoles = user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'owner';
+  // Exclusividad: Solo las 3 cuentas oficiales de Super Usuario (Directivos de ISkool) tienen conmutación global de roles
+  const isSuperUser = isPlatformSuperUser(user);
+  const canSwitchRoles = isSuperUser;
 
   const getStudentLevelLabel = (id: string) => {
     const studentProfile = detailedStudents?.find(s => s.id === id);
@@ -75,6 +83,21 @@ export const Header: React.FC = () => {
 
   // Enlaces de navegación según rol activo
   const getNavLinks = () => {
+    if (isSuperUser) {
+      return [
+        { href: '/admin', label: 'Directorio de Colegios', icon: '🏢' },
+        { href: '/teacher', label: 'Portal Docente', icon: '📖' },
+        { href: '/director', label: 'Supervisión Directiva', icon: '🏛️' },
+        { href: '/coordinator/billing', label: 'Finanzas & Nómina', icon: '💵' },
+      ];
+    }
+    if (user?.role === 'owner') {
+      return [
+        { href: '/admin', label: 'Presidencia Institucional', icon: '🏛️' },
+        { href: '/director', label: 'Supervisión Directiva', icon: '📊' },
+        { href: '/coordinator/billing', label: 'Finanzas & Nómina', icon: '💵' },
+      ];
+    }
     if (currentRole === 'student') {
       return [
         { href: '/student', label: 'Misiones', icon: '🗺️' },
@@ -105,6 +128,12 @@ export const Header: React.FC = () => {
         { href: '/teacher/grades', label: 'Supervisión SEP', icon: '⭐' },
       ];
     }
+    if (user?.role === 'billing' || pathname.startsWith('/coordinator/billing') || pathname.startsWith('/coordinator/fiscal')) {
+      return [
+        { href: '/coordinator/billing', label: 'Cobranza & Finanzas', icon: '💵' },
+        { href: '/coordinator/fiscal', label: 'Facturación SAT', icon: '📑' },
+      ];
+    }
     if (currentRole === 'coordinator') {
       const links = [
         { href: '/coordinator', label: 'Control Escolar', icon: '📚' },
@@ -121,11 +150,12 @@ export const Header: React.FC = () => {
 
   // Destino del enlace institucional: Super Usuario y Dueño van a /admin, los demás a su portal específico
   const getHomeHref = () => {
-    if (canSwitchRoles) return '/admin';
+    if (isSuperUser || user?.role === 'owner') return '/admin';
     if (user?.role === 'director' || currentRole === 'director') return '/director';
     if (user?.role === 'student' || currentRole === 'student') return '/student';
     if (user?.role === 'teacher' || currentRole === 'teacher') return '/teacher';
     if (user?.role === 'parent' || currentRole === 'parent') return '/parent';
+    if (user?.role === 'billing') return '/coordinator/billing';
     if (user?.role === 'coordinator' || currentRole === 'coordinator') return '/coordinator';
     return '/login';
   };

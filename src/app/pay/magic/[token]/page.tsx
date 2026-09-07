@@ -120,7 +120,7 @@ export default async function MagicLinkPage({ params }: MagicLinkPageProps) {
               </div>
               <h2 className="text-xl font-bold text-white mb-2">Enlace No Válido</h2>
               <p className="text-sm text-slate-300 mb-6 leading-relaxed">
-                {validation.errorMessage || 'El token de seguridad proporcionado no coincide con ningún registro activo o ya fue consumido.'}
+                {validation.errorMessage || 'El enlace de seguridad proporcionado no coincide con ningún registro activo o ya ha expirado.'}
               </p>
               <div className="bg-slate-900/60 rounded-xl p-4 border border-slate-700/60 text-left text-xs text-slate-400 mb-6 flex items-start gap-2.5">
                 <HelpCircle className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />

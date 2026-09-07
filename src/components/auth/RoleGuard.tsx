@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Loader } from '@/components/Loader';
+import { isPlatformSuperUser } from '@/types';
 
 interface RoleGuardProps {
   allowedRoles: string[];
@@ -14,8 +15,9 @@ export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
 
-  // Superadministradores, Dueños/Propietarios y Administradores tienen permisos de supervisión institucional global
-  const isSuperExecutive = user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'owner');
+  // Solo los 3 Super Usuarios oficiales de ISkool tienen pase de supervisión global.
+  // Dueños de escuela (owner) y demás roles están estrictamente sujetos a allowedRoles de su módulo.
+  const isSuperExecutive = user && isPlatformSuperUser(user);
   const isAllowed = user && (isSuperExecutive || allowedRoles.includes(user.role));
 
   useEffect(() => {

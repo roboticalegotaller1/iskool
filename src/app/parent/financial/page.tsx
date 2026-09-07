@@ -8,6 +8,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { Header } from '@/components/Header';
 import { 
   CreditCard, 
   Receipt, 
@@ -272,7 +273,9 @@ export default function ParentFinancialStatementPage() {
   };
 
   return (
-    <div className="space-y-6 font-sans">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-50 font-sans">
+      <Header />
+      <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       
       {/* Encabezado del Estado de Cuenta */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
@@ -789,6 +792,7 @@ export default function ParentFinancialStatementPage() {
 
       </div>
 
+    </div>
     </div>
   );
 }

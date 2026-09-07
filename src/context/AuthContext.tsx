@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { UserProfile } from '@/types';
 import { useRouter } from 'next/navigation';
-import { STUDENTS_LIST_SEED, TEACHER_SEED, PARENT_SEED } from '@/store/seeds';
+import { STUDENTS_LIST_SEED, TEACHER_SEED, PARENT_SEED, SUPER_USERS_ISKOOL_SEED } from '@/store/seeds';
 
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 
@@ -123,7 +123,7 @@ const getDemoUser = (email: string): UserProfile => {
       id: 'usr-owner-1',
       school_id: 'sch-jjrosseau',
       first_name: 'Don Alejandro',
-      last_name: 'Vargas Robles (Dueño de Empresa)',
+      last_name: 'Vargas Robles (Dueño de Plantel UP)',
       role: 'owner',
       email: 'dueno@jjrosseau.edu.mx',
       temporary_password: 'DUE2026',
@@ -132,22 +132,38 @@ const getDemoUser = (email: string): UserProfile => {
     };
   }
 
-  // 7. Super Usuario Demo (Coincidencia exacta)
+  // 7. Cuentas Maestras de Super Usuario ISkool (Únicamente 3 Directivos de la Plataforma)
+  const matchedSuperUser = SUPER_USERS_ISKOOL_SEED.find(su => 
+    su.email.toLowerCase() === emailLower ||
+    su.id.toLowerCase() === emailLower
+  );
+  if (matchedSuperUser) {
+    return matchedSuperUser;
+  }
+
   if (
     emailLower === 'admin' || 
-    emailLower === 'admin@jjrosseau.edu.mx' || 
-    emailLower === 'admin@iskool.edu.mx'
+    emailLower === 'superadmin' ||
+    emailLower === 'admin@iskool.edu.mx' ||
+    emailLower === 'direccion@iskool.edu.mx' ||
+    emailLower === 'usr-admin-1'
   ) {
-    return {
-      id: 'usr-admin-1',
-      first_name: 'Admin',
-      last_name: '(Super Usuario)',
-      role: 'admin',
-      email: 'admin@iskool.edu.mx',
-      temporary_password: '008805',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
+    return SUPER_USERS_ISKOOL_SEED[0]; // Dirección General ISkool
+  }
+
+  if (
+    emailLower === 'tecnologia' || 
+    emailLower === 'tecnologia@iskool.edu.mx' ||
+    emailLower === 'cto@iskool.edu.mx'
+  ) {
+    return SUPER_USERS_ISKOOL_SEED[1]; // Dirección de Tecnología ISkool
+  }
+
+  if (
+    emailLower === 'pedagogia' || 
+    emailLower === 'pedagogia@iskool.edu.mx'
+  ) {
+    return SUPER_USERS_ISKOOL_SEED[2]; // Dirección Pedagógica ISkool
   }
 
   // 4. Coordinación Demo (Coincidencia exacta)
@@ -171,28 +187,96 @@ const getDemoUser = (email: string): UserProfile => {
   if (
     emailLower === TEACHER_SEED.email.toLowerCase() || 
     emailLower === 'israel.lopez@iskool.edu.mx' ||
-    emailLower === 'profesor@iskool.edu.mx'
+    emailLower === 'israel.lopez@jjrosseau.edu.mx' ||
+    emailLower === 'profesor@iskool.edu.mx' ||
+    emailLower === 'usr-teacher-1'
   ) {
     return {
       ...TEACHER_SEED,
       first_name: 'Israel',
       last_name: 'López Ángeles',
-      email: TEACHER_SEED.email,
+      email: 'israel.lopez@jjrosseau.edu.mx',
       temporary_password: '008805'
     };
   }
 
   // 6. Tutor / Padre Demo (Coincidencia exacta)
+  if (emailLower === 'israel.lopez@ejemplo.com' || emailLower === 'usr-parent-001') {
+    return {
+      id: 'usr-parent-001',
+      first_name: 'Familia',
+      last_name: 'López Mendoza (Tutor)',
+      role: 'parent',
+      email: 'israel.lopez@ejemplo.com',
+      school_id: 'sch-test-case',
+      temporary_password: 'ISkoolPassword2026!',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
   if (
     emailLower === PARENT_SEED.email.toLowerCase() ||
     emailLower === 'tutor@iskool.edu.mx' ||
-    emailLower === 'padre@iskool.edu.mx' ||
-    emailLower === 'israel.lopez@ejemplo.com'
+    emailLower === 'padre@iskool.edu.mx'
   ) {
     return PARENT_SEED;
   }
 
-  // 7. Alumnos Demo de semillas (Coincidencia exacta)
+  // 7. Alumnos Demo Específicos por Identificador o Correo
+  if (emailLower === 'lucas@iskool.edu.mx' || emailLower === 'lucas.skywalker@iskool.edu.mx' || emailLower === 'std-pa') {
+    const seed = STUDENTS_LIST_SEED.find(s => s.id === 'std-pa');
+    return seed || {
+      id: 'std-pa',
+      first_name: 'Lucas',
+      last_name: 'Skywalker',
+      role: 'student',
+      email: 'lucas@iskool.edu.mx',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (emailLower === 'elena@iskool.edu.mx' || emailLower === 'elena.rostova@iskool.edu.mx' || emailLower === 'std-sec') {
+    const seed = STUDENTS_LIST_SEED.find(s => s.id === 'std-sec');
+    return seed || {
+      id: 'std-sec',
+      first_name: 'Elena',
+      last_name: 'Rostova',
+      role: 'student',
+      email: 'elena@iskool.edu.mx',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (emailLower === 'santi@iskool.edu.mx' || emailLower === 'santi.gómez@iskool.edu.mx' || emailLower === 'santi.gomez@iskool.edu.mx' || emailLower === 'std-pb') {
+    const seed = STUDENTS_LIST_SEED.find(s => s.id === 'std-pb');
+    return seed || {
+      id: 'std-pb',
+      first_name: 'Santi',
+      last_name: 'Gómez',
+      role: 'student',
+      email: 'santi@iskool.edu.mx',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (emailLower === 'mateo@iskool.edu.mx' || emailLower === 'mateo.díaz@iskool.edu.mx' || emailLower === 'mateo.diaz@iskool.edu.mx' || emailLower === 'std-prep') {
+    const seed = STUDENTS_LIST_SEED.find(s => s.id === 'std-prep');
+    return seed || {
+      id: 'std-prep',
+      first_name: 'Mateo',
+      last_name: 'Díaz',
+      role: 'student',
+      email: 'mateo@iskool.edu.mx',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  // 8. Alumnos Demo de semillas (Coincidencia general)
   const matchedSeedStudent = STUDENTS_LIST_SEED.find(s => 
     s.email.toLowerCase() === emailLower || 
     s.id.toLowerCase() === emailLower
@@ -243,6 +327,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (typeof window !== 'undefined') {
             localStorage.setItem('iskool_session_user', JSON.stringify(restoredUser));
           }
+          useSchoolAdminStore.getState().syncUserSchool(restoredUser);
           return;
         }
 
@@ -254,6 +339,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               const parsed = JSON.parse(saved);
               if (parsed && parsed.id && parsed.role) {
                 setUser(parsed);
+                useSchoolAdminStore.getState().syncUserSchool(parsed);
                 setSession({
                   access_token: 'mock-token-restored-offline-session',
                   user: {
@@ -296,10 +382,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } : null);
     });
 
+    // Sincronización automática reactiva de escuela según el usuario autenticado
+    useSchoolAdminStore.getState().syncUserSchool(user);
+
     return () => {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Sincronizar store administrativo cada vez que cambie el usuario activo
+  useEffect(() => {
+    useSchoolAdminStore.getState().syncUserSchool(user);
+  }, [user]);
 
   const login = async (email: string, userPassword?: string): Promise<{ success: boolean; user?: UserProfile; error?: string }> => {
     setLoading(true);
@@ -315,13 +409,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (userPassword && userPassword.trim().length > 0) {
       const isTeacherSeed = resolvedUser.role === 'teacher' && (resolvedUser.id === 'usr-teacher-1' || resolvedUser.email === TEACHER_SEED.email);
-      const isAdmin = resolvedUser.role === 'admin' || resolvedUser.id === 'usr-admin-1';
+      const isSuperUser = resolvedUser.role === 'admin' || resolvedUser.role === 'superadmin' || resolvedUser.id.startsWith('usr-superadmin') || resolvedUser.id === 'usr-admin-1';
       
-      if (isAdmin && userPassword !== '008805' && userPassword !== 'ISkoolPassword2026!') {
+      if (isSuperUser && userPassword !== '008805' && userPassword !== 'ISkoolPassword2026!') {
         setLoading(false);
         return {
           success: false,
-          error: 'Contraseña incorrecta para Administrador. Introduce la clave asignada (008805).'
+          error: 'Contraseña incorrecta para Super Usuario ISkool. Introduce la clave asignada (008805).'
         };
       }
 
@@ -391,6 +485,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (typeof window !== 'undefined') {
         localStorage.setItem('iskool_session_user', JSON.stringify(finalUser));
       }
+      useSchoolAdminStore.getState().syncUserSchool(finalUser);
 
       setLoading(false);
       return { success: true, user: finalUser };
@@ -400,6 +495,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (typeof window !== 'undefined') {
         localStorage.setItem('iskool_session_user', JSON.stringify(resolvedUser));
       }
+      useSchoolAdminStore.getState().syncUserSchool(resolvedUser);
       setSession({
         access_token: 'mock-token-free-access-contingency',
         user: {
@@ -422,7 +518,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.auth.signOut().catch(() => null);
     if (typeof window !== 'undefined') {
       localStorage.removeItem('iskool_session_user');
+      localStorage.removeItem('auth_current_user');
     }
+    useSchoolAdminStore.getState().syncUserSchool(null);
     setSession(null);
     setUser(null);
     setLoading(false);

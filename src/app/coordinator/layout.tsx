@@ -11,7 +11,7 @@ export default function CoordinatorLayout({
 }) {
   return (
     <Suspense fallback={<Loader message="Cargando coordinación escolar..." />}>
-      <RoleGuard allowedRoles={['coordinator']}>
+      <RoleGuard allowedRoles={['coordinator', 'billing']}>
         {children}
       </RoleGuard>
     </Suspense>

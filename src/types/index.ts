@@ -6,16 +6,46 @@
 export type UserRole = 'owner' | 'superadmin' | 'admin' | 'director' | 'coordinator' | 'billing' | 'teacher' | 'student' | 'parent' | 'tutor';
 
 export const ROLE_HIERARCHY_LEVEL: Record<UserRole, number> = {
-  owner: 1,
-  superadmin: 1,
-  admin: 1,
-  director: 2,
-  coordinator: 3,
-  billing: 3,
-  teacher: 4,
-  student: 5,
-  parent: 5,
-  tutor: 5
+  superadmin: 1, // Directivos de ISkool (Super Usuario Global de Plataforma)
+  admin: 1,      // Directivos de ISkool (Super Usuario Global de Plataforma)
+  owner: 2,      // Dueño de Escuela / Presidencia (Restringido exclusivamente a su school_id)
+  director: 3,   // Director General de Plantel
+  coordinator: 4,
+  billing: 4,
+  teacher: 5,
+  student: 6,
+  parent: 6,
+  tutor: 6
+};
+
+/**
+ * Predicado de Super Usuario de Plataforma:
+ * Solo aplica a las 3 cuentas de directivos de ISkool (superadmin / admin global).
+ * Los dueños de escuela hacia abajo quedan estrictamente circunscritos a su propio sistema escolar.
+ */
+export const isPlatformSuperUser = (userProfile?: { role?: string; email?: string } | null): boolean => {
+  if (!userProfile) return false;
+  return userProfile.role === 'superadmin' || userProfile.role === 'admin';
+};
+
+/**
+ * Resolver de Escuela Eficaz (Single Source of Truth para Aislamiento Multi-Colegio):
+ * Garantiza cero desincronización:
+ * 1. Para no superusuarios con school_id asignado, devuelve de forma inmutable su propio colegio.
+ * 2. Para superusuarios, respeta la escuela activa seleccionada en el conmutador de plataforma.
+ */
+export const resolveEffectiveSchoolId = (
+  userProfile?: { role?: string; email?: string; school_id?: string } | null,
+  activeSchoolId?: string | null,
+  fallback: string = 'sch-jjrosseau'
+): string => {
+  if (userProfile && !isPlatformSuperUser(userProfile) && userProfile.school_id) {
+    return userProfile.school_id === 'sch-jjr' ? 'sch-jjrosseau' : userProfile.school_id;
+  }
+  if (activeSchoolId) {
+    return activeSchoolId === 'sch-jjr' ? 'sch-jjrosseau' : activeSchoolId;
+  }
+  return fallback;
 };
 
 /**

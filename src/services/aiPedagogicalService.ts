@@ -6,7 +6,7 @@
  */
 
 import { useStudentStore } from '@/store/useStudentStore';
-import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
+import { useSchoolAdminStore, resolveEffectiveSchoolId } from '@/store/useSchoolAdminStore';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { getStudentAcademicLevelInfo } from '@/lib/academicLevels';
 import { supabase } from '@/lib/supabaseClient';
@@ -62,8 +62,15 @@ export class AIPedagogicalService {
     const studentStore = useStudentStore.getState();
     const adminStore = useSchoolAdminStore.getState();
     
-    // Obtener plantel activo desde StoreAdministracion (useSchoolAdminStore)
-    const currentSchoolId = adminStore.activeSchoolId || 'sch-jjrosseau';
+    // Obtener plantel activo desde StoreAdministracion (useSchoolAdminStore) con protección multi-colegio
+    let sessionUser: any = null;
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const stored = localStorage.getItem('iskool_session_user') || localStorage.getItem('auth_current_user');
+        if (stored) sessionUser = JSON.parse(stored);
+      }
+    } catch (e) {}
+    const currentSchoolId = resolveEffectiveSchoolId(sessionUser, adminStore.activeSchoolId, 'sch-jjrosseau');
     const activeId = studentId || studentStore.activeStudentId || 'std-pa';
 
     // 1. Buscar si el alumno está registrado en el plantel activo

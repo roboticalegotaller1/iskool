@@ -72,7 +72,7 @@ import {
   getSchoolPayroll,
   getSchoolBillingRecords
 } from '@/store/useSchoolAdminStore';
-import { DetailedStudent, Subject, GroupAnnualPlan, SyllabusTopic, Campus, Group, canManageTargetRole, StaffPayrollRecord } from '@/types';
+import { DetailedStudent, Subject, GroupAnnualPlan, SyllabusTopic, Campus, Group, canManageTargetRole, StaffPayrollRecord, isPlatformSuperUser } from '@/types';
 
 type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll';
 
@@ -123,6 +123,13 @@ export default function SuperUserAdminPage() {
     adjustSalary
   } = useSchoolAdminStore();
 
+  // Verificación estricta de Super Usuario ISkool (Nivel 1) vs Dueño de Colegio (Nivel 2)
+  const isSuperUser = useMemo(() => isPlatformSuperUser(user), [user]);
+  const effectiveSchoolId = useMemo(() => {
+    if (isSuperUser) return activeSchoolId;
+    return user?.school_id || 'sch-jjrosseau';
+  }, [isSuperUser, activeSchoolId, user]);
+
   useEffect(() => {
     if (!authLoading) {
       if (!user) {
@@ -131,9 +138,20 @@ export default function SuperUserAdminPage() {
         router.push('/student');
       } else if (user.role === 'teacher') {
         router.push('/teacher');
+      } else if (!isSuperUser && user.role !== 'owner') {
+        router.push('/login');
       }
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, isSuperUser]);
+
+  // Sincronización y candado para dueños de colegio: nunca pueden operar fuera de su school_id
+  useEffect(() => {
+    if (!authLoading && user && !isSuperUser && user.school_id) {
+      if (activeSchoolId !== user.school_id) {
+        selectSchool(user.school_id);
+      }
+    }
+  }, [authLoading, user, isSuperUser, activeSchoolId, selectSchool]);
 
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [selectedCampus, setSelectedCampus] = useState<string>('all');
@@ -264,7 +282,7 @@ export default function SuperUserAdminPage() {
     first_name: '',
     last_name: '',
     role: 'director' as 'director' | 'coordinator' | 'billing',
-    school_id: activeSchoolId || 'sch-jjrosseau',
+    school_id: effectiveSchoolId || 'sch-jjrosseau',
     campus_name: '',
     email: '',
     phone: '',
@@ -356,10 +374,10 @@ export default function SuperUserAdminPage() {
     return Math.max(fromTeachers, fromInstitutions, 345350);
   }, [teachersList, institutionsList]);
 
-  // Colegio Activo
+  // Colegio Activo (Aislamiento Estricto: para dueños siempre es su colegio asignado)
   const currentSchool = useMemo(() => {
-    return (institutionsList || []).find(i => i.id === activeSchoolId) || null;
-  }, [institutionsList, activeSchoolId]);
+    return (institutionsList || []).find(i => i.id === effectiveSchoolId) || null;
+  }, [institutionsList, effectiveSchoolId]);
 
   // Estado para Edición de Ficha Institucional en Tab Config
   const [instEditForm, setInstEditForm] = useState({
@@ -398,7 +416,7 @@ export default function SuperUserAdminPage() {
         logoUrl: schoolSettings.logoUrl || ''
       });
     }
-  }, [currentSchool, schoolSettings, activeSchoolId]);
+  }, [currentSchool, schoolSettings, effectiveSchoolId]);
 
   // Manejo de Guardado de Ficha Institucional
   const handleSaveInstitutionalInfo = (e: React.FormEvent) => {
@@ -408,7 +426,7 @@ export default function SuperUserAdminPage() {
       return;
     }
 
-    const schoolId = activeSchoolId || 'sch-jjrosseau';
+    const schoolId = effectiveSchoolId || 'sch-jjrosseau';
     updateInstitution(schoolId, {
       name: instEditForm.name.trim(),
       cct: instEditForm.cct.trim().toUpperCase(),
@@ -492,7 +510,7 @@ export default function SuperUserAdminPage() {
       address: newCampusForm.address || 'Ciudad de México',
       phone: newCampusForm.phone || '55-4160-8800',
       grades: assignedGrades,
-      school_id: activeSchoolId || 'sch-jjrosseau'
+      school_id: effectiveSchoolId || 'sch-jjrosseau'
     });
 
     showToast(`🏢 ¡Plantel "${newCampusForm.name}" creado con éxito!`);
@@ -517,7 +535,7 @@ export default function SuperUserAdminPage() {
       campus_name: selectedCampusDetail.name,
       campus_id: selectedCampusDetail.id,
       level: selectedCampusDetail.level,
-      school_id: activeSchoolId || 'sch-jjrosseau'
+      school_id: effectiveSchoolId || 'sch-jjrosseau'
     });
 
     showToast(`✅ Grupo "${newGroupForm.grade} ${newGroupForm.name.toUpperCase().trim()}" creado en ${selectedCampusDetail.name}`);
@@ -552,29 +570,29 @@ export default function SuperUserAdminPage() {
 
   // Listas con Particionado y Aislamiento Escolar Estricto
   const schoolCampuses = useMemo(() => {
-    return getSchoolCampuses(campusesList, activeSchoolId);
-  }, [campusesList, activeSchoolId]);
+    return getSchoolCampuses(campusesList, effectiveSchoolId);
+  }, [campusesList, effectiveSchoolId]);
 
   const schoolStudents = useMemo(() => {
-    return getSchoolStudents(detailedStudents, activeSchoolId, schoolCampuses);
-  }, [detailedStudents, activeSchoolId, schoolCampuses]);
+    return getSchoolStudents(detailedStudents, effectiveSchoolId, schoolCampuses);
+  }, [detailedStudents, effectiveSchoolId, schoolCampuses]);
 
   const schoolTeachers = useMemo(() => {
-    return getSchoolTeachers(teachersList, activeSchoolId, schoolCampuses);
-  }, [teachersList, activeSchoolId, schoolCampuses]);
+    return getSchoolTeachers(teachersList, effectiveSchoolId, schoolCampuses);
+  }, [teachersList, effectiveSchoolId, schoolCampuses]);
 
   const schoolGroups = useMemo(() => {
-    return getSchoolGroups(groupsList, activeSchoolId, schoolCampuses);
-  }, [groupsList, activeSchoolId, schoolCampuses]);
+    return getSchoolGroups(groupsList, effectiveSchoolId, schoolCampuses);
+  }, [groupsList, effectiveSchoolId, schoolCampuses]);
 
   const schoolSubjects = useMemo(() => {
-    return getSchoolSubjects(subjectsList, activeSchoolId, schoolCampuses);
-  }, [subjectsList, activeSchoolId, schoolCampuses]);
+    return getSchoolSubjects(subjectsList, effectiveSchoolId, schoolCampuses);
+  }, [subjectsList, effectiveSchoolId, schoolCampuses]);
 
   // Personal Administrativo Filtrado
   const schoolStaff = useMemo(() => {
-    return getSchoolStaff(staffUsers, activeSchoolId);
-  }, [staffUsers, activeSchoolId]);
+    return getSchoolStaff(staffUsers, effectiveSchoolId);
+  }, [staffUsers, effectiveSchoolId]);
 
   const filteredStaffList = useMemo(() => {
     return schoolStaff.filter(s => {
@@ -592,12 +610,12 @@ export default function SuperUserAdminPage() {
 
   // Nómina y Finanzas del Colegio (Supervisión del Dueño)
   const schoolPayroll = useMemo(() => {
-    return getSchoolPayroll(storeStaffPayroll, activeSchoolId, selectedCampus);
-  }, [storeStaffPayroll, activeSchoolId, selectedCampus]);
+    return getSchoolPayroll(storeStaffPayroll, effectiveSchoolId, selectedCampus);
+  }, [storeStaffPayroll, effectiveSchoolId, selectedCampus]);
 
   const schoolBilling = useMemo(() => {
-    return getSchoolBillingRecords(storeBillingRecords, activeSchoolId, schoolStudents);
-  }, [storeBillingRecords, activeSchoolId, schoolStudents]);
+    return getSchoolBillingRecords(storeBillingRecords, effectiveSchoolId, schoolStudents);
+  }, [storeBillingRecords, effectiveSchoolId, schoolStudents]);
 
   const filteredPayroll = useMemo(() => {
     return schoolPayroll.filter(p => {
@@ -700,7 +718,7 @@ export default function SuperUserAdminPage() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Nomina_Personal_${activeSchoolId || 'colegio'}_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `Nomina_Personal_${effectiveSchoolId || 'colegio'}_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -740,7 +758,7 @@ export default function SuperUserAdminPage() {
       return;
     }
 
-    const targetSchoolId = newStaffForm.school_id || activeSchoolId || 'sch-jjrosseau';
+    const targetSchoolId = (!isSuperUser ? user?.school_id : (newStaffForm.school_id || effectiveSchoolId)) || 'sch-jjrosseau';
     const schoolObj = institutionsList.find(i => i.id === targetSchoolId);
     const domain = getSchoolEmailDomain(schoolObj);
     const emailPrefix = newStaffForm.email.trim() ? newStaffForm.email.trim().split('@')[0] : `${newStaffForm.first_name.toLowerCase().replace(/[^a-z0-9]/g, '')}.${newStaffForm.last_name.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
@@ -764,7 +782,7 @@ export default function SuperUserAdminPage() {
       first_name: '',
       last_name: '',
       role: 'director',
-      school_id: activeSchoolId || institutionsList[0]?.id || 'sch-jjrosseau',
+      school_id: effectiveSchoolId || institutionsList[0]?.id || 'sch-jjrosseau',
       campus_name: '',
       email: '',
       phone: '',
@@ -860,9 +878,9 @@ export default function SuperUserAdminPage() {
       return;
     }
 
-    const domain = activeSchoolId === 'sch-test-case' 
+    const domain = effectiveSchoolId === 'sch-test-case' 
       ? 'sandbox.iskool.edu.mx' 
-      : activeSchoolId === 'sch-montessori' 
+      : effectiveSchoolId === 'sch-montessori' 
       ? 'montessoridelvalle.edu.mx' 
       : 'jjrosseau.edu.mx';
 
@@ -891,7 +909,7 @@ export default function SuperUserAdminPage() {
       campus_id: campusObj?.id || selectedCampusDetail?.id || 'cmp-pri-jardines',
       assigned_subjects: assignedSubs,
       assigned_groups: assignedGrps,
-      school_id: activeSchoolId || 'sch-jjrosseau',
+      school_id: effectiveSchoolId || 'sch-jjrosseau',
       temporary_password: tempPassword
     });
 
@@ -945,10 +963,11 @@ export default function SuperUserAdminPage() {
       return;
     }
 
+    const targetSchoolId = effectiveSchoolId === 'sch-jjrosseau' ? 'sch-jjr' : (effectiveSchoolId || 'sch-jjrosseau');
     const sepCode = newWorkshopForm.sep_code.trim() || `OPT-${newWorkshopForm.name.substring(0, 3).toUpperCase()}`;
 
     createSubject({
-      school_id: 'sch-jjr',
+      school_id: targetSchoolId,
       level_grade_id: 'all',
       name: newWorkshopForm.name.trim(),
       sep_code: sepCode,
@@ -1046,8 +1065,10 @@ export default function SuperUserAdminPage() {
     e.preventDefault();
     if (!newSubjectForm.name) return;
 
+    const targetSchoolId = effectiveSchoolId === 'sch-jjrosseau' ? 'sch-jjr' : (effectiveSchoolId || 'sch-jjrosseau');
+
     createSubject({
-      school_id: 'sch-jjr',
+      school_id: targetSchoolId,
       level_grade_id: newSubjectForm.level_grade_id,
       name: newSubjectForm.name,
       sep_code: newSubjectForm.sep_code || `CURR-${newSubjectForm.name.substring(0, 3).toUpperCase()}`,
@@ -1307,8 +1328,8 @@ export default function SuperUserAdminPage() {
         </div>
       )}
 
-      {/* VISTA 1: DIRECTORIO CENTRAL MULTI-COLEGIOS (SI activeSchoolId ES NULL) */}
-      {!activeSchoolId ? (
+      {/* VISTA 1: DIRECTORIO CENTRAL MULTI-COLEGIOS (EXCLUSIVO PARA DIRECTIVOS SUPER USUARIOS ISKOOL) */}
+      {(!activeSchoolId && isSuperUser) ? (
         <div className="flex-1 flex flex-col">
           {/* MULTI-SCHOOL GLOBAL HEADER */}
           <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-xl border-b border-white/10 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
@@ -1318,9 +1339,9 @@ export default function SuperUserAdminPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-lg font-black tracking-tight text-white">Presidencia Corporativa & Directorio Escolar</h1>
+                  <h1 className="text-lg font-black tracking-tight text-white">Directorio Institucional de Colegios</h1>
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                    🏢 DUEÑO DE EMPRESA · SUPER USUARIO
+                    🏢 SUPER USUARIO · DIRECTIVOS ISKOOL
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">
@@ -1625,13 +1646,15 @@ export default function SuperUserAdminPage() {
           {/* SUPER USER HEADER DENTRO DEL COLEGIO */}
           <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-xl border-b border-white/10 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              {/* Botón Volver al Directorio */}
-              <button
-                onClick={() => selectSchool(null)}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 border border-white/10 transition-all cursor-pointer hover:scale-102"
-              >
-                <ChevronLeft className="h-4 w-4 text-indigo-400" /> Directorio de Colegios
-              </button>
+              {/* Botón Volver al Directorio: Exclusivo Super Usuario ISkool */}
+              {isSuperUser && (
+                <button
+                  onClick={() => selectSchool(null)}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 border border-white/10 transition-all cursor-pointer hover:scale-102"
+                >
+                  <ChevronLeft className="h-4 w-4 text-indigo-400" /> Directorio de Colegios
+                </button>
+              )}
 
               <div className="flex items-center gap-3">
                 {/* Logo Escolar */}
@@ -1666,13 +1689,19 @@ export default function SuperUserAdminPage() {
                     <h1 className="text-lg font-black tracking-tight text-white">
                       {currentSchool?.name || schoolSettings.name}
                     </h1>
-                    {currentSchool?.isTestCase ? (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                        🧪 TEST CASE / SANDBOX
-                      </span>
+                    {isSuperUser ? (
+                      currentSchool?.isTestCase ? (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                          🧪 TEST CASE / SANDBOX
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                          SUPER USUARIO · DIRECTIVO ISKOOL
+                        </span>
+                      )
                     ) : (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                        SUPER USUARIO · DCTA 2026
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        PRESIDENCIA INSTITUCIONAL · COLEGIO AUTÓNOMO
                       </span>
                     )}
                   </div>
@@ -1689,22 +1718,30 @@ export default function SuperUserAdminPage() {
               </div>
             </div>
 
-            {/* Selector Rápido de Colegio y Botones de Acción */}
+            {/* Selector Rápido de Colegio (SOLO SUPER USUARIOS) o Badge Institucional Aislado (DUEÑO) */}
             <div className="flex items-center gap-2.5">
-              <div className="flex items-center gap-1.5 bg-slate-800/80 border border-white/10 px-3 py-1.5 rounded-xl text-xs">
-                <span className="text-slate-400 font-bold">Colegio:</span>
-                <select
-                  value={activeSchoolId || ''}
-                  onChange={(e) => selectSchool(e.target.value === 'none' ? null : e.target.value)}
-                  className="bg-transparent text-white font-black outline-none cursor-pointer"
-                >
-                  {institutionsList.map(i => (
-                    <option key={i.id} value={i.id} className="bg-slate-900 text-white">
-                      {i.name} {i.isTestCase ? '(Sandbox)' : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {isSuperUser ? (
+                <div className="flex items-center gap-1.5 bg-slate-800/80 border border-white/10 px-3 py-1.5 rounded-xl text-xs">
+                  <span className="text-slate-400 font-bold">Colegio:</span>
+                  <select
+                    value={activeSchoolId || ''}
+                    onChange={(e) => selectSchool(e.target.value === 'none' ? null : e.target.value)}
+                    className="bg-transparent text-white font-black outline-none cursor-pointer"
+                  >
+                    {institutionsList.map(i => (
+                      <option key={i.id} value={i.id} className="bg-slate-900 text-white">
+                        {i.name} {i.isTestCase ? '(Sandbox)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 bg-slate-800/80 border border-emerald-500/30 px-3.5 py-1.5 rounded-xl text-xs">
+                  <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                  <span className="text-slate-300 font-bold">Institución:</span>
+                  <span className="text-white font-black">{currentSchool?.name || schoolSettings.name}</span>
+                </div>
+              )}
 
               <button
                 onClick={exportCredentialsCSV}
@@ -1767,7 +1804,7 @@ export default function SuperUserAdminPage() {
                     : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                 }`}
               >
-                <Users className="h-4 w-4" /> Profesores & Tokens IA ({schoolTeachers.length})
+                <Users className="h-4 w-4" /> {isSuperUser ? `Profesores & Tokens IA (${schoolTeachers.length})` : `Plantilla Docente (${schoolTeachers.length})`}
               </button>
 
               <button
@@ -1869,27 +1906,53 @@ export default function SuperUserAdminPage() {
                 </div>
               </div>
 
-              <div className="p-5 rounded-2xl bg-slate-900 border border-white/10 shadow-lg flex flex-col justify-between hover:border-indigo-500/40 transition-all">
-                <div className="flex items-center justify-between text-slate-400">
-                  <span className="text-xs font-bold uppercase tracking-wider">Consumo de Tokens IA</span>
-                  <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400">
-                    <Cpu className="h-5 w-5" />
+              {isSuperUser ? (
+                <div className="p-5 rounded-2xl bg-slate-900 border border-white/10 shadow-lg flex flex-col justify-between hover:border-indigo-500/40 transition-all">
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span className="text-xs font-bold uppercase tracking-wider">Consumo de Tokens IA (Super Usuario)</span>
+                    <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400">
+                      <Cpu className="h-5 w-5" />
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-3xl font-black text-purple-400">
+                        {((currentSchool?.aiTokensConsumed || (currentSchool?.isTestCase ? 48200 : (currentSchool?.id === 'sch-jjrosseau' ? 345350 : 0)))).toLocaleString()}
+                      </span>
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                        ≈ ${(((currentSchool?.aiTokensConsumed || (currentSchool?.isTestCase ? 48200 : (currentSchool?.id === 'sch-jjrosseau' ? 345350 : 0)))) * 0.000015).toFixed(2)} MXN
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Equiv. comercial: <strong className="text-slate-200">${(((currentSchool?.aiTokensConsumed || (currentSchool?.isTestCase ? 48200 : (currentSchool?.id === 'sch-jjrosseau' ? 345350 : 0)))) * 0.000015).toFixed(2)} MXN</strong> ($0.80 USD/1M tokens)
+                    </p>
                   </div>
                 </div>
-                <div className="mt-3">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-3xl font-black text-purple-400">
-                      {((currentSchool?.aiTokensConsumed || (currentSchool?.isTestCase ? 48200 : (currentSchool?.id === 'sch-jjrosseau' ? 345350 : 0)))).toLocaleString()}
-                    </span>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                      ≈ ${(((currentSchool?.aiTokensConsumed || (currentSchool?.isTestCase ? 48200 : (currentSchool?.id === 'sch-jjrosseau' ? 345350 : 0)))) * 0.000015).toFixed(2)} MXN
-                    </span>
+              ) : (
+                <div className="p-5 rounded-2xl bg-slate-900 border border-white/10 shadow-lg flex flex-col justify-between hover:border-emerald-500/40 transition-all">
+                  <div className="flex items-center justify-between text-slate-400">
+                    <span className="text-xs font-bold uppercase tracking-wider">Cobranza de Colegiaturas</span>
+                    <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+                      <DollarSign className="h-5 w-5" />
+                    </div>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    Equiv. comercial: <strong className="text-slate-200">${(((currentSchool?.aiTokensConsumed || (currentSchool?.isTestCase ? 48200 : (currentSchool?.id === 'sch-jjrosseau' ? 345350 : 0)))) * 0.000015).toFixed(2)} MXN</strong> ($0.80 USD/1M tokens)
-                  </p>
+                  <div className="mt-3">
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-3xl font-black text-emerald-400">
+                        ${payrollMetrics.totalTuitionIncome.toLocaleString()} <span className="text-xs font-bold text-slate-400">MXN</span>
+                      </span>
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                        {payrollMetrics.totalTuitionIncome + payrollMetrics.pendingTuitionIncome > 0
+                          ? Math.round((payrollMetrics.totalTuitionIncome / (payrollMetrics.totalTuitionIncome + payrollMetrics.pendingTuitionIncome)) * 100)
+                          : 100}% Al Corriente
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Pendiente por recaudar: <strong className="text-amber-300">${payrollMetrics.pendingTuitionIncome.toLocaleString()} MXN</strong>
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="p-5 rounded-2xl bg-slate-900 border border-white/10 shadow-lg flex flex-col justify-between hover:border-indigo-500/40 transition-all">
                 <div className="flex items-center justify-between text-slate-400">
@@ -2085,10 +2148,10 @@ export default function SuperUserAdminPage() {
                       <th className="p-4">Profesor</th>
                       <th className="p-4">Plantel Asignado</th>
                       <th className="p-4">Materias & Grupos</th>
-                      <th className="p-4 text-center">Tokens IA Usados</th>
+                      <th className="p-4 text-center">{isSuperUser ? 'Tokens IA Usados' : 'Planeaciones Curriculares'}</th>
                       <th className="p-4 text-center">Contraseña Acceso</th>
                       <th className="p-4 text-center">Estado</th>
-                      <th className="p-4 text-right">Acciones de Super Usuario</th>
+                      <th className="p-4 text-right">{isSuperUser ? 'Acciones de Super Usuario' : 'Acciones de Control'}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5 text-slate-200">
@@ -2117,14 +2180,25 @@ export default function SuperUserAdminPage() {
                             </div>
                           </td>
                           <td className="p-4 text-center font-mono">
-                            <div className="flex flex-col items-center gap-0.5">
-                              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-purple-500/15 text-purple-300 border border-purple-500/30">
-                                {tokens.toLocaleString()} tokens
-                              </span>
-                              <span className="text-[10px] text-emerald-400 font-semibold">
-                                ≈ ${(tokens * 0.000015).toFixed(2)} MXN
-                              </span>
-                            </div>
+                            {isSuperUser ? (
+                              <div className="flex flex-col items-center gap-0.5">
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                                  {tokens.toLocaleString()} tokens
+                                </span>
+                                <span className="text-[10px] text-emerald-400 font-semibold">
+                                  ≈ ${(tokens * 0.000015).toFixed(2)} MXN
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center gap-0.5">
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                                  {Math.max(1, Math.round((tokens || 15000) / 15000))} Plan(es)
+                                </span>
+                                <span className="text-[10px] text-slate-400 font-medium">
+                                  Bóveda Curricular SEP
+                                </span>
+                              </div>
+                            )}
                           </td>
                           <td className="p-4 text-center font-mono">
                             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 border border-white/10 text-xs font-bold text-amber-400">
@@ -2396,7 +2470,7 @@ export default function SuperUserAdminPage() {
                       first_name: '',
                       last_name: '',
                       role: 'director',
-                      school_id: activeSchoolId || institutionsList[0]?.id || 'sch-jjrosseau',
+                      school_id: effectiveSchoolId || institutionsList[0]?.id || 'sch-jjrosseau',
                       campus_name: 'Dirección General de Plantel',
                       email: '',
                       phone: '55-4160-8800',
@@ -2926,17 +3000,24 @@ export default function SuperUserAdminPage() {
                         <label className="text-xs font-bold text-slate-300 block mb-1">
                           Colegio Asignado *
                         </label>
-                        <select
-                          value={newStaffForm.school_id}
-                          onChange={(e) => setNewStaffForm(prev => ({ ...prev, school_id: e.target.value }))}
-                          className="w-full bg-slate-950/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
-                        >
-                          {institutionsList.map(inst => (
-                            <option key={inst.id} value={inst.id} className="bg-slate-900 text-white">
-                              {inst.name}
-                            </option>
-                          ))}
-                        </select>
+                        {isSuperUser ? (
+                          <select
+                            value={newStaffForm.school_id}
+                            onChange={(e) => setNewStaffForm(prev => ({ ...prev, school_id: e.target.value }))}
+                            className="w-full bg-slate-950/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
+                          >
+                            {institutionsList.map(inst => (
+                              <option key={inst.id} value={inst.id} className="bg-slate-900 text-white">
+                                {inst.name}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <div className="w-full bg-slate-950/50 border border-emerald-500/30 rounded-xl px-3 py-2 text-xs text-slate-200 font-bold flex items-center gap-1.5">
+                            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                            <span className="truncate">{currentSchool?.name || schoolSettings.name} (Tu Institución)</span>
+                          </div>
+                        )}
                       </div>
 
                       <div>
@@ -2993,12 +3074,12 @@ export default function SuperUserAdminPage() {
                           </label>
                           <div className="flex items-center gap-2">
                             <span className="text-[10px] font-mono text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">
-                              @{getSchoolEmailDomain(institutionsList.find(i => i.id === (newStaffForm.school_id || activeSchoolId || 'sch-jjrosseau')))}
+                              @{getSchoolEmailDomain(institutionsList.find(i => i.id === (newStaffForm.school_id || effectiveSchoolId || 'sch-jjrosseau')))}
                             </span>
                             <button
                               type="button"
                               onClick={() => {
-                                const targetSchoolId = newStaffForm.school_id || activeSchoolId || 'sch-jjrosseau';
+                                const targetSchoolId = (!isSuperUser ? user?.school_id : (newStaffForm.school_id || effectiveSchoolId)) || 'sch-jjrosseau';
                                 const schoolObj = institutionsList.find(i => i.id === targetSchoolId);
                                 const domain = getSchoolEmailDomain(schoolObj);
                                 if (newStaffForm.first_name) {
@@ -3016,7 +3097,7 @@ export default function SuperUserAdminPage() {
                           type="email"
                           value={newStaffForm.email}
                           onChange={(e) => setNewStaffForm(prev => ({ ...prev, email: e.target.value }))}
-                          placeholder={`usuario@${getSchoolEmailDomain(institutionsList.find(i => i.id === (newStaffForm.school_id || activeSchoolId || 'sch-jjrosseau')))}`}
+                          placeholder={`usuario@${getSchoolEmailDomain(institutionsList.find(i => i.id === (newStaffForm.school_id || effectiveSchoolId || 'sch-jjrosseau')))}`}
                           className="w-full bg-slate-950/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
                         />
                       </div>

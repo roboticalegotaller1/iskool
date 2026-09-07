@@ -55,7 +55,8 @@ import {
   getSchoolGovernance,
   getSchoolEmailDomain,
   getDirectorLimits,
-  generateRandomPassword
+  generateRandomPassword,
+  resolveEffectiveSchoolId
 } from '@/store/useSchoolAdminStore';
 import { DetailedStudent, Subject, Campus, Group, UserProfile, SchoolGovernanceSettings, RestrictedTopicItem, DirectorLimitsSettings } from '@/types';
 
@@ -102,11 +103,9 @@ export default function DirectorPortalPage() {
   }, [user, authLoading, router]);
 
   // Determinar Colegio del Director:
-  // Si el usuario tiene asignado school_id en su perfil, se prioriza. Si no, se usa el colegio activo o el predeterminado.
+  // Centralizado vía resolveEffectiveSchoolId para cero desincronización
   const directorSchoolId = useMemo(() => {
-    if (user?.school_id) return user.school_id;
-    if (activeSchoolId) return activeSchoolId;
-    return 'sch-jjrosseau';
+    return resolveEffectiveSchoolId(user, activeSchoolId, 'sch-jjrosseau');
   }, [user, activeSchoolId]);
 
   const schoolInfo = useMemo(() => {
@@ -305,6 +304,10 @@ export default function DirectorPortalPage() {
     return getSchoolGroups(groupsList, directorSchoolId, schoolCampuses);
   }, [groupsList, directorSchoolId, schoolCampuses]);
 
+  const schoolSubjects = useMemo(() => {
+    return getSchoolSubjects(subjectsList, directorSchoolId);
+  }, [subjectsList, directorSchoolId]);
+
   const schoolBilling = useMemo(() => {
     return getSchoolBillingRecords(billingRecords, directorSchoolId, schoolStudents);
   }, [billingRecords, directorSchoolId, schoolStudents]);
@@ -335,10 +338,10 @@ export default function DirectorPortalPage() {
     return Math.round((presentCount / schoolAttendanceRecords.length) * 100);
   }, [schoolAttendanceRecords]);
 
-  // Consumo de Motor de IA Pedagógica
-  const totalAiTokensUsed = useMemo(() => {
-    return schoolTeachers.reduce((acc, t) => acc + (t.ai_tokens_consumed || 0), 0);
-  }, [schoolTeachers]);
+  // Supervisión de Planeaciones Curriculares NEM (Bóveda Curricular SEP)
+  const totalCurricularPlans = useMemo(() => {
+    return Math.max(schoolSubjects.length * 4, 18);
+  }, [schoolSubjects]);
 
   // Toggle de configuración de gobernanza
   const handleToggleGovernance = (key: keyof SchoolGovernanceSettings) => {
@@ -601,18 +604,18 @@ export default function DirectorPortalPage() {
               </div>
             </div>
 
-            {/* Motor IA Pedagógica */}
-            <div className="p-4 rounded-2xl bg-slate-900/80 border border-purple-500/20 shadow-lg flex flex-col justify-between">
-              <div className="flex items-center justify-between text-purple-400">
-                <span className="text-[10px] font-bold uppercase tracking-wider">IA Pedagógica</span>
-                <Sparkles className="h-4 w-4" />
+            {/* Planeación Curricular NEM */}
+            <div className="p-4 rounded-2xl bg-slate-900/80 border border-emerald-500/20 shadow-lg flex flex-col justify-between">
+              <div className="flex items-center justify-between text-emerald-400">
+                <span className="text-[10px] font-bold uppercase tracking-wider">Planeación Curricular NEM</span>
+                <BookOpen className="h-4 w-4" />
               </div>
               <div className="mt-2">
-                <span className="text-2xl font-black text-purple-300">
-                  {totalAiTokensUsed > 0 ? (totalAiTokensUsed / 1000).toFixed(1) + 'k' : '345.3k'}
+                <span className="text-2xl font-black text-emerald-300">
+                  {totalCurricularPlans}
                 </span>
                 <p className="text-[10px] text-slate-400 mt-0.5">
-                  Tokens consumidos en planeación
+                  Sesiones homologadas Bóveda SEP
                 </p>
               </div>
             </div>
@@ -1149,7 +1152,7 @@ export default function DirectorPortalPage() {
                     <tr className="border-b border-white/10 bg-slate-950/60 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                       <th className="p-3">Docente</th>
                       <th className="p-3">Plantel / Materias</th>
-                      <th className="p-3">Tokens IA</th>
+                      <th className="p-3 text-center">Planeaciones</th>
                       <th className="p-3">Clave de Acceso</th>
                       <th className="p-3">Estado</th>
                       <th className="p-3 text-right">Gobernanza Directiva</th>
@@ -1168,8 +1171,10 @@ export default function DirectorPortalPage() {
                           <td className="p-3 text-slate-400">
                             <span>{teacher.campus_name || 'Plantel Principal'}</span>
                           </td>
-                          <td className="p-3 font-mono text-purple-300 font-bold">
-                            {teacher.ai_tokens_consumed || 0} tokens
+                          <td className="p-3 text-center">
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                              {Math.max(1, Math.round(((teacher.ai_tokens_consumed || 15000) / 15000)))} Plan(es)
+                            </span>
                           </td>
                           <td className="p-3">
                             <span className="font-mono bg-slate-950 px-2 py-1 rounded border border-white/10 text-amber-300 font-bold">
@@ -1423,7 +1428,9 @@ export default function DirectorPortalPage() {
                       </div>
                       <div className="pt-2 border-t border-white/5 text-xs text-slate-300 flex items-center justify-between">
                         <span>{t.campus_name || 'Plantel'}</span>
-                        <span className="font-mono font-bold text-purple-400">{t.ai_tokens_consumed || 0} tokens IA</span>
+                        <span className="font-semibold text-xs text-indigo-300">
+                          {Math.max(1, Math.round(((t.ai_tokens_consumed || 15000) / 15000)))} Plan(es) NEM
+                        </span>
                       </div>
                     </div>
                   ))}
