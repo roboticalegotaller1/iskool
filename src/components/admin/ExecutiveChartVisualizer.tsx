@@ -354,18 +354,18 @@ export default function ExecutiveChartVisualizer({
               title="Haz clic para abrir el expediente del alumno correspondiente"
               className={`p-3 rounded-xl transition-all duration-200 cursor-pointer ${
                 isSelected 
-                  ? 'bg-indigo-950/70 border border-indigo-500/60 shadow-lg ring-1 ring-indigo-500/40' 
+                  ? 'bg-indigo-50 border border-indigo-300 shadow-sm ring-1 ring-indigo-400' 
                   : isHovered 
-                    ? 'bg-white/10 border border-white/15 shadow-md' 
-                    : 'bg-slate-950/40 border border-transparent hover:bg-white/5'
+                    ? 'bg-slate-50 border border-slate-200 shadow-sm' 
+                    : 'bg-white border border-slate-100 hover:bg-slate-50'
               }`}
             >
               <div className="flex items-center justify-between text-xs mb-1.5 font-medium">
                 <div className="flex items-center gap-2 truncate max-w-[70%]">
-                  <span className="w-5 h-5 rounded-md bg-white/5 text-[10px] font-mono text-slate-400 flex items-center justify-center shrink-0">
+                  <span className="w-5 h-5 rounded-md bg-slate-100 text-[10px] font-mono text-slate-600 flex items-center justify-center shrink-0">
                     {idx + 1}
                   </span>
-                  <span className={`truncate ${isSelected ? 'text-cyan-300 font-bold' : isHovered ? 'text-white font-bold' : 'text-slate-200'}`}>
+                  <span className={`truncate ${isSelected ? 'text-indigo-700 font-bold' : isHovered ? 'text-slate-900 font-bold' : 'text-slate-800'}`}>
                     {label}
                   </span>
                   <button
@@ -379,9 +379,9 @@ export default function ExecutiveChartVisualizer({
                         ? `Abrir expediente de ${label}`
                         : `Ver los ${chart.datasets[0]?.data[idx] || 0} expedientes de ${label}`
                     }
-                    className="text-[10px] text-indigo-400 hover:text-cyan-300 hover:underline flex items-center gap-1 shrink-0 ml-1 cursor-pointer bg-indigo-500/10 hover:bg-indigo-500/20 px-2 py-0.5 rounded transition border border-indigo-500/20 font-medium"
+                    className="text-[10px] text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1 shrink-0 ml-1 cursor-pointer bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded transition border border-indigo-200 font-medium"
                   >
-                    <ExternalLink className="h-2.5 w-2.5 text-indigo-400" />
+                    <ExternalLink className="h-2.5 w-2.5 text-indigo-600" />
                     <span>
                       {(chart.datasets[0]?.data[idx] || 0) === 1 
                         ? 'Ver expediente' 
@@ -393,15 +393,15 @@ export default function ExecutiveChartVisualizer({
                   {chart.datasets.map((ds, dIdx) => (
                     <span 
                       key={dIdx} 
-                      className={`text-xs font-bold ${isHovered || isSelected ? 'text-white' : 'text-slate-300'}`}
+                      className={`text-xs font-bold ${isHovered || isSelected ? 'text-slate-900' : 'text-slate-700'}`}
                     >
                       {chart.datasets.length > 1 && (
-                        <span className="text-[10px] text-slate-400 font-normal mr-1">{ds.name}:</span>
+                        <span className="text-[10px] text-slate-500 font-normal mr-1">{ds.name}:</span>
                       )}
                       {formatVal(ds.data[idx] || 0)}
                     </span>
                   ))}
-                  <span className="text-[10px] text-cyan-400/80 bg-cyan-500/10 px-1.5 py-0.5 rounded font-mono">
+                  <span className="text-[10px] text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded font-mono font-bold">
                     {(((chart.datasets[0]?.data[idx] || 0) / (stats.total || 1)) * 100).toFixed(1)}%
                   </span>
                 </div>
@@ -417,14 +417,14 @@ export default function ExecutiveChartVisualizer({
                   return (
                     <div 
                       key={dIdx}
-                      className="h-3.5 w-full bg-slate-900 rounded-full overflow-hidden p-0.5 border border-white/5"
+                      className="h-3.5 w-full bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200"
                     >
                       <div 
                         className="h-full rounded-full transition-all duration-700 ease-out"
                         style={{ 
                           width: `${pct}%`,
                           backgroundColor: color,
-                          boxShadow: isHovered || isSelected ? `0 0 14px ${color}90` : 'none'
+                          boxShadow: isHovered || isSelected ? `0 0 10px ${color}80` : 'none'
                         }}
                       />
                     </div>
@@ -477,7 +477,7 @@ export default function ExecutiveChartVisualizer({
                   y1={y} 
                   x2={width - padding.right} 
                   y2={y} 
-                  stroke="rgba(255,255,255,0.07)" 
+                  stroke="rgba(0,0,0,0.08)" 
                   strokeDasharray={step === 0 ? "0" : "3 3"} 
                 />
                 <text 
@@ -512,8 +512,8 @@ export default function ExecutiveChartVisualizer({
                     y={padding.top} 
                     width={groupWidth - 8} 
                     height={chartH} 
-                    fill={isSelected ? "rgba(99, 102, 241, 0.15)" : "rgba(255,255,255,0.04)"} 
-                    stroke={isSelected ? "rgba(99, 102, 241, 0.5)" : "none"}
+                    fill={isSelected ? "rgba(99, 102, 241, 0.08)" : "rgba(0,0,0,0.03)"} 
+                    stroke={isSelected ? "rgba(99, 102, 241, 0.4)" : "none"}
                     rx={8} 
                   />
                 )}
@@ -537,7 +537,7 @@ export default function ExecutiveChartVisualizer({
                         opacity={isHovered || isSelected ? 1 : 0.85} 
                         style={{
                           transition: 'all 0.3s ease',
-                          filter: isHovered || isSelected ? `drop-shadow(0 0 10px ${color})` : 'none'
+                          filter: isHovered || isSelected ? `drop-shadow(0 2px 6px ${color}60)` : 'none'
                         }}
                       />
                       {(isHovered || isSelected || numCategories <= 6) && (
@@ -545,7 +545,7 @@ export default function ExecutiveChartVisualizer({
                           x={x + colWidth / 2} 
                           y={y - 6} 
                           textAnchor="middle" 
-                          className="fill-white font-mono font-bold text-[10px]"
+                          className="fill-slate-900 font-mono font-bold text-[10px]"
                         >
                           {formatVal(val)}
                         </text>
@@ -560,7 +560,7 @@ export default function ExecutiveChartVisualizer({
                   y={height - padding.bottom + 22} 
                   textAnchor="middle" 
                   className={`text-[11px] transition-colors ${
-                    isSelected ? 'fill-cyan-300 font-bold' : isHovered ? 'fill-white font-bold' : 'fill-slate-400 font-medium'
+                    isSelected ? 'fill-indigo-600 font-bold' : isHovered ? 'fill-slate-900 font-bold' : 'fill-slate-600 font-medium'
                   }`}
                 >
                   {label.length > 14 ? `${label.slice(0, 12)}...` : label}
@@ -602,7 +602,7 @@ export default function ExecutiveChartVisualizer({
               cy="120" 
               r={r} 
               fill="transparent" 
-              stroke="rgba(255,255,255,0.05)" 
+              stroke="rgba(0,0,0,0.06)" 
               strokeWidth="28" 
             />
 
@@ -633,7 +633,7 @@ export default function ExecutiveChartVisualizer({
                   onClick={() => handleCategoryClick(label)}
                   className="cursor-pointer transition-all duration-300 ease-out"
                   style={{
-                    filter: isHovered || isSelected ? `drop-shadow(0 0 12px ${color})` : 'none'
+                    filter: isHovered || isSelected ? `drop-shadow(0 2px 8px ${color}80)` : 'none'
                   }}
                 />
               );
@@ -642,13 +642,13 @@ export default function ExecutiveChartVisualizer({
 
           {/* Centro del Donut */}
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none px-4">
-            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">
               {activeItem ? activeItem.label : 'Total Global'}
             </span>
-            <span className="text-lg font-black text-white font-mono mt-0.5 tracking-tight">
+            <span className="text-lg font-black text-slate-900 font-mono mt-0.5 tracking-tight">
               {activeItem ? formatVal(activeItem.value) : formatVal(total)}
             </span>
-            <span className="text-[10px] font-mono text-cyan-400 font-semibold mt-0.5">
+            <span className="text-[10px] font-mono text-indigo-600 font-semibold mt-0.5">
               {activeItem ? `${activeItem.share}% del total` : `${chart.labels.length} categorías`}
             </span>
           </div>
@@ -671,10 +671,10 @@ export default function ExecutiveChartVisualizer({
                 onClick={() => handleCategoryClick(label)}
                 className={`flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-indigo-950/70 border-indigo-500/50 shadow-md ring-1 ring-indigo-500/30'
+                    ? 'bg-indigo-50 border-indigo-300 shadow-sm ring-1 ring-indigo-400'
                     : isHovered 
-                      ? 'bg-white/10 border-white/20 shadow-md' 
-                      : 'bg-slate-950/50 border-white/5 hover:bg-white/5'
+                      ? 'bg-slate-100 border-slate-200 shadow-sm' 
+                      : 'bg-white border-slate-200 hover:bg-slate-50'
                 }`}
               >
                 <div className="flex items-center gap-2.5 truncate">
@@ -682,13 +682,13 @@ export default function ExecutiveChartVisualizer({
                     className="w-3 h-3 rounded-full shrink-0 shadow-sm"
                     style={{ backgroundColor: color }} 
                   />
-                  <span className={`text-xs truncate ${isSelected ? 'text-cyan-300 font-bold' : isHovered ? 'text-white font-bold' : 'text-slate-300'}`}>
+                  <span className={`text-xs truncate ${isSelected ? 'text-indigo-700 font-bold' : isHovered ? 'text-slate-900 font-bold' : 'text-slate-700'}`}>
                     {label}
                   </span>
                 </div>
                 <div className="text-right shrink-0 ml-2 font-mono">
-                  <span className="text-xs font-bold text-white block">{formatVal(val)}</span>
-                  <span className="text-[10px] text-cyan-400">{pct}%</span>
+                  <span className="text-xs font-bold text-slate-900 block">{formatVal(val)}</span>
+                  <span className="text-[10px] text-indigo-600 font-semibold">{pct}%</span>
                 </div>
               </div>
             );
@@ -746,7 +746,7 @@ export default function ExecutiveChartVisualizer({
                   y1={y} 
                   x2={width - padding.right} 
                   y2={y} 
-                  stroke="rgba(255,255,255,0.07)" 
+                  stroke="rgba(0,0,0,0.08)" 
                   strokeDasharray={step === 0 ? "0" : "3 3"} 
                 />
                 <text 
@@ -824,12 +824,12 @@ export default function ExecutiveChartVisualizer({
                         cx={pt.x} 
                         cy={pt.y} 
                         r={isHovered || isSelected ? 7.5 : 4.5} 
-                        fill="#090d16" 
+                        fill="#ffffff" 
                         stroke={color} 
                         strokeWidth={isHovered || isSelected ? 3.5 : 2.5} 
                         className="transition-all duration-200"
                         style={{
-                          filter: isHovered || isSelected ? `drop-shadow(0 0 10px ${color})` : 'none'
+                          filter: isHovered || isSelected ? `drop-shadow(0 2px 6px ${color}80)` : 'none'
                         }}
                       />
 
@@ -843,7 +843,7 @@ export default function ExecutiveChartVisualizer({
                             height="32" 
                             rx="8" 
                             fill="#0f172a" 
-                            stroke="rgba(255,255,255,0.2)" 
+                            stroke="rgba(0,0,0,0.15)" 
                           />
                           <text 
                             x={pt.x} 
@@ -876,7 +876,7 @@ export default function ExecutiveChartVisualizer({
                 textAnchor="middle" 
                 onClick={() => handleCategoryClick(label)}
                 className={`text-[11px] cursor-pointer transition-colors ${
-                  isSelected ? 'fill-cyan-300 font-bold' : isHovered ? 'fill-white font-bold' : 'fill-slate-400 font-medium'
+                  isSelected ? 'fill-indigo-600 font-bold' : isHovered ? 'fill-slate-900 font-bold' : 'fill-slate-600 font-medium'
                 }`}
               >
                 {label}
@@ -889,29 +889,29 @@ export default function ExecutiveChartVisualizer({
   };
 
   return (
-    <div className={`bg-slate-900/85 border border-white/10 rounded-2xl p-5 shadow-xl backdrop-blur-md ${className}`}>
+    <div className={`bg-white border border-slate-200 rounded-2xl p-5 shadow-sm ${className}`}>
       
       {/* BARRA DE HERRAMIENTAS Y ENCABEZADO DE LA GRÁFICA (SIN BOTÓN DE 0 TOKENS) */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
-          <h3 className="text-sm font-bold text-white tracking-wide">
+          <h3 className="text-sm font-bold text-slate-900 tracking-wide">
             {chart.title}
           </h3>
           {chart.subtitle && (
-            <p className="text-xs text-slate-400 mt-0.5">{chart.subtitle}</p>
+            <p className="text-xs text-slate-500 mt-0.5">{chart.subtitle}</p>
           )}
         </div>
 
         {/* SELECTOR DE TIPO DE GRÁFICA (VARIEDAD DISPONIBLE) */}
-        <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-white/10 self-start md:self-auto">
+        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 self-start md:self-auto">
           {availableTypes.includes('bar') && (
             <button
               onClick={() => setCurrentType('bar')}
               title="Gráfico de Barras Horizontales (Ideal para clasificaciones)"
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 currentType === 'bar'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white'
               }`}
             >
               <BarChart3 className="h-3.5 w-3.5" />
@@ -925,8 +925,8 @@ export default function ExecutiveChartVisualizer({
               title="Columnas Verticales (Ideal para categorías)"
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 currentType === 'column'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white'
               }`}
             >
               <BarChart2 className="h-3.5 w-3.5" />
@@ -940,8 +940,8 @@ export default function ExecutiveChartVisualizer({
               title="Gráfico de Dona / Pastel (Ideal para distribución y proporciones)"
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 currentType === 'donut'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white'
               }`}
             >
               <PieChart className="h-3.5 w-3.5" />
@@ -955,8 +955,8 @@ export default function ExecutiveChartVisualizer({
               title="Líneas de Tendencia (Ideal para series temporales y comparativas)"
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 currentType === 'line'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white'
               }`}
             >
               <TrendingUp className="h-3.5 w-3.5" />
@@ -970,8 +970,8 @@ export default function ExecutiveChartVisualizer({
               title="Gráfico de Área Suave (Ideal para acumulación y volumen)"
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                 currentType === 'area'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white'
               }`}
             >
               <Activity className="h-3.5 w-3.5" />
@@ -983,7 +983,7 @@ export default function ExecutiveChartVisualizer({
             <button
               onClick={onExpandToFull}
               title="Abrir en pestaña de Vista Gráfica completa"
-              className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-300 hover:bg-white/5 transition cursor-pointer ml-1"
+              className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-slate-200 transition cursor-pointer ml-1"
             >
               <Maximize2 className="h-3.5 w-3.5" />
             </button>
@@ -1000,7 +1000,7 @@ export default function ExecutiveChartVisualizer({
                 className="w-3 h-3 rounded-full shadow-sm"
                 style={{ backgroundColor: ds.color || PALETTE[idx % PALETTE.length] }} 
               />
-              <span className="text-slate-300">{ds.name}</span>
+              <span className="text-slate-700">{ds.name}</span>
             </div>
           ))}
         </div>
@@ -1016,24 +1016,24 @@ export default function ExecutiveChartVisualizer({
       </div>
 
       {/* CINTA DE RESUMEN ESTADÍSTICO */}
-      <div className="mt-4 pt-3 border-t border-white/5 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+      <div className="mt-4 pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
         <div className="flex flex-wrap items-center gap-4 font-mono text-[11px]">
           <div>
             <span className="text-slate-500">Total: </span>
-            <span className="text-white font-bold">{formatVal(stats.total)}</span>
+            <span className="text-slate-900 font-bold">{formatVal(stats.total)}</span>
           </div>
           <div>
             <span className="text-slate-500">Promedio: </span>
-            <span className="text-cyan-400 font-bold">{formatVal(stats.avg)}</span>
+            <span className="text-indigo-600 font-bold">{formatVal(stats.avg)}</span>
           </div>
           <div>
             <span className="text-slate-500">Pico Máx: </span>
-            <span className="text-emerald-400 font-bold">{formatVal(stats.max)}</span>
-            <span className="text-slate-500 text-[10px] ml-1">({stats.maxLabel})</span>
+            <span className="text-emerald-600 font-bold">{formatVal(stats.max)}</span>
+            <span className="text-slate-400 text-[10px] ml-1">({stats.maxLabel})</span>
           </div>
         </div>
 
-        <span className="text-[11px] text-slate-400 italic">
+        <span className="text-[11px] text-slate-500 italic">
           💡 Haz clic en una barra o en "Ver expediente" para consultar los registros correspondientes
         </span>
       </div>
@@ -1042,20 +1042,20 @@ export default function ExecutiveChartVisualizer({
       {/* SECCIÓN DE ALUMNOS DE LA CATEGORÍA: NOMBRES Y BOTÓN A EXPEDIENTES 360° */}
       {/* ========================================================================= */}
       {displayedCategoryStudents.length > 0 && (
-        <div className="mt-5 pt-4 border-t border-white/10 space-y-3 animate-in fade-in duration-300">
+        <div className="mt-5 pt-4 border-t border-slate-200 space-y-3 animate-in fade-in duration-300">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              <div className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200">
                 <Users className="h-4 w-4" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                   <span>Alumnos Registrados en {selectedCategory}</span>
-                  <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-mono text-[11px] font-bold">
+                  <span className="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono text-[11px] font-bold">
                     {displayedCategoryStudents.length} {displayedCategoryStudents.length === 1 ? 'alumno' : 'alumnos'}
                   </span>
                 </h4>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-slate-500">
                   Haz clic en cualquier alumno o en "Abrir Expediente" para consultar su expediente 360°.
                 </p>
               </div>
@@ -1068,7 +1068,7 @@ export default function ExecutiveChartVisualizer({
                   setInternalSelectedCategory(null);
                   onSelectCategory?.(null);
                 }}
-                className="text-[11px] px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 transition cursor-pointer self-start sm:self-auto flex items-center gap-1 border border-white/10"
+                className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer self-start sm:self-auto flex items-center gap-1 border border-slate-200"
               >
                 <span>Limpiar filtro de gráfica</span>
                 <X className="h-3 w-3" />
@@ -1082,18 +1082,18 @@ export default function ExecutiveChartVisualizer({
               <div
                 key={student.id || sIdx}
                 onClick={() => onOpenExpediente && onOpenExpediente(student.id, student.name)}
-                className="p-3.5 rounded-xl bg-slate-950/80 border border-white/10 hover:border-indigo-500/60 hover:bg-white/[0.04] transition-all cursor-pointer group shadow-sm flex flex-col justify-between space-y-3"
+                className="p-3.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-400 hover:shadow-md transition-all cursor-pointer group shadow-sm flex flex-col justify-between space-y-3"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500/20 to-cyan-500/20 border border-indigo-500/30 flex items-center justify-center text-cyan-300 font-bold text-xs shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-xs shrink-0">
                       {student.shortName.split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
                     </div>
                     <div className="min-w-0">
-                      <span className="text-xs font-bold text-white group-hover:text-cyan-300 transition truncate block">
+                      <span className="text-xs font-bold text-slate-900 group-hover:text-indigo-600 transition truncate block">
                         {student.name}
                       </span>
-                      <span className="text-[10px] text-slate-400 block truncate">
+                      <span className="text-[10px] text-slate-500 block truncate">
                         {student.level} · {student.grade}
                       </span>
                     </div>
@@ -1101,34 +1101,34 @@ export default function ExecutiveChartVisualizer({
 
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0 ${
                     student.status?.toLowerCase().includes('inactiv') || student.status?.toLowerCase().includes('baja')
-                      ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
-                      : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                      ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                      : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                   }`}>
                     {student.status || 'Activo'}
                   </span>
                 </div>
 
-                <div className="space-y-1 text-[11px] text-slate-400 border-t border-white/5 pt-2">
+                <div className="space-y-1 text-[11px] text-slate-600 border-t border-slate-100 pt-2">
                   <div className="flex items-center gap-1.5 truncate">
-                    <Building2 className="h-3 w-3 text-slate-500 shrink-0" />
-                    <span className="truncate text-slate-300">{student.campus}</span>
+                    <Building2 className="h-3 w-3 text-slate-400 shrink-0" />
+                    <span className="truncate text-slate-700">{student.campus}</span>
                   </div>
                   <div className="flex items-center gap-1.5 truncate">
-                    <User className="h-3 w-3 text-slate-500 shrink-0" />
-                    <span className="truncate">Tutor: <strong className="text-slate-200 font-medium">{student.tutor}</strong></span>
+                    <User className="h-3 w-3 text-slate-400 shrink-0" />
+                    <span className="truncate">Tutor: <strong className="text-slate-800 font-medium">{student.tutor}</strong></span>
                   </div>
                   {student.phone && student.phone !== 'No registrado' && (
                     <div className="flex items-center gap-1.5 truncate">
-                      <Phone className="h-3 w-3 text-slate-500 shrink-0" />
-                      <span className="truncate font-mono text-[10px] text-slate-300">{student.phone}</span>
+                      <Phone className="h-3 w-3 text-slate-400 shrink-0" />
+                      <span className="truncate font-mono text-[10px] text-slate-800">{student.phone}</span>
                     </div>
                   )}
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs">
-                  <div className="font-mono text-[10px] text-slate-400 truncate">
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                  <div className="font-mono text-[10px] text-slate-500 truncate">
                     <span>Mat: </span>
-                    <span className="text-cyan-400 font-semibold">{student.enrollmentId}</span>
+                    <span className="text-indigo-600 font-semibold">{student.enrollmentId}</span>
                   </div>
 
                   <button
@@ -1137,7 +1137,7 @@ export default function ExecutiveChartVisualizer({
                       e.stopPropagation();
                       onOpenExpediente && onOpenExpediente(student.id, student.name);
                     }}
-                    className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-sm shadow-indigo-600/30 cursor-pointer"
+                    className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-sm cursor-pointer"
                   >
                     <span>Abrir Expediente</span>
                     <ExternalLink className="h-3 w-3" />
@@ -1153,17 +1153,17 @@ export default function ExecutiveChartVisualizer({
       {/* SECCIÓN DE DEUDORES: NOMBRES EN LA PARTE BAJA Y ACCESO A EXPEDIENTES 360° */}
       {/* ========================================================================= */}
       {displayedDebtors.length > 0 && (
-        <div className="mt-5 pt-4 border-t border-white/10 space-y-3">
+        <div className="mt-5 pt-4 border-t border-slate-200 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20">
+              <div className="p-1.5 rounded-lg bg-rose-50 text-rose-600 border border-rose-200">
                 <AlertCircle className="h-4 w-4" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
                   Estudiantes con Adeudo Activo ({displayedDebtors.length})
                 </h4>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-slate-500">
                   {selectedCategory 
                     ? `Filtrado por "${selectedCategory}" · Haz clic en cualquier alumno para abrir su expediente 360°`
                     : 'Nombres de deudores registrados · Haz clic para abrir su expediente completo'}
@@ -1177,7 +1177,7 @@ export default function ExecutiveChartVisualizer({
                   setInternalSelectedCategory(null);
                   onSelectCategory?.(null);
                 }}
-                className="text-[11px] px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 transition cursor-pointer self-start sm:self-auto flex items-center gap-1"
+                className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer self-start sm:self-auto flex items-center gap-1 border border-slate-200"
               >
                 <span>Ver todos los deudores</span>
                 <X className="h-3 w-3" />
@@ -1191,18 +1191,18 @@ export default function ExecutiveChartVisualizer({
               <div
                 key={dIdx}
                 onClick={() => onOpenExpediente && onOpenExpediente(debtor.studentId, debtor.studentName)}
-                className="p-3.5 rounded-xl bg-slate-950/80 border border-white/10 hover:border-indigo-500/60 hover:bg-white/[0.04] transition-all cursor-pointer group shadow-sm flex flex-col justify-between space-y-3"
+                className="p-3.5 rounded-xl bg-white border border-slate-200 hover:border-indigo-400 hover:shadow-md transition-all cursor-pointer group shadow-sm flex flex-col justify-between space-y-3"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-300 font-bold text-xs shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-700 font-bold text-xs shrink-0">
                       <User className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
-                      <span className="text-xs font-bold text-white group-hover:text-cyan-300 transition truncate block">
+                      <span className="text-xs font-bold text-slate-900 group-hover:text-indigo-600 transition truncate block">
                         {debtor.studentName}
                       </span>
-                      <span className="text-[10px] text-slate-400 block truncate">
+                      <span className="text-[10px] text-slate-500 block truncate">
                         {debtor.level || 'Primaria'} · {debtor.gradeGroup || '1º A'}
                       </span>
                     </div>
@@ -1210,19 +1210,19 @@ export default function ExecutiveChartVisualizer({
 
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0 ${
                     String(debtor.status).toLowerCase().includes('vencid') 
-                      ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
-                      : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                      ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                      : 'bg-amber-50 text-amber-700 border border-amber-200'
                   }`}>
                     {debtor.status || 'Pendiente'}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs">
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
                   <div>
-                    <span className="text-[10px] text-slate-400 block truncate max-w-[140px]">
+                    <span className="text-[10px] text-slate-500 block truncate max-w-[140px]">
                       {debtor.concept || 'Colegiatura de Septiembre'}
                     </span>
-                    <span className="font-mono font-bold text-white text-sm text-rose-400">
+                    <span className="font-mono font-bold text-rose-600 text-sm">
                       {formatMXN(debtor.amount)}
                     </span>
                   </div>
@@ -1233,7 +1233,7 @@ export default function ExecutiveChartVisualizer({
                       e.stopPropagation();
                       onOpenExpediente && onOpenExpediente(debtor.studentId, debtor.studentName);
                     }}
-                    className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-sm shadow-indigo-600/30 cursor-pointer"
+                    className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-sm cursor-pointer"
                   >
                     <span>Abrir Expediente</span>
                     <ExternalLink className="h-3 w-3" />

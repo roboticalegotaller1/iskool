@@ -59,12 +59,8 @@
   --color-area-alert: var(--area-alert);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #09090b;
-    --foreground: #f8fafc;
-  }
-}
+@custom-variant dark (&:where(.dark, .dark *));
+
 
 body {
   background: var(--background);
@@ -188,12 +184,7 @@ body {
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  .card-glass-interactive {
-    background: rgba(24, 24, 27, 0.85);
-    border-color: rgba(63, 63, 70, 0.7);
-  }
-}
+
 
 
 

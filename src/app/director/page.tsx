@@ -406,10 +406,10 @@ export default function DirectorPortalPage() {
 
   if (authLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-900">
         <div className="flex flex-col items-center gap-3">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-purple-500" />
-          <p className="text-xs font-bold text-slate-400">Verificando credenciales directivas...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-purple-600" />
+          <p className="text-xs font-bold text-slate-500">Verificando credenciales directivas...</p>
         </div>
       </div>
     );
@@ -439,13 +439,13 @@ export default function DirectorPortalPage() {
     const redirectInfo = getRedirectInfo();
 
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white p-6">
-        <div className="max-w-md w-full p-8 rounded-3xl bg-slate-900 border border-white/10 text-center space-y-4 shadow-2xl">
-          <div className="h-14 w-14 rounded-2xl bg-purple-500/10 text-purple-400 border border-purple-500/20 mx-auto flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-900 p-6">
+        <div className="max-w-md w-full p-8 rounded-3xl bg-white border border-slate-200 text-center space-y-4 shadow-xl">
+          <div className="h-14 w-14 rounded-2xl bg-purple-50 text-purple-600 border border-purple-200 mx-auto flex items-center justify-center">
             <Lock className="h-7 w-7" />
           </div>
-          <h2 className="text-lg font-black text-white">Acceso Denegado</h2>
-          <p className="text-xs text-slate-400">
+          <h2 className="text-lg font-black text-slate-900">Acceso Denegado</h2>
+          <p className="text-xs text-slate-600">
             Esta consola está reservada exclusivamente para Directores de Plantel y Dirección General.
           </p>
           <button
@@ -460,7 +460,7 @@ export default function DirectorPortalPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-purple-500 selection:text-white font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col selection:bg-purple-500 selection:text-white font-sans">
       <Header />
 
       {/* TOAST DE NOTIFICACIÓN DIRECTIVA */}
@@ -472,33 +472,33 @@ export default function DirectorPortalPage() {
       )}
 
       {/* BANNER INSTITUCIONAL DEL COLEGIO DEL DIRECTOR */}
-      <section className="bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-950 border-b border-white/10 pt-8 pb-6 px-4 sm:px-6 lg:px-8">
+      <section className="bg-gradient-to-r from-purple-50/70 via-white to-indigo-50/70 border-b border-slate-200 pt-8 pb-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-600 to-slate-800 flex items-center justify-center text-white shadow-xl shadow-purple-600/30 border border-purple-400/30 shrink-0">
+              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-600 to-slate-800 flex items-center justify-center text-white shadow-xl shadow-purple-600/20 border border-purple-200 shrink-0">
                 <Crown className="h-8 w-8 text-amber-300" />
               </div>
 
               <div>
                 <div className="flex items-center gap-2.5 flex-wrap">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-300">
                     🏛️ Dirección General de Plantel
                   </span>
-                  <span className="text-xs font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded-md border border-white/5">
+                  <span className="text-xs font-mono text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
                     CCT: {schoolInfo.cct}
                   </span>
                   {user?.first_name && (
-                    <span className="text-xs font-bold text-slate-300">
-                      Director: <strong className="text-white">{user.first_name} {user.last_name}</strong>
+                    <span className="text-xs font-bold text-slate-600">
+                      Director: <strong className="text-slate-900">{user.first_name} {user.last_name}</strong>
                     </span>
                   )}
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1">
+                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1">
                   {schoolInfo.name}
                 </h1>
-                <p className="text-xs text-slate-400 max-w-2xl mt-0.5">
+                <p className="text-xs text-slate-600 max-w-2xl mt-0.5">
                   {schoolInfo.tagline || 'Supervisión integral, gobernanza directiva y control escolar unificado de la institución.'}
                 </p>
               </div>
@@ -506,13 +506,13 @@ export default function DirectorPortalPage() {
 
             {/* Selector de Campus del Plantel & Acciones Directivas */}
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 bg-slate-900/90 border border-white/10 px-3.5 py-2 rounded-2xl shadow-inner">
-                <Building2 className="h-4 w-4 text-purple-400" />
-                <span className="text-xs font-bold text-slate-300">Filtrar Plantel:</span>
+              <div className="flex items-center gap-2 bg-white border border-slate-200 px-3.5 py-2 rounded-2xl shadow-xs">
+                <Building2 className="h-4 w-4 text-purple-600" />
+                <span className="text-xs font-bold text-slate-700">Filtrar Plantel:</span>
                 <select
                   value={selectedCampusFilter}
                   onChange={(e) => setSelectedCampusFilter(e.target.value)}
-                  className="bg-slate-950 border border-white/10 text-white rounded-xl px-2.5 py-1 text-xs font-bold focus:outline-none focus:border-purple-500 cursor-pointer"
+                  className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-2.5 py-1 text-xs font-bold focus:outline-none focus:border-purple-500 cursor-pointer"
                 >
                   <option value="all">🏢 Todos los Planteles ({schoolCampuses.length})</option>
                   {schoolCampuses.map(cmp => (
@@ -523,9 +523,9 @@ export default function DirectorPortalPage() {
 
               <Link
                 href="/coordinator/billing"
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-black transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-black transition-all cursor-pointer shadow-xs"
               >
-                <DollarSign className="h-4 w-4" /> Cobranza & Facturación
+                <DollarSign className="h-4 w-4 text-emerald-600" /> Cobranza & Facturación
               </Link>
             </div>
           </div>
@@ -533,88 +533,88 @@ export default function DirectorPortalPage() {
           {/* TARJETAS KPI EJECUTIVAS EN TIEMPO REAL */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
             {/* Matrícula Total */}
-            <div className="p-4 rounded-2xl bg-slate-900/80 border border-white/10 shadow-lg flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-400">
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-slate-500">
                 <span className="text-[10px] font-bold uppercase tracking-wider">Matrícula Total</span>
-                <GraduationCap className="h-4 w-4 text-blue-400" />
+                <GraduationCap className="h-4 w-4 text-blue-600" />
               </div>
               <div className="mt-2">
-                <span className="text-2xl font-black text-white">{schoolStudents.length}</span>
-                <p className="text-[10px] text-slate-400 mt-0.5">
+                <span className="text-2xl font-black text-slate-900">{schoolStudents.length}</span>
+                <p className="text-[10px] text-slate-500 mt-0.5">
                   {schoolStudents.filter(s => !s.is_blocked && s.status === 'activo').length} activos · {schoolStudents.filter(s => s.is_blocked).length} bloqueados
                 </p>
               </div>
             </div>
 
             {/* Plantilla Docente */}
-            <div className="p-4 rounded-2xl bg-slate-900/80 border border-white/10 shadow-lg flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-400">
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-slate-500">
                 <span className="text-[10px] font-bold uppercase tracking-wider">Plantilla Docente</span>
-                <Users className="h-4 w-4 text-emerald-400" />
+                <Users className="h-4 w-4 text-emerald-600" />
               </div>
               <div className="mt-2">
-                <span className="text-2xl font-black text-white">{schoolTeachers.length}</span>
-                <p className="text-[10px] text-slate-400 mt-0.5">
+                <span className="text-2xl font-black text-slate-900">{schoolTeachers.length}</span>
+                <p className="text-[10px] text-slate-500 mt-0.5">
                   {schoolTeachers.filter(t => !t.is_blocked).length} profesores activos
                 </p>
               </div>
             </div>
 
             {/* Grupos Escolares */}
-            <div className="p-4 rounded-2xl bg-slate-900/80 border border-white/10 shadow-lg flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-400">
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-slate-500">
                 <span className="text-[10px] font-bold uppercase tracking-wider">Grupos Escolares</span>
-                <BookOpen className="h-4 w-4 text-amber-400" />
+                <BookOpen className="h-4 w-4 text-amber-600" />
               </div>
               <div className="mt-2">
-                <span className="text-2xl font-black text-white">{schoolGroups.length}</span>
-                <p className="text-[10px] text-slate-400 mt-0.5">
+                <span className="text-2xl font-black text-slate-900">{schoolGroups.length}</span>
+                <p className="text-[10px] text-slate-500 mt-0.5">
                   {schoolCampuses.length} planteles articulados
                 </p>
               </div>
             </div>
 
             {/* Salud de Cobranza */}
-            <div className="p-4 rounded-2xl bg-slate-900/80 border border-emerald-500/20 shadow-lg flex flex-col justify-between">
-              <div className="flex items-center justify-between text-emerald-400">
+            <div className="p-4 rounded-2xl bg-white border border-emerald-200 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-emerald-600">
                 <span className="text-[10px] font-bold uppercase tracking-wider">Recaudación Mes</span>
                 <DollarSign className="h-4 w-4" />
               </div>
               <div className="mt-2">
-                <span className="text-2xl font-black text-emerald-300">
+                <span className="text-2xl font-black text-emerald-700">
                   ${totalCollected.toLocaleString('es-MX')}
                 </span>
-                <p className="text-[10px] text-slate-400 mt-0.5">
+                <p className="text-[10px] text-slate-500 mt-0.5">
                   {collectionRate}% efectividad de cobro
                 </p>
               </div>
             </div>
 
             {/* Asistencia Institucional */}
-            <div className="p-4 rounded-2xl bg-slate-900/80 border border-white/10 shadow-lg flex flex-col justify-between">
-              <div className="flex items-center justify-between text-slate-400">
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-slate-500">
                 <span className="text-[10px] font-bold uppercase tracking-wider">Asistencia Global</span>
-                <Activity className="h-4 w-4 text-cyan-400" />
+                <Activity className="h-4 w-4 text-cyan-600" />
               </div>
               <div className="mt-2">
-                <span className="text-2xl font-black text-cyan-300">{attendancePercentage}%</span>
-                <p className="text-[10px] text-slate-400 mt-0.5">
+                <span className="text-2xl font-black text-cyan-700">{attendancePercentage}%</span>
+                <p className="text-[10px] text-slate-500 mt-0.5">
                   Semana lectiva en curso
                 </p>
               </div>
             </div>
 
             {/* Planeación Curricular NEM */}
-            <div className="p-4 rounded-2xl bg-slate-900/80 border border-emerald-500/20 shadow-lg flex flex-col justify-between">
-              <div className="flex items-center justify-between text-emerald-400">
+            <div className="p-4 rounded-2xl bg-white border border-emerald-200 shadow-xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-emerald-600">
                 <span className="text-[10px] font-bold uppercase tracking-wider">Planeación Curricular NEM</span>
                 <BookOpen className="h-4 w-4" />
               </div>
               <div className="mt-2">
-                <span className="text-2xl font-black text-emerald-300">
+                <span className="text-2xl font-black text-emerald-700">
                   {totalCurricularPlans}
                 </span>
-                <p className="text-[10px] text-slate-400 mt-0.5">
+                <p className="text-[10px] text-slate-500 mt-0.5">
                   Sesiones homologadas Bóveda SEP
                 </p>
               </div>
@@ -622,13 +622,13 @@ export default function DirectorPortalPage() {
           </div>
 
           {/* BARRA DE NAVEGACIÓN DEL DIRECTOR */}
-          <nav className="flex items-center gap-2 overflow-x-auto scrollbar-none pt-2 border-t border-white/5">
+          <nav className="flex items-center gap-2 overflow-x-auto scrollbar-none pt-2 border-t border-slate-200">
             <button
               onClick={() => setActiveTab('overview')}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer shrink-0 ${
                 activeTab === 'overview'
-                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
               <BarChart3 className="h-4 w-4" /> Resumen Ejecutivo
@@ -638,13 +638,13 @@ export default function DirectorPortalPage() {
               onClick={() => setActiveTab('governance')}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer shrink-0 ${
                 activeTab === 'governance'
-                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <SlidersHorizontal className="h-4 w-4 text-amber-400" /> Gobernanza & Restricciones
+              <SlidersHorizontal className="h-4 w-4 text-amber-500" /> Gobernanza & Restricciones
               {currentGovernance.restrictedTopics.length > 0 && (
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-amber-100 text-amber-800 border border-amber-300">
                   {currentGovernance.restrictedTopics.length}
                 </span>
               )}
@@ -654,33 +654,33 @@ export default function DirectorPortalPage() {
               onClick={() => setActiveTab('school_control')}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer shrink-0 ${
                 activeTab === 'school_control'
-                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <BookOpen className="h-4 w-4 text-blue-400" /> Control Escolar Liberado
+              <BookOpen className="h-4 w-4 text-blue-500" /> Control Escolar Liberado
             </button>
 
             <button
               onClick={() => setActiveTab('vault')}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer shrink-0 ${
                 activeTab === 'vault'
-                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <ShieldCheck className="h-4 w-4 text-emerald-400" /> Supervisión de Bóveda Curricular
+              <ShieldCheck className="h-4 w-4 text-emerald-500" /> Supervisión de Bóveda Curricular
             </button>
 
             <button
               onClick={() => setActiveTab('finances')}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer shrink-0 ${
                 activeTab === 'finances'
-                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+                  ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <DollarSign className="h-4 w-4 text-emerald-400" /> Finanzas & Cobranza
+              <DollarSign className="h-4 w-4 text-emerald-500" /> Finanzas & Cobranza
             </button>
           </nav>
         </div>
@@ -694,13 +694,13 @@ export default function DirectorPortalPage() {
           <div className="space-y-6 animate-fade-in">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Desglose de Matrícula por Plantel */}
-              <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 shadow-xl space-y-4">
-                <div className="flex items-center justify-between border-b border-white/5 pb-3">
+              <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2">
-                    <Building2 className="h-5 w-5 text-purple-400" />
-                    <h3 className="text-sm font-black text-white">Distribución de Planteles</h3>
+                    <Building2 className="h-5 w-5 text-purple-600" />
+                    <h3 className="text-sm font-black text-slate-900">Distribución de Planteles</h3>
                   </div>
-                  <span className="text-xs font-bold text-slate-400">{schoolCampuses.length} planteles</span>
+                  <span className="text-xs font-bold text-slate-500">{schoolCampuses.length} planteles</span>
                 </div>
 
                 <div className="space-y-3">
@@ -708,18 +708,18 @@ export default function DirectorPortalPage() {
                     const count = schoolStudents.filter(s => s.campus_name?.toLowerCase() === cmp.name.toLowerCase() || s.campus_id === cmp.id).length;
                     const pct = schoolStudents.length > 0 ? Math.round((count / schoolStudents.length) * 100) : 0;
                     return (
-                      <div key={cmp.id} className="p-3.5 rounded-2xl bg-slate-950/70 border border-white/5 space-y-1.5">
+                      <div key={cmp.id} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
                         <div className="flex items-center justify-between text-xs">
-                          <span className="font-bold text-slate-200">{cmp.name}</span>
-                          <span className="font-mono text-purple-300 font-bold">{count} alumnos ({pct}%)</span>
+                          <span className="font-bold text-slate-800">{cmp.name}</span>
+                          <span className="font-mono text-purple-700 font-bold">{count} alumnos ({pct}%)</span>
                         </div>
-                        <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
                           <div 
                             className="bg-gradient-to-r from-purple-500 to-indigo-500 h-full rounded-full transition-all duration-500" 
                             style={{ width: `${pct}%` }} 
                           />
                         </div>
-                        <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">
+                        <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider block">
                           Nivel: {cmp.level} · {cmp.grades.length} grados
                         </span>
                       </div>
@@ -729,42 +729,42 @@ export default function DirectorPortalPage() {
               </div>
 
               {/* Salud Financiera y Cartera */}
-              <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 shadow-xl space-y-4">
-                <div className="flex items-center justify-between border-b border-white/5 pb-3">
+              <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2">
-                    <DollarSign className="h-5 w-5 text-emerald-400" />
-                    <h3 className="text-sm font-black text-white">Estado Financiero Institucional</h3>
+                    <DollarSign className="h-5 w-5 text-emerald-600" />
+                    <h3 className="text-sm font-black text-slate-900">Estado Financiero Institucional</h3>
                   </div>
-                  <span className="text-xs font-bold text-emerald-400">{collectionRate}% Cobrado</span>
+                  <span className="text-xs font-bold text-emerald-600">{collectionRate}% Cobrado</span>
                 </div>
 
                 <div className="space-y-3">
-                  <div className="p-4 rounded-2xl bg-slate-950/70 border border-white/5 flex items-center justify-between">
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                     <div>
-                      <span className="text-[11px] font-bold text-slate-400 block uppercase">Recaudación Cobrada</span>
-                      <span className="text-xl font-black text-emerald-300">${totalCollected.toLocaleString('es-MX')}</span>
+                      <span className="text-[11px] font-bold text-slate-500 block uppercase">Recaudación Cobrada</span>
+                      <span className="text-xl font-black text-emerald-700">${totalCollected.toLocaleString('es-MX')}</span>
                     </div>
-                    <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+                    <div className="p-2 rounded-xl bg-emerald-100 text-emerald-700">
                       <CheckCircle2 className="h-5 w-5" />
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-slate-950/70 border border-white/5 flex items-center justify-between">
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                     <div>
-                      <span className="text-[11px] font-bold text-slate-400 block uppercase">Cartera por Cobrar</span>
-                      <span className="text-xl font-black text-amber-300">${totalOverdue.toLocaleString('es-MX')}</span>
+                      <span className="text-[11px] font-bold text-slate-500 block uppercase">Cartera por Cobrar</span>
+                      <span className="text-xl font-black text-amber-700">${totalOverdue.toLocaleString('es-MX')}</span>
                     </div>
-                    <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+                    <div className="p-2 rounded-xl bg-amber-100 text-amber-700">
                       <AlertTriangle className="h-5 w-5" />
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-slate-950/70 border border-white/5 flex items-center justify-between">
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                     <div>
-                      <span className="text-[11px] font-bold text-slate-400 block uppercase">Recibos Emitidos</span>
-                      <span className="text-xl font-black text-white">{schoolBilling.length} transacciones</span>
+                      <span className="text-[11px] font-bold text-slate-500 block uppercase">Recibos Emitidos</span>
+                      <span className="text-xl font-black text-slate-900">{schoolBilling.length} transacciones</span>
                     </div>
-                    <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400">
+                    <div className="p-2 rounded-xl bg-blue-100 text-blue-700">
                       <FileText className="h-5 w-5" />
                     </div>
                   </div>
@@ -772,48 +772,48 @@ export default function DirectorPortalPage() {
 
                 <Link
                   href="/coordinator/billing"
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black shadow-lg shadow-emerald-600/30 transition-all cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
                 >
                   Abrir Módulo Completo de Cobranza <ChevronRight className="h-4 w-4" />
                 </Link>
               </div>
 
               {/* Alertas Directivas & Acciones Rápidas */}
-              <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 shadow-xl space-y-4">
-                <div className="flex items-center justify-between border-b border-white/5 pb-3">
+              <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5 text-amber-400" />
-                    <h3 className="text-sm font-black text-white">Alertas Directivas</h3>
+                    <AlertTriangle className="h-5 w-5 text-amber-500" />
+                    <h3 className="text-sm font-black text-slate-900">Alertas Directivas</h3>
                   </div>
-                  <span className="text-xs font-bold text-amber-400">Prioridad Alta</span>
+                  <span className="text-xs font-bold text-amber-600">Prioridad Alta</span>
                 </div>
 
                 <div className="space-y-3">
-                  <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-3">
-                    <Lock className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
+                  <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-3">
+                    <Lock className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
                     <div>
-                      <span className="text-xs font-bold text-amber-200 block">Cuentas Suspendidas</span>
-                      <p className="text-[11px] text-amber-300/80 mt-0.5">
+                      <span className="text-xs font-bold text-amber-900 block">Cuentas Suspendidas</span>
+                      <p className="text-[11px] text-amber-700 mt-0.5">
                         {schoolStudents.filter(s => s.is_blocked).length} alumnos y {schoolTeachers.filter(t => t.is_blocked).length} profesores tienen su acceso bloqueado actualmente.
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-start gap-3">
-                    <ShieldCheck className="h-4 w-4 text-purple-400 mt-0.5 shrink-0" />
+                  <div className="p-3.5 rounded-2xl bg-purple-50 border border-purple-200 flex items-start gap-3">
+                    <ShieldCheck className="h-4 w-4 text-purple-600 mt-0.5 shrink-0" />
                     <div>
-                      <span className="text-xs font-bold text-purple-200 block">Temáticas Restringidas</span>
-                      <p className="text-[11px] text-purple-300/80 mt-0.5">
+                      <span className="text-xs font-bold text-purple-900 block">Temáticas Restringidas</span>
+                      <p className="text-[11px] text-purple-700 mt-0.5">
                         Hay {currentGovernance.restrictedTopics.length} temática(s) con restricción pedagógica activa en este colegio.
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-start gap-3">
-                    <CheckCircle2 className="h-4 w-4 text-blue-400 mt-0.5 shrink-0" />
+                  <div className="p-3.5 rounded-2xl bg-blue-50 border border-blue-200 flex items-start gap-3">
+                    <CheckCircle2 className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
                     <div>
-                      <span className="text-xs font-bold text-blue-200 block">Bóveda Curricular Sincronizada</span>
-                      <p className="text-[11px] text-blue-300/80 mt-0.5">
+                      <span className="text-xs font-bold text-blue-900 block">Bóveda Curricular Sincronizada</span>
+                      <p className="text-[11px] text-blue-700 mt-0.5">
                         El repositorio pedagógico se encuentra al día con los lineamientos oficiales de la SEP NEM 2024.
                       </p>
                     </div>
@@ -822,7 +822,7 @@ export default function DirectorPortalPage() {
 
                 <button
                   onClick={() => setActiveTab('governance')}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-lg shadow-purple-600/30 transition-all cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-md shadow-purple-600/20 transition-all cursor-pointer"
                 >
                   Ir al Centro de Gobernanza <ChevronRight className="h-4 w-4" />
                 </button>
@@ -835,15 +835,15 @@ export default function DirectorPortalPage() {
         {activeTab === 'governance' && (
           <div className="space-y-6 animate-fade-in">
             {/* Banner Informativo de Gobernanza */}
-            <div className="p-6 rounded-3xl bg-gradient-to-r from-purple-900/60 via-slate-900 to-indigo-900/60 border border-purple-500/30 shadow-2xl flex flex-wrap items-center justify-between gap-4">
+            <div className="p-6 rounded-3xl bg-gradient-to-r from-purple-50 via-white to-indigo-50 border border-purple-200 shadow-xs flex flex-wrap items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <SlidersHorizontal className="h-6 w-6 text-purple-400" />
-                  <h3 className="text-lg font-black text-white tracking-tight">
+                  <SlidersHorizontal className="h-6 w-6 text-purple-600" />
+                  <h3 className="text-lg font-black text-slate-900 tracking-tight">
                     Centro de Gobernanza y Restricciones Institucionales
                   </h3>
                 </div>
-                <p className="text-xs text-slate-300 mt-1 max-w-3xl leading-relaxed">
+                <p className="text-xs text-slate-600 mt-1 max-w-3xl leading-relaxed">
                   Como Director General de este plantel, dispones de la facultad exclusiva para regular qué módulos están disponibles para cada tipo de cuenta (Coordinadores, Docentes, Alumnos y Tutores), así como auditar o restringir temáticas curriculares específicas antes de su aplicación en el aula.
                 </p>
               </div>
@@ -851,45 +851,45 @@ export default function DirectorPortalPage() {
               <button
                 type="button"
                 onClick={() => setShowAddTopicModal(true)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-lg shadow-purple-600/30 transition-all cursor-pointer hover:scale-102 shrink-0"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-md shadow-purple-600/20 transition-all cursor-pointer hover:scale-102 shrink-0"
               >
                 <Plus className="h-4 w-4" /> Restringir Nueva Temática Curricular
               </button>
             </div>
 
             {/* LÍMITES CORPORATIVOS FIJADOS POR EL DUEÑO DE EMPRESA */}
-            <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-950/40 via-purple-950/30 to-slate-900 border border-blue-500/20 shadow-lg space-y-3">
+            <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-50 via-purple-50 to-slate-50 border border-blue-200 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Crown className="h-4 w-4 text-blue-400" />
-                  <h4 className="text-xs font-black uppercase tracking-wider text-white">
+                  <Crown className="h-4 w-4 text-blue-600" />
+                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-900">
                     Atribuciones Directivas Otorgadas por el Dueño de Empresa
                   </h4>
                 </div>
-                <span className="text-[10px] font-mono text-blue-300 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
+                <span className="text-[10px] font-mono text-blue-800 bg-blue-100 px-2 py-0.5 rounded border border-blue-300 font-bold">
                   Presidencia Corporativa
                 </span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                <div className="p-3 rounded-xl bg-slate-950/60 border border-white/5">
-                  <span className="text-[10px] text-slate-400 block">Tope Beca Directa</span>
-                  <span className="font-black text-amber-400 text-sm">{directorLimits?.maxScholarshipDiscountPercent ?? 50}% Máximo</span>
+                <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-xs">
+                  <span className="text-[10px] text-slate-500 block">Tope Beca Directa</span>
+                  <span className="font-black text-amber-700 text-sm">{directorLimits?.maxScholarshipDiscountPercent ?? 50}% Máximo</span>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-950/60 border border-white/5">
-                  <span className="text-[10px] text-slate-400 block">Alta Coordinadores</span>
-                  <span className={`font-bold text-xs ${directorLimits?.canRegisterCoordinators ? 'text-emerald-400' : 'text-slate-400'}`}>
+                <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-xs">
+                  <span className="text-[10px] text-slate-500 block">Alta Coordinadores</span>
+                  <span className={`font-bold text-xs ${directorLimits?.canRegisterCoordinators ? 'text-emerald-700' : 'text-slate-500'}`}>
                     {directorLimits?.canRegisterCoordinators ? '✓ Autorizada' : '🔒 Solo Dueño'}
                   </span>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-950/60 border border-white/5">
-                  <span className="text-[10px] text-slate-400 block">Aranceles y Cobros</span>
-                  <span className={`font-bold text-xs ${directorLimits?.canModifyTuitionFees ? 'text-emerald-400' : 'text-slate-400'}`}>
+                <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-xs">
+                  <span className="text-[10px] text-slate-500 block">Aranceles y Cobros</span>
+                  <span className={`font-bold text-xs ${directorLimits?.canModifyTuitionFees ? 'text-emerald-700' : 'text-slate-500'}`}>
                     {directorLimits?.canModifyTuitionFees ? '✓ Autorizado' : '🔒 Fijado por Dueño'}
                   </span>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-950/60 border border-white/5">
-                  <span className="text-[10px] text-slate-400 block">Crear Planteles</span>
-                  <span className={`font-bold text-xs ${directorLimits?.canManageCampuses ? 'text-emerald-400' : 'text-slate-400'}`}>
+                <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-xs">
+                  <span className="text-[10px] text-slate-500 block">Crear Planteles</span>
+                  <span className={`font-bold text-xs ${directorLimits?.canManageCampuses ? 'text-emerald-700' : 'text-slate-500'}`}>
                     {directorLimits?.canManageCampuses ? '✓ Habilitado' : '🔒 Corporativo'}
                   </span>
                 </div>
@@ -897,22 +897,22 @@ export default function DirectorPortalPage() {
             </div>
 
             {/* SECCIÓN A: MATRIZ DE INTERRUPTORES DE MÓDULOS */}
-            <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 shadow-xl space-y-5">
-              <div className="border-b border-white/5 pb-3">
-                <h4 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-purple-400" /> Matriz de Acceso a Módulos para Cuentas del Colegio
+            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-5">
+              <div className="border-b border-slate-100 pb-3">
+                <h4 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-purple-600" /> Matriz de Acceso a Módulos para Cuentas del Colegio
                 </h4>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   Los cambios tienen efecto inmediato en todas las sesiones activas de las cuentas vinculadas a este plantel.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Switch: Cobranza a Coordinadores */}
-                <div className="p-4 rounded-2xl bg-slate-950/70 border border-white/5 flex items-center justify-between gap-4">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-4">
                   <div>
-                    <span className="text-xs font-bold text-white block">Acceso a Cobranza para Coordinación</span>
-                    <span className="text-[11px] text-slate-400 block mt-0.5">
+                    <span className="text-xs font-bold text-slate-900 block">Acceso a Cobranza para Coordinación</span>
+                    <span className="text-[11px] text-slate-500 block mt-0.5">
                       Permite que los coordinadores vean y gestionen cobros y estados de cuenta familiares.
                     </span>
                   </div>
@@ -920,7 +920,7 @@ export default function DirectorPortalPage() {
                     type="button"
                     onClick={() => handleToggleGovernance('allowCoordinatorBilling')}
                     className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-                      currentGovernance.allowCoordinatorBilling ? 'bg-emerald-600' : 'bg-slate-700'
+                      currentGovernance.allowCoordinatorBilling ? 'bg-emerald-600' : 'bg-slate-300'
                     }`}
                   >
                     <div className={`w-4 h-4 rounded-full bg-white transition-transform absolute top-1 ${
@@ -930,10 +930,10 @@ export default function DirectorPortalPage() {
                 </div>
 
                 {/* Switch: Bajas Definitivas para Coordinación */}
-                <div className="p-4 rounded-2xl bg-slate-950/70 border border-white/5 flex items-center justify-between gap-4">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-4">
                   <div>
-                    <span className="text-xs font-bold text-white block">Facultad de Bajas Definitivas para Coordinación</span>
-                    <span className="text-[11px] text-slate-400 block mt-0.5">
+                    <span className="text-xs font-bold text-slate-900 block">Facultad de Bajas Definitivas para Coordinación</span>
+                    <span className="text-[11px] text-slate-500 block mt-0.5">
                       Permite que los coordinadores eliminen o den de baja alumnos y grupos sin visto bueno directivo.
                     </span>
                   </div>
@@ -941,7 +941,7 @@ export default function DirectorPortalPage() {
                     type="button"
                     onClick={() => handleToggleGovernance('allowCoordinatorDelete' as any)}
                     className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-                      currentGovernance.allowCoordinatorDelete ? 'bg-emerald-600' : 'bg-slate-700'
+                      currentGovernance.allowCoordinatorDelete ? 'bg-emerald-600' : 'bg-slate-300'
                     }`}
                   >
                     <div className={`w-4 h-4 rounded-full bg-white transition-transform absolute top-1 ${
@@ -951,10 +951,10 @@ export default function DirectorPortalPage() {
                 </div>
 
                 {/* Switch: Edición Extemporánea de Boletas a Profesores */}
-                <div className="p-4 rounded-2xl bg-slate-950/70 border border-white/5 flex items-center justify-between gap-4">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-4">
                   <div>
-                    <span className="text-xs font-bold text-white block">Edición Extemporánea de Boletas</span>
-                    <span className="text-[11px] text-slate-400 block mt-0.5">
+                    <span className="text-xs font-bold text-slate-900 block">Edición Extemporánea de Boletas</span>
+                    <span className="text-[11px] text-slate-500 block mt-0.5">
                       Habilita a los profesores la modificación de calificaciones fuera del periodo ordinario.
                     </span>
                   </div>
@@ -962,7 +962,7 @@ export default function DirectorPortalPage() {
                     type="button"
                     onClick={() => handleToggleGovernance('allowTeacherGradeEditing')}
                     className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-                      currentGovernance.allowTeacherGradeEditing ? 'bg-emerald-600' : 'bg-slate-700'
+                      currentGovernance.allowTeacherGradeEditing ? 'bg-emerald-600' : 'bg-slate-300'
                     }`}
                   >
                     <div className={`w-4 h-4 rounded-full bg-white transition-transform absolute top-1 ${
@@ -972,10 +972,10 @@ export default function DirectorPortalPage() {
                 </div>
 
                 {/* Switch: Tienda Gamificada para Alumnos */}
-                <div className="p-4 rounded-2xl bg-slate-950/70 border border-white/5 flex items-center justify-between gap-4">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-4">
                   <div>
-                    <span className="text-xs font-bold text-white block">Módulo de Tienda Mágica & Recompensas</span>
-                    <span className="text-[11px] text-slate-400 block mt-0.5">
+                    <span className="text-xs font-bold text-slate-900 block">Módulo de Tienda Mágica & Recompensas</span>
+                    <span className="text-[11px] text-slate-500 block mt-0.5">
                       Activa la tienda gamificada y canje de avatares para los estudiantes de este colegio.
                     </span>
                   </div>
@@ -983,7 +983,7 @@ export default function DirectorPortalPage() {
                     type="button"
                     onClick={() => handleToggleGovernance('allowStudentGamification')}
                     className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-                      currentGovernance.allowStudentGamification ? 'bg-emerald-600' : 'bg-slate-700'
+                      currentGovernance.allowStudentGamification ? 'bg-emerald-600' : 'bg-slate-300'
                     }`}
                   >
                     <div className={`w-4 h-4 rounded-full bg-white transition-transform absolute top-1 ${
@@ -993,10 +993,10 @@ export default function DirectorPortalPage() {
                 </div>
 
                 {/* Switch: Asistente Pedagógico IA para Profesores */}
-                <div className="p-4 rounded-2xl bg-slate-950/70 border border-white/5 flex items-center justify-between gap-4">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-4">
                   <div>
-                    <span className="text-xs font-bold text-white block">Motor de IA Pedagógica para Docentes</span>
-                    <span className="text-[11px] text-slate-400 block mt-0.5">
+                    <span className="text-xs font-bold text-slate-900 block">Motor de IA Pedagógica para Docentes</span>
+                    <span className="text-[11px] text-slate-500 block mt-0.5">
                       Habilita la generación asistida por IA de planeaciones, rúbricas y proyectos formativos.
                     </span>
                   </div>
@@ -1004,7 +1004,7 @@ export default function DirectorPortalPage() {
                     type="button"
                     onClick={() => handleToggleGovernance('allowAiAssistantTeachers')}
                     className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-                      currentGovernance.allowAiAssistantTeachers ? 'bg-emerald-600' : 'bg-slate-700'
+                      currentGovernance.allowAiAssistantTeachers ? 'bg-emerald-600' : 'bg-slate-300'
                     }`}
                   >
                     <div className={`w-4 h-4 rounded-full bg-white transition-transform absolute top-1 ${
@@ -1014,10 +1014,10 @@ export default function DirectorPortalPage() {
                 </div>
 
                 {/* Switch: Asistente Pedagógico IA para Alumnos */}
-                <div className="p-4 rounded-2xl bg-slate-950/70 border border-white/5 flex items-center justify-between gap-4">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-4">
                   <div>
-                    <span className="text-xs font-bold text-white block">Tutor de IA Pedagógica para Alumnos</span>
-                    <span className="text-[11px] text-slate-400 block mt-0.5">
+                    <span className="text-xs font-bold text-slate-900 block">Tutor de IA Pedagógica para Alumnos</span>
+                    <span className="text-[11px] text-slate-500 block mt-0.5">
                       Permite que los alumnos reciban retroalimentación inteligente durante las misiones.
                     </span>
                   </div>
@@ -1025,7 +1025,7 @@ export default function DirectorPortalPage() {
                     type="button"
                     onClick={() => handleToggleGovernance('allowAiAssistantStudents')}
                     className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-                      currentGovernance.allowAiAssistantStudents ? 'bg-emerald-600' : 'bg-slate-700'
+                      currentGovernance.allowAiAssistantStudents ? 'bg-emerald-600' : 'bg-slate-300'
                     }`}
                   >
                     <div className={`w-4 h-4 rounded-full bg-white transition-transform absolute top-1 ${
@@ -1035,10 +1035,10 @@ export default function DirectorPortalPage() {
                 </div>
 
                 {/* Switch: Aprobación Previa Obligatoria de Planeaciones */}
-                <div className="p-4 rounded-2xl bg-slate-950/70 border border-white/5 flex items-center justify-between gap-4">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-4">
                   <div>
-                    <span className="text-xs font-bold text-white block">Aprobación Directiva de Planeaciones</span>
-                    <span className="text-[11px] text-slate-400 block mt-0.5">
+                    <span className="text-xs font-bold text-slate-900 block">Aprobación Directiva de Planeaciones</span>
+                    <span className="text-[11px] text-slate-500 block mt-0.5">
                       Exige el visto bueno formal de Dirección antes de que un docente pueda aplicar una planeación.
                     </span>
                   </div>
@@ -1046,7 +1046,7 @@ export default function DirectorPortalPage() {
                     type="button"
                     onClick={() => handleToggleGovernance('requirePlanningApproval')}
                     className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
-                      currentGovernance.requirePlanningApproval ? 'bg-emerald-600' : 'bg-slate-700'
+                      currentGovernance.requirePlanningApproval ? 'bg-emerald-600' : 'bg-slate-300'
                     }`}
                   >
                     <div className={`w-4 h-4 rounded-full bg-white transition-transform absolute top-1 ${
@@ -1058,32 +1058,32 @@ export default function DirectorPortalPage() {
             </div>
 
             {/* SECCIÓN B: GESTOR DE TEMÁTICAS CURRICULARES RESTRINGIDAS */}
-            <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 shadow-xl space-y-4">
-              <div className="flex items-center justify-between border-b border-white/5 pb-3">
+            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div>
-                  <h4 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-                    <BookOpen className="h-4 w-4 text-amber-400" /> Temáticas Curriculares Restringidas o en Pausa Institucional
+                  <h4 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 text-amber-500" /> Temáticas Curriculares Restringidas o en Pausa Institucional
                   </h4>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-500 mt-0.5">
                     Contenidos o unidades que requieren revisión directiva previa o se encuentran temporalmente bloqueadas.
                   </p>
                 </div>
-                <span className="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">
+                <span className="text-xs font-mono font-bold text-amber-800 bg-amber-100 px-2.5 py-1 rounded-full border border-amber-300">
                   {currentGovernance.restrictedTopics.length} Temáticas
                 </span>
               </div>
 
               {currentGovernance.restrictedTopics.length === 0 ? (
-                <div className="p-8 text-center text-slate-400 bg-slate-950/60 rounded-2xl border border-white/5">
-                  <CheckCircle2 className="h-8 w-8 text-emerald-400 mx-auto mb-2" />
-                  <p className="text-xs font-bold text-white">Todas las temáticas curriculares están libres para impartirse.</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">No hay restricciones curriculares activas en este plantel.</p>
+                <div className="p-8 text-center text-slate-600 bg-slate-50 rounded-2xl border border-slate-200">
+                  <CheckCircle2 className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
+                  <p className="text-xs font-bold text-slate-900">Todas las temáticas curriculares están libres para impartirse.</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">No hay restricciones curriculares activas en este plantel.</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="border-b border-white/10 bg-slate-950/60 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                      <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
                         <th className="p-3">Temática / Contenido</th>
                         <th className="p-3">Asignatura & Grado</th>
                         <th className="p-3">Motivo Pedagógico / Directivo</th>
@@ -1091,25 +1091,25 @@ export default function DirectorPortalPage() {
                         <th className="p-3 text-right">Liberar</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5 text-xs text-slate-300">
+                    <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
                       {currentGovernance.restrictedTopics.map((topic) => (
-                        <tr key={topic.id} className="hover:bg-white/[0.02]">
-                          <td className="p-3 font-bold text-white">
+                        <tr key={topic.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="p-3 font-bold text-slate-900">
                             {topic.topicTitle}
                           </td>
-                          <td className="p-3 text-slate-400 font-mono">
+                          <td className="p-3 text-slate-500 font-mono">
                             {topic.subjectName || 'General'} · {topic.grade || 'Todos'}
                           </td>
-                          <td className="p-3 text-slate-300 max-w-xs truncate">
+                          <td className="p-3 text-slate-700 max-w-xs truncate">
                             {topic.reason || 'Restricción preventiva establecida por Dirección.'}
                           </td>
                           <td className="p-3">
                             {topic.status === 'bloqueado' ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-red-500/20 text-red-300 border border-red-500/30">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-red-100 text-red-800 border border-red-300">
                                 <Lock className="h-3 w-3" /> Bloqueado Total
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-100 text-amber-800 border border-amber-300">
                                 <Eye className="h-3 w-3" /> Requiere Revisión
                               </span>
                             )}
@@ -1122,7 +1122,7 @@ export default function DirectorPortalPage() {
                                 showToast(`🔓 Restricción eliminada para "${topic.topicTitle}".`);
                               }}
                               title="Liberar temática"
-                              className="p-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30 transition-colors cursor-pointer"
+                              className="p-1.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 border border-red-300 transition-colors cursor-pointer"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </button>
@@ -1136,12 +1136,12 @@ export default function DirectorPortalPage() {
             </div>
 
             {/* SECCIÓN C: CONTROL DE CUENTAS DEL COLEGIO */}
-            <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 shadow-xl space-y-4">
-              <div className="border-b border-white/5 pb-3">
-                <h4 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-                  <Users className="h-4 w-4 text-purple-400" /> Gobernanza de Cuentas del Personal Docente de su Colegio
+            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4">
+              <div className="border-b border-slate-100 pb-3">
+                <h4 className="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                  <Users className="h-4 w-4 text-purple-600" /> Gobernanza de Cuentas del Personal Docente de su Colegio
                 </h4>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   El Director tiene la facultad de suspender accesos o reasignar contraseñas a los profesores de su institución.
                 </p>
               </div>
@@ -1149,7 +1149,7 @@ export default function DirectorPortalPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-white/10 bg-slate-950/60 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
                       <th className="p-3">Docente</th>
                       <th className="p-3">Plantel / Materias</th>
                       <th className="p-3 text-center">Planeaciones</th>
@@ -1158,36 +1158,36 @@ export default function DirectorPortalPage() {
                       <th className="p-3 text-right">Gobernanza Directiva</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5 text-xs text-slate-300">
+                  <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
                     {schoolTeachers.map((teacher) => {
                       const isBlocked = !!teacher.is_blocked;
                       const tempPass = teacher.temporary_password || '008805';
                       return (
-                        <tr key={teacher.id} className="hover:bg-white/[0.02]">
+                        <tr key={teacher.id} className="hover:bg-slate-50/80 transition-colors">
                           <td className="p-3">
-                            <span className="font-bold text-white block">{teacher.first_name} {teacher.last_name}</span>
-                            <span className="text-[10px] text-slate-400 font-mono">{teacher.email}</span>
+                            <span className="font-bold text-slate-900 block">{teacher.first_name} {teacher.last_name}</span>
+                            <span className="text-[10px] text-slate-500 font-mono">{teacher.email}</span>
                           </td>
-                          <td className="p-3 text-slate-400">
+                          <td className="p-3 text-slate-500">
                             <span>{teacher.campus_name || 'Plantel Principal'}</span>
                           </td>
                           <td className="p-3 text-center">
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
                               {Math.max(1, Math.round(((teacher.ai_tokens_consumed || 15000) / 15000)))} Plan(es)
                             </span>
                           </td>
                           <td className="p-3">
-                            <span className="font-mono bg-slate-950 px-2 py-1 rounded border border-white/10 text-amber-300 font-bold">
+                            <span className="font-mono bg-amber-50 px-2 py-1 rounded border border-amber-200 text-amber-800 font-bold">
                               {tempPass}
                             </span>
                           </td>
                           <td className="p-3">
                             {isBlocked ? (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-red-500/20 text-red-400 border border-red-500/30">
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-red-100 text-red-700 border border-red-300">
                                 Suspendido
                               </span>
                             ) : (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-700 border border-emerald-300">
                                 Activo
                               </span>
                             )}
@@ -1201,7 +1201,7 @@ export default function DirectorPortalPage() {
                                   showToast(isBlocked ? `✅ Profesor ${teacher.first_name} reactivado.` : `⛔ Profesor ${teacher.first_name} suspendido.`);
                                 }}
                                 className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
-                                  isBlocked ? 'bg-emerald-600/20 text-emerald-400 border-emerald-500/30' : 'bg-amber-600/20 text-amber-400 border-amber-500/30'
+                                  isBlocked ? 'bg-emerald-100 text-emerald-700 border-emerald-300 hover:bg-emerald-200' : 'bg-amber-100 text-amber-700 border-amber-300 hover:bg-amber-200'
                                 }`}
                               >
                                 {isBlocked ? <Unlock className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
@@ -1213,7 +1213,7 @@ export default function DirectorPortalPage() {
                                   showToast(`🔑 Nueva clave para ${teacher.first_name}: ${newP}`);
                                 }}
                                 title="Regenerar contraseña"
-                                className="p-1.5 rounded-lg bg-slate-800 text-amber-400 border border-white/10 hover:bg-slate-700 transition-colors cursor-pointer"
+                                className="p-1.5 rounded-lg bg-slate-100 text-amber-700 border border-slate-200 hover:bg-slate-200 transition-colors cursor-pointer"
                               >
                                 <RefreshCw className="h-3.5 w-3.5" />
                               </button>
@@ -1233,12 +1233,12 @@ export default function DirectorPortalPage() {
         {activeTab === 'school_control' && (
           <div className="space-y-6 animate-fade-in">
             {/* Header de Control Escolar */}
-            <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-900 p-6 rounded-3xl border border-white/10 shadow-xl">
+            <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-xs">
               <div>
-                <h3 className="text-lg font-black text-white flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-blue-400" /> Control Escolar y Coordinación del Colegio
+                <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-blue-600" /> Control Escolar y Coordinación del Colegio
                 </h3>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-slate-500 mt-1">
                   Acceso liberado total para la consulta y administración de alumnos, grupos y horarios del colegio.
                 </p>
               </div>
@@ -1246,7 +1246,7 @@ export default function DirectorPortalPage() {
               <div className="flex items-center gap-2">
                 <Link
                   href="/coordinator"
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black shadow-lg shadow-blue-600/30 transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black shadow-md shadow-blue-600/20 transition-all cursor-pointer"
                 >
                   Abrir Panel de Control Escolar Completo <ExternalLink className="h-3.5 w-3.5" />
                 </Link>
@@ -1254,11 +1254,11 @@ export default function DirectorPortalPage() {
             </div>
 
             {/* Subpestañas */}
-            <div className="flex items-center gap-2 border-b border-white/10 pb-2">
+            <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
               <button
                 onClick={() => setControlSubTab('students')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-                  controlSubTab === 'students' ? 'bg-white text-slate-900 font-black' : 'text-slate-400 hover:text-white'
+                  controlSubTab === 'students' ? 'bg-slate-900 text-white font-black' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 Alumnos ({schoolStudents.length})
@@ -1266,7 +1266,7 @@ export default function DirectorPortalPage() {
               <button
                 onClick={() => setControlSubTab('groups')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-                  controlSubTab === 'groups' ? 'bg-white text-slate-900 font-black' : 'text-slate-400 hover:text-white'
+                  controlSubTab === 'groups' ? 'bg-slate-900 text-white font-black' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 Grupos ({schoolGroups.length})
@@ -1274,7 +1274,7 @@ export default function DirectorPortalPage() {
               <button
                 onClick={() => setControlSubTab('teachers')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-                  controlSubTab === 'teachers' ? 'bg-white text-slate-900 font-black' : 'text-slate-400 hover:text-white'
+                  controlSubTab === 'teachers' ? 'bg-slate-900 text-white font-black' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 Docentes ({schoolTeachers.length})
@@ -1283,24 +1283,24 @@ export default function DirectorPortalPage() {
 
             {/* Subtab Alumnos */}
             {controlSubTab === 'students' && (
-              <div className="bg-slate-900 rounded-3xl border border-white/10 overflow-hidden shadow-xl p-5 space-y-4">
+              <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xs p-5 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <input
                       type="text"
                       value={searchStudent}
                       onChange={(e) => setSearchStudent(e.target.value)}
                       placeholder="Buscar alumno por nombre, matrícula o CURP..."
-                      className="w-full bg-slate-950 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500"
                     />
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-xs font-bold text-slate-400">{filteredStudents.length} alumnos mostrados</span>
+                    <span className="text-xs font-bold text-slate-500">{filteredStudents.length} alumnos mostrados</span>
                     <button
                       type="button"
                       onClick={() => setShowAddStudentModal(true)}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black shadow-lg shadow-blue-600/30 transition-all cursor-pointer hover:scale-102"
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black shadow-md shadow-blue-600/20 transition-all cursor-pointer hover:scale-102"
                     >
                       <Plus className="h-4 w-4" /> Inscribir Nuevo Alumno
                     </button>
@@ -1310,7 +1310,7 @@ export default function DirectorPortalPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="border-b border-white/10 bg-slate-950/60 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                      <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
                         <th className="p-3">Alumno</th>
                         <th className="p-3">Nivel & Grado</th>
                         <th className="p-3">Plantel</th>
@@ -1319,31 +1319,31 @@ export default function DirectorPortalPage() {
                         <th className="p-3 text-right">Acciones</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5 text-xs text-slate-300">
+                    <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
                       {filteredStudents.slice(0, 20).map(std => {
                         const isBlocked = !!std.is_blocked || std.status === 'suspendido';
                         return (
-                          <tr key={std.id} className="hover:bg-white/[0.02]">
-                            <td className="p-3 font-bold text-white">
+                          <tr key={std.id} className="hover:bg-slate-50/80 transition-colors">
+                            <td className="p-3 font-bold text-slate-900">
                               {std.first_name} {std.last_name_1}
                               <span className="block text-[10px] text-slate-500 font-mono">CURP: {std.curp || 'S/N'}</span>
                             </td>
-                            <td className="p-3 font-mono text-purple-300">
+                            <td className="p-3 font-mono text-purple-700 font-bold">
                               {std.grade || '1º'}
                             </td>
-                            <td className="p-3 text-slate-400">
+                            <td className="p-3 text-slate-500">
                               {std.campus_name || 'Plantel Principal'}
                             </td>
-                            <td className="p-3 text-slate-300">
+                            <td className="p-3 text-slate-700">
                               {std.tutor_name || std.father_name || 'Tutor Registrado'}
                             </td>
                             <td className="p-3">
                               {isBlocked ? (
-                                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-red-500/20 text-red-400 border border-red-500/30">
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-red-100 text-red-700 border border-red-300">
                                   Bloqueado
                                 </span>
                               ) : (
-                                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-700 border border-emerald-300">
                                   Activo
                                 </span>
                               )}
@@ -1355,7 +1355,7 @@ export default function DirectorPortalPage() {
                                   toggleUserBlock(std.id, 'student', !isBlocked);
                                   showToast(isBlocked ? `✅ Alumno ${std.first_name} desbloqueado.` : `⛔ Alumno ${std.first_name} bloqueado.`);
                                 }}
-                                className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+                                className="p-1.5 rounded-lg bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-200 hover:bg-slate-200 transition-colors cursor-pointer"
                               >
                                 {isBlocked ? <Unlock className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
                               </button>
@@ -1375,13 +1375,13 @@ export default function DirectorPortalPage() {
                 {schoolGroups.map(grp => {
                   const studentsInGroup = schoolStudents.filter(s => s.campus_name === grp.campus_name && s.grade === grp.grade);
                   return (
-                    <div key={grp.id} className="p-5 rounded-2xl bg-slate-900 border border-white/10 space-y-2">
+                    <div key={grp.id} className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-blue-400 uppercase tracking-wider">{grp.campus_name || 'Plantel'}</span>
-                        <span className="px-2 py-0.5 rounded-md bg-white/5 text-[11px] font-mono text-slate-400">Grupo {grp.name}</span>
+                        <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">{grp.campus_name || 'Plantel'}</span>
+                        <span className="px-2 py-0.5 rounded-md bg-slate-100 text-[11px] font-mono text-slate-600 font-bold">Grupo {grp.name}</span>
                       </div>
-                      <h4 className="text-base font-black text-white">{grp.grade} Grupo "{grp.name}"</h4>
-                      <p className="text-xs text-slate-400">{studentsInGroup.length} alumnos matriculados</p>
+                      <h4 className="text-base font-black text-slate-900">{grp.grade} Grupo "{grp.name}"</h4>
+                      <p className="text-xs text-slate-500">{studentsInGroup.length} alumnos matriculados</p>
                     </div>
                   );
                 })}
@@ -1391,23 +1391,23 @@ export default function DirectorPortalPage() {
             {/* Subtab Docentes */}
             {controlSubTab === 'teachers' && (
               <div className="space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-900 p-4 rounded-2xl border border-white/10">
+                <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
                   <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <input
                       type="text"
                       value={searchTeacher}
                       onChange={(e) => setSearchTeacher(e.target.value)}
                       placeholder="Buscar docente por nombre o correo..."
-                      className="w-full bg-slate-950 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-purple-500"
                     />
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-xs font-bold text-slate-400">{filteredTeachers.length} docentes registrados</span>
+                    <span className="text-xs font-bold text-slate-500">{filteredTeachers.length} docentes registrados</span>
                     <button
                       type="button"
                       onClick={() => setShowAddTeacherModal(true)}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-lg shadow-purple-600/30 transition-all cursor-pointer hover:scale-102"
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-md shadow-purple-600/20 transition-all cursor-pointer hover:scale-102"
                     >
                       <Plus className="h-4 w-4" /> Registrar Nuevo Docente
                     </button>
@@ -1416,19 +1416,19 @@ export default function DirectorPortalPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredTeachers.map(t => (
-                    <div key={t.id} className="p-5 rounded-2xl bg-slate-900 border border-white/10 space-y-2">
+                    <div key={t.id} className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold">
+                        <div className="h-10 w-10 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 flex items-center justify-center font-bold">
                           {t.first_name[0]}{t.last_name[0]}
                         </div>
                         <div>
-                          <h4 className="text-sm font-black text-white">{t.first_name} {t.last_name}</h4>
-                          <span className="text-[11px] text-slate-400 font-mono">{t.email}</span>
+                          <h4 className="text-sm font-black text-slate-900">{t.first_name} {t.last_name}</h4>
+                          <span className="text-[11px] text-slate-500 font-mono">{t.email}</span>
                         </div>
                       </div>
-                      <div className="pt-2 border-t border-white/5 text-xs text-slate-300 flex items-center justify-between">
+                      <div className="pt-2 border-t border-slate-100 text-xs text-slate-600 flex items-center justify-between">
                         <span>{t.campus_name || 'Plantel'}</span>
-                        <span className="font-semibold text-xs text-indigo-300">
+                        <span className="font-semibold text-xs text-indigo-700">
                           {Math.max(1, Math.round(((t.ai_tokens_consumed || 15000) / 15000)))} Plan(es) NEM
                         </span>
                       </div>
@@ -1443,49 +1443,49 @@ export default function DirectorPortalPage() {
         {/* 4. SUPERVISIÓN DE BÓVEDA CURRICULAR */}
         {activeTab === 'vault' && (
           <div className="space-y-6 animate-fade-in">
-            <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 shadow-xl space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/5 pb-4">
+            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
                     <ShieldCheck className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="text-base font-black text-white">Bóveda Curricular & Supervisión Pedagógica NEM 2024</h3>
-                    <p className="text-xs text-slate-400">Auditoría directiva de planeaciones docentes y cumplimiento de PDA oficiales</p>
+                    <h3 className="text-base font-black text-slate-900">Bóveda Curricular & Supervisión Pedagógica NEM 2024</h3>
+                    <p className="text-xs text-slate-500">Auditoría directiva de planeaciones docentes y cumplimiento de PDA oficiales</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
                     ✓ Bóveda Central En Línea
                   </span>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 rounded-2xl bg-slate-950/70 border border-white/5 space-y-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Planeaciones Registradas</span>
-                  <span className="text-2xl font-black text-white">48 Planeaciones</span>
-                  <span className="text-[11px] text-emerald-400 font-bold block">100% conforme a la NEM</span>
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Planeaciones Registradas</span>
+                  <span className="text-2xl font-black text-slate-900">48 Planeaciones</span>
+                  <span className="text-[11px] text-emerald-700 font-bold block">100% conforme a la NEM</span>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-slate-950/70 border border-white/5 space-y-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Proyectos Formativos en Curso</span>
-                  <span className="text-2xl font-black text-purple-300">12 Proyectos</span>
-                  <span className="text-[11px] text-slate-400 block">Articulación comunitaria activa</span>
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Proyectos Formativos en Curso</span>
+                  <span className="text-2xl font-black text-purple-700">12 Proyectos</span>
+                  <span className="text-[11px] text-slate-500 block">Articulación comunitaria activa</span>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-slate-950/70 border border-white/5 space-y-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Rúbricas Analíticas</span>
-                  <span className="text-2xl font-black text-cyan-300">36 Rúbricas</span>
-                  <span className="text-[11px] text-slate-400 block">Entregables tangibles definidos</span>
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block">Rúbricas Analíticas</span>
+                  <span className="text-2xl font-black text-cyan-700">36 Rúbricas</span>
+                  <span className="text-[11px] text-slate-500 block">Entregables tangibles definidos</span>
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-purple-950/30 border border-purple-500/30 flex items-start gap-3">
-                <Sparkles className="h-5 w-5 text-purple-400 shrink-0 mt-0.5" />
-                <div className="text-xs text-slate-300 leading-relaxed">
-                  <strong className="text-white block mb-1">Estrategia Vault-First / Cache-First:</strong>
+              <div className="p-4 rounded-2xl bg-purple-50 border border-purple-200 flex items-start gap-3">
+                <Sparkles className="h-5 w-5 text-purple-600 shrink-0 mt-0.5" />
+                <div className="text-xs text-slate-700 leading-relaxed">
+                  <strong className="text-slate-900 block mb-1">Estrategia Vault-First / Cache-First:</strong>
                   Cuando un profesor de su colegio solicita una planeación, el sistema primero consulta en la Bóveda Curricular local (`planeaciones/`) si ya existe un nodo curricular adecuado. Únicamente en su ausencia se recurre al Motor de Inteligencia Artificial Pedagógica, garantizando consistencia y persistencia inmediata en formato Markdown bidireccional.
                 </div>
               </div>
@@ -1496,17 +1496,17 @@ export default function DirectorPortalPage() {
         {/* 5. FINANZAS & COBRANZA INSTITUCIONAL */}
         {activeTab === 'finances' && (
           <div className="space-y-6 animate-fade-in">
-            <div className="p-6 rounded-3xl bg-slate-900 border border-white/10 shadow-xl space-y-4">
-              <div className="flex items-center justify-between border-b border-white/5 pb-3">
+            <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div>
-                  <h3 className="text-base font-black text-white flex items-center gap-2">
-                    <DollarSign className="h-5 w-5 text-emerald-400" /> Resumen de Cobranza del Colegio
+                  <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                    <DollarSign className="h-5 w-5 text-emerald-600" /> Resumen de Cobranza del Colegio
                   </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">Seguimiento de cuotas, aranceles escolares y estados de cuenta familiares.</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Seguimiento de cuotas, aranceles escolares y estados de cuenta familiares.</p>
                 </div>
                 <Link
                   href="/coordinator/billing"
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black shadow-lg shadow-emerald-600/30 transition-all cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
                 >
                   Abrir Panel Completo de Cobranza
                 </Link>
@@ -1515,7 +1515,7 @@ export default function DirectorPortalPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-white/10 bg-slate-950/60 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
                       <th className="p-3">Recibo / Folio</th>
                       <th className="p-3">Alumno / Familia</th>
                       <th className="p-3">Concepto</th>
@@ -1523,33 +1523,33 @@ export default function DirectorPortalPage() {
                       <th className="p-3">Estatus</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5 text-xs text-slate-300">
+                  <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
                     {schoolBilling.slice(0, 15).map(rec => (
-                      <tr key={rec.id} className="hover:bg-white/[0.02]">
-                        <td className="p-3 font-mono font-bold text-purple-300">
+                      <tr key={rec.id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="p-3 font-mono font-bold text-purple-700">
                           {rec.invoiceNumber}
                         </td>
                         <td className="p-3">
-                          <span className="font-bold text-white block">{rec.studentName}</span>
-                          <span className="text-[10px] text-slate-400">{rec.parentName}</span>
+                          <span className="font-bold text-slate-900 block">{rec.studentName}</span>
+                          <span className="text-[10px] text-slate-500">{rec.parentName}</span>
                         </td>
-                        <td className="p-3 text-slate-300">
+                        <td className="p-3 text-slate-700">
                           {rec.concept}
                         </td>
-                        <td className="p-3 font-mono font-bold text-emerald-400">
+                        <td className="p-3 font-mono font-bold text-emerald-700">
                           ${(rec.amount || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                         </td>
                         <td className="p-3">
                           {rec.status === 'paid' ? (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-700 border border-emerald-300">
                               Pagado
                             </span>
                           ) : rec.status === 'overdue' ? (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-red-500/20 text-red-300 border border-red-500/30">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-red-100 text-red-700 border border-red-300">
                               Vencido
                             </span>
                           ) : (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-100 text-amber-800 border border-amber-300">
                               Pendiente
                             </span>
                           )}
@@ -1566,22 +1566,22 @@ export default function DirectorPortalPage() {
 
       {/* MODAL: RESTRINGIR NUEVA TEMÁTICA CURRICULAR */}
       {showAddTopicModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-lg bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-white/10 p-6 space-y-5">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in">
+          <div className="relative w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200 p-6 space-y-5 text-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                <div className="p-2 rounded-xl bg-amber-50 text-amber-700 border border-amber-200">
                   <SlidersHorizontal className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="text-base font-black text-white">Restringir Temática Curricular</h4>
-                  <p className="text-xs text-slate-400">Establecer validación directiva o pausa pedagógica institucional</p>
+                  <h4 className="text-base font-black text-slate-900">Restringir Temática Curricular</h4>
+                  <p className="text-xs text-slate-500">Establecer validación directiva o pausa pedagógica institucional</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAddTopicModal(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1589,7 +1589,7 @@ export default function DirectorPortalPage() {
 
             <form onSubmit={handleAddRestrictedTopicSubmit} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1">
+                <label className="text-xs font-bold text-slate-700 block mb-1">
                   Título o Contenido de la Temática *
                 </label>
                 <input
@@ -1598,13 +1598,13 @@ export default function DirectorPortalPage() {
                   value={newRestrictedTopic.topicTitle}
                   onChange={(e) => setNewRestrictedTopic(prev => ({ ...prev, topicTitle: e.target.value }))}
                   placeholder="Ej. Sexualidad Integral y Género, Geopolítica Contemporánea"
-                  className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
                     Materia / Asignatura
                   </label>
                   <input
@@ -1612,12 +1612,12 @@ export default function DirectorPortalPage() {
                     value={newRestrictedTopic.subjectName}
                     onChange={(e) => setNewRestrictedTopic(prev => ({ ...prev, subjectName: e.target.value }))}
                     placeholder="Ej. Formación Cívica y Ética"
-                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-500"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
                     Grado Escolar
                   </label>
                   <input
@@ -1625,19 +1625,19 @@ export default function DirectorPortalPage() {
                     value={newRestrictedTopic.grade}
                     onChange={(e) => setNewRestrictedTopic(prev => ({ ...prev, grade: e.target.value }))}
                     placeholder="Ej. Secundaria (2º)"
-                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1">
+                <label className="text-xs font-bold text-slate-700 block mb-1">
                   Tipo de Restricción
                 </label>
                 <select
                   value={newRestrictedTopic.status}
                   onChange={(e) => setNewRestrictedTopic(prev => ({ ...prev, status: e.target.value as any }))}
-                  className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-500 cursor-pointer"
                 >
                   <option value="requiere_revision">Requiere Revisión Directiva Previa (Supervisión)</option>
                   <option value="bloqueado">Bloqueado Total (Pausa Institucional)</option>
@@ -1645,7 +1645,7 @@ export default function DirectorPortalPage() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1">
+                <label className="text-xs font-bold text-slate-700 block mb-1">
                   Motivo Institucional o Pedagógico
                 </label>
                 <textarea
@@ -1653,21 +1653,21 @@ export default function DirectorPortalPage() {
                   value={newRestrictedTopic.reason}
                   onChange={(e) => setNewRestrictedTopic(prev => ({ ...prev, reason: e.target.value }))}
                   placeholder="Explica el criterio por el cual esta temática debe ser supervisada..."
-                  className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-500"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowAddTopicModal(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-lg shadow-purple-600/30 transition-all cursor-pointer hover:scale-102"
+                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-md shadow-purple-600/20 transition-all cursor-pointer hover:scale-102"
                 >
                   Aplicar Restricción Institucional
                 </button>
@@ -1679,32 +1679,32 @@ export default function DirectorPortalPage() {
 
       {/* MODAL DIRECTIVO: INSCRIBIR NUEVO ALUMNO */}
       {showAddStudentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-2xl bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-white/10 p-6 space-y-5 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in">
+          <div className="relative w-full max-w-2xl bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200 p-6 space-y-5 max-h-[90vh] overflow-y-auto text-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                <div className="p-2 rounded-xl bg-blue-50 text-blue-700 border border-blue-200">
                   <GraduationCap className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="text-base font-black text-white">Inscripción Directiva de Alumno</h4>
-                  <p className="text-xs text-slate-400">
-                    {schoolInfo.name} · Correo institucional obligatorio <span className="font-mono text-blue-400">@{schoolDomain}</span>
+                  <h4 className="text-base font-black text-slate-900">Inscripción Directiva de Alumno</h4>
+                  <p className="text-xs text-slate-500">
+                    {schoolInfo.name} · Correo institucional obligatorio <span className="font-mono text-blue-600">@{schoolDomain}</span>
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAddStudentModal(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             {/* Banner de Límite Corporativo de Becas */}
-            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center gap-2 text-xs text-amber-300">
-              <Crown className="h-4 w-4 shrink-0 text-amber-400" />
+            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-center gap-2 text-xs text-amber-800 font-medium">
+              <Crown className="h-4 w-4 shrink-0 text-amber-600" />
               <span>
                 Tope máximo de beca autorizado por Presidencia: <strong>{directorLimits?.maxScholarshipDiscountPercent ?? 50}%</strong>.
               </span>
@@ -1713,7 +1713,7 @@ export default function DirectorPortalPage() {
             <form onSubmit={handleCreateStudentDirector} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
                     Primer Nombre *
                   </label>
                   <input
@@ -1722,12 +1722,12 @@ export default function DirectorPortalPage() {
                     value={newStudentForm.first_name}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, first_name: e.target.value }))}
                     placeholder="Ej. Mateo"
-                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
                     Segundo Nombre
                   </label>
                   <input
@@ -1735,12 +1735,12 @@ export default function DirectorPortalPage() {
                     value={newStudentForm.second_name}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, second_name: e.target.value }))}
                     placeholder="Ej. Alexander"
-                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
                     Primer Apellido *
                   </label>
                   <input
@@ -1749,12 +1749,12 @@ export default function DirectorPortalPage() {
                     value={newStudentForm.last_name_1}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, last_name_1: e.target.value }))}
                     placeholder="Ej. Morales"
-                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
                     Segundo Apellido
                   </label>
                   <input
@@ -1762,20 +1762,20 @@ export default function DirectorPortalPage() {
                     value={newStudentForm.last_name_2}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, last_name_2: e.target.value }))}
                     placeholder="Ej. Ruiz"
-                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
                     Nivel Educativo
                   </label>
                   <select
                     value={newStudentForm.level}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, level: e.target.value as any }))}
-                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 cursor-pointer"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 cursor-pointer"
                   >
                     <option value="primaria">Primaria</option>
                     <option value="secundaria">Secundaria</option>
@@ -1784,13 +1784,13 @@ export default function DirectorPortalPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
                     Grado
                   </label>
                   <select
                     value={newStudentForm.grade}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, grade: e.target.value }))}
-                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 cursor-pointer"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 cursor-pointer"
                   >
                     <option value="1º">1º Grado</option>
                     <option value="2º">2º Grado</option>
@@ -1802,13 +1802,13 @@ export default function DirectorPortalPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
                     Plantel de Asignación
                   </label>
                   <select
                     value={newStudentForm.campus_name}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, campus_name: e.target.value }))}
-                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 cursor-pointer"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 cursor-pointer"
                   >
                     {schoolCampuses.map(c => (
                       <option key={c.id} value={c.name}>{c.name}</option>
@@ -1819,7 +1819,7 @@ export default function DirectorPortalPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
                     CURP del Alumno
                   </label>
                   <input
@@ -1828,12 +1828,12 @@ export default function DirectorPortalPage() {
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, curp: e.target.value.toUpperCase() }))}
                     placeholder="Auto o 18 caracteres"
                     maxLength={18}
-                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-blue-500 uppercase"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono focus:outline-none focus:border-blue-500 uppercase"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
                     Nombre del Tutor / Familiar
                   </label>
                   <input
@@ -1841,15 +1841,15 @@ export default function DirectorPortalPage() {
                     value={newStudentForm.tutor_name}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, tutor_name: e.target.value }))}
                     placeholder="Ej. Roberto Morales Sánchez"
-                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500"
                   />
                 </div>
               </div>
 
               {/* Beca y Financiero */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-2xl bg-slate-950/60 border border-white/5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-200">
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
                     Porcentaje de Beca (%)
                   </label>
                   <input
@@ -1858,7 +1858,7 @@ export default function DirectorPortalPage() {
                     max={directorLimits?.maxScholarshipDiscountPercent ?? 50}
                     value={newStudentForm.scholarship_percentage}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, scholarship_percentage: Number(e.target.value) }))}
-                    className="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 font-mono"
                   />
                   <span className="text-[10px] text-slate-500 mt-1 block">
                     Máx. autorizado: {directorLimits?.maxScholarshipDiscountPercent ?? 50}%
@@ -1866,13 +1866,13 @@ export default function DirectorPortalPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
                     Tipo de Beca
                   </label>
                   <select
                     value={newStudentForm.scholarship_type}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, scholarship_type: e.target.value as any }))}
-                    className="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 cursor-pointer"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 cursor-pointer"
                   >
                     <option value="ninguna">Sin Beca (Cuota Ordinaria)</option>
                     <option value="academica">Beca Académica / Excelencia</option>
@@ -1885,7 +1885,7 @@ export default function DirectorPortalPage() {
 
               {/* Correo Estricto Institucional */}
               <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1">
+                <label className="text-xs font-bold text-slate-700 block mb-1">
                   Correo Institucional Autogenerado *
                 </label>
                 <div className="flex items-center">
@@ -1894,28 +1894,28 @@ export default function DirectorPortalPage() {
                     value={newStudentForm.email}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, email: e.target.value }))}
                     placeholder={newStudentForm.first_name ? `${newStudentForm.first_name.toLowerCase().replace(/[^a-z0-9]/g, '')}.${newStudentForm.last_name_1.toLowerCase().replace(/[^a-z0-9]/g, '')}` : "nombre.apellido"}
-                    className="flex-1 bg-slate-950 border border-white/10 rounded-l-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-l-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 font-mono"
                   />
-                  <span className="bg-blue-600/20 text-blue-300 border border-l-0 border-blue-500/30 rounded-r-xl px-3 py-2 text-xs font-mono font-bold">
+                  <span className="bg-blue-50 text-blue-700 border border-l-0 border-blue-200 rounded-r-xl px-3 py-2 text-xs font-mono font-bold">
                     @{schoolDomain}
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-400 mt-1 block">
+                <span className="text-[10px] text-slate-500 mt-1 block">
                   Regla de seguridad: Todo estudiante pertenece estrictamente al dominio de su colegio.
                 </span>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowAddStudentModal(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black shadow-lg shadow-blue-600/30 transition-all cursor-pointer hover:scale-102"
+                  className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black shadow-md shadow-blue-600/20 transition-all cursor-pointer hover:scale-102"
                 >
                   Matricular Alumno en Plantel
                 </button>
@@ -1927,24 +1927,24 @@ export default function DirectorPortalPage() {
 
       {/* MODAL DIRECTIVO: REGISTRAR NUEVO DOCENTE */}
       {showAddTeacherModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-xl bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-white/10 p-6 space-y-5">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in">
+          <div className="relative w-full max-w-xl bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200 p-6 space-y-5 text-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                <div className="p-2 rounded-xl bg-purple-50 text-purple-700 border border-purple-200">
                   <Users className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="text-base font-black text-white">Registro Directivo de Docente</h4>
-                  <p className="text-xs text-slate-400">
-                    {schoolInfo.name} · Correo institucional obligatorio <span className="font-mono text-purple-400">@{schoolDomain}</span>
+                  <h4 className="text-base font-black text-slate-900">Registro Directivo de Docente</h4>
+                  <p className="text-xs text-slate-500">
+                    {schoolInfo.name} · Correo institucional obligatorio <span className="font-mono text-purple-600">@{schoolDomain}</span>
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAddTeacherModal(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1953,7 +1953,7 @@ export default function DirectorPortalPage() {
             <form onSubmit={handleCreateTeacherDirector} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
                     Nombre(s) del Docente *
                   </label>
                   <input
@@ -1962,12 +1962,12 @@ export default function DirectorPortalPage() {
                     value={newTeacherForm.first_name}
                     onChange={(e) => setNewTeacherForm(prev => ({ ...prev, first_name: e.target.value }))}
                     placeholder="Ej. Laura"
-                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-500"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
                     Apellidos *
                   </label>
                   <input
@@ -1976,14 +1976,14 @@ export default function DirectorPortalPage() {
                     value={newTeacherForm.last_name}
                     onChange={(e) => setNewTeacherForm(prev => ({ ...prev, last_name: e.target.value }))}
                     placeholder="Ej. Gómez Silva"
-                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-500"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
                     Materia / Asignatura Principal
                   </label>
                   <input
@@ -1992,18 +1992,18 @@ export default function DirectorPortalPage() {
                     value={newTeacherForm.assigned_subject}
                     onChange={(e) => setNewTeacherForm(prev => ({ ...prev, assigned_subject: e.target.value }))}
                     placeholder="Ej. Matemáticas, Ciencias, Robótica"
-                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-500"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
                     Plantel de Adscripción
                   </label>
                   <select
                     value={newTeacherForm.campus_name}
                     onChange={(e) => setNewTeacherForm(prev => ({ ...prev, campus_name: e.target.value }))}
-                    className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-500 cursor-pointer"
                   >
                     {schoolCampuses.map(c => (
                       <option key={c.id} value={c.name}>{c.name}</option>
@@ -2013,7 +2013,7 @@ export default function DirectorPortalPage() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1">
+                <label className="text-xs font-bold text-slate-700 block mb-1">
                   Teléfono de Contacto
                 </label>
                 <input
@@ -2021,13 +2021,13 @@ export default function DirectorPortalPage() {
                   value={newTeacherForm.phone}
                   onChange={(e) => setNewTeacherForm(prev => ({ ...prev, phone: e.target.value }))}
                   placeholder="Ej. 55-4160-8800"
-                  className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-500"
                 />
               </div>
 
               {/* Correo Estricto Institucional */}
               <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1">
+                <label className="text-xs font-bold text-slate-700 block mb-1">
                   Correo Institucional Autogenerado *
                 </label>
                 <div className="flex items-center">
@@ -2036,28 +2036,28 @@ export default function DirectorPortalPage() {
                     value={newTeacherForm.email}
                     onChange={(e) => setNewTeacherForm(prev => ({ ...prev, email: e.target.value }))}
                     placeholder={newTeacherForm.first_name ? `${newTeacherForm.first_name.toLowerCase().replace(/[^a-z0-9]/g, '')}.${newTeacherForm.last_name.toLowerCase().replace(/[^a-z0-9]/g, '')}` : "profesor.apellido"}
-                    className="flex-1 bg-slate-950 border border-white/10 rounded-l-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 font-mono"
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-l-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-500 font-mono"
                   />
-                  <span className="bg-purple-600/20 text-purple-300 border border-l-0 border-purple-500/30 rounded-r-xl px-3 py-2 text-xs font-mono font-bold">
+                  <span className="bg-purple-50 text-purple-700 border border-l-0 border-purple-200 rounded-r-xl px-3 py-2 text-xs font-mono font-bold">
                     @{schoolDomain}
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-400 mt-1 block">
+                <span className="text-[10px] text-slate-500 mt-1 block">
                   Regla institucional: Los accesos al Motor de IA Pedagógica y Bóveda se autentican con este dominio.
                 </span>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowAddTeacherModal(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-lg shadow-purple-600/30 transition-all cursor-pointer hover:scale-102"
+                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-md shadow-purple-600/20 transition-all cursor-pointer hover:scale-102"
                 >
                   Registrar y Asignar Docente
                 </button>

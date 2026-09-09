@@ -95,14 +95,14 @@ function renderFormattedMarkdown(content?: string | null) {
           if (match[2]) {
             // **bold**
             parts.push(
-              <strong key={`${lineIdx}-${match.index}`} className="font-bold text-cyan-200">
+              <strong key={`${lineIdx}-${match.index}`} className="font-bold text-indigo-700">
                 {match[2]}
               </strong>
             );
           } else if (match[3]) {
             // *italic*
             parts.push(
-              <em key={`${lineIdx}-${match.index}`} className="italic text-slate-300">
+              <em key={`${lineIdx}-${match.index}`} className="italic text-slate-600">
                 {match[3]}
               </em>
             );
@@ -116,15 +116,15 @@ function renderFormattedMarkdown(content?: string | null) {
 
         if (isBullet) {
           return (
-            <div key={lineIdx} className="flex items-start gap-2 pl-1.5 text-slate-200">
-              <span className="text-cyan-400 font-bold select-none leading-normal shrink-0">•</span>
+            <div key={lineIdx} className="flex items-start gap-2 pl-1.5 text-slate-800">
+              <span className="text-indigo-600 font-bold select-none leading-normal shrink-0">•</span>
               <div className="flex-1 leading-snug">{parts}</div>
             </div>
           );
         }
 
         return (
-          <p key={lineIdx} className="leading-snug text-slate-200">
+          <p key={lineIdx} className="leading-snug text-slate-800">
             {parts}
           </p>
         );
@@ -946,20 +946,20 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
               <div 
                 key={idx}
                 onClick={() => handleOpenStudentExpediente(studentId, studentName)}
-                className="bg-slate-950/80 hover:bg-slate-950 border border-white/10 hover:border-indigo-500/50 rounded-xl p-4 flex flex-col justify-between gap-3 shadow-md hover:shadow-indigo-500/10 transition-all cursor-pointer group relative overflow-hidden"
+                className="bg-white hover:bg-slate-50 border border-slate-200 hover:border-indigo-400 rounded-xl p-4 flex flex-col justify-between gap-3 shadow-sm hover:shadow-md transition-all cursor-pointer group relative overflow-hidden"
               >
                 {/* Header de la tarjeta */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500/30 via-slate-800 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-300 font-bold text-xs shrink-0 shadow-inner">
+                    <div className="h-10 w-10 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-xs shrink-0 shadow-xs">
                       {String(studentName).split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
                     </div>
                     <div className="min-w-0">
-                      <h4 className="text-xs font-bold text-white group-hover:text-indigo-300 transition truncate">
+                      <h4 className="text-xs font-bold text-slate-900 group-hover:text-indigo-600 transition truncate">
                         {studentName}
                       </h4>
-                      <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5">
-                        <span className="font-mono text-cyan-400">{enrollmentId}</span>
+                      <div className="flex items-center gap-1.5 text-[10px] text-slate-500 mt-0.5">
+                        <span className="font-mono text-indigo-600 font-bold">{enrollmentId}</span>
                         <span>·</span>
                         <span>{levelGrade}</span>
                       </div>
@@ -967,7 +967,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                   </div>
 
                   <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0 ${
-                    isOverdue ? 'bg-rose-500/15 border border-rose-500/30 text-rose-400' : 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400'
+                    isOverdue ? 'bg-rose-50 border border-rose-200 text-rose-700' : 'bg-emerald-50 border border-emerald-200 text-emerald-700'
                   }`}>
                     {status}
                   </span>
@@ -975,19 +975,19 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
 
                 {/* Beca Institucional autorizada (> 0%) */}
                 {scholarshipNotes && (
-                  <div className="p-2.5 rounded-lg bg-indigo-950/40 border border-indigo-500/30 text-indigo-200 text-xs space-y-1">
+                  <div className="p-2.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 flex items-center gap-1">
                         <GraduationCap className="h-3.5 w-3.5" />
                         <span>Beca Institucional Autorizada</span>
                       </span>
                       {scholarshipPercentage > 0 && (
-                        <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-indigo-500/25 border border-indigo-500/30 rounded text-indigo-300">
+                        <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-indigo-100 border border-indigo-200 rounded text-indigo-800">
                           🏷️ {scholarshipPercentage}% DCTO
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] font-medium leading-snug text-slate-200">
+                    <p className="text-[11px] font-medium leading-snug text-slate-700">
                       {scholarshipNotes}
                     </p>
                   </div>
@@ -995,44 +995,44 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
 
                 {/* Ficha Médica / Alergia destacada */}
                 {(medicalNotes || isAllergySearch || (bloodType && bloodType !== 'N/D')) && (
-                  <div className="p-2.5 rounded-lg bg-rose-950/30 border border-rose-500/30 text-rose-200 text-xs space-y-1">
+                  <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 text-xs space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 flex items-center gap-1">
                         <AlertTriangle className="h-3 w-3" />
                         <span>Alergia / Ficha Médica</span>
                       </span>
                       {bloodType && bloodType !== 'N/D' && (
-                        <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-rose-500/20 rounded text-rose-300">
+                        <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-rose-100 border border-rose-200 rounded text-rose-800">
                           🩸 {bloodType}
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] font-medium leading-snug">
+                    <p className="text-[11px] font-medium leading-snug text-rose-800">
                       {medicalNotes || 'Diagnóstico clínico registrado en expediente escolar.'}
                     </p>
                   </div>
                 )}
 
                 {/* Filiación Familiar & Contacto de Emergencia */}
-                <div className="text-[11px] text-slate-300 space-y-1 bg-white/[0.02] p-2.5 rounded-lg border border-white/5">
+                <div className="text-[11px] text-slate-600 space-y-1 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
                   <div className="flex items-center justify-between">
                     <span className="text-slate-500">Tutor:</span>
-                    <span className="font-medium text-slate-200 truncate max-w-[170px]">{tutor}</span>
+                    <span className="font-medium text-slate-800 truncate max-w-[170px]">{tutor}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-slate-500">Emergencia:</span>
-                    <span className="font-medium text-cyan-300 font-mono">{phone}</span>
+                    <span className="font-medium text-indigo-700 font-mono">{phone}</span>
                   </div>
                   {age && age !== 'N/D' && (
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500">Edad:</span>
-                      <span className="font-medium text-slate-200">{age} {birthDate ? `(${birthDate})` : ''}</span>
+                      <span className="font-medium text-slate-800">{age} {birthDate ? `(${birthDate})` : ''}</span>
                     </div>
                   )}
                   {campus && (
                     <div className="flex items-center justify-between text-[10px]">
                       <span className="text-slate-500">Plantel:</span>
-                      <span className="font-medium text-slate-400 truncate max-w-[170px]">{campus}</span>
+                      <span className="font-medium text-slate-600 truncate max-w-[170px]">{campus}</span>
                     </div>
                   )}
                 </div>
@@ -1044,7 +1044,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                     e.stopPropagation();
                     handleOpenStudentExpediente(studentId, studentName);
                   }}
-                  className="w-full py-2 rounded-lg bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white border border-indigo-500/30 hover:border-transparent text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer mt-1 shadow-sm"
+                  className="w-full py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer mt-1 shadow-sm"
                 >
                   <span>Abrir Expediente 360°</span>
                   <ExternalLink className="h-3 w-3" />
@@ -1117,21 +1117,21 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
         }
       `}</style>
 
-      {/* 1. CONTENEDOR EN PANTALLA (INTERACTIVO, SPLIT-VIEW, MODO OSCURO) - OCULTO AL IMPRIMIR */}
-      <div className="screen-only-studio flex flex-col h-screen w-full bg-slate-950 text-slate-100 font-sans overflow-hidden select-none print:hidden">
+      {/* 1. CONTENEDOR EN PANTALLA (INTERACTIVO, SPLIT-VIEW, MODO CLARO) - OCULTO AL IMPRIMIR */}
+      <div className="screen-only-studio flex flex-col h-screen w-full bg-slate-50 text-slate-900 font-sans overflow-hidden select-none print:hidden">
         
-        {/* 1. BARRA SUPERIOR EJECUTIVA (ESTILO IMAGEN 2) */}
-      <header className="h-14 shrink-0 bg-slate-900/90 backdrop-blur-md border-b border-white/10 px-4 flex items-center justify-between gap-3 z-30">
+        {/* 1. BARRA SUPERIOR EJECUTIVA */}
+      <header className="h-14 shrink-0 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 flex items-center justify-between gap-3 z-30 shadow-xs">
         <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={() => onBack ? onBack() : window.history.back()}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-semibold transition cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 text-xs font-semibold transition cursor-pointer shrink-0 border border-slate-200"
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Volver</span>
           </button>
           
-          <div className="h-4 w-[1px] bg-white/10 shrink-0" />
+          <div className="h-4 w-[1px] bg-slate-200 shrink-0" />
 
           {/* Título dinámico del reporte */}
           <div className="flex items-center gap-2 min-w-0">
@@ -1143,13 +1143,13 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                 onBlur={() => setIsEditingTitle(false)}
                 onKeyDown={(e) => e.key === 'Enter' && setIsEditingTitle(false)}
                 autoFocus
-                className="bg-slate-800 border border-indigo-500 rounded px-2 py-0.5 text-sm font-semibold text-white focus:outline-none"
+                className="bg-white border border-indigo-500 rounded px-2 py-0.5 text-sm font-semibold text-slate-900 focus:outline-none"
               />
             ) : (
               <h1 
                 onClick={() => setIsEditingTitle(true)}
                 title="Clic para editar título del reporte"
-                className="text-sm md:text-base font-bold text-white truncate cursor-pointer hover:text-indigo-300 transition flex items-center gap-1.5"
+                className="text-sm md:text-base font-bold text-slate-900 truncate cursor-pointer hover:text-indigo-600 transition flex items-center gap-1.5"
               >
                 {reportTitle}
               </h1>
@@ -1161,57 +1161,55 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
         <div className="flex items-center gap-2.5 shrink-0">
           {/* Aislamiento Multi-Colegio: Selector solo para Super Usuario; Badge bloqueado para Dueño de Colegio */}
           {isSuperUser ? (
-            <div className="flex items-center gap-1.5 bg-slate-800 border border-white/10 rounded-lg px-2.5 py-1 text-xs">
-              <Building2 className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+            <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-1 text-xs">
+              <Building2 className="h-3.5 w-3.5 text-amber-500 shrink-0" />
               <select
                 value={selectedSchoolFilter}
                 onChange={(e) => {
                   setSelectedSchoolFilter(e.target.value);
                   selectSchool(e.target.value);
                 }}
-                className="bg-transparent text-slate-200 font-medium focus:outline-none text-xs cursor-pointer"
+                className="bg-transparent text-slate-800 font-medium focus:outline-none text-xs cursor-pointer"
               >
-                <option value="all" className="bg-slate-900 text-amber-300 font-bold">Consolidado Global (Todos los Colegios)</option>
+                <option value="all" className="bg-white text-amber-600 font-bold">Consolidado Global (Todos los Colegios)</option>
                 {institutionsList.map(inst => (
-                  <option key={inst.id} value={inst.id} className="bg-slate-900 text-white">
+                  <option key={inst.id} value={inst.id} className="bg-white text-slate-900">
                     {inst.name}
                   </option>
                 ))}
               </select>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 bg-slate-800/80 border border-white/10 rounded-lg px-3 py-1 text-xs text-slate-300">
-              <ShieldCheck className="h-3.5 w-3.5 text-indigo-400" />
-              <span className="font-semibold text-white truncate max-w-[180px]">
+            <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 rounded-lg px-3 py-1 text-xs text-slate-700">
+              <ShieldCheck className="h-3.5 w-3.5 text-indigo-600" />
+              <span className="font-semibold text-slate-900 truncate max-w-[180px]">
                 {activeInstitution?.name || 'Colegio Autónomo'}
               </span>
             </div>
           )}
 
-
-
           {/* Botones de acción del reporte */}
           <button
             onClick={handleExportCSV}
             title="Exportar datos a formato CSV/Excel"
-            className="p-1.5 sm:px-3 sm:py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-300 hover:text-white flex items-center gap-1.5 transition cursor-pointer"
+            className="p-1.5 sm:px-3 sm:py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 hover:text-slate-900 flex items-center gap-1.5 transition cursor-pointer shadow-xs"
           >
-            <Download className="h-3.5 w-3.5 text-slate-400" />
+            <Download className="h-3.5 w-3.5 text-slate-500" />
             <span className="hidden sm:inline">Exportar</span>
           </button>
 
           <button
             onClick={() => window.print()}
             title="Imprimir reporte o guardar como PDF"
-            className="p-1.5 sm:px-3 sm:py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-300 hover:text-white flex items-center gap-1.5 transition cursor-pointer"
+            className="p-1.5 sm:px-3 sm:py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 hover:text-slate-900 flex items-center gap-1.5 transition cursor-pointer shadow-xs"
           >
-            <Printer className="h-3.5 w-3.5 text-slate-400" />
+            <Printer className="h-3.5 w-3.5 text-slate-500" />
             <span className="hidden sm:inline">Imprimir</span>
           </button>
 
           <button
             onClick={handleCopySummary}
-            className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white shadow-md shadow-indigo-600/30 flex items-center gap-1.5 transition cursor-pointer"
+            className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-bold text-white shadow-sm flex items-center gap-1.5 transition cursor-pointer"
           >
             {copiedSummary ? <Check className="h-3.5 w-3.5 text-white" /> : <Copy className="h-3.5 w-3.5 text-white" />}
             <span>{copiedSummary ? 'Copiado' : 'Publicar'}</span>
@@ -1224,26 +1222,26 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
         
         {/* PANEL LATERAL IZQUIERDO: ASISTENTE CONVERSACIONAL (VOZ Y TEXTO) */}
         <aside 
-          className={`shrink-0 bg-slate-900 border-r border-white/10 flex flex-col transition-all duration-300 relative z-20 ${
+          className={`shrink-0 bg-white border-r border-slate-200 flex flex-col transition-all duration-300 relative z-20 ${
             isSidebarOpen ? 'w-[360px] md:w-[410px]' : 'w-0 border-r-0 overflow-hidden'
           }`}
         >
           {/* Header del Chat */}
-          <div className="h-10 px-4 border-b border-white/5 flex items-center justify-between shrink-0 bg-slate-900/50">
+          <div className="h-10 px-4 border-b border-slate-200 flex items-center justify-between shrink-0 bg-slate-50">
             <div className="flex items-center gap-2">
-              <Bot className="h-4 w-4 text-cyan-400" />
-              <span className="text-xs font-bold text-slate-200">Asistente Ejecutivo de Información</span>
+              <Bot className="h-4 w-4 text-indigo-600" />
+              <span className="text-xs font-bold text-slate-800">Asistente Ejecutivo de Información</span>
             </div>
-            <span className="text-[10px] text-slate-500 bg-white/5 px-2 py-0.5 rounded font-mono">
+            <span className="text-[10px] text-slate-500 bg-slate-200/60 px-2 py-0.5 rounded font-mono">
               IA Pedagógica & Analítica
             </span>
           </div>
 
-          {/* Historial de conversación (Formato idéntico a imagen 2) */}
+          {/* Historial de conversación */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
             {/* Mensaje del usuario */}
             <div className="flex flex-col items-end">
-              <div className="max-w-[90%] bg-slate-800 text-slate-100 rounded-2xl rounded-tr-sm px-3.5 py-2.5 shadow-sm border border-white/5 font-medium leading-relaxed">
+              <div className="max-w-[90%] bg-indigo-600 text-white rounded-2xl rounded-tr-sm px-3.5 py-2.5 shadow-sm font-medium leading-relaxed">
                 {currentReport?.queryReceived || reportTitle}
               </div>
               <span className="text-[10px] text-slate-500 mt-1 mr-1">Tú · Consulta Directiva</span>
@@ -1251,75 +1249,75 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
 
             {/* Respuesta explicativa estructurada del Asistente */}
             {isProcessing ? (
-              <div className="flex items-center gap-2 text-slate-400 p-3 bg-white/5 rounded-xl animate-pulse">
-                <div className="h-3 w-3 rounded-full bg-cyan-400 animate-ping" />
+              <div className="flex items-center gap-2 text-slate-600 p-3 bg-slate-50 rounded-xl animate-pulse border border-slate-200">
+                <div className="h-3 w-3 rounded-full bg-indigo-600 animate-ping" />
                 <span className="text-xs">Consultando base de datos escolar local...</span>
               </div>
             ) : currentReport ? (
               <div className="flex flex-col items-start">
-                <div className="w-full bg-slate-950/60 border border-white/10 rounded-2xl rounded-tl-sm p-3.5 text-slate-300 space-y-3 shadow-inner">
-                  <p className="font-semibold text-slate-100 text-[13px] leading-snug">
+                <div className="w-full bg-slate-50 border border-slate-200 rounded-2xl rounded-tl-sm p-3.5 text-slate-800 space-y-3 shadow-xs">
+                  <p className="font-semibold text-slate-900 text-[13px] leading-snug">
                     ¡Listo! Ya actualicé el reporte.
                   </p>
 
                   {/* Respuesta Directa Ejecutiva */}
                   {currentReport.directAnswer ? (
-                    <div className="p-3.5 bg-gradient-to-br from-cyan-950/70 via-slate-900 to-indigo-950/70 border border-cyan-500/30 rounded-xl text-slate-200 text-xs leading-relaxed shadow-md space-y-2">
-                      <div className="flex items-center gap-1.5 font-bold text-cyan-300 text-[11px] uppercase tracking-wider">
-                        <Bot className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+                    <div className="p-3.5 bg-indigo-50/70 border border-indigo-200 rounded-xl text-slate-800 text-xs leading-relaxed shadow-xs space-y-2">
+                      <div className="flex items-center gap-1.5 font-bold text-indigo-700 text-[11px] uppercase tracking-wider">
+                        <Bot className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
                         <span>Respuesta Institucional:</span>
                       </div>
-                      <div className="text-slate-100 font-normal leading-relaxed text-[11.5px]">
+                      <div className="text-slate-800 font-normal leading-relaxed text-[11.5px]">
                         {renderFormattedMarkdown(currentReport.directAnswer)}
                       </div>
                     </div>
                   ) : currentReport.explanation.summary ? (
-                    <div className="p-3 bg-slate-900/80 border border-white/10 rounded-xl text-slate-200 text-xs leading-relaxed">
+                    <div className="p-3 bg-white border border-slate-200 rounded-xl text-slate-800 text-xs leading-relaxed shadow-xs">
                       {renderFormattedMarkdown(currentReport.explanation.summary)}
                     </div>
                   ) : null}
 
-                  {/* Parámetros técnicos y filtros colapsables para priorizar la respuesta directa */}
-                  <details className="group mt-2 border-t border-white/10 pt-2 text-slate-400">
-                    <summary className="cursor-pointer text-[11px] font-semibold text-slate-400 hover:text-slate-200 flex items-center justify-between py-1 transition-colors select-none">
+                  {/* Parámetros técnicos y filtros colapsables */}
+                  <details className="group mt-2 border-t border-slate-200 pt-2 text-slate-600">
+                    <summary className="cursor-pointer text-[11px] font-semibold text-slate-600 hover:text-slate-900 flex items-center justify-between py-1 transition-colors select-none">
                       <span className="flex items-center gap-1.5">
-                        <Filter className="h-3 w-3 text-cyan-400" />
+                        <Filter className="h-3 w-3 text-indigo-600" />
                         <span>Ver parámetros técnicos y filtros de la consulta</span>
                       </span>
                       <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 group-open:rotate-180" />
                     </summary>
 
                     <div className="pt-2 space-y-2">
-                      <div className="space-y-1.5 bg-white/5 p-2.5 rounded-lg border border-white/5">
-                        <p className="font-bold text-slate-200 text-[11px] uppercase tracking-wider text-cyan-400">
+                      <div className="space-y-1.5 bg-white p-2.5 rounded-lg border border-slate-200 shadow-xs">
+                        <p className="font-bold text-indigo-700 text-[11px] uppercase tracking-wider">
                           ¿Qué incluye esta consulta?
                         </p>
-                        <ul className="space-y-1 text-[11px] text-slate-300 list-disc list-inside">
+                        <ul className="space-y-1 text-[11px] text-slate-700 list-disc list-inside">
                           {currentReport.explanation.fieldsIncluded.map((field, idx) => (
                             <li key={idx} className="leading-tight">
-                              <span className="font-semibold text-slate-200">{field.split(':')[0]}:</span> {field.split(':')[1] || ''}
+                              <span className="font-semibold text-slate-900">{field.split(':')[0]}:</span> {field.split(':')[1] || ''}
                             </li>
                           ))}
                         </ul>
                       </div>
 
-                      <div className="space-y-1 bg-white/5 p-2.5 rounded-lg border border-white/5 text-[11px]">
-                        <p className="font-bold text-slate-200 uppercase tracking-wider text-emerald-400">
+                      <div className="space-y-1 bg-white p-2.5 rounded-lg border border-slate-200 text-[11px] shadow-xs">
+                        <p className="font-bold text-emerald-700 uppercase tracking-wider">
                           Filtros Aplicados:
                         </p>
-                        <ul className="space-y-1 text-slate-300 list-disc list-inside">
+                        <ul className="space-y-1 text-slate-700 list-disc list-inside">
                           {currentReport.explanation.filtersApplied.map((filter, idx) => (
                             <li key={idx} className="leading-tight">{filter}</li>
                           ))}
                         </ul>
                       </div>
 
-                      <p className="text-slate-300 leading-relaxed text-[11px]">
+                      <p className="text-slate-700 leading-relaxed text-[11px]">
                         {currentReport.explanation.visualizationDescription}
                       </p>
 
-                      <div className="pt-1 border-t border-white/5">
-                        <p className="text-slate-400 text-[11px] italic">
+                      <div className="pt-1 border-t border-slate-200">
+                        <p className="text-slate-500 text-[11px] italic">
                           {currentReport.explanation.followUpPrompt}
                         </p>
                       </div>
@@ -1339,7 +1337,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                     <button
                       key={idx}
                       onClick={() => handleExecuteQuery(sug)}
-                      className="text-left text-[11px] px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-indigo-600/20 hover:text-indigo-300 border border-white/5 hover:border-indigo-500/30 text-slate-300 transition cursor-pointer"
+                      className="text-left text-[11px] px-2.5 py-1.5 rounded-lg bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 border border-slate-200 text-slate-700 transition cursor-pointer shadow-xs"
                     >
                       {sug}
                     </button>
@@ -1353,7 +1351,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
 
           {/* Indicador de Grabación de Voz Activa */}
           {isListening && (
-            <div className="px-4 py-2 bg-rose-500/10 border-t border-rose-500/30 flex items-center justify-between text-xs text-rose-400 shrink-0">
+            <div className="px-4 py-2 bg-rose-50 border-t border-rose-200 flex items-center justify-between text-xs text-rose-700 shrink-0">
               <div className="flex items-center gap-2">
                 <span className="relative flex h-3 w-3">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
@@ -1361,18 +1359,18 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                 </span>
                 <span className="font-semibold">Escuchando dictado por voz...</span>
               </div>
-              <span className="text-[10px] text-slate-400">Habla con claridad</span>
+              <span className="text-[10px] text-slate-500">Habla con claridad</span>
             </div>
           )}
 
           {/* Barra de Entrada (Texto y Micrófono) */}
-          <div className="p-3 border-t border-white/10 bg-slate-900 shrink-0">
-            <div className="flex items-center gap-1.5 bg-slate-950 border border-white/10 rounded-xl px-3 py-1.5 focus-within:border-indigo-500 transition shadow-inner">
+          <div className="p-3 border-t border-slate-200 bg-white shrink-0">
+            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus-within:border-indigo-500 focus-within:bg-white transition shadow-xs">
               <button
                 type="button"
                 onClick={() => handleExecuteQuery('Resumen general de control total del colegio')}
                 title="Plantillas de consulta ejecutiva"
-                className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-white/5 transition cursor-pointer"
+                className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition cursor-pointer"
               >
                 <Paperclip className="h-4 w-4" />
               </button>
@@ -1383,7 +1381,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleExecuteQuery()}
                 placeholder={isListening ? "Escuchando tu voz..." : "Escribe aquí tu consulta..."}
-                className="flex-1 bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none py-1"
+                className="flex-1 bg-transparent text-xs text-slate-900 placeholder-slate-400 focus:outline-none py-1"
               />
 
               {/* Botón de Dictado por Voz */}
@@ -1394,7 +1392,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                 className={`p-1.5 rounded-lg transition cursor-pointer ${
                   isListening 
                     ? 'bg-rose-500 text-white animate-pulse' 
-                    : 'text-slate-400 hover:text-cyan-400 hover:bg-white/5'
+                    : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-200'
                 }`}
               >
                 {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
@@ -1405,7 +1403,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                 type="button"
                 onClick={() => handleExecuteQuery()}
                 disabled={!inputText.trim()}
-                className="p-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:hover:bg-indigo-600 text-white transition cursor-pointer"
+                className="p-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-30 disabled:hover:bg-indigo-600 text-white transition cursor-pointer shadow-xs"
               >
                 <Send className="h-3.5 w-3.5" />
               </button>
@@ -1413,28 +1411,28 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
           </div>
         </aside>
 
-        {/* BOTÓN TOGGLE COLAPSO DEL PANEL LATERAL (FIEL AL BOTÓN EN IMAGEN 2) */}
+        {/* BOTÓN TOGGLE COLAPSO DEL PANEL LATERAL */}
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           title={isSidebarOpen ? "Ocultar panel conversacional" : "Mostrar panel conversacional"}
-          className="absolute top-3 z-30 flex items-center justify-center h-7 w-7 rounded-full bg-slate-800 hover:bg-slate-700 border border-white/10 text-slate-300 hover:text-white shadow-md transition cursor-pointer"
+          className="absolute top-3 z-30 flex items-center justify-center h-7 w-7 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 shadow-md transition cursor-pointer"
           style={{ left: isSidebarOpen ? 'calc(410px - 14px)' : '8px' }}
         >
           {isSidebarOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </button>
 
         {/* ÁREA PRINCIPAL: ESPACIO DE TRABAJO Y VISUALIZACIÓN DEL REPORTE */}
-        <main className="flex-1 flex flex-col overflow-hidden bg-slate-950">
+        <main className="flex-1 flex flex-col overflow-hidden bg-slate-50">
           
           {/* Pestañas Superiores de la Vista (Imagen 2: Vista previa | Mi edición actual) */}
-          <div className="h-10 px-6 border-b border-white/10 flex items-center justify-between shrink-0 bg-slate-900/40">
+          <div className="h-10 px-6 border-b border-slate-200 flex items-center justify-between shrink-0 bg-white">
             <div className="flex items-center gap-6 text-xs font-semibold">
               <button
                 onClick={() => setActiveTab('preview')}
                 className={`py-2.5 border-b-2 transition cursor-pointer ${
                   activeTab === 'preview'
-                    ? 'border-indigo-500 text-white'
-                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                    ? 'border-indigo-600 text-indigo-700 font-bold'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
                 Vista previa
@@ -1444,11 +1442,11 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                 onClick={() => setActiveTab('charts')}
                 className={`py-2.5 border-b-2 transition cursor-pointer flex items-center gap-1.5 ${
                   activeTab === 'charts'
-                    ? 'border-indigo-500 text-white'
-                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                    ? 'border-indigo-600 text-indigo-700 font-bold'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
-                <BarChart3 className="h-3.5 w-3.5 text-cyan-400" />
+                <BarChart3 className="h-3.5 w-3.5 text-indigo-600" />
                 <span>Vista Gráfica</span>
               </button>
               
@@ -1456,8 +1454,8 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                 onClick={() => setActiveTab('table')}
                 className={`py-2.5 border-b-2 transition cursor-pointer ${
                   activeTab === 'table'
-                    ? 'border-indigo-500 text-white'
-                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                    ? 'border-indigo-600 text-indigo-700 font-bold'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
                 Datos Tabulares ({currentReport?.table.totalRows || 0})
@@ -1467,16 +1465,16 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                 onClick={() => setActiveTab('edition')}
                 className={`py-2.5 border-b-2 transition cursor-pointer ${
                   activeTab === 'edition'
-                    ? 'border-indigo-500 text-white'
-                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                    ? 'border-indigo-600 text-indigo-700 font-bold'
+                    : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
                 Mi edición actual
               </button>
             </div>
 
-            <span className="text-[11px] text-slate-400 font-medium">
-              Institución: <span className="text-white font-bold">{currentReport?.schoolName || activeInstitution?.name}</span>
+            <span className="text-[11px] text-slate-500 font-medium">
+              Institución: <span className="text-slate-900 font-bold">{currentReport?.schoolName || activeInstitution?.name}</span>
             </span>
           </div>
 
@@ -1486,29 +1484,29 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
             {/* Si no hay reporte cargado: Estado vacío idéntico al de la Imagen 2 */}
             {!currentReport ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-8">
-                <div className="h-16 w-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-500 mb-4">
-                  <Bot className="h-8 w-8 text-cyan-400" />
+                <div className="h-16 w-16 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 mb-4">
+                  <Bot className="h-8 w-8 text-indigo-600" />
                 </div>
-                <h3 className="text-base font-bold text-white mb-1">El reporte aparecerá aquí</h3>
-                <p className="text-xs text-slate-400 max-w-sm mb-6">
+                <h3 className="text-base font-bold text-slate-900 mb-1">El reporte aparecerá aquí</h3>
+                <p className="text-xs text-slate-500 max-w-sm mb-6">
                   Escribe una instrucción en el chat o usa el micrófono para ver el resultado.
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center max-w-md">
                   <button
                     onClick={() => handleExecuteQuery('Estudiantes con adeudo activo por nivel y monto pendiente')}
-                    className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-white/10 text-xs text-slate-300 transition"
+                    className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs text-slate-700 shadow-xs transition"
                   >
                     Estudiantes con adeudo activo
                   </button>
                   <button
                     onClick={() => handleExecuteQuery('Comparativa de ingresos y nómina mes a mes')}
-                    className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-white/10 text-xs text-slate-300 transition"
+                    className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs text-slate-700 shadow-xs transition"
                   >
                     Comparativa entre meses
                   </button>
                   <button
                     onClick={() => handleExecuteQuery('Asistencias y retardos del colegio')}
-                    className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-white/10 text-xs text-slate-300 transition"
+                    className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs text-slate-700 shadow-xs transition"
                   >
                     Control de asistencias
                   </button>
@@ -1518,19 +1516,19 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
               <>
                 {/* Banner de Respuesta Ejecutiva Directa */}
                 {currentReport.directAnswer && (
-                  <div className="p-4 bg-gradient-to-r from-cyan-950/70 via-slate-900 to-indigo-950/70 border border-cyan-500/30 rounded-2xl shadow-lg">
+                  <div className="p-4 bg-gradient-to-r from-indigo-50/80 via-slate-50 to-blue-50/80 border border-indigo-200/80 rounded-2xl shadow-xs">
                     <div className="flex items-start gap-3.5">
-                      <div className="h-10 w-10 rounded-xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold shrink-0 mt-0.5">
+                      <div className="h-10 w-10 rounded-xl bg-indigo-100 border border-indigo-200 flex items-center justify-center text-indigo-600 font-bold shrink-0 mt-0.5 shadow-xs">
                         <Bot className="h-5 w-5" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <h3 className="text-sm font-bold text-white">Respuesta Ejecutiva Directa</h3>
-                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 font-mono font-bold">
+                          <h3 className="text-sm font-bold text-slate-900">Respuesta Ejecutiva Directa</h3>
+                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-700 font-mono font-bold border border-indigo-200">
                             Inteligencia Pedagógica · 0 Tokens
                           </span>
                         </div>
-                        <div className="text-xs text-slate-200 mt-2 leading-relaxed font-medium">
+                        <div className="text-xs text-slate-700 mt-2 leading-relaxed font-medium">
                           {renderFormattedMarkdown(currentReport.directAnswer)}
                         </div>
                       </div>
@@ -1540,21 +1538,21 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
 
                 {/* Banner de acceso rápido: Si hay múltiples alumnos coincidentes o si es individual */}
                 {currentReport.table.totalRows > 1 && currentReport.table.rows.some((r: any) => r.studentId || r.enrollmentId || r.studentName) ? (
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-gradient-to-r from-cyan-950/70 via-slate-900 to-indigo-950/70 border border-cyan-500/30 rounded-2xl shadow-lg">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white border border-slate-200 rounded-2xl shadow-xs">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-cyan-600/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold shrink-0">
+                      <div className="h-10 w-10 rounded-xl bg-cyan-50 border border-cyan-200 flex items-center justify-center text-cyan-700 font-bold shrink-0">
                         <Users className="h-5 w-5" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="text-sm font-bold text-white">
+                          <h3 className="text-sm font-bold text-slate-900">
                             Directorio de Expedientes: {currentReport.table.totalRows} Alumnos Coincidentes
                           </h3>
-                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 font-mono font-bold">
+                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-cyan-50 text-cyan-700 border border-cyan-200 font-mono font-bold">
                             Catálogo Oficial
                           </span>
                         </div>
-                        <p className="text-xs text-slate-400 mt-0.5">
+                        <p className="text-xs text-slate-500 mt-0.5">
                           Se localizaron {currentReport.table.totalRows} expedientes bajo el criterio solicitado. Consulta los detalles de cada uno a continuación.
                         </p>
                       </div>
@@ -1564,28 +1562,28 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                       onClick={() => {
                         expedientesSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
                       }}
-                      className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-md shadow-cyan-600/30 flex items-center gap-1.5 transition cursor-pointer self-start sm:self-auto shrink-0"
+                      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition cursor-pointer self-start sm:self-auto shrink-0"
                     >
                       <span>Explorar Expedientes Abajo</span>
                       <ArrowDown className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 ) : currentReport.studentDetail ? (
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-gradient-to-r from-indigo-950/60 via-slate-900 to-indigo-950/60 border border-indigo-500/30 rounded-2xl shadow-lg">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white border border-indigo-200 rounded-2xl shadow-xs">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold shrink-0">
+                      <div className="h-10 w-10 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 font-bold shrink-0">
                         <User className="h-5 w-5" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="text-sm font-bold text-white">
+                          <h3 className="text-sm font-bold text-slate-900">
                             Ficha Integral 360°: {currentReport.studentDetail.student.first_name} {currentReport.studentDetail.student.last_name_1}
                           </h3>
-                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 font-mono font-bold">
+                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 font-mono font-bold">
                             {currentReport.studentDetail.student.level.toUpperCase()} · {currentReport.studentDetail.student.grade}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-400 mt-0.5">
+                        <p className="text-xs text-slate-500 mt-0.5">
                           Haz clic para ver contactos de tutores, fecha de nacimiento, edad, asistencias y desglose de cobros.
                         </p>
                       </div>
@@ -1598,7 +1596,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                           setShowDrawer(true);
                         }
                       }}
-                      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 flex items-center gap-1.5 transition cursor-pointer self-start sm:self-auto shrink-0"
+                      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition cursor-pointer self-start sm:self-auto shrink-0"
                     >
                       <span>Abrir Expediente 360°</span>
                       <ExternalLink className="h-3.5 w-3.5" />
@@ -1622,15 +1620,15 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                             }, 50);
                           }
                         }}
-                        className={`bg-slate-900/80 border border-white/10 rounded-2xl p-4 flex flex-col justify-between shadow-sm relative overflow-hidden ${
-                          isCountKpi ? 'cursor-pointer hover:border-cyan-500/50 hover:bg-slate-800/80 transition group' : ''
+                        className={`bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-between shadow-xs relative overflow-hidden ${
+                          isCountKpi ? 'cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/30 transition group' : ''
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-semibold text-slate-400 tracking-wide uppercase">{kpi.label}</span>
+                          <span className="text-xs font-semibold text-slate-500 tracking-wide uppercase">{kpi.label}</span>
                           {kpi.trend && (
                             <span className={`text-[10px] font-bold flex items-center gap-1 ${
-                              kpi.trend.direction === 'up' ? 'text-emerald-400' : (kpi.trend.direction === 'down' ? 'text-rose-400' : 'text-slate-400')
+                              kpi.trend.direction === 'up' ? 'text-emerald-600' : (kpi.trend.direction === 'down' ? 'text-rose-600' : 'text-slate-500')
                             }`}>
                               {kpi.trend.direction === 'up' ? <TrendingUp className="h-3 w-3" /> : (kpi.trend.direction === 'down' ? <TrendingDown className="h-3 w-3" /> : null)}
                               {kpi.trend.value}
@@ -1638,7 +1636,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                           )}
                         </div>
                         
-                        <div className="text-2xl font-black text-white tracking-tight mb-1">
+                        <div className="text-2xl font-black text-slate-900 tracking-tight mb-1">
                           {kpi.value}
                         </div>
 
@@ -1649,7 +1647,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                         )}
 
                         {isCountKpi && (
-                          <div className="mt-2 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] text-cyan-400 group-hover:text-cyan-300 font-semibold">
+                          <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-indigo-600 group-hover:text-indigo-700 font-semibold">
                             <span>Ver todos los expedientes</span>
                             <ChevronDown className="h-3 w-3 group-hover:translate-y-0.5 transition-transform" />
                           </div>
@@ -1681,25 +1679,25 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                     {renderExpedientesGrid()}
 
                     {/* Tabla de datos tabulares con búsqueda */}
-                    <div className="bg-slate-900/80 border border-white/10 rounded-2xl overflow-hidden shadow-sm">
-                      <div className="p-4 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900">
-                        <div className="flex items-center gap-2 flex-1 max-w-sm bg-slate-950 border border-white/10 rounded-xl px-3 py-1.5 focus-within:border-indigo-500">
-                          <Search className="h-4 w-4 text-slate-500 shrink-0" />
+                    <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+                      <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70">
+                        <div className="flex items-center gap-2 flex-1 max-w-sm bg-white border border-slate-200 rounded-xl px-3 py-1.5 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500/20">
+                          <Search className="h-4 w-4 text-slate-400 shrink-0" />
                           <input
                             type="text"
                             value={tableSearch}
                             onChange={(e) => setTableSearch(e.target.value)}
                             placeholder="Buscar en el reporte..."
-                            className="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none"
+                            className="w-full bg-transparent text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
                           />
                         </div>
 
                         <div className="flex items-center gap-3 text-xs">
-                          <span className="text-slate-400">Estado:</span>
+                          <span className="text-slate-600 font-medium">Estado:</span>
                           <select
                             value={tableStatusFilter}
                             onChange={(e) => setTableStatusFilter(e.target.value)}
-                            className="bg-slate-950 border border-white/10 rounded-lg px-2.5 py-1 text-slate-200 font-medium focus:outline-none text-xs"
+                            className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-slate-700 font-medium focus:outline-none text-xs"
                           >
                             <option value="all">Todos los registros</option>
                             <option value="pendiente">Pendientes</option>
@@ -1716,7 +1714,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                       <div className="overflow-x-auto">
                         <table className="w-full text-left text-xs border-collapse">
                           <thead>
-                            <tr className="bg-slate-950/70 border-b border-white/10 text-slate-400 font-semibold uppercase tracking-wider text-[11px]">
+                            <tr className="bg-slate-100/80 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
                               {activeTableColumns.map((col) => (
                                 <th 
                                   key={col.key} 
@@ -1728,7 +1726,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                               <th className="py-3 px-4 text-right">Acción</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-white/5">
+                          <tbody className="divide-y divide-slate-100">
                             {filteredTableRows.length === 0 ? (
                               <tr>
                                 <td colSpan={activeTableColumns.length + 1} className="py-8 text-center text-slate-500">
@@ -1740,14 +1738,14 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                                 <tr 
                                   key={rowIdx} 
                                   onClick={() => handleRowClick(row)}
-                                  className="hover:bg-white/[0.04] transition cursor-pointer group"
+                                  className="hover:bg-slate-50 transition cursor-pointer group"
                                 >
                                   {activeTableColumns.map((col) => {
                                     const val = row[col.key];
 
                                     if (col.isCurrency) {
                                       return (
-                                        <td key={col.key} className="py-3 px-4 text-right font-mono font-bold text-white">
+                                        <td key={col.key} className="py-3 px-4 text-right font-mono font-bold text-slate-900">
                                           {formatMXN(Number(val) || 0)}
                                         </td>
                                       );
@@ -1762,10 +1760,10 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                                         <td key={col.key} className="py-3 px-4 text-center">
                                           <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                                             isBad 
-                                              ? 'bg-rose-500/10 border border-rose-500/20 text-rose-400' 
+                                              ? 'bg-rose-50 border border-rose-200 text-rose-700' 
                                               : (isGood 
-                                                  ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' 
-                                                  : 'bg-amber-500/10 border border-amber-500/20 text-amber-400')
+                                                  ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' 
+                                                  : 'bg-amber-50 border border-amber-200 text-amber-700')
                                           }`}>
                                             {val}
                                           </span>
@@ -1776,7 +1774,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                                     return (
                                       <td 
                                         key={col.key} 
-                                        className={`py-3 px-4 ${col.align === 'center' ? 'text-center' : ''} text-slate-300 font-medium`}
+                                        className={`py-3 px-4 ${col.align === 'center' ? 'text-center' : ''} text-slate-700 font-medium`}
                                       >
                                         {val ?? '-'}
                                       </td>
@@ -1790,7 +1788,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                                         e.stopPropagation();
                                         handleRowClick(row);
                                       }}
-                                      className="text-[11px] font-bold text-indigo-400 group-hover:text-indigo-300 hover:underline flex items-center gap-1 ml-auto cursor-pointer"
+                                      className="text-[11px] font-bold text-indigo-600 group-hover:text-indigo-800 hover:underline flex items-center gap-1 ml-auto cursor-pointer"
                                     >
                                       <span>
                                         {row.studentId || row.studentName 
@@ -1827,18 +1825,18 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                         />
 
                         {/* Desglose Analítico de Distribución y Concentración */}
-                        <div className="bg-slate-900/80 border border-white/10 rounded-2xl p-5 shadow-sm">
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-white/10">
+                        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-200">
                             <div>
-                              <h4 className="text-sm font-bold text-white">Desglose Analítico de Datos de la Gráfica</h4>
-                              <p className="text-xs text-slate-400">Valores cuantitativos y ponderación porcentual calculados al vuelo</p>
+                              <h4 className="text-sm font-bold text-slate-900">Desglose Analítico de Datos de la Gráfica</h4>
+                              <p className="text-xs text-slate-500">Valores cuantitativos y ponderación porcentual calculados al vuelo</p>
                             </div>
                           </div>
 
                           <div className="overflow-x-auto">
                             <table className="w-full text-left text-xs">
                               <thead>
-                                <tr className="border-b border-white/10 text-slate-400 font-semibold uppercase text-[11px]">
+                                <tr className="border-b border-slate-200 text-slate-600 font-semibold uppercase text-[11px] bg-slate-50">
                                   <th className="py-2.5 px-3">Segmento / Categoría</th>
                                   {currentReport.chart.datasets.map((ds, idx) => (
                                     <th key={idx} className="py-2.5 px-3 text-right">{ds.name}</th>
@@ -1847,30 +1845,30 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                                   <th className="py-2.5 px-3">Representación Proporcional</th>
                                 </tr>
                               </thead>
-                              <tbody className="divide-y divide-white/5 font-medium">
+                              <tbody className="divide-y divide-slate-100 font-medium">
                                 {currentReport.chart.labels.map((label, idx) => {
                                   const val = currentReport.chart?.datasets[0]?.data[idx] || 0;
                                   const total = currentReport.chart?.datasets[0]?.data.reduce((a, b) => a + b, 0) || 1;
                                   const pct = Math.min(Math.max((val / total) * 100, 0), 100);
 
                                   return (
-                                    <tr key={idx} className="hover:bg-white/5 transition">
-                                      <td className="py-3 px-3 text-white font-bold flex items-center gap-2">
-                                        <span className="w-2 h-2 rounded-full bg-cyan-400" />
+                                    <tr key={idx} className="hover:bg-slate-50 transition">
+                                      <td className="py-3 px-3 text-slate-900 font-bold flex items-center gap-2">
+                                        <span className="w-2 h-2 rounded-full bg-indigo-600" />
                                         <span>{label}</span>
                                       </td>
                                       {currentReport.chart?.datasets.map((ds, dIdx) => (
-                                        <td key={dIdx} className="py-3 px-3 text-right font-mono font-bold text-slate-200">
+                                        <td key={dIdx} className="py-3 px-3 text-right font-mono font-bold text-slate-800">
                                           {currentReport.chart?.unit === 'currency' ? formatMXN(ds.data[idx] || 0) : ds.data[idx]}
                                         </td>
                                       ))}
-                                      <td className="py-3 px-3 text-center font-mono text-cyan-400 font-bold">
+                                      <td className="py-3 px-3 text-center font-mono text-indigo-600 font-bold">
                                         {pct.toFixed(1)}%
                                       </td>
                                       <td className="py-3 px-3">
-                                        <div className="h-2.5 w-full max-w-[200px] bg-slate-950 rounded-full overflow-hidden p-0.5 border border-white/5">
+                                        <div className="h-2.5 w-full max-w-[200px] bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200">
                                           <div 
-                                            className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-indigo-500 to-purple-500 transition-all duration-500" 
+                                            className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-indigo-600 to-indigo-700 transition-all duration-500" 
                                             style={{ width: `${Math.max(pct, 3)}%` }} 
                                           />
                                         </div>
@@ -1884,7 +1882,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                         </div>
                       </>
                     ) : (
-                      <div className="p-8 text-center bg-slate-900/60 rounded-2xl border border-white/10 text-slate-400">
+                      <div className="p-8 text-center bg-white rounded-2xl border border-slate-200 text-slate-500">
                         No hay datos gráficos configurados para este reporte.
                       </div>
                     )}
@@ -1893,25 +1891,25 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
 
                 {/* VISTA TABULAR DEDICADA */}
                 {activeTab === 'table' && (
-                  <div className="bg-slate-900/80 border border-white/10 rounded-2xl overflow-hidden shadow-sm">
-                    <div className="p-4 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900">
-                      <div className="flex items-center gap-2 flex-1 max-w-md bg-slate-950 border border-white/10 rounded-xl px-3 py-1.5 focus-within:border-indigo-500">
-                        <Search className="h-4 w-4 text-slate-500 shrink-0" />
+                  <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+                    <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70">
+                      <div className="flex items-center gap-2 flex-1 max-w-md bg-white border border-slate-200 rounded-xl px-3 py-1.5 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500/20">
+                        <Search className="h-4 w-4 text-slate-400 shrink-0" />
                         <input
                           type="text"
                           value={tableSearch}
                           onChange={(e) => setTableSearch(e.target.value)}
                           placeholder="Buscar por estudiante, nivel, folio o concepto..."
-                          className="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none"
+                          className="w-full bg-transparent text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
                         />
                       </div>
 
                       <div className="flex items-center gap-3 text-xs">
-                        <span className="text-slate-400">Estado:</span>
+                        <span className="text-slate-600 font-medium">Estado:</span>
                         <select
                           value={tableStatusFilter}
                           onChange={(e) => setTableStatusFilter(e.target.value)}
-                          className="bg-slate-950 border border-white/10 rounded-lg px-2.5 py-1 text-slate-200 font-medium focus:outline-none text-xs"
+                          className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-slate-700 font-medium focus:outline-none text-xs"
                         >
                           <option value="all">Todos los registros</option>
                           <option value="pendiente">Pendientes</option>
@@ -1921,7 +1919,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
 
                         <button
                           onClick={handleExportCSV}
-                          className="px-3 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 font-bold transition flex items-center gap-1.5 cursor-pointer"
+                          className="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 font-bold transition flex items-center gap-1.5 cursor-pointer"
                         >
                           <Download className="h-3.5 w-3.5" />
                           <span>CSV</span>
@@ -1932,7 +1930,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs border-collapse">
                         <thead>
-                          <tr className="bg-slate-950/70 border-b border-white/10 text-slate-400 font-semibold uppercase tracking-wider text-[11px]">
+                          <tr className="bg-slate-100/80 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
                             {activeTableColumns.map((col) => (
                               <th 
                                 key={col.key} 
@@ -1944,7 +1942,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                             <th className="py-3 px-4 text-right">Acción</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y divide-slate-100">
                           {filteredTableRows.length === 0 ? (
                             <tr>
                               <td colSpan={activeTableColumns.length + 1} className="py-8 text-center text-slate-500">
@@ -1956,14 +1954,14 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                               <tr 
                                 key={rowIdx} 
                                 onClick={() => handleRowClick(row)}
-                                className="hover:bg-white/[0.04] transition cursor-pointer group"
+                                className="hover:bg-slate-50 transition cursor-pointer group"
                               >
                                 {activeTableColumns.map((col) => {
                                   const val = row[col.key];
 
                                   if (col.isCurrency) {
                                     return (
-                                      <td key={col.key} className="py-3 px-4 text-right font-mono font-bold text-white">
+                                      <td key={col.key} className="py-3 px-4 text-right font-mono font-bold text-slate-900">
                                         {formatMXN(Number(val) || 0)}
                                       </td>
                                     );
@@ -1978,10 +1976,10 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                                       <td key={col.key} className="py-3 px-4 text-center">
                                         <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                                           isBad 
-                                            ? 'bg-rose-500/10 border border-rose-500/20 text-rose-400' 
+                                            ? 'bg-rose-50 border border-rose-200 text-rose-700' 
                                             : (isGood 
-                                                ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' 
-                                                : 'bg-amber-500/10 border border-amber-500/20 text-amber-400')
+                                                ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' 
+                                                : 'bg-amber-50 border border-amber-200 text-amber-700')
                                         }`}>
                                           {val}
                                         </span>
@@ -1992,7 +1990,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                                   return (
                                     <td 
                                       key={col.key} 
-                                      className={`py-3 px-4 ${col.align === 'center' ? 'text-center' : ''} text-slate-300 font-medium`}
+                                      className={`py-3 px-4 ${col.align === 'center' ? 'text-center' : ''} text-slate-700 font-medium`}
                                     >
                                       {val ?? '-'}
                                     </td>
@@ -2006,7 +2004,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                                       e.stopPropagation();
                                       handleRowClick(row);
                                     }}
-                                    className="text-[11px] font-bold text-indigo-400 group-hover:text-indigo-300 hover:underline flex items-center gap-1 ml-auto cursor-pointer"
+                                    className="text-[11px] font-bold text-indigo-600 group-hover:text-indigo-800 hover:underline flex items-center gap-1 ml-auto cursor-pointer"
                                   >
                                     <span>
                                       {row.studentId || row.studentName 
@@ -2027,36 +2025,36 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
 
                 {/* VISTA DE EDICIÓN Y PARÁMETROS DEL REPORTE */}
                 {activeTab === 'edition' && (
-                  <div className="bg-slate-900/80 border border-white/10 rounded-2xl p-6 shadow-sm space-y-6">
+                  <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-6">
                     <div>
-                      <h3 className="text-sm font-bold text-white mb-1">Parámetros y Metadatos de la Consulta</h3>
-                      <p className="text-xs text-slate-400">Ajusta los detalles descriptivos y la configuración del reporte</p>
+                      <h3 className="text-sm font-bold text-slate-900 mb-1">Parámetros y Metadatos de la Consulta</h3>
+                      <p className="text-xs text-slate-500">Ajusta los detalles descriptivos y la configuración del reporte</p>
                     </div>
 
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1.5">Título del Reporte:</label>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1.5">Título del Reporte:</label>
                         <input
                           type="text"
                           value={reportTitle}
                           onChange={(e) => setReportTitle(e.target.value)}
-                          className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2 text-sm text-white font-bold focus:outline-none focus:border-indigo-500"
+                          className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-sm text-slate-900 font-bold focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20"
                         />
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="bg-slate-950 p-4 rounded-xl border border-white/5 space-y-2">
-                          <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider block">Campos Computados</span>
-                          <ul className="text-xs text-slate-300 space-y-1 list-disc list-inside">
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                          <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider block">Campos Computados</span>
+                          <ul className="text-xs text-slate-700 space-y-1 list-disc list-inside">
                             {currentReport.explanation.fieldsIncluded.map((f, i) => (
                               <li key={i}>{f}</li>
                             ))}
                           </ul>
                         </div>
 
-                        <div className="bg-slate-950 p-4 rounded-xl border border-white/5 space-y-2">
-                          <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider block">Filtros Activos</span>
-                          <ul className="text-xs text-slate-300 space-y-1 list-disc list-inside">
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                          <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider block">Filtros Activos</span>
+                          <ul className="text-xs text-slate-700 space-y-1 list-disc list-inside">
                             {currentReport.explanation.filtersApplied.map((flt, i) => (
                               <li key={i}>{flt}</li>
                             ))}
@@ -2078,27 +2076,27 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
 
       {/* 3. DRAWER SLIDE-OVER: EXPEDIENTE 360° DE ESTUDIANTE / REGISTRO */}
       {showDrawer && selectedStudentForDrawer && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="w-full max-w-md bg-slate-900 border-l border-white/10 h-full flex flex-col shadow-2xl p-6 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/40 backdrop-blur-xs animate-fadeIn">
+          <div className="w-full max-w-md bg-white border-l border-slate-200 h-full flex flex-col shadow-2xl p-6 overflow-y-auto">
             
             {/* Header del Drawer */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-4 mb-4">
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold text-lg">
+                <div className="h-12 w-12 rounded-xl bg-indigo-100 border border-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-lg">
                   {selectedStudentForDrawer.student.first_name[0]}{selectedStudentForDrawer.student.last_name_1[0]}
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-white">
+                  <h2 className="text-base font-bold text-slate-900">
                     {selectedStudentForDrawer.student.first_name} {selectedStudentForDrawer.student.last_name_1}
                   </h2>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     {selectedStudentForDrawer.student.level.toUpperCase()} · {selectedStudentForDrawer.student.grade} Grupo {selectedStudentForDrawer.student.group_id || 'A'}
                   </p>
                 </div>
               </div>
               <button 
                 onClick={() => setShowDrawer(false)}
-                className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition cursor-pointer"
+                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -2106,17 +2104,17 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
 
             {/* Resumen Financiero y Asistencias */}
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="bg-slate-950 p-3.5 rounded-xl border border-white/5 space-y-1">
-                <span className="text-[10px] text-slate-400 uppercase font-semibold">Adeudo Total</span>
-                <p className={`text-lg font-black ${selectedStudentForDrawer.totalDebt > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
+                <span className="text-[10px] text-slate-500 uppercase font-semibold">Adeudo Total</span>
+                <p className={`text-lg font-black ${selectedStudentForDrawer.totalDebt > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
                   {formatMXN(selectedStudentForDrawer.totalDebt)}
                 </p>
                 <span className="text-[10px] text-slate-500">{selectedStudentForDrawer.billingRecords.filter(b => b.status !== 'paid').length} recibos pendientes</span>
               </div>
 
-              <div className="bg-slate-950 p-3.5 rounded-xl border border-white/5 space-y-1">
-                <span className="text-[10px] text-slate-400 uppercase font-semibold">Asistencia</span>
-                <p className="text-lg font-black text-cyan-400">
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
+                <span className="text-[10px] text-slate-500 uppercase font-semibold">Asistencia</span>
+                <p className="text-lg font-black text-indigo-600">
                   {selectedStudentForDrawer.attendanceStats.attendanceRate.toFixed(1)}%
                 </p>
                 <span className="text-[10px] text-slate-500">
@@ -2126,12 +2124,12 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
             </div>
 
             {/* Filiación y Contactos */}
-            <div className="space-y-3 mb-6 text-xs bg-white/5 p-4 rounded-xl border border-white/5">
-              <h4 className="font-bold text-slate-200 uppercase text-[11px] tracking-wider mb-2">Datos Generales y Filiación</h4>
-              <div className="grid grid-cols-2 gap-2.5 text-slate-300">
+            <div className="space-y-3 mb-6 text-xs bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <h4 className="font-bold text-slate-800 uppercase text-[11px] tracking-wider mb-2">Datos Generales y Filiación</h4>
+              <div className="grid grid-cols-2 gap-2.5 text-slate-700">
                 <div>
                   <span className="text-slate-500 block text-[10px]">Edad Calculada:</span>
-                  <span className="font-bold text-emerald-400 text-xs">
+                  <span className="font-bold text-emerald-700 text-xs">
                     {selectedStudentForDrawer.student.birth_date 
                       ? `${2026 - new Date(selectedStudentForDrawer.student.birth_date).getFullYear()} Años Cumplidos`
                       : '7 Años'}
@@ -2139,7 +2137,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[10px]">Fecha de Nacimiento:</span>
-                  <span className="font-semibold text-white">
+                  <span className="font-semibold text-slate-900">
                     {selectedStudentForDrawer.student.birth_date 
                       ? new Date(selectedStudentForDrawer.student.birth_date).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })
                       : '10 de Mayo de 2019'}
@@ -2147,25 +2145,25 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[10px]">CURP:</span>
-                  <span className="font-mono font-semibold">{selectedStudentForDrawer.student.curp || 'N/D'}</span>
+                  <span className="font-mono font-semibold text-slate-900">{selectedStudentForDrawer.student.curp || 'N/D'}</span>
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[10px]">Matrícula:</span>
-                  <span className="font-mono font-semibold">{selectedStudentForDrawer.student.enrollment_id || 'MAT-2026'}</span>
+                  <span className="font-mono font-semibold text-slate-900">{selectedStudentForDrawer.student.enrollment_id || 'MAT-2026'}</span>
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[10px]">Plantel y Turno:</span>
-                  <span className="font-semibold text-white">
+                  <span className="font-semibold text-slate-900">
                     {selectedStudentForDrawer.student.campus_name || 'Plantel Principal'} ({selectedStudentForDrawer.student.shift || 'Matutino'})
                   </span>
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[10px]">Tutor Responsable:</span>
-                  <span className="font-semibold">{selectedStudentForDrawer.student.tutor_name || selectedStudentForDrawer.student.father_name || 'Tutor registrado'}</span>
+                  <span className="font-semibold text-slate-900">{selectedStudentForDrawer.student.tutor_name || selectedStudentForDrawer.student.father_name || 'Tutor registrado'}</span>
                 </div>
                 <div className="col-span-2">
                   <span className="text-slate-500 block text-[10px]">Teléfono de Contacto Familiar:</span>
-                  <span className="font-semibold text-emerald-400 text-xs flex items-center gap-1.5">
+                  <span className="font-semibold text-emerald-700 text-xs flex items-center gap-1.5">
                     <Phone className="h-3 w-3" />
                     {selectedStudentForDrawer.student.emergency_contact_phone || selectedStudentForDrawer.student.phone || '55-4160-8800'}
                   </span>
@@ -2175,18 +2173,18 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
 
             {/* Observaciones de Salud y Pedagógicas */}
             {(selectedStudentForDrawer.student.medical_notes || selectedStudentForDrawer.student.academic_notes) && (
-              <div className="space-y-2.5 mb-6 text-xs bg-white/5 p-4 rounded-xl border border-white/5">
-                <h4 className="font-bold text-slate-200 uppercase text-[11px] tracking-wider">Ficha Médica y Pedagógica</h4>
+              <div className="space-y-2.5 mb-6 text-xs bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <h4 className="font-bold text-slate-800 uppercase text-[11px] tracking-wider">Ficha Médica y Pedagógica</h4>
                 {selectedStudentForDrawer.student.medical_notes && (
                   <div>
-                    <span className="text-amber-400 font-semibold block text-[10px]">Salud y Alergias:</span>
-                    <p className="text-slate-300 text-[11px] mt-0.5">{selectedStudentForDrawer.student.medical_notes}</p>
+                    <span className="text-amber-700 font-semibold block text-[10px]">Salud y Alergias:</span>
+                    <p className="text-slate-700 text-[11px] mt-0.5">{selectedStudentForDrawer.student.medical_notes}</p>
                   </div>
                 )}
                 {selectedStudentForDrawer.student.academic_notes && (
-                  <div className="pt-2 border-t border-white/5">
-                    <span className="text-cyan-400 font-semibold block text-[10px]">Desempeño Académico:</span>
-                    <p className="text-slate-300 text-[11px] mt-0.5">{selectedStudentForDrawer.student.academic_notes}</p>
+                  <div className="pt-2 border-t border-slate-200">
+                    <span className="text-indigo-700 font-semibold block text-[10px]">Desempeño Académico:</span>
+                    <p className="text-slate-700 text-[11px] mt-0.5">{selectedStudentForDrawer.student.academic_notes}</p>
                   </div>
                 )}
               </div>
@@ -2194,20 +2192,20 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
 
             {/* Recibos de Cobranza del Alumno */}
             <div className="space-y-2 mb-6 flex-1">
-              <h4 className="font-bold text-slate-200 uppercase text-[11px] tracking-wider">Estado de Cuenta</h4>
+              <h4 className="font-bold text-slate-800 uppercase text-[11px] tracking-wider">Estado de Cuenta</h4>
               <div className="space-y-2">
                 {selectedStudentForDrawer.billingRecords.length === 0 ? (
                   <p className="text-xs text-slate-500 italic">No hay cargos registrados para este estudiante.</p>
                 ) : (
                   selectedStudentForDrawer.billingRecords.map((b) => (
-                    <div key={b.id} className="p-3 bg-slate-950 rounded-xl border border-white/5 flex items-center justify-between text-xs">
+                    <div key={b.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
                       <div>
-                        <p className="font-bold text-white">{b.concept}</p>
-                        <p className="text-[11px] text-slate-400">Vencimiento: {b.dueDate}</p>
+                        <p className="font-bold text-slate-900">{b.concept}</p>
+                        <p className="text-[11px] text-slate-500">Vencimiento: {b.dueDate}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-mono font-bold text-white">{formatMXN(Number(b.amount))}</p>
-                        <span className={`text-[10px] font-bold uppercase ${b.status === 'paid' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        <p className="font-mono font-bold text-slate-900">{formatMXN(Number(b.amount))}</p>
+                        <span className={`text-[10px] font-bold uppercase ${b.status === 'paid' ? 'text-emerald-700' : 'text-rose-700'}`}>
                           {b.status === 'paid' ? 'Pagado' : 'Pendiente'}
                         </span>
                       </div>
@@ -2220,7 +2218,7 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
             {/* Botón de cierre */}
             <button
               onClick={() => setShowDrawer(false)}
-              className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white transition cursor-pointer"
+              className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-800 border border-slate-200 transition cursor-pointer"
             >
               Cerrar Expediente
             </button>

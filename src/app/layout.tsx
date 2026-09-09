@@ -32,10 +32,10 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`h-full antialiased ${plusJakarta.variable} ${jetbrainsMono.variable}`}
+      className={`h-full light antialiased ${plusJakarta.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 font-sans">
+      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 font-sans">
         <ThemeSync />
         <AuthProvider>
           {children}
