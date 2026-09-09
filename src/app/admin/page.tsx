@@ -1900,7 +1900,7 @@ export default function SuperUserAdminPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-bold text-white">Estudio Ejecutivo de Consultas y Reportes (Voz & Texto)</h3>
-                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-semibold font-mono">0 Tokens · Motor Local</span>
+                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-semibold font-mono">Motor Inteligente Local</span>
                   </div>
                   <p className="text-xs text-slate-400 mt-1">
                     Controla todo tu colegio pidiendo por voz o texto: adeudos, finanzas, comparativas mes a mes, asistencias y fichas 360° de alumnos.

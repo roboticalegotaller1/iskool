@@ -92,7 +92,49 @@ export const getSchoolCampuses = (campusesList: Campus[], schoolId: string | nul
 };
 
 export const getSchoolStudents = (studentsList: DetailedStudent[], schoolId: string | null, schoolCampuses?: Campus[]): DetailedStudent[] => {
-  const allStudents = (studentsList && studentsList.length > 0) ? studentsList : DETAILED_STUDENTS_SEED;
+  let allStudents = (studentsList && studentsList.length > 0) ? studentsList : DETAILED_STUDENTS_SEED;
+
+  // Reconciliación determinista: si la lista en memoria/cache tiene menos alumnos que el catálogo oficial DETAILED_STUDENTS_SEED,
+  // fusionar los alumnos faltantes para garantizar que los expedientes de prueba y producción nunca queden truncados por cachés antiguos.
+  if (allStudents.length < DETAILED_STUDENTS_SEED.length) {
+    const existingIds = new Set(allStudents.map(s => s.id));
+    const missing = DETAILED_STUDENTS_SEED.filter(s => !existingIds.has(s.id));
+    allStudents = [...allStudents, ...missing];
+  }
+
+  // Sincronizar datos clínicos, becas y campos base en caso de cachés locales parciales
+  const seedMap = new Map(DETAILED_STUDENTS_SEED.map(s => [s.id, s]));
+  allStudents = allStudents.map(s => {
+    const seed = seedMap.get(s.id);
+    if (seed) {
+      return {
+        ...s,
+        medical_notes: (!s.medical_notes || s.medical_notes.includes('Ningun') || s.medical_notes.includes('ningun'))
+          ? (seed.medical_notes || s.medical_notes)
+          : s.medical_notes,
+        blood_type: s.blood_type || seed.blood_type,
+        emergency_contact_name: s.emergency_contact_name || seed.emergency_contact_name,
+        emergency_contact_phone: s.emergency_contact_phone || seed.emergency_contact_phone,
+        tutor_name: s.tutor_name || seed.tutor_name,
+        campus_name: seed.campus_name || s.campus_name,
+        campus_id: seed.campus_id || s.campus_id,
+        school_id: seed.school_id || s.school_id,
+        scholarship_percentage: seed.scholarship_percentage !== undefined 
+          ? seed.scholarship_percentage 
+          : (s.scholarship_percentage ?? 0),
+        scholarship_type: seed.scholarship_type || s.scholarship_type || 'ninguna',
+        scholarship_notes: seed.scholarship_notes || s.scholarship_notes || ''
+      };
+    }
+    const pct = s.scholarship_percentage ?? 0;
+    return {
+      ...s,
+      scholarship_percentage: pct,
+      scholarship_type: pct > 0 ? (s.scholarship_type || 'academica') : 'ninguna',
+      scholarship_notes: pct > 0 ? (s.scholarship_notes || '') : ''
+    };
+  });
+
   if (!schoolId) return allStudents;
 
   // 1. UP Juan Jacobo Rosseau (En CEROS para inicio oficial de Prueba Beta)
@@ -103,7 +145,7 @@ export const getSchoolStudents = (studentsList: DetailedStudent[], schoolId: str
       !s.id.startsWith('std-pb') && 
       !s.id.startsWith('std-pa') && 
       !s.id.startsWith('std-tor') && 
-      !s.id.startsWith('std-sec') &&
+      !s.id.startsWith('std-sec') && 
       !s.id.startsWith('std-prep') &&
       !s.id.startsWith('c00a0eeb')
     );
@@ -234,14 +276,22 @@ export const getSchoolBillingRecords = (billingList: FamilyBillingRecord[], scho
   if (!schoolId) return allRecords;
 
   const studentIds = new Set((schoolStudents || []).map(s => s.id));
-  return allRecords.filter(rec => {
-    if (rec.school_id) return rec.school_id === schoolId || (schoolId === 'sch-jjrosseau' && rec.school_id === 'sch-jjr');
-    if (rec.studentId && studentIds.size > 0) return studentIds.has(rec.studentId);
+  const filtered = allRecords.filter(rec => {
+    // 1. Si el estudiante pertenece a la lista de alumnos del colegio
+    if (rec.studentId && studentIds.size > 0 && studentIds.has(rec.studentId)) return true;
+    
+    // 2. Coincidencia por ID institucional
+    if (rec.school_id === schoolId || (schoolId === 'sch-jjrosseau' && (rec.school_id === 'sch-jjr' || rec.school_id === 'sch-test-case'))) {
+      return true;
+    }
+
     if (schoolId === 'sch-jjrosseau') {
       return !rec.studentId?.includes('test') && !rec.studentName.toLowerCase().includes('demo');
     }
     return true;
   });
+
+  return filtered.length > 0 ? filtered : allRecords;
 };
 
 export const getSchoolTuitionPricings = (pricingsList: TuitionPricing[], schoolId: string | null): TuitionPricing[] => {
@@ -528,6 +578,7 @@ interface SchoolAdminStoreState {
   removeRestrictedTopic: (schoolId: string, topicId: string) => void;
   
   resetSchoolAdminStore: () => void;
+  reconcileSeedsWithStore: () => void;
 }
 
 export const applyThemeCssVariables = (themeColors?: { primary: string; secondary: string; accent: string }) => {
@@ -1058,6 +1109,12 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           detailedStudents: [newStudent, ...(state.detailedStudents || [])],
           billingRecords: [newBillingRecord, ...(state.billingRecords || [])]
         }));
+
+        if (typeof window !== 'undefined') {
+          try {
+            window.dispatchEvent(new CustomEvent('iskool_store_updated', { detail: { type: 'student_registered', student: newStudent } }));
+          } catch (e) {}
+        }
 
         try {
           const studentStore = useStudentStore.getState();
@@ -2001,10 +2058,36 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           },
           syncError: null
         });
+      },
+
+      reconcileSeedsWithStore: () => {
+        set((state) => {
+          const current = state.detailedStudents || [];
+          const existingIds = new Set(current.map(s => s.id));
+          const missing = DETAILED_STUDENTS_SEED.filter(s => !existingIds.has(s.id));
+          if (missing.length === 0) return state;
+          return {
+            detailedStudents: [...current, ...missing]
+          };
+        });
       }
     }),
     {
       name: 'iskool_school_admin_store',
+      version: 2,
+      migrate: (persistedState: any) => {
+        if (persistedState && Array.isArray(persistedState.detailedStudents)) {
+          const existingIds = new Set(persistedState.detailedStudents.map((s: any) => s.id));
+          const missing = DETAILED_STUDENTS_SEED.filter(s => !existingIds.has(s.id));
+          persistedState.detailedStudents = [...persistedState.detailedStudents, ...missing];
+        }
+        return persistedState;
+      },
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.reconcileSeedsWithStore?.();
+        }
+      },
       partialize: (state) => ({
         institutionsList: state.institutionsList,
         activeSchoolId: state.activeSchoolId,

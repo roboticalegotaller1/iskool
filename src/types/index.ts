@@ -117,6 +117,8 @@ export interface UserProfile {
   role: UserRole;
   email: string;
   phone?: string;
+  birth_date?: string; // Fecha de nacimiento (ISO YYYY-MM-DD)
+  age?: number; // Edad en años cumplidos
   campus_id?: string;
   campus_name?: string;
   ai_tokens_consumed?: number; // Contador de tokens consumidos del Asistente Pedagógico IA
@@ -850,6 +852,9 @@ export interface DetailedStudent {
   monthly_tuition_override?: number;
   behavior_reports?: { id?: string; date: string; description: string; reporter: string; parent_reply?: string; replied_at?: string }[];
   teacher_notes?: { id?: string; date: string; note: string; teacher_name: string; parent_reply?: string; replied_at?: string }[];
+  average_grade?: number; // Promedio general de calificaciones (escala 0-10)
+  academic_standing?: 'excelente' | 'notable' | 'suficiente' | 'regular' | 'en_riesgo';
+  subject_grades?: { subject_name: string; grade: number }[];
 }
 
 export interface TuitionPricing {

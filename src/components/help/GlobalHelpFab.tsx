@@ -45,7 +45,7 @@ export const GlobalHelpFab: React.FC = () => {
   return (
     <>
       {/* Botón Flotante No Invasivo en la esquina inferior derecha */}
-      <aside aria-label="Asistencia Rápida" className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40">
+      <aside aria-label="Asistencia Rápida" className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 print:hidden">
         <button
           type="button"
           onClick={() => setIsOpen(true)}
@@ -59,7 +59,7 @@ export const GlobalHelpFab: React.FC = () => {
 
       {/* Cajón Lateral Deslizante de Asistencia Rápida */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden">
+        <div className="fixed inset-0 z-50 overflow-hidden print:hidden">
           {/* Fondo semi-transparente */}
           <div 
             className="absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-fade-in"

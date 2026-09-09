@@ -721,8 +721,25 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     temporary_password: 'San7K4',
     is_blocked: false,
     pending_payments: ["Colegiatura Junio 2026"],
+    average_grade: 9.8,
+    academic_standing: 'excelente',
+    subject_grades: [
+      { subject_name: 'Matemáticas y Lógica', grade: 10.0 },
+      { subject_name: 'Robótica y Mecatrónica', grade: 9.9 },
+      { subject_name: 'Lenguajes y Comunicación', grade: 9.6 },
+      { subject_name: 'Ciencias Naturales', grade: 9.7 }
+    ],
     behavior_reports: [],
-    teacher_notes: []
+    teacher_notes: [
+      {
+        id: 'tn-santi-1',
+        date: '2026-06-01',
+        teacher_name: 'Israel López',
+        note: 'Felicitaciones por el destacado desempeño en el Torneo de Robótica y Cálculo Mental.',
+        parent_reply: 'Muchas gracias profesor Israel, estamos muy orgullosos y apoyando a Santi en casa con sus proyectos de ciencias.',
+        replied_at: '2026-06-02T10:15:00.000Z'
+      }
+    ]
   },
   {
     id: 'std-pa',
@@ -747,8 +764,19 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     emergency_contact_name: 'Sofía Ruiz',
     emergency_contact_phone: '555-987-2001',
     blood_type: 'A+',
-    medical_notes: 'Ninguna alergia.',
+    medical_notes: 'Alergia severa a picaduras de abeja. Porta autoinyector EpiPen en enfermería escolar.',
     academic_notes: 'Gran desempeño en Matemáticas y Robótica.',
+    scholarship_percentage: 25,
+    scholarship_type: 'academica',
+    scholarship_notes: 'Beca Académica de Excelencia por promedio sobresaliente.',
+    average_grade: 9.2,
+    academic_standing: 'excelente',
+    subject_grades: [
+      { subject_name: 'Matemáticas', grade: 9.5 },
+      { subject_name: 'Robótica', grade: 9.4 },
+      { subject_name: 'Español', grade: 8.8 },
+      { subject_name: 'Ciencias Naturales', grade: 9.1 }
+    ],
     level: 'primaria',
     grade: '4º',
     group_id: 'grp-test-pri-4a',
@@ -759,7 +787,15 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     is_blocked: false,
     pending_payments: [],
     behavior_reports: [],
-    teacher_notes: []
+    teacher_notes: [
+      {
+        id: 'tn-lucas-1',
+        date: '2026-06-05',
+        teacher_name: 'Israel López',
+        note: 'Aviso sobre tarea pendiente: Fraccionando en Casa de Matemáticas. Requiere apoyo en casa.'
+        // parent_reply ausente: tutor NO ha respondido
+      }
+    ]
   },
   {
     id: 'std-tor-1',
@@ -784,7 +820,7 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     emergency_contact_name: 'Gabriela Medina',
     emergency_contact_phone: '555-987-3000',
     blood_type: 'B+',
-    medical_notes: 'Ninguna.',
+    medical_notes: 'Ninguna condición médica.',
     academic_notes: 'Destacado en Ciencias y Robótica.',
     level: 'primaria',
     grade: '4º',
@@ -821,8 +857,11 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     emergency_contact_name: 'Diana Castro',
     emergency_contact_phone: '555-987-4000',
     blood_type: 'O+',
-    medical_notes: 'Ninguna alergia.',
+    medical_notes: 'Alergia a la penicilina y sulfamidas. Atención médica preventiva requerida.',
     academic_notes: 'Líder en proyectos y destacada en Basquetbol.',
+    scholarship_percentage: 50,
+    scholarship_type: 'deportiva',
+    scholarship_notes: 'Beca Deportiva de Alto Rendimiento (Natación y Atletismo).',
     level: 'secundaria',
     grade: '2º',
     group_id: 'grp-test-sec-2a',
@@ -858,11 +897,17 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     emergency_contact_name: 'Gabriela Ruiz',
     emergency_contact_phone: '555-987-2001',
     blood_type: 'A+',
-    medical_notes: 'Ninguna alergia reportada.',
+    medical_notes: 'Alergia a mariscos y colorantes artificiales.',
     academic_notes: 'Muestra gran interés y desempeño en clase.',
+    scholarship_percentage: 30,
+    scholarship_type: 'hermanos',
+    scholarship_notes: 'Beca Familiar por hermanos matriculados en la institución.',
     level: 'primaria',
     grade: '1º',
     group_id: 'grp-pb-a',
+    campus_id: 'cmp-test-pri',
+    campus_name: 'Primaria Laboratorio Demo',
+    school_id: 'sch-test-case',
     pending_payments: [],
     behavior_reports: [],
     teacher_notes: []
@@ -924,6 +969,9 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     blood_type: 'AB+',
     medical_notes: 'Ninguna alergia reportada.',
     academic_notes: 'Muestra gran interés y desempeño en clase.',
+    scholarship_percentage: 20,
+    scholarship_type: 'sep',
+    scholarship_notes: 'Beca de Excelencia SEP Ciclo 2026-2027.',
     level: 'primaria',
     grade: '1º',
     group_id: 'grp-pb-a',
@@ -1018,14 +1066,34 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     emergency_contact_name: 'Gabriela Ríos',
     emergency_contact_phone: '555-987-2006',
     blood_type: 'B+',
-    medical_notes: 'Ninguna alergia reportada.',
-    academic_notes: 'Muestra gran interés y desempeño en clase.',
+    medical_notes: 'Rinitis alérgica estacional al polen y polvo.',
+    academic_notes: 'Muestra gran interés y desempeño en clase. Seguimiento en laboratorio.',
+    average_grade: 8.5,
+    academic_standing: 'notable',
+    subject_grades: [
+      { subject_name: 'Ciencias Naturales', grade: 8.2 },
+      { subject_name: 'Español', grade: 8.8 },
+      { subject_name: 'Matemáticas', grade: 8.4 },
+      { subject_name: 'Educación Física', grade: 9.0 }
+    ],
     level: 'primaria',
     grade: '1º',
     group_id: 'grp-pb-a',
+    campus_id: 'cmp-test-pri',
+    campus_name: 'Primaria Laboratorio Demo',
+    school_id: 'sch-test-case',
     pending_payments: [],
     behavior_reports: [],
-    teacher_notes: []
+    teacher_notes: [
+      {
+        id: 'tn-diego-1',
+        date: '2026-05-15',
+        teacher_name: 'Roberto Díaz',
+        note: 'Favor de revisar el cuaderno de Ciencias Naturales para regularizar la práctica 3 de laboratorio escolar.',
+        parent_reply: 'Enterado profesor, hoy mismo Diego concluye la práctica 3 y se la entrega mañana a primera hora sin falta.',
+        replied_at: '2026-05-15T18:45:00.000Z'
+      }
+    ]
   },
   {
     id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b08',
@@ -1372,6 +1440,9 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     blood_type: 'AB+',
     medical_notes: 'Ninguna alergia reportada.',
     academic_notes: 'Muestra gran interés y desempeño en clase.',
+    scholarship_percentage: 40,
+    scholarship_type: 'socioeconomica',
+    scholarship_notes: 'Beca de Continuidad y Apoyo Socioeconómico Institucional.',
     level: 'primaria',
     grade: '4º',
     group_id: 'grp-pa-a',
@@ -1471,6 +1542,9 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     level: 'secundaria',
     grade: '2º',
     group_id: 'grp-sec-a',
+    campus_id: 'cmp-test-sec',
+    campus_name: 'Secundaria Laboratorio Demo',
+    school_id: 'sch-test-case',
     pending_payments: ["Colegiatura Junio 2026"],
     behavior_reports: [],
     teacher_notes: []
@@ -1797,6 +1871,9 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     level: 'preparatoria',
     grade: '4º Semestre',
     group_id: 'grp-prep-a',
+    campus_id: 'cmp-test-prep',
+    campus_name: 'Preparatoria Laboratorio Demo',
+    school_id: 'sch-test-case',
     pending_payments: ["Colegiatura Junio 2026"],
     behavior_reports: [],
     teacher_notes: []
@@ -2107,6 +2184,8 @@ export const TEACHERS_LIST_SEED: UserProfile[] = [
     role: 'teacher',
     school_id: 'sch-test-case',
     email: 'israel.lopez@sandbox.iskool.edu.mx',
+    birth_date: '1988-05-14',
+    age: 38,
     campus_id: 'cmp-test-pri',
     campus_name: 'Primaria Laboratorio Demo',
     ai_tokens_consumed: 68450,
@@ -2124,6 +2203,8 @@ export const TEACHERS_LIST_SEED: UserProfile[] = [
     role: 'teacher',
     school_id: 'sch-test-case',
     email: 'maria.fernandez@sandbox.iskool.edu.mx',
+    birth_date: '1992-09-21',
+    age: 34,
     campus_id: 'cmp-test-pri',
     campus_name: 'Primaria Laboratorio Demo',
     ai_tokens_consumed: 45200,
@@ -2141,6 +2222,8 @@ export const TEACHERS_LIST_SEED: UserProfile[] = [
     role: 'teacher',
     school_id: 'sch-test-case',
     email: 'roberto.diaz@sandbox.iskool.edu.mx',
+    birth_date: '1981-03-12',
+    age: 45,
     campus_id: 'cmp-test-sec',
     campus_name: 'Secundaria Laboratorio Demo',
     ai_tokens_consumed: 53100,
@@ -2158,6 +2241,8 @@ export const TEACHERS_LIST_SEED: UserProfile[] = [
     role: 'teacher',
     school_id: 'sch-test-case',
     email: 'carmen.morales@sandbox.iskool.edu.mx',
+    birth_date: '1985-11-04',
+    age: 41,
     campus_id: 'cmp-test-sec',
     campus_name: 'Secundaria Laboratorio Demo',
     ai_tokens_consumed: 32800,
@@ -2175,6 +2260,8 @@ export const TEACHERS_LIST_SEED: UserProfile[] = [
     role: 'teacher',
     school_id: 'sch-test-case',
     email: 'david.navarrete@sandbox.iskool.edu.mx',
+    birth_date: '1990-07-19',
+    age: 36,
     campus_id: 'cmp-test-prep',
     campus_name: 'Preparatoria Laboratorio Demo',
     ai_tokens_consumed: 79600,
@@ -2192,6 +2279,8 @@ export const TEACHERS_LIST_SEED: UserProfile[] = [
     role: 'teacher',
     school_id: 'sch-test-case',
     email: 'elena.salazar@sandbox.iskool.edu.mx',
+    birth_date: '1997-01-28',
+    age: 29,
     campus_id: 'cmp-test-sec',
     campus_name: 'Secundaria Laboratorio Demo',
     ai_tokens_consumed: 41900,
@@ -2209,6 +2298,8 @@ export const TEACHERS_LIST_SEED: UserProfile[] = [
     role: 'teacher',
     school_id: 'sch-test-case',
     email: 'fernando.rangel@sandbox.iskool.edu.mx',
+    birth_date: '1983-12-08',
+    age: 43,
     campus_id: 'cmp-test-prep',
     campus_name: 'Preparatoria Laboratorio Demo',
     ai_tokens_consumed: 24300,
@@ -2226,6 +2317,8 @@ export const TEACHERS_LIST_SEED: UserProfile[] = [
     role: 'teacher',
     school_id: 'sch-test-case',
     email: 'alan.turing@sandbox.iskool.edu.mx',
+    birth_date: '1974-06-23',
+    age: 52,
     campus_id: 'cmp-test-pri',
     campus_name: 'Primaria Laboratorio Demo',
     ai_tokens_consumed: 15400,
@@ -2806,6 +2899,7 @@ export const ATTENDANCE_SEED: Attendance[] = [
 export const PARENT_MESSAGES_SEED: ParentMessage[] = [
   {
     id: 'msg-1',
+    school_id: 'sch-test-case',
     parent_id: 'usr-parent-1',
     student_id: 'std-pa',
     student_name: 'Lucas Skywalker',
@@ -2816,8 +2910,56 @@ export const PARENT_MESSAGES_SEED: ParentMessage[] = [
     quest_id: 'q-fractions-2',
     quest_title: 'Fraccionando en Casa',
     message: 'Estimado tutor de Lucas, le informamos que el alumno no ha entregado la tarea "Fraccionando en Casa" de la materia Matemáticas. Agradecemos su apoyo en casa para regularizar esta situación.',
-    sent_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-    is_read: false
+    sent_at: '2026-06-05T10:00:00.000Z',
+    is_read: true
+    // parent_reply no presente: PENDIENTE DE RESPUESTA
+  },
+  {
+    id: 'msg-2',
+    school_id: 'sch-test-case',
+    parent_id: 'usr-parent-santi',
+    student_id: 'std-pb',
+    student_name: 'Santi Gómez',
+    teacher_id: 'usr-teacher-1',
+    teacher_name: 'Israel López',
+    subject_id: 'sub-math',
+    subject_name: 'Robótica y Matemáticas',
+    message: 'Estimado tutor de Santi, extendemos una felicitación por su desempeño sobresaliente en el Torneo de Robótica y Cálculo Mental.',
+    sent_at: '2026-06-01T14:30:00.000Z',
+    is_read: true,
+    parent_reply: 'Muchas gracias profesor Israel, estamos muy orgullosos y apoyando a Santi en casa con sus proyectos de ciencias.',
+    replied_at: '2026-06-02T10:15:00.000Z'
+  },
+  {
+    id: 'msg-3',
+    school_id: 'sch-test-case',
+    parent_id: 'usr-parent-diego',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380b07',
+    student_name: 'Diego Vargas Ríos',
+    teacher_id: 'usr-teacher-3',
+    teacher_name: 'Roberto Díaz',
+    subject_id: 'sub-sci',
+    subject_name: 'Ciencias Naturales',
+    message: 'Estimado tutor de Diego, favor de revisar el cuaderno de Ciencias Naturales para regularizar la práctica 3 de laboratorio escolar.',
+    sent_at: '2026-05-15T12:00:00.000Z',
+    is_read: true,
+    parent_reply: 'Enterado profesor, hoy mismo Diego concluye la práctica 3 y se la entrega mañana a primera hora sin falta.',
+    replied_at: '2026-05-15T18:45:00.000Z'
+  },
+  {
+    id: 'msg-4',
+    school_id: 'sch-test-case',
+    parent_id: 'usr-parent-ale',
+    student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a03',
+    student_name: 'Alejandro Castro',
+    teacher_id: 'usr-teacher-2',
+    teacher_name: 'María Fernández',
+    subject_id: 'sub-esp',
+    subject_name: 'Lenguajes y Español',
+    message: 'Estimado tutor de Alejandro, extendemos la invitación para representar a la escuela en el concurso regional de Declamación y Oratoria.',
+    sent_at: '2026-06-03T09:00:00.000Z',
+    is_read: true
+    // parent_reply no presente: PENDIENTE DE RESPUESTA
   }
 ];
 
@@ -2967,8 +3109,10 @@ export const BILLING_RECORDS_SEED: import('../types').FamilyBillingRecord[] = [
     group: 'A',
     concept: 'Colegiatura de Agosto 2026 (Extemporánea)',
     baseAmount: 3800.00,
-    scholarshipPercentage: 0,
-    amount: 3800.00,
+    scholarshipPercentage: 50,
+    scholarshipType: 'deportiva',
+    discountAmount: 1900.00,
+    amount: 1900.00,
     dueDate: '15 Agosto 2026',
     status: 'overdue',
     autoInvoice: true
