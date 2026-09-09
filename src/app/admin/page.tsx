@@ -73,8 +73,9 @@ import {
   getSchoolBillingRecords
 } from '@/store/useSchoolAdminStore';
 import { DetailedStudent, Subject, GroupAnnualPlan, SyllabusTopic, Campus, Group, canManageTargetRole, StaffPayrollRecord, isPlatformSuperUser } from '@/types';
+import ExecutiveAnalyticsStudio from '@/components/admin/ExecutiveAnalyticsStudio';
 
-type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll';
+type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll' | 'analytics';
 
 export default function SuperUserAdminPage() {
   const { user, loading: authLoading } = useAuth();
@@ -1328,8 +1329,10 @@ export default function SuperUserAdminPage() {
         </div>
       )}
 
-      {/* VISTA 1: DIRECTORIO CENTRAL MULTI-COLEGIOS (EXCLUSIVO PARA DIRECTIVOS SUPER USUARIOS ISKOOL) */}
-      {(!activeSchoolId && isSuperUser) ? (
+      {/* VISTA ESPECIAL: ESTUDIO EJECUTIVO DE CONTROL ANALÍTICO (VOZ Y TEXTO - 0 TOKENS) */}
+      {activeTab === 'analytics' ? (
+        <ExecutiveAnalyticsStudio onBack={() => setActiveTab('overview')} />
+      ) : (!activeSchoolId && isSuperUser) ? (
         <div className="flex-1 flex flex-col">
           {/* MULTI-SCHOOL GLOBAL HEADER */}
           <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-xl border-b border-white/10 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
@@ -1351,6 +1354,13 @@ export default function SuperUserAdminPage() {
             </div>
 
             <div className="flex items-center gap-2.5">
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black shadow-lg shadow-cyan-600/30 hover:scale-102 transition-all cursor-pointer"
+              >
+                <Sparkles className="h-4 w-4" /> Estudio Analítico (Voz & Texto)
+              </button>
+
               <button
                 onClick={() => setShowAddSchoolModal(true)}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shadow-lg shadow-indigo-600/30 hover:scale-102 transition-all cursor-pointer"
@@ -1850,6 +1860,13 @@ export default function SuperUserAdminPage() {
               >
                 <DollarSign className="h-4 w-4 text-emerald-400" /> Finanzas & Nóminas ({schoolPayroll.length})
               </button>
+
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 border border-cyan-500/20"
+              >
+                <Sparkles className="h-4 w-4 text-cyan-400 animate-pulse" /> Consultas & Reportes Inteligentes
+              </button>
             </div>
 
             {/* Global Campus Selector Pill */}
@@ -1874,6 +1891,31 @@ export default function SuperUserAdminPage() {
         {/* TAB 1: OVERVIEW / DASHBOARD */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
+            {/* Banner de Acceso Directo al Estudio Ejecutivo de Información (Voz & Texto) */}
+            <div className="p-5 rounded-2xl bg-gradient-to-r from-cyan-950/70 via-slate-900 to-indigo-950/70 border border-cyan-500/30 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="h-12 w-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
+                  <Sparkles className="h-6 w-6 animate-pulse" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-white">Estudio Ejecutivo de Consultas y Reportes (Voz & Texto)</h3>
+                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-semibold font-mono">0 Tokens · Motor Local</span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Controla todo tu colegio pidiendo por voz o texto: adeudos, finanzas, comparativas mes a mes, asistencias y fichas 360° de alumnos.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className="px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold shadow-md shadow-cyan-600/30 flex items-center gap-2 transition cursor-pointer shrink-0 self-start md:self-auto"
+              >
+                <span>Abrir Estudio Analítico</span>
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+
             {/* Top KPI Metrics Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="p-5 rounded-2xl bg-slate-900 border border-white/10 shadow-lg flex flex-col justify-between hover:border-indigo-500/40 transition-all">
