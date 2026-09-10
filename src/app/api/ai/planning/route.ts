@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isEnglishSubject, getCambridgeSpecification } from '@/lib/curriculumEngine';
 
 const PlanningRequestSchema = z.object({
   promptText: z.string().max(2000).optional().default(''),
@@ -43,12 +44,24 @@ export async function POST(request: NextRequest) {
       'preparatoria': 'Preparatoria / Bachillerato General'
     };
 
+    const isEnglish = isEnglishSubject(subject, promptText);
+    const cambridgeSpec = getCambridgeSpecification(level);
     const levelLabel = levelNames[level] || 'Nivel Educativo';
-    const subjectLabel = subject === 'matematicas' ? 'Matemáticas (Saberes y Pensamiento Científico)' :
+    const subjectLabel = isEnglish ? `Lengua Extranjera (Inglés) • Certificación Cambridge (${cambridgeSpec.qualificationName})` :
+                         subject === 'matematicas' ? 'Matemáticas (Saberes y Pensamiento Científico)' :
                          subject === 'ciencias' ? 'Ciencias / Física y Química (Saberes y Pensamiento Científico)' : 'Lenguajes (Español y Comunicación)';
 
     const systemPrompt = `Eres un Asesor Pedagógico y Diseñador Curricular Nacional de la SEP, experto en la Nueva Escuela Mexicana (NEM 2024).
 Debes generar una planeación didáctica RIGUROSA, CONCRETA, ALTAMENTE PRÁCTICA Y 100% APLICABLE en el aula para un profesor.
+
+${isEnglish ? `🇬🇧 DIRECTRICES EXCLUSIVAS PARA DOCENTES DE INGLÉS (LENGUA EXTRANJERA - CAMBRIDGE CEFR):
+1. NIVEL EDUCATIVO CALIBRADO: Estricta alineación con el nivel Cambridge: ${cambridgeSpec.levelCode} (${cambridgeSpec.cefrLevel}) correspondiente a ${levelLabel}.
+2. METODOLOGÍA COMUNICATIVA: Aplica Communicative Language Teaching (CLT) y Task-Based Learning (TBL / PPP). Prohibido convertir la clase en ejercicios de español o historia mexicana.
+3. LAS 4 HABILIDADES: Integra Listening, Speaking (en parejas), Reading Comprehension y Guided Writing.
+4. CAN-DO STATEMENT: Desarrolla el descriptor: "${cambridgeSpec.canDoSummary}".
+5. MATERIALES: Articula con el libro del PRONI SEP oficial (${cambridgeSpec.proniMaterial}) y tareas Cambridge (${cambridgeSpec.cambridgeGuide}).
+6. EVALUACIÓN Y PROYECTO: Diseña un proyecto comunicativo en inglés con rúbrica Cambridge de 3 criterios (Grammar/Lexis, Spoken Interaction/Pronunciation, Written Task/Dossier).
+` : ''}
 
 ${targetPda ? `🎯 PDA OFICIAL SELECCIONADO POR EL DOCENTE:
 "${targetPda}"

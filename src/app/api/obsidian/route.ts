@@ -325,7 +325,8 @@ export async function GET(request: NextRequest) {
       // Extracción de Asignatura
       const subjectYaml = rawContent.match(/^materia:\s*"?(.*?)"?$/m) || rawContent.match(/^disciplina:\s*"?(.*?)"?$/m) || rawContent.match(/^asignatura:\s*"?(.*?)"?$/m);
       const subjectMd = rawContent.match(/\*\*Asignatura \/ Disciplina:\*\*\s*(?:\[\[)?(.*?)(?:\]\])?$/m) || rawContent.match(/\*\*Disciplina \/ Materia:\*\*\s*(?:\[\[)?(.*?)(?:\]\])?$/m);
-      const subjectName = subjectYaml ? subjectYaml[1].trim() : (subjectMd ? subjectMd[1].trim() : (campoFormativo.includes('Lenguajes') ? 'Español' : 'Matemáticas'));
+      const isEnglishNode = bestMatchNode.cleanPath.includes('ingles') || bestMatchNode.cleanPath.includes('english') || bestMatchNode.cleanTopic.includes('english') || bestMatchNode.cleanFilename.includes('ingles');
+      const subjectName = subjectYaml ? subjectYaml[1].trim() : (subjectMd ? subjectMd[1].trim() : (isEnglishNode ? 'Inglés' : (campoFormativo.includes('Lenguajes') ? 'Español' : 'Matemáticas')));
 
       // Extracción de PDA
       const pdaYaml = rawContent.match(/PDA:\s*"([\s\S]*?)"/);

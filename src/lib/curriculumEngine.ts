@@ -46,6 +46,18 @@ export interface FinalProjectProposal {
   };
 }
 
+export interface CambridgeLevelSpec {
+  levelCode: string; // e.g. "A2 Flyers"
+  cefrLevel: string; // e.g. "A2"
+  qualificationName: string; // e.g. "Cambridge English: Young Learners (YLE Flyers)"
+  targetAudience: string; // e.g. "Primaria Alta (Fase 5: 5º y 6º Grado)"
+  primarySkills: string[]; // ["Listening", "Speaking", "Reading", "Writing", "Grammar & Vocabulary"]
+  canDoSummary: string; // "Reconoce y utiliza expresiones cotidianas..."
+  proniMaterial: string; // "PRONI SEP: English Reader & Activity Book 5º/6º"
+  cambridgeGuide: string; // "Cambridge English: A2 Flyers Practice Book"
+  targetGrammarFocus?: string[];
+}
+
 export interface CompleteNEMPlanning {
   id: string;
   title: string;
@@ -68,6 +80,87 @@ export interface CompleteNEMPlanning {
   materiales: string;
   createdAt: string;
   isFromVault?: boolean;
+  cambridgeLevel?: CambridgeLevelSpec;
+}
+
+export const CAMBRIDGE_SPECS: Record<string, CambridgeLevelSpec> = {
+  'preescolar': {
+    levelCode: 'Pre-A1 Starters',
+    cefrLevel: 'Pre-A1',
+    qualificationName: 'Cambridge English: Young Learners (YLE Starters - Early Foundations)',
+    targetAudience: 'Preescolar (Fase 2: 3 a 5 años)',
+    primarySkills: ['Listening', 'Speaking (Oral/Aural)', 'Phonics & Pronunciation', 'TPR (Total Physical Response)'],
+    canDoSummary: 'Reconoce y reproduce saludos básicos, colores, números del 1 al 10 y objetos del entorno inmediato mediante canciones infantiles, mímica y tarjetas ilustradas (flashcards).',
+    proniMaterial: 'PRONI SEP Preescolar: English Activity Kit & Nursery Audio',
+    cambridgeGuide: 'Cambridge Pre-A1 Starters Wordlist & Classroom Phonics Guide'
+  },
+  'primaria-baja': {
+    levelCode: 'Pre-A1 Starters',
+    cefrLevel: 'Pre-A1',
+    qualificationName: 'Cambridge English: Young Learners (YLE Starters)',
+    targetAudience: 'Primaria Baja (Fase 3: 1º y 2º Grado)',
+    primarySkills: ['Listening & Pointing', 'Simple Spoken Production', 'Word Recognition & Spelling', 'Short Descriptive Chants'],
+    canDoSummary: 'Formula y responde preguntas básicas sobre sí mismo (nombre, edad, estado de ánimo), sigue comandos de aula y asocia grafías con sonidos fonéticos elementales.',
+    proniMaterial: 'PRONI SEP: English Activity Book 1st & 2nd Grade',
+    cambridgeGuide: 'Cambridge Young Learners English (YLE) Starters Handbook & Vocabulary List'
+  },
+  'primaria-media': {
+    levelCode: 'A1 Movers',
+    cefrLevel: 'A1',
+    qualificationName: 'Cambridge English: Young Learners (YLE Movers)',
+    targetAudience: 'Primaria Media (Fase 4: 3º y 4º Grado)',
+    primarySkills: ['Listening for Detail', 'Paired Spoken Interaction', 'Reading Short Stories', 'Writing Short Sentences (20-30 words)'],
+    canDoSummary: 'Comprende y participa en intercambios orales sencillos sobre rutinas diarias, gustos, habilidades (can/can\'t) y descripciones básicas de personas y animales.',
+    proniMaterial: 'PRONI SEP: English Activity Book 3rd & 4th Grade',
+    cambridgeGuide: 'Cambridge English: A1 Movers Examination Preparation Guide'
+  },
+  'primaria-alta': {
+    levelCode: 'A2 Flyers',
+    cefrLevel: 'A2',
+    qualificationName: 'Cambridge English: Young Learners (YLE Flyers)',
+    targetAudience: 'Primaria Alta (Fase 5: 5º y 6º Grado)',
+    primarySkills: ['Interactive Spoken Interviews', 'Reading Comprehension', 'Descriptive Paragraph Writing (30-50 words)', 'Grammar in Context'],
+    canDoSummary: 'Utiliza el verbo to be, presente simple, pasado y futuro próximo para describir personas, planes y experiencias; participa en diálogos situacionales y redacta textos estructurados con conectores.',
+    proniMaterial: 'PRONI SEP: English Reader & Activity Book 5th & 6th Grade',
+    cambridgeGuide: 'Cambridge English: A2 Flyers Practice Papers & Teacher Handbook'
+  },
+  'secundaria': {
+    levelCode: 'A2 Key / B1 Preliminary',
+    cefrLevel: 'A2 - B1',
+    qualificationName: 'Cambridge English Qualifications: A2 Key for Schools (KET) & B1 Preliminary for Schools (PET)',
+    targetAudience: 'Secundaria (Fase 6: 1º a 3º Grado)',
+    primarySkills: ['Transactional Writing (Emails & Notes)', 'Listening for Specific Information', 'Collaborative Spoken Tasks', 'Reading Notices & Articles'],
+    canDoSummary: 'Expresa opiniones, acuerdos y desacuerdos con fluidez funcional; comprende textos informativos auténticos y redacta correspondencia, reportes breves y entrevistas situadas.',
+    proniMaterial: 'SEP Lengua Extranjera: Inglés Secundaria (Fase 6)',
+    cambridgeGuide: 'Cambridge A2 Key for Schools & B1 Preliminary for Schools Handbook'
+  },
+  'preparatoria': {
+    levelCode: 'B1+ / B2 First for Schools',
+    cefrLevel: 'B2',
+    qualificationName: 'Cambridge English Qualifications: B2 First for Schools (FCE)',
+    targetAudience: 'Preparatoria / Bachillerato General (MCCEMS)',
+    primarySkills: ['Academic Essay Writing', 'Spoken Debates & Presentations', 'Critical Reading Analysis', 'Listening to Lectures/Podcasts'],
+    canDoSummary: 'Demuestra autonomía discursiva en situaciones académicas y profesionales; argumenta posturas con vocabulario idiomático, estructuras gramaticales complejas y registro formal e informal adecuado.',
+    proniMaterial: 'MCCEMS Programa de Lengua Extranjera (Inglés I a IV)',
+    cambridgeGuide: 'Cambridge English: B2 First for Schools Teacher Resource Pack'
+  }
+};
+
+export function getCambridgeSpecification(level: string): CambridgeLevelSpec {
+  return CAMBRIDGE_SPECS[level] || CAMBRIDGE_SPECS['primaria-alta'];
+}
+
+export function isEnglishSubject(subjectIdOrName: string = '', topic: string = ''): boolean {
+  const cleanSub = (subjectIdOrName || '').toLowerCase();
+  const cleanTopic = (topic || '').toLowerCase();
+  return (
+    cleanSub.includes('ingl') ||
+    cleanSub.includes('eng') ||
+    cleanSub.includes('foreign') ||
+    cleanSub.includes('extranjera') ||
+    cleanSub.endsWith('-ing') ||
+    /verb\b|grammar|vocabulary|speaking|listening|reading|writing|phonics|past simple|present continuous|present simple|future will|going to|cambridge|cefr|to be\b|to-be|pronoun|adjective|preposition|modal verbs|daily routine|flyers|movers|starters|ket\b|pet\b|fce\b|ielts|toefl|clil/i.test(cleanTopic)
+  );
 }
 
 export interface BaseSubjectDef {
@@ -566,6 +659,17 @@ export function getSepBookForSession(
 ): { titulo: string; paginas: string; seccion: string } {
   const levelKey = SEP_BOOKS_BY_LEVEL[level] ? level : 'primaria-baja';
   const cleanTopic = topicStr.toLowerCase();
+
+  // 0. Si la asignatura es Inglés, referenciar materiales oficiales del PRONI SEP y guías Cambridge
+  if (isEnglishSubject(subject, topicStr)) {
+    const spec = getCambridgeSpecification(levelKey);
+    const sessionOffset = ((sessionNumber - 1) % 6) + 1;
+    return {
+      titulo: `${spec.proniMaterial} • ${spec.cambridgeGuide}`,
+      paginas: `Unit ${Math.ceil(sessionNumber / 2)}, Session ${sessionNumber} (Págs. ${10 + sessionOffset * 3} a la ${12 + sessionOffset * 3})`,
+      seccion: `Target Language & Communicative Practice: ${cleanCoreTopicName(topicStr)} [Cambridge ${spec.levelCode}]`
+    };
+  }
   
   // 1. Verificación directa en proyectos oficiales específicos comprobados de la SEP (NEM 2024)
   const matchedProject = OFFICIAL_SEP_PROJECTS.find(p => p.level === levelKey && p.topicRegex.test(cleanTopic));
@@ -694,6 +798,7 @@ export function sanitizeSpanishPedagogicalGrammar(text: string): string {
 }
 
 export type PedagogicalDomain = 
+  | 'english_cambridge'
   | 'traditions_culture'
   | 'history_independence'
   | 'history_revolution'
@@ -718,6 +823,11 @@ export type PedagogicalDomain =
 export function classifyPedagogicalDomain(topic: string, subject: string = ''): PedagogicalDomain {
   const cleanTopic = cleanCoreTopicName(topic).toLowerCase();
   const cleanSub = (subject || '').toLowerCase();
+
+  // 0. Lengua Extranjera (Inglés) y Certificaciones Cambridge (Prioridad Absoluta)
+  if (isEnglishSubject(subject, topic)) {
+    return 'english_cambridge';
+  }
 
   // 1. Tradiciones y Patrimonio Biocultural
   if (/muert|difunt|ofrend|calaver|altar|cempasuchil|pan de muerto|costumbre|festividad|tradicion|patrimonio biocultural|celebrac|panteon|copal|sahumerio|alfeñique|papel picado|fiesta patronal|guelaguetza|posada|navidad|carnaval|charro|mariachi|indigena|originario|lengua materna/i.test(cleanTopic)) {
@@ -1563,6 +1673,141 @@ export function generateChronometerSessions(
     }
   ];
 
+  // 8. Plantilla Especializada: Lengua Extranjera (Inglés) • Certificaciones Cambridge (CEFR)
+  const englishSpec = getCambridgeSpecification(level);
+  const englishSessionsTemplates = [
+    {
+      num: 1,
+      titulo: `Unit 1. Diagnostic Warm-up & Target Language Discovery: "${cleanTopic}" (Listening & Speaking)`,
+      inicio: `⏱️ INICIO (10 min): Warm-Up & Lead-In. Dinámica TPR (Total Physical Response) y desafío visual con flashcards temáticas en el pizarrón. El docente activa el vocabulario previo sobre "${cleanTopic}" con objetos reales (realia) y preguntas rápidas. Declaración formal del objetivo comunicativo (Can-Do Goal): "Today we can recognize and use key elements of ${cleanTopic} in spoken sentences."`,
+      desarrollo: `⏱️ DESARROLLO (30 min): Guided Practice & Concept Checking (Enfoque PPP). 1) Presentación contextualizada de las estructuras afirmativas de "${cleanTopic}" con ejemplos ilustrados. 2) Preguntas de verificación de conceptos (Concept Checking Questions - CCQs) para asegurar la comprensión sin traducir al español. 3) Práctica guiada de pronunciación coral e individual con énfasis en entonación y acentuación fonética. 4) Actividad en parejas: emparejamiento de tiras de oraciones (sentence strips) con tarjetas de situación comunicativa.`,
+      cierre: `⏱️ CIERRE (10 min): Wrap-Up & Exit Ticket. Dinámica rápida de círculo "Pass the ball": cada alumno comparte una oración afirmativa en inglés utilizando "${cleanTopic}". Autoevaluación formativa con pulgares arriba/abajo respecto al objetivo Can-Do del día.`,
+      preguntas: [
+        `How do we introduce ourselves and describe our reality using "${cleanTopic}" without translating word-for-word from Spanish?`,
+        `What is the difference between pronouncing full forms vs. natural spoken contractions in English?`
+      ],
+      materiales: ['Cambridge vocabulary flashcards', 'Sentence strip builders', `${englishSpec.proniMaterial}`, 'Mini-whiteboards y plumones'],
+      entregable: `📄 Diagnostic Worksheet #1: "Target Language Discovery & Sentence Strips of ${cleanTopic}".`
+    },
+    {
+      num: 2,
+      titulo: `Unit 2. Negative & Question Forms: Interactive Detective Challenge (Listening & Reading)`,
+      inicio: `⏱️ INICIO (10 min): Speed Listening Review. Pista de audio breve o chant del docente. Los alumnos identifican afirmaciones verdaderas y falsas levantando tarjetas de color.`,
+      desarrollo: `⏱️ DESARROLLO (30 min): Controlled Structure Building. 1) Explicación visual de la inversión sujeto-verbo en oraciones interrogativas y la partícula negativa con código de color en el pizarrón. 2) Juego "Secret Detective" por parejas: cada alumno recibe una tarjeta de personaje oculto y formula hasta 5 preguntas en inglés para descubrir la identidad de su compañero. 3) Ejercicio de lectura formativa estilo Cambridge YLE: "Read, choose the correct form, and complete the dialogue."`,
+      cierre: `⏱️ CIERRE (10 min): Plenary Feedback. 3 parejas modelan su diálogo de detective de 20 segundos frente al grupo. Retroalimentación inmediata en entonación ascendente para preguntas cerradas (Yes/No questions).`,
+      preguntas: [
+        `How does the word order change when we turn a positive statement into a question with "${cleanTopic}"?`,
+        `Why is using short polite answers (e.g. "Yes, I am / No, he isn't") more natural than just answering "yes" or "no"?`
+      ],
+      materiales: ['Secret character detective cards', 'Cambridge exam-format dialogue sheets', 'Audio prompt / visual cue cards'],
+      entregable: `📄 Cambridge Practice Sheet #2: "Detective Questions & Answers Challenge with ${cleanTopic}".`
+    },
+    {
+      num: 3,
+      titulo: `Unit 3. Communicative Information-Gap & Paired Roleplays (Speaking & Interactive Fluency)`,
+      inicio: `⏱️ INICIO (10 min): Fluency Activation: "Find Someone Who...". Los estudiantes se ponen de pie con una lista de verificación y entrevistan a 3 compañeros utilizando preguntas directas sobre "${cleanTopic}".`,
+      desarrollo: `⏱️ DESARROLLO (30 min): Communicative Task (Task-Based Learning - TBL). 1) Trabajo en parejas: Alumno A recibe "Hoja de Perfil Alpha" y Alumno B recibe "Hoja de Perfil Beta" con información complementaria faltante (edad, nacionalidad, ocupación, estado de ánimo). 2) Utilizando exclusivamente inglés, formulan preguntas y registran las respuestas para completar ambos expedientes. 3) Simulación de juego de rol: Módulo de registro internacional o academia de superhéroes.`,
+      cierre: `⏱️ CIERRE (10 min): Delayed Error Correction. El docente escribe 3 frases escuchadas durante la interacción en el pizarrón; el grupo colabora para identificar y corregir errores comunes de concordancia y pronunciación.`,
+      preguntas: [
+        `How do we maintain natural conversation flow when asking for missing information in English?`,
+        `What polite clarification strategies can we use when we don't understand our partner (e.g., "Could you repeat that, please?")?`
+      ],
+      materiales: ['Information-gap paired sheets (A & B)', 'Roleplay badges', 'Speaking rubric cards'],
+      entregable: `📄 Paired Information-Gap Dossier #3: Completed communicative profile and roleplay transcript.`
+    },
+    {
+      num: 4,
+      titulo: `Unit 4. Reading for Detail & Lexical Expansion (Reading & Use of English)`,
+      inicio: `⏱️ INICIO (10 min): Pre-reading prediction from illustrations and keywords. Explicación práctica de las técnicas de lectura rápida (skimming) vs. búsqueda de datos específicos (scanning).`,
+      desarrollo: `⏱️ DESARROLLO (30 min): Text Engagement (Formato Cambridge Reading). 1) Lectura individual y guiada de un texto descriptivo auténtico (80-120 palabras) sobre perfiles juveniles inspiradores. 2) Reactivos de comprensión: emparejar encabezados, seleccionar opción múltiple y subrayar estructuras clave de "${cleanTopic}". 3) Expansión léxica: registro de adjetivos calificativos y expresiones idiomáticas en el "Cambridge Word Bank" personal.`,
+      cierre: `⏱️ CIERRE (10 min): Comprehension Circle. Cada alumno comparte un dato relevante extraído del texto en inglés utilizando las estructuras aprendidas.`,
+      preguntas: [
+        `What contextual clues help us distinguish between permanent traits and temporary emotions when reading?`,
+        `How do descriptive adjectives enrich our sentences when talking about people, animals, and places?`
+      ],
+      materiales: [`${englishSpec.proniMaterial}`, 'Cambridge reading task cards', 'Highlighters and vocabulary notebooks'],
+      entregable: `📄 Reading Comprehension Task Sheet #4: Cambridge-style multiple choice & lexical matching.`
+    },
+    {
+      num: 5,
+      titulo: `Unit 5. Guided Writing Workshop: Drafting the Global Citizen & Superhero Profile (Writing Focus)`,
+      inicio: `⏱️ INICIO (10 min): Mentor Text Analysis. Análisis colectivo de un perfil modelo de alta calidad con conectores resaltados (and, but, because) y gramática precisa.`,
+      desarrollo: `⏱️ DESARROLLO (30 min): Process Writing Workshop. 1) Lluvia de ideas y mapa conceptual: definición de identidad, talentos especiales, roles comunitarios y emociones. 2) Redacción guiada del primer borrador: escribir de 4 a 6 oraciones conectadas (30 a 50 palabras) aplicando estructuras afirmativas, negativas e interrogativas de "${cleanTopic}". 3) Acompañamiento docente diferenciado en ortografía y concordancia gramatical.`,
+      cierre: `⏱️ CIERRE (10 min): Self-Check Station. Los estudiantes cotejan su borrador contra la lista de verificación Cambridge: "¿Revisé mayúsculas, apóstrofes de contracción y concordancia de verbos?".`,
+      preguntas: [
+        `How do connectors like "and" and "because" transform isolated sentences into a fluent English paragraph?`,
+        `What capitalization and punctuation rules are essential when writing personal profiles in English?`
+      ],
+      materiales: ['Model writing templates', 'Graphic organizer mind maps', 'Cambridge writing checklist cards'],
+      entregable: `📄 Written First Draft #5: "My Global Citizen & Superhero Identity Dossier".`
+    },
+    {
+      num: 6,
+      titulo: `Unit 6. Peer-Editing & Pronunciation Lab: Phonics, Sentence Stress & Intonation`,
+      inicio: `⏱️ INICIO (10 min): Pronunciation Drills. Trabalenguas fonéticos y pares mínimos en inglés (/s/, /z/, /ɪz/, vocales largas vs. cortas) y práctica de contracciones naturales ('m, 's, 're).`,
+      desarrollo: `⏱️ DESARROLLO (30 min): Peer Review Café & Spoken Practice. 1) Intercambio de borradores escritos en parejas con notas adhesivas (estrategia "1 Elogio + 1 Sugerencia de Mejora"). 2) Práctica oral: lectura en voz alta del perfil del compañero con entonación expresiva y ritmo natural de la oración. 3) Ajustes de escritura basados en la retroalimentación entre pares.`,
+      cierre: `⏱️ CIERRE (10 min): Confidence Round. Los alumnos comparten una mejora concreta realizada a su texto tras el diálogo con su revisor.`,
+      preguntas: [
+        `Why does listening to a partner read our text aloud help us catch grammatical and spelling slips?`,
+        `How does natural sentence stress and rhythm make our spoken English much clearer to international listeners?`
+      ],
+      materiales: ['Sticky notes de colores', 'Guía de pronunciación fonética Cambridge', 'Rúbricas de coevaluación'],
+      entregable: `📄 Peer-Edited Draft & Pronunciation Checklist #6: Borrador corregido con observaciones entre pares.`
+    },
+    {
+      num: 7,
+      titulo: `Unit 7. Visual Production & Media Design of the Final Project Portfolio`,
+      inicio: `⏱️ INICIO (10 min): Layout Design Briefing. Demostración de formatos de presentación creativos (Pasaporte Internacional, Tarjeta de Identidad Superheroica, Tríptico o Cómic Digital).`,
+      desarrollo: `⏱️ DESARROLLO (30 min): Art & Language Integration. Montaje del producto tangible definitivo: 1) Ilustración o fotografía del personaje. 2) Rotulación caligráfica cuidada del texto en inglés verificado. 3) Inclusión de solapas interactivas con preguntas y respuestas para la simulación oral.`,
+      cierre: `⏱️ CIERRE (10 min): Classroom Gallery Preview. Recorrido rápido para observar los diseños visuales de los compañeros y expresar frases cortas de cortesía en inglés ("Great design!", "I love your colors!").`,
+      preguntas: [
+        `How does a clean, visually appealing design enhance the clarity and impact of our English message?`,
+        `What details give an identity portfolio an authentic international look ready for an exhibition?`
+      ],
+      materiales: ['Cartulinas, marcadores, pegamento y tijeras', 'Plantillas de pasaporte o gafete', 'Fotografías o dibujos'],
+      entregable: `🎨 Tangible Artefact #7: Final Polished Visual Portfolio & Identity Card in English.`
+    },
+    {
+      num: 8,
+      titulo: `Unit 8. Mock Cambridge Speaking Test Rehearsal: Interview Stations & Fluency Drills`,
+      inicio: `⏱️ INICIO (10 min): Cambridge Speaking Criteria Orientation. Explicación de las expectativas del examinador oficial: respuesta rápida, volumen adecuado, contacto visual y oraciones completas.`,
+      desarrollo: `⏱️ DESARROLLO (30 min): Simulation Stations. 1) El grupo se divide en Examinadores y Candidatos. 2) Los examinadores utilizan tarjetas de preguntas de Cambridge para formular 3 preguntas personales con "${cleanTopic}". 3) Los candidatos describen su tarjeta de perfil durante 1 minuto continuo sin detenerse. 4) Intercambio de roles a los 15 minutos mientras el docente registra observaciones formativas.`,
+      cierre: `⏱️ CIERRE (10 min): Spoken Feedback Plenary. Celebración de logros de fluidez, ejemplos de respuestas sobresalientes y consejos para vencer los bloqueos al hablar.`,
+      preguntas: [
+        `What communication strategies can we use when we need a second to think in English (e.g. "Well...", "Let me see...")?`,
+        `How does repeated interview simulation build authentic speaking confidence and reduce exam anxiety?`
+      ],
+      materiales: ['Cambridge Speaking prompt cards', 'Cronómetro', 'Gafetes de examinador y candidato'],
+      entregable: `📄 Mock Speaking Evaluation Form #8: Registro analítico de fluidez y pronunciación Cambridge.`
+    },
+    {
+      num: 9,
+      titulo: `Unit 9. Showcase Setup & Dress Rehearsal of the Communicative English Summit`,
+      inicio: `⏱️ INICIO (10 min): Event Organization. Organización del salón en estaciones temáticas ("Global Embassies", "Superhero Headquarters" o "Media Studios").`,
+      desarrollo: `⏱️ DESARROLLO (30 min): Timed Dress Rehearsal. 1) Ensayo cronometrado de presentaciones orales de 90 segundos por estudiante con su portafolio visual. 2) Práctica de escucha activa: formular 2 preguntas espontáneas a los compañeros expositores. 3) Ajustes finales de postura, proyección de voz y dicción en inglés.`,
+      cierre: `⏱️ CIERRE (10 min): Readiness Verification. Confirmación de que cada alumno cuenta con su portafolio, gafete y pasaporte de retroalimentación de visitantes listo.`,
+      preguntas: [
+        `How do polite English greetings (e.g., "Welcome to my stand! My name is...") set an engaging atmosphere?`,
+        `What vocal techniques help us speak clearly and confidently before an audience?`
+      ],
+      materiales: ['Visitor feedback passports', 'Señaladores de mesa y letreros', 'Tarjetas de apoyo de presentación'],
+      entregable: `📄 Final Presentation Script & Rehearsal Feedback Slip #9.`
+    },
+    {
+      num: 10,
+      titulo: `Unit 10. The International Communicative English Summit & Cambridge Assessment`,
+      inicio: `⏱️ INICIO (10 min): Grand Opening. Palabras de apertura por parte del docente y anfitriones estudiantiles: "Welcome to our English Communicative Showcase — English Only Zone!".`,
+      desarrollo: `⏱️ DESARROLLO (30 min): Live Interactive Showcase. 1) Los alumnos recorren los stands, realizan entrevistas en inglés, intercambian expedientes de identidad y recolectan sellos en sus pasaportes de visitantes. 2) El docente aplica la rúbrica analítica oficial de 3 criterios de Cambridge (Grammar & Vocabulary, Pronunciation, Interactive Communication). 3) Registro de notas breves de felicitación entre compañeros.`,
+      cierre: `⏱️ CIERRE (10 min): Awards & Metacognitive Reflection. Entrega de certificados simbólicos de logro "Cambridge Achiever Badge". Reflexión escrita individual: "In this project, I am proud that I can speak English to describe..."`,
+      preguntas: [
+        `How did our English speaking and writing skills grow from Session 1 to Session 10?`,
+        `How will we continue practicing and enjoying English outside the classroom in our daily lives?`
+      ],
+      materiales: ['Visitor passports', 'Certificados simbólicos de logro Cambridge', 'Rúbricas analíticas oficiales'],
+      entregable: `🏆 Master Project Portfolio & Cambridge Analytical Assessment Rubric Evaluated.`
+    }
+  ];
+
   let masterPool = primaryLowTemplates;
   if (level === 'preescolar') {
     masterPool = preschoolTemplates;
@@ -1578,7 +1823,10 @@ export function generateChronometerSessions(
     masterPool = preparatoriaTemplates;
   }
   
-  if (isLanguageSubject && isEpistolar) {
+  const isEnglish = isEnglishSubject(subject, cleanTopic);
+  if (isEnglish) {
+    masterPool = englishSessionsTemplates;
+  } else if (isLanguageSubject && isEpistolar) {
     masterPool = epistolarTemplates;
   } else if (isTradition) {
     masterPool = traditionTemplates;
@@ -1593,22 +1841,38 @@ export function generateChronometerSessions(
 
     if (count === 1) {
       // 1 sesión integrada
-      baseTpl = {
-        num: 1,
-        titulo: `Sesión Integradora: Reto, Indagación y Aplicación Práctica sobre "${cleanTopic}"`,
-        inicio: `⏱️ INICIO (10 min): Activación de saberes previos y presentación del reto sobre "${cleanTopic}". Lluvia de ideas participativa en el salón.`,
-        desarrollo: `⏱️ DESARROLLO (30 min): Exploración guiada en libros SEP, modelado práctico en equipos y elaboración del producto tangible de aprendizaje.`,
-        cierre: `⏱️ CIERRE (10 min): Socialización en plenaria, autoevaluación formativa con rúbrica y registro de conclusiones.`,
-        preguntas: level === 'preescolar' || level === 'primaria-baja' ? [
-          `¿Qué personas, objetos o dibujos descubrimos hoy sobre "${cleanTopic}"?`,
-          `¿Qué aprendizaje bonito compartiré con mi familia al llegar a casa?`
-        ] : [
-          `¿Cómo resolvemos el reto central de "${cleanTopic}" con los saberes adquiridos hoy?`,
-          `¿Qué aprendizaje clave compartiré con mi comunidad escolar?`
-        ],
-        materiales: ['Libro de texto gratuito SEP', 'Material manipulable o cartulinas', 'Bitácora escolar'],
-        entregable: `🏆 Evidencia Integradora: Ficha de trabajo y producto demostrativo completado sobre "${cleanTopic}".`
-      };
+      if (isEnglish) {
+        baseTpl = {
+          num: 1,
+          titulo: `Interactive Showcase: Communicative Discovery & Practice of "${cleanTopic}" (${englishSpec.levelCode})`,
+          inicio: `⏱️ INICIO (10 min): Warm-Up & Phonics Lead-In. TPR chant y desafío con flashcards. El docente introduce el objetivo comunicativo Can-Do: "Today we can introduce ourselves and practice ${cleanTopic} in simple spoken sentences."`,
+          desarrollo: `⏱️ DESARROLLO (30 min): Communicative Workshop (PPP). 1) Presentación de estructuras clave de ${cleanTopic} y Concept Checking Questions (CCQs). 2) Práctica en parejas con tarjetas de intercambio de información. 3) Hoja de trabajo de lectura y construcción de oraciones en formato Cambridge.`,
+          cierre: `⏱️ CIERRE (10 min): Wrap-Up & Exit Ticket. Ronda rápida de expresión oral donde cada estudiante comparte una oración en inglés con ${cleanTopic}. Autoevaluación formativa con la lista de verificación Can-Do.`,
+          preguntas: [
+            `How do we describe who we are and express our ideas using "${cleanTopic}" in natural English?`,
+            `What new words or pronunciation patterns did we master today to communicate with friends around the world?`
+          ],
+          materiales: [`${englishSpec.proniMaterial}`, 'Cambridge flashcards', 'Sentence strip builders', 'Mini-whiteboards'],
+          entregable: `🏆 Communicative Evidence: Completed Language Practice Sheet & Spoken Interaction Record on "${cleanTopic}".`
+        };
+      } else {
+        baseTpl = {
+          num: 1,
+          titulo: `Sesión Integradora: Reto, Indagación y Aplicación Práctica sobre "${cleanTopic}"`,
+          inicio: `⏱️ INICIO (10 min): Activación de saberes previos y presentación del reto sobre "${cleanTopic}". Lluvia de ideas participativa en el salón.`,
+          desarrollo: `⏱️ DESARROLLO (30 min): Exploración guiada en libros SEP, modelado práctico en equipos y elaboración del producto tangible de aprendizaje.`,
+          cierre: `⏱️ CIERRE (10 min): Socialización en plenaria, autoevaluación formativa con rúbrica y registro de conclusiones.`,
+          preguntas: level === 'preescolar' || level === 'primaria-baja' ? [
+            `¿Qué personas, objetos o dibujos descubrimos hoy sobre "${cleanTopic}"?`,
+            `¿Qué aprendizaje bonito compartiré con mi familia al llegar a casa?`
+          ] : [
+            `¿Cómo resolvemos el reto central de "${cleanTopic}" con los saberes adquiridos hoy?`,
+            `¿Qué aprendizaje clave compartiré con mi comunidad escolar?`
+          ],
+          materiales: ['Libro de texto gratuito SEP', 'Material manipulable o cartulinas', 'Bitácora escolar'],
+          entregable: `🏆 Evidencia Integradora: Ficha de trabajo y producto demostrativo completado sobre "${cleanTopic}".`
+        };
+      }
     } else if (count === 2) {
       const poolLen = masterPool.length;
       const tplIndex = i === 0 ? 0 : poolLen - 1;
@@ -1682,6 +1946,38 @@ export function getArticulatedPdas(level: string, subject: string, topic: string
   const capitalizedTopic = cleanTopic;
   const topicLower = cleanTopic.toLowerCase();
   const levelKey = level || 'primaria-baja';
+
+  // 0. DOMINIO INGLÉS Y CERTIFICACIONES CAMBRIDGE (ELT)
+  if (isEnglishSubject(subject, topic)) {
+    const spec = getCambridgeSpecification(levelKey);
+    return [
+      {
+        campoFormativo: 'Lenguajes (Lengua Extranjera: Inglés • Certificación Cambridge)',
+        pda: `Aplica estructuras comunicativas, vocabulario contextual y patrones fonéticos de "${capitalizedTopic}" alineados a los descriptores Cambridge (${spec.levelCode}) en intercambios orales y escritos auténticos.`,
+        relacion: `Enfoque Comunicativo (CLT), desarrollo de los 4 Skills (Listening, Speaking, Reading, Writing) y precisión léxico-gramatical.`
+      },
+      {
+        campoFormativo: 'Lenguajes (Lengua Materna / Español)',
+        pda: `Contrasta semejanzas y diferencias léxicas, sintácticas y culturales entre el español y el inglés (cognados, estructuras temporales y orden de adjetivos), consolidando la conciencia metalingüística bilingüe.`,
+        relacion: `Análisis comparativo de lenguas, transferencia positiva de vocabulario y desarrollo del multilingüismo escolar.`
+      },
+      {
+        campoFormativo: 'Saberes y Pensamiento Científico',
+        pda: `Organiza datos e información personal en tablas lógicas, esquemas visuales y diagramas de flujo para estructurar oraciones y descripciones sistemáticas en inglés.`,
+        relacion: `Pensamiento lógico-secuencial, estructuración analítica de la información y rigor conceptual.`
+      },
+      {
+        campoFormativo: 'Ética, Naturaleza y Sociedades',
+        pda: `Reconoce y valora la diversidad lingüística, geográfica y cultural de las comunidades anglófonas y su relación con México, fomentando la empatía y la ciudadanía global.`,
+        relacion: `Interculturalidad crítica, respeto a la pluralidad cultural y apertura a la comunicación internacional.`
+      },
+      {
+        campoFormativo: 'De lo Humano y lo Comunitario',
+        pda: `Participa con seguridad, respeto y colaboración activa en dinámicas grupales, juegos de rol y diálogos en parejas en inglés, superando la ansiedad lingüística.`,
+        relacion: `Confianza comunicativa, empatía interpersonal y habilidades socioemocionales para el trabajo en equipo.`
+      }
+    ];
+  }
 
   // Identificación precisa del dominio temático
   const isTraditionsOrCulture = /muert|difunt|ofrend|calaver|altar|cempasuchil|pan de muerto|costumbre|festividad|tradicion|patrimonio biocultural|celebrac|panteon|copal|sahumerio|alfeñique|papel picado|fiesta patronal|guelaguetza|posada|navidad|carnaval|charro|mariachi|indigena|originario|lengua materna/i.test(topicLower);
@@ -2419,6 +2715,181 @@ export function generateFinalProjectProposal(level: string, subject: string, top
   const capitalizedTopic = cleanTopic;
   const levelKey = level || 'primaria-baja';
   const domain = classifyPedagogicalDomain(cleanTopic, subject);
+
+  // 0. DOMINIO INGLÉS - CERTIFICACIÓN CAMBRIDGE Y ENFOQUE COMUNICATIVO (ELT / CEFR)
+  if (domain === 'english_cambridge' || isEnglishSubject(subject, cleanTopic)) {
+    const spec = getCambridgeSpecification(levelKey);
+    if (levelKey === 'preescolar') {
+      return {
+        titulo: `Junior Explorers Circle: "My World & Friends" — Cambridge Pre-A1 Starters Interactive Showcase`,
+        problematicaComunitaria: `Los aprendices tempranos de inglés requieren un ambiente lúdico, seguro e inmersivo para asociar sonidos, saludos y vocabulario cotidiano (${capitalizedTopic}) sin ansiedad y con confianza afectiva.`,
+        proposito: `Desarrollar la oralidad y discriminación auditiva inicial en inglés mediante canciones, tarjetas visuales (flashcards), comandos corporales (TPR) y dinámicas de interacción entre pares vinculadas a ${spec.proniMaterial}.`,
+        productoFinal: `Instalación del "My World Discovery Circle" en el aula: mini álbum ilustrado (Picture Booklet) rotulado por las niñas y niños, demostración oral de saludos y cantos en pares ante la comunidad escolar.`,
+        impactoSocial: `Fomenta la curiosidad intercultural, la empatía y la autoconfianza para comunicarse en una segunda lengua desde la primera infancia.`,
+        rubrica: {
+          criterio1: {
+            nombre: 'Comprensión Auditiva y Respuesta TPR (Pre-A1 Starters)',
+            sobresaliente: `Comprende con entusiasmo instrucciones y estímulos auditivos en inglés sobre ${capitalizedTopic}, respondiendo con gestos o palabras clave.`,
+            satisfactorio: `Responde a comandos orales y señalamientos visuales con apoyo del docente.`,
+            enProceso: `Requiere repetición constante o muestra timidez al responder a estímulos en inglés.`
+          },
+          criterio2: {
+            nombre: 'Producción Oral y Reconocimiento Léxico',
+            sobresaliente: `Pronuncia con claridad palabras y frases cortas vinculadas a ${capitalizedTopic} al señalar imágenes y participar en rondas.`,
+            satisfactorio: `Identifica las tarjetas ilustradas y repite el vocabulario guiado.`,
+            enProceso: `Presenta dificultad para recordar el vocabulario básico o articular los fonemas.`
+          },
+          criterio3: {
+            nombre: 'Participación Colaborativa y Actitud Comunicativa',
+            sobresaliente: `Participa con alegría y empatía en los juegos y canciones en parejas, respetando turnos de habla.`,
+            satisfactorio: `Se integra al trabajo grupal y comparte materiales con sus compañeros.`,
+            enProceso: `Le cuesta mantener la atención o integrarse en las dinámicas colectivas.`
+          }
+        }
+      };
+    } else if (levelKey === 'primaria-baja') {
+      return {
+        titulo: `Young Learners Communicative Fair: "Our School & Everyday Life" — Cambridge Pre-A1 Starters Project`,
+        problematicaComunitaria: `En 1º y 2º de primaria, los alumnos necesitan pasar del aprendizaje pasivo de listas de palabras a la interacción comunicativa real mediante diálogos orales y representaciones visuales contextualizadas sobre "${capitalizedTopic}".`,
+        proposito: `Desarrollar la competencia léxica y de interacción oral inicial alineada a Cambridge Pre-A1 Starters y ${spec.proniMaterial}, diseñando un diccionario gráfico interactivo y dramatizando intercambios cotidianos breves.`,
+        productoFinal: `Montaje de la "English Interactive Discovery Fair" en el aula: Picture Dictionaries ilustrados por equipos, mini roleplays en parejas (Ask & Answer) y grabación de un podcast de audio infantil sobre "${capitalizedTopic}".`,
+        impactoSocial: `Crea un entorno de aprendizaje bilingüe inclusivo que estimula la autoestima lingüística, la escucha activa y la colaboración entre pares.`,
+        rubrica: {
+          criterio1: {
+            nombre: 'Control Léxico y Estructuras Básicas (Pre-A1 Starters)',
+            sobresaliente: `Utiliza con precisión vocabulario y frases modelo vinculadas a "${capitalizedTopic}" en actividades orales y de rotulación.`,
+            satisfactorio: `Reconoce y escribe el vocabulario central con guía de modelos visuales.`,
+            enProceso: `Presenta confusiones léxicas o requiere asistencia continua para estructurar frases simples.`
+          },
+          criterio2: {
+            nombre: 'Interacción Oral y Pronunciación Inteligible',
+            sobresaliente: `Sostiene intercambios orales breves en parejas con buena entonación, ritmo y pronunciación clara para el nivel Starters.`,
+            satisfactorio: `Formula y responde preguntas básicas de rutina con fluidez aceptable.`,
+            enProceso: `Muestra inseguridad o pronunciación que dificulta la comprensión del mensaje.`
+          },
+          criterio3: {
+            nombre: 'Calidad del Entregable Gráfico y Trabajo en Equipo',
+            sobresaliente: `Presenta su Picture Dictionary con esmero gráfico y colabora activamente en su equipo durante la feria comunicativa.`,
+            satisfactorio: `Completa su material ilustrado y participa en la estación escolar.`,
+            enProceso: `Entrega el trabajo incompleto o presenta dificultades para coordinarse con su compañero.`
+          }
+        }
+      };
+    } else if (levelKey === 'primaria-media') {
+      return {
+        titulo: `Global Kids Interactive Studio: "Stories, Profiles & Routines" — Cambridge A1 Movers Communicative Project`,
+        problematicaComunitaria: `Los estudiantes de 3º y 4º de primaria requieren consolidar la estructuración de oraciones completas, la formulación de preguntas directas y la descripción de su entorno inmediato en torno a "${capitalizedTopic}".`,
+        proposito: `Integrar las cuatro habilidades lingüísticas (Listening, Speaking, Reading, Writing) bajo estándares Cambridge A1 Movers y ${spec.proniMaterial} para elaborar un mural de historias ilustradas y conducir entrevistas guiadas en parejas.`,
+        productoFinal: `Edición y exposición del "Global Kids Magazine & Live Interview Studio": viñetas narrativas con textos descriptivos sobre "${capitalizedTopic}", acompañadas de una estación de entrevistas en vivo en parejas donde los estudiantes demuestran fluidez oral.`,
+        impactoSocial: `Sensibiliza a las y los alumnos sobre la diversidad global y la comunicación asertiva, fortaleciendo sus herramientas para interactuar en un mundo interconectado.`,
+        rubrica: {
+          criterio1: {
+            nombre: 'Estructuración Gramatical y Rango Léxico (A1 Movers)',
+            sobresaliente: `Construye oraciones afirmativas, negativas e interrogativas precisas sobre "${capitalizedTopic}" aplicando la concordancia y vocabulario adecuado.`,
+            satisfactorio: `Elabora oraciones completas comprensibles con errores menores que no impiden la comunicación.`,
+            enProceso: `Dificultad recurrente en la estructura sintáctica o vocabulario muy limitado.`
+          },
+          criterio2: {
+            nombre: 'Fluidez y Producción Oral en Parejas (Cambridge Speaking Format)',
+            sobresaliente: `Participa con soltura en el diálogo en parejas, respondiendo y repreguntando con pronunciación inteligible y ritmo adecuado.`,
+            satisfactorio: `Mantiene la interacción guiada respondiendo a las preguntas de su compañero con claridad.`,
+            enProceso: `Requiere intervención constante del profesor para mantener el diálogo o recurre al español.`
+          },
+          criterio3: {
+            nombre: 'Producción Escrita y Edición del Mural Temático',
+            sobresaliente: `Redacta párrafos descriptivos coherentes con puntuación y ortografía apropiadas, integrando ilustraciones creativas.`,
+            satisfactorio: `Escribe descripciones sencillas y colabora en el armado de la revista mural.`,
+            enProceso: `Textos desorganizados o con fallas ortográficas que afectan el sentido global.`
+          }
+        }
+      };
+    } else if (levelKey === 'primaria-alta') {
+      return {
+        titulo: `Global Citizens & Superhero Summit: "Our Identities & Daily Realities" — Cambridge A2 Flyers Interactive Showcase`,
+        problematicaComunitaria: `En 5º y 6º de primaria, los estudiantes requieren trascender los ejercicios gramaticales aislados y aplicar "${capitalizedTopic}" para expresar opiniones, biografías, descripciones detalladas y situaciones de su vida real en inglés comunicativo.`,
+        proposito: `Aplicar los estándares internacionales de Cambridge A2 Flyers y ${spec.proniMaterial} para investigar, redactar y presentar dossiers biográficos interactivos y sostener entrevistas cara a cara en parejas (Speaking Test Task).`,
+        productoFinal: `Montaje del "A2 Flyers Global Summit & Interactive Media Showcase" en el aula: portafolio ilustrado de perfiles ("Who We Are & What We Do"), podcast de entrevistas grabado en parejas y feria de conversación oral interactiva para la comunidad escolar con rúbrica Cambridge.`,
+        impactoSocial: `Consolida el nivel A2 del MCER/Cambridge, fortalece la identidad bilingüe, la autoconfianza y la capacidad de interactuar fluidamente en situaciones cotidianas e interculturales.`,
+        rubrica: {
+          criterio1: {
+            nombre: 'Precisión Gramatical y Rango de Uso (Cambridge A2 Flyers)',
+            sobresaliente: `Emplea con notable exactitud las estructuras comunicativas de "${capitalizedTopic}", demostrando control de sujetos, concordancia verbal y complementos descriptivos.`,
+            satisfactorio: `Utiliza las estructuras objetivo de manera comprensible, con inconsistencias gramaticales menores que no obstruyen el mensaje.`,
+            enProceso: `Presenta errores estructurales sistemáticos al formular enunciados básicos sobre el tema.`
+          },
+          criterio2: {
+            nombre: 'Interacción Oral y Manejo Discursivo (Paired Speaking Task)',
+            sobresaliente: `Mantiene un diálogo fluido y natural en parejas, formulando preguntas abiertas, respondiendo con extensión y buena pronunciación.`,
+            satisfactorio: `Participa activamente en la conversación en parejas respondiendo con claridad a las preguntas del interlocutor.`,
+            enProceso: `Muestra dificultades para sostener la interacción, recurriendo en exceso a respuestas monosilábicas o a su lengua materna.`
+          },
+          criterio3: {
+            nombre: 'Coherencia Escrita y Presentación del Portafolio Temático',
+            sobresaliente: `Redacta textos descriptivos organizados con conectores lógicos ("and", "but", "because"), ortografía rigurosa y diseño visual profesional.`,
+            satisfactorio: `Elabora textos descriptivos coherentes y participa en la presentación de su portafolio.`,
+            enProceso: `Presenta textos inconexos o con fallas severas de sintaxis y ortografía en inglés.`
+          }
+        }
+      };
+    } else if (levelKey === 'secundaria') {
+      return {
+        titulo: `Youth Action Global Forum: "Identities, Perspectives & World Challenges" — Cambridge A2 Key / B1 Preliminary Showcase`,
+        problematicaComunitaria: `Los estudiantes de secundaria necesitan consolidar competencias comunicativas formales y funcionales en inglés, articulando argumentos personales, datos factuales y soluciones a desafíos juveniles vinculados a "${capitalizedTopic}".`,
+        proposito: `Desarrollar competencias del MCER niveles A2/B1 (Cambridge Key / Preliminary) y ${spec.proniMaterial}, diseñando infografías analíticas bilingües y debatiendo en mesas redondas en parejas con rúbrica internacional.`,
+        productoFinal: `Celebración del "Teen Youth Action Global Forum": simulación de panel internacional con infografías expositivas, debates en parejas (Speaking Test Parts 1 & 2) y publicación de una guía digital de compromisos juveniles en inglés.`,
+        impactoSocial: `Potencia las habilidades de argumentación, pensamiento crítico global y empleabilidad académica de las y los adolescentes mediante el dominio del inglés internacional.`,
+        rubrica: {
+          criterio1: {
+            nombre: 'Manejo Discursivo y Complejidad Sintáctica (A2 Key / B1 Preliminary)',
+            sobresaliente: `Construye discursos y textos cohesionados sobre "${capitalizedTopic}" empleando conectores variados, oraciones compuestas y precisión morfosintáctica.`,
+            satisfactorio: `Produce mensajes continuos comprensibles con adecuado control de las estructuras esenciales.`,
+            enProceso: `Sintaxis fragmentada o recurrencia a estructuras en español traducidas literalmente.`
+          },
+          criterio2: {
+            nombre: 'Competencia Interactiva Oral y Fluidez (Cambridge Speaking Exam)',
+            sobresaliente: `Inicia, mantiene y concluye intercambios comunicativos con fluidez, justificando opiniones y negociando acuerdos con su par.`,
+            satisfactorio: `Interactúa con solvencia en la mesa redonda respondiendo a preguntas y aportando argumentos propios.`,
+            enProceso: `Participación titubeante o limitada a frases aisladas sin encadenamiento comunicativo.`
+          },
+          criterio3: {
+            nombre: 'Recurso Léxico y Registro Sociolingüístico',
+            sobresaliente: `Emplea un repertorio léxico amplio y adecuado al contexto, utilizando vocabulario específico de "${capitalizedTopic}" y registro formal apropiado.`,
+            satisfactorio: `Utiliza vocabulario relevante con corrección general, recurriendo a paráfrasis cuando lo requiere.`,
+            enProceso: `Léxico repetitivo o inadecuado para el nivel y tema tratado.`
+          }
+        }
+      };
+    } else {
+      // Preparatoria / Bachillerato (MCCEMS)
+      return {
+        titulo: `International Academic Colloquium: "Perspectives, Global Trends & Ethics" — Cambridge B1+/B2 First for Schools Project`,
+        problematicaComunitaria: `Los estudiantes preuniversitarios requieren dominar el inglés académico y profesional para sintetizar fuentes bibliográficas auténticas, redactar ensayos estructurados y defender ponencias orales rigurosas sobre "${capitalizedTopic}".`,
+        proposito: `Consolidar las competencias del perfil de egreso MCCEMS y Cambridge B2 First en las cuatro habilidades lingüísticas, produciendo un artículo de análisis crítico y participando en un coloquio académico bilingüe.`,
+        productoFinal: `Desarrollo del "International Academic Colloquium": redacción de un artículo de divulgación / ensayo académico estructurado en inglés (Abstract, Analysis, Conclusion), infografía de síntesis y disertación oral en panel con sesión de preguntas y respuestas.`,
+        impactoSocial: `Eleva las credenciales académicas preuniversitarias, capacita para certificaciones de alta exigencia (B2 First / IELTS) y forma ciudadanos globales con voz crítica.`,
+        rubrica: {
+          criterio1: {
+            nombre: 'Control Gramatical y Complejidad Estructural (Cambridge B2 First)',
+            sobresaliente: `Demuestra un control consistente de estructuras sintácticas complejas vinculadas a "${capitalizedTopic}", con flexibilidad estilística y nulo error fosilizado.`,
+            satisfactorio: `Utiliza estructuras complejas con buen grado de control; los descuidos gramaticales no restan claridad ni rigor.`,
+            enProceso: `Inconsistencias gramaticales en oraciones complejas que comprometen la precisión del análisis.`
+          },
+          criterio2: {
+            nombre: 'Argumentación Oral y Solvencia Académica (Interactive Speaking)',
+            sobresaliente: `Expone ideas abstractas con elocuencia, fluidez y entonación natural, debatiendo con madurez y respondiendo a cuestionamientos del auditorio.`,
+            satisfactorio: `Defiende su postura con argumentos claros y mantiene el hilo de la discusión académica en inglés.`,
+            enProceso: `Fluidez entrecortada o dependencia excesiva de notas escritas durante la ponencia.`
+          },
+          criterio3: {
+            nombre: 'Riqueza Léxica, Cohesión y Rigor Académico Textual',
+            sobresaliente: `Integra vocabulario técnico, colocaciones idiomáticas y marcadores discursivos avanzados, presentando un texto ensayístico impecable.`,
+            satisfactorio: `Elabora un texto coherente con registro formal adecuado y vocabulario pertinente sobre el tema.`,
+            enProceso: `Registro coloquial o vocabulario genérico que desmerece el formato de coloquio académico.`
+          }
+        }
+      };
+    }
+  }
 
   // 1. DOMINIO TRADICIONES Y PATRIMONIO BIOCULTURAL
   if (domain === 'traditions_culture') {
@@ -3248,8 +3719,32 @@ export function generateDetonatingQuestions(topic: string, level: string = 'prim
 
   let rawQuestions: string[] = [];
 
+  // 0. INGLÉS - ENFOQUE COMUNICATIVO Y CERTIFICACIÓN CAMBRIDGE
+  if (domain === 'english_cambridge' || isEnglishSubject(subject, cleanTopic)) {
+    const spec = getCambridgeSpecification(levelKey);
+    if (levelKey === 'preescolar' || levelKey === 'primaria-baja') {
+      rawQuestions = [
+        `How can we use English words and friendly greetings like "${capitalizedTopic}" to introduce ourselves and make new friends in our classroom?`,
+        `What fun actions, songs, and colorful flashcards help us remember and say "${capitalizedTopic}" with confidence?`,
+        `Why is learning English exciting, and how can we share our favorite English words with our families at home?`
+      ];
+    } else if (levelKey === 'primaria-media' || levelKey === 'primaria-alta') {
+      rawQuestions = [
+        `How do we use "${capitalizedTopic}" in real everyday conversations to talk about who we are, our daily routines, and the world around us?`,
+        `What is the difference between simply memorizing grammar rules and actually using "${capitalizedTopic}" to ask questions and interview our classmates?`,
+        `How does mastering "${capitalizedTopic}" (at Cambridge ${spec.levelCode} level) help us connect with young people from other cultures and countries?`
+      ];
+    } else {
+      rawQuestions = [
+        `How do communicative structures related to "${capitalizedTopic}" allow us to express nuanced opinions, compare viewpoints, and debate contemporary global issues in English?`,
+        `What strategies can we apply to transition from translation-dependent thinking to natural, spontaneous spoken fluency in Cambridge ${spec.levelCode} tasks?`,
+        `In what ways does bilingual proficiency in "${capitalizedTopic}" broaden our academic, cultural, and future professional opportunities in an interconnected world?`
+      ];
+    }
+  }
+
   // 1. TRADICIONES Y PATRIMONIO BIOCULTURAL
-  if (domain === 'traditions_culture') {
+  else if (domain === 'traditions_culture') {
     if (levelKey === 'preescolar' || levelKey === 'primaria-baja') {
       rawQuestions = [
         `¿Qué historias nos platican los abuelitos sobre los altares y qué olores ricos sentimos con el copal y las flores de cempasúchil en ${capitalizedTopic}?`,
@@ -3675,6 +4170,54 @@ export function detectCurriculumPdasForTopic(
   const topicLower = cleanTopic.toLowerCase();
   const subLower = (subjectIdOrName || '').toLowerCase();
   const levelKey = level || 'primaria-baja';
+
+  // 0. ENFOQUE EXCLUSIVO PARA INGLÉS (LENGUA EXTRANJERA - CAMBRIDGE CEFR)
+  if (isEnglishSubject(subjectIdOrName, cleanTopic)) {
+    const spec = getCambridgeSpecification(levelKey);
+    if (levelKey === 'preescolar') {
+      return [
+        `Fase 2 (Preescolar) - Lenguajes (Inglés • ${spec.levelCode}): Reconoce y reproduce sonidos, saludos, instrucciones básicas (TPR) y vocabulario cotidiano en inglés vinculados a "${capitalizedTopic}".`,
+        `Fase 2 (Preescolar) - Lenguajes (Inglés • ${spec.levelCode}): Asocia imágenes, tarjetas visuales y canciones ilustradas con palabras y expresiones clave en inglés sobre "${capitalizedTopic}".`,
+        `Fase 2 (Preescolar) - Lenguajes (Inglés • ${spec.levelCode}): Participa con alegría en rondas, juegos cooperativos y dinámicas de señalamiento (Point & Say) respondiendo a estímulos en inglés.`,
+        `Fase 2 (Preescolar) - Lenguajes (Inglés • ${spec.levelCode}): Comparte con sus compañeros y familia expresiones afectivas y palabras sencillas aprendidas en inglés en torno a "${capitalizedTopic}".`
+      ];
+    } else if (levelKey === 'primaria-baja') {
+      return [
+        `Fase 3 (1º y 2º Primaria) - Lenguajes (Inglés • ${spec.levelCode}): Identifica y escribe palabras y expresiones cotidianas en inglés relacionadas con "${capitalizedTopic}" a través de tarjetas ilustradas (flashcards) y rimas infantiles.`,
+        `Fase 3 (1º y 2º Primaria) - Lenguajes (Inglés • ${spec.levelCode}): Participa en intercambios orales guiados muy breves sobre "${capitalizedTopic}", saludando, presentándose y nombrando objetos de su entorno escolar.`,
+        `Fase 3 (1º y 2º Primaria) - Lenguajes (Inglés • ${spec.levelCode}): Sigue instrucciones orales simples y responde con acciones físicas o respuestas de una a dos palabras en actividades lúdicas sobre "${capitalizedTopic}".`,
+        `Fase 3 (1º y 2º Primaria) - Lenguajes (Inglés • ${spec.levelCode}): Elabora un mini diccionario ilustrado (Picture Dictionary) rotulando elementos en inglés vinculados a "${capitalizedTopic}".`
+      ];
+    } else if (levelKey === 'primaria-media') {
+      return [
+        `Fase 4 (3º y 4º Primaria) - Lenguajes (Inglés • ${spec.levelCode}): Comprende y utiliza oraciones comunicativas completas sobre "${capitalizedTopic}" para describir personas, gustos, objetos cotidianos y su entorno.`,
+        `Fase 4 (3º y 4º Primaria) - Lenguajes (Inglés • ${spec.levelCode}): Formula y responde preguntas directas (Wh- questions & Yes/No) en diálogos en parejas sobre "${capitalizedTopic}".`,
+        `Fase 4 (3º y 4º Primaria) - Lenguajes (Inglés • ${spec.levelCode}): Lee relatos ilustrados breves identificando la secuencia de acontecimientos y vocabulario contextualizado de "${capitalizedTopic}".`,
+        `Fase 4 (3º y 4º Primaria) - Lenguajes (Inglés • ${spec.levelCode}): Redacta textos descriptivos breves conectados y completa viñetas aplicando estructuras comunicativas de "${capitalizedTopic}".`
+      ];
+    } else if (levelKey === 'primaria-alta') {
+      return [
+        `Fase 5 (5º y 6º Primaria) - Lenguajes (Inglés • ${spec.levelCode}): Emplea estructuras comunicativas en inglés vinculadas a "${capitalizedTopic}" para expresar descripciones personales, rutinas y hechos cotidianos en diálogos orales y textos breves.`,
+        `Fase 5 (5º y 6º Primaria) - Lenguajes (Inglés • ${spec.levelCode}): Comprende información global y específica en textos orales y escritos sencillos (historias cortas, diálogos y folletos) que incorporan "${capitalizedTopic}".`,
+        `Fase 5 (5º y 6º Primaria) - Lenguajes (Inglés • ${spec.levelCode}): Participa en intercambios comunicativos en parejas (Ask & Answer en formato Speaking Cambridge) sobre "${capitalizedTopic}", formulando y respondiendo preguntas con pronunciación inteligible.`,
+        `Fase 5 (5º y 6º Primaria) - Lenguajes (Inglés • ${spec.levelCode}): Elabora un portafolio descriptivo ilustrado ("Interactive Profile Dossier") utilizando conectores básicos ("and", "but", "because") y léxico clave de "${capitalizedTopic}".`
+      ];
+    } else if (levelKey === 'secundaria') {
+      return [
+        `Fase 6 (Secundaria) - Lenguajes (Inglés • ${spec.levelCode}): Produce textos orales y escritos continuos y coherentes en inglés sobre "${capitalizedTopic}", contrastando ideas y justificando opiniones personales.`,
+        `Fase 6 (Secundaria) - Lenguajes (Inglés • ${spec.levelCode}): Comprende la idea principal y detalles implícitos en audios breves, podcasts o lecturas informativas en inglés que abordan "${capitalizedTopic}".`,
+        `Fase 6 (Secundaria) - Lenguajes (Inglés • ${spec.levelCode}): Participa en debates guiados y roleplays espontáneos en parejas (Speaking Test format) negociando significado y resolviendo situaciones cotidianas vinculadas a "${capitalizedTopic}".`,
+        `Fase 6 (Secundaria) - Lenguajes (Inglés • ${spec.levelCode}): Diseña un informe analítico o infografía bilingüe estructurada con introducción, desarrollo y conclusión sobre "${capitalizedTopic}".`
+      ];
+    } else {
+      return [
+        `Bachillerato (MCCEMS) - Lengua y Comunicación (Inglés • ${spec.levelCode}): Sintetiza información compleja de fuentes auténticas en inglés sobre "${capitalizedTopic}", evaluando argumentos y perspectivas críticas.`,
+        `Bachillerato (MCCEMS) - Lengua y Comunicación (Inglés • ${spec.levelCode}): Produce ensayos expositivos y discursos argumentativos con variedad léxica, conectores avanzados y precisión gramatical en torno a "${capitalizedTopic}".`,
+        `Bachillerato (MCCEMS) - Lengua y Comunicación (Inglés • ${spec.levelCode}): Sostiene intercambios comunicativos fluidos y espontáneos en inglés en mesas redondas y simulaciones de conferencias académicas sobre "${capitalizedTopic}".`,
+        `Bachillerato (MCCEMS) - Lengua y Comunicación (Inglés • ${spec.levelCode}): Aplica estrategias de autorregulación y corrección estilística en la producción textual bilingüe de nivel preuniversitario.`
+      ];
+    }
+  }
 
   // Identificación exhaustiva de dominios temáticos
   const isTraditionsOrCulture = /muert|difunt|ofrend|calaver|altar|cempasuchil|pan de muerto|costumbre|festividad|tradicion|patrimonio biocultural|celebrac|panteon|copal|sahumerio|alfeñique|papel picado|fiesta patronal|guelaguetza|posada|navidad|carnaval|charro|mariachi|indigena|originario|lengua materna/i.test(topicLower);

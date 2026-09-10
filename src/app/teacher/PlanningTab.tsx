@@ -29,7 +29,10 @@ import {
   SessionPlanItem, 
   ArticulatedPda, 
   FinalProjectProposal,
-  CompleteNEMPlanning
+  CompleteNEMPlanning,
+  CambridgeLevelSpec,
+  getCambridgeSpecification,
+  isEnglishSubject
 } from '@/lib/curriculumEngine';
 import { PedagogicalSuggestionsSection } from '@/components/teacher/PedagogicalSuggestionsSection';
 
@@ -188,6 +191,58 @@ const NEM_CURRICULUM_DATABASE: Record<string, Record<string, NemContent>> = {
       evaluacion: 'Manuscrito del discurso con uso explícito de figuras retóricas y video de la oratoria final del alumno.',
       materiales: 'Manual de retórica y oratoria, videos de discursos históricos, rúbrica de coevaluación escolar.'
     }
+  },
+  'ingles': {
+    'preescolar': {
+      campoFormativo: 'Lenguajes (Lengua Extranjera: Inglés • Cambridge Pre-A1 Starters)',
+      ejesArticuladores: ['Interculturalidad Crítica', 'Artes y Experiencias Estéticas'],
+      pda: 'Pre-A1 Starters - Reconoce e interactúa con vocabulario cotidiano, saludos, instrucciones físicas (TPR) y cantos en inglés en un ambiente afectivo y seguro.',
+      inicio: 'Circle Time & Hello Song: Reunir a los alumnos en semicírculo, cantar una canción de bienvenida con mímica y presentar una marioneta (puppet) que saluda y pregunta nombres en inglés ("Hello! What is your name?").',
+      desarrollo: 'Flashcard Discovery & Action Games: Mostrar tarjetas ilustradas de gran formato con imágenes y colores vivos. Modelar la pronunciación mediante repetición coral y dinámicas de respuesta física total (TPR: "Stand up", "Jump", "Point to the picture"). Practicar en parejas con tarjetas pequeñas nombrando objetos y felicitándose mutuamente con "High five!".',
+      cierre: 'Goodbye Chant & Sticker Reward: Ronda de cierre cantando "Goodbye, See You Soon!", donde cada alumno señala su tarjeta favorita del día antes de despedirse en inglés.',
+      evaluacion: 'Observación formativa continua: Reconocimiento auditivo de comandos simples, participación alegre en canciones y articulación comprensible de palabras básicas.',
+      materiales: 'Puppet escolar, flashcards ilustradas de alta visibilidad, reproductor de audio para canciones infantiles en inglés, stickers de felicitación.'
+    },
+    'primaria-baja': {
+      campoFormativo: 'Lenguajes (Lengua Extranjera: Inglés • Cambridge Pre-A1 Starters)',
+      ejesArticuladores: ['Interculturalidad Crítica', 'Pensamiento Crítico'],
+      pda: 'Cambridge Pre-A1 Starters (Fase 3: 1º y 2º) - Identifica y utiliza vocabulario fundamental, fórmulas de cortesía y preguntas directas de uso cotidiano mediante juegos de interacción comunicativa.',
+      inicio: 'Interactive Warm-up: Activar conocimientos previos con un juego de memoria visual (Kim\'s Game o Flashcard Flash) proyectando o mostrando objetos cotidianos y pidiendo a los alumnos que nombren lo que recuerdan en inglés.',
+      desarrollo: 'Guided Practice & Information-Gap Task: Presentar las estructuras modelo en el pizarrón mediante tarjetas de diálogo. En parejas, realizar una actividad de vacío de información (Information Gap): cada alumno tiene una hoja con dibujos incompletos y debe preguntar a su compañero ("What is this?", "What color is it?", "Is it a...?") para completar su ilustración.',
+      cierre: 'Mini Picture Showcase: Cada pareja expone su Picture Card completada frente al grupo, diciendo una oración comunicativa completa. Mini ticket de salida (Exit Slip) oral respondiendo una pregunta rápida al docente.',
+      evaluacion: 'Lista de cotejo Cambridge Starters: Pronunciación inteligible en palabras clave, participación cooperativa en el diálogo de pares y culminación del Picture Card.',
+      materiales: 'Tarjetas de vocabulario ilustradas (flashcards), hojas de trabajo de información incompleta (Information-Gap), colores, PRONI SEP Activity Book 1º/2º.'
+    },
+    'primaria-alta': {
+      campoFormativo: 'Lenguajes (Lengua Extranjera: Inglés • Cambridge A2 Flyers)',
+      ejesArticuladores: ['Interculturalidad Crítica', 'Pensamiento Crítico'],
+      pda: 'Cambridge A2 Flyers (Fase 5: 5º y 6º) - Emplea estructuras comunicativas precisas en presente y pasado para describir identidades, rutinas y situaciones reales en diálogos en parejas y textos descriptivos breves.',
+      inicio: 'Communicative Hook & Schema Activation: Plantear un dilema visual o proyección de imágenes de jóvenes de distintas partes del mundo con una pregunta detonadora en inglés: "Who are they and what do they do every day?". Realizar una lluvia de ideas rápida en el pizarrón clasificando verbos y adjetivos en mapas mentales comunicativos.',
+      desarrollo: 'Task-Based Learning (TBL) & Paired Interview: En parejas, los estudiantes diseñan una mini encuesta ("Classroom Profile Survey"). Formulan y responden preguntas abiertas utilizando las estructuras modelo (ej. Verb to be, rutinas, descripciones). Redactan una ficha biográfica ilustrada ("Global Kid Dossier") integrando conectores ("and", "but", "because") para unir ideas.',
+      cierre: 'Speed-Meeting Presentation & Peer Assessment: Dinámica de rotación donde cada estudiante comparte el perfil de su compañero con un nuevo interlocutor durante 2 minutos en inglés. Coevaluación formativa con rúbrica simplificada de 3 criterios Cambridge (Grammar, Pronunciation, Interaction).',
+      evaluacion: 'Rúbrica analítica Cambridge A2 Flyers: Precisión en el uso de la estructura gramatical, fluidez e inteligibilidad fonética en la entrevista oral, y coherencia en el dossier escrito.',
+      materiales: 'PRONI SEP Activity Book 5º/6º, Cambridge A2 Flyers Practice Worksheets, hojas de registro de encuestas, marcadores y tarjetas de diálogo.'
+    },
+    'secundaria': {
+      campoFormativo: 'Lenguajes (Lengua Extranjera: Inglés • Cambridge A2 Key / B1 Preliminary)',
+      ejesArticuladores: ['Interculturalidad Crítica', 'Pensamiento Crítico'],
+      pda: 'Cambridge A2 Key / B1 Preliminary (Fase 6) - Produce discursos orales y textos informativos coherentes en inglés, argumentando opiniones personales y contrastando datos culturales y cotidianos.',
+      inicio: 'Lead-in & Critical Discussion: Presentar un fragmento de video o podcast auténtico sobre un desafío juvenil actual (tecnología, hábitos sostenibles o identidades). Pedir a los estudiantes que anoten palabras clave y compartan su reacción inicial en inglés con su compañero de banco (Think-Pair-Share).',
+      desarrollo: 'Collaborative Writing & Cambridge Speaking Simulation: En equipos de tres, estructurar un artículo de opinión breve o infografía digital en inglés. Practicar una simulación del examen oral Cambridge (Speaking Test Part 2: Discusión colaborativa con apoyos visuales), negociando acuerdos y respetando turnos de habla con frases de enlace ("In my opinion...", "I agree because...", "What about you?").',
+      cierre: 'Plenary Round Table: Cada equipo presenta su conclusión clave en 90 segundos. Debate abierto moderado en inglés. Reflexión metacognitiva sobre cómo expresaron sus ideas sin traducir palabra por palabra.',
+      evaluacion: 'Escala estimativa CEFR B1: Rango y control de vocabulario, interacción comunicativa espontánea, y cohesión estructural del texto argumentativo.',
+      materiales: 'Lecturas de divulgación bilingües, plantillas para infografías, rúbrica oficial de Speaking Cambridge A2/B1, PRONI SEP Secondary Reader.'
+    },
+    'preparatoria': {
+      campoFormativo: 'Lengua y Comunicación (Inglés • Cambridge B1+/B2 First for Schools)',
+      ejesArticuladores: ['Pensamiento Crítico', 'Interculturalidad Crítica'],
+      pda: 'Cambridge B2 First (MCCEMS) - Analiza y sintetiza textos complejos de nivel preuniversitario, produciendo ensayos argumentativos estructurados y debatiendo con solvencia en mesas redondas en inglés.',
+      inicio: 'Authentic Text Analysis & Problem Statement: Analizar un artículo de divulgación científica o ensayo sociológico en inglés sobre tendencias globales contemporáneas. Identificar la tesis, los argumentos de respaldo y los marcadores discursivos avanzados.',
+      desarrollo: 'Academic Seminar & Argumentative Synthesis: Organizar un seminario estilo Oxford en equipos. Cada equipo redacta un ensayo de 300 palabras con estructura académica rigurosa (Abstract, Arguments, Counter-arguments, Synthesis). Conducir un debate formal en inglés aplicando registro formal y colocaciones idiomáticas precisas.',
+      cierre: 'Peer Review & International Exam Reflection: Taller de edición ciega entre pares evaluando la precisión sintáctica, el léxico académico y la madurez argumentativa. Elaboración de metas personales para la certificación Cambridge B2.',
+      evaluacion: 'Rúbrica de redacción y oratoria Cambridge B2 First: Control morfosintáctico, riqueza léxica, coherencia y adecuación pragmática del discurso.',
+      materiales: 'Artículos académicos en inglés, guía de conectores discursivos avanzados B2, rúbrica oficial Cambridge Writing & Speaking B2.'
+    }
   }
 };
 
@@ -250,6 +305,7 @@ const getPdaMap = (rawTopic: string): Record<string, Record<string, string>> => 
       civics:    `Fase 2 (Preescolar) - Ética, Naturaleza y Sociedades: Colabora con sus compañeros en actividades sobre "${capitalizedTopic}" respetando las reglas y acuerdos del salón.`,
       language:  `Fase 2 (Preescolar) - Lenguajes: Expresa oralmente sus ideas y emociones sobre "${capitalizedTopic}" y disfruta de narraciones, rimas y cantos infantiles.`,
       social:    `Fase 2 (Preescolar) - Conoce lugares de su comunidad que se relacionan con "${capitalizedTopic}" y platica sobre lo que hacen ahí.`,
+      english:   `Fase 2 (Preescolar) - Lenguajes (Inglés • Cambridge Pre-A1 Starters): Reconoce y reproduce sonidos, saludos, instrucciones básicas (TPR) y vocabulario cotidiano en inglés vinculados a "${capitalizedTopic}".`,
       default:   isTradition
         ? `Fase 2 (Preescolar) - Ética, Naturaleza y Sociedades: Comparte relatos y costumbres familiares sobre Día de Muertos y festividades locales, conviviendo con respeto.`
         : isIndependence
@@ -278,6 +334,7 @@ const getPdaMap = (rawTopic: string): Record<string, Record<string, string>> => 
         ? `Fase 3 (1º y 2º Primaria) - Lenguajes: Escribe de manera autónoma y mediante dictado al docente coplas, rimas y descripciones sencillas sobre las ofrendas y personajes tradicionales de su comunidad.`
         : (isEpistolar ? `Fase 3 (1º y 2º Primaria) - Lenguajes (Producción y lectura de textos epistolares): Reconoce la estructura de la carta (lugar, fecha, destinatario, saludo, cuerpo, despedida, firma y remitente), escribe cartas a familiares y compañeros con propósitos reales y utiliza el buzón escolar para la entrega de correspondencia comunitaria.` : isReading ? `Fase 3 (1º y 2º Primaria) - Lenguajes: Produce e interpreta textos breves, cuentos, coplas, instructivos y descripciones sobre "${capitalizedTopic}"; aplica la correspondencia grafofonética, el dictado colectivo y signos de puntuación básicos.` : `Fase 3 (1º y 2º Primaria) - Lenguajes: Describe de forma oral y escrita objetos, personas y eventos relacionados con "${capitalizedTopic}" mediante el dibujo y la escritura autónoma.`),
       social:    `Fase 3 (1º y 2º Primaria) - Identifica los cambios y tradiciones de su localidad relacionados con "${capitalizedTopic}" a través de entrevistas familiares y cartografía infantil.`,
+      english:   `Fase 3 (1º y 2º Primaria) - Lenguajes (Inglés • Cambridge Pre-A1 Starters): Identifica y escribe palabras y expresiones cotidianas en inglés relacionadas con "${capitalizedTopic}" a través de flashcards y rimas infantiles.`,
       default:   isTradition
         ? `Fase 3 (1º y 2º Primaria) - Ética, Naturaleza y Sociedades: Indaga en relatos familiares y testimonios de su comunidad el origen de las tradiciones y celebraciones locales.`
         : isIndependence
@@ -308,6 +365,7 @@ const getPdaMap = (rawTopic: string): Record<string, Record<string, string>> => 
         ? `Fase 4 (3º y 4º Primaria) - Lenguajes: Lee, comprende y produce calaveritas literarias y coplas populares, explorando la rima, el ritmo lírico, la sátira humorística y las figuras retóricas de la tradición lírica mexicana.`
         : `Fase 4 (3º y 4º Primaria) - Lenguajes: Redacta textos expositivos, narrativos y resúmenes estructurados sobre "${capitalizedTopic}".`,
       social:    `Fase 4 (3º y 4º Primaria) - Analiza la diversidad geográfica y socioeconómica de México en torno a "${capitalizedTopic}".`,
+      english:   `Fase 4 (3º y 4º Primaria) - Lenguajes (Inglés • Cambridge A1 Movers): Comprende y utiliza oraciones comunicativas completas sobre "${capitalizedTopic}" para describir personas, gustos, objetos cotidianos y su entorno.`,
       default:   isTradition
         ? `Fase 4 (3º y 4º Primaria) - Ética, Naturaleza y Sociedades (La Entidad donde Vivo): Reconoce y valora las prácticas culturales, expresiones artísticas, rituales, ofrendas y celebraciones tradicionales (como Día de Muertos) como parte del patrimonio biocultural y la memoria colectiva de su entidad federativa y pueblos originarios.`
         : (isHistory ? `Fase 4 (3º y 4º Primaria) - Ética, Naturaleza y Sociedades: Investiga en fuentes primarias y secundarias las causas, personajes y consecuencias de "${capitalizedTopic}" en su entidad federativa y en México.` : `Fase 4 (3º y 4º Primaria) - Indaga, sistematiza y comunica hallazgos sobre "${capitalizedTopic}" con herramientas formales de la NEM.`)
@@ -322,6 +380,7 @@ const getPdaMap = (rawTopic: string): Record<string, Record<string, string>> => 
       civics:    `Fase 5 (5º y 6º Primaria) - Ética, Naturaleza y Sociedades: Debate dilemas éticos y democráticos sobre "${capitalizedTopic}" formulando propuestas ciudadanas.`,
       language:  `Fase 5 (5º y 6º Primaria) - Lenguajes: Produce textos argumentativos, reseñas y debates académicos sobre "${capitalizedTopic}".`,
       social:    `Fase 5 (5º y 6º Primaria) - Investiga características geoespaciales y económicas de "${capitalizedTopic}" en México y el mundo.`,
+      english:   `Fase 5 (5º y 6º Primaria) - Lenguajes (Inglés • Cambridge A2 Flyers): Emplea estructuras comunicativas en inglés vinculadas a "${capitalizedTopic}" para expresar descripciones personales, rutinas y hechos cotidianos en diálogos orales y textos breves.`,
       default:   isHistory ? `Fase 5 (5º y 6º Primaria) - Ética, Naturaleza y Sociedades: Analiza críticamente las causas del estallido histórico de "${capitalizedTopic}", la promulgación de leyes y las garantías sociales en el México actual.` : `Fase 5 (5º y 6º Primaria) - Desarrolla proyectos de indagación científica y comunitaria sobre "${capitalizedTopic}" aplicando la metodología NEM.`
     },
     'secundaria': {
@@ -334,6 +393,7 @@ const getPdaMap = (rawTopic: string): Record<string, Record<string, string>> => 
       civics:    `Fase 6 (Secundaria) - Ética, Naturaleza y Sociedades: Analiza problemáticas de derechos humanos y estado de derecho relacionadas con "${capitalizedTopic}".`,
       language:  `Fase 6 (Secundaria) - Lenguajes: Analiza discursos, argumentación y produce ensayos críticos sobre "${capitalizedTopic}".`,
       social:    `Fase 6 (Secundaria) - Analiza dinámicas geopolíticas, económicas y ambientales sobre "${capitalizedTopic}".`,
+      english:   `Fase 6 (Secundaria) - Lenguajes (Inglés • Cambridge A2 Key / B1 Preliminary): Produce textos orales y escritos continuos y coherentes en inglés sobre "${capitalizedTopic}", contrastando ideas y justificando opiniones personales.`,
       default:   isHistory ? `Fase 6 (Secundaria) - Ética, Naturaleza y Sociedades: Analiza críticamente desde diversas corrientes historiográficas las contradicciones socioeconómicas y los planes de "${capitalizedTopic}".` : `Fase 6 (Secundaria) - Desarrolla proyectos sociocríticos integrales sobre "${capitalizedTopic}" con rigor pedagógico NEM 2024.`
     },
     'preparatoria': {
@@ -346,6 +406,7 @@ const getPdaMap = (rawTopic: string): Record<string, Record<string, string>> => 
       civics:    `Bachillerato (MCCEMS) - Humanidades: Diseña proyectos de política pública e incidencia democrática sobre "${capitalizedTopic}".`,
       language:  `Bachillerato (MCCEMS) - Lengua y Comunicación: Produce textos académicos y discursos argumentativos formales sobre "${capitalizedTopic}".`,
       social:    `Bachillerato (MCCEMS) - Modela escenarios económicos y demográficos sobre "${capitalizedTopic}".`,
+      english:   `Bachillerato (MCCEMS) - Lengua y Comunicación (Inglés • Cambridge B1+/B2 First): Sintetiza información compleja de fuentes auténticas en inglés sobre "${capitalizedTopic}", evaluando argumentos y perspectivas críticas.`,
       default:   `Bachillerato (MCCEMS) - Integra marcos teóricos y cuantitativos para formular proyectos de investigación sobre "${capitalizedTopic}".`
     }
   };
@@ -376,6 +437,9 @@ export function PlanningTab({ currentTeacher, subjects, schedulesList, groupsLis
     }
     if (cleanId.includes('art') || cleanName.includes('arte') || cleanName.includes('musica') || cleanId.includes('-art')) {
       return 'artes';
+    }
+    if (cleanId.includes('ing') || cleanId.includes('eng') || cleanName.includes('ingl') || cleanName.includes('engl') || cleanId.includes('-ing')) {
+      return 'ingles';
     }
     if (cleanId.includes('hum') || cleanId.includes('fisic') || cleanName.includes('fisica') || cleanName.includes('salud') || cleanName.includes('emocional') || cleanId.includes('-hum') || cleanId.includes('-efi')) {
       return 'humano';
@@ -1204,18 +1268,27 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
     const subName = customSubjectObj?.name || subjectNames[subject] || 'Asignatura';
     const subCampo = customSubjectObj?.campoFormativo;
 
-    const isLanguage = subCampo === 'Lenguajes' || subject === 'lenguajes' || (!subCampo && (!subject && /cuento|fabula|leyenda|mito|carta|epistol|mensaje|buzon|correo|poema|narrat|lectura|escrib/i.test(cleanTopic)));
-    const isMath = (subCampo === 'Saberes y Pensamiento Científico' && (subject.includes('mat') || /num|suma|resta|multiplic|fracc|geom|parabol|cuadrat|conteo|tangram/i.test(cleanTopic)));
-    const isScience = subCampo === 'Saberes y Pensamiento Científico' && !isMath;
-    const isHistory = subCampo === 'Ética, Naturaleza y Sociedades' || subject === 'historia';
-    const isHuman = subCampo === 'De lo Humano y lo Comunitario' || subject === 'humano';
+    const isEnglish = isEnglishSubject(customSubjectObj?.id || subject, cleanTopic) || isEnglishSubject(subName, cleanTopic);
+    const cambridgeSpec = getCambridgeSpecification(level);
 
-    const campo = subCampo || (isLanguage ? 'Lenguajes' : isHistory ? 'Ética, Naturaleza y Sociedades' : isHuman ? 'De lo Humano y lo Comunitario' : 'Saberes y Pensamiento Científico');
-    const ejes = ['Pensamiento Crítico', 'Inclusión', 'Vida Saludable', 'Apropiación de las Culturas a través de la Lectura y la Escritura'];
+    const isLanguage = !isEnglish && (subCampo === 'Lenguajes' || subject === 'lenguajes' || (!subCampo && (!subject && /cuento|fabula|leyenda|mito|carta|epistol|mensaje|buzon|correo|poema|narrat|lectura|escrib/i.test(cleanTopic))));
+    const isMath = !isEnglish && (subCampo === 'Saberes y Pensamiento Científico' && (subject.includes('mat') || /num|suma|resta|multiplic|fracc|geom|parabol|cuadrat|conteo|tangram/i.test(cleanTopic)));
+    const isScience = !isEnglish && (subCampo === 'Saberes y Pensamiento Científico' && !isMath);
+    const isHistory = !isEnglish && (subCampo === 'Ética, Naturaleza y Sociedades' || subject === 'historia');
+    const isHuman = !isEnglish && (subCampo === 'De lo Humano y lo Comunitario' || subject === 'humano');
 
-    const isTradition = /muert|difunt|ofrend|calaver|altar|cempasuchil|pan de muerto|costumbre|festividad|tradicion|patrimonio biocultural|celebrac|panteon|copal|alfeñique|papel picado|fiesta patronal|guelaguetza|posada|navidad/i.test(cleanTopic);
+    const campo = isEnglish
+      ? 'Lenguajes (Lengua Extranjera: Inglés • Certificación Cambridge)'
+      : (subCampo || (isLanguage ? 'Lenguajes' : isHistory ? 'Ética, Naturaleza y Sociedades' : isHuman ? 'De lo Humano y lo Comunitario' : 'Saberes y Pensamiento Científico'));
+    const ejes = isEnglish
+      ? ['Interculturalidad Crítica', 'Pensamiento Crítico', 'Apropiación de las Culturas a través de la Lectura y la Escritura']
+      : ['Pensamiento Crítico', 'Inclusión', 'Vida Saludable', 'Apropiación de las Culturas a través de la Lectura y la Escritura'];
+
+    const isTradition = !isEnglish && /muert|difunt|ofrend|calaver|altar|cempasuchil|pan de muerto|costumbre|festividad|tradicion|patrimonio biocultural|celebrac|panteon|copal|alfeñique|papel picado|fiesta patronal|guelaguetza|posada|navidad/i.test(cleanTopic);
     const pdaMap = getPdaMap(capitalizedTopic);
-    const pdaKey = isTradition
+    const pdaKey = isEnglish
+      ? 'english'
+      : isTradition
       ? (isLanguage ? 'language' : isHuman ? 'health' : isScience ? 'ecology' : 'history')
       : (isHistory ? 'history' : isHuman ? 'health' : isLanguage ? 'language' : isMath ? 'math' : isScience ? 'ecology' : 'default');
     const rawPda = customPda || pdaMap[level]?.[pdaKey] || pdaMap['primaria-baja']?.['default'] || `Fase correspondiente: Desarrolla y aplica habilidades prácticas y conceptuales sobre "${capitalizedTopic}" para resolver retos comunitarios.`;
@@ -1226,14 +1299,19 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
     const proyectoIntegrador = generateFinalProjectProposal(level, subName, cleanTopic);
     const preguntasDetonadoras = generateDetonatingQuestions(cleanTopic, level, subName);
 
+    const titleText = isEnglish
+      ? `Proyecto didáctico: ${capitalizedTopic} — ${levelNames[level] || level} (${cambridgeSpec.levelCode} • CEFR ${cambridgeSpec.cefrLevel})`
+      : `Proyecto didáctico: ${capitalizedTopic} — ${levelNames[level] || level}`;
+
     return {
       id: 'plan-' + Date.now(),
-      title: sanitizeSpanishPedagogicalGrammar(`Proyecto didáctico: ${capitalizedTopic} — ${levelNames[level] || level}`),
+      title: sanitizeSpanishPedagogicalGrammar(titleText),
       subjectId: customSubjectObj?.id || subject,
-      subjectName: subName,
+      subjectName: isEnglish ? (customSubjectObj?.name || 'Inglés') : subName,
       levelId: level,
       levelName: levelNames[level] || 'Nivel Educativo',
       campoFormativo: campo,
+      cambridgeLevel: isEnglish ? cambridgeSpec : undefined,
       ejesArticuladores: ejes,
       pda,
       pdasArticulados,
@@ -1434,6 +1512,34 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
               ))}
             </select>
           </div>
+
+          {/* Badge de Nivel Cambridge si la asignatura seleccionada es Inglés */}
+          {isEnglishSubject(selectedSubject, inputText) && (() => {
+            const spec = getCambridgeSpecification(selectedLevel);
+            return (
+              <div className="col-span-2 flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-950/40 dark:to-blue-950/40 border border-sky-200 dark:border-sky-800 text-sky-900 dark:text-sky-200 text-xs font-bold">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🇬🇧</span>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-sky-700 dark:text-sky-300">Nivel Cambridge:</span>
+                      <span className="text-xs font-extrabold text-blue-700 dark:text-blue-200">{spec.levelCode}</span>
+                      <span className="text-[10px] text-zinc-500 font-semibold">({spec.cefrLevel})</span>
+                    </div>
+                    <p className="text-[9.5px] font-medium text-sky-750 dark:text-sky-300 leading-tight">
+                      {spec.qualificationName}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-0.5">
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-blue-600 text-white uppercase tracking-wider">
+                    ELT / CEFR
+                  </span>
+                  <span className="text-[8.5px] text-zinc-500 font-medium">PRONI SEP Oficial</span>
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Selector en Lista de Número de Sesiones Disponibles */}
@@ -1958,11 +2064,81 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                 </h1>
               </div>
 
+              {/* Banner Oficial Cambridge English Qualifications & Marco Común Europeo (CEFR) */}
+              {(activePlanning.cambridgeLevel || isEnglishSubject(activePlanning.subjectName, activePlanning.title)) && (() => {
+                const spec = activePlanning.cambridgeLevel || getCambridgeSpecification(activePlanning.levelId || 'primaria-alta');
+                return (
+                  <div className="mb-6 p-5 rounded-2xl bg-gradient-to-r from-sky-50 via-indigo-50/50 to-blue-50 dark:from-sky-950/30 dark:via-indigo-950/20 dark:to-blue-950/30 border-2 border-sky-200 dark:border-sky-800 shadow-sm print-section">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-sky-200/60 dark:border-sky-850">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-base shadow-sm flex-shrink-0">
+                          🇬🇧
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-sky-700 dark:text-sky-300">
+                              Cambridge English Qualifications & CEFR
+                            </span>
+                            <span className="px-2 py-0.5 rounded-full text-[9.5px] font-black bg-blue-600 text-white uppercase tracking-wider">
+                              Nivel {spec.levelCode} ({spec.cefrLevel})
+                            </span>
+                          </div>
+                          <h4 className="text-sm font-black text-zinc-900 dark:text-white leading-tight mt-0.5">
+                            {spec.qualificationName}
+                          </h4>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 self-start sm:self-center">
+                        <span className="text-[9.5px] font-bold px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
+                          {spec.targetAudience}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-3.5 grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs">
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-[9px] font-black uppercase tracking-wider text-zinc-400">
+                          Descriptor de Logro Cambridge (Can-Do Statement)
+                        </span>
+                        <p className="text-[11px] font-medium text-zinc-750 dark:text-zinc-200 leading-relaxed bg-white/70 dark:bg-zinc-900/50 p-2.5 rounded-xl border border-sky-150 dark:border-sky-900/40">
+                          🎯 &quot;{spec.canDoSummary}&quot;
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-[9px] font-black uppercase tracking-wider text-zinc-400">
+                          Habilidades Lingüísticas Evaluadas (4 Skills)
+                        </span>
+                        <div className="flex flex-wrap gap-1.5 pt-0.5">
+                          {spec.primarySkills.map((skill: string, sIdx: number) => (
+                            <span
+                              key={sIdx}
+                              className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-white dark:bg-zinc-900 text-blue-700 dark:text-blue-300 border border-sky-200 dark:border-sky-800 shadow-2xs"
+                            >
+                              {skill === 'Listening' ? '🎧' : skill === 'Speaking' ? '🗣️' : skill === 'Reading' ? '📖' : skill === 'Writing' ? '✍️' : '🔤'} {skill}
+                            </span>
+                          ))}
+                        </div>
+                        <div className="mt-1 text-[10px] text-zinc-500 flex items-center gap-2">
+                          <span>📚 <strong>SEP:</strong> {spec.proniMaterial}</span>
+                          <span>•</span>
+                          <span>🇬🇧 <strong>Cambridge:</strong> {spec.cambridgeGuide}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Tabla de Metadatos Didácticos */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 bg-zinc-50/70 dark:bg-zinc-950/20 p-5 rounded-2xl border border-zinc-150 dark:border-zinc-850 mb-6 font-semibold text-xs leading-normal print-metadata-grid">
                 <div className="flex flex-col gap-1">
                   <span className="text-[9px] text-zinc-400 uppercase tracking-wider font-bold">Docente Titular</span>
-                  <span className="text-zinc-850 dark:text-zinc-200 break-words">{currentTeacher.first_name} {currentTeacher.last_name}</span>
+                  <span className="text-zinc-850 dark:text-zinc-200 break-words">
+                    {(`${currentTeacher.first_name || ''} ${currentTeacher.last_name || ''}`).replace(/\(Super\s*Usuario\)/gi, '').trim() || 'Docente Titular'}
+                    {(activePlanning.cambridgeLevel || isEnglishSubject(activePlanning.subjectName, activePlanning.title)) ? ' • Docente Especialista en Inglés (ELT)' : ''}
+                  </span>
                 </div>
                 
                 <div className="flex flex-col gap-1">
@@ -2320,8 +2496,10 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
               <div className="grid grid-cols-2 gap-12 border-t border-zinc-100 dark:border-zinc-850 pt-8 mt-12 text-center text-xs font-semibold text-zinc-400 leading-normal print-avoid-break">
                 <div className="flex flex-col items-center gap-1">
                   <div className="w-36 border-b border-zinc-300 dark:border-zinc-700 h-10" />
-                  <span className="text-zinc-600 dark:text-zinc-300 mt-2">Prof. {currentTeacher.first_name} {currentTeacher.last_name}</span>
-                  <span className="text-[9px] uppercase tracking-wider">Docente Titular</span>
+                  <span className="text-zinc-600 dark:text-zinc-300 mt-2">Prof. {(`${currentTeacher.first_name || ''} ${currentTeacher.last_name || ''}`).replace(/\(Super\s*Usuario\)/gi, '').trim() || 'Docente Titular'}</span>
+                  <span className="text-[9px] uppercase tracking-wider">
+                    {(activePlanning.cambridgeLevel || isEnglishSubject(activePlanning.subjectName, activePlanning.title)) ? 'Docente Titular de Lengua Extranjera (Inglés)' : 'Docente Titular'}
+                  </span>
                 </div>
                 
                 <div className="flex flex-col items-center gap-1">
