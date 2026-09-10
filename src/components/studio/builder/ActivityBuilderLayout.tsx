@@ -34,7 +34,13 @@ import {
   Check,
   Zap,
   Flame,
-  Star
+  Star,
+  Wand2,
+  Gamepad2,
+  ListOrdered,
+  KeyRound,
+  Swords,
+  Trophy
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { StudioBlock } from '@/types/studioBlocks';
@@ -42,6 +48,7 @@ import {
   MEXICAN_INDEPENDENCE_BLOCKS, 
   MEXICAN_INDEPENDENCE_METADATA 
 } from '@/data/mexicanIndependenceStudioFlow';
+import { generateGamifiedProject } from '@/services/pedagogicalProjectEngine';
 
 // Catálogo Oficial de Ejes Articuladores NEM
 const EJES_ARTICULADORES_CATALOG = [
@@ -106,12 +113,76 @@ export const ActivityBuilderLayout: React.FC = () => {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isTemplatesModalOpen, setIsTemplatesModalOpen] = useState(false);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [aiModalTopic, setAiModalTopic] = useState('');
+  const [aiModalFase, setAiModalFase] = useState('Fase 5');
+  const [aiModalStyle, setAiModalStyle] = useState<'rpg_adventure' | 'escape_room' | 'scientific_expedition' | 'olympic_tournament'>('rpg_adventure');
+  const [isGeneratingAiModal, setIsGeneratingAiModal] = useState(false);
+  const [aiModalGenStep, setAiModalGenStep] = useState('');
   const [isPublishing, setIsPublishing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Generador Maestro con IA directamente en el Lienzo
+  const handleGenerateInCanvas = async () => {
+    if (!aiModalTopic.trim() || isGeneratingAiModal) return;
+    setIsGeneratingAiModal(true);
+    try {
+      setAiModalGenStep('Analizando contenidos y PDA curricular oficial...');
+      await new Promise(r => setTimeout(r, 350));
+      setAiModalGenStep('Estructurando narrativa épica y desafíos interactivos...');
+      await new Promise(r => setTimeout(r, 350));
+
+      let projectResult;
+      try {
+        const res = await fetch('/api/studio/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            topic: aiModalTopic.trim(),
+            faseNem: aiModalFase,
+            gamificationStyle: aiModalStyle,
+            questionCount: 5
+          })
+        });
+        if (res.ok) projectResult = await res.json();
+      } catch (e) {
+        console.warn('Fallback a motor local en lienzo:', e);
+      }
+
+      if (!projectResult || !projectResult.blocks || projectResult.blocks.length === 0) {
+        projectResult = await generateGamifiedProject({
+          topic: aiModalTopic.trim(),
+          faseNem: aiModalFase,
+          gamificationStyle: aiModalStyle
+        });
+      }
+
+      setAiModalGenStep('Configurando encuentro RPG, combate y cofre legendario...');
+      await new Promise(r => setTimeout(r, 350));
+
+      loadPresetBlocks(projectResult.blocks, projectResult.metadata);
+      if (projectResult.connections && projectResult.connections.length > 0) {
+        useActivityBuilderStore.setState({
+          connections: projectResult.connections,
+          startNodeId: projectResult.startNodeId || projectResult.blocks[0]?.id || null
+        });
+      }
+
+      setIsAiModalOpen(false);
+      setAiModalTopic('');
+      showToast(`✨ ¡Proyecto "${projectResult.metadata.title}" estructurado con 7 bloques gamificados!`);
+    } catch (err) {
+      console.error('Error generando en lienzo:', err);
+      showToast('❌ Error al generar con IA.');
+    } finally {
+      setIsGeneratingAiModal(false);
+      setAiModalGenStep('');
+    }
   };
 
   // Cargar Plantillas Pedagógicas Rápidas (NEM Presets)
@@ -428,6 +499,17 @@ export const ActivityBuilderLayout: React.FC = () => {
           >
             <FolderKanban className="w-3.5 h-3.5 text-amber-500" />
             <span className="hidden sm:inline">Plantillas NEM</span>
+          </button>
+
+          {/* Botón de Generar con IA en Lienzo */}
+          <button
+            type="button"
+            onClick={() => setIsAiModalOpen(true)}
+            title="Generar proyecto gamificado completo con IA"
+            className="px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 hover:to-teal-500/30 text-emerald-300 font-bold text-xs border border-emerald-400/40 flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-current" />
+            <span className="hidden sm:inline">Generar con IA</span>
           </button>
 
           {/* Deshacer / Rehacer / Limpiar */}
@@ -763,6 +845,130 @@ export const ActivityBuilderLayout: React.FC = () => {
                 <div className="mt-4 pt-3 border-t border-slate-100 dark:border-zinc-800 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
                   Cargar Plantilla ➔
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Modal de Generación Rápida con IA en Lienzo */}
+      {isAiModalOpen && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[9999] bg-slate-950/85 backdrop-blur-md flex items-start justify-center p-3 sm:p-4 pt-6 sm:pt-10 overflow-y-auto animate-fade-in">
+          <div className="relative w-full max-w-2xl bg-slate-900 rounded-3xl border border-emerald-500/40 shadow-2xl p-6 sm:p-8 space-y-6 my-auto sm:my-2 animate-scale-in text-slate-100">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-emerald-500/30">
+                  <Wand2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest block">
+                    Arquitecto de Gamificación Educativa
+                  </span>
+                  <h2 className="text-lg font-black text-white">
+                    Generar Proyecto Gamificado con IA
+                  </h2>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsAiModalOpen(false)}
+                disabled={isGeneratingAiModal}
+                className="p-2 rounded-xl bg-slate-800 hover:bg-rose-500 hover:text-white text-slate-400 transition-all cursor-pointer disabled:opacity-50"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Ingresa el tema curricular y la IA estructurará una secuencia de 7 bloques interconectados: narrativa inmersiva, ordenamiento lógico, emparejamiento conceptual, reactivos analíticos, enigmas de escape room, combate de saberes contra un jefe y cofre legendario.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+              <div>
+                <label className="text-[11px] font-bold text-slate-300 block mb-1">Fase Curricular NEM:</label>
+                <select
+                  value={aiModalFase}
+                  onChange={(e) => setAiModalFase(e.target.value)}
+                  disabled={isGeneratingAiModal}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 disabled:opacity-50"
+                >
+                  <option value="Fase 3">Fase 3 (1º y 2º Primaria)</option>
+                  <option value="Fase 4">Fase 4 (3º y 4º Primaria)</option>
+                  <option value="Fase 5">Fase 5 (5º y 6º Primaria)</option>
+                  <option value="Fase 6">Fase 6 (Secundaria)</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-slate-300 block mb-1">Estilo de Juego:</label>
+                <select
+                  value={aiModalStyle}
+                  onChange={(e) => setAiModalStyle(e.target.value as any)}
+                  disabled={isGeneratingAiModal}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 disabled:opacity-50"
+                >
+                  <option value="rpg_adventure">⚔️ Aventura RPG y Duelo de Saberes</option>
+                  <option value="escape_room">🔐 Escape Room & Enigmas Secretos</option>
+                  <option value="scientific_expedition">🌿 Expedición e Indagación Científica</option>
+                  <option value="olympic_tournament">🏆 Torneo Olímpico de Saberes</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-2 text-left">
+              <label className="text-xs font-bold text-slate-200">
+                Tema de la Actividad o Aprendizaje Esperado (PDA):
+              </label>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  value={aiModalTopic}
+                  onChange={(e) => setAiModalTopic(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleGenerateInCanvas()}
+                  placeholder="Ej. Causas de la Independencia de México, Ecosistemas..."
+                  disabled={isGeneratingAiModal}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-semibold text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 disabled:opacity-50"
+                />
+                <button
+                  type="button"
+                  onClick={handleGenerateInCanvas}
+                  disabled={!aiModalTopic.trim() || isGeneratingAiModal}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 transition-all border border-amber-400/50"
+                >
+                  <Sparkles className="w-3.5 h-3.5 fill-current" />
+                  <span>{isGeneratingAiModal ? 'Generando...' : 'Generar al Tablero'}</span>
+                </button>
+              </div>
+            </div>
+
+            {isGeneratingAiModal && (
+              <div className="p-3.5 rounded-xl bg-slate-800/80 border border-emerald-500/40 text-left flex items-center gap-3 animate-pulse">
+                <div className="w-5 h-5 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin shrink-0" />
+                <p className="text-xs font-medium text-emerald-300">
+                  {aiModalGenStep || 'Estructurando proyecto interactivo...'}
+                </p>
+              </div>
+            )}
+
+            <div className="pt-2 border-t border-slate-800 text-left">
+              <span className="text-[10px] font-bold text-slate-400 block mb-1.5">Sugerencias rápidas:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  'Causas de la Independencia de México',
+                  'Ecosistemas y Biodiversidad',
+                  'Operaciones con Fracciones',
+                  'La Tabla Periódica'
+                ].map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setAiModalTopic(s)}
+                    className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-800 hover:bg-emerald-950/40 text-slate-300 border border-slate-700 cursor-pointer"
+                  >
+                    {s}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
