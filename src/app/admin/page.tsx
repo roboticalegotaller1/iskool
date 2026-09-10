@@ -70,12 +70,13 @@ import {
   getSchoolEmailDomain,
   getDirectorLimits,
   getSchoolPayroll,
-  getSchoolBillingRecords
+  getSchoolBillingRecords,
+  getSchoolDeletionAuditLogs
 } from '@/store/useSchoolAdminStore';
-import { DetailedStudent, Subject, GroupAnnualPlan, SyllabusTopic, Campus, Group, canManageTargetRole, StaffPayrollRecord, isPlatformSuperUser } from '@/types';
+import { DetailedStudent, Subject, GroupAnnualPlan, SyllabusTopic, Campus, Group, canManageTargetRole, StaffPayrollRecord, isPlatformSuperUser, StudentDeletionAuditLog, UserRole } from '@/types';
 import ExecutiveAnalyticsStudio from '@/components/admin/ExecutiveAnalyticsStudio';
 
-type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll' | 'analytics';
+type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll' | 'analytics' | 'deletions';
 
 export default function SuperUserAdminPage() {
   const { user, loading: authLoading } = useAuth();
@@ -180,6 +181,30 @@ export default function SuperUserAdminPage() {
   const [studentStatusFilter, setStudentStatusFilter] = useState('all');
   
   const [teacherSearch, setTeacherSearch] = useState('');
+
+  // Estados de Auditoría de Bajas para Super Usuario
+  const studentDeletionAuditLogs = useSchoolAdminStore(state => state.studentDeletionAuditLogs) || [];
+  const deleteStudent = useSchoolAdminStore(state => state.deleteStudent);
+  const [deletionSearchTerm, setDeletionSearchTerm] = useState('');
+  const [studentToDeleteAdmin, setStudentToDeleteAdmin] = useState<DetailedStudent | null>(null);
+  const [adminDeleteReason, setAdminDeleteReason] = useState('Baja administrativa directa por Super Usuario');
+
+  const schoolDeletionLogs = useMemo(() => {
+    return getSchoolDeletionAuditLogs(studentDeletionAuditLogs, isSuperUser ? null : effectiveSchoolId);
+  }, [studentDeletionAuditLogs, isSuperUser, effectiveSchoolId]);
+
+  const filteredDeletionLogs = useMemo(() => {
+    if (!deletionSearchTerm.trim()) return schoolDeletionLogs;
+    const q = deletionSearchTerm.toLowerCase();
+    return schoolDeletionLogs.filter(l => 
+      l.student_name.toLowerCase().includes(q) ||
+      (l.curp && l.curp.toLowerCase().includes(q)) ||
+      (l.enrollment_id && l.enrollment_id.toLowerCase().includes(q)) ||
+      (l.reason && l.reason.toLowerCase().includes(q)) ||
+      (l.deleted_by_name && l.deleted_by_name.toLowerCase().includes(q)) ||
+      (l.school_name && l.school_name.toLowerCase().includes(q))
+    );
+  }, [schoolDeletionLogs, deletionSearchTerm]);
   
   // Modales
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
@@ -1862,6 +1887,17 @@ export default function SuperUserAdminPage() {
               </button>
 
               <button
+                onClick={() => setActiveTab('deletions')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  activeTab === 'deletions'
+                    ? 'bg-rose-600 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                }`}
+              >
+                <Trash2 className="h-4 w-4 text-rose-500" /> Registro de Bajas ({schoolDeletionLogs.length})
+              </button>
+
+              <button
                 onClick={() => setActiveTab('analytics')}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border border-indigo-200"
               >
@@ -2473,6 +2509,15 @@ export default function SuperUserAdminPage() {
                                 }`}
                               >
                                 {isBlocked ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                              </button>
+
+                              {/* Botón Eliminar Alumno (Acción Directiva / Super Usuario) */}
+                              <button
+                                onClick={() => setStudentToDeleteAdmin(student)}
+                                title="Dar de Baja Definitiva / Retirar de Sistema (Con Auditoría)"
+                                className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-all cursor-pointer"
+                              >
+                                <Trash2 className="h-4 w-4" />
                               </button>
                             </div>
                           </td>
@@ -4062,6 +4107,186 @@ export default function SuperUserAdminPage() {
                                 </button>
                               )}
                             </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB AUDITORÍA DE BAJAS Y ALUMNOS ELIMINADOS DEL SISTEMA (EXCLUSIVO SUPER USUARIO) */}
+        {/* ========================================================================= */}
+        {activeTab === 'deletions' && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Header del Tab */}
+            <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-xs">
+              <div className="flex items-center gap-3.5">
+                <div className="p-3 rounded-2xl bg-rose-50 text-rose-600 border border-rose-200 shadow-xs">
+                  <Trash2 className="h-6 w-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                      Registro Oficial de Bajas y Auditoría de Alumnos Eliminados
+                    </h2>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-rose-100 text-rose-800 border border-rose-200">
+                      Trazabilidad Inmutable Super Usuario
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Historial oficial de alumnos retirados del sistema con fecha y hora exacta, operador responsable y motivo de baja.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200">
+                  Total Registros: {schoolDeletionLogs.length}
+                </span>
+              </div>
+            </div>
+
+            {/* KPI Cards de Auditoría */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
+                <div className="flex items-center justify-between text-slate-500">
+                  <span className="text-xs font-bold uppercase tracking-wider">Total de Bajas Registradas</span>
+                  <div className="p-2 rounded-xl bg-rose-50 text-rose-600">
+                    <AlertCircle className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <span className="text-3xl font-black text-rose-600 font-mono">{schoolDeletionLogs.length}</span>
+                  <p className="text-xs text-slate-500 mt-1">Alumnos retirados del sistema activo</p>
+                </div>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
+                <div className="flex items-center justify-between text-slate-500">
+                  <span className="text-xs font-bold uppercase tracking-wider">Última Baja en Sistema</span>
+                  <div className="p-2 rounded-xl bg-indigo-50 text-indigo-600">
+                    <Calendar className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <span className="text-xs font-bold text-slate-800 block line-clamp-1">
+                    {schoolDeletionLogs[0]?.deleted_at_formatted || 'Sin registros recientes'}
+                  </span>
+                  <span className="text-[11px] font-mono text-indigo-600 mt-1 block">
+                    {schoolDeletionLogs[0]?.student_name ? `Alumno: ${schoolDeletionLogs[0].student_name}` : 'Ninguna baja registrada'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs">
+                <div className="flex items-center justify-between text-slate-500">
+                  <span className="text-xs font-bold uppercase tracking-wider">Garantía de Auditoría</span>
+                  <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600">
+                    <ShieldCheck className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <span className="text-sm font-black text-emerald-700 block">100% Auditado</span>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Cada baja almacena fecha ISO, hora oficial, operador y motivo institucional.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Barra de Filtro y Búsqueda */}
+            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
+              <div className="relative min-w-[280px] flex-1 max-w-md">
+                <Search className="h-4 w-4 absolute left-3 top-3 text-slate-400" />
+                <input
+                  type="text"
+                  value={deletionSearchTerm}
+                  onChange={(e) => setDeletionSearchTerm(e.target.value)}
+                  placeholder="Buscar por alumno, matrícula, CURP, motivo u operador..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-rose-500 transition-all"
+                />
+              </div>
+
+              <span className="text-xs text-slate-500">
+                Mostrando <strong className="text-slate-900">{filteredDeletionLogs.length}</strong> de <strong className="text-slate-900">{schoolDeletionLogs.length}</strong> bajas registradas
+              </span>
+            </div>
+
+            {/* Tabla de Registros de Bajas */}
+            <div className="rounded-2xl bg-white border border-slate-200 shadow-xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                      <th className="p-4">Fecha y Hora Exacta de Baja</th>
+                      <th className="p-4">Alumno Eliminado</th>
+                      <th className="p-4">Matrícula & CURP</th>
+                      <th className="p-4">Colegio & Grado</th>
+                      <th className="p-4">Operador que dio la Baja</th>
+                      <th className="p-4">Motivo de Retiro</th>
+                      <th className="p-4 text-center">Estado Oficial</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
+                    {filteredDeletionLogs.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="p-10 text-center text-slate-400">
+                          <CheckCircle2 className="h-8 w-8 text-emerald-500 mx-auto mb-2" />
+                          <span className="font-bold text-slate-700 block">No se encontraron registros de bajas con los filtros actuales.</span>
+                          <span className="text-xs text-slate-400">El sistema escolar se encuentra íntegro y sin bajas pendientes.</span>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredDeletionLogs.map(log => (
+                        <tr key={log.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="p-4">
+                            <span className="font-bold text-slate-900 block text-xs">
+                              {log.deleted_at_formatted}
+                            </span>
+                            <span className="font-mono text-[10px] text-slate-400 block mt-0.5">
+                              {log.deleted_at}
+                            </span>
+                          </td>
+
+                          <td className="p-4">
+                            <span className="font-black text-slate-900 text-sm block">
+                              {log.student_name}
+                            </span>
+                            <span className="text-[10px] font-mono text-slate-500">
+                              ID: {log.student_id}
+                            </span>
+                          </td>
+
+                          <td className="p-4 font-mono text-slate-600">
+                            <div className="font-bold text-slate-800">{log.curp || 'SIN-CURP'}</div>
+                            <div className="text-[10px] text-slate-500">{log.enrollment_id || 'Sin matrícula'}</div>
+                          </td>
+
+                          <td className="p-4">
+                            <span className="font-bold text-slate-800 block">{log.school_name || currentSchool?.name}</span>
+                            <span className="text-[11px] text-slate-500 block">{log.campus_name || 'Plantel'} · {log.grade}</span>
+                          </td>
+
+                          <td className="p-4">
+                            <span className="font-bold text-indigo-700 block">{log.deleted_by_name}</span>
+                            <span className="text-[10px] text-slate-500 block uppercase font-mono">{log.deleted_by_role} · {log.deleted_by_email}</span>
+                          </td>
+
+                          <td className="p-4 max-w-[220px]">
+                            <span className="text-xs text-slate-700 italic bg-slate-50 p-2 rounded-xl border border-slate-200 block">
+                              "{log.reason}"
+                            </span>
+                          </td>
+
+                          <td className="p-4 text-center">
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase bg-rose-100 text-rose-700 border border-rose-200">
+                              Baja Definitiva
+                            </span>
                           </td>
                         </tr>
                       ))
@@ -6433,6 +6658,95 @@ export default function SuperUserAdminPage() {
           }
         }}
       />
+
+      {/* Modal de Confirmación para Eliminar Alumno en Admin / Super Usuario */}
+      {studentToDeleteAdmin && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white border border-rose-200 w-full max-w-md rounded-3xl p-6 shadow-2xl flex flex-col gap-4 animate-in zoom-in-95">
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="h-12 w-12 rounded-2xl bg-rose-100 border border-rose-200 flex items-center justify-center shrink-0">
+                <Trash2 className="h-6 w-6 text-rose-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-slate-900">
+                  Eliminar Alumno del Sistema
+                </h3>
+                <p className="text-xs text-rose-600 font-semibold">
+                  Acción autorizada de Super Usuario
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-xs space-y-1.5">
+              <p className="font-black text-slate-900 text-sm">
+                {studentToDeleteAdmin.first_name} {studentToDeleteAdmin.last_name_1} {studentToDeleteAdmin.last_name_2 || ''}
+              </p>
+              <div className="flex flex-wrap gap-x-3 text-[11px] text-slate-500 font-mono">
+                <span>Matrícula: {studentToDeleteAdmin.enrollment_id || 'S/N'}</span>
+                <span>CURP: {studentToDeleteAdmin.curp || 'S/N'}</span>
+                <span>Grado: {studentToDeleteAdmin.grade}</span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-800 flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
+              <p className="leading-tight">
+                <strong>Registro de Auditoría:</strong> Esta baja se guardará de forma inmediata e inmutable en el historial de <strong>Super Usuario</strong> con la <strong>fecha y hora exacta</strong> del retiro.
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700">
+                Motivo de la baja:
+              </label>
+              <select
+                value={adminDeleteReason}
+                onChange={(e) => setAdminDeleteReason(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 focus:outline-none focus:border-rose-500 cursor-pointer"
+              >
+                <option value="Baja administrativa directa por Super Usuario">Baja administrativa directa por Super Usuario</option>
+                <option value="Traslado de colegio / Solicitud familiar">Traslado de colegio / Solicitud familiar</option>
+                <option value="Cambio de residencia o ciudad">Cambio de residencia o ciudad</option>
+                <option value="Egreso escolar / Fin de ciclo">Egreso escolar / Fin de ciclo</option>
+                <option value="Falta de documentación oficial">Falta de documentación oficial</option>
+                <option value="Otro motivo justificado">Otro motivo justificado</option>
+              </select>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setStudentToDeleteAdmin(null)}
+                className="px-4 py-2 rounded-full border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const target = studentToDeleteAdmin;
+                  const operator = {
+                    id: user?.id || 'usr-super',
+                    name: `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.email || 'Super Usuario',
+                    role: (user?.role as UserRole) || 'superadmin',
+                    email: user?.email || 'superusuario@iskool.edu.mx'
+                  };
+                  deleteStudent(target.id, {
+                    reason: adminDeleteReason,
+                    operatorUser: operator
+                  });
+                  setStudentToDeleteAdmin(null);
+                  showToast(`✅ Alumno ${target.first_name} ${target.last_name_1} eliminado del sistema. Registro de auditoría guardado.`);
+                }}
+                className="px-5 py-2 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-black shadow-md shadow-rose-600/25 transition cursor-pointer flex items-center gap-1.5"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>Confirmar Baja y Eliminación</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

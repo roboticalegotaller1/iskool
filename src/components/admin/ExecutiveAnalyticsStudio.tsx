@@ -40,12 +40,20 @@ import {
   FolderOpen,
   AlertTriangle,
   ChevronDown,
-  ArrowDown
+  ArrowDown,
+  Trash2
 } from 'lucide-react';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useAuth } from '@/context/AuthContext';
 import { DETAILED_STUDENTS_SEED } from '@/store/seeds';
-import { isPlatformSuperUser, resolveEffectiveSchoolId, DetailedStudent, FamilyBillingRecord } from '@/types';
+import { 
+  isPlatformSuperUser, 
+  resolveEffectiveSchoolId, 
+  DetailedStudent, 
+  FamilyBillingRecord,
+  ROLE_HIERARCHY_LEVEL,
+  UserRole
+} from '@/types';
 import { 
   executeAnalyticQuery, 
   AnalyticReportResult, 
@@ -216,8 +224,49 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
     subjectsList,
     parentMessages,
     schedulesList,
-    reconcileSeedsWithStore
+    reconcileSeedsWithStore,
+    studentDeletionAuditLogs,
+    deleteStudent
   } = useSchoolAdminStore();
+
+  // Permiso Directivo Estricto: Solo Directivos hacia arriba (director, owner, admin, superadmin) pueden eliminar alumnos
+  const canDeleteStudent = Boolean(
+    user && (
+      user.role === 'superadmin' ||
+      user.role === 'admin' ||
+      user.role === 'owner' ||
+      user.role === 'director' ||
+      (ROLE_HIERARCHY_LEVEL[user.role as UserRole] !== undefined && ROLE_HIERARCHY_LEVEL[user.role as UserRole] <= 3)
+    )
+  );
+
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  const [deleteReason, setDeleteReason] = useState('Traslado de colegio / Solicitud familiar');
+  const [deletionToast, setDeletionToast] = useState<string | null>(null);
+
+  const handleDeleteStudentFromDrawer = () => {
+    if (!selectedStudentForDrawer) return;
+    const studentToDelete = selectedStudentForDrawer.student;
+    const operator = {
+      id: user?.id || 'usr-admin-1',
+      name: `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.email || 'Directivo ISkool',
+      role: (user?.role as UserRole) || 'director',
+      email: user?.email || 'directivo@iskool.edu.mx'
+    };
+
+    const result = deleteStudent(studentToDelete.id, {
+      reason: deleteReason,
+      operatorUser: operator
+    });
+
+    if (result.success) {
+      setIsConfirmDeleteOpen(false);
+      setShowDrawer(false);
+      setSelectedStudentForDrawer(null);
+      setDeletionToast(`✅ Alumno ${studentToDelete.first_name} ${studentToDelete.last_name_1} eliminado del sistema. Baja registrada con fecha y hora exacta en Super Usuario.`);
+      setTimeout(() => setDeletionToast(null), 6000);
+    }
+  };
 
   useEffect(() => {
     reconcileSeedsWithStore?.();
@@ -331,7 +380,8 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
       staffPayroll,
       subjectsList,
       parentMessages,
-      schedulesList
+      schedulesList,
+      studentDeletionAuditLogs
     });
 
     setCurrentReport(result);
@@ -353,7 +403,8 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
     campusesList,
     groupsList,
     staffPayroll,
-    schedulesList
+    schedulesList,
+    studentDeletionAuditLogs
   ]);
 
   // Inicializar motor de reconocimiento de voz del navegador (Web Speech API)
@@ -439,7 +490,8 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
         staffPayroll,
         subjectsList,
         parentMessages,
-        schedulesList
+        schedulesList,
+        studentDeletionAuditLogs
       });
 
       setCurrentReport(result);
@@ -2094,12 +2146,25 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
                   </p>
                 </div>
               </div>
-              <button 
-                onClick={() => setShowDrawer(false)}
-                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition cursor-pointer"
-              >
-                <X className="h-5 w-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                {canDeleteStudent && (
+                  <button 
+                    type="button"
+                    onClick={() => setIsConfirmDeleteOpen(true)}
+                    className="p-1.5 px-2.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-xs"
+                    title="Eliminar Alumno del Sistema (Acción Directiva)"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 text-rose-600" />
+                    <span>Eliminar</span>
+                  </button>
+                )}
+                <button 
+                  onClick={() => setShowDrawer(false)}
+                  className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition cursor-pointer"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
             </div>
 
             {/* Resumen Financiero y Asistencias */}
@@ -2215,14 +2280,116 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
               </div>
             </div>
 
-            {/* Botón de cierre */}
-            <button
-              onClick={() => setShowDrawer(false)}
-              className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-800 border border-slate-200 transition cursor-pointer"
-            >
-              Cerrar Expediente
-            </button>
+            {/* Acciones del Expediente */}
+            <div className="space-y-2 pt-2 border-t border-slate-200">
+              {canDeleteStudent && (
+                <button
+                  type="button"
+                  onClick={() => setIsConfirmDeleteOpen(true)}
+                  className="w-full py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold border border-rose-200 transition cursor-pointer flex items-center justify-center gap-2 shadow-xs"
+                >
+                  <Trash2 className="h-4 w-4 text-rose-600" />
+                  <span>Eliminar Alumno del Sistema</span>
+                </button>
+              )}
+              {/* Botón de cierre */}
+              <button
+                onClick={() => setShowDrawer(false)}
+                className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-800 border border-slate-200 transition cursor-pointer"
+              >
+                Cerrar Expediente
+              </button>
+            </div>
           </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmación para Eliminar Alumno del Sistema (Expediente 360) */}
+      {isConfirmDeleteOpen && selectedStudentForDrawer && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white border border-rose-200 w-full max-w-md rounded-3xl p-6 shadow-2xl flex flex-col gap-4 animate-in zoom-in-95">
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="h-12 w-12 rounded-2xl bg-rose-100 border border-rose-200 flex items-center justify-center shrink-0">
+                <Trash2 className="h-6 w-6 text-rose-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-zinc-900">
+                  Eliminar Alumno del Sistema
+                </h3>
+                <p className="text-xs text-rose-600 font-semibold">
+                  Acción autorizada para Directivos y Super Usuarios
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-xs space-y-1.5">
+              <p className="font-black text-slate-900">
+                {selectedStudentForDrawer.student.first_name} {selectedStudentForDrawer.student.last_name_1} {selectedStudentForDrawer.student.last_name_2 || ''}
+              </p>
+              <div className="flex flex-wrap gap-x-3 text-[11px] text-slate-500 font-mono">
+                <span>Matrícula: {selectedStudentForDrawer.student.enrollment_id || 'S/N'}</span>
+                <span>CURP: {selectedStudentForDrawer.student.curp || 'S/N'}</span>
+                <span>Grado: {selectedStudentForDrawer.student.grade}</span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-800 flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
+              <p className="leading-tight">
+                <strong>Aviso de Trazabilidad:</strong> El retiro de este alumno quedará registrado en el módulo de <strong>Super Usuario</strong> con la <strong>fecha y hora exacta</strong> de la baja institucional.
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-zinc-700">
+                Motivo de la baja o retiro:
+              </label>
+              <select
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 focus:outline-none focus:border-rose-500 cursor-pointer"
+              >
+                <option value="Traslado de colegio / Solicitud familiar">Traslado de colegio / Solicitud familiar</option>
+                <option value="Cambio de residencia o ciudad">Cambio de residencia o ciudad</option>
+                <option value="Baja administrativa por falta de documentación">Baja administrativa por falta de documentación</option>
+                <option value="Egreso escolar / Fin de ciclo">Egreso escolar / Fin de ciclo</option>
+                <option value="Baja solicitada por Dirección General">Baja solicitada por Dirección General</option>
+                <option value="Otro motivo justificado">Otro motivo justificado</option>
+              </select>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsConfirmDeleteOpen(false)}
+                className="px-4 py-2 rounded-full border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteStudentFromDrawer}
+                className="px-5 py-2 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-black shadow-md shadow-rose-600/25 transition cursor-pointer flex items-center gap-1.5"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>Confirmar Baja y Eliminación</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notificación Toast de Baja Exitosa */}
+      {deletionToast && (
+        <div className="fixed bottom-6 right-6 z-60 max-w-md bg-emerald-900 text-white text-xs font-bold p-4 rounded-2xl shadow-2xl border border-emerald-700 flex items-center gap-3 animate-in slide-in-from-bottom-5">
+          <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
+          <p className="flex-1 leading-snug">{deletionToast}</p>
+          <button
+            onClick={() => setDeletionToast(null)}
+            className="p-1 hover:bg-emerald-800 rounded-lg transition"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       )}
 

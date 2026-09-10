@@ -22,7 +22,8 @@ import {
   Institution,
   UserProfile,
   Subject,
-  ParentMessage
+  ParentMessage,
+  StudentDeletionAuditLog
 } from '@/types';
 import { 
   getSchoolCampuses, 
@@ -34,7 +35,9 @@ import {
   getSchoolPayroll,
   getSchoolSubjects,
   getSchoolParentMessages,
-  getSchoolSchedules
+  getSchoolSchedules,
+  getSchoolDeletionAuditLogs,
+  useSchoolAdminStore
 } from '@/store/useSchoolAdminStore';
 import { DETAILED_STUDENTS_SEED, SUBJECTS_SEED, PARENT_MESSAGES_SEED, TEACHERS_LIST_SEED } from '@/store/seeds';
 
@@ -52,7 +55,8 @@ export type AnalyticDomain =
   | 'CURRICULUM_SUBJECTS'
   | 'FACULTY_DIRECTORY'
   | 'PARENT_COMMUNICATION_REPLIES'
-  | 'ACADEMIC_GRADES_ASSESSMENT';
+  | 'ACADEMIC_GRADES_ASSESSMENT'
+  | 'STUDENT_DELETIONS_AUDIT';
 
 export interface AnalyticKPICard {
   id: string;
@@ -209,6 +213,7 @@ export interface EngineDataSources {
   subjectsList?: Subject[];
   parentMessages?: ParentMessage[];
   schedulesList?: any[];
+  studentDeletionAuditLogs?: StudentDeletionAuditLog[];
 }
 
 // Formateador monetario mexicano con separación de comas y dos decimales
@@ -635,6 +640,29 @@ export const detectAnalyticDomain = (
   const normalized = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   const criteria = extractExpedienteSearchCriteria(query, availableStudents);
 
+  // 0. Auditoría de Bajas y Alumnos Eliminados del Sistema (Super Usuario y Directivos)
+  const isDeletionAuditIntent = 
+    normalized.includes('baja') ||
+    normalized.includes('bajas') ||
+    normalized.includes('eliminad') ||
+    normalized.includes('eliminaron') ||
+    normalized.includes('retirad') ||
+    normalized.includes('quitaron') ||
+    normalized.includes('desinscrit') ||
+    normalized.includes('dieron de baja') ||
+    normalized.includes('dar de baja') ||
+    normalized.includes('fecha de baja') ||
+    normalized.includes('fechas de baja') ||
+    normalized.includes('registro de bajas') ||
+    normalized.includes('auditoria de bajas') ||
+    normalized.includes('alumnos dados de baja') ||
+    normalized.includes('alumnos quitados') ||
+    normalized.includes('alumnos retirados');
+
+  if (isDeletionAuditIntent) {
+    return { domain: 'STUDENT_DELETIONS_AUDIT' };
+  }
+
   // 1. Comunicación familiar / Respuestas de los papás a notas académicas
   const isParentReplyIntent = 
     normalized.includes('respondido el papa') || 
@@ -1001,6 +1029,159 @@ export const executeAnalyticQuery = (
   const timestamp = new Date().toLocaleString('es-MX', { 
     year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' 
   });
+
+  // ==========================================================================
+  // CASO AUDITORÍA: ALUMNOS DADOS DE BAJA Y RETIRADOS DEL SISTEMA
+  // ==========================================================================
+  if (domain === 'STUDENT_DELETIONS_AUDIT') {
+    const rawDeletionLogs = sources.studentDeletionAuditLogs || 
+      (typeof useSchoolAdminStore !== 'undefined' ? useSchoolAdminStore.getState().studentDeletionAuditLogs : []) || [];
+    const scopedDeletionLogs = isConsolidated
+      ? rawDeletionLogs
+      : getSchoolDeletionAuditLogs(rawDeletionLogs, effectiveSchoolId);
+
+    // Ordenar de más reciente a más antiguo
+    const sortedLogs = [...scopedDeletionLogs].sort((a, b) => 
+      new Date(b.deleted_at).getTime() - new Date(a.deleted_at).getTime()
+    );
+
+    const totalBajas = sortedLogs.length;
+    const latestLog = sortedLogs[0];
+    const latestDateFormatted = latestLog ? latestLog.deleted_at_formatted : 'Sin bajas registradas';
+
+    // Agrupación por causas
+    const reasonCounts: Record<string, number> = {};
+    sortedLogs.forEach(l => {
+      const r = l.reason || 'No especificado';
+      reasonCounts[r] = (reasonCounts[r] || 0) + 1;
+    });
+    const mostFrequentReason = Object.entries(reasonCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Traslado de colegio';
+
+    const kpis: AnalyticKPICard[] = [
+      {
+        id: 'kpi-total-deletions',
+        label: 'Alumnos Dados de Baja',
+        value: `${totalBajas} ${totalBajas === 1 ? 'Alumno' : 'Alumnos'}`,
+        subtext: 'Bajas auditadas en el sistema',
+        trend: { direction: 'neutral', value: '100% Trazable' },
+        color: totalBajas > 0 ? 'rose' : 'emerald'
+      },
+      {
+        id: 'kpi-latest-deletion-date',
+        label: 'Última Fecha de Baja',
+        value: latestLog ? latestLog.deleted_at.split('T')[0] : 'N/A',
+        subtext: latestDateFormatted,
+        color: 'indigo'
+      },
+      {
+        id: 'kpi-primary-reason',
+        label: 'Causa Principal de Baja',
+        value: mostFrequentReason.length > 25 ? `${mostFrequentReason.slice(0, 22)}...` : mostFrequentReason,
+        subtext: `${reasonCounts[mostFrequentReason] || 0} alumnos con esta causa`,
+        color: 'amber'
+      },
+      {
+        id: 'kpi-super-audit',
+        label: 'Auditoría Super Usuario',
+        value: 'Sellado Oficial',
+        subtext: 'Fecha, hora y directivo inmutable',
+        color: 'emerald'
+      }
+    ];
+
+    const chartLabels = Object.keys(reasonCounts);
+    const chartData = Object.values(reasonCounts);
+
+    const chartConfig: AnalyticChartConfig = {
+      type: 'donut',
+      availableTypes: ['donut', 'bar', 'column'],
+      title: 'Distribución de Bajas de Alumnos por Causa',
+      subtitle: `Total: ${totalBajas} bajas registradas en sistema`,
+      labels: chartLabels.length > 0 ? chartLabels : ['Sin registros'],
+      datasets: [
+        {
+          name: 'Alumnos Retirados',
+          data: chartData.length > 0 ? chartData : [0],
+          color: '#f43f5e'
+        }
+      ],
+      unit: 'count'
+    };
+
+    const tableColumns: AnalyticTableColumn[] = [
+      { key: 'index', label: '#', align: 'center' },
+      { key: 'student_name', label: 'Alumno Retirado / Baja' },
+      { key: 'enrollment_id', label: 'Matrícula' },
+      { key: 'curp', label: 'CURP' },
+      { key: 'level_grade', label: 'Nivel y Grado' },
+      { key: 'school_name', label: 'Plantel / Colegio' },
+      { key: 'deleted_at_formatted', label: 'Fecha Exacta de Baja en Sistema' },
+      { key: 'deleted_by', label: 'Autorizado por (Directivo)' },
+      { key: 'reason', label: 'Motivo de Baja' }
+    ];
+
+    const tableRows = sortedLogs.map((log, i) => ({
+      id: log.id,
+      index: i + 1,
+      student_name: log.student_name,
+      enrollment_id: log.enrollment_id || 'S/N',
+      curp: log.curp || 'S/N',
+      level_grade: `${log.level.toUpperCase()} ${log.grade}`,
+      school_name: log.school_name || schoolName,
+      deleted_at_formatted: log.deleted_at_formatted,
+      deleted_by: `${log.deleted_by_name} (${log.deleted_by_role.toUpperCase()})`,
+      reason: log.reason
+    }));
+
+    const directAnswer = totalBajas === 0
+      ? `No se registran actualmente bajas ni alumnos eliminados del sistema en ${schoolName}. Todas las matrículas se encuentran vigentes y activas.`
+      : `Se registran oficialmente **${totalBajas} alumnos dados de baja** en el sistema para ${schoolName}. A continuación se certifica la fecha y hora exacta de cada baja reportada a Super Usuario:\n\n` +
+        sortedLogs.map(l => `• **${l.student_name}** (Matrícula: ${l.enrollment_id || 'S/N'}, CURP: ${l.curp || 'S/N'}) — **Fecha exacta de baja:** ${l.deleted_at_formatted} — Autorizado por: ${l.deleted_by_name} (${l.deleted_by_role}) — Motivo: *${l.reason}*`).join('\n\n');
+
+    return {
+      domain: 'STUDENT_DELETIONS_AUDIT',
+      queryReceived: rawQuery,
+      reportTitle: isConsolidated 
+        ? 'Auditoría Institucional de Alumnos Dados de Baja (Consolidado Global)' 
+        : `Registro Oficial de Bajas y Alumnos Eliminados - ${schoolName}`,
+      schoolName,
+      schoolId: effectiveSchoolId || 'all',
+      isConsolidated,
+      generatedAt: timestamp,
+      tokenCost: 0,
+      explanation: {
+        summary: `Auditoría y certificación temporal de desincorporaciones escolares. Registra con precisión de segundo el momento exacto en que un alumno fue dado de baja o removido del sistema por directivos autorizados.`,
+        fieldsIncluded: [
+          'Nombre del alumno',
+          'Matrícula y CURP oficial',
+          'Nivel, grado y plantel',
+          'Fecha y hora exacta de baja en sistema',
+          'Directivo u operador responsable',
+          'Motivo o justificación de retiro'
+        ],
+        filtersApplied: [
+          isConsolidated ? 'Consolidado Global (Todas las Unidades)' : `Plantel: ${schoolName}`,
+          'Filtro de trazabilidad inmutable Super Usuario'
+        ],
+        visualizationDescription: 'Desglose proporcional por causas de baja institucional y tabla cronológica de desincorporaciones con sellado temporal.',
+        followUpPrompt: '¿Desea ver las bajas filtradas por un mes específico o consultar el expediente histórico de algún alumno?'
+      },
+      directAnswer,
+      kpis,
+      chart: chartConfig,
+      table: {
+        columns: tableColumns,
+        rows: tableRows,
+        totalRows: tableRows.length
+      },
+      suggestedQueries: [
+        '¿Quién autorizó la última baja de alumnos?',
+        '¿Cuántos alumnos hay inscritos actualmente?',
+        'Directorio de alumnos con adeudos de colegiatura',
+        'Resumen de ingresos y finanzas del colegio'
+      ]
+    };
+  }
 
   // ==========================================================================
   // CASO A: MATERIAS QUE SE IMPARTEN (CURRICULARES SEP Y TALLERES OFICIALES)

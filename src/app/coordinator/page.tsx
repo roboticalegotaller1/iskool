@@ -23,7 +23,7 @@ import {
   Phone, Mail, CheckCircle2, ChevronRight, User, AlertCircle, Sparkles, X, Heart, Globe, Building2, Upload, RefreshCw, Edit3,
   Landmark, Lock
 } from 'lucide-react';
-import { DetailedStudent, ClassSchedule, Group, SchoolSettings, UserProfile } from '@/types';
+import { DetailedStudent, ClassSchedule, Group, SchoolSettings, UserProfile, ROLE_HIERARCHY_LEVEL, UserRole } from '@/types';
 import { getStudentAvatarUrl } from '@/utils/studentAvatar';
 
 export default function CoordinatorDashboard() {
@@ -106,6 +106,46 @@ export default function CoordinatorDashboard() {
   const registerTeacher = useSchoolAdminStore(state => state.registerTeacher);
   const updateTeacher = useSchoolAdminStore(state => state.updateTeacher);
   const deleteTeacher = useSchoolAdminStore(state => state.deleteTeacher);
+
+  const deleteStudent = useSchoolAdminStore(state => state.deleteStudent);
+
+  // Permiso Directivo Estricto: Solo Directivos hacia arriba (director, owner, admin, superadmin) pueden eliminar alumnos
+  const canDeleteStudent = Boolean(
+    user && (
+      user.role === 'superadmin' ||
+      user.role === 'admin' ||
+      user.role === 'owner' ||
+      user.role === 'director' ||
+      (ROLE_HIERARCHY_LEVEL[user.role as UserRole] !== undefined && ROLE_HIERARCHY_LEVEL[user.role as UserRole] <= 3)
+    )
+  );
+
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  const [deleteReason, setDeleteReason] = useState('Traslado de colegio / Solicitud familiar');
+  const [deletionToast, setDeletionToast] = useState<string | null>(null);
+
+  const handleDeleteStudentFromExpediente = () => {
+    if (!selectedStudent) return;
+    const studentToDelete = selectedStudent;
+    const operator = {
+      id: user?.id || 'usr-dir',
+      name: `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.email || 'Directivo',
+      role: (user?.role as UserRole) || 'director',
+      email: user?.email || 'directivo@iskool.edu.mx'
+    };
+
+    const result = deleteStudent(studentToDelete.id, {
+      reason: deleteReason,
+      operatorUser: operator
+    });
+
+    if (result.success) {
+      setIsConfirmDeleteOpen(false);
+      setSelectedStudent(null);
+      setDeletionToast(`✅ Alumno ${studentToDelete.first_name} ${studentToDelete.last_name_1} eliminado del sistema. Baja auditada con fecha exacta en Super Usuario.`);
+      setTimeout(() => setDeletionToast(null), 6000);
+    }
+  };
 
   const setDetailedStudents = (val: DetailedStudent[] | ((prev: DetailedStudent[]) => DetailedStudent[])) => {
     const current = useSchoolAdminStore.getState().detailedStudents;
@@ -641,6 +681,14 @@ export default function CoordinatorDashboard() {
   return (
     <div className="min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50">
       <Header />
+
+      {/* Notificación de Baja de Alumno */}
+      {deletionToast && (
+        <div className="fixed top-20 right-6 z-50 flex items-center gap-3 bg-emerald-600 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-emerald-400/30 animate-bounce text-xs font-black">
+          <CheckCircle2 className="h-5 w-5 text-emerald-200" />
+          <span>{deletionToast}</span>
+        </div>
+      )}
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
         
@@ -2780,6 +2828,17 @@ export default function CoordinatorDashboard() {
             {/* Cabecera del Modal */}
             <div className="relative p-6 border-b border-zinc-100 dark:border-zinc-850 flex flex-col md:flex-row items-center gap-6 bg-zinc-50/50 dark:bg-zinc-950/20">
               <div className="absolute top-4 right-4 flex items-center gap-2">
+                {canDeleteStudent && (
+                  <button
+                    type="button"
+                    onClick={() => setIsConfirmDeleteOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/50 text-xs font-bold transition-all shadow-xs border border-rose-200/80 cursor-pointer"
+                    title="Eliminar Alumno del Sistema (Acción Directiva)"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 text-rose-600" />
+                    <span>Eliminar Alumno</span>
+                  </button>
+                )}
                 <button 
                   type="button"
                   onClick={() => {
@@ -3228,15 +3287,106 @@ export default function CoordinatorDashboard() {
             </div>
 
             {/* Pie de Modal */}
-            <div className="p-4 px-6 border-t border-zinc-100 dark:border-zinc-850 bg-zinc-50 dark:bg-zinc-950/10 flex justify-end">
+            <div className="p-4 px-6 border-t border-zinc-100 dark:border-zinc-850 bg-zinc-50 dark:bg-zinc-950/10 flex items-center justify-between gap-3">
+              <div>
+                {canDeleteStudent ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsConfirmDeleteOpen(true)}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-full text-xs font-bold transition-all cursor-pointer shadow-xs"
+                  >
+                    <Trash2 className="h-4 w-4 text-rose-600" />
+                    <span>Eliminar Alumno del Sistema</span>
+                  </button>
+                ) : (
+                  <span className="text-[11px] text-zinc-400 italic">
+                    Modo solo lectura de expediente escolar
+                  </span>
+                )}
+              </div>
               <button
                 onClick={() => setSelectedStudent(null)}
-                className="px-6 py-2.5 bg-zinc-900 hover:bg-zinc-850 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-full text-xs font-bold shadow-md shadow-zinc-500/10 transition-all"
+                className="px-6 py-2.5 bg-zinc-900 hover:bg-zinc-850 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-full text-xs font-bold shadow-md shadow-zinc-500/10 transition-all cursor-pointer"
               >
                 Cerrar Expediente
               </button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmación para Eliminar Alumno del Sistema (Acción Directiva) */}
+      {isConfirmDeleteOpen && selectedStudent && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-zinc-900 border border-rose-200 dark:border-rose-900/50 w-full max-w-md rounded-3xl p-6 shadow-2xl flex flex-col gap-4 animate-in zoom-in-95">
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="h-12 w-12 rounded-2xl bg-rose-100 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 flex items-center justify-center shrink-0">
+                <Trash2 className="h-6 w-6 text-rose-600 dark:text-rose-400" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-zinc-900 dark:text-white">
+                  Eliminar Alumno del Sistema
+                </h3>
+                <p className="text-xs text-rose-600 dark:text-rose-400 font-semibold">
+                  Acción autorizada para Directivos y Super Usuarios
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 dark:bg-zinc-800/50 p-3.5 rounded-2xl border border-slate-200 dark:border-zinc-700/60 text-xs space-y-1.5">
+              <p className="font-black text-slate-900 dark:text-white">
+                {selectedStudent.first_name} {selectedStudent.last_name_1} {selectedStudent.last_name_2 || ''}
+              </p>
+              <div className="flex flex-wrap gap-x-3 text-[11px] text-slate-500 font-mono">
+                <span>Matrícula: {selectedStudent.enrollment_id || 'S/N'}</span>
+                <span>CURP: {selectedStudent.curp || 'S/N'}</span>
+                <span>Grado: {selectedStudent.grade}</span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-2xl text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600" />
+              <p className="leading-tight">
+                <strong>Aviso de Trazabilidad:</strong> El retiro de este alumno quedará registrado en el módulo de <strong>Super Usuario</strong> con la <strong>fecha y hora exacta</strong> de la baja institucional.
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                Motivo de la baja o retiro:
+              </label>
+              <select
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                className="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-rose-500 cursor-pointer"
+              >
+                <option value="Traslado de colegio / Solicitud familiar">Traslado de colegio / Solicitud familiar</option>
+                <option value="Cambio de residencia o ciudad">Cambio de residencia o ciudad</option>
+                <option value="Baja administrativa por falta de documentación">Baja administrativa por falta de documentación</option>
+                <option value="Egreso escolar / Fin de ciclo">Egreso escolar / Fin de ciclo</option>
+                <option value="Baja solicitada por Dirección General">Baja solicitada por Dirección General</option>
+                <option value="Otro motivo justificado">Otro motivo justificado</option>
+              </select>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100 dark:border-zinc-800">
+              <button
+                type="button"
+                onClick={() => setIsConfirmDeleteOpen(false)}
+                className="px-4 py-2 rounded-full border border-slate-200 dark:border-zinc-700 text-xs font-bold text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteStudentFromExpediente}
+                className="px-5 py-2 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-black shadow-md shadow-rose-600/25 transition cursor-pointer flex items-center gap-1.5"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>Confirmar Baja y Eliminación</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { SchoolSettings, DetailedStudent, Group, ClassSchedule, Attendance, ParentMessage, Subject, UserProfile, Campus, TuitionPricing, FamilyBillingRecord, Institution, SchoolGovernanceSettings, RestrictedTopicItem, DirectorLimitsSettings, ROLE_HIERARCHY_LEVEL, canManageTargetRole, StaffPayrollRecord, isPlatformSuperUser, resolveEffectiveSchoolId } from '../types';
+import { SchoolSettings, DetailedStudent, Group, ClassSchedule, Attendance, ParentMessage, Subject, UserProfile, Campus, TuitionPricing, FamilyBillingRecord, Institution, SchoolGovernanceSettings, RestrictedTopicItem, DirectorLimitsSettings, ROLE_HIERARCHY_LEVEL, canManageTargetRole, StaffPayrollRecord, isPlatformSuperUser, resolveEffectiveSchoolId, StudentDeletionAuditLog, UserRole } from '../types';
 export { resolveEffectiveSchoolId, isPlatformSuperUser } from '../types';
 import { DETAILED_STUDENTS_SEED, GROUPS_SEED, SCHEDULES_SEED, ATTENDANCE_SEED, PARENT_MESSAGES_SEED, TEACHERS_LIST_SEED, SUBJECTS_SEED, CAMPUSES_SEED, TUITION_PRICINGS_SEED, BILLING_RECORDS_SEED, INSTITUTIONS_SEED, STAFF_USERS_SEED, DEFAULT_GOVERNANCE_SETTINGS, DEFAULT_DIRECTOR_LIMITS, STAFF_PAYROLL_SEED } from './seeds';
 import { useStudentStore } from './useStudentStore';
@@ -432,6 +432,18 @@ export const getDirectorLimits = (limitsMap: Record<string, DirectorLimitsSettin
 };
 
 /**
+ * Filtra los registros de auditoría de bajas y alumnos eliminados por colegio eficaz.
+ */
+export const getSchoolDeletionAuditLogs = (
+  logs: StudentDeletionAuditLog[] = [], 
+  schoolId?: string | null
+): StudentDeletionAuditLog[] => {
+  if (!schoolId) return logs || [];
+  const targetId = schoolId === 'sch-jjr' ? 'sch-jjrosseau' : schoolId;
+  return (logs || []).filter(l => l.school_id === targetId);
+};
+
+/**
  * Generador Estricto de Dominios de Correo por Colegio:
  * Garantiza que cualquier cuenta creada pertenezca estrictamente al dominio @(nombre-escuela.edu.mx).
  */
@@ -481,6 +493,7 @@ interface SchoolAdminStoreState {
   schoolSettings: SchoolSettings;
   campusesList: Campus[];
   detailedStudents: DetailedStudent[];
+  studentDeletionAuditLogs: StudentDeletionAuditLog[];
   groupsList: Group[];
   schedulesList: ClassSchedule[];
   subjectsList: Subject[];
@@ -560,6 +573,13 @@ interface SchoolAdminStoreState {
   deleteCampus: (campusId: string) => void;
 
   updateStudentStatus: (studentId: string, status: 'activo' | 'suspendido' | 'baja') => void;
+  deleteStudent: (
+    studentId: string, 
+    options?: { 
+      reason?: string; 
+      operatorUser?: { id: string; name: string; role: UserRole; email: string } 
+    }
+  ) => { success: boolean; auditLog?: StudentDeletionAuditLog };
   updateStudent: (studentId: string, updatedData: Partial<DetailedStudent>) => void;
   addTeacherNote: (studentId: string, note: { id?: string; date: string; note: string; teacher_name: string; parent_reply?: string; replied_at?: string }) => void;
   addBehaviorReport: (studentId: string, report: { id?: string; date: string; description: string; reporter: string; parent_reply?: string; replied_at?: string }) => void;
@@ -607,6 +627,29 @@ export const applyThemeCssVariables = (themeColors?: { primary: string; secondar
 
 let saveSettingsTimeout: NodeJS.Timeout | null = null;
 
+export const INITIAL_DELETION_AUDIT_LOGS_SEED: StudentDeletionAuditLog[] = [
+  {
+    id: 'audit-del-seed-1',
+    student_id: 'std-seed-baja-1',
+    student_name: 'Mateo Sandoval Rivas',
+    enrollment_id: 'MAT-2026-089',
+    curp: 'SARM160512HDFNR03',
+    school_id: 'sch-jjrosseau',
+    school_name: 'UP Juan Jacobo Rosseau',
+    campus_name: 'Primaria Jardines',
+    level: 'primaria',
+    grade: '4º',
+    deleted_at: '2026-09-02T14:32:10.000Z',
+    deleted_at_formatted: 'miércoles, 2 de septiembre de 2026, 08:32:10 a. m.',
+    deleted_by_id: 'usr-dir-1',
+    deleted_by_name: 'Dirección Pedagógica ISkool',
+    deleted_by_role: 'director',
+    deleted_by_email: 'direccion@jjrosseau.edu.mx',
+    reason: 'Cambio de residencia familiar a otro estado',
+    previous_status: 'activo'
+  }
+];
+
 export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
   persist(
     (set, get) => ({
@@ -630,6 +673,7 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
       },
       campusesList: CAMPUSES_SEED,
       detailedStudents: DETAILED_STUDENTS_SEED,
+      studentDeletionAuditLogs: INITIAL_DELETION_AUDIT_LOGS_SEED,
       groupsList: GROUPS_SEED,
       schedulesList: SCHEDULES_SEED,
       subjectsList: SUBJECTS_SEED,
@@ -1360,11 +1404,103 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
       },
 
   updateStudentStatus: (studentId, status) => {
-    set((state) => ({
-      detailedStudents: (state.detailedStudents || []).map(s => 
-        s.id === studentId ? { ...s, status } : s
-      )
+    set((state) => {
+      const student = (state.detailedStudents || []).find(s => s.id === studentId);
+      let newAuditLogs = state.studentDeletionAuditLogs || [];
+
+      if (status === 'baja' && student) {
+        const now = new Date();
+        const formattedDate = new Intl.DateTimeFormat('es-MX', {
+          dateStyle: 'full',
+          timeStyle: 'medium',
+          timeZone: 'America/Mexico_City'
+        }).format(now);
+        const studentFullName = `${student.first_name} ${student.second_name ? student.second_name + ' ' : ''}${student.last_name_1} ${student.last_name_2 || ''}`.trim();
+        const targetSchoolId = student.school_id || state.activeSchoolId || 'sch-jjrosseau';
+        const school = (state.institutionsList || []).find(i => i.id === targetSchoolId);
+
+        const auditLog: StudentDeletionAuditLog = {
+          id: `audit-baja-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          student_id: student.id,
+          student_name: studentFullName,
+          enrollment_id: student.enrollment_id || '',
+          curp: student.curp || '',
+          school_id: targetSchoolId,
+          school_name: school?.name || state.schoolSettings?.name || 'Colegio Institucional',
+          campus_name: student.campus_name || '',
+          level: student.level || 'primaria',
+          grade: student.grade || '1º',
+          deleted_at: now.toISOString(),
+          deleted_at_formatted: formattedDate,
+          deleted_by_id: 'usr-dir',
+          deleted_by_name: 'Dirección de Plantel',
+          deleted_by_role: 'director',
+          deleted_by_email: 'director@iskool.edu.mx',
+          reason: 'Cambio de estado a Baja en expediente escolar',
+          previous_status: student.status
+        };
+        newAuditLogs = [auditLog, ...newAuditLogs];
+      }
+
+      return {
+        detailedStudents: (state.detailedStudents || []).map(s => 
+          s.id === studentId ? { ...s, status, deleted_at: status === 'baja' ? new Date().toISOString() : undefined } : s
+        ),
+        studentDeletionAuditLogs: newAuditLogs
+      };
+    });
+  },
+
+  deleteStudent: (studentId, options) => {
+    const state = get();
+    const student = (state.detailedStudents || []).find(s => s.id === studentId);
+    if (!student) return { success: false };
+
+    const targetSchoolId = student.school_id || getActiveSchoolIdFromState(state);
+    const school = (state.institutionsList || []).find(i => i.id === targetSchoolId);
+    const now = new Date();
+    const formattedDate = new Intl.DateTimeFormat('es-MX', {
+      dateStyle: 'full',
+      timeStyle: 'medium',
+      timeZone: 'America/Mexico_City'
+    }).format(now);
+
+    const studentFullName = `${student.first_name} ${student.second_name ? student.second_name + ' ' : ''}${student.last_name_1} ${student.last_name_2 || ''}`.trim();
+
+    const auditLog: StudentDeletionAuditLog = {
+      id: `audit-del-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      student_id: student.id,
+      student_name: studentFullName,
+      enrollment_id: student.enrollment_id || '',
+      curp: student.curp || '',
+      school_id: targetSchoolId,
+      school_name: school?.name || state.schoolSettings?.name || 'Colegio Institucional',
+      campus_name: student.campus_name || '',
+      level: student.level || 'primaria',
+      grade: student.grade || '1º',
+      deleted_at: now.toISOString(),
+      deleted_at_formatted: formattedDate,
+      deleted_by_id: options?.operatorUser?.id || 'usr-dir',
+      deleted_by_name: options?.operatorUser?.name || 'Dirección de Plantel',
+      deleted_by_role: options?.operatorUser?.role || 'director',
+      deleted_by_email: options?.operatorUser?.email || 'director@iskool.edu.mx',
+      reason: options?.reason || 'Baja definitiva y retiro de sistema desde el expediente escolar',
+      previous_status: student.status
+    };
+
+    set((prevState) => ({
+      detailedStudents: (prevState.detailedStudents || []).filter(s => s.id !== studentId),
+      studentDeletionAuditLogs: [auditLog, ...(prevState.studentDeletionAuditLogs || [])]
     }));
+
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const existingLogs = JSON.parse(localStorage.getItem('iskool_deletion_audit_logs') || '[]');
+        localStorage.setItem('iskool_deletion_audit_logs', JSON.stringify([auditLog, ...existingLogs]));
+      }
+    } catch (e) {}
+
+    return { success: true, auditLog };
   },
 
   updateStudent: (studentId, updatedData) => {
@@ -2036,6 +2172,7 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           },
           campusesList: CAMPUSES_SEED,
           detailedStudents: DETAILED_STUDENTS_SEED,
+          studentDeletionAuditLogs: INITIAL_DELETION_AUDIT_LOGS_SEED,
           groupsList: GROUPS_SEED,
           schedulesList: SCHEDULES_SEED,
           subjectsList: SUBJECTS_SEED,
@@ -2064,7 +2201,8 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
         set((state) => {
           const current = state.detailedStudents || [];
           const existingIds = new Set(current.map(s => s.id));
-          const missing = DETAILED_STUDENTS_SEED.filter(s => !existingIds.has(s.id));
+          const deletedIds = new Set((state.studentDeletionAuditLogs || []).map(l => l.student_id));
+          const missing = DETAILED_STUDENTS_SEED.filter(s => !existingIds.has(s.id) && !deletedIds.has(s.id));
           if (missing.length === 0) return state;
           return {
             detailedStudents: [...current, ...missing]
@@ -2078,7 +2216,8 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
       migrate: (persistedState: any) => {
         if (persistedState && Array.isArray(persistedState.detailedStudents)) {
           const existingIds = new Set(persistedState.detailedStudents.map((s: any) => s.id));
-          const missing = DETAILED_STUDENTS_SEED.filter(s => !existingIds.has(s.id));
+          const deletedIds = new Set((persistedState.studentDeletionAuditLogs || []).map((l: any) => l.student_id));
+          const missing = DETAILED_STUDENTS_SEED.filter(s => !existingIds.has(s.id) && !deletedIds.has(s.id));
           persistedState.detailedStudents = [...persistedState.detailedStudents, ...missing];
         }
         return persistedState;
@@ -2094,6 +2233,7 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
         schoolSettings: state.schoolSettings,
         campusesList: state.campusesList,
         detailedStudents: state.detailedStudents,
+        studentDeletionAuditLogs: state.studentDeletionAuditLogs,
         groupsList: state.groupsList,
         schedulesList: state.schedulesList,
         subjectsList: state.subjectsList,

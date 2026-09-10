@@ -855,6 +855,35 @@ export interface DetailedStudent {
   average_grade?: number; // Promedio general de calificaciones (escala 0-10)
   academic_standing?: 'excelente' | 'notable' | 'suficiente' | 'regular' | 'en_riesgo';
   subject_grades?: { subject_name: string; grade: number }[];
+  deleted_at?: string;
+  deleted_by?: string;
+  deleted_reason?: string;
+}
+
+/**
+ * @interface StudentDeletionAuditLog
+ * @description Registro de auditoría inmutable de alumnos dados de baja o eliminados del sistema.
+ * @stateImpact Consultado por el portal de Super Usuario para trazabilidad de fecha y hora exacta.
+ */
+export interface StudentDeletionAuditLog {
+  id: string;
+  student_id: string;
+  student_name: string;
+  enrollment_id?: string;
+  curp?: string;
+  school_id: string;
+  school_name?: string;
+  campus_name?: string;
+  level: string;
+  grade: string;
+  deleted_at: string; // ISO timestamp
+  deleted_at_formatted: string; // Fecha y hora completa legible
+  deleted_by_id: string;
+  deleted_by_name: string;
+  deleted_by_role: UserRole;
+  deleted_by_email: string;
+  reason: string;
+  previous_status?: string;
 }
 
 export interface TuitionPricing {
