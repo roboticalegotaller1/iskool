@@ -13,6 +13,7 @@ function getBase64Image(filename) {
 }
 
 const imgFinanzas = getBase64Image('screen_finanzas_admin.png');
+const imgExpediente360 = getBase64Image('screen_expediente_360_real.png');
 const imgDirector = getBase64Image('screen_director_supervision.png');
 const imgTeacher = getBase64Image('screen_teacher_planning.png');
 const imgStudio = getBase64Image('screen_studio_canvas.png');
@@ -21,6 +22,7 @@ const imgParent = getBase64Image('screen_parent_portal.png');
 
 console.log('Imágenes base64 cargadas:');
 console.log('- Finanzas:', imgFinanzas ? 'OK' : 'FALTA');
+console.log('- Expediente 360°:', imgExpediente360 ? 'OK' : 'FALTA');
 console.log('- Director:', imgDirector ? 'OK' : 'FALTA');
 console.log('- Docente:', imgTeacher ? 'OK' : 'FALTA');
 console.log('- Estudio:', imgStudio ? 'OK' : 'FALTA');
@@ -31,7 +33,7 @@ const htmlContent = `<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>ISkool Académico - Presentación Ejecutiva con Capturas Reales</title>
+  <title>ISkool Académico - Presentación Ejecutiva con Expediente 360° Real</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
@@ -547,7 +549,7 @@ const htmlContent = `<!DOCTYPE html>
         </div>
         <div class="metric-pill" style="text-align: left;">
           <span class="metric-label">Familias Conectadas</span>
-          <span class="metric-value">WhatsApp + Magic Link</span>
+          <span class="metric-value">WhatsApp & Mensajería Instantánea</span>
         </div>
         <div class="metric-pill" style="text-align: left;">
           <span class="metric-label">Blindaje Fiscal</span>
@@ -637,8 +639,8 @@ const htmlContent = `<!DOCTYPE html>
           <div class="feature-item">
             <div class="feature-icon-box">✓</div>
             <div>
-              <div class="feature-title">WhatsApp Automático + Magic Link en 1 Toque</div>
-              <div class="feature-desc">Avisos de asistencia y calificaciones directos al celular del padre, con acceso seguro sin recordar contraseñas.</div>
+              <div class="feature-title">WhatsApp y Mensajería Instantánea en 1 Toque</div>
+              <div class="feature-desc">Avisos de asistencia y calificaciones directos al celular del padre mediante mensajería instantánea segura sin contraseñas.</div>
             </div>
           </div>
         </div>
@@ -702,7 +704,7 @@ const htmlContent = `<!DOCTYPE html>
           <div class="feature-item">
             <div class="feature-icon-box">💬</div>
             <div>
-              <div class="feature-title">WhatsApp & Magic Link</div>
+              <div class="feature-title">WhatsApp & Mensajería Instantánea</div>
               <div class="feature-desc">Notificaciones inmediatas de faltas, boletas y avisos al WhatsApp de los padres, con acceso instantáneo sin contraseñas.</div>
             </div>
           </div>
@@ -733,7 +735,7 @@ const htmlContent = `<!DOCTYPE html>
             <div class="feature-icon-box">🏛️</div>
             <div>
               <div class="feature-title">Control Escolar 360°</div>
-              <div class="feature-desc">Tablero ejecutivo para el director: avance curricular de maestros, expedientes médicos, conducta y boleta formativa SEP.</div>
+              <div class="feature-desc">Expediente completo del alumno: datos de filiación, salud y alergias, adeudo, asistencias y reportes formativos.</div>
             </div>
           </div>
         </div>
@@ -916,7 +918,7 @@ const htmlContent = `<!DOCTYPE html>
   </div>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 6: CONTROL ESCOLAR & EXPEDIENTES 360° (CON CAPTURA REAL)     -->
+  <!-- SLIDE 6: CONTROL ESCOLAR & EXPEDIENTES 360° (EXPEDIENTE REAL 360°) -->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
@@ -930,7 +932,7 @@ const htmlContent = `<!DOCTYPE html>
           <span class="brand-tag">Control Escolar</span>
         </div>
       </div>
-      <div class="header-pill">Expedientes 360° • Captura en Vivo</div>
+      <div class="header-pill">Expediente 360° Real • Captura en Vivo</div>
     </div>
 
     <div class="slide-body">
@@ -962,8 +964,8 @@ const htmlContent = `<!DOCTYPE html>
           <div class="feature-item">
             <div class="feature-icon-box">🔒</div>
             <div>
-              <div class="feature-title">Control de Boletas y Estatus de Matrícula</div>
-              <div class="feature-desc">Configuración de visualización de boletas ligada al estatus de la cuenta escolar y auditoría de bajas por ciclo.</div>
+              <div class="feature-title">Estado de Cuenta y Filiación Familiar</div>
+              <div class="feature-desc">CURP, matrícula oficial, tutor responsable, teléfonos de contacto y desglose de recibos pendientes y pagados.</div>
             </div>
           </div>
         </div>
@@ -974,16 +976,16 @@ const htmlContent = `<!DOCTYPE html>
               <div class="mockup-dot" style="background: #ef4444;"></div>
               <div class="mockup-dot" style="background: #f59e0b;"></div>
               <div class="mockup-dot" style="background: #10b981;"></div>
-              <span class="mockup-url-bar">https://colegio.iskool.app/director (Control Escolar)</span>
+              <span class="mockup-url-bar">https://colegio.iskool.app/admin/expediente-360</span>
             </div>
-            <div class="mockup-live-indicator"><span class="live-dot"></span> EN VIVO</div>
+            <div class="mockup-live-indicator"><span class="live-dot"></span> EXPEDIENTE 360° EN VIVO</div>
           </div>
           <div class="mockup-img-container">
-            <img src="${imgDirector}" class="mockup-real-screen" alt="Captura Real de Control Escolar ISkool" />
+            <img src="${imgExpediente360}" class="mockup-real-screen" alt="Captura Real del Expediente 360° de Estudiante ISkool" />
           </div>
           <div class="mockup-footer-badge">
-            <span>● Pantalla real de ISkool: Tablero de Control y Grupos Institucionales</span>
-            <span style="color: #34d399; font-weight: 700;">EXPEDIENTES 360°</span>
+            <span>● Pantalla real de ISkool: Expediente 360° (Filiación, Salud, Asistencia y Cobranza)</span>
+            <span style="color: #34d399; font-weight: 700;">EXPEDIENTE 360° DEL ALUMNO</span>
           </div>
         </div>
       </div>
@@ -996,7 +998,7 @@ const htmlContent = `<!DOCTYPE html>
   </div>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 7: COMUNICACIÓN FAMILIAR: WHATSAPP & MAGIC LINK (CAPTURA REAL)-->
+  <!-- SLIDE 7: COMUNICACIÓN FAMILIAR: WHATSAPP & MENSAJERÍA INSTANTÁNEA   -->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
@@ -1017,10 +1019,10 @@ const htmlContent = `<!DOCTYPE html>
       <div class="grid-2" style="align-items: center;">
         <div>
           <h2 class="slide-title">
-            Notificaciones por <span class="gradient-text-emerald">WhatsApp</span> y acceso por <span class="gradient-text-gold">Magic Link</span>
+            Notificaciones por <span class="gradient-text-emerald">WhatsApp</span> y <span class="gradient-text-gold">Mensajería Instantánea Segura</span>
           </h2>
           <p class="slide-subtitle">
-            Elimina los pretextos de "no me llegó el aviso" o contraseñas olvidadas. Los padres entran a su expediente familiar en un solo toque desde su celular.
+            Elimina los pretextos de "no me llegó el aviso" o contraseñas olvidadas. Los padres entran a su expediente familiar en un solo toque mediante mensajería instantánea.
           </p>
 
           <div class="feature-item">
@@ -1038,8 +1040,8 @@ const htmlContent = `<!DOCTYPE html>
               🔑
             </div>
             <div>
-              <div class="feature-title">Acceso por Magic Link Criptográfico</div>
-              <div class="feature-desc">El tutor pulsa el enlace seguro y entra directo a su panel familiar sin tener que recordar ni restablecer contraseñas.</div>
+              <div class="feature-title">Acceso Directo por Mensajería Instantánea</div>
+              <div class="feature-desc">El tutor pulsa el enlace seguro en su teléfono y entra directo a su panel familiar sin tener que recordar ni restablecer contraseñas.</div>
             </div>
           </div>
 
@@ -1069,7 +1071,7 @@ const htmlContent = `<!DOCTYPE html>
           </div>
           <div class="mockup-footer-badge">
             <span>● Pantalla real de ISkool: Panel de Tutores con Asistencias y Calificaciones</span>
-            <span style="color: #25d366; font-weight: 700;">WHATSAPP & MAGIC LINK</span>
+            <span style="color: #25d366; font-weight: 700;">WHATSAPP & MENSAJERÍA INSTANTÁNEA</span>
           </div>
         </div>
       </div>
@@ -1548,7 +1550,7 @@ const htmlContent = `<!DOCTYPE html>
           <tr>
             <td><strong>Comunicación Familiar</strong></td>
             <td><span class="badge-cross">✕</span> Contraseñas complejas que los padres olvidan</td>
-            <td><span class="badge-check">✓</span> <strong>WhatsApp automático + Magic Link en 1 toque sin contraseñas</strong></td>
+            <td><span class="badge-check">✓</span> <strong>WhatsApp automático y Mensajería Instantánea sin contraseñas</strong></td>
           </tr>
           <tr>
             <td><strong>Facturación Electrónica Fiscal</strong></td>
@@ -1635,7 +1637,7 @@ const htmlFilePath = path.join(__dirname, 'presentacion_ejecutiva_iskool.html');
 const pdfFilePath = path.join(__dirname, 'PRESENTACION_EJECUTIVA_ISKOOL.pdf');
 
 fs.writeFileSync(htmlFilePath, htmlContent, 'utf8');
-console.log('HTML con capturas reales generado en:', htmlFilePath);
+console.log('HTML con capturas reales y terminología corregida generado en:', htmlFilePath);
 
 const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
@@ -1647,7 +1649,7 @@ try {
   console.log('Generando PDF mediante:', browserExecutable);
   execSync(command);
   const stats = fs.statSync(pdfFilePath);
-  console.log('✓ PDF con capturas reales generado exitosamente!');
+  console.log('✓ PDF con Expediente 360° y Mensajería Instantánea generado exitosamente!');
   console.log('Ruta:', pdfFilePath);
   console.log('Tamaño:', (stats.size / (1024 * 1024)).toFixed(2), 'MB');
 } catch (err) {

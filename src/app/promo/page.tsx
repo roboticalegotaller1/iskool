@@ -55,7 +55,7 @@ interface SlideData {
 }
 
 // SECUENCIA DE DIAPOSITIVAS: DATOS 100% COMPROBABLES DEL SISTEMA
-// Portales destacados: Docente, Estudio Gamificado, Alumno, Tutores (WhatsApp & Magic Link), Finanzas (SAT), Dirección & Coordinación.
+// Portales destacados: Docente, Estudio Gamificado, Alumno, Tutores (WhatsApp & Mensajería Instantánea), Finanzas (SAT), Dirección & Coordinación.
 // Super Usuario queda estrictamente excluido.
 const SLIDES: SlideData[] = [
   // SLIDE 0: VISIÓN GENERAL · LA SUITE ACADÉMICA INTEGRAL
@@ -71,7 +71,7 @@ const SLIDES: SlideData[] = [
     metrics: [
       { label: "Bóveda Curricular", value: "NEM (Fases 1-6) + Cambridge" },
       { label: "Velocidad de Planeación", value: "Generación en Segundos" },
-      { label: "Comunicación Familiar", value: "WhatsApp + Magic Link" },
+      { label: "Comunicación Familiar", value: "WhatsApp + Mensajería Instantánea" },
       { label: "Control de Cobranza", value: "Timbrado SAT CFDI 4.0" }
     ],
     features: [
@@ -235,32 +235,32 @@ const SLIDES: SlideData[] = [
     objectionBuster: "Funciona en computadoras de escritorio, laptops y tabletas sin requerir instalaciones pesadas de software."
   },
 
-  // SLIDE 7: PORTAL DE PADRES Y TUTORES · COMUNICACIÓN POR WHATSAPP & MAGIC LINK
+  // SLIDE 7: PORTAL DE PADRES Y TUTORES · COMUNICACIÓN POR WHATSAPP & MENSAJERÍA INSTANTÁNEA
   {
     id: 7,
     type: "curtain",
-    portalName: "PORTAL DE TUTORES · WHATSAPP & MAGIC LINK",
+    portalName: "PORTAL DE TUTORES · WHATSAPP & MENSAJERÍA INSTANTÁNEA",
     highlightCategory: "Portal de Familias · Comunicación Directa",
-    badge: "Portal de Tutores · Notificaciones Inmediatas por WhatsApp & Acceso Seguro por Magic Link",
-    title: "Comunicación Familiar Directa por WhatsApp y Magic Link",
-    subtitle: "Sin contraseñas que olvidar ni aplicaciones complejas: los padres reciben notificaciones directas por WhatsApp y acceden a su portal institucional mediante un Magic Link seguro de un solo clic.",
-    narrativeCaption: "Portal de Tutores: Asistencias, calificaciones y avisos escolares enviados al instante por WhatsApp con acceso seguro por Magic Link.",
+    badge: "Portal de Tutores · Notificaciones Inmediatas por WhatsApp & Acceso Seguro por Mensajería Instantánea",
+    title: "Comunicación Familiar Directa por WhatsApp y Mensajería Instantánea",
+    subtitle: "Sin contraseñas que olvidar ni aplicaciones complejas: los padres reciben notificaciones directas por WhatsApp y acceden a su portal institucional mediante un enlace seguro de un solo clic vía mensajería instantánea.",
+    narrativeCaption: "Portal de Tutores: Asistencias, calificaciones y avisos escolares enviados al instante por WhatsApp con acceso seguro por mensajería instantánea.",
     metrics: [
       { label: "Canal de Notificación", value: "Mensajes por WhatsApp" },
-      { label: "Método de Acceso", value: "Magic Link Seguro" },
+      { label: "Método de Acceso", value: "Mensajería Instantánea Segura" },
       { label: "Reporte de Asistencia", value: "Notificación Inmediata" },
       { label: "Seguimiento Familiar", value: "Boletas y Estados de Cuenta" }
     ],
     features: [
       { iconName: "MessageSquare", title: "Notificaciones Automáticas por WhatsApp", desc: "El padre recibe avisos directos en su teléfono: falta a clase, tarea entregada, reporte de conducta o aviso general." },
-      { iconName: "Key", title: "Acceso Instantáneo por Magic Link", desc: "El tutor entra a su expediente familiar con un enlace seguro único enviado a su correo o celular, sin recordar contraseñas." },
+      { iconName: "Key", title: "Acceso Instantáneo por Enlace Seguro", desc: "El tutor entra a su expediente familiar con un enlace seguro único enviado a su correo o mensajería, sin recordar contraseñas." },
       { iconName: "Receipt", title: "Estados de Cuenta y Comprobantes", desc: "Consulta transparente de colegiaturas pagadas, saldos vigentes y recibos de pago en formato digital." }
     ],
     portalUrl: "/parent",
-    pitchScript: "El involucramiento de los padres es decisivo para la retención escolar. Muchas plataformas fracasan porque los padres olvidan sus usuarios y contraseñas. En ISkool lo resolvimos con dos tecnologías directas: mensajes automáticos por WhatsApp cuando su hijo tiene una falta o un reporte, y acceso instantáneo por Magic Link. El padre da un toque en su teléfono y entra directamente a ver calificaciones, asistencias y pagos.",
+    pitchScript: "El involucramiento de los padres es decisivo para la retención escolar. Muchas plataformas fracasan porque los padres olvidan sus usuarios y contraseñas. En ISkool lo resolvimos con dos tecnologías directas: mensajes automáticos por WhatsApp cuando su hijo tiene una falta o un reporte, y acceso instantáneo vía mensajería instantánea segura. El padre da un toque en su teléfono y entra directamente a ver calificaciones, asistencias y pagos.",
     keySalesPoint: "Elimina los pretextos de 'no me llegó el aviso' y fideliza a las familias con una comunicación moderna, ágil y transparente.",
     diagnosticQuestion: "¿Cuántas llamadas o reclamos recibe su recepción escolar por circulares en papel no entregadas o avisos no leídos?",
-    objectionBuster: "Los enlaces Magic Link cuentan con cifrado criptográfico seguro y expiran automáticamente para garantizar la privacidad familiar."
+    objectionBuster: "Los enlaces de mensajería cuentan con cifrado criptográfico seguro y expiran automáticamente para garantizar la privacidad familiar."
   },
 
   // SLIDE 8: SHOWCASE PORTAL DE TUTORES EN VIVO
