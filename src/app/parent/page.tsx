@@ -218,9 +218,9 @@ export default function ParentDashboard() {
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {/* Banner de Tutor */}
-        <div className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 mb-8 shadow-sm flex flex-col md:flex-row justify-between gap-6 items-start md:items-center">
+        <div className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 sm:p-6 mb-6 sm:mb-8 shadow-sm flex flex-col md:flex-row justify-between gap-6 items-start md:items-center">
           <div>
-            <h1 className="text-2xl font-black text-zinc-950 dark:text-white">Panel de Padres de Familia</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-zinc-950 dark:text-white">Panel de Padres de Familia</h1>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
               Hijo(a) vinculado: <strong>{currentStudent.first_name} {currentStudent.last_name}</strong> | Grado: {getStudentLevelLabel(currentStudent.id)}
             </p>
@@ -233,29 +233,29 @@ export default function ParentDashboard() {
         </div>
 
         {/* Tab switcher de Padres */}
-        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between mb-8">
-          <div className="flex gap-2 bg-zinc-150 dark:bg-zinc-900 p-1 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/80 w-full sm:w-auto max-w-md">
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between mb-8">
+          <div className="flex gap-2 bg-zinc-150 dark:bg-zinc-900 p-1 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/80 w-full sm:w-auto max-w-md overflow-x-auto scrollbar-none">
             <button
               onClick={() => setCurrentTab('achievements')}
-              className={`flex-1 py-3 px-4 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-3 px-4 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 ${
                 currentTab === 'achievements'
                   ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shadow-sm'
                   : 'text-zinc-550 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200'
               }`}
             >
               <Trophy className="h-4 w-4" />
-              Muro de Logros
+              <span>Muro de Logros</span>
             </button>
             <button
               onClick={() => setCurrentTab('messages')}
-              className={`flex-1 py-3 px-4 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 relative ${
+              className={`flex-1 py-3 px-4 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 relative whitespace-nowrap shrink-0 ${
                 currentTab === 'messages'
                   ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shadow-sm'
                   : 'text-zinc-550 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200'
               }`}
             >
               <Bell className="h-4 w-4" />
-              Mensajes y Alertas
+              <span>Mensajes y Alertas</span>
               {parentMessages.filter(m => !m.is_read && (m.student_id === currentStudent?.id || m.parent_id === currentParent.id)).length > 0 && (
                 <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-rose-500 text-white font-extrabold text-[9px] flex items-center justify-center animate-pulse border border-white">
                   {parentMessages.filter(m => !m.is_read && (m.student_id === currentStudent?.id || m.parent_id === currentParent.id)).length}
@@ -266,7 +266,7 @@ export default function ParentDashboard() {
 
           <Link
             href="/parent/financial"
-            className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-blue-700 dark:hover:bg-blue-600 text-white font-bold text-xs py-3 px-4 rounded-2xl transition-all shadow-sm"
+            className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-blue-700 dark:hover:bg-blue-600 text-white font-bold text-xs py-3 px-4 rounded-2xl transition-all shadow-sm w-full sm:w-auto text-center"
           >
             <Landmark className="w-4 h-4 text-blue-300" />
             <span>Estado de Cuenta y Pagos</span>

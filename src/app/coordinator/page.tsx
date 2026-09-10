@@ -693,7 +693,7 @@ export default function CoordinatorDashboard() {
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
         
         {/* Banner Coordinador */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-zinc-900 p-6 rounded-3xl border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-zinc-900 p-4 sm:p-6 rounded-3xl border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm">
           <div>
             <span className="text-xs font-bold text-violet-600 dark:text-violet-400 uppercase tracking-widest bg-violet-50 dark:bg-violet-950/50 px-2.5 py-1 rounded-md">Panel de Control de Coordinación</span>
             <h1 className="text-2xl font-black text-zinc-950 dark:text-white mt-2">Módulo de Administración Académica</h1>
@@ -703,11 +703,11 @@ export default function CoordinatorDashboard() {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-950 p-1 rounded-xl border border-zinc-200/45 dark:border-zinc-850 self-stretch md:self-auto">
+          <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-950 p-1 rounded-xl border border-zinc-200/45 dark:border-zinc-850 self-stretch md:self-auto overflow-x-auto max-w-full scrollbar-none shrink-0">
             <button
               onClick={() => setActiveTab('students')}
               style={activeTab === 'students' ? { color: 'var(--brand-primary)' } : undefined}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                 activeTab === 'students'
                   ? 'bg-white dark:bg-zinc-800 shadow-sm'
                   : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400'
@@ -718,7 +718,7 @@ export default function CoordinatorDashboard() {
             <button
               onClick={() => setActiveTab('groups')}
               style={activeTab === 'groups' ? { color: 'var(--brand-primary)' } : undefined}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                 activeTab === 'groups'
                   ? 'bg-white dark:bg-zinc-800 shadow-sm'
                   : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400'
@@ -729,7 +729,7 @@ export default function CoordinatorDashboard() {
             <button
               onClick={() => setActiveTab('schedules')}
               style={activeTab === 'schedules' ? { color: 'var(--brand-primary)' } : undefined}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                 activeTab === 'schedules'
                   ? 'bg-white dark:bg-zinc-800 shadow-sm'
                   : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400'
@@ -740,7 +740,7 @@ export default function CoordinatorDashboard() {
             <button
               onClick={() => setActiveTab('settings')}
               style={activeTab === 'settings' ? { color: 'var(--brand-primary)' } : undefined}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 ${
                 activeTab === 'settings'
                   ? 'bg-white dark:bg-zinc-800 shadow-sm'
                   : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400'
@@ -751,7 +751,7 @@ export default function CoordinatorDashboard() {
             {currentGovernance.allowCoordinatorBilling ? (
               <Link
                 href="/coordinator/billing"
-                className="px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-blue-700 hover:bg-blue-600 text-white flex items-center gap-1.5 shadow-sm cursor-pointer"
+                className="px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-blue-700 hover:bg-blue-600 text-white flex items-center gap-1.5 shadow-sm cursor-pointer whitespace-nowrap shrink-0"
               >
                 <Landmark className="w-3.5 h-3.5" />
                 <span>Cobranza</span>
@@ -761,7 +761,7 @@ export default function CoordinatorDashboard() {
                 type="button"
                 onClick={() => alert("🔒 La función de Cobranza y Aranceles ha sido restringida para Coordinación por la Dirección del Colegio.")}
                 title="Acceso restringido por la Dirección"
-                className="px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 flex items-center gap-1.5 cursor-not-allowed opacity-80"
+                className="px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-zinc-200 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 flex items-center gap-1.5 cursor-not-allowed opacity-80 whitespace-nowrap shrink-0"
               >
                 <Lock className="w-3.5 h-3.5 text-amber-500" />
                 <span>Cobranza (Bloqueado)</span>
@@ -769,7 +769,7 @@ export default function CoordinatorDashboard() {
             )}
             <Link
               href="/coordinator/fiscal"
-              className="px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-emerald-700 hover:bg-emerald-600 text-white flex items-center gap-1.5 shadow-sm"
+              className="px-3.5 py-2 rounded-lg text-xs font-bold transition-all bg-emerald-700 hover:bg-emerald-600 text-white flex items-center gap-1.5 shadow-sm whitespace-nowrap shrink-0"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
               <span>Facturación SAT</span>
@@ -781,10 +781,10 @@ export default function CoordinatorDashboard() {
         {activeTab === 'students' && (
           <div className="flex flex-col gap-6">
             {/* Barra de Filtros */}
-            <div className="bg-white dark:bg-zinc-900 p-5 rounded-3xl border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className="flex flex-1 flex-col sm:flex-row gap-3 w-full">
+            <div className="bg-white dark:bg-zinc-900 p-4 sm:p-5 rounded-3xl border border-zinc-200/60 dark:border-zinc-800/60 shadow-sm flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
+              <div className="flex flex-1 flex-col sm:flex-row flex-wrap gap-3 w-full">
                 {/* Búsqueda */}
-                <div className="relative flex-1">
+                <div className="relative flex-1 min-w-[200px]">
                   <Search className="absolute left-3 top-3.5 h-4 w-4 text-zinc-400" />
                   <input
                     type="text"
@@ -798,7 +798,7 @@ export default function CoordinatorDashboard() {
                 <select
                   value={levelFilter}
                   onChange={(e: any) => setLevelFilter(e.target.value)}
-                  className="p-2.5 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-brand-primary"
+                  className="p-2.5 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-brand-primary shrink-0"
                 >
                   <option value="all">Todos los Niveles</option>
                   <option value="primaria">Primaria</option>
@@ -809,7 +809,7 @@ export default function CoordinatorDashboard() {
                 <select
                   value={groupFilter}
                   onChange={(e: any) => setGroupFilter(e.target.value)}
-                  className="p-2.5 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-brand-primary"
+                  className="p-2.5 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-brand-primary shrink-0"
                 >
                   <option value="all">Todos (Con y Sin Grupo)</option>
                   <option value="assigned">Con Grupo Asignado</option>
@@ -821,10 +821,10 @@ export default function CoordinatorDashboard() {
               <button
                 onClick={() => setIsRegisterModalOpen(true)}
                 style={{ backgroundColor: 'var(--brand-primary)' }}
-                className="w-full md:w-auto px-5 py-2.5 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md hover:opacity-90"
+                className="w-full lg:w-auto px-5 py-2.5 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md hover:opacity-90 shrink-0"
               >
                 <UserPlus className="h-4.5 w-4.5" />
-                Dar de Alta Alumno
+                <span>Dar de Alta Alumno</span>
               </button>
             </div>
 
@@ -2827,16 +2827,16 @@ export default function CoordinatorDashboard() {
             
             {/* Cabecera del Modal */}
             <div className="relative p-6 border-b border-zinc-100 dark:border-zinc-850 flex flex-col md:flex-row items-center gap-6 bg-zinc-50/50 dark:bg-zinc-950/20">
-              <div className="absolute top-4 right-4 flex items-center gap-2">
+              <div className="absolute top-4 right-4 flex items-center gap-1.5 sm:gap-2">
                 {canDeleteStudent && (
                   <button
                     type="button"
                     onClick={() => setIsConfirmDeleteOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/50 text-xs font-bold transition-all shadow-xs border border-rose-200/80 cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/50 text-xs font-bold transition-all shadow-xs border border-rose-200/80 cursor-pointer"
                     title="Eliminar Alumno del Sistema (Acción Directiva)"
                   >
-                    <Trash2 className="h-3.5 w-3.5 text-rose-600" />
-                    <span>Eliminar Alumno</span>
+                    <Trash2 className="h-3.5 w-3.5 text-rose-600 shrink-0" />
+                    <span className="hidden sm:inline">Eliminar Alumno</span>
                   </button>
                 )}
                 <button 
@@ -2845,11 +2845,11 @@ export default function CoordinatorDashboard() {
                     setEditingStudentData(selectedStudent);
                     setIsEditStudentModalOpen(true);
                   }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-955/40 dark:text-violet-300 dark:hover:bg-violet-900/50 text-xs font-bold transition-all shadow-sm border border-violet-200/50 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-955/40 dark:text-violet-300 dark:hover:bg-violet-900/50 text-xs font-bold transition-all shadow-sm border border-violet-200/50 cursor-pointer"
                   title="Editar Expediente"
                 >
-                  <Edit3 className="h-3.5 w-3.5" />
-                  <span>Editar Expediente</span>
+                  <Edit3 className="h-3.5 w-3.5 shrink-0" />
+                  <span className="hidden sm:inline">Editar Expediente</span>
                 </button>
                 <button 
                   onClick={() => setSelectedStudent(null)}
@@ -3287,26 +3287,26 @@ export default function CoordinatorDashboard() {
             </div>
 
             {/* Pie de Modal */}
-            <div className="p-4 px-6 border-t border-zinc-100 dark:border-zinc-850 bg-zinc-50 dark:bg-zinc-950/10 flex items-center justify-between gap-3">
+            <div className="p-4 px-5 sm:px-6 border-t border-zinc-100 dark:border-zinc-850 bg-zinc-50 dark:bg-zinc-950/10 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 {canDeleteStudent ? (
                   <button
                     type="button"
                     onClick={() => setIsConfirmDeleteOpen(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-full text-xs font-bold transition-all cursor-pointer shadow-xs"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-full text-xs font-bold transition-all cursor-pointer shadow-xs"
                   >
-                    <Trash2 className="h-4 w-4 text-rose-600" />
+                    <Trash2 className="h-4 w-4 text-rose-600 shrink-0" />
                     <span>Eliminar Alumno del Sistema</span>
                   </button>
                 ) : (
-                  <span className="text-[11px] text-zinc-400 italic">
+                  <span className="text-[11px] text-zinc-400 italic block text-center sm:text-left">
                     Modo solo lectura de expediente escolar
                   </span>
                 )}
               </div>
               <button
                 onClick={() => setSelectedStudent(null)}
-                className="px-6 py-2.5 bg-zinc-900 hover:bg-zinc-850 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-full text-xs font-bold shadow-md shadow-zinc-500/10 transition-all cursor-pointer"
+                className="w-full sm:w-auto px-6 py-2.5 bg-zinc-900 hover:bg-zinc-850 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-full text-xs font-bold shadow-md shadow-zinc-500/10 transition-all cursor-pointer text-center"
               >
                 Cerrar Expediente
               </button>

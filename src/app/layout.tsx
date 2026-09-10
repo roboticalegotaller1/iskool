@@ -35,7 +35,7 @@ export default function RootLayout({
       className={`h-full light antialiased ${plusJakarta.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 font-sans">
+      <body className="min-h-full w-full max-w-full overflow-x-hidden flex flex-col bg-slate-50 text-slate-900 font-sans">
         <ThemeSync />
         <AuthProvider>
           {children}

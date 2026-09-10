@@ -1360,13 +1360,13 @@ export default function SuperUserAdminPage() {
       ) : (!activeSchoolId && isSuperUser) ? (
         <div className="flex-1 flex flex-col">
           {/* MULTI-SCHOOL GLOBAL HEADER */}
-          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200 px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-center gap-3.5">
-              <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+              <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/25 shrink-0">
                 <School className="h-6 w-6 text-white" />
               </div>
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-lg font-black tracking-tight text-slate-900">Directorio Institucional de Colegios</h1>
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-indigo-50 text-indigo-700 border border-indigo-200">
                     🏢 SUPER USUARIO · DIRECTIVOS ISKOOL
@@ -1378,35 +1378,35 @@ export default function SuperUserAdminPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <button
                 onClick={() => setActiveTab('analytics')}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black shadow-lg shadow-cyan-600/30 hover:scale-102 transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black shadow-lg shadow-cyan-600/30 hover:scale-102 transition-all cursor-pointer shrink-0"
               >
-                <Sparkles className="h-4 w-4" /> Estudio Analítico (Voz & Texto)
+                <Sparkles className="h-4 w-4" /> <span>Estudio Analítico <span className="hidden xs:inline">(Voz & Texto)</span></span>
               </button>
 
               <button
                 onClick={() => setShowAddSchoolModal(true)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shadow-lg shadow-indigo-600/30 hover:scale-102 transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shadow-lg shadow-indigo-600/30 hover:scale-102 transition-all cursor-pointer shrink-0"
               >
-                <Plus className="h-4 w-4" /> Dar de Alta Nuevo Colegio
+                <Plus className="h-4 w-4" /> <span><span className="hidden sm:inline">Dar de Alta</span> Nuevo Colegio</span>
               </button>
 
               <Link
                 href="/teacher"
-                className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-bold transition-all"
+                className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-bold transition-all shrink-0"
               >
-                Portal Docente <ChevronRight className="h-4 w-4" />
+                <span>Portal Docente</span> <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
           </header>
 
           {/* MAIN CONTAINER: DIRECTORIO DE COLEGIOS */}
-          <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-8">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6 sm:space-y-8">
             
             {/* PANORAMIC HERO BANNER */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-50/80 via-white to-purple-50/80 border border-indigo-200/80 p-8 shadow-xs">
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-50/80 via-white to-purple-50/80 border border-indigo-200/80 p-5 sm:p-8 shadow-xs">
               <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="space-y-2 max-w-2xl">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100 border border-indigo-200 text-indigo-700 text-xs font-black">
@@ -1679,21 +1679,21 @@ export default function SuperUserAdminPage() {
         /* VISTA 2: DASHBOARD DE LA INSTITUCIÓN SELECCIONADA */
         <div className="flex-1 flex flex-col">
           {/* SUPER USER HEADER DENTRO DEL COLEGIO */}
-          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200 px-4 sm:px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-center gap-4">
               {/* Botón Volver al Directorio: Exclusivo Super Usuario ISkool */}
               {isSuperUser && (
                 <button
                   onClick={() => selectSchool(null)}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 border border-slate-200 transition-all cursor-pointer hover:scale-102"
+                  className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 border border-slate-200 transition-all cursor-pointer hover:scale-102 shrink-0"
                 >
-                  <ChevronLeft className="h-4 w-4 text-indigo-600" /> Directorio de Colegios
+                  <ChevronLeft className="h-4 w-4 text-indigo-600" /> <span className="hidden sm:inline">Directorio de Colegios</span>
                 </button>
               )}
 
               <div className="flex items-center gap-3">
                 {/* Logo Escolar */}
-                <div className="relative group/headlogo">
+                <div className="relative group/headlogo shrink-0">
                   {currentSchool?.logoUrl ? (
                     <img
                       src={currentSchool.logoUrl}
@@ -1720,7 +1720,7 @@ export default function SuperUserAdminPage() {
                 </div>
 
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <h1 className="text-lg font-black tracking-tight text-slate-900">
                       {currentSchool?.name || schoolSettings.name}
                     </h1>
@@ -1740,7 +1740,7 @@ export default function SuperUserAdminPage() {
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-slate-500 flex items-center gap-3 mt-0.5">
+                  <p className="text-xs text-slate-500 flex flex-wrap items-center gap-2 sm:gap-3 mt-0.5">
                     <span>CCT: <strong className="text-slate-800">{currentSchool?.cct || schoolSettings.cct}</strong></span>
                     <span>·</span>
                     <span>{schoolCampuses.length} Planteles Oficiales</span>
@@ -1754,9 +1754,9 @@ export default function SuperUserAdminPage() {
             </div>
 
             {/* Selector Rápido de Colegio (SOLO SUPER USUARIOS) o Badge Institucional Aislado (DUEÑO) */}
-            <div className="flex items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               {isSuperUser ? (
-                <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl text-xs">
+                <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl text-xs shrink-0">
                   <span className="text-slate-500 font-bold">Colegio:</span>
                   <select
                     value={activeSchoolId || ''}
@@ -1771,7 +1771,7 @@ export default function SuperUserAdminPage() {
                   </select>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 bg-slate-100 border border-emerald-200 px-3.5 py-1.5 rounded-xl text-xs">
+                <div className="flex items-center gap-2 bg-slate-100 border border-emerald-200 px-3.5 py-1.5 rounded-xl text-xs shrink-0">
                   <ShieldCheck className="h-4 w-4 text-emerald-600" />
                   <span className="text-slate-500 font-bold">Institución:</span>
                   <span className="text-slate-900 font-black">{currentSchool?.name || schoolSettings.name}</span>
@@ -1780,24 +1780,24 @@ export default function SuperUserAdminPage() {
 
               <button
                 onClick={exportCredentialsCSV}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 transition-all hover:scale-102 cursor-pointer shadow-xs"
+                className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 transition-all hover:scale-102 cursor-pointer shadow-xs shrink-0"
               >
                 <Download className="h-4 w-4 text-emerald-600" />
-                Descargar Credenciales (CSV)
+                <span><span className="hidden xs:inline">Descargar</span> Credenciales (CSV)</span>
               </button>
 
               <Link
                 href="/teacher"
-                className="flex items-center gap-1 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shadow-lg shadow-indigo-500/25 transition-all hover:scale-102"
+                className="flex items-center gap-1 px-3 sm:px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shadow-lg shadow-indigo-500/25 transition-all hover:scale-102 shrink-0"
               >
-                Ir a Portal Académico <ChevronRight className="h-4 w-4" />
+                <span><span className="hidden xs:inline">Ir a</span> Portal Académico</span> <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
           </header>
 
           {/* NAVIGATION TABS STRIP */}
-          <nav className="bg-white border-b border-slate-200 px-6 py-2 flex items-center justify-between gap-4 overflow-x-auto scrollbar-none">
-            <div className="flex items-center gap-1.5 shrink-0">
+          <nav className="bg-white border-b border-slate-200 px-4 sm:px-6 py-2 flex items-center justify-between gap-3 sm:gap-4 overflow-x-auto scrollbar-none">
+            <div className="flex items-center gap-1.5 shrink-0 whitespace-nowrap">
               <button
                 onClick={() => setActiveTab('overview')}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
@@ -1922,7 +1922,7 @@ export default function SuperUserAdminPage() {
           </nav>
 
           {/* MAIN CONTENT CONTAINER */}
-          <main className="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
 
         {/* TAB 1: OVERVIEW / DASHBOARD */}
         {activeTab === 'overview' && (

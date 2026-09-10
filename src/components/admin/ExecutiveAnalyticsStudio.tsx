@@ -1174,16 +1174,30 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
         
         {/* 1. BARRA SUPERIOR EJECUTIVA */}
       <header className="h-14 shrink-0 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 flex items-center justify-between gap-3 z-30 shadow-xs">
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             onClick={() => onBack ? onBack() : window.history.back()}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 text-xs font-semibold transition cursor-pointer shrink-0 border border-slate-200"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Volver</span>
+            <span className="hidden xs:inline">Volver</span>
+          </button>
+
+          {/* Toggle Asistente en Mobile */}
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            title={isSidebarOpen ? "Ocultar asistente" : "Abrir asistente"}
+            className={`flex md:hidden items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition shrink-0 ${
+              isSidebarOpen 
+                ? 'bg-indigo-600 text-white shadow-xs' 
+                : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200'
+            }`}
+          >
+            <Bot className="h-4 w-4" />
+            <span className="text-[11px]">Asistente</span>
           </button>
           
-          <div className="h-4 w-[1px] bg-slate-200 shrink-0" />
+          <div className="h-4 w-[1px] bg-slate-200 shrink-0 hidden xs:block" />
 
           {/* Título dinámico del reporte */}
           <div className="flex items-center gap-2 min-w-0">
@@ -1272,21 +1286,40 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
       {/* 2. CUERPO SPLIT-VIEW (PANEL IZQUIERDO CONVERSACIONAL + ÁREA DE REPORTE) */}
       <div className="flex-1 flex overflow-hidden relative">
         
+        {/* BACKDROP PARA DISPOSITIVOS MÓVILES */}
+        {isSidebarOpen && (
+          <div 
+            onClick={() => setIsSidebarOpen(false)}
+            className="md:hidden absolute inset-0 bg-slate-950/40 z-20 backdrop-blur-xs transition-opacity"
+          />
+        )}
+
         {/* PANEL LATERAL IZQUIERDO: ASISTENTE CONVERSACIONAL (VOZ Y TEXTO) */}
         <aside 
-          className={`shrink-0 bg-white border-r border-slate-200 flex flex-col transition-all duration-300 relative z-20 ${
-            isSidebarOpen ? 'w-[360px] md:w-[410px]' : 'w-0 border-r-0 overflow-hidden'
+          className={`shrink-0 bg-white border-r border-slate-200 flex flex-col transition-all duration-300 z-30 ${
+            isSidebarOpen 
+              ? 'absolute md:relative inset-y-0 left-0 w-full sm:w-[380px] md:w-[410px] shadow-2xl md:shadow-none' 
+              : 'w-0 border-r-0 overflow-hidden'
           }`}
         >
           {/* Header del Chat */}
           <div className="h-10 px-4 border-b border-slate-200 flex items-center justify-between shrink-0 bg-slate-50">
             <div className="flex items-center gap-2">
               <Bot className="h-4 w-4 text-indigo-600" />
-              <span className="text-xs font-bold text-slate-800">Asistente Ejecutivo de Información</span>
+              <span className="text-xs font-bold text-slate-800">Asistente Ejecutivo</span>
             </div>
-            <span className="text-[10px] text-slate-500 bg-slate-200/60 px-2 py-0.5 rounded font-mono">
-              IA Pedagógica & Analítica
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-slate-500 bg-slate-200/60 px-2 py-0.5 rounded font-mono hidden sm:inline">
+                IA Pedagógica & Analítica
+              </span>
+              <button
+                onClick={() => setIsSidebarOpen(false)}
+                className="md:hidden p-1 rounded-lg hover:bg-slate-200 text-slate-500"
+                title="Cerrar panel"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           {/* Historial de conversación */}
@@ -1463,11 +1496,11 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
           </div>
         </aside>
 
-        {/* BOTÓN TOGGLE COLAPSO DEL PANEL LATERAL */}
+        {/* BOTÓN TOGGLE COLAPSO DEL PANEL LATERAL (SOLO PANTALLAS MD+) */}
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           title={isSidebarOpen ? "Ocultar panel conversacional" : "Mostrar panel conversacional"}
-          className="absolute top-3 z-30 flex items-center justify-center h-7 w-7 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 shadow-md transition cursor-pointer"
+          className="hidden md:flex absolute top-3 z-30 items-center justify-center h-7 w-7 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 shadow-md transition cursor-pointer"
           style={{ left: isSidebarOpen ? 'calc(410px - 14px)' : '8px' }}
         >
           {isSidebarOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}

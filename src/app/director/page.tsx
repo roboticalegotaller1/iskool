@@ -622,10 +622,10 @@ export default function DirectorPortalPage() {
           </div>
 
           {/* BARRA DE NAVEGACIÓN DEL DIRECTOR */}
-          <nav className="flex items-center gap-2 overflow-x-auto scrollbar-none pt-2 border-t border-slate-200">
+          <nav className="flex items-center gap-2 overflow-x-auto scrollbar-none pt-2 border-t border-slate-200 whitespace-nowrap">
             <button
               onClick={() => setActiveTab('overview')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer shrink-0 ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                 activeTab === 'overview'
                   ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -636,7 +636,7 @@ export default function DirectorPortalPage() {
 
             <button
               onClick={() => setActiveTab('governance')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer shrink-0 ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                 activeTab === 'governance'
                   ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -652,7 +652,7 @@ export default function DirectorPortalPage() {
 
             <button
               onClick={() => setActiveTab('school_control')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer shrink-0 ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                 activeTab === 'school_control'
                   ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -663,7 +663,7 @@ export default function DirectorPortalPage() {
 
             <button
               onClick={() => setActiveTab('vault')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer shrink-0 ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                 activeTab === 'vault'
                   ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -674,7 +674,7 @@ export default function DirectorPortalPage() {
 
             <button
               onClick={() => setActiveTab('finances')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer shrink-0 ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                 activeTab === 'finances'
                   ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
