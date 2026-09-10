@@ -20,15 +20,15 @@ export const WorkspaceConnectionLine: React.FC<Props> = ({ insertIndex }) => {
       className="relative flex items-center justify-center py-2 group"
     >
       {/* Línea vertical conectora estilo Scratch / Notion */}
-      <div className="absolute inset-y-0 w-0.5 bg-gradient-to-b from-purple-300 via-indigo-400 to-purple-300 dark:from-purple-900 dark:via-indigo-800 dark:to-purple-900" />
+      <div className="absolute inset-y-0 w-0.5 bg-gradient-to-b from-emerald-400 via-teal-400 to-emerald-400 dark:from-emerald-900 dark:via-teal-800 dark:to-emerald-900" />
 
       {/* Botón flotante (+) para insertar bloque */}
       <div className={`relative z-10 transition-all transform ${isHovered ? 'scale-110 opacity-100' : 'scale-90 opacity-0 group-hover:opacity-100'}`}>
-        <div className="flex items-center gap-1 bg-white dark:bg-zinc-850 p-1 rounded-full shadow-lg border border-purple-200 dark:border-purple-800/80">
+        <div className="flex items-center gap-1 bg-white dark:bg-slate-900 p-1 rounded-full shadow-lg border border-emerald-200 dark:border-emerald-800/80">
           <button
             type="button"
             onClick={() => addBlock('quiz_question', insertIndex)}
-            className="px-2.5 py-1 rounded-full text-[10px] font-black bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 hover:bg-purple-200 flex items-center gap-1 cursor-pointer transition-colors"
+            className="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 flex items-center gap-1 cursor-pointer transition-colors"
           >
             <Plus className="w-3 h-3" />
             <span>+ Reactivo</span>
@@ -51,7 +51,7 @@ export const WorkspaceConnectionLine: React.FC<Props> = ({ insertIndex }) => {
             type="button"
             onClick={() => setIsExtendedMenuOpen(true)}
             title="Ver más herramientas"
-            className="p-1 rounded-full text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950 cursor-pointer"
+            className="p-1 rounded-full text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-950 cursor-pointer"
           >
             <Sparkles className="w-3.5 h-3.5" />
           </button>

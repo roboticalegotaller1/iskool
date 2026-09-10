@@ -35,7 +35,7 @@ export const AudioSfxBlockView: React.FC<Props> = ({ block }) => {
               onClick={() => updateBlockData(block.id, { soundType: s.id })}
               className={`p-2.5 rounded-2xl border text-left transition-all cursor-pointer ${
                 soundType === s.id
-                  ? 'bg-violet-50 dark:bg-violet-950/60 border-violet-400 dark:border-violet-600 ring-2 ring-violet-500 shadow-md'
+                  ? 'bg-teal-50 dark:bg-teal-950/60 border-teal-400 dark:border-teal-600 ring-2 ring-teal-500 shadow-md'
                   : 'bg-white dark:bg-zinc-850 border-slate-200 dark:border-zinc-750'
               }`}
             >
@@ -50,7 +50,7 @@ export const AudioSfxBlockView: React.FC<Props> = ({ block }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="p-3 bg-slate-50 dark:bg-zinc-850 rounded-2xl border border-slate-200 dark:border-zinc-750 space-y-1.5">
           <label className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
-            <Volume2 className="w-4 h-4 text-violet-500" />
+            <Volume2 className="w-4 h-4 text-teal-500" />
             <span>Volumen:</span>
           </label>
           <div className="flex items-center gap-2">
@@ -61,7 +61,7 @@ export const AudioSfxBlockView: React.FC<Props> = ({ block }) => {
               step={0.1}
               value={volume}
               onChange={(e) => updateBlockData(block.id, { volume: Number(e.target.value) })}
-              className="flex-1 accent-violet-500"
+              className="flex-1 accent-teal-500"
             />
             <span className="text-xs font-bold text-slate-600 dark:text-zinc-400 w-12 text-right">
               {Math.round(volume * 100)}%
@@ -77,7 +77,7 @@ export const AudioSfxBlockView: React.FC<Props> = ({ block }) => {
             type="checkbox"
             checked={autoPlay}
             onChange={(e) => updateBlockData(block.id, { autoPlay: e.target.checked })}
-            className="w-4 h-4 rounded text-violet-600 accent-violet-600 cursor-pointer"
+            className="w-4 h-4 rounded text-teal-600 accent-teal-600 cursor-pointer"
           />
         </div>
       </div>

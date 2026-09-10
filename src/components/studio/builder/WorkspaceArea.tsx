@@ -90,7 +90,7 @@ export const WorkspaceArea: React.FC = () => {
             onClick={() => setViewMode('graph')}
             className={`px-3 py-1.5 rounded-xl font-black flex items-center gap-1.5 transition-all cursor-pointer ${
               viewMode === 'graph'
-                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/20'
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/25'
                 : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
@@ -103,7 +103,7 @@ export const WorkspaceArea: React.FC = () => {
             onClick={() => setViewMode('list')}
             className={`px-3 py-1.5 rounded-xl font-black flex items-center gap-1.5 transition-all cursor-pointer ${
               viewMode === 'list'
-                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/20'
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/25'
                 : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
@@ -116,9 +116,9 @@ export const WorkspaceArea: React.FC = () => {
           <button
             type="button"
             onClick={autoLayoutNodes}
-            className="px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-850 hover:bg-purple-50 dark:hover:bg-zinc-800 border border-slate-200 dark:border-zinc-750 text-[11px] font-bold text-slate-700 dark:text-zinc-300 shadow-sm flex items-center gap-1.5 cursor-pointer transition-colors"
+            className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/40 text-[11px] font-bold text-slate-700 dark:text-emerald-300 shadow-sm flex items-center gap-1.5 cursor-pointer transition-colors"
           >
-            <Layers className="w-3.5 h-3.5 text-purple-600" />
+            <Layers className="w-3.5 h-3.5 text-emerald-400" />
             <span className="hidden sm:inline">Auto-organizar Nodos</span>
           </button>
         )}
@@ -184,10 +184,10 @@ export const WorkspaceArea: React.FC = () => {
           type="button"
           onClick={() => setIsExtendedMenuOpen(!isExtendedMenuOpen)}
           aria-label="Abrir catálogo de bloques lúdicos"
-          className="px-5 py-3.5 rounded-full bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-black text-sm shadow-2xl shadow-purple-600/40 ring-4 ring-purple-400/30 flex items-center gap-2.5 transition-all duration-200 ease-out hover:scale-105 active:scale-95 cursor-pointer"
+          className="px-5 py-3.5 rounded-full bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm shadow-2xl shadow-amber-500/35 ring-4 ring-amber-400/30 border border-amber-300/40 flex items-center gap-2.5 transition-all duration-200 ease-out hover:scale-105 active:scale-95 cursor-pointer"
         >
-          <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
-            <Plus className={`w-4 h-4 text-white transition-transform duration-200 ${isExtendedMenuOpen ? 'rotate-45' : ''}`} />
+          <div className="w-6 h-6 rounded-full bg-slate-950/20 flex items-center justify-center">
+            <Plus className={`w-4 h-4 text-slate-950 font-black transition-transform duration-200 ${isExtendedMenuOpen ? 'rotate-45' : ''}`} />
           </div>
           <span className="hidden sm:inline font-black tracking-wide">Añadir Bloque</span>
           <span className="font-black">(+)</span>

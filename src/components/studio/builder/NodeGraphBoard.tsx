@@ -239,7 +239,7 @@ export const NodeGraphBoard: React.FC = () => {
                 refY="6"
                 orient="auto"
               >
-                <path d="M 0 2 L 10 6 L 0 10 Z" fill="#8b5cf6" />
+                <path d="M 0 2 L 10 6 L 0 10 Z" fill="#10b981" />
               </marker>
 
               {/* Marcador de punta de flecha resaltada */}
@@ -251,7 +251,7 @@ export const NodeGraphBoard: React.FC = () => {
                 refY="6"
                 orient="auto"
               >
-                <path d="M 0 2 L 10 6 L 0 10 Z" fill="#ec4899" />
+                <path d="M 0 2 L 10 6 L 0 10 Z" fill="#2dd4bf" />
               </marker>
             </defs>
 
@@ -288,7 +288,7 @@ export const NodeGraphBoard: React.FC = () => {
                   <path
                     d={pathD}
                     fill="none"
-                    stroke={isHovered ? '#ec4899' : '#8b5cf6'}
+                    stroke={isHovered ? '#2dd4bf' : '#10b981'}
                     strokeWidth={isHovered ? '3.5' : '2.5'}
                     strokeDasharray="6,4"
                     markerEnd={isHovered ? 'url(#flow-arrowhead-active)' : 'url(#flow-arrowhead)'}
@@ -316,7 +316,7 @@ export const NodeGraphBoard: React.FC = () => {
               <path
                 d={generateBezierPath(pendingConn.startX, pendingConn.startY, pendingConn.currentX, pendingConn.currentY)}
                 fill="none"
-                stroke="#ec4899"
+                stroke="#2dd4bf"
                 strokeWidth="3"
                 strokeDasharray="4,4"
                 markerEnd="url(#flow-arrowhead-active)"
@@ -328,7 +328,7 @@ export const NodeGraphBoard: React.FC = () => {
           {/* ================= ESTADO VACÍO ================= */}
           {blocks.length === 0 && (
             <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center space-y-6 animate-fade-in z-20">
-              <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center shadow-xl shadow-purple-500/25 animate-bounce">
+              <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-emerald-600 to-teal-600 text-white flex items-center justify-center shadow-xl shadow-emerald-500/25 animate-bounce">
                 <Layers className="w-8 h-8" />
               </div>
 
@@ -346,10 +346,10 @@ export const NodeGraphBoard: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => addBlock('quiz_question', undefined, { x: 120, y: 180 })}
-                  className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-purple-500 text-left space-y-1 shadow-md hover:shadow-lg transition-all cursor-pointer group"
+                  className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:border-emerald-500 text-left space-y-1 shadow-md hover:shadow-lg transition-all cursor-pointer group"
                 >
                   <span className="text-base">❓</span>
-                  <h4 className="text-xs font-black text-slate-900 dark:text-white group-hover:text-purple-600">+ Pregunta Didáctica</h4>
+                  <h4 className="text-xs font-black text-slate-900 dark:text-white group-hover:text-emerald-500">+ Pregunta Didáctica</h4>
                   <p className="text-[10px] text-slate-500">Reactivo de evaluación inmediata.</p>
                 </button>
 
@@ -418,22 +418,22 @@ export const NodeGraphBoard: React.FC = () => {
                 title="Doble clic para configurar contenido"
                 className={`absolute top-0 left-0 rounded-3xl bg-white dark:bg-zinc-900 border-2 shadow-xl transition-shadow z-20 cursor-move ${
                   isSelected 
-                    ? 'border-purple-600 ring-4 ring-purple-500/20 shadow-purple-500/10' 
-                    : 'border-slate-200 dark:border-zinc-800 hover:border-purple-300'
+                    ? 'border-emerald-500 ring-4 ring-emerald-500/25 shadow-emerald-500/15' 
+                    : 'border-slate-200 dark:border-zinc-800 hover:border-emerald-400/50'
                 }`}
               >
                 {/* PUERTO DE ENTRADA (Izquierda) */}
                 <div 
-                  className="absolute -left-3 top-[70px] w-6 h-6 rounded-full bg-white dark:bg-zinc-900 border-2 border-purple-500 flex items-center justify-center shadow-md cursor-crosshair group port-handle z-30"
+                  className="absolute -left-3 top-[70px] w-6 h-6 rounded-full bg-white dark:bg-zinc-900 border-2 border-emerald-500 flex items-center justify-center shadow-md cursor-crosshair group port-handle z-30"
                   title="Puerto de Entrada (Recibe conexiones de nodos previos)"
                 >
-                  <div className="w-2 h-2 rounded-full bg-purple-500 group-hover:scale-150 transition-transform" />
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 group-hover:scale-150 transition-transform" />
                 </div>
 
                 {/* PUERTO DE SALIDA (Derecha - Jalar para conectar con flecha) */}
                 <div 
                   onMouseDown={(e) => handlePortMouseDown(e, block)}
-                  className="absolute -right-3 top-[70px] w-6 h-6 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 border-2 border-white dark:border-zinc-900 flex items-center justify-center shadow-md cursor-crosshair group port-handle hover:scale-125 transition-transform z-30"
+                  className="absolute -right-3 top-[70px] w-6 h-6 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-500 border-2 border-white dark:border-zinc-900 flex items-center justify-center shadow-md cursor-crosshair group port-handle hover:scale-125 transition-transform z-30"
                   title="Puerto de Salida: Haz clic y jala para conectar con el siguiente nodo"
                 >
                   <div className="w-2 h-2 rounded-full bg-white animate-ping" />
@@ -446,7 +446,7 @@ export const NodeGraphBoard: React.FC = () => {
                       <meta.icon className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
-                      <span className="text-[9px] font-black uppercase tracking-wider text-purple-600 dark:text-purple-400 block truncate">
+                      <span className="text-[9px] font-black uppercase tracking-wider text-teal-500 dark:text-teal-400 block truncate">
                         {meta.label}
                       </span>
                       <h4 className="text-xs font-black text-slate-900 dark:text-white truncate">
@@ -505,12 +505,12 @@ export const NodeGraphBoard: React.FC = () => {
                   )}
 
                   {block.type === 'drag_drop_match' && (
-                    <div className="p-2 rounded-xl bg-violet-50/70 dark:bg-violet-950/40 border border-violet-200/50 text-[11px] font-bold text-violet-700 dark:text-violet-300 flex items-center justify-between">
+                    <div className="p-2 rounded-xl bg-teal-50/70 dark:bg-teal-950/40 border border-teal-200/50 text-[11px] font-bold text-teal-700 dark:text-teal-300 flex items-center justify-between">
                       <span className="flex items-center gap-1.5 truncate">
-                        <Link2 className="w-3.5 h-3.5 shrink-0 text-violet-600" />
+                        <Link2 className="w-3.5 h-3.5 shrink-0 text-teal-600" />
                         <span>{block.data.pairs?.length || 4} Parejas Didácticas</span>
                       </span>
-                      <span className="text-[9px] bg-violet-200/80 dark:bg-violet-900/60 px-1.5 py-0.5 rounded-md shrink-0">
+                      <span className="text-[9px] bg-teal-200/80 dark:bg-teal-900/60 px-1.5 py-0.5 rounded-md shrink-0">
                         Conectar
                       </span>
                     </div>
@@ -565,7 +565,7 @@ export const NodeGraphBoard: React.FC = () => {
                       setSelectedBlockId(block.id);
                       setIsNodeConfigDrawerOpen(true);
                     }}
-                    className="px-2.5 py-1 rounded-xl bg-purple-50 dark:bg-purple-950/50 hover:bg-purple-100 text-purple-700 dark:text-purple-300 font-black flex items-center gap-1 cursor-pointer transition-colors"
+                    className="px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 font-black flex items-center gap-1 cursor-pointer transition-colors"
                   >
                     <Settings2 className="w-3 h-3" />
                     <span>Configurar</span>
@@ -586,7 +586,7 @@ export const NodeGraphBoard: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => duplicateBlock(block.id)}
-                      className="p-1 rounded-lg text-slate-400 hover:text-purple-600 cursor-pointer"
+                      className="p-1 rounded-lg text-slate-400 hover:text-emerald-500 cursor-pointer"
                       title="Duplicar Nodo"
                     >
                       <Copy className="w-3.5 h-3.5" />
@@ -614,7 +614,7 @@ export const NodeGraphBoard: React.FC = () => {
           type="button"
           onClick={() => setZoomLevel(Math.max(0.6, zoomLevel - 0.1))}
           title="Alejar Zoom (-)"
-          className="p-2 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-purple-100 dark:hover:bg-purple-950/60 text-slate-700 dark:text-zinc-200 font-bold transition-all cursor-pointer"
+          className="p-2 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 text-slate-700 dark:text-zinc-200 font-bold transition-all cursor-pointer"
         >
           <ZoomOut className="w-4 h-4" />
         </button>
@@ -623,7 +623,7 @@ export const NodeGraphBoard: React.FC = () => {
           type="button"
           onClick={() => setZoomLevel(1.0)}
           title="Restablecer Zoom al 100%"
-          className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-purple-100 dark:hover:bg-purple-950/60 text-[11px] font-black text-slate-800 dark:text-zinc-200 transition-all cursor-pointer min-w-[50px] text-center"
+          className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 text-[11px] font-black text-slate-800 dark:text-zinc-200 transition-all cursor-pointer min-w-[50px] text-center"
         >
           {Math.round(zoomLevel * 100)}%
         </button>
@@ -632,7 +632,7 @@ export const NodeGraphBoard: React.FC = () => {
           type="button"
           onClick={() => setZoomLevel(Math.min(1.4, zoomLevel + 0.1))}
           title="Acercar Zoom (+)"
-          className="p-2 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-purple-100 dark:hover:bg-purple-950/60 text-slate-700 dark:text-zinc-200 font-bold transition-all cursor-pointer"
+          className="p-2 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 text-slate-700 dark:text-zinc-200 font-bold transition-all cursor-pointer"
         >
           <ZoomIn className="w-4 h-4" />
         </button>
@@ -643,7 +643,7 @@ export const NodeGraphBoard: React.FC = () => {
           type="button"
           onClick={autoLayoutNodes}
           title="Auto-organizar Nodos en el tablero"
-          className="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/50 hover:bg-purple-100 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 font-bold transition-all cursor-pointer flex items-center gap-1 text-xs"
+          className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-bold transition-all cursor-pointer flex items-center gap-1 text-xs"
         >
           <Layers className="w-4 h-4" />
           <span className="hidden sm:inline font-black text-[11px]">Organizar</span>

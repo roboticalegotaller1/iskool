@@ -23,7 +23,7 @@ export default function QuestList({ quests, getQuestStatus, onQuestClick }: Ques
     <div className="w-full flex flex-col gap-6 bg-zinc-950/60 p-6 sm:p-8 rounded-3xl border border-zinc-900 shadow-2xl backdrop-blur-md relative overflow-hidden">
       
       {/* Decorative top grid effect */}
-      <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-purple-500/5 to-transparent pointer-events-none" />
+      <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-teal-500/10 to-transparent pointer-events-none" />
 
       {/* Stylized Video-game Header */}
       <div className="flex flex-col gap-1 relative z-10">
@@ -53,7 +53,7 @@ export default function QuestList({ quests, getQuestStatus, onQuestClick }: Ques
 
           // Select visual style based on status and quest type
           let itemBorderClass = 'border-zinc-800 hover:border-zinc-700 bg-zinc-900/30';
-          let hoverGlowClass = 'hover:shadow-[0_0_15px_rgba(168,85,247,0.15)] hover:border-purple-500/40 hover:scale-[1.005]';
+          let hoverGlowClass = 'hover:shadow-[0_0_15px_rgba(45,212,191,0.15)] hover:border-teal-500/40 hover:scale-[1.005]';
           let iconContainerClass = 'bg-zinc-950/60 text-zinc-400 border-zinc-800';
 
           if (isLocked) {
@@ -66,11 +66,11 @@ export default function QuestList({ quests, getQuestStatus, onQuestClick }: Ques
           } else if (isReading) {
             itemBorderClass = 'border-amber-500/40 bg-zinc-950/90 shadow-[0_0_20px_rgba(245,158,11,0.15)]';
             hoverGlowClass = 'hover:shadow-[0_0_25px_rgba(245,158,11,0.5)] hover:border-amber-400 hover:scale-[1.02] transition-all duration-300';
-            iconContainerClass = 'bg-gradient-to-tr from-amber-950/80 to-purple-950/80 text-amber-300 border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.3)]';
+            iconContainerClass = 'bg-gradient-to-tr from-amber-950/80 to-teal-950/80 text-amber-300 border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.3)]';
           } else if (isBoss) {
-            itemBorderClass = 'border-purple-500/30 bg-purple-950/10';
-            hoverGlowClass = 'hover:shadow-[0_0_18px_rgba(168,85,247,0.25)] hover:border-purple-500/50 hover:scale-[1.005]';
-            iconContainerClass = 'bg-purple-950/45 text-purple-400 border-purple-500/30 shadow-[0_0_10px_rgba(168,85,247,0.3)]';
+            itemBorderClass = 'border-teal-500/30 bg-teal-950/10';
+            hoverGlowClass = 'hover:shadow-[0_0_18px_rgba(45,212,191,0.25)] hover:border-teal-500/50 hover:scale-[1.005]';
+            iconContainerClass = 'bg-teal-950/45 text-teal-400 border-teal-500/30 shadow-[0_0_10px_rgba(45,212,191,0.3)]';
           } else {
             // Pending standard quest
             itemBorderClass = 'border-amber-500/40 bg-zinc-950/85';
@@ -122,7 +122,7 @@ export default function QuestList({ quests, getQuestStatus, onQuestClick }: Ques
                       </span>
                     )}
                     {isBoss && !isCompleted && (
-                      <span className="inline-flex items-center gap-1 text-[9px] font-extrabold px-2 py-0.5 rounded bg-purple-950/50 border border-purple-500/30 text-purple-400 animate-pulse">
+                      <span className="inline-flex items-center gap-1 text-[9px] font-extrabold px-2 py-0.5 rounded bg-teal-950/50 border border-teal-500/30 text-teal-400 animate-pulse">
                         ⚔️ JEFE DE NIVEL
                       </span>
                     )}
@@ -160,7 +160,7 @@ export default function QuestList({ quests, getQuestStatus, onQuestClick }: Ques
                       isCompleted
                         ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 border border-zinc-700/50'
                         : isBoss
-                          ? 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white shadow-md shadow-purple-500/25 border border-purple-400/20'
+                          ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black shadow-lg shadow-amber-500/30 border border-amber-400/40'
                           : 'bg-gradient-to-r from-amber-600 via-amber-500 to-amber-700 text-amber-100 shadow-[0_0_12px_rgba(245,158,11,0.45)] hover:shadow-[0_0_18px_rgba(245,158,11,0.75)] border border-amber-500/20'
                     }`}
                   >

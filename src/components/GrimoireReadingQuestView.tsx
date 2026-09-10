@@ -308,7 +308,7 @@ export const GrimoireReadingQuestView: React.FC<GrimoireReadingQuestViewProps> =
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-slate-950/90 backdrop-blur-xl overflow-y-auto animate-fade-in">
-      <div className="relative w-full max-w-4xl bg-gradient-to-b from-zinc-950 via-[#16121e] to-zinc-950 rounded-3xl border border-amber-500/30 shadow-[0_0_60px_rgba(245,158,11,0.18)] overflow-hidden flex flex-col my-auto max-h-[92vh]">
+      <div className="relative w-full max-w-4xl bg-gradient-to-b from-slate-950 via-slate-900 to-blue-950 rounded-3xl border border-amber-500/30 shadow-[0_0_60px_rgba(245,158,11,0.18)] overflow-hidden flex flex-col my-auto max-h-[92vh]">
         
         {/* Cabecera Mágica Superior con Barra de Maná */}
         <div className="p-4 sm:p-5 border-b border-amber-500/20 bg-zinc-950/80 flex flex-col gap-3 relative">
@@ -316,7 +316,7 @@ export const GrimoireReadingQuestView: React.FC<GrimoireReadingQuestViewProps> =
           {/* Adorno rúnico superior */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-amber-500 to-purple-600 flex items-center justify-center text-white shadow-md shadow-amber-500/20">
+              <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-amber-500 to-teal-600 flex items-center justify-center text-white shadow-md shadow-amber-500/20">
                 <Wand2 className="w-5 h-5 text-amber-200 animate-pulse" />
               </div>
               <div>
@@ -372,7 +372,7 @@ export const GrimoireReadingQuestView: React.FC<GrimoireReadingQuestViewProps> =
                       <FileText className="w-3.5 h-3.5" />
                       {wordCount} palabras
                     </span>
-                    <span className="flex items-center gap-1 text-purple-400">
+                    <span className="flex items-center gap-1 text-teal-400 font-black">
                       <Gauge className="w-3.5 h-3.5" />
                       ~{livePpm} PPM
                     </span>
@@ -387,7 +387,7 @@ export const GrimoireReadingQuestView: React.FC<GrimoireReadingQuestViewProps> =
                         ? 'bg-gradient-to-r from-red-600 via-rose-500 to-amber-500 shadow-[0_0_15px_rgba(244,63,94,0.7)]' 
                         : isMid 
                         ? 'bg-gradient-to-r from-amber-500 via-yellow-400 to-emerald-400' 
-                        : 'bg-gradient-to-r from-cyan-400 via-indigo-500 to-purple-600'
+                        : 'bg-gradient-to-r from-cyan-400 via-teal-500 to-emerald-500'
                     }`}
                     style={{ width: `${energyPercent}%` }}
                   >
@@ -423,7 +423,7 @@ export const GrimoireReadingQuestView: React.FC<GrimoireReadingQuestViewProps> =
 
                 <div className="pt-3 border-t border-amber-500/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-medium text-amber-300/70">
                   <span className="flex items-center gap-1.5">
-                    <Brain className="w-4 h-4 text-purple-400" />
+                    <Brain className="w-4 h-4 text-teal-400" />
                     Memoriza los detalles clave: el texto desaparecerá al iniciar la batalla.
                   </span>
 
@@ -446,7 +446,7 @@ export const GrimoireReadingQuestView: React.FC<GrimoireReadingQuestViewProps> =
             <div className="space-y-6 animate-fade-in">
               
               {/* Lienzo de Batalla Pixi.js (DataDrivenCombatCanvas) */}
-              <div className="rounded-3xl overflow-hidden border border-purple-500/40 shadow-2xl bg-zinc-950 relative">
+              <div className="rounded-3xl overflow-hidden border border-teal-500/40 shadow-2xl bg-slate-950 relative">
                 <DataDrivenCombatCanvas
                   payload={combatPayload}
                   localStudentId={activeStudentId}
@@ -458,7 +458,7 @@ export const GrimoireReadingQuestView: React.FC<GrimoireReadingQuestViewProps> =
 
               {/* Registro de Hechizos y Combate */}
               {battleLogs.length > 0 && (
-                <div className="p-3 rounded-2xl bg-zinc-950/80 border border-purple-900/50 text-xs font-mono text-purple-300 space-y-1 max-h-20 overflow-y-auto">
+                <div className="p-3 rounded-2xl bg-slate-950/80 border border-teal-900/50 text-xs font-mono text-teal-300 space-y-1 max-h-20 overflow-y-auto">
                   {battleLogs.slice(0, 3).map((log, idx) => (
                     <div key={idx} className="flex items-center gap-1.5 truncate">
                       <span>{log}</span>
@@ -472,8 +472,8 @@ export const GrimoireReadingQuestView: React.FC<GrimoireReadingQuestViewProps> =
                 <div className="p-5 sm:p-6 rounded-3xl bg-zinc-900/90 border border-amber-500/30 shadow-xl space-y-4">
                   
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-purple-950 text-purple-300 border border-purple-800 flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-purple-400" />
+                    <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-teal-950 text-teal-300 border border-teal-800 flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-teal-400" />
                       Conjuro de Retención {currentQIndex + 1} de {questions.length}
                     </span>
 
@@ -544,7 +544,7 @@ export const GrimoireReadingQuestView: React.FC<GrimoireReadingQuestViewProps> =
                         type="button"
                         onClick={handleNextCombatStep}
                         disabled={isSubmitting}
-                        className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-500 hover:to-indigo-500 text-white font-black text-xs shadow-lg shadow-purple-500/25 flex items-center gap-2 cursor-pointer transition-all transform active:scale-95"
+                        className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 border border-amber-400/40 flex items-center gap-2 cursor-pointer transition-all transform active:scale-95"
                       >
                         {isSubmitting ? (
                           <span>Canalizando Sabiduría...</span>
@@ -556,7 +556,7 @@ export const GrimoireReadingQuestView: React.FC<GrimoireReadingQuestViewProps> =
                         ) : (
                           <>
                             <span>¡Triunfar y Reclamar Recompensas!</span>
-                            <Trophy className="w-4 h-4 text-yellow-300" />
+                            <Trophy className="w-4 h-4 text-slate-950" />
                           </>
                         )}
                       </button>
@@ -571,11 +571,11 @@ export const GrimoireReadingQuestView: React.FC<GrimoireReadingQuestViewProps> =
 
           {/* ================= FASE 3: VICTORIA MÁGICA Y RECOMPENSAS ================= */}
           {phase === 'victory' && (
-            <div className="p-6 sm:p-8 text-center space-y-6 rounded-3xl bg-gradient-to-b from-purple-950/60 via-zinc-950 to-zinc-950 border-2 border-amber-500/40 shadow-2xl animate-scale-in">
+            <div className="p-6 sm:p-8 text-center space-y-6 rounded-3xl bg-gradient-to-b from-slate-900 via-blue-950 to-slate-950 border-2 border-amber-500/40 shadow-2xl animate-scale-in">
               
               {/* Emblema de Victoria */}
-              <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-400 via-purple-600 to-indigo-600 text-white flex items-center justify-center mx-auto shadow-2xl shadow-purple-500/40">
-                <Trophy className="w-10 h-10 text-yellow-200 animate-bounce" />
+              <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-400 via-yellow-500 to-amber-600 text-slate-950 flex items-center justify-center mx-auto shadow-2xl shadow-amber-500/40">
+                <Trophy className="w-10 h-10 text-slate-950 animate-bounce" />
               </div>
 
               <div className="space-y-2">
@@ -614,11 +614,11 @@ export const GrimoireReadingQuestView: React.FC<GrimoireReadingQuestViewProps> =
                 </div>
 
                 {/* XP Ganado */}
-                <div className="p-4 rounded-2xl bg-zinc-900/90 border border-purple-500/30 text-center shadow-lg">
-                  <span className="text-[10px] font-black text-purple-400 uppercase tracking-wider block">
+                <div className="p-4 rounded-2xl bg-zinc-900/90 border border-teal-500/30 text-center shadow-lg">
+                  <span className="text-[10px] font-black text-teal-400 uppercase tracking-wider block">
                     Experiencia
                   </span>
-                  <span className="text-lg font-black text-purple-200 mt-1 block">
+                  <span className="text-lg font-black text-teal-200 mt-1 block">
                     +{finalResult?.xp_earned || 80} XP
                   </span>
                 </div>

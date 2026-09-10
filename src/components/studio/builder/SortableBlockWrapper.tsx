@@ -62,10 +62,10 @@ export const BLOCK_META: Record<StudioBlockType, { label: string; icon: any; col
   quiz_question: {
     label: 'Pregunta de Opción Múltiple',
     icon: HelpCircle,
-    colorScheme: 'border-purple-200/90 dark:border-purple-900/60 shadow-purple-500/5',
-    badgeBg: 'bg-purple-100/90 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-200/60',
-    glow: 'hover:border-purple-400 dark:hover:border-purple-700 hover:shadow-purple-500/10',
-    color: 'from-purple-600 to-pink-600'
+    colorScheme: 'border-emerald-200/90 dark:border-emerald-900/60 shadow-emerald-500/5',
+    badgeBg: 'bg-emerald-100/90 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200/60',
+    glow: 'hover:border-emerald-400 dark:hover:border-emerald-700 hover:shadow-emerald-500/10',
+    color: 'from-emerald-600 to-teal-600'
   },
   timed_reading_block: {
     label: 'Lectura Cronometrada & PPM',
@@ -110,10 +110,10 @@ export const BLOCK_META: Record<StudioBlockType, { label: string; icon: any; col
   drag_drop_match: {
     label: 'Emparejamiento / Drag & Drop',
     icon: Link2,
-    colorScheme: 'border-violet-200/90 dark:border-violet-900/60 shadow-violet-500/5',
-    badgeBg: 'bg-violet-100/90 dark:bg-violet-950 text-violet-700 dark:text-violet-300 border-violet-200/60',
-    glow: 'hover:border-violet-400 dark:hover:border-violet-700 hover:shadow-violet-500/10',
-    color: 'from-violet-600 to-purple-600'
+    colorScheme: 'border-teal-200/90 dark:border-teal-900/60 shadow-teal-500/5',
+    badgeBg: 'bg-teal-100/90 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border-teal-200/60',
+    glow: 'hover:border-teal-400 dark:hover:border-teal-700 hover:shadow-teal-500/10',
+    color: 'from-teal-600 to-emerald-600'
   },
   ordering_sequence: {
     label: 'Ordenar Secuencia / Cronología',
@@ -134,10 +134,10 @@ export const BLOCK_META: Record<StudioBlockType, { label: string; icon: any; col
   open_poll_wordcloud: {
     label: 'Pregunta Abierta & Reflexión IA',
     icon: MessageSquare,
-    colorScheme: 'border-fuchsia-200/90 dark:border-fuchsia-900/60 shadow-fuchsia-500/5',
-    badgeBg: 'bg-fuchsia-100/90 dark:bg-fuchsia-950 text-fuchsia-700 dark:text-fuchsia-300 border-fuchsia-200/60',
-    glow: 'hover:border-fuchsia-400 dark:hover:border-fuchsia-700 hover:shadow-fuchsia-500/10',
-    color: 'from-fuchsia-600 to-pink-600'
+    colorScheme: 'border-cyan-200/90 dark:border-cyan-900/60 shadow-cyan-500/5',
+    badgeBg: 'bg-cyan-100/90 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300 border-cyan-200/60',
+    glow: 'hover:border-cyan-400 dark:hover:border-cyan-700 hover:shadow-cyan-500/10',
+    color: 'from-cyan-600 to-teal-600'
   },
   secret_code_puzzle: {
     label: 'Misterio & Código Secreto',
@@ -179,9 +179,9 @@ export const BLOCK_META: Record<StudioBlockType, { label: string; icon: any; col
   audio_sfx: {
     label: 'Audio / Ambientación',
     icon: Volume2,
-    colorScheme: 'border-violet-200/90 dark:border-violet-900/60 shadow-violet-500/5',
-    badgeBg: 'bg-violet-100/90 dark:bg-violet-950 text-violet-700 dark:text-violet-300 border-violet-200/60',
-    glow: 'hover:border-violet-400 dark:hover:border-violet-700 hover:shadow-violet-500/10'
+    colorScheme: 'border-teal-200/90 dark:border-teal-900/60 shadow-teal-500/5',
+    badgeBg: 'bg-teal-100/90 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border-teal-200/60',
+    glow: 'hover:border-teal-400 dark:hover:border-teal-700 hover:shadow-teal-500/10'
   },
   logic_challenge_interactive: {
     label: 'Reto de Lógica & Condiciones',
@@ -258,9 +258,9 @@ export const SortableBlockWrapper: React.FC<Props> = ({ block, index, totalBlock
       <div
         ref={setNodeRef}
         style={style}
-        className="w-full rounded-3xl border-2 border-dashed border-purple-500 bg-purple-50/60 dark:bg-purple-950/30 p-6 flex items-center justify-center gap-2.5 text-purple-700 dark:text-purple-300 font-black text-xs min-h-[90px] shadow-inner transition-all animate-pulse"
+        className="w-full rounded-3xl border-2 border-dashed border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/30 p-6 flex items-center justify-center gap-2.5 text-emerald-700 dark:text-emerald-300 font-black text-xs min-h-[90px] shadow-inner transition-all animate-pulse"
       >
-        <GripVertical className="w-4 h-4 text-purple-500" />
+        <GripVertical className="w-4 h-4 text-emerald-500" />
         <span>Soltar aquí: {block.title}</span>
       </div>
     );
@@ -271,7 +271,7 @@ export const SortableBlockWrapper: React.FC<Props> = ({ block, index, totalBlock
       ref={setNodeRef}
       style={style}
       className={`relative rounded-3xl transition-all duration-200 ${
-        isOver ? 'ring-2 ring-purple-500 ring-offset-2 dark:ring-offset-zinc-950 shadow-xl' : ''
+        isOver ? 'ring-2 ring-emerald-500 ring-offset-2 dark:ring-offset-zinc-950 shadow-xl' : ''
       }`}
     >
       <motion.div
@@ -283,7 +283,7 @@ export const SortableBlockWrapper: React.FC<Props> = ({ block, index, totalBlock
         onClick={() => setSelectedBlockId(block.id)}
         className={`w-full bg-white dark:bg-zinc-900 rounded-3xl border ${meta.colorScheme} ${meta.glow} ${
           isSelected
-            ? 'ring-2 ring-purple-500 shadow-xl shadow-purple-500/10 dark:shadow-purple-950/40'
+            ? 'ring-2 ring-emerald-500 shadow-xl shadow-emerald-500/10 dark:shadow-emerald-950/40'
             : 'shadow-sm hover:shadow-xl dark:shadow-zinc-950/50 hover:scale-[1.008]'
         } overflow-hidden transition-all duration-200 ease-out`}
       >
@@ -297,7 +297,7 @@ export const SortableBlockWrapper: React.FC<Props> = ({ block, index, totalBlock
               {...listeners}
               aria-label="Arrastra para reordenar"
               title="Arrastra para reordenar"
-              className="p-1.5 rounded-xl text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/60 cursor-grab active:cursor-grabbing hover:scale-110 active:scale-95 transition-all duration-150"
+              className="p-1.5 rounded-xl text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 cursor-grab active:cursor-grabbing hover:scale-110 active:scale-95 transition-all duration-150"
             >
               <GripVertical className="w-4 h-4" />
             </button>
@@ -323,7 +323,7 @@ export const SortableBlockWrapper: React.FC<Props> = ({ block, index, totalBlock
                   onBlur={() => setIsEditingTitle(false)}
                   onKeyDown={(e) => e.key === 'Enter' && setIsEditingTitle(false)}
                   onChange={(e) => updateBlockTitle(block.id, e.target.value)}
-                  className="px-2 py-0.5 text-xs font-bold bg-white dark:bg-zinc-800 border border-purple-400 rounded-lg text-slate-900 dark:text-white focus:outline-none shadow-sm"
+                  className="px-2 py-0.5 text-xs font-bold bg-white dark:bg-zinc-800 border border-emerald-400 rounded-lg text-slate-900 dark:text-white focus:outline-none shadow-sm"
                 />
                 <button
                   type="button"
@@ -340,7 +340,7 @@ export const SortableBlockWrapper: React.FC<Props> = ({ block, index, totalBlock
                   setIsEditingTitle(true);
                 }}
                 title="Clic para editar título"
-                className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate hover:text-purple-600 dark:hover:text-purple-400 cursor-pointer flex items-center gap-1 transition-colors"
+                className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer flex items-center gap-1 transition-colors"
               >
                 <span>{block.title}</span>
                 <Edit3 className="w-3 h-3 text-slate-400 opacity-60 hover:opacity-100 transition-opacity" />
@@ -360,7 +360,7 @@ export const SortableBlockWrapper: React.FC<Props> = ({ block, index, totalBlock
               }}
               aria-label="Mover bloque hacia arriba"
               title="Mover arriba"
-              className="p-1 rounded-lg text-slate-400 hover:text-purple-600 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-zinc-750 disabled:opacity-30 cursor-pointer hover:scale-110 active:scale-90 transition-all"
+              className="p-1 rounded-lg text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-zinc-750 disabled:opacity-30 cursor-pointer hover:scale-110 active:scale-90 transition-all"
             >
               <ArrowUp className="w-3.5 h-3.5" />
             </button>
@@ -373,7 +373,7 @@ export const SortableBlockWrapper: React.FC<Props> = ({ block, index, totalBlock
               }}
               aria-label="Mover bloque hacia abajo"
               title="Mover abajo"
-              className="p-1 rounded-lg text-slate-400 hover:text-purple-600 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-zinc-750 disabled:opacity-30 cursor-pointer hover:scale-110 active:scale-90 transition-all"
+              className="p-1 rounded-lg text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-zinc-750 disabled:opacity-30 cursor-pointer hover:scale-110 active:scale-90 transition-all"
             >
               <ArrowDown className="w-3.5 h-3.5" />
             </button>
@@ -387,7 +387,7 @@ export const SortableBlockWrapper: React.FC<Props> = ({ block, index, totalBlock
               }}
               aria-label="Duplicar bloque"
               title="Duplicar bloque"
-              className="p-1.5 rounded-lg text-slate-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950/60 hover:scale-110 active:scale-90 transition-all cursor-pointer"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:scale-110 active:scale-90 transition-all cursor-pointer"
             >
               <Copy className="w-3.5 h-3.5" />
             </button>

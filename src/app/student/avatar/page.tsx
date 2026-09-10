@@ -29,7 +29,7 @@ export default function AvatarCustomizerPage() {
   const isItemUnlocked = (itemId: string) => {
     const defaults = [
       'classic', 'happy', 'space_suit', 'nebula', 'explorer', 'forest', 'spiky',
-      'wizard_hat', 'purple', 'eyes', 'hair', 'outfit', 'background', 'standard',
+      'wizard_hat', 'purple', 'teal', 'eyes', 'hair', 'outfit', 'background', 'standard',
       'pale', 'medium', 'dark', 'pink', 'brown', 'yellow', 'black', 'blue',
       'red', 'silver', 'orange', 'green', 'light', 'elf', 'cat', 'horns', 'mask',
       'guerrero', 'mago', 'ninja', 'curador', 'domador', 'cazador', 'reptil',
@@ -208,7 +208,7 @@ export default function AvatarCustomizerPage() {
     { id: 'blue', label: 'Místico', color: '#3B82F6' },
     { id: 'red', label: 'Fuego', color: '#EF4444' },
     { id: 'silver', label: 'Platinado', color: '#D1D5DB' },
-    { id: 'purple', label: 'Púrpura', color: '#8B5CF6' },
+    { id: 'teal', label: 'Turquesa Épico', color: '#2DD4BF' },
     { id: 'orange', label: 'Zorro', color: '#F97316' },
     { id: 'green', label: 'Bosque', color: '#10B981' }
   ];
@@ -228,26 +228,26 @@ export default function AvatarCustomizerPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-purple-600 selection:text-white pb-12">
+    <div className="min-h-screen bg-slate-900 text-zinc-100 flex flex-col font-sans selection:bg-emerald-600 selection:text-white pb-12">
       <Header />
       
       {/* Background ambient stars */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.12),rgba(255,255,255,0))] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(16,185,129,0.12),rgba(255,255,255,0))] pointer-events-none" />
 
-      <main className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 mt-6 flex-1 flex flex-col gap-6 relative z-10">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6 relative z-10">
         
-        {/* Navigation Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <button 
+        {/* Navigation / Back */}
+        <div className="flex items-center justify-between">
+          <button
             onClick={handleCancel}
-            className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-sm font-semibold group self-start"
+            className="group flex items-center gap-2 text-xs font-bold text-zinc-400 hover:text-white transition-colors bg-zinc-900/60 hover:bg-zinc-800 px-4 py-2 rounded-xl border border-zinc-800/80 backdrop-blur-md"
           >
             <ChevronLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
             {academicLevel.backButtonLabel}
           </button>
           
           <div className="flex items-center gap-2.5 flex-wrap">
-            <span className="bg-purple-500/15 border border-purple-500/30 text-purple-400 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 animate-pulse cursor-default select-none">
+            <span className="bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 animate-pulse cursor-default select-none">
               <Sparkles className="h-3.5 w-3.5" /> {academicLevel.tagLabel}
             </span>
             <span className="bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 px-3 py-1.5 rounded-lg text-xs font-bold tracking-wide flex items-center gap-1.5 cursor-default select-none">
@@ -258,7 +258,7 @@ export default function AvatarCustomizerPage() {
 
         {/* Title */}
         <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-purple-400 via-indigo-200 to-cyan-300 bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 via-teal-200 to-cyan-300 bg-clip-text text-transparent">
             {academicLevel.avatarTitle}
           </h1>
           <p className="text-zinc-400 text-xs sm:text-sm mt-1">{academicLevel.avatarSubtitle}</p>
@@ -276,7 +276,7 @@ export default function AvatarCustomizerPage() {
                 onClick={() => handleOptionChange(setActiveSection, 'base')}
                 className={`flex-1 py-3 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 ${
                   activeSection === 'base'
-                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/35'
+                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-950/40'
                     : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
                 }`}
               >
@@ -287,7 +287,7 @@ export default function AvatarCustomizerPage() {
                 onClick={() => handleOptionChange(setActiveSection, 'clase')}
                 className={`flex-1 py-3 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 ${
                   activeSection === 'clase'
-                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/35'
+                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-950/40'
                     : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
                 }`}
               >
@@ -298,7 +298,7 @@ export default function AvatarCustomizerPage() {
                 onClick={() => handleOptionChange(setActiveSection, 'cabeza')}
                 className={`flex-1 py-3 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 ${
                   activeSection === 'cabeza'
-                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/35'
+                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-950/40'
                     : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
                 }`}
               >
@@ -309,7 +309,7 @@ export default function AvatarCustomizerPage() {
                 onClick={() => handleOptionChange(setActiveSection, 'cabello')}
                 className={`flex-1 py-3 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 ${
                   activeSection === 'cabello'
-                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/35'
+                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-950/40'
                     : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
                 }`}
               >
@@ -327,7 +327,7 @@ export default function AvatarCustomizerPage() {
                   
                   {/* Sexo / Gender */}
                   <div>
-                    <h3 className="text-sm font-black uppercase text-purple-400 tracking-wider mb-3 flex items-center gap-1.5">
+                    <h3 className="text-sm font-black uppercase text-emerald-400 tracking-wider mb-3 flex items-center gap-1.5">
                       <span>👤</span> Sexo del Personaje
                     </h3>
                     <div className="grid grid-cols-2 gap-4">
@@ -337,7 +337,7 @@ export default function AvatarCustomizerPage() {
                           onClick={() => handleOptionChange(setGender, opt.id as any)}
                           className={`group p-4 rounded-2xl border text-left transition-all duration-300 relative overflow-hidden flex items-center gap-4 ${
                             gender === opt.id
-                              ? 'border-purple-500 bg-purple-950/20 text-white shadow-md'
+                              ? 'border-emerald-500 bg-emerald-950/20 text-white shadow-md'
                               : 'border-zinc-800 bg-zinc-900/30 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                           }`}
                         >
@@ -347,7 +347,7 @@ export default function AvatarCustomizerPage() {
                             <p className="text-[10px] text-zinc-500">{opt.desc}</p>
                           </div>
                           {gender === opt.id && (
-                            <div className="absolute right-4 top-4 bg-purple-500 text-white rounded-full p-0.5">
+                            <div className="absolute right-4 top-4 bg-emerald-500 text-white rounded-full p-0.5">
                               <Check className="h-3.5 w-3.5" />
                             </div>
                           )}
@@ -360,7 +360,7 @@ export default function AvatarCustomizerPage() {
 
                   {/* Tono de Piel */}
                   <div>
-                    <h3 className="text-sm font-black uppercase text-purple-400 tracking-wider mb-3 flex items-center gap-1.5">
+                    <h3 className="text-sm font-black uppercase text-emerald-400 tracking-wider mb-3 flex items-center gap-1.5">
                       <span>🎨</span> Tono de Piel
                     </h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -370,7 +370,7 @@ export default function AvatarCustomizerPage() {
                           onClick={() => handleOptionChange(setSkinTone, opt.id)}
                           className={`p-3 rounded-2xl border flex items-center gap-3 text-left transition-all duration-300 ${
                             skinTone === opt.id
-                              ? 'border-purple-500 bg-purple-950/20 text-white shadow-md'
+                              ? 'border-emerald-500 bg-emerald-950/20 text-white shadow-md'
                               : 'border-zinc-800 bg-zinc-900/30 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                           }`}
                         >
@@ -382,7 +382,7 @@ export default function AvatarCustomizerPage() {
                             <p className="font-bold text-xs">{opt.label}</p>
                           </div>
                           {skinTone === opt.id && (
-                            <span className="ml-auto text-purple-400">
+                            <span className="ml-auto text-emerald-400">
                               <Check className="h-4 w-4" />
                             </span>
                           )}
@@ -397,7 +397,7 @@ export default function AvatarCustomizerPage() {
               {/* SECTION 2: CLASE Y VESTIMENTA */}
               {activeSection === 'clase' && (
                 <div className="flex flex-col gap-4 animate-fade-in">
-                  <h3 className="text-sm font-black uppercase text-purple-400 tracking-wider mb-1 flex items-center gap-1.5">
+                  <h3 className="text-sm font-black uppercase text-emerald-400 tracking-wider mb-1 flex items-center gap-1.5">
                     <span>🧙‍♂️</span> Clase del Héroe
                   </h3>
                   <p className="text-zinc-400 text-[11px] mb-3">La clase determina tu armadura de batalla, tu báculo o arma especial y tu acompañante.</p>
@@ -412,7 +412,7 @@ export default function AvatarCustomizerPage() {
                           onClick={() => handleOptionChange(setRpgClass, opt.id)}
                           className={`group p-3.5 rounded-2xl border text-left transition-all duration-300 relative overflow-hidden flex items-start gap-3.5 ${
                             rpgClass === opt.id
-                              ? 'border-purple-500 bg-purple-950/20 text-white shadow-md font-bold'
+                              ? 'border-emerald-500 bg-emerald-950/20 text-white shadow-md font-bold'
                               : unlocked
                                 ? 'border-zinc-800 bg-zinc-900/30 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                                 : 'border-zinc-900 bg-zinc-950/20 text-zinc-650 cursor-not-allowed opacity-50'
@@ -428,7 +428,7 @@ export default function AvatarCustomizerPage() {
                             <p className="text-[10px] text-zinc-500 mt-0.5 leading-relaxed">{opt.desc}</p>
                           </div>
                           {rpgClass === opt.id && (
-                            <div className="absolute right-3 top-3 bg-purple-500 text-white rounded-full p-0.5">
+                            <div className="absolute right-3 top-3 bg-emerald-500 text-white rounded-full p-0.5">
                               <Check className="h-3 w-3" />
                             </div>
                           )}
@@ -442,7 +442,7 @@ export default function AvatarCustomizerPage() {
               {/* SECTION 3: CABEZA Y ACCESORIOS */}
               {activeSection === 'cabeza' && (
                 <div className="flex flex-col gap-4 animate-fade-in">
-                  <h3 className="text-sm font-black uppercase text-purple-400 tracking-wider mb-1 flex items-center gap-1.5">
+                  <h3 className="text-sm font-black uppercase text-emerald-400 tracking-wider mb-1 flex items-center gap-1.5">
                     <span>👑</span> Forma de la Cabeza y Orejas
                   </h3>
                   <p className="text-zinc-400 text-[11px] mb-3">Dale un aspecto mitológico o ninja a las orejas y accesorios del rostro.</p>
@@ -457,7 +457,7 @@ export default function AvatarCustomizerPage() {
                           onClick={() => handleOptionChange(setHeadType, opt.id)}
                           className={`group p-3.5 rounded-2xl border text-left transition-all duration-300 relative overflow-hidden flex items-start gap-3.5 ${
                             headType === opt.id
-                              ? 'border-purple-500 bg-purple-950/20 text-white shadow-md font-bold'
+                              ? 'border-emerald-500 bg-emerald-950/20 text-white shadow-md font-bold'
                               : unlocked
                                 ? 'border-zinc-800 bg-zinc-900/30 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                                 : 'border-zinc-900 bg-zinc-950/20 text-zinc-650 cursor-not-allowed opacity-50'
@@ -473,7 +473,7 @@ export default function AvatarCustomizerPage() {
                             <p className="text-[10px] text-zinc-500 mt-0.5 leading-relaxed">{opt.desc}</p>
                           </div>
                           {headType === opt.id && (
-                            <div className="absolute right-3 top-3 bg-purple-500 text-white rounded-full p-0.5">
+                            <div className="absolute right-3 top-3 bg-emerald-500 text-white rounded-full p-0.5">
                               <Check className="h-3 w-3" />
                             </div>
                           )}
@@ -490,7 +490,7 @@ export default function AvatarCustomizerPage() {
                   
                   {/* Tipos de Cabello (10 Options) */}
                   <div>
-                    <h3 className="text-sm font-black uppercase text-purple-400 tracking-wider mb-1 flex items-center gap-1.5">
+                    <h3 className="text-sm font-black uppercase text-emerald-400 tracking-wider mb-1 flex items-center gap-1.5">
                       <span>💈</span> Estilo de Peinado
                     </h3>
                     <p className="text-zinc-400 text-[11px] mb-3">Elige entre 10 peinados de fantasía y corte anime medieval.</p>
@@ -505,7 +505,7 @@ export default function AvatarCustomizerPage() {
                             onClick={() => handleOptionChange(setHairStyle, opt.id)}
                             className={`p-2.5 rounded-xl border text-left transition-all duration-300 relative overflow-hidden flex items-center gap-2 ${
                               hairStyle === opt.id
-                                ? 'border-purple-500 bg-purple-950/20 text-white font-bold'
+                                ? 'border-emerald-500 bg-emerald-950/20 text-white font-bold'
                                 : unlocked
                                   ? 'border-zinc-800 bg-zinc-900/30 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                                   : 'border-zinc-900 bg-zinc-950/20 text-zinc-650 cursor-not-allowed opacity-50'
@@ -515,7 +515,7 @@ export default function AvatarCustomizerPage() {
                             {!unlocked && <Lock className="h-3 w-3 text-zinc-500 flex-shrink-0" />}
                             <span className="text-sm font-bold truncate">{opt.label}</span>
                             {hairStyle === opt.id && (
-                              <span className="ml-auto text-purple-400">
+                              <span className="ml-auto text-emerald-400">
                                 <Check className="h-3.5 w-3.5" />
                               </span>
                             )}
@@ -529,7 +529,7 @@ export default function AvatarCustomizerPage() {
 
                   {/* Color de Cabello */}
                   <div>
-                    <h3 className="text-sm font-black uppercase text-purple-400 tracking-wider mb-3 flex items-center gap-1.5">
+                    <h3 className="text-sm font-black uppercase text-emerald-400 tracking-wider mb-3 flex items-center gap-1.5">
                       <span>🎨</span> Color de Cabello Tinturado
                     </h3>
                     <div className="flex flex-wrap gap-2.5">
@@ -539,7 +539,7 @@ export default function AvatarCustomizerPage() {
                           onClick={() => handleOptionChange(setHairColor, opt.id)}
                           className={`h-9 w-9 rounded-full border flex items-center justify-center transition-all duration-300 relative hover:scale-105 active:scale-95 ${
                             hairColor === opt.id
-                              ? 'border-white ring-2 ring-purple-500 scale-105'
+                              ? 'border-white ring-2 ring-emerald-500 scale-105'
                               : 'border-zinc-800 ring-0 hover:border-zinc-500'
                           }`}
                           style={{ backgroundColor: opt.color }}
@@ -571,7 +571,7 @@ export default function AvatarCustomizerPage() {
               
               <button
                 onClick={handleSave}
-                className="flex-1 py-3.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-500 hover:to-indigo-500 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all duration-300 shadow-lg shadow-purple-950/20 active:scale-95 flex items-center justify-center gap-2 border border-purple-500/30"
+                className="flex-1 py-3.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 rounded-2xl text-xs font-black uppercase tracking-wider transition-all duration-300 shadow-lg shadow-amber-500/30 active:scale-95 flex items-center justify-center gap-2 border border-amber-400/40 cursor-pointer"
               >
                 <Save className="h-4 w-4" />
                 Guardar y {academicLevel.backButtonLabel}
@@ -613,7 +613,7 @@ export default function AvatarCustomizerPage() {
                 
                 {/* Preview Info Tag */}
                 <div className="flex justify-between items-center bg-zinc-950/60 backdrop-blur-md rounded-xl p-3 border border-zinc-800/80">
-                  <span className="text-[10px] font-black uppercase text-purple-400 tracking-widest flex items-center gap-1.5">
+                  <span className="text-[10px] font-black uppercase text-emerald-400 tracking-widest flex items-center gap-1.5">
                     <Eye className="h-3.5 w-3.5" /> Vista Previa
                   </span>
                   
@@ -625,7 +625,7 @@ export default function AvatarCustomizerPage() {
                 {/* Central Sprite Container */}
                 <div className="flex-1 flex items-center justify-center my-6 relative min-h-[220px]">
                   {/* Aura Effect */}
-                  <div className="absolute h-40 w-40 rounded-full bg-purple-500/10 blur-3xl animate-pulse" />
+                  <div className="absolute h-40 w-40 rounded-full bg-emerald-500/15 blur-3xl animate-pulse" />
                   
                   {/* The anime sprite */}
                   <div className="h-48 w-48 relative filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)] transform hover:scale-105 transition-transform duration-500">
@@ -644,14 +644,14 @@ export default function AvatarCustomizerPage() {
 
                 {/* Name Input Box */}
                 <div className="bg-zinc-950/70 border border-zinc-800/80 rounded-2xl p-4 backdrop-blur-md flex flex-col gap-2">
-                  <label className="text-[10px] font-black text-purple-400 uppercase tracking-widest block">
+                  <label className="text-[10px] font-black text-emerald-400 uppercase tracking-widest block">
                     Nombre del Avatar
                   </label>
                   <input
                     type="text"
                     value={avatarName}
                     onChange={(e) => setAvatarName(e.target.value)}
-                    className="w-full font-bold text-lg bg-zinc-900 border border-zinc-800 hover:border-zinc-700 focus:border-purple-500 focus:outline-none text-zinc-100 rounded-xl px-4 py-2 text-center"
+                    className="w-full font-bold text-lg bg-zinc-900 border border-zinc-800 hover:border-zinc-700 focus:border-emerald-500 focus:outline-none text-zinc-100 rounded-xl px-4 py-2 text-center"
                     placeholder="Escribe el nombre de tu avatar..."
                   />
                   <p className="text-[10px] text-zinc-500 text-center">

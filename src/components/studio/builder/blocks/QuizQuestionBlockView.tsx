@@ -91,7 +91,7 @@ export const QuizQuestionBlockView: React.FC<Props> = ({ block }) => {
           value={question}
           onChange={(e) => updateBlockData(block.id, { question: e.target.value })}
           placeholder="Escribe la pregunta o problema a resolver..."
-          className="w-full px-3.5 py-2.5 rounded-2xl text-sm font-semibold bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 dark:text-white placeholder:text-slate-400 resize-y"
+          className="w-full px-3.5 py-2.5 rounded-2xl text-sm font-semibold bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white placeholder:text-slate-400 resize-y"
         />
       </div>
 
@@ -101,7 +101,7 @@ export const QuizQuestionBlockView: React.FC<Props> = ({ block }) => {
           <button
             type="button"
             onClick={() => setShowImageInput(!showImageInput)}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-purple-600 dark:text-purple-400 hover:underline cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
           >
             <ImageIcon className="w-3.5 h-3.5" />
             <span>{showImageInput ? 'Ocultar Imagen' : '+ Agregar Imagen o Gráfico'}</span>
@@ -127,10 +127,10 @@ export const QuizQuestionBlockView: React.FC<Props> = ({ block }) => {
                   value={imageUrl || ''}
                   onChange={(e) => updateBlockData(block.id, { imageUrl: e.target.value })}
                   placeholder="Pega la URL de una imagen..."
-                  className="w-full pl-8 pr-3 py-1.5 rounded-xl text-xs bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full pl-8 pr-3 py-1.5 rounded-xl text-xs bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
-              <label className="px-3 py-1.5 rounded-xl text-xs font-bold bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-300 border border-purple-200/50 hover:bg-purple-100 flex items-center gap-1.5 cursor-pointer shrink-0">
+              <label className="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 flex items-center gap-1.5 cursor-pointer shrink-0">
                 <Upload className="w-3.5 h-3.5" />
                 <span>Subir Archivo</span>
                 <input
@@ -243,7 +243,7 @@ export const QuizQuestionBlockView: React.FC<Props> = ({ block }) => {
           <button
             type="button"
             onClick={handleAddOption}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 border border-purple-200/50 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200/50 dark:border-emerald-800/50 transition-all cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Añadir otra opción ({options.length}/6)</span>
@@ -262,7 +262,7 @@ export const QuizQuestionBlockView: React.FC<Props> = ({ block }) => {
           value={explanation || ''}
           onChange={(e) => updateBlockData(block.id, { explanation: e.target.value })}
           placeholder="Explica por qué la respuesta correcta es la adecuada para que el alumno aprenda..."
-          className="w-full px-3.5 py-2 rounded-xl text-xs font-medium bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-800 dark:text-zinc-200"
+          className="w-full px-3.5 py-2 rounded-xl text-xs font-medium bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 dark:text-zinc-200"
         />
       </div>
     </div>

@@ -135,12 +135,12 @@ export const NodeConfigDrawer: React.FC = () => {
           {/* Cabecera del Panel */}
           <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between gap-3 bg-slate-50/80 dark:bg-zinc-850/80">
             <div className="flex items-center gap-3 min-w-0">
-              <div className={`w-10 h-10 rounded-2xl bg-gradient-to-tr ${meta.color || 'from-purple-600 to-indigo-600'} flex items-center justify-center text-white shrink-0 shadow-md`}>
+              <div className={`w-10 h-10 rounded-2xl bg-gradient-to-tr ${meta.color || 'from-emerald-600 to-teal-600'} flex items-center justify-center text-white shrink-0 shadow-md`}>
                 <meta.icon className="w-5 h-5" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-teal-500 dark:text-teal-400">
                     {meta.label}
                   </span>
                   {isStart && (
@@ -154,7 +154,7 @@ export const NodeConfigDrawer: React.FC = () => {
                   type="text"
                   value={selectedBlock.title}
                   onChange={(e) => updateBlockTitle(selectedBlock.id, e.target.value)}
-                  className="text-sm font-black text-slate-900 dark:text-white bg-transparent border-b border-transparent hover:border-slate-300 dark:hover:border-zinc-700 focus:border-purple-500 focus:outline-none w-full transition-colors"
+                  className="text-sm font-black text-slate-900 dark:text-white bg-transparent border-b border-transparent hover:border-slate-300 dark:hover:border-zinc-700 focus:border-emerald-500 focus:outline-none w-full transition-colors"
                   placeholder="Título del nodo..."
                 />
               </div>
@@ -200,9 +200,9 @@ export const NodeConfigDrawer: React.FC = () => {
                     {outgoingConnections.map((conn) => {
                       const target = blocks.find(b => b.id === conn.targetNodeId);
                       return (
-                        <div key={conn.id} className="flex items-center justify-between p-2.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-xs">
-                          <span className="font-bold text-purple-900 dark:text-purple-200 flex items-center gap-1.5">
-                            <ArrowRight className="w-3.5 h-3.5 text-purple-600" />
+                        <div key={conn.id} className="flex items-center justify-between p-2.5 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 text-xs">
+                          <span className="font-bold text-teal-900 dark:text-teal-200 flex items-center gap-1.5">
+                            <ArrowRight className="w-3.5 h-3.5 text-teal-600" />
                             <span>{target?.title || 'Nodo Destino'}</span>
                           </span>
                           <button
@@ -233,7 +233,7 @@ export const NodeConfigDrawer: React.FC = () => {
                         }
                       }}
                       defaultValue=""
-                      className="w-full text-xs p-2 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 font-bold focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="w-full text-xs p-2 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     >
                       <option value="" disabled>+ Conectar flecha con otro nodo...</option>
                       {availableTargetNodes.map((n) => (
@@ -283,7 +283,7 @@ export const NodeConfigDrawer: React.FC = () => {
                   duplicateBlock(selectedBlock.id);
                   setIsNodeConfigDrawerOpen(false);
                 }}
-                className="p-2 rounded-xl text-slate-500 hover:text-purple-600 cursor-pointer"
+                className="p-2 rounded-xl text-slate-500 hover:text-emerald-600 cursor-pointer"
                 title="Duplicar Nodo"
               >
                 <Copy className="w-4 h-4" />
@@ -305,9 +305,9 @@ export const NodeConfigDrawer: React.FC = () => {
             <button
               type="button"
               onClick={handleAttemptClose}
-              className="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-xs shadow-md shadow-purple-500/25 flex items-center gap-1.5 transition-all cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 border border-amber-400/40 flex items-center gap-1.5 transition-all cursor-pointer"
             >
-              <Check className="w-4 h-4" />
+              <Check className="w-4 h-4 text-slate-950 font-black" />
               <span>Guardar & Cerrar</span>
             </button>
           </div>

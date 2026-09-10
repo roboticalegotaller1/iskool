@@ -533,7 +533,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
         {/* Resumen de Recompensas */}
         <div className="grid grid-cols-3 gap-3 max-w-sm mx-auto p-4 rounded-2xl bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750">
           <div className="text-center">
-            <span className="text-xs font-black text-purple-600 dark:text-purple-400">
+            <span className="text-xs font-black text-emerald-500 dark:text-emerald-400">
               +{accumulatedXp}
             </span>
             <p className="text-[9px] font-bold uppercase text-slate-400">XP Ganada</p>
@@ -572,7 +572,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 text-white font-black text-xs shadow-lg shadow-purple-500/25 flex items-center gap-1.5 transition-all transform active:scale-95 cursor-pointer"
+              className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 border border-amber-400/40 flex items-center gap-1.5 transition-all transform active:scale-95 cursor-pointer"
             >
               <Check className="w-4 h-4" />
               <span>Finalizar y Volver al Estudio</span>
@@ -591,12 +591,12 @@ export const StudioFlowPlayer: React.FC<Props> = ({
       <div className="flex items-center justify-between gap-4 p-3 rounded-2xl bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750">
         {/* Progreso */}
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          <span className="text-[10px] font-black uppercase text-purple-600 dark:text-purple-400 shrink-0">
+          <span className="text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400 shrink-0">
             Paso {currentStepIndex + 1}/{blocks.length}
           </span>
           <div className="w-full bg-slate-200 dark:bg-zinc-700 h-2 rounded-full overflow-hidden">
             <div 
-              className="bg-gradient-to-r from-purple-500 to-indigo-600 h-full transition-all duration-300 rounded-full"
+              className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full transition-all duration-300 rounded-full"
               style={{ width: `${Math.max(10, progressPercent)}%` }}
             />
           </div>
@@ -604,8 +604,8 @@ export const StudioFlowPlayer: React.FC<Props> = ({
 
         {/* Métricas en Vivo */}
         <div className="flex items-center gap-3 shrink-0">
-          <div className="flex items-center gap-1 text-purple-600 dark:text-purple-400 font-black text-xs">
-            <Sparkles className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-black text-xs">
+            <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
             <span>+{accumulatedXp} XP</span>
           </div>
 
@@ -796,7 +796,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                           ? 'bg-rose-600 shadow-rose-500/30 animate-pulse' 
                           : readingSecondsLeft <= 25 
                           ? 'bg-amber-600 shadow-amber-500/25' 
-                          : 'bg-purple-600 shadow-purple-500/20 animate-pulse'
+                          : 'bg-teal-600 shadow-teal-500/20 animate-pulse'
                       }`}>
                         <Clock className="w-3.5 h-3.5" />
                         {readingSecondsLeft}s
@@ -822,7 +822,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                               ? 'text-rose-600 dark:text-rose-400 animate-pulse' 
                               : isMidTime
                               ? 'text-amber-600 dark:text-amber-400'
-                              : 'text-purple-600 dark:text-purple-400'
+                              : 'text-teal-600 dark:text-teal-400'
                           }`}>
                             <Clock className={`w-3.5 h-3.5 ${isLowTime ? 'animate-spin' : ''}`} />
                             <span>Tiempo Restante: <strong>{readingSecondsLeft}s</strong> / {timeLimit}s</span>
@@ -841,7 +841,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                                 ? 'bg-gradient-to-r from-red-600 via-rose-500 to-amber-500 shadow-[0_0_12px_rgba(239,68,68,0.6)]'
                                 : isMidTime
                                 ? 'bg-gradient-to-r from-amber-500 via-yellow-400 to-emerald-500'
-                                : 'bg-gradient-to-r from-purple-600 via-indigo-500 to-cyan-400'
+                                : 'bg-gradient-to-r from-teal-500 via-emerald-400 to-cyan-400'
                             }`}
                             style={{ width: `${timePercent}%` }}
                           >
@@ -852,7 +852,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
 
                       <div className="p-5 rounded-3xl bg-white dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 shadow-sm space-y-3">
                         <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 border-b border-slate-100 dark:border-zinc-800 pb-2">
-                          <span className="flex items-center gap-1 text-purple-600 dark:text-purple-400">
+                          <span className="flex items-center gap-1 text-teal-600 dark:text-teal-400">
                             <Gauge className="w-3.5 h-3.5" />
                             Lee con atención y concentración
                           </span>
@@ -881,8 +881,8 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                 {/* Fase 2: Preguntas de comprensión */}
                 {readingPhase === 'questions' && (
                   <div className="space-y-4">
-                    <div className="p-3 bg-purple-50 dark:bg-purple-950/40 rounded-2xl border border-purple-200/60 dark:border-purple-800/60 text-xs font-bold text-purple-800 dark:text-purple-200 flex items-center gap-2">
-                      <Target className="w-4 h-4 text-purple-600" />
+                    <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl border border-emerald-200/60 dark:border-emerald-800/60 text-xs font-bold text-emerald-800 dark:text-emerald-200 flex items-center gap-2">
+                      <Target className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                       <span>Responde las preguntas para evaluar tu nivel de comprensión lectora:</span>
                     </div>
 
@@ -893,7 +893,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                           className="p-4 rounded-2xl bg-white dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 shadow-2xs space-y-2.5"
                         >
                           <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
-                            <span className="w-5 h-5 rounded-lg bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 text-[10px] font-black flex items-center justify-center">
+                            <span className="w-5 h-5 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-black flex items-center justify-center">
                               {qIdx + 1}
                             </span>
                             {q.question}
@@ -911,12 +911,12 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                                   onClick={() => handleSelectQuestionOption(q.id, optIdx)}
                                   className={`p-2.5 rounded-xl border text-left text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
                                     isSelected
-                                      ? 'bg-purple-600 text-white border-purple-700 shadow-sm shadow-purple-500/20'
-                                      : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 hover:border-purple-300'
+                                      ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm shadow-emerald-500/20'
+                                      : 'bg-slate-50 dark:bg-zinc-800 border-slate-200 dark:border-zinc-750 text-slate-800 dark:text-zinc-200 hover:border-emerald-300'
                                   }`}
                                 >
                                   <span className={`w-5 h-5 rounded-md text-[10px] font-black flex items-center justify-center ${
-                                    isSelected ? 'bg-white text-purple-700' : 'bg-slate-200 dark:bg-zinc-700 text-slate-600 dark:text-zinc-400'
+                                    isSelected ? 'bg-white text-emerald-700' : 'bg-slate-200 dark:bg-zinc-700 text-slate-600 dark:text-zinc-400'
                                   }`}>
                                     {letter}
                                   </span>
@@ -945,7 +945,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                 {/* Fase 3: Resultados y Recompensas */}
                 {readingPhase === 'results' && readingResults && (
                   <div className="p-6 text-center space-y-4 rounded-3xl bg-white dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 shadow-md animate-scale-in">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-500 to-purple-600 text-white flex items-center justify-center mx-auto shadow-lg shadow-purple-500/25">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-500 to-emerald-600 text-white flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/25">
                       <Trophy className="w-7 h-7" />
                     </div>
 
@@ -970,9 +970,9 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                         <span className="text-base font-black text-indigo-600 dark:text-indigo-300">{readingResults.score}%</span>
                       </div>
 
-                      <div className="p-3 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800">
+                      <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
                         <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 block uppercase">XP Ganado</span>
-                        <span className="text-base font-black text-purple-600 dark:text-purple-300">+{readingResults.xp} XP</span>
+                        <span className="text-base font-black text-emerald-600 dark:text-emerald-300">+{readingResults.xp} XP</span>
                       </div>
 
                       <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800">
@@ -985,7 +985,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                       <button
                         type="button"
                         onClick={() => handleNextStep(readingResults.xp)}
-                        className="px-8 py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black text-xs shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2 mx-auto cursor-pointer"
+                        className="px-8 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 border border-amber-400/40 flex items-center justify-center gap-2 mx-auto cursor-pointer"
                       >
                         <span>Continuar Aventura (+{readingResults.xp} XP)</span>
                         <ArrowRight className="w-4 h-4" />
@@ -1119,8 +1119,8 @@ export const StudioFlowPlayer: React.FC<Props> = ({
             <div className="space-y-4 animate-fade-in">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-zinc-800 pb-3">
                 <div className="space-y-1">
-                  <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950 text-violet-700 dark:text-violet-300 inline-flex items-center gap-1">
-                    <Shuffle className="w-3 h-3 text-violet-500" />
+                  <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 inline-flex items-center gap-1">
+                    <Shuffle className="w-3 h-3 text-teal-500" />
                     <span>Emparejamiento Aleatorizado</span>
                   </span>
                   <h3 className="text-base font-black text-slate-900 dark:text-white">
@@ -1138,7 +1138,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                     title="Revolver aleatoriamente las opciones de la derecha"
                     className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
-                    <Shuffle className="w-3.5 h-3.5 text-violet-500" />
+                    <Shuffle className="w-3.5 h-3.5 text-teal-500" />
                     <span>Revolver</span>
                   </button>
                   <span className="text-xs font-bold text-slate-400 bg-slate-100 dark:bg-zinc-850 px-2.5 py-1 rounded-xl border border-slate-200 dark:border-zinc-750">
@@ -1150,7 +1150,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
                 {/* Columna Izquierda: Conceptos */}
                 <div className="space-y-2">
-                  <h4 className="text-[11px] font-black text-violet-600 dark:text-violet-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <h4 className="text-[11px] font-black text-teal-600 dark:text-teal-400 uppercase tracking-wider flex items-center gap-1.5">
                     <span>Conceptos / Términos</span>
                   </h4>
                   {activeBlock.data.pairs.map((pair, idx) => {
@@ -1170,12 +1170,12 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                             : isError
                             ? 'bg-rose-500/20 border-rose-500 text-rose-700 dark:text-rose-300 animate-shake'
                             : isSelected
-                            ? 'bg-violet-600 text-white border-violet-700 shadow-lg shadow-violet-500/30 scale-[1.02] ring-2 ring-violet-400'
-                            : 'bg-white dark:bg-zinc-850 border-slate-200 dark:border-zinc-750 text-slate-800 dark:text-zinc-200 hover:border-violet-400 hover:bg-violet-50/40 dark:hover:bg-zinc-800'
+                            ? 'bg-teal-600 text-white border-teal-700 shadow-lg shadow-teal-500/30 scale-[1.02] ring-2 ring-teal-400'
+                            : 'bg-white dark:bg-zinc-850 border-slate-200 dark:border-zinc-750 text-slate-800 dark:text-zinc-200 hover:border-teal-400 hover:bg-teal-50/40 dark:hover:bg-zinc-800'
                         }`}
                       >
                         <span className="flex items-center gap-2.5">
-                          <span className="w-5 h-5 rounded-lg bg-violet-100 dark:bg-violet-950 text-violet-700 dark:text-violet-300 text-[10px] font-black flex items-center justify-center shrink-0">
+                          <span className="w-5 h-5 rounded-lg bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 text-[10px] font-black flex items-center justify-center shrink-0">
                             {idx + 1}
                           </span>
                           <span>{pair.left}</span>
@@ -1229,7 +1229,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={() => handleNextStep(35)}
-                    className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-purple-600 hover:from-violet-500 hover:to-indigo-500 text-white font-black text-xs shadow-lg shadow-violet-500/25 flex items-center gap-2 transition-all transform active:scale-95 cursor-pointer"
+                    className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 border border-amber-400/40 flex items-center gap-2 transition-all transform active:scale-95 cursor-pointer"
                   >
                     <span>¡Todos Conectados con Éxito! Continuar (+35 XP)</span>
                     <ArrowRight className="w-4 h-4" />
@@ -1378,7 +1378,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
           {activeBlock?.type === 'open_poll_wordcloud' && (
             <div className="space-y-4">
               <div className="space-y-1">
-                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-fuchsia-100 dark:bg-fuchsia-950 text-fuchsia-700 dark:text-fuchsia-300">
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300">
                   Reflexión & Evaluación Formativa IA
                 </span>
                 <h3 className="text-base font-black text-slate-900 dark:text-white">
@@ -1391,7 +1391,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                 value={openAnswerText}
                 onChange={(e) => setOpenAnswerText(e.target.value)}
                 placeholder="Escribe tu argumento pedagógico aquí..."
-                className="w-full p-3 rounded-2xl text-xs bg-white dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
+                className="w-full p-3 rounded-2xl text-xs bg-white dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
               />
 
               {!aiFeedback ? (
@@ -1400,22 +1400,22 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                     type="button"
                     disabled={openAnswerText.length < 5 || isAiEvaluating}
                     onClick={handleEvaluateAiReflection}
-                    className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 text-white font-black text-xs shadow-md shadow-fuchsia-500/20 flex items-center gap-2 disabled:opacity-50 transition-all cursor-pointer"
+                    className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs shadow-md shadow-emerald-500/20 flex items-center gap-2 disabled:opacity-50 transition-all cursor-pointer"
                   >
-                    {isAiEvaluating ? <Sparkles className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                    {isAiEvaluating ? <Sparkles className="w-4 h-4 animate-spin text-teal-300" /> : <Sparkles className="w-4 h-4 text-teal-300" />}
                     <span>{isAiEvaluating ? 'Analizando con IA...' : 'Enviar y Recibir Feedback IA (+40 XP)'}</span>
                   </button>
                 </div>
               ) : (
                 <div className="space-y-3 pt-1 animate-scale-in">
-                  <div className="p-3.5 rounded-2xl bg-fuchsia-50 dark:bg-fuchsia-950/40 border border-fuchsia-200 text-xs text-fuchsia-900 dark:text-fuchsia-200">
+                  <div className="p-3.5 rounded-2xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800 text-xs text-cyan-900 dark:text-cyan-200">
                     <p className="font-bold">{aiFeedback}</p>
                   </div>
                   <div className="flex justify-end">
                     <button
                       type="button"
                       onClick={() => handleNextStep(40)}
-                      className="px-6 py-2.5 rounded-2xl bg-fuchsia-600 hover:bg-fuchsia-700 text-white font-black text-xs shadow-md flex items-center gap-2 cursor-pointer"
+                      className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 border border-amber-400/40 flex items-center gap-2 cursor-pointer"
                     >
                       <span>Continuar al Siguiente Paso</span>
                       <ArrowRight className="w-4 h-4" />
@@ -1581,13 +1581,13 @@ export const StudioFlowPlayer: React.FC<Props> = ({
           {/* ================= 10. TEXTO / NARRATIVA ================= */}
           {activeBlock?.type === 'text_narrative' && (
             <div className="space-y-4 animate-fade-in">
-              <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-blue-50/90 via-indigo-50/60 to-purple-50/60 dark:from-blue-950/40 dark:via-zinc-850 dark:to-indigo-950/40 border-2 border-blue-200/80 dark:border-blue-800/80 shadow-lg space-y-4">
+              <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-slate-50 via-teal-50/30 to-blue-50/40 dark:from-slate-900 dark:via-blue-950/60 dark:to-slate-900 border-2 border-teal-200/80 dark:border-teal-800/80 shadow-lg space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-blue-500/25 shrink-0 animate-pulse">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-600 to-emerald-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-teal-500/25 shrink-0 animate-pulse">
                     {activeBlock.data.speakerAvatar || <BookOpen className="w-6 h-6" />}
                   </div>
                   <div>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-100/80 dark:bg-blue-950 px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-800">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-teal-600 dark:text-teal-400 bg-teal-100/80 dark:bg-teal-950 px-2 py-0.5 rounded-full border border-teal-200 dark:border-teal-800">
                       {activeBlock.data.speakerName || 'Narrativa Histórica'}
                     </span>
                     <h3 className="text-base font-black text-slate-900 dark:text-white pt-0.5">
@@ -1596,7 +1596,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                   </div>
                 </div>
 
-                <div className="relative p-4 rounded-2xl bg-white/80 dark:bg-zinc-900/80 border border-blue-100 dark:border-blue-900/60 shadow-inner">
+                <div className="relative p-4 rounded-2xl bg-white/80 dark:bg-zinc-900/80 border border-teal-100 dark:border-teal-900/60 shadow-inner">
                   <p className="text-xs sm:text-sm text-slate-800 dark:text-zinc-200 leading-relaxed whitespace-pre-wrap font-medium">
                     {activeBlock.data.content}
                   </p>
@@ -1607,7 +1607,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={() => handleNextStep(25)}
-                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs shadow-lg shadow-blue-500/25 flex items-center gap-2 transition-all transform active:scale-95 cursor-pointer"
+                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 border border-amber-400/40 flex items-center gap-2 transition-all transform active:scale-95 cursor-pointer"
                 >
                   <span>¡Comprendido, Libertador! Avanzar (+25 XP)</span>
                   <ArrowRight className="w-4 h-4" />
@@ -1620,7 +1620,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
           {activeBlock?.type === 'quiz_question' && (
             <div className="space-y-4">
               <div className="space-y-2">
-                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
                   Pregunta de Evaluación
                 </span>
                 <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
@@ -1644,7 +1644,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                   const isSelected = selectedOption === optIdx;
                   const isCorrect = optIdx === activeBlock.data.correctIndex;
                   
-                  let btnStyle = 'bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 hover:border-purple-400 dark:hover:border-purple-600 text-slate-800 dark:text-zinc-200';
+                  let btnStyle = 'bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 hover:border-emerald-400 dark:hover:border-emerald-500 text-slate-800 dark:text-zinc-200';
                   
                   if (isQuestionAnswered) {
                     if (isCorrect) {
@@ -1684,7 +1684,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
 
               {/* Explicación formativa tras responder */}
               {isQuestionAnswered && (
-                <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-xs text-purple-900 dark:text-purple-200 space-y-1 animate-fade-in">
+                <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-900 dark:text-emerald-200 space-y-1 animate-fade-in">
                   <span className="font-black">Retroalimentación Didáctica:</span>
                   <p>{activeBlock.data.explanation || '¡Excelente análisis conceptual!'}</p>
                 </div>
@@ -1695,7 +1695,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={() => handleNextStep(0)}
-                    className="px-6 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md shadow-purple-500/25 flex items-center gap-2 transition-all transform active:scale-95 cursor-pointer"
+                    className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 border border-amber-400/40 flex items-center gap-2 transition-all transform active:scale-95 cursor-pointer"
                   >
                     <span>Siguiente Reactivo</span>
                     <ArrowRight className="w-4 h-4" />
@@ -1763,7 +1763,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={() => handleAttackBoss('magic')}
-                    className="p-3 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md shadow-purple-500/25 flex flex-col items-center gap-1 cursor-pointer transition-transform active:scale-95"
+                    className="p-3 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-black text-xs shadow-md shadow-teal-500/25 flex flex-col items-center gap-1 cursor-pointer transition-transform active:scale-95"
                   >
                     <Sparkles className="w-4 h-4 text-cyan-300" />
                     <span>Ideario Patriótico</span>
@@ -1823,14 +1823,14 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                     ¡Has desbloqueado: {activeBlock.data.badgeName || 'Insignia de Honor'}!
                   </h4>
                   <div className="flex items-center justify-center gap-3 text-xs font-black">
-                    <span className="text-purple-600 dark:text-purple-400">+{activeBlock.data.xpAmount || 100} XP</span>
+                    <span className="text-emerald-500 dark:text-emerald-400">+{activeBlock.data.xpAmount || 100} XP</span>
                     <span className="text-amber-500">+{activeBlock.data.coinsAmount || 25} Monedas</span>
                   </div>
                   <div className="pt-2">
                     <button
                       type="button"
                       onClick={() => handleNextStep(activeBlock.data.xpAmount || 100)}
-                      className="px-6 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs shadow-md flex items-center justify-center gap-2 mx-auto cursor-pointer"
+                      className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 border border-amber-400/40 flex items-center justify-center gap-2 mx-auto cursor-pointer"
                     >
                       <span>Reclamar Recompensa y Continuar</span>
                       <ArrowRight className="w-4 h-4" />
@@ -1932,12 +1932,12 @@ export const StudioFlowPlayer: React.FC<Props> = ({
 
           {/* ================= 16. EFECTO DE AUDIO SFX ================= */}
           {activeBlock?.type === 'audio_sfx' && (
-            <div className="p-6 text-center space-y-4 rounded-3xl bg-violet-50/70 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800 text-violet-950 dark:text-violet-200">
-              <div className="w-12 h-12 rounded-2xl bg-violet-600 text-white flex items-center justify-center mx-auto shadow-md animate-bounce">
+            <div className="p-6 text-center space-y-4 rounded-3xl bg-teal-50/70 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 text-teal-950 dark:text-teal-200">
+              <div className="w-12 h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center mx-auto shadow-md animate-bounce">
                 <Music className="w-6 h-6" />
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] font-black uppercase text-violet-500">Inmersión Sonora</span>
+                <span className="text-[10px] font-black uppercase text-teal-500">Inmersión Sonora</span>
                 <h3 className="text-base font-black text-slate-900 dark:text-white">
                   {activeBlock.title}
                 </h3>
@@ -1950,7 +1950,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={() => handleNextStep(10)}
-                  className="px-6 py-2.5 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 mx-auto cursor-pointer"
+                  className="px-6 py-2.5 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-black text-xs shadow-md shadow-teal-500/25 flex items-center justify-center gap-2 mx-auto cursor-pointer"
                 >
                   <span>Continuar (+10 XP)</span>
                   <ArrowRight className="w-4 h-4" />

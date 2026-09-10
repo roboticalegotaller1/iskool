@@ -194,7 +194,7 @@ export const TimedReadingBlockView: React.FC<Props> = ({ block }) => {
     <div className="space-y-4 select-none">
       
       {/* Barra Superior de Métricas en Tiempo Real (Contador de Palabras + PPM + Tiempo) */}
-      <div className="grid grid-cols-3 gap-2 p-2.5 rounded-2xl bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/40 dark:via-indigo-950/40 dark:to-purple-950/40 border border-blue-200/70 dark:border-indigo-800/60 shadow-xs">
+      <div className="grid grid-cols-3 gap-2 p-2.5 rounded-2xl bg-gradient-to-r from-blue-50 via-teal-50 to-emerald-50 dark:from-slate-900 dark:via-blue-950/60 dark:to-emerald-950/40 border border-teal-200/70 dark:border-teal-800/60 shadow-xs">
         
         {/* Conteo de Palabras */}
         <div className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-white/80 dark:bg-zinc-900/80 border border-blue-100 dark:border-zinc-800 text-center shadow-2xs">
@@ -219,15 +219,15 @@ export const TimedReadingBlockView: React.FC<Props> = ({ block }) => {
         </div>
 
         {/* Límite de Tiempo */}
-        <div className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-white/80 dark:bg-zinc-900/80 border border-purple-100 dark:border-zinc-800 text-center shadow-2xs">
-          <div className="flex items-center gap-1 text-purple-600 dark:text-purple-400">
+        <div className="flex flex-col items-center justify-center p-1.5 rounded-xl bg-white/80 dark:bg-zinc-900/80 border border-teal-100 dark:border-teal-900/40 text-center shadow-2xs">
+          <div className="flex items-center gap-1 text-teal-600 dark:text-teal-400">
             <Clock className="w-3.5 h-3.5" />
             <span className="text-[10px] font-black uppercase tracking-wider">Tiempo</span>
           </div>
           <select
             value={timeLimitSeconds}
             onChange={(e) => updateBlockData(block.id, { timeLimitSeconds: Number(e.target.value) })}
-            className="text-xs font-black text-purple-700 dark:text-purple-300 bg-transparent focus:outline-none cursor-pointer mt-0.5"
+            className="text-xs font-black text-teal-700 dark:text-teal-300 bg-transparent focus:outline-none cursor-pointer mt-0.5"
             title="Seleccionar tiempo límite de lectura"
           >
             <option value={30}>30 seg</option>
@@ -259,7 +259,7 @@ export const TimedReadingBlockView: React.FC<Props> = ({ block }) => {
                 key={idx}
                 type="button"
                 onClick={() => handleLoadSample(sample)}
-                className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/60 hover:bg-purple-100 transition-all cursor-pointer"
+                className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-teal-50 dark:bg-teal-950 text-teal-600 dark:text-teal-300 border border-teal-200/60 dark:border-teal-800/60 hover:bg-teal-100 transition-all cursor-pointer"
                 title={`Cargar lectura de ejemplo: ${sample.title}`}
               >
                 {sample.title.split(' ')[1] || sample.title}
@@ -297,7 +297,7 @@ export const TimedReadingBlockView: React.FC<Props> = ({ block }) => {
       <div className="space-y-2.5 pt-2 border-t border-slate-100 dark:border-zinc-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <Target className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <Target className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <h4 className="text-xs font-black text-slate-800 dark:text-zinc-200">
               Preguntas de Comprensión ({comprehensionQuestions.length})
             </h4>
@@ -306,7 +306,7 @@ export const TimedReadingBlockView: React.FC<Props> = ({ block }) => {
           <button
             type="button"
             onClick={handleAddQuestion}
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-xs hover:scale-105 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-xs shadow-emerald-500/20 hover:scale-105 transition-all cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Agregar Pregunta</span>
@@ -334,8 +334,8 @@ export const TimedReadingBlockView: React.FC<Props> = ({ block }) => {
                   key={q.id}
                   className={`rounded-2xl border transition-all overflow-hidden ${
                     isExpanded 
-                      ? 'border-purple-300 dark:border-purple-700/80 bg-white dark:bg-zinc-850 shadow-sm'
-                      : 'border-slate-200 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 hover:border-purple-200'
+                      ? 'border-emerald-300 dark:border-emerald-700/80 bg-white dark:bg-zinc-850 shadow-sm'
+                      : 'border-slate-200 dark:border-zinc-800 bg-slate-50/70 dark:bg-zinc-900/60 hover:border-emerald-300'
                   }`}
                 >
                   {/* Cabecera de la Pregunta */}
@@ -344,7 +344,7 @@ export const TimedReadingBlockView: React.FC<Props> = ({ block }) => {
                     className="p-2.5 flex items-center justify-between gap-2 cursor-pointer"
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="w-5 h-5 rounded-lg bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 text-[10px] font-black flex items-center justify-center shrink-0">
+                      <span className="w-5 h-5 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-black flex items-center justify-center shrink-0">
                         {qIndex + 1}
                       </span>
                       <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate">
@@ -386,7 +386,7 @@ export const TimedReadingBlockView: React.FC<Props> = ({ block }) => {
                           value={q.question}
                           onChange={(e) => handleUpdateQuestion(q.id, { question: e.target.value })}
                           placeholder="Escribe la pregunta sobre la lectura..."
-                          className="w-full px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
+                          className="w-full px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                         />
                       </div>
 
@@ -451,7 +451,7 @@ export const TimedReadingBlockView: React.FC<Props> = ({ block }) => {
                           <button
                             type="button"
                             onClick={() => handleAddOptionToQuestion(q.id)}
-                            className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-600 dark:text-purple-400 hover:underline pt-0.5 cursor-pointer"
+                            className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline pt-0.5 cursor-pointer"
                           >
                             <Plus className="w-3 h-3" />
                             <span>Añadir otra opción ({q.options.length}/5)</span>

@@ -64,8 +64,8 @@ export const ExtendedToolsDrawer: React.FC = () => {
       title: 'Emparejamiento / Drag & Drop',
       description: 'Conecta conceptos con definiciones, términos o imágenes interactivas.',
       icon: Link2,
-      gradient: 'from-violet-500 to-purple-600 text-white',
-      glow: 'shadow-purple-500/20',
+      gradient: 'from-teal-500 to-emerald-600 text-white',
+      glow: 'shadow-teal-500/20',
       badge: 'Interactivo',
       platformInspiration: 'Estilo Quizizz & Nearpod'
     },
@@ -97,8 +97,8 @@ export const ExtendedToolsDrawer: React.FC = () => {
       title: 'Pregunta Abierta & Reflexión IA',
       description: 'Pregunta reflexiva con retroalimentación automática generada por rúbrica de IA.',
       icon: MessageSquare,
-      gradient: 'from-fuchsia-500 to-pink-600 text-white',
-      glow: 'shadow-fuchsia-500/20',
+      gradient: 'from-cyan-500 to-teal-600 text-white',
+      glow: 'shadow-cyan-500/20',
       badge: 'Evaluación IA',
       platformInspiration: 'Nube de Ideas & Mentimeter'
     },
@@ -108,8 +108,8 @@ export const ExtendedToolsDrawer: React.FC = () => {
       title: 'Pregunta de Opción Múltiple',
       description: 'Reactivo formativo con retroalimentación inmediata, tiempo límite e imágenes.',
       icon: HelpCircle,
-      gradient: 'from-purple-500 to-indigo-600 text-white',
-      glow: 'shadow-purple-500/20',
+      gradient: 'from-emerald-500 to-teal-600 text-white',
+      glow: 'shadow-emerald-500/20',
       badge: 'Reactivo',
       platformInspiration: 'Estándar LMS'
     },
@@ -143,8 +143,8 @@ export const ExtendedToolsDrawer: React.FC = () => {
       title: 'Efecto de Audio / Fanfarria',
       description: 'Fanfarrias triunfales, tambores de batalla y pistas sonoras de inmersión.',
       icon: Volume2,
-      gradient: 'from-violet-500 to-fuchsia-600 text-white',
-      glow: 'shadow-violet-500/20',
+      gradient: 'from-teal-500 to-emerald-600 text-white',
+      glow: 'shadow-teal-500/20',
       badge: 'Inmersión',
       platformInspiration: 'Audio Gamificado'
     },
@@ -213,8 +213,8 @@ export const ExtendedToolsDrawer: React.FC = () => {
       title: 'Ramificación Adaptativa Condicional',
       description: 'Adapta la ruta didáctica: si el alumno acierta > 80% va a reto avanzado; si no, a refuerzo.',
       icon: GitBranch,
-      gradient: 'from-indigo-500 to-purple-600 text-white',
-      glow: 'shadow-indigo-500/20',
+      gradient: 'from-teal-600 to-emerald-600 text-white',
+      glow: 'shadow-teal-500/20',
       badge: 'Adaptativo',
       platformInspiration: 'Mastery Learning LMS'
     },
@@ -269,8 +269,8 @@ export const ExtendedToolsDrawer: React.FC = () => {
       title: 'Redes, Grafos & Rutas BFS',
       description: 'Exploración de mapas interconectados, senderos de Euler, flujo máximo y propagación en amplitud (BFS).',
       icon: Network,
-      gradient: 'from-indigo-500 to-purple-600 text-white',
-      glow: 'shadow-indigo-500/20',
+      gradient: 'from-cyan-500 to-teal-600 text-white',
+      glow: 'shadow-cyan-500/20',
       badge: 'Teoría de Grafos',
       platformInspiration: 'Algoritmia de Redes'
     },
@@ -324,7 +324,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
           transition={{ type: 'spring', damping: 26, stiffness: 280 }}
           className="fixed bottom-0 inset-x-0 z-50 max-w-7xl mx-auto px-2 sm:px-6 pointer-events-none"
         >
-          <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border-t-2 sm:border-x-2 border-purple-400/80 dark:border-purple-600/80 rounded-t-[2.5rem] shadow-[0_-20px_50px_rgba(0,0,0,0.25)] p-4 sm:p-6 space-y-4 pointer-events-auto max-h-[82vh] sm:max-h-[62vh] flex flex-col">
+          <div className="bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border-t-2 sm:border-x-2 border-emerald-500/80 dark:border-emerald-500/80 rounded-t-[2.5rem] shadow-[0_-20px_50px_rgba(0,0,0,0.25)] p-4 sm:p-6 space-y-4 pointer-events-auto max-h-[82vh] sm:max-h-[62vh] flex flex-col">
             
             {/* Manija táctil superior */}
             <div className="w-12 h-1.5 bg-slate-300 dark:bg-zinc-750 rounded-full mx-auto shrink-0" />
@@ -332,7 +332,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
             {/* Barra de Título, Búsqueda y Filtros */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-zinc-800 shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-purple-500/20">
+                <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 text-white flex items-center justify-center font-bold shadow-md shadow-emerald-500/20">
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
@@ -340,7 +340,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
                     <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-tight">
                       Catálogo de Herramientas LMS Gamificado
                     </h3>
-                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
                       21 Mecánicas
                     </span>
                   </div>
@@ -359,7 +359,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Buscar mecánica o tipo..."
-                    className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-750 text-xs text-slate-800 dark:text-zinc-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-750 text-xs text-slate-800 dark:text-zinc-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
@@ -390,7 +390,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all shrink-0 cursor-pointer ${
                     activeTab === tab.id
-                      ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/20'
+                      ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/25'
                       : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200'
                   }`}
                 >
@@ -426,7 +426,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
                       key={tool.type + tool.title}
                       type="button"
                       onClick={() => handleSelectTool(tool.type)}
-                      className={`group p-3.5 rounded-2xl border border-slate-200/90 dark:border-zinc-800 hover:border-purple-400 dark:hover:border-purple-600 bg-slate-50/70 dark:bg-zinc-850/80 hover:bg-purple-50/70 dark:hover:bg-purple-950/40 text-left transition-all duration-200 hover:scale-[1.02] active:scale-95 shadow-sm hover:shadow-md cursor-pointer flex items-start gap-3`}
+                      className={`group p-3.5 rounded-2xl border border-slate-200/90 dark:border-zinc-800 hover:border-emerald-400 dark:hover:border-emerald-500 bg-slate-50/70 dark:bg-zinc-850/80 hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40 text-left transition-all duration-200 hover:scale-[1.02] active:scale-95 shadow-sm hover:shadow-md cursor-pointer flex items-start gap-3`}
                     >
                       <div className={`w-10 h-10 rounded-2xl bg-gradient-to-tr ${tool.gradient} flex items-center justify-center shrink-0 shadow-md ${tool.glow} group-hover:scale-110 transition-transform`}>
                         <Icon className="w-5 h-5" />
@@ -434,7 +434,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-1">
-                          <h4 className="text-xs font-black text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 truncate">
+                          <h4 className="text-xs font-black text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 truncate">
                             {tool.title}
                           </h4>
                           <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-zinc-750 text-slate-700 dark:text-zinc-300 shrink-0">
@@ -446,7 +446,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
                           {tool.description}
                         </p>
 
-                        <div className="mt-1.5 flex items-center gap-1 text-[9px] font-bold text-purple-600 dark:text-purple-400">
+                        <div className="mt-1.5 flex items-center gap-1 text-[9px] font-bold text-teal-600 dark:text-teal-400">
                           <Sparkles className="w-2.5 h-2.5" />
                           <span>{tool.platformInspiration}</span>
                         </div>

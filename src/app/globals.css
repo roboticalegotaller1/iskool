@@ -10,14 +10,14 @@
 
   /* Valores HSL institucionales base */
   --color-primary-hsl: 221 83% 53%;   /* Azul Zafiro (Rigor, Estructura, Académico) */
-  --color-secondary-hsl: 268 85% 58%; /* Púrpura / Violeta Mágico (Magia, Poder, Transformación - Min 6:25) */
-  --color-accent-hsl: 158 72% 40%;    /* Verde Esmeralda (Crecimiento, Bienestar, Comunidad) */
+  --color-secondary-hsl: 160 84% 39%; /* Verde Esmeralda Neón (Innovación, Crecimiento, Magia Natural) */
+  --color-accent-hsl: 174 84% 38%;    /* Turquesa Mágico (Energía Mágica, Claridad, Comunidad) */
 
   /* Identidades Cromáticas por Área Funcional (Psicología del Color en Educación) */
   --area-planning-hsl: 221 83% 53%;   /* Planeación Curricular NEM (Azul Cobalto) */
-  --area-studio-hsl: 268 85% 58%;     /* Estudio Creador & IA (Violeta Neón / Mágico) */
-  --area-classroom-hsl: 238 82% 59%;  /* Aula Digital & Gremio (Índigo Profundo) */
-  --area-community-hsl: 158 72% 40%;  /* Red Docente & Comunidad (Verde Esmeralda) */
+  --area-studio-hsl: 174 84% 38%;     /* Estudio Creador & IA (Turquesa / Esmeralda Neón) */
+  --area-classroom-hsl: 221 83% 53%;  /* Aula Digital & Gremio (Azul Marino / Índigo) */
+  --area-community-hsl: 160 84% 39%;  /* Red Docente & Comunidad (Verde Esmeralda) */
   --area-evaluation-hsl: 38 92% 50%;  /* Evaluación Formativa & XP (Ámbar Dorado) */
   --area-tasks-hsl: 24 94% 53%;       /* Tareas, Retos & Rachas (Naranja Dinámico) */
   --area-attendance-hsl: 199 89% 48%; /* Asistencia & Control (Cian / Celeste) */
@@ -121,9 +121,34 @@ body {
    SISTEMA DE EFECTOS CROMÁTICOS GAMIFICADOS POR ÁREA (PSICOLOGÍA DEL COLOR)
    ========================================================================= */
 
-/* Estudio Creador & IA (Violeta Neón / Magia y Exclusividad - Minuto 6:25) */
+/* Estudio Creador & IA (Verde Esmeralda Neón & Turquesa Mágico) */
 @utility glow-studio {
-  box-shadow: 0 0 20px -3px rgba(168, 85, 247, 0.45), 0 0 8px -2px rgba(234, 179, 8, 0.3);
+  box-shadow: 0 0 20px -3px rgba(16, 185, 129, 0.55), 0 0 10px -2px rgba(45, 212, 191, 0.45);
+}
+
+/* Resplandor Turquesa Mágico */
+@utility glow-teal {
+  box-shadow: 0 0 20px -2px rgba(20, 184, 166, 0.55), 0 0 8px -1px rgba(45, 212, 191, 0.4);
+}
+
+/* Bordes Neón Esmeralda y Turquesa */
+@utility border-neon-emerald {
+  border-color: rgba(16, 185, 129, 0.8);
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.35);
+}
+
+@utility border-neon-teal {
+  border-color: rgba(45, 212, 191, 0.8);
+  box-shadow: 0 0 15px rgba(45, 212, 191, 0.35);
+}
+
+/* Botón de Acción Principal Dorado de Alto Contraste */
+@utility btn-golden-action {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #090d16;
+  font-weight: 900;
+  border: 1px solid rgba(251, 191, 36, 0.7);
+  box-shadow: 0 10px 25px -3px rgba(245, 158, 11, 0.45), 0 4px 6px -4px rgba(245, 158, 11, 0.25);
 }
 
 /* Oro y Puntos de Experiencia XP (Celebración, Recompensas y Maestría) */
@@ -153,8 +178,8 @@ body {
 
 /* Insignias de Rango Gamificado */
 @utility badge-legendary {
-  background: linear-gradient(135deg, rgba(147, 51, 234, 0.2) 0%, rgba(245, 158, 11, 0.25) 100%);
-  border: 1px solid rgba(234, 179, 8, 0.5);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(245, 158, 11, 0.25) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.6);
   color: #fbbf24;
 }
 

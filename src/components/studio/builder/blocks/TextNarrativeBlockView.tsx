@@ -35,7 +35,7 @@ export const TextNarrativeBlockView: React.FC<Props> = ({ block }) => {
             onClick={() => updateBlockData(block.id, { style: 'narrative_lore' })}
             className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
               style === 'narrative_lore'
-                ? 'bg-white dark:bg-zinc-700 text-purple-600 dark:text-purple-400 shadow-sm'
+                ? 'bg-white dark:bg-zinc-700 text-teal-600 dark:text-teal-400 shadow-sm'
                 : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900'
             }`}
           >
@@ -58,13 +58,13 @@ export const TextNarrativeBlockView: React.FC<Props> = ({ block }) => {
       {/* Nombre del Personaje (Si es diálogo o lore) */}
       {style !== 'instruction' && (
         <div className="flex items-center gap-2">
-          <User className="w-4 h-4 text-purple-500" />
+          <User className="w-4 h-4 text-teal-500" />
           <input
             type="text"
             value={speakerName || ''}
             onChange={(e) => updateBlockData(block.id, { speakerName: e.target.value })}
             placeholder="Nombre del personaje o guía (ej. Sabio Lucas, Prof. Garza)..."
-            className="w-full sm:w-72 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-800 dark:text-zinc-200"
+            className="w-full sm:w-72 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 dark:text-zinc-200"
           />
         </div>
       )}
@@ -79,7 +79,7 @@ export const TextNarrativeBlockView: React.FC<Props> = ({ block }) => {
           value={content}
           onChange={(e) => updateBlockData(block.id, { content: e.target.value })}
           placeholder="Escribe aquí las instrucciones o la historia que leerá el estudiante..."
-          className="w-full px-3.5 py-2.5 rounded-2xl text-sm font-medium bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-800 dark:text-zinc-100 placeholder:text-slate-400 resize-y"
+          className="w-full px-3.5 py-2.5 rounded-2xl text-sm font-medium bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800 dark:text-zinc-100 placeholder:text-slate-400 resize-y"
         />
       </div>
     </div>

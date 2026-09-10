@@ -104,7 +104,7 @@ const StudioTriviaPlayerInner: React.FC<StudioTriviaPlayerProps> = ({
               {activity.title}
             </h2>
             <p className="text-sm font-medium text-slate-600 dark:text-zinc-400">
-              Puntaje Final: <span className="font-black text-purple-600 dark:text-purple-400 text-lg">{score} / {questions.length}</span> correctas
+              Puntaje Final: <span className="font-black text-emerald-500 dark:text-teal-400 text-lg">{score} / {questions.length}</span> correctas
             </p>
           </div>
 
@@ -124,7 +124,7 @@ const StudioTriviaPlayerInner: React.FC<StudioTriviaPlayerProps> = ({
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
             <button
               onClick={handleRestart}
-              className="px-6 py-3 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25"
+              className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-sm shadow-lg shadow-amber-500/30 border border-amber-400/40 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
             >
               <RotateCcw className="w-4 h-4" />
               <span>Volver a Jugar</span>
@@ -147,19 +147,19 @@ const StudioTriviaPlayerInner: React.FC<StudioTriviaPlayerProps> = ({
           {/* Cabecera y Barra de Progreso */}
           <div className="space-y-3">
             <div className="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-zinc-400">
-              <span className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400">
+              <span className="flex items-center gap-1.5 text-teal-600 dark:text-teal-400 font-black">
                 <BrainCircuit className="w-4 h-4" />
                 <span>Pregunta {currentIndex + 1} de {questions.length}</span>
               </span>
               <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
-                Puntos: <strong className="text-purple-600 dark:text-purple-400">{score}</strong>
+                Puntos: <strong className="text-amber-500 dark:text-amber-400 font-black">{score}</strong>
               </span>
             </div>
 
             {/* Progress bar */}
             <div className="w-full h-2.5 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-purple-500 to-indigo-600 transition-all duration-300 rounded-full"
+                className="h-full bg-gradient-to-r from-teal-400 to-emerald-500 transition-all duration-300 rounded-full"
                 style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
               />
             </div>
@@ -186,7 +186,7 @@ const StudioTriviaPlayerInner: React.FC<StudioTriviaPlayerProps> = ({
               const isSelected = selectedOption === idx;
               const isCorrect = idx === currentQuestion.correctIndex;
               
-              let buttonStyle = "bg-white dark:bg-zinc-800/80 border-slate-200 dark:border-zinc-700/80 text-slate-800 dark:text-zinc-100 hover:border-purple-500 hover:bg-purple-50/50 dark:hover:bg-purple-950/20";
+              let buttonStyle = "bg-white dark:bg-zinc-800/80 border-slate-200 dark:border-zinc-700/80 text-slate-800 dark:text-zinc-100 hover:border-teal-500 hover:bg-teal-50/50 dark:hover:bg-teal-950/20";
               
               if (isAnswered) {
                 if (isCorrect) {
@@ -240,7 +240,7 @@ const StudioTriviaPlayerInner: React.FC<StudioTriviaPlayerProps> = ({
 
               <button
                 onClick={handleNextQuestion}
-                className="px-6 py-3 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm transition-all flex items-center gap-2 shadow-lg shadow-purple-500/25"
+                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-sm transition-all flex items-center gap-2 shadow-lg shadow-amber-500/30 border border-amber-400/40 cursor-pointer active:scale-95"
               >
                 <span>{currentIndex < questions.length - 1 ? 'Siguiente Pregunta' : 'Ver Resultados'}</span>
                 <ArrowRight className="w-4 h-4" />

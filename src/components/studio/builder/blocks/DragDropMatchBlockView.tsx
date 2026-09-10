@@ -35,8 +35,8 @@ export const DragDropMatchBlockView: React.FC<Props> = ({ block }) => {
   return (
     <div className="space-y-4">
       {/* Aviso de aleatorización automática */}
-      <div className="p-3 rounded-2xl bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-850 flex items-center gap-2.5 text-xs text-violet-700 dark:text-violet-300">
-        <Shuffle className="w-4 h-4 shrink-0 text-violet-600 dark:text-violet-400 animate-spin-slow" />
+      <div className="p-3 rounded-2xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-850 flex items-center gap-2.5 text-xs text-teal-700 dark:text-teal-300">
+        <Shuffle className="w-4 h-4 shrink-0 text-teal-600 dark:text-teal-400 animate-spin-slow" />
         <span>
           <strong>Dificultad Dinámica:</strong> En la vista del estudiante, las respuestas de la columna derecha se revolverán automáticamente de forma aleatoria para fomentar la retención y el análisis.
         </span>
@@ -45,7 +45,7 @@ export const DragDropMatchBlockView: React.FC<Props> = ({ block }) => {
       {/* Instrucciones */}
       <div className="space-y-1">
         <label className="text-xs font-bold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
-          <Link2 className="w-4 h-4 text-violet-600" />
+          <Link2 className="w-4 h-4 text-teal-600" />
           <span>Instrucción del Emparejamiento:</span>
         </label>
         <input
@@ -53,7 +53,7 @@ export const DragDropMatchBlockView: React.FC<Props> = ({ block }) => {
           value={instructions}
           onChange={(e) => updateBlockData(block.id, { instructions: e.target.value })}
           placeholder="Ej. Conecta cada concepto con su definición correcta:"
-          className="w-full px-3.5 py-2 rounded-xl text-xs font-medium bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 focus:outline-none focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white"
+          className="w-full px-3.5 py-2 rounded-xl text-xs font-medium bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-900 dark:text-white"
         />
       </div>
 
@@ -66,7 +66,7 @@ export const DragDropMatchBlockView: React.FC<Props> = ({ block }) => {
         <div className="space-y-2">
           {pairs.map((pair, idx) => (
             <div key={idx} className="flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-violet-100 dark:bg-violet-950 text-violet-700 dark:text-violet-300 text-[10px] font-black flex items-center justify-center shrink-0">
+              <span className="w-5 h-5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 text-[10px] font-black flex items-center justify-center shrink-0">
                 {idx + 1}
               </span>
               <input
@@ -74,7 +74,7 @@ export const DragDropMatchBlockView: React.FC<Props> = ({ block }) => {
                 value={pair.left}
                 onChange={(e) => handleUpdatePair(idx, 'left', e.target.value)}
                 placeholder="Término / Concepto..."
-                className="flex-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 focus:outline-none focus:ring-2 focus:ring-violet-500 text-slate-900 dark:text-white"
+                className="flex-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-900 dark:text-white"
               />
               <span className="text-slate-400 font-black text-xs">↔️</span>
               <input
@@ -82,7 +82,7 @@ export const DragDropMatchBlockView: React.FC<Props> = ({ block }) => {
                 value={pair.right}
                 onChange={(e) => handleUpdatePair(idx, 'right', e.target.value)}
                 placeholder="Definición o Imagen..."
-                className="flex-1 px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 focus:outline-none focus:ring-2 focus:ring-violet-500 text-slate-800 dark:text-zinc-200"
+                className="flex-1 px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 dark:text-zinc-200"
               />
               {pairs.length > 2 && (
                 <button
@@ -100,7 +100,7 @@ export const DragDropMatchBlockView: React.FC<Props> = ({ block }) => {
         <button
           type="button"
           onClick={handleAddPair}
-          className="text-xs font-bold text-violet-600 dark:text-violet-400 hover:underline flex items-center gap-1 pt-1 cursor-pointer"
+          className="text-xs font-bold text-teal-600 dark:text-teal-400 hover:underline flex items-center gap-1 pt-1 cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>+ Añadir otro par</span>

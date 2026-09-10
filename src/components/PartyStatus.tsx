@@ -114,7 +114,7 @@ export default function PartyStatus() {
       {/* Bitácora de Combate RPG */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-1.5 border-b border-zinc-150 dark:border-zinc-800/80 pb-2">
-          <MessageSquareText className="h-4 w-4 text-purple-500" />
+          <MessageSquareText className="h-4 w-4 text-teal-400" />
           <h3 className="text-xs font-black text-zinc-450 dark:text-zinc-400 uppercase tracking-wider">
             Consola de Combate RPG
           </h3>
@@ -131,12 +131,12 @@ export default function PartyStatus() {
               return (
                 <div 
                   key={action.id || idx} 
-                  className="text-purple-400/90 leading-relaxed animate-fade-in"
+                  className="text-teal-400/90 leading-relaxed animate-fade-in"
                 >
                   <span className="text-zinc-650 dark:text-zinc-600 select-none">
                     [{new Date(action.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}]
                   </span>{' '}
-                  <span className="text-purple-300 font-medium">
+                  <span className="text-teal-300 font-medium">
                     {getRpgActionMessage(action)}
                   </span>
                 </div>

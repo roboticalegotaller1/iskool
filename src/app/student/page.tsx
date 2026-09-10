@@ -225,7 +225,7 @@ export default function StudentDashboard() {
   // Renderizador estático del Avatar en SVG
   const renderAvatarPreview = (width = 120, height = 120) => {
     const bgGradient = (avatar?.background_style ?? 'forest') === 'nebula' 
-      ? 'from-indigo-950 via-slate-900 to-purple-950'
+      ? 'from-blue-950 via-slate-900 to-emerald-950'
       : (avatar?.background_style ?? 'forest') === 'nature_spirit'
         ? 'from-emerald-900 via-teal-950 to-stone-900'
         : 'from-emerald-950 via-teal-900 to-cyan-950';
@@ -610,15 +610,15 @@ export default function StudentDashboard() {
 
     return (
       <div className="flex flex-col gap-8">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-950 p-8 text-white shadow-xl border border-indigo-700/30">
-          <div className="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-purple-500/25 blur-xl animate-pulse" />
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 p-8 text-white shadow-2xl border border-emerald-500/30">
+          <div className="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-emerald-500/20 blur-xl animate-pulse" />
           <div className="relative z-10 flex flex-col lg:flex-row gap-8 items-stretch w-full">
             
             {/* Hoja de Atributos */}
             <div id="rpg-attributes-panel" className="bg-zinc-950/50 p-5 rounded-2xl border border-zinc-800 backdrop-blur-md shadow-2xl w-full lg:w-72 flex flex-col gap-4">
               <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
-                <span className="text-xs font-black text-purple-400 uppercase tracking-widest flex items-center gap-1">
-                  <User className="h-4 w-4" />
+                <span className="text-xs font-black text-emerald-400 uppercase tracking-widest flex items-center gap-1">
+                  <User className="h-4 w-4 text-emerald-400" />
                   Hoja de Héroe
                 </span>
                 <span className="text-[10px] font-bold text-yellow-500">Clase: {rpgClass.toUpperCase()}</span>
@@ -698,7 +698,7 @@ export default function StudentDashboard() {
             {/* Info principal RPG */}
             <div className="flex-1 flex flex-col justify-between items-start w-full gap-6">
               <div>
-                <span className="bg-purple-600 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full">
+                <span className="bg-emerald-600 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-sm shadow-emerald-500/20">
                   Gremio de Héroes
                 </span>
                 <h1 className="text-3xl font-extrabold tracking-tight mt-2">{avatar?.avatar_name || (activeStudent ? `${activeStudent.first_name} ${activeStudent.last_name_1}` : 'Elena la Sabia')}</h1>
@@ -711,7 +711,7 @@ export default function StudentDashboard() {
                     <span>{stats?.xp ?? 0} / {xpForCurrentLevel} XP</span>
                   </div>
                   <div className="h-3 w-full bg-white/20 rounded-full overflow-hidden">
-                    <div className="h-full bg-purple-500 rounded-full" style={{ width: `${progressPercent}%` }} />
+                    <div className="h-full bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]" style={{ width: `${progressPercent}%` }} />
                   </div>
                 </div>
               </div>
@@ -721,7 +721,7 @@ export default function StudentDashboard() {
                 <Link
                   id="rpg-avatar-edit-button"
                   href="/student/avatar"
-                  className="relative group overflow-hidden px-6 py-4 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-500 hover:to-indigo-500 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl shadow-purple-950/20 transition-all duration-300 border border-purple-500/35 active:scale-95 flex flex-col items-center gap-1.5 min-w-[140px]"
+                  className="relative group overflow-hidden px-6 py-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl shadow-emerald-950/20 transition-all duration-300 border border-emerald-500/35 active:scale-95 flex flex-col items-center gap-1.5 min-w-[140px]"
                 >
                   <span className="text-2xl">🧙‍♂️</span>
                   <span className="relative z-10 flex items-center gap-2">
@@ -733,7 +733,7 @@ export default function StudentDashboard() {
                 <Link
                   id="rpg-shop-banner-button"
                   href="/student/shop"
-                  className="relative group overflow-hidden px-6 py-4 bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 hover:from-yellow-400 hover:to-amber-500 text-zinc-950 font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl shadow-amber-950/20 transition-all duration-300 border border-yellow-400/30 active:scale-95 flex flex-col items-center gap-1.5 min-w-[140px]"
+                  className="relative group overflow-hidden px-6 py-4 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl shadow-amber-500/30 transition-all duration-300 border border-amber-400/40 active:scale-95 flex flex-col items-center gap-1.5 min-w-[140px]"
                 >
                   <span className="text-2xl">🏬</span>
                   <span className="relative z-10 flex items-center gap-2">
@@ -753,7 +753,7 @@ export default function StudentDashboard() {
         {/* Tablero de Gremios / Contratos de Secundaria - Saga Map */}
         <div className="flex flex-col gap-4">
           <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-            <Compass className="h-5 w-5 text-purple-500" />
+            <Compass className="h-5 w-5 text-emerald-500" />
             Sendero del Héroe: Contratos Activos
           </h2>
           <SagaMap missions={missions} activeLevel={activeLevel} activeGrade={activeGrade} />
@@ -762,7 +762,7 @@ export default function StudentDashboard() {
         {/* Campo de Batalla del Gremio */}
         <div id="rpg-combat-arena" className="flex flex-col gap-4">
           <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-            <Swords className="h-5 w-5 text-purple-500" />
+            <Swords className="h-5 w-5 text-teal-400" />
             Arena del Gremio: Batalla Sincrónica
           </h2>
           <RpgCombatViewport />
@@ -945,9 +945,9 @@ export default function StudentDashboard() {
         
         {/* BANNER DEL GREMIO: EDICTO ACTIVO & PULSO SOCIOEMOCIONAL */}
         {edictosList.length > 0 && (
-          <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-purple-950 border border-indigo-800/60 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-fade-in">
+          <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 border border-emerald-500/40 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-fade-in">
             <div className="flex items-start gap-3">
-              <div className="p-2.5 rounded-2xl bg-indigo-500/20 text-indigo-300 shrink-0 mt-0.5 border border-indigo-400/30">
+              <div className="p-2.5 rounded-2xl bg-teal-500/20 text-teal-300 shrink-0 mt-0.5 border border-teal-400/30">
                 <Sparkles className="w-5 h-5 text-yellow-300 animate-pulse" />
               </div>
               <div className="space-y-1">
@@ -1064,7 +1064,7 @@ export default function StudentDashboard() {
                 <button
                   type="button"
                   onClick={() => playWithPet(activeStudentId)}
-                  className="py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md transition-all active:scale-95"
+                  className="py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md transition-all active:scale-95"
                 >
                   <Heart className="h-4 w-4 fill-current text-rose-300" />
                   Jugar (2 🪙)
@@ -1128,27 +1128,27 @@ export default function StudentDashboard() {
       {/* Tour Overlay de Gamificación */}
       {showTour && activeLevel === 'secundaria' && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/80 backdrop-blur-sm transition-all duration-300">
-          <div className="relative max-w-md w-full mx-4 p-6 rounded-3xl border border-purple-500/50 bg-gradient-to-br from-zinc-900 to-purple-950/90 text-white shadow-[0_0_50px_rgba(168,85,247,0.3)] flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative max-w-md w-full mx-4 p-6 rounded-3xl border border-emerald-500/50 bg-gradient-to-br from-slate-900 to-blue-950/90 text-white shadow-[0_0_50px_rgba(16,185,129,0.25)] flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200">
             
             {/* Step indicator */}
-            <div className="flex justify-between items-center text-[10px] font-black text-purple-400 uppercase tracking-widest">
+            <div className="flex justify-between items-center text-[10px] font-black text-emerald-400 uppercase tracking-widest">
               <span>Guía del Gremio (Paso {tourStep + 1} de 4)</span>
               <button 
                 onClick={() => {
                   setShowTour(false);
                   localStorage.setItem('iskool_rpg_tour_completed', 'true');
                 }}
-                className="hover:text-purple-300 transition-colors"
+                className="hover:text-emerald-300 transition-colors"
               >
                 Saltar Tour ✕
               </button>
             </div>
 
             {/* Mentor Avatar and Dialogue */}
-            <div className="flex gap-4 items-start bg-zinc-950/40 p-4 rounded-2xl border border-purple-900/30">
-              <div className="text-4xl p-2 bg-purple-950/50 rounded-2xl border border-purple-500/30 shadow-inner select-none">🧙‍♂️</div>
+            <div className="flex gap-4 items-start bg-zinc-950/40 p-4 rounded-2xl border border-emerald-900/30">
+              <div className="text-4xl p-2 bg-emerald-950/50 rounded-2xl border border-emerald-500/30 shadow-inner select-none">🧙‍♂️</div>
               <div className="flex-1">
-                <strong className="text-purple-300 text-xs font-bold block mb-1">Sombra (Mentor de Rol)</strong>
+                <strong className="text-emerald-300 text-xs font-bold block mb-1">Sombra (Mentor de Rol)</strong>
                 <p className="text-xs text-zinc-300 leading-relaxed font-semibold">
                   {tourStep === 0 && "🔮 ¡Bienvenido al Gremio de Héroes! Aquí verás tu Hoja de Héroe. Al completar contratos de tareas y subir de nivel, obtendrás puntos para mejorar tu Fuerza, Inteligencia y Defensa."}
                   {tourStep === 1 && "🏬 Esta es la Tienda de Artefactos. Compra objetos mágicos con las monedas que ganes. ¡Cada artefacto te otorga una oportunidad extra de reintentar el examen final!"}
@@ -1186,7 +1186,7 @@ export default function StudentDashboard() {
                     localStorage.setItem('iskool_rpg_tour_completed', 'true');
                   }
                 }}
-                className="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black uppercase tracking-wider transition-all shadow-md active:scale-95"
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 text-xs font-black uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer"
               >
                 {tourStep === 3 ? "¡Entendido!" : "Siguiente"}
               </button>

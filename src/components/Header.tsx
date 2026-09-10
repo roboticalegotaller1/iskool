@@ -240,8 +240,8 @@ export const Header: React.FC = () => {
                 <Coins className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />
                 <span>{stats.coins}</span>
               </div>
-              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 border border-purple-200/60 text-purple-600 dark:text-purple-400" title="Nivel de Gamificación">
-                <Trophy className="h-3.5 w-3.5 text-purple-500" />
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 border border-teal-200/60 text-teal-600 dark:text-teal-400" title="Nivel de Gamificación">
+                <Trophy className="h-3.5 w-3.5 text-teal-500" />
                 <span>Nv.{stats.level}</span>
               </div>
             </div>
@@ -299,8 +299,8 @@ export const Header: React.FC = () => {
                 aria-label="Cambiar vista a Director"
                 className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${
                   currentRole === 'director'
-                    ? 'bg-purple-600 text-white shadow-xs'
-                    : 'text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
                 }`}
               >
                 Director

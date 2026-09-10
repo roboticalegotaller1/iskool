@@ -576,7 +576,7 @@ function MissionPageContent({ params }: MissionPageContentProps) {
 
       {/* Background Starry/Glowing Aura */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
-        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[150px] mix-blend-screen" />
+        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-[150px] mix-blend-screen" />
         <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[150px] mix-blend-screen" />
       </div>
 
@@ -596,15 +596,15 @@ function MissionPageContent({ params }: MissionPageContentProps) {
             {/* Detalles de la Misión / Historia (Izquierda) */}
             <div className="lg:col-span-1 flex flex-col gap-6">
               <div className="rounded-3xl border border-zinc-200/80 bg-white dark:border-zinc-800/80 dark:bg-zinc-900 p-6 shadow-sm">
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-400 border border-teal-500/20">
                   {mission.subject_id === 'sub-math' ? 'Matemáticas' : mission.subject_id === 'sub-sci' ? 'Ciencias Naturales' : 'Español'}
                 </span>
                 
                 <h1 className="text-2xl font-black mt-3 text-zinc-950 dark:text-white">{mission.title}</h1>
                 
                 {/* Cuadro de Narrativa */}
-                <div className="mt-4 p-4 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 border border-indigo-100/60 dark:border-indigo-900/30">
-                  <p className="text-xs font-bold text-indigo-500 dark:text-indigo-400 uppercase tracking-wide flex items-center gap-1.5 mb-2">
+                <div className="mt-4 p-4 rounded-2xl bg-gradient-to-br from-teal-50 to-emerald-50 dark:from-teal-950/20 dark:to-emerald-950/20 border border-teal-100/60 dark:border-teal-900/30">
+                  <p className="text-xs font-bold text-teal-600 dark:text-teal-400 uppercase tracking-wide flex items-center gap-1.5 mb-2">
                     <Sparkles className="h-4 w-4" />
                     Bitácora del Explorador
                   </p>
@@ -1004,7 +1004,7 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                                     onClick={() => simulateFileUpload('audio')}
                                     className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-zinc-800 hover:border-zinc-700 hover:text-white text-xs font-bold bg-zinc-950 text-zinc-400 transition-colors"
                                   >
-                                    <Mic className="h-4 w-4 text-purple-400" />
+                                    <Mic className="h-4 w-4 text-teal-400" />
                                     Grabar Audio
                                   </button>
                                 )}
@@ -1133,13 +1133,13 @@ function MissionPageContent({ params }: MissionPageContentProps) {
 
         {/* --- MODO COMBATE DE JEFE (EXAMEN) --- */}
         {isPlayingExam && selectedQuest && (
-          <div className="max-w-4xl mx-auto bg-zinc-950 text-white rounded-3xl overflow-hidden border border-purple-900/50 shadow-2xl shadow-purple-950/20 animate-scale-up">
+          <div className="max-w-4xl mx-auto bg-slate-900/95 text-white rounded-3xl overflow-hidden border border-emerald-500/30 shadow-2xl shadow-emerald-950/40 animate-scale-up">
             
             {/* Header del Combate */}
-            <div className="px-6 py-4 bg-zinc-900 border-b border-purple-950 flex justify-between items-center">
+            <div className="px-6 py-4 bg-slate-950/80 border-b border-emerald-950 flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
-                <span className="text-[10px] font-black text-purple-400 uppercase tracking-widest">Encuentro de Jefe de Zona (Examen)</span>
+                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Encuentro de Jefe de Zona (Examen)</span>
               </div>
               <button
                 onClick={() => {
@@ -1148,7 +1148,7 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                     setSelectedQuest(null);
                   }
                 }}
-                className="text-xs font-bold text-zinc-400 hover:text-red-400 transition-colors"
+                className="text-xs font-bold text-zinc-400 hover:text-red-400 transition-colors cursor-pointer"
               >
                 Huir de la batalla 🏃‍♂️
               </button>
@@ -1156,23 +1156,23 @@ function MissionPageContent({ params }: MissionPageContentProps) {
 
             {bossBattlePhase === 'intro' ? (
               // FASE INTRODUCCIÓN LORE
-              <div className="p-8 text-center flex flex-col items-center justify-center gap-6 bg-gradient-to-b from-zinc-900 to-zinc-950">
+              <div className="p-8 text-center flex flex-col items-center justify-center gap-6 bg-gradient-to-b from-slate-900 to-blue-950">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-purple-500/20 blur-xl rounded-full" />
-                  <Trophy className="h-20 w-20 text-purple-500 relative animate-pulse" />
+                  <div className="absolute inset-0 bg-amber-500/20 blur-xl rounded-full" />
+                  <Trophy className="h-20 w-20 text-amber-400 relative animate-pulse" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-black text-purple-400 tracking-wider">¡SE APROXIMA EL JEFE DE NIVEL!</h2>
+                  <h2 className="text-2xl font-black text-amber-400 tracking-wider">¡SE APROXIMA EL JEFE DE NIVEL!</h2>
                   <h3 className="text-xl font-bold text-white mt-1">{(selectedQuest.content as import('@/types').ExamContent).bossName || 'Tirano Oscuro'}</h3>
-                  <p className="text-xs text-purple-300 font-semibold mt-1">HP: {(selectedQuest.content as import('@/types').ExamContent).bossHp || 100} | Daño: 10-{(selectedQuest.content as import('@/types').ExamContent).bossMaxDmg || 20}</p>
+                  <p className="text-xs text-teal-300 font-semibold mt-1">HP: {(selectedQuest.content as import('@/types').ExamContent).bossHp || 100} | Daño: 10-{(selectedQuest.content as import('@/types').ExamContent).bossMaxDmg || 20}</p>
                 </div>
 
-                <div className="max-w-md p-5 rounded-2xl bg-zinc-900/80 border border-purple-950/60 leading-relaxed font-semibold italic text-xs text-zinc-350 shadow-inner">
+                <div className="max-w-md p-5 rounded-2xl bg-slate-950/70 border border-teal-900/50 leading-relaxed font-semibold italic text-xs text-zinc-350 shadow-inner">
                   "{(selectedQuest.content as import('@/types').ExamContent).storyIntro || 'Un gran reto te espera. Usa tus saberes para derrotar al guardián.'}"
                 </div>
 
                 {/* RPG stats del alumno */}
-                <div className="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800 w-full max-w-sm flex justify-around text-center text-xs">
+                <div className="bg-slate-950/60 p-4 rounded-xl border border-zinc-800 w-full max-w-sm flex justify-around text-center text-xs">
                   <div>
                     <span className="text-red-500 block font-bold">Fuerza 💪</span>
                     <span className="text-md font-black">{stats.attribute_strength || 1}</span>
@@ -1191,7 +1191,7 @@ function MissionPageContent({ params }: MissionPageContentProps) {
 
                 <button
                   onClick={() => setBossBattlePhase('fight')}
-                  className="px-8 py-3 bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs rounded-full shadow-lg shadow-purple-500/20 transition-all hover:scale-105 uppercase tracking-widest flex items-center gap-2"
+                  className="px-8 py-3 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-xs rounded-full shadow-lg shadow-amber-500/30 border border-amber-400/40 transition-all hover:scale-105 uppercase tracking-widest flex items-center gap-2 cursor-pointer active:scale-95"
                 >
                   <Play className="h-4 w-4 fill-current" />
                   Iniciar Combate
@@ -1199,12 +1199,12 @@ function MissionPageContent({ params }: MissionPageContentProps) {
               </div>
             ) : bossBattlePhase === 'fight' ? (
               // FASE COMBATE
-              <div className="p-6 flex flex-col gap-6 bg-zinc-950">
+              <div className="p-6 flex flex-col gap-6 bg-slate-950/90">
                 {/* Visualizadores de HP (Personaje vs Jefe) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center col-span-2">
                   
                   {/* Estudiante stats */}
-                  <div className="p-4 rounded-2xl bg-zinc-900 border border-zinc-800 flex flex-col gap-2">
+                  <div className="p-4 rounded-2xl bg-slate-900 border border-zinc-800 flex flex-col gap-2">
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-black text-zinc-300 font-black">Explorador (Tú)</span>
                       <span className="text-xs font-black text-zinc-400 font-black">HP {playerHp}/100</span>
@@ -1226,22 +1226,22 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                   </div>
 
                   {/* Jefe stats */}
-                  <div className="p-4 rounded-2xl bg-zinc-900 border border-purple-950/60 flex flex-col gap-2">
+                  <div className="p-4 rounded-2xl bg-slate-900 border border-teal-900/60 flex flex-col gap-2">
                     <div className="flex justify-between items-center font-black">
-                      <span className="text-xs font-black text-purple-400">{selectedQuest.content.bossName}</span>
-                      <span className="text-xs font-black text-purple-300">HP {currentBossHp}/{currentBossMaxHp}</span>
+                      <span className="text-xs font-black text-teal-400">{selectedQuest.content.bossName}</span>
+                      <span className="text-xs font-black text-teal-300">HP {currentBossHp}/{currentBossMaxHp}</span>
                     </div>
                     {/* Barra de HP */}
                     <div className="h-3 w-full bg-zinc-800 rounded-full overflow-hidden">
                       <div 
                         className={`h-full transition-all duration-500 ${
-                          currentBossHp > 50 ? 'bg-purple-650' : currentBossHp > 20 ? 'bg-fuchsia-500' : 'bg-red-650 animate-pulse'
+                          currentBossHp > 50 ? 'bg-teal-500' : currentBossHp > 20 ? 'bg-amber-500' : 'bg-red-500 animate-pulse'
                         }`}
                         style={{ width: `${(currentBossHp / currentBossMaxHp) * 100}%` }}
                       />
                     </div>
                     <div className="text-[10px] text-zinc-400 mt-1 flex justify-between font-bold">
-                      <span>Alineación: <strong className="text-indigo-400">NEM Integral</strong></span>
+                      <span>Alineación: <strong className="text-teal-300">NEM Integral</strong></span>
                       <span className="text-rose-450">Poder: 10-{selectedQuest.content.bossMaxDmg || 20}</span>
                     </div>
                   </div>
@@ -1249,7 +1249,7 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                 </div>
 
                 {/* Lienzo Gráfico de Combate RPG (PixiJS) */}
-                <div className="w-full h-[220px] md:h-[280px] rounded-2xl overflow-hidden border border-purple-955/30 bg-zinc-900/35 relative">
+                <div className="w-full h-[220px] md:h-[280px] rounded-2xl overflow-hidden border border-teal-900/40 bg-slate-900/50 relative">
                   <PixiCombatView
                     combatState={canvasCombatState}
                     volume={1}
@@ -1267,7 +1267,7 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                 </div>
 
                 {/* Combat Log */}
-                <div className="bg-zinc-900/60 border border-zinc-800 rounded-xl p-3 max-h-[90px] overflow-y-auto text-[10px] leading-relaxed flex flex-col gap-1 font-mono text-zinc-400">
+                <div className="bg-slate-900/80 border border-zinc-800 rounded-xl p-3 max-h-[90px] overflow-y-auto text-[10px] leading-relaxed flex flex-col gap-1 font-mono text-zinc-400">
                   {combatLog.map((log, idx) => (
                     <div key={idx} className={log.startsWith('⚔️') ? 'text-emerald-400 font-semibold' : log.startsWith('💥') ? 'text-red-400 font-semibold' : 'text-zinc-300'}>
                       {log}
@@ -1279,7 +1279,7 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                   {/* Preguntas y Progreso */}
                   <div className="flex justify-between items-center text-xs font-bold text-zinc-500 mb-3">
                     <span>Ronda {examCurrentQuestionIdx + 1} de {(selectedQuest.content as any).questions.length}</span>
-                    <span className="text-[10px] bg-purple-950/60 text-purple-400 px-2 py-0.5 rounded border border-purple-900/40">
+                    <span className="text-[10px] bg-teal-950/60 text-teal-400 px-2 py-0.5 rounded border border-teal-900/40 font-black">
                       Modo Combate
                     </span>
                   </div>
@@ -1349,7 +1349,7 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                     <div className="mt-6 flex justify-end">
                       <button
                         onClick={continueBossBattle}
-                        className="px-6 py-2.5 rounded-full bg-purple-650 hover:bg-purple-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-purple-500/10"
+                        className="px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-lg shadow-amber-500/30 border border-amber-400/40 cursor-pointer active:scale-95"
                       >
                         Continuar Combate
                         <ArrowRight className="h-4 w-4" />
@@ -1360,24 +1360,24 @@ function MissionPageContent({ params }: MissionPageContentProps) {
               </div>
             ) : bossBattlePhase === 'victory' ? (
               // FASE VICTORIA
-              <div className="p-8 text-center flex flex-col items-center justify-center gap-6 bg-gradient-to-b from-zinc-900 to-zinc-950">
-                <div className="h-20 w-20 rounded-full bg-purple-900/50 text-purple-400 flex items-center justify-center animate-bounce border border-purple-500/30">
-                  <Trophy className="h-10 w-10 text-purple-400" />
+              <div className="p-8 text-center flex flex-col items-center justify-center gap-6 bg-gradient-to-b from-slate-900 to-blue-950">
+                <div className="h-20 w-20 rounded-full bg-amber-950/50 text-amber-400 flex items-center justify-center animate-bounce border border-amber-500/40 shadow-lg shadow-amber-500/20">
+                  <Trophy className="h-10 w-10 text-amber-400" />
                 </div>
 
                 <div>
-                  <h3 className="text-2xl font-black text-purple-400">¡VICTORIA LEGENDARIA!</h3>
+                  <h3 className="text-2xl font-black text-amber-400">¡VICTORIA LEGENDARIA!</h3>
                   <p className="text-sm text-zinc-300 mt-2 max-w-sm mx-auto font-semibold">
-                    Lograste derrotar a <strong className="text-purple-300 font-extrabold">{selectedQuest.content.bossName}</strong> y restablecer el balance en la asignatura.
+                    Lograste derrotar a <strong className="text-teal-300 font-extrabold">{selectedQuest.content.bossName}</strong> y restablecer el balance en la asignatura.
                   </p>
                 </div>
 
                 {/* Desglose de Recompensas Básicas */}
                 {examResult && (
-                  <div className="bg-zinc-900/60 p-5 rounded-2xl border border-zinc-800 w-full max-w-md grid grid-cols-2 gap-4 text-center font-black">
+                  <div className="bg-slate-950/60 p-5 rounded-2xl border border-zinc-800 w-full max-w-md grid grid-cols-2 gap-4 text-center font-black">
                     <div className="flex flex-col items-center justify-center">
                       <span className="text-[10px] font-bold text-zinc-400 uppercase">EXPERIENCIA</span>
-                      <span className="text-lg font-black text-blue-400 mt-1">+{examResult.xpEarned} XP</span>
+                      <span className="text-lg font-black text-teal-400 mt-1">+{examResult.xpEarned} XP</span>
                     </div>
                     <div className="flex flex-col items-center justify-center border-l border-zinc-800">
                       <span className="text-[10px] font-bold text-zinc-400 uppercase">MONEDAS</span>
@@ -1390,9 +1390,9 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                 )}
 
                 {/* Atributos e Items Desbloqueados */}
-                <div className="bg-purple-950/20 border border-purple-900/35 rounded-2xl p-5 w-full max-w-md text-left flex flex-col gap-3 font-semibold text-xs text-zinc-300">
-                  <span className="text-[9px] font-black text-purple-400 uppercase tracking-wider border-b border-purple-900/30 pb-1.5 flex items-center gap-1">
-                    <Sparkles className="h-3.5 w-3.5 text-purple-400" />
+                <div className="bg-slate-950/70 border border-teal-900/40 rounded-2xl p-5 w-full max-w-md text-left flex flex-col gap-3 font-semibold text-xs text-zinc-300">
+                  <span className="text-[9px] font-black text-teal-400 uppercase tracking-wider border-b border-teal-900/30 pb-1.5 flex items-center gap-1">
+                    <Sparkles className="h-3.5 w-3.5 text-teal-400" />
                     MEJORAS ACADÉMICAS Y DE PERSONAJE OBTENIDAS:
                   </span>
                   
@@ -1408,7 +1408,7 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                   )}
 
                   {selectedQuest.content.customLoot && (
-                    <div className="flex items-center gap-2 text-zinc-200 mt-1 bg-zinc-900/40 p-2.5 rounded-xl border border-zinc-800">
+                    <div className="flex items-center gap-2 text-zinc-200 mt-1 bg-slate-900/60 p-2.5 rounded-xl border border-zinc-800">
                       <Award className="h-5 w-5 text-yellow-500" />
                       <div>
                         <p className="text-[10px] text-zinc-400 uppercase">Loot Especial Desbloqueado</p>
@@ -1440,14 +1440,14 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                     setIsPlayingExam(false);
                     setSelectedQuest(null);
                   }}
-                  className="px-8 py-3 bg-white hover:bg-zinc-200 text-zinc-950 rounded-full font-black text-xs transition-all shadow-md uppercase tracking-wider"
+                  className="px-8 py-3 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 rounded-full font-black text-xs transition-all shadow-lg shadow-amber-500/30 border border-amber-400/40 uppercase tracking-wider cursor-pointer active:scale-95"
                 >
                   Regresar a la Misión
                 </button>
               </div>
             ) : (
               // FASE DEFEAT
-              <div className="p-8 text-center flex flex-col items-center justify-center gap-6 bg-gradient-to-b from-zinc-900 to-zinc-950">
+              <div className="p-8 text-center flex flex-col items-center justify-center gap-6 bg-gradient-to-b from-slate-900 to-blue-950">
                 <div className="h-20 w-20 rounded-full bg-red-950/50 text-red-500 flex items-center justify-center animate-pulse border border-red-900/30">
                   <XCircle className="h-10 w-10 text-red-500" />
                 </div>
@@ -1455,7 +1455,7 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                 <div>
                   <h3 className="text-2xl font-black text-red-500">¡HAS SIDO DERROTADO!</h3>
                   <p className="text-sm text-zinc-300 mt-2 max-w-sm mx-auto font-semibold">
-                    No lograste resistir los ataques de <strong className="text-purple-300 font-extrabold">{selectedQuest.content.bossName}</strong>. 
+                    No lograste resistir los ataques de <strong className="text-rose-400 font-extrabold">{selectedQuest.content.bossName}</strong>. 
                   </p>
                   <p className="text-xs text-zinc-500 mt-1 max-w-xs mx-auto leading-relaxed font-semibold">
                     Revisa las explicaciones de las preguntas, repasa los conceptos de la Nueva Escuela Mexicana y vuelve a desafiar al jefe.
@@ -1463,7 +1463,7 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                 </div>
 
                 {/* Atributos informativos */}
-                <div className="bg-zinc-900/60 p-4 rounded-2xl border border-zinc-800 w-full max-w-md text-left text-xs text-zinc-400 flex flex-col gap-2 leading-relaxed font-semibold">
+                <div className="bg-slate-950/60 p-4 rounded-2xl border border-zinc-800 w-full max-w-md text-left text-xs text-zinc-400 flex flex-col gap-2 leading-relaxed font-semibold">
                   <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider block border-b border-zinc-800 pb-1 flex items-center gap-1 font-black">
                     <Brain className="h-4 w-4 text-red-400" />
                     Consejo RPG Académico:
@@ -1479,7 +1479,7 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                 <div className="flex gap-3 mt-2">
                   <button
                     onClick={() => setBossBattlePhase('intro')}
-                    className="px-6 py-2.5 bg-purple-650 hover:bg-purple-700 text-white rounded-full font-bold text-xs transition-all shadow-md"
+                    className="px-6 py-2.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 rounded-full font-black text-xs transition-all shadow-lg shadow-amber-500/30 border border-amber-400/40 cursor-pointer active:scale-95"
                   >
                     Volver a Intentar
                   </button>
@@ -1488,7 +1488,7 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                       setIsPlayingExam(false);
                       setSelectedQuest(null);
                     }}
-                    className="px-6 py-2.5 bg-zinc-900 hover:bg-zinc-850 text-zinc-400 border border-zinc-800 rounded-full font-bold text-xs transition-all"
+                    className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-zinc-400 border border-zinc-800 rounded-full font-bold text-xs transition-all cursor-pointer"
                   >
                     Retirarse
                   </button>

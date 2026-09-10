@@ -211,7 +211,7 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
 
   // Determine Level Subtheme (Redesigned for Magic Academy)
   const theme = {
-    containerBg: 'bg-gradient-to-b from-slate-950 via-indigo-950 to-purple-900',
+    containerBg: 'bg-gradient-to-b from-slate-950 via-slate-900 to-blue-950',
     gridColor: 'rgba(255, 215, 0, 0.03)',
     pathColor: 'url(#arcane-golden-gradient)',
     pathDash: '8 6',
@@ -219,10 +219,10 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
     decoElements: (
       <>
         {/* Starry Sky Overlay */}
-        <div className="absolute inset-0 pointer-events-none opacity-40 mix-blend-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/40 via-transparent to-transparent" />
+        <div className="absolute inset-0 pointer-events-none opacity-40 mix-blend-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-900/20 via-transparent to-transparent" />
         
         {/* Inline SVG Gothic Castle Silhouette */}
-        <svg className="absolute bottom-0 right-4 w-72 h-36 opacity-10 pointer-events-none select-none text-purple-300 fill-current" viewBox="0 0 400 200">
+        <svg className="absolute bottom-0 right-4 w-72 h-36 opacity-10 pointer-events-none select-none text-teal-300 fill-current" viewBox="0 0 400 200">
           <path d="M 0,200 L 0,160 L 20,160 L 20,140 L 40,140 L 40,160 L 60,160 L 60,200 Z" />
           <path d="M 50,200 L 50,110 L 70,80 L 90,110 L 90,200 Z" />
           <path d="M 80,200 L 80,130 L 100,130 L 100,100 L 120,70 L 140,100 L 140,130 L 160,130 L 160,200 Z" />
@@ -337,7 +337,7 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
 
         {/* Period Selector */}
         <div className="absolute top-4 right-6 z-10 bg-zinc-950/70 border border-zinc-800/80 backdrop-blur-md px-3 py-1.5 rounded-2xl flex items-center gap-2 shadow-lg select-none">
-          <span className="text-[10px] font-black text-purple-400 uppercase tracking-wider">Periodo:</span>
+          <span className="text-[10px] font-black text-emerald-400 uppercase tracking-wider">Periodo:</span>
           <div className="flex gap-1.5">
             {['Todos', 'Trimestre 1', 'Trimestre 2', 'Trimestre 3'].map((p) => (
               <button
@@ -345,7 +345,7 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
                 onClick={() => setSelectedPeriod(p)}
                 className={`px-2.5 py-1 rounded-xl text-[10px] font-bold tracking-wide transition-all cursor-pointer ${
                   selectedPeriod === p
-                    ? 'bg-purple-650 text-white shadow shadow-purple-950/50 border border-purple-500/30'
+                    ? 'bg-emerald-600 text-white shadow shadow-emerald-950/50 border border-emerald-500/40 font-black'
                     : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5 border border-transparent'
                 }`}
               >
@@ -469,13 +469,13 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
             }}
           >
             {/* Corner Decorative Gradients */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 blur-3xl pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-500/10 blur-3xl pointer-events-none" />
 
             {/* Modal Header */}
             <div className="flex justify-between items-start">
               <div className="flex flex-col gap-1 text-left">
-                <span className="text-[9px] font-black text-purple-400 tracking-widest uppercase bg-purple-950/50 border border-purple-500/25 px-2.5 py-0.5 rounded-full w-max">
+                <span className="text-[9px] font-black text-teal-400 tracking-widest uppercase bg-teal-950/50 border border-teal-500/25 px-2.5 py-0.5 rounded-full w-max">
                   {selectedMission.subject_id === 'sub-math' ? 'Matemáticas' : 'Español'}
                 </span>
                 <h3 className="text-xl font-black text-white mt-1.5">{selectedMission.title}</h3>
@@ -602,7 +602,7 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
                 </button>
                 <Link
                   href={`/student/missions/${selectedMission.id}`}
-                  className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-md shadow-indigo-950/40 active:scale-95 flex items-center gap-1.5 border border-purple-500/20"
+                  className="px-5 py-2.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 text-xs font-black uppercase tracking-wider rounded-xl transition-all shadow-lg shadow-amber-500/30 active:scale-95 flex items-center gap-1.5 border border-amber-400/40 cursor-pointer"
                 >
                   Comenzar Aventura
                   <ArrowRight className="h-3.5 w-3.5" />

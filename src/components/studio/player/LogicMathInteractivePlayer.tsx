@@ -204,7 +204,7 @@ export const LogicMathInteractivePlayer: React.FC<Props> = ({
       case 'boolean_algebra':
         return <ToggleLeft className="w-5 h-5 text-indigo-400" />;
       case 'graphs_networks':
-        return <Network className="w-5 h-5 text-purple-400" />;
+        return <Network className="w-5 h-5 text-teal-400" />;
       case 'state_automaton':
         return <Bot className="w-5 h-5 text-teal-400" />;
       case 'csp_scheduler':
@@ -517,9 +517,9 @@ export const LogicMathInteractivePlayer: React.FC<Props> = ({
 
         {/* === CASO D: GRAFOS Y PROPAGACIÓN BFS === */}
         {activity.simulationConfig.engine === 'graph_explorer' && (
-          <div className="w-full max-w-xl p-5 rounded-2xl bg-slate-900 border border-purple-800/60 space-y-4">
+          <div className="w-full max-w-xl p-5 rounded-2xl bg-slate-900 border border-teal-800/60 space-y-4">
             <div className="flex items-center justify-between text-xs text-slate-400 font-bold border-b border-slate-800 pb-2">
-              <div className="flex items-center gap-1.5 text-purple-300">
+              <div className="flex items-center gap-1.5 text-teal-300">
                 <Network className="w-4 h-4" />
                 <span>Simulador de Propagación en Red (BFS)</span>
               </div>
@@ -532,7 +532,7 @@ export const LogicMathInteractivePlayer: React.FC<Props> = ({
                 { name: 'Pueblo J (Origen)', day: 0, color: 'border-cyan-500 bg-cyan-950 text-cyan-200' },
                 { name: 'Pueblos E, G, H, M', day: 1, color: 'border-blue-500 bg-blue-950 text-blue-200' },
                 { name: 'Pueblos B, C, D, I, K, N', day: 2, color: 'border-indigo-500 bg-indigo-950 text-indigo-200' },
-                { name: 'Pueblos A, F, P, R', day: 3, color: 'border-purple-500 bg-purple-950 text-purple-200' },
+                { name: 'Pueblos A, F, P, R', day: 3, color: 'border-teal-500 bg-teal-950 text-teal-200' },
                 { name: 'Pueblo Q (Último)', day: 4, color: 'border-rose-500 bg-rose-950 text-rose-200' }
               ].map((group, idx) => (
                 <div
@@ -555,7 +555,7 @@ export const LogicMathInteractivePlayer: React.FC<Props> = ({
                   playSoundEffect('step');
                   setActiveBfsStep(prev => (prev < 4 ? prev + 1 : 0));
                 }}
-                className="px-4 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer"
+                className="px-4 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-teal-500/20"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Avanzar Día de Entrega (+1 Salto BFS)</span>
@@ -661,7 +661,7 @@ export const LogicMathInteractivePlayer: React.FC<Props> = ({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-black shadow-lg shadow-purple-500/20 transition-all flex items-center gap-1.5"
+                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 text-xs font-black shadow-lg shadow-amber-500/30 border border-amber-400/40 transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <span>Continuar Misión</span>
                   <ArrowRight className="w-4 h-4" />

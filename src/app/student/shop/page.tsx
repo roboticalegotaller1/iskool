@@ -162,7 +162,7 @@ export default function MagicShopPage() {
             Volver al Portal Escolar
           </Link>
           
-          <div className="flex items-center gap-2 bg-purple-900/35 border border-purple-500/30 px-4 py-2 rounded-xl">
+          <div className="flex items-center gap-2 bg-amber-950/40 border border-amber-500/40 px-4 py-2 rounded-xl shadow-lg shadow-amber-500/10">
             <Coins className="h-4 w-4 text-yellow-400 fill-current" />
             <span className="text-xs font-black text-zinc-100 uppercase tracking-wider">
               Tus Monedas: <strong className="text-yellow-400 text-sm">{stats.coins}</strong>
@@ -329,7 +329,7 @@ export default function MagicShopPage() {
                       <div className="flex-1">
                         <strong className="text-zinc-100 block font-bold text-xs">{art.name}</strong>
                         <p className="text-[10px] text-zinc-400 mt-1 leading-relaxed">{art.description}</p>
-                        <span className="text-[9px] text-purple-400 font-bold tracking-wide mt-2 block uppercase bg-purple-950/45 border border-purple-900/35 px-2 py-0.5 rounded-md w-fit">
+                        <span className="text-[9px] text-teal-400 font-bold tracking-wide mt-2 block uppercase bg-teal-950/45 border border-teal-900/35 px-2 py-0.5 rounded-md w-fit">
                           Efecto: +1 reintento
                         </span>
                       </div>
@@ -405,7 +405,7 @@ export default function MagicShopPage() {
               <div>
                 <div className="flex justify-between items-center border-b border-zinc-800/80 pb-3 mb-3">
                   <h3 className="text-xs font-black uppercase text-zinc-400 tracking-wider flex items-center gap-1.5">
-                    <Bell className="h-4 w-4 text-purple-400" />
+                    <Bell className="h-4 w-4 text-amber-400" />
                     Alertas del Gremio
                   </h3>
                   {studentMessages.filter(m => m.student_id === activeStudentId && !m.is_read).length > 0 && (
@@ -429,17 +429,17 @@ export default function MagicShopPage() {
                               ? 'border-zinc-800/60 bg-zinc-950/20 text-zinc-500' 
                               : msg.type === 'revocation'
                                 ? 'border-rose-950 bg-rose-950/15 text-zinc-200'
-                                : 'border-purple-950 bg-purple-950/15 text-zinc-200'
+                                : 'border-teal-950 bg-teal-950/15 text-zinc-200'
                           }`}
                         >
                           <div className="flex justify-between items-start gap-2 mb-1">
-                            <span className="font-extrabold uppercase text-[9px] tracking-wide text-purple-300">
+                            <span className="font-extrabold uppercase text-[9px] tracking-wide text-teal-300">
                               {msg.title}
                             </span>
                             {!msg.is_read && (
                               <button 
                                 onClick={() => markStudentMessageAsRead(msg.id)}
-                                className="text-[9px] text-purple-400 hover:underline shrink-0"
+                                className="text-[9px] text-teal-400 hover:underline shrink-0"
                               >
                                 Marcar leído
                               </button>

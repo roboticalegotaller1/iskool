@@ -66,7 +66,7 @@ export const SCRATCH_CATEGORIES: BlockCategoryItem[] = [
     name: 'Evaluación & Reactivos',
     badge: '6 Bloques',
     icon: HelpCircle,
-    color: 'from-purple-600 to-indigo-600',
+    color: 'from-emerald-600 to-teal-600',
     description: 'Reactivos de evaluación formativa inmediata, lectura cronometrada, emparejamiento y preguntas abiertas.',
     example: 'Ideal para evaluar fluidez y comprensión lectora (PPM), definiciones científicas y procesos históricos.',
     blocks: [
@@ -89,8 +89,8 @@ export const SCRATCH_CATEGORIES: BlockCategoryItem[] = [
         description: 'Reactivo interactivo con 4 opciones, retroalimentación formativa y cronómetro opcional.',
         example: '¿Cuál es la función principal de los cloroplastos en las células vegetales?',
         icon: HelpCircle,
-        gradient: 'from-purple-500 to-indigo-600',
-        glowColor: 'shadow-purple-500/30'
+        gradient: 'from-emerald-500 to-teal-600',
+        glowColor: 'shadow-emerald-500/30'
       },
       {
         type: 'drag_drop_match',
@@ -243,8 +243,8 @@ export const SCRATCH_CATEGORIES: BlockCategoryItem[] = [
         description: 'Ruleta de la fortuna, memorama o ruleta de preguntas para otorgar bonificaciones.',
         example: 'Girar la ruleta para duplicar el botín XP antes de enfrentar al Boss.',
         icon: Gamepad2,
-        gradient: 'from-violet-500 to-purple-600',
-        glowColor: 'shadow-violet-500/30'
+        gradient: 'from-teal-500 to-emerald-600',
+        glowColor: 'shadow-teal-500/30'
       }
     ]
   },
@@ -265,8 +265,8 @@ export const SCRATCH_CATEGORIES: BlockCategoryItem[] = [
         description: 'Divide el camino según la puntuación del alumno (ruta avanzada vs ruta de refuerzo).',
         example: 'Si el alumno tiene > 80% de aciertos avanza al reto; si no, recibe apoyo guiado.',
         icon: GitBranch,
-        gradient: 'from-indigo-600 to-purple-600',
-        glowColor: 'shadow-indigo-500/30'
+        gradient: 'from-teal-600 to-emerald-600',
+        glowColor: 'shadow-teal-500/30'
       },
       {
         type: 'checkpoint_gate',
@@ -331,8 +331,8 @@ export const SCRATCH_CATEGORIES: BlockCategoryItem[] = [
         description: 'Exploración de mapas interconectados, senderos de Euler, flujo máximo y propagación en amplitud (BFS).',
         example: 'El mensaje del cartero en la isla, barquitos de Euler y rutas de transporte público.',
         icon: Network,
-        gradient: 'from-indigo-500 to-purple-600',
-        glowColor: 'shadow-indigo-500/30'
+        gradient: 'from-cyan-500 to-teal-600',
+        glowColor: 'shadow-cyan-500/30'
       },
       {
         type: 'turing_step_simulator',
@@ -465,7 +465,7 @@ export const SidebarToolbar: React.FC = () => {
       {/* Cabecera del Panel de Bloques */}
       <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-zinc-800">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center font-black shadow-xs">
+          <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black shadow-xs">
             <Workflow className="w-4 h-4" />
           </div>
           <div>
@@ -478,7 +478,7 @@ export const SidebarToolbar: React.FC = () => {
           </div>
         </div>
 
-        <span className="px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-bold text-[10px] border border-purple-200/60 dark:border-purple-800/60">
+        <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold text-[10px] border border-emerald-200/60 dark:border-emerald-800/60">
           17 Nodos
         </span>
       </div>
@@ -491,7 +491,7 @@ export const SidebarToolbar: React.FC = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Buscar bloque (ej. PhET, Quiz, Boss)..."
-          className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700/80 text-xs text-slate-800 dark:text-zinc-200 placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+          className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700/80 text-xs text-slate-800 dark:text-zinc-200 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
         />
       </div>
 
@@ -513,7 +513,7 @@ export const SidebarToolbar: React.FC = () => {
                 onMouseEnter={() => setHoveredCategory(cat)}
                 onMouseLeave={() => setHoveredCategory(null)}
                 className={`w-full p-2.5 flex items-center justify-between gap-2 text-left transition-colors cursor-pointer ${
-                  isExpanded ? 'bg-purple-50/80 dark:bg-purple-950/40 text-purple-900 dark:text-purple-200' : 'hover:bg-slate-100/80 dark:hover:bg-zinc-800/60'
+                  isExpanded ? 'bg-emerald-50/80 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200' : 'hover:bg-slate-100/80 dark:hover:bg-zinc-800/60'
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
@@ -530,7 +530,7 @@ export const SidebarToolbar: React.FC = () => {
                   </div>
                 </div>
 
-                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-purple-600' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-emerald-500' : ''}`} />
               </button>
 
               {/* Lista de Bloques dentro de la Agrupación */}
@@ -554,14 +554,14 @@ export const SidebarToolbar: React.FC = () => {
                           }}
                           onMouseEnter={() => setHoveredTool(tool)}
                           onMouseLeave={() => setHoveredTool(null)}
-                          className="group p-2 rounded-xl border border-slate-200/80 dark:border-zinc-800 hover:border-purple-400 dark:hover:border-purple-600 bg-white dark:bg-zinc-850 hover:bg-purple-50 dark:hover:bg-purple-950/40 flex items-center justify-between gap-2 transition-all cursor-grab active:cursor-grabbing hover:scale-[1.01] shadow-2xs"
+                          className="group p-2 rounded-xl border border-slate-200/80 dark:border-zinc-800 hover:border-emerald-400 dark:hover:border-emerald-500 bg-white dark:bg-zinc-850 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-between gap-2 transition-all cursor-grab active:cursor-grabbing hover:scale-[1.01] shadow-2xs"
                         >
                           <div className="flex items-center gap-2 min-w-0">
                             <div className={`w-7 h-7 rounded-lg bg-gradient-to-tr ${tool.gradient} text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-110 transition-transform`}>
                               <ToolIcon className="w-3.5 h-3.5" />
                             </div>
                             <div className="min-w-0">
-                              <h5 className="text-[11px] font-black text-slate-800 dark:text-zinc-200 group-hover:text-purple-600 dark:group-hover:text-purple-400 truncate">
+                              <h5 className="text-[11px] font-black text-slate-800 dark:text-zinc-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 truncate">
                                 {tool.title}
                               </h5>
                               <span className="text-[9px] font-bold text-slate-400 block truncate">
@@ -570,7 +570,7 @@ export const SidebarToolbar: React.FC = () => {
                             </div>
                           </div>
 
-                          <span className="text-[10px] font-black text-purple-600 dark:text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                             + Añadir
                           </span>
                         </div>
@@ -592,7 +592,7 @@ export const SidebarToolbar: React.FC = () => {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.12 }}
-            className="hidden lg:block fixed left-[340px] xl:left-[370px] top-28 z-[99999] pointer-events-none w-72 sm:w-80 shadow-2xl rounded-2xl overflow-hidden bg-slate-900/95 dark:bg-zinc-900/95 text-white backdrop-blur-xl border border-slate-700/80 dark:border-zinc-700/80 p-4 space-y-2.5 animate-fade-in"
+            className="hidden lg:block fixed left-[340px] xl:left-[370px] top-28 z-[99999] pointer-events-none w-72 sm:w-80 shadow-2xl rounded-2xl overflow-hidden bg-slate-900/95 dark:bg-blue-950/95 text-white backdrop-blur-xl border border-emerald-500/30 dark:border-emerald-500/30 p-4 space-y-2.5 animate-fade-in"
           >
             {hoveredTool ? (
               <>
@@ -602,7 +602,7 @@ export const SidebarToolbar: React.FC = () => {
                       <hoveredTool.icon className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
-                      <span className="text-[9px] font-black uppercase text-purple-400 tracking-wider block">
+                      <span className="text-[9px] font-black uppercase text-teal-400 tracking-wider block">
                         {hoveredTool.category}
                       </span>
                       <h4 className="text-xs font-black text-white truncate">
@@ -610,7 +610,7 @@ export const SidebarToolbar: React.FC = () => {
                       </h4>
                     </div>
                   </div>
-                  <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-white/10 text-purple-200 shrink-0">
+                  <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0">
                     {hoveredTool.badge}
                   </span>
                 </div>
@@ -620,12 +620,12 @@ export const SidebarToolbar: React.FC = () => {
                     {hoveredTool.description}
                   </p>
 
-                  <div className="p-2.5 rounded-xl bg-purple-950/50 border border-purple-800/40 text-[11px] space-y-1">
+                  <div className="p-2.5 rounded-xl bg-slate-900/80 border border-emerald-500/30 text-[11px] space-y-1">
                     <div className="flex items-center gap-1.5 font-bold text-amber-300">
                       <Lightbulb className="w-3.5 h-3.5 shrink-0" />
                       <span>Ejemplo práctico de uso:</span>
                     </div>
-                    <p className="text-purple-200 italic leading-snug">
+                    <p className="text-emerald-200 italic leading-snug">
                       &ldquo;{hoveredTool.example}&rdquo;
                     </p>
                   </div>
@@ -642,7 +642,7 @@ export const SidebarToolbar: React.FC = () => {
                     <hoveredCategory.icon className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-[9px] font-black uppercase text-purple-400 tracking-wider block">
+                    <span className="text-[9px] font-black uppercase text-teal-400 tracking-wider block">
                       Agrupación de Bloques
                     </span>
                     <h4 className="text-xs font-black text-white">
@@ -655,9 +655,9 @@ export const SidebarToolbar: React.FC = () => {
                   {hoveredCategory.description}
                 </p>
 
-                <div className="p-2.5 rounded-xl bg-blue-950/50 border border-blue-800/40 text-[11px] space-y-1">
+                <div className="p-2.5 rounded-xl bg-blue-950/50 border border-teal-500/30 text-[11px] space-y-1">
                   <span className="font-bold text-cyan-300">💡 Aplicación sugerida:</span>
-                  <p className="text-blue-200 text-[10px] leading-snug">
+                  <p className="text-teal-200 text-[10px] leading-snug">
                     {hoveredCategory.example}
                   </p>
                 </div>
@@ -677,13 +677,13 @@ export const SidebarToolbar: React.FC = () => {
             pointerEvents: 'none',
             zIndex: 999999,
           }}
-          className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border-2 border-purple-500 shadow-2xl flex items-center gap-2.5 min-w-[200px] animate-scale-in opacity-90 rotate-2"
+          className="p-3 rounded-2xl bg-white dark:bg-zinc-900 border-2 border-emerald-500 shadow-2xl flex items-center gap-2.5 min-w-[200px] animate-scale-in opacity-90 rotate-2"
         >
           <div className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${draggingTool.gradient} text-white flex items-center justify-center shrink-0 shadow-md`}>
             <draggingTool.icon className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-[9px] font-black uppercase text-purple-600 block">
+            <span className="text-[9px] font-black uppercase text-emerald-500 block">
               Soltar para crear nodo
             </span>
             <h5 className="text-xs font-black text-slate-900 dark:text-white truncate">

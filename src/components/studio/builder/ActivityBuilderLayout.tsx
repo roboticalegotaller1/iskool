@@ -45,7 +45,7 @@ import {
 
 // Catálogo Oficial de Ejes Articuladores NEM
 const EJES_ARTICULADORES_CATALOG = [
-  { name: 'Pensamiento Crítico', icon: Brain, color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/40 border-purple-200' },
+  { name: 'Pensamiento Crítico', icon: Brain, color: 'text-teal-500 bg-teal-50 dark:bg-teal-950/40 border-teal-200' },
   { name: 'Inclusión', icon: Globe, color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/40 border-blue-200' },
   { name: 'Interculturalidad Crítica', icon: Activity, color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200' },
   { name: 'Igualdad de Género', icon: Scale, color: 'text-pink-600 bg-pink-50 dark:bg-pink-950/40 border-pink-200' },
@@ -386,7 +386,7 @@ export const ActivityBuilderLayout: React.FC = () => {
     <div className="w-full space-y-5 sm:space-y-6">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-[99999] bg-slate-900 text-white px-4 py-2.5 rounded-2xl shadow-xl border border-purple-500/40 flex items-center gap-2.5 animate-fade-in">
+        <div className="fixed bottom-6 right-6 z-[99999] bg-slate-900 text-white px-4 py-2.5 rounded-2xl shadow-xl border border-emerald-500/40 flex items-center gap-2.5 animate-fade-in">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span className="text-xs font-semibold">{toastMessage}</span>
         </div>
@@ -397,7 +397,7 @@ export const ActivityBuilderLayout: React.FC = () => {
         {/* Título de la Actividad y Metadatos */}
         <div className="space-y-1 w-full lg:max-w-md xl:max-w-lg min-w-0">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-            <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/50">
+            <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/50">
               Lienzo de Bloques
             </span>
             <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200/50 dark:border-blue-800/40">
@@ -413,7 +413,7 @@ export const ActivityBuilderLayout: React.FC = () => {
             value={metadata.title}
             onChange={(e) => updateMetadata({ title: e.target.value })}
             placeholder="Título de la Actividad..."
-            className="text-base sm:text-lg lg:text-xl font-bold text-slate-900 dark:text-white bg-transparent border-b border-transparent hover:border-slate-300 dark:hover:border-zinc-700 focus:border-purple-500 focus:outline-none w-full truncate transition-colors py-0.5"
+            className="text-base sm:text-lg lg:text-xl font-bold text-slate-900 dark:text-white bg-transparent border-b border-transparent hover:border-slate-300 dark:hover:border-zinc-700 focus:border-emerald-500 focus:outline-none w-full truncate transition-colors py-0.5"
           />
         </div>
 
@@ -490,7 +490,7 @@ export const ActivityBuilderLayout: React.FC = () => {
             title="Ajustes Pedagógicos y NEM"
             className="p-2 sm:px-3 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-slate-700 dark:text-zinc-300 font-semibold text-xs flex items-center gap-1.5 transition-all cursor-pointer border border-slate-200/80 dark:border-zinc-700/80"
           >
-            <Settings className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+            <Settings className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
             <span className="hidden sm:inline">Ajustes</span>
           </button>
 
@@ -509,7 +509,7 @@ export const ActivityBuilderLayout: React.FC = () => {
             type="button"
             onClick={handlePublishToCommunity}
             disabled={isPublishing}
-            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold text-xs shadow-md shadow-purple-600/20 flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-md shadow-amber-500/30 border border-amber-400/40 flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
           >
             <Share2 className="w-3.5 h-3.5" />
             <span>{isPublishing ? 'Publicando...' : 'Publicar'}</span>
@@ -534,7 +534,7 @@ export const ActivityBuilderLayout: React.FC = () => {
           onClick={() => setMobileStudioTab('canvas')}
           className={`flex-1 py-1.5 text-xs font-semibold rounded-xl transition-all ${
             mobileStudioTab === 'canvas'
-              ? 'bg-white dark:bg-zinc-900 text-purple-700 dark:text-purple-300 shadow-xs'
+              ? 'bg-white dark:bg-zinc-900 text-emerald-700 dark:text-emerald-300 shadow-xs'
               : 'text-slate-600 dark:text-zinc-400'
           }`}
         >
@@ -545,7 +545,7 @@ export const ActivityBuilderLayout: React.FC = () => {
           onClick={() => setMobileStudioTab('sidebar')}
           className={`flex-1 py-1.5 text-xs font-semibold rounded-xl transition-all ${
             mobileStudioTab === 'sidebar'
-              ? 'bg-white dark:bg-zinc-900 text-purple-700 dark:text-purple-300 shadow-xs'
+              ? 'bg-white dark:bg-zinc-900 text-emerald-700 dark:text-emerald-300 shadow-xs'
               : 'text-slate-600 dark:text-zinc-400'
           }`}
         >
@@ -696,23 +696,23 @@ export const ActivityBuilderLayout: React.FC = () => {
               {/* Plantilla 2: Examen / Batalla Boss */}
               <div 
                 onClick={() => applyPresetTemplate('boss_exam')}
-                className="p-5 rounded-2xl border border-slate-200 dark:border-zinc-800 hover:border-purple-500 bg-white dark:bg-zinc-850/60 hover:shadow-md cursor-pointer transition-all flex flex-col justify-between group"
+                className="p-5 rounded-2xl border border-slate-200 dark:border-zinc-800 hover:border-teal-500 bg-white dark:bg-zinc-850/60 hover:shadow-md cursor-pointer transition-all flex flex-col justify-between group"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
+                    <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300">
                       Evaluación Formativa / Boss
                     </span>
-                    <span className="text-xs font-black text-purple-600">+300 XP</span>
+                    <span className="text-xs font-black text-amber-500">+300 XP</span>
                   </div>
-                  <h4 className="text-sm font-black text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                  <h4 className="text-sm font-black text-slate-900 dark:text-white group-hover:text-teal-500 dark:group-hover:text-teal-400 transition-colors">
                     Batalla: Fraccionator el Glotón 🍕
                   </h4>
                   <p className="text-xs text-slate-500 dark:text-zinc-400 line-clamp-2">
                     Examen gamificado con emparejamiento, reactivos múltiples y combate contra criatura oscura en motor gráfico.
                   </p>
                 </div>
-                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-zinc-800 text-[10px] font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1">
+                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-zinc-800 text-[10px] font-bold text-teal-600 dark:text-teal-400 flex items-center gap-1">
                   Cargar Plantilla ➔
                 </div>
               </div>
@@ -776,11 +776,11 @@ export const ActivityBuilderLayout: React.FC = () => {
           <div className="relative w-full max-w-xl bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-2xl p-6 sm:p-8 space-y-6 my-auto sm:my-2 animate-scale-in">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-2xl bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-300 font-bold">
+                <div className="p-2 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-300 font-bold">
                   <BookOpen className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-widest">
+                  <span className="text-[10px] font-black text-teal-600 dark:text-teal-400 uppercase tracking-widest">
                     Alineación Curricular Oficial
                   </span>
                   <h3 className="text-base font-black text-slate-900 dark:text-white">
@@ -806,7 +806,7 @@ export const ActivityBuilderLayout: React.FC = () => {
                   value={metadata.description}
                   onChange={(e) => updateMetadata({ description: e.target.value })}
                   placeholder="Describe de forma formativa o gamificada el propósito de esta secuencia..."
-                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium"
+                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
                 />
               </div>
 
@@ -846,7 +846,7 @@ export const ActivityBuilderLayout: React.FC = () => {
               <div className="space-y-2">
                 <label className="font-bold text-slate-700 dark:text-zinc-300 flex items-center justify-between">
                   <span>Ejes Articuladores NEM (Multiselección):</span>
-                  <span className="text-[10px] text-purple-600 dark:text-purple-400 font-extrabold">
+                  <span className="text-[10px] text-teal-600 dark:text-teal-400 font-extrabold">
                     {(metadata.ejesArticuladores || []).length} seleccionados
                   </span>
                 </label>
@@ -865,8 +865,8 @@ export const ActivityBuilderLayout: React.FC = () => {
                         }}
                         className={`p-2.5 rounded-xl border text-left text-[11px] font-bold flex items-center gap-2 transition-all cursor-pointer ${
                           isSelected
-                            ? 'bg-purple-600 border-purple-600 text-white shadow-sm'
-                            : 'bg-slate-50 dark:bg-zinc-850 border-slate-200 dark:border-zinc-750 text-slate-700 dark:text-zinc-300 hover:border-purple-300'
+                            ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
+                            : 'bg-slate-50 dark:bg-zinc-850 border-slate-200 dark:border-zinc-750 text-slate-700 dark:text-zinc-300 hover:border-emerald-400'
                         }`}
                       >
                         <EjeIcon className="w-4 h-4 shrink-0" />
@@ -888,7 +888,7 @@ export const ActivityBuilderLayout: React.FC = () => {
                   value={metadata.pdaNem}
                   onChange={(e) => updateMetadata({ pdaNem: e.target.value })}
                   placeholder="Describe el PDA correspondiente..."
-                  className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium text-xs"
+                  className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-xs"
                 />
                 {/* Sugerencias Rápidas de PDA Oficiales */}
                 <div className="flex flex-col gap-1 mt-1">
@@ -960,7 +960,7 @@ export const ActivityBuilderLayout: React.FC = () => {
                   setIsSettingsOpen(false);
                   showToast('✅ Ajustes pedagógicos y alineación NEM guardados.');
                 }}
-                className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs shadow-md shadow-purple-500/25 transition-all cursor-pointer"
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-md shadow-amber-500/30 border border-amber-400/40 transition-all cursor-pointer"
               >
                 Guardar Ajustes
               </button>

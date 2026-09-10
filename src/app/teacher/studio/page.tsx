@@ -129,33 +129,35 @@ export default function TeacherStudioPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-50">
+    <div className="min-h-screen flex flex-col bg-slate-900 text-slate-100 relative selection:bg-emerald-500 selection:text-slate-950">
+      {/* Atmósfera oscura inmersiva */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(30,58,138,0.25),rgba(15,23,42,0))] pointer-events-none" />
       <Header />
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 relative z-10">
         {/* Navegación y Selector de Modo */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <button
             type="button"
             onClick={() => router.push('/teacher')}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800/80 text-slate-800 dark:text-zinc-200 font-bold text-xs hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all shadow-sm group w-fit cursor-pointer"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-800/90 border border-slate-700/80 text-slate-200 font-bold text-xs hover:bg-slate-750 hover:border-teal-500/50 hover:text-white transition-all shadow-sm group w-fit cursor-pointer"
           >
-            <ArrowLeft className="w-4 h-4 text-purple-600 group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft className="w-4 h-4 text-teal-400 group-hover:-translate-x-1 transition-transform" />
             <span>Volver al Hub Docente</span>
           </button>
 
           {/* Selector de Pestaña: Taller de Bloques o Asistente IA */}
-          <div className="flex items-center gap-1.5 bg-slate-200/80 dark:bg-zinc-900 p-1 rounded-2xl border border-slate-200 dark:border-zinc-800 self-start sm:self-auto">
+          <div className="flex items-center gap-1.5 bg-slate-850 p-1 rounded-2xl border border-slate-750 self-start sm:self-auto shadow-inner">
             <button
               type="button"
               onClick={() => setActiveTab('builder')}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'builder'
-                  ? 'bg-white dark:bg-zinc-800 text-purple-600 dark:text-purple-400 shadow-sm'
-                  : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900'
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 shadow-sm shadow-emerald-950/40 font-black'
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <Layers className="w-3.5 h-3.5" />
+              <Layers className="w-3.5 h-3.5 text-emerald-400" />
               <span>Lienzo de Bloques</span>
             </button>
 
@@ -164,11 +166,11 @@ export default function TeacherStudioPage() {
               onClick={() => setActiveTab('ai_assistant')}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'ai_assistant'
-                  ? 'bg-white dark:bg-zinc-800 text-purple-600 dark:text-purple-400 shadow-sm'
-                  : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900'
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 shadow-sm shadow-emerald-950/40 font-black'
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <Wand2 className="w-3.5 h-3.5 text-amber-500" />
+              <Wand2 className="w-3.5 h-3.5 text-amber-400" />
               <span>Generar con IA</span>
             </button>
           </div>
@@ -181,22 +183,22 @@ export default function TeacherStudioPage() {
 
         {/* Vista 2: Asistente Generativo con IA */}
         {activeTab === 'ai_assistant' && (
-          <div className="max-w-2xl mx-auto bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800/80 p-6 sm:p-10 shadow-xl space-y-6 animate-scale-in text-center">
-            <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-amber-400 to-purple-600 flex items-center justify-center text-white mx-auto shadow-lg shadow-purple-500/25">
+          <div className="max-w-2xl mx-auto bg-slate-900/90 rounded-3xl border border-emerald-500/30 p-6 sm:p-10 shadow-2xl shadow-emerald-950/40 space-y-6 animate-scale-in text-center backdrop-blur-md">
+            <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 mx-auto shadow-lg shadow-emerald-500/30">
               <Wand2 className="w-8 h-8" />
             </div>
 
             <div className="space-y-2">
-              <h2 className="text-2xl font-black text-slate-900 dark:text-white">
+              <h2 className="text-2xl font-black text-white">
                 Asistente de Creación Automática con IA
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 max-w-md mx-auto">
+              <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
                 Escribe cualquier tema curricular y la IA generará una estructura inicial de bloques (narrativa, reactivos, combate y recompensas) que podrás editar y reorganizar visualmente.
               </p>
             </div>
 
             <div className="space-y-3 text-left">
-              <label className="text-xs font-bold text-slate-700 dark:text-zinc-300">
+              <label className="text-xs font-bold text-slate-200">
                 Tema de la Actividad o Aprendizaje Esperado:
               </label>
               <div className="flex flex-col sm:flex-row gap-2">
@@ -206,15 +208,15 @@ export default function TeacherStudioPage() {
                   onChange={(e) => setAiTopic(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleGenerateWithAi()}
                   placeholder="Ej. El ciclo del agua, Ecosistemas de México, Fracciones..."
-                  className="flex-1 px-4 py-3 rounded-2xl bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="flex-1 px-4 py-3 rounded-2xl bg-slate-800/90 border border-slate-700 text-sm font-semibold text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400"
                 />
                 <button
                   type="button"
                   onClick={handleGenerateWithAi}
                   disabled={!aiTopic.trim() || isGeneratingAi}
-                  className="px-6 py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-sm shadow-lg shadow-purple-500/30 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 transition-all"
+                  className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-sm shadow-xl shadow-amber-500/30 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 transition-all border border-amber-400/50 hover:scale-[1.02] active:scale-95"
                 >
-                  <Sparkles className="w-4 h-4 text-yellow-300" />
+                  <Sparkles className="w-4 h-4 text-slate-950 fill-current" />
                   <span>{isGeneratingAi ? 'Creando Bloques...' : 'Generar Flujo'}</span>
                 </button>
               </div>
@@ -236,7 +238,7 @@ export default function TeacherStudioPage() {
                     onClick={() => {
                       setAiTopic(sug);
                     }}
-                    className="px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-zinc-800 hover:bg-purple-50 dark:hover:bg-purple-950 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 cursor-pointer transition-colors"
+                    className="px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-800/90 hover:bg-emerald-950/40 hover:border-emerald-500/50 text-slate-200 border border-slate-700 cursor-pointer transition-colors"
                   >
                     {sug}
                   </button>

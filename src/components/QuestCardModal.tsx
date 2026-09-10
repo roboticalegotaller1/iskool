@@ -479,7 +479,7 @@ export default function QuestCardModal() {
       
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-6 right-6 z-[250] bg-purple-950/90 text-white px-5 py-3 rounded-2xl shadow-2xl border border-amber-500/50 font-bold text-xs flex items-center gap-2 animate-bounce">
+        <div className="fixed top-6 right-6 z-[250] bg-slate-900/95 text-white px-5 py-3 rounded-2xl shadow-2xl border border-amber-500/50 font-bold text-xs flex items-center gap-2 animate-bounce">
           <Sparkles className="w-4 h-4 text-yellow-300" />
           <span>{toastMessage}</span>
         </div>
@@ -487,13 +487,13 @@ export default function QuestCardModal() {
 
       {/* Magic Spellbook / Parchment style RPG Container */}
       <div 
-        className="relative w-full max-w-2xl bg-gradient-to-b from-purple-950/90 via-stone-900/95 to-slate-950/95 border-2 border-amber-600/40 backdrop-blur-xl rounded-[32px] overflow-hidden shadow-[0_0_50px_rgba(217,119,6,0.25)] flex flex-col p-6 md:p-8 animate-in fade-in zoom-in-95 duration-200"
+        className="relative w-full max-w-2xl bg-gradient-to-b from-slate-900 via-blue-950 to-slate-900 border-2 border-amber-600/40 backdrop-blur-xl rounded-[32px] overflow-hidden shadow-[0_0_50px_rgba(217,119,6,0.25)] flex flex-col p-6 md:p-8 animate-in fade-in zoom-in-95 duration-200"
         style={{
           boxShadow: '0 20px 50px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.08)'
         }}
       >
         {/* Floating background gradient light */}
-        <div className="absolute top-0 right-0 w-48 h-48 bg-purple-500/10 blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-48 h-48 bg-teal-500/10 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-500/5 blur-3xl pointer-events-none" />
 
         {/* Modal Close Button */}
@@ -532,7 +532,7 @@ export default function QuestCardModal() {
                 )}
                 
                 {/* Floating HP Tag */}
-                <div className="absolute top-2 left-2 bg-purple-950/80 border border-purple-500/50 text-[8px] font-black uppercase px-1.5 py-0.5 rounded text-purple-300 font-serif">
+                <div className="absolute top-2 left-2 bg-teal-950/80 border border-teal-500/50 text-[8px] font-black uppercase px-1.5 py-0.5 rounded text-teal-300 font-serif">
                   DESAFÍO
                 </div>
               </div>
@@ -562,7 +562,7 @@ export default function QuestCardModal() {
                 <div className="flex gap-4 p-3 bg-stone-950/40 border border-stone-900 rounded-xl text-xs font-black">
                   <span className="text-[9px] text-stone-500 uppercase tracking-wider block self-center">Recompensa del Gremio:</span>
                   <div className="flex items-center gap-3">
-                    <span className="text-purple-400 flex items-center gap-1">
+                    <span className="text-teal-400 flex items-center gap-1">
                       <Star className="h-3.5 w-3.5 fill-current" />
                       +{activeQuest.xp_reward} Puntos de Casa
                     </span>
@@ -668,7 +668,7 @@ export default function QuestCardModal() {
               // --- FORM AND SUBMISSION VIEWS ---
               <div className="relative w-full rounded-2xl overflow-hidden border border-stone-850 bg-stone-950/80 p-1 flex justify-center items-center">
                 {showAnimation === 'player_attack' && (
-                  <div className="absolute inset-0 z-10 bg-purple-500/10 mix-blend-screen flex items-center justify-center animate-ping">
+                  <div className="absolute inset-0 z-10 bg-teal-500/10 mix-blend-screen flex items-center justify-center animate-ping">
                     <span className="text-4xl text-amber-400 drop-shadow-[0_0_10px_#D97706] font-serif">🔮 HECHIZO</span>
                   </div>
                 )}
@@ -911,7 +911,7 @@ export default function QuestCardModal() {
                                     aria-label="Grabar o adjuntar audio"
                                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-stone-850 hover:border-stone-800 text-[10px] font-black bg-stone-950 text-stone-400 font-serif cursor-pointer disabled:opacity-50"
                                   >
-                                    <Mic className="h-3.5 w-3.5 text-purple-400" />
+                                    <Mic className="h-3.5 w-3.5 text-teal-400" />
                                     Grabar Audio
                                   </button>
                                 )}
@@ -920,7 +920,7 @@ export default function QuestCardModal() {
                           ) : (
                             <div className="border border-emerald-500/20 bg-emerald-950/15 rounded-xl p-3 flex justify-between items-center">
                               <div className="flex items-center gap-2">
-                                {mockFile.type === 'image' ? <FileImage className="h-4.5 w-4.5 text-emerald-455" /> : <Mic className="h-4.5 w-4.5 text-purple-455" />}
+                                {mockFile.type === 'image' ? <FileImage className="h-4.5 w-4.5 text-emerald-400" /> : <Mic className="h-4.5 w-4.5 text-teal-400" />}
                                 <span className="text-xs font-bold text-stone-200">
                                   {mockFile.type === 'image' ? 'evidencia_foto.png' : 'evidencia_lectura.mp3'}
                                 </span>
@@ -999,7 +999,7 @@ export default function QuestCardModal() {
             <div className="bg-stone-950 border border-stone-900 rounded-2xl p-4 w-full max-w-xs flex flex-col gap-2">
               <span className="text-[8.5px] font-black text-stone-500 uppercase tracking-widest font-serif">BOTÍN EXTRAÍDO</span>
               <div className="flex justify-center items-center gap-4 font-black text-sm">
-                <span className="text-purple-400 flex items-center gap-1 font-serif">
+                <span className="text-teal-400 flex items-center gap-1 font-serif">
                   <Star className="h-4 w-4 fill-current" />
                   +{activeQuest.xp_reward} Puntos de Casa
                 </span>

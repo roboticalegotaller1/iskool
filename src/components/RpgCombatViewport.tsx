@@ -735,8 +735,8 @@ export function RpgCombatViewport() {
         {/* Top Header UI */}
         <div className="flex justify-between items-start w-full px-4 z-20 mt-1 h-[15%]">
           {/* Selector de Asignatura */}
-          <div className="flex items-center gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-purple-500/20">
-            <span className="text-[9px] font-black text-purple-400 uppercase tracking-widest">ASIGNATURA:</span>
+          <div className="flex items-center gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-emerald-500/20">
+            <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">ASIGNATURA:</span>
             <select 
               disabled={battlePhase === 'fight'}
               value={selectedMissionId}
@@ -771,7 +771,7 @@ export function RpgCombatViewport() {
               step="0.05" 
               value={volume} 
               onChange={(e) => setVolume(parseFloat(e.target.value))}
-              className="w-12 md:w-16 h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-purple-400"
+              className="w-12 md:w-16 h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-400"
             />
             <button 
               onClick={handleReset}
@@ -812,7 +812,7 @@ export function RpgCombatViewport() {
             />
             {/* Subtle Gradient Overlays for contrast */}
             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-indigo-950/30 mix-blend-multiply" />
-            <div className="absolute inset-0 bg-gradient-to-b from-purple-950/30 via-transparent to-zinc-950/70" />
+            <div className="absolute inset-0 bg-gradient-to-b from-blue-950/30 via-transparent to-zinc-950/70" />
           </div>
 
           {/* Layered Animated Forest Trees Layer */}
@@ -898,7 +898,7 @@ export function RpgCombatViewport() {
                 <BruxaPixiSprite className="w-24 h-28" width={96} height={112} />
               </div>
               <div className="flex flex-col mb-1 text-left select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] min-w-[70px] gap-1">
-                <span className="text-[10px] font-black uppercase text-purple-300 tracking-wider">Elena</span>
+                <span className="text-[10px] font-black uppercase text-teal-300 tracking-wider">Elena</span>
                 {/* HP */}
                 <div className="flex flex-col gap-0.5">
                   <div className="flex justify-between items-center text-[7.5px] font-bold text-zinc-200 font-mono">
@@ -906,7 +906,7 @@ export function RpgCombatViewport() {
                     <span>{playerHp}/100</span>
                   </div>
                   <div className="h-1 w-16 bg-zinc-950/80 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-300" style={{ width: `${playerHp}%` }} />
+                    <div className="h-full bg-gradient-to-r from-teal-400 to-emerald-500 transition-all duration-300" style={{ width: `${playerHp}%` }} />
                   </div>
                 </div>
                 {/* MP */}
@@ -1056,8 +1056,8 @@ export function RpgCombatViewport() {
                 </div>
 
                 {/* HP Bar del Jefe */}
-                <div className="w-44 bg-zinc-950 p-2 rounded-xl border border-purple-950/60 shadow-lg text-center">
-                  <div className="flex justify-between items-center text-[8.5px] font-black text-purple-300 uppercase tracking-widest mb-1">
+                <div className="w-44 bg-zinc-950 p-2 rounded-xl border border-teal-900/60 shadow-lg text-center">
+                  <div className="flex justify-between items-center text-[8.5px] font-black text-teal-300 uppercase tracking-widest mb-1">
                     <span>{examContent?.bossName || 'EXAMEN FINAL'}</span>
                     <span>HP {bossHp}/{bossMaxHp}</span>
                   </div>
@@ -1079,12 +1079,12 @@ export function RpgCombatViewport() {
         <div className="w-full h-[30%] flex flex-col justify-between px-3 pb-1 z-20">
           
           {/* Diálogo */}
-          <div className="relative bg-zinc-950/95 border border-purple-500/40 rounded-xl p-2 flex gap-2.5 items-center backdrop-blur-md shadow-[0_0_12px_rgba(168,85,247,0.15)]">
-            <div className="absolute -top-3 left-4 px-2.5 py-0.5 bg-purple-500 text-[8px] font-black uppercase tracking-wider text-white rounded-t-md rounded-br-md shadow-lg">
+          <div className="relative bg-zinc-950/95 border border-teal-500/40 rounded-xl p-2 flex gap-2.5 items-center backdrop-blur-md shadow-[0_0_12px_rgba(45,212,191,0.15)]">
+            <div className="absolute -top-3 left-4 px-2.5 py-0.5 bg-teal-500 text-[8px] font-black uppercase tracking-wider text-slate-950 rounded-t-md rounded-br-md shadow-lg">
               SOMBRA LOG
             </div>
             
-            <div className="h-6 w-6 rounded bg-purple-950/80 border border-purple-400/50 flex items-center justify-center text-[10px] animate-bounce shrink-0">
+            <div className="h-6 w-6 rounded bg-teal-950/80 border border-teal-400/50 flex items-center justify-center text-[10px] animate-bounce shrink-0">
               💡
             </div>
             <div className="flex-1 overflow-y-auto max-h-[35px]">
@@ -1101,10 +1101,10 @@ export function RpgCombatViewport() {
               <div className="flex gap-2">
                 <button
                   onClick={startFight}
-                  className="px-6 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-[10px] md:text-xs font-black tracking-widest uppercase rounded-xl transition-all shadow-md shadow-indigo-650/35 flex items-center gap-1.5 border border-purple-500/20"
+                  className="px-6 py-2 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 text-[10px] md:text-xs font-black tracking-widest uppercase rounded-xl transition-all shadow-lg shadow-amber-500/30 flex items-center gap-1.5 border border-amber-400/40 cursor-pointer active:scale-95"
                 >
                   <Swords className="h-4.5 w-4.5" />
-                  Iniciar Examen Boss ⚔_
+                  Iniciar Examen Boss ⚔️
                 </button>
                 <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 px-3 py-1 rounded-xl text-[9px] font-bold text-zinc-400">
                   <AlertCircle className="h-3.5 w-3.5 text-zinc-500" />
@@ -1121,27 +1121,27 @@ export function RpgCombatViewport() {
                   <button 
                     disabled={combatState !== 'idle'}
                     onClick={() => handlePlayerAttack('normal')}
-                    className="px-4 py-2 bg-purple-800 hover:bg-purple-700 disabled:opacity-40 text-[9px] md:text-xs font-black rounded-lg border border-purple-500/30 tracking-wider transition-all uppercase text-white shadow"
+                    className="px-4 py-2 bg-teal-800 hover:bg-teal-700 disabled:opacity-40 text-[9px] md:text-xs font-black rounded-lg border border-teal-500/30 tracking-wider transition-all uppercase text-white shadow cursor-pointer active:scale-95"
                   >
                     [ ⚔️ Atacar ]
                   </button>
                   <button 
                     disabled={combatState !== 'idle'}
                     onClick={() => handlePlayerAttack('skill')}
-                    className="px-4 py-2 bg-indigo-800 hover:bg-indigo-700 disabled:opacity-40 text-[9px] md:text-xs font-black rounded-lg border border-indigo-500/30 tracking-wider transition-all uppercase text-white shadow"
+                    className="px-4 py-2 bg-indigo-800 hover:bg-indigo-700 disabled:opacity-40 text-[9px] md:text-xs font-black rounded-lg border border-indigo-500/30 tracking-wider transition-all uppercase text-white shadow cursor-pointer active:scale-95"
                   >
                     [ 🔮 Habilidad ]
                   </button>
                   <button 
                     disabled={combatState !== 'idle' || ownedArtifacts.length === 0}
                     onClick={() => setIsUsingItem(prev => !prev)}
-                    className="px-4 py-2 bg-amber-800 hover:bg-amber-700 disabled:opacity-40 text-[9px] md:text-xs font-black rounded-lg border border-amber-500/30 tracking-wider transition-all uppercase text-white shadow"
+                    className="px-4 py-2 bg-amber-800 hover:bg-amber-700 disabled:opacity-40 text-[9px] md:text-xs font-black rounded-lg border border-amber-500/30 tracking-wider transition-all uppercase text-white shadow cursor-pointer active:scale-95"
                   >
                     [ 🎒 Objetos ({ownedArtifacts.length}) ]
                   </button>
                 </div>
 
-                <div className="text-[10px] font-bold text-purple-400 bg-purple-950/45 px-2.5 py-1 rounded border border-purple-900/40">
+                <div className="text-[10px] font-bold text-teal-400 bg-teal-950/45 px-2.5 py-1 rounded border border-teal-900/40 font-black">
                   Ronda: {turnCount}
                 </div>
               </div>
@@ -1184,7 +1184,7 @@ export function RpgCombatViewport() {
                   {usedAttempts < totalAttemptsAllowed - 1 ? (
                     <button
                       onClick={handleRetryBattle}
-                      className="px-4 py-1.5 bg-purple-600 hover:bg-purple-500 text-[10px] font-black uppercase text-white rounded-lg transition-all"
+                      className="px-4 py-1.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 text-[10px] font-black uppercase rounded-lg transition-all shadow-lg shadow-amber-500/30 border border-amber-400/40 cursor-pointer active:scale-95"
                     >
                       Usar Oportunidad ({usedAttempts + 1}/{totalAttemptsAllowed - 1})
                     </button>

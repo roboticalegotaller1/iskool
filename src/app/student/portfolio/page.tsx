@@ -154,7 +154,7 @@ export default function StudentPortfolio() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white">
         <div className="flex flex-col items-center gap-3">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-purple-500" />
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-emerald-500" />
           <p className="text-sm font-medium text-zinc-400">Verificando sesión...</p>
         </div>
       </div>
@@ -227,7 +227,7 @@ export default function StudentPortfolio() {
   const getBranchTheme = (name: string) => {
     if (name.includes('Lenguajes')) {
       return {
-        cardBg: 'from-pink-950/20 via-purple-950/5 to-zinc-950/30 border-pink-500/20',
+        cardBg: 'from-pink-950/20 via-slate-950/20 to-zinc-950/30 border-pink-500/20',
         badgeBg: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
         activeGlow: 'bg-pink-500 shadow-lg shadow-pink-500/50 text-white border-pink-300',
         inactiveNode: 'border-zinc-800 bg-zinc-900/60 text-zinc-650',
@@ -270,12 +270,12 @@ export default function StudentPortfolio() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-950 font-sans selection:bg-purple-650 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-950 font-sans selection:bg-emerald-500 selection:text-slate-950">
       <Header />
 
       {/* Floating Success Toast Alert */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-5 duration-300 max-w-md bg-zinc-900 border border-purple-500/50 text-zinc-100 rounded-2xl p-4.5 shadow-2xl flex items-start gap-3.5 backdrop-blur-md">
+        <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-5 duration-300 max-w-md bg-zinc-900 border border-emerald-500/50 text-zinc-100 rounded-2xl p-4.5 shadow-2xl flex items-start gap-3.5 backdrop-blur-md">
           <Sparkles className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5 animate-pulse" />
           <div className="flex-1">
             <p className="text-xs font-bold leading-relaxed">{toastMessage}</p>
@@ -291,7 +291,7 @@ export default function StudentPortfolio() {
         {/* Title and Description */}
         <div className="flex flex-col gap-2 mb-8">
           <h1 className="text-2xl font-black text-zinc-950 dark:text-white uppercase tracking-wider flex items-center gap-2">
-            <Trophy className="h-6 w-6 text-purple-500" />
+            <Trophy className="h-6 w-6 text-amber-400" />
             Portafolio y Árbol de Habilidades
           </h1>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-2xl leading-relaxed">
@@ -305,7 +305,7 @@ export default function StudentPortfolio() {
             onClick={() => setActiveTab('evidence')}
             className={`pb-3 px-6 text-xs font-black uppercase tracking-wider border-b-2 flex items-center gap-2 transition-all ${
               activeTab === 'evidence'
-                ? 'border-purple-600 text-purple-600 dark:text-purple-400'
+                ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
                 : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
             }`}
           >
@@ -316,7 +316,7 @@ export default function StudentPortfolio() {
             onClick={() => setActiveTab('skills')}
             className={`pb-3 px-6 text-xs font-black uppercase tracking-wider border-b-2 flex items-center gap-2 transition-all ${
               activeTab === 'skills'
-                ? 'border-purple-600 text-purple-600 dark:text-purple-400'
+                ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
                 : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
             }`}
           >
@@ -505,7 +505,7 @@ export default function StudentPortfolio() {
         {activeTab === 'skills' && (
           loadingSkills ? (
             <div className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-16 text-center flex flex-col items-center justify-center gap-3 shadow-xs">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-purple-500" />
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-emerald-500" />
               <p className="text-xs font-semibold text-zinc-500">Cargando Árbol de Habilidades...</p>
             </div>
           ) : (
@@ -570,12 +570,12 @@ export default function StudentPortfolio() {
                             <div
                               className={`flex-1 rounded-2xl border p-4.5 text-left transition-all ${
                                 isMastered
-                                  ? 'bg-zinc-950/50 border-purple-500/20 text-zinc-100'
+                                  ? 'bg-zinc-950/50 border-emerald-500/20 text-zinc-100'
                                   : 'bg-zinc-950/20 border-zinc-900/50 text-zinc-550'
                               }`}
                             >
                               <div className="flex justify-between items-center gap-4">
-                                <span className={`text-[9.5px] font-black uppercase tracking-wider ${isMastered ? 'text-purple-400' : 'text-zinc-550'}`}>
+                                <span className={`text-[9.5px] font-black uppercase tracking-wider ${isMastered ? 'text-teal-400' : 'text-zinc-550'}`}>
                                   {pda.code}
                                 </span>
                                 
@@ -626,7 +626,7 @@ export default function StudentPortfolio() {
                         ) : (
                           <button
                             onClick={() => handleEquipReward(rewardId)}
-                            className="px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider transition-all shadow-md hover:scale-[1.02]"
+                            className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 text-[10px] font-black uppercase tracking-wider transition-all shadow-lg shadow-amber-500/30 border border-amber-400/40 cursor-pointer active:scale-95"
                           >
                             Equipar Premio
                           </button>

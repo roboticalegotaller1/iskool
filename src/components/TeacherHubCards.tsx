@@ -37,7 +37,7 @@ export const TeacherHubCards: React.FC<TeacherHubCardsProps> = ({
         </div>
         
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white tracking-tight leading-snug">
-          ¡Hola, <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">{teacherName}</span>!
+          ¡Hola, <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-blue-500 bg-clip-text text-transparent">{teacherName}</span>!
         </h1>
         
         <p className="text-sm sm:text-base font-normal text-slate-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed">
@@ -146,52 +146,52 @@ export const TeacherHubCards: React.FC<TeacherHubCardsProps> = ({
           </div>
         </div>
 
-        {/* TARJETA 3: CREAR ACTIVIDAD (HERO CARD - PÚRPURA MÁGICO) */}
+        {/* TARJETA 3: CREAR ACTIVIDAD (HERO CARD - ESMERALDA & TURQUESA) */}
         <Link 
           href="/teacher/studio"
           onClick={() => onSelectAction('studio')}
-          className="group relative bg-gradient-to-br from-purple-700 via-violet-800 to-indigo-950 text-white rounded-3xl p-5 sm:p-6 shadow-md shadow-purple-900/20 hover:shadow-xl hover:shadow-purple-900/30 border border-purple-400/30 transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 cursor-pointer flex flex-col justify-between overflow-hidden"
+          className="group relative bg-gradient-to-br from-slate-900 via-blue-950 to-emerald-950 text-white rounded-3xl p-5 sm:p-6 shadow-lg shadow-emerald-950/40 hover:shadow-2xl hover:shadow-emerald-500/20 border border-emerald-500/40 hover:border-teal-400/60 transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 cursor-pointer flex flex-col justify-between overflow-hidden"
         >
-          <div className="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 bg-amber-400/15 rounded-full blur-2xl group-hover:scale-125 transition-transform" />
+          <div className="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 bg-emerald-400/15 rounded-full blur-2xl group-hover:scale-125 transition-transform" />
           
           <div className="space-y-4 relative z-10">
             <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-inner group-hover:scale-105 transition-transform">
-                <Palette className="w-6 h-6 text-amber-300" />
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 backdrop-blur-md border border-emerald-400/30 flex items-center justify-center text-white shadow-inner group-hover:scale-105 transition-transform">
+                <Palette className="w-6 h-6 text-teal-300" />
               </div>
-              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-300/20 border border-amber-300/40 text-amber-200 flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-amber-300" />
+              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-amber-400" />
                 <span>Creación Pedagógica</span>
               </span>
             </div>
 
             <div className="space-y-1">
-              <div className="text-xs font-semibold text-amber-300">
+              <div className="text-xs font-semibold text-teal-300">
                 Estudio Interactivo
               </div>
               <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
                 🎨 Crear Actividad
               </h2>
-              <p className="text-xs text-purple-100/90 leading-relaxed line-clamp-3">
+              <p className="text-xs text-slate-300 leading-relaxed line-clamp-3">
                 Diseña experiencias interactivas y retos gamificados alineados al currículo oficial.
               </p>
             </div>
 
-            <ul className="space-y-1.5 pt-2 border-t border-white/15 text-xs">
-              <li className="flex items-center gap-1.5 font-medium text-purple-100">
-                <Sparkles className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+            <ul className="space-y-1.5 pt-2 border-t border-slate-700/60 text-xs">
+              <li className="flex items-center gap-1.5 font-medium text-slate-200">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 <span>40+ Retos y Dinámicas</span>
               </li>
-              <li className="flex items-center gap-1.5 font-medium text-purple-100">
-                <BrainCircuit className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+              <li className="flex items-center gap-1.5 font-medium text-slate-200">
+                <BrainCircuit className="w-3.5 h-3.5 text-teal-400 shrink-0" />
                 <span>Alineación oficial con PDAs</span>
               </li>
             </ul>
           </div>
 
-          <div className="pt-4 mt-4 border-t border-white/15 flex items-center justify-between text-amber-200 font-semibold text-xs group-hover:translate-x-0.5 transition-transform relative z-10">
+          <div className="pt-4 mt-4 border-t border-slate-700/60 flex items-center justify-between text-amber-300 font-semibold text-xs group-hover:translate-x-0.5 transition-transform relative z-10">
             <span>Abrir Estudio ISkool</span>
-            <div className="w-7 h-7 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center group-hover:scale-105 transition-all">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 flex items-center justify-center group-hover:scale-105 transition-all shadow-md shadow-amber-500/30">
               <ArrowRight className="w-3.5 h-3.5 font-bold" />
             </div>
           </div>
