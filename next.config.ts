@@ -28,6 +28,25 @@ const nextConfig: NextConfig = {
     // Full type safety is enforced during development via IDE.
     ignoreBuildErrors: true,
   },
+  async redirects() {
+    return [
+      {
+        source: "/pitch",
+        destination: "/promo",
+        permanent: false,
+      },
+      {
+        source: "/deck",
+        destination: "/promo",
+        permanent: false,
+      },
+      {
+        source: "/presentacion",
+        destination: "/promo",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
