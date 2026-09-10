@@ -2,9 +2,9 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>ISkool Académico - Presentación Ejecutiva con Expediente 360° Real</title>
+  <title>ISkool Académico - Presentación Ejecutiva Institucional</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap');
 
     @page {
       size: 16in 9in;
@@ -21,8 +21,8 @@
       margin: 0;
       padding: 0;
       font-family: 'Inter', sans-serif;
-      color: #f1f5f9;
-      background: #020617;
+      color: #0f172a;
+      background: #f8fafc;
       -webkit-font-smoothing: antialiased;
     }
 
@@ -36,30 +36,30 @@
       flex-direction: column;
       justify-content: space-between;
       page-break-after: always;
-      background: radial-gradient(circle at 50% -20%, #0f172a 0%, #020617 60%, #082f49 110%);
+      background: radial-gradient(circle at 50% -10%, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
     }
 
     /* Ambient Glows */
     .glow-top-right {
       position: absolute;
-      top: -100px;
-      right: -100px;
-      width: 500px;
-      height: 500px;
+      top: -120px;
+      right: -120px;
+      width: 550px;
+      height: 550px;
       border-radius: 50%;
-      background: rgba(16, 185, 129, 0.12);
+      background: rgba(16, 185, 129, 0.09);
       filter: blur(120px);
       pointer-events: none;
     }
 
     .glow-bottom-left {
       position: absolute;
-      bottom: -100px;
-      left: -100px;
-      width: 500px;
-      height: 500px;
+      bottom: -120px;
+      left: -120px;
+      width: 550px;
+      height: 550px;
       border-radius: 50%;
-      background: rgba(45, 212, 191, 0.1);
+      background: rgba(14, 165, 233, 0.08);
       filter: blur(120px);
       pointer-events: none;
     }
@@ -69,10 +69,10 @@
       position: absolute;
       inset: 0;
       background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-      background-size: 60px 60px;
-      mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, #000 60%, transparent 100%);
+        linear-gradient(to right, rgba(15, 23, 42, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
+      background-size: 50px 50px;
+      mask-image: radial-gradient(ellipse 75% 65% at 50% 50%, #000 60%, transparent 100%);
       pointer-events: none;
     }
 
@@ -84,7 +84,7 @@
       justify-content: space-between;
       align-items: center;
       padding-bottom: 0.12in;
-      border-bottom: 1px solid rgba(16, 185, 129, 0.25);
+      border-bottom: 1.5px solid #e2e8f0;
     }
 
     .brand-logo {
@@ -97,14 +97,14 @@
       width: 36px;
       height: 36px;
       border-radius: 10px;
-      background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
+      background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 18px;
       font-weight: 900;
-      color: #020617;
-      box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
     }
 
     .brand-text {
@@ -112,7 +112,7 @@
       font-size: 22px;
       font-weight: 800;
       letter-spacing: -0.02em;
-      color: #ffffff;
+      color: #0f172a;
     }
 
     .brand-tag {
@@ -120,7 +120,7 @@
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.15em;
-      color: #2dd4bf;
+      color: #0d9488;
       margin-left: 8px;
     }
 
@@ -130,14 +130,15 @@
       gap: 8px;
       padding: 5px 15px;
       border-radius: 999px;
-      background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(16, 185, 129, 0.35);
-      color: #6ee7b7;
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #047857;
       font-size: 11px;
       font-weight: 700;
       letter-spacing: 0.05em;
       text-transform: uppercase;
       font-family: 'JetBrains Mono', monospace;
+      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.08);
     }
 
     /* Main Body Area */
@@ -159,7 +160,7 @@
       justify-content: space-between;
       align-items: center;
       padding-top: 0.12in;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      border-top: 1.5px solid #e2e8f0;
       font-size: 11px;
       color: #64748b;
       font-weight: 600;
@@ -167,8 +168,8 @@
 
     .slide-number {
       font-family: 'JetBrains Mono', monospace;
-      color: #10b981;
-      font-weight: 700;
+      color: #059669;
+      font-weight: 800;
     }
 
     /* Typography */
@@ -176,9 +177,9 @@
       font-family: 'Outfit', sans-serif;
       font-size: 50px;
       font-weight: 900;
-      line-height: 1.08;
+      line-height: 1.1;
       letter-spacing: -0.03em;
-      color: #ffffff;
+      color: #0f172a;
       margin: 0 0 14px 0;
     }
 
@@ -186,40 +187,40 @@
       font-family: 'Outfit', sans-serif;
       font-size: 36px;
       font-weight: 800;
-      line-height: 1.15;
+      line-height: 1.18;
       letter-spacing: -0.02em;
-      color: #ffffff;
+      color: #0f172a;
       margin: 0 0 8px 0;
     }
 
     p.slide-subtitle {
       font-size: 15.5px;
-      line-height: 1.45;
-      color: #94a3b8;
+      line-height: 1.48;
+      color: #475569;
       margin: 0 0 20px 0;
       max-width: 1000px;
       font-weight: 400;
     }
 
     .gradient-text-emerald {
-      background: linear-gradient(135deg, #ffffff 30%, #34d399 100%);
+      background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     .gradient-text-gold {
-      background: linear-gradient(135deg, #fef08a 0%, #f59e0b 100%);
+      background: linear-gradient(135deg, #d97706 0%, #ea580c 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     /* Cards & Containers */
     .card {
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(16, 185, 129, 0.25);
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
       border-radius: 16px;
       padding: 20px;
-      box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.6), 0 0 20px -5px rgba(16, 185, 129, 0.1);
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
     }
 
     .gold-button {
@@ -229,13 +230,13 @@
       padding: 12px 28px;
       border-radius: 14px;
       background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      color: #020617;
-      font-weight: 900;
+      color: #ffffff;
+      font-weight: 800;
       font-size: 14px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      border: 1px solid #fbbf24;
-      box-shadow: 0 0 30px rgba(245, 158, 11, 0.4);
+      border: 1px solid #f59e0b;
+      box-shadow: 0 10px 20px -5px rgba(245, 158, 11, 0.4);
     }
 
     /* Layout Grids */
@@ -279,58 +280,59 @@
       width: 36px;
       height: 36px;
       border-radius: 10px;
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.35);
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 16px;
-      color: #34d399;
+      color: #059669;
       flex-shrink: 0;
     }
 
     .feature-icon-gold {
-      background: rgba(245, 158, 11, 0.15);
-      border: 1px solid rgba(245, 158, 11, 0.35);
-      color: #fbbf24;
+      background: #fef3c7;
+      border: 1px solid #fde68a;
+      color: #d97706;
     }
 
     .feature-title {
       font-size: 14.5px;
       font-weight: 700;
-      color: #ffffff;
+      color: #0f172a;
       margin-bottom: 2px;
     }
 
     .feature-desc {
       font-size: 12px;
-      line-height: 1.4;
-      color: #94a3b8;
+      line-height: 1.45;
+      color: #475569;
     }
 
     /* Metric Box */
     .metric-pill {
-      background: rgba(2, 6, 23, 0.8);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      border-radius: 12px;
-      padding: 10px 14px;
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 12px 16px;
       display: flex;
       flex-direction: column;
       gap: 3px;
+      box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05);
     }
 
     .metric-label {
       font-size: 9.5px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: #2dd4bf;
-      font-weight: 700;
+      color: #0d9488;
+      font-weight: 800;
     }
 
     .metric-value {
       font-size: 15px;
       font-weight: 800;
-      color: #ffffff;
+      color: #0f172a;
       font-family: 'Outfit', sans-serif;
     }
 
@@ -341,62 +343,67 @@
       border-spacing: 0;
       border-radius: 14px;
       overflow: hidden;
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      background: rgba(15, 23, 42, 0.8);
+      border: 1.5px solid #cbd5e1;
+      background: #ffffff;
+      box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.06);
       font-size: 12.5px;
     }
 
     .comp-table th {
-      background: rgba(2, 6, 23, 0.95);
+      background: #f8fafc;
       padding: 12px 16px;
       text-align: left;
       font-family: 'Outfit', sans-serif;
       font-size: 13px;
       font-weight: 800;
-      color: #2dd4bf;
-      border-bottom: 1px solid rgba(16, 185, 129, 0.25);
+      color: #0f172a;
+      border-bottom: 2px solid #cbd5e1;
     }
 
     .comp-table td {
       padding: 11px 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      color: #cbd5e1;
+      border-bottom: 1px solid #f1f5f9;
+      color: #334155;
     }
 
     .comp-table tr:last-child td {
       border-bottom: none;
     }
 
+    .comp-table tr:hover td {
+      background: #f8fafc;
+    }
+
     .badge-check {
       display: inline-block;
-      color: #10b981;
+      color: #059669;
       font-weight: 800;
       margin-right: 6px;
     }
 
     .badge-cross {
       display: inline-block;
-      color: #f43f5e;
+      color: #e11d48;
       font-weight: 800;
       margin-right: 6px;
     }
 
     /* Mockup Frame with Real Screenshot */
     .mockup-window-real {
-      background: #090d16;
-      border: 1.5px solid rgba(45, 212, 191, 0.4);
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.75), 0 0 25px rgba(45, 212, 191, 0.2);
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15), 0 0 1px 1px rgba(15, 23, 42, 0.05);
       display: flex;
       flex-direction: column;
       height: 100%;
     }
 
     .mockup-header-real {
-      background: #0f172a;
-      padding: 8px 14px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: #f8fafc;
+      padding: 9px 14px;
+      border-bottom: 1.5px solid #e2e8f0;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -405,29 +412,31 @@
     .mockup-controls {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
     }
 
     .mockup-dot {
-      width: 9px;
-      height: 9px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
     }
 
     .mockup-url-bar {
       font-size: 10.5px;
-      color: #94a3b8;
+      color: #334155;
       font-family: 'JetBrains Mono', monospace;
-      background: rgba(2, 6, 23, 0.6);
+      background: #ffffff;
       padding: 3px 12px;
       border-radius: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      border: 1px solid #cbd5e1;
+      font-weight: 600;
+      box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
     }
 
     .mockup-img-container {
       position: relative;
       flex: 1;
-      background: #020617;
+      background: #f1f5f9;
       overflow: hidden;
       display: flex;
       align-items: flex-start;
@@ -445,31 +454,33 @@
     }
 
     .mockup-footer-badge {
-      background: #0f172a;
-      padding: 7px 14px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      background: #f8fafc;
+      padding: 8px 14px;
+      border-top: 1.5px solid #e2e8f0;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 10px;
+      font-size: 10.5px;
       color: #64748b;
+      font-weight: 500;
     }
 
     .mockup-live-indicator {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      color: #10b981;
-      font-weight: 700;
+      gap: 6px;
+      color: #059669;
+      font-weight: 800;
+      font-size: 11px;
       font-family: 'JetBrains Mono', monospace;
     }
 
     .live-dot {
-      width: 6px;
-      height: 6px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: #10b981;
-      box-shadow: 0 0 8px #10b981;
+      box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
     }
   </style>
 </head>
@@ -495,7 +506,7 @@
     </div>
 
     <div class="slide-body" style="align-items: center; text-align: center; max-width: 1100px; margin: 0 auto;">
-      <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 18px; border-radius: 999px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; font-size: 12px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; font-family: 'JetBrains Mono', monospace;">
+      <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 18px; border-radius: 999px; background: #fef3c7; border: 1px solid #fde68a; color: #b45309; font-size: 12px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; font-family: 'JetBrains Mono', monospace; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.1);">
         ★ Presentación Exclusiva para Dueños de Colegios y Directores Generales
       </div>
 
@@ -560,56 +571,56 @@
       </p>
 
       <div class="grid-2">
-        <div class="card" style="border-color: rgba(244, 63, 94, 0.3); background: rgba(244, 63, 94, 0.04);">
-          <div style="font-size: 13.5px; font-weight: 800; color: #fb7185; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+        <div class="card" style="border: 1.5px solid #fecdd3; background: #fff1f2; box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.07);">
+          <div style="font-size: 13.5px; font-weight: 800; color: #e11d48; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
             ⚠️ Lo que ofrecen los sistemas de cobranza tradicionales
           </div>
           <div class="feature-item">
-            <div class="feature-icon-box" style="background: rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.3); color: #fb7185;">✕</div>
+            <div class="feature-icon-box" style="background: #ffe4e6; border-color: #fda4af; color: #e11d48;">✕</div>
             <div>
-              <div class="feature-title">Solo tocan la parte administrativa</div>
-              <div class="feature-desc">Cobran mensualidades pero dejan a los maestros solos frente a la abrumadora carga de planeaciones de la SEP.</div>
+              <div class="feature-title" style="color: #881337;">Solo tocan la parte administrativa</div>
+              <div class="feature-desc" style="color: #9f1239;">Cobran mensualidades pero dejan a los maestros solos frente a la abrumadora carga de planeaciones de la SEP.</div>
             </div>
           </div>
           <div class="feature-item">
-            <div class="feature-icon-box" style="background: rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.3); color: #fb7185;">✕</div>
+            <div class="feature-icon-box" style="background: #ffe4e6; border-color: #fda4af; color: #e11d48;">✕</div>
             <div>
-              <div class="feature-title">Cero impacto en el aula y en los alumnos</div>
-              <div class="feature-desc">El estudiante ni siquiera tiene una experiencia digital motivante; sigue resolviendo copias en papel aburridas.</div>
+              <div class="feature-title" style="color: #881337;">Cero impacto en el aula y en los alumnos</div>
+              <div class="feature-desc" style="color: #9f1239;">El estudiante ni siquiera tiene una experiencia digital motivante; sigue resolviendo copias en papel aburridas.</div>
             </div>
           </div>
           <div class="feature-item">
-            <div class="feature-icon-box" style="background: rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.3); color: #fb7185;">✕</div>
+            <div class="feature-icon-box" style="background: #ffe4e6; border-color: #fda4af; color: #e11d48;">✕</div>
             <div>
-              <div class="feature-title">Contraseñas engorrosas para los padres</div>
-              <div class="feature-desc">Los tutores olvidan sus accesos y saturan la recepción del colegio pidiendo circulares y boletas.</div>
+              <div class="feature-title" style="color: #881337;">Contraseñas engorrosas para los padres</div>
+              <div class="feature-desc" style="color: #9f1239;">Los tutores olvidan sus accesos y saturan la recepción del colegio pidiendo circulares y boletas.</div>
             </div>
           </div>
         </div>
 
-        <div class="card" style="border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.05);">
-          <div style="font-size: 13.5px; font-weight: 800; color: #34d399; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+        <div class="card" style="border: 1.5px solid #86efac; background: #f0fdf4; box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.1);">
+          <div style="font-size: 13.5px; font-weight: 800; color: #059669; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
             ★ La Solución Soberana ISkool
           </div>
           <div class="feature-item">
-            <div class="feature-icon-box">✓</div>
+            <div class="feature-icon-box" style="background: #dcfce7; border-color: #86efac; color: #059669;">✓</div>
             <div>
-              <div class="feature-title">Ecosistema Dual: Finanzas + Excelencia Pedagógica</div>
-              <div class="feature-desc">Cobranza y SAT CFDI 4.0 conviven con la Bóveda Curricular SEP y Cambridge para ahorrar horas semanales a cada docente.</div>
+              <div class="feature-title" style="color: #064e3b;">Ecosistema Dual: Finanzas + Excelencia Pedagógica</div>
+              <div class="feature-desc" style="color: #065f46;">Cobranza y SAT CFDI 4.0 conviven con la Bóveda Curricular SEP y Cambridge para ahorrar horas semanales a cada docente.</div>
             </div>
           </div>
           <div class="feature-item">
-            <div class="feature-icon-box">✓</div>
+            <div class="feature-icon-box" style="background: #dcfce7; border-color: #86efac; color: #059669;">✓</div>
             <div>
-              <div class="feature-title">Gamificación con 17 Nodos Interactivos</div>
-              <div class="feature-desc">Escape rooms, retos cronológicos y duelos de saberes donde los alumnos estudian motivados por mérito escolar real.</div>
+              <div class="feature-title" style="color: #064e3b;">Gamificación con 17 Nodos Interactivos</div>
+              <div class="feature-desc" style="color: #065f46;">Escape rooms, retos cronológicos y duelos de saberes donde los alumnos estudian motivados por mérito escolar real.</div>
             </div>
           </div>
           <div class="feature-item">
-            <div class="feature-icon-box">✓</div>
+            <div class="feature-icon-box" style="background: #dcfce7; border-color: #86efac; color: #059669;">✓</div>
             <div>
-              <div class="feature-title">WhatsApp y Mensajería Instantánea en 1 Toque</div>
-              <div class="feature-desc">Avisos de asistencia y calificaciones directos al celular del padre mediante mensajería instantánea segura sin contraseñas.</div>
+              <div class="feature-title" style="color: #064e3b;">WhatsApp y Mensajería Instantánea en 1 Toque</div>
+              <div class="feature-desc" style="color: #065f46;">Avisos de asistencia y calificaciones directos al celular del padre mediante mensajería instantánea segura sin contraseñas.</div>
             </div>
           </div>
         </div>
@@ -671,7 +682,7 @@
 
         <div class="card">
           <div class="feature-item">
-            <div class="feature-icon-box">💬</div>
+            <div class="feature-icon-box" style="background: #dcfce7; border-color: #86efac; color: #059669;">💬</div>
             <div>
               <div class="feature-title">WhatsApp & Mensajería Instantánea</div>
               <div class="feature-desc">Notificaciones inmediatas de faltas, boletas y avisos al WhatsApp de los padres, con acceso instantáneo sin contraseñas.</div>
@@ -681,7 +692,7 @@
 
         <div class="card">
           <div class="feature-item">
-            <div class="feature-icon-box">🧩</div>
+            <div class="feature-icon-box" style="background: #e0f2fe; border-color: #bae6fd; color: #0284c7;">🧩</div>
             <div>
               <div class="feature-title">Estudio de Retos Gamificados</div>
               <div class="feature-desc">Lienzo digital con 17 nodos pedagógicos: escape rooms, duelos contra jefes, cronología y simulador en tiempo real.</div>
@@ -701,7 +712,7 @@
 
         <div class="card">
           <div class="feature-item">
-            <div class="feature-icon-box">🏛️</div>
+            <div class="feature-icon-box" style="background: #f3e8ff; border-color: #e9d5ff; color: #7e22ce;">🏛️</div>
             <div>
               <div class="feature-title">Control Escolar 360°</div>
               <div class="feature-desc">Expediente completo del alumno: datos de filiación, salud y alergias, adeudo, asistencias y reportes formativos.</div>
@@ -785,7 +796,7 @@
           </div>
           <div class="mockup-footer-badge">
             <span>● Pantalla real de ISkool: Panel de Finanzas & Conciliación Fiscal</span>
-            <span style="color: #fbbf24; font-weight: 700;">SAT CFDI 4.0 IEDU</span>
+            <span style="color: #b45309; font-weight: 800;">SAT CFDI 4.0 IEDU</span>
           </div>
         </div>
       </div>
@@ -825,7 +836,7 @@
 
       <div class="grid-2">
         <div class="card">
-          <div style="font-size: 13.5px; font-weight: 800; color: #fbbf24; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+          <div style="font-size: 13.5px; font-weight: 800; color: #b45309; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
             🛒 Tienda Escolar en Línea para Familias
           </div>
           <div class="feature-item">
@@ -852,7 +863,7 @@
         </div>
 
         <div class="card">
-          <div style="font-size: 13.5px; font-weight: 800; color: #34d399; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+          <div style="font-size: 13.5px; font-weight: 800; color: #047857; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
             🏆 Tienda Mágica de Reconocimiento al Alumno
           </div>
           <div class="feature-item">
@@ -954,7 +965,7 @@
           </div>
           <div class="mockup-footer-badge">
             <span>● Pantalla real de ISkool: Expediente 360° (Filiación, Salud, Asistencia y Cobranza)</span>
-            <span style="color: #34d399; font-weight: 700;">EXPEDIENTE 360° DEL ALUMNO</span>
+            <span style="color: #047857; font-weight: 800;">EXPEDIENTE 360° DEL ALUMNO</span>
           </div>
         </div>
       </div>
@@ -995,7 +1006,7 @@
           </p>
 
           <div class="feature-item">
-            <div class="feature-icon-box" style="background: rgba(37, 211, 102, 0.15); border-color: rgba(37, 211, 102, 0.35); color: #25d366;">
+            <div class="feature-icon-box" style="background: #dcfce7; border-color: #86efac; color: #059669;">
               📱
             </div>
             <div>
@@ -1040,7 +1051,7 @@
           </div>
           <div class="mockup-footer-badge">
             <span>● Pantalla real de ISkool: Panel de Tutores con Asistencias y Calificaciones</span>
-            <span style="color: #25d366; font-weight: 700;">WHATSAPP & MENSAJERÍA INSTANTÁNEA</span>
+            <span style="color: #059669; font-weight: 800;">WHATSAPP & MENSAJERÍA INSTANTÁNEA</span>
           </div>
         </div>
       </div>
@@ -1080,7 +1091,7 @@
 
       <div class="grid-2">
         <div class="card">
-          <div style="font-size: 13.5px; font-weight: 800; color: #34d399; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+          <div style="font-size: 13.5px; font-weight: 800; color: #047857; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
             🇲🇽 Nueva Escuela Mexicana (Fases 1 a 6)
           </div>
           <div class="feature-item">
@@ -1107,7 +1118,7 @@
         </div>
 
         <div class="card">
-          <div style="font-size: 13.5px; font-weight: 800; color: #fbbf24; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+          <div style="font-size: 13.5px; font-weight: 800; color: #b45309; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
             🇬🇧 Estándar Internacional Cambridge
           </div>
           <div class="feature-item">
@@ -1209,7 +1220,7 @@
           </div>
           <div class="mockup-footer-badge">
             <span>● Pantalla real de ISkool: Panel del Maestro con Bóveda Curricular SEP</span>
-            <span style="color: #34d399; font-weight: 700;">PLANEACIONES EN SEGUNDOS</span>
+            <span style="color: #047857; font-weight: 800;">PLANEACIONES EN SEGUNDOS</span>
           </div>
         </div>
       </div>
@@ -1289,7 +1300,7 @@
           </div>
           <div class="mockup-footer-badge">
             <span>● Pantalla real de ISkool: Lienzo de Flujos Pedagógicos por Nodos</span>
-            <span style="color: #2dd4bf; font-weight: 700;">17 NODOS INTERACTIVOS</span>
+            <span style="color: #0d9488; font-weight: 800;">17 NODOS INTERACTIVOS</span>
           </div>
         </div>
       </div>
@@ -1369,7 +1380,7 @@
           </div>
           <div class="mockup-footer-badge">
             <span>● Pantalla real de ISkool: Mapa de Misiones del Estudiante & Avatar</span>
-            <span style="color: #fbbf24; font-weight: 700;">ECONOMÍA DE MÉRITO</span>
+            <span style="color: #b45309; font-weight: 800;">ECONOMÍA DE MÉRITO</span>
           </div>
         </div>
       </div>
@@ -1449,7 +1460,7 @@
           </div>
           <div class="mockup-footer-badge">
             <span>● Pantalla real de ISkool: Panel Ejecutivo con Grupos, Alumnos y Estatus</span>
-            <span style="color: #34d399; font-weight: 700;">SUPERVISIÓN 360°</span>
+            <span style="color: #047857; font-weight: 800;">SUPERVISIÓN 360°</span>
           </div>
         </div>
       </div>
@@ -1492,39 +1503,39 @@
           <tr>
             <th style="width: 32%;">Capacidad Institucional</th>
             <th style="width: 34%;">Plataforma Tradicional de Cobranza</th>
-            <th style="width: 34%; color: #34d399; background: rgba(16, 185, 129, 0.15);">ISkool Académico</th>
+            <th style="width: 34%; color: #047857; background: #ecfdf5; border-bottom: 2px solid #34d399;">ISkool Académico</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td><strong>Alcance de la Plataforma</strong></td>
             <td><span class="badge-cross">✕</span> Solo administración financiera y cobranza</td>
-            <td><span class="badge-check">✓</span> <strong>Ecosistema 360°:</strong> Aula + Docentes + Alumnos + Familias + Finanzas</td>
+            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>Ecosistema 360°:</strong> Aula + Docentes + Alumnos + Familias + Finanzas</td>
           </tr>
           <tr>
             <td><strong>Currículo Oficial SEP y Cambridge</strong></td>
             <td><span class="badge-cross">✕</span> Nula. No integra el programa educativo</td>
-            <td><span class="badge-check">✓</span> <strong>Bóveda Oficial (+1,500 Nodos NEM) + Cambridge bilingüe</strong></td>
+            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>Bóveda Oficial (+1,500 Nodos NEM) + Cambridge bilingüe</strong></td>
           </tr>
           <tr>
             <td><strong>Planeaciones del Docente</strong></td>
             <td><span class="badge-cross">✕</span> El maestro sigue haciendo formatos a mano</td>
-            <td><span class="badge-check">✓</span> <strong>Generación instantánea en segundos con rúbrica oficial</strong></td>
+            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>Generación instantánea en segundos con rúbrica oficial</strong></td>
           </tr>
           <tr>
             <td><strong>Gamificación e Interactividad</strong></td>
             <td><span class="badge-cross">✕</span> Inexistente; el alumno no tiene portal</td>
-            <td><span class="badge-check">✓</span> <strong>Estudio con 17 nodos y Camino del Héroe por mérito</strong></td>
+            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>Estudio con 17 nodos y Camino del Héroe por mérito</strong></td>
           </tr>
           <tr>
             <td><strong>Comunicación Familiar</strong></td>
             <td><span class="badge-cross">✕</span> Contraseñas complejas que los padres olvidan</td>
-            <td><span class="badge-check">✓</span> <strong>WhatsApp automático y Mensajería Instantánea sin contraseñas</strong></td>
+            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>WhatsApp automático y Mensajería Instantánea sin contraseñas</strong></td>
           </tr>
           <tr>
             <td><strong>Facturación Electrónica Fiscal</strong></td>
             <td><span class="badge-check">✓</span> Facturación básica</td>
-            <td><span class="badge-check">✓</span> <strong>SAT CFDI 4.0 con complemento educativo oficial (IEDU)</strong></td>
+            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>SAT CFDI 4.0 con complemento educativo oficial (IEDU)</strong></td>
           </tr>
         </tbody>
       </table>
@@ -1556,12 +1567,12 @@
     </div>
 
     <div class="slide-body" style="align-items: center; text-align: center; max-width: 1000px; margin: 0 auto;">
-      <div class="header-pill" style="margin-bottom: 16px;">
+      <div class="header-pill" style="margin-bottom: 16px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857;">
         ★ Garantía de Despliegue en 48 Horas
       </div>
 
       <h1 class="hero-title" style="font-size: 50px;">
-        Comprueba el poder de ISkool con una <span class="gradient-text-gold">Prueba Piloto en tu Colegio</span>
+        Comprueba el poder de ISkool con una <span class="gradient-text-emerald">Prueba Piloto en tu Colegio</span>
       </h1>
 
       <p class="slide-subtitle" style="font-size: 18px; max-width: 820px; margin-bottom: 28px;">
@@ -1569,26 +1580,26 @@
       </p>
 
       <div class="grid-3" style="width: 100%; margin-bottom: 30px; text-align: left;">
-        <div class="card">
-          <div style="font-size: 20px; margin-bottom: 6px;">⚡</div>
-          <div class="feature-title">Configuración en 48 Horas</div>
+        <div class="card" style="border: 1.5px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);">
+          <div style="font-size: 24px; margin-bottom: 8px;">⚡</div>
+          <div class="feature-title" style="font-size: 16px;">Configuración en 48 Horas</div>
           <div class="feature-desc">Nuestro equipo técnico carga tus materias y grupos sin interrumpir las clases del colegio.</div>
         </div>
 
-        <div class="card">
-          <div style="font-size: 20px; margin-bottom: 6px;">👥</div>
-          <div class="feature-title">Capacitación Llave en Mano</div>
+        <div class="card" style="border: 1.5px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);">
+          <div style="font-size: 24px; margin-bottom: 8px;">👥</div>
+          <div class="feature-title" style="font-size: 16px;">Capacitación Llave en Mano</div>
           <div class="feature-desc">Talleres prácticos inmediatos para maestros, directivos y personal de control escolar.</div>
         </div>
 
-        <div class="card">
-          <div style="font-size: 20px; margin-bottom: 6px;">🛡️</div>
-          <div class="feature-title">Cero Riesgo Institucional</div>
+        <div class="card" style="border: 1.5px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);">
+          <div style="font-size: 24px; margin-bottom: 8px;">🛡️</div>
+          <div class="feature-title" style="font-size: 16px;">Cero Riesgo Institucional</div>
           <div class="feature-desc">Acompañamiento dedicado permanente con soporte técnico y pedagógico prioritario.</div>
         </div>
       </div>
 
-      <div class="gold-button" style="font-size: 16px; padding: 15px 36px;">
+      <div class="gold-button" style="font-size: 16px; padding: 15px 36px; cursor: pointer;">
         📅 Agendar Prueba Piloto para tu Colegio
       </div>
     </div>
