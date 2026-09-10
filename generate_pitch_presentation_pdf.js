@@ -16,18 +16,20 @@ const imgFinanzas = getBase64Image('screen_finanzas_admin.png');
 const imgExpediente360 = getBase64Image('screen_expediente_360_real.png');
 const imgDirector = getBase64Image('screen_director_supervision.png');
 const imgTeacher = getBase64Image('screen_teacher_planning.png');
+const imgTeacherNem = getBase64Image('screen_teacher_planning_nem.png') || imgTeacher;
 const imgStudio = getBase64Image('screen_studio_canvas.png');
 const imgStudent = getBase64Image('screen_student_hero.png');
 const imgParent = getBase64Image('screen_parent_portal.png');
 
 console.log('Imágenes base64 cargadas:');
-console.log('- Finanzas:', imgFinanzas ? 'OK' : 'FALTA');
-console.log('- Expediente 360°:', imgExpediente360 ? 'OK' : 'FALTA');
-console.log('- Director:', imgDirector ? 'OK' : 'FALTA');
-console.log('- Docente:', imgTeacher ? 'OK' : 'FALTA');
-console.log('- Estudio:', imgStudio ? 'OK' : 'FALTA');
-console.log('- Alumno:', imgStudent ? 'OK' : 'FALTA');
-console.log('- Padre:', imgParent ? 'OK' : 'FALTA');
+console.log('- Docente Planeación:', imgTeacher ? 'OK' : 'FALTA');
+console.log('- Docente NEM Bóveda:', imgTeacherNem ? 'OK' : 'FALTA');
+console.log('- Estudio 17 Nodos:', imgStudio ? 'OK' : 'FALTA');
+console.log('- Alumno Camino Héroe:', imgStudent ? 'OK' : 'FALTA');
+console.log('- Expediente 360° Real:', imgExpediente360 ? 'OK' : 'FALTA');
+console.log('- Familias WhatsApp:', imgParent ? 'OK' : 'FALTA');
+console.log('- Director Supervisión:', imgDirector ? 'OK' : 'FALTA');
+console.log('- Finanzas Admin (Módulo Final):', imgFinanzas ? 'OK' : 'FALTA');
 
 const htmlContent = `<!DOCTYPE html>
 <html lang="es">
@@ -70,7 +72,7 @@ const htmlContent = `<!DOCTYPE html>
       background: radial-gradient(circle at 50% -10%, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
     }
 
-    /* Ambient Glows */
+    /* Ambient Glows - Elegantes y suaves */
     .glow-top-right {
       position: absolute;
       top: -120px;
@@ -78,7 +80,7 @@ const htmlContent = `<!DOCTYPE html>
       width: 550px;
       height: 550px;
       border-radius: 50%;
-      background: rgba(16, 185, 129, 0.09);
+      background: rgba(16, 185, 129, 0.08);
       filter: blur(120px);
       pointer-events: none;
     }
@@ -90,7 +92,7 @@ const htmlContent = `<!DOCTYPE html>
       width: 550px;
       height: 550px;
       border-radius: 50%;
-      background: rgba(14, 165, 233, 0.08);
+      background: rgba(14, 165, 233, 0.07);
       filter: blur(120px);
       pointer-events: none;
     }
@@ -100,8 +102,8 @@ const htmlContent = `<!DOCTYPE html>
       position: absolute;
       inset: 0;
       background-image: 
-        linear-gradient(to right, rgba(15, 23, 42, 0.035) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
+        linear-gradient(to right, rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
       background-size: 50px 50px;
       mask-image: radial-gradient(ellipse 75% 65% at 50% 50%, #000 60%, transparent 100%);
       pointer-events: none;
@@ -125,62 +127,49 @@ const htmlContent = `<!DOCTYPE html>
     }
 
     .brand-icon {
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
       border-radius: 10px;
-      background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
-      font-weight: 900;
-      color: #ffffff;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+      font-size: 20px;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
     }
 
     .brand-text {
       font-family: 'Outfit', sans-serif;
-      font-size: 22px;
-      font-weight: 800;
+      font-size: 24px;
+      font-weight: 900;
       letter-spacing: -0.02em;
       color: #0f172a;
     }
 
     .brand-tag {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 800;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: #0d9488;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
       margin-left: 8px;
     }
 
     .header-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 5px 15px;
-      border-radius: 999px;
-      background: #ecfdf5;
-      border: 1px solid #a7f3d0;
-      color: #047857;
       font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
       font-family: 'JetBrains Mono', monospace;
-      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.08);
-    }
-
-    /* Main Body Area */
-    .slide-body {
-      position: relative;
-      z-index: 10;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 0.2in 0;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #0f172a;
+      border: 1.5px solid #cbd5e1;
+      box-shadow: 0 2px 5px rgba(15, 23, 42, 0.04);
     }
 
     /* Footer */
@@ -192,44 +181,47 @@ const htmlContent = `<!DOCTYPE html>
       align-items: center;
       padding-top: 0.12in;
       border-top: 1.5px solid #e2e8f0;
-      font-size: 11px;
+      font-size: 11.5px;
       color: #64748b;
-      font-weight: 600;
+      font-weight: 500;
     }
 
     .slide-number {
       font-family: 'JetBrains Mono', monospace;
-      color: #059669;
       font-weight: 800;
+      color: #059669;
+      background: #ecfdf5;
+      padding: 3px 10px;
+      border-radius: 6px;
+      border: 1px solid #a7f3d0;
     }
 
     /* Typography */
-    h1.hero-title {
+    .hero-title {
       font-family: 'Outfit', sans-serif;
-      font-size: 50px;
+      font-size: 48px;
       font-weight: 900;
-      line-height: 1.1;
+      line-height: 1.12;
       letter-spacing: -0.03em;
       color: #0f172a;
-      margin: 0 0 14px 0;
+      margin: 0 0 16px 0;
     }
 
-    h2.slide-title {
+    .slide-title {
       font-family: 'Outfit', sans-serif;
-      font-size: 36px;
+      font-size: 34px;
       font-weight: 800;
-      line-height: 1.18;
-      letter-spacing: -0.02em;
+      line-height: 1.2;
+      letter-spacing: -0.025em;
       color: #0f172a;
-      margin: 0 0 8px 0;
+      margin: 0 0 10px 0;
     }
 
-    p.slide-subtitle {
-      font-size: 15.5px;
-      line-height: 1.48;
+    .slide-subtitle {
+      font-size: 15px;
+      line-height: 1.55;
       color: #475569;
-      margin: 0 0 20px 0;
-      max-width: 1000px;
+      margin: 0 0 22px 0;
       font-weight: 400;
     }
 
@@ -240,15 +232,21 @@ const htmlContent = `<!DOCTYPE html>
     }
 
     .gradient-text-gold {
-      background: linear-gradient(135deg, #d97706 0%, #ea580c 100%);
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
-    /* Cards & Containers */
+    .gradient-text-blue {
+      background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Cards */
     .card {
       background: #ffffff;
-      border: 1px solid #e2e8f0;
+      border: 1.5px solid #e2e8f0;
       border-radius: 16px;
       padding: 20px;
       box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
@@ -267,7 +265,7 @@ const htmlContent = `<!DOCTYPE html>
       text-transform: uppercase;
       letter-spacing: 0.05em;
       border: 1px solid #f59e0b;
-      box-shadow: 0 10px 20px -5px rgba(245, 158, 11, 0.4);
+      box-shadow: 0 10px 20px -5px rgba(245, 158, 11, 0.35);
     }
 
     /* Layout Grids */
@@ -327,6 +325,18 @@ const htmlContent = `<!DOCTYPE html>
       color: #d97706;
     }
 
+    .feature-icon-blue {
+      background: #e0f2fe;
+      border: 1px solid #bae6fd;
+      color: #0284c7;
+    }
+
+    .feature-icon-purple {
+      background: #f3e8ff;
+      border: 1px solid #e9d5ff;
+      color: #7e22ce;
+    }
+
     .feature-title {
       font-size: 14.5px;
       font-weight: 700;
@@ -377,22 +387,22 @@ const htmlContent = `<!DOCTYPE html>
       border: 1.5px solid #cbd5e1;
       background: #ffffff;
       box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.06);
-      font-size: 12.5px;
+      font-size: 12px;
     }
 
     .comp-table th {
       background: #f8fafc;
-      padding: 12px 16px;
+      padding: 11px 16px;
       text-align: left;
       font-family: 'Outfit', sans-serif;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 800;
       color: #0f172a;
       border-bottom: 2px solid #cbd5e1;
     }
 
     .comp-table td {
-      padding: 11px 16px;
+      padding: 10px 16px;
       border-bottom: 1px solid #f1f5f9;
       color: #334155;
     }
@@ -518,7 +528,7 @@ const htmlContent = `<!DOCTYPE html>
 <body>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 1: PORTADA INSTITUCIONAL                                      -->
+  <!-- SLIDE 1: PORTADA INSTITUCIONAL (FOCO EN EXCELENCIA PEDAGÓGICA)       -->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
@@ -537,46 +547,46 @@ const htmlContent = `<!DOCTYPE html>
     </div>
 
     <div class="slide-body" style="align-items: center; text-align: center; max-width: 1100px; margin: 0 auto;">
-      <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 18px; border-radius: 999px; background: #fef3c7; border: 1px solid #fde68a; color: #b45309; font-size: 12px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; font-family: 'JetBrains Mono', monospace; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.1);">
-        ★ Presentación Exclusiva para Dueños de Colegios y Directores Generales
+      <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 18px; border-radius: 999px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; font-size: 12px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; font-family: 'JetBrains Mono', monospace; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.1);">
+        ★ Excelencia Pedagógica para Dueños, Directores Generales y Consejos Académicos
       </div>
 
-      <h1 class="hero-title" style="font-size: 56px;">
-        El Sistema Operativo Escolar que <span class="gradient-text-emerald">Automatiza tu Gestión</span> y <span class="gradient-text-gold">Transforma el Aula</span>
+      <h1 class="hero-title" style="font-size: 54px;">
+        La Plataforma de <span class="gradient-text-emerald">Excelencia Académica</span> que Transforma tu Colegio
       </h1>
 
-      <p class="slide-subtitle" style="font-size: 19px; max-width: 880px; margin-bottom: 30px;">
-        La suite institucional que unifica el control administrativo-financiero con la pedagogía oficial de la SEP, el estándar internacional Cambridge y gamificación inmersiva en una sola plataforma soberana.
+      <p class="slide-subtitle" style="font-size: 18.5px; max-width: 900px; margin-bottom: 28px;">
+        La suite institucional soberana que unifica la Bóveda Curricular oficial SEP NEM 2024, el estándar bilingüe Cambridge y la gamificación inmersiva para elevar la calidad educativa, motivar al estudiante y respaldar al docente.
       </p>
 
-      <div class="grid-4" style="width: 100%; max-width: 980px;">
+      <div class="grid-4" style="width: 100%; max-width: 1040px;">
         <div class="metric-pill" style="text-align: left;">
           <span class="metric-label">Bóveda Curricular</span>
           <span class="metric-value">NEM Fases 1 a 6 + Cambridge</span>
         </div>
         <div class="metric-pill" style="text-align: left;">
-          <span class="metric-label">Velocidad Docente</span>
+          <span class="metric-label">Productividad Docente</span>
           <span class="metric-value">Planeación en Segundos</span>
         </div>
         <div class="metric-pill" style="text-align: left;">
-          <span class="metric-label">Familias Conectadas</span>
-          <span class="metric-value">WhatsApp & Mensajería Instantánea</span>
+          <span class="metric-label">Metodología Lúdica</span>
+          <span class="metric-value">Estudio con 17 Nodos</span>
         </div>
         <div class="metric-pill" style="text-align: left;">
-          <span class="metric-label">Blindaje Fiscal</span>
-          <span class="metric-value">SAT CFDI 4.0 Complemento IEDU</span>
+          <span class="metric-label">Vínculo con Familias</span>
+          <span class="metric-value">WhatsApp y Mensajería Directa</span>
         </div>
       </div>
     </div>
 
     <div class="slide-footer">
-      <div>ISkool Académico • Confidencial • Preparado para Consejos Directivos</div>
+      <div>ISkool Académico • Confidencial • Preparado para Consejos Directivos y Académicos</div>
       <div class="slide-number">01 / 14</div>
     </div>
   </div>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 2: LA TESIS DE VALOR DIRECTIVA                                -->
+  <!-- SLIDE 2: LA TESIS CENTRAL: LO VERDADERAMENTE VALIOSO ES LO ACADÉMICO -->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
@@ -595,63 +605,63 @@ const htmlContent = `<!DOCTYPE html>
 
     <div class="slide-body">
       <h2 class="slide-title">
-        Gestionar la cobranza no es suficiente. <span class="gradient-text-emerald">Debes ganar la batalla del aula.</span>
+        La cobranza no define a una gran escuela. <span class="gradient-text-emerald">Lo verdaderamente valioso es lo académico.</span>
       </h2>
       <p class="slide-subtitle">
-        Los colegios privados pierden familias y dinero por dos frentes: el agotamiento burocrático de sus maestros y la apatía de los alumnos frente a métodos tradicionales.
+        Los colegios privados no ganan prestigio ni retienen familias por su caja registradora, sino por la calidad de su enseñanza, el entusiasmo de sus alumnos en el aula y el respaldo que brindan a sus maestros frente a las exigencias normativas.
       </p>
 
       <div class="grid-2">
         <div class="card" style="border: 1.5px solid #fecdd3; background: #fff1f2; box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.07);">
-          <div style="font-size: 13.5px; font-weight: 800; color: #e11d48; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
-            ⚠️ Lo que ofrecen los sistemas de cobranza tradicionales
+          <div style="font-size: 13px; font-weight: 800; color: #e11d48; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+            ⚠️ El error de los sistemas centrados solo en la cobranza
           </div>
           <div class="feature-item">
             <div class="feature-icon-box" style="background: #ffe4e6; border-color: #fda4af; color: #e11d48;">✕</div>
             <div>
-              <div class="feature-title" style="color: #881337;">Solo tocan la parte administrativa</div>
-              <div class="feature-desc" style="color: #9f1239;">Cobran mensualidades pero dejan a los maestros solos frente a la abrumadora carga de planeaciones de la SEP.</div>
+              <div class="feature-title" style="color: #881337;">Tratan al colegio como comercio, no como centro educativo</div>
+              <div class="feature-desc" style="color: #9f1239;">Se limitan a emitir recibos pero no tocan el corazón de la escuela: los contenidos pedagógicos, las materias y el aprendizaje.</div>
             </div>
           </div>
           <div class="feature-item">
             <div class="feature-icon-box" style="background: #ffe4e6; border-color: #fda4af; color: #e11d48;">✕</div>
             <div>
-              <div class="feature-title" style="color: #881337;">Cero impacto en el aula y en los alumnos</div>
-              <div class="feature-desc" style="color: #9f1239;">El estudiante ni siquiera tiene una experiencia digital motivante; sigue resolviendo copias en papel aburridas.</div>
+              <div class="feature-title" style="color: #881337;">Ignoran el agotamiento y la rotación de los maestros</div>
+              <div class="feature-desc" style="color: #9f1239;">Los docentes siguen perdiendo sus fines de semana llenando formatos manuales de la SEP sin herramientas inteligentes.</div>
             </div>
           </div>
           <div class="feature-item">
             <div class="feature-icon-box" style="background: #ffe4e6; border-color: #fda4af; color: #e11d48;">✕</div>
             <div>
-              <div class="feature-title" style="color: #881337;">Contraseñas engorrosas para los padres</div>
-              <div class="feature-desc" style="color: #9f1239;">Los tutores olvidan sus accesos y saturan la recepción del colegio pidiendo circulares y boletas.</div>
+              <div class="feature-title" style="color: #881337;">Cero motivación para el alumno en el aula</div>
+              <div class="feature-desc" style="color: #9f1239;">Los estudiantes continúan con métodos pasivos y fotocopias aburridas; no existe una experiencia digital que despierte su pasión.</div>
             </div>
           </div>
         </div>
 
         <div class="card" style="border: 1.5px solid #86efac; background: #f0fdf4; box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.1);">
-          <div style="font-size: 13.5px; font-weight: 800; color: #059669; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
-            ★ La Solución Soberana ISkool
+          <div style="font-size: 13px; font-weight: 800; color: #059669; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+            ★ El Enfoque Soberano ISkool: Pedagogía en el Centro
           </div>
           <div class="feature-item">
             <div class="feature-icon-box" style="background: #dcfce7; border-color: #86efac; color: #059669;">✓</div>
             <div>
-              <div class="feature-title" style="color: #064e3b;">Ecosistema Dual: Finanzas + Excelencia Pedagógica</div>
-              <div class="feature-desc" style="color: #065f46;">Cobranza y SAT CFDI 4.0 conviven con la Bóveda Curricular SEP y Cambridge para ahorrar horas semanales a cada docente.</div>
+              <div class="feature-title" style="color: #064e3b;">Bóveda Curricular Oficial (+1,500 Nodos SEP NEM & Cambridge)</div>
+              <div class="feature-desc" style="color: #065f46;">Respaldamos a la planta docente con programas de estudio oficiales listos para aplicar desde preescolar hasta preparatoria.</div>
             </div>
           </div>
           <div class="feature-item">
             <div class="feature-icon-box" style="background: #dcfce7; border-color: #86efac; color: #059669;">✓</div>
             <div>
-              <div class="feature-title" style="color: #064e3b;">Gamificación con 17 Nodos Interactivos</div>
-              <div class="feature-desc" style="color: #065f46;">Escape rooms, retos cronológicos y duelos de saberes donde los alumnos estudian motivados por mérito escolar real.</div>
+              <div class="feature-title" style="color: #064e3b;">Planeaciones Analíticas de Alta Calidad en Segundos</div>
+              <div class="feature-desc" style="color: #065f46;">Estructuración didáctica oficial (Inicio, Desarrollo y Cierre) con rúbricas analíticas oficiales que devuelven el tiempo libre al maestro.</div>
             </div>
           </div>
           <div class="feature-item">
             <div class="feature-icon-box" style="background: #dcfce7; border-color: #86efac; color: #059669;">✓</div>
             <div>
-              <div class="feature-title" style="color: #064e3b;">WhatsApp y Mensajería Instantánea en 1 Toque</div>
-              <div class="feature-desc" style="color: #065f46;">Avisos de asistencia y calificaciones directos al celular del padre mediante mensajería instantánea segura sin contraseñas.</div>
+              <div class="feature-title" style="color: #064e3b;">El Camino del Héroe: Alumnos Entusiasmados por Estudiar</div>
+              <div class="feature-desc" style="color: #065f46;">17 nodos de actividades lúdicas y economía basada 100% en mérito académico para lograr retención escolar genuina.</div>
             </div>
           </div>
         </div>
@@ -659,13 +669,13 @@ const htmlContent = `<!DOCTYPE html>
     </div>
 
     <div class="slide-footer">
-      <div>ISkool Académico • Diagnóstico de Valor para el Colegio</div>
+      <div>ISkool Académico • La Prioridad Pedagógica Institucional</div>
       <div class="slide-number">02 / 14</div>
     </div>
   </div>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 3: EL ECOSISTEMA EN 6 PILARES (BENTO GRID)                    -->
+  <!-- SLIDE 3: ARQUITECTURA EN 6 PILARES ACADÉMICOS Y DE VIDA ESCOLAR     -->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
@@ -679,54 +689,44 @@ const htmlContent = `<!DOCTYPE html>
           <span class="brand-tag">Ecosistema 360°</span>
         </div>
       </div>
-      <div class="header-pill">Arquitectura Integral</div>
+      <div class="header-pill">Arquitectura Pedagógica</div>
     </div>
 
     <div class="slide-body">
       <h2 class="slide-title">
-        Toda la vida de tu colegio en <span class="gradient-text-emerald">6 Pilares Comprobables</span>
+        La excelencia de tu colegio en <span class="gradient-text-emerald">6 Pilares Pedagógicos y de Vida Escolar</span>
       </h2>
       <p class="slide-subtitle">
-        Elimina la dispersión de tener múltiples suscripciones aisladas. ISkool integra todas las áreas críticas de tu institución.
+        Diseñado integralmente para nutrir la relación entre profesores, alumnos y familias bajo una misma visión académica de vanguardia.
       </p>
 
       <div class="grid-bento">
         <div class="card">
           <div class="feature-item">
-            <div class="feature-icon-box feature-icon-gold">💳</div>
-            <div>
-              <div class="feature-title">Finanzas & SAT CFDI 4.0</div>
-              <div class="feature-desc">Conciliación de colegiaturas, estados de cuenta familiares y timbrado fiscal con complemento educativo oficial (IEDU).</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="feature-item">
             <div class="feature-icon-box">📚</div>
             <div>
-              <div class="feature-title">Bóveda Curricular & Cambridge</div>
-              <div class="feature-desc">+1,500 nodos oficiales NEM 2024 (Fases 1-6) y currículo bilingüe Cambridge con planeaciones generadas en segundos.</div>
+              <div class="feature-title">1. Bóveda Curricular Oficial</div>
+              <div class="feature-desc">+1,500 nodos oficiales NEM 2024 (Fases 1 a 6) con PDAs textuales y marco bilingüe Cambridge internacional.</div>
             </div>
           </div>
         </div>
 
         <div class="card">
           <div class="feature-item">
-            <div class="feature-icon-box" style="background: #dcfce7; border-color: #86efac; color: #059669;">💬</div>
+            <div class="feature-icon-box feature-icon-gold">⚡</div>
             <div>
-              <div class="feature-title">WhatsApp & Mensajería Instantánea</div>
-              <div class="feature-desc">Notificaciones inmediatas de faltas, boletas y avisos al WhatsApp de los padres, con acceso instantáneo sin contraseñas.</div>
+              <div class="feature-title">2. Planeaciones en Segundos</div>
+              <div class="feature-desc">Sesiones dosificadas con los 3 momentos didácticos oficiales (Inicio, Desarrollo y Cierre) y rúbricas analíticas formativas.</div>
             </div>
           </div>
         </div>
 
         <div class="card">
           <div class="feature-item">
-            <div class="feature-icon-box" style="background: #e0f2fe; border-color: #bae6fd; color: #0284c7;">🧩</div>
+            <div class="feature-icon-box feature-icon-blue">🧩</div>
             <div>
-              <div class="feature-title">Estudio de Retos Gamificados</div>
-              <div class="feature-desc">Lienzo digital con 17 nodos pedagógicos: escape rooms, duelos contra jefes, cronología y simulador en tiempo real.</div>
+              <div class="feature-title">3. Estudio con 17 Nodos</div>
+              <div class="feature-desc">Lienzo pedagógico interactivo: escape rooms, duelos contra jefes de saberes, secuencias cronológicas y simulador en vivo.</div>
             </div>
           </div>
         </div>
@@ -735,18 +735,28 @@ const htmlContent = `<!DOCTYPE html>
           <div class="feature-item">
             <div class="feature-icon-box feature-icon-gold">🏆</div>
             <div>
-              <div class="feature-title">Camino del Héroe (Alumnos)</div>
-              <div class="feature-desc">Sendero de misiones y economía de mérito con gemas y XP ganadas 100% por estudio. Cero compras con dinero real.</div>
+              <div class="feature-title">4. Camino del Héroe (Alumnos)</div>
+              <div class="feature-desc">Sendero de misiones y economía de mérito con gemas y XP ganadas 100% por entrega de tareas y estudio. Cero compras con dinero.</div>
             </div>
           </div>
         </div>
 
         <div class="card">
           <div class="feature-item">
-            <div class="feature-icon-box" style="background: #f3e8ff; border-color: #e9d5ff; color: #7e22ce;">🏛️</div>
+            <div class="feature-icon-box feature-icon-purple">🩺</div>
             <div>
-              <div class="feature-title">Control Escolar 360°</div>
-              <div class="feature-desc">Expediente completo del alumno: datos de filiación, salud y alergias, adeudo, asistencias y reportes formativos.</div>
+              <div class="feature-title">5. Expediente 360° Real</div>
+              <div class="feature-desc">Ficha médica, alergias en primer plano, bitácora psicopedagógica, filiación y asistencias auditables ante la dirección.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="feature-item">
+            <div class="feature-icon-box" style="background: #dcfce7; border-color: #86efac; color: #059669;">💬</div>
+            <div>
+              <div class="feature-title">6. Conexión Familiar WhatsApp</div>
+              <div class="feature-desc">Avisos automáticos de asistencias, boletas oficiales y acceso en 1 toque por mensajería instantánea segura sin contraseñas.</div>
             </div>
           </div>
         </div>
@@ -754,348 +764,13 @@ const htmlContent = `<!DOCTYPE html>
     </div>
 
     <div class="slide-footer">
-      <div>ISkool Académico • Arquitectura Soberana</div>
+      <div>ISkool Académico • Arquitectura Pedagógica Integral</div>
       <div class="slide-number">03 / 14</div>
     </div>
   </div>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 4: FINANZAS & SAT CFDI 4.0 (CON CAPTURA REAL)                -->
-  <!-- =================================================================== -->
-  <div class="slide">
-    <div class="glow-top-right"></div>
-    <div class="grid-overlay"></div>
-
-    <div class="slide-header">
-      <div class="brand-logo">
-        <div class="brand-icon">🎓</div>
-        <div>
-          <span class="brand-text">ISkool</span>
-          <span class="brand-tag">Finanzas & Cobranza</span>
-        </div>
-      </div>
-      <div class="header-pill">Portal de Administración • Captura en Vivo</div>
-    </div>
-
-    <div class="slide-body">
-      <div class="grid-2" style="align-items: center;">
-        <div>
-          <h2 class="slide-title">
-            Cobranza automatizada. <span class="gradient-text-emerald">Facturación SAT CFDI 4.0</span> sin errores.
-          </h2>
-          <p class="slide-subtitle">
-            Recupera el control de tu flujo de caja escolar y elimina las tareas repetitivas de conciliación y timbrado de facturas a mano cada fin de mes.
-          </p>
-
-          <div class="feature-item">
-            <div class="feature-icon-box feature-icon-gold">✓</div>
-            <div>
-              <div class="feature-title">Estados de cuenta claros por familia</div>
-              <div class="feature-desc">Los padres consultan colegiaturas pagadas y pendientes desde su celular con comprobantes digitales instantáneos.</div>
-            </div>
-          </div>
-
-          <div class="feature-item">
-            <div class="feature-icon-box feature-icon-gold">✓</div>
-            <div>
-              <div class="feature-title">Timbrado CFDI 4.0 con Complemento IEDU</div>
-              <div class="feature-desc">Cumple al 100% con los requerimientos del SAT incorporando CURP del alumno, nivel escolar y validez fiscal oficial.</div>
-            </div>
-          </div>
-
-          <div class="feature-item">
-            <div class="feature-icon-box feature-icon-gold">✓</div>
-            <div>
-              <div class="feature-title">Conciliación bancaria en tiempo real</div>
-              <div class="feature-desc">Control inmediato de ingresos por transferencias, ventanilla o pagos en línea sin descuadres en caja.</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="mockup-window-real">
-          <div class="mockup-header-real">
-            <div class="mockup-controls">
-              <div class="mockup-dot" style="background: #ef4444;"></div>
-              <div class="mockup-dot" style="background: #f59e0b;"></div>
-              <div class="mockup-dot" style="background: #10b981;"></div>
-              <span class="mockup-url-bar">https://colegio.iskool.app/admin (Finanzas & Facturación)</span>
-            </div>
-            <div class="mockup-live-indicator"><span class="live-dot"></span> EN VIVO</div>
-          </div>
-          <div class="mockup-img-container">
-            <img src="${imgFinanzas}" class="mockup-real-screen" alt="Captura Real de Finanzas ISkool" />
-          </div>
-          <div class="mockup-footer-badge">
-            <span>● Pantalla real de ISkool: Panel de Finanzas & Conciliación Fiscal</span>
-            <span style="color: #b45309; font-weight: 800;">SAT CFDI 4.0 IEDU</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="slide-footer">
-      <div>ISkool Académico • Soberanía Financiera Escolar</div>
-      <div class="slide-number">04 / 14</div>
-    </div>
-  </div>
-
-  <!-- =================================================================== -->
-  <!-- SLIDE 5: TIENDA ESCOLAR & ECONOMÍA DE MÉRITO                        -->
-  <!-- =================================================================== -->
-  <div class="slide">
-    <div class="glow-top-right"></div>
-    <div class="grid-overlay"></div>
-
-    <div class="slide-header">
-      <div class="brand-logo">
-        <div class="brand-icon">🎓</div>
-        <div>
-          <span class="brand-text">ISkool</span>
-          <span class="brand-tag">Tienda & Mérito</span>
-        </div>
-      </div>
-      <div class="header-pill">Economía Escolar Sana</div>
-    </div>
-
-    <div class="slide-body">
-      <h2 class="slide-title">
-        Centraliza tus ventas escolares y <span class="gradient-text-gold">premia el mérito académico</span>
-      </h2>
-      <p class="slide-subtitle">
-        Una doble vertiente: canaliza la venta de uniformes y materiales oficiales, mientras impulsas una cultura escolar donde el esfuerzo académico se traduce en reconocimiento real.
-      </p>
-
-      <div class="grid-2">
-        <div class="card">
-          <div style="font-size: 13.5px; font-weight: 800; color: #b45309; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
-            🛒 Tienda Escolar en Línea para Familias
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon-box feature-icon-gold">👕</div>
-            <div>
-              <div class="feature-title">Venta de Uniformes y Paquetes de Libros</div>
-              <div class="feature-desc">Catálogo digital con tallas, inventario y reglas de compra directa para los padres de familia desde su portal.</div>
-            </div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon-box feature-icon-gold">🎟️</div>
-            <div>
-              <div class="feature-title">Eventos, Talleres y Cuotas Especiales</div>
-              <div class="feature-desc">Registro y cobro de salidas escolares, actividades extracurriculares y festivales sin efectivo en las aulas.</div>
-            </div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon-box feature-icon-gold">💳</div>
-            <div>
-              <div class="feature-title">Control y Auditoría de Inventarios</div>
-              <div class="feature-desc">Seguimiento de existencias y reportes consolidados de ingresos adicionales para la administración del colegio.</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div style="font-size: 13.5px; font-weight: 800; color: #047857; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
-            🏆 Tienda Mágica de Reconocimiento al Alumno
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon-box">🪙</div>
-            <div>
-              <div class="feature-title">100% Ganado por Mérito Académico</div>
-              <div class="feature-desc">Las monedas y gemas escolares NO se compran con dinero real. Solo se obtienen entregando tareas y resolviendo retos.</div>
-            </div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon-box">📜</div>
-            <div>
-              <div class="feature-title">Canje de Privilegios Escolares Regulados</div>
-              <div class="feature-desc">Pases de biblioteca, reconocimientos de honor en asamblea y artefactos digitales autorizados por los directores.</div>
-            </div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon-box">🛡️</div>
-            <div>
-              <div class="feature-title">Cero Vicios Consumistas</div>
-              <div class="feature-desc">Diseñado bajo rigor pedagógico para motivar la constancia y el hábito diario de estudio sin generar desigualdades.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="slide-footer">
-      <div>ISkool Académico • Cultura de Excelencia y Flujo de Ingresos</div>
-      <div class="slide-number">05 / 14</div>
-    </div>
-  </div>
-
-  <!-- =================================================================== -->
-  <!-- SLIDE 6: CONTROL ESCOLAR & EXPEDIENTES 360° (EXPEDIENTE REAL 360°) -->
-  <!-- =================================================================== -->
-  <div class="slide">
-    <div class="glow-top-right"></div>
-    <div class="grid-overlay"></div>
-
-    <div class="slide-header">
-      <div class="brand-logo">
-        <div class="brand-icon">🎓</div>
-        <div>
-          <span class="brand-text">ISkool</span>
-          <span class="brand-tag">Control Escolar</span>
-        </div>
-      </div>
-      <div class="header-pill">Expediente 360° Real • Captura en Vivo</div>
-    </div>
-
-    <div class="slide-body">
-      <div class="grid-2" style="align-items: center;">
-        <div>
-          <h2 class="slide-title">
-            Todo el historial del alumno en un <span class="gradient-text-emerald">Expediente 360° Digital</span>
-          </h2>
-          <p class="slide-subtitle">
-            Seguridad institucional, historial clínico, bitácora de conducta y control de asistencia auditable en segundos ante cualquier necesidad directiva o médica.
-          </p>
-
-          <div class="feature-item">
-            <div class="feature-icon-box">🩺</div>
-            <div>
-              <div class="feature-title">Ficha Médica y Alergias en Primer Plano</div>
-              <div class="feature-desc">Acceso instantáneo para enfermería y profesores a condiciones de salud, tipo de sangre y contactos de emergencia autorizados.</div>
-            </div>
-          </div>
-
-          <div class="feature-item">
-            <div class="feature-icon-box">📋</div>
-            <div>
-              <div class="feature-title">Bitácora Conductual y Asistencias Históricas</div>
-              <div class="feature-desc">Registro formal de reportes de disciplina, justificación de faltas y bitácora de seguimiento psicopedagógico.</div>
-            </div>
-          </div>
-
-          <div class="feature-item">
-            <div class="feature-icon-box">🔒</div>
-            <div>
-              <div class="feature-title">Estado de Cuenta y Filiación Familiar</div>
-              <div class="feature-desc">CURP, matrícula oficial, tutor responsable, teléfonos de contacto y desglose de recibos pendientes y pagados.</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="mockup-window-real">
-          <div class="mockup-header-real">
-            <div class="mockup-controls">
-              <div class="mockup-dot" style="background: #ef4444;"></div>
-              <div class="mockup-dot" style="background: #f59e0b;"></div>
-              <div class="mockup-dot" style="background: #10b981;"></div>
-              <span class="mockup-url-bar">https://colegio.iskool.app/admin/expediente-360</span>
-            </div>
-            <div class="mockup-live-indicator"><span class="live-dot"></span> EXPEDIENTE 360° EN VIVO</div>
-          </div>
-          <div class="mockup-img-container">
-            <img src="${imgExpediente360}" class="mockup-real-screen" alt="Captura Real del Expediente 360° de Estudiante ISkool" />
-          </div>
-          <div class="mockup-footer-badge">
-            <span>● Pantalla real de ISkool: Expediente 360° (Filiación, Salud, Asistencia y Cobranza)</span>
-            <span style="color: #047857; font-weight: 800;">EXPEDIENTE 360° DEL ALUMNO</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="slide-footer">
-      <div>ISkool Académico • Seguridad y Control del Alumnado</div>
-      <div class="slide-number">06 / 14</div>
-    </div>
-  </div>
-
-  <!-- =================================================================== -->
-  <!-- SLIDE 7: COMUNICACIÓN FAMILIAR: WHATSAPP & MENSAJERÍA INSTANTÁNEA   -->
-  <!-- =================================================================== -->
-  <div class="slide">
-    <div class="glow-top-right"></div>
-    <div class="grid-overlay"></div>
-
-    <div class="slide-header">
-      <div class="brand-logo">
-        <div class="brand-icon">🎓</div>
-        <div>
-          <span class="brand-text">ISkool</span>
-          <span class="brand-tag">Familias & Tutores</span>
-        </div>
-      </div>
-      <div class="header-pill">Portal Familiar • Captura en Vivo</div>
-    </div>
-
-    <div class="slide-body">
-      <div class="grid-2" style="align-items: center;">
-        <div>
-          <h2 class="slide-title">
-            Notificaciones por <span class="gradient-text-emerald">WhatsApp</span> y <span class="gradient-text-gold">Mensajería Instantánea Segura</span>
-          </h2>
-          <p class="slide-subtitle">
-            Elimina los pretextos de "no me llegó el aviso" o contraseñas olvidadas. Los padres entran a su expediente familiar en un solo toque mediante mensajería instantánea.
-          </p>
-
-          <div class="feature-item">
-            <div class="feature-icon-box" style="background: #dcfce7; border-color: #86efac; color: #059669;">
-              📱
-            </div>
-            <div>
-              <div class="feature-title">Avisos Directos a WhatsApp</div>
-              <div class="feature-desc">Notificaciones inmediatas cuando el alumno registra una falta, se publica una boleta o hay avisos urgentes de dirección.</div>
-            </div>
-          </div>
-
-          <div class="feature-item">
-            <div class="feature-icon-box feature-icon-gold">
-              🔑
-            </div>
-            <div>
-              <div class="feature-title">Acceso Directo por Mensajería Instantánea</div>
-              <div class="feature-desc">El tutor pulsa el enlace seguro en su teléfono y entra directo a su panel familiar sin tener que recordar ni restablecer contraseñas.</div>
-            </div>
-          </div>
-
-          <div class="feature-item">
-            <div class="feature-icon-box">
-              👨‍👩‍👧‍👦
-            </div>
-            <div>
-              <div class="feature-title">Visión Familiar Multi-Hijo</div>
-              <div class="feature-desc">Alterna entre hermanos matriculados en diferentes grados con calificaciones, asistencias y pagos en una sola pantalla.</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="mockup-window-real">
-          <div class="mockup-header-real">
-            <div class="mockup-controls">
-              <div class="mockup-dot" style="background: #ef4444;"></div>
-              <div class="mockup-dot" style="background: #f59e0b;"></div>
-              <div class="mockup-dot" style="background: #10b981;"></div>
-              <span class="mockup-url-bar">https://colegio.iskool.app/parent (Portal de Familias)</span>
-            </div>
-            <div class="mockup-live-indicator"><span class="live-dot"></span> EN VIVO</div>
-          </div>
-          <div class="mockup-img-container">
-            <img src="${imgParent}" class="mockup-real-screen" alt="Captura Real del Portal Familiar ISkool" />
-          </div>
-          <div class="mockup-footer-badge">
-            <span>● Pantalla real de ISkool: Panel de Tutores con Asistencias y Calificaciones</span>
-            <span style="color: #059669; font-weight: 800;">WHATSAPP & MENSAJERÍA INSTANTÁNEA</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="slide-footer">
-      <div>ISkool Académico • Retención y Fidelización de Familias</div>
-      <div class="slide-number">07 / 14</div>
-    </div>
-  </div>
-
-  <!-- =================================================================== -->
-  <!-- SLIDE 8: BÓVEDA CURRICULAR OFICIAL (NEM 2024 & CAMBRIDGE)           -->
+  <!-- SLIDE 4: BÓVEDA CURRICULAR NEM 2024 & CAMBRIDGE EN PROFUNDIDAD      -->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
@@ -1109,7 +784,7 @@ const htmlContent = `<!DOCTYPE html>
           <span class="brand-tag">Pedagogía Oficial</span>
         </div>
       </div>
-      <div class="header-pill">Rigor Curricular</div>
+      <div class="header-pill">Rigor Curricular • Fases 1 a 6</div>
     </div>
 
     <div class="slide-body">
@@ -1122,55 +797,55 @@ const htmlContent = `<!DOCTYPE html>
 
       <div class="grid-2">
         <div class="card">
-          <div style="font-size: 13.5px; font-weight: 800; color: #047857; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+          <div style="font-size: 13px; font-weight: 800; color: #047857; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
             🇲🇽 Nueva Escuela Mexicana (Fases 1 a 6)
           </div>
           <div class="feature-item">
             <div class="feature-icon-box">✓</div>
             <div>
-              <div class="feature-title">+1,500 Nodos Curriculares Oficiales</div>
-              <div class="feature-desc">Campos Formativos (Lenguajes, Saberes, Ética y De lo Humano) y Procesos de Desarrollo de Aprendizaje (PDA) textuales.</div>
+              <div class="feature-title">4 Campos Formativos & 7 Ejes Articuladores</div>
+              <div class="feature-desc">Lenguajes, Saberes y Pensamiento Científico, Ética, Naturaleza y Sociedades, y De lo Humano y lo Comunitario totalmente articulados.</div>
             </div>
           </div>
           <div class="feature-item">
             <div class="feature-icon-box">✓</div>
             <div>
-              <div class="feature-title">Boleta Formativa SEP Automática</div>
-              <div class="feature-desc">Ponderación oficial y descriptores formativos calculados en tiempo real sin cálculos manuales en hojas de cálculo.</div>
+              <div class="feature-title">+1,500 Procesos de Desarrollo de Aprendizaje (PDA)</div>
+              <div class="feature-desc">Textuales de los programas sintéticos oficiales de la SEP para evitar improvisaciones o discrepancias pedagógicas.</div>
             </div>
           </div>
           <div class="feature-item">
             <div class="feature-icon-box">✓</div>
             <div>
-              <div class="feature-title">Auditoría de Zona Escolar Lista</div>
-              <div class="feature-desc">Respuestas inmediatas ante supervisiones e inspecciones de zona sin tener que reunir papeles a última hora.</div>
+              <div class="feature-title">Carpetas Listas para Supervisión e Inspección SEP</div>
+              <div class="feature-desc">Cumplimiento cabal de normatividad ante visitas de inspectores de zona escolar sin tener que armar expedientes de última hora.</div>
             </div>
           </div>
         </div>
 
         <div class="card">
-          <div style="font-size: 13.5px; font-weight: 800; color: #b45309; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+          <div style="font-size: 13px; font-weight: 800; color: #b45309; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
             🇬🇧 Estándar Internacional Cambridge
           </div>
           <div class="feature-item">
             <div class="feature-icon-box feature-icon-gold">✓</div>
             <div>
               <div class="feature-title">Ejes Bilingües English & Science</div>
-              <div class="feature-desc">Marco de competencias internacionales de comprensión lectora, expresión escrita y razonamiento científico.</div>
+              <div class="feature-desc">Marco de competencias internacionales de comprensión lectora, expresión escrita y razonamiento científico estructurado.</div>
             </div>
           </div>
           <div class="feature-item">
             <div class="feature-icon-box feature-icon-gold">✓</div>
             <div>
-              <div class="feature-title">Evaluación por Rúbricas Analíticas</div>
-              <div class="feature-desc">Escalas de logro cuantitativas y cualitativas que miden el progreso real del alumno en un segundo idioma.</div>
+              <div class="feature-title">Evaluación por Rúbricas Analíticas Oficiales</div>
+              <div class="feature-desc">Escalas de logro cualitativas y formativas que miden el progreso real del alumno en un segundo idioma.</div>
             </div>
           </div>
           <div class="feature-item">
             <div class="feature-icon-box feature-icon-gold">✓</div>
             <div>
-              <div class="feature-title">Diferenciador en Admisiones</div>
-              <div class="feature-desc">El argumento decisivo para que los padres elijan tu colegio frente a opciones tradicionales de la zona.</div>
+              <div class="feature-title">Poderoso Diferenciador en Admisiones</div>
+              <div class="feature-desc">El argumento de mayor peso pedagógico para que los padres de familia elijan tu colegio frente a otras opciones locales.</div>
             </div>
           </div>
         </div>
@@ -1179,12 +854,12 @@ const htmlContent = `<!DOCTYPE html>
 
     <div class="slide-footer">
       <div>ISkool Académico • Bóveda Curricular Soberana</div>
-      <div class="slide-number">08 / 14</div>
+      <div class="slide-number">04 / 14</div>
     </div>
   </div>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 9: PLANEACIONES ANALÍTICAS EN SEGUNDOS (CAPTURA REAL)         -->
+  <!-- SLIDE 5: PLANEACIONES ANALÍTICAS EN SEGUNDOS (CAPTURA REAL)         -->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
@@ -1212,26 +887,26 @@ const htmlContent = `<!DOCTYPE html>
           </p>
 
           <div class="feature-item">
-            <div class="feature-icon-box">⚡</div>
+            <div class="feature-icon-box">⏱️</div>
             <div>
-              <div class="feature-title">3 Momentos Didácticos Oficiales</div>
-              <div class="feature-desc">Inicio (activación de saberes previos), Desarrollo (indagación y práctica guiada) y Cierre (socialización y entregable tangible).</div>
+              <div class="feature-title">3 Momentos Didácticos con Cronómetro Oficial</div>
+              <div class="feature-desc">Inicio (10 min de activación), Desarrollo (30 min de práctica e indagación) y Cierre (10 min de socialización y entregable tangible).</div>
             </div>
           </div>
 
           <div class="feature-item">
             <div class="feature-icon-box">📊</div>
             <div>
-              <div class="feature-title">Rúbrica Analítica Oficial Incorporada</div>
-              <div class="feature-desc">Criterios de evaluación formativa alineados con el programa oficial de la SEP para calificar con total transparencia.</div>
+              <div class="feature-title">Rúbrica Analítica Formativa Integrada</div>
+              <div class="feature-desc">Criterios de evaluación cualitativa con 4 niveles de desempeño (Sobresaliente, Logrado, En Proceso y Requiere Apoyo).</div>
             </div>
           </div>
 
           <div class="feature-item">
-            <div class="feature-icon-box">🖨️</div>
+            <div class="feature-icon-box">📸</div>
             <div>
-              <div class="feature-title">Exportación y Respaldo Institucional</div>
-              <div class="feature-desc">Descarga en PDF institucional con sellos del colegio o consulta directa desde la Bóveda del docente.</div>
+              <div class="feature-title">Soporte Multimodal: Foto del Libro de Texto</div>
+              <div class="feature-desc">El profesor toma foto a la página del libro de la SEP y el motor curricular extrae el tema y genera la planeación alineada al PDA.</div>
             </div>
           </div>
         </div>
@@ -1247,10 +922,10 @@ const htmlContent = `<!DOCTYPE html>
             <div class="mockup-live-indicator"><span class="live-dot"></span> EN VIVO</div>
           </div>
           <div class="mockup-img-container">
-            <img src="${imgTeacher}" class="mockup-real-screen" alt="Captura Real del Portal Docente ISkool" />
+            <img src="${imgTeacherNem}" class="mockup-real-screen" alt="Captura Real de Planeación Docente NEM ISkool" />
           </div>
           <div class="mockup-footer-badge">
-            <span>● Pantalla real de ISkool: Panel del Maestro con Bóveda Curricular SEP</span>
+            <span>● Pantalla real de ISkool: Planeador Curricular NEM 2024 con Bóveda Oficial</span>
             <span style="color: #047857; font-weight: 800;">PLANEACIONES EN SEGUNDOS</span>
           </div>
         </div>
@@ -1259,12 +934,12 @@ const htmlContent = `<!DOCTYPE html>
 
     <div class="slide-footer">
       <div>ISkool Académico • Productividad Docente Extrema</div>
-      <div class="slide-number">09 / 14</div>
+      <div class="slide-number">05 / 14</div>
     </div>
   </div>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 10: ESTUDIO DE ACTIVIDADES GAMIFICADAS (CAPTURA REAL)         -->
+  <!-- SLIDE 6: ESTUDIO DE ACTIVIDADES GAMIFICADAS (17 NODOS)             -->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
@@ -1339,12 +1014,12 @@ const htmlContent = `<!DOCTYPE html>
 
     <div class="slide-footer">
       <div>ISkool Académico • Innovación Lúdica en el Aula</div>
-      <div class="slide-number">10 / 14</div>
+      <div class="slide-number">06 / 14</div>
     </div>
   </div>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 11: PORTAL DEL ALUMNO (CAPTURA REAL)                          -->
+  <!-- SLIDE 7: PORTAL DEL ALUMNO · EL CAMINO DEL HÉROE                   -->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
@@ -1419,12 +1094,178 @@ const htmlContent = `<!DOCTYPE html>
 
     <div class="slide-footer">
       <div>ISkool Académico • Retención e Impacto en el Alumnado</div>
-      <div class="slide-number">11 / 14</div>
+      <div class="slide-number">07 / 14</div>
     </div>
   </div>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 12: SUPERVISIÓN DIRECTIVA 360° (CAPTURA REAL)                 -->
+  <!-- SLIDE 8: CONTROL ESCOLAR & EXPEDIENTE 360° REAL                     -->
+  <!-- =================================================================== -->
+  <div class="slide">
+    <div class="glow-top-right"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="slide-header">
+      <div class="brand-logo">
+        <div class="brand-icon">🎓</div>
+        <div>
+          <span class="brand-text">ISkool</span>
+          <span class="brand-tag">Control Escolar</span>
+        </div>
+      </div>
+      <div class="header-pill">Expediente 360° Real • Captura en Vivo</div>
+    </div>
+
+    <div class="slide-body">
+      <div class="grid-2" style="align-items: center;">
+        <div>
+          <h2 class="slide-title">
+            Todo el historial del alumno en un <span class="gradient-text-emerald">Expediente 360° Digital</span>
+          </h2>
+          <p class="slide-subtitle">
+            Seguridad institucional, historial clínico, bitácora de conducta y control de asistencia auditable en segundos ante cualquier necesidad directiva o médica.
+          </p>
+
+          <div class="feature-item">
+            <div class="feature-icon-box">🩺</div>
+            <div>
+              <div class="feature-title">Ficha Médica y Alergias en Primer Plano</div>
+              <div class="feature-desc">Acceso instantáneo para enfermería y profesores a condiciones de salud, tipo de sangre y contactos de emergencia autorizados.</div>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon-box">📋</div>
+            <div>
+              <div class="feature-title">Bitácora Conductual y Asistencias Históricas</div>
+              <div class="feature-desc">Registro formal de reportes de disciplina, justificación de faltas y bitácora de seguimiento psicopedagógico.</div>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon-box">🔒</div>
+            <div>
+              <div class="feature-title">Filiación Familiar y Estatus Integral</div>
+              <div class="feature-desc">CURP, matrícula oficial, tutor responsable, teléfonos de contacto e historial escolar consolidado en un solo lugar.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mockup-window-real">
+          <div class="mockup-header-real">
+            <div class="mockup-controls">
+              <div class="mockup-dot" style="background: #ef4444;"></div>
+              <div class="mockup-dot" style="background: #f59e0b;"></div>
+              <div class="mockup-dot" style="background: #10b981;"></div>
+              <span class="mockup-url-bar">https://colegio.iskool.app/admin/expediente-360</span>
+            </div>
+            <div class="mockup-live-indicator"><span class="live-dot"></span> EXPEDIENTE 360° EN VIVO</div>
+          </div>
+          <div class="mockup-img-container">
+            <img src="${imgExpediente360}" class="mockup-real-screen" alt="Captura Real del Expediente 360° de Estudiante ISkool" />
+          </div>
+          <div class="mockup-footer-badge">
+            <span>● Pantalla real de ISkool: Expediente 360° (Filiación, Salud, Asistencia y Datos Escolares)</span>
+            <span style="color: #047857; font-weight: 800;">EXPEDIENTE 360° DEL ALUMNO</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <div>ISkool Académico • Seguridad y Control del Alumnado</div>
+      <div class="slide-number">08 / 14</div>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- SLIDE 9: COMUNICACIÓN FAMILIAR: WHATSAPP & MENSAJERÍA INSTANTÁNEA   -->
+  <!-- =================================================================== -->
+  <div class="slide">
+    <div class="glow-top-right"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="slide-header">
+      <div class="brand-logo">
+        <div class="brand-icon">🎓</div>
+        <div>
+          <span class="brand-text">ISkool</span>
+          <span class="brand-tag">Familias & Tutores</span>
+        </div>
+      </div>
+      <div class="header-pill">Portal Familiar • Captura en Vivo</div>
+    </div>
+
+    <div class="slide-body">
+      <div class="grid-2" style="align-items: center;">
+        <div>
+          <h2 class="slide-title">
+            Notificaciones por <span class="gradient-text-emerald">WhatsApp</span> y <span class="gradient-text-gold">Mensajería Instantánea Segura</span>
+          </h2>
+          <p class="slide-subtitle">
+            Elimina los pretextos de "no me llegó el aviso" o contraseñas olvidadas. Los padres entran a su expediente familiar en un solo toque mediante mensajería instantánea.
+          </p>
+
+          <div class="feature-item">
+            <div class="feature-icon-box" style="background: #dcfce7; border-color: #86efac; color: #059669;">
+              📱
+            </div>
+            <div>
+              <div class="feature-title">Avisos Directos a WhatsApp</div>
+              <div class="feature-desc">Notificaciones inmediatas cuando el alumno registra una falta, se publica una boleta o hay avisos urgentes de dirección.</div>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon-box feature-icon-gold">
+              🔑
+            </div>
+            <div>
+              <div class="feature-title">Acceso Directo por Mensajería Instantánea</div>
+              <div class="feature-desc">El tutor pulsa el enlace seguro en su teléfono y entra directo a su panel familiar sin tener que recordar ni restablecer contraseñas.</div>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon-box">
+              👨‍👩‍👧‍👦
+            </div>
+            <div>
+              <div class="feature-title">Visión Familiar Multi-Hijo</div>
+              <div class="feature-desc">Alterna entre hermanos matriculados en diferentes grados con calificaciones, asistencias y avisos en una sola pantalla.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mockup-window-real">
+          <div class="mockup-header-real">
+            <div class="mockup-controls">
+              <div class="mockup-dot" style="background: #ef4444;"></div>
+              <div class="mockup-dot" style="background: #f59e0b;"></div>
+              <div class="mockup-dot" style="background: #10b981;"></div>
+              <span class="mockup-url-bar">https://colegio.iskool.app/parent (Portal de Familias)</span>
+            </div>
+            <div class="mockup-live-indicator"><span class="live-dot"></span> EN VIVO</div>
+          </div>
+          <div class="mockup-img-container">
+            <img src="${imgParent}" class="mockup-real-screen" alt="Captura Real del Portal Familiar ISkool" />
+          </div>
+          <div class="mockup-footer-badge">
+            <span>● Pantalla real de ISkool: Panel de Tutores con Asistencias y Calificaciones</span>
+            <span style="color: #059669; font-weight: 800;">WHATSAPP & MENSAJERÍA INSTANTÁNEA</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <div>ISkool Académico • Retención y Fidelización de Familias</div>
+      <div class="slide-number">09 / 14</div>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- SLIDE 10: SUPERVISIÓN Y COBERTURA CURRICULAR DIRECTIVA 360°          -->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
@@ -1445,16 +1286,16 @@ const htmlContent = `<!DOCTYPE html>
       <div class="grid-2" style="align-items: center;">
         <div>
           <h2 class="slide-title">
-            La cabina de control para la <span class="gradient-text-emerald">Dirección Escolar 360°</span>
+            La cabina de control para la <span class="gradient-text-emerald">Supervisión Académica Directiva</span>
           </h2>
           <p class="slide-subtitle">
-            Supervisa la salud académica y operativa de todo tu plantel en tiempo real sin esperar a fin de mes ni perseguir a los maestros por reportes impresos.
+            Supervisa la cobertura de los programas oficiales de la SEP y la salud de cada grupo en tiempo real sin esperar a fin de mes ni perseguir reportes impresos.
           </p>
 
           <div class="feature-item">
             <div class="feature-icon-box">📊</div>
             <div>
-              <div class="feature-title">Auditoría Curricular en Tiempo Real</div>
+              <div class="feature-title">Auditoría de Cobertura Curricular en Tiempo Real</div>
               <div class="feature-desc">Verifica qué porcentaje de los PDAs oficiales de la SEP ha cubierto cada profesor y grupo con métricas consolidadas.</div>
             </div>
           </div>
@@ -1462,7 +1303,7 @@ const htmlContent = `<!DOCTYPE html>
           <div class="feature-item">
             <div class="feature-icon-box">🚨</div>
             <div>
-              <div class="feature-title">Alertas Tempranas de Ausentismo</div>
+              <div class="feature-title">Alertas Tempranas de Ausentismo y Rezago</div>
               <div class="feature-desc">Detecta a tiempo patrones de faltas reiteradas o bajas en calificaciones para intervenir antes de que se conviertan en deserción.</div>
             </div>
           </div>
@@ -1470,8 +1311,8 @@ const htmlContent = `<!DOCTYPE html>
           <div class="feature-item">
             <div class="feature-icon-box feature-icon-gold">📈</div>
             <div>
-              <div class="feature-title">Toma de Decisiones Informada</div>
-              <div class="feature-desc">Reportes ejecutivos listos para juntas de consejo directivo, comités de socios fundadores y reuniones estratégicas.</div>
+              <div class="feature-title">Reportes Ejecutivos para Consejos Técnicos</div>
+              <div class="feature-desc">Tableros de control listos para juntas de consejo directivo, comités de socios fundadores e informes de acreditación.</div>
             </div>
           </div>
         </div>
@@ -1490,7 +1331,7 @@ const htmlContent = `<!DOCTYPE html>
             <img src="${imgDirector}" class="mockup-real-screen" alt="Captura Real del Tablero Directivo ISkool" />
           </div>
           <div class="mockup-footer-badge">
-            <span>● Pantalla real de ISkool: Panel Ejecutivo con Grupos, Alumnos y Estatus</span>
+            <span>● Pantalla real de ISkool: Panel Ejecutivo con Grupos, Alumnos y Estatus Curricular</span>
             <span style="color: #047857; font-weight: 800;">SUPERVISIÓN 360°</span>
           </div>
         </div>
@@ -1499,6 +1340,179 @@ const htmlContent = `<!DOCTYPE html>
 
     <div class="slide-footer">
       <div>ISkool Académico • Gobierno Institucional Inteligente</div>
+      <div class="slide-number">10 / 14</div>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- SLIDE 11: CULTURA ESCOLAR DE MÉRITO Y TIENDA REGULADA               -->
+  <!-- =================================================================== -->
+  <div class="slide">
+    <div class="glow-top-right"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="slide-header">
+      <div class="brand-logo">
+        <div class="brand-icon">🎓</div>
+        <div>
+          <span class="brand-text">ISkool</span>
+          <span class="brand-tag">Vida Escolar & Mérito</span>
+        </div>
+      </div>
+      <div class="header-pill">Cultura Institucional Sana</div>
+    </div>
+
+    <div class="slide-body">
+      <h2 class="slide-title">
+        Fortalece la identidad escolar con <span class="gradient-text-gold">Reconocimiento al Esfuerzo y Orden Escolar</span>
+      </h2>
+      <p class="slide-subtitle">
+        Premia el mérito académico de tus alumnos y canaliza las actividades y eventos del colegio sin distracciones mercantiles ni efectivo en los salones de clase.
+      </p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div style="font-size: 13px; font-weight: 800; color: #047857; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+            🏆 Reconocimientos y Privilegios por Mérito Real
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-box">🪙</div>
+            <div>
+              <div class="feature-title">100% Ganado por Mérito Académico</div>
+              <div class="feature-desc">Las monedas y gemas escolares NO se compran con dinero real. Solo se obtienen entregando tareas y superando retos formativos.</div>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-box">📜</div>
+            <div>
+              <div class="feature-title">Canje de Privilegios Escolares Regulados</div>
+              <div class="feature-desc">Pases de biblioteca, reconocimientos de honor en asamblea y distinciones autorizadas por los directores.</div>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-box">🛡️</div>
+            <div>
+              <div class="feature-title">Formación de Hábitos y Disciplina Positiva</div>
+              <div class="feature-desc">Diseñado bajo rigor pedagógico para motivar la constancia diaria de estudio sin generar desigualdades económicas.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-size: 13px; font-weight: 800; color: #b45309; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+            🎟️ Eventos, Talleres y Cuotas Escolares sin Efectivo
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-box feature-icon-gold">🚌</div>
+            <div>
+              <div class="feature-title">Salidas Escolares y Actividades Extracurriculares</div>
+              <div class="feature-desc">Registro y cobro transparente de visitas guiadas, eventos deportivos y festivales sin dinero en mano de maestros.</div>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-box feature-icon-gold">👕</div>
+            <div>
+              <div class="feature-title">Uniformes y Materiales Escolares Oficiales</div>
+              <div class="feature-desc">Catálogo institucional con tallas y existencias para que los padres adquieran materiales con certeza y claridad.</div>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon-box feature-icon-gold">📑</div>
+            <div>
+              <div class="feature-title">Trazabilidad Total para la Administración</div>
+              <div class="feature-desc">Reportes consolidados de inventarios y cuotas especiales con auditoría clara para la dirección del colegio.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <div>ISkool Académico • Cultura de Excelencia y Organización Escolar</div>
+      <div class="slide-number">11 / 14</div>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- SLIDE 12: MÓDULO ADMINISTRATIVO Y FACTURACIÓN SAT CFDI 4.0 (AL FINAL)-->
+  <!-- =================================================================== -->
+  <div class="slide">
+    <div class="glow-top-right"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="slide-header">
+      <div class="brand-logo">
+        <div class="brand-icon">🎓</div>
+        <div>
+          <span class="brand-text">ISkool</span>
+          <span class="brand-tag">Módulo Administrativo</span>
+        </div>
+      </div>
+      <div class="header-pill">Opcional / Integrado • Captura en Vivo</div>
+    </div>
+
+    <div class="slide-body">
+      <div class="grid-2" style="align-items: center;">
+        <div>
+          <div style="display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 999px; background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+            ⚙️ Módulo Administrativo Complementario
+          </div>
+
+          <h2 class="slide-title">
+            Gestión Administrativa y <span class="gradient-text-emerald">Facturación SAT CFDI 4.0</span>
+          </h2>
+          <p class="slide-subtitle">
+            Para aquellos colegios que desean consolidar también su administración en una misma plataforma: cobranza ordenada de colegiaturas, estados de cuenta claros y timbrado fiscal con complemento educativo oficial (IEDU).
+          </p>
+
+          <div class="feature-item">
+            <div class="feature-icon-box feature-icon-gold">💳</div>
+            <div>
+              <div class="feature-title">Cobranza y Estados de Cuenta Claros</div>
+              <div class="feature-desc">Los tutores consultan mensualidades pagadas y pendientes desde su teléfono celular con conciliación bancaria directa.</div>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon-box feature-icon-gold">🏛️</div>
+            <div>
+              <div class="feature-title">Timbrado CFDI 4.0 con Complemento IEDU Oficial</div>
+              <div class="feature-desc">Incorpora automáticamente la CURP del alumno, nivel escolar y validez fiscal para la deducción anual de los padres ante el SAT.</div>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon-box">✓</div>
+            <div>
+              <div class="feature-title">Totalmente Opcional e Independiente</div>
+              <div class="feature-desc">Si tu colegio ya cuenta con un sistema contable o de cobranza externo, ISkool opera al 100% como suite pedagógica sin requerir migración financiera.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mockup-window-real">
+          <div class="mockup-header-real">
+            <div class="mockup-controls">
+              <div class="mockup-dot" style="background: #ef4444;"></div>
+              <div class="mockup-dot" style="background: #f59e0b;"></div>
+              <div class="mockup-dot" style="background: #10b981;"></div>
+              <span class="mockup-url-bar">https://colegio.iskool.app/admin (Finanzas & Facturación)</span>
+            </div>
+            <div class="mockup-live-indicator"><span class="live-dot"></span> EN VIVO</div>
+          </div>
+          <div class="mockup-img-container">
+            <img src="${imgFinanzas}" class="mockup-real-screen" alt="Captura Real de Finanzas ISkool" />
+          </div>
+          <div class="mockup-footer-badge">
+            <span>● Pantalla real de ISkool: Panel de Finanzas & Conciliación Fiscal</span>
+            <span style="color: #b45309; font-weight: 800;">SAT CFDI 4.0 IEDU</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <div>ISkool Académico • Módulo Administrativo y Facturación Fiscal Opcional</div>
       <div class="slide-number">12 / 14</div>
     </div>
   </div>
@@ -1518,68 +1532,68 @@ const htmlContent = `<!DOCTYPE html>
           <span class="brand-tag">Comparativa de Valor</span>
         </div>
       </div>
-      <div class="header-pill">Retorno de Inversión</div>
+      <div class="header-pill">Retorno Educativo</div>
     </div>
 
     <div class="slide-body">
       <h2 class="slide-title">
-        ¿Por qué ISkool es <span class="gradient-text-emerald">muy superior</span> a un software de cobranza tradicional?
+        ¿Por qué un sistema tradicional de cobranza <span class="gradient-text-emerald">se queda corto</span> frente a ISkool?
       </h2>
       <p class="slide-subtitle">
-        Las soluciones convencionales solo resuelven la caja registradora. ISkool blinda los ingresos y al mismo tiempo eleva el valor académico de tu institución.
+        Los programas tradicionales solo actúan como terminales de cobro. ISkool transforma la enseñanza, motiva a los alumnos y brinda respaldo pedagógico de principio a fin.
       </p>
 
       <table class="comp-table">
         <thead>
           <tr>
-            <th style="width: 32%;">Capacidad Institucional</th>
-            <th style="width: 34%;">Plataforma Tradicional de Cobranza</th>
-            <th style="width: 34%; color: #047857; background: #ecfdf5; border-bottom: 2px solid #34d399;">ISkool Académico</th>
+            <th style="width: 28%;">Capacidad Institucional</th>
+            <th style="width: 36%;">Software Tradicional de Cobranza</th>
+            <th style="width: 36%; color: #047857; background: #ecfdf5; border-bottom: 2px solid #34d399;">ISkool Académico</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td><strong>Alcance de la Plataforma</strong></td>
-            <td><span class="badge-cross">✕</span> Solo administración financiera y cobranza</td>
-            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>Ecosistema 360°:</strong> Aula + Docentes + Alumnos + Familias + Finanzas</td>
+            <td><strong>Enfoque Central</strong></td>
+            <td><span class="badge-cross">✕</span> Meramente administrativo y de cobro mensual</td>
+            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>Pedagogía en el Centro:</strong> Aula + Docente + Alumno + Familias</td>
           </tr>
           <tr>
-            <td><strong>Currículo Oficial SEP y Cambridge</strong></td>
-            <td><span class="badge-cross">✕</span> Nula. No integra el programa educativo</td>
+            <td><strong>Currículo SEP & Cambridge</strong></td>
+            <td><span class="badge-cross">✕</span> Nulo. No incorpora planes de estudio oficiales</td>
             <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>Bóveda Oficial (+1,500 Nodos NEM) + Cambridge bilingüe</strong></td>
           </tr>
           <tr>
             <td><strong>Planeaciones del Docente</strong></td>
-            <td><span class="badge-cross">✕</span> El maestro sigue haciendo formatos a mano</td>
-            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>Generación instantánea en segundos con rúbrica oficial</strong></td>
+            <td><span class="badge-cross">✕</span> Los maestros siguen llenando formatos a mano</td>
+            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>Generación instantánea con 3 momentos y rúbricas oficiales</strong></td>
           </tr>
           <tr>
             <td><strong>Gamificación e Interactividad</strong></td>
-            <td><span class="badge-cross">✕</span> Inexistente; el alumno no tiene portal</td>
-            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>Estudio con 17 nodos y Camino del Héroe por mérito</strong></td>
+            <td><span class="badge-cross">✕</span> Inexistente; el alumno no tiene experiencia digital</td>
+            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>Estudio con 17 nodos interactivos y Camino del Héroe por mérito</strong></td>
           </tr>
           <tr>
             <td><strong>Comunicación Familiar</strong></td>
-            <td><span class="badge-cross">✕</span> Contraseñas complejas que los padres olvidan</td>
-            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>WhatsApp automático y Mensajería Instantánea sin contraseñas</strong></td>
+            <td><span class="badge-cross">✕</span> Portales con contraseñas que los padres olvidan</td>
+            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>WhatsApp automático y Mensajería Instantánea en 1 toque</strong></td>
           </tr>
           <tr>
-            <td><strong>Facturación Electrónica Fiscal</strong></td>
-            <td><span class="badge-check">✓</span> Facturación básica</td>
-            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>SAT CFDI 4.0 con complemento educativo oficial (IEDU)</strong></td>
+            <td><strong>Administración y Facturación</strong></td>
+            <td><span class="badge-check">✓</span> Cobranza básica</td>
+            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>SAT CFDI 4.0 IEDU integrado como módulo complementario</strong></td>
           </tr>
         </tbody>
       </table>
     </div>
 
     <div class="slide-footer">
-      <div>ISkool Académico • Ventaja Competitiva Real</div>
+      <div>ISkool Académico • Ventaja Competitiva y Retorno Educativo</div>
       <div class="slide-number">13 / 14</div>
     </div>
   </div>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 14: CIERRE EJECUTIVO & PRUEBA PILOTO                          -->
+  <!-- SLIDE 14: CIERRE EJECUTIVO & PRUEBA PILOTO PEDAGÓGICA               -->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
@@ -1603,35 +1617,35 @@ const htmlContent = `<!DOCTYPE html>
       </div>
 
       <h1 class="hero-title" style="font-size: 50px;">
-        Comprueba el poder de ISkool con una <span class="gradient-text-emerald">Prueba Piloto en tu Colegio</span>
+        Comprueba el poder de ISkool con una <span class="gradient-text-emerald">Prueba Piloto Pedagógica</span>
       </h1>
 
       <p class="slide-subtitle" style="font-size: 18px; max-width: 820px; margin-bottom: 28px;">
-        Configuramos un grupo muestra de tu institución para que tus maestros generen planeaciones en segundos, tus padres reciban avisos por WhatsApp y tus directivos comprueben el blindaje operativo.
+        Configuramos un grupo muestra de tu institución para que tus maestros generen planeaciones en segundos, tus alumnos vivan el Camino del Héroe y tu dirección compruebe la auditoría curricular en tiempo real.
       </p>
 
       <div class="grid-3" style="width: 100%; margin-bottom: 30px; text-align: left;">
         <div class="card" style="border: 1.5px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);">
           <div style="font-size: 24px; margin-bottom: 8px;">⚡</div>
           <div class="feature-title" style="font-size: 16px;">Configuración en 48 Horas</div>
-          <div class="feature-desc">Nuestro equipo técnico carga tus materias y grupos sin interrumpir las clases del colegio.</div>
+          <div class="feature-desc">Carga de materias y grupos de prueba sin interrumpir las clases ni alterar los sistemas actuales del colegio.</div>
         </div>
 
         <div class="card" style="border: 1.5px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);">
           <div style="font-size: 24px; margin-bottom: 8px;">👥</div>
-          <div class="feature-title" style="font-size: 16px;">Capacitación Llave en Mano</div>
-          <div class="feature-desc">Talleres prácticos inmediatos para maestros, directivos y personal de control escolar.</div>
+          <div class="feature-title" style="font-size: 16px;">Acompañamiento Pedagógico</div>
+          <div class="feature-desc">Talleres prácticos inmediatos para profesores en la Bóveda Curricular y manejo del estudio de retos.</div>
         </div>
 
         <div class="card" style="border: 1.5px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);">
           <div style="font-size: 24px; margin-bottom: 8px;">🛡️</div>
           <div class="feature-title" style="font-size: 16px;">Cero Riesgo Institucional</div>
-          <div class="feature-desc">Acompañamiento dedicado permanente con soporte técnico y pedagógico prioritario.</div>
+          <div class="feature-desc">Comprueba los resultados con tus propios maestros y alumnos antes de tomar cualquier decisión de adopción global.</div>
         </div>
       </div>
 
       <div class="gold-button" style="font-size: 16px; padding: 15px 36px; cursor: pointer;">
-        📅 Agendar Prueba Piloto para tu Colegio
+        📅 Agendar Prueba Piloto Pedagógica para tu Colegio
       </div>
     </div>
 
@@ -1660,7 +1674,7 @@ try {
   console.log('Generando PDF mediante:', browserExecutable);
   execSync(command);
   const stats = fs.statSync(pdfFilePath);
-  console.log('✓ PDF con Tema Claro impactante generado exitosamente!');
+  console.log('✓ PDF con Prioridad Académica y Tema Claro generado exitosamente!');
   console.log('Ruta:', pdfFilePath);
   console.log('Tamaño:', (stats.size / (1024 * 1024)).toFixed(2), 'MB');
 } catch (err) {
