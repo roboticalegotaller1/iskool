@@ -16,7 +16,8 @@ import {
   Users, 
   ShieldCheck, 
   BookOpen, 
-  Globe 
+  Globe,
+  Database 
 } from 'lucide-react';
 
 export const GlobalHelpFab: React.FC = () => {
@@ -129,23 +130,51 @@ export const GlobalHelpFab: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Directorio de Simuladores Rápido (si es docente) */}
+                {/* Bóveda Curricular & Simuladores Rápidos (si es docente) */}
                 {role === 'teacher' && (
-                  <div className="p-3.5 rounded-2xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800 text-cyan-950 dark:text-cyan-200 space-y-2">
-                    <div className="flex items-center gap-1.5 font-black text-xs text-cyan-800 dark:text-cyan-300">
-                      <Globe className="w-3.5 h-3.5" />
-                      <span>50 Simuladores Web Listos</span>
+                  <div className="space-y-2.5">
+                    <div className="p-3.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-indigo-950 dark:text-indigo-200 space-y-2">
+                      <div className="flex items-center gap-1.5 font-black text-xs text-indigo-800 dark:text-indigo-300">
+                        <Database className="w-3.5 h-3.5" />
+                        <span>Bóveda Curricular (703 Nodos NEM)</span>
+                      </div>
+                      <p className="text-[11px] text-indigo-900 dark:text-indigo-200">
+                        Consulta planeaciones oficiales con búsqueda instantánea (&lt;5ms) y videoteca pedagógica verificada.
+                      </p>
+                      <div className="flex items-center gap-3 pt-0.5">
+                        <Link
+                          href="/teacher"
+                          onClick={() => setIsOpen(false)}
+                          className="text-[11px] font-bold text-indigo-700 dark:text-indigo-300 underline"
+                        >
+                          Abrir Planificador ➔
+                        </Link>
+                        <Link
+                          href="/guide?role=teacher#boveda"
+                          onClick={() => setIsOpen(false)}
+                          className="text-[11px] font-bold text-purple-700 dark:text-purple-300 underline"
+                        >
+                          Ver en Guía ➔
+                        </Link>
+                      </div>
                     </div>
-                    <p className="text-[11px] text-cyan-900 dark:text-cyan-200">
-                      Encuentra laboratorios interactivos de PhET, GeoGebra, Desmos y NASA en la guía completa.
-                    </p>
-                    <Link
-                      href="/guide?role=teacher#simuladores"
-                      onClick={() => setIsOpen(false)}
-                      className="text-[11px] font-bold text-cyan-700 dark:text-cyan-300 underline block"
-                    >
-                      Ver directorio completo ➔
-                    </Link>
+
+                    <div className="p-3.5 rounded-2xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800 text-cyan-950 dark:text-cyan-200 space-y-2">
+                      <div className="flex items-center gap-1.5 font-black text-xs text-cyan-800 dark:text-cyan-300">
+                        <Globe className="w-3.5 h-3.5" />
+                        <span>50 Simuladores Web Listos</span>
+                      </div>
+                      <p className="text-[11px] text-cyan-900 dark:text-cyan-200">
+                        Encuentra laboratorios interactivos de PhET, GeoGebra, Desmos y NASA en la guía completa.
+                      </p>
+                      <Link
+                        href="/guide?role=teacher#simuladores"
+                        onClick={() => setIsOpen(false)}
+                        className="text-[11px] font-bold text-cyan-700 dark:text-cyan-300 underline block"
+                      >
+                        Ver directorio completo ➔
+                      </Link>
+                    </div>
                   </div>
                 )}
               </div>
