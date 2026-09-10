@@ -45,6 +45,9 @@ next-env.d.ts
 # docs / temp
 /iskool-docs/
 temp_frames/
+verify_frames_v3_1/
+high_tech_raw*.webm
+*v3.0.mp4
 
 # Knowledge vault workspace files
 .obsidian/workspace

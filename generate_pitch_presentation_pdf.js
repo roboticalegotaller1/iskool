@@ -506,6 +506,47 @@ const htmlContent = `<!DOCTYPE html>
       font-weight: 500;
     }
 
+    
+    .mockup-school-banner {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 38px;
+      background: #ffffff;
+      border-bottom: 1.5px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 16px;
+      z-index: 10;
+      box-shadow: 0 2px 5px rgba(15, 23, 42, 0.05);
+    }
+
+    .mockup-school-icon {
+      font-size: 15px;
+    }
+
+    .mockup-school-name {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #0f172a;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .mockup-school-badge {
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2.5px 8px;
+      border-radius: 4px;
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+      font-family: 'JetBrains Mono', monospace;
+      margin-left: auto;
+      letter-spacing: 0.04em;
+    }
+
     .mockup-live-indicator {
       display: inline-flex;
       align-items: center;
@@ -570,7 +611,7 @@ const htmlContent = `<!DOCTYPE html>
         </div>
         <div class="metric-pill" style="text-align: left;">
           <span class="metric-label">Metodología Lúdica</span>
-          <span class="metric-value">Estudio con 17 Nodos</span>
+          <span class="metric-value">Estudio con 17 Dinámicas</span>
         </div>
         <div class="metric-pill" style="text-align: left;">
           <span class="metric-label">Vínculo con Familias</span>
@@ -586,10 +627,11 @@ const htmlContent = `<!DOCTYPE html>
   </div>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 2: LA TESIS CENTRAL: LO VERDADERAMENTE VALIOSO ES LO ACADÉMICO -->
+  <!-- SLIDE 2: ¿QUÉ ES LA GAMIFICACIÓN EDUCATIVA Y CÓMO LA APLICA ISKOOL? -->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
+    <div class="glow-bottom-left"></div>
     <div class="grid-overlay"></div>
 
     <div class="slide-header">
@@ -597,79 +639,83 @@ const htmlContent = `<!DOCTYPE html>
         <div class="brand-icon">🎓</div>
         <div>
           <span class="brand-text">ISkool</span>
-          <span class="brand-tag">Tesis de Valor</span>
+          <span class="brand-tag">Innovación Pedagógica</span>
         </div>
       </div>
-      <div class="header-pill">El Diagnóstico Estratégico</div>
+      <div class="header-pill">Metodología Activa • Aprendizaje Significativo</div>
     </div>
 
     <div class="slide-body">
       <h2 class="slide-title">
-        La cobranza no define a una gran escuela. <span class="gradient-text-emerald">Lo verdaderamente valioso es lo académico.</span>
+        ¿Qué es la Gamificación Educativa y <span class="gradient-text-emerald">cómo transforma las aulas con ISkool?</span>
       </h2>
       <p class="slide-subtitle">
-        Los colegios privados no ganan prestigio ni retienen familias por su caja registradora, sino por la calidad de su enseñanza, el entusiasmo de sus alumnos en el aula y el respaldo que brindan a sus maestros frente a las exigencias normativas.
+        Gamificar no significa poner videojuegos distractores en el aula. Es aplicar la ciencia del reto, la curiosidad y la superación personal para que los alumnos aprendan los contenidos oficiales con genuina motivación y disciplina.
       </p>
 
-      <div class="grid-2">
-        <div class="card" style="border: 1.5px solid #fecdd3; background: #fff1f2; box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.07);">
-          <div style="font-size: 13px; font-weight: 800; color: #e11d48; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
-            ⚠️ El error de los sistemas centrados solo en la cobranza
+      <div class="grid-3" style="margin-bottom: 20px;">
+        <div class="card" style="border: 1.5px solid #a7f3d0; background: #ffffff; box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.08);">
+          <div style="font-size: 13px; font-weight: 800; color: #047857; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; gap: 8px;">
+            <span>🎯</span> 1. El Concepto Pedagógico
           </div>
-          <div class="feature-item">
-            <div class="feature-icon-box" style="background: #ffe4e6; border-color: #fda4af; color: #e11d48;">✕</div>
-            <div>
-              <div class="feature-title" style="color: #881337;">Tratan al colegio como comercio, no como centro educativo</div>
-              <div class="feature-desc" style="color: #9f1239;">Se limitan a emitir recibos pero no tocan el corazón de la escuela: los contenidos pedagógicos, las materias y el aprendizaje.</div>
-            </div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon-box" style="background: #ffe4e6; border-color: #fda4af; color: #e11d48;">✕</div>
-            <div>
-              <div class="feature-title" style="color: #881337;">Ignoran el agotamiento y la rotación de los maestros</div>
-              <div class="feature-desc" style="color: #9f1239;">Los docentes siguen perdiendo sus fines de semana llenando formatos manuales de la SEP sin herramientas inteligentes.</div>
-            </div>
-          </div>
-          <div class="feature-item">
-            <div class="feature-icon-box" style="background: #ffe4e6; border-color: #fda4af; color: #e11d48;">✕</div>
-            <div>
-              <div class="feature-title" style="color: #881337;">Cero motivación para el alumno en el aula</div>
-              <div class="feature-desc" style="color: #9f1239;">Los estudiantes continúan con métodos pasivos y fotocopias aburridas; no existe una experiencia digital que despierte su pasión.</div>
-            </div>
+          <div class="feature-title" style="font-size: 16px; margin-bottom: 8px; color: #064e3b;">Del Aprendizaje Pasivo a la Experiencia Activa</div>
+          <p class="feature-desc" style="font-size: 12.5px; line-height: 1.55; color: #334155; margin-bottom: 12px;">
+            En el modelo tradicional, el estudiante escucha pasivamente y memoriza solo para el examen. En ISkool, cada tema oficial se convierte en una dinámica de descubrimiento donde los alumnos resuelven acertijos, ordenan cronologías y colaboran en equipo.
+          </p>
+          <div style="padding: 8px 12px; background: #ecfdf5; border-radius: 8px; font-size: 11.5px; color: #065f46; font-weight: 700;">
+            ✓ Aprender explorando y resolviendo retos con significado, no memorizando por obligación.
           </div>
         </div>
 
-        <div class="card" style="border: 1.5px solid #86efac; background: #f0fdf4; box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.1);">
-          <div style="font-size: 13px; font-weight: 800; color: #059669; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
-            ★ El Enfoque Soberano ISkool: Pedagogía en el Centro
+        <div class="card" style="border: 1.5px solid #bae6fd; background: #ffffff; box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.08);">
+          <div style="font-size: 13px; font-weight: 800; color: #0284c7; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; gap: 8px;">
+            <span>🚀</span> 2. Cómo lo Aplica ISkool
           </div>
-          <div class="feature-item">
-            <div class="feature-icon-box" style="background: #dcfce7; border-color: #86efac; color: #059669;">✓</div>
-            <div>
-              <div class="feature-title" style="color: #064e3b;">Bóveda Curricular Oficial (+1,500 Nodos SEP NEM & Cambridge)</div>
-              <div class="feature-desc" style="color: #065f46;">Respaldamos a la planta docente con programas de estudio oficiales listos para aplicar desde preescolar hasta preparatoria.</div>
-            </div>
+          <div class="feature-title" style="font-size: 16px; margin-bottom: 8px; color: #0c4a6e;">17 Dinámicas Interactivas y Camino del Héroe</div>
+          <p class="feature-desc" style="font-size: 12.5px; line-height: 1.55; color: #334155; margin-bottom: 12px;">
+            El profesor no programa: selecciona el tema de la SEP y lo proyecta como escape rooms didácticos, trivias contrarreloj o duelos de saberes. El alumno avanza en su "Camino del Héroe", ganando puntos de experiencia (XP) y rangos conforme entrega tareas.
+          </p>
+          <div style="padding: 8px 12px; background: #f0f9ff; border-radius: 8px; font-size: 11.5px; color: #0369a1; font-weight: 700;">
+            ✓ El docente facilita en 1 clic; el estudiante se apasiona por su propio progreso académico.
           </div>
-          <div class="feature-item">
-            <div class="feature-icon-box" style="background: #dcfce7; border-color: #86efac; color: #059669;">✓</div>
-            <div>
-              <div class="feature-title" style="color: #064e3b;">Planeaciones Analíticas de Alta Calidad en Segundos</div>
-              <div class="feature-desc" style="color: #065f46;">Estructuración didáctica oficial (Inicio, Desarrollo y Cierre) con rúbricas analíticas oficiales que devuelven el tiempo libre al maestro.</div>
-            </div>
+        </div>
+
+        <div class="card" style="border: 1.5px solid #fde68a; background: #ffffff; box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.08);">
+          <div style="font-size: 13px; font-weight: 800; color: #b45309; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; gap: 8px;">
+            <span>🛡️</span> 3. Ética Escolar y Cero Dinero
           </div>
-          <div class="feature-item">
-            <div class="feature-icon-box" style="background: #dcfce7; border-color: #86efac; color: #059669;">✓</div>
-            <div>
-              <div class="feature-title" style="color: #064e3b;">El Camino del Héroe: Alumnos Entusiasmados por Estudiar</div>
-              <div class="feature-desc" style="color: #065f46;">17 nodos de actividades lúdicas y economía basada 100% en mérito académico para lograr retención escolar genuina.</div>
-            </div>
+          <div class="feature-title" style="font-size: 16px; margin-bottom: 8px; color: #78350f;">Progreso Basado 100% en Mérito y Esfuerzo</div>
+          <p class="feature-desc" style="font-size: 12.5px; line-height: 1.55; color: #334155; margin-bottom: 12px;">
+            A diferencia de aplicaciones comerciales con microtransacciones, en ISkool es imposible comprar ventajas con dinero real. Cada gema o reconocimiento se gana exclusivamente con tareas completas, constancia de lectura y valores cívicos en el aula.
+          </p>
+          <div style="padding: 8px 12px; background: #fffbeb; border-radius: 8px; font-size: 11.5px; color: #92400e; font-weight: 700;">
+            ✓ Meritocracia pura que forma hábitos de estudio, sin desigualdades económicas entre familias.
           </div>
+        </div>
+      </div>
+
+      <div class="grid-4">
+        <div class="metric-pill" style="border-left: 4px solid #10b981;">
+          <span class="metric-label">Atención en el Aula</span>
+          <span class="metric-value">+95% Participación Activa</span>
+        </div>
+        <div class="metric-pill" style="border-left: 4px solid #0284c7;">
+          <span class="metric-label">Clima Escolar</span>
+          <span class="metric-value">-80% Apatía en Clases</span>
+        </div>
+        <div class="metric-pill" style="border-left: 4px solid #f59e0b;">
+          <span class="metric-label">Alineación Oficial</span>
+          <span class="metric-value">100% SEP (NEM 2024)</span>
+        </div>
+        <div class="metric-pill" style="border-left: 4px solid #8b5cf6;">
+          <span class="metric-label">Facilidad Docente</span>
+          <span class="metric-value">0 Código Requerido</span>
         </div>
       </div>
     </div>
 
     <div class="slide-footer">
-      <div>ISkool Académico • La Prioridad Pedagógica Institucional</div>
+      <div>ISkool Académico • La Ciencia de la Motivación y el Aprendizaje Activo</div>
       <div class="slide-number">02 / 14</div>
     </div>
   </div>
@@ -706,7 +752,7 @@ const htmlContent = `<!DOCTYPE html>
             <div class="feature-icon-box">📚</div>
             <div>
               <div class="feature-title">1. Bóveda Curricular Oficial</div>
-              <div class="feature-desc">+1,500 nodos oficiales NEM 2024 (Fases 1 a 6) con PDAs textuales y marco bilingüe Cambridge internacional.</div>
+              <div class="feature-desc">+1,500 contenidos oficiales NEM 2024 (Fases 1 a 6) con PDAs textuales y marco bilingüe Cambridge internacional.</div>
             </div>
           </div>
         </div>
@@ -725,7 +771,7 @@ const htmlContent = `<!DOCTYPE html>
           <div class="feature-item">
             <div class="feature-icon-box feature-icon-blue">🧩</div>
             <div>
-              <div class="feature-title">3. Estudio con 17 Nodos</div>
+              <div class="feature-title">3. Estudio con 17 Dinámicas Interactivas</div>
               <div class="feature-desc">Lienzo pedagógico interactivo: escape rooms, duelos contra jefes de saberes, secuencias cronológicas y simulador en vivo.</div>
             </div>
           </div>
@@ -921,7 +967,13 @@ const htmlContent = `<!DOCTYPE html>
             </div>
             <div class="mockup-live-indicator"><span class="live-dot"></span> EN VIVO</div>
           </div>
+          
           <div class="mockup-img-container">
+            <div class="mockup-school-banner">
+              <span class="mockup-school-icon">🏫</span>
+              <span class="mockup-school-name">Colegio Modelo de Innovación Educativa</span>
+              <span class="mockup-school-badge">CAMPUS DIGITAL</span>
+            </div>
             <img src="${imgTeacherNem}" class="mockup-real-screen" alt="Captura Real de Planeación Docente NEM ISkool" />
           </div>
           <div class="mockup-footer-badge">
@@ -939,7 +991,7 @@ const htmlContent = `<!DOCTYPE html>
   </div>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 6: ESTUDIO DE ACTIVIDADES GAMIFICADAS (17 NODOS)             -->
+  <!-- SLIDE 6: ESTUDIO DE ACTIVIDADES GAMIFICADAS (17 DINÁMICAS)         -->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
@@ -960,7 +1012,7 @@ const htmlContent = `<!DOCTYPE html>
       <div class="grid-2" style="align-items: center;">
         <div>
           <h2 class="slide-title">
-            Lienzo de Retos con <span class="gradient-text-emerald">17 Nodos Pedagógicos Interactivos</span>
+            Lienzo de Retos con <span class="gradient-text-emerald">17 Dinámicas de Juego y Aprendizaje</span>
           </h2>
           <p class="slide-subtitle">
             Diseña experiencias donde los alumnos aprenden jugando. El profesor arrastra y conecta bloques didácticos con validación instantánea y simulador en vivo.
@@ -1001,12 +1053,18 @@ const htmlContent = `<!DOCTYPE html>
             </div>
             <div class="mockup-live-indicator"><span class="live-dot"></span> EN VIVO</div>
           </div>
+          
           <div class="mockup-img-container">
+            <div class="mockup-school-banner">
+              <span class="mockup-school-icon">🏫</span>
+              <span class="mockup-school-name">Colegio Modelo de Innovación Educativa</span>
+              <span class="mockup-school-badge">CAMPUS DIGITAL</span>
+            </div>
             <img src="${imgStudio}" class="mockup-real-screen" alt="Captura Real del Estudio de Gamificación ISkool" />
           </div>
           <div class="mockup-footer-badge">
-            <span>● Pantalla real de ISkool: Lienzo de Flujos Pedagógicos por Nodos</span>
-            <span style="color: #0d9488; font-weight: 800;">17 NODOS INTERACTIVOS</span>
+            <span>● Pantalla real de ISkool: Lienzo de Flujos Didácticos y Retos de Aprendizaje</span>
+            <span style="color: #0d9488; font-weight: 800;">17 DINÁMICAS INTERACTIVAS</span>
           </div>
         </div>
       </div>
@@ -1081,7 +1139,13 @@ const htmlContent = `<!DOCTYPE html>
             </div>
             <div class="mockup-live-indicator"><span class="live-dot"></span> EN VIVO</div>
           </div>
+          
           <div class="mockup-img-container">
+            <div class="mockup-school-banner">
+              <span class="mockup-school-icon">🏫</span>
+              <span class="mockup-school-name">Colegio Modelo de Innovación Educativa</span>
+              <span class="mockup-school-badge">CAMPUS DIGITAL</span>
+            </div>
             <img src="${imgStudent}" class="mockup-real-screen" alt="Captura Real del Portal del Alumno ISkool" />
           </div>
           <div class="mockup-footer-badge">
@@ -1161,7 +1225,13 @@ const htmlContent = `<!DOCTYPE html>
             </div>
             <div class="mockup-live-indicator"><span class="live-dot"></span> EXPEDIENTE 360° EN VIVO</div>
           </div>
+          
           <div class="mockup-img-container">
+            <div class="mockup-school-banner">
+              <span class="mockup-school-icon">🏫</span>
+              <span class="mockup-school-name">Colegio Modelo de Innovación Educativa</span>
+              <span class="mockup-school-badge">CAMPUS DIGITAL</span>
+            </div>
             <img src="${imgExpediente360}" class="mockup-real-screen" alt="Captura Real del Expediente 360° de Estudiante ISkool" />
           </div>
           <div class="mockup-footer-badge">
@@ -1247,7 +1317,13 @@ const htmlContent = `<!DOCTYPE html>
             </div>
             <div class="mockup-live-indicator"><span class="live-dot"></span> EN VIVO</div>
           </div>
+          
           <div class="mockup-img-container">
+            <div class="mockup-school-banner">
+              <span class="mockup-school-icon">🏫</span>
+              <span class="mockup-school-name">Colegio Modelo de Innovación Educativa</span>
+              <span class="mockup-school-badge">CAMPUS DIGITAL</span>
+            </div>
             <img src="${imgParent}" class="mockup-real-screen" alt="Captura Real del Portal Familiar ISkool" />
           </div>
           <div class="mockup-footer-badge">
@@ -1327,7 +1403,13 @@ const htmlContent = `<!DOCTYPE html>
             </div>
             <div class="mockup-live-indicator"><span class="live-dot"></span> EN VIVO</div>
           </div>
+          
           <div class="mockup-img-container">
+            <div class="mockup-school-banner">
+              <span class="mockup-school-icon">🏫</span>
+              <span class="mockup-school-name">Colegio Modelo de Innovación Educativa</span>
+              <span class="mockup-school-badge">CAMPUS DIGITAL</span>
+            </div>
             <img src="${imgDirector}" class="mockup-real-screen" alt="Captura Real del Tablero Directivo ISkool" />
           </div>
           <div class="mockup-footer-badge">
@@ -1399,28 +1481,28 @@ const htmlContent = `<!DOCTYPE html>
         </div>
 
         <div class="card">
-          <div style="font-size: 13px; font-weight: 800; color: #b45309; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
-            🎟️ Eventos, Talleres y Cuotas Escolares sin Efectivo
+          <div style="font-size: 13px; font-weight: 800; color: #0284c7; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+            🌱 Convivencia Escolar Sana y Hábitos de Excelencia
           </div>
           <div class="feature-item">
-            <div class="feature-icon-box feature-icon-gold">🚌</div>
+            <div class="feature-icon-box feature-icon-blue">⏱️</div>
             <div>
-              <div class="feature-title">Salidas Escolares y Actividades Extracurriculares</div>
-              <div class="feature-desc">Registro y cobro transparente de visitas guiadas, eventos deportivos y festivales sin dinero en mano de maestros.</div>
+              <div class="feature-title">Puntualidad y Asistencia Reconocidas</div>
+              <div class="feature-desc">Incentivos formativos y distinciones que motivan la presencia diaria y la responsabilidad escolar sin castigos punitivos.</div>
             </div>
           </div>
           <div class="feature-item">
-            <div class="feature-icon-box feature-icon-gold">👕</div>
+            <div class="feature-icon-box feature-icon-blue">🤝</div>
             <div>
-              <div class="feature-title">Uniformes y Materiales Escolares Oficiales</div>
-              <div class="feature-desc">Catálogo institucional con tallas y existencias para que los padres adquieran materiales con certeza y claridad.</div>
+              <div class="feature-title">Trabajo Colaborativo y Empatía en el Aula</div>
+              <div class="feature-desc">Dinámicas de equipo que promueven el compañerismo, la resolución pacífica de conflictos y el respeto mutuo.</div>
             </div>
           </div>
           <div class="feature-item">
-            <div class="feature-icon-box feature-icon-gold">📑</div>
+            <div class="feature-icon-box feature-icon-blue">🌟</div>
             <div>
-              <div class="feature-title">Trazabilidad Total para la Administración</div>
-              <div class="feature-desc">Reportes consolidados de inventarios y cuotas especiales con auditoría clara para la dirección del colegio.</div>
+              <div class="feature-title">Embajadores de Valores Institucionales</div>
+              <div class="feature-desc">Reconocimiento formal en ceremonias para estudiantes que demuestran honestidad, perseverancia y liderazgo positivo.</div>
             </div>
           </div>
         </div>
@@ -1500,7 +1582,13 @@ const htmlContent = `<!DOCTYPE html>
             </div>
             <div class="mockup-live-indicator"><span class="live-dot"></span> EN VIVO</div>
           </div>
+          
           <div class="mockup-img-container">
+            <div class="mockup-school-banner">
+              <span class="mockup-school-icon">🏫</span>
+              <span class="mockup-school-name">Colegio Modelo de Innovación Educativa</span>
+              <span class="mockup-school-badge">CAMPUS DIGITAL</span>
+            </div>
             <img src="${imgFinanzas}" class="mockup-real-screen" alt="Captura Real de Finanzas ISkool" />
           </div>
           <div class="mockup-footer-badge">
@@ -1560,7 +1648,7 @@ const htmlContent = `<!DOCTYPE html>
           <tr>
             <td><strong>Currículo SEP & Cambridge</strong></td>
             <td><span class="badge-cross">✕</span> Nulo. No incorpora planes de estudio oficiales</td>
-            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>Bóveda Oficial (+1,500 Nodos NEM) + Cambridge bilingüe</strong></td>
+            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>Bóveda Oficial (+1,500 Contenidos NEM) + Cambridge bilingüe</strong></td>
           </tr>
           <tr>
             <td><strong>Planeaciones del Docente</strong></td>
@@ -1570,7 +1658,7 @@ const htmlContent = `<!DOCTYPE html>
           <tr>
             <td><strong>Gamificación e Interactividad</strong></td>
             <td><span class="badge-cross">✕</span> Inexistente; el alumno no tiene experiencia digital</td>
-            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>Estudio con 17 nodos interactivos y Camino del Héroe por mérito</strong></td>
+            <td style="background: #f0fdf4; color: #064e3b;"><span class="badge-check">✓</span> <strong>Estudio con 17 dinámicas interactivas y Camino del Héroe por mérito</strong></td>
           </tr>
           <tr>
             <td><strong>Comunicación Familiar</strong></td>
