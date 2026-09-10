@@ -2,11 +2,36 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
+// Helper para convertir imagen a base64
+function getBase64Image(filename) {
+  const filePath = path.join(__dirname, 'presentation_screenshots', filename);
+  if (fs.existsSync(filePath)) {
+    const data = fs.readFileSync(filePath);
+    return `data:image/png;base64,${data.toString('base64')}`;
+  }
+  return '';
+}
+
+const imgFinanzas = getBase64Image('screen_finanzas_admin.png');
+const imgDirector = getBase64Image('screen_director_supervision.png');
+const imgTeacher = getBase64Image('screen_teacher_planning.png');
+const imgStudio = getBase64Image('screen_studio_canvas.png');
+const imgStudent = getBase64Image('screen_student_hero.png');
+const imgParent = getBase64Image('screen_parent_portal.png');
+
+console.log('Imágenes base64 cargadas:');
+console.log('- Finanzas:', imgFinanzas ? 'OK' : 'FALTA');
+console.log('- Director:', imgDirector ? 'OK' : 'FALTA');
+console.log('- Docente:', imgTeacher ? 'OK' : 'FALTA');
+console.log('- Estudio:', imgStudio ? 'OK' : 'FALTA');
+console.log('- Alumno:', imgStudent ? 'OK' : 'FALTA');
+console.log('- Padre:', imgParent ? 'OK' : 'FALTA');
+
 const htmlContent = `<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>ISkool Académico - Presentación Ejecutiva para Dueños de Colegios</title>
+  <title>ISkool Académico - Presentación Ejecutiva con Capturas Reales</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
@@ -35,7 +60,7 @@ const htmlContent = `<!DOCTYPE html>
       height: 9in;
       position: relative;
       overflow: hidden;
-      padding: 0.65in 0.85in;
+      padding: 0.55in 0.8in;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -87,7 +112,7 @@ const htmlContent = `<!DOCTYPE html>
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-bottom: 0.15in;
+      padding-bottom: 0.12in;
       border-bottom: 1px solid rgba(16, 185, 129, 0.25);
     }
 
@@ -132,12 +157,12 @@ const htmlContent = `<!DOCTYPE html>
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 6px 16px;
+      padding: 5px 15px;
       border-radius: 999px;
       background: rgba(16, 185, 129, 0.12);
       border: 1px solid rgba(16, 185, 129, 0.35);
       color: #6ee7b7;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       letter-spacing: 0.05em;
       text-transform: uppercase;
@@ -152,7 +177,7 @@ const htmlContent = `<!DOCTYPE html>
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 0.25in 0;
+      padding: 0.2in 0;
     }
 
     /* Footer */
@@ -162,16 +187,11 @@ const htmlContent = `<!DOCTYPE html>
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-top: 0.15in;
+      padding-top: 0.12in;
       border-top: 1px solid rgba(255, 255, 255, 0.08);
       font-size: 11px;
       color: #64748b;
       font-weight: 600;
-    }
-
-    .footer-highlight {
-      color: #fbbf24;
-      font-weight: 700;
     }
 
     .slide-number {
@@ -183,29 +203,29 @@ const htmlContent = `<!DOCTYPE html>
     /* Typography */
     h1.hero-title {
       font-family: 'Outfit', sans-serif;
-      font-size: 52px;
+      font-size: 50px;
       font-weight: 900;
       line-height: 1.08;
       letter-spacing: -0.03em;
       color: #ffffff;
-      margin: 0 0 16px 0;
+      margin: 0 0 14px 0;
     }
 
     h2.slide-title {
       font-family: 'Outfit', sans-serif;
-      font-size: 40px;
+      font-size: 36px;
       font-weight: 800;
       line-height: 1.15;
       letter-spacing: -0.02em;
       color: #ffffff;
-      margin: 0 0 10px 0;
+      margin: 0 0 8px 0;
     }
 
     p.slide-subtitle {
-      font-size: 17px;
-      line-height: 1.5;
+      font-size: 15.5px;
+      line-height: 1.45;
       color: #94a3b8;
-      margin: 0 0 24px 0;
+      margin: 0 0 20px 0;
       max-width: 1000px;
       font-weight: 400;
     }
@@ -226,17 +246,9 @@ const htmlContent = `<!DOCTYPE html>
     .card {
       background: rgba(15, 23, 42, 0.85);
       border: 1px solid rgba(16, 185, 129, 0.25);
-      border-radius: 18px;
-      padding: 22px;
+      border-radius: 16px;
+      padding: 20px;
       box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.6), 0 0 20px -5px rgba(16, 185, 129, 0.1);
-    }
-
-    .card-teal {
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(45, 212, 191, 0.25);
-      border-radius: 18px;
-      padding: 22px;
-      box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.6), 0 0 20px -5px rgba(45, 212, 191, 0.1);
     }
 
     .gold-button {
@@ -259,33 +271,33 @@ const htmlContent = `<!DOCTYPE html>
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 28px;
+      gap: 24px;
     }
 
     .grid-3 {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      gap: 24px;
+      gap: 20px;
     }
 
     .grid-4 {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 18px;
+      gap: 16px;
     }
 
     .grid-bento {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
+      gap: 18px;
     }
 
     /* Feature Item inside Card */
     .feature-item {
       display: flex;
       align-items: flex-start;
-      gap: 14px;
-      margin-bottom: 14px;
+      gap: 12px;
+      margin-bottom: 12px;
     }
 
     .feature-item:last-child {
@@ -293,15 +305,15 @@ const htmlContent = `<!DOCTYPE html>
     }
 
     .feature-icon-box {
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       border-radius: 10px;
       background: rgba(16, 185, 129, 0.15);
       border: 1px solid rgba(16, 185, 129, 0.35);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
+      font-size: 16px;
       color: #34d399;
       flex-shrink: 0;
     }
@@ -313,15 +325,15 @@ const htmlContent = `<!DOCTYPE html>
     }
 
     .feature-title {
-      font-size: 15px;
+      font-size: 14.5px;
       font-weight: 700;
       color: #ffffff;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
     }
 
     .feature-desc {
-      font-size: 12.5px;
-      line-height: 1.45;
+      font-size: 12px;
+      line-height: 1.4;
       color: #94a3b8;
     }
 
@@ -330,14 +342,14 @@ const htmlContent = `<!DOCTYPE html>
       background: rgba(2, 6, 23, 0.8);
       border: 1px solid rgba(16, 185, 129, 0.3);
       border-radius: 12px;
-      padding: 12px 16px;
+      padding: 10px 14px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
     }
 
     .metric-label {
-      font-size: 10px;
+      font-size: 9.5px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
       color: #2dd4bf;
@@ -345,7 +357,7 @@ const htmlContent = `<!DOCTYPE html>
     }
 
     .metric-value {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
       color: #ffffff;
       font-family: 'Outfit', sans-serif;
@@ -356,26 +368,26 @@ const htmlContent = `<!DOCTYPE html>
       width: 100%;
       border-collapse: separate;
       border-spacing: 0;
-      border-radius: 16px;
+      border-radius: 14px;
       overflow: hidden;
       border: 1px solid rgba(16, 185, 129, 0.3);
       background: rgba(15, 23, 42, 0.8);
-      font-size: 13px;
+      font-size: 12.5px;
     }
 
     .comp-table th {
       background: rgba(2, 6, 23, 0.95);
-      padding: 14px 18px;
+      padding: 12px 16px;
       text-align: left;
       font-family: 'Outfit', sans-serif;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 800;
       color: #2dd4bf;
       border-bottom: 1px solid rgba(16, 185, 129, 0.25);
     }
 
     .comp-table td {
-      padding: 13px 18px;
+      padding: 11px 16px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       color: #cbd5e1;
     }
@@ -398,51 +410,95 @@ const htmlContent = `<!DOCTYPE html>
       margin-right: 6px;
     }
 
-    /* Mockup Frame */
-    .mockup-window {
+    /* Mockup Frame with Real Screenshot */
+    .mockup-window-real {
       background: #090d16;
-      border: 1px solid rgba(45, 212, 191, 0.3);
+      border: 1.5px solid rgba(45, 212, 191, 0.4);
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(45, 212, 191, 0.15);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.75), 0 0 25px rgba(45, 212, 191, 0.2);
       display: flex;
       flex-direction: column;
       height: 100%;
     }
 
-    .mockup-header {
+    .mockup-header-real {
       background: #0f172a;
-      padding: 10px 16px;
+      padding: 8px 14px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
-      gap: 8px;
-    }
-
-    .mockup-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-    }
-
-    .mockup-content {
-      padding: 18px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
       justify-content: space-between;
     }
 
-    .mockup-tag {
-      display: inline-block;
-      padding: 4px 10px;
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.4);
-      color: #34d399;
+    .mockup-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mockup-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+
+    .mockup-url-bar {
+      font-size: 10.5px;
+      color: #94a3b8;
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(2, 6, 23, 0.6);
+      padding: 3px 12px;
       border-radius: 6px;
-      font-size: 11px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .mockup-img-container {
+      position: relative;
+      flex: 1;
+      background: #020617;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      max-height: 410px;
+    }
+
+    .mockup-real-screen {
+      width: 100%;
+      height: 100%;
+      max-height: 410px;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+    }
+
+    .mockup-footer-badge {
+      background: #0f172a;
+      padding: 7px 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: #64748b;
+    }
+
+    .mockup-live-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #10b981;
       font-weight: 700;
       font-family: 'JetBrains Mono', monospace;
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
     }
   </style>
 </head>
@@ -472,11 +528,11 @@ const htmlContent = `<!DOCTYPE html>
         ★ Presentación Exclusiva para Dueños de Colegios y Directores Generales
       </div>
 
-      <h1 class="hero-title" style="font-size: 58px;">
+      <h1 class="hero-title" style="font-size: 56px;">
         El Sistema Operativo Escolar que <span class="gradient-text-emerald">Automatiza tu Gestión</span> y <span class="gradient-text-gold">Transforma el Aula</span>
       </h1>
 
-      <p class="slide-subtitle" style="font-size: 20px; max-width: 850px; margin-bottom: 35px;">
+      <p class="slide-subtitle" style="font-size: 19px; max-width: 880px; margin-bottom: 30px;">
         La suite institucional que unifica el control administrativo-financiero con la pedagogía oficial de la SEP, el estándar internacional Cambridge y gamificación inmersiva en una sola plataforma soberana.
       </p>
 
@@ -534,7 +590,7 @@ const htmlContent = `<!DOCTYPE html>
 
       <div class="grid-2">
         <div class="card" style="border-color: rgba(244, 63, 94, 0.3); background: rgba(244, 63, 94, 0.04);">
-          <div style="font-size: 14px; font-weight: 800; color: #fb7185; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+          <div style="font-size: 13.5px; font-weight: 800; color: #fb7185; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
             ⚠️ Lo que ofrecen los sistemas de cobranza tradicionales
           </div>
           <div class="feature-item">
@@ -561,14 +617,14 @@ const htmlContent = `<!DOCTYPE html>
         </div>
 
         <div class="card" style="border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.05);">
-          <div style="font-size: 14px; font-weight: 800; color: #34d399; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+          <div style="font-size: 13.5px; font-weight: 800; color: #34d399; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
             ★ La Solución Soberana ISkool
           </div>
           <div class="feature-item">
             <div class="feature-icon-box">✓</div>
             <div>
               <div class="feature-title">Ecosistema Dual: Finanzas + Excelencia Pedagógica</div>
-              <div class="feature-desc">Cobranza y SAT CFDI 4.0 conviven con la Bóveda Curricular SEP y Cambridge para ahorrar 14 horas semanales a cada docente.</div>
+              <div class="feature-desc">Cobranza y SAT CFDI 4.0 conviven con la Bóveda Curricular SEP y Cambridge para ahorrar horas semanales a cada docente.</div>
             </div>
           </div>
           <div class="feature-item">
@@ -691,7 +747,7 @@ const htmlContent = `<!DOCTYPE html>
   </div>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 4: FINANZAS, COBRANZA & SAT CFDI 4.0                          -->
+  <!-- SLIDE 4: FINANZAS & SAT CFDI 4.0 (CON CAPTURA REAL)                -->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
@@ -705,7 +761,7 @@ const htmlContent = `<!DOCTYPE html>
           <span class="brand-tag">Finanzas & Cobranza</span>
         </div>
       </div>
-      <div class="header-pill">Portal de Administración</div>
+      <div class="header-pill">Portal de Administración • Captura en Vivo</div>
     </div>
 
     <div class="slide-body">
@@ -743,46 +799,22 @@ const htmlContent = `<!DOCTYPE html>
           </div>
         </div>
 
-        <div class="mockup-window">
-          <div class="mockup-header">
-            <div class="mockup-dot" style="background: #ef4444;"></div>
-            <div class="mockup-dot" style="background: #f59e0b;"></div>
-            <div class="mockup-dot" style="background: #10b981;"></div>
-            <span style="font-size: 11px; color: #94a3b8; font-family: 'JetBrains Mono', monospace; margin-left: 8px;">panel_finanzas_sat_cfdi4.0.app</span>
+        <div class="mockup-window-real">
+          <div class="mockup-header-real">
+            <div class="mockup-controls">
+              <div class="mockup-dot" style="background: #ef4444;"></div>
+              <div class="mockup-dot" style="background: #f59e0b;"></div>
+              <div class="mockup-dot" style="background: #10b981;"></div>
+              <span class="mockup-url-bar">https://colegio.iskool.app/admin (Finanzas & Facturación)</span>
+            </div>
+            <div class="mockup-live-indicator"><span class="live-dot"></span> EN VIVO</div>
           </div>
-          <div class="mockup-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-              <div>
-                <span class="mockup-tag">SAT CFDI 4.0 • ACTIVO</span>
-                <div style="font-size: 18px; font-weight: 800; color: white; margin-top: 6px;">Consolidado de Colegiaturas</div>
-              </div>
-              <div style="text-align: right;">
-                <div style="font-size: 11px; color: #2dd4bf; font-weight: 700;">CICLO ESCOLAR ACTIVO</div>
-                <div style="font-size: 20px; font-weight: 900; color: #fbbf24; font-family: 'JetBrains Mono', monospace;">100% CONCILIADO</div>
-              </div>
-            </div>
-
-            <div style="background: rgba(2, 6, 23, 0.6); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 14px; margin-bottom: 12px;">
-              <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px;">
-                <span style="color: #94a3b8;">Familia Morales Benítez (2 Alumnos)</span>
-                <span style="color: #34d399; font-weight: 700;">Al corriente • Recibo #2026-089</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; font-size: 12px;">
-                <span style="color: #94a3b8;">Factura Timbrada SAT (IEDU)</span>
-                <span style="color: #fbbf24; font-family: 'JetBrains Mono', monospace;">UUID: 8F92-41BC-00A9</span>
-              </div>
-            </div>
-
-            <div style="display: flex; gap: 10px;">
-              <div class="metric-pill" style="flex: 1;">
-                <span class="metric-label">Facturas Emitidas</span>
-                <span class="metric-value">Automático</span>
-              </div>
-              <div class="metric-pill" style="flex: 1;">
-                <span class="metric-label">Auditoría Fiscal</span>
-                <span class="metric-value">Sin Descuadres</span>
-              </div>
-            </div>
+          <div class="mockup-img-container">
+            <img src="${imgFinanzas}" class="mockup-real-screen" alt="Captura Real de Finanzas ISkool" />
+          </div>
+          <div class="mockup-footer-badge">
+            <span>● Pantalla real de ISkool: Panel de Finanzas & Conciliación Fiscal</span>
+            <span style="color: #fbbf24; font-weight: 700;">SAT CFDI 4.0 IEDU</span>
           </div>
         </div>
       </div>
@@ -822,7 +854,7 @@ const htmlContent = `<!DOCTYPE html>
 
       <div class="grid-2">
         <div class="card">
-          <div style="font-size: 14px; font-weight: 800; color: #fbbf24; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+          <div style="font-size: 13.5px; font-weight: 800; color: #fbbf24; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
             🛒 Tienda Escolar en Línea para Familias
           </div>
           <div class="feature-item">
@@ -849,7 +881,7 @@ const htmlContent = `<!DOCTYPE html>
         </div>
 
         <div class="card">
-          <div style="font-size: 14px; font-weight: 800; color: #34d399; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+          <div style="font-size: 13.5px; font-weight: 800; color: #34d399; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
             🏆 Tienda Mágica de Reconocimiento al Alumno
           </div>
           <div class="feature-item">
@@ -884,7 +916,7 @@ const htmlContent = `<!DOCTYPE html>
   </div>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 6: CONTROL ESCOLAR & EXPEDIENTES 360°                         -->
+  <!-- SLIDE 6: CONTROL ESCOLAR & EXPEDIENTES 360° (CON CAPTURA REAL)     -->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
@@ -898,7 +930,7 @@ const htmlContent = `<!DOCTYPE html>
           <span class="brand-tag">Control Escolar</span>
         </div>
       </div>
-      <div class="header-pill">Expedientes 360°</div>
+      <div class="header-pill">Expedientes 360° • Captura en Vivo</div>
     </div>
 
     <div class="slide-body">
@@ -936,45 +968,22 @@ const htmlContent = `<!DOCTYPE html>
           </div>
         </div>
 
-        <div class="mockup-window">
-          <div class="mockup-header">
-            <div class="mockup-dot" style="background: #ef4444;"></div>
-            <div class="mockup-dot" style="background: #f59e0b;"></div>
-            <div class="mockup-dot" style="background: #10b981;"></div>
-            <span style="font-size: 11px; color: #94a3b8; font-family: 'JetBrains Mono', monospace; margin-left: 8px;">expediente_estudiante_360.app</span>
+        <div class="mockup-window-real">
+          <div class="mockup-header-real">
+            <div class="mockup-controls">
+              <div class="mockup-dot" style="background: #ef4444;"></div>
+              <div class="mockup-dot" style="background: #f59e0b;"></div>
+              <div class="mockup-dot" style="background: #10b981;"></div>
+              <span class="mockup-url-bar">https://colegio.iskool.app/director (Control Escolar)</span>
+            </div>
+            <div class="mockup-live-indicator"><span class="live-dot"></span> EN VIVO</div>
           </div>
-          <div class="mockup-content">
-            <div style="display: flex; gap: 14px; align-items: center; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
-              <div style="width: 48px; height: 48px; border-radius: 12px; background: #0f172a; border: 1.5px solid #2dd4bf; display: flex; align-items: center; justify-content: center; font-size: 22px;">
-                👧
-              </div>
-              <div>
-                <div style="font-size: 16px; font-weight: 800; color: white;">Zoe Benítez Morales</div>
-                <div style="font-size: 11px; color: #94a3b8;">Secundaria 2°B • Matrícula: CMONS-0226 • Al Corriente</div>
-              </div>
-            </div>
-
-            <div class="grid-2" style="gap: 10px; margin-bottom: 12px;">
-              <div style="background: rgba(2, 6, 23, 0.7); padding: 10px; border-radius: 10px; border: 1px solid rgba(244, 63, 94, 0.3);">
-                <span style="font-size: 10px; color: #fb7185; font-weight: 800; display: block; text-transform: uppercase;">Alergias Críticas</span>
-                <span style="font-size: 12px; font-weight: 700; color: white;">Penicilina / Cacahuates</span>
-              </div>
-              <div style="background: rgba(2, 6, 23, 0.7); padding: 10px; border-radius: 10px; border: 1px solid rgba(16, 185, 129, 0.3);">
-                <span style="font-size: 10px; color: #34d399; font-weight: 800; display: block; text-transform: uppercase;">Asistencia Escolar</span>
-                <span style="font-size: 12px; font-weight: 700; color: white;">98% (1 Falta justificada)</span>
-              </div>
-            </div>
-
-            <div style="background: rgba(2, 6, 23, 0.7); padding: 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08);">
-              <div style="display: flex; justify-content: space-between; font-size: 11.5px; margin-bottom: 4px;">
-                <span style="color: #cbd5e1;">Promedio SEP Oficial</span>
-                <span style="color: #2dd4bf; font-weight: 800; font-family: 'JetBrains Mono', monospace;">9.6 / 10</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; font-size: 11.5px;">
-                <span style="color: #cbd5e1;">Evaluación Cambridge (English)</span>
-                <span style="color: #fbbf24; font-weight: 800; font-family: 'JetBrains Mono', monospace;">Nivel B1 (Distinction)</span>
-              </div>
-            </div>
+          <div class="mockup-img-container">
+            <img src="${imgDirector}" class="mockup-real-screen" alt="Captura Real de Control Escolar ISkool" />
+          </div>
+          <div class="mockup-footer-badge">
+            <span>● Pantalla real de ISkool: Tablero de Control y Grupos Institucionales</span>
+            <span style="color: #34d399; font-weight: 700;">EXPEDIENTES 360°</span>
           </div>
         </div>
       </div>
@@ -987,7 +996,7 @@ const htmlContent = `<!DOCTYPE html>
   </div>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 7: COMUNICACIÓN FAMILIAR: WHATSAPP & MAGIC LINK               -->
+  <!-- SLIDE 7: COMUNICACIÓN FAMILIAR: WHATSAPP & MAGIC LINK (CAPTURA REAL)-->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
@@ -998,48 +1007,69 @@ const htmlContent = `<!DOCTYPE html>
         <div class="brand-icon">🎓</div>
         <div>
           <span class="brand-text">ISkool</span>
-          <span class="brand-tag">Comunicación</span>
+          <span class="brand-tag">Familias & Tutores</span>
         </div>
       </div>
-      <div class="header-pill">Familias Conectadas</div>
+      <div class="header-pill">Portal Familiar • Captura en Vivo</div>
     </div>
 
     <div class="slide-body">
-      <h2 class="slide-title">
-        Notificaciones directas por <span class="gradient-text-emerald">WhatsApp</span> y acceso instantáneo por <span class="gradient-text-gold">Magic Link</span>
-      </h2>
-      <p class="slide-subtitle">
-        Elimina de raíz los pretextos de "no me llegó el correo" o "se me olvidó la contraseña". Los padres reciben información oficial directamente en la aplicación que usan todo el día.
-      </p>
+      <div class="grid-2" style="align-items: center;">
+        <div>
+          <h2 class="slide-title">
+            Notificaciones por <span class="gradient-text-emerald">WhatsApp</span> y acceso por <span class="gradient-text-gold">Magic Link</span>
+          </h2>
+          <p class="slide-subtitle">
+            Elimina los pretextos de "no me llegó el aviso" o contraseñas olvidadas. Los padres entran a su expediente familiar en un solo toque desde su celular.
+          </p>
 
-      <div class="grid-3">
-        <div class="card">
-          <div class="feature-icon-box" style="background: rgba(37, 211, 102, 0.15); border-color: rgba(37, 211, 102, 0.35); color: #25d366; margin-bottom: 14px;">
-            📱
+          <div class="feature-item">
+            <div class="feature-icon-box" style="background: rgba(37, 211, 102, 0.15); border-color: rgba(37, 211, 102, 0.35); color: #25d366;">
+              📱
+            </div>
+            <div>
+              <div class="feature-title">Avisos Directos a WhatsApp</div>
+              <div class="feature-desc">Notificaciones inmediatas cuando el alumno registra una falta, se publica una boleta o hay avisos urgentes de dirección.</div>
+            </div>
           </div>
-          <div class="feature-title" style="font-size: 17px; margin-bottom: 8px;">Avisos por WhatsApp</div>
-          <div class="feature-desc" style="font-size: 13.5px; line-height: 1.5;">
-            Notificaciones automatizadas al teléfono del tutor cuando su hijo registra una falta, se publica una nueva boleta o hay un aviso urgente de dirección.
+
+          <div class="feature-item">
+            <div class="feature-icon-box feature-icon-gold">
+              🔑
+            </div>
+            <div>
+              <div class="feature-title">Acceso por Magic Link Criptográfico</div>
+              <div class="feature-desc">El tutor pulsa el enlace seguro y entra directo a su panel familiar sin tener que recordar ni restablecer contraseñas.</div>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon-box">
+              👨‍👩‍👧‍👦
+            </div>
+            <div>
+              <div class="feature-title">Visión Familiar Multi-Hijo</div>
+              <div class="feature-desc">Alterna entre hermanos matriculados en diferentes grados con calificaciones, asistencias y pagos en una sola pantalla.</div>
+            </div>
           </div>
         </div>
 
-        <div class="card">
-          <div class="feature-icon-box feature-icon-gold" style="margin-bottom: 14px;">
-            🔑
+        <div class="mockup-window-real">
+          <div class="mockup-header-real">
+            <div class="mockup-controls">
+              <div class="mockup-dot" style="background: #ef4444;"></div>
+              <div class="mockup-dot" style="background: #f59e0b;"></div>
+              <div class="mockup-dot" style="background: #10b981;"></div>
+              <span class="mockup-url-bar">https://colegio.iskool.app/parent (Portal de Familias)</span>
+            </div>
+            <div class="mockup-live-indicator"><span class="live-dot"></span> EN VIVO</div>
           </div>
-          <div class="feature-title" style="font-size: 17px; margin-bottom: 8px;">Magic Link Criptográfico</div>
-          <div class="feature-desc" style="font-size: 13.5px; line-height: 1.5;">
-            El padre presiona el enlace seguro en su WhatsApp o correo y entra directamente a su sesión familiar sin teclear contraseñas ni descargar apps pesadas.
+          <div class="mockup-img-container">
+            <img src="${imgParent}" class="mockup-real-screen" alt="Captura Real del Portal Familiar ISkool" />
           </div>
-        </div>
-
-        <div class="card">
-          <div class="feature-icon-box" style="margin-bottom: 14px;">
-            👨‍👩‍👧‍👦
-          </div>
-          <div class="feature-title" style="font-size: 17px; margin-bottom: 8px;">Visión de Hogar Multi-Hijo</div>
-          <div class="feature-desc" style="font-size: 13.5px; line-height: 1.5;">
-            Los padres con más de un hijo en la escuela alternan entre hermanos en un clic, viendo el avance académico y los estados de cuenta unificados.
+          <div class="mockup-footer-badge">
+            <span>● Pantalla real de ISkool: Panel de Tutores con Asistencias y Calificaciones</span>
+            <span style="color: #25d366; font-weight: 700;">WHATSAPP & MAGIC LINK</span>
           </div>
         </div>
       </div>
@@ -1079,7 +1109,7 @@ const htmlContent = `<!DOCTYPE html>
 
       <div class="grid-2">
         <div class="card">
-          <div style="font-size: 14px; font-weight: 800; color: #34d399; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+          <div style="font-size: 13.5px; font-weight: 800; color: #34d399; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
             🇲🇽 Nueva Escuela Mexicana (Fases 1 a 6)
           </div>
           <div class="feature-item">
@@ -1106,7 +1136,7 @@ const htmlContent = `<!DOCTYPE html>
         </div>
 
         <div class="card">
-          <div style="font-size: 14px; font-weight: 800; color: #fbbf24; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
+          <div style="font-size: 13.5px; font-weight: 800; color: #fbbf24; text-transform: uppercase; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace;">
             🇬🇧 Estándar Internacional Cambridge
           </div>
           <div class="feature-item">
@@ -1141,7 +1171,7 @@ const htmlContent = `<!DOCTYPE html>
   </div>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 9: PLANEACIONES ANALÍTICAS EN SEGUNDOS                        -->
+  <!-- SLIDE 9: PLANEACIONES ANALÍTICAS EN SEGUNDOS (CAPTURA REAL)         -->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
@@ -1155,7 +1185,7 @@ const htmlContent = `<!DOCTYPE html>
           <span class="brand-tag">Docentes & Bóveda</span>
         </div>
       </div>
-      <div class="header-pill">Velocidad Pedagógica</div>
+      <div class="header-pill">Portal Docente • Captura en Vivo</div>
     </div>
 
     <div class="slide-body">
@@ -1193,36 +1223,22 @@ const htmlContent = `<!DOCTYPE html>
           </div>
         </div>
 
-        <div class="mockup-window">
-          <div class="mockup-header">
-            <div class="mockup-dot" style="background: #ef4444;"></div>
-            <div class="mockup-dot" style="background: #f59e0b;"></div>
-            <div class="mockup-dot" style="background: #10b981;"></div>
-            <span style="font-size: 11px; color: #94a3b8; font-family: 'JetBrains Mono', monospace; margin-left: 8px;">planeacion_analitica_nem.app</span>
+        <div class="mockup-window-real">
+          <div class="mockup-header-real">
+            <div class="mockup-controls">
+              <div class="mockup-dot" style="background: #ef4444;"></div>
+              <div class="mockup-dot" style="background: #f59e0b;"></div>
+              <div class="mockup-dot" style="background: #10b981;"></div>
+              <span class="mockup-url-bar">https://colegio.iskool.app/teacher (Bóveda Curricular)</span>
+            </div>
+            <div class="mockup-live-indicator"><span class="live-dot"></span> EN VIVO</div>
           </div>
-          <div class="mockup-content">
-            <div style="margin-bottom: 12px;">
-              <span class="mockup-tag">NEM 2024 • FASE 5 (5° PRIMARIA)</span>
-              <div style="font-size: 16px; font-weight: 800; color: white; margin-top: 6px;">
-                Causas y Efectos de la Independencia de México
-              </div>
-              <div style="font-size: 11px; color: #94a3b8;">Campo: Ética, Naturaleza y Sociedades • Duración: 3 Sesiones</div>
-            </div>
-
-            <div style="background: rgba(2, 6, 23, 0.7); padding: 12px; border-radius: 10px; border: 1px solid rgba(16, 185, 129, 0.2); margin-bottom: 10px;">
-              <div style="font-size: 11px; font-weight: 800; color: #34d399; text-transform: uppercase;">1. Inicio (15 min)</div>
-              <div style="font-size: 11.5px; color: #cbd5e1;">Pregunta detonadora sobre el descontento criollo y lluvia de ideas en el lienzo digital.</div>
-            </div>
-
-            <div style="background: rgba(2, 6, 23, 0.7); padding: 12px; border-radius: 10px; border: 1px solid rgba(45, 212, 191, 0.2); margin-bottom: 10px;">
-              <div style="font-size: 11px; font-weight: 800; color: #2dd4bf; text-transform: uppercase;">2. Desarrollo (25 min)</div>
-              <div style="font-size: 11.5px; color: #cbd5e1;">Reto interactivo de ordenamiento cronológico (1808 a 1810) y emparejamiento de causas.</div>
-            </div>
-
-            <div style="background: rgba(2, 6, 23, 0.7); padding: 12px; border-radius: 10px; border: 1px solid rgba(245, 158, 11, 0.2);">
-              <div style="font-size: 11px; font-weight: 800; color: #fbbf24; text-transform: uppercase;">3. Cierre & Rúbrica (10 min)</div>
-              <div style="font-size: 11.5px; color: #cbd5e1;">Conclusión grupal y rúbrica analítica formativa de 4 niveles de desempeño oficial.</div>
-            </div>
+          <div class="mockup-img-container">
+            <img src="${imgTeacher}" class="mockup-real-screen" alt="Captura Real del Portal Docente ISkool" />
+          </div>
+          <div class="mockup-footer-badge">
+            <span>● Pantalla real de ISkool: Panel del Maestro con Bóveda Curricular SEP</span>
+            <span style="color: #34d399; font-weight: 700;">PLANEACIONES EN SEGUNDOS</span>
           </div>
         </div>
       </div>
@@ -1235,7 +1251,7 @@ const htmlContent = `<!DOCTYPE html>
   </div>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 10: ESTUDIO DE ACTIVIDADES GAMIFICADAS (17 NODOS)             -->
+  <!-- SLIDE 10: ESTUDIO DE ACTIVIDADES GAMIFICADAS (CAPTURA REAL)         -->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
@@ -1249,52 +1265,62 @@ const htmlContent = `<!DOCTYPE html>
           <span class="brand-tag">Gamificación</span>
         </div>
       </div>
-      <div class="header-pill">Lienzo de Retos</div>
+      <div class="header-pill">Estudio de Actividades • Captura en Vivo</div>
     </div>
 
     <div class="slide-body">
-      <h2 class="slide-title">
-        Estudio de Actividades con <span class="gradient-text-emerald">17 Nodos Pedagógicos Interactivos</span>
-      </h2>
-      <p class="slide-subtitle">
-        Diseña experiencias donde los alumnos aprenden jugando. El profesor arrastra y conecta bloques didácticos con validación instantánea y simulador en vivo.
-      </p>
+      <div class="grid-2" style="align-items: center;">
+        <div>
+          <h2 class="slide-title">
+            Lienzo de Retos con <span class="gradient-text-emerald">17 Nodos Pedagógicos Interactivos</span>
+          </h2>
+          <p class="slide-subtitle">
+            Diseña experiencias donde los alumnos aprenden jugando. El profesor arrastra y conecta bloques didácticos con validación instantánea y simulador en vivo.
+          </p>
 
-      <div class="grid-4">
-        <div class="card">
-          <div class="feature-icon-box" style="margin-bottom: 10px;">🔐</div>
-          <div class="feature-title">Escape Room</div>
-          <div class="feature-desc">Enigmas deductivos y teclados con códigos secretos para desbloquear la siguiente etapa del desafío.</div>
-        </div>
+          <div class="feature-item">
+            <div class="feature-icon-box">🔐</div>
+            <div>
+              <div class="feature-title">Escape Room & Enigmas Secretos</div>
+              <div class="feature-desc">Pistas deductivas y teclados alfanuméricos para desbloquear la siguiente etapa del aprendizaje curricular.</div>
+            </div>
+          </div>
 
-        <div class="card">
-          <div class="feature-icon-box feature-icon-gold" style="margin-bottom: 10px;">⚔️</div>
-          <div class="feature-title">Combate contra Jefes</div>
-          <div class="feature-desc">Duelos de conocimiento contra personajes históricos o científicos con barras de vida (HP) y contraataque.</div>
-        </div>
+          <div class="feature-item">
+            <div class="feature-icon-box feature-icon-gold">⚔️</div>
+            <div>
+              <div class="feature-title">Combate de Saberes contra Jefes</div>
+              <div class="feature-desc">Duelos de conocimiento contra personajes históricos o científicos con barras de vida (HP) y mecánicas lúdicas.</div>
+            </div>
+          </div>
 
-        <div class="card">
-          <div class="feature-icon-box" style="margin-bottom: 10px;">⏳</div>
-          <div class="feature-title">Secuencia Cronológica</div>
-          <div class="feature-desc">Retos táctiles donde los estudiantes arrastran eventos o etapas de procesos para ordenarlos en el tiempo.</div>
-        </div>
-
-        <div class="card">
-          <div class="feature-icon-box" style="margin-bottom: 10px;">🎁</div>
-          <div class="feature-title">Cofre Legendario</div>
-          <div class="feature-desc">Entrega de gemas, experiencia (XP) y reconocimientos al culminar la actividad con éxito formativo.</div>
-        </div>
-      </div>
-
-      <div class="card-teal" style="margin-top: 18px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;">
-        <div style="display: flex; align-items: center; gap: 14px;">
-          <span style="font-size: 24px;">⚡</span>
-          <div>
-            <div style="font-size: 14px; font-weight: 800; color: white;">Botón de Creación Asistida Incorporado</div>
-            <div style="font-size: 12px; color: #94a3b8;">El maestro ingresa el tema y el sistema ensambla la secuencia completa de 7 bloques gamificados en segundos.</div>
+          <div class="feature-item">
+            <div class="feature-icon-box">⚡</div>
+            <div>
+              <div class="feature-title">Generador Rápido de 7 Bloques</div>
+              <div class="feature-desc">Estructura secuencias completas para cualquier tema en segundos: diálogo, cronología, reactivos y cofre final.</div>
+            </div>
           </div>
         </div>
-        <span class="mockup-tag">SIMULADOR EN VIVO INTEGRADO</span>
+
+        <div class="mockup-window-real">
+          <div class="mockup-header-real">
+            <div class="mockup-controls">
+              <div class="mockup-dot" style="background: #ef4444;"></div>
+              <div class="mockup-dot" style="background: #f59e0b;"></div>
+              <div class="mockup-dot" style="background: #10b981;"></div>
+              <span class="mockup-url-bar">https://colegio.iskool.app/teacher/studio (Lienzo Digital)</span>
+            </div>
+            <div class="mockup-live-indicator"><span class="live-dot"></span> EN VIVO</div>
+          </div>
+          <div class="mockup-img-container">
+            <img src="${imgStudio}" class="mockup-real-screen" alt="Captura Real del Estudio de Gamificación ISkool" />
+          </div>
+          <div class="mockup-footer-badge">
+            <span>● Pantalla real de ISkool: Lienzo de Flujos Pedagógicos por Nodos</span>
+            <span style="color: #2dd4bf; font-weight: 700;">17 NODOS INTERACTIVOS</span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1305,7 +1331,7 @@ const htmlContent = `<!DOCTYPE html>
   </div>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 11: PORTAL DEL ALUMNO (CAMINO DEL HÉROE)                     -->
+  <!-- SLIDE 11: PORTAL DEL ALUMNO (CAPTURA REAL)                          -->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
@@ -1319,7 +1345,7 @@ const htmlContent = `<!DOCTYPE html>
           <span class="brand-tag">Portal del Alumno</span>
         </div>
       </div>
-      <div class="header-pill">El Camino del Héroe</div>
+      <div class="header-pill">Camino del Héroe • Captura en Vivo</div>
     </div>
 
     <div class="slide-body">
@@ -1357,40 +1383,22 @@ const htmlContent = `<!DOCTYPE html>
           </div>
         </div>
 
-        <div class="mockup-window">
-          <div class="mockup-header">
-            <div class="mockup-dot" style="background: #ef4444;"></div>
-            <div class="mockup-dot" style="background: #f59e0b;"></div>
-            <div class="mockup-dot" style="background: #10b981;"></div>
-            <span style="font-size: 11px; color: #94a3b8; font-family: 'JetBrains Mono', monospace; margin-left: 8px;">portal_estudiante_aventura.app</span>
+        <div class="mockup-window-real">
+          <div class="mockup-header-real">
+            <div class="mockup-controls">
+              <div class="mockup-dot" style="background: #ef4444;"></div>
+              <div class="mockup-dot" style="background: #f59e0b;"></div>
+              <div class="mockup-dot" style="background: #10b981;"></div>
+              <span class="mockup-url-bar">https://colegio.iskool.app/student (Portal Alumno)</span>
+            </div>
+            <div class="mockup-live-indicator"><span class="live-dot"></span> EN VIVO</div>
           </div>
-          <div class="mockup-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-              <div>
-                <span class="mockup-tag">NIVEL 4 • EXPLORADOR ACADÉMICO</span>
-                <div style="font-size: 18px; font-weight: 800; color: white; margin-top: 6px;">Misiones de la Semana</div>
-              </div>
-              <div style="text-align: right;">
-                <div style="font-size: 16px; font-weight: 900; color: #fbbf24; font-family: 'JetBrains Mono', monospace;">1,450 XP ✦</div>
-                <div style="font-size: 10px; color: #34d399; font-weight: 700;">RACHA: 12 DÍAS SEGUIDOS</div>
-              </div>
-            </div>
-
-            <div style="background: rgba(2, 6, 23, 0.7); padding: 12px; border-radius: 10px; border: 1px solid rgba(45, 212, 191, 0.3); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <div style="font-size: 12px; font-weight: 700; color: white;">Reto: Ecosistemas y Cadenas Tróficas</div>
-                <div style="font-size: 10.5px; color: #94a3b8;">Ciencias Naturales • Entrega hoy</div>
-              </div>
-              <span style="background: #10b981; color: #020617; font-weight: 800; font-size: 10px; padding: 4px 8px; border-radius: 6px;">COMPLETADO</span>
-            </div>
-
-            <div style="background: rgba(2, 6, 23, 0.7); padding: 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <div style="font-size: 12px; font-weight: 700; color: white;">Enigma: Fracciones Equivalentes</div>
-                <div style="font-size: 10.5px; color: #94a3b8;">Matemáticas • Escape Room 2</div>
-              </div>
-              <span style="background: #f59e0b; color: #020617; font-weight: 800; font-size: 10px; padding: 4px 8px; border-radius: 6px;">EN PROGRESO</span>
-            </div>
+          <div class="mockup-img-container">
+            <img src="${imgStudent}" class="mockup-real-screen" alt="Captura Real del Portal del Alumno ISkool" />
+          </div>
+          <div class="mockup-footer-badge">
+            <span>● Pantalla real de ISkool: Mapa de Misiones del Estudiante & Avatar</span>
+            <span style="color: #fbbf24; font-weight: 700;">ECONOMÍA DE MÉRITO</span>
           </div>
         </div>
       </div>
@@ -1403,7 +1411,7 @@ const htmlContent = `<!DOCTYPE html>
   </div>
 
   <!-- =================================================================== -->
-  <!-- SLIDE 12: SUPERVISIÓN DIRECTIVA 360° EN TIEMPO REAL                 -->
+  <!-- SLIDE 12: SUPERVISIÓN DIRECTIVA 360° (CAPTURA REAL)                 -->
   <!-- =================================================================== -->
   <div class="slide">
     <div class="glow-top-right"></div>
@@ -1417,39 +1425,60 @@ const htmlContent = `<!DOCTYPE html>
           <span class="brand-tag">Dirección General</span>
         </div>
       </div>
-      <div class="header-pill">Mando Ejecutivo</div>
+      <div class="header-pill">Mando Ejecutivo • Captura en Vivo</div>
     </div>
 
     <div class="slide-body">
-      <h2 class="slide-title">
-        La cabina de control para la <span class="gradient-text-emerald">Dirección y Coordinación Escolar</span>
-      </h2>
-      <p class="slide-subtitle">
-        Supervisa la salud académica y operativa de todo tu plantel en tiempo real sin esperar a fin de mes ni perseguir a los maestros por reportes impresos.
-      </p>
+      <div class="grid-2" style="align-items: center;">
+        <div>
+          <h2 class="slide-title">
+            La cabina de control para la <span class="gradient-text-emerald">Dirección Escolar 360°</span>
+          </h2>
+          <p class="slide-subtitle">
+            Supervisa la salud académica y operativa de todo tu plantel en tiempo real sin esperar a fin de mes ni perseguir a los maestros por reportes impresos.
+          </p>
 
-      <div class="grid-3">
-        <div class="card">
-          <div class="feature-icon-box" style="margin-bottom: 12px;">📊</div>
-          <div class="feature-title" style="font-size: 16px; margin-bottom: 6px;">Auditoría Curricular en Vivo</div>
-          <div class="feature-desc" style="font-size: 13px; line-height: 1.5;">
-            Verifica qué porcentaje de los PDAs oficiales de la SEP ha cubierto cada profesor y grupo con métricas consolidadas instantáneas.
+          <div class="feature-item">
+            <div class="feature-icon-box">📊</div>
+            <div>
+              <div class="feature-title">Auditoría Curricular en Tiempo Real</div>
+              <div class="feature-desc">Verifica qué porcentaje de los PDAs oficiales de la SEP ha cubierto cada profesor y grupo con métricas consolidadas.</div>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon-box">🚨</div>
+            <div>
+              <div class="feature-title">Alertas Tempranas de Ausentismo</div>
+              <div class="feature-desc">Detecta a tiempo patrones de faltas reiteradas o bajas en calificaciones para intervenir antes de que se conviertan en deserción.</div>
+            </div>
+          </div>
+
+          <div class="feature-item">
+            <div class="feature-icon-box feature-icon-gold">📈</div>
+            <div>
+              <div class="feature-title">Toma de Decisiones Informada</div>
+              <div class="feature-desc">Reportes ejecutivos listos para juntas de consejo directivo, comités de socios fundadores y reuniones estratégicas.</div>
+            </div>
           </div>
         </div>
 
-        <div class="card">
-          <div class="feature-icon-box" style="margin-bottom: 12px;">🚨</div>
-          <div class="feature-title" style="font-size: 16px; margin-bottom: 6px;">Alertas Tempranas de Ausentismo</div>
-          <div class="feature-desc" style="font-size: 13px; line-height: 1.5;">
-            Detecta a tiempo patrones de faltas reiteradas o bajas en calificaciones para intervenir antes de que se conviertan en deserción.
+        <div class="mockup-window-real">
+          <div class="mockup-header-real">
+            <div class="mockup-controls">
+              <div class="mockup-dot" style="background: #ef4444;"></div>
+              <div class="mockup-dot" style="background: #f59e0b;"></div>
+              <div class="mockup-dot" style="background: #10b981;"></div>
+              <span class="mockup-url-bar">https://colegio.iskool.app/director (Mando Ejecutivo)</span>
+            </div>
+            <div class="mockup-live-indicator"><span class="live-dot"></span> EN VIVO</div>
           </div>
-        </div>
-
-        <div class="card">
-          <div class="feature-icon-box feature-icon-gold" style="margin-bottom: 12px;">📈</div>
-          <div class="feature-title" style="font-size: 16px; margin-bottom: 6px;">Toma de Decisiones Informada</div>
-          <div class="feature-desc" style="font-size: 13px; line-height: 1.5;">
-            Reportes ejecutivos listos para juntas de consejo directivo, comités de socios fundadores y reuniones de planeación estratégica.
+          <div class="mockup-img-container">
+            <img src="${imgDirector}" class="mockup-real-screen" alt="Captura Real del Tablero Directivo ISkool" />
+          </div>
+          <div class="mockup-footer-badge">
+            <span>● Pantalla real de ISkool: Panel Ejecutivo con Grupos, Alumnos y Estatus</span>
+            <span style="color: #34d399; font-weight: 700;">SUPERVISIÓN 360°</span>
           </div>
         </div>
       </div>
@@ -1556,19 +1585,19 @@ const htmlContent = `<!DOCTYPE html>
     </div>
 
     <div class="slide-body" style="align-items: center; text-align: center; max-width: 1000px; margin: 0 auto;">
-      <div class="header-pill" style="margin-bottom: 18px;">
+      <div class="header-pill" style="margin-bottom: 16px;">
         ★ Garantía de Despliegue en 48 Horas
       </div>
 
-      <h1 class="hero-title" style="font-size: 52px;">
+      <h1 class="hero-title" style="font-size: 50px;">
         Comprueba el poder de ISkool con una <span class="gradient-text-gold">Prueba Piloto en tu Colegio</span>
       </h1>
 
-      <p class="slide-subtitle" style="font-size: 19px; max-width: 820px; margin-bottom: 30px;">
+      <p class="slide-subtitle" style="font-size: 18px; max-width: 820px; margin-bottom: 28px;">
         Configuramos un grupo muestra de tu institución para que tus maestros generen planeaciones en segundos, tus padres reciban avisos por WhatsApp y tus directivos comprueben el blindaje operativo.
       </p>
 
-      <div class="grid-3" style="width: 100%; margin-bottom: 32px; text-align: left;">
+      <div class="grid-3" style="width: 100%; margin-bottom: 30px; text-align: left;">
         <div class="card">
           <div style="font-size: 20px; margin-bottom: 6px;">⚡</div>
           <div class="feature-title">Configuración en 48 Horas</div>
@@ -1588,7 +1617,7 @@ const htmlContent = `<!DOCTYPE html>
         </div>
       </div>
 
-      <div class="gold-button" style="font-size: 16px; padding: 16px 36px;">
+      <div class="gold-button" style="font-size: 16px; padding: 15px 36px;">
         📅 Agendar Prueba Piloto para tu Colegio
       </div>
     </div>
@@ -1606,7 +1635,7 @@ const htmlFilePath = path.join(__dirname, 'presentacion_ejecutiva_iskool.html');
 const pdfFilePath = path.join(__dirname, 'PRESENTACION_EJECUTIVA_ISKOOL.pdf');
 
 fs.writeFileSync(htmlFilePath, htmlContent, 'utf8');
-console.log('HTML generado exitosamente en:', htmlFilePath);
+console.log('HTML con capturas reales generado en:', htmlFilePath);
 
 const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
@@ -1618,7 +1647,7 @@ try {
   console.log('Generando PDF mediante:', browserExecutable);
   execSync(command);
   const stats = fs.statSync(pdfFilePath);
-  console.log('PDF generado exitosamente!');
+  console.log('✓ PDF con capturas reales generado exitosamente!');
   console.log('Ruta:', pdfFilePath);
   console.log('Tamaño:', (stats.size / (1024 * 1024)).toFixed(2), 'MB');
 } catch (err) {
