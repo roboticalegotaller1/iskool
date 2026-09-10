@@ -34,7 +34,7 @@ async function generatePromoVideo() {
   fs.mkdirSync(framesDir);
 
   console.log('📸 Capturing slide sequence frames...');
-  const TOTAL_SLIDES = 15; // 15 slides covering all ISkool 2026 modules (Studio, Hero's Journey, Rewards, Vault, Coordinator, Superuser)
+  const TOTAL_SLIDES = 10; // 10 slides covering ISkool 2026 Executive Pitch (Intro, 5 Top Skills with Showcases, and Grand Finale Close)
   let frameCounter = 0;
   const FPS = 30;
 
