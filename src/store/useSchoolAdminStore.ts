@@ -525,6 +525,8 @@ interface SchoolAdminStoreState {
   }) => Institution;
   updateInstitution: (schoolId: string, data: Partial<Institution>) => void;
   deleteInstitution: (schoolId: string) => void;
+  toggleSchoolSuspension: (schoolId: string) => boolean;
+  isSchoolSuspended: (schoolId: string) => boolean;
 
   // Financial and Tuition Actions
   updateTuitionPricing: (levelId: string, data: Partial<TuitionPricing>) => void;
@@ -870,6 +872,34 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           institutionsList: (state.institutionsList || []).filter(i => i.id !== schoolId),
           activeSchoolId: state.activeSchoolId === schoolId ? null : state.activeSchoolId
         }));
+      },
+
+      toggleSchoolSuspension: (schoolId) => {
+        let becomesSuspended = false;
+        set((state) => {
+          const updated = (state.institutionsList || []).map(inst => {
+            if (inst.id === schoolId) {
+              const newStatus: 'active' | 'inactive' = inst.status === 'inactive' ? 'active' : 'inactive';
+              becomesSuspended = newStatus === 'inactive';
+              return {
+                ...inst,
+                status: newStatus
+              };
+            }
+            return inst;
+          });
+
+          return {
+            institutionsList: updated
+          };
+        });
+        return becomesSuspended;
+      },
+
+      isSchoolSuspended: (schoolId) => {
+        const targetId = schoolId === 'sch-jjr' ? 'sch-jjrosseau' : schoolId;
+        const inst = (get().institutionsList || []).find(i => i.id === targetId || (targetId === 'sch-jjrosseau' && i.id === 'sch-jjr'));
+        return inst ? inst.status === 'inactive' : false;
       },
 
       updateTuitionPricing: (levelId, data) => {

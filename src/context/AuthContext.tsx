@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { UserProfile } from '@/types';
+import { UserProfile, isPlatformSuperUser, resolveEffectiveSchoolId } from '@/types';
 import { useRouter } from 'next/navigation';
 import { STUDENTS_LIST_SEED, TEACHER_SEED, PARENT_SEED, SUPER_USERS_ISKOOL_SEED } from '@/store/seeds';
 
@@ -174,6 +174,7 @@ const getDemoUser = (email: string): UserProfile => {
   ) {
     return {
       id: 'usr-coord-1',
+      school_id: 'sch-test-case',
       first_name: 'Beatriz',
       last_name: 'Morales (Coordinación)',
       role: 'coordinator',
@@ -196,6 +197,7 @@ const getDemoUser = (email: string): UserProfile => {
       first_name: 'Israel',
       last_name: 'López Ángeles',
       email: 'israel.lopez@jjrosseau.edu.mx',
+      school_id: 'sch-jjrosseau',
       temporary_password: '008805'
     };
   }
@@ -220,59 +222,74 @@ const getDemoUser = (email: string): UserProfile => {
     emailLower === 'tutor@iskool.edu.mx' ||
     emailLower === 'padre@iskool.edu.mx'
   ) {
-    return PARENT_SEED;
+    return {
+      ...PARENT_SEED,
+      school_id: 'sch-jjrosseau'
+    };
   }
 
   // 7. Alumnos Demo Específicos por Identificador o Correo
   if (emailLower === 'lucas@iskool.edu.mx' || emailLower === 'lucas.skywalker@iskool.edu.mx' || emailLower === 'std-pa') {
     const seed = STUDENTS_LIST_SEED.find(s => s.id === 'std-pa');
-    return seed || {
-      id: 'std-pa',
-      first_name: 'Lucas',
-      last_name: 'Skywalker',
-      role: 'student',
-      email: 'lucas@iskool.edu.mx',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+    return {
+      ...(seed || {
+        id: 'std-pa',
+        first_name: 'Lucas',
+        last_name: 'Skywalker',
+        role: 'student',
+        email: 'lucas@iskool.edu.mx',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }),
+      school_id: 'sch-jjrosseau'
     };
   }
 
   if (emailLower === 'elena@iskool.edu.mx' || emailLower === 'elena.rostova@iskool.edu.mx' || emailLower === 'std-sec') {
     const seed = STUDENTS_LIST_SEED.find(s => s.id === 'std-sec');
-    return seed || {
-      id: 'std-sec',
-      first_name: 'Elena',
-      last_name: 'Rostova',
-      role: 'student',
-      email: 'elena@iskool.edu.mx',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+    return {
+      ...(seed || {
+        id: 'std-sec',
+        first_name: 'Elena',
+        last_name: 'Rostova',
+        role: 'student',
+        email: 'elena@iskool.edu.mx',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }),
+      school_id: 'sch-jjrosseau'
     };
   }
 
   if (emailLower === 'santi@iskool.edu.mx' || emailLower === 'santi.gómez@iskool.edu.mx' || emailLower === 'santi.gomez@iskool.edu.mx' || emailLower === 'std-pb') {
     const seed = STUDENTS_LIST_SEED.find(s => s.id === 'std-pb');
-    return seed || {
-      id: 'std-pb',
-      first_name: 'Santi',
-      last_name: 'Gómez',
-      role: 'student',
-      email: 'santi@iskool.edu.mx',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+    return {
+      ...(seed || {
+        id: 'std-pb',
+        first_name: 'Santi',
+        last_name: 'Gómez',
+        role: 'student',
+        email: 'santi@iskool.edu.mx',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }),
+      school_id: 'sch-jjrosseau'
     };
   }
 
   if (emailLower === 'mateo@iskool.edu.mx' || emailLower === 'mateo.díaz@iskool.edu.mx' || emailLower === 'mateo.diaz@iskool.edu.mx' || emailLower === 'std-prep') {
     const seed = STUDENTS_LIST_SEED.find(s => s.id === 'std-prep');
-    return seed || {
-      id: 'std-prep',
-      first_name: 'Mateo',
-      last_name: 'Díaz',
-      role: 'student',
-      email: 'mateo@iskool.edu.mx',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+    return {
+      ...(seed || {
+        id: 'std-prep',
+        first_name: 'Mateo',
+        last_name: 'Díaz',
+        role: 'student',
+        email: 'mateo@iskool.edu.mx',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }),
+      school_id: 'sch-jjrosseau'
     };
   }
 
@@ -281,7 +298,12 @@ const getDemoUser = (email: string): UserProfile => {
     s.email.toLowerCase() === emailLower || 
     s.id.toLowerCase() === emailLower
   );
-  if (matchedSeedStudent) return matchedSeedStudent;
+  if (matchedSeedStudent) {
+    return {
+      ...matchedSeedStudent,
+      school_id: matchedSeedStudent.school_id || 'sch-jjrosseau'
+    };
+  }
 
   // 8. Fallback para nuevo alumno con correo personalizado
   const nameParts = emailLower.split('@')[0].split('.');
@@ -289,7 +311,8 @@ const getDemoUser = (email: string): UserProfile => {
   const lastName = nameParts[1] ? nameParts[1].charAt(0).toUpperCase() + nameParts[1].slice(1) : 'Escolar';
 
   return {
-    id: `usr-custom-${Date.now()}`,
+    id: `usr-demo-${Date.now()}`,
+    school_id: 'sch-jjrosseau',
     first_name: firstName,
     last_name: lastName,
     role: 'student',
@@ -323,6 +346,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             created_at: u.created_at,
             updated_at: new Date().toISOString()
           };
+
+          const isSuper = isPlatformSuperUser(restoredUser) || restoredUser.role === 'admin' || restoredUser.role === 'superadmin' || restoredUser.id.startsWith('usr-superadmin');
+          if (!isSuper) {
+            const effectiveSchool = resolveEffectiveSchoolId(restoredUser, null, restoredUser.school_id || 'sch-jjrosseau');
+            if (useSchoolAdminStore.getState().isSchoolSuspended(effectiveSchool)) {
+              setUser(null);
+              setSession(null);
+              if (typeof window !== 'undefined') {
+                localStorage.removeItem('iskool_session_user');
+                localStorage.setItem('iskool_suspension_error', 'cuenta inhabilitada favor de ponerse en contacto con el administrador del colegio');
+              }
+              return;
+            }
+          }
+
           setUser(restoredUser);
           if (typeof window !== 'undefined') {
             localStorage.setItem('iskool_session_user', JSON.stringify(restoredUser));
@@ -338,6 +376,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             try {
               const parsed = JSON.parse(saved);
               if (parsed && parsed.id && parsed.role) {
+                const isSuper = isPlatformSuperUser(parsed) || parsed.role === 'admin' || parsed.role === 'superadmin' || parsed.id.startsWith('usr-superadmin');
+                if (!isSuper) {
+                  const effectiveSchool = resolveEffectiveSchoolId(parsed, null, parsed.school_id || 'sch-jjrosseau');
+                  if (useSchoolAdminStore.getState().isSchoolSuspended(effectiveSchool)) {
+                    setUser(null);
+                    setSession(null);
+                    localStorage.removeItem('iskool_session_user');
+                    localStorage.setItem('iskool_suspension_error', 'cuenta inhabilitada favor de ponerse en contacto con el administrador del colegio');
+                    return;
+                  }
+                }
+
                 setUser(parsed);
                 useSchoolAdminStore.getState().syncUserSchool(parsed);
                 setSession({
@@ -405,6 +455,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         success: false, 
         error: '⛔ Esta cuenta ha sido bloqueada o cancelada por la Dirección Escolar en el Portal de Super Usuario.' 
       };
+    }
+
+    // Regla de Suspensión Institucional por Colegio
+    const isSuperUser = isPlatformSuperUser(resolvedUser) || 
+                        resolvedUser.role === 'admin' || 
+                        resolvedUser.role === 'superadmin' || 
+                        resolvedUser.id.startsWith('usr-superadmin') || 
+                        resolvedUser.id === 'usr-admin-1';
+
+    if (!isSuperUser) {
+      let userSchoolId = resolvedUser.school_id;
+      if (!userSchoolId) {
+        const adminStore = useSchoolAdminStore.getState();
+        const std = (adminStore.detailedStudents || []).find(s => s.id === resolvedUser.id || s.email?.toLowerCase() === email.toLowerCase());
+        if (std) userSchoolId = std.school_id;
+        const tch = (adminStore.teachersList || []).find(t => t.id === resolvedUser.id || t.email?.toLowerCase() === email.toLowerCase());
+        if (tch) userSchoolId = tch.school_id;
+        const stf = (adminStore.staffUsers || []).find(s => s.id === resolvedUser.id || s.email?.toLowerCase() === email.toLowerCase());
+        if (stf) userSchoolId = stf.school_id;
+      }
+
+      const effectiveSchool = resolveEffectiveSchoolId(
+        { ...resolvedUser, school_id: userSchoolId },
+        null,
+        userSchoolId || 'sch-jjrosseau'
+      );
+
+      if (useSchoolAdminStore.getState().isSchoolSuspended(effectiveSchool)) {
+        setLoading(false);
+        return {
+          success: false,
+          error: 'cuenta inhabilitada favor de ponerse en contacto con el administrador del colegio'
+        };
+      }
     }
 
     if (userPassword && userPassword.trim().length > 0) {

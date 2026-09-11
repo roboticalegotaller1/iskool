@@ -76,6 +76,7 @@ import {
 import { DetailedStudent, Subject, GroupAnnualPlan, SyllabusTopic, Campus, Group, canManageTargetRole, StaffPayrollRecord, isPlatformSuperUser, StudentDeletionAuditLog, UserRole } from '@/types';
 import ExecutiveAnalyticsStudio from '@/components/admin/ExecutiveAnalyticsStudio';
 import { SuperUserCompendiumStudio } from '@/components/books/SuperUserCompendiumStudio';
+import { SchoolStatusSlider } from '@/components/admin/SchoolStatusSlider';
 
 type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll' | 'analytics' | 'deletions' | 'books_compendium';
 
@@ -123,7 +124,8 @@ export default function SuperUserAdminPage() {
     updateDirectorLimits,
     updatePayrollRecord,
     dispersePayrollBatch,
-    adjustSalary
+    adjustSalary,
+    toggleSchoolSuspension
   } = useSchoolAdminStore();
 
   // Verificación estricta de Super Usuario ISkool (Nivel 1) vs Dueño de Colegio (Nivel 2)
@@ -1547,6 +1549,7 @@ export default function SuperUserAdminPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {institutionsList.map((inst) => {
                   const isTest = inst.isTestCase;
+                  const isSuspended = inst.status === 'inactive';
                   const instCampuses = getSchoolCampuses(campusesList, inst.id);
                   const instStudents = getSchoolStudents(detailedStudents, inst.id, instCampuses);
                   const instTeachers = getSchoolTeachers(teachersList, inst.id, instCampuses);
@@ -1559,11 +1562,26 @@ export default function SuperUserAdminPage() {
                     <div
                       key={inst.id}
                       className={`rounded-3xl border transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-xs relative group ${
-                        isTest
+                        isSuspended
+                          ? 'bg-rose-50/20 border-rose-300 hover:border-rose-400 hover:shadow-md'
+                          : isTest
                           ? 'bg-gradient-to-b from-purple-50/40 via-white to-white border-purple-200 hover:border-purple-400 hover:shadow-md'
                           : 'bg-white border-slate-200 hover:border-indigo-400 hover:shadow-md'
                       }`}
                     >
+                      {/* Banner superior de aviso si el colegio está suspendido */}
+                      {isSuspended && (
+                        <div className="bg-rose-600 text-white text-[11px] font-bold py-1.5 px-4 flex items-center justify-between shadow-xs">
+                          <span className="flex items-center gap-1.5">
+                            <Lock className="h-3.5 w-3.5" />
+                            Servicio Suspendido · Cuentas Inhabilitadas
+                          </span>
+                          <span className="text-[10px] bg-rose-700/80 px-2 py-0.5 rounded-full">
+                            Datos Preservados
+                          </span>
+                        </div>
+                      )}
+
                       {/* Top Header Card */}
                       <div className="p-6 space-y-4">
                         <div className="flex items-start justify-between gap-3">
@@ -1577,11 +1595,13 @@ export default function SuperUserAdminPage() {
                               />
                             ) : (
                               <div className={`h-16 w-16 rounded-2xl flex items-center justify-center shadow-sm ${
-                                isTest 
+                                isSuspended
+                                  ? 'bg-gradient-to-br from-rose-600 to-rose-800 text-white'
+                                  : isTest 
                                   ? 'bg-gradient-to-br from-purple-600 to-amber-500 text-white'
                                   : 'bg-gradient-to-br from-indigo-600 to-blue-500 text-white'
                               }`}>
-                                {isTest ? <Bot className="h-8 w-8" /> : <Building2 className="h-8 w-8" />}
+                                {isSuspended ? <Lock className="h-8 w-8" /> : isTest ? <Bot className="h-8 w-8" /> : <Building2 className="h-8 w-8" />}
                               </div>
                             )}
 
@@ -1599,16 +1619,17 @@ export default function SuperUserAdminPage() {
                             </button>
                           </div>
 
-                          <div className="flex flex-col items-end gap-1">
-                            {isTest ? (
-                              <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-50 text-amber-700 border border-amber-200 uppercase tracking-wide">
-                                🧪 Sandbox / Test Case
-                              </span>
-                            ) : (
-                              <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase tracking-wide">
-                                ● Oficial Activo
-                              </span>
-                            )}
+                          <div className="flex flex-col items-end gap-1.5">
+                            {/* Botón deslizante de Estado Activo / Inactivo */}
+                            <SchoolStatusSlider
+                              schoolId={inst.id}
+                              schoolName={inst.name}
+                              status={inst.status || 'active'}
+                              isTestCase={isTest}
+                              onToggle={() => {
+                                toggleSchoolSuspension(inst.id);
+                              }}
+                            />
                             <span className="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">
                               CCT: {inst.cct}
                             </span>
@@ -1666,12 +1687,18 @@ export default function SuperUserAdminPage() {
                         <button
                           onClick={() => selectSchool(inst.id)}
                           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black shadow-sm transition-all cursor-pointer ${
-                            isTest
+                            isSuspended
+                              ? 'bg-rose-700 hover:bg-rose-600 text-white shadow-rose-700/20'
+                              : isTest
                               ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-purple-600/20'
                               : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/20'
                           }`}
                         >
-                          {isTest ? '🧪 Entrar a Sandbox / Pruebas' : 'Entrar al Panel Institucional'} <ChevronRight className="h-4 w-4" />
+                          {isSuspended
+                            ? '🔒 Entrar a Supervisión (Colegio Inactivo)'
+                            : isTest
+                            ? '🧪 Entrar a Sandbox / Pruebas'
+                            : 'Entrar al Panel Institucional'} <ChevronRight className="h-4 w-4" />
                         </button>
                       </div>
                     </div>
@@ -1822,6 +1849,39 @@ export default function SuperUserAdminPage() {
               </Link>
             </div>
           </header>
+
+          {/* BANNER DE COLEGIO SUSPENDIDO (AUDITORÍA SUPER USUARIO) */}
+          {currentSchool?.status === 'inactive' && (
+            <div className="bg-gradient-to-r from-rose-600 to-rose-700 text-white px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm animate-fade-in">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-white/15 text-white shrink-0">
+                  <Lock className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-xs sm:text-sm font-black uppercase tracking-wide">
+                      Colegio Temporalmente Inhabilitado
+                    </h4>
+                    <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold">
+                      Servicio Suspendido
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-rose-100 mt-0.5 leading-relaxed">
+                    Todas las cuentas de alumnos, profesores, directivos y administrativos asociadas a este colegio están inhabilitadas. No se ha borrado información ni eliminado ningún registro.
+                  </p>
+                </div>
+              </div>
+
+              {isSuperUser && (
+                <button
+                  onClick={() => toggleSchoolSuspension(currentSchool.id)}
+                  className="px-4 py-2 rounded-xl bg-white hover:bg-rose-50 text-rose-700 hover:text-rose-800 text-xs font-black shrink-0 shadow-md transition-all hover:scale-105 cursor-pointer flex items-center gap-1.5"
+                >
+                  <Check className="h-4 w-4 text-emerald-600" /> Reactivar Colegio y Habilitar Cuentas
+                </button>
+              )}
+            </div>
+          )}
 
           {/* NAVIGATION TABS STRIP */}
           <nav className="bg-white border-b border-slate-200 px-4 sm:px-6 py-2 flex items-center justify-between gap-3 sm:gap-4 overflow-x-auto scrollbar-none">

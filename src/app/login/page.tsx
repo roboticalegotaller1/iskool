@@ -17,9 +17,11 @@ import {
   BookOpen,
   Compass,
   ShieldCheck,
-  HelpCircle
+  HelpCircle,
+  Lock
 } from 'lucide-react';
 import { useStudentStore } from '@/store/useStudentStore';
+import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 
 type DemoCategory = 'docentes' | 'estudiantes' | 'gestion';
 
@@ -179,6 +181,26 @@ export default function LoginPage() {
   const { login, loading: authLoading } = useAuth();
   const switchStudent = useStudentStore(state => state.switchStudent);
   const router = useRouter();
+  const isSchoolSuspended = useSchoolAdminStore(state => state.isSchoolSuspended);
+
+  // Comprobar si hay una notificación flash de suspensión institucional
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const suspensionMsg = localStorage.getItem('iskool_suspension_error');
+      if (suspensionMsg) {
+        setErrorMsg(suspensionMsg);
+        localStorage.removeItem('iskool_suspension_error');
+      }
+    }
+  }, []);
+
+  const getDemoSchoolId = (demo: DemoAccount): string | null => {
+    if (demo.role === 'admin' || demo.id.startsWith('usr-superadmin')) return null;
+    if (demo.id === 'usr-coord-1' || demo.id === 'usr-billing-1' || demo.id === 'usr-parent-001') {
+      return 'sch-test-case';
+    }
+    return 'sch-jjrosseau';
+  };
 
   const routeUserByRole = async (userProfile: any) => {
     const role = userProfile?.role || 'student';
@@ -526,33 +548,53 @@ export default function LoginPage() {
 
                 {/* Lista Limpia de Perfiles Segmentados */}
                 <div className="flex flex-col gap-2 pt-1">
-                  {filteredDemoAccounts.map((demo) => (
-                    <button
-                      key={demo.email}
-                      type="button"
-                      onClick={() => handleSelectDemo(demo)}
-                      disabled={isSubmitting || authLoading}
-                      className="w-full flex items-center justify-between p-2.5 rounded-2xl border border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/40 hover:bg-blue-50/50 dark:hover:bg-zinc-800/90 hover:border-blue-200 dark:hover:border-zinc-700 text-left transition-all duration-150 group disabled:opacity-50"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`h-8 w-8 rounded-xl ${demo.avatarColor} flex items-center justify-center text-white font-bold text-xs shadow-sm`}>
-                          {demo.name[0]}
+                  {filteredDemoAccounts.map((demo) => {
+                    const schoolId = getDemoSchoolId(demo);
+                    const isSuspended = schoolId ? isSchoolSuspended(schoolId) : false;
+
+                    return (
+                      <button
+                        key={demo.email}
+                        type="button"
+                        onClick={() => handleSelectDemo(demo)}
+                        disabled={isSubmitting || authLoading}
+                        className={`w-full flex items-center justify-between p-2.5 rounded-2xl border text-left transition-all duration-150 group disabled:opacity-50 ${
+                          isSuspended
+                            ? 'border-rose-200 dark:border-rose-900/50 bg-rose-50/40 dark:bg-rose-950/20 hover:bg-rose-100/50 hover:border-rose-300'
+                            : 'border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/40 hover:bg-blue-50/50 dark:hover:bg-zinc-800/90 hover:border-blue-200 dark:hover:border-zinc-700'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`h-8 w-8 rounded-xl ${demo.avatarColor} flex items-center justify-center text-white font-bold text-xs shadow-sm`}>
+                            {demo.name[0]}
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors flex items-center gap-1.5">
+                              {demo.name}
+                              {isSuspended && (
+                                <span className="text-[9px] font-extrabold text-rose-600 dark:text-rose-400 bg-rose-100 dark:bg-rose-900/40 px-1.5 py-0.2 rounded-md">
+                                  Inactiva
+                                </span>
+                              )}
+                            </p>
+                            <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
+                              {demo.grade}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                            {demo.name}
-                          </p>
-                          <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
-                            {demo.grade}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-zinc-200/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors">
-                        Acceder
-                      </span>
-                    </button>
-                  ))}
+                        
+                        {isSuspended ? (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 flex items-center gap-1 border border-rose-200 dark:border-rose-800">
+                            <Lock className="h-2.5 w-2.5" /> Inhabilitada
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-zinc-200/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors">
+                            Acceder
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
