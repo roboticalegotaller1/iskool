@@ -190,8 +190,8 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
         onPointerMove={(e) => {
           if (e.buttons === 1) handlePointerInteraction(e);
         }}
-        className="relative w-44 sm:w-52 flex items-end justify-center cursor-pointer transition-all duration-300 group touch-none pb-2"
-        style={{ height: `${avatarHeight}px` }}
+        className="relative flex items-end justify-center cursor-pointer transition-all duration-300 group touch-none pb-2"
+        style={{ height: `${avatarHeight}px`, width: `${Math.max(260, petPixelWidth + 60)}px` }}
         title={`¡Haz clic o desliza suavemente sobre tu compañero para acariciarlo! (Escala: ${ratioDescription})`}
       >
         {/* Glow elemental circundante adaptativo al tamaño de la mascota */}
@@ -199,8 +199,8 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
           className="absolute rounded-full filter blur-xl transition-all duration-500 opacity-60 group-hover:opacity-90 pointer-events-none"
           style={{ 
             backgroundColor: meta.glowColor,
-            width: `${Math.max(60, petPixelWidth * 1.35)}px`,
-            height: `${Math.max(60, petPixelHeight * 1.35)}px`,
+            width: `${Math.max(80, petPixelWidth * 1.35)}px`,
+            height: `${Math.max(80, petPixelHeight * 1.35)}px`,
             bottom: '8px'
           }}
         />
@@ -209,8 +209,8 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
         <div 
           className="absolute bottom-1 bg-black/40 rounded-full blur-[2px] pointer-events-none transition-all duration-300"
           style={{
-            width: `${Math.max(28, petPixelWidth * 0.8)}px`,
-            height: `${Math.max(6, petPixelHeight * 0.12)}px`
+            width: `${Math.max(36, petPixelWidth * 0.85)}px`,
+            height: `${Math.max(8, petPixelHeight * 0.12)}px`
           }}
         />
 
@@ -264,7 +264,7 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
       </div>
 
       {/* Barra de Información, Vínculo y Estado Evolutivo */}
-      <div className="w-full max-w-xs mt-2 px-3 py-2.5 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-2">
+      <div className="w-full max-w-sm mt-3 px-3.5 py-2.5 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-2">
         {/* Cabecera de Mascota */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 truncate">

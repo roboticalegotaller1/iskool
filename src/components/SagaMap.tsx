@@ -58,8 +58,8 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
     const stepX = (endX - startX) / Math.max(1, total - 1);
     const x = startX + index * stepX;
     
-    // Smooth wavy pattern for Y: alternates heights to create an organic, beautiful path
-    const wavePattern = [48, 28, 68, 34, 64, 26, 72];
+    // Smooth wavy pattern for Y: alternates heights to create an organic, beautiful path with vertical clearance for 3x character
+    const wavePattern = [56, 42, 68, 46, 64, 40, 70];
     const y = wavePattern[index % wavePattern.length];
     
     return { x, y };
@@ -256,9 +256,11 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
 
   const petStage = stats?.pet_stage || 'egg';
   const petScaleRatio = getPetToAvatarScaleRatio(petStage);
-  const avatarMapHeight = 62;
-  const avatarMapWidth = 46;
-  const petMapHeight = Math.max(14, Math.round(avatarMapHeight * petScaleRatio));
+  
+  // Tamaño ampliado a exactamente 3 veces el tamaño inicial (3x: 186px alto)
+  const avatarMapHeight = 186;
+  const avatarMapWidth = 138;
+  const petMapHeight = Math.max(34, Math.round(avatarMapHeight * petScaleRatio));
   const petMapWidth = Math.round(petMapHeight * 0.95);
 
   const [playerNodeIndex, setPlayerNodeIndex] = useState<number>(fallbackIndex);
@@ -271,6 +273,13 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
     if (targetIndex < 0 || targetIndex >= nodes.length) return;
     if (targetIndex === playerNodeIndex) {
       if (onArrival) onArrival();
+      return;
+    }
+
+    // Regla estricta de seguridad: JAMÁS caminar o posicionarse en un nodo bloqueado
+    const targetStatus = getMissionStatus(nodes[targetIndex].mission, nodes[targetIndex].idx);
+    if (targetStatus === 'locked') {
+      console.warn('Protección de mapa: No se permite desplazarse hacia un desafío bloqueado');
       return;
     }
 
@@ -290,7 +299,7 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
     }, 1400);
   }, [nodes, playerNodeIndex]);
 
-  // Synchronize when active mission progresses
+  // Sincronizar automáticamente cuando progresa la misión activa
   React.useEffect(() => {
     if (activeNodeIdx !== -1 && activeNodeIdx !== prevActiveNodeIdxRef.current) {
       walkToNode(activeNodeIdx);
@@ -298,12 +307,23 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
     }
   }, [activeNodeIdx, walkToNode]);
 
-  // Keep index within bounds when period changes
+  // Protección permanente: si por cualquier motivo el jugador está en un nodo bloqueado, reubicarlo inmediatamente al desafío activo
+  React.useEffect(() => {
+    if (nodes.length > 0 && activeNodeIdx !== -1) {
+      const currentNode = nodes[playerNodeIndex];
+      const currentStatus = currentNode ? getMissionStatus(currentNode.mission, currentNode.idx) : 'locked';
+      if (currentStatus === 'locked' || playerNodeIndex === -1) {
+        setPlayerNodeIndex(activeNodeIdx);
+      }
+    }
+  }, [activeNodeIdx, nodes, playerNodeIndex]);
+
+  // Mantener el índice dentro de los límites al cambiar de periodo
   React.useEffect(() => {
     if (nodes.length > 0 && playerNodeIndex >= nodes.length) {
-      setPlayerNodeIndex(Math.max(0, nodes.length - 1));
+      setPlayerNodeIndex(activeNodeIdx !== -1 ? activeNodeIdx : 0);
     }
-  }, [nodes.length, playerNodeIndex]);
+  }, [nodes.length, playerNodeIndex, activeNodeIdx]);
 
   // Handle clicking on a node with world map walking animation
   const handleNodeClick = (mission: Mission, status: string) => {
@@ -393,7 +413,7 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
       `}} />
 
       {/* Main Saga Map Panel */}
-      <div className={`relative w-full rounded-[32px] overflow-hidden shadow-2xl border border-zinc-800 ${theme.containerBg} p-6 min-h-[460px]`}>
+      <div className={`relative w-full rounded-[32px] overflow-hidden shadow-2xl border border-zinc-800 ${theme.containerBg} p-6 min-h-[580px]`}>
         
         {/* Continuous background grid pattern */}
         <div 
@@ -426,22 +446,47 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
           </div>
         </div>
 
-        {/* Period Selector and Explorer Walk Button */}
+        {/* Period Selector and Explorer Walk Button (Solo Casillas Desbloqueadas) */}
         <div className="absolute top-4 right-6 z-10 flex items-center gap-2 select-none">
-          {/* Action to walk across map */}
-          {nodes.length > 1 && (
-            <button
-              onClick={() => {
-                const nextIdx = (playerNodeIndex + 1) % nodes.length;
-                walkToNode(nextIdx);
-              }}
-              className="bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 backdrop-blur-md px-3 py-1.5 rounded-2xl flex items-center gap-1.5 text-[10px] font-bold shadow-lg transition-all active:scale-95 cursor-pointer"
-              title="Caminar al siguiente nodo para probar la animación del mapa"
-            >
-              <Footprints className="h-3.5 w-3.5" />
-              <span>Pasear en Mapa</span>
-            </button>
-          )}
+          {/* Action to walk across map only through UNLOCKED (completed / active) nodes */}
+          {(() => {
+            const accessibleIndices = nodes
+              .map((n, i) => ({ status: getMissionStatus(n.mission, n.idx), index: i }))
+              .filter(item => item.status === 'completed' || item.status === 'active')
+              .map(item => item.index);
+
+            if (playerNodeIndex !== activeNodeIdx && activeNodeIdx !== -1) {
+              return (
+                <button
+                  onClick={() => walkToNode(activeNodeIdx)}
+                  className="bg-amber-500/25 hover:bg-amber-500/35 border border-amber-400/60 text-amber-200 backdrop-blur-md px-3 py-1.5 rounded-2xl flex items-center gap-1.5 text-[10px] font-black shadow-lg transition-all active:scale-95 cursor-pointer animate-pulse"
+                  title="Regresar al desafío actual desbloqueado"
+                >
+                  <Footprints className="h-3.5 w-3.5" />
+                  <span>Ir a Desafío Actual</span>
+                </button>
+              );
+            }
+
+            if (accessibleIndices.length > 1) {
+              return (
+                <button
+                  onClick={() => {
+                    const currentPos = accessibleIndices.indexOf(playerNodeIndex);
+                    const nextIndex = accessibleIndices[(currentPos + 1) % accessibleIndices.length];
+                    walkToNode(nextIndex);
+                  }}
+                  className="bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 backdrop-blur-md px-3 py-1.5 rounded-2xl flex items-center gap-1.5 text-[10px] font-bold shadow-lg transition-all active:scale-95 cursor-pointer"
+                  title="Pasear únicamente por misiones desbloqueadas"
+                >
+                  <Footprints className="h-3.5 w-3.5" />
+                  <span>Pasear por Desafíos</span>
+                </button>
+              );
+            }
+
+            return null;
+          })()}
 
           <div className="bg-zinc-950/70 border border-zinc-800/80 backdrop-blur-md px-3 py-1.5 rounded-2xl flex items-center gap-2 shadow-lg">
             <span className="text-[10px] font-black text-emerald-400 uppercase tracking-wider">Periodo:</span>
@@ -463,11 +508,11 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
           </div>
         </div>
 
-        {/* Responsive Scrolling Map Container */}
-        <div className="w-full overflow-x-auto overflow-y-hidden relative h-[360px] pb-4 mt-6 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+        {/* Responsive Scrolling Map Container with ample vertical room */}
+        <div className="w-full overflow-x-auto overflow-y-hidden relative h-[520px] pb-4 mt-8 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
           
           {/* Map canvas with relative positions */}
-          <div style={{ width: `${mapCanvasWidth}px` }} className="h-[310px] relative mx-auto my-auto px-10">
+          <div style={{ width: `${mapCanvasWidth}px` }} className="h-[460px] relative mx-auto my-auto px-10">
             
             {/* SVG Connecting Path */}
             {nodes.length >= 2 && (
@@ -562,9 +607,13 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
               );
             })}
 
-            {/* Token de Avatar y Mascota Estilo Explorador de Mapa */}
+            {/* Token de Avatar y Mascota Estilo Explorador de Mapa (3x tamaño oficial) */}
             {nodes.length > 0 && (() => {
-              const currentNode = nodes[playerNodeIndex] || nodes[0];
+              const activeNodeSafe = activeNodeIdx !== -1 ? nodes[activeNodeIdx] : nodes[0];
+              const currentNode = nodes[playerNodeIndex] && getMissionStatus(nodes[playerNodeIndex].mission, nodes[playerNodeIndex].idx) !== 'locked'
+                ? nodes[playerNodeIndex]
+                : activeNodeSafe;
+
               const playerX = currentNode?.x ?? 50;
               const playerY = currentNode?.y ?? 50;
 
@@ -574,28 +623,28 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
                   style={{
                     left: `${playerX}%`,
                     top: `${playerY}%`,
-                    transform: 'translate(-50%, -92%)',
+                    transform: 'translate(-50%, -90%)',
                   }}
                 >
                   {/* Distintivo de Posición Actual con Proporción de Mascota */}
-                  <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black text-[9px] px-2.5 py-0.5 rounded-full shadow-lg shadow-amber-500/50 uppercase tracking-wider mb-1 animate-bounce border border-yellow-200">
+                  <div className="flex items-center gap-2 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black text-[11px] px-3.5 py-1 rounded-full shadow-xl shadow-amber-500/50 uppercase tracking-wider mb-2 animate-bounce border-2 border-yellow-200">
                     <span>⭐ {avatar?.avatar_name || 'Héroe'}</span>
-                    <span className="text-[8px] opacity-90 font-black bg-amber-600/30 px-1.5 py-0.2 rounded">
+                    <span className="text-[9.5px] opacity-90 font-black bg-amber-600/35 px-2 py-0.5 rounded-md">
                       {avatar?.pet_name || 'Mascota'} ({petStage === 'egg' ? '1/5' : petStage === 'baby' ? '1/4' : petStage === 'child' ? '1/2' : petStage === 'teen' ? '2/3' : '1:1'})
                     </span>
                   </div>
 
                   {/* Par Avatar + Mascota con Orientación según Dirección de Caminata */}
                   <div 
-                    className="flex items-end justify-center gap-1.5 transition-transform duration-300"
+                    className="flex items-end justify-center gap-3 transition-transform duration-300"
                     style={{
                       transform: facingDirection === 'left' ? 'scaleX(-1)' : 'scaleX(1)',
                     }}
                   >
-                    {/* Sprite del Avatar con fidelidad vectorial íntegra */}
+                    {/* Sprite del Avatar con fidelidad vectorial íntegra (3x tamaño = 186px de alto) */}
                     <div 
                       style={{ width: avatarMapWidth, height: avatarMapHeight }} 
-                      className="relative shrink-0 filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]"
+                      className="relative shrink-0 filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.65)]"
                     >
                       <ModularAnimeAvatarSprite
                         gender={(avatar as any)?.gender ?? 'female'}
@@ -616,14 +665,14 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
                       />
                     </div>
 
-                    {/* Mascota Acompañante con Escala Proporcional Estricta (Huevo 1/5, Bebé 1/4, Niño 1/2, Adolescente 2/3, Adulto 1:1) */}
+                    {/* Mascota Acompañante con Escala Proporcional Estricta a 3x (Huevo 1/5, Bebé 1/4, Niño 1/2, Adolescente 2/3, Adulto 1:1) */}
                     <div 
                       style={{ 
                         width: petMapWidth, 
                         height: petMapHeight,
-                        marginBottom: 2
+                        marginBottom: 4
                       }} 
-                      className={`relative shrink-0 filter drop-shadow-[0_3px_6px_rgba(0,0,0,0.5)] ${
+                      className={`relative shrink-0 filter drop-shadow-[0_6px_12px_rgba(0,0,0,0.55)] ${
                         isWalking ? 'animate-pet-map-hop' : 'animate-pet-map-float'
                       }`}
                       title={`${avatar?.pet_name || 'Mascota'} (${getPetScaleRatioDescription(petStage)})`}
@@ -639,22 +688,22 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
 
                   {/* Partículas de Pasos y Polvo en Caminata */}
                   {isWalking ? (
-                    <div className="flex items-center gap-1 -mt-1 pointer-events-none">
-                      <span className="text-[11px] animate-ping opacity-75">💨</span>
-                      <span className="text-[9px] animate-spin text-amber-300">✨</span>
-                      <span className="text-[10px] animate-bounce opacity-80">💨</span>
+                    <div className="flex items-center gap-1.5 -mt-1 pointer-events-none">
+                      <span className="text-[14px] animate-ping opacity-85">💨</span>
+                      <span className="text-[12px] animate-spin text-amber-300">✨</span>
+                      <span className="text-[14px] animate-bounce opacity-85">💨</span>
                     </div>
                   ) : (
                     /* Sombra base en el suelo */
-                    <div className="w-12 h-2.5 bg-black/50 rounded-full blur-[2px] -mt-1 pointer-events-none" />
+                    <div className="w-28 h-4 bg-black/50 rounded-full blur-[3px] -mt-1 pointer-events-none" />
                   )}
 
                   {/* Celebración / Destello al llegar a la casilla de misión */}
                   {isCheering && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-2 pointer-events-none animate-in zoom-in-50 fade-in duration-300">
-                      <span className="text-lg animate-bounce">🎉</span>
-                      <span className="text-sm animate-ping text-yellow-300">⭐</span>
-                      <span className="text-lg animate-bounce">✨</span>
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 pointer-events-none animate-in zoom-in-50 fade-in duration-300">
+                      <span className="text-2xl animate-bounce">🎉</span>
+                      <span className="text-lg animate-ping text-yellow-300">⭐</span>
+                      <span className="text-2xl animate-bounce">✨</span>
                     </div>
                   )}
                 </div>
