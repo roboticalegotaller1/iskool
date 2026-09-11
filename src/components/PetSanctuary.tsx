@@ -7,7 +7,11 @@ import {
 } from 'lucide-react';
 import { PetSvgRenderer } from './pet/PetSvgRenderer';
 
-export function PetSanctuary() {
+interface PetSanctuaryProps {
+  onOpenHome?: () => void;
+}
+
+export function PetSanctuary({ onOpenHome }: PetSanctuaryProps = {}) {
   const activeStudentId = useStudentStore(state => state.activeStudentId);
   const feedPetRpg = useStudentStore(state => state.feedPetRpg);
   const trainPetRpg = useStudentStore(state => state.trainPetRpg);
@@ -240,6 +244,17 @@ export function PetSanctuary() {
             : 'Mantén la felicidad > 80 para invocarla como aliado protector en combate.'}
         </span>
       </div>
+
+      {onOpenHome && (
+        <button
+          type="button"
+          onClick={onOpenHome}
+          className="w-full py-2.5 bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 hover:from-teal-500 hover:to-emerald-500 text-white rounded-xl text-xs font-black flex items-center justify-center gap-2 shadow-lg shadow-teal-950/30 transition-all active:scale-95 cursor-pointer border border-teal-400/40 relative z-10"
+        >
+          <span>🏠</span>
+          <span>Entrar a la Casa del Santuario</span>
+        </button>
+      )}
 
     </div>
   );

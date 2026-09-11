@@ -35,6 +35,13 @@ interface StudentStoreState {
   petCompanionTouch: (studentId?: string) => { newHappiness: number; friendshipExp: number };
   evolvePetStage: (studentId?: string, targetStage?: PetEvolutionStage) => Promise<void>;
   registerHomeworkCompletedForPet: (studentId?: string) => Promise<{ triggeredHatch: boolean; triggeredEvolution: boolean; newStage?: PetEvolutionStage; race?: ElementalPetRace }>;
+  setSanctuaryHouse: (studentId: string, houseType: 'forest_cabin' | 'cosmic_observatory' | 'ice_temple' | 'magma_forge' | 'coral_sanctuary') => void;
+  purchaseSanctuaryItem: (studentId: string, itemId: string, price: number) => { success: boolean; reason?: string };
+  placeSanctuaryItem: (studentId: string, slotId: number, itemId: string) => void;
+  removeSanctuaryItem: (studentId: string, slotId: number) => void;
+  feedPetInSanctuary: (studentId?: string, foodItemId?: string) => { success: boolean; hunger: number; happiness: number };
+  petPlayInSanctuary: (studentId?: string, toyItemId?: string) => { success: boolean; happiness: number; energy: number };
+  petSleepInSanctuary: (studentId?: string, bedItemId?: string) => { success: boolean; energy: number };
   levelUpAttribute: (statName: 'strength' | 'intelligence' | 'defense') => Promise<void>;
   purchaseArtifact: (studentId: string, artifactId: string) => Promise<void>;
   grantArtifact: (studentId: string, artifactId: string) => Promise<void>;
@@ -606,6 +613,243 @@ export const useStudentStore = create<StudentStoreState>()(
       triggeredEvolution,
       newStage: triggeredHatch || triggeredEvolution ? newStage : undefined
     };
+  },
+
+  setSanctuaryHouse: (studentId, houseType) => {
+    const rawId = studentId || get().activeStudentId;
+    const activeId = normalizeStudentId(rawId);
+    const currentAv = get().allAvatars[activeId] || get().allAvatars[rawId] || { student_id: activeId, avatar_name: 'Estudiante', hair_style: 'classic', hair_color: '#4B5563', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: [] };
+    const updated = {
+      ...currentAv,
+      sanctuary_house_type: houseType,
+      updated_at: new Date().toISOString()
+    };
+    set((state) => ({
+      allAvatars: {
+        ...state.allAvatars,
+        [activeId]: updated,
+        [rawId]: updated
+      }
+    }));
+  },
+
+  purchaseSanctuaryItem: (studentId, itemId, price) => {
+    const rawId = studentId || get().activeStudentId;
+    const activeId = normalizeStudentId(rawId);
+    const currentStats = get().allStats[activeId] || get().allStats[rawId];
+    const currentAv = get().allAvatars[activeId] || get().allAvatars[rawId] || { student_id: activeId, avatar_name: 'Estudiante', hair_style: 'classic', hair_color: '#4B5563', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: [] };
+    const coins = currentStats?.coins || 0;
+
+    if (coins < price) {
+      return { success: false, reason: 'No tienes suficientes monedas escolares.' };
+    }
+
+    const currentInventory = currentAv.sanctuary_inventory || [];
+    if (currentInventory.includes(itemId)) {
+      return { success: false, reason: 'Ya adquiriste este artículo.' };
+    }
+
+    const updatedStats = {
+      ...currentStats,
+      coins: coins - price,
+      friendship_exp: (currentStats?.friendship_exp || 0) + 15
+    };
+
+    const updatedAv = {
+      ...currentAv,
+      sanctuary_inventory: [...currentInventory, itemId],
+      updated_at: new Date().toISOString()
+    };
+
+    set((state) => ({
+      allStats: {
+        ...state.allStats,
+        [activeId]: updatedStats,
+        [rawId]: updatedStats
+      },
+      allAvatars: {
+        ...state.allAvatars,
+        [activeId]: updatedAv,
+        [rawId]: updatedAv
+      }
+    }));
+
+    return { success: true };
+  },
+
+  placeSanctuaryItem: (studentId, slotId, itemId) => {
+    const rawId = studentId || get().activeStudentId;
+    const activeId = normalizeStudentId(rawId);
+    const currentAv = get().allAvatars[activeId] || get().allAvatars[rawId] || { student_id: activeId, avatar_name: 'Estudiante', hair_style: 'classic', hair_color: '#4B5563', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: [] };
+    const currentPlaced = { ...(currentAv.sanctuary_placed_items || {}) };
+    currentPlaced[slotId] = itemId;
+
+    const updatedAv = {
+      ...currentAv,
+      sanctuary_placed_items: currentPlaced,
+      updated_at: new Date().toISOString()
+    };
+
+    set((state) => ({
+      allAvatars: {
+        ...state.allAvatars,
+        [activeId]: updatedAv,
+        [rawId]: updatedAv
+      }
+    }));
+  },
+
+  removeSanctuaryItem: (studentId, slotId) => {
+    const rawId = studentId || get().activeStudentId;
+    const activeId = normalizeStudentId(rawId);
+    const currentAv = get().allAvatars[activeId] || get().allAvatars[rawId] || { student_id: activeId, avatar_name: 'Estudiante', hair_style: 'classic', hair_color: '#4B5563', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: [] };
+    const currentPlaced = { ...(currentAv.sanctuary_placed_items || {}) };
+    delete currentPlaced[slotId];
+
+    const updatedAv = {
+      ...currentAv,
+      sanctuary_placed_items: currentPlaced,
+      updated_at: new Date().toISOString()
+    };
+
+    set((state) => ({
+      allAvatars: {
+        ...state.allAvatars,
+        [activeId]: updatedAv,
+        [rawId]: updatedAv
+      }
+    }));
+  },
+
+  feedPetInSanctuary: (studentId, foodItemId) => {
+    const rawId = studentId || get().activeStudentId;
+    const activeId = normalizeStudentId(rawId);
+    const currentStats = get().allStats[activeId] || get().allStats[rawId] || { xp: 0, level: 1, coins: 0 };
+    const currentAv = get().allAvatars[activeId] || get().allAvatars[rawId] || { student_id: activeId, avatar_name: 'Estudiante', hair_style: 'classic', hair_color: '#4B5563', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: [] };
+
+    const cost = foodItemId ? 0 : 20;
+    if (cost > 0 && (currentStats.coins || 0) < cost) {
+      return { success: false, hunger: currentAv.pet_hunger || 70, happiness: currentAv.pet_happiness || 70 };
+    }
+
+    const newHunger = Math.min(100, (currentAv.pet_hunger || 60) + 30);
+    const newHappiness = Math.min(100, (currentAv.pet_happiness || 70) + 15);
+    const newCoins = Math.max(0, (currentStats.coins || 0) - cost);
+    const newFriendship = (currentStats.friendship_exp || 0) + 10;
+
+    const updatedStats = {
+      ...currentStats,
+      coins: newCoins,
+      pet_happiness: newHappiness,
+      friendship_exp: newFriendship
+    };
+
+    const updatedAv = {
+      ...currentAv,
+      pet_hunger: newHunger,
+      pet_happiness: newHappiness,
+      updated_at: new Date().toISOString()
+    };
+
+    set((state) => ({
+      allStats: {
+        ...state.allStats,
+        [activeId]: updatedStats,
+        [rawId]: updatedStats
+      },
+      allAvatars: {
+        ...state.allAvatars,
+        [activeId]: updatedAv,
+        [rawId]: updatedAv
+      }
+    }));
+
+    return { success: true, hunger: newHunger, happiness: newHappiness };
+  },
+
+  petPlayInSanctuary: (studentId, toyItemId) => {
+    const rawId = studentId || get().activeStudentId;
+    const activeId = normalizeStudentId(rawId);
+    const currentStats = get().allStats[activeId] || get().allStats[rawId] || { xp: 0, level: 1, coins: 0 };
+    const currentAv = get().allAvatars[activeId] || get().allAvatars[rawId] || { student_id: activeId, avatar_name: 'Estudiante', hair_style: 'classic', hair_color: '#4B5563', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: [] };
+
+    const cost = toyItemId ? 0 : 15;
+    if (cost > 0 && (currentStats.coins || 0) < cost) {
+      return { success: false, happiness: currentAv.pet_happiness || 70, energy: currentStats.pet_energy || 100 };
+    }
+
+    const newHappiness = Math.min(100, (currentAv.pet_happiness || 70) + 25);
+    const newEnergy = Math.max(10, (currentStats.pet_energy ?? 100) - 10);
+    const newCoins = Math.max(0, (currentStats.coins || 0) - cost);
+    const newFriendship = (currentStats.friendship_exp || 0) + 12;
+
+    const updatedStats = {
+      ...currentStats,
+      coins: newCoins,
+      pet_happiness: newHappiness,
+      pet_energy: newEnergy,
+      friendship_exp: newFriendship
+    };
+
+    const updatedAv = {
+      ...currentAv,
+      pet_happiness: newHappiness,
+      updated_at: new Date().toISOString()
+    };
+
+    set((state) => ({
+      allStats: {
+        ...state.allStats,
+        [activeId]: updatedStats,
+        [rawId]: updatedStats
+      },
+      allAvatars: {
+        ...state.allAvatars,
+        [activeId]: updatedAv,
+        [rawId]: updatedAv
+      }
+    }));
+
+    return { success: true, happiness: newHappiness, energy: newEnergy };
+  },
+
+  petSleepInSanctuary: (studentId, bedItemId) => {
+    const rawId = studentId || get().activeStudentId;
+    const activeId = normalizeStudentId(rawId);
+    const currentStats = get().allStats[activeId] || get().allStats[rawId] || { xp: 0, level: 1, coins: 0 };
+    const currentAv = get().allAvatars[activeId] || get().allAvatars[rawId] || { student_id: activeId, avatar_name: 'Estudiante', hair_style: 'classic', hair_color: '#4B5563', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: [] };
+
+    const newEnergy = 100;
+    const newHappiness = Math.min(100, (currentAv.pet_happiness || 70) + 10);
+    const newFriendship = (currentStats.friendship_exp || 0) + 8;
+
+    const updatedStats = {
+      ...currentStats,
+      pet_energy: newEnergy,
+      pet_happiness: newHappiness,
+      friendship_exp: newFriendship
+    };
+
+    const updatedAv = {
+      ...currentAv,
+      pet_happiness: newHappiness,
+      updated_at: new Date().toISOString()
+    };
+
+    set((state) => ({
+      allStats: {
+        ...state.allStats,
+        [activeId]: updatedStats,
+        [rawId]: updatedStats
+      },
+      allAvatars: {
+        ...state.allAvatars,
+        [activeId]: updatedAv,
+        [rawId]: updatedAv
+      }
+    }));
+
+    return { success: true, energy: newEnergy };
   },
 
   levelUpAttribute: async (statName) => {

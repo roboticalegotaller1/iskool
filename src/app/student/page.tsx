@@ -44,6 +44,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { LivingCompanionEngine } from '@/components/pet/LivingCompanionEngine';
 import { HatchingCinematicModal } from '@/components/pet/HatchingCinematicModal';
+import { PetHomeSanctuaryModal } from '@/components/pet/PetHomeSanctuaryModal';
 import { ELEMENTAL_PET_RACES } from '@/components/pet/types';
 
 export default function StudentDashboard() {
@@ -204,6 +205,7 @@ export default function StudentDashboard() {
 
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
   const [isPetModalOpen, setIsPetModalOpen] = useState(false);
+  const [isSanctuaryHomeOpen, setIsSanctuaryHomeOpen] = useState(false);
   const [selectedReviewItem, setSelectedReviewItem] = useState<any>(null);
   const [peerScore, setPeerScore] = useState('9.0');
   const [peerComment, setPeerComment] = useState('');
@@ -451,7 +453,7 @@ export default function StudentDashboard() {
                   friendshipExp={stats?.friendship_exp || 120}
                   tasksCompleted={stats?.tasks_completed_count || 0}
                   onPetTouch={() => petCompanionTouch(activeStudentId)}
-                  onOpenSanctuary={() => setIsPetModalOpen(true)}
+                  onOpenSanctuary={() => setIsSanctuaryHomeOpen(true)}
                   onTriggerHatch={() => setIsHatchingModalOpen(true)}
                   onEvolveStage={() => evolvePetStage(activeStudentId)}
                 />
@@ -719,11 +721,24 @@ export default function StudentDashboard() {
                   </span>
                   <div className="absolute inset-0 bg-white/25 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                 </Link>
+
+                <button
+                  id="rpg-sanctuary-banner-button"
+                  type="button"
+                  onClick={() => setIsSanctuaryHomeOpen(true)}
+                  className="relative group overflow-hidden px-6 py-4 bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 hover:from-teal-500 hover:to-emerald-500 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl shadow-teal-950/20 transition-all duration-300 border border-teal-400/40 active:scale-95 flex flex-col items-center gap-1.5 min-w-[140px] cursor-pointer"
+                >
+                  <span className="text-2xl">🏠</span>
+                  <span className="relative z-10 flex items-center gap-2">
+                    Ver Santuario
+                  </span>
+                  <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                </button>
               </div>
             </div>
 
             {/* Mascota de Combate / Tamagotchi RPG */}
-            <PetSanctuary />
+            <PetSanctuary onOpenHome={() => setIsSanctuaryHomeOpen(true)} />
 
           </div>
         </div>
@@ -1191,6 +1206,12 @@ export default function StudentDashboard() {
           setIsHatchingModalOpen(false);
         }}
         onClose={() => setIsHatchingModalOpen(false)}
+      />
+
+      {/* Experiencia Inmersiva del Santuario y Hogar del Compañero */}
+      <PetHomeSanctuaryModal
+        isOpen={isSanctuaryHomeOpen}
+        onClose={() => setIsSanctuaryHomeOpen(false)}
       />
 
       <QuestCardModal />

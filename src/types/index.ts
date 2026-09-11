@@ -511,6 +511,11 @@ export interface StudentAvatar {
   pet_bonded?: boolean;
   pet_birth_date?: string;
 
+  // Santuario y Hogar del Compañero
+  sanctuary_house_type?: 'forest_cabin' | 'cosmic_observatory' | 'ice_temple' | 'magma_forge' | 'coral_sanctuary';
+  sanctuary_placed_items?: Record<number, string>;
+  sanctuary_inventory?: string[];
+
   // RPG Customizer fields
   gender?: 'male' | 'female';
   rpg_class?: string;
