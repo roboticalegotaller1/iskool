@@ -42,6 +42,9 @@ import {
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { LivingCompanionEngine } from '@/components/pet/LivingCompanionEngine';
+import { HatchingCinematicModal } from '@/components/pet/HatchingCinematicModal';
+import { ELEMENTAL_PET_RACES } from '@/components/pet/types';
 
 export default function StudentDashboard() {
   const { user, loading } = useAuth();
@@ -52,6 +55,9 @@ export default function StudentDashboard() {
   const playWithPet = useStudentStore(state => state.playWithPet);
   const feedPetRpg = useStudentStore(state => state.feedPetRpg);
   const trainPetRpg = useStudentStore(state => state.trainPetRpg);
+  const hatchStudentEgg = useStudentStore(state => state.hatchStudentEgg);
+  const petCompanionTouch = useStudentStore(state => state.petCompanionTouch);
+  const evolvePetStage = useStudentStore(state => state.evolvePetStage);
   const levelUpAttribute = useStudentStore(state => state.levelUpAttribute);
   const changeAvatar = useStudentStore(state => state.changeAvatar);
   const studentInventoryMap = useStudentStore(state => state.studentInventoryMap);
@@ -68,6 +74,7 @@ export default function StudentDashboard() {
   const edictosList = useClassroomStore(state => state.edictosList);
   const recordSocioemotionalCheckin = useClassroomStore(state => state.recordSocioemotionalCheckin);
   const [studentMoodFeedback, setStudentMoodFeedback] = useState<string | null>(null);
+  const [isHatchingModalOpen, setIsHatchingModalOpen] = useState(false);
 
   React.useEffect(() => {
     if (!loading && !user) {
@@ -91,9 +98,11 @@ export default function StudentDashboard() {
     attribute_defense: 10,
     skill_points: 0,
     funding_credits: 1000,
-    pet_stage: 'egg' as 'egg' | 'baby' | 'adult' | 'mystic',
+    pet_stage: 'egg' as any,
     pet_energy: 100,
     pet_happiness: 50,
+    friendship_exp: 100,
+    tasks_completed_count: 0,
     updated_at: new Date().toISOString()
   };
 
@@ -432,51 +441,20 @@ export default function StudentDashboard() {
                 </button>
               </div>
 
-              {/* Bloque de la Mascota */}
-              <div className="flex flex-col items-center gap-3 bg-white/10 p-5 rounded-2xl border border-white/20 backdrop-blur-sm shadow-inner w-48">
-                <span className="text-[10px] font-extrabold bg-yellow-400 text-teal-950 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                  Mascota: {avatar?.pet_name ?? 'Mascota'}
-                </span>
-                
-                {/* Pet SVG */}
-                <div className="h-24 w-24 flex items-center justify-center relative bg-emerald-950/20 rounded-full border border-white/10 p-1.5">
-                  <svg viewBox="0 0 100 100" className="w-full h-full filter drop-shadow-md">
-                    {renderPetSVG(avatar?.pet_type || 'dragon')}
-                    {renderPetAccessories(avatar?.pet_type || 'dragon', petOutfit)}
-                  </svg>
-                </div>
-
-                {/* Ropa selector */}
-                <div className="flex gap-1 justify-center w-full">
-                  <button
-                    onClick={() => changeAvatar({ pet_outfit: 'hat' })}
-                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${petOutfit === 'hat' ? 'bg-white text-emerald-700' : 'bg-white/25 text-white'} cursor-pointer`}
-                    title="Gorro"
-                  >
-                    🎩
-                  </button>
-                  <button
-                    onClick={() => changeAvatar({ pet_outfit: 'glasses' })}
-                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${petOutfit === 'glasses' ? 'bg-white text-emerald-700' : 'bg-white/25 text-white'} cursor-pointer`}
-                    title="Lentes"
-                  >
-                    👓
-                  </button>
-                  <button
-                    onClick={() => changeAvatar({ pet_outfit: 'cape' })}
-                    className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${petOutfit === 'cape' ? 'bg-white text-emerald-700' : 'bg-white/25 text-white'} cursor-pointer`}
-                    title="Capa"
-                  >
-                    🧥
-                  </button>
-                  <button
-                    onClick={() => changeAvatar({ pet_outfit: 'none' })}
-                    className="px-1 py-0.5 rounded text-[10px] bg-red-500/20 text-white font-bold cursor-pointer"
-                    title="Quitar todo"
-                  >
-                    ✕
-                  </button>
-                </div>
+              {/* Bloque del Compañero Místico Vivo con 32 conductas y caricias */}
+              <div className="w-56 flex flex-col items-center">
+                <LivingCompanionEngine
+                  raceId={avatar?.pet_type || 'cryo_dragon'}
+                  stage={stats?.pet_stage || 'egg'}
+                  petName={avatar?.pet_name || 'Compañero'}
+                  happiness={avatar?.pet_happiness ?? stats?.pet_happiness ?? 85}
+                  friendshipExp={stats?.friendship_exp || 120}
+                  tasksCompleted={stats?.tasks_completed_count || 0}
+                  onPetTouch={() => petCompanionTouch(activeStudentId)}
+                  onOpenSanctuary={() => setIsPetModalOpen(true)}
+                  onTriggerHatch={() => setIsHatchingModalOpen(true)}
+                  onEvolveStage={() => evolvePetStage(activeStudentId)}
+                />
               </div>
             </div>
 
@@ -1072,31 +1050,39 @@ export default function StudentDashboard() {
               </div>
             </div>
 
-            {/* Opciones de Mascota */}
+            {/* Opciones de Mascota: 10 Razas Elementales */}
             <div className="mb-6">
-              <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase block mb-2">Especie de Mascota</label>
-              <div className="grid grid-cols-5 gap-2">
-                {[
-                  { type: 'dragon', label: 'Dragón', emoji: '🐉' },
-                  { type: 'lobo', label: 'Lobo', emoji: '🐺' },
-                  { type: 'venado', label: 'Venado', emoji: '🦌' },
-                  { type: 'gusano', label: 'Gusano', emoji: '🐛' },
-                  { type: 'gatito', label: 'Gato', emoji: '🐱' }
-                ].map(option => (
-                  <button
-                    key={option.type}
-                    type="button"
-                    onClick={() => changeAvatar({ pet_type: option.type as any })}
-                    className={`flex flex-col items-center justify-center p-2 rounded-2xl border transition-all ${
-                      (avatar?.pet_type || 'dragon') === option.type
-                        ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/35 text-emerald-700 dark:text-emerald-400 font-bold'
-                        : 'border-zinc-200 dark:border-zinc-800 hover:border-emerald-300'
-                    }`}
-                  >
-                    <span className="text-2xl">{option.emoji}</span>
-                    <span className="text-[9px] mt-1 text-center truncate w-full">{option.label}</span>
-                  </button>
-                ))}
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase block">10 Razas Elementales de Compañero</label>
+                <button
+                  type="button"
+                  onClick={() => setIsHatchingModalOpen(true)}
+                  className="text-[10px] text-amber-500 hover:text-amber-600 font-bold flex items-center gap-1 cursor-pointer hover:underline"
+                >
+                  <Sparkles className="h-3 w-3 text-amber-500" />
+                  <span>Cinemática de Eclosión</span>
+                </button>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                {ELEMENTAL_PET_RACES.map(option => {
+                  const isSelected = (avatar?.pet_type || 'cryo_dragon') === option.id || (avatar?.pet_type === 'dragon' && option.id === 'cryo_dragon');
+                  return (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => changeAvatar({ pet_type: option.id })}
+                      className={`flex flex-col items-center justify-center p-2 rounded-2xl border transition-all text-left ${
+                        isSelected
+                          ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/35 text-amber-800 dark:text-amber-300 font-bold shadow-xs'
+                          : 'border-zinc-200 dark:border-zinc-800 hover:border-amber-300'
+                      }`}
+                    >
+                      <span className="text-2xl">{option.badgeEmoji}</span>
+                      <span className="text-[10px] font-black mt-1 text-center truncate w-full">{option.name}</span>
+                      <span className="text-[8px] opacity-75 truncate w-full text-center">{option.element}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -1194,6 +1180,18 @@ export default function StudentDashboard() {
           </div>
         </div>
       )}
+
+      {/* Cinemática de Eclosión del Huevo Místico al Cumplir la Primera Tarea */}
+      <HatchingCinematicModal
+        isOpen={isHatchingModalOpen}
+        assignedRace={avatar?.pet_type || 'cryo_dragon'}
+        studentName={avatar?.avatar_name || user?.first_name || 'Estudiante'}
+        onConfirmBond={async (race, petName) => {
+          await hatchStudentEgg(activeStudentId, race, petName);
+          setIsHatchingModalOpen(false);
+        }}
+        onClose={() => setIsHatchingModalOpen(false)}
+      />
 
       <QuestCardModal />
     </div>

@@ -441,10 +441,13 @@ export interface StudentStats {
   // Preparatoria (Proyectos Productivos)
   funding_credits?: number;
 
-  // Tamagotchi RPG Mascotas
-  pet_stage?: 'egg' | 'baby' | 'adult' | 'mystic';
+  // Tamagotchi RPG Mascotas y Compañeros Místicos
+  pet_stage?: PetEvolutionStage;
   pet_energy?: number;
   pet_happiness?: number;
+  pet_bonded?: boolean;
+  tasks_completed_count?: number;
+  friendship_exp?: number;
 
   // Afinidades Elementales / Stats NEM (Nueva Escuela Mexicana)
   stat_lenguajes?: number;
@@ -452,6 +455,33 @@ export interface StudentStats {
   stat_etica?: number;
   stat_de_lo_humano?: number;
 }
+
+/**
+ * @typedef {('cryo_dragon' | 'pyros_dragon' | 'aqua_dragon' | 'voltfang_wolf' | 'flora_stag' | 'astro_caterpillar' | 'umbra_cat' | 'solari_phoenix' | 'terra_golem' | 'axo_axolotl' | 'dragon' | 'lobo' | 'venado' | 'gusano' | 'gatito')} ElementalPetRace
+ * @description 10 Razas elementales místicas de compañeros escolares + compatibilidad retroactiva.
+ */
+export type ElementalPetRace =
+  | 'cryo_dragon'       // Dragón Glacial (Hielo)
+  | 'pyros_dragon'      // Dragón Solar (Fuego)
+  | 'aqua_dragon'       // Dragón de Mareas (Agua)
+  | 'voltfang_wolf'     // Lobo Tormenta (Rayo)
+  | 'flora_stag'        // Venado Silvestre (Planta)
+  | 'astro_caterpillar' // Gusano Alquímico (Cosmos)
+  | 'umbra_cat'         // Felino Sombrío (Luna)
+  | 'solari_phoenix'    // Fénix Dorado (Luz)
+  | 'terra_golem'       // Gólem de Cristal (Tierra)
+  | 'axo_axolotl'       // Axolote Éter (Bioluminiscencia)
+  | 'dragon'            // Alias heredado (Cryo)
+  | 'lobo'              // Alias heredado (Voltfang)
+  | 'venado'            // Alias heredado (Flora)
+  | 'gusano'            // Alias heredado (Astro)
+  | 'gatito';           // Alias heredado (Umbra)
+
+/**
+ * @typedef {('egg' | 'baby' | 'child' | 'teen' | 'adult' | 'mystic')} PetEvolutionStage
+ * @description 5 Etapas evolutivas del compañero (Huevo, Bebé, Niño, Adolescente, Adulto).
+ */
+export type PetEvolutionStage = 'egg' | 'baby' | 'child' | 'teen' | 'adult' | 'mystic';
 
 /**
  * @interface StudentAvatar
@@ -472,12 +502,14 @@ export interface StudentAvatar {
   unlocked_items: string[];
   updated_at: string;
 
-  // Mascota Virtual (Solo nivel Primaria Baja)
-  pet_type?: 'dragon' | 'lobo' | 'venado' | 'gusano' | 'gatito';
+  // Mascota Virtual y Compañero Místico
+  pet_type?: ElementalPetRace;
   pet_name?: string;
   pet_hunger?: number;
   pet_happiness?: number;
   pet_outfit?: string;
+  pet_bonded?: boolean;
+  pet_birth_date?: string;
 
   // RPG Customizer fields
   gender?: 'male' | 'female';

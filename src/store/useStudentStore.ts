@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useMemo } from 'react';
-import { StudentStats, StudentAvatar, StudentMessage, UserProfile, Quest } from '../types';
+import { StudentStats, StudentAvatar, StudentMessage, UserProfile, Quest, ElementalPetRace, PetEvolutionStage } from '../types';
 import { STATS_MAP_SEED, AVATAR_MAP_SEED, STUDENT_INVENTORY_SEED, STUDENT_MESSAGES_SEED, STUDENTS_LIST_SEED } from './seeds';
 import { supabase } from '@/lib/supabaseClient';
 import { calculateAcademicPower, AcademicPowerResult } from '@/utils/academicPower';
@@ -31,6 +31,10 @@ interface StudentStoreState {
   playWithPet: (studentId?: string) => Promise<void>;
   feedPetRpg: () => Promise<void>;
   trainPetRpg: () => Promise<void>;
+  hatchStudentEgg: (studentId?: string, forcedRace?: ElementalPetRace, petName?: string) => Promise<ElementalPetRace>;
+  petCompanionTouch: (studentId?: string) => { newHappiness: number; friendshipExp: number };
+  evolvePetStage: (studentId?: string, targetStage?: PetEvolutionStage) => Promise<void>;
+  registerHomeworkCompletedForPet: (studentId?: string) => Promise<{ triggeredHatch: boolean; triggeredEvolution: boolean; newStage?: PetEvolutionStage; race?: ElementalPetRace }>;
   levelUpAttribute: (statName: 'strength' | 'intelligence' | 'defense') => Promise<void>;
   purchaseArtifact: (studentId: string, artifactId: string) => Promise<void>;
   grantArtifact: (studentId: string, artifactId: string) => Promise<void>;
@@ -425,6 +429,183 @@ export const useStudentStore = create<StudentStoreState>()(
     } catch (err) {
       console.error('Unexpected error updating pet training:', err);
     }
+  },
+
+  hatchStudentEgg: async (studentId?: string, forcedRace?: ElementalPetRace, petName?: string) => {
+    const rawId = studentId || get().activeStudentId;
+    const activeId = normalizeStudentId(rawId);
+    const dbStudentId = mapStudentIdToUuid(activeId);
+
+    const availableRaces: ElementalPetRace[] = [
+      'cryo_dragon', 'pyros_dragon', 'aqua_dragon', 'voltfang_wolf', 'flora_stag',
+      'astro_caterpillar', 'umbra_cat', 'solari_phoenix', 'terra_golem', 'axo_axolotl'
+    ];
+    const race = forcedRace || availableRaces[Math.floor(Math.random() * availableRaces.length)];
+    const finalName = petName || (race.split('_')[0].charAt(0).toUpperCase() + race.split('_')[0].slice(1));
+
+    const currentAv = get().allAvatars[activeId] || get().allAvatars[rawId] || { student_id: activeId, avatar_name: 'Estudiante', hair_style: 'classic', hair_color: '#4B5563', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: [] };
+    const currentStats = get().allStats[activeId] || get().allStats[rawId] || { xp: 0, level: 1, coins: 0 };
+
+    const updatedAv: StudentAvatar = {
+      ...currentAv,
+      pet_type: race,
+      pet_name: finalName,
+      pet_bonded: true,
+      pet_hunger: 80,
+      pet_happiness: 100,
+      pet_birth_date: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    const updatedStats: StudentStats = {
+      ...currentStats,
+      pet_stage: 'baby',
+      pet_energy: 100,
+      pet_happiness: 100,
+      pet_bonded: true,
+      friendship_exp: (currentStats.friendship_exp || 0) + 50
+    };
+
+    try {
+      if (isUuid(dbStudentId)) {
+        await supabase.from('student_avatars').update({
+          pet_type: race,
+          pet_name: finalName,
+          pet_hunger: 80,
+          pet_happiness: 100
+        }).eq('student_id', dbStudentId);
+      }
+    } catch (e) {
+      console.warn('Error al persistir eclosión en Supabase:', e);
+    }
+
+    set((state) => ({
+      allAvatars: {
+        ...state.allAvatars,
+        [activeId]: updatedAv,
+        [rawId]: updatedAv
+      },
+      allStats: {
+        ...state.allStats,
+        [activeId]: updatedStats,
+        [rawId]: updatedStats
+      }
+    }));
+
+    return race;
+  },
+
+  petCompanionTouch: (studentId?: string) => {
+    const rawId = studentId || get().activeStudentId;
+    const activeId = normalizeStudentId(rawId);
+    const currentAv = get().allAvatars[activeId] || get().allAvatars[rawId] || {};
+    const currentStats = get().allStats[activeId] || get().allStats[rawId] || { xp: 0, level: 1, coins: 0 };
+
+    const newHappiness = Math.min(100, (currentAv.pet_happiness || 70) + 4);
+    const newFriendshipExp = (currentStats.friendship_exp || 0) + 5;
+
+    const updatedAv = {
+      ...currentAv,
+      pet_happiness: newHappiness,
+      updated_at: new Date().toISOString()
+    };
+
+    const updatedStats = {
+      ...currentStats,
+      pet_happiness: newHappiness,
+      friendship_exp: newFriendshipExp
+    };
+
+    set((state) => ({
+      allAvatars: {
+        ...state.allAvatars,
+        [activeId]: updatedAv,
+        [rawId]: updatedAv
+      },
+      allStats: {
+        ...state.allStats,
+        [activeId]: updatedStats,
+        [rawId]: updatedStats
+      }
+    }));
+
+    return { newHappiness, friendshipExp: newFriendshipExp };
+  },
+
+  evolvePetStage: async (studentId?: string, targetStage?: PetEvolutionStage) => {
+    const rawId = studentId || get().activeStudentId;
+    const activeId = normalizeStudentId(rawId);
+    const currentStats = get().allStats[activeId] || get().allStats[rawId];
+    if (!currentStats) return;
+
+    const stagesSequence: PetEvolutionStage[] = ['egg', 'baby', 'child', 'teen', 'adult'];
+    const currentStageIndex = stagesSequence.indexOf((currentStats.pet_stage as PetEvolutionStage) || 'egg');
+    const nextStage = targetStage || (currentStageIndex < stagesSequence.length - 1 ? stagesSequence[currentStageIndex + 1] : 'adult');
+
+    const updatedStats = {
+      ...currentStats,
+      pet_stage: nextStage,
+      pet_happiness: 100,
+      pet_energy: 100,
+      xp: (currentStats.xp || 0) + 150
+    };
+
+    set((state) => ({
+      allStats: {
+        ...state.allStats,
+        [activeId]: updatedStats,
+        [rawId]: updatedStats
+      }
+    }));
+  },
+
+  registerHomeworkCompletedForPet: async (studentId?: string) => {
+    const rawId = studentId || get().activeStudentId;
+    const activeId = normalizeStudentId(rawId);
+    const currentStats = get().allStats[activeId] || get().allStats[rawId];
+    if (!currentStats) return { triggeredHatch: false, triggeredEvolution: false };
+
+    const newTasksCount = (currentStats.tasks_completed_count || 0) + 1;
+    let triggeredHatch = false;
+    let triggeredEvolution = false;
+    let newStage = currentStats.pet_stage || 'egg';
+
+    // 1. Si está en huevo y completa su 1ª tarea -> Eclosión
+    if (newStage === 'egg' && newTasksCount >= 1) {
+      triggeredHatch = true;
+      newStage = 'baby';
+    } else if (newStage === 'baby' && newTasksCount >= 3) {
+      triggeredEvolution = true;
+      newStage = 'child';
+    } else if (newStage === 'child' && newTasksCount >= 10) {
+      triggeredEvolution = true;
+      newStage = 'teen';
+    } else if (newStage === 'teen' && newTasksCount >= 25) {
+      triggeredEvolution = true;
+      newStage = 'adult';
+    }
+
+    const updatedStats = {
+      ...currentStats,
+      tasks_completed_count: newTasksCount,
+      pet_stage: newStage,
+      pet_happiness: Math.min(100, (currentStats.pet_happiness || 70) + 15),
+      friendship_exp: (currentStats.friendship_exp || 0) + 25
+    };
+
+    set((state) => ({
+      allStats: {
+        ...state.allStats,
+        [activeId]: updatedStats,
+        [rawId]: updatedStats
+      }
+    }));
+
+    return {
+      triggeredHatch,
+      triggeredEvolution,
+      newStage: triggeredHatch || triggeredEvolution ? newStage : undefined
+    };
   },
 
   levelUpAttribute: async (statName) => {
