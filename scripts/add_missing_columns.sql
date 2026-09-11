@@ -1,0 +1,1 @@
+ALTER TABLE public.community_activities ADD COLUMN IF NOT EXISTS "teacher_name" text;
