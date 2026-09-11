@@ -14,7 +14,7 @@ import {
 import { SanctuaryFurnitureSvg } from './SanctuaryFurnitureSvg';
 import { PetSvgRenderer } from './PetSvgRenderer';
 import { ElementalPetRace, PetEvolutionStage } from '@/types';
-import { AnimeAvatarSprite } from '../AnimeAvatarSprite';
+import { ModularAnimeAvatarSprite } from '../avatar/ModularAnimeAvatarSprite';
 
 interface SanctuaryRoomViewProps {
   houseTheme: HouseThemeId;
@@ -25,12 +25,21 @@ interface SanctuaryRoomViewProps {
   petStage: PetEvolutionStage;
   petName: string;
   avatarData?: {
-    gender?: 'male' | 'female';
+    gender?: 'male' | 'female' | 'neutral';
     rpg_class?: string;
     head_type?: string;
     skin_tone?: string;
     hair_color?: string;
     hair_style?: string;
+    eyes_style?: string;
+    race_feature?: string;
+    body_scale?: 'compact' | 'normal' | 'tall';
+    equipped_shoes?: string;
+    equipped_bottom?: string;
+    equipped_top?: string;
+    equipped_outerwear?: string;
+    equipped_hat?: string;
+    equipped_accessory?: string;
   };
   onSlotClick: (slotId: number) => void;
   onRemoveItem: (slotId: number) => void;
@@ -60,6 +69,7 @@ export const SanctuaryRoomView: React.FC<SanctuaryRoomViewProps> = ({
 
   // Estado del compañero en la habitación (posición interactiva, acción actual)
   const [petActionState, setPetActionState] = useState<'idle' | 'sleeping' | 'eating' | 'playing' | 'petted'>('idle');
+  const [avatarActionState, setAvatarActionState] = useState<'idle' | 'cast' | 'cheer'>('idle');
   const [petPosition, setPetPosition] = useState<{ xPercent: number; yPercent: number }>({ xPercent: 50, yPercent: 68 });
   const [activeSpeechBubble, setActiveSpeechBubble] = useState<string | null>(null);
   const [heartsList, setHeartsList] = useState<{ id: number; x: number; y: number }[]>([]);
@@ -78,23 +88,29 @@ export const SanctuaryRoomView: React.FC<SanctuaryRoomViewProps> = ({
 
     if (item.category === 'bed') {
       setPetActionState('sleeping');
+      setAvatarActionState('cheer');
       setActiveSpeechBubble('¡Zzz... Esta cama está súper acogedora! (+⚡ Energía)');
       onSleepPet();
     } else if (item.category === 'food') {
       setPetActionState('eating');
+      setAvatarActionState('cheer');
       setActiveSpeechBubble('¡Ñam ñam! ¡Qué comida tan deliciosa! (+🍖 Hambre)');
       onFeedPet();
     } else if (item.category === 'toy') {
       setPetActionState('playing');
-      setActiveSpeechBubble('¡A jugar! ¡Esto es súper divertido! (+🎾 Felicidad)');
+      setAvatarActionState('cast');
+      setActiveSpeechBubble('¡A jugar! ¡Invocando destellos mágicos con la varita! (+🎾 Felicidad)');
       onPlayPet();
     } else if (item.category === 'lighting') {
-      setActiveSpeechBubble(`¡Encendiste el/la "${item.name}"! Qué bonita iluminación.`);
+      setAvatarActionState('cast');
+      setActiveSpeechBubble(`¡Encendiste el/la "${item.name}" con chispas de luz mágica!`);
     } else {
+      setAvatarActionState('cheer');
       setActiveSpeechBubble(`¡Admirando "${item.name}" en su lugar especial!`);
     }
 
     setTimeout(() => {
+      setAvatarActionState('idle');
       if (item.category !== 'bed') {
         setPetActionState('idle');
       }
@@ -252,31 +268,50 @@ export const SanctuaryRoomView: React.FC<SanctuaryRoomViewProps> = ({
       </div>
 
       {/* ========================================================= */}
-      {/* 3. AVATAR DEL ESTUDIANTE EN SU RINCÓN DE ESTUDIO         */}
+      {/* 3. AVATAR MODULAR DEL ESTUDIANTE (CON PODERES MÁGICOS)   */}
       {/* ========================================================= */}
       <div 
-        className="absolute left-[6%] bottom-[20%] z-20 flex flex-col items-center group cursor-pointer"
+        className="absolute left-[4%] bottom-[15%] z-20 flex flex-col items-center group cursor-pointer select-none"
         onClick={() => {
-          setActiveSpeechBubble(`¡Hola, ${petName}! Estamos decorando nuestra casa juntos.`);
-          setTimeout(() => setActiveSpeechBubble(null), 3000);
+          setAvatarActionState('cast');
+          setPetActionState('petted');
+          setActiveSpeechBubble(`✨ ¡Poder Arcano Activado! Canalizando energía mágica con ${petName} en nuestro hogar.`);
+          setTimeout(() => {
+            setAvatarActionState('idle');
+            setPetActionState('idle');
+          }, 3500);
+          setTimeout(() => setActiveSpeechBubble(null), 3200);
         }}
+        title="¡Haz clic en tu personaje para lanzar hechizos con tu varita y grimorio!"
       >
-        <div className="relative w-16 h-20 filter drop-shadow-xl group-hover:scale-105 transition-transform">
-          <AnimeAvatarSprite 
-            gender={avatarData?.gender || 'female'}
-            rpgClass={avatarData?.rpg_class || 'mago'}
-            headType={avatarData?.head_type || 'standard'}
-            skinTone={avatarData?.skin_tone || 'light'}
-            hairColor={avatarData?.hair_color || 'pink'}
-            hairStyle={avatarData?.hair_style || 'spiky'}
-            className="w-full h-full"
+        <div className="relative w-28 h-36 filter drop-shadow-2xl group-hover:scale-105 transition-transform flex items-center justify-center">
+          <ModularAnimeAvatarSprite 
+            gender={avatarData?.gender || 'neutral'}
+            skinTone={avatarData?.skin_tone || '#FCD34D'}
+            hairStyle={avatarData?.hair_style || 'spiky_hero'}
+            hairColor={avatarData?.hair_color || '#4B5563'}
+            eyesStyle={avatarData?.eyes_style || 'determined'}
+            raceFeature={avatarData?.race_feature || 'human'}
+            bodyScale={avatarData?.body_scale || 'normal'}
+            equippedShoes={avatarData?.equipped_shoes || 'shoes_basic'}
+            equippedBottom={avatarData?.equipped_bottom || 'bottom_basic'}
+            equippedTop={avatarData?.equipped_top || 'top_basic'}
+            equippedOuterwear={avatarData?.equipped_outerwear || 'outerwear_none'}
+            equippedHat={avatarData?.equipped_hat || 'hat_none'}
+            equippedAccessory={avatarData?.equipped_accessory || 'acc_wand_book'}
+            animationState={avatarActionState}
+            width={112}
+            height={144}
           />
         </div>
         {/* Sombra del avatar en el suelo */}
-        <div className="w-12 h-2.5 bg-black/40 rounded-full blur-[1px] mt-0.5" />
-        <span className="text-[9px] font-black uppercase text-amber-200 tracking-wider bg-black/60 px-2 py-0.5 rounded-full border border-amber-500/30 mt-1 shadow-sm">
-          Tú
-        </span>
+        <div className="w-16 h-2.5 bg-black/50 rounded-full blur-[1.5px] -mt-1" />
+        <div className="flex items-center gap-1 bg-black/80 backdrop-blur-xs px-2 py-0.5 rounded-full border border-pink-500/40 mt-1 shadow-md group-hover:border-pink-400 transition-colors">
+          <span className="text-[8.5px] font-black uppercase text-pink-300 tracking-wider">
+            Tú (Héroe/Mago)
+          </span>
+          <span className="text-[9px] text-amber-300">⚡</span>
+        </div>
       </div>
 
       {/* ========================================================= */}

@@ -521,6 +521,18 @@ export interface StudentAvatar {
   rpg_class?: string;
   head_type?: string;
   skin_tone?: string;
+  race_feature?: string;
+  body_scale?: 'compact' | 'normal' | 'tall';
+  animation_state?: 'idle' | 'cast' | 'cheer' | 'walk';
+
+  // Vestimenta Modular
+  equipped_shoes?: string;
+  equipped_bottom?: string;
+  equipped_top?: string;
+  equipped_outerwear?: string;
+  equipped_hat?: string;
+  equipped_accessory?: string;
+  wardrobe_inventory?: string[];
 }
 
 /**

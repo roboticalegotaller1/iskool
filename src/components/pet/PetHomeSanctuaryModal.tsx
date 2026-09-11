@@ -317,7 +317,16 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
               head_type: avatar.head_type || avatar.eyes_style,
               skin_tone: avatar.skin_tone,
               hair_color: avatar.hair_color,
-              hair_style: avatar.hair_style
+              hair_style: avatar.hair_style,
+              eyes_style: avatar.eyes_style,
+              race_feature: avatar.race_feature,
+              body_scale: avatar.body_scale,
+              equipped_shoes: avatar.equipped_shoes,
+              equipped_bottom: avatar.equipped_bottom,
+              equipped_top: avatar.equipped_top,
+              equipped_outerwear: avatar.equipped_outerwear,
+              equipped_hat: avatar.equipped_hat,
+              equipped_accessory: avatar.equipped_accessory
             }}
             onSlotClick={handleSlotClick}
             onRemoveItem={handleRemoveItem}

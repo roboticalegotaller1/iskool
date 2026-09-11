@@ -42,6 +42,9 @@ interface StudentStoreState {
   feedPetInSanctuary: (studentId?: string, foodItemId?: string) => { success: boolean; hunger: number; happiness: number };
   petPlayInSanctuary: (studentId?: string, toyItemId?: string) => { success: boolean; happiness: number; energy: number };
   petSleepInSanctuary: (studentId?: string, bedItemId?: string) => { success: boolean; energy: number };
+  purchaseClothingItem: (studentId: string, itemId: string, price: number) => { success: boolean; reason?: string };
+  equipClothingItem: (studentId: string, category: 'shoes' | 'bottom' | 'top' | 'outerwear' | 'hat' | 'accessory', itemId: string) => void;
+  updatePhysicalTraits: (studentId: string, traits: Partial<StudentAvatar>) => void;
   levelUpAttribute: (statName: 'strength' | 'intelligence' | 'defense') => Promise<void>;
   purchaseArtifact: (studentId: string, artifactId: string) => Promise<void>;
   grantArtifact: (studentId: string, artifactId: string) => Promise<void>;
@@ -850,6 +853,111 @@ export const useStudentStore = create<StudentStoreState>()(
     }));
 
     return { success: true, energy: newEnergy };
+  },
+
+  purchaseClothingItem: (studentId, itemId, price) => {
+    const rawId = studentId || get().activeStudentId;
+    const activeId = normalizeStudentId(rawId);
+    const currentStats = get().allStats[activeId] || get().allStats[rawId] || { coins: 0 };
+    const currentAv = get().allAvatars[activeId] || get().allAvatars[rawId] || { 
+      student_id: activeId, 
+      avatar_name: 'Estudiante', 
+      wardrobe_inventory: ['shoes_basic', 'bottom_basic', 'top_basic'] 
+    };
+
+    const coins = currentStats?.coins ?? 0;
+    if (coins < price) {
+      return { success: false, reason: 'No tienes suficientes monedas ISkool.' };
+    }
+
+    const currentInventory = currentAv.wardrobe_inventory || ['shoes_basic', 'bottom_basic', 'top_basic'];
+    if (currentInventory.includes(itemId)) {
+      return { success: false, reason: 'Ya posees esta prenda o accesorio en tu vestidor.' };
+    }
+
+    const updatedStats = {
+      ...currentStats,
+      coins: Math.max(0, coins - price)
+    };
+
+    const updatedAv = {
+      ...currentAv,
+      wardrobe_inventory: [...currentInventory, itemId],
+      updated_at: new Date().toISOString()
+    };
+
+    set((state) => ({
+      allStats: {
+        ...state.allStats,
+        [activeId]: updatedStats,
+        [rawId]: updatedStats
+      },
+      allAvatars: {
+        ...state.allAvatars,
+        [activeId]: updatedAv,
+        [rawId]: updatedAv
+      }
+    }));
+
+    return { success: true };
+  },
+
+  equipClothingItem: (studentId, category, itemId) => {
+    const rawId = studentId || get().activeStudentId;
+    const activeId = normalizeStudentId(rawId);
+    const currentAv = get().allAvatars[activeId] || get().allAvatars[rawId] || { 
+      student_id: activeId, 
+      avatar_name: 'Estudiante', 
+      wardrobe_inventory: ['shoes_basic', 'bottom_basic', 'top_basic'] 
+    };
+
+    const fieldMap: Record<string, string> = {
+      shoes: 'equipped_shoes',
+      bottom: 'equipped_bottom',
+      top: 'equipped_top',
+      outerwear: 'equipped_outerwear',
+      hat: 'equipped_hat',
+      accessory: 'equipped_accessory'
+    };
+
+    const targetKey = fieldMap[category] || `equipped_${category}`;
+
+    const updatedAv = {
+      ...currentAv,
+      [targetKey]: itemId,
+      updated_at: new Date().toISOString()
+    };
+
+    set((state) => ({
+      allAvatars: {
+        ...state.allAvatars,
+        [activeId]: updatedAv,
+        [rawId]: updatedAv
+      }
+    }));
+  },
+
+  updatePhysicalTraits: (studentId, traits) => {
+    const rawId = studentId || get().activeStudentId;
+    const activeId = normalizeStudentId(rawId);
+    const currentAv = get().allAvatars[activeId] || get().allAvatars[rawId] || { 
+      student_id: activeId, 
+      avatar_name: 'Estudiante' 
+    };
+
+    const updatedAv = {
+      ...currentAv,
+      ...traits,
+      updated_at: new Date().toISOString()
+    };
+
+    set((state) => ({
+      allAvatars: {
+        ...state.allAvatars,
+        [activeId]: updatedAv,
+        [rawId]: updatedAv
+      }
+    }));
   },
 
   levelUpAttribute: async (statName) => {

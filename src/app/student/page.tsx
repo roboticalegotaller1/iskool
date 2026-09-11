@@ -110,13 +110,21 @@ export default function StudentDashboard() {
   const defaultAvatar = {
     student_id: activeStudentId || '',
     avatar_name: 'Estudiante',
-    hair_style: 'classic',
+    hair_style: 'spiky_hero',
     hair_color: '#4B5563',
-    eyes_style: 'happy',
+    eyes_style: 'determined',
     outfit_style: 'explorer',
     outfit_color: '#3B82F6',
     background_style: 'forest',
     unlocked_items: ['classic', 'happy', 'explorer', 'forest'],
+    race_feature: 'human',
+    body_scale: 'normal' as const,
+    equipped_shoes: 'shoes_basic',
+    equipped_bottom: 'bottom_basic',
+    equipped_top: 'top_basic',
+    equipped_outerwear: 'outerwear_none',
+    equipped_hat: 'hat_none',
+    equipped_accessory: 'acc_none',
     pet_type: 'dragon' as const,
     pet_name: 'Mascota',
     pet_hunger: 50,
@@ -260,6 +268,13 @@ export default function StudentDashboard() {
             skinTone={(avatar as any)?.skin_tone ?? 'light'}
             hairColor={avatar?.hair_color ?? 'pink'}
             hairStyle={avatar?.hair_style ?? 'spiky'}
+            raceFeature={avatar?.race_feature}
+            equippedShoes={avatar?.equipped_shoes}
+            equippedBottom={avatar?.equipped_bottom}
+            equippedTop={avatar?.equipped_top}
+            equippedOuterwear={avatar?.equipped_outerwear}
+            equippedHat={avatar?.equipped_hat}
+            equippedAccessory={avatar?.equipped_accessory}
             equippedArtifacts={ownedArtifactIds}
             className="w-full h-full"
           />
