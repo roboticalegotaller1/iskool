@@ -159,7 +159,7 @@ const createDefaultBlock = (type: StudioBlockType, index: number = 0): StudioBlo
         isCollapsed: false,
         position,
         data: {
-          readingText: 'El sistema solar está compuesto por una estrella central, el Sol, y todos los cuerpos celestes que orbitan a su alrededor debido a la fuerza de gravedad. Entre ellos se encuentran ocho planetas principales, planetas enanos como Plutón, lunas, asteroides y cometas.',
+          readingText: 'El sistema solar está compuesto por una estrella central, el Sol, y todos los cuerpos celestes que orbitan a su alrededor debido a la fuerza de gravedad. Entre ellos se encuentran ocho planetas principales, planetas enanos como Plutón, lunas, asteroides y meteoritos.',
           timeLimitSeconds: 60,
           wordCount: 42,
           targetWpm: 120,

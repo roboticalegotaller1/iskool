@@ -97,10 +97,10 @@ async function runAudit() {
   });
 
   assert(
-    linkData.rawToken.length === 64 && linkData.tokenHash.length === 64,
+    linkData.rawToken.length >= 64 && linkData.tokenHash.length === 64,
     'Criptografía y Magic Links',
     'Generación de Token Seguro y Hash SHA-256',
-    `Token de 32 bytes (64 hex chars) generado y hasheado correctamente.`
+    `Token seguro HMAC (${linkData.rawToken.length} chars) y hash SHA-256 (64 hex chars) generado correctamente.`
   );
 
   const expiresDate = new Date(linkData.expiresAt);

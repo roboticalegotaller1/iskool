@@ -161,7 +161,7 @@ export function isEnglishSubject(subjectIdOrName: string = '', topic: string = '
   const cleanTopic = (topic || '').toLowerCase();
   return (
     cleanSub.includes('ingl') ||
-    cleanSub.includes('eng') ||
+    cleanSub.includes('english') ||
     cleanSub.includes('foreign') ||
     cleanSub.includes('extranjera') ||
     cleanSub.endsWith('-ing') ||
