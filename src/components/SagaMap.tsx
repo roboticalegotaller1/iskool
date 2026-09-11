@@ -2,16 +2,19 @@
 
 import React, { useState } from 'react';
 import { useGamificationStore } from '@/store/useGamificationStore';
-import { useStudentStore, useCurrentStudentStats, normalizeStudentId, mapStudentIdToUuid } from '@/store/useStudentStore';
+import { useStudentStore, useCurrentStudentStats, useCurrentStudentAvatar, normalizeStudentId, mapStudentIdToUuid } from '@/store/useStudentStore';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { Loader } from '@/components/Loader';
 import { useHydration } from '@/hooks/useHydration';
 import { Mission, Quest } from '@/types';
 import { 
   Lock, Check, Star, Play, Swords, Trophy, Sparkles, BookOpen, 
-  ArrowRight, Shield, Award, X, AlertTriangle, Compass, Heart, Zap
+  ArrowRight, Shield, Award, X, AlertTriangle, Compass, Heart, Zap, Footprints
 } from 'lucide-react';
 import Link from 'next/link';
+import { ModularAnimeAvatarSprite } from './avatar/ModularAnimeAvatarSprite';
+import { PetSvgRenderer } from './pet/PetSvgRenderer';
+import { getPetToAvatarScaleRatio, getPetScaleRatioDescription } from '@/utils/petScaleHelper';
 
 interface SagaMapProps {
   missions: Mission[];
@@ -27,15 +30,12 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
   const [selectedPeriod, setSelectedPeriod] = useState<string>('Todos');
 
   const stats = useCurrentStudentStats();
+  const avatar = useCurrentStudentAvatar();
   const detailedStudents = useSchoolAdminStore(state => state.detailedStudents);
   const activeStudentId = useStudentStore(state => state.activeStudentId);
   const normActiveStudentId = normalizeStudentId(activeStudentId);
   const dbActiveStudentUuid = mapStudentIdToUuid(activeStudentId);
   const schedulesList = useSchoolAdminStore(state => state.schedulesList);
-
-  if (!isHydrated) {
-    return <Loader />;
-  }
 
   // Helper to determine if a quest is completed for active student
   const isQuestCompleted = (qId: string) => {
@@ -250,7 +250,62 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
     )
   };
 
-  // Handle clicking on a node
+  // Find index of the currently active node within nodes
+  const activeNodeIdx = nodes.findIndex(n => getMissionStatus(n.mission, n.idx) === 'active');
+  const fallbackIndex = activeNodeIdx !== -1 ? activeNodeIdx : 0;
+
+  const petStage = stats?.pet_stage || 'egg';
+  const petScaleRatio = getPetToAvatarScaleRatio(petStage);
+  const avatarMapHeight = 62;
+  const avatarMapWidth = 46;
+  const petMapHeight = Math.max(14, Math.round(avatarMapHeight * petScaleRatio));
+  const petMapWidth = Math.round(petMapHeight * 0.95);
+
+  const [playerNodeIndex, setPlayerNodeIndex] = useState<number>(fallbackIndex);
+  const [isWalking, setIsWalking] = useState<boolean>(false);
+  const [isCheering, setIsCheering] = useState<boolean>(false);
+  const [facingDirection, setFacingDirection] = useState<'right' | 'left'>('right');
+  const prevActiveNodeIdxRef = React.useRef<number>(activeNodeIdx);
+
+  const walkToNode = React.useCallback((targetIndex: number, onArrival?: () => void) => {
+    if (targetIndex < 0 || targetIndex >= nodes.length) return;
+    if (targetIndex === playerNodeIndex) {
+      if (onArrival) onArrival();
+      return;
+    }
+
+    const currentX = nodes[playerNodeIndex]?.x ?? 0;
+    const targetX = nodes[targetIndex]?.x ?? 0;
+    setFacingDirection(targetX >= currentX ? 'right' : 'left');
+    setIsWalking(true);
+    setPlayerNodeIndex(targetIndex);
+
+    setTimeout(() => {
+      setIsWalking(false);
+      setIsCheering(true);
+      setTimeout(() => {
+        setIsCheering(false);
+        if (onArrival) onArrival();
+      }, 700);
+    }, 1400);
+  }, [nodes, playerNodeIndex]);
+
+  // Synchronize when active mission progresses
+  React.useEffect(() => {
+    if (activeNodeIdx !== -1 && activeNodeIdx !== prevActiveNodeIdxRef.current) {
+      walkToNode(activeNodeIdx);
+      prevActiveNodeIdxRef.current = activeNodeIdx;
+    }
+  }, [activeNodeIdx, walkToNode]);
+
+  // Keep index within bounds when period changes
+  React.useEffect(() => {
+    if (nodes.length > 0 && playerNodeIndex >= nodes.length) {
+      setPlayerNodeIndex(Math.max(0, nodes.length - 1));
+    }
+  }, [nodes.length, playerNodeIndex]);
+
+  // Handle clicking on a node with world map walking animation
   const handleNodeClick = (mission: Mission, status: string) => {
     const missionMinLevel = (mission as any).required_level || 
       (mission.quests && mission.quests.length > 0 
@@ -266,8 +321,20 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
       alert("⚠️ Esta aventura aún está bloqueada. Completa las misiones previas.");
       return;
     }
-    setSelectedMission(mission);
+
+    const targetIndex = nodes.findIndex(n => n.mission.id === mission.id);
+    if (targetIndex !== -1 && targetIndex !== playerNodeIndex) {
+      walkToNode(targetIndex, () => {
+        setSelectedMission(mission);
+      });
+    } else {
+      setSelectedMission(mission);
+    }
   };
+
+  if (!isHydrated) {
+    return <Loader />;
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -298,6 +365,30 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
         }
         .arcane-active-glow {
           animation: pulseGlow 1.8s infinite ease-in-out;
+        }
+
+        @keyframes petMapHop {
+          0%, 100% {
+            transform: translateY(0) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-13px) rotate(8deg);
+          }
+        }
+        .animate-pet-map-hop {
+          animation: petMapHop 0.35s ease-in-out infinite;
+        }
+
+        @keyframes petMapFloat {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-5px);
+          }
+        }
+        .animate-pet-map-float {
+          animation: petMapFloat 2.2s ease-in-out infinite;
         }
       `}} />
 
@@ -335,23 +426,40 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
           </div>
         </div>
 
-        {/* Period Selector */}
-        <div className="absolute top-4 right-6 z-10 bg-zinc-950/70 border border-zinc-800/80 backdrop-blur-md px-3 py-1.5 rounded-2xl flex items-center gap-2 shadow-lg select-none">
-          <span className="text-[10px] font-black text-emerald-400 uppercase tracking-wider">Periodo:</span>
-          <div className="flex gap-1.5">
-            {['Todos', 'Trimestre 1', 'Trimestre 2', 'Trimestre 3'].map((p) => (
-              <button
-                key={p}
-                onClick={() => setSelectedPeriod(p)}
-                className={`px-2.5 py-1 rounded-xl text-[10px] font-bold tracking-wide transition-all cursor-pointer ${
-                  selectedPeriod === p
-                    ? 'bg-emerald-600 text-white shadow shadow-emerald-950/50 border border-emerald-500/40 font-black'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5 border border-transparent'
-                }`}
-              >
-                {p}
-              </button>
-            ))}
+        {/* Period Selector and Explorer Walk Button */}
+        <div className="absolute top-4 right-6 z-10 flex items-center gap-2 select-none">
+          {/* Action to walk across map */}
+          {nodes.length > 1 && (
+            <button
+              onClick={() => {
+                const nextIdx = (playerNodeIndex + 1) % nodes.length;
+                walkToNode(nextIdx);
+              }}
+              className="bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 backdrop-blur-md px-3 py-1.5 rounded-2xl flex items-center gap-1.5 text-[10px] font-bold shadow-lg transition-all active:scale-95 cursor-pointer"
+              title="Caminar al siguiente nodo para probar la animación del mapa"
+            >
+              <Footprints className="h-3.5 w-3.5" />
+              <span>Pasear en Mapa</span>
+            </button>
+          )}
+
+          <div className="bg-zinc-950/70 border border-zinc-800/80 backdrop-blur-md px-3 py-1.5 rounded-2xl flex items-center gap-2 shadow-lg">
+            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-wider">Periodo:</span>
+            <div className="flex gap-1.5">
+              {['Todos', 'Trimestre 1', 'Trimestre 2', 'Trimestre 3'].map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setSelectedPeriod(p)}
+                  className={`px-2.5 py-1 rounded-xl text-[10px] font-bold tracking-wide transition-all cursor-pointer ${
+                    selectedPeriod === p
+                      ? 'bg-emerald-600 text-white shadow shadow-emerald-950/50 border border-emerald-500/40 font-black'
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5 border border-transparent'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -453,6 +561,105 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
                 </div>
               );
             })}
+
+            {/* Token de Avatar y Mascota Estilo Explorador de Mapa */}
+            {nodes.length > 0 && (() => {
+              const currentNode = nodes[playerNodeIndex] || nodes[0];
+              const playerX = currentNode?.x ?? 50;
+              const playerY = currentNode?.y ?? 50;
+
+              return (
+                <div
+                  className="absolute z-35 pointer-events-none transition-all duration-[1400ms] ease-in-out flex flex-col items-center select-none"
+                  style={{
+                    left: `${playerX}%`,
+                    top: `${playerY}%`,
+                    transform: 'translate(-50%, -92%)',
+                  }}
+                >
+                  {/* Distintivo de Posición Actual con Proporción de Mascota */}
+                  <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black text-[9px] px-2.5 py-0.5 rounded-full shadow-lg shadow-amber-500/50 uppercase tracking-wider mb-1 animate-bounce border border-yellow-200">
+                    <span>⭐ {avatar?.avatar_name || 'Héroe'}</span>
+                    <span className="text-[8px] opacity-90 font-black bg-amber-600/30 px-1.5 py-0.2 rounded">
+                      {avatar?.pet_name || 'Mascota'} ({petStage === 'egg' ? '1/5' : petStage === 'baby' ? '1/4' : petStage === 'child' ? '1/2' : petStage === 'teen' ? '2/3' : '1:1'})
+                    </span>
+                  </div>
+
+                  {/* Par Avatar + Mascota con Orientación según Dirección de Caminata */}
+                  <div 
+                    className="flex items-end justify-center gap-1.5 transition-transform duration-300"
+                    style={{
+                      transform: facingDirection === 'left' ? 'scaleX(-1)' : 'scaleX(1)',
+                    }}
+                  >
+                    {/* Sprite del Avatar con fidelidad vectorial íntegra */}
+                    <div 
+                      style={{ width: avatarMapWidth, height: avatarMapHeight }} 
+                      className="relative shrink-0 filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]"
+                    >
+                      <ModularAnimeAvatarSprite
+                        gender={(avatar as any)?.gender ?? 'female'}
+                        skinTone={(avatar as any)?.skin_tone ?? 'light'}
+                        hairColor={avatar?.hair_color ?? '#4B5563'}
+                        hairStyle={avatar?.hair_style ?? 'spiky'}
+                        eyesStyle={avatar?.eyes_style ?? 'determined'}
+                        raceFeature={avatar?.race_feature || 'human'}
+                        bodyScale={(avatar as any)?.body_scale ?? 'normal'}
+                        equippedShoes={avatar?.equipped_shoes}
+                        equippedBottom={avatar?.equipped_bottom}
+                        equippedTop={avatar?.equipped_top}
+                        equippedOuterwear={avatar?.equipped_outerwear}
+                        equippedHat={avatar?.equipped_hat}
+                        equippedAccessory={avatar?.equipped_accessory}
+                        animationState={isWalking ? 'walk' : isCheering ? 'cheer' : 'idle'}
+                        className="w-full h-full"
+                      />
+                    </div>
+
+                    {/* Mascota Acompañante con Escala Proporcional Estricta (Huevo 1/5, Bebé 1/4, Niño 1/2, Adolescente 2/3, Adulto 1:1) */}
+                    <div 
+                      style={{ 
+                        width: petMapWidth, 
+                        height: petMapHeight,
+                        marginBottom: 2
+                      }} 
+                      className={`relative shrink-0 filter drop-shadow-[0_3px_6px_rgba(0,0,0,0.5)] ${
+                        isWalking ? 'animate-pet-map-hop' : 'animate-pet-map-float'
+                      }`}
+                      title={`${avatar?.pet_name || 'Mascota'} (${getPetScaleRatioDescription(petStage)})`}
+                    >
+                      <PetSvgRenderer
+                        raceId={avatar?.pet_type || 'cryo_dragon'}
+                        stage={petStage}
+                        actionId={isWalking ? 'joy_bounce' : 'idle'}
+                        className="w-full h-full"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Partículas de Pasos y Polvo en Caminata */}
+                  {isWalking ? (
+                    <div className="flex items-center gap-1 -mt-1 pointer-events-none">
+                      <span className="text-[11px] animate-ping opacity-75">💨</span>
+                      <span className="text-[9px] animate-spin text-amber-300">✨</span>
+                      <span className="text-[10px] animate-bounce opacity-80">💨</span>
+                    </div>
+                  ) : (
+                    /* Sombra base en el suelo */
+                    <div className="w-12 h-2.5 bg-black/50 rounded-full blur-[2px] -mt-1 pointer-events-none" />
+                  )}
+
+                  {/* Celebración / Destello al llegar a la casilla de misión */}
+                  {isCheering && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-2 pointer-events-none animate-in zoom-in-50 fade-in duration-300">
+                      <span className="text-lg animate-bounce">🎉</span>
+                      <span className="text-sm animate-ping text-yellow-300">⭐</span>
+                      <span className="text-lg animate-bounce">✨</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
           </div>
         </div>

@@ -438,29 +438,29 @@ export default function StudentDashboard() {
           <div className="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-white/10 blur-xl animate-pulse" />
           <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8">
             
-            {/* Visualización de Avatar y Mascota */}
+            {/* Visualización de Avatar y Mascota con Proporción Oficial */}
             <div className="flex flex-col sm:flex-row items-center gap-6 bg-white/5 p-4 rounded-3xl border border-white/10 backdrop-blur-md">
-              {/* Bloque del Avatar */}
-              <div className="flex flex-col items-center gap-3 bg-white/10 p-5 rounded-2xl border border-white/20 backdrop-blur-sm shadow-inner w-48">
+              {/* Bloque del Avatar con fidelidad completa y presencia heroica */}
+              <div className="flex flex-col items-center gap-2.5 bg-white/10 p-4 rounded-2xl border border-white/20 backdrop-blur-sm shadow-inner w-48">
                 <span className="text-[10px] font-extrabold bg-blue-400 text-teal-950 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                   Avatar: {avatar?.avatar_name ?? 'Estudiante'}
                 </span>
                 
-                {/* Avatar Preview */}
+                {/* Avatar Preview en alta resolución */}
                 <div className="relative">
-                  {renderAvatarPreview(100, 100)}
+                  {renderAvatarPreview(140, 180)}
                 </div>
 
                 {/* Botón Personalizar */}
                 <button
                   onClick={() => setIsCustomizerOpen(true)}
-                  className="w-full py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-450 hover:to-indigo-500 text-white font-bold rounded-xl text-[10px] uppercase tracking-wider shadow-md transition-all active:scale-95 cursor-pointer"
+                  className="w-full py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-450 hover:to-indigo-500 text-white font-bold rounded-xl text-[10px] uppercase tracking-wider shadow-md transition-all active:scale-95 cursor-pointer"
                 >
                   Personalizar Traje
                 </button>
               </div>
 
-              {/* Bloque del Compañero Místico Vivo con 32 conductas y caricias */}
+              {/* Bloque del Compañero Místico Vivo con escala proporcional oficial */}
               <div className="w-56 flex flex-col items-center">
                 <LivingCompanionEngine
                   raceId={avatar?.pet_type || 'cryo_dragon'}
@@ -473,6 +473,7 @@ export default function StudentDashboard() {
                   onOpenSanctuary={() => setIsSanctuaryHomeOpen(true)}
                   onTriggerHatch={() => setIsHatchingModalOpen(true)}
                   onEvolveStage={() => evolvePetStage(activeStudentId)}
+                  avatarHeight={180}
                 />
               </div>
             </div>

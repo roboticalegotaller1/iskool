@@ -52,6 +52,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
   const isFemale = gender === 'female';
   const isCasting = animationState === 'cast';
   const isCheering = animationState === 'cheer';
+  const isWalking = animationState === 'walk';
 
   // Resolver color de piel
   const resolveSkinColor = (tone: string) => {
@@ -100,11 +101,21 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
       style={{ 
         width: width ? (typeof width === 'number' ? `${width}px` : width) : undefined, 
         height: height ? (typeof height === 'number' ? `${height}px` : height) : undefined,
-        animation: isCheering ? 'cheerJumpBounce 0.62s cubic-bezier(0.28, 0.84, 0.42, 1) infinite' : undefined,
-        willChange: isCheering ? 'transform' : undefined
+        animation: isCheering 
+          ? 'cheerJumpBounce 0.62s cubic-bezier(0.28, 0.84, 0.42, 1) infinite' 
+          : isWalking
+          ? 'walkCycleBob 0.45s ease-in-out infinite'
+          : undefined,
+        willChange: (isCheering || isWalking) ? 'transform' : undefined
       }}
     >
       <style>{`
+        @keyframes walkCycleBob {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          25% { transform: translateY(-7px) rotate(-3deg); }
+          50% { transform: translateY(0px) rotate(0deg); }
+          75% { transform: translateY(-7px) rotate(3deg); }
+        }
         @keyframes cheerJumpBounce {
           0%, 100% { transform: translateY(0px) scale(1, 1); }
           30% { transform: translateY(-22px) scale(0.95, 1.05); }

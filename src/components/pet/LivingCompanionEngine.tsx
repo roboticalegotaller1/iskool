@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ElementalPetRace, PetEvolutionStage } from '@/types';
 import { PetSvgRenderer } from './PetSvgRenderer';
 import { resolvePetRace, LIVING_IDLE_ACTIONS, EVOLUTION_STAGE_CONFIG, IdleActionDefinition } from './types';
+import { getPetToAvatarScaleRatio, getPetScaleRatioDescription } from '@/utils/petScaleHelper';
 import { Sparkles, Heart, Flame, Shield, ArrowUpCircle } from 'lucide-react';
 
 interface FloatingHeart {
@@ -28,6 +29,7 @@ interface LivingCompanionEngineProps {
   onTriggerHatch?: () => void;
   onEvolveStage?: () => void;
   className?: string;
+  avatarHeight?: number;
 }
 
 export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
@@ -41,7 +43,8 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
   onOpenSanctuary,
   onTriggerHatch,
   onEvolveStage,
-  className = ''
+  className = '',
+  avatarHeight = 180
 }) => {
   const meta = resolvePetRace(raceId);
   const stageConfig = EVOLUTION_STAGE_CONFIG[stage] || EVOLUTION_STAGE_CONFIG.egg;
@@ -171,24 +174,44 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
 
   const isReadyToEvolve = !isEgg && tasksCompleted >= nextStageTasks && stage !== 'adult' && stage !== 'mystic';
 
+  const scaleRatio = getPetToAvatarScaleRatio(stage);
+  const ratioDescription = getPetScaleRatioDescription(stage);
+  const petPixelHeight = Math.round(avatarHeight * scaleRatio);
+  const petPixelWidth = Math.round(petPixelHeight * 0.95);
+
   return (
     <div
       className={`relative flex flex-col items-center select-none ${className}`}
       ref={containerRef}
     >
-      {/* Contenedor Visual del Avatar y Efectos Táctiles */}
+      {/* Contenedor Visual del Avatar y Efectos Táctiles con escala proporcional oficial */}
       <div
         onPointerDown={handlePointerInteraction}
         onPointerMove={(e) => {
           if (e.buttons === 1) handlePointerInteraction(e);
         }}
-        className="relative h-44 w-44 sm:h-52 sm:w-52 flex items-center justify-center cursor-pointer transition-all duration-300 group touch-none"
-        title="¡Haz clic o desliza suavemente sobre tu compañero para acariciarlo!"
+        className="relative w-44 sm:w-52 flex items-end justify-center cursor-pointer transition-all duration-300 group touch-none pb-2"
+        style={{ height: `${avatarHeight}px` }}
+        title={`¡Haz clic o desliza suavemente sobre tu compañero para acariciarlo! (Escala: ${ratioDescription})`}
       >
-        {/* Glow elemental circundante */}
+        {/* Glow elemental circundante adaptativo al tamaño de la mascota */}
         <div
-          className="absolute inset-2 rounded-full filter blur-xl transition-all duration-500 opacity-60 group-hover:opacity-90"
-          style={{ backgroundColor: meta.glowColor }}
+          className="absolute rounded-full filter blur-xl transition-all duration-500 opacity-60 group-hover:opacity-90 pointer-events-none"
+          style={{ 
+            backgroundColor: meta.glowColor,
+            width: `${Math.max(60, petPixelWidth * 1.35)}px`,
+            height: `${Math.max(60, petPixelHeight * 1.35)}px`,
+            bottom: '8px'
+          }}
+        />
+
+        {/* Sombra base en el suelo */}
+        <div 
+          className="absolute bottom-1 bg-black/40 rounded-full blur-[2px] pointer-events-none transition-all duration-300"
+          style={{
+            width: `${Math.max(28, petPixelWidth * 0.8)}px`,
+            height: `${Math.max(6, petPixelHeight * 0.12)}px`
+          }}
         />
 
         {/* Burbuja de Pensamiento / Reacción Viva (Idle Thought) */}
@@ -206,10 +229,14 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
           </div>
         )}
 
-        {/* SVG Renderizador con Aceleración por Hardware */}
+        {/* SVG Renderizador con Escala Proporcional Estricta (Huevo 1/5, Bebé 1/4, Niño 1/2, Adolescente 2/3, Adulto 1:1) */}
         <div
-          className={`w-full h-full transform transition-transform duration-300 ease-out will-change-transform ${getActionTransformClass()}`}
-          style={{ transformOrigin: 'bottom center' }}
+          className={`relative z-10 transform transition-transform duration-300 ease-out will-change-transform flex items-center justify-center ${getActionTransformClass()}`}
+          style={{ 
+            width: `${petPixelWidth}px`,
+            height: `${petPixelHeight}px`,
+            transformOrigin: 'bottom center' 
+          }}
         >
           <PetSvgRenderer
             raceId={meta.id}
@@ -250,9 +277,14 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
             </span>
           </div>
 
-          <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 shrink-0">
-            {stageConfig.label}
-          </span>
+          <div className="flex items-center gap-1 shrink-0">
+            <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+              {stageConfig.label}
+            </span>
+            <span className="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300" title={`Proporción oficial: ${ratioDescription}`}>
+              {stage === 'egg' ? '1/5' : stage === 'baby' ? '1/4' : stage === 'child' ? '1/2' : stage === 'teen' ? '2/3' : '1:1'}
+            </span>
+          </div>
         </div>
 
         {/* Barra de Felicidad / Amistad */}
