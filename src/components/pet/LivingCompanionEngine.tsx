@@ -190,8 +190,11 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
         onPointerMove={(e) => {
           if (e.buttons === 1) handlePointerInteraction(e);
         }}
-        className="relative flex items-end justify-center cursor-pointer transition-all duration-300 group touch-none pb-2"
-        style={{ height: `${avatarHeight}px`, width: `${Math.max(260, petPixelWidth + 60)}px` }}
+        className="relative flex items-end justify-center cursor-pointer transition-all duration-300 group touch-none pb-1"
+        style={{ 
+          height: `${Math.max(120, Math.min(220, Math.round(petPixelHeight * 1.25)))}px`, 
+          width: `${Math.max(140, petPixelWidth + 30)}px` 
+        }}
         title={`¡Haz clic o desliza suavemente sobre tu compañero para acariciarlo! (Escala: ${ratioDescription})`}
       >
         {/* Glow elemental circundante adaptativo al tamaño de la mascota */}
@@ -264,7 +267,7 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
       </div>
 
       {/* Barra de Información, Vínculo y Estado Evolutivo */}
-      <div className="w-full max-w-sm mt-3 px-3.5 py-2.5 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-2">
+      <div className="w-full max-w-[285px] mt-2 px-3 py-2 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-1.5">
         {/* Cabecera de Mascota */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 truncate">

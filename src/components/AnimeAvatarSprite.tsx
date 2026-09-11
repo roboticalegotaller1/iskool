@@ -21,6 +21,7 @@ export interface AnimeAvatarSpriteProps {
   equippedAccessory?: string;
   animationState?: 'idle' | 'cast' | 'cheer' | 'walk';
   equippedArtifacts?: string[];
+  viewBox?: string;
   className?: string;
 }
 
@@ -42,6 +43,7 @@ export const AnimeAvatarSprite: React.FC<AnimeAvatarSpriteProps> = ({
   equippedAccessory,
   animationState = 'idle',
   equippedArtifacts = [],
+  viewBox,
   className = "w-full h-full"
 }) => {
   // Mapear headType legacy a raceFeature
@@ -97,6 +99,7 @@ export const AnimeAvatarSprite: React.FC<AnimeAvatarSpriteProps> = ({
       equippedHat={resolvedHat}
       equippedAccessory={resolvedAccessory}
       animationState={animationState}
+      viewBox={viewBox}
       className={className}
     />
   );

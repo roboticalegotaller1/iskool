@@ -26,6 +26,7 @@ export interface ModularAnimeAvatarSpriteProps {
   animationState?: AvatarAnimationState;
   width?: number | string;
   height?: number | string;
+  viewBox?: string;
   className?: string;
 }
 
@@ -46,6 +47,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
   animationState = 'idle',
   width,
   height,
+  viewBox,
   className = 'w-full h-full'
 }) => {
   const isMale = gender === 'male';
@@ -138,7 +140,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
       `}</style>
 
       <svg
-        viewBox="0 0 160 150"
+        viewBox={viewBox || "0 0 160 150"}
         className="w-full h-full overflow-visible"
         style={{ transform: `scale(${scaleValue})`, transformOrigin: 'bottom center' }}
       >
