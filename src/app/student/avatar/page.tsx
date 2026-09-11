@@ -52,7 +52,7 @@ export default function AvatarCustomizerPage() {
   }, [user, fetchStats]);
 
   // Local editing states initialized from current avatar settings
-  const [gender, setGender] = useState<'male' | 'female'>('female');
+  const [gender, setGender] = useState<'male' | 'female' | 'neutral'>('female');
   const [rpgClass, setRpgClass] = useState('mago');
   const [headType, setHeadType] = useState('standard');
   const [skinTone, setSkinTone] = useState('light');

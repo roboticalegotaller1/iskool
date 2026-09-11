@@ -517,7 +517,7 @@ export interface StudentAvatar {
   sanctuary_inventory?: string[];
 
   // RPG Customizer fields
-  gender?: 'male' | 'female';
+  gender?: 'female' | 'male' | 'neutral';
   rpg_class?: string;
   head_type?: string;
   skin_tone?: string;
