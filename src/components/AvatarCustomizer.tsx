@@ -33,6 +33,14 @@ import {
   ClothingCategory,
   AvatarClothingItem
 } from './avatar/avatarCustomizationTypes';
+import { 
+  EyePreviewSvg,
+  HairPreviewSvg,
+  HairColorPreviewSvg,
+  SkinTonePreviewSvg,
+  RaceFeaturePreviewSvg,
+  ClothingItemPreviewSvg
+} from './avatar/AvatarTraitPreviews';
 import { StudentAvatar } from '@/types';
 
 interface AvatarCustomizerProps {
@@ -175,9 +183,26 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
 
   // Guardar y Salir
   const handleApply = () => {
-    if (avatarName.trim() && avatarName.trim() !== avatar.avatar_name) {
-      changeAvatar({ avatar_name: avatarName.trim() });
+    const fullPayload: Partial<StudentAvatar> = {
+      gender: selectedGender,
+      body_scale: selectedScale,
+      skin_tone: selectedSkinTone,
+      hair_style: selectedHairStyle,
+      hair_color: selectedHairColor,
+      eyes_style: selectedEyesStyle,
+      race_feature: selectedRaceFeature,
+      equipped_shoes: selectedShoes,
+      equipped_bottom: selectedBottom,
+      equipped_top: selectedTop,
+      equipped_outerwear: selectedOuterwear,
+      equipped_hat: selectedHat,
+      equipped_accessory: selectedAccessory,
+    };
+    if (avatarName.trim()) {
+      fullPayload.avatar_name = avatarName.trim();
     }
+    updatePhysicalTraits(activeStudentId, fullPayload);
+    changeAvatar(fullPayload);
     onClose();
   };
 
@@ -374,9 +399,9 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                           </div>
                         )}
 
-                        {/* Icono central de la prenda */}
-                        <div className="w-12 h-12 rounded-xl bg-white/70 dark:bg-zinc-800 flex items-center justify-center text-3xl shadow-inner mt-1">
-                          {item.icon || item.badgeEmoji || '👕'}
+                        {/* Ilustración visual vectorial de la prenda */}
+                        <div className="w-14 h-14 rounded-2xl bg-white/80 dark:bg-zinc-800/90 p-1 flex items-center justify-center shadow-inner mt-1">
+                          <ClothingItemPreviewSvg item={item} />
                         </div>
 
                         {/* Nombre y Precio */}
@@ -407,7 +432,7 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
               {mainTab === 'body' && (
                 <div>
                   {bodySubTab === 'skin' && (
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       {AVATAR_SKIN_TONES.map((tone) => {
                         const toneCol = tone.color || tone.value || '#FED7AA';
                         const isSelected = selectedSkinTone === toneCol;
@@ -420,19 +445,28 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                               updatePhysicalTraits(activeStudentId, { skin_tone: toneCol });
                               changeAvatar({ skin_tone: toneCol });
                             }}
-                            className={`p-3 rounded-2xl flex flex-col items-center gap-2 transition-all cursor-pointer shadow-sm hover:scale-105 ${
+                            className={`group relative aspect-square p-2.5 rounded-2xl flex flex-col items-center justify-between transition-all cursor-pointer shadow-sm hover:scale-105 ${
                               isSelected
-                                ? 'bg-[#FFE6C7] dark:bg-amber-950/60 border-2 border-amber-500 ring-4 ring-amber-400/40'
-                                : 'bg-[#FFF9EE] dark:bg-zinc-900 border-2 border-[#E9D9C3] dark:border-zinc-800'
+                                ? 'bg-[#FFE6C7] dark:bg-amber-950/60 border-2 border-amber-500 ring-4 ring-amber-400/40 shadow-md'
+                                : 'bg-[#FFF9EE] dark:bg-zinc-900 border-2 border-[#E9D9C3] dark:border-zinc-800 hover:border-amber-400'
                             }`}
                           >
-                            <span 
-                              className="w-10 h-10 rounded-full border-2 border-black/20 shadow-md transition-transform group-hover:scale-110"
-                              style={{ backgroundColor: toneCol }}
-                            />
-                            <span className="text-[11px] font-bold text-center text-zinc-800 dark:text-zinc-200 truncate w-full">
-                              {tone.name}
-                            </span>
+                            {isSelected && (
+                              <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md z-10">
+                                <Check className="w-3 h-3 stroke-[3]" />
+                              </div>
+                            )}
+                            <div className="w-14 h-14 rounded-2xl bg-white/80 dark:bg-zinc-800/80 p-1 flex items-center justify-center shadow-inner mt-1">
+                              <SkinTonePreviewSvg toneColor={toneCol} />
+                            </div>
+                            <div className="text-center w-full mt-1">
+                              <span className="text-[11px] font-black text-zinc-800 dark:text-zinc-200 truncate block">
+                                {tone.name}
+                              </span>
+                              <span className="text-[9px] text-zinc-500 dark:text-zinc-400 truncate block">
+                                {tone.description || 'Tono de piel'}
+                              </span>
+                            </div>
                           </button>
                         );
                       })}
@@ -452,14 +486,25 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                               updatePhysicalTraits(activeStudentId, { race_feature: race.id });
                               changeAvatar({ race_feature: race.id });
                             }}
-                            className={`p-3 rounded-2xl flex flex-col items-center justify-between aspect-square transition-all cursor-pointer shadow-sm hover:scale-105 ${
+                            className={`group relative aspect-square p-2.5 rounded-2xl flex flex-col items-center justify-between transition-all cursor-pointer shadow-sm hover:scale-105 ${
                               isSelected
-                                ? 'bg-[#FFE6C7] dark:bg-amber-950/60 border-2 border-amber-500 ring-4 ring-amber-400/40'
-                                : 'bg-[#FFF9EE] dark:bg-zinc-900 border-2 border-[#E9D9C3] dark:border-zinc-800'
+                                ? 'bg-[#FFE6C7] dark:bg-amber-950/60 border-2 border-amber-500 ring-4 ring-amber-400/40 shadow-md'
+                                : 'bg-[#FFF9EE] dark:bg-zinc-900 border-2 border-[#E9D9C3] dark:border-zinc-800 hover:border-amber-400'
                             }`}
                           >
-                            <span className="text-3xl mt-1">{race.icon || race.badgeEmoji || '✨'}</span>
-                            <div className="text-center w-full">
+                            {isSelected && (
+                              <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md z-10">
+                                <Check className="w-3 h-3 stroke-[3]" />
+                              </div>
+                            )}
+                            <div className="w-14 h-14 rounded-2xl bg-white/80 dark:bg-zinc-800/80 p-0.5 flex items-center justify-center shadow-inner mt-1">
+                              <RaceFeaturePreviewSvg 
+                                featureId={race.id} 
+                                skinColor={selectedSkinTone} 
+                                hairColor={selectedHairColor} 
+                              />
+                            </div>
+                            <div className="text-center w-full mt-1">
                               <p className="text-[11px] font-black text-zinc-800 dark:text-zinc-200 truncate">{race.name}</p>
                               <p className="text-[9px] text-zinc-500 dark:text-zinc-400 truncate">{race.description}</p>
                             </div>
@@ -478,9 +523,9 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                         </span>
                         <div className="grid grid-cols-3 gap-3">
                           {[
-                            { id: 'female' as const, label: 'Femenino', icon: '♀' },
-                            { id: 'male' as const, label: 'Masculino', icon: '♂' },
-                            { id: 'neutral' as const, label: 'Mágico / Neutro', icon: '✦' }
+                            { id: 'female' as const, label: 'Femenino', icon: '♀', emoji: '👧' },
+                            { id: 'male' as const, label: 'Masculino', icon: '♂', emoji: '👦' },
+                            { id: 'neutral' as const, label: 'Mágico / Neutro', icon: '✦', emoji: '✨' }
                           ].map((g) => (
                             <button
                               key={g.id}
@@ -492,7 +537,7 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                                   : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700'
                               }`}
                             >
-                              <span className="text-2xl">{g.icon}</span>
+                              <span className="text-2xl">{g.emoji}</span>
                               <span>{g.label}</span>
                             </button>
                           ))}
@@ -506,9 +551,9 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                         </span>
                         <div className="grid grid-cols-3 gap-3">
                           {[
-                            { id: 'compact' as const, label: 'Compacto (S)', desc: 'Ágil y menudo' },
-                            { id: 'normal' as const, label: 'Normal (M)', desc: 'Equilibrado' },
-                            { id: 'tall' as const, label: 'Alto (L)', desc: 'Heroico' }
+                            { id: 'compact' as const, label: 'Compacto (S)', desc: 'Ágil y menudo', scale: '0.85' },
+                            { id: 'normal' as const, label: 'Normal (M)', desc: 'Equilibrado', scale: '1.0' },
+                            { id: 'tall' as const, label: 'Alto (L)', desc: 'Heroico', scale: '1.15' }
                           ].map((s) => (
                             <button
                               key={s.id}
@@ -520,7 +565,8 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                                   : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700'
                               }`}
                             >
-                              <span>{s.label}</span>
+                              <span className="text-base font-black font-mono">x{s.scale}</span>
+                              <span className="font-black">{s.label}</span>
                               <span className="text-[10px] opacity-80">{s.desc}</span>
                             </button>
                           ))}
@@ -531,7 +577,7 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                 </div>
               )}
 
-              {/* --- CASO 3: CABELLO (ESTILOS Y COLORES) --- */}
+              {/* --- CASO 3: CABELLO (ESTILOS Y COLORES EN CUADRÍCULA SQUIRCLE) --- */}
               {mainTab === 'hair' && (
                 <div>
                   {hairSubTab === 'styles' ? (
@@ -547,14 +593,21 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                               updatePhysicalTraits(activeStudentId, { hair_style: h.id });
                               changeAvatar({ hair_style: h.id });
                             }}
-                            className={`p-3 rounded-2xl aspect-square flex flex-col items-center justify-between transition-all cursor-pointer shadow-sm hover:scale-105 ${
+                            className={`group relative aspect-square p-2.5 rounded-2xl flex flex-col items-center justify-between transition-all cursor-pointer shadow-sm hover:scale-105 ${
                               isSelected
-                                ? 'bg-[#FFE6C7] dark:bg-amber-950/60 border-2 border-amber-500 ring-4 ring-amber-400/40'
-                                : 'bg-[#FFF9EE] dark:bg-zinc-900 border-2 border-[#E9D9C3] dark:border-zinc-800'
+                                ? 'bg-[#FFE6C7] dark:bg-amber-950/60 border-2 border-amber-500 ring-4 ring-amber-400/40 shadow-md'
+                                : 'bg-[#FFF9EE] dark:bg-zinc-900 border-2 border-[#E9D9C3] dark:border-zinc-800 hover:border-amber-400'
                             }`}
                           >
-                            <span className="text-3xl mt-1">{h.badgeEmoji || '💇'}</span>
-                            <div className="text-center w-full">
+                            {isSelected && (
+                              <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md z-10">
+                                <Check className="w-3 h-3 stroke-[3]" />
+                              </div>
+                            )}
+                            <div className="w-14 h-14 rounded-2xl bg-white/80 dark:bg-zinc-800/80 p-0.5 flex items-center justify-center shadow-inner mt-1">
+                              <HairPreviewSvg styleId={h.id} color={selectedHairColor} />
+                            </div>
+                            <div className="text-center w-full mt-1">
                               <p className="text-[11px] font-black text-zinc-800 dark:text-zinc-200 truncate">{h.name}</p>
                               <p className="text-[9px] text-zinc-500 dark:text-zinc-400 truncate">{h.description || 'Anime'}</p>
                             </div>
@@ -563,7 +616,7 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                       })}
                     </div>
                   ) : (
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       {AVATAR_HAIR_COLORS.map((hc) => {
                         const hairCol = hc.color || hc.value || '#EC4899';
                         const isSelected = selectedHairColor === hairCol;
@@ -576,21 +629,24 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                               updatePhysicalTraits(activeStudentId, { hair_color: hairCol });
                               changeAvatar({ hair_color: hairCol });
                             }}
-                            className={`p-3 rounded-2xl flex flex-col items-center gap-2 transition-all cursor-pointer shadow-sm hover:scale-105 ${
+                            className={`group relative aspect-square p-2.5 rounded-2xl flex flex-col items-center justify-between transition-all cursor-pointer shadow-sm hover:scale-105 ${
                               isSelected
-                                ? 'bg-[#FFE6C7] dark:bg-amber-950/60 border-2 border-amber-500 ring-4 ring-amber-400/40'
-                                : 'bg-[#FFF9EE] dark:bg-zinc-900 border-2 border-[#E9D9C3] dark:border-zinc-800'
+                                ? 'bg-[#FFE6C7] dark:bg-amber-950/60 border-2 border-amber-500 ring-4 ring-amber-400/40 shadow-md'
+                                : 'bg-[#FFF9EE] dark:bg-zinc-900 border-2 border-[#E9D9C3] dark:border-zinc-800 hover:border-amber-400'
                             }`}
                           >
-                            <span 
-                              className="w-10 h-10 rounded-full border-2 border-black/20 shadow-md transition-transform group-hover:scale-110 flex items-center justify-center"
-                              style={{ backgroundColor: hairCol }}
-                            >
-                              {isSelected && <Check className="w-4 h-4 text-white drop-shadow" />}
-                            </span>
-                            <span className="text-[11px] font-bold text-center text-zinc-800 dark:text-zinc-200 truncate w-full">
-                              {hc.name}
-                            </span>
+                            {isSelected && (
+                              <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md z-10">
+                                <Check className="w-3 h-3 stroke-[3]" />
+                              </div>
+                            )}
+                            <div className="w-14 h-14 rounded-2xl bg-white/80 dark:bg-zinc-800/80 p-1 flex items-center justify-center shadow-inner mt-1">
+                              <HairColorPreviewSvg color={hairCol} isSelected={isSelected} />
+                            </div>
+                            <div className="text-center w-full mt-1">
+                              <p className="text-[11px] font-black text-zinc-800 dark:text-zinc-200 truncate">{hc.name}</p>
+                              <p className="text-[9px] text-zinc-500 dark:text-zinc-400 truncate">{hc.description || 'Color'}</p>
+                            </div>
                           </button>
                         );
                       })}
@@ -599,9 +655,9 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                 </div>
               )}
 
-              {/* --- CASO 4: OJOS Y EXPRESIÓN (15 OPCIONES) --- */}
+              {/* --- CASO 4: OJOS Y EXPRESIÓN (15 OPCIONES VISUALES VECTORIALES) --- */}
               {mainTab === 'eyes' && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {AVATAR_EYES_STYLES.map((eye) => {
                     const eyeCol = eye.color || eye.value || '#3B82F6';
                     const isSelected = selectedEyesStyle === eye.id;
@@ -614,21 +670,31 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                           updatePhysicalTraits(activeStudentId, { eyes_style: eye.id });
                           changeAvatar({ eyes_style: eye.id });
                         }}
-                        className={`p-3 rounded-2xl flex items-center gap-3 transition-all cursor-pointer shadow-sm hover:scale-105 ${
+                        className={`group relative aspect-square p-2.5 rounded-2xl flex flex-col items-center justify-between transition-all cursor-pointer shadow-sm hover:scale-105 ${
                           isSelected
-                            ? 'bg-[#FFE6C7] dark:bg-amber-950/60 border-2 border-amber-500 ring-4 ring-amber-400/40'
-                            : 'bg-[#FFF9EE] dark:bg-zinc-900 border-2 border-[#E9D9C3] dark:border-zinc-800'
+                            ? 'bg-[#FFE6C7] dark:bg-amber-950/60 border-2 border-amber-500 ring-4 ring-amber-400/40 shadow-md'
+                            : 'bg-[#FFF9EE] dark:bg-zinc-900 border-2 border-[#E9D9C3] dark:border-zinc-800 hover:border-amber-400'
                         }`}
                       >
-                        <span 
-                          className="w-7 h-7 rounded-full border border-black/20 shrink-0 shadow-inner flex items-center justify-center text-xs text-white font-bold"
-                          style={{ backgroundColor: eyeCol }}
-                        >
-                          👁
-                        </span>
-                        <div className="text-left truncate">
-                          <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">{eye.name}</p>
-                          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">{eye.description}</p>
+                        {isSelected && (
+                          <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md z-10">
+                            <Check className="w-3 h-3 stroke-[3]" />
+                          </div>
+                        )}
+
+                        {/* Previsualización Vectorial Real de los Ojos Anime */}
+                        <div className="w-full flex-1 max-h-[58px] rounded-2xl bg-white/85 dark:bg-zinc-800/90 p-1 flex items-center justify-center shadow-inner mt-0.5">
+                          <EyePreviewSvg styleId={eye.id} color={eyeCol} />
+                        </div>
+
+                        {/* Título y descripción breve */}
+                        <div className="text-center w-full mt-1">
+                          <p className="text-[11px] font-black text-zinc-800 dark:text-zinc-200 truncate">
+                            {eye.name}
+                          </p>
+                          <p className="text-[9px] text-zinc-500 dark:text-zinc-400 truncate">
+                            {eye.description || 'Mirada anime'}
+                          </p>
                         </div>
                       </button>
                     );
@@ -672,8 +738,8 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                           </div>
                         )}
 
-                        <div className="w-12 h-12 rounded-xl bg-white/70 dark:bg-zinc-800 flex items-center justify-center text-3xl shadow-inner mt-1">
-                          {item.icon || item.badgeEmoji || '🎩'}
+                        <div className="w-14 h-14 rounded-2xl bg-white/80 dark:bg-zinc-800/90 p-1 flex items-center justify-center shadow-inner mt-1">
+                          <ClothingItemPreviewSvg item={item} />
                         </div>
 
                         <div className="text-center w-full mt-1">

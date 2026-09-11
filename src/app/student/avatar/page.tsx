@@ -636,6 +636,15 @@ export default function AvatarCustomizerPage() {
                       skinTone={skinTone}
                       hairColor={hairColor}
                       hairStyle={hairStyle}
+                      eyesStyle={avatar?.eyes_style}
+                      raceFeature={avatar?.race_feature}
+                      bodyScale={avatar?.body_scale}
+                      equippedShoes={avatar?.equipped_shoes}
+                      equippedBottom={avatar?.equipped_bottom}
+                      equippedTop={avatar?.equipped_top}
+                      equippedOuterwear={avatar?.equipped_outerwear}
+                      equippedHat={avatar?.equipped_hat}
+                      equippedAccessory={avatar?.equipped_accessory}
                       equippedArtifacts={ownedArtifactIds}
                       className="w-full h-full"
                     />

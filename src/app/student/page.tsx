@@ -268,7 +268,9 @@ export default function StudentDashboard() {
             skinTone={(avatar as any)?.skin_tone ?? 'light'}
             hairColor={avatar?.hair_color ?? 'pink'}
             hairStyle={avatar?.hair_style ?? 'spiky'}
+            eyesStyle={avatar?.eyes_style ?? 'determined'}
             raceFeature={avatar?.race_feature}
+            bodyScale={(avatar as any)?.body_scale ?? 'normal'}
             equippedShoes={avatar?.equipped_shoes}
             equippedBottom={avatar?.equipped_bottom}
             equippedTop={avatar?.equipped_top}

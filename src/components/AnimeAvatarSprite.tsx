@@ -10,7 +10,9 @@ export interface AnimeAvatarSpriteProps {
   skinTone?: string; // hex color or preset name
   hairColor?: string; // hex color or preset name
   hairStyle?: string; // spiky, long, ponytail, twintails, bob, dreadlocks, bald, short, hat, mohawk, witch_curls
+  eyesStyle?: string;
   raceFeature?: string;
+  bodyScale?: 'compact' | 'normal' | 'tall';
   equippedShoes?: string;
   equippedBottom?: string;
   equippedTop?: string;
@@ -28,8 +30,10 @@ export const AnimeAvatarSprite: React.FC<AnimeAvatarSpriteProps> = ({
   headType = 'standard',
   skinTone = 'light',
   hairColor = 'pink',
-  hairStyle = 'witch_curls',
+  hairStyle = 'spiky',
+  eyesStyle = 'determined',
   raceFeature,
+  bodyScale = 'normal',
   equippedShoes,
   equippedBottom,
   equippedTop,
@@ -83,7 +87,9 @@ export const AnimeAvatarSprite: React.FC<AnimeAvatarSpriteProps> = ({
       skinTone={skinTone}
       hairStyle={hairStyle}
       hairColor={hairColor}
+      eyesStyle={eyesStyle}
       raceFeature={resolvedRace}
+      bodyScale={bodyScale}
       equippedShoes={resolvedShoes}
       equippedBottom={resolvedBottom}
       equippedTop={resolvedTop}

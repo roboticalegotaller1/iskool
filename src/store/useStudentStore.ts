@@ -899,6 +899,29 @@ export const useStudentStore = create<StudentStoreState>()(
       }
     }));
 
+    // Sincronización asíncrona en Supabase
+    try {
+      const dbStudentId = mapStudentIdToUuid(activeId);
+      if (dbStudentId && dbStudentId.length > 10) {
+        supabase
+          .from('student_stats')
+          .update({ coins: updatedStats.coins })
+          .eq('student_id', dbStudentId)
+          .then(({ error }) => {
+            if (error) console.warn('Supabase stats coins update notice:', error.message);
+          });
+        supabase
+          .from('student_avatars')
+          .update({ wardrobe_inventory: updatedAv.wardrobe_inventory, updated_at: updatedAv.updated_at })
+          .eq('student_id', dbStudentId)
+          .then(({ error }) => {
+            if (error) console.warn('Supabase wardrobe update notice:', error.message);
+          });
+      }
+    } catch (e) {
+      // safe fallback
+    }
+
     return { success: true };
   },
 
@@ -935,6 +958,22 @@ export const useStudentStore = create<StudentStoreState>()(
         [rawId]: updatedAv
       }
     }));
+
+    // Sincronización en Supabase
+    try {
+      const dbStudentId = mapStudentIdToUuid(activeId);
+      if (dbStudentId && dbStudentId.length > 10) {
+        supabase
+          .from('student_avatars')
+          .update({ [targetKey]: itemId, updated_at: updatedAv.updated_at })
+          .eq('student_id', dbStudentId)
+          .then(({ error }) => {
+            if (error) console.warn('Supabase equip update notice:', error.message);
+          });
+      }
+    } catch (e) {
+      // safe fallback
+    }
   },
 
   updatePhysicalTraits: (studentId, traits) => {
@@ -958,6 +997,22 @@ export const useStudentStore = create<StudentStoreState>()(
         [rawId]: updatedAv
       }
     }));
+
+    // Sincronización en Supabase
+    try {
+      const dbStudentId = mapStudentIdToUuid(activeId);
+      if (dbStudentId && dbStudentId.length > 10) {
+        supabase
+          .from('student_avatars')
+          .update({ ...traits, updated_at: updatedAv.updated_at })
+          .eq('student_id', dbStudentId)
+          .then(({ error }) => {
+            if (error) console.warn('Supabase traits update notice:', error.message);
+          });
+      }
+    } catch (e) {
+      // safe fallback
+    }
   },
 
   levelUpAttribute: async (statName) => {
