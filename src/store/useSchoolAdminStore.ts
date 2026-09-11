@@ -868,10 +868,85 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
       },
 
       deleteInstitution: (schoolId) => {
-        set((state) => ({
-          institutionsList: (state.institutionsList || []).filter(i => i.id !== schoolId),
-          activeSchoolId: state.activeSchoolId === schoolId ? null : state.activeSchoolId
-        }));
+        set((state) => {
+          const targetId = schoolId === 'sch-jjr' ? 'sch-jjrosseau' : schoolId;
+          const targetCampuses = (state.campusesList || []).filter(c => c.school_id === targetId || (targetId === 'sch-jjrosseau' && c.school_id === 'sch-jjr'));
+          const targetCampusIds = new Set(targetCampuses.map(c => c.id));
+
+          // 1. Depurar alumnos del colegio y de sus planteles
+          const remainingStudents = (state.detailedStudents || []).filter(
+            s => s.school_id !== targetId && (!s.campus_id || !targetCampusIds.has(s.campus_id))
+          );
+
+          // 2. Depurar grupos del colegio y planteles
+          const remainingGroups = (state.groupsList || []).filter(
+            g => g.school_id !== targetId && (!g.campus_id || !targetCampusIds.has(g.campus_id))
+          );
+
+          // 3. Depurar planteles
+          const remainingCampuses = (state.campusesList || []).filter(
+            c => c.school_id !== targetId && (targetId !== 'sch-jjrosseau' || c.school_id !== 'sch-jjr')
+          );
+
+          // 4. Depurar personal escolar administrativo de este colegio
+          const remainingStaff = (state.staffUsers || []).filter(
+            u => u.school_id !== targetId && (targetId !== 'sch-jjrosseau' || u.school_id !== 'sch-jjr')
+          );
+
+          // 5. Depurar profesores excepto el profesor maestro Israel López Ángeles
+          const remainingTeachers = (state.teachersList || []).filter(
+            t => t.id === 'usr-teacher-1' || t.email === 'israel.lopez@jjrosseau.edu.mx' || (t.school_id !== targetId && (targetId !== 'sch-jjrosseau' || t.school_id !== 'sch-jjr'))
+          );
+
+          // 6. Depurar registros financieros / nómina
+          const remainingPayroll = (state.staffPayroll || []).filter(
+            p => p.school_id !== targetId && (targetId !== 'sch-jjrosseau' || p.school_id !== 'sch-jjr')
+          );
+          const remainingBilling = (state.billingRecords || []).filter(
+            b => b.school_id !== targetId && (targetId !== 'sch-jjrosseau' || b.school_id !== 'sch-jjr')
+          );
+
+          // 7. Depurar institución del catálogo
+          const remainingInstitutions = (state.institutionsList || []).filter(
+            i => i.id !== targetId && (targetId !== 'sch-jjrosseau' || i.id !== 'sch-jjr')
+          );
+
+          // 8. Registro de auditoría de eliminación completa
+          const deletedInst = (state.institutionsList || []).find(i => i.id === targetId || (targetId === 'sch-jjrosseau' && i.id === 'sch-jjr'));
+          const now = new Date();
+          const auditEntry: StudentDeletionAuditLog = {
+            id: `audit-school-del-${Date.now()}`,
+            student_id: 'ALL_STUDENTS',
+            student_name: `Baja Total Institución: ${deletedInst?.name || targetId}`,
+            enrollment_id: deletedInst?.cct || 'CCT_N_A',
+            curp: 'N_A',
+            school_id: targetId,
+            school_name: deletedInst?.name || targetId,
+            campus_name: `${targetCampuses.length} planteles`,
+            level: 'Institucional',
+            grade: 'Todos',
+            deleted_at: now.toISOString(),
+            deleted_at_formatted: now.toLocaleString('es-MX'),
+            deleted_by_id: 'usr-superadmin-1',
+            deleted_by_name: 'Dirección General ISkool (Super Usuario)',
+            deleted_by_role: 'superadmin',
+            deleted_by_email: 'admin@iskool.edu.mx',
+            reason: 'Eliminación total del colegio con preservación de libros y reacreditación de planeaciones/actividades al Prof. Israel López Ángeles.'
+          };
+
+          return {
+            institutionsList: remainingInstitutions,
+            detailedStudents: remainingStudents,
+            groupsList: remainingGroups,
+            campusesList: remainingCampuses,
+            staffUsers: remainingStaff,
+            teachersList: remainingTeachers,
+            staffPayroll: remainingPayroll,
+            billingRecords: remainingBilling,
+            studentDeletionAuditLogs: [auditEntry, ...(state.studentDeletionAuditLogs || [])],
+            activeSchoolId: state.activeSchoolId === targetId ? null : state.activeSchoolId
+          };
+        });
       },
 
       toggleSchoolSuspension: (schoolId) => {

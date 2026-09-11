@@ -46,6 +46,9 @@ interface SchoolBooksState {
   ) => VerifiedCompendium;
   deleteCompendium: (compendiumId: string) => void;
 
+  // Preservación y Reasignación Curricular
+  preserveAndReassignSchoolBooks: (schoolId: string, masterTeacherName?: string) => number;
+
   // Utilidades
   resetToDefaults: () => void;
 }
@@ -130,6 +133,26 @@ export const useSchoolBooksStore = create<SchoolBooksState>()(
         set(state => ({
           compendiums: state.compendiums.filter(c => c.id !== compendiumId)
         }));
+      },
+
+      preserveAndReassignSchoolBooks: (schoolId: string, masterTeacherName: string = 'Prof. Israel López Ángeles') => {
+        let count = 0;
+        set(state => {
+          const targetId = schoolId === 'sch-jjr' ? 'sch-jjrosseau' : schoolId;
+          const updated = state.books.map(b => {
+            if (b.schoolId === targetId || (targetId === 'sch-jjrosseau' && b.schoolId === 'sch-jjr')) {
+              count++;
+              return {
+                ...b,
+                schoolId: 'sch-jjrosseau', // Reasignado a la bóveda curricular maestra protegida
+                subidoPor: `${masterTeacherName} (Resguardo Bóveda Curricular)`
+              };
+            }
+            return b;
+          });
+          return { books: updated };
+        });
+        return count;
       },
 
       resetToDefaults: () => {

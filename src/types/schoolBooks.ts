@@ -41,6 +41,7 @@ export interface SchoolDigitalBook {
   fechaCarga: string;
   capitulos: BookChapter[];
   palabrasClaveIndice: string[];
+  subidoPor?: string;
   estadoMapeo: 'completo' | 'procesando' | 'error';
 }
 

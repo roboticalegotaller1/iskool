@@ -43,6 +43,7 @@ import {
   ImageIcon,
   Calendar,
   Layers,
+  Loader2,
   ExternalLink,
   X,
   Edit3,
@@ -73,10 +74,11 @@ import {
   getSchoolBillingRecords,
   getSchoolDeletionAuditLogs
 } from '@/store/useSchoolAdminStore';
-import { DetailedStudent, Subject, GroupAnnualPlan, SyllabusTopic, Campus, Group, canManageTargetRole, StaffPayrollRecord, isPlatformSuperUser, StudentDeletionAuditLog, UserRole } from '@/types';
+import { DetailedStudent, Subject, GroupAnnualPlan, SyllabusTopic, Campus, Group, canManageTargetRole, StaffPayrollRecord, isPlatformSuperUser, StudentDeletionAuditLog, UserRole, Institution } from '@/types';
 import ExecutiveAnalyticsStudio from '@/components/admin/ExecutiveAnalyticsStudio';
 import { SuperUserCompendiumStudio } from '@/components/books/SuperUserCompendiumStudio';
 import { SchoolStatusSlider } from '@/components/admin/SchoolStatusSlider';
+import { useSchoolBooksStore } from '@/store/useSchoolBooksStore';
 
 type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll' | 'analytics' | 'deletions' | 'books_compendium';
 
@@ -177,6 +179,52 @@ export default function SuperUserAdminPage() {
     coordinatorName: '',
     campusesCount: 2
   });
+
+  // Estados y Funciones de Eliminación Completa de Colegio (con Preservación Curricular)
+  const preserveAndReassignSchoolBooks = useSchoolBooksStore(state => state.preserveAndReassignSchoolBooks);
+  const [showDeleteSchoolModal, setShowDeleteSchoolModal] = useState(false);
+  const [schoolToDelete, setSchoolToDelete] = useState<Institution | null>(null);
+  const [isDeletingSchool, setIsDeletingSchool] = useState(false);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
+  const [deletionFeedback, setDeletionFeedback] = useState<string | null>(null);
+
+  const handleConfirmDeleteSchool = async () => {
+    if (!schoolToDelete) return;
+    setIsDeletingSchool(true);
+    try {
+      const schoolId = schoolToDelete.id;
+      const schoolName = schoolToDelete.name;
+
+      // 1. Preservar y reasignar libros digitales al Prof. Israel López Ángeles en la Bóveda Curricular
+      const booksPreserved = preserveAndReassignSchoolBooks(schoolId, 'Prof. Israel López Ángeles');
+
+      // 2. Reasignar planeaciones en la Bóveda Curricular vía endpoint
+      await fetch('/api/vault/reassign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          schoolId,
+          masterTeacherName: 'Prof. Israel López Ángeles',
+          masterTeacherId: 'usr-teacher-1'
+        })
+      }).catch(err => console.warn('Aviso de sincronización de Bóveda:', err));
+
+      // 3. Eliminar toda la información operativa del colegio del sistema
+      deleteInstitution(schoolId);
+
+      setDeletionFeedback(
+        `✅ El colegio "${schoolName}" fue eliminado del sistema. Se preservaron ${booksPreserved > 0 ? booksPreserved + ' libros digitales' : 'los libros digitales'}, planeaciones y actividades, acreditadas al Prof. Israel López Ángeles.`
+      );
+      setTimeout(() => setDeletionFeedback(null), 8000);
+      setShowDeleteSchoolModal(false);
+      setSchoolToDelete(null);
+      setDeleteConfirmationText('');
+    } catch (err: any) {
+      console.error('Error al eliminar colegio:', err);
+    } finally {
+      setIsDeletingSchool(false);
+    }
+  };
 
   // Filtros de búsqueda
   const [studentSearch, setStudentSearch] = useState('');
@@ -1537,6 +1585,23 @@ export default function SuperUserAdminPage() {
 
             {/* SECCIÓN DE TARJETAS DE INSTITUCIONES */}
             <div className="space-y-4">
+              {deletionFeedback && (
+                <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center justify-between shadow-sm animate-in fade-in">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-7 w-7 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                      <CheckCircle2 className="h-4 w-4" />
+                    </div>
+                    <span className="leading-relaxed">{deletionFeedback}</span>
+                  </div>
+                  <button 
+                    onClick={() => setDeletionFeedback(null)} 
+                    className="p-1 rounded-lg text-emerald-700 hover:bg-emerald-100/60 cursor-pointer shrink-0 ml-2"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
                   <Building2 className="h-5 w-5 text-indigo-600" /> Directorio de Instituciones Educativas
@@ -1695,10 +1760,24 @@ export default function SuperUserAdminPage() {
                           }`}
                         >
                           {isSuspended
-                            ? '🔒 Entrar a Supervisión (Colegio Inactivo)'
+                            ? '🔒 Supervisión'
                             : isTest
-                            ? '🧪 Entrar a Sandbox / Pruebas'
+                            ? '🧪 Entrar a Sandbox'
                             : 'Entrar al Panel Institucional'} <ChevronRight className="h-4 w-4" />
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSchoolToDelete(inst);
+                            setDeleteConfirmationText('');
+                            setShowDeleteSchoolModal(true);
+                          }}
+                          className="px-3 py-2.5 rounded-xl border border-rose-200 hover:border-rose-400 bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer shadow-xs shrink-0"
+                          title={`Eliminar completamente ${inst.name} del sistema`}
+                        >
+                          <Trash2 className="h-3.5 w-3.5 text-rose-500" />
+                          <span>Eliminar</span>
                         </button>
                       </div>
                     </div>
@@ -6837,6 +6916,126 @@ export default function SuperUserAdminPage() {
               >
                 <Trash2 className="h-3.5 w-3.5" />
                 <span>Confirmar Baja y Eliminación</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmación para Eliminar Colegio con Preservación de Bóveda y Acreditación */}
+      {showDeleteSchoolModal && schoolToDelete && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white border border-rose-200 w-full max-w-lg rounded-3xl p-6 sm:p-7 shadow-2xl flex flex-col gap-4 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+            {/* Header del Modal */}
+            <div className="flex items-start gap-3.5 text-rose-600">
+              <div className="h-12 w-12 rounded-2xl bg-rose-100 border border-rose-200 flex items-center justify-center shrink-0">
+                <Trash2 className="h-6 w-6 text-rose-600" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-black text-slate-900">
+                    Eliminar Colegio del Sistema
+                  </h3>
+                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 border border-rose-200">
+                    Irreversible
+                  </span>
+                </div>
+                <p className="text-xs text-rose-600 font-semibold mt-0.5">
+                  Operación de Super Usuario con resguardo curricular
+                </p>
+              </div>
+            </div>
+
+            {/* Colegio a Eliminar */}
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs space-y-1">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                Institución Seleccionada
+              </span>
+              <p className="font-black text-slate-900 text-base">
+                {schoolToDelete.name}
+              </p>
+              <div className="flex flex-wrap gap-x-3 text-[11px] text-slate-500 font-mono pt-1">
+                <span>CCT: {schoolToDelete.cct}</span>
+                <span>ID: {schoolToDelete.id}</span>
+                <span>Planteles: {getSchoolCampuses(campusesList, schoolToDelete.id).length}</span>
+                <span>Alumnos: {getSchoolStudents(detailedStudents, schoolToDelete.id, getSchoolCampuses(campusesList, schoolToDelete.id)).length}</span>
+              </div>
+            </div>
+
+            {/* Lo que se ELIMINA del sistema */}
+            <div className="p-4 bg-rose-50/80 border border-rose-200 rounded-2xl text-xs space-y-2">
+              <p className="font-black text-rose-900 flex items-center gap-1.5 text-xs uppercase tracking-wide">
+                <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
+                Se eliminará por completo del sistema:
+              </p>
+              <ul className="text-rose-800 space-y-1 pl-4 list-disc text-[11px] leading-relaxed">
+                <li>Todos los expedientes y cuentas de <strong>alumnos registrados</strong> en este colegio.</li>
+                <li>Todas las cuentas de <strong>personal administrativo, directores y cobranza</strong> del colegio.</li>
+                <li>La totalidad de <strong>grupos, planteles y horarios escolares</strong> asociados.</li>
+                <li>Los registros de <strong>nóminas de empleados y cobranza financiera</strong> institucional.</li>
+                <li>El registro del colegio será retirado del <strong>Directorio de Instituciones Educativas</strong>.</li>
+              </ul>
+            </div>
+
+            {/* Lo que se PRESERVA y REASIGNA */}
+            <div className="p-4 bg-emerald-50/90 border border-emerald-200 rounded-2xl text-xs space-y-2">
+              <p className="font-black text-emerald-900 flex items-center gap-1.5 text-xs uppercase tracking-wide">
+                <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+                Garantía de Preservación y Acreditación Curricular:
+              </p>
+              <ul className="text-emerald-800 space-y-1 pl-4 list-disc text-[11px] leading-relaxed">
+                <li><strong>Libros Digitales:</strong> Se mantendrán al 100% en la Bóveda Curricular con todos sus capítulos, páginas y temas mapeados.</li>
+                <li><strong>Planeaciones NEM:</strong> Se conservan íntegras en la Bóveda Curricular local.</li>
+                <li><strong>Actividades del Lienzo Digital:</strong> Se mantienen a salvo y disponibles en el sistema.</li>
+                <li><strong>Acreditación Oficial:</strong> Todas las planeaciones y actividades quedan acreditadas y asignadas formalmente al <strong>Prof. Israel López Ángeles</strong>.</li>
+              </ul>
+            </div>
+
+            {/* Input de confirmación */}
+            <div className="space-y-1.5 pt-1">
+              <label className="text-xs font-bold text-slate-700 block">
+                Para confirmar la eliminación total, escribe <span className="font-mono font-black text-rose-600">ELIMINAR</span> a continuación:
+              </label>
+              <input
+                type="text"
+                placeholder="Escribe ELIMINAR para confirmar"
+                value={deleteConfirmationText}
+                onChange={(e) => setDeleteConfirmationText(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20"
+              />
+            </div>
+
+            {/* Botones de acción */}
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                disabled={isDeletingSchool}
+                onClick={() => {
+                  setShowDeleteSchoolModal(false);
+                  setSchoolToDelete(null);
+                  setDeleteConfirmationText('');
+                }}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={deleteConfirmationText.trim().toUpperCase() !== 'ELIMINAR' || isDeletingSchool}
+                onClick={handleConfirmDeleteSchool}
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-black shadow-md shadow-rose-600/25 transition cursor-pointer flex items-center gap-2"
+              >
+                {isDeletingSchool ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Eliminando y Reasignando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4" />
+                    <span>Confirmar Eliminación Total</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
