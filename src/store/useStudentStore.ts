@@ -156,10 +156,10 @@ export const useStudentStore = create<StudentStoreState>()(
         .eq('student_id', dbStudentId);
         
       if (error) {
-        console.error('Error updating avatar in Supabase:', error.message);
+        console.warn('Could not sync avatar in Supabase:', error.message);
       }
     } catch (err) {
-      console.error('Unexpected error updating avatar in Supabase:', err);
+      console.warn('Unexpected error updating avatar in Supabase:', err);
     }
 
     set((state) => {
