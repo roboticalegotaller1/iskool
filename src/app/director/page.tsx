@@ -59,6 +59,7 @@ import {
   resolveEffectiveSchoolId
 } from '@/store/useSchoolAdminStore';
 import { DetailedStudent, Subject, Campus, Group, UserProfile, SchoolGovernanceSettings, RestrictedTopicItem, DirectorLimitsSettings } from '@/types';
+import { SchoolBooksManagerSection } from '@/components/books/SchoolBooksManagerSection';
 
 type DirectorTab = 'overview' | 'governance' | 'school_control' | 'vault' | 'finances';
 
@@ -1489,6 +1490,15 @@ export default function DirectorPortalPage() {
                   Cuando un profesor de su colegio solicita una planeación, el sistema primero consulta en la Bóveda Curricular local (`planeaciones/`) si ya existe un nodo curricular adecuado. Únicamente en su ausencia se recurre al Motor de Inteligencia Artificial Pedagógica, garantizando consistencia y persistencia inmediata en formato Markdown bidireccional.
                 </div>
               </div>
+            </div>
+
+            {/* Gestor de Libros Digitales Institucionales en Bóveda Curricular */}
+            <div className="pt-2">
+              <SchoolBooksManagerSection 
+                schoolId={directorSchoolId} 
+                schoolName={schoolInfo.name} 
+                userRole={user?.role} 
+              />
             </div>
           </div>
         )}

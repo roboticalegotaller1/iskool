@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   Sparkles, BookOpen, FileText, Activity, Users, Brain, 
   Scale, Globe, Palette, Download, Save, Trash2, Plus, 
@@ -35,6 +35,9 @@ import {
   isEnglishSubject
 } from '@/lib/curriculumEngine';
 import { PedagogicalSuggestionsSection } from '@/components/teacher/PedagogicalSuggestionsSection';
+import { useSchoolBooksStore } from '@/store/useSchoolBooksStore';
+import { SmartBookNotebookModal } from '@/components/books/SmartBookNotebookModal';
+import { SchoolDigitalBook } from '@/types/schoolBooks';
 
 // ==========================================
 // BASE DE DATOS CURRICULAR DE LA NEM 2022
@@ -793,6 +796,66 @@ export function PlanningTab({ currentTeacher, subjects, schedulesList, groupsLis
   // --- Estados de Resultado ---
   const [activePlanning, setActivePlanning] = useState<any | null>(null);
   const [planningsHistory, setPlanningsHistory] = useState<any[]>([]);
+
+  // --- Estados y Consultas de Libros Digitales Escolares (0 Tokens) ---
+  const activeSchoolId = useSchoolAdminStore(state => state.activeSchoolId);
+  const effectiveSchoolId = currentTeacher?.school_id || activeSchoolId || 'sch-jjrosseau';
+  const findBookCitation = useSchoolBooksStore(state => state.findBookCitationForPlanning);
+
+  const [notebookModalBook, setNotebookModalBook] = useState<SchoolDigitalBook | null>(null);
+  const [showBookToc, setShowBookToc] = useState<boolean>(false);
+  const [isEnrichedWithBook, setIsEnrichedWithBook] = useState<boolean>(false);
+
+  // Mapeo exhaustivo determinístico del libro que sustenta la planeación
+  const matchingBookData = useMemo(() => {
+    if (!activePlanning) return null;
+    const query = `${activePlanning.title || ''} ${activePlanning.subjectName || ''} ${activePlanning.pda || ''} ${activePlanning.campoFormativo || ''}`;
+    return findBookCitation(
+      effectiveSchoolId,
+      activePlanning.levelId || selectedLevel || 'primaria-alta',
+      activePlanning.subjectName || activePlanning.subjectId || selectedSubject || '',
+      query
+    );
+  }, [activePlanning, effectiveSchoolId, findBookCitation, selectedLevel, selectedSubject]);
+
+  const handleEnrichPlanningWithBook = () => {
+    if (!activePlanning || !matchingBookData) return;
+    const { book, chapter, citation } = matchingBookData;
+
+    const updatedSesiones = (activePlanning.sesiones || []).map((s: SessionPlanItem, idx: number) => {
+      const exercise = chapter.ejerciciosPropuestos[idx % chapter.ejerciciosPropuestos.length];
+      const addedActivity = exercise 
+        ? ` Complementar con ejercicio de libro "${book.titulo}" (Pág. ${exercise.paginaReferencia}): ${exercise.instruccion}` 
+        : ` Consultar sustentación teórica en "${book.titulo}", Cap. ${chapter.numero} (Págs. ${chapter.rangoPaginas}).`;
+      return {
+        ...s,
+        actividadDesarrollo: s.actividadDesarrollo ? `${s.actividadDesarrollo}.${addedActivity}` : addedActivity,
+        libroInstitucional: {
+          titulo: book.titulo,
+          capitulo: `Cap. ${chapter.numero}: ${chapter.titulo}`,
+          paginas: chapter.rangoPaginas,
+          resumen: chapter.resumenTematico
+        }
+      };
+    });
+
+    const bookRefText = `\n\nBIBLIOGRAFÍA Y LIBRO INSTITUCIONAL DEL COLEGIO:\n• Obra: "${book.titulo}" (${book.autorEditorial})\n• Capítulo de Sustento: Capítulo ${chapter.numero}: ${chapter.titulo} (Páginas ${chapter.rangoPaginas})\n• Conceptos clave integrados: ${chapter.conceptosClave.join(', ')}\n• Ejes de trabajo: ${chapter.resumenTematico}`;
+
+    const updatedPlanning = {
+      ...activePlanning,
+      sesiones: updatedSesiones,
+      libroInstitucionalRef: citation,
+      materiales: (activePlanning.materiales || '') + bookRefText
+    };
+
+    setActivePlanning(updatedPlanning);
+    setIsEnrichedWithBook(true);
+
+    const updatedHistory = planningsHistory.map((p: any) => p.id === activePlanning.id ? updatedPlanning : p);
+    saveHistory(updatedHistory);
+
+    alert(`✨ ¡Planeación enriquecida exitosamente!\nSe integraron las referencias del libro "${book.titulo}", Capítulo ${chapter.numero} (Páginas ${chapter.rangoPaginas}) en las actividades y entregables de cada sesión.`);
+  };
 
   // Inicializar Asignatura según las disponibles para el maestro si aún no hay una seleccionada
   useEffect(() => {
@@ -2273,6 +2336,156 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                 </div>
               )}
 
+              {/* SECCIÓN INSTITUCIONAL: SUSTENTO BIBLIOGRÁFICO EN LIBRO DIGITAL DEL COLEGIO */}
+              {matchingBookData && (
+                <div className="mb-6 p-5 rounded-2xl bg-gradient-to-br from-indigo-50/90 via-purple-50/50 to-blue-50/70 dark:from-indigo-950/40 dark:via-purple-950/30 dark:to-blue-950/30 border-2 border-indigo-200 dark:border-indigo-800 shadow-xs print-section">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-indigo-200/70 dark:border-indigo-800/70">
+                    <div className="flex items-center gap-3">
+                      <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-md flex-shrink-0">
+                        <BookOpen className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
+                            Bóveda Curricular • Libro de Texto Institucional
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-indigo-100 dark:bg-indigo-900/60 text-indigo-800 dark:text-indigo-200">
+                            {matchingBookData.book.schoolName}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                            0 Tokens • Mapeo Exhaustivo
+                          </span>
+                        </div>
+                        <h4 className="text-base font-black text-zinc-900 dark:text-white leading-tight mt-0.5">
+                          {matchingBookData.book.titulo}
+                        </h4>
+                        <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                          {matchingBookData.book.autorEditorial} • {matchingBookData.book.materia} ({matchingBookData.book.grado})
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 self-start sm:self-center no-print">
+                      <button
+                        type="button"
+                        onClick={() => setNotebookModalBook(matchingBookData.book)}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-md shadow-purple-600/20 hover:scale-102 transition-all cursor-pointer"
+                        title="Hacer preguntas por voz o texto con respuestas fundamentadas en el libro"
+                      >
+                        <Sparkles className="h-3.5 w-3.5" />
+                        <span>Cuaderno Inteligente (Voz / Texto)</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleEnrichPlanningWithBook}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shadow-md shadow-indigo-600/20 hover:scale-102 transition-all cursor-pointer"
+                        title="Integrar citas exactas de páginas y ejercicios en las sesiones"
+                      >
+                        <Wand2 className="h-3.5 w-3.5" />
+                        <span>{isEnrichedWithBook ? 'Actualizar Enriquecimiento' : 'Enriquecer con este Libro'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Datos del Capítulo de Sustento y Páginas */}
+                  <div className="mt-3.5 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                    <div className="bg-white/80 dark:bg-zinc-900/80 p-3 rounded-xl border border-indigo-150 dark:border-indigo-900/40 md:col-span-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[9.5px] font-black text-indigo-700 dark:text-indigo-300 uppercase">
+                          Capítulo de Sustento Curricular
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-md bg-indigo-600 text-white font-black text-[10px]">
+                          Páginas {matchingBookData.chapter.rangoPaginas}
+                        </span>
+                      </div>
+                      <h5 className="font-black text-sm text-zinc-900 dark:text-white">
+                        Capítulo {matchingBookData.chapter.numero}: {matchingBookData.chapter.titulo}
+                      </h5>
+                      <p className="text-[11.5px] text-zinc-700 dark:text-zinc-300 mt-1 leading-relaxed">
+                        {matchingBookData.chapter.resumenTematico}
+                      </p>
+
+                      {/* Conceptos Clave */}
+                      <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                        <span className="text-[9.5px] font-bold text-zinc-400 self-center">Conceptos Clave:</span>
+                        {matchingBookData.chapter.conceptosClave.map((c: string, cIdx: number) => (
+                          <span key={cIdx} className="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-[10px] font-semibold border border-indigo-150 dark:border-indigo-900/50">
+                            {c}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="bg-white/80 dark:bg-zinc-900/80 p-3 rounded-xl border border-indigo-150 dark:border-indigo-900/40 flex flex-col justify-between">
+                      <div>
+                        <span className="text-[9.5px] font-black text-purple-700 dark:text-purple-300 uppercase block mb-1">
+                          Actividad Sugerida del Libro
+                        </span>
+                        <p className="text-[11px] text-zinc-700 dark:text-zinc-300 leading-snug">
+                          {matchingBookData.chapter.ejerciciosPropuestos[0]?.instruccion || 'Resolver los retos propuestos en el capítulo.'}
+                        </p>
+                        <span className="text-[9.5px] text-zinc-400 block mt-1">
+                          📄 Ejercicio en Página {matchingBookData.chapter.ejerciciosPropuestos[0]?.paginaReferencia || matchingBookData.chapter.paginaInicio + 1}
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setShowBookToc(!showBookToc)}
+                        className="mt-3 text-[10px] font-black text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 flex items-center justify-between p-2 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/30 hover:bg-indigo-100/50 cursor-pointer no-print transition-all"
+                      >
+                        <span>{showBookToc ? '▲ Ocultar Índice del Libro' : '▼ Ver Índice Completo del Libro'}</span>
+                        <BookMarked className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Índice Expandible de Todo el Libro */}
+                  {showBookToc && (
+                    <div className="mt-3.5 p-4 rounded-xl bg-white dark:bg-zinc-900 border border-indigo-200 dark:border-indigo-800 space-y-2 animate-fade-in no-print">
+                      <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-2">
+                        <span className="text-xs font-black text-zinc-900 dark:text-white flex items-center gap-1.5">
+                          <BookMarked className="w-4 h-4 text-indigo-600" />
+                          Índice Analítico Completo — {matchingBookData.book.titulo}
+                        </span>
+                        <span className="text-[10px] text-zinc-400">
+                          {matchingBookData.book.capitulos.length} Capítulos Mapeados • {matchingBookData.book.totalPaginas} Páginas
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1 max-h-60 overflow-y-auto">
+                        {matchingBookData.book.capitulos.map((ch: any) => {
+                          const isCurrent = ch.numero === matchingBookData.chapter.numero;
+                          return (
+                            <div
+                              key={ch.numero}
+                              className={`p-2.5 rounded-lg border transition-all ${
+                                isCurrent 
+                                  ? 'bg-indigo-50/80 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-700 font-bold' 
+                                  : 'bg-zinc-50 dark:bg-zinc-850/50 border-zinc-200 dark:border-zinc-800'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-black text-zinc-800 dark:text-zinc-200">
+                                  Cap. {ch.numero}: {ch.titulo}
+                                </span>
+                                <span className="text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                                  Págs. {ch.rangoPaginas}
+                                </span>
+                              </div>
+                              <p className="text-[10.5px] text-zinc-500 dark:text-zinc-400 line-clamp-1 mt-0.5">
+                                {ch.subtemas.join(' • ')}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* III. Propuesta del Proyecto Final Integrador */}
               {activePlanning.proyectoIntegrador && (
                 <div className="mb-6 bg-amber-50/50 dark:bg-amber-950/20 p-5 rounded-2xl border border-amber-200/60 dark:border-amber-900/40 flex flex-col gap-3 print-avoid-break">
@@ -2409,8 +2622,8 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                           </div>
                         )}
 
-                        {/* Referencia a Libros de la SEP y Entregable */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-[11px] pt-1">
+                        {/* Referencia a Libros de la SEP, Libro Institucional del Colegio y Entregable */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-[11px] pt-1">
                           <div className="flex items-start gap-2 bg-purple-50/50 dark:bg-purple-950/20 p-2 rounded-xl border border-purple-100 dark:border-purple-900/30">
                             <BookMarked className="h-4 w-4 text-purple-600 flex-shrink-0 mt-0.5" />
                             <div>
@@ -2419,6 +2632,21 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                               <span className="text-purple-600 dark:text-purple-400 font-extrabold ml-1">({sesion.libroSep?.paginas})</span>
                             </div>
                           </div>
+
+                          {(sesion.libroInstitucional || matchingBookData) && (
+                            <div className="flex items-start gap-2 bg-indigo-50/50 dark:bg-indigo-950/20 p-2 rounded-xl border border-indigo-150 dark:border-indigo-900/30">
+                              <BookOpen className="h-4 w-4 text-indigo-600 flex-shrink-0 mt-0.5" />
+                              <div>
+                                <span className="font-bold text-[9px] text-indigo-700 dark:text-indigo-300 uppercase block">Libro Digital del Colegio:</span>
+                                <span className="font-bold text-zinc-850 dark:text-zinc-150">
+                                  {sesion.libroInstitucional?.titulo || matchingBookData?.book.titulo}
+                                </span>
+                                <span className="text-indigo-600 dark:text-indigo-400 font-extrabold ml-1">
+                                  (Cap. {matchingBookData?.chapter.numero} • Págs. {sesion.libroInstitucional?.paginas || matchingBookData?.chapter.rangoPaginas})
+                                </span>
+                              </div>
+                            </div>
+                          )}
 
                           <div className="flex items-start gap-2 bg-emerald-50/50 dark:bg-emerald-950/20 p-2 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
                             <CheckSquare className="h-4 w-4 text-emerald-600 flex-shrink-0 mt-0.5" />
@@ -2998,6 +3226,14 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
             </div>
           )}
         </div>
+      )}
+
+      {/* MODAL DEL CUADERNO DE ESTUDIO INTELIGENTE (VOZ / TEXTO - 0 TOKENS) */}
+      {notebookModalBook && (
+        <SmartBookNotebookModal
+          book={notebookModalBook}
+          onClose={() => setNotebookModalBook(null)}
+        />
       )}
     </div>
   );

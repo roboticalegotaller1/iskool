@@ -23,6 +23,12 @@ export interface SessionPlanItem {
     paginas: string;
     seccion: string;
   };
+  libroInstitucional?: {
+    titulo: string;
+    capitulo: string;
+    paginas: string;
+    resumen?: string;
+  };
   materiales: string[];
   entregableSesion: string;
 }

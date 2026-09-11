@@ -75,8 +75,9 @@ import {
 } from '@/store/useSchoolAdminStore';
 import { DetailedStudent, Subject, GroupAnnualPlan, SyllabusTopic, Campus, Group, canManageTargetRole, StaffPayrollRecord, isPlatformSuperUser, StudentDeletionAuditLog, UserRole } from '@/types';
 import ExecutiveAnalyticsStudio from '@/components/admin/ExecutiveAnalyticsStudio';
+import { SuperUserCompendiumStudio } from '@/components/books/SuperUserCompendiumStudio';
 
-type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll' | 'analytics' | 'deletions';
+type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll' | 'analytics' | 'deletions' | 'books_compendium';
 
 export default function SuperUserAdminPage() {
   const { user, loading: authLoading } = useAuth();
@@ -1357,6 +1358,26 @@ export default function SuperUserAdminPage() {
       {/* VISTA ESPECIAL: ESTUDIO EJECUTIVO DE CONTROL ANALÍTICO (VOZ Y TEXTO - 0 TOKENS) */}
       {activeTab === 'analytics' ? (
         <ExecutiveAnalyticsStudio onBack={() => setActiveTab('overview')} />
+      ) : activeTab === 'books_compendium' ? (
+        <div className="flex-1 flex flex-col min-h-screen bg-slate-50 dark:bg-zinc-950">
+          <header className="sticky top-0 z-40 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-zinc-800 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setActiveTab('overview')}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 text-xs font-bold text-slate-700 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700 transition-all cursor-pointer"
+              >
+                <ChevronLeft className="h-4 w-4 text-purple-600" /> Volver al Panel
+              </button>
+              <div>
+                <h1 className="text-base font-black text-slate-900 dark:text-white">Bóveda Curricular & Compendios de Información Verificada</h1>
+                <p className="text-xs text-slate-500">Unificación de libros digitales escolares • Motor Multi-Colegio Super Usuario</p>
+              </div>
+            </div>
+          </header>
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+            <SuperUserCompendiumStudio />
+          </main>
+        </div>
       ) : (!activeSchoolId && isSuperUser) ? (
         <div className="flex-1 flex flex-col">
           {/* MULTI-SCHOOL GLOBAL HEADER */}
@@ -1379,6 +1400,13 @@ export default function SuperUserAdminPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => setActiveTab('books_compendium')}
+                className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-lg shadow-purple-600/30 hover:scale-102 transition-all cursor-pointer shrink-0"
+              >
+                <Brain className="h-4 w-4" /> <span>Compendios & Libros Globales</span>
+              </button>
+
               <button
                 onClick={() => setActiveTab('analytics')}
                 className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black shadow-lg shadow-cyan-600/30 hover:scale-102 transition-all cursor-pointer shrink-0"
@@ -1902,6 +1930,13 @@ export default function SuperUserAdminPage() {
                 className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border border-indigo-200"
               >
                 <Sparkles className="h-4 w-4 text-indigo-600 animate-pulse" /> Consultas & Reportes Inteligentes
+              </button>
+
+              <button
+                onClick={() => setActiveTab('books_compendium')}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-purple-700 hover:text-purple-900 hover:bg-purple-50 border border-purple-200"
+              >
+                <Brain className="h-4 w-4 text-purple-600" /> Bóveda & Compendios
               </button>
             </div>
 

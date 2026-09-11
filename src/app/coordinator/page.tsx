@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { DetailedStudent, ClassSchedule, Group, SchoolSettings, UserProfile, ROLE_HIERARCHY_LEVEL, UserRole } from '@/types';
 import { getStudentAvatarUrl } from '@/utils/studentAvatar';
+import { SchoolBooksManagerSection } from '@/components/books/SchoolBooksManagerSection';
 
 export default function CoordinatorDashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -156,7 +157,7 @@ export default function CoordinatorDashboard() {
   const subjects = subjectsList;
 
   // Gestión de Pestañas
-  const [activeTab, setActiveTab] = useState<'students' | 'groups' | 'schedules' | 'settings'>('students');
+  const [activeTab, setActiveTab] = useState<'students' | 'groups' | 'schedules' | 'settings' | 'books'>('students');
 
   // --- ESTADOS DE GESTIÓN Y EDICIÓN DE ALUMNOS ---
   const [isEditStudentModalOpen, setIsEditStudentModalOpen] = useState(false);
@@ -747,6 +748,18 @@ export default function CoordinatorDashboard() {
               }`}
             >
               Identidad de Escuela
+            </button>
+            <button
+              onClick={() => setActiveTab('books')}
+              style={activeTab === 'books' ? { color: 'var(--brand-primary)' } : undefined}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'books'
+                  ? 'bg-white dark:bg-zinc-800 shadow-sm text-purple-600'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400'
+              }`}
+            >
+              <BookOpen className="w-3.5 h-3.5 text-purple-600" />
+              <span>Libros de Texto & Bóveda</span>
             </button>
             {currentGovernance.allowCoordinatorBilling ? (
               <Link
@@ -1931,6 +1944,17 @@ export default function CoordinatorDashboard() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* --- PESTAÑA 5: LIBROS DE TEXTO DIGITALES & BÓVEDA CURRICULAR --- */}
+        {activeTab === 'books' && (
+          <div className="animate-fade-in">
+            <SchoolBooksManagerSection 
+              schoolId={effectiveSchoolId} 
+              schoolName={schoolInfo.name} 
+              userRole={user?.role} 
+            />
           </div>
         )}
 
