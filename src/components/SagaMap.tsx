@@ -59,7 +59,7 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
     const x = startX + index * stepX;
     
     // Smooth wavy pattern for Y: alternates heights to create an organic, beautiful path with vertical clearance for 3x character
-    const wavePattern = [56, 42, 68, 46, 64, 40, 70];
+    const wavePattern = [60, 50, 72, 52, 66, 48, 72];
     const y = wavePattern[index % wavePattern.length];
     
     return { x, y };
@@ -509,10 +509,10 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
         </div>
 
         {/* Responsive Scrolling Map Container with ample vertical room */}
-        <div className="w-full overflow-x-auto overflow-y-hidden relative h-[520px] pb-4 mt-8 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
+        <div className="w-full overflow-x-auto overflow-y-hidden relative h-[540px] pt-2 pb-4 mt-6 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
           
           {/* Map canvas with relative positions */}
-          <div style={{ width: `${mapCanvasWidth}px` }} className="h-[460px] relative mx-auto my-auto px-10">
+          <div style={{ width: `${mapCanvasWidth}px` }} className="h-[480px] relative mx-auto my-auto px-10">
             
             {/* SVG Connecting Path */}
             {nodes.length >= 2 && (
@@ -623,7 +623,7 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
                   style={{
                     left: `${playerX}%`,
                     top: `${playerY}%`,
-                    transform: 'translate(-50%, -90%)',
+                    transform: 'translate(-50%, -83%)',
                   }}
                 >
                   {/* Distintivo de Posición Actual con Proporción de Mascota */}
