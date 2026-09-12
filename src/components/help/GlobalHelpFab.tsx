@@ -31,20 +31,31 @@ export const GlobalHelpFab: React.FC = () => {
   // No mostrar en la propia página de guía para evitar redundancia
   if (pathname === '/guide') return null;
 
-  // Detectar rol actual basado en la ruta o usuario
+  const isDirectorOrAdmin = Boolean(
+    user && ['superadmin', 'admin', 'director', 'coordinator', 'owner'].includes(user.role as any)
+  );
+
+  // Detectar rol actual basado estrictamente en el nivel jerárquico del usuario
   const getActiveRole = (): 'teacher' | 'student' | 'parent' | 'admin' => {
+    if (user) {
+      if (user.role === 'student') return 'student';
+      if (user.role === 'teacher') return 'teacher';
+      if (user.role === 'parent' || user.role === 'tutor') return 'parent';
+      if (isDirectorOrAdmin) {
+        if (pathname.startsWith('/teacher')) return 'teacher';
+        if (pathname.startsWith('/student')) return 'student';
+        if (pathname.startsWith('/parent')) return 'parent';
+        return 'admin';
+      }
+    }
     if (pathname.startsWith('/teacher')) return 'teacher';
     if (pathname.startsWith('/student')) return 'student';
     if (pathname.startsWith('/parent')) return 'parent';
-    if (pathname.startsWith('/coordinator') || pathname.startsWith('/admin')) return 'admin';
-    if (user?.role === 'teacher') return 'teacher';
-    if (user?.role === 'parent') return 'parent';
-    if (user?.role === 'coordinator' || user?.role === 'admin') return 'admin';
     return 'student';
   };
 
   const role = getActiveRole();
-  const roleData = GUIDE_ROLE_DATA[role] || GUIDE_ROLE_DATA.teacher;
+  const roleData = GUIDE_ROLE_DATA[role] || GUIDE_ROLE_DATA.student;
 
   return (
     <>
@@ -267,7 +278,15 @@ export const GlobalHelpFab: React.FC = () => {
                   onClick={() => setIsOpen(false)}
                   className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 hover:from-purple-700 transition-all text-center"
                 >
-                  <span>Abrir Manual y Guía Completa</span>
+                  <span>
+                    {role === 'student' 
+                      ? 'Abrir Guía Oficial de Alumno' 
+                      : role === 'teacher' 
+                        ? 'Abrir Guía Oficial Docente' 
+                        : role === 'parent' 
+                          ? 'Abrir Guía del Portal Familiar' 
+                          : 'Abrir Centro de Ayuda (Acceso Dirección)'}
+                  </span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>

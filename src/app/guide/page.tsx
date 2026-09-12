@@ -149,13 +149,71 @@ function GuideContent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
 
-  // Determinar rol activo inicial (del query param, del usuario logueado o profesor por defecto)
-  const initialRole = (searchParams.get('role') as any) || user?.role || 'teacher';
-  const [activeRole, setActiveRole] = useState<'teacher' | 'student' | 'parent' | 'admin'>(
-    ['teacher', 'student', 'parent', 'admin', 'coordinator'].includes(initialRole) 
-      ? (initialRole === 'coordinator' ? 'admin' : initialRole) 
-      : 'teacher'
+  // 1. Determinar si el usuario tiene privilegios de Dirección / Coordinación / Superadmin
+  const isDirectorOrAdmin = Boolean(
+    user && ['superadmin', 'admin', 'director', 'coordinator', 'owner'].includes(user.role as any)
   );
+
+  // 2. Determinar los roles estrictamente permitidos según el nivel jerárquico
+  const allowedRoles = useMemo<('teacher' | 'student' | 'parent' | 'admin')[]>(() => {
+    if (!user) {
+      // Usuario visitante no autenticado: puede explorar la guía
+      return ['teacher', 'student', 'parent', 'admin'];
+    }
+    if (isDirectorOrAdmin) {
+      // Dirección y Coordinación pueden ver TODA la ayuda institucional
+      return ['teacher', 'student', 'parent', 'admin'];
+    }
+    if (user.role === 'teacher') {
+      // Profesor solo ve la ayuda de su portal
+      return ['teacher'];
+    }
+    if (user.role === 'parent' || user.role === 'tutor') {
+      // Familiar solo ve la ayuda familiar
+      return ['parent'];
+    }
+    if (user.role === 'student') {
+      // Alumno solo ve la ayuda de alumno
+      return ['student'];
+    }
+    return ['student'];
+  }, [user, isDirectorOrAdmin]);
+
+  // 3. Resolución segura del rol activo: se fuerza estrictamente a allowedRoles
+  const requestedRole = searchParams.get('role') as any;
+  const initialRole = useMemo(() => {
+    if (allowedRoles.length === 1) {
+      return allowedRoles[0];
+    }
+    if (requestedRole && allowedRoles.includes(requestedRole)) {
+      return requestedRole;
+    }
+    if (user?.role && allowedRoles.includes(user.role as any)) {
+      return user.role as any;
+    }
+    return allowedRoles[0] || 'student';
+  }, [allowedRoles, requestedRole, user]);
+
+  const [activeRole, setActiveRole] = useState<'teacher' | 'student' | 'parent' | 'admin'>(initialRole);
+
+  // Advertencia amigable si intentó acceder a un rol no autorizado
+  const hadUnauthorizedAttempt = Boolean(
+    user && !isDirectorOrAdmin && requestedRole && !allowedRoles.includes(requestedRole)
+  );
+
+  // Forzar estrictamente el rol si cambia el usuario o el rol activo queda fuera de allowedRoles
+  React.useEffect(() => {
+    if (!allowedRoles.includes(activeRole)) {
+      setActiveRole(allowedRoles[0] || 'student');
+    }
+  }, [allowedRoles, activeRole]);
+
+  // Si cambia el query param y el usuario es directivo, actualizar activeRole
+  React.useEffect(() => {
+    if (isDirectorOrAdmin && requestedRole && allowedRoles.includes(requestedRole)) {
+      setActiveRole(requestedRole);
+    }
+  }, [isDirectorOrAdmin, requestedRole, allowedRoles]);
 
   // Estados de Búsqueda Global en la Guía
   const [guideSearchQuery, setGuideSearchQuery] = useState('');
@@ -246,6 +304,18 @@ function GuideContent() {
     setTimeout(() => setCopiedSimId(null), 2500);
   };
 
+  const getReturnUrl = () => {
+    if (!user) return '/';
+    if (user.role === 'student') return '/student';
+    if (user.role === 'teacher') return '/teacher';
+    if (user.role === 'parent' || user.role === 'tutor') return '/parent';
+    if (isDirectorOrAdmin) {
+      if (user.role === 'admin' || user.role === 'superadmin') return '/admin';
+      return '/coordinator';
+    }
+    return '/';
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-50 pb-20 selection:bg-purple-500 selection:text-white">
       {/* Barra de Navegación Superior */}
@@ -253,12 +323,12 @@ function GuideContent() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <Link 
-              href={activeRole === 'teacher' ? '/teacher' : activeRole === 'student' ? '/student' : activeRole === 'parent' ? '/parent' : '/admin'}
+              href={getReturnUrl()}
               className="p-2 rounded-xl bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors flex items-center gap-1.5 text-xs font-bold"
-              title="Volver a la plataforma"
+              title="Volver a mi portal escolar"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Volver a ISkool</span>
+              <span className="hidden sm:inline">Volver a Mi Portal</span>
             </Link>
 
             <div className="h-6 w-[1px] bg-slate-200 dark:bg-zinc-800 hidden sm:block" />
@@ -270,9 +340,16 @@ function GuideContent() {
               <div>
                 <h1 className="text-sm sm:text-base font-black text-slate-900 dark:text-white leading-tight flex items-center gap-2">
                   <span>Centro de Ayuda & Guía Maestra</span>
-                  <span className="px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 text-[10px] font-black uppercase">
-                    v2.4
-                  </span>
+                  {user && !isDirectorOrAdmin && (
+                    <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 text-[10px] font-bold">
+                      {user.role === 'student' ? '🎒 Alumno' : user.role === 'teacher' ? '👨‍🏫 Profesor' : '👨‍👩‍👧 Familia'}
+                    </span>
+                  )}
+                  {isDirectorOrAdmin && (
+                    <span className="px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 text-[10px] font-black uppercase">
+                      🏛️ Dirección (Acceso Total)
+                    </span>
+                  )}
                 </h1>
                 <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400">
                   Colegio Anglo Mexicano • Ecosistema ISkool 2026
@@ -352,68 +429,276 @@ function GuideContent() {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 space-y-10">
-        {/* Selector de Segmento / Rol de Usuario */}
-        <div className="p-2 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-md">
-          <div className="text-center pb-2 pt-1">
-            <span className="text-[11px] font-black uppercase text-slate-400 dark:text-zinc-500 tracking-wider">
-              Selecciona tu Perfil o Segmento Institucional:
-            </span>
+        {/* Aviso de Redirección / Restricción de Nivel si hubo intento no autorizado */}
+        {hadUnauthorizedAttempt && (
+          <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-900 dark:text-amber-200 text-xs font-bold flex items-center justify-between gap-3 animate-fade-in shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+              <span>
+                <strong>Acceso Ajustado Automáticamente:</strong> Tu cuenta institucional tiene asignado el nivel de{' '}
+                <span className="underline font-black">
+                  {user?.role === 'student' ? 'Alumno' : user?.role === 'teacher' ? 'Docente' : 'Tutor / Familiar'}
+                </span>
+                . La consulta de otros portales está reservada exclusivamente para el personal de Dirección.
+              </span>
+            </div>
           </div>
+        )}
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            <button
-              type="button"
-              onClick={() => setActiveRole('teacher')}
-              className={`p-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
-                activeRole === 'teacher'
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/25 scale-[1.02]'
-                  : 'bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800'
-              }`}
-            >
-              <GraduationCap className="w-4 h-4 shrink-0" />
-              <span>👨‍🏫 Soy Profesor</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveRole('student')}
-              className={`p-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
-                activeRole === 'student'
-                  ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 shadow-lg shadow-amber-500/25 scale-[1.02]'
-                  : 'bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800'
-              }`}
-            >
-              <Gamepad2 className="w-4 h-4 shrink-0" />
-              <span>🎒 Soy Alumno</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveRole('parent')}
-              className={`p-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
-                activeRole === 'parent'
-                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/25 scale-[1.02]'
-                  : 'bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800'
-              }`}
-            >
-              <Users className="w-4 h-4 shrink-0" />
-              <span>👨‍👩‍👧 Tutor / Familia</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveRole('admin')}
-              className={`p-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
-                activeRole === 'admin'
-                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg shadow-blue-500/25 scale-[1.02]'
-                  : 'bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800'
-              }`}
-            >
-              <ShieldCheck className="w-4 h-4 shrink-0" />
-              <span>🏛️ Dirección / Admin</span>
-            </button>
+        {/* ================= BARRA DE ACCESO SEGÚN NIVEL DE USUARIO ================= */}
+        {/* CASO 1: Alumno (Solo ve ayuda de alumno) */}
+        {user && user.role === 'student' && (
+          <div className="p-4 sm:p-5 rounded-3xl bg-amber-500/10 border-2 border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-yellow-500 text-slate-950 flex items-center justify-center font-black shadow-md shadow-amber-500/20 shrink-0">
+                <Gamepad2 className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                    Nivel Autorizado: Alumno / Explorador
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-300 text-[10px] font-black flex items-center gap-1">
+                    <Lock className="w-3 h-3" />
+                    <span>Vista Exclusiva</span>
+                  </span>
+                </div>
+                <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+                  Guía Oficial de Aventuras, Mascotas Místicas, Santuario y Avatar
+                </h2>
+                <p className="text-xs text-slate-600 dark:text-zinc-400 mt-0.5">
+                  Colegio Anglo Mexicano • Tu perfil visualiza exclusivamente las guías y herramientas asignadas a tus tareas y mapa escolar.
+                </p>
+              </div>
+            </div>
+            <div className="shrink-0 flex items-center gap-2">
+              <Link
+                href="/student"
+                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs shadow-md shadow-amber-500/20 flex items-center gap-1.5 transition-all"
+              >
+                <Gamepad2 className="w-3.5 h-3.5" />
+                <span>Ir al Mapa de Misiones</span>
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* CASO 2: Profesor (Solo ve ayuda de profesor) */}
+        {user && user.role === 'teacher' && (
+          <div className="p-4 sm:p-5 rounded-3xl bg-indigo-500/10 border-2 border-indigo-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-black shadow-md shadow-purple-500/20 shrink-0">
+                <GraduationCap className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-400">
+                    Nivel Autorizado: Docente / Titular de Academia
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-800 dark:text-indigo-300 text-[10px] font-black flex items-center gap-1">
+                    <Lock className="w-3 h-3" />
+                    <span>Vista Exclusiva</span>
+                  </span>
+                </div>
+                <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+                  Guía Oficial de Bóveda Curricular, Libros SEP (0 Tokens) y Estudio Didáctico
+                </h2>
+                <p className="text-xs text-slate-600 dark:text-zinc-400 mt-0.5">
+                  Colegio Anglo Mexicano • Tu perfil visualiza exclusivamente las guías y herramientas asignadas a tu portal docente.
+                </p>
+              </div>
+            </div>
+            <div className="shrink-0 flex items-center gap-2">
+              <Link
+                href="/teacher"
+                className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md shadow-purple-500/20 flex items-center gap-1.5 transition-all"
+              >
+                <Database className="w-3.5 h-3.5" />
+                <span>Abrir Planificador</span>
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* CASO 3: Tutor / Padre de Familia (Solo ve ayuda familiar) */}
+        {user && (user.role === 'parent' || user.role === 'tutor') && (
+          <div className="p-4 sm:p-5 rounded-3xl bg-emerald-500/10 border-2 border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 text-white flex items-center justify-center font-black shadow-md shadow-emerald-500/20 shrink-0">
+                <Users className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                    Nivel Autorizado: Tutor / Familia
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-[10px] font-black flex items-center gap-1">
+                    <Lock className="w-3 h-3" />
+                    <span>Vista Exclusiva</span>
+                  </span>
+                </div>
+                <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+                  Guía Oficial del Portal Familiar • Monitoreo en Tiempo Real y Hábitos
+                </h2>
+                <p className="text-xs text-slate-600 dark:text-zinc-400 mt-0.5">
+                  Colegio Anglo Mexicano • Tu perfil visualiza exclusivamente las guías de acompañamiento para padres y tutores.
+                </p>
+              </div>
+            </div>
+            <div className="shrink-0 flex items-center gap-2">
+              <Link
+                href="/parent"
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md shadow-emerald-500/20 flex items-center gap-1.5 transition-all"
+              >
+                <Users className="w-3.5 h-3.5" />
+                <span>Ir al Panel Familiar</span>
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* CASO 4: Dirección / Coordinación / Superadmin (Acceso total a toda la ayuda) */}
+        {isDirectorOrAdmin && (
+          <div className="p-3 rounded-3xl bg-white dark:bg-zinc-900 border-2 border-purple-500/40 shadow-lg space-y-3">
+            <div className="px-3 pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-zinc-800 pb-2.5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-purple-600 text-white flex items-center justify-center font-black">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wide block">
+                    Panel Directivo: Permisos Globales para Ver Toda la Ayuda
+                  </span>
+                  <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400">
+                    Como directivo puedes auditar y consultar las guías de todos los niveles educativos:
+                  </span>
+                </div>
+              </div>
+              <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 uppercase tracking-wider">
+                🏛️ Acceso Total Concedido
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveRole('teacher')}
+                className={`p-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
+                  activeRole === 'teacher'
+                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/25 scale-[1.02]'
+                    : 'bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800'
+                }`}
+              >
+                <GraduationCap className="w-4 h-4 shrink-0" />
+                <span>👨‍🏫 Ayuda Profesores</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveRole('student')}
+                className={`p-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
+                  activeRole === 'student'
+                    ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 shadow-lg shadow-amber-500/25 scale-[1.02]'
+                    : 'bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800'
+                }`}
+              >
+                <Gamepad2 className="w-4 h-4 shrink-0" />
+                <span>🎒 Ayuda Alumnos</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveRole('parent')}
+                className={`p-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
+                  activeRole === 'parent'
+                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/25 scale-[1.02]'
+                    : 'bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800'
+                }`}
+              >
+                <Users className="w-4 h-4 shrink-0" />
+                <span>👨‍👩‍👧 Ayuda Tutores</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveRole('admin')}
+                className={`p-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
+                  activeRole === 'admin'
+                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg shadow-blue-500/25 scale-[1.02]'
+                    : 'bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800'
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4 shrink-0" />
+                <span>🏛️ Ayuda Dirección</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* CASO 5: Visitante no autenticado (Vista Previa Pública con selector libre) */}
+        {!user && (
+          <div className="p-3 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-md space-y-2">
+            <div className="text-center pb-1 pt-1">
+              <span className="text-[11px] font-black uppercase text-slate-400 dark:text-zinc-500 tracking-wider">
+                Exploración Pública de la Guía: Inicia sesión con tu cuenta para ingresar a tu nivel exclusivo:
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveRole('teacher')}
+                className={`p-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
+                  activeRole === 'teacher'
+                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/25 scale-[1.02]'
+                    : 'bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800'
+                }`}
+              >
+                <GraduationCap className="w-4 h-4 shrink-0" />
+                <span>👨‍🏫 Soy Profesor</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveRole('student')}
+                className={`p-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
+                  activeRole === 'student'
+                    ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 shadow-lg shadow-amber-500/25 scale-[1.02]'
+                    : 'bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800'
+                }`}
+              >
+                <Gamepad2 className="w-4 h-4 shrink-0" />
+                <span>🎒 Soy Alumno</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveRole('parent')}
+                className={`p-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
+                  activeRole === 'parent'
+                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/25 scale-[1.02]'
+                    : 'bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800'
+                }`}
+              >
+                <Users className="w-4 h-4 shrink-0" />
+                <span>👨‍👩‍👧 Tutor / Familia</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveRole('admin')}
+                className={`p-3.5 rounded-2xl font-black text-xs flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
+                  activeRole === 'admin'
+                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg shadow-blue-500/25 scale-[1.02]'
+                    : 'bg-slate-50 dark:bg-zinc-800/60 text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800'
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4 shrink-0" />
+                <span>🏛️ Dirección / Admin</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Buscador Rápido Global en la Guía */}
         <div className="relative">
