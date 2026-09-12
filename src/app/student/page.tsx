@@ -753,7 +753,7 @@ export default function StudentDashboard() {
               </div>
             </div>
 
-            {/* Mascota de Combate / Tamagotchi RPG */}
+            {/* Mascota de Acompañamiento / Compañero Digital */}
             <PetSanctuary onOpenHome={() => setIsSanctuaryHomeOpen(true)} />
 
           </div>

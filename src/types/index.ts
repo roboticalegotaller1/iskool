@@ -441,7 +441,7 @@ export interface StudentStats {
   // Preparatoria (Proyectos Productivos)
   funding_credits?: number;
 
-  // Tamagotchi RPG Mascotas y Compañeros Místicos
+  // Mascotas y Compañeros Místicos
   pet_stage?: PetEvolutionStage;
   pet_energy?: number;
   pet_happiness?: number;

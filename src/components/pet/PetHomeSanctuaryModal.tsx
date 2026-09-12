@@ -65,7 +65,7 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
     { id: 'coral_sanctuary', name: 'Cueva de Coral', icon: '🌊' }
   ];
 
-  // Acciones Tamagotchi
+  // Acciones del Compañero
   const handleFeed = () => {
     feedPetInSanctuary(activeStudentId);
   };
@@ -140,7 +140,7 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
                     Santuario & Hogar de {avatar.pet_name || 'Compañero'}
                   </h1>
                   <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0">
-                    Tamagotchi RPG
+                    Compañero Digital
                   </span>
                 </div>
                 <p className="text-[11px] text-zinc-400 truncate">Personaliza y cuida a tu compañero interactivo.</p>
@@ -195,7 +195,7 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
         </div>
 
         {/* ========================================================= */}
-        {/* HUD DE ESTADÍSTICAS TAMAGOTCHI & BOTONES DE ACCIÓN RÁPIDA */}
+        {/* HUD DE ESTADÍSTICAS DEL COMPAÑERO & ACCIONES RÁPIDAS      */}
         {/* ========================================================= */}
         <div className="px-3 sm:px-5 py-2 sm:py-2.5 bg-zinc-900/40 border-b border-zinc-800/80 flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 sm:gap-3">
           
@@ -282,7 +282,7 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
               </span>
             </button>
 
-            {/* Acciones Rápidas Tamagotchi */}
+            {/* Acciones Rápidas del Compañero */}
             <button
               onClick={handleFeed}
               title="Alimentar con monedas o comida (-20🪙)"

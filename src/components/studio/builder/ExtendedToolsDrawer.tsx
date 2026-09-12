@@ -48,7 +48,7 @@ interface ToolItem {
   gradient: string;
   glow: string;
   badge: string;
-  platformInspiration: string; // ej. "Tipo Kahoot / Quizizz", "Estilo Duolingo", "Laboratorio PhET"
+  platformInspiration: string; // Dinámica formativa, interactiva o pedagógica
 }
 
 export const ExtendedToolsDrawer: React.FC = () => {
@@ -67,7 +67,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
       gradient: 'from-teal-500 to-emerald-600 text-white',
       glow: 'shadow-teal-500/20',
       badge: 'Interactivo',
-      platformInspiration: 'Estilo Quizizz & Nearpod'
+      platformInspiration: 'Preguntas Interactivas Gamificadas'
     },
     {
       type: 'ordering_sequence',
@@ -78,7 +78,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
       gradient: 'from-blue-500 to-indigo-600 text-white',
       glow: 'shadow-blue-500/20',
       badge: 'Cronología',
-      platformInspiration: 'Tipo Kahoot Reorder'
+      platformInspiration: 'Ordenamiento y Secuencia Lógica'
     },
     {
       type: 'fill_in_blanks',
@@ -89,7 +89,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
       gradient: 'from-teal-500 to-emerald-600 text-white',
       glow: 'shadow-teal-500/20',
       badge: 'Comprensión',
-      platformInspiration: 'Estilo Duolingo'
+      platformInspiration: 'Laboratorio de Lenguaje Interactivo'
     },
     {
       type: 'open_poll_wordcloud',
@@ -100,7 +100,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
       gradient: 'from-cyan-500 to-teal-600 text-white',
       glow: 'shadow-cyan-500/20',
       badge: 'Evaluación IA',
-      platformInspiration: 'Nube de Ideas & Mentimeter'
+      platformInspiration: 'Lluvia de Ideas y Reflexión IA'
     },
     {
       type: 'quiz_question',
@@ -111,31 +111,31 @@ export const ExtendedToolsDrawer: React.FC = () => {
       gradient: 'from-emerald-500 to-teal-600 text-white',
       glow: 'shadow-emerald-500/20',
       badge: 'Reactivo',
-      platformInspiration: 'Estándar LMS'
+      platformInspiration: 'Reactivo Formativo Institucional'
     },
 
     // === 2. MULTIMEDIA & LABORATORIOS VIVOS ===
     {
       type: 'youtube_video',
       category: 'multimedia',
-      title: 'Video Interactivo de YouTube',
+      title: 'Cápsula de Video Interactivo',
       description: 'Incrusta cápsulas audiovisuales con marcas de tiempo y pausas formativas.',
       icon: Video,
       gradient: 'from-red-500 to-rose-600 text-white',
       glow: 'shadow-red-500/20',
       badge: 'Video',
-      platformInspiration: 'Tipo Edpuzzle'
+      platformInspiration: 'Video Formativo Interactivo'
     },
     {
       type: 'external_embed',
       category: 'multimedia',
       title: 'Simulador / Laboratorio Web',
-      description: 'Integra simuladores de física, química y matemáticas (PhET, GeoGebra, Desmos).',
+      description: 'Integra simuladores de física, química y matemáticas interactivos.',
       icon: Globe,
       gradient: 'from-cyan-500 to-blue-600 text-white',
       glow: 'shadow-cyan-500/20',
       badge: 'Laboratorio',
-      platformInspiration: 'PhET & GeoGebra Live'
+      platformInspiration: 'Simulador Científico Web'
     },
     {
       type: 'audio_sfx',
@@ -159,7 +159,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
       gradient: 'from-amber-500 to-orange-600 text-white',
       glow: 'shadow-amber-500/20',
       badge: 'Escape Room',
-      platformInspiration: 'Genially Breakout'
+      platformInspiration: 'Escape Room Gamificado'
     },
     {
       type: 'boss_enemy',
@@ -170,7 +170,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
       gradient: 'from-rose-500 to-red-600 text-white',
       glow: 'shadow-rose-500/20',
       badge: 'RPG Combate',
-      platformInspiration: 'Tipo Classcraft'
+      platformInspiration: 'Combate Pedagógico por Turnos'
     },
     {
       type: 'minigame_action',
@@ -181,7 +181,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
       gradient: 'from-emerald-500 to-teal-600 text-white',
       glow: 'shadow-emerald-500/20',
       badge: 'Minijuego',
-      platformInspiration: 'Tipo Blooket & Wordwall'
+      platformInspiration: 'Dinámica Lúdica Interactiva'
     },
     {
       type: 'reward_chest',
@@ -338,7 +338,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-tight">
-                      Catálogo de Herramientas LMS Gamificado
+                      Catálogo de Herramientas Pedagógicas Gamificadas
                     </h3>
                     <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
                       21 Mecánicas
@@ -408,7 +408,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
               >
                 <div className="flex items-center gap-1.5 font-bold">
                   <Globe className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
-                  <span>💡 ¿Buscas interactivos para tus clases? Explora nuestro Directorio de 50 Simuladores Web (PhET, GeoGebra, Desmos, NASA).</span>
+                  <span>💡 ¿Buscas interactivos para tus clases? Explora nuestro Directorio de 50 Simuladores y Laboratorios Web Interactivos.</span>
                 </div>
                 <span className="font-black text-cyan-700 dark:text-cyan-300 shrink-0 flex items-center gap-1">
                   Ver guía ➔

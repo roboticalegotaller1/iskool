@@ -883,7 +883,7 @@ function GuideContent() {
                       {selectedPetRace.desc}
                     </p>
                     <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-[11px] text-slate-200">
-                      <strong>💡 Mecánica Tamagotchi:</strong> Alimenta a tu compañero (5🪙) para llenar su barra de Hambre y juega con él (2🪙) para elevar su Felicidad al 100%.
+                      <strong>💡 Cuidado del Compañero:</strong> Alimenta a tu compañero (5🪙) para llenar su barra de Hambre y juega con él (2🪙) para elevar su Felicidad al 100%.
                     </div>
                   </div>
 

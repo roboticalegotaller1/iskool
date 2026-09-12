@@ -221,7 +221,7 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
         onClick={(e) => e.stopPropagation()}
       >
         {/* ========================================================================= */}
-        {/* BARRA SUPERIOR: PESTAÑAS DE JUEGO (Estilo Animal Crossing / Cozy RPG)     */}
+        {/* BARRA SUPERIOR: PESTAÑAS DE PERSONALIZACIÓN (Estilo Cozy RPG Lúdico)     */}
         {/* ========================================================================= */}
         <div className="px-3 sm:px-6 pt-2.5 sm:pt-4 pb-2 sm:pb-3 bg-[#F2E7D5] dark:bg-zinc-900/90 border-b border-[#E3D3BE] dark:border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-2 shrink-0">
           

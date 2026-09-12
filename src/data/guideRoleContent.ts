@@ -352,7 +352,7 @@ export const GUIDE_ROLE_DATA: Record<string, RoleGuideData> = {
         id: 'mascotas-vivas',
         title: 'Compañeros Místicos & Mascotas Vivas',
         category: 'Crianza Gamificada',
-        description: '10 razas elementales, 5 etapas de evolución por tareas completadas, caricias interactivas y barras Tamagotchi.',
+        description: '10 razas elementales, 5 etapas de evolución por tareas completadas, caricias interactivas y sistema de cuidado integral.',
         icon: 'Heart',
         benefit: 'Tu esfuerzo académico diario hace crecer y fortalecer a tu compañero mágico.',
         actionUrl: '/student',

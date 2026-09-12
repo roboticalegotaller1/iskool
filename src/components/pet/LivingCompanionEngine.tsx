@@ -87,7 +87,7 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
     };
   }, [scheduleNextAction]);
 
-  // 2. SISTEMA INTERACTIVO DE CARICIAS (Inspiración Pokémon GO)
+  // 2. SISTEMA INTERACTIVO DE CARICIAS (Dinámica Háptica de Afecto)
   const handlePointerInteraction = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
@@ -252,7 +252,7 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
           />
         </div>
 
-        {/* Corazones Flotantes (Pokémon GO Petting Effect) */}
+        {/* Corazones Flotantes (Efecto Dinámico de Afecto) */}
         {floatingHearts.map(heart => (
           <div
             key={heart.id}
