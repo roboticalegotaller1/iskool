@@ -223,9 +223,9 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
         {/* ========================================================================= */}
         {/* BARRA SUPERIOR: PESTAÑAS DE JUEGO (Estilo Animal Crossing / Cozy RPG)     */}
         {/* ========================================================================= */}
-        <div className="px-6 pt-5 pb-3 bg-[#F2E7D5] dark:bg-zinc-900/90 border-b border-[#E3D3BE] dark:border-zinc-800 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2 overflow-x-auto">
-            <span className="hidden sm:inline-flex items-center justify-center w-6 h-6 rounded bg-[#E4D4BE] dark:bg-zinc-800 text-[10px] font-black text-zinc-600 dark:text-zinc-300 shadow-inner">
+        <div className="px-3 sm:px-6 pt-3 sm:pt-5 pb-2 sm:pb-3 bg-[#F2E7D5] dark:bg-zinc-900/90 border-b border-[#E3D3BE] dark:border-zinc-800 flex items-center justify-between gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none max-w-[calc(100%-110px)] sm:max-w-none">
+            <span className="hidden sm:inline-flex items-center justify-center w-6 h-6 rounded bg-[#E4D4BE] dark:bg-zinc-800 text-[10px] font-black text-zinc-600 dark:text-zinc-300 shadow-inner shrink-0">
               Q
             </span>
 
@@ -236,7 +236,7 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                   key={tab.id}
                   type="button"
                   onClick={() => handleTabChange(tab.id)}
-                  className={`px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-black tracking-wider transition-all flex items-center gap-2 shadow-sm cursor-pointer ${
+                  className={`px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-black tracking-wider transition-all flex items-center gap-1.5 shadow-sm cursor-pointer whitespace-nowrap shrink-0 ${
                     isActive
                       ? 'bg-[#FFE6C7] dark:bg-amber-500/20 text-[#7A3E00] dark:text-amber-300 ring-2 ring-[#DCA876] dark:ring-amber-500/50 scale-105'
                       : 'bg-[#FAF3E8] dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-white hover:text-zinc-900 dark:hover:bg-zinc-700'
@@ -248,15 +248,15 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
               );
             })}
 
-            <span className="hidden sm:inline-flex items-center justify-center w-6 h-6 rounded bg-[#E4D4BE] dark:bg-zinc-800 text-[10px] font-black text-zinc-600 dark:text-zinc-300 shadow-inner">
+            <span className="hidden sm:inline-flex items-center justify-center w-6 h-6 rounded bg-[#E4D4BE] dark:bg-zinc-800 text-[10px] font-black text-zinc-600 dark:text-zinc-300 shadow-inner shrink-0">
               E
             </span>
           </div>
 
           {/* Monedas ISkool */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-[#FFE4C4] dark:bg-amber-950/40 border border-[#DEB887] dark:border-amber-700/50 text-[#8B4513] dark:text-amber-300 text-xs font-black shadow-inner">
-            <Coins className="w-4 h-4 text-amber-600 dark:text-amber-400 animate-pulse" />
-            <span>{currentCoins} Monedas</span>
+          <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl sm:rounded-2xl bg-[#FFE4C4] dark:bg-amber-950/40 border border-[#DEB887] dark:border-amber-700/50 text-[#8B4513] dark:text-amber-300 text-[11px] sm:text-xs font-black shadow-inner shrink-0">
+            <Coins className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600 dark:text-amber-400 animate-pulse" />
+            <span>{currentCoins} <span className="hidden min-[420px]:inline">Monedas</span></span>
           </div>
         </div>
 

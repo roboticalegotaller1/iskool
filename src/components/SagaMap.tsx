@@ -430,83 +430,86 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
         {/* Decorative theme-specific elements */}
         {theme.decoElements}
 
-        {/* Legend / Info HUD */}
-        <div className="absolute top-4 left-6 z-10 bg-zinc-950/70 border border-zinc-800/80 backdrop-blur-md px-4 py-2 rounded-2xl flex flex-col gap-1.5 shadow-lg select-none">
-          <span className="text-[10px] font-black text-yellow-400 uppercase tracking-wider">Progreso Arcano</span>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
-              <div className="w-2.5 h-2.5 bg-emerald-500 border border-emerald-400 rotate-45 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-              <span className="text-[9px] font-bold text-zinc-300 ml-1">Superado</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-2.5 h-2.5 bg-yellow-500 border border-yellow-400 rotate-45 animate-pulse shadow-[0_0_8px_rgba(255,215,0,0.8)]" />
-              <span className="text-[9px] font-bold text-zinc-300 ml-1">Actual</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-2.5 h-2.5 bg-zinc-850 border border-zinc-750 rotate-45" />
-              <span className="text-[9px] font-bold text-zinc-300 ml-1">Bloqueado</span>
+        {/* Responsive Saga Map Header Toolbar: Flow responsivo en móvil/tablet, horizontal en desktop */}
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-2 select-none">
+          {/* Legend / Info HUD */}
+          <div className="bg-zinc-950/80 border border-zinc-800/80 backdrop-blur-md px-3.5 py-2 rounded-2xl flex items-center justify-between sm:justify-start gap-3 shadow-lg shrink-0 w-fit">
+            <span className="text-[10px] font-black text-yellow-400 uppercase tracking-wider">Progreso Arcano:</span>
+            <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-1">
+                <div className="w-2.5 h-2.5 bg-emerald-500 border border-emerald-400 rotate-45 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                <span className="text-[9px] font-bold text-zinc-300 ml-0.5">Superado</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2.5 h-2.5 bg-yellow-500 border border-yellow-400 rotate-45 animate-pulse shadow-[0_0_8px_rgba(255,215,0,0.8)]" />
+                <span className="text-[9px] font-bold text-zinc-300 ml-0.5">Actual</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2.5 h-2.5 bg-zinc-850 border border-zinc-750 rotate-45" />
+                <span className="text-[9px] font-bold text-zinc-300 ml-0.5">Bloqueado</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Period Selector and Explorer Walk Button (Solo Casillas Desbloqueadas) */}
-        <div className="absolute top-4 right-6 z-10 flex items-center gap-2 select-none">
-          {/* Action to walk across map only through UNLOCKED (completed / active) nodes */}
-          {(() => {
-            const accessibleIndices = nodes
-              .map((n, i) => ({ status: getMissionStatus(n.mission, n.idx), index: i }))
-              .filter(item => item.status === 'completed' || item.status === 'active')
-              .map(item => item.index);
+          {/* Period Selector and Explorer Walk Button */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Action to walk across map only through UNLOCKED (completed / active) nodes */}
+            {(() => {
+              const accessibleIndices = nodes
+                .map((n, i) => ({ status: getMissionStatus(n.mission, n.idx), index: i }))
+                .filter(item => item.status === 'completed' || item.status === 'active')
+                .map(item => item.index);
 
-            if (playerNodeIndex !== activeNodeIdx && activeNodeIdx !== -1) {
-              return (
-                <button
-                  onClick={() => walkToNode(activeNodeIdx)}
-                  className="bg-amber-500/25 hover:bg-amber-500/35 border border-amber-400/60 text-amber-200 backdrop-blur-md px-3 py-1.5 rounded-2xl flex items-center gap-1.5 text-[10px] font-black shadow-lg transition-all active:scale-95 cursor-pointer animate-pulse"
-                  title="Regresar al desafío actual desbloqueado"
-                >
-                  <Footprints className="h-3.5 w-3.5" />
-                  <span>Ir a Desafío Actual</span>
-                </button>
-              );
-            }
+              if (playerNodeIndex !== activeNodeIdx && activeNodeIdx !== -1) {
+                return (
+                  <button
+                    onClick={() => walkToNode(activeNodeIdx)}
+                    className="bg-amber-500/25 hover:bg-amber-500/35 border border-amber-400/60 text-amber-200 backdrop-blur-md px-3 py-1.5 rounded-2xl flex items-center gap-1.5 text-[10px] font-black shadow-lg transition-all active:scale-95 cursor-pointer animate-pulse shrink-0"
+                    title="Regresar al desafío actual desbloqueado"
+                  >
+                    <Footprints className="h-3.5 w-3.5" />
+                    <span>Ir a Desafío Actual</span>
+                  </button>
+                );
+              }
 
-            if (accessibleIndices.length > 1) {
-              return (
-                <button
-                  onClick={() => {
-                    const currentPos = accessibleIndices.indexOf(playerNodeIndex);
-                    const nextIndex = accessibleIndices[(currentPos + 1) % accessibleIndices.length];
-                    walkToNode(nextIndex);
-                  }}
-                  className="bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 backdrop-blur-md px-3 py-1.5 rounded-2xl flex items-center gap-1.5 text-[10px] font-bold shadow-lg transition-all active:scale-95 cursor-pointer"
-                  title="Pasear únicamente por misiones desbloqueadas"
-                >
-                  <Footprints className="h-3.5 w-3.5" />
-                  <span>Pasear por Desafíos</span>
-                </button>
-              );
-            }
+              if (accessibleIndices.length > 1) {
+                return (
+                  <button
+                    onClick={() => {
+                      const currentPos = accessibleIndices.indexOf(playerNodeIndex);
+                      const nextIndex = accessibleIndices[(currentPos + 1) % accessibleIndices.length];
+                      walkToNode(nextIndex);
+                    }}
+                    className="bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/40 text-amber-300 backdrop-blur-md px-3 py-1.5 rounded-2xl flex items-center gap-1.5 text-[10px] font-bold shadow-lg transition-all active:scale-95 cursor-pointer shrink-0"
+                    title="Pasear únicamente por misiones desbloqueadas"
+                  >
+                    <Footprints className="h-3.5 w-3.5" />
+                    <span>Pasear por Desafíos</span>
+                  </button>
+                );
+              }
 
-            return null;
-          })()}
+              return null;
+            })()}
 
-          <div className="bg-zinc-950/70 border border-zinc-800/80 backdrop-blur-md px-3 py-1.5 rounded-2xl flex items-center gap-2 shadow-lg">
-            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-wider">Periodo:</span>
-            <div className="flex gap-1.5">
-              {['Todos', 'Trimestre 1', 'Trimestre 2', 'Trimestre 3'].map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setSelectedPeriod(p)}
-                  className={`px-2.5 py-1 rounded-xl text-[10px] font-bold tracking-wide transition-all cursor-pointer ${
-                    selectedPeriod === p
-                      ? 'bg-emerald-600 text-white shadow shadow-emerald-950/50 border border-emerald-500/40 font-black'
-                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5 border border-transparent'
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
+            <div className="bg-zinc-950/80 border border-zinc-800/80 backdrop-blur-md px-3 py-1.5 rounded-2xl flex items-center gap-2 shadow-lg overflow-x-auto max-w-full">
+              <span className="text-[10px] font-black text-emerald-400 uppercase tracking-wider shrink-0">Periodo:</span>
+              <div className="flex gap-1 shrink-0">
+                {['Todos', 'Trimestre 1', 'Trimestre 2', 'Trimestre 3'].map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setSelectedPeriod(p)}
+                    className={`px-2.5 py-1 rounded-xl text-[10px] font-bold tracking-wide transition-all cursor-pointer whitespace-nowrap ${
+                      selectedPeriod === p
+                        ? 'bg-emerald-600 text-white shadow shadow-emerald-950/50 border border-emerald-500/40 font-black'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/5 border border-transparent'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>

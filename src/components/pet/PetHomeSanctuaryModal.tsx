@@ -127,34 +127,45 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
         {/* ========================================================= */}
         {/* BARRA SUPERIOR: SELECTOR DE 5 CASAS Y SALDO               */}
         {/* ========================================================= */}
-        <div className="px-5 py-3 border-b border-zinc-800 bg-gradient-to-r from-zinc-900 via-zinc-950 to-zinc-900 flex flex-col md:flex-row items-center justify-between gap-3">
+        <div className="px-4 sm:px-5 py-3 border-b border-zinc-800 bg-gradient-to-r from-zinc-900 via-zinc-950 to-zinc-900 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
           
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400">
-              <Sparkles className="w-5 h-5 animate-pulse" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base font-black text-white font-serif tracking-wide">
-                  Santuario & Hogar de {avatar.pet_name || 'Compañero'}
-                </h1>
-                <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  Tamagotchi RPG
-                </span>
+          <div className="flex items-center justify-between w-full md:w-auto gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <div className="p-2 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 shrink-0">
+                <Sparkles className="w-5 h-5 animate-pulse" />
               </div>
-              <p className="text-[11px] text-zinc-400">Personaliza y cuida a tu compañero interactivo.</p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-sm sm:text-base font-black text-white font-serif tracking-wide truncate">
+                    Santuario & Hogar de {avatar.pet_name || 'Compañero'}
+                  </h1>
+                  <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0">
+                    Tamagotchi RPG
+                  </span>
+                </div>
+                <p className="text-[11px] text-zinc-400 truncate">Personaliza y cuida a tu compañero interactivo.</p>
+              </div>
             </div>
+
+            {/* Botón Cerrar en móvil (superior derecha) */}
+            <button
+              onClick={onClose}
+              aria-label="Cerrar Santuario"
+              className="md:hidden p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Selector de las 5 Casas Temáticas */}
-          <div className="flex items-center gap-1.5 bg-zinc-900/80 p-1 rounded-2xl border border-zinc-800 overflow-x-auto max-w-full">
+          <div className="flex items-center gap-1.5 bg-zinc-900/80 p-1 rounded-2xl border border-zinc-800 overflow-x-auto max-w-full w-full md:w-auto">
             {houseOptions.map(h => {
               const isSelected = currentHouseTheme === h.id;
               return (
                 <button
                   key={h.id}
                   onClick={() => setSanctuaryHouse(activeStudentId, h.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
                     isSelected
                       ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30 font-black scale-105'
                       : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
@@ -167,14 +178,15 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
             })}
           </div>
 
-          {/* Monedas y Botón Cerrar */}
-          <div className="flex items-center gap-3">
+          {/* Monedas y Botón Cerrar (en desktop) */}
+          <div className="hidden md:flex items-center gap-3 shrink-0">
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono font-black text-xs">
               <Coins className="w-3.5 h-3.5 text-yellow-400" />
               <span>{(stats.coins || 0).toLocaleString()}🪙</span>
             </div>
             <button
               onClick={onClose}
+              aria-label="Cerrar Santuario"
               className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />

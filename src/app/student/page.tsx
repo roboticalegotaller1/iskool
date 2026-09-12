@@ -504,27 +504,27 @@ export default function StudentDashboard() {
               </div>
 
               {/* Botones de Cuidado */}
-              <div className="flex flex-wrap gap-2.5 mt-4">
+              <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2.5 mt-4 w-full">
                 <button
                   onClick={() => feedPet(activeStudentId)}
-                  className="px-3.5 py-2 bg-white text-emerald-800 rounded-xl text-xs font-bold shadow-md hover:bg-emerald-50 transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-2.5 bg-white text-emerald-800 rounded-xl text-xs font-bold shadow-md hover:bg-emerald-50 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
                 >
                   <Gamepad2 className="h-4 w-4" />
-                  Alimentar (5 🪙)
+                  <span>Alimentar (5 🪙)</span>
                 </button>
                 <button
                   onClick={() => playWithPet(activeStudentId)}
-                  className="px-3.5 py-2 bg-emerald-950/45 text-white border border-white/25 rounded-xl text-xs font-bold hover:bg-emerald-950/60 transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-2.5 bg-emerald-950/45 text-white border border-white/25 rounded-xl text-xs font-bold hover:bg-emerald-950/60 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
                 >
                   <Heart className="h-4 w-4 fill-current text-rose-300" />
-                  Jugar (2 🪙)
+                  <span>Jugar (2 🪙)</span>
                 </button>
                 <button
                   onClick={() => setIsPetModalOpen(true)}
-                  className="px-3.5 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-350 hover:to-amber-450 text-emerald-950 font-black rounded-xl text-xs shadow-md transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                  className="col-span-2 sm:col-span-1 px-3.5 py-2.5 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-350 hover:to-amber-450 text-emerald-950 font-black rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
                 >
                   <Heart className="h-4 w-4 fill-current text-rose-650" />
-                  Centro de Cuidado ❤️
+                  <span>Centro de Cuidado ❤️</span>
                 </button>
               </div>
             </div>
@@ -1030,8 +1030,8 @@ export default function StudentDashboard() {
       />
 
       {isPetModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="relative w-full max-w-md bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-2xl p-6 border border-zinc-200 dark:border-zinc-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm">
+          <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl p-5 sm:p-6 border border-zinc-200 dark:border-zinc-800">
             <h3 className="text-lg font-black text-zinc-900 dark:text-white flex items-center gap-2 mb-4">
               ✨ Centro de Cuidado de tu Mascota
             </h3>

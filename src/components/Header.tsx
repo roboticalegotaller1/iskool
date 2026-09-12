@@ -189,9 +189,11 @@ export const Header: React.FC = () => {
             ) : (
               <GraduationCap className="h-7 w-7 sm:h-8 sm:w-8 group-hover:scale-105 transition-transform" style={{ color: 'var(--brand-primary)' }} />
             )}
-            <div className="text-lg sm:text-xl font-bold tracking-tight text-zinc-900 dark:text-white flex items-baseline gap-1.5">
-              <span className="group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{schoolSettings.name || 'ISkool'}</span>
-              <span className="font-semibold text-[10px] sm:text-xs text-blue-600 dark:text-blue-400">Académico</span>
+            <div className="text-base sm:text-lg xl:text-xl font-bold tracking-tight text-zinc-900 dark:text-white flex items-baseline gap-1.5 min-w-0">
+              <span className="truncate max-w-[130px] min-[400px]:max-w-[180px] sm:max-w-[220px] md:max-w-[260px] lg:max-w-[300px] xl:max-w-none group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                {schoolSettings.name || 'ISkool'}
+              </span>
+              <span className="font-semibold text-[10px] sm:text-xs text-blue-600 dark:text-blue-400 shrink-0">Académico</span>
             </div>
           </Link>
         </div>
@@ -232,11 +234,12 @@ export const Header: React.FC = () => {
         </nav>
 
         {/* Stats, Switcher de Roles y Acciones de Usuario */}
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
           {/* Stats para Estudiante */}
           {currentRole === 'student' && (
-            <div className="hidden md:flex items-center gap-1.5 text-xs font-bold">
-              <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/70 border border-blue-200/70 dark:border-blue-800/70 text-blue-700 dark:text-blue-300 font-bold" title="Nivel Académico del Alumno">
+            <div className="hidden md:flex items-center gap-1.5 text-xs font-bold shrink-0">
+              {/* Grado detallado visible en pantallas grandes para no apretar tablet */}
+              <div className="hidden xl:flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/70 border border-blue-200/70 dark:border-blue-800/70 text-blue-700 dark:text-blue-300 font-bold" title="Nivel Académico del Alumno">
                 <span>🎒</span>
                 <span>{currentAcademicLevel.fullGradeLabel}</span>
               </div>
@@ -397,6 +400,30 @@ export const Header: React.FC = () => {
               {currentRole === 'teacher' ? 'Docente' : currentRole === 'student' ? 'Estudiante' : currentRole === 'parent' ? 'Tutor' : 'Coordinación'}
             </span>
           </div>
+
+          {/* Tarjeta de Progreso y Monedas del Alumno en Móvil */}
+          {currentRole === 'student' && (
+            <div className="bg-gradient-to-r from-blue-950/40 via-slate-900 to-indigo-950/40 border border-blue-500/30 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-2 shadow-inner">
+              <div className="flex items-center gap-1.5 text-xs text-blue-200 font-bold">
+                <span className="text-base">🎒</span>
+                <span className="truncate max-w-[150px]">{currentAcademicLevel.fullGradeLabel}</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-xs font-black">
+                <div className="flex items-center gap-1 text-orange-400 bg-orange-950/40 px-2 py-0.5 rounded-lg border border-orange-500/30">
+                  <Flame className="h-3.5 w-3.5 fill-current" />
+                  <span>{stats.current_streak}d</span>
+                </div>
+                <div className="flex items-center gap-1 text-amber-400 bg-amber-950/40 px-2 py-0.5 rounded-lg border border-amber-500/30">
+                  <Coins className="h-3.5 w-3.5 fill-current" />
+                  <span>{stats.coins}</span>
+                </div>
+                <div className="flex items-center gap-1 text-teal-400 bg-teal-950/40 px-2 py-0.5 rounded-lg border border-teal-500/30">
+                  <Trophy className="h-3.5 w-3.5" />
+                  <span>Nv.{stats.level}</span>
+                </div>
+              </div>
+            </div>
+          )}
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
             {navLinks.map((link) => {
