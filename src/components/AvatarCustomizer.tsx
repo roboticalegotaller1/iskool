@@ -400,13 +400,13 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                         )}
 
                         {/* Ilustración visual vectorial de la prenda */}
-                        <div className="w-14 h-14 rounded-2xl bg-white/80 dark:bg-zinc-800/90 p-1 flex items-center justify-center shadow-inner mt-1">
+                        <div className="w-24 h-24 min-[400px]:w-28 min-[400px]:h-28 sm:w-20 sm:h-20 rounded-2xl bg-white/90 dark:bg-zinc-800/90 p-2 flex items-center justify-center shadow-inner mt-1 transition-transform group-hover:scale-105">
                           <ClothingItemPreviewSvg item={item} />
                         </div>
 
                         {/* Nombre y Precio */}
                         <div className="text-center w-full mt-1">
-                          <p className="text-[11px] font-black text-zinc-800 dark:text-zinc-200 truncate">
+                          <p className="text-[11px] min-[400px]:text-xs font-black text-zinc-800 dark:text-zinc-200 truncate">
                             {item.name}
                           </p>
                           <div className="flex items-center justify-center gap-1 mt-0.5">
@@ -456,11 +456,11 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                                 <Check className="w-3 h-3 stroke-[3]" />
                               </div>
                             )}
-                            <div className="w-14 h-14 rounded-2xl bg-white/80 dark:bg-zinc-800/80 p-1 flex items-center justify-center shadow-inner mt-1">
+                            <div className="w-24 h-24 min-[400px]:w-28 min-[400px]:h-28 sm:w-20 sm:h-20 rounded-2xl bg-white/90 dark:bg-zinc-800/80 p-2 flex items-center justify-center shadow-inner mt-1 transition-transform group-hover:scale-105">
                               <SkinTonePreviewSvg toneColor={toneCol} />
                             </div>
                             <div className="text-center w-full mt-1">
-                              <span className="text-[11px] font-black text-zinc-800 dark:text-zinc-200 truncate block">
+                              <span className="text-[11px] min-[400px]:text-xs font-black text-zinc-800 dark:text-zinc-200 truncate block">
                                 {tone.name}
                               </span>
                               <span className="text-[9px] text-zinc-500 dark:text-zinc-400 truncate block">
@@ -497,7 +497,7 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                                 <Check className="w-3 h-3 stroke-[3]" />
                               </div>
                             )}
-                            <div className="w-14 h-14 rounded-2xl bg-white/80 dark:bg-zinc-800/80 p-0.5 flex items-center justify-center shadow-inner mt-1">
+                            <div className="w-24 h-24 min-[400px]:w-28 min-[400px]:h-28 sm:w-20 sm:h-20 rounded-2xl bg-white/90 dark:bg-zinc-800/80 p-1.5 flex items-center justify-center shadow-inner mt-1 transition-transform group-hover:scale-105">
                               <RaceFeaturePreviewSvg 
                                 featureId={race.id} 
                                 skinColor={selectedSkinTone} 
@@ -505,7 +505,7 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                               />
                             </div>
                             <div className="text-center w-full mt-1">
-                              <p className="text-[11px] font-black text-zinc-800 dark:text-zinc-200 truncate">{race.name}</p>
+                              <p className="text-[11px] min-[400px]:text-xs font-black text-zinc-800 dark:text-zinc-200 truncate">{race.name}</p>
                               <p className="text-[9px] text-zinc-500 dark:text-zinc-400 truncate">{race.description}</p>
                             </div>
                           </button>
@@ -604,11 +604,11 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                                 <Check className="w-3 h-3 stroke-[3]" />
                               </div>
                             )}
-                            <div className="w-14 h-14 rounded-2xl bg-white/80 dark:bg-zinc-800/80 p-0.5 flex items-center justify-center shadow-inner mt-1">
+                            <div className="w-24 h-24 min-[400px]:w-28 min-[400px]:h-28 sm:w-20 sm:h-20 rounded-2xl bg-white/90 dark:bg-zinc-800/80 p-1.5 flex items-center justify-center shadow-inner mt-1 transition-transform group-hover:scale-105">
                               <HairPreviewSvg styleId={h.id} color={selectedHairColor} />
                             </div>
                             <div className="text-center w-full mt-1">
-                              <p className="text-[11px] font-black text-zinc-800 dark:text-zinc-200 truncate">{h.name}</p>
+                              <p className="text-[11px] min-[400px]:text-xs font-black text-zinc-800 dark:text-zinc-200 truncate">{h.name}</p>
                               <p className="text-[9px] text-zinc-500 dark:text-zinc-400 truncate">{h.description || 'Anime'}</p>
                             </div>
                           </button>
@@ -640,11 +640,11 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                                 <Check className="w-3 h-3 stroke-[3]" />
                               </div>
                             )}
-                            <div className="w-14 h-14 rounded-2xl bg-white/80 dark:bg-zinc-800/80 p-1 flex items-center justify-center shadow-inner mt-1">
+                            <div className="w-24 h-24 min-[400px]:w-28 min-[400px]:h-28 sm:w-20 sm:h-20 rounded-2xl bg-white/90 dark:bg-zinc-800/80 p-2 flex items-center justify-center shadow-inner mt-1 transition-transform group-hover:scale-105">
                               <HairColorPreviewSvg color={hairCol} isSelected={isSelected} />
                             </div>
                             <div className="text-center w-full mt-1">
-                              <p className="text-[11px] font-black text-zinc-800 dark:text-zinc-200 truncate">{hc.name}</p>
+                              <p className="text-[11px] min-[400px]:text-xs font-black text-zinc-800 dark:text-zinc-200 truncate">{hc.name}</p>
                               <p className="text-[9px] text-zinc-500 dark:text-zinc-400 truncate">{hc.description || 'Color'}</p>
                             </div>
                           </button>
@@ -683,13 +683,13 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                         )}
 
                         {/* Previsualización Vectorial Real de los Ojos Anime */}
-                        <div className="w-full flex-1 max-h-[58px] rounded-2xl bg-white/85 dark:bg-zinc-800/90 p-1 flex items-center justify-center shadow-inner mt-0.5">
+                        <div className="w-full flex-1 max-h-[85px] sm:max-h-[70px] rounded-2xl bg-white/90 dark:bg-zinc-800/90 p-2 flex items-center justify-center shadow-inner mt-0.5 transition-transform group-hover:scale-105">
                           <EyePreviewSvg styleId={eye.id} color={eyeCol} />
                         </div>
 
                         {/* Título y descripción breve */}
                         <div className="text-center w-full mt-1">
-                          <p className="text-[11px] font-black text-zinc-800 dark:text-zinc-200 truncate">
+                          <p className="text-[11px] min-[400px]:text-xs font-black text-zinc-800 dark:text-zinc-200 truncate">
                             {eye.name}
                           </p>
                           <p className="text-[9px] text-zinc-500 dark:text-zinc-400 truncate">
@@ -738,12 +738,12 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                           </div>
                         )}
 
-                        <div className="w-14 h-14 rounded-2xl bg-white/80 dark:bg-zinc-800/90 p-1 flex items-center justify-center shadow-inner mt-1">
+                        <div className="w-24 h-24 min-[400px]:w-28 min-[400px]:h-28 sm:w-20 sm:h-20 rounded-2xl bg-white/90 dark:bg-zinc-800/90 p-2 flex items-center justify-center shadow-inner mt-1 transition-transform group-hover:scale-105">
                           <ClothingItemPreviewSvg item={item} />
                         </div>
 
                         <div className="text-center w-full mt-1">
-                          <p className="text-[11px] font-black text-zinc-800 dark:text-zinc-200 truncate">
+                          <p className="text-[11px] min-[400px]:text-xs font-black text-zinc-800 dark:text-zinc-200 truncate">
                             {item.name}
                           </p>
                           <div className="flex items-center justify-center gap-1 mt-0.5">

@@ -251,19 +251,19 @@ export const HairColorPreviewSvg: React.FC<{ color: string; isSelected?: boolean
 export const SkinTonePreviewSvg: React.FC<{ toneColor: string }> = ({ toneColor }) => {
   return (
     <svg viewBox="0 0 48 48" className="w-full h-full">
-      {/* Rostro chibi redondeado */}
-      <ellipse cx="24" cy="24" rx="16" ry="17" fill={toneColor} stroke="#000000" strokeOpacity="0.15" strokeWidth="1.2" />
+      {/* Rostro chibi redondeado más amplio y visible */}
+      <ellipse cx="24" cy="24" rx="18" ry="19" fill={toneColor} stroke="#000000" strokeOpacity="0.15" strokeWidth="1.2" />
       {/* Orejitas laterales */}
-      <ellipse cx="8" cy="25" rx="3" ry="4" fill={toneColor} />
-      <ellipse cx="40" cy="25" rx="3" ry="4" fill={toneColor} />
+      <ellipse cx="6" cy="25" rx="3.5" ry="4.5" fill={toneColor} />
+      <ellipse cx="42" cy="25" rx="3.5" ry="4.5" fill={toneColor} />
       {/* Mejillas rosadas */}
-      <circle cx="16" cy="28" r="3.2" fill="#F43F5E" opacity="0.45" />
-      <circle cx="32" cy="28" r="3.2" fill="#F43F5E" opacity="0.45" />
+      <circle cx="15" cy="28" r="3.5" fill="#F43F5E" opacity="0.45" />
+      <circle cx="33" cy="28" r="3.5" fill="#F43F5E" opacity="0.45" />
       {/* Ojos cerrados sonrientes */}
-      <path d="M 15,22 Q 18,18 21,22" stroke="#1E293B" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-      <path d="M 27,22 Q 30,18 33,22" stroke="#1E293B" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+      <path d="M 13,22 Q 17,17 21,22" stroke="#1E293B" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+      <path d="M 27,22 Q 31,17 35,22" stroke="#1E293B" strokeWidth="2.2" fill="none" strokeLinecap="round" />
       {/* Boca sonriente */}
-      <path d="M 22,30 Q 24,33 26,30" stroke="#E11D48" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+      <path d="M 21,30 Q 24,34 27,30" stroke="#E11D48" strokeWidth="2" fill="none" strokeLinecap="round" />
     </svg>
   );
 };
