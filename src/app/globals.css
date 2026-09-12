@@ -234,6 +234,14 @@ body {
 }
 
 .neon-hero-contour {
+  filter: 
+    drop-shadow(-2px 0 0 #00F0FF)
+    drop-shadow(2px 0 0 #FF007F)
+    drop-shadow(0 -2px 0 #BD00FF)
+    drop-shadow(0 2px 0 #00F0FF)
+    drop-shadow(0 0 4px #00F0FF)
+    drop-shadow(0 0 8px #FF007F)
+    drop-shadow(0 0 14px rgba(0, 240, 255, 0.65));
   animation: neonHeroContourPulse 3s ease-in-out infinite;
   will-change: filter;
 }

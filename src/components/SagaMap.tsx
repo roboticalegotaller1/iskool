@@ -14,6 +14,7 @@ import {
 import Link from 'next/link';
 import { ModularAnimeAvatarSprite } from './avatar/ModularAnimeAvatarSprite';
 import { PetSvgRenderer } from './pet/PetSvgRenderer';
+import { resolvePetRace } from './pet/types';
 import { getPetToAvatarScaleRatio, getPetScaleRatioDescription } from '@/utils/petScaleHelper';
 
 interface SagaMapProps {
@@ -256,6 +257,8 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
 
   const petStage = stats?.pet_stage || 'egg';
   const petScaleRatio = getPetToAvatarScaleRatio(petStage);
+  const petRaceMeta = resolvePetRace(avatar?.pet_type);
+  const petGlowColor = petRaceMeta?.glowColor || 'rgba(139, 92, 246, 0.45)';
   
   // Tamaño ampliado a exactamente 3 veces el tamaño inicial (3x: 186px alto)
   const avatarMapHeight = 186;
@@ -665,24 +668,48 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
                       />
                     </div>
 
-                    {/* Mascota Acompañante con Contorno Neón Pegado a su Silueta */}
+                    {/* Mascota Acompañante con Halo Elemental y Contorno Neón */}
                     <div 
                       style={{ 
                         width: petMapWidth, 
                         height: petMapHeight,
                         marginBottom: 4
                       }} 
-                      className={`relative shrink-0 neon-hero-contour ${
+                      className={`relative shrink-0 flex items-center justify-center ${
                         isWalking ? 'animate-pet-map-hop' : 'animate-pet-map-float'
                       }`}
                       title={`${avatar?.pet_name || 'Mascota'} (${getPetScaleRatioDescription(petStage)})`}
                     >
-                      <PetSvgRenderer
-                        raceId={avatar?.pet_type || 'cryo_dragon'}
-                        stage={petStage}
-                        actionId={isWalking ? 'joy_bounce' : 'idle'}
-                        className="w-full h-full"
+                      {/* Halo elemental luminoso circundante adaptativo (Idéntico a la implementación superior) */}
+                      <div
+                        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none filter blur-md opacity-85 transition-all duration-500"
+                        style={{ 
+                          backgroundColor: petGlowColor,
+                          width: `${Math.max(50, Math.round(petMapWidth * 1.4))}px`,
+                          height: `${Math.max(50, Math.round(petMapHeight * 1.4))}px`,
+                          boxShadow: `0 0 20px ${petRaceMeta?.primaryColor || '#8B5CF6'}`
+                        }}
                       />
+
+                      {/* Halo etéreo exterior difuso para profundidad mágica */}
+                      <div
+                        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none filter blur-xl opacity-60 transition-all duration-500"
+                        style={{ 
+                          backgroundColor: petGlowColor,
+                          width: `${Math.max(66, Math.round(petMapWidth * 1.75))}px`,
+                          height: `${Math.max(66, Math.round(petMapHeight * 1.75))}px`,
+                        }}
+                      />
+
+                      {/* Sprite de la Mascota con Contorno Neón Pegado a su Silueta */}
+                      <div className="relative z-10 w-full h-full neon-hero-contour flex items-center justify-center">
+                        <PetSvgRenderer
+                          raceId={avatar?.pet_type || 'cryo_dragon'}
+                          stage={petStage}
+                          actionId={isWalking ? 'joy_bounce' : 'idle'}
+                          className="w-full h-full"
+                        />
+                      </div>
                     </div>
                   </div>
 
