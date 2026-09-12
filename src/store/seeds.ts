@@ -2186,6 +2186,11 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
 ];
 
 export const SCHEDULES_SEED: ClassSchedule[] = [
+  { id: 'sch-demo-1', groupId: 'grp-test-pri-4a', subjectId: 'sub-math', teacherId: 'usr-teacher-1', dayOfWeek: 'Lunes', timeSlot: '08:00 - 09:30' },
+  { id: 'sch-demo-2', groupId: 'grp-test-pri-4a', subjectId: 'sub-span', teacherId: 'usr-teacher-1', dayOfWeek: 'Martes', timeSlot: '09:30 - 11:00' },
+  { id: 'sch-demo-3', groupId: 'grp-test-pri-1a', subjectId: 'sub-sci', teacherId: 'usr-teacher-1', dayOfWeek: 'Miércoles', timeSlot: '08:00 - 09:30' },
+  { id: 'sch-demo-4', groupId: 'grp-test-sec-2a', subjectId: 'sub-sci', teacherId: 'usr-teacher-1', dayOfWeek: 'Jueves', timeSlot: '11:30 - 13:00' },
+  { id: 'sch-demo-5', groupId: 'grp-test-prep-4a', subjectId: 'sub-sci', teacherId: 'usr-teacher-1', dayOfWeek: 'Viernes', timeSlot: '10:00 - 11:30' },
   { id: 'sch-1', groupId: 'grp-pa-a', subjectId: 'sub-math', teacherId: 'usr-teacher-1', dayOfWeek: 'Lunes', timeSlot: '08:00 - 09:30' },
   { id: 'sch-2', groupId: 'grp-pa-a', subjectId: 'sub-span', teacherId: 'usr-teacher-1', dayOfWeek: 'Martes', timeSlot: '09:30 - 11:00' },
   { id: 'sch-3', groupId: 'grp-pa-a', subjectId: 'sub-sci', teacherId: 'usr-teacher-1', dayOfWeek: 'Miércoles', timeSlot: '08:00 - 09:30' },

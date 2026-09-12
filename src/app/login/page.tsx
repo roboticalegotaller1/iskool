@@ -41,8 +41,8 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
   {
     name: "Prof. Israel López Ángeles",
     role: "teacher",
-    grade: "Docente Titular (Acceso Integral NEM)",
-    email: "israel.lopez@jjrosseau.edu.mx",
+    grade: "Docente Titular (Primaria Laboratorio Demo)",
+    email: "israel.lopez@sandbox.iskool.edu.mx",
     avatarColor: "bg-rose-500",
     id: "usr-teacher-1",
     defaultPass: "008805",

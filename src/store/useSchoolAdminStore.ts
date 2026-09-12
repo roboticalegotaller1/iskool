@@ -711,7 +711,11 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
 
         // Para cualquier usuario de colegio (dueño, director, cobranza, maestro, alumno):
         // Forzar estrictamente su school_id institucional como activeSchoolId y sincronizar schoolSettings
-        const targetSchoolId = user.school_id === 'sch-jjr' ? 'sch-jjrosseau' : (user.school_id || 'sch-jjrosseau');
+        let targetSchoolId = user.school_id === 'sch-jjr' ? 'sch-jjrosseau' : (user.school_id || 'sch-jjrosseau');
+        if (user.id === 'usr-teacher-1' || user.id === 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a55' || (user.email && user.email.toLowerCase().includes('israel.lopez') && user.role === 'teacher')) {
+          const tch = (get().teachersList || []).find(t => t.id === 'usr-teacher-1');
+          targetSchoolId = tch?.school_id || 'sch-test-case';
+        }
         set((state) => {
           const inst = (state.institutionsList || []).find(i => i.id === targetSchoolId);
           if (inst && inst.settings) {
@@ -895,7 +899,7 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
 
           // 5. Depurar profesores excepto el profesor maestro Israel López Ángeles
           const remainingTeachers = (state.teachersList || []).filter(
-            t => t.id === 'usr-teacher-1' || t.email === 'israel.lopez@jjrosseau.edu.mx' || (t.school_id !== targetId && (targetId !== 'sch-jjrosseau' || t.school_id !== 'sch-jjr'))
+            t => t.id === 'usr-teacher-1' || t.email === 'israel.lopez@sandbox.iskool.edu.mx' || t.email === 'israel.lopez@jjrosseau.edu.mx' || (t.school_id !== targetId && (targetId !== 'sch-jjrosseau' || t.school_id !== 'sch-jjr'))
           );
 
           // 6. Depurar registros financieros / nómina

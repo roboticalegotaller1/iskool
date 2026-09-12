@@ -36,9 +36,10 @@ const getDemoUser = (email: string): UserProfile => {
     // 2. Verificar si coincide con profesores registrados en el Super Usuario
     const adminTeachers = useSchoolAdminStore.getState().teachersList || [];
     const matchedTeacher = adminTeachers.find(t => 
-      t.email.toLowerCase() === emailLower || 
+      t.email?.toLowerCase() === emailLower || 
       t.id === emailLower ||
-      `${t.first_name.toLowerCase()}.${t.last_name.toLowerCase()}` === emailLower.replace('@jjrosseau.edu.mx', '')
+      `${t.first_name.toLowerCase()}.${t.last_name.toLowerCase()}` === emailLower.replace(/@.*$/, '') ||
+      `${t.first_name.toLowerCase()}.${t.last_name.toLowerCase()}`.replace(/\s*\(.*?\)/g, '') === emailLower.replace(/@.*$/, '')
     );
     if (matchedTeacher) {
       return {
@@ -187,18 +188,24 @@ const getDemoUser = (email: string): UserProfile => {
   // 5. Profesor Demo (Coincidencia exacta)
   if (
     emailLower === TEACHER_SEED.email.toLowerCase() || 
+    emailLower === 'israel.lopez@sandbox.iskool.edu.mx' ||
     emailLower === 'israel.lopez@iskool.edu.mx' ||
     emailLower === 'israel.lopez@jjrosseau.edu.mx' ||
     emailLower === 'profesor@iskool.edu.mx' ||
     emailLower === 'usr-teacher-1'
   ) {
+    const liveTeacher = (useSchoolAdminStore.getState().teachersList || []).find(t => t.id === 'usr-teacher-1') || TEACHER_SEED;
     return {
-      ...TEACHER_SEED,
+      ...liveTeacher,
       first_name: 'Israel',
-      last_name: 'López Ángeles',
-      email: 'israel.lopez@jjrosseau.edu.mx',
-      school_id: 'sch-jjrosseau',
-      temporary_password: '008805'
+      last_name: 'López Ángeles (Demo)',
+      email: 'israel.lopez@sandbox.iskool.edu.mx',
+      school_id: liveTeacher.school_id || 'sch-test-case',
+      campus_id: liveTeacher.campus_id || 'cmp-test-pri',
+      campus_name: liveTeacher.campus_name || 'Primaria Laboratorio Demo',
+      temporary_password: '008805',
+      assigned_subjects: liveTeacher.assigned_subjects || ['Matemáticas', 'Robótica'],
+      assigned_groups: liveTeacher.assigned_groups || ['1ºA Primaria Demo', '4ºA Primaria Demo']
     };
   }
 
@@ -336,7 +343,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(currentSession);
         if (currentSession?.user) {
           const u = currentSession.user;
-          const restoredUser: UserProfile = {
+          let restoredUser: UserProfile = {
             id: u.id,
             first_name: u.user_metadata?.first_name || 'Usuario',
             last_name: u.user_metadata?.last_name || '',
@@ -347,9 +354,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             updated_at: new Date().toISOString()
           };
 
+          // Saneamiento de profesor Israel si viene sin school_id o con la escuela demo antigua
+          if (restoredUser.id === 'usr-teacher-1' || restoredUser.id === 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a55' || (restoredUser.email && restoredUser.email.toLowerCase().includes('israel.lopez') && restoredUser.role === 'teacher')) {
+            const liveTeacher = (useSchoolAdminStore.getState().teachersList || []).find(t => t.id === 'usr-teacher-1') || TEACHER_SEED;
+            restoredUser = {
+              ...restoredUser,
+              ...liveTeacher,
+              school_id: liveTeacher.school_id || 'sch-test-case',
+              campus_id: liveTeacher.campus_id || 'cmp-test-pri',
+              campus_name: liveTeacher.campus_name || 'Primaria Laboratorio Demo',
+              email: 'israel.lopez@sandbox.iskool.edu.mx'
+            };
+          }
+
           const isSuper = isPlatformSuperUser(restoredUser) || restoredUser.role === 'admin' || restoredUser.role === 'superadmin' || restoredUser.id.startsWith('usr-superadmin');
           if (!isSuper) {
-            const effectiveSchool = resolveEffectiveSchoolId(restoredUser, null, restoredUser.school_id || 'sch-jjrosseau');
+            const effectiveSchool = resolveEffectiveSchoolId(restoredUser, null, restoredUser.school_id || 'sch-test-case');
             if (useSchoolAdminStore.getState().isSchoolSuspended(effectiveSchool)) {
               setUser(null);
               setSession(null);
@@ -374,11 +394,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const saved = localStorage.getItem('iskool_session_user');
           if (saved) {
             try {
-              const parsed = JSON.parse(saved);
+              let parsed = JSON.parse(saved);
               if (parsed && parsed.id && parsed.role) {
+                // Saneamiento reactivo de profesor Israel si tenía guardada la escuela antigua o vacía
+                if (parsed.id === 'usr-teacher-1' || parsed.id === 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a55' || (parsed.email && parsed.email.toLowerCase().includes('israel.lopez') && parsed.role === 'teacher')) {
+                  const liveTeacher = (useSchoolAdminStore.getState().teachersList || []).find(t => t.id === 'usr-teacher-1') || TEACHER_SEED;
+                  parsed = {
+                    ...parsed,
+                    ...liveTeacher,
+                    school_id: liveTeacher.school_id || 'sch-test-case',
+                    campus_id: liveTeacher.campus_id || 'cmp-test-pri',
+                    campus_name: liveTeacher.campus_name || 'Primaria Laboratorio Demo',
+                    email: 'israel.lopez@sandbox.iskool.edu.mx'
+                  };
+                  localStorage.setItem('iskool_session_user', JSON.stringify(parsed));
+                }
+
                 const isSuper = isPlatformSuperUser(parsed) || parsed.role === 'admin' || parsed.role === 'superadmin' || parsed.id.startsWith('usr-superadmin');
                 if (!isSuper) {
-                  const effectiveSchool = resolveEffectiveSchoolId(parsed, null, parsed.school_id || 'sch-jjrosseau');
+                  const effectiveSchool = resolveEffectiveSchoolId(parsed, null, parsed.school_id || 'sch-test-case');
                   if (useSchoolAdminStore.getState().isSchoolSuspended(effectiveSchool)) {
                     setUser(null);
                     setSession(null);
@@ -553,7 +587,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
       }
 
-      const finalUser: UserProfile = {
+      let finalUser: UserProfile = {
         id: userObj.id,
         first_name: userObj.user_metadata?.first_name || resolvedUser.first_name,
         last_name: userObj.user_metadata?.last_name || resolvedUser.last_name,
@@ -563,6 +597,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         created_at: userObj.created_at || new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
+
+      if (finalUser.id === 'usr-teacher-1' || finalUser.id === 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a55' || (finalUser.email && finalUser.email.toLowerCase().includes('israel.lopez') && finalUser.role === 'teacher')) {
+        const liveTeacher = (useSchoolAdminStore.getState().teachersList || []).find(t => t.id === 'usr-teacher-1') || TEACHER_SEED;
+        finalUser = {
+          ...finalUser,
+          ...liveTeacher,
+          school_id: liveTeacher.school_id || 'sch-test-case',
+          campus_id: liveTeacher.campus_id || 'cmp-test-pri',
+          campus_name: liveTeacher.campus_name || 'Primaria Laboratorio Demo',
+          email: 'israel.lopez@sandbox.iskool.edu.mx'
+        };
+      }
 
       setSession(sessionObj);
       setUser(finalUser);
