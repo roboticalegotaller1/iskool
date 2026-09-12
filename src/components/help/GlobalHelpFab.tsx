@@ -17,7 +17,10 @@ import {
   ShieldCheck, 
   BookOpen, 
   Globe,
-  Database 
+  Database,
+  Heart,
+  Smile,
+  Cpu
 } from 'lucide-react';
 
 export const GlobalHelpFab: React.FC = () => {
@@ -173,6 +176,84 @@ export const GlobalHelpFab: React.FC = () => {
                         className="text-[11px] font-bold text-cyan-700 dark:text-cyan-300 underline block"
                       >
                         Ver directorio completo ➔
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
+                {/* Acciones Rápidas para Alumnos */}
+                {role === 'student' && (
+                  <div className="space-y-2.5">
+                    <div className="p-3.5 rounded-2xl bg-pink-50 dark:bg-pink-950/40 border border-pink-200 dark:border-pink-800 text-pink-950 dark:text-pink-200 space-y-2">
+                      <div className="flex items-center gap-1.5 font-black text-xs text-pink-800 dark:text-pink-300">
+                        <Heart className="w-3.5 h-3.5" />
+                        <span>Compañero Místico & Santuario</span>
+                      </div>
+                      <p className="text-[11px] text-pink-900 dark:text-pink-200">
+                        Acaricia a tu mascota para ganar Vínculo EXP y descubre las 5 etapas evolutivas por tareas escolares.
+                      </p>
+                      <Link
+                        href="/guide?role=student#mascotas-showcase"
+                        onClick={() => setIsOpen(false)}
+                        className="text-[11px] font-bold text-pink-700 dark:text-pink-300 underline block"
+                      >
+                        Ver guía de evolución y razas ➔
+                      </Link>
+                    </div>
+
+                    <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-purple-950 dark:text-purple-200 space-y-2">
+                      <div className="flex items-center gap-1.5 font-black text-xs text-purple-800 dark:text-purple-300">
+                        <Smile className="w-3.5 h-3.5" />
+                        <span>Avatar Anime Shonen / Hechicera</span>
+                      </div>
+                      <p className="text-[11px] text-purple-900 dark:text-purple-200">
+                        Personaliza peinados, capas, varitas y desbloquea animaciones de magia y celebración.
+                      </p>
+                      <Link
+                        href="/student/avatar"
+                        onClick={() => setIsOpen(false)}
+                        className="text-[11px] font-bold text-purple-700 dark:text-purple-300 underline block"
+                      >
+                        Abrir Personalizador ➔
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
+                {/* Acciones Rápidas para Administradores / Super Usuario */}
+                {role === 'admin' && (
+                  <div className="space-y-2.5">
+                    <div className="p-3.5 rounded-2xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800 text-cyan-950 dark:text-cyan-200 space-y-2">
+                      <div className="flex items-center gap-1.5 font-black text-xs text-cyan-800 dark:text-cyan-300">
+                        <Cpu className="w-3.5 h-3.5" />
+                        <span>Auditoría de Tokens en Tiempo Real</span>
+                      </div>
+                      <p className="text-[11px] text-cyan-900 dark:text-cyan-200">
+                        Monitorea el consumo de tokens del Motor de IA y el ahorro &gt;85% de la Bóveda Curricular.
+                      </p>
+                      <Link
+                        href="/admin"
+                        onClick={() => setIsOpen(false)}
+                        className="text-[11px] font-bold text-cyan-700 dark:text-cyan-300 underline block"
+                      >
+                        Portal Super Usuario ➔
+                      </Link>
+                    </div>
+
+                    <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-950 dark:text-amber-200 space-y-2">
+                      <div className="flex items-center gap-1.5 font-black text-xs text-amber-800 dark:text-amber-300">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>Suspensión & Preservación Curricular</span>
+                      </div>
+                      <p className="text-[11px] text-amber-900 dark:text-amber-200">
+                        Interruptor deslizante de activación escolar y protección del acervo del Prof. Israel López Ángeles.
+                      </p>
+                      <Link
+                        href="/guide?role=admin#suspension-preservacion"
+                        onClick={() => setIsOpen(false)}
+                        className="text-[11px] font-bold text-amber-700 dark:text-amber-300 underline block"
+                      >
+                        Ver protocolo institucional ➔
                       </Link>
                     </div>
                   </div>
