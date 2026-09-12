@@ -771,27 +771,13 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
           {/* --------------------------------------------------------------------- */}
           {/* PANEL DERECHO: ESCENARIO DEL AVATAR CON CÁMARA ZOOM Y ANIMACIONES     */}
           {/* --------------------------------------------------------------------- */}
-          <div className="w-full lg:w-[42%] p-5 sm:p-6 flex flex-col items-center justify-between bg-amber-50/60 dark:bg-zinc-950/80">
+          <div className="w-full lg:w-[42%] p-5 sm:p-6 flex flex-col items-center justify-between bg-slate-900/50 dark:bg-zinc-950/80">
             
-            {/* ESCENARIO / DIORAMA CON ZOOM DINÁMICO Y FONDO CLARO RADIANTE */}
-            <div className="relative w-full aspect-[4/5] max-w-[340px] rounded-3xl overflow-hidden shadow-2xl border-4 border-amber-300/80 bg-gradient-to-b from-[#FEF08A] via-[#BAE6FD] to-[#DDD6FE] flex items-center justify-center select-none">
+            {/* ESCENARIO / DIORAMA CON ZOOM DINÁMICO Y CONTORNO NEÓN */}
+            <div className="relative w-full aspect-[4/5] max-w-[340px] rounded-3xl overflow-hidden shadow-2xl border-4 border-cyan-500/30 bg-gradient-to-b from-slate-950 via-slate-900 to-blue-950 flex items-center justify-center select-none">
               
-              {/* Halo y resplandor radial solar cálido */}
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(254,240,138,0.85)_0%,rgba(186,230,253,0.55)_50%,rgba(221,214,254,0.4)_100%)] pointer-events-none" />
-
-              {/* Patrón sutil de rayos de luz mágicos */}
-              <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,rgba(255,255,255,0.25)_0,rgba(255,255,255,0.25)_10px,transparent_10px,transparent_20px)] opacity-35 pointer-events-none" />
-
-              {/* Estrellas y destellos flotantes */}
-              <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                <span className="absolute top-12 left-4 text-[13px] animate-pulse">✨</span>
-                <span className="absolute top-14 right-4 text-[11px] animate-bounce">⭐</span>
-                <span className="absolute bottom-16 left-4 text-[11px] opacity-80 animate-ping">✨</span>
-                <span className="absolute bottom-20 right-4 text-[12px] opacity-75 animate-pulse">🌟</span>
-              </div>
-
-              {/* Pedestal de luz dorada bajo los pies del avatar */}
-              <div className="absolute bottom-12 inset-x-8 h-6 rounded-full bg-gradient-to-r from-amber-300/60 via-yellow-200 to-amber-300/60 blur-[1px] shadow-[0_0_16px_rgba(250,204,21,0.7)] pointer-events-none" />
+              {/* Sutil resplandor de fondo ambiental */}
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(6,182,212,0.15)_0%,rgba(236,72,153,0.1)_50%,transparent_80%)] pointer-events-none" />
 
               {/* Controles flotantes de la cámara (Zoom In / Zoom Out) */}
               <div className="absolute top-3 left-3 z-30 flex items-center gap-1 bg-black/60 backdrop-blur-md p-1 rounded-2xl border border-white/20 shadow-md">
@@ -828,9 +814,9 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                 Nivel {stats.level || 1}
               </div>
 
-              {/* CONTENEDOR CON TRANSFORM ZOOM SUAVE Y ACELERADO POR GPU */}
+              {/* CONTENEDOR CON TRANSFORM ZOOM SUAVE Y CONTORNO NEÓN PEGADO A LA SILUETA */}
               <div 
-                className="w-full h-full flex items-center justify-center transition-transform duration-500 ease-out"
+                className="w-full h-full flex items-center justify-center transition-transform duration-500 ease-out neon-hero-contour"
                 style={{
                   transform: cameraZoom === 'face' 
                     ? 'scale(1.9) translateY(24%)' 

@@ -241,31 +241,18 @@ export default function StudentDashboard() {
   const xpForCurrentLevel = (stats?.level ?? 1) * 200;
   const progressPercent = Math.min(100, Math.round(((stats?.xp ?? 0) / xpForCurrentLevel) * 100));
 
-  // Renderizador estático del Avatar en SVG con Fondo Claro Radiante de Alto Contraste
+  // Renderizador estático del Avatar en SVG con Contorno Neón Pegado a la Silueta (Estilo Neón Cian/Magenta)
   const renderAvatarPreview = (width = 120, height = 120, customViewBox?: string) => {
     return (
       <div 
-        className="relative flex items-center justify-center rounded-2xl overflow-hidden border-2 border-amber-300/85 bg-gradient-to-b from-[#FEF08A] via-[#BAE6FD] to-[#DDD6FE] shadow-xl select-none" 
+        className="relative flex items-center justify-center rounded-2xl overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 border border-cyan-500/30 shadow-xl select-none" 
         style={{ width, height }}
       >
-        {/* Halo y resplandor radial cálido solar */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(254,240,138,0.85)_0%,rgba(186,230,253,0.55)_50%,rgba(221,214,254,0.4)_100%)] pointer-events-none" />
+        {/* Sutil resplandor de fondo ambiental */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(6,182,212,0.15)_0%,rgba(236,72,153,0.1)_50%,transparent_80%)] pointer-events-none" />
 
-        {/* Patrón sutil de rayos de luz mágicos */}
-        <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,rgba(255,255,255,0.25)_0,rgba(255,255,255,0.25)_10px,transparent_10px,transparent_20px)] opacity-35 pointer-events-none" />
-
-        {/* Estrellas y destellos flotantes */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <span className="absolute top-2 left-2.5 text-[12px] animate-pulse">✨</span>
-          <span className="absolute top-2.5 right-2.5 text-[10px] animate-bounce">⭐</span>
-          <span className="absolute bottom-5 left-2 text-[10px] opacity-80 animate-ping">✨</span>
-          <span className="absolute bottom-7 right-2 text-[11px] opacity-75 animate-pulse">🌟</span>
-        </div>
-
-        {/* Pedestal de luz dorada bajo los pies del avatar */}
-        <div className="absolute bottom-1.5 inset-x-3 h-5 rounded-full bg-gradient-to-r from-amber-300/60 via-yellow-200 to-amber-300/60 blur-[1px] shadow-[0_0_14px_rgba(250,204,21,0.7)] pointer-events-none" />
-
-        <div className="w-full h-full p-1 relative z-10 filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)]">
+        {/* Sprite del Avatar con Contorno Neón Pegado a su Silueta */}
+        <div className="w-full h-full p-1 relative z-10 neon-hero-contour">
           <AnimeAvatarSprite 
             gender={(avatar as any)?.gender ?? 'female'}
             rpgClass={(avatar as any)?.rpg_class ?? avatar?.outfit_style ?? 'mago'}

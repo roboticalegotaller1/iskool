@@ -583,35 +583,18 @@ export default function AvatarCustomizerPage() {
           {/* RIGHT PANEL: Real-time Character Preview (5 columns on large screens) */}
           <div className="lg:col-span-5 flex flex-col gap-6">
             
-            {/* The live preview frame (Luminous Aurora Sunburst theme) */}
-            <div className="relative overflow-hidden rounded-3xl border-2 border-amber-300/80 shadow-2xl flex flex-col h-full min-h-[420px] bg-gradient-to-b from-[#FEF08A] via-[#BAE6FD] to-[#DDD6FE]">
+            {/* The live preview frame con Contorno Neón (Estilo Neón Cian/Magenta) */}
+            <div className="relative overflow-hidden rounded-3xl border border-cyan-500/30 shadow-2xl flex flex-col h-full min-h-[420px] bg-gradient-to-b from-slate-950 via-slate-900 to-blue-950">
               
-              {/* Luminous Background Elements */}
-              <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-                {/* Radial Solar Warm Halo */}
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(254,240,138,0.85)_0%,rgba(186,230,253,0.55)_50%,rgba(221,214,254,0.4)_100%)]" />
-
-                {/* Subtle Magic Rays */}
-                <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,rgba(255,255,255,0.25)_0,rgba(255,255,255,0.25)_10px,transparent_10px,transparent_20px)] opacity-35" />
-
-                {/* Pedestal de luz dorada */}
-                <div className="absolute bottom-20 inset-x-8 h-6 rounded-full bg-gradient-to-r from-amber-300/60 via-yellow-200 to-amber-300/60 blur-[1px] shadow-[0_0_16px_rgba(250,204,21,0.7)]" />
-
-                {/* Animated Sparkles and Stars */}
-                <div className="absolute inset-0">
-                  <span className="absolute top-12 left-4 text-[13px] animate-pulse">✨</span>
-                  <span className="absolute top-14 right-4 text-[11px] animate-bounce">⭐</span>
-                  <span className="absolute bottom-28 left-4 text-[11px] opacity-80 animate-ping">✨</span>
-                  <span className="absolute bottom-32 right-4 text-[12px] opacity-75 animate-pulse">🌟</span>
-                </div>
-              </div>
+              {/* Sutil resplandor de fondo ambiental */}
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(6,182,212,0.15)_0%,rgba(236,72,153,0.1)_50%,transparent_80%)] pointer-events-none" />
 
               {/* Live Card Overlay Content */}
               <div className="relative z-10 p-6 flex-1 flex flex-col justify-between">
                 
                 {/* Preview Info Tag */}
                 <div className="flex justify-between items-center bg-zinc-950/60 backdrop-blur-md rounded-xl p-3 border border-zinc-800/80">
-                  <span className="text-[10px] font-black uppercase text-emerald-400 tracking-widest flex items-center gap-1.5">
+                  <span className="text-[10px] font-black uppercase text-cyan-400 tracking-widest flex items-center gap-1.5">
                     <Eye className="h-3.5 w-3.5" /> Vista Previa
                   </span>
                   
@@ -620,13 +603,10 @@ export default function AvatarCustomizerPage() {
                   </span>
                 </div>
 
-                {/* Central Sprite Container */}
+                {/* Central Sprite Container con Contorno Neón Pegado a la Silueta */}
                 <div className="flex-1 flex items-center justify-center my-6 relative min-h-[220px]">
-                  {/* Aura Effect */}
-                  <div className="absolute h-40 w-40 rounded-full bg-emerald-500/15 blur-3xl animate-pulse" />
-                  
-                  {/* The anime sprite */}
-                  <div className="h-48 w-48 relative filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)] transform hover:scale-105 transition-transform duration-500">
+                  {/* The anime sprite con Contorno Neón */}
+                  <div className="h-48 w-48 relative neon-hero-contour transform hover:scale-105 transition-transform duration-500">
                     <AnimeAvatarSprite 
                       gender={gender}
                       rpgClass={rpgClass}
