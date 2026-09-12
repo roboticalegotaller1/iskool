@@ -122,26 +122,33 @@ export const SanctuaryShopModal: React.FC<SanctuaryShopModalProps> = ({
           </div>
         )}
 
-        {/* Pestañas de Categoría - Sin scrollbars toscas y con etiquetas adaptadas */}
-        <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-2.5 border-b border-zinc-800/80 bg-zinc-900/50 overflow-x-auto scrollbar-none no-scrollbar touch-pan-x shrink-0">
-          {categories.map(cat => {
-            const isActive = activeCategory === cat.id;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl text-[11px] sm:text-xs font-bold transition-all shrink-0 cursor-pointer ${
-                  isActive
-                    ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30 font-black'
-                    : 'bg-zinc-900/80 text-zinc-400 hover:text-white hover:bg-zinc-800/80 border border-zinc-800'
-                }`}
-              >
-                {cat.icon}
-                <span className="hidden sm:inline">{cat.label}</span>
-                <span className="sm:hidden">{cat.shortLabel}</span>
-              </button>
-            );
-          })}
+        {/* Pestañas de Categoría - Cuadrícula responsiva (3x2 en móvil/compacto, 1x6 en escritorio): Visibilidad completa al 100%, cero recortes */}
+        <div className="p-2 sm:px-6 sm:py-2.5 border-b border-zinc-800/80 bg-zinc-900/60 shrink-0">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2">
+            {categories.map(cat => {
+              const isActive = activeCategory === cat.id;
+              const count = allItems.filter(item => item.category === cat.id).length;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`flex items-center justify-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30 font-black scale-[1.02]'
+                      : 'bg-zinc-900/80 text-zinc-400 hover:text-white hover:bg-zinc-800/80 border border-zinc-800'
+                  }`}
+                >
+                  <span className="shrink-0">{cat.icon}</span>
+                  <span className="truncate">{cat.shortLabel}</span>
+                  <span className={`text-[9.5px] px-1 py-0.2 rounded-md font-mono shrink-0 font-bold ${
+                    isActive ? 'bg-slate-950/20 text-slate-950' : 'text-zinc-500'
+                  }`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Cuadrícula de Objetos - Adaptativa, proporcionada y con scroll suave */}
