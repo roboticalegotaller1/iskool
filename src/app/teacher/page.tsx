@@ -65,22 +65,78 @@ const RosterImporterModal = dynamic(
   { ssr: false }
 );
 
-// Catálogo de PDAs por asignatura
+// Catálogo de PDAs por asignatura oficial SEP (NEM 2024 y MCCEMS)
 const PDA_CATALOG: Record<string, string[]> = {
   'sub-math': [
-    'Fase 4 - Saberes y Pensamiento Científico: Resuelve problemas que implican repartir y dividir elementos en partes iguales (fracciones).',
-    'Fase 4 - Saberes y Pensamiento Científico: Compara y ordena fracciones con diferentes denominadores utilizando material concreto.',
-    'Fase 4 - Saberes y Pensamiento Científico: Identifica y representa fracciones equivalentes en situaciones cotidianas.'
+    'Fase 2 (Preescolar) - Saberes y Pensamiento Científico: Cuenta elementos de su entorno inmediato en situaciones de juego, compara colecciones y utiliza nociones espaciales y de orden.',
+    'Fase 3 (1º y 2º Primaria) - Saberes y Pensamiento Científico: Expresa oralmente y por escrito la serie numérica hasta 1000, identifica regularidades y resuelve sumas y restas con algoritmos concretos.',
+    'Fase 4 (3º y 4º Primaria) - Saberes y Pensamiento Científico: Representa, compara y ordena fracciones con denominadores 2, 4, 8, 3 y 6 en situaciones cotidianas de medición y reparto equitativo con material concreto.',
+    'Fase 4 (3º y 4º Primaria) - Saberes y Pensamiento Científico: Resuelve problemas de multiplicación de números de hasta tres cifras y división con cocientes enteros y decimales.',
+    'Fase 5 (5º y 6º Primaria) - Saberes y Pensamiento Científico: Resuelve problemas de proporcionalidad directa (regla de tres), cálculo de porcentajes y conversión entre fracciones y decimales.',
+    'Fase 6 (Secundaria) - Saberes y Pensamiento Científico: Modela y resuelve problemas mediante ecuaciones lineales, sistemas de ecuaciones y funciones cuadráticas (parábolas).',
+    'Bachillerato (MCCEMS) - Pensamiento Matemático: Modela fenómenos continuos y discretos mediante cálculo diferencial e integral, vectores y estadística inferencial.'
   ],
   'sub-span': [
-    'Fase 4 - Lenguajes: Lee en voz alta textos poéticos o narrativos prestando atención a la entonación, modulación y volumen.',
-    'Fase 4 - Lenguajes: Identifica la estructura de las leyendas y su relevancia cultural para la comunidad.',
-    'Fase 4 - Lenguajes: Elabora portafolios de evidencias sobre mitos y relatos regionales.'
+    'Fase 2 (Preescolar) - Lenguajes: Narra con sus propias palabras historias, cuentos y anécdotas de su comunidad, siguiendo una secuencia lógica.',
+    'Fase 3 (1º y 2º Primaria) - Lenguajes: Escribe su nombre y lo compara con los de sus compañeros; reconoce la correspondencia fonema-grafema en la lectoescritura convencional.',
+    'Fase 4 (3º y 4º Primaria) - Lenguajes: Lee, interpreta y produce calaveritas literarias, coplas populares mexicanas y cartas formales e informales con propósito social.',
+    'Fase 4 (3º y 4º Primaria) - Lenguajes: Identifica la estructura de las leyendas y su relevancia cultural para la memoria colectiva de la comunidad.',
+    'Fase 5 (5º y 6º Primaria) - Lenguajes: Escribe textos argumentativos y artículos de divulgación científica fundamentando su postura con rigor.',
+    'Fase 6 (Secundaria) - Lenguajes: Analiza críticamente discursos persuasivos, artículos de opinión y redacta ensayos estructurados con aparato formal de citas.',
+    'Bachillerato (MCCEMS) - Lengua y Comunicación: Desarrolla el pensamiento crítico mediante el análisis literario comparativo y redacta discursos persuasivos y ensayos académicos.'
   ],
   'sub-sci': [
-    'Fase 5 - Saberes y Pensamiento Científico: Diseña y describe el funcionamiento de un biodigestor de residuos orgánicos para generar biogás.',
-    'Fase 5 - Ética, Naturaleza y Sociedades: Analiza las ventajas ambientales del uso de energías renovables en la comunidad.',
-    'Fase 5 - De lo Humano y lo Comunitario: Desarrolla ecotecnias y prototipos para el desarrollo sustentable del entorno.'
+    'Fase 2 (Preescolar) - Saberes y Pensamiento Científico: Observa con curiosidad seres vivos (plantas y animales), describe sus necesidades vitales y propone acciones de cuidado.',
+    'Fase 3 (1º y 2º Primaria) - Saberes y Pensamiento Científico: Identifica los cinco sentidos corporales y hábitos de vida saludable para el bienestar individual y colectivo.',
+    'Fase 4 (3º y 4º Primaria) - Saberes y Pensamiento Científico: Experimenta y explica los cambios de estado físico de la materia y analiza cadenas tróficas en ecosistemas locales.',
+    'Fase 5 (5º y 6º Primaria) - Saberes y Pensamiento Científico: Diseña y describe el funcionamiento de un biodigestor de residuos orgánicos para generar biogás y ecotecnias sustentables.',
+    'Fase 6 (Secundaria) - Saberes y Pensamiento Científico (Física/Química/Biología): Modela leyes de Newton, enlaces químicos en la Tabla Periódica y mecanismos de evolución genética.',
+    'Bachillerato (MCCEMS) - Ciencias Naturales y Tecnología: Aplica principios termodinámicos, estequiométricos y biología molecular en sistemas biotecnológicos.'
+  ],
+  'sub-eng': [
+    'Fase 2 (Preescolar) - Lenguajes (Inglés • Pre-A1): Reconoce sonidos, saludos básicos (Hello, Goodbye) e instrucciones físicas (TPR).',
+    'Fase 3 (1º y 2º Primaria) - Lenguajes (Inglés • A1): Identifica palabras cotidianas y participa en intercambios orales guiados muy breves.',
+    'Fase 4 (3º y 4º Primaria) - Lenguajes (Inglés • A1-A2): Comprende y utiliza oraciones comunicativas completas y formula preguntas directas (Wh- questions).',
+    'Fase 5 (5º y 6º Primaria) - Lenguajes (Inglés • A2 Flyers): Comprende información específica en audios y textos breves y sostiene intercambios comunicativos en parejas.',
+    'Fase 6 (Secundaria) - Lenguajes (Inglés • B1): Produce textos orales y escritos continuos y coherentes, debatiendo temas de interés común.',
+    'Bachillerato (MCCEMS) - Lengua y Comunicación (Inglés • B1-B2): Sintetiza información académica compleja de fuentes auténticas y redacta ensayos bilingües.'
+  ],
+  'sub-art': [
+    'Fase 2 (Preescolar) - Lenguajes (Artes): Experimenta libremente con colores, texturas, plastilina y música para representar ideas sobre su entorno.',
+    'Fase 4 (3º y 4º Primaria) - Lenguajes (Artes): Analiza las características estéticas y simbólicas de las manifestaciones artísticas tradicionales (altares, catrinas, danza).',
+    'Fase 6 (Secundaria) - Lenguajes (Artes): Diseña proyectos de arte contemporáneo (instalaciones, performance) que resignifican problemáticas comunitarias.',
+    'Bachillerato (MCCEMS) - Humanidades / Artes: Examina corrientes estéticas y desarrolla proyectos conceptuales de impacto sociocultural.'
+  ],
+  'sub-civ': [
+    'Fase 2 (Preescolar) - Ética, Naturaleza y Sociedades: Construye y respeta acuerdos de convivencia en el salón y juegos colectivos basados en el diálogo.',
+    'Fase 4 (3º y 4º Primaria) - Ética, Naturaleza y Sociedades: Reconoce y localiza en mapas el patrimonio biocultural y tradiciones de su entidad federativa.',
+    'Fase 6 (Secundaria) - Ética, Naturaleza y Sociedades: Ejerce sus derechos ciudadanos, promueve la cultura de la legalidad y la resolución pacífica de controversias.',
+    'Bachillerato (MCCEMS) - Ciencias Sociales: Analiza los modos de producción, la organización del Estado moderno y las políticas públicas redistributivas.'
+  ],
+  'sub-hist': [
+    'Fase 3 (1º y 2º Primaria) - Ética, Naturaleza y Sociedades: Indaga en relatos familiares y testimonios los hechos históricos de la Independencia y la Revolución.',
+    'Fase 5 (5º y 6º Primaria) - Ética, Naturaleza y Sociedades: Analiza críticamente los procesos de Independencia, Reforma, Porfiriato y Revolución de 1910.',
+    'Fase 6 (Secundaria) - Ética, Naturaleza y Sociedades (Historia): Investiga desde diversas corrientes historiográficas las transformaciones sociopolíticas de México.',
+    'Bachillerato (MCCEMS) - Conciencia Histórica: Aplica el método historiográfico contrastando fuentes primarias para interpretar hechos históricos con rigor crítico.'
+  ],
+  'sub-geo': [
+    'Fase 4 (3º y 4º Primaria) - Ética, Naturaleza y Sociedades: Localiza y representa en mapas de su entidad federativa la distribución territorial y áreas naturales protegidas.',
+    'Fase 6 (1º Secundaria) - Ética, Naturaleza y Sociedades (Geografía): Interpreta el espacio geográfico mediante mapas temáticos, imágenes de satélite y Sistemas de Información Geográfica (SIG).'
+  ],
+  'sub-tech': [
+    'Fase 6 (Secundaria) - De lo Humano y lo Comunitario (Tecnología): Analiza procesos técnicos, herramientas y diseña prototipos sustentables que resuelven retos comunitarios.',
+    'Bachillerato (MCCEMS) - Cultura Digital: Ejerce una ciudadanía digital crítica, modela algoritmos lógicos y procesa datos analíticos para la toma de decisiones.'
+  ],
+  'sub-pe': [
+    'Fase 2 (Preescolar) - De lo Humano y lo Comunitario: Desarrolla coordinación motriz gruesa y equilibrio al correr, saltar y reptar en circuitos motores.',
+    'Fase 4 (3º y 4º Primaria) - De lo Humano y lo Comunitario: Diseña y aplica estrategias de juego limpio en actividades físico-deportivas cooperativas.',
+    'Fase 6 (Secundaria) - De lo Humano y lo Comunitario (Educación Física): Diseña planes de acondicionamiento físico promoviendo estilos de vida activos y salud integral.'
+  ],
+  'sub-socio': [
+    'Fase 2 (Preescolar) - De lo Humano y lo Comunitario: Reconoce y nombra emociones básicas y practica hábitos autónomos de higiene y alimentación.',
+    'Fase 4 (3º y 4º Primaria) - De lo Humano y lo Comunitario: Identifica fortalezas personales y áreas de oportunidad para construir su proyecto de vida escolar.',
+    'Fase 6 (Secundaria) - De lo Humano y lo Comunitario: Construye un proyecto de vida vocacional consciente y diseña campañas comunitarias de salud mental.',
+    'Bachillerato (MCCEMS) - Recursos Socioemocionales: Coordina programas de voluntariado, autorregulación emocional y madurez vocacional preuniversitaria.'
   ]
 };
 

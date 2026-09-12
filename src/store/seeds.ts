@@ -183,7 +183,14 @@ export const STUDENT_MESSAGES_SEED: StudentMessage[] = [
 ];
 
 export const SUBJECTS_SEED: Subject[] = [
-  // Curriculares Primaria
+  // Curriculares Preescolar (Fase 2)
+  { id: 'sub-len-pre', school_id: 'sch-jjr', level_grade_id: 'preescolar', name: 'Lenguajes y Expresión Artística', sep_code: 'LEN-PRE', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
+  { id: 'sub-sab-pre', school_id: 'sch-jjr', level_grade_id: 'preescolar', name: 'Saberes y Pensamiento Científico', sep_code: 'SPC-PRE', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
+  { id: 'sub-eti-pre', school_id: 'sch-jjr', level_grade_id: 'preescolar', name: 'Ética, Naturaleza y Sociedades', sep_code: 'ENS-PRE', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
+  { id: 'sub-hum-pre', school_id: 'sch-jjr', level_grade_id: 'preescolar', name: 'De lo Humano y lo Comunitario', sep_code: 'DHC-PRE', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
+  { id: 'sub-ing-pre', school_id: 'sch-jjr', level_grade_id: 'preescolar', name: 'Lengua Extranjera (Inglés Preescolar)', sep_code: 'ING-PRE', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
+
+  // Curriculares Primaria (Fases 3, 4 y 5)
   { id: 'sub-esp-pri', school_id: 'sch-jjr', level_grade_id: 'primaria', name: 'Lenguajes (Español)', sep_code: 'LEN-PRI', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
   { id: 'sub-ing-pri', school_id: 'sch-jjr', level_grade_id: 'primaria', name: 'Lengua Extranjera (Inglés)', sep_code: 'ING-PRI', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
   { id: 'sub-math-pri', school_id: 'sch-jjr', level_grade_id: 'primaria', name: 'Saberes y Pensamiento Científico (Matemáticas)', sep_code: 'SPC-MAT', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
@@ -191,13 +198,23 @@ export const SUBJECTS_SEED: Subject[] = [
   { id: 'sub-soc-pri', school_id: 'sch-jjr', level_grade_id: 'primaria', name: 'Ética, Naturaleza y Sociedades (Historia y Geografía)', sep_code: 'ENS-SOC', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
   { id: 'sub-hum-pri', school_id: 'sch-jjr', level_grade_id: 'primaria', name: 'De lo Humano y lo Comunitario (Educación Socioemocional)', sep_code: 'DHC-SOC', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
   
-  // Curriculares Secundaria
+  // Curriculares Secundaria (Fase 6)
   { id: 'sub-esp-sec', school_id: 'sch-jjr', level_grade_id: 'secundaria', name: 'Lengua Materna (Español)', sep_code: 'LEN-SEC', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
   { id: 'sub-ing-sec', school_id: 'sch-jjr', level_grade_id: 'secundaria', name: 'Inglés Avanzado', sep_code: 'ING-SEC', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
   { id: 'sub-mat-sec', school_id: 'sch-jjr', level_grade_id: 'secundaria', name: 'Matemáticas y Razonamiento Lógico', sep_code: 'SPC-MSEC', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
   { id: 'sub-fis-sec', school_id: 'sch-jjr', level_grade_id: 'secundaria', name: 'Física y Métodos de Laboratorio', sep_code: 'SPC-FIS', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
   { id: 'sub-his-sec', school_id: 'sch-jjr', level_grade_id: 'secundaria', name: 'Historia de México y Ciudadanía', sep_code: 'ENS-HIS', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
   { id: 'sub-fcye-sec', school_id: 'sch-jjr', level_grade_id: 'secundaria', name: 'Formación Cívica y Ética', sep_code: 'ENS-FCYE', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
+
+  // Curriculares Preparatoria / Bachillerato (MCCEMS)
+  { id: 'sub-lc-prep', school_id: 'sch-jjr', level_grade_id: 'preparatoria', name: 'Lengua y Comunicación (MCCEMS)', sep_code: 'MCC-LC', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
+  { id: 'sub-pm-prep', school_id: 'sch-jjr', level_grade_id: 'preparatoria', name: 'Pensamiento Matemático (MCCEMS)', sep_code: 'MCC-PM', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
+  { id: 'sub-cnet-prep', school_id: 'sch-jjr', level_grade_id: 'preparatoria', name: 'Ciencias Naturales, Experimentales y Tecnología', sep_code: 'MCC-CNET', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
+  { id: 'sub-cs-prep', school_id: 'sch-jjr', level_grade_id: 'preparatoria', name: 'Ciencias Sociales (MCCEMS)', sep_code: 'MCC-CS', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
+  { id: 'sub-hum-prep', school_id: 'sch-jjr', level_grade_id: 'preparatoria', name: 'Humanidades (MCCEMS)', sep_code: 'MCC-HUM', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
+  { id: 'sub-ch-prep', school_id: 'sch-jjr', level_grade_id: 'preparatoria', name: 'Conciencia Histórica (MCCEMS)', sep_code: 'MCC-CH', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
+  { id: 'sub-cd-prep', school_id: 'sch-jjr', level_grade_id: 'preparatoria', name: 'Cultura Digital (MCCEMS)', sep_code: 'MCC-CD', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
+  { id: 'sub-ing-prep', school_id: 'sch-jjr', level_grade_id: 'preparatoria', name: 'Lengua Extranjera (Inglés Bachillerato)', sep_code: 'MCC-ING', category: 'curricular', is_elective: false, created_at: new Date().toISOString() },
 
   // Materias Optativas / Talleres Oficiales Solicitados con Temarios y Multi-Grupo
   { 
