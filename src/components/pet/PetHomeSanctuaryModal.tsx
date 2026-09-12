@@ -197,15 +197,15 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
         {/* ========================================================= */}
         {/* HUD DE ESTADÍSTICAS TAMAGOTCHI & BOTONES DE ACCIÓN RÁPIDA */}
         {/* ========================================================= */}
-        <div className="px-5 py-2.5 bg-zinc-900/40 border-b border-zinc-800/80 flex flex-wrap items-center justify-between gap-3">
+        <div className="px-3 sm:px-5 py-2 sm:py-2.5 bg-zinc-900/40 border-b border-zinc-800/80 flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 sm:gap-3">
           
           {/* Indicadores de Estado */}
-          <div className="flex items-center gap-4 text-xs font-bold">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-4 text-xs font-bold w-full lg:w-auto">
             {/* Hambre */}
             <div className="flex items-center gap-1.5">
-              <Utensils className="w-3.5 h-3.5 text-orange-400" />
-              <span className="text-zinc-400 text-[11px]">Hambre:</span>
-              <div className="w-16 h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
+              <Utensils className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+              <span className="text-zinc-400 text-[10px] sm:text-[11px]">Hambre:</span>
+              <div className="w-12 sm:w-16 h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
                 <div 
                   className="h-full bg-orange-400 rounded-full transition-all duration-500" 
                   style={{ width: `${avatar.pet_hunger ?? 70}%` }} 
@@ -216,9 +216,9 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
 
             {/* Energía */}
             <div className="flex items-center gap-1.5">
-              <Moon className="w-3.5 h-3.5 text-indigo-400" />
-              <span className="text-zinc-400 text-[11px]">Energía:</span>
-              <div className="w-16 h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
+              <Moon className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+              <span className="text-zinc-400 text-[10px] sm:text-[11px]">Energía:</span>
+              <div className="w-12 sm:w-16 h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
                 <div 
                   className="h-full bg-indigo-500 rounded-full transition-all duration-500" 
                   style={{ width: `${stats.pet_energy ?? 85}%` }} 
@@ -229,9 +229,9 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
 
             {/* Felicidad */}
             <div className="flex items-center gap-1.5">
-              <Gamepad2 className="w-3.5 h-3.5 text-rose-400" />
-              <span className="text-zinc-400 text-[11px]">Felicidad:</span>
-              <div className="w-16 h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
+              <Gamepad2 className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+              <span className="text-zinc-400 text-[10px] sm:text-[11px]">Felicidad:</span>
+              <div className="w-12 sm:w-16 h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
                 <div 
                   className="h-full bg-rose-500 rounded-full transition-all duration-500" 
                   style={{ width: `${avatar.pet_happiness ?? 80}%` }} 
@@ -242,41 +242,51 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
 
             {/* Vínculo / Amistad */}
             <div className="flex items-center gap-1.5">
-              <Heart className="w-3.5 h-3.5 text-pink-500 fill-current" />
-              <span className="text-zinc-400 text-[11px]">Amistad:</span>
+              <Heart className="w-3.5 h-3.5 text-pink-500 fill-current shrink-0" />
+              <span className="text-zinc-400 text-[10px] sm:text-[11px]">Amistad:</span>
               <span className="font-mono text-[10px] text-pink-300">{stats.friendship_exp ?? 100} XP</span>
             </div>
           </div>
 
           {/* Botones de Acción Rápida */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full lg:w-auto">
             {/* Modo Decoración Toggle */}
             <button
               onClick={() => setIsDecoratingMode(prev => !prev)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer shadow-md ${
+              className={`px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer shadow-md ${
                 isDecoratingMode
                   ? 'bg-amber-500 text-slate-950 shadow-amber-500/30'
                   : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700'
               }`}
             >
               <Palette className="w-3.5 h-3.5" />
-              <span>{isDecoratingMode ? 'Finalizar Diseño' : 'Modo Decorar (32 Ranuras)'}</span>
+              <span>
+                {isDecoratingMode ? 'Finalizar' : (
+                  <>
+                    <span className="sm:hidden">Decorar (32)</span>
+                    <span className="hidden sm:inline">Modo Decorar (32 Ranuras)</span>
+                  </>
+                )}
+              </span>
             </button>
 
             {/* Botón de Tienda */}
             <button
               onClick={() => setIsShopModalOpen(true)}
-              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 text-xs font-black transition-all flex items-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-95 cursor-pointer"
+              className="px-2.5 sm:px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 text-xs font-black transition-all flex items-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-95 cursor-pointer"
             >
               <ShoppingBag className="w-3.5 h-3.5" />
-              <span>Tienda de Muebles</span>
+              <span>
+                <span className="sm:hidden">Tienda</span>
+                <span className="hidden sm:inline">Tienda de Muebles</span>
+              </span>
             </button>
 
             {/* Acciones Rápidas Tamagotchi */}
             <button
               onClick={handleFeed}
               title="Alimentar con monedas o comida (-20🪙)"
-              className="px-2.5 py-1.5 rounded-xl bg-emerald-950/70 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+              className="px-2 sm:px-2.5 py-1.5 rounded-xl bg-emerald-950/70 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
             >
               <span>🍖</span>
               <span className="hidden sm:inline">Comer</span>
@@ -285,7 +295,7 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
             <button
               onClick={handlePlay}
               title="Jugar con tu compañero (-15🪙)"
-              className="px-2.5 py-1.5 rounded-xl bg-indigo-950/70 hover:bg-indigo-900 border border-indigo-500/40 text-indigo-300 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+              className="px-2 sm:px-2.5 py-1.5 rounded-xl bg-indigo-950/70 hover:bg-indigo-900 border border-indigo-500/40 text-indigo-300 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
             >
               <span>🎾</span>
               <span className="hidden sm:inline">Jugar</span>
@@ -294,7 +304,7 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
             <button
               onClick={handleSleep}
               title="Descansar en la cama (+Energía)"
-              className="px-2.5 py-1.5 rounded-xl bg-purple-950/70 hover:bg-purple-900 border border-purple-500/40 text-purple-300 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+              className="px-2 sm:px-2.5 py-1.5 rounded-xl bg-purple-950/70 hover:bg-purple-900 border border-purple-500/40 text-purple-300 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
             >
               <span>💤</span>
               <span className="hidden sm:inline">Dormir</span>
@@ -302,8 +312,8 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
 
             <button
               onClick={handlePetTouch}
-              title="Acariciar (Mecánica Pokémon GO)"
-              className="px-2.5 py-1.5 rounded-xl bg-rose-950/70 hover:bg-rose-900 border border-rose-500/40 text-rose-300 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+              title="Acariciar (Mecánica de caricias)"
+              className="px-2 sm:px-2.5 py-1.5 rounded-xl bg-rose-950/70 hover:bg-rose-900 border border-rose-500/40 text-rose-300 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
             >
               <Heart className="w-3.5 h-3.5 fill-current" />
               <span className="hidden sm:inline">Acariciar</span>

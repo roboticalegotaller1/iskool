@@ -150,7 +150,7 @@ export const SanctuaryRoomView: React.FC<SanctuaryRoomViewProps> = ({
 
   return (
     <div 
-      className={`relative w-full h-[520px] sm:h-[580px] rounded-3xl overflow-hidden shadow-2xl border border-zinc-800 select-none bg-gradient-to-b ${houseConfig.bgGradient} transition-colors duration-700`}
+      className={`relative w-full h-[400px] sm:h-[480px] lg:h-[540px] rounded-3xl overflow-hidden shadow-2xl border border-zinc-800 select-none bg-gradient-to-b ${houseConfig.bgGradient} transition-colors duration-700`}
       style={{ perspective: '1000px' }}
     >
       {/* ========================================================= */}
@@ -271,7 +271,7 @@ export const SanctuaryRoomView: React.FC<SanctuaryRoomViewProps> = ({
       {/* 3. AVATAR MODULAR DEL ESTUDIANTE (CON PODERES MÁGICOS)   */}
       {/* ========================================================= */}
       <div 
-        className="absolute left-[4%] bottom-[15%] z-20 flex flex-col items-center group cursor-pointer select-none"
+        className="absolute left-[2%] sm:left-[4%] bottom-[4%] sm:bottom-[6%] z-20 flex flex-col items-center group cursor-pointer select-none"
         onClick={() => {
           setAvatarActionState('cast');
           setPetActionState('petted');
@@ -284,7 +284,7 @@ export const SanctuaryRoomView: React.FC<SanctuaryRoomViewProps> = ({
         }}
         title="¡Haz clic en tu personaje para lanzar hechizos con tu varita y grimorio!"
       >
-        <div className="relative w-28 h-36 filter drop-shadow-2xl group-hover:scale-105 transition-transform flex items-center justify-center">
+        <div className="relative w-44 sm:w-56 h-56 sm:h-72 filter drop-shadow-2xl group-hover:scale-105 transition-transform flex items-center justify-center">
           <ModularAnimeAvatarSprite 
             gender={avatarData?.gender || 'neutral'}
             skinTone={avatarData?.skin_tone || '#FCD34D'}
@@ -300,17 +300,17 @@ export const SanctuaryRoomView: React.FC<SanctuaryRoomViewProps> = ({
             equippedHat={avatarData?.equipped_hat || 'hat_none'}
             equippedAccessory={avatarData?.equipped_accessory || 'acc_wand_book'}
             animationState={avatarActionState}
-            width={112}
-            height={144}
+            width={224}
+            height={288}
           />
         </div>
         {/* Sombra del avatar en el suelo */}
-        <div className="w-16 h-2.5 bg-black/50 rounded-full blur-[1.5px] -mt-1" />
-        <div className="flex items-center gap-1 bg-black/80 backdrop-blur-xs px-2 py-0.5 rounded-full border border-pink-500/40 mt-1 shadow-md group-hover:border-pink-400 transition-colors">
-          <span className="text-[8.5px] font-black uppercase text-pink-300 tracking-wider">
+        <div className="w-28 sm:w-36 h-3 bg-black/50 rounded-full blur-[2px] -mt-1" />
+        <div className="flex items-center gap-1 bg-black/80 backdrop-blur-xs px-2.5 py-1 rounded-full border border-pink-500/40 mt-1 shadow-md group-hover:border-pink-400 transition-colors">
+          <span className="text-[9px] sm:text-[10px] font-black uppercase text-pink-300 tracking-wider">
             Tú (Héroe/Mago)
           </span>
-          <span className="text-[9px] text-amber-300">⚡</span>
+          <span className="text-[10px] text-amber-300">⚡</span>
         </div>
       </div>
 

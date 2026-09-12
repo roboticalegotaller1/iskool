@@ -277,7 +277,7 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
           {/* --------------------------------------------------------------------- */}
           {/* PANEL IZQUIERDO: CUADRÍCULA TÁCTIL DE SQUIRCLES (Como la imagen)       */}
           {/* --------------------------------------------------------------------- */}
-          <div className="w-full lg:w-[58%] p-4 sm:p-6 flex flex-col overflow-hidden bg-[#FAF4EB] dark:bg-zinc-950/60 border-r border-[#E6D7C3] dark:border-zinc-800/80">
+          <div className="w-full lg:w-[58%] p-3 sm:p-5 lg:p-6 flex-1 flex flex-col overflow-hidden bg-[#FAF4EB] dark:bg-zinc-950/60 border-r border-[#E6D7C3] dark:border-zinc-800/80 min-h-[300px]">
             
             {/* SUB-PESTAÑAS DE CATEGORÍA */}
             <div className="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1 shrink-0">
@@ -771,46 +771,46 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
           {/* --------------------------------------------------------------------- */}
           {/* PANEL DERECHO: ESCENARIO DEL AVATAR CON CÁMARA ZOOM Y ANIMACIONES     */}
           {/* --------------------------------------------------------------------- */}
-          <div className="w-full lg:w-[42%] p-5 sm:p-6 flex flex-col items-center justify-between bg-slate-900/50 dark:bg-zinc-950/80">
+          <div className="w-full lg:w-[42%] p-3 sm:p-5 lg:p-6 flex flex-col items-center justify-between bg-slate-900/50 dark:bg-zinc-950/80 shrink-0">
             
             {/* ESCENARIO / DIORAMA CON ZOOM DINÁMICO Y CONTORNO NEÓN */}
-            <div className="relative w-full aspect-[4/5] max-w-[340px] rounded-3xl overflow-hidden shadow-2xl border-4 border-cyan-500/30 bg-gradient-to-b from-slate-950 via-slate-900 to-blue-950 flex items-center justify-center select-none">
+            <div className="relative w-full max-w-[200px] h-[190px] sm:max-w-[260px] sm:h-[240px] lg:max-w-[340px] lg:h-auto lg:aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border-4 border-cyan-500/30 bg-gradient-to-b from-slate-950 via-slate-900 to-blue-950 flex items-center justify-center select-none shrink-0">
               
               {/* Sutil resplandor de fondo ambiental */}
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(6,182,212,0.15)_0%,rgba(236,72,153,0.1)_50%,transparent_80%)] pointer-events-none" />
 
               {/* Controles flotantes de la cámara (Zoom In / Zoom Out) */}
-              <div className="absolute top-3 left-3 z-30 flex items-center gap-1 bg-black/60 backdrop-blur-md p-1 rounded-2xl border border-white/20 shadow-md">
+              <div className="absolute top-2.5 sm:top-3 left-2.5 sm:left-3 z-30 flex items-center gap-1 bg-black/60 backdrop-blur-md p-1 rounded-2xl border border-white/20 shadow-md">
                 <button
                   type="button"
                   onClick={() => setCameraZoom('face')}
-                  className={`px-2.5 py-1 rounded-xl text-[11px] font-black flex items-center gap-1 transition-all cursor-pointer ${
+                  className={`px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl text-[10px] sm:text-[11px] font-black flex items-center gap-1 transition-all cursor-pointer ${
                     cameraZoom === 'face'
                       ? 'bg-amber-400 text-black shadow-sm'
                       : 'text-zinc-300 hover:text-white'
                   }`}
                   title="Acercar cámara al rostro para ver ojos, cabello y expresiones"
                 >
-                  <ZoomIn className="w-3.5 h-3.5" />
+                  <ZoomIn className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                   <span>Rostro</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setCameraZoom('body')}
-                  className={`px-2.5 py-1 rounded-xl text-[11px] font-black flex items-center gap-1 transition-all cursor-pointer ${
+                  className={`px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl text-[10px] sm:text-[11px] font-black flex items-center gap-1 transition-all cursor-pointer ${
                     cameraZoom === 'body'
                       ? 'bg-amber-400 text-black shadow-sm'
                       : 'text-zinc-300 hover:text-white'
                   }`}
                   title="Alejar cámara para ver atuendo y cuerpo entero"
                 >
-                  <User className="w-3.5 h-3.5" />
+                  <User className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                   <span>Cuerpo</span>
                 </button>
               </div>
 
               {/* Insignia de Nivel */}
-              <div className="absolute top-3 right-3 z-30 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white text-[10px] font-black tracking-wider uppercase shadow-md">
+              <div className="absolute top-2.5 sm:top-3 right-2.5 sm:right-3 z-30 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white text-[9px] sm:text-[10px] font-black tracking-wider uppercase shadow-md">
                 Nivel {stats.level || 1}
               </div>
 
@@ -846,7 +846,7 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
               </div>
 
               {/* Nombre del avatar clickeable */}
-              <div className="absolute bottom-3 inset-x-3 z-30 flex items-center justify-center">
+              <div className="absolute bottom-2.5 sm:bottom-3 inset-x-2.5 sm:inset-x-3 z-30 flex items-center justify-center">
                 {isEditingName ? (
                   <input
                     type="text"
@@ -855,70 +855,70 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                     onBlur={() => setIsEditingName(false)}
                     onKeyDown={(e) => e.key === 'Enter' && setIsEditingName(false)}
                     autoFocus
-                    className="w-48 text-center font-black text-xs bg-white dark:bg-zinc-900 border-2 border-amber-500 rounded-xl px-2 py-1 outline-none text-zinc-900 dark:text-zinc-100 shadow-lg"
+                    className="w-40 sm:w-48 text-center font-black text-xs bg-white dark:bg-zinc-900 border-2 border-amber-500 rounded-xl px-2 py-0.5 sm:py-1 outline-none text-zinc-900 dark:text-zinc-100 shadow-lg"
                   />
                 ) : (
                   <button
                     type="button"
                     onClick={() => setIsEditingName(true)}
-                    className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white text-xs font-black flex items-center gap-1.5 shadow-md hover:scale-105 transition-transform"
+                    className="px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white text-[11px] sm:text-xs font-black flex items-center gap-1.5 shadow-md hover:scale-105 transition-transform"
                   >
-                    <span>{avatarName}</span>
+                    <span className="truncate max-w-[120px]">{avatarName}</span>
                     <span className="text-[10px] text-amber-300">✏️</span>
                   </button>
                 )}
               </div>
             </div>
 
-            {/* BOTONES DE PRUEBA DE ANIMACIÓN EN VIVO (HECHIZO, CELEBRAR, REPOSO) */}
-            <div className="w-full mt-4 bg-[#EDE1D1] dark:bg-zinc-900/80 p-2.5 rounded-2xl border border-[#D8C6B1] dark:border-zinc-800 shadow-sm">
-              <p className="text-[10px] font-black text-zinc-600 dark:text-zinc-400 uppercase tracking-wider mb-2 text-center">
+            {/* BOTONES DE PRUEBA DE ANIMACIÓN EN VIVO (HECHIZO, CELEBRAR, REPOSO) - Visible en sm y superior */}
+            <div className="hidden sm:block w-full mt-3 bg-[#EDE1D1] dark:bg-zinc-900/80 p-2 sm:p-2.5 rounded-2xl border border-[#D8C6B1] dark:border-zinc-800 shadow-sm shrink-0">
+              <p className="text-[10px] font-black text-zinc-600 dark:text-zinc-400 uppercase tracking-wider mb-1.5 text-center">
                 Probar Animación en Vivo
               </p>
               <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
                   onClick={() => triggerAnim('cast')}
-                  className={`py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`py-1.5 sm:py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                     previewAnimation === 'cast'
                       ? 'bg-pink-600 text-white shadow-lg shadow-pink-600/40 scale-105'
                       : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-pink-50 hover:text-pink-600'
                   }`}
                 >
-                  <Zap className="w-4 h-4" />
+                  <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>Hechizo</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => triggerAnim('cheer')}
-                  className={`py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`py-1.5 sm:py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                     previewAnimation === 'cheer'
                       ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/40 scale-105'
                       : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-amber-50 hover:text-amber-600'
                   }`}
                 >
-                  <PartyPopper className="w-4 h-4" />
+                  <PartyPopper className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>Celebrar</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => triggerAnim('idle')}
-                  className={`py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`py-1.5 sm:py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                     previewAnimation === 'idle'
                       ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/40 scale-105'
                       : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-blue-50 hover:text-blue-600'
                   }`}
                 >
-                  <User className="w-4 h-4" />
+                  <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>Reposo</span>
                 </button>
               </div>
             </div>
 
-            {/* Selector Rápido de Género y Altura debajo del Avatar */}
-            <div className="w-full mt-3 flex items-center justify-between gap-2">
+            {/* Selector Rápido de Género y Altura debajo del Avatar (solo desktop para no apretar tablet/móvil) */}
+            <div className="hidden lg:flex w-full mt-3 items-center justify-between gap-2 shrink-0">
               <div className="flex-1 bg-[#EDE1D1] dark:bg-zinc-900/80 p-2 rounded-2xl border border-[#D8C6B1] dark:border-zinc-800">
                 <span className="block text-[9px] text-zinc-500 dark:text-zinc-400 font-bold uppercase mb-1">Género</span>
                 <div className="flex gap-1">
