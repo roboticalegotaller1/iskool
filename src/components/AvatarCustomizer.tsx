@@ -223,9 +223,26 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
         {/* ========================================================================= */}
         {/* BARRA SUPERIOR: PESTAÑAS DE JUEGO (Estilo Animal Crossing / Cozy RPG)     */}
         {/* ========================================================================= */}
-        <div className="px-3 sm:px-6 pt-3 sm:pt-5 pb-2 sm:pb-3 bg-[#F2E7D5] dark:bg-zinc-900/90 border-b border-[#E3D3BE] dark:border-zinc-800 flex items-center justify-between gap-2 shrink-0">
-          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none max-w-[calc(100%-110px)] sm:max-w-none">
-            <span className="hidden sm:inline-flex items-center justify-center w-6 h-6 rounded bg-[#E4D4BE] dark:bg-zinc-800 text-[10px] font-black text-zinc-600 dark:text-zinc-300 shadow-inner shrink-0">
+        <div className="px-3 sm:px-6 pt-2.5 sm:pt-4 pb-2 sm:pb-3 bg-[#F2E7D5] dark:bg-zinc-900/90 border-b border-[#E3D3BE] dark:border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-2 shrink-0">
+          
+          {/* Fila 1 en móvil: Título / Indicador + Monedas */}
+          <div className="flex md:hidden items-center justify-between w-full">
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm">🎨</span>
+              <span className="text-xs font-black uppercase tracking-wider text-[#7A3E00] dark:text-amber-300">
+                Personalizar Personaje
+              </span>
+            </div>
+            {/* Monedas ISkool en móvil */}
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#FFE4C4] dark:bg-amber-950/40 border border-[#DEB887] dark:border-amber-700/50 text-[#8B4513] dark:text-amber-300 text-xs font-black shadow-inner">
+              <Coins className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 animate-pulse" />
+              <span>{currentCoins} <span className="font-bold">Monedas</span></span>
+            </div>
+          </div>
+
+          {/* Fila de pestañas principales (100% de ancho, cero recortes de 'OJOS' ni 'SOMBREROS') */}
+          <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto scrollbar-none w-full md:w-auto py-0.5 touch-pan-x">
+            <span className="hidden lg:inline-flex items-center justify-center w-6 h-6 rounded bg-[#E4D4BE] dark:bg-zinc-800 text-[10px] font-black text-zinc-600 dark:text-zinc-300 shadow-inner shrink-0">
               Q
             </span>
 
@@ -236,27 +253,27 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                   key={tab.id}
                   type="button"
                   onClick={() => handleTabChange(tab.id)}
-                  className={`px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-black tracking-wider transition-all flex items-center gap-1.5 shadow-sm cursor-pointer whitespace-nowrap shrink-0 ${
+                  className={`flex-1 sm:flex-initial px-2 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs md:text-sm font-black tracking-wider transition-all flex items-center justify-center gap-1 sm:gap-1.5 shadow-sm cursor-pointer whitespace-nowrap shrink-0 ${
                     isActive
-                      ? 'bg-[#FFE6C7] dark:bg-amber-500/20 text-[#7A3E00] dark:text-amber-300 ring-2 ring-[#DCA876] dark:ring-amber-500/50 scale-105'
+                      ? 'bg-[#FFE6C7] dark:bg-amber-500/20 text-[#7A3E00] dark:text-amber-300 ring-2 ring-[#DCA876] dark:ring-amber-500/50 scale-[1.02]'
                       : 'bg-[#FAF3E8] dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-white hover:text-zinc-900 dark:hover:bg-zinc-700'
                   }`}
                 >
-                  <span className="text-base">{tab.icon}</span>
+                  <span className="text-sm sm:text-base">{tab.icon}</span>
                   <span>{tab.label}</span>
                 </button>
               );
             })}
 
-            <span className="hidden sm:inline-flex items-center justify-center w-6 h-6 rounded bg-[#E4D4BE] dark:bg-zinc-800 text-[10px] font-black text-zinc-600 dark:text-zinc-300 shadow-inner shrink-0">
+            <span className="hidden lg:inline-flex items-center justify-center w-6 h-6 rounded bg-[#E4D4BE] dark:bg-zinc-800 text-[10px] font-black text-zinc-600 dark:text-zinc-300 shadow-inner shrink-0">
               E
             </span>
           </div>
 
-          {/* Monedas ISkool */}
-          <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl sm:rounded-2xl bg-[#FFE4C4] dark:bg-amber-950/40 border border-[#DEB887] dark:border-amber-700/50 text-[#8B4513] dark:text-amber-300 text-[11px] sm:text-xs font-black shadow-inner shrink-0">
-            <Coins className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600 dark:text-amber-400 animate-pulse" />
-            <span>{currentCoins} <span className="hidden min-[420px]:inline">Monedas</span></span>
+          {/* Monedas ISkool en Desktop */}
+          <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-[#FFE4C4] dark:bg-amber-950/40 border border-[#DEB887] dark:border-amber-700/50 text-[#8B4513] dark:text-amber-300 text-xs font-black shadow-inner shrink-0">
+            <Coins className="w-4 h-4 text-amber-600 dark:text-amber-400 animate-pulse" />
+            <span>{currentCoins} Monedas</span>
           </div>
         </div>
 
