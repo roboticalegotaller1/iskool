@@ -220,16 +220,16 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
           }}
         />
 
-        {/* Burbuja de Pensamiento / Reacción Viva (Idle Thought) */}
+        {/* Burbuja de Pensamiento / Reacción Viva (Idle Thought) completamente contenida dentro del recuadro */}
         {currentAction?.thoughtBubble && !isPetting && !isEgg && (
-          <div className="absolute -top-3 right-2 z-20 px-2.5 py-1 rounded-2xl bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 text-[11px] font-black shadow-lg animate-in zoom-in-75 fade-in duration-200 text-slate-800 dark:text-slate-100 flex items-center gap-1">
+          <div className="absolute top-2.5 right-2.5 z-20 px-3 py-1.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 border border-slate-200/90 dark:border-slate-700/90 text-[11px] font-black shadow-xl animate-in zoom-in-75 fade-in duration-200 text-slate-800 dark:text-slate-100 flex items-center gap-1.5 backdrop-blur-sm pointer-events-none select-none">
             <span>{currentAction.thoughtBubble}</span>
           </div>
         )}
 
-        {/* Indicador táctil de Caricia activa */}
+        {/* Indicador táctil de Caricia activa centrado en el margen superior interior */}
         {isPetting && (
-          <div className="absolute -top-3 z-20 px-3 py-1 rounded-full bg-rose-500 text-white text-[10px] font-black shadow-lg animate-bounce flex items-center gap-1">
+          <div className="absolute top-2.5 left-1/2 -translate-x-1/2 z-20 px-3 py-1 rounded-full bg-rose-500 text-white text-[10px] font-black shadow-lg animate-bounce flex items-center gap-1 pointer-events-none select-none">
             <Heart className="h-3 w-3 fill-current" />
             <span>¡Le encanta! +Amistad</span>
           </div>

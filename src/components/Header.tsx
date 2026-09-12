@@ -26,7 +26,15 @@ export const Header: React.FC = () => {
   const institutionsList = useSchoolAdminStore(state => state.institutionsList);
   const rawSchoolSettings = useSchoolAdminStore(state => state.schoolSettings);
 
-  const effectiveSchoolId = resolveEffectiveSchoolId(user, activeSchoolId, 'sch-jjrosseau');
+  // En el portal de alumno, derivar el colegio directamente del perfil del estudiante activo
+  const activeStudentProfile = detailedStudents?.find(s => s.id === activeStudentId);
+  const studentSchoolId = (user?.role === 'student' && user.school_id && user.school_id !== 'sch-jjrosseau')
+    ? user.school_id
+    : (activeStudentProfile?.school_id || 'sch-test-case');
+
+  const effectiveSchoolId = pathname.startsWith('/student')
+    ? studentSchoolId
+    : resolveEffectiveSchoolId(user, activeSchoolId, 'sch-jjrosseau');
   const currentInstitution = institutionsList.find(i => i.id === effectiveSchoolId);
   const schoolSettings = currentInstitution?.settings || rawSchoolSettings;
 

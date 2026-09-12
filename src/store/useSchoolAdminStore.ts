@@ -715,6 +715,9 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
         if (user.id === 'usr-teacher-1' || user.id === 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a55' || (user.email && user.email.toLowerCase().includes('israel.lopez') && user.role === 'teacher')) {
           const tch = (get().teachersList || []).find(t => t.id === 'usr-teacher-1');
           targetSchoolId = tch?.school_id || 'sch-test-case';
+        } else if (user.role === 'student' || user.id.startsWith('std-') || user.id.startsWith('c00a0eeb')) {
+          const std = (get().detailedStudents || []).find(s => s.id === user.id || (user.email && s.email?.toLowerCase() === user.email.toLowerCase()));
+          targetSchoolId = std?.school_id || user.school_id || 'sch-test-case';
         }
         set((state) => {
           const inst = (state.institutionsList || []).find(i => i.id === targetSchoolId);

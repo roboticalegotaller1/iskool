@@ -231,11 +231,11 @@ const getDemoUser = (email: string): UserProfile => {
   ) {
     return {
       ...PARENT_SEED,
-      school_id: 'sch-jjrosseau'
+      school_id: 'sch-test-case'
     };
   }
 
-  // 7. Alumnos Demo Específicos por Identificador o Correo
+  // 7. Alumnos Demo Específicos por Identificador o Correo (Asignados a su Laboratorio Pedagógico sch-test-case)
   if (emailLower === 'lucas@iskool.edu.mx' || emailLower === 'lucas.skywalker@iskool.edu.mx' || emailLower === 'std-pa') {
     const seed = STUDENTS_LIST_SEED.find(s => s.id === 'std-pa');
     return {
@@ -248,7 +248,7 @@ const getDemoUser = (email: string): UserProfile => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }),
-      school_id: 'sch-jjrosseau'
+      school_id: 'sch-test-case'
     };
   }
 
@@ -264,7 +264,7 @@ const getDemoUser = (email: string): UserProfile => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }),
-      school_id: 'sch-jjrosseau'
+      school_id: 'sch-test-case'
     };
   }
 
@@ -280,7 +280,7 @@ const getDemoUser = (email: string): UserProfile => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }),
-      school_id: 'sch-jjrosseau'
+      school_id: 'sch-test-case'
     };
   }
 
@@ -296,7 +296,7 @@ const getDemoUser = (email: string): UserProfile => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }),
-      school_id: 'sch-jjrosseau'
+      school_id: 'sch-test-case'
     };
   }
 
@@ -308,18 +308,18 @@ const getDemoUser = (email: string): UserProfile => {
   if (matchedSeedStudent) {
     return {
       ...matchedSeedStudent,
-      school_id: matchedSeedStudent.school_id || 'sch-jjrosseau'
+      school_id: matchedSeedStudent.school_id || 'sch-test-case'
     };
   }
 
-  // 8. Fallback para nuevo alumno con correo personalizado
+  // 9. Fallback para nuevo alumno con correo personalizado
   const nameParts = emailLower.split('@')[0].split('.');
   const firstName = nameParts[0] ? nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1) : 'Usuario';
   const lastName = nameParts[1] ? nameParts[1].charAt(0).toUpperCase() + nameParts[1].slice(1) : 'Escolar';
 
   return {
     id: `usr-demo-${Date.now()}`,
-    school_id: 'sch-jjrosseau',
+    school_id: 'sch-test-case',
     first_name: firstName,
     last_name: lastName,
     role: 'student',
@@ -367,6 +367,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             };
           }
 
+          // Saneamiento reactivo de alumnos (Lucas, Elena, Santi, Mateo, etc.): asegurar su colegio correspondiente sch-test-case
+          if (restoredUser.role === 'student' || restoredUser.id.startsWith('std-') || restoredUser.id.startsWith('c00a0eeb')) {
+            const detailed = (useSchoolAdminStore.getState().detailedStudents || []).find(s => s.id === restoredUser.id || (restoredUser.email && s.email?.toLowerCase() === restoredUser.email.toLowerCase()));
+            restoredUser = {
+              ...restoredUser,
+              school_id: detailed?.school_id || 'sch-test-case'
+            };
+          }
+
           const isSuper = isPlatformSuperUser(restoredUser) || restoredUser.role === 'admin' || restoredUser.role === 'superadmin' || restoredUser.id.startsWith('usr-superadmin');
           if (!isSuper) {
             const effectiveSchool = resolveEffectiveSchoolId(restoredUser, null, restoredUser.school_id || 'sch-test-case');
@@ -408,6 +417,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     email: 'israel.lopez@sandbox.iskool.edu.mx'
                   };
                   localStorage.setItem('iskool_session_user', JSON.stringify(parsed));
+                }
+
+                // Saneamiento reactivo de alumnos (Lucas, Elena, Santi, Mateo, etc.): asegurar su colegio correspondiente sch-test-case
+                if (parsed.role === 'student' || parsed.id.startsWith('std-') || parsed.id.startsWith('c00a0eeb')) {
+                  const detailed = (useSchoolAdminStore.getState().detailedStudents || []).find(s => s.id === parsed.id || (parsed.email && s.email?.toLowerCase() === parsed.email.toLowerCase()));
+                  const correctSchool = detailed?.school_id || 'sch-test-case';
+                  if (parsed.school_id !== correctSchool) {
+                    parsed = { ...parsed, school_id: correctSchool };
+                    localStorage.setItem('iskool_session_user', JSON.stringify(parsed));
+                  }
                 }
 
                 const isSuper = isPlatformSuperUser(parsed) || parsed.role === 'admin' || parsed.role === 'superadmin' || parsed.id.startsWith('usr-superadmin');
