@@ -709,20 +709,44 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
 
             {/* CABELLO FRONTAL DINÁMICO (16 ESTILOS ANIME PARA HOMBRE Y MUJER) */}
             <g id="layer-front-hair">
+              {/* BÓVEDA / CASQUETE CAPILAR BASE (Garantiza cero calvicie en todos los peinados) */}
+              {hairStyle !== 'bald' && (
+                <g id="hair-universal-crown-base">
+                  {/* Volumen de cabello completo cubriendo toda la bóveda craneal */}
+                  <path
+                    d="M 40,30 C 37,8 89,8 86,30 C 85,25 76,23 63,23 C 50,23 41,25 40,30 Z"
+                    fill={hair}
+                  />
+                  {/* Brillo anime sutil en la parte superior del cabello */}
+                  <path
+                    d="M 49,15 Q 63,11 77,15"
+                    stroke="#FFFFFF"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                    opacity="0.35"
+                    fill="none"
+                  />
+                </g>
+              )}
+
               {/* 1. Spiky / Puntas Anime Rebelde */}
               {hairStyle === 'spiky' && (
                 <g id="hair-spiky">
                   {isMale ? (
                     <>
                       <path d="M 40,28 L 47,8 L 54,20 L 63,4 L 72,20 L 79,8 L 86,28 Z" fill={hair} />
-                      <path d="M 41,26 L 36,38 L 44,33 Z" fill={hair} />
-                      <path d="M 85,26 L 90,38 L 82,33 Z" fill={hair} />
+                      <path d="M 41,24 L 36,38 L 44,33 Z" fill={hair} />
+                      <path d="M 85,24 L 90,38 L 82,33 Z" fill={hair} />
+                      <path d="M 50,23 L 54,32 L 58,23 Z" fill={hair} />
+                      <path d="M 68,23 L 72,32 L 76,23 Z" fill={hair} />
                     </>
                   ) : (
                     <>
                       <path d="M 42,28 L 48,14 L 54,24 L 63,10 L 72,24 L 78,14 L 84,28 Z" fill={hair} />
-                      <path d="M 42,26 Q 37,42 42,54 Q 45,45 46,32 Z" fill={hair} />
-                      <path d="M 84,26 Q 89,42 84,54 Q 81,45 80,32 Z" fill={hair} />
+                      <path d="M 42,24 Q 37,42 42,54 Q 45,45 46,32 Z" fill={hair} />
+                      <path d="M 84,24 Q 89,42 84,54 Q 81,45 80,32 Z" fill={hair} />
+                      <path d="M 51,23 L 55,34 L 60,23 Z" fill={hair} />
+                      <path d="M 66,23 L 71,34 L 76,23 Z" fill={hair} />
                     </>
                   )}
                 </g>
@@ -731,45 +755,45 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
               {/* 2. Short Clean / Corto Clásico de Academia */}
               {(hairStyle === 'short_clean' || (!hairStyle && isMale)) && (
                 <g id="hair-short-clean">
-                  <path d="M 41,26 Q 63,14 85,26 L 85,32 Q 63,22 41,32 Z" fill={hair} />
-                  <path d="M 41,26 L 38,36 L 43,32 Z" fill={hair} />
-                  <path d="M 85,26 L 88,36 L 83,32 Z" fill={hair} />
+                  <path d="M 40,24 Q 63,14 86,24 L 86,32 Q 63,22 40,32 Z" fill={hair} />
+                  <path d="M 40,24 L 37,36 L 43,32 Z" fill={hair} />
+                  <path d="M 86,24 L 89,36 L 83,32 Z" fill={hair} />
                 </g>
               )}
 
               {/* 3. Sidecut / Rapado Lateral Urbano */}
               {hairStyle === 'sidecut' && (
                 <g id="hair-sidecut">
-                  <path d="M 42,28 Q 50,10 74,8 Q 88,14 88,30 Q 78,22 54,25 Z" fill={hair} />
+                  <path d="M 42,24 Q 50,9 74,7 Q 88,13 88,30 Q 78,22 54,24 Z" fill={hair} />
                   {/* Líneas de fade / rapado en el lateral izquierdo */}
-                  <line x1="41" y1="28" x2="45" y2="28" stroke={hair} strokeWidth="1.5" opacity="0.6" />
-                  <line x1="40" y1="32" x2="44" y2="32" stroke={hair} strokeWidth="1.5" opacity="0.6" />
-                  <path d="M 85,26 L 89,38 L 82,34 Z" fill={hair} />
+                  <line x1="41" y1="26" x2="45" y2="26" stroke={hair} strokeWidth="1.5" opacity="0.6" />
+                  <line x1="40" y1="30" x2="44" y2="30" stroke={hair} strokeWidth="1.5" opacity="0.6" />
+                  <path d="M 85,24 L 89,38 L 82,34 Z" fill={hair} />
                 </g>
               )}
 
               {/* 4. Shaggy / Flequillo Despeinado */}
               {hairStyle === 'shaggy' && (
                 <g id="hair-shaggy">
-                  <path d="M 40,26 L 46,37 L 51,26 L 58,40 L 64,26 L 70,39 L 76,26 L 82,36 L 86,26 Z" fill={hair} />
-                  <path d="M 41,26 L 36,40 L 44,34 Z" fill={hair} />
-                  <path d="M 85,26 L 90,40 L 82,34 Z" fill={hair} />
+                  <path d="M 40,24 L 46,37 L 51,25 L 58,40 L 64,25 L 70,39 L 76,25 L 82,36 L 86,24 Z" fill={hair} />
+                  <path d="M 41,24 L 36,40 L 44,34 Z" fill={hair} />
+                  <path d="M 85,24 L 90,40 L 82,34 Z" fill={hair} />
                 </g>
               )}
 
               {/* 5. Bob / Corte Bob Moderno */}
               {hairStyle === 'bob' && (
                 <g id="hair-bob">
-                  <path d="M 41,26 Q 63,18 85,26 L 86,48 Q 80,48 79,30 Q 63,28 47,30 Q 46,48 40,48 Z" fill={hair} />
+                  <path d="M 40,24 Q 63,18 86,24 L 86,48 Q 80,48 79,30 Q 63,28 47,30 Q 46,48 40,48 Z" fill={hair} />
                 </g>
               )}
 
               {/* 6. Pixie / Corte Pixie Élfico */}
               {hairStyle === 'pixie' && (
                 <g id="hair-pixie">
-                  <path d="M 42,26 L 48,32 L 54,23 L 63,33 L 72,23 L 78,32 L 84,26 Z" fill={hair} />
-                  <path d="M 42,26 L 38,34 L 44,30 Z" fill={hair} />
-                  <path d="M 84,26 L 88,34 L 82,30 Z" fill={hair} />
+                  <path d="M 42,24 L 48,32 L 54,23 L 63,33 L 72,23 L 78,32 L 84,24 Z" fill={hair} />
+                  <path d="M 42,24 L 38,34 L 44,30 Z" fill={hair} />
+                  <path d="M 84,24 L 88,34 L 82,30 Z" fill={hair} />
                 </g>
               )}
 
@@ -783,7 +807,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
               {/* 8. Dreadlocks / Rastas Urbanas */}
               {hairStyle === 'dreadlocks' && (
                 <g id="hair-dreadlocks">
-                  <path d="M 40,26 L 45,38 L 49,27 L 55,42 L 59,27 L 67,27 L 71,42 L 77,27 L 81,38 L 86,26 Z" fill={hair} />
+                  <path d="M 40,24 L 45,38 L 49,26 L 55,42 L 59,26 L 67,26 L 71,42 L 77,26 L 81,38 L 86,24 Z" fill={hair} />
                   <circle cx="55" cy="38" r="1.5" fill="#F59E0B" />
                   <circle cx="71" cy="38" r="1.5" fill="#F59E0B" />
                 </g>
@@ -792,34 +816,34 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
               {/* 9. Coleta Alta Aventurera (Frontal) */}
               {hairStyle === 'ponytail' && (
                 <g id="hair-ponytail">
-                  <path d="M 42,26 Q 52,36 63,26 Q 74,36 84,26 Q 74,18 63,18 Q 52,18 42,26 Z" fill={hair} />
-                  <path d="M 42,26 Q 38,40 43,50 Q 45,42 46,30 Z" fill={hair} />
-                  <path d="M 84,26 Q 88,40 83,50 Q 81,42 80,30 Z" fill={hair} />
+                  <path d="M 42,24 Q 52,36 63,26 Q 74,36 84,24 Q 74,18 63,18 Q 52,18 42,24 Z" fill={hair} />
+                  <path d="M 42,24 Q 38,40 43,50 Q 45,42 46,30 Z" fill={hair} />
+                  <path d="M 84,24 Q 88,40 83,50 Q 81,42 80,30 Z" fill={hair} />
                 </g>
               )}
 
               {/* 10. Trenzas Dobles Épicas (Frontal) */}
               {hairStyle === 'twin_braids' && (
                 <g id="hair-braids-front">
-                  <path d="M 42,26 Q 52,34 63,26 Q 74,34 84,26 Q 63,16 42,26 Z" fill={hair} />
-                  <path d="M 42,26 L 38,42 L 44,36 Z" fill={hair} />
-                  <path d="M 84,26 L 88,42 L 82,36 Z" fill={hair} />
+                  <path d="M 42,24 Q 52,34 63,26 Q 74,34 84,24 Q 63,16 42,24 Z" fill={hair} />
+                  <path d="M 42,24 L 38,42 L 44,36 Z" fill={hair} />
+                  <path d="M 84,24 L 88,42 L 82,36 Z" fill={hair} />
                 </g>
               )}
 
               {/* 11. Moños Dobles Cósmicos (Space Buns Frontal) */}
               {hairStyle === 'space_buns' && (
                 <g id="hair-spacebuns-front">
-                  <path d="M 42,26 Q 63,20 84,26 L 84,32 Q 63,24 42,32 Z" fill={hair} />
-                  <path d="M 43,26 Q 38,44 43,52 Q 45,44 46,30 Z" fill={hair} />
-                  <path d="M 83,26 Q 88,44 83,52 Q 81,44 80,30 Z" fill={hair} />
+                  <path d="M 42,24 Q 63,20 84,24 L 84,32 Q 63,24 42,32 Z" fill={hair} />
+                  <path d="M 43,24 Q 38,44 43,52 Q 45,44 46,30 Z" fill={hair} />
+                  <path d="M 83,24 Q 88,44 83,52 Q 81,44 80,30 Z" fill={hair} />
                 </g>
               )}
 
               {/* 12. Nudos Bantu Sagrados (Frontal) */}
               {hairStyle === 'bantu_knots' && (
                 <g id="hair-bantu-front">
-                  <path d="M 42,26 Q 63,18 84,26 L 84,30 Q 63,22 42,30 Z" fill={hair} />
+                  <path d="M 42,24 Q 63,18 84,24 L 84,30 Q 63,22 42,30 Z" fill={hair} />
                   <circle cx="56" cy="22" r="3.5" fill={hair} />
                   <circle cx="70" cy="22" r="3.5" fill={hair} />
                 </g>
@@ -828,34 +852,34 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
               {/* 13. Straight Long / Melena Lisa Profunda */}
               {hairStyle === 'straight_long' && (
                 <g id="hair-straight-long">
-                  <path d="M 42,26 Q 63,22 84,26 L 86,58 Q 81,58 80,32 Q 63,28 46,32 Q 45,58 40,58 Z" fill={hair} />
+                  <path d="M 42,24 Q 63,22 84,24 L 86,58 Q 81,58 80,32 Q 63,28 46,32 Q 45,58 40,58 Z" fill={hair} />
                 </g>
               )}
 
               {/* 14. Wavy Long / Melena Ondulada Suave */}
               {hairStyle === 'wavy_long' && (
                 <g id="hair-wavy-long">
-                  <path d="M 42,26 Q 52,36 63,26 Q 74,36 84,26 Q 63,16 42,26 Z" fill={hair} />
-                  <path d="M 42,26 Q 36,46 43,62 Q 46,50 46,32 Z" fill={hair} />
-                  <path d="M 84,26 Q 90,46 83,62 Q 80,50 80,32 Z" fill={hair} />
+                  <path d="M 42,24 Q 52,36 63,26 Q 74,36 84,24 Q 63,16 42,24 Z" fill={hair} />
+                  <path d="M 42,24 Q 36,46 43,62 Q 46,50 46,32 Z" fill={hair} />
+                  <path d="M 84,24 Q 90,46 83,62 Q 80,50 80,32 Z" fill={hair} />
                 </g>
               )}
 
               {/* 15. Witch Curls / Rizos Místicos de Bruja */}
               {hairStyle === 'witch_curls' && (
                 <g id="hair-witch-curls">
-                  <path d="M 42,26 Q 52,38 63,26 Q 74,38 84,26 Q 63,16 42,26 Z" fill={hair} />
-                  <path d="M 42,26 Q 34,44 42,56 Q 44,48 45,34 Z" fill={hair} />
-                  <path d="M 84,26 Q 92,44 84,56 Q 82,48 81,34 Z" fill={hair} />
+                  <path d="M 42,24 Q 52,38 63,26 Q 74,38 84,24 Q 63,16 42,24 Z" fill={hair} />
+                  <path d="M 42,24 Q 34,44 42,56 Q 44,48 45,34 Z" fill={hair} />
+                  <path d="M 84,24 Q 92,44 84,56 Q 82,48 81,34 Z" fill={hair} />
                 </g>
               )}
 
               {/* 16. Wild Mane / Melena Salvaje de Héroe */}
               {hairStyle === 'wild_mane' && (
                 <g id="hair-wild-mane">
-                  <path d="M 38,26 L 44,10 L 52,24 L 63,6 L 74,24 L 82,10 L 88,26 Z" fill={hair} />
-                  <path d="M 39,26 L 32,46 L 42,38 Z" fill={hair} />
-                  <path d="M 87,26 L 94,46 L 84,38 Z" fill={hair} />
+                  <path d="M 38,24 L 44,10 L 52,24 L 63,6 L 74,24 L 82,10 L 88,24 Z" fill={hair} />
+                  <path d="M 39,24 L 32,46 L 42,38 Z" fill={hair} />
+                  <path d="M 87,24 L 94,46 L 84,38 Z" fill={hair} />
                 </g>
               )}
             </g>
@@ -872,18 +896,39 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
             {/* SOMBRERO DE BRUJA O GORRO */}
             {equippedHat === 'hat_witch' && (
               <g id="layer-witch-hat" className="drop-shadow-lg">
-                <ellipse cx="63" cy="20" rx="38" ry="10" fill="#3B185F" stroke="#2A0845" strokeWidth="1.5" />
-                <ellipse cx="63" cy="18" rx="22" ry="6" fill="#DB2777" />
-                <circle cx="63" cy="18" r="3" fill="#FDE047" />
-                <path d="M 44,18 Q 55,-12 78,-16 Q 80,4 82,18 Z" fill="#3B185F" stroke="#2A0845" strokeWidth="1.5" />
-                <polygon points="56,6 58,10 62,11 59,14 60,18 56,15 52,18 53,14 50,11 54,10" fill="#FDE047" />
+                <ellipse cx="63" cy="22" rx="38" ry="11" fill="#3B185F" stroke="#2A0845" strokeWidth="1.5" />
+                <ellipse cx="63" cy="20" rx="22" ry="6" fill="#DB2777" />
+                <circle cx="63" cy="20" r="3" fill="#FDE047" />
+                <path d="M 42,20 Q 55,-14 78,-18 Q 80,4 84,20 Z" fill="#3B185F" stroke="#2A0845" strokeWidth="1.5" />
+                <polygon points="56,8 58,12 62,13 59,16 60,20 56,17 52,20 53,16 50,13 54,12" fill="#FDE047" />
               </g>
             )}
             {equippedHat === 'hat_urban_cap' && (
-              <path d="M 44,20 Q 63,6 82,20 L 94,22 L 80,24 Z" fill="#DC2626" stroke="#B91C1C" strokeWidth="1.5" />
+              <g id="layer-urban-cap" className="drop-shadow-md">
+                {/* Corona completa de la gorra encajando en el cráneo */}
+                <path d="M 39,23 C 37,4 89,4 87,23 C 85,21 75,19 63,19 C 51,19 41,21 39,23 Z" fill="#DC2626" stroke="#991B1B" strokeWidth="1.2" />
+                {/* Botón superior de la gorra */}
+                <ellipse cx="63" cy="5" rx="2.5" ry="1.5" fill="#7F1D1D" />
+                {/* Costuras de los gajos */}
+                <path d="M 63,6 L 63,19" stroke="#991B1B" strokeWidth="0.8" opacity="0.6" />
+                <path d="M 50,8 Q 56,14 63,19" stroke="#991B1B" strokeWidth="0.6" opacity="0.5" />
+                <path d="M 76,8 Q 70,14 63,19" stroke="#991B1B" strokeWidth="0.6" opacity="0.5" />
+                {/* Visera deportiva proyectada */}
+                <path d="M 40,22 Q 63,15 86,22 L 95,24 Q 63,26 40,22 Z" fill="#B91C1C" stroke="#7F1D1D" strokeWidth="1" />
+                {/* Pespunte de la visera */}
+                <path d="M 44,21 Q 63,16 84,21" stroke="#EF4444" strokeWidth="0.8" fill="none" opacity="0.7" />
+                {/* Emblema bordado frontal estrella */}
+                <polygon points="63,10 64.5,13 67.5,13 65,15 66,18 63,16 60,18 61,15 58.5,13 61.5,13" fill="#FDE047" stroke="#CA8A04" strokeWidth="0.5" />
+              </g>
             )}
             {equippedHat === 'hat_guild_crown' && (
-              <polygon points="46,18 50,8 57,14 63,4 69,14 76,8 80,18" fill="#F59E0B" stroke="#B45309" strokeWidth="1.5" />
+              <g id="layer-guild-crown" className="drop-shadow-md">
+                <path d="M 45,20 Q 63,16 81,20 L 81,16 Q 63,12 45,16 Z" fill="#F59E0B" stroke="#B45309" strokeWidth="1" />
+                <polygon points="45,16 48,7 54,14 63,3 72,14 78,7 81,16" fill="#FBBF24" stroke="#B45309" strokeWidth="1" />
+                <circle cx="63" cy="9" r="2.2" fill="#EF4444" stroke="#991B1B" strokeWidth="0.5" />
+                <circle cx="51" cy="12" r="1.6" fill="#3B82F6" />
+                <circle cx="75" cy="12" r="1.6" fill="#10B981" />
+              </g>
             )}
           </g>
 
