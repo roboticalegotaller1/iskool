@@ -241,26 +241,31 @@ export default function StudentDashboard() {
   const xpForCurrentLevel = (stats?.level ?? 1) * 200;
   const progressPercent = Math.min(100, Math.round(((stats?.xp ?? 0) / xpForCurrentLevel) * 100));
 
-  // Renderizador estático del Avatar en SVG
+  // Renderizador estático del Avatar en SVG con Fondo Claro Radiante de Alto Contraste
   const renderAvatarPreview = (width = 120, height = 120, customViewBox?: string) => {
-    const bgGradient = (avatar?.background_style ?? 'forest') === 'nebula' 
-      ? 'from-blue-950 via-slate-900 to-emerald-950'
-      : (avatar?.background_style ?? 'forest') === 'nature_spirit'
-        ? 'from-emerald-900 via-teal-950 to-stone-900'
-        : 'from-emerald-950 via-teal-900 to-cyan-950';
-
     return (
-      <div className={`relative flex items-center justify-center rounded-2xl bg-gradient-to-br ${bgGradient} overflow-hidden shadow-md`} style={{ width, height }}>
-        {/* Hojas flotantes para el Espíritu de la Naturaleza */}
-        {(avatar?.background_style ?? 'forest') === 'nature_spirit' && (
-          <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.2),transparent_70%)]">
-            <div className="absolute top-4 left-4 h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
-            <div className="absolute bottom-4 right-4 h-1.5 w-1.5 rounded-full bg-emerald-300 animate-bounce" />
-            <span className="absolute top-2 right-4 text-[8px] opacity-40">🍃</span>
-            <span className="absolute bottom-2 left-2 text-[8px] opacity-40">🍃</span>
-          </div>
-        )}
-        <div className="w-full h-full p-1 relative filter drop-shadow-md">
+      <div 
+        className="relative flex items-center justify-center rounded-2xl overflow-hidden border-2 border-amber-300/85 bg-gradient-to-b from-[#FEF08A] via-[#BAE6FD] to-[#DDD6FE] shadow-xl select-none" 
+        style={{ width, height }}
+      >
+        {/* Halo y resplandor radial cálido solar */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(254,240,138,0.85)_0%,rgba(186,230,253,0.55)_50%,rgba(221,214,254,0.4)_100%)] pointer-events-none" />
+
+        {/* Patrón sutil de rayos de luz mágicos */}
+        <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,rgba(255,255,255,0.25)_0,rgba(255,255,255,0.25)_10px,transparent_10px,transparent_20px)] opacity-35 pointer-events-none" />
+
+        {/* Estrellas y destellos flotantes */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <span className="absolute top-2 left-2.5 text-[12px] animate-pulse">✨</span>
+          <span className="absolute top-2.5 right-2.5 text-[10px] animate-bounce">⭐</span>
+          <span className="absolute bottom-5 left-2 text-[10px] opacity-80 animate-ping">✨</span>
+          <span className="absolute bottom-7 right-2 text-[11px] opacity-75 animate-pulse">🌟</span>
+        </div>
+
+        {/* Pedestal de luz dorada bajo los pies del avatar */}
+        <div className="absolute bottom-1.5 inset-x-3 h-5 rounded-full bg-gradient-to-r from-amber-300/60 via-yellow-200 to-amber-300/60 blur-[1px] shadow-[0_0_14px_rgba(250,204,21,0.7)] pointer-events-none" />
+
+        <div className="w-full h-full p-1 relative z-10 filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)]">
           <AnimeAvatarSprite 
             gender={(avatar as any)?.gender ?? 'female'}
             rpgClass={(avatar as any)?.rpg_class ?? avatar?.outfit_style ?? 'mago'}
@@ -443,11 +448,11 @@ export default function StudentDashboard() {
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 bg-white/5 p-2 rounded-2xl border border-white/10 backdrop-blur-md shrink-0">
               {/* Bloque del Avatar ceñido con fidelidad completa (220% de escala) */}
               <div className="flex flex-col items-center gap-1 bg-white/10 p-1.5 rounded-xl border border-white/20 backdrop-blur-sm shadow-inner w-fit">
-                <span className="text-[10px] font-black bg-blue-400 text-teal-950 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                <span className="text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-300 text-slate-950 px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm border border-yellow-200">
                   Avatar: {avatar?.avatar_name ?? 'Estudiante'}
                 </span>
                 
-                {/* Avatar Preview ceñido sin margen sobrante (escala 220% preservada con viewBox ajustado) */}
+                {/* Avatar Preview ceñido sin margen sobrante con fondo claro radiante */}
                 <div className="relative">
                   {renderAvatarPreview(200, 252, "20 4 110 138")}
                 </div>
@@ -462,20 +467,25 @@ export default function StudentDashboard() {
               </div>
 
               {/* Bloque del Compañero Místico Vivo ceñido con escala proporcional oficial */}
-              <div className="w-auto flex flex-col items-center">
-                <LivingCompanionEngine
-                  raceId={avatar?.pet_type || 'cryo_dragon'}
-                  stage={stats?.pet_stage || 'egg'}
-                  petName={avatar?.pet_name || 'Compañero'}
-                  happiness={avatar?.pet_happiness ?? stats?.pet_happiness ?? 85}
-                  friendshipExp={stats?.friendship_exp || 120}
-                  tasksCompleted={stats?.tasks_completed_count || 0}
-                  onPetTouch={() => petCompanionTouch(activeStudentId)}
-                  onOpenSanctuary={() => setIsSanctuaryHomeOpen(true)}
-                  onTriggerHatch={() => setIsHatchingModalOpen(true)}
-                  onEvolveStage={() => evolvePetStage(activeStudentId)}
-                  avatarHeight={252}
-                />
+              <div className="flex flex-col items-center gap-1 bg-white/10 p-1.5 rounded-xl border border-white/20 backdrop-blur-sm shadow-inner w-fit">
+                <span className="text-[10px] font-black bg-gradient-to-r from-teal-300 to-cyan-300 text-slate-950 px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm border border-cyan-100">
+                  Mascota: {avatar?.pet_name || 'Compañero'}
+                </span>
+                <div className="relative">
+                  <LivingCompanionEngine
+                    raceId={avatar?.pet_type || 'cryo_dragon'}
+                    stage={stats?.pet_stage || 'egg'}
+                    petName={avatar?.pet_name || 'Compañero'}
+                    happiness={avatar?.pet_happiness ?? stats?.pet_happiness ?? 85}
+                    friendshipExp={stats?.friendship_exp || 120}
+                    tasksCompleted={stats?.tasks_completed_count || 0}
+                    onPetTouch={() => petCompanionTouch(activeStudentId)}
+                    onOpenSanctuary={() => setIsSanctuaryHomeOpen(true)}
+                    onTriggerHatch={() => setIsHatchingModalOpen(true)}
+                    onEvolveStage={() => evolvePetStage(activeStudentId)}
+                    avatarHeight={252}
+                  />
+                </div>
               </div>
             </div>
 

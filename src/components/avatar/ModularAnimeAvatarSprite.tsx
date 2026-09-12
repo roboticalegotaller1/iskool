@@ -107,34 +107,49 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
           ? 'cheerJumpBounce 0.62s cubic-bezier(0.28, 0.84, 0.42, 1) infinite' 
           : isWalking
           ? 'walkCycleBob 0.45s ease-in-out infinite'
-          : undefined,
-        willChange: (isCheering || isWalking) ? 'transform' : undefined
+          : 'idleLivingBreathe 3.4s ease-in-out infinite',
+        willChange: 'transform'
       }}
     >
       <style>{`
         @keyframes walkCycleBob {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          25% { transform: translateY(-7px) rotate(-3deg); }
-          50% { transform: translateY(0px) rotate(0deg); }
-          75% { transform: translateY(-7px) rotate(3deg); }
+          0%, 100% { transform: translateY(0px) rotate(0deg) scale(1, 1); }
+          25% { transform: translateY(-9px) rotate(-4deg) scale(0.97, 1.03); }
+          50% { transform: translateY(1.5px) rotate(0deg) scale(1.03, 0.97); }
+          75% { transform: translateY(-9px) rotate(4deg) scale(0.97, 1.03); }
+        }
+        @keyframes idleLivingBreathe {
+          0%, 100% { transform: translateY(0px) scale(1, 1); }
+          35% { transform: translateY(-3.2px) scale(1.015, 0.985); }
+          70% { transform: translateY(-4px) scale(1.008, 0.992); }
+        }
+        @keyframes animeEyeBlink {
+          0%, 88%, 93%, 97%, 100% { transform: scaleY(1); }
+          90%, 95% { transform: scaleY(0.06); }
+        }
+        @keyframes shadowPulse {
+          0%, 100% { transform: scale(1); opacity: 0.35; }
+          35% { transform: scale(0.88); opacity: 0.22; }
+          70% { transform: scale(0.86); opacity: 0.20; }
         }
         @keyframes cheerJumpBounce {
           0%, 100% { transform: translateY(0px) scale(1, 1); }
-          30% { transform: translateY(-22px) scale(0.95, 1.05); }
-          50% { transform: translateY(-26px) scale(0.92, 1.08); }
-          75% { transform: translateY(3px) scale(1.06, 0.94); }
+          15% { transform: translateY(5px) scale(1.10, 0.90); }
+          40% { transform: translateY(-30px) scale(0.90, 1.10); }
+          65% { transform: translateY(-34px) scale(0.92, 1.08); }
+          85% { transform: translateY(3px) scale(1.06, 0.94); }
         }
         @keyframes cheerArmWaveLeft {
           0%, 100% { transform: rotate(0deg); }
-          50% { transform: rotate(-8deg); }
+          50% { transform: rotate(-10deg); }
         }
         @keyframes cheerArmWaveRight {
           0%, 100% { transform: rotate(0deg); }
-          50% { transform: rotate(8deg); }
+          50% { transform: rotate(10deg); }
         }
         @keyframes floatConfettiParticle {
           0% { transform: translateY(0px) rotate(0deg); opacity: 1; }
-          50% { transform: translateY(-8px) rotate(180deg); opacity: 0.9; }
+          50% { transform: translateY(-10px) rotate(180deg); opacity: 0.9; }
           100% { transform: translateY(0px) rotate(360deg); opacity: 1; }
         }
       `}</style>
@@ -162,7 +177,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
         </defs>
 
         <g transform="translate(10, 8)">
-          {/* 1. SOMBRA BASE EN EL SUELO */}
+          {/* 1. SOMBRA BASE EN EL SUELO CON PULSACIÓN SUAVE */}
           <ellipse 
             cx="65" 
             cy="126" 
@@ -171,6 +186,10 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
             fill="#000000" 
             opacity={isCheering ? 0.18 : 0.35} 
             className="transition-all duration-300"
+            style={{
+              animation: !isCheering && !isWalking ? 'shadowPulse 3.4s ease-in-out infinite' : undefined,
+              transformOrigin: '65px 126px'
+            }}
           />
 
           {/* 2. CAPA / CABELLO TRASERO / ALAS */}
@@ -630,8 +649,14 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
               </g>
             )}
 
-            {/* OJOS Y EXPRESIÓN */}
-            <g id="layer-eyes">
+            {/* OJOS Y EXPRESIÓN CON PARPADEO ANIME NATURAL */}
+            <g 
+              id="layer-eyes"
+              style={{
+                animation: !isCheering && eyesStyle !== 'wink' ? 'animeEyeBlink 4.2s ease-in-out infinite' : undefined,
+                transformOrigin: '63px 36px'
+              }}
+            >
               {isCheering ? (
                 /* Ojos cerrados sonrientes de felicidad ( ^ ‿ ^ ) */
                 <g>

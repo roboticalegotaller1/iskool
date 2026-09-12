@@ -389,10 +389,10 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
 
         @keyframes petMapHop {
           0%, 100% {
-            transform: translateY(0) rotate(0deg);
+            transform: translateY(0) scale(1.06, 0.94) rotate(0deg);
           }
           50% {
-            transform: translateY(-13px) rotate(8deg);
+            transform: translateY(-16px) scale(0.94, 1.06) rotate(8deg);
           }
         }
         .animate-pet-map-hop {
@@ -401,10 +401,10 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
 
         @keyframes petMapFloat {
           0%, 100% {
-            transform: translateY(0);
+            transform: translateY(0) scale(1, 1);
           }
           50% {
-            transform: translateY(-5px);
+            transform: translateY(-6px) scale(1.03, 0.97);
           }
         }
         .animate-pet-map-float {
@@ -634,55 +634,78 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
                     </span>
                   </div>
 
-                  {/* Par Avatar + Mascota con Orientación según Dirección de Caminata */}
-                  <div 
-                    className="flex items-end justify-center gap-3 transition-transform duration-300"
-                    style={{
-                      transform: facingDirection === 'left' ? 'scaleX(-1)' : 'scaleX(1)',
-                    }}
-                  >
-                    {/* Sprite del Avatar con fidelidad vectorial íntegra (3x tamaño = 186px de alto) */}
+                  {/* Cápsula Diorama de Fondo Claro Radiante de Alto Contraste para Avatar y Mascota en el Mapa */}
+                  <div className="relative flex flex-col items-center">
+                    {/* Fondo Claro Radiante de Alto Contraste (NO blanco: aurora dorada-celeste-lavanda ultra vistosa) */}
                     <div 
-                      style={{ width: avatarMapWidth, height: avatarMapHeight }} 
-                      className="relative shrink-0 filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.65)]"
+                      className="absolute -inset-x-5 -top-5 -bottom-2 rounded-3xl bg-gradient-to-b from-[#FEF08A]/92 via-[#BAE6FD]/95 to-[#DDD6FE]/92 border-2 border-amber-300 shadow-[0_0_28px_rgba(250,204,21,0.55),0_10px_25px_rgba(0,0,0,0.5)] backdrop-blur-md overflow-hidden pointer-events-none z-0"
                     >
-                      <ModularAnimeAvatarSprite
-                        gender={(avatar as any)?.gender ?? 'female'}
-                        skinTone={(avatar as any)?.skin_tone ?? 'light'}
-                        hairColor={avatar?.hair_color ?? '#4B5563'}
-                        hairStyle={avatar?.hair_style ?? 'spiky'}
-                        eyesStyle={avatar?.eyes_style ?? 'determined'}
-                        raceFeature={avatar?.race_feature || 'human'}
-                        bodyScale={(avatar as any)?.body_scale ?? 'normal'}
-                        equippedShoes={avatar?.equipped_shoes}
-                        equippedBottom={avatar?.equipped_bottom}
-                        equippedTop={avatar?.equipped_top}
-                        equippedOuterwear={avatar?.equipped_outerwear}
-                        equippedHat={avatar?.equipped_hat}
-                        equippedAccessory={avatar?.equipped_accessory}
-                        animationState={isWalking ? 'walk' : isCheering ? 'cheer' : 'idle'}
-                        className="w-full h-full"
-                      />
+                      {/* Resplandor radial solar cálido central */}
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(254,240,138,0.85),transparent_70%)]" />
+                      
+                      {/* Rayos de luz suaves */}
+                      <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,rgba(255,255,255,0.25)_0,rgba(255,255,255,0.25)_10px,transparent_10px,transparent_20px)] opacity-40" />
+
+                      {/* Partículas y destellos flotantes */}
+                      <span className="absolute top-1.5 left-2.5 text-[11px] animate-pulse">✨</span>
+                      <span className="absolute top-2.5 right-2.5 text-[10px] animate-bounce">⭐</span>
+                      <span className="absolute bottom-3 left-3 text-[9px] opacity-80 animate-ping">✨</span>
+                      <span className="absolute bottom-3 right-3 text-[10px] opacity-75 animate-pulse">🌟</span>
+
+                      {/* Pedestal de luz dorada en el suelo bajo el avatar y mascota */}
+                      <div className="absolute bottom-1 inset-x-2 h-4 rounded-full bg-gradient-to-r from-amber-300/60 via-yellow-200 to-amber-300/60 blur-[1px] shadow-[0_0_12px_rgba(250,204,21,0.6)]" />
                     </div>
 
-                    {/* Mascota Acompañante con Escala Proporcional Estricta a 3x (Huevo 1/5, Bebé 1/4, Niño 1/2, Adolescente 2/3, Adulto 1:1) */}
+                    {/* Par Avatar + Mascota con Orientación según Dirección de Caminata */}
                     <div 
-                      style={{ 
-                        width: petMapWidth, 
-                        height: petMapHeight,
-                        marginBottom: 4
-                      }} 
-                      className={`relative shrink-0 filter drop-shadow-[0_6px_12px_rgba(0,0,0,0.55)] ${
-                        isWalking ? 'animate-pet-map-hop' : 'animate-pet-map-float'
-                      }`}
-                      title={`${avatar?.pet_name || 'Mascota'} (${getPetScaleRatioDescription(petStage)})`}
+                      className="relative z-10 flex items-end justify-center gap-3 transition-transform duration-300 px-3.5 pb-1.5"
+                      style={{
+                        transform: facingDirection === 'left' ? 'scaleX(-1)' : 'scaleX(1)',
+                      }}
                     >
-                      <PetSvgRenderer
-                        raceId={avatar?.pet_type || 'cryo_dragon'}
-                        stage={petStage}
-                        actionId={isWalking ? 'joy_bounce' : 'idle'}
-                        className="w-full h-full"
-                      />
+                      {/* Sprite del Avatar con fidelidad vectorial íntegra (3x tamaño = 186px de alto) */}
+                      <div 
+                        style={{ width: avatarMapWidth, height: avatarMapHeight }} 
+                        className="relative shrink-0 filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.4)]"
+                      >
+                        <ModularAnimeAvatarSprite
+                          gender={(avatar as any)?.gender ?? 'female'}
+                          skinTone={(avatar as any)?.skin_tone ?? 'light'}
+                          hairColor={avatar?.hair_color ?? '#4B5563'}
+                          hairStyle={avatar?.hair_style ?? 'spiky'}
+                          eyesStyle={avatar?.eyes_style ?? 'determined'}
+                          raceFeature={avatar?.race_feature || 'human'}
+                          bodyScale={(avatar as any)?.body_scale ?? 'normal'}
+                          equippedShoes={avatar?.equipped_shoes}
+                          equippedBottom={avatar?.equipped_bottom}
+                          equippedTop={avatar?.equipped_top}
+                          equippedOuterwear={avatar?.equipped_outerwear}
+                          equippedHat={avatar?.equipped_hat}
+                          equippedAccessory={avatar?.equipped_accessory}
+                          animationState={isWalking ? 'walk' : isCheering ? 'cheer' : 'idle'}
+                          className="w-full h-full"
+                        />
+                      </div>
+
+                      {/* Mascota Acompañante con Escala Proporcional Estricta a 3x (Huevo 1/5, Bebé 1/4, Niño 1/2, Adolescente 2/3, Adulto 1:1) */}
+                      <div 
+                        style={{ 
+                          width: petMapWidth, 
+                          height: petMapHeight,
+                          marginBottom: 4
+                        }} 
+                        className={`relative shrink-0 filter drop-shadow-[0_6px_12px_rgba(0,0,0,0.35)] ${
+                          isWalking ? 'animate-pet-map-hop' : 'animate-pet-map-float'
+                        }`}
+                        title={`${avatar?.pet_name || 'Mascota'} (${getPetScaleRatioDescription(petStage)})`}
+                      >
+                        <PetSvgRenderer
+                          raceId={avatar?.pet_type || 'cryo_dragon'}
+                          stage={petStage}
+                          actionId={isWalking ? 'joy_bounce' : 'idle'}
+                          className="w-full h-full"
+                        />
+                      </div>
                     </div>
                   </div>
 

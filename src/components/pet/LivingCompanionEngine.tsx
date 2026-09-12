@@ -184,19 +184,36 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
       className={`relative flex flex-col items-center select-none ${className}`}
       ref={containerRef}
     >
-      {/* Contenedor Visual del Avatar y Efectos Táctiles con escala proporcional oficial */}
+      {/* Contenedor Visual de la Mascota con Diorama Claro Radiante y Efectos Táctiles */}
       <div
         onPointerDown={handlePointerInteraction}
         onPointerMove={(e) => {
           if (e.buttons === 1) handlePointerInteraction(e);
         }}
-        className="relative flex items-end justify-center cursor-pointer transition-all duration-300 group touch-none pb-1"
+        className="relative flex items-end justify-center cursor-pointer transition-all duration-300 group touch-none pb-2 rounded-2xl overflow-hidden border-2 border-amber-300/85 bg-gradient-to-b from-[#FEF08A] via-[#BAE6FD] to-[#DDD6FE] shadow-xl"
         style={{ 
-          height: `${Math.max(120, Math.min(220, Math.round(petPixelHeight * 1.25)))}px`, 
-          width: `${Math.max(140, petPixelWidth + 30)}px` 
+          height: `${Math.max(140, Math.min(252, Math.round(petPixelHeight * 1.35)))}px`, 
+          width: `${Math.max(160, petPixelWidth + 40)}px` 
         }}
         title={`¡Haz clic o desliza suavemente sobre tu compañero para acariciarlo! (Escala: ${ratioDescription})`}
       >
+        {/* Halo y resplandor radial cálido solar */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(254,240,138,0.85)_0%,rgba(186,230,253,0.55)_50%,rgba(221,214,254,0.4)_100%)] pointer-events-none" />
+
+        {/* Patrón sutil de rayos de luz mágicos */}
+        <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,rgba(255,255,255,0.25)_0,rgba(255,255,255,0.25)_10px,transparent_10px,transparent_20px)] opacity-35 pointer-events-none" />
+
+        {/* Estrellas y destellos flotantes */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <span className="absolute top-2 left-2 text-[11px] animate-pulse">✨</span>
+          <span className="absolute top-2.5 right-2 text-[10px] animate-bounce">⭐</span>
+          <span className="absolute bottom-4 left-2 text-[9px] opacity-80 animate-ping">✨</span>
+          <span className="absolute bottom-6 right-2 text-[10px] opacity-75 animate-pulse">🌟</span>
+        </div>
+
+        {/* Pedestal de luz dorada bajo la mascota */}
+        <div className="absolute bottom-1 inset-x-3 h-4 rounded-full bg-gradient-to-r from-amber-300/60 via-yellow-200 to-amber-300/60 blur-[1px] shadow-[0_0_12px_rgba(250,204,21,0.6)] pointer-events-none" />
+
         {/* Glow elemental circundante adaptativo al tamaño de la mascota */}
         <div
           className="absolute rounded-full filter blur-xl transition-all duration-500 opacity-60 group-hover:opacity-90 pointer-events-none"
@@ -210,7 +227,7 @@ export const LivingCompanionEngine: React.FC<LivingCompanionEngineProps> = ({
 
         {/* Sombra base en el suelo */}
         <div 
-          className="absolute bottom-1 bg-black/40 rounded-full blur-[2px] pointer-events-none transition-all duration-300"
+          className="absolute bottom-1.5 bg-black/35 rounded-full blur-[2px] pointer-events-none transition-all duration-300"
           style={{
             width: `${Math.max(36, petPixelWidth * 0.85)}px`,
             height: `${Math.max(8, petPixelHeight * 0.12)}px`

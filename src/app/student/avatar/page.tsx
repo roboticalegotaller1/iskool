@@ -583,28 +583,26 @@ export default function AvatarCustomizerPage() {
           {/* RIGHT PANEL: Real-time Character Preview (5 columns on large screens) */}
           <div className="lg:col-span-5 flex flex-col gap-6">
             
-            {/* The live preview frame (Forest theme) */}
-            <div className="relative overflow-hidden rounded-3xl border border-emerald-800/30 shadow-2xl flex flex-col h-full min-h-[420px] bg-gradient-to-b from-teal-950 via-emerald-950 to-zinc-950">
+            {/* The live preview frame (Luminous Aurora Sunburst theme) */}
+            <div className="relative overflow-hidden rounded-3xl border-2 border-amber-300/80 shadow-2xl flex flex-col h-full min-h-[420px] bg-gradient-to-b from-[#FEF08A] via-[#BAE6FD] to-[#DDD6FE]">
               
-              {/* Forest Background Elements */}
+              {/* Luminous Background Elements */}
               <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-                {/* Sunrays */}
-                <div className="absolute -top-12 -right-12 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl" />
-                <div className="absolute top-0 right-1/4 w-0.5 h-full bg-gradient-to-b from-yellow-400/20 via-yellow-500/5 to-transparent rotate-[25deg] origin-top transform" />
-                <div className="absolute top-0 right-1/3 w-1.5 h-full bg-gradient-to-b from-yellow-400/15 via-yellow-500/5 to-transparent rotate-[22deg] origin-top transform" />
-                
-                {/* SVG silhouette trees */}
-                <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute bottom-0 left-0 right-0 h-1/2 w-full text-emerald-900/25 opacity-30">
-                  <path d="M 0 100 L 0 70 L 15 50 L 30 70 L 45 45 L 60 75 L 80 55 L 100 80 L 100 100 Z" fill="currentColor" />
-                  <path d="M 0 100 L 0 80 L 25 65 L 50 85 L 75 70 L 100 90 L 100 100 Z" fill="currentColor" opacity="0.5" />
-                </svg>
+                {/* Radial Solar Warm Halo */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(254,240,138,0.85)_0%,rgba(186,230,253,0.55)_50%,rgba(221,214,254,0.4)_100%)]" />
 
-                {/* Animated Fireflies */}
-                <div className="absolute inset-0 bg-transparent">
-                  <div className="absolute h-1.5 w-1.5 rounded-full bg-yellow-400/70 shadow-lg shadow-yellow-300 top-1/2 left-1/4 animate-bounce opacity-80" style={{ animationDuration: '4s' }} />
-                  <div className="absolute h-1 w-1 rounded-full bg-yellow-300/80 shadow-lg shadow-yellow-300 top-1/3 right-1/4 animate-pulse" style={{ animationDuration: '3s' }} />
-                  <div className="absolute h-2 w-2 rounded-full bg-emerald-400/60 shadow-lg shadow-emerald-300 bottom-1/3 left-1/3 animate-bounce" style={{ animationDuration: '5s' }} />
-                  <div className="absolute h-1 w-1 rounded-full bg-yellow-400/95 shadow-lg shadow-yellow-300 bottom-1/4 right-1/3 animate-pulse" style={{ animationDuration: '2.5s' }} />
+                {/* Subtle Magic Rays */}
+                <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,rgba(255,255,255,0.25)_0,rgba(255,255,255,0.25)_10px,transparent_10px,transparent_20px)] opacity-35" />
+
+                {/* Pedestal de luz dorada */}
+                <div className="absolute bottom-20 inset-x-8 h-6 rounded-full bg-gradient-to-r from-amber-300/60 via-yellow-200 to-amber-300/60 blur-[1px] shadow-[0_0_16px_rgba(250,204,21,0.7)]" />
+
+                {/* Animated Sparkles and Stars */}
+                <div className="absolute inset-0">
+                  <span className="absolute top-12 left-4 text-[13px] animate-pulse">✨</span>
+                  <span className="absolute top-14 right-4 text-[11px] animate-bounce">⭐</span>
+                  <span className="absolute bottom-28 left-4 text-[11px] opacity-80 animate-ping">✨</span>
+                  <span className="absolute bottom-32 right-4 text-[12px] opacity-75 animate-pulse">🌟</span>
                 </div>
               </div>
 
