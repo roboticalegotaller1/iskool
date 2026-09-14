@@ -399,6 +399,32 @@ export const ClothingItemPreviewSvg: React.FC<{ item: ClothingItem }> = ({ item 
   const { id } = item;
 
   // --- PLAYERAS Y TOPS ---
+  if (id === 'top_dia_de_muertos') {
+    return (
+      <svg viewBox="0 0 44 44" className="w-full h-full">
+        <polygon points="12,10 32,10 30,34 14,34" fill="#0F172A" stroke="#1E293B" strokeWidth="1.2" />
+        <path d="M 12,10 L 6,17 L 10,20 L 13,15" fill="#0F172A" stroke="#1E293B" strokeWidth="1" />
+        <path d="M 32,10 L 38,17 L 34,20 L 31,15" fill="#0F172A" stroke="#1E293B" strokeWidth="1" />
+        {/* Calaverita estilizada */}
+        <circle cx="22" cy="20" r="5.5" fill="#F8FAFC" />
+        <circle cx="20" cy="19" r="1.8" fill="#06B6D4" />
+        <circle cx="24" cy="19" r="1.8" fill="#06B6D4" />
+        <circle cx="22" cy="15.5" r="1.2" fill="#EF4444" />
+        <path d="M 20,23 L 24,23" stroke="#0F172A" strokeWidth="1" />
+      </svg>
+    );
+  }
+
+  if (id === 'top_athletic_tank') {
+    return (
+      <svg viewBox="0 0 44 44" className="w-full h-full">
+        <polygon points="14,10 30,10 28,34 16,34" fill="#475569" stroke="#334155" strokeWidth="1.2" />
+        <path d="M 16,12 L 16,32" stroke="#84CC16" strokeWidth="2" />
+        <path d="M 28,12 L 28,32" stroke="#84CC16" strokeWidth="2" />
+      </svg>
+    );
+  }
+
   if (id === 'top_basic') {
     return (
       <svg viewBox="0 0 44 44" className="w-full h-full">
@@ -444,7 +470,7 @@ export const ClothingItemPreviewSvg: React.FC<{ item: ClothingItem }> = ({ item 
     );
   }
 
-  if (id === 'top_celestial_robe') {
+  if (id === 'top_celestial_robe' || id === 'top_celestial_tunic') {
     return (
       <svg viewBox="0 0 44 44" className="w-full h-full">
         <polygon points="12,10 32,10 34,36 10,36" fill="#4C1D95" stroke="#F59E0B" strokeWidth="1.5" />
@@ -456,6 +482,26 @@ export const ClothingItemPreviewSvg: React.FC<{ item: ClothingItem }> = ({ item 
   }
 
   // --- PANTALONES / FALDAS ---
+  if (id === 'bottom_ripped_jeans') {
+    return (
+      <svg viewBox="0 0 44 44" className="w-full h-full">
+        <path d="M 14,10 L 30,10 L 28,34 L 23,34 L 22,20 L 21,34 L 16,34 Z" fill="#1D4ED8" stroke="#1E3A8A" strokeWidth="1.2" />
+        <line x1="17" y1="24" x2="20" y2="24" stroke="#FED7AA" strokeWidth="1.8" />
+        <line x1="24" y1="26" x2="27" y2="26" stroke="#FED7AA" strokeWidth="1.8" />
+      </svg>
+    );
+  }
+
+  if (id === 'bottom_dark_slacks') {
+    return (
+      <svg viewBox="0 0 44 44" className="w-full h-full">
+        <path d="M 14,10 L 30,10 L 28,34 L 23,34 L 22,20 L 21,34 L 16,34 Z" fill="#0F172A" stroke="#334155" strokeWidth="1.2" />
+        <rect x="16" y="22" width="4" height="5" rx="1" fill="#334155" />
+        <rect x="24" y="22" width="4" height="5" rx="1" fill="#334155" />
+      </svg>
+    );
+  }
+
   if (id === 'bottom_basic') {
     return (
       <svg viewBox="0 0 44 44" className="w-full h-full">
@@ -485,16 +531,21 @@ export const ClothingItemPreviewSvg: React.FC<{ item: ClothingItem }> = ({ item 
     );
   }
 
-  if (id === 'bottom_sorcerer_pants') {
+  // --- CALZADO ---
+  if (id === 'shoes_tan_boots') {
     return (
       <svg viewBox="0 0 44 44" className="w-full h-full">
-        <path d="M 13,10 L 31,10 L 32,32 L 25,32 L 22,18 L 19,32 L 12,32 Z" fill="#831843" stroke="#500724" strokeWidth="1" />
-        <rect x="13" y="10" width="18" height="3" fill="#F59E0B" />
+        {/* Par de botas de gamuza trigo */}
+        <path d="M 10,16 L 16,16 L 17,28 L 8,28 Z" fill="#D97706" stroke="#92400E" strokeWidth="1" />
+        <path d="M 28,16 L 34,16 L 36,28 L 27,28 Z" fill="#D97706" stroke="#92400E" strokeWidth="1" />
+        <rect x="10" y="15" width="6.5" height="2.5" rx="1" fill="#18181B" />
+        <rect x="28" y="15" width="6.5" height="2.5" rx="1" fill="#18181B" />
+        <rect x="7.5" y="27.5" width="10" height="2" fill="#78350F" />
+        <rect x="26.5" y="27.5" width="10" height="2" fill="#78350F" />
       </svg>
     );
   }
 
-  // --- CALZADO ---
   if (id === 'shoes_basic' || id === 'shoes_sneakers') {
     return (
       <svg viewBox="0 0 44 44" className="w-full h-full">
@@ -522,6 +573,28 @@ export const ClothingItemPreviewSvg: React.FC<{ item: ClothingItem }> = ({ item 
   }
 
   // --- CAPAS Y CHAMARRAS ---
+  if (id === 'outerwear_fur_duster') {
+    return (
+      <svg viewBox="0 0 44 44" className="w-full h-full">
+        <path d="M 14,8 L 30,8 L 36,36 Q 22,38 8,36 Z" fill="#0F172A" stroke="#1E293B" strokeWidth="1.2" />
+        {/* Cuello de peluche */}
+        <ellipse cx="22" cy="11" rx="10" ry="4" fill="#3B1808" stroke="#1F0A02" strokeWidth="1" />
+        <circle cx="22" cy="16" r="2" fill="#94A3B8" />
+      </svg>
+    );
+  }
+
+  if (id === 'outerwear_varsity') {
+    return (
+      <svg viewBox="0 0 44 44" className="w-full h-full">
+        <polygon points="14,10 30,10 28,34 16,34" fill="#1D4ED8" stroke="#1E40AF" strokeWidth="1.2" />
+        <path d="M 14,10 L 6,24 L 11,26 L 15,16" fill="#F8FAFC" stroke="#CBD5E1" strokeWidth="1" />
+        <path d="M 30,10 L 38,24 L 33,26 L 29,16" fill="#F8FAFC" stroke="#CBD5E1" strokeWidth="1" />
+        <text x="20" y="24" fill="#FBBF24" fontSize="10" fontWeight="bold">IS</text>
+      </svg>
+    );
+  }
+
   if (id === 'outerwear_witch_cloak' || id === 'outerwear_archmage_cape') {
     return (
       <svg viewBox="0 0 44 44" className="w-full h-full">
@@ -536,6 +609,17 @@ export const ClothingItemPreviewSvg: React.FC<{ item: ClothingItem }> = ({ item 
       <svg viewBox="0 0 44 44" className="w-full h-full">
         <polygon points="12,12 32,12 30,34 14,34" fill="#0284C7" stroke="#0369A1" strokeWidth="1.2" />
         <path d="M 18,14 Q 22,22 26,14" stroke="#FFFFFF" strokeWidth="1.5" fill="none" />
+      </svg>
+    );
+  }
+
+  // --- SOMBREROS ---
+  if (id === 'hat_snapback_trainer') {
+    return (
+      <svg viewBox="0 0 44 44" className="w-full h-full">
+        <path d="M 12,24 C 12,14 32,14 32,24 Z" fill="#0F172A" stroke="#1E293B" strokeWidth="1.2" />
+        <path d="M 10,24 Q 22,28 34,24 L 38,27 Q 22,31 10,27 Z" fill="#020617" />
+        <circle cx="22" cy="20" r="2" fill="#FFFFFF" />
       </svg>
     );
   }
@@ -569,7 +653,28 @@ export const ClothingItemPreviewSvg: React.FC<{ item: ClothingItem }> = ({ item 
     );
   }
 
-  // --- ACCESORIOS (VARITAS, GRIMORIOS, LENTES) ---
+  // --- ACCESORIOS (MOCHILAS, COLGANTES, VARITAS, GRIMORIOS, LENTES) ---
+  if (id === 'acc_red_backpack') {
+    return (
+      <svg viewBox="0 0 44 44" className="w-full h-full">
+        <rect x="12" y="10" width="20" height="24" rx="6" fill="#0F172A" stroke="#1E293B" strokeWidth="1.2" />
+        <rect x="15" y="14" width="14" height="10" rx="3" fill="#DC2626" />
+        <path d="M 16,10 L 16,34" stroke="#DC2626" strokeWidth="2" />
+        <path d="M 28,10 L 28,34" stroke="#DC2626" strokeWidth="2" />
+      </svg>
+    );
+  }
+
+  if (id === 'acc_silver_pendant') {
+    return (
+      <svg viewBox="0 0 44 44" className="w-full h-full">
+        <path d="M 14,10 Q 22,24 30,10" stroke="#94A3B8" strokeWidth="1.5" fill="none" />
+        <circle cx="22" cy="24" r="5" fill="#E2E8F0" stroke="#64748B" strokeWidth="1" />
+        <path d="M 20,23 L 22,27 L 24,23 Z" fill="#334155" />
+      </svg>
+    );
+  }
+
   if (id === 'acc_magic_wand' || id === 'acc_wand_and_book') {
     return (
       <svg viewBox="0 0 44 44" className="w-full h-full">

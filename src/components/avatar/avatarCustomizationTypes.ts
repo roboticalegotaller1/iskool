@@ -1,6 +1,6 @@
 export type AvatarGender = 'female' | 'male' | 'neutral';
 export type AvatarBodyScale = 'compact' | 'normal' | 'tall';
-export type AvatarAnimationState = 'idle' | 'cast' | 'cheer' | 'walk';
+export type AvatarAnimationState = 'idle' | 'pose' | 'cast' | 'cheer' | 'walk';
 
 export type ClothingCategory = 
   | 'shoes' 
@@ -192,6 +192,15 @@ export const AVATAR_CLOTHING_ITEMS: ClothingItem[] = [
     rarity: 'legendary',
     description: 'Sandalias míticas con pequeñas alitas que te hacen flotar al caminar.'
   },
+  {
+    id: 'shoes_tan_boots',
+    name: 'Botas de Gamuza Trigo Urbanas',
+    category: 'shoes',
+    price: 220,
+    badgeEmoji: '🥾',
+    rarity: 'rare',
+    description: 'Botas de exploración académica estilo nubuck color miel con suela de tracción.'
+  },
 
   // --- PANTALONES / FALDAS ---
   {
@@ -212,6 +221,24 @@ export const AVATAR_CLOTHING_ITEMS: ClothingItem[] = [
     badgeEmoji: '👖',
     rarity: 'common',
     description: 'Mezclilla cómoda y resistente para el día a día.'
+  },
+  {
+    id: 'bottom_ripped_jeans',
+    name: 'Jeans Skinny con Rasgaduras',
+    category: 'bottom',
+    price: 180,
+    badgeEmoji: '👖',
+    rarity: 'rare',
+    description: 'Jeans entallados oscuros con rasgaduras en las rodillas de estilo urbano moderno.'
+  },
+  {
+    id: 'bottom_dark_slacks',
+    name: 'Pantalón Entallado Negro Élite',
+    category: 'bottom',
+    price: 250,
+    badgeEmoji: '🖤',
+    rarity: 'rare',
+    description: 'Pantalón negro ajustado con rodilleras reforzadas para atuendos de invierno y duster.'
   },
   {
     id: 'bottom_witch_skirt',
@@ -251,6 +278,24 @@ export const AVATAR_CLOTHING_ITEMS: ClothingItem[] = [
     rarity: 'common',
     description: 'Camiseta de cuello redondo suave y fresca.',
     isDefault: true
+  },
+  {
+    id: 'top_dia_de_muertos',
+    name: 'Playera Calavera "Día de Muertos"',
+    category: 'top',
+    price: 220,
+    badgeEmoji: '💀',
+    rarity: 'rare',
+    description: 'Playera negra con estampado ornamental tradicional mexicano multicolor de alta definición.'
+  },
+  {
+    id: 'top_athletic_tank',
+    name: 'Camiseta Atlética de Entrenamiento',
+    category: 'top',
+    price: 130,
+    badgeEmoji: '🎽',
+    rarity: 'common',
+    description: 'Top deportivo gris con ribetes verde lima para alto rendimiento.'
   },
   {
     id: 'top_school_blouse',
@@ -301,6 +346,24 @@ export const AVATAR_CLOTHING_ITEMS: ClothingItem[] = [
     isDefault: true
   },
   {
+    id: 'outerwear_fur_duster',
+    name: 'Abrigo Nocturno con Cuello de Peluche',
+    category: 'outerwear',
+    price: 490,
+    badgeEmoji: '🧥',
+    rarity: 'epic',
+    description: 'Elegante gabardina negra de invierno con cuello y puños de peluche grueso y colgante plateado.'
+  },
+  {
+    id: 'outerwear_varsity',
+    name: 'Chamarra Bomber Colegial "ISkool"',
+    category: 'outerwear',
+    price: 290,
+    badgeEmoji: '⚾',
+    rarity: 'rare',
+    description: 'Chamarra azul y blanca de estilo universitario con mangas de cuero suave.'
+  },
+  {
     id: 'outerwear_hoodie',
     name: 'Hoodie Escolar Cálido',
     category: 'outerwear',
@@ -349,6 +412,15 @@ export const AVATAR_CLOTHING_ITEMS: ClothingItem[] = [
     isDefault: true
   },
   {
+    id: 'hat_snapback_trainer',
+    name: 'Gorra Snapback Negra de Estudiante',
+    category: 'hat',
+    price: 150,
+    badgeEmoji: '🧢',
+    rarity: 'rare',
+    description: 'Gorra urbana de visera curva con emblema frontal de la academia ISkool.'
+  },
+  {
     id: 'hat_urban_cap',
     name: 'Gorra Deportiva Escolar',
     category: 'hat',
@@ -395,6 +467,24 @@ export const AVATAR_CLOTHING_ITEMS: ClothingItem[] = [
     rarity: 'common',
     description: 'Sin objetos adicionales en mano.',
     isDefault: true
+  },
+  {
+    id: 'acc_red_backpack',
+    name: 'Mochila de Expedición con Tirantes Rojos',
+    category: 'accessory',
+    price: 210,
+    badgeEmoji: '🎒',
+    rarity: 'rare',
+    description: 'Mochila técnica de aventurero con correas rojas y bolsillos laterales de red.'
+  },
+  {
+    id: 'acc_silver_pendant',
+    name: 'Colgante Místico Plateado de Lobo',
+    category: 'accessory',
+    price: 140,
+    badgeEmoji: '🐺',
+    rarity: 'rare',
+    description: 'Medallón de plata esculpido con la efigie de un lobo legendario que protege al portador.'
   },
   {
     id: 'acc_scholar_glasses',

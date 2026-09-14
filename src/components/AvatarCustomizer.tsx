@@ -20,7 +20,12 @@ import {
   ChevronRight,
   ShieldCheck,
   Flame,
-  Crown
+  Crown,
+  Star,
+  Tag,
+  ArrowLeft,
+  Eye,
+  Scissors
 } from 'lucide-react';
 import { ModularAnimeAvatarSprite } from './avatar/ModularAnimeAvatarSprite';
 import { 
@@ -31,7 +36,8 @@ import {
   AVATAR_RACE_FEATURES,
   AVATAR_CLOTHING_ITEMS,
   ClothingCategory,
-  AvatarClothingItem
+  AvatarClothingItem,
+  AvatarAnimationState
 } from './avatar/avatarCustomizationTypes';
 import { 
   EyePreviewSvg,
@@ -48,6 +54,17 @@ interface AvatarCustomizerProps {
   onClose: () => void;
 }
 
+type AvatarStudioCategory = 
+  | 'appearance' 
+  | 'featured' 
+  | 'poses' 
+  | 'hats' 
+  | 'accessories' 
+  | 'tops' 
+  | 'outerwear' 
+  | 'bottoms' 
+  | 'footwear';
+
 export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onClose }) => {
   const avatar = useCurrentStudentAvatar();
   const stats = useCurrentStudentStats();
@@ -57,38 +74,34 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
   const equipClothingItem = useStudentStore(state => state.equipClothingItem);
   const purchaseClothingItem = useStudentStore(state => state.purchaseClothingItem);
 
-  // Tab Principal (estilo RPG cozy como la imagen de referencia: ROPA, CUERPO, CABELLO, OJOS, SOMBREROS)
-  const [mainTab, setMainTab] = useState<'clothes' | 'body' | 'hair' | 'eyes' | 'hats'>('clothes');
+  // Categoría activa de la barra lateral
+  const [activeCategory, setActiveCategory] = useState<AvatarStudioCategory>('appearance');
   
-  // Sub-categorías para Ropa
-  const [clothingSubTab, setClothingSubTab] = useState<ClothingCategory>('top');
-  
-  // Sub-categorías para Cuerpo y Cabello
-  const [bodySubTab, setBodySubTab] = useState<'skin' | 'races' | 'scale'>('skin');
-  const [hairSubTab, setHairSubTab] = useState<'styles' | 'colors'>('styles');
+  // Sub-categoría de Apariencia (Rostro, Cabello, Ojos, Piel, etc.)
+  const [appearanceSubTab, setAppearanceSubTab] = useState<'skin' | 'hair' | 'hair_color' | 'eyes' | 'races' | 'body'>('skin');
 
-  // Modo de Cámara: Dinámico y controlado (acercamiento para rostro/ojos/cabello vs cuerpo entero)
-  const [cameraZoom, setCameraZoom] = useState<'face' | 'body'>('body');
+  // Modo de Cámara: Cuerpo entero vs Rostro
+  const [cameraZoom, setCameraZoom] = useState<'full' | 'face'>('full');
 
   // Estados locales para respuesta inmediata sin lag
   const [selectedGender, setSelectedGender] = useState<'female' | 'male' | 'neutral'>(avatar.gender || 'female');
   const [selectedScale, setSelectedScale] = useState<'compact' | 'normal' | 'tall'>(avatar.body_scale || 'normal');
   const [selectedSkinTone, setSelectedSkinTone] = useState(avatar.skin_tone || '#FED7AA');
   const [selectedHairStyle, setSelectedHairStyle] = useState(avatar.hair_style || 'spiky');
-  const [selectedHairColor, setSelectedHairColor] = useState(avatar.hair_color || '#EC4899');
+  const [selectedHairColor, setSelectedHairColor] = useState(avatar.hair_color || '#FBBF24');
   const [selectedEyesStyle, setSelectedEyesStyle] = useState(avatar.eyes_style || 'determined');
   const [selectedRaceFeature, setSelectedRaceFeature] = useState(avatar.race_feature || 'human');
 
-  const [selectedShoes, setSelectedShoes] = useState(avatar.equipped_shoes || 'shoes_basic');
-  const [selectedBottom, setSelectedBottom] = useState(avatar.equipped_bottom || 'bottom_basic');
-  const [selectedTop, setSelectedTop] = useState(avatar.equipped_top || 'top_basic');
+  const [selectedShoes, setSelectedShoes] = useState(avatar.equipped_shoes || 'shoes_tan_boots');
+  const [selectedBottom, setSelectedBottom] = useState(avatar.equipped_bottom || 'bottom_ripped_jeans');
+  const [selectedTop, setSelectedTop] = useState(avatar.equipped_top || 'top_dia_de_muertos');
   const [selectedOuterwear, setSelectedOuterwear] = useState(avatar.equipped_outerwear || 'outerwear_none');
-  const [selectedHat, setSelectedHat] = useState(avatar.equipped_hat || 'hat_none');
-  const [selectedAccessory, setSelectedAccessory] = useState(avatar.equipped_accessory || 'acc_none');
+  const [selectedHat, setSelectedHat] = useState(avatar.equipped_hat || 'hat_snapback_trainer');
+  const [selectedAccessory, setSelectedAccessory] = useState(avatar.equipped_accessory || 'acc_red_backpack');
 
-  // Animación interactiva en vivo ('idle', 'cast', 'cheer')
-  const [previewAnimation, setPreviewAnimation] = useState<'idle' | 'cast' | 'cheer'>('idle');
-  const [avatarName, setAvatarName] = useState(avatar.avatar_name || 'LucasAvatar');
+  // Animación / Pose activa
+  const [previewAnimation, setPreviewAnimation] = useState<AvatarAnimationState>('idle');
+  const [avatarName, setAvatarName] = useState(avatar.avatar_name || 'Entrenador');
   const [isEditingName, setIsEditingName] = useState(false);
   const [feedbackNotice, setFeedbackNotice] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
 
@@ -99,39 +112,46 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
       setSelectedScale(avatar.body_scale || 'normal');
       setSelectedSkinTone(avatar.skin_tone || '#FED7AA');
       setSelectedHairStyle(avatar.hair_style || 'spiky');
-      setSelectedHairColor(avatar.hair_color || '#EC4899');
+      setSelectedHairColor(avatar.hair_color || '#FBBF24');
       setSelectedEyesStyle(avatar.eyes_style || 'determined');
       setSelectedRaceFeature(avatar.race_feature || 'human');
-      setSelectedShoes(avatar.equipped_shoes || 'shoes_basic');
-      setSelectedBottom(avatar.equipped_bottom || 'bottom_basic');
-      setSelectedTop(avatar.equipped_top || 'top_basic');
+      setSelectedShoes(avatar.equipped_shoes || 'shoes_tan_boots');
+      setSelectedBottom(avatar.equipped_bottom || 'bottom_ripped_jeans');
+      setSelectedTop(avatar.equipped_top || 'top_dia_de_muertos');
       setSelectedOuterwear(avatar.equipped_outerwear || 'outerwear_none');
-      setSelectedHat(avatar.equipped_hat || 'hat_none');
-      setSelectedAccessory(avatar.equipped_accessory || 'acc_none');
-      setAvatarName(avatar.avatar_name || 'LucasAvatar');
+      setSelectedHat(avatar.equipped_hat || 'hat_snapback_trainer');
+      setSelectedAccessory(avatar.equipped_accessory || 'acc_red_backpack');
+      setAvatarName(avatar.avatar_name || 'Entrenador');
     }
   }, [isOpen, avatar]);
-
-  // Al cambiar de pestaña, ajustar la cámara automáticamente para mayor inmersión
-  const handleTabChange = (tab: 'clothes' | 'body' | 'hair' | 'eyes' | 'hats') => {
-    setMainTab(tab);
-    if (tab === 'hair' || tab === 'eyes' || tab === 'body') {
-      setCameraZoom('face');
-    } else {
-      setCameraZoom('body');
-    }
-  };
 
   if (!isOpen) return null;
 
   const currentCoins = stats.coins ?? 0;
-  const ownedItems = avatar.wardrobe_inventory || ['shoes_basic', 'bottom_basic', 'top_basic'];
+  const ownedItems = avatar.wardrobe_inventory || [
+    'shoes_basic', 'shoes_tan_boots',
+    'bottom_basic', 'bottom_ripped_jeans',
+    'top_basic', 'top_dia_de_muertos',
+    'outerwear_none', 'outerwear_fur_duster',
+    'hat_none', 'hat_snapback_trainer',
+    'acc_none', 'acc_red_backpack'
+  ];
 
-  const triggerAnim = (anim: 'idle' | 'cast' | 'cheer') => {
+  const triggerAnim = (anim: AvatarAnimationState) => {
     setPreviewAnimation(anim);
   };
 
-  // Cambio de género inmediato con reflejo visual
+  // Cambio de categoría del estudio de avatar
+  const handleCategorySelect = (cat: AvatarStudioCategory) => {
+    setActiveCategory(cat);
+    if (cat === 'appearance' && (appearanceSubTab === 'hair' || appearanceSubTab === 'eyes' || appearanceSubTab === 'hair_color')) {
+      setCameraZoom('face');
+    } else {
+      setCameraZoom('full');
+    }
+  };
+
+  // Cambio de género
   const handleGenderSelect = (newGender: 'female' | 'male' | 'neutral') => {
     setSelectedGender(newGender);
     updatePhysicalTraits(activeStudentId, { gender: newGender });
@@ -139,14 +159,45 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
     triggerAnim('cheer');
   };
 
-  // Cambio de escala / altura
+  // Cambio de escala
   const handleScaleSelect = (newScale: 'compact' | 'normal' | 'tall') => {
     setSelectedScale(newScale);
     updatePhysicalTraits(activeStudentId, { body_scale: newScale });
     changeAvatar({ body_scale: newScale });
   };
 
-  // Equipar prenda inmediatamente
+  // Manejadores de rasgos físicos reactivos en tiempo real
+  const handleSkinToneSelect = (toneId: string) => {
+    setSelectedSkinTone(toneId);
+    updatePhysicalTraits(activeStudentId, { skin_tone: toneId });
+    changeAvatar({ skin_tone: toneId });
+  };
+
+  const handleHairStyleSelect = (styleId: string) => {
+    setSelectedHairStyle(styleId);
+    updatePhysicalTraits(activeStudentId, { hair_style: styleId });
+    changeAvatar({ hair_style: styleId });
+  };
+
+  const handleHairColorSelect = (colorVal: string) => {
+    setSelectedHairColor(colorVal);
+    updatePhysicalTraits(activeStudentId, { hair_color: colorVal });
+    changeAvatar({ hair_color: colorVal });
+  };
+
+  const handleEyesStyleSelect = (eyeId: string) => {
+    setSelectedEyesStyle(eyeId);
+    updatePhysicalTraits(activeStudentId, { eyes_style: eyeId });
+    changeAvatar({ eyes_style: eyeId });
+  };
+
+  const handleRaceFeatureSelect = (raceId: string) => {
+    setSelectedRaceFeature(raceId);
+    updatePhysicalTraits(activeStudentId, { race_feature: raceId });
+    changeAvatar({ race_feature: raceId });
+  };
+
+  // Equipar prenda
   const handleEquip = (category: ClothingCategory, itemId: string) => {
     if (category === 'shoes') setSelectedShoes(itemId);
     if (category === 'bottom') setSelectedBottom(itemId);
@@ -168,7 +219,7 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
     changeAvatar({ [targetProp]: itemId });
   };
 
-  // Comprar prenda con monedas
+  // Comprar prenda
   const handlePurchase = (item: AvatarClothingItem) => {
     const res = purchaseClothingItem(activeStudentId, item.id, item.price);
     if (res.success) {
@@ -178,7 +229,7 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
     } else {
       setFeedbackNotice({ msg: res.reason || 'Monedas insuficientes.', type: 'error' });
     }
-    setTimeout(() => setFeedbackNotice(null), 3000);
+    setTimeout(() => setFeedbackNotice(null), 3500);
   };
 
   // Guardar y Salir
@@ -206,80 +257,167 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
     onClose();
   };
 
-  const tabsList: { id: 'clothes' | 'body' | 'hair' | 'eyes' | 'hats'; label: string; icon: string }[] = [
-    { id: 'clothes', label: 'ROPA', icon: '👕' },
-    { id: 'body', label: 'CUERPO', icon: '✨' },
-    { id: 'hair', label: 'CABELLO', icon: '💇' },
-    { id: 'eyes', label: 'OJOS', icon: '👁️' },
-    { id: 'hats', label: 'SOMBREROS', icon: '🎩' }
+  // Lista de categorías del estudio de avatar (con iconos teal y tarjetas cuadradas)
+  const categoryNavItems: { id: AvatarStudioCategory; label: string; icon: React.ReactNode; isNew?: boolean }[] = [
+    { 
+      id: 'appearance', 
+      label: 'APPEARANCE', 
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
+        </svg>
+      ),
+      isNew: true 
+    },
+    { 
+      id: 'featured', 
+      label: 'FEATURED', 
+      icon: <Star className="w-6 h-6 text-amber-500 fill-amber-400" /> 
+    },
+    { 
+      id: 'poses', 
+      label: 'POSES', 
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
+          <path d="M14 6c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2 2-.9 2-2zm-3 4h2c.55 0 1 .45 1 1v4h1v7h-2v-6h-2v6H9v-7h1v-4c0-.55.45-1 1-1z" />
+        </svg>
+      )
+    },
+    { 
+      id: 'hats', 
+      label: 'HATS', 
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
+          <path d="M12 4C8.69 4 6 6.69 6 10v1H3c-.55 0-1 .45-1 1s.45 1 1 1h18c.55 0 1-.45 1-1s-.45-1-1-1h-3v-1c0-3.31-2.69-6-6-6zm-4 7c0-2.21 1.79-4 4-4s4 1.79 4 4v1H8v-1z" />
+        </svg>
+      )
+    },
+    { 
+      id: 'accessories', 
+      label: 'ACCESSORIES', 
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
+          <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="2.5" />
+          <circle cx="12" cy="18" r="2.5" />
+        </svg>
+      )
+    },
+    { 
+      id: 'tops', 
+      label: 'TOPS', 
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
+          <path d="M21.5 5.5l-4-3C17.2 2.2 16.8 2 16.4 2H7.6c-.4 0-.8.2-1.1.5l-4 3c-.4.3-.6.8-.4 1.3l1.5 4.5c.2.6.8 1 1.4.9l2-.3V20c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V11.9l2 .3c.6.1 1.2-.3 1.4-.9l1.5-4.5c.2-.5 0-1-.5-1.3z" />
+        </svg>
+      )
+    },
+    { 
+      id: 'outerwear', 
+      label: 'OUTERWEAR', 
+      icon: <Shirt className="w-6 h-6" /> 
+    },
+    { 
+      id: 'bottoms', 
+      label: 'BOTTOMS', 
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
+          <path d="M18 2H6c-.55 0-1 .45-1 1v18c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-8h2v8c0 .55.45 1 1 1h4c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm-1 8h-2V4h2v6zm-6-6v6H9V4h2z" />
+        </svg>
+      )
+    },
+    { 
+      id: 'footwear', 
+      label: 'FOOTWEAR', 
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
+          <path d="M2 18h20v2H2zm19.5-6.5c-.83-.83-1.92-1.34-3.1-1.44L14 9.5V5c0-1.1-.9-2-2-2h-3c-1.1 0-2 .9-2 2v6.5l-4.5 1.5c-1.1.37-1.87 1.37-1.98 2.54L0 16h22l-.5-4.5z" />
+        </svg>
+      )
+    }
   ];
 
+  // Filtrar prendas según la categoría seleccionada
+  const getItemsForCategory = () => {
+    if (activeCategory === 'featured') {
+      return AVATAR_CLOTHING_ITEMS.filter(item => 
+        item.id === 'top_dia_de_muertos' || 
+        item.id === 'outerwear_fur_duster' || 
+        item.id === 'bottom_ripped_jeans' || 
+        item.id === 'shoes_tan_boots' || 
+        item.id === 'hat_snapback_trainer' || 
+        item.id === 'acc_red_backpack'
+      );
+    }
+    if (activeCategory === 'tops') return AVATAR_CLOTHING_ITEMS.filter(i => i.category === 'top');
+    if (activeCategory === 'bottoms') return AVATAR_CLOTHING_ITEMS.filter(i => i.category === 'bottom');
+    if (activeCategory === 'footwear') return AVATAR_CLOTHING_ITEMS.filter(i => i.category === 'shoes');
+    if (activeCategory === 'outerwear') return AVATAR_CLOTHING_ITEMS.filter(i => i.category === 'outerwear');
+    if (activeCategory === 'hats') return AVATAR_CLOTHING_ITEMS.filter(i => i.category === 'hat');
+    if (activeCategory === 'accessories') return AVATAR_CLOTHING_ITEMS.filter(i => i.category === 'accessory');
+    return [];
+  };
+
+  const currentItems = getItemsForCategory();
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
       <div 
-        className="relative w-full max-w-5xl rounded-[32px] overflow-hidden shadow-2xl flex flex-col max-h-[94vh] border border-[#E6D7C3] dark:border-zinc-800 bg-[#FAF4EB] dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100"
+        className="relative w-full h-full max-w-6xl max-h-[96vh] rounded-[36px] overflow-hidden shadow-2xl flex flex-col bg-gradient-to-b from-[#E0F2FE] via-[#F0FDF4] to-[#E2E8F0] dark:from-slate-950 dark:via-zinc-900 dark:to-slate-950 text-zinc-900 dark:text-zinc-100 border border-cyan-300/40 dark:border-cyan-900/40"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ========================================================================= */}
-        {/* BARRA SUPERIOR: PESTAÑAS DE PERSONALIZACIÓN (Estilo Cozy RPG Lúdico)     */}
+        {/* CABECERA SUPERIOR ESTILO POKÉMON GO                                       */}
         {/* ========================================================================= */}
-        <div className="px-3 sm:px-6 pt-2.5 sm:pt-4 pb-2 sm:pb-3 bg-[#F2E7D5] dark:bg-zinc-900/90 border-b border-[#E3D3BE] dark:border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-2 shrink-0">
-          
-          {/* Fila 1 en móvil: Título / Indicador + Monedas */}
-          <div className="flex md:hidden items-center justify-between w-full">
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm">🎨</span>
-              <span className="text-xs font-black uppercase tracking-wider text-[#7A3E00] dark:text-amber-300">
-                Personalizar Personaje
-              </span>
-            </div>
-            {/* Monedas ISkool en móvil */}
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#FFE4C4] dark:bg-amber-950/40 border border-[#DEB887] dark:border-amber-700/50 text-[#8B4513] dark:text-amber-300 text-xs font-black shadow-inner">
-              <Coins className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 animate-pulse" />
-              <span>{currentCoins} <span className="font-bold">Monedas</span></span>
-            </div>
+        <div className="px-4 sm:px-6 py-3 flex items-center justify-between border-b border-cyan-200/50 dark:border-zinc-800/80 bg-white/70 dark:bg-zinc-900/80 backdrop-blur-md shrink-0 z-20">
+          {/* Botón circular de retroceso (Estilo Pokémon GO exacto de imagen 2) */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-11 h-11 rounded-full bg-white dark:bg-zinc-800 shadow-md border-2 border-cyan-400 dark:border-cyan-600 flex items-center justify-center text-cyan-600 dark:text-cyan-400 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            title="Volver"
+          >
+            <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
+          </button>
+
+          {/* Nombre y Título de Entrenador */}
+          <div className="flex items-center gap-2">
+            {isEditingName ? (
+              <input
+                type="text"
+                value={avatarName}
+                onChange={(e) => setAvatarName(e.target.value)}
+                onBlur={() => setIsEditingName(false)}
+                onKeyDown={(e) => e.key === 'Enter' && setIsEditingName(false)}
+                autoFocus
+                className="w-44 text-center font-black text-sm bg-white dark:bg-zinc-900 border-2 border-cyan-500 rounded-xl px-2 py-1 outline-none shadow-md"
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsEditingName(true)}
+                className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 dark:bg-zinc-800/80 border border-cyan-300 dark:border-zinc-700 shadow-sm hover:scale-102 transition-transform"
+              >
+                <span className="font-black text-sm text-slate-800 dark:text-white uppercase tracking-wider">
+                  {avatarName}
+                </span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500 text-white font-bold">
+                  Nv. {stats.level || 1}
+                </span>
+                <span className="text-[11px] text-zinc-400">✏️</span>
+              </button>
+            )}
           </div>
 
-          {/* Fila de pestañas principales (100% de ancho, cero recortes de 'OJOS' ni 'SOMBREROS') */}
-          <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto scrollbar-none w-full md:w-auto py-0.5 touch-pan-x">
-            <span className="hidden lg:inline-flex items-center justify-center w-6 h-6 rounded bg-[#E4D4BE] dark:bg-zinc-800 text-[10px] font-black text-zinc-600 dark:text-zinc-300 shadow-inner shrink-0">
-              Q
-            </span>
-
-            {tabsList.map((tab) => {
-              const isActive = mainTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => handleTabChange(tab.id)}
-                  className={`flex-1 sm:flex-initial px-2 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs md:text-sm font-black tracking-wider transition-all flex items-center justify-center gap-1 sm:gap-1.5 shadow-sm cursor-pointer whitespace-nowrap shrink-0 ${
-                    isActive
-                      ? 'bg-[#FFE6C7] dark:bg-amber-500/20 text-[#7A3E00] dark:text-amber-300 ring-2 ring-[#DCA876] dark:ring-amber-500/50 scale-[1.02]'
-                      : 'bg-[#FAF3E8] dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-white hover:text-zinc-900 dark:hover:bg-zinc-700'
-                  }`}
-                >
-                  <span className="text-sm sm:text-base">{tab.icon}</span>
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-
-            <span className="hidden lg:inline-flex items-center justify-center w-6 h-6 rounded bg-[#E4D4BE] dark:bg-zinc-800 text-[10px] font-black text-zinc-600 dark:text-zinc-300 shadow-inner shrink-0">
-              E
-            </span>
-          </div>
-
-          {/* Monedas ISkool en Desktop */}
-          <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-[#FFE4C4] dark:bg-amber-950/40 border border-[#DEB887] dark:border-amber-700/50 text-[#8B4513] dark:text-amber-300 text-xs font-black shadow-inner shrink-0">
+          {/* Contador de Monedas ISkool */}
+          <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-100 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-300 text-xs sm:text-sm font-black shadow-inner">
             <Coins className="w-4 h-4 text-amber-600 dark:text-amber-400 animate-pulse" />
-            <span>{currentCoins} Monedas</span>
+            <span>{currentCoins} <span className="font-bold">Monedas</span></span>
           </div>
         </div>
 
-        {/* Notificación de feedback (compras, avisos) */}
+        {/* Notificación de feedback */}
         {feedbackNotice && (
-          <div className={`px-4 py-2 text-xs font-bold text-center flex items-center justify-center gap-2 ${
+          <div className={`px-4 py-2 text-xs font-bold text-center flex items-center justify-center gap-2 shrink-0 ${
             feedbackNotice.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'
           }`}>
             <span>{feedbackNotice.msg}</span>
@@ -287,726 +425,485 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
         )}
 
         {/* ========================================================================= */}
-        {/* CUERPO PRINCIPAL: IZQUIERDA (CUADRÍCULA 4 COLUMNAS) | DERECHA (ESCENARIO) */}
+        {/* ESCENARIO PRINCIPAL (BARRA LATERAL IZQUIERDA + CATÁLOGO + AVATAR 3D)       */}
         {/* ========================================================================= */}
-        <div className="flex-1 flex flex-col-reverse lg:flex-row overflow-hidden">
+        <div className="flex-1 flex flex-row overflow-hidden relative">
           
-          {/* --------------------------------------------------------------------- */}
-          {/* PANEL IZQUIERDO: CUADRÍCULA TÁCTIL DE SQUIRCLES (Como la imagen)       */}
-          {/* --------------------------------------------------------------------- */}
-          <div className="w-full lg:w-[58%] p-3 sm:p-5 lg:p-6 flex-1 flex flex-col overflow-hidden bg-[#FAF4EB] dark:bg-zinc-950/60 border-r border-[#E6D7C3] dark:border-zinc-800/80 min-h-[300px]">
+          {/* ----------------------------------------------------------------------- */}
+          {/* 1. BARRA VERTICAL DE CATEGORÍAS (IDÉNTICA A POKÉMON GO IMAGES 1 & 2)     */}
+          {/* ----------------------------------------------------------------------- */}
+          <div className="w-24 sm:w-28 p-2 sm:p-2.5 flex flex-col gap-2 overflow-y-auto scrollbar-none bg-white/60 dark:bg-zinc-950/40 border-r border-cyan-200/50 dark:border-zinc-800/60 shrink-0 z-10">
+            {categoryNavItems.map((cat) => {
+              const isActive = activeCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => handleCategorySelect(cat.id)}
+                  className={`relative w-full aspect-square rounded-2xl flex flex-col items-center justify-center p-1.5 transition-all cursor-pointer shadow-sm ${
+                    isActive
+                      ? 'bg-white dark:bg-zinc-800 ring-3 ring-cyan-500 text-cyan-600 dark:text-cyan-400 scale-105 shadow-md'
+                      : 'bg-white/90 dark:bg-zinc-900/90 text-cyan-700 dark:text-cyan-400 hover:bg-white hover:scale-102'
+                  }`}
+                >
+                  {/* Badge "NEW" rosa como en imagen 2 */}
+                  {cat.isNew && (
+                    <span className="absolute -top-1.5 -left-1.5 px-1.5 py-0.2 rounded-full bg-pink-500 text-white text-[9px] font-black tracking-wider uppercase shadow">
+                      NEW
+                    </span>
+                  )}
+                  <div className="mb-1">{cat.icon}</div>
+                  <span className="text-[9px] font-black uppercase tracking-wider text-center leading-tight">
+                    {cat.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* ----------------------------------------------------------------------- */}
+          {/* 2. ESTANTE / BANDEJA DE ÍTEMS Y PROPIEDADES (EXPANSIÓN FLUIDA)          */}
+          {/* ----------------------------------------------------------------------- */}
+          <div className="w-72 sm:w-80 p-3 sm:p-4 flex flex-col overflow-y-auto bg-white/80 dark:bg-zinc-900/90 backdrop-blur-md border-r border-cyan-200/60 dark:border-zinc-800/80 shrink-0 z-10">
             
-            {/* SUB-PESTAÑAS DE CATEGORÍA */}
-            <div className="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1 shrink-0">
-              {mainTab === 'clothes' && (
-                [
-                  { id: 'top' as const, label: 'Playeras', icon: '👕' },
-                  { id: 'bottom' as const, label: 'Pantalones', icon: '👖' },
-                  { id: 'shoes' as const, label: 'Zapatos', icon: '👟' },
-                  { id: 'outerwear' as const, label: 'Capas/Chamarras', icon: '🧥' }
-                ].map((sub) => (
-                  <button
-                    key={sub.id}
-                    type="button"
-                    onClick={() => {
-                      setClothingSubTab(sub.id);
-                      setCameraZoom(sub.id === 'top' || sub.id === 'outerwear' ? 'body' : 'body');
-                    }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
-                      clothingSubTab === sub.id
-                        ? 'bg-[#EBDBC6] dark:bg-zinc-800 text-[#5C3206] dark:text-zinc-100 shadow-sm ring-1 ring-[#D8C0A4]'
-                        : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
-                    }`}
-                  >
-                    <span>{sub.icon}</span>
-                    <span>{sub.label}</span>
-                  </button>
-                ))
-              )}
-
-              {mainTab === 'body' && (
-                [
-                  { id: 'skin' as const, label: 'Tonos de Piel (15)', icon: '🎨' },
-                  { id: 'races' as const, label: 'Razas & Rasgos (15)', icon: '🧝' },
-                  { id: 'scale' as const, label: 'Identidad & Talla', icon: '👤' }
-                ].map((sub) => (
-                  <button
-                    key={sub.id}
-                    type="button"
-                    onClick={() => {
-                      setBodySubTab(sub.id);
-                      setCameraZoom(sub.id === 'scale' ? 'body' : 'face');
-                    }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
-                      bodySubTab === sub.id
-                        ? 'bg-[#EBDBC6] dark:bg-zinc-800 text-[#5C3206] dark:text-zinc-100 shadow-sm ring-1 ring-[#D8C0A4]'
-                        : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
-                    }`}
-                  >
-                    <span>{sub.icon}</span>
-                    <span>{sub.label}</span>
-                  </button>
-                ))
-              )}
-
-              {mainTab === 'hair' && (
-                [
-                  { id: 'styles' as const, label: '16 Peinados Anime', icon: '💇' },
-                  { id: 'colors' as const, label: '15 Colores de Pelo', icon: '🎨' }
-                ].map((sub) => (
-                  <button
-                    key={sub.id}
-                    type="button"
-                    onClick={() => {
-                      setHairSubTab(sub.id);
-                      setCameraZoom('face');
-                    }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
-                      hairSubTab === sub.id
-                        ? 'bg-[#EBDBC6] dark:bg-zinc-800 text-[#5C3206] dark:text-zinc-100 shadow-sm ring-1 ring-[#D8C0A4]'
-                        : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
-                    }`}
-                  >
-                    <span>{sub.icon}</span>
-                    <span>{sub.label}</span>
-                  </button>
-                ))
-              )}
+            {/* Título de la sección activa */}
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
+                <span>✨</span>
+                <span>{categoryNavItems.find(c => c.id === activeCategory)?.label || 'ÍTEMS'}</span>
+              </h3>
+              <span className="text-[10px] text-zinc-500 font-bold">
+                {activeCategory === 'appearance' ? 'Personalizar' : `${currentItems.length} opciones`}
+              </span>
             </div>
 
-            {/* CONTENIDO EN CUADRÍCULA DE 4 COLUMNAS (SQUIRCLES TÁCTILES) */}
-            <div className="flex-1 overflow-y-auto pr-1">
-              
-              {/* --- CASO 1: ROPA (TOP, BOTTOM, SHOES, OUTERWEAR) --- */}
-              {mainTab === 'clothes' && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {AVATAR_CLOTHING_ITEMS.filter(item => item.category === clothingSubTab).map((item) => {
-                    const isOwned = item.isDefault || ownedItems.includes(item.id);
-                    const isEquipped = (
-                      (clothingSubTab === 'top' && selectedTop === item.id) ||
-                      (clothingSubTab === 'bottom' && selectedBottom === item.id) ||
-                      (clothingSubTab === 'shoes' && selectedShoes === item.id) ||
-                      (clothingSubTab === 'outerwear' && selectedOuterwear === item.id)
-                    );
-                    const canAfford = currentCoins >= item.price;
+            {/* SECCIÓN A: APARIENCIA (SUB-PESTAÑAS DE CUERPO, CABELLO, OJOS, PIEL) */}
+            {activeCategory === 'appearance' && (
+              <div className="flex flex-col gap-3">
+                {/* Sub-pestañas de rasgos (Grid de 2 filas accesible y visible al 100%) */}
+                <div className="grid grid-cols-3 gap-1.5 p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl">
+                  {[
+                    { id: 'skin' as const, label: 'Piel', icon: '🎨' },
+                    { id: 'hair' as const, label: 'Pelo', icon: '💇' },
+                    { id: 'hair_color' as const, label: 'Color', icon: '🌈' },
+                    { id: 'eyes' as const, label: 'Ojos', icon: '👁️' },
+                    { id: 'races' as const, label: 'Rasgos', icon: '🧝' },
+                    { id: 'body' as const, label: 'Cuerpo', icon: '👤' }
+                  ].map((sub) => (
+                    <button
+                      key={sub.id}
+                      type="button"
+                      onClick={() => {
+                        setAppearanceSubTab(sub.id);
+                        if (sub.id === 'hair' || sub.id === 'eyes' || sub.id === 'hair_color' || sub.id === 'races') {
+                          setCameraZoom('face');
+                        } else {
+                          setCameraZoom('full');
+                        }
+                      }}
+                      className={`px-2 py-2 rounded-xl text-[11px] font-black transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                        appearanceSubTab === sub.id
+                          ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
+                          : 'bg-white dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50'
+                      }`}
+                    >
+                      <span className="text-xs">{sub.icon}</span>
+                      <span className="truncate">{sub.label}</span>
+                    </button>
+                  ))}
+                </div>
 
-                    return (
+                {/* Contenido según sub-pestaña */}
+                {appearanceSubTab === 'skin' && (
+                  <div className="grid grid-cols-3 gap-2">
+                    {AVATAR_SKIN_TONES.map((tone) => (
                       <button
-                        key={item.id}
+                        key={tone.id}
                         type="button"
-                        onClick={() => {
-                          if (isOwned) {
-                            handleEquip(item.category, item.id);
-                          } else {
-                            handlePurchase(item);
-                          }
-                        }}
-                        className={`group relative aspect-square p-3 rounded-2xl flex flex-col items-center justify-between transition-all cursor-pointer shadow-sm hover:scale-105 ${
-                          isEquipped
-                            ? 'bg-[#FFE6C7] dark:bg-amber-950/60 border-2 border-amber-500 ring-4 ring-amber-400/40 shadow-md'
-                            : isOwned
-                            ? 'bg-[#FFF9EE] dark:bg-zinc-900 border-2 border-[#E9D9C3] dark:border-zinc-800 hover:border-amber-400'
-                            : 'bg-[#FFF9EE]/70 dark:bg-zinc-900/60 border-2 border-dashed border-zinc-300 dark:border-zinc-700'
+                        onClick={() => handleSkinToneSelect(tone.id)}
+                        className={`p-2 rounded-2xl border flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                          selectedSkinTone === tone.id
+                            ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/40 ring-2 ring-cyan-400'
+                            : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800'
                         }`}
                       >
-                        {/* Insignia equipada */}
-                        {isEquipped && (
-                          <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md">
-                            <Check className="w-3 h-3 stroke-[3]" />
-                          </div>
-                        )}
-
-                        {/* Ilustración visual vectorial de la prenda */}
-                        <div className="w-24 h-24 min-[400px]:w-28 min-[400px]:h-28 sm:w-20 sm:h-20 rounded-2xl bg-white/90 dark:bg-zinc-800/90 p-2 flex items-center justify-center shadow-inner mt-1 transition-transform group-hover:scale-105">
-                          <ClothingItemPreviewSvg item={item} />
-                        </div>
-
-                        {/* Nombre y Precio */}
-                        <div className="text-center w-full mt-1">
-                          <p className="text-[11px] min-[400px]:text-xs font-black text-zinc-800 dark:text-zinc-200 truncate">
-                            {item.name}
-                          </p>
-                          <div className="flex items-center justify-center gap-1 mt-0.5">
-                            {isEquipped ? (
-                              <span className="text-[9px] font-black uppercase text-emerald-600 dark:text-emerald-400">Puesto</span>
-                            ) : isOwned ? (
-                              <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400">Equipar</span>
-                            ) : (
-                              <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 flex items-center gap-0.5">
-                                <Coins className="w-3 h-3" />
-                                {item.price}
-                              </span>
-                            )}
-                          </div>
-                        </div>
+                        <div className="w-8 h-8 rounded-full shadow-inner border border-black/20" style={{ backgroundColor: tone.value }} />
+                        <span className="text-[10px] font-bold text-center leading-tight truncate w-full">{tone.name}</span>
                       </button>
-                    );
-                  })}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
 
-              {/* --- CASO 2: CUERPO (TONOS DE PIEL, RAZAS MÍTICAS, ESCALA Y GÉNERO) --- */}
-              {mainTab === 'body' && (
-                <div>
-                  {bodySubTab === 'skin' && (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {AVATAR_SKIN_TONES.map((tone) => {
-                        const toneCol = tone.color || tone.value || '#FED7AA';
-                        const isSelected = selectedSkinTone === toneCol;
-                        return (
-                          <button
-                            key={tone.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedSkinTone(toneCol);
-                              updatePhysicalTraits(activeStudentId, { skin_tone: toneCol });
-                              changeAvatar({ skin_tone: toneCol });
-                            }}
-                            className={`group relative aspect-square p-2.5 rounded-2xl flex flex-col items-center justify-between transition-all cursor-pointer shadow-sm hover:scale-105 ${
-                              isSelected
-                                ? 'bg-[#FFE6C7] dark:bg-amber-950/60 border-2 border-amber-500 ring-4 ring-amber-400/40 shadow-md'
-                                : 'bg-[#FFF9EE] dark:bg-zinc-900 border-2 border-[#E9D9C3] dark:border-zinc-800 hover:border-amber-400'
-                            }`}
-                          >
-                            {isSelected && (
-                              <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md z-10">
-                                <Check className="w-3 h-3 stroke-[3]" />
-                              </div>
-                            )}
-                            <div className="w-24 h-24 min-[400px]:w-28 min-[400px]:h-28 sm:w-20 sm:h-20 rounded-2xl bg-white/90 dark:bg-zinc-800/80 p-2 flex items-center justify-center shadow-inner mt-1 transition-transform group-hover:scale-105">
-                              <SkinTonePreviewSvg toneColor={toneCol} />
-                            </div>
-                            <div className="text-center w-full mt-1">
-                              <span className="text-[11px] min-[400px]:text-xs font-black text-zinc-800 dark:text-zinc-200 truncate block">
-                                {tone.name}
-                              </span>
-                              <span className="text-[9px] text-zinc-500 dark:text-zinc-400 truncate block">
-                                {tone.description || 'Tono de piel'}
-                              </span>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {bodySubTab === 'races' && (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {AVATAR_RACE_FEATURES.map((race) => {
-                        const isSelected = selectedRaceFeature === race.id;
-                        return (
-                          <button
-                            key={race.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedRaceFeature(race.id);
-                              updatePhysicalTraits(activeStudentId, { race_feature: race.id });
-                              changeAvatar({ race_feature: race.id });
-                            }}
-                            className={`group relative aspect-square p-2.5 rounded-2xl flex flex-col items-center justify-between transition-all cursor-pointer shadow-sm hover:scale-105 ${
-                              isSelected
-                                ? 'bg-[#FFE6C7] dark:bg-amber-950/60 border-2 border-amber-500 ring-4 ring-amber-400/40 shadow-md'
-                                : 'bg-[#FFF9EE] dark:bg-zinc-900 border-2 border-[#E9D9C3] dark:border-zinc-800 hover:border-amber-400'
-                            }`}
-                          >
-                            {isSelected && (
-                              <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md z-10">
-                                <Check className="w-3 h-3 stroke-[3]" />
-                              </div>
-                            )}
-                            <div className="w-24 h-24 min-[400px]:w-28 min-[400px]:h-28 sm:w-20 sm:h-20 rounded-2xl bg-white/90 dark:bg-zinc-800/80 p-1.5 flex items-center justify-center shadow-inner mt-1 transition-transform group-hover:scale-105">
-                              <RaceFeaturePreviewSvg 
-                                featureId={race.id} 
-                                skinColor={selectedSkinTone} 
-                                hairColor={selectedHairColor} 
-                              />
-                            </div>
-                            <div className="text-center w-full mt-1">
-                              <p className="text-[11px] min-[400px]:text-xs font-black text-zinc-800 dark:text-zinc-200 truncate">{race.name}</p>
-                              <p className="text-[9px] text-zinc-500 dark:text-zinc-400 truncate">{race.description}</p>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {bodySubTab === 'scale' && (
-                    <div className="space-y-4">
-                      {/* Género con cambio inmediato */}
-                      <div className="bg-[#FFF9EE] dark:bg-zinc-900 p-4 rounded-2xl border-2 border-[#E9D9C3] dark:border-zinc-800">
-                        <span className="text-xs font-black uppercase text-zinc-500 dark:text-zinc-400 mb-2 block">
-                          Identidad de Género del Estudiante
-                        </span>
-                        <div className="grid grid-cols-3 gap-3">
-                          {[
-                            { id: 'female' as const, label: 'Femenino', icon: '♀', emoji: '👧' },
-                            { id: 'male' as const, label: 'Masculino', icon: '♂', emoji: '👦' },
-                            { id: 'neutral' as const, label: 'Mágico / Neutro', icon: '✦', emoji: '✨' }
-                          ].map((g) => (
-                            <button
-                              key={g.id}
-                              type="button"
-                              onClick={() => handleGenderSelect(g.id)}
-                              className={`p-3 rounded-2xl font-black text-xs flex flex-col items-center gap-1 transition-all cursor-pointer ${
-                                selectedGender === g.id
-                                  ? 'bg-blue-600 text-white shadow-lg ring-4 ring-blue-400/40 scale-105'
-                                  : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700'
-                              }`}
-                            >
-                              <span className="text-2xl">{g.emoji}</span>
-                              <span>{g.label}</span>
-                            </button>
-                          ))}
+                {appearanceSubTab === 'hair' && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {AVATAR_HAIRSTYLES.map((style) => (
+                      <button
+                        key={style.id}
+                        type="button"
+                        onClick={() => handleHairStyleSelect(style.id)}
+                        className={`p-2 rounded-2xl border flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                          selectedHairStyle === style.id
+                            ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/40 ring-2 ring-cyan-400'
+                            : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800'
+                        }`}
+                      >
+                        <div className="w-10 h-10">
+                          <HairPreviewSvg styleId={style.id} color={selectedHairColor} />
                         </div>
-                      </div>
+                        <span className="text-[10px] font-bold text-center leading-tight truncate w-full">{style.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-                      {/* Escala Corporal */}
-                      <div className="bg-[#FFF9EE] dark:bg-zinc-900 p-4 rounded-2xl border-2 border-[#E9D9C3] dark:border-zinc-800">
-                        <span className="text-xs font-black uppercase text-zinc-500 dark:text-zinc-400 mb-2 block">
-                          Altura / Complexión
-                        </span>
-                        <div className="grid grid-cols-3 gap-3">
-                          {[
-                            { id: 'compact' as const, label: 'Compacto (S)', desc: 'Ágil y menudo', scale: '0.85' },
-                            { id: 'normal' as const, label: 'Normal (M)', desc: 'Equilibrado', scale: '1.0' },
-                            { id: 'tall' as const, label: 'Alto (L)', desc: 'Heroico', scale: '1.15' }
-                          ].map((s) => (
-                            <button
-                              key={s.id}
-                              type="button"
-                              onClick={() => handleScaleSelect(s.id)}
-                              className={`p-3 rounded-2xl font-bold text-xs flex flex-col items-center gap-0.5 transition-all cursor-pointer ${
-                                selectedScale === s.id
-                                  ? 'bg-purple-600 text-white shadow-lg ring-4 ring-purple-400/40 scale-105'
-                                  : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700'
-                              }`}
-                            >
-                              <span className="text-base font-black font-mono">x{s.scale}</span>
-                              <span className="font-black">{s.label}</span>
-                              <span className="text-[10px] opacity-80">{s.desc}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
+                {appearanceSubTab === 'hair_color' && (
+                  <div className="grid grid-cols-3 gap-2">
+                    {AVATAR_HAIR_COLORS.map((col) => (
+                      <button
+                        key={col.id}
+                        type="button"
+                        onClick={() => handleHairColorSelect(col.value || col.id)}
+                        className={`p-2 rounded-2xl border flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                          selectedHairColor === (col.value || col.id)
+                            ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/40 ring-2 ring-cyan-400'
+                            : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800'
+                        }`}
+                      >
+                        <div className="w-8 h-8 rounded-full shadow-inner border border-black/20" style={{ backgroundColor: col.value }} />
+                        <span className="text-[10px] font-bold text-center leading-tight truncate w-full">{col.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-              {/* --- CASO 3: CABELLO (ESTILOS Y COLORES EN CUADRÍCULA SQUIRCLE) --- */}
-              {mainTab === 'hair' && (
-                <div>
-                  {hairSubTab === 'styles' ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {AVATAR_HAIRSTYLES.map((h) => {
-                        const isSelected = selectedHairStyle === h.id;
-                        return (
-                          <button
-                            key={h.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedHairStyle(h.id);
-                              updatePhysicalTraits(activeStudentId, { hair_style: h.id });
-                              changeAvatar({ hair_style: h.id });
-                            }}
-                            className={`group relative aspect-square p-2.5 rounded-2xl flex flex-col items-center justify-between transition-all cursor-pointer shadow-sm hover:scale-105 ${
-                              isSelected
-                                ? 'bg-[#FFE6C7] dark:bg-amber-950/60 border-2 border-amber-500 ring-4 ring-amber-400/40 shadow-md'
-                                : 'bg-[#FFF9EE] dark:bg-zinc-900 border-2 border-[#E9D9C3] dark:border-zinc-800 hover:border-amber-400'
-                            }`}
-                          >
-                            {isSelected && (
-                              <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md z-10">
-                                <Check className="w-3 h-3 stroke-[3]" />
-                              </div>
-                            )}
-                            <div className="w-24 h-24 min-[400px]:w-28 min-[400px]:h-28 sm:w-20 sm:h-20 rounded-2xl bg-white/90 dark:bg-zinc-800/80 p-1.5 flex items-center justify-center shadow-inner mt-1 transition-transform group-hover:scale-105">
-                              <HairPreviewSvg styleId={h.id} color={selectedHairColor} />
-                            </div>
-                            <div className="text-center w-full mt-1">
-                              <p className="text-[11px] min-[400px]:text-xs font-black text-zinc-800 dark:text-zinc-200 truncate">{h.name}</p>
-                              <p className="text-[9px] text-zinc-500 dark:text-zinc-400 truncate">{h.description || 'Anime'}</p>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {AVATAR_HAIR_COLORS.map((hc) => {
-                        const hairCol = hc.color || hc.value || '#EC4899';
-                        const isSelected = selectedHairColor === hairCol;
-                        return (
-                          <button
-                            key={hc.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedHairColor(hairCol);
-                              updatePhysicalTraits(activeStudentId, { hair_color: hairCol });
-                              changeAvatar({ hair_color: hairCol });
-                            }}
-                            className={`group relative aspect-square p-2.5 rounded-2xl flex flex-col items-center justify-between transition-all cursor-pointer shadow-sm hover:scale-105 ${
-                              isSelected
-                                ? 'bg-[#FFE6C7] dark:bg-amber-950/60 border-2 border-amber-500 ring-4 ring-amber-400/40 shadow-md'
-                                : 'bg-[#FFF9EE] dark:bg-zinc-900 border-2 border-[#E9D9C3] dark:border-zinc-800 hover:border-amber-400'
-                            }`}
-                          >
-                            {isSelected && (
-                              <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md z-10">
-                                <Check className="w-3 h-3 stroke-[3]" />
-                              </div>
-                            )}
-                            <div className="w-24 h-24 min-[400px]:w-28 min-[400px]:h-28 sm:w-20 sm:h-20 rounded-2xl bg-white/90 dark:bg-zinc-800/80 p-2 flex items-center justify-center shadow-inner mt-1 transition-transform group-hover:scale-105">
-                              <HairColorPreviewSvg color={hairCol} isSelected={isSelected} />
-                            </div>
-                            <div className="text-center w-full mt-1">
-                              <p className="text-[11px] min-[400px]:text-xs font-black text-zinc-800 dark:text-zinc-200 truncate">{hc.name}</p>
-                              <p className="text-[9px] text-zinc-500 dark:text-zinc-400 truncate">{hc.description || 'Color'}</p>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* --- CASO 4: OJOS Y EXPRESIÓN (15 OPCIONES VISUALES VECTORIALES) --- */}
-              {mainTab === 'eyes' && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {AVATAR_EYES_STYLES.map((eye) => {
-                    const eyeCol = eye.color || eye.value || '#3B82F6';
-                    const isSelected = selectedEyesStyle === eye.id;
-                    return (
+                {appearanceSubTab === 'eyes' && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {AVATAR_EYES_STYLES.map((eye) => (
                       <button
                         key={eye.id}
                         type="button"
-                        onClick={() => {
-                          setSelectedEyesStyle(eye.id);
-                          updatePhysicalTraits(activeStudentId, { eyes_style: eye.id });
-                          changeAvatar({ eyes_style: eye.id });
-                        }}
-                        className={`group relative aspect-square p-2.5 rounded-2xl flex flex-col items-center justify-between transition-all cursor-pointer shadow-sm hover:scale-105 ${
-                          isSelected
-                            ? 'bg-[#FFE6C7] dark:bg-amber-950/60 border-2 border-amber-500 ring-4 ring-amber-400/40 shadow-md'
-                            : 'bg-[#FFF9EE] dark:bg-zinc-900 border-2 border-[#E9D9C3] dark:border-zinc-800 hover:border-amber-400'
+                        onClick={() => handleEyesStyleSelect(eye.id)}
+                        className={`p-2 rounded-2xl border flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                          selectedEyesStyle === eye.id
+                            ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/40 ring-2 ring-cyan-400'
+                            : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800'
                         }`}
                       >
-                        {isSelected && (
-                          <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md z-10">
-                            <Check className="w-3 h-3 stroke-[3]" />
-                          </div>
-                        )}
-
-                        {/* Previsualización Vectorial Real de los Ojos Anime */}
-                        <div className="w-full flex-1 max-h-[85px] sm:max-h-[70px] rounded-2xl bg-white/90 dark:bg-zinc-800/90 p-2 flex items-center justify-center shadow-inner mt-0.5 transition-transform group-hover:scale-105">
-                          <EyePreviewSvg styleId={eye.id} color={eyeCol} />
+                        <div className="w-14 h-8">
+                          <EyePreviewSvg styleId={eye.id} />
                         </div>
-
-                        {/* Título y descripción breve */}
-                        <div className="text-center w-full mt-1">
-                          <p className="text-[11px] min-[400px]:text-xs font-black text-zinc-800 dark:text-zinc-200 truncate">
-                            {eye.name}
-                          </p>
-                          <p className="text-[9px] text-zinc-500 dark:text-zinc-400 truncate">
-                            {eye.description || 'Mirada anime'}
-                          </p>
-                        </div>
+                        <span className="text-[10px] font-bold text-center leading-tight truncate w-full">{eye.name}</span>
                       </button>
-                    );
-                  })}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
 
-              {/* --- CASO 5: SOMBREROS & VARITAS MÁGICAS --- */}
-              {mainTab === 'hats' && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {AVATAR_CLOTHING_ITEMS.filter(item => item.category === 'hat' || item.category === 'accessory').map((item) => {
-                    const isOwned = item.isDefault || ownedItems.includes(item.id);
-                    const isEquipped = (
-                      (item.category === 'hat' && selectedHat === item.id) ||
-                      (item.category === 'accessory' && selectedAccessory === item.id)
-                    );
-                    const canAfford = currentCoins >= item.price;
-
-                    return (
+                {appearanceSubTab === 'races' && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {AVATAR_RACE_FEATURES.map((race) => (
                       <button
-                        key={item.id}
+                        key={race.id}
                         type="button"
-                        onClick={() => {
-                          if (isOwned) {
-                            handleEquip(item.category, item.id);
-                          } else {
-                            handlePurchase(item);
-                          }
-                        }}
-                        className={`group relative aspect-square p-3 rounded-2xl flex flex-col items-center justify-between transition-all cursor-pointer shadow-sm hover:scale-105 ${
-                          isEquipped
-                            ? 'bg-[#FFE6C7] dark:bg-amber-950/60 border-2 border-amber-500 ring-4 ring-amber-400/40 shadow-md'
-                            : isOwned
-                            ? 'bg-[#FFF9EE] dark:bg-zinc-900 border-2 border-[#E9D9C3] dark:border-zinc-800 hover:border-amber-400'
-                            : 'bg-[#FFF9EE]/70 dark:bg-zinc-900/60 border-2 border-dashed border-zinc-300 dark:border-zinc-700'
+                        onClick={() => handleRaceFeatureSelect(race.id)}
+                        className={`p-2 rounded-2xl border flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                          selectedRaceFeature === race.id
+                            ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/40 ring-2 ring-cyan-400'
+                            : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800'
                         }`}
                       >
-                        {isEquipped && (
-                          <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md">
-                            <Check className="w-3 h-3 stroke-[3]" />
-                          </div>
-                        )}
-
-                        <div className="w-24 h-24 min-[400px]:w-28 min-[400px]:h-28 sm:w-20 sm:h-20 rounded-2xl bg-white/90 dark:bg-zinc-800/90 p-2 flex items-center justify-center shadow-inner mt-1 transition-transform group-hover:scale-105">
-                          <ClothingItemPreviewSvg item={item} />
+                        <div className="w-10 h-10">
+                          <RaceFeaturePreviewSvg featureId={race.id} />
                         </div>
-
-                        <div className="text-center w-full mt-1">
-                          <p className="text-[11px] min-[400px]:text-xs font-black text-zinc-800 dark:text-zinc-200 truncate">
-                            {item.name}
-                          </p>
-                          <div className="flex items-center justify-center gap-1 mt-0.5">
-                            {isEquipped ? (
-                              <span className="text-[9px] font-black uppercase text-emerald-600 dark:text-emerald-400">Puesto</span>
-                            ) : isOwned ? (
-                              <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400">Equipar</span>
-                            ) : (
-                              <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 flex items-center gap-0.5">
-                                <Coins className="w-3 h-3" />
-                                {item.price}
-                              </span>
-                            )}
-                          </div>
-                        </div>
+                        <span className="text-[10px] font-bold text-center leading-tight truncate w-full">{race.name}</span>
                       </button>
-                    );
-                  })}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
 
-            </div>
-          </div>
+                {appearanceSubTab === 'body' && (
+                  <div className="flex flex-col gap-3">
+                    <div className="p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700">
+                      <span className="text-xs font-black uppercase text-zinc-500 dark:text-zinc-400 block mb-2">Género</span>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {[
+                          { id: 'female' as const, label: 'Femenino ♀' },
+                          { id: 'male' as const, label: 'Masculino ♂' },
+                          { id: 'neutral' as const, label: 'Neutro ✦' }
+                        ].map((g) => (
+                          <button
+                            key={g.id}
+                            type="button"
+                            onClick={() => handleGenderSelect(g.id)}
+                            className={`py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                              selectedGender === g.id
+                                ? 'bg-cyan-500 text-white shadow-md'
+                                : 'bg-white dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200'
+                            }`}
+                          >
+                            {g.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
 
-          {/* --------------------------------------------------------------------- */}
-          {/* PANEL DERECHO: ESCENARIO DEL AVATAR CON CÁMARA ZOOM Y ANIMACIONES     */}
-          {/* --------------------------------------------------------------------- */}
-          <div className="w-full lg:w-[42%] p-3 sm:p-5 lg:p-6 flex flex-col items-center justify-between bg-slate-900/50 dark:bg-zinc-950/80 shrink-0">
-            
-            {/* ESCENARIO / DIORAMA CON ZOOM DINÁMICO Y CONTORNO NEÓN */}
-            <div className="relative w-full max-w-[200px] h-[190px] sm:max-w-[260px] sm:h-[240px] lg:max-w-[340px] lg:h-auto lg:aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border-4 border-cyan-500/30 bg-gradient-to-b from-slate-950 via-slate-900 to-blue-950 flex items-center justify-center select-none shrink-0">
-              
-              {/* Sutil resplandor de fondo ambiental */}
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(6,182,212,0.15)_0%,rgba(236,72,153,0.1)_50%,transparent_80%)] pointer-events-none" />
-
-              {/* Controles flotantes de la cámara (Zoom In / Zoom Out) */}
-              <div className="absolute top-2.5 sm:top-3 left-2.5 sm:left-3 z-30 flex items-center gap-1 bg-black/60 backdrop-blur-md p-1 rounded-2xl border border-white/20 shadow-md">
-                <button
-                  type="button"
-                  onClick={() => setCameraZoom('face')}
-                  className={`px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl text-[10px] sm:text-[11px] font-black flex items-center gap-1 transition-all cursor-pointer ${
-                    cameraZoom === 'face'
-                      ? 'bg-amber-400 text-black shadow-sm'
-                      : 'text-zinc-300 hover:text-white'
-                  }`}
-                  title="Acercar cámara al rostro para ver ojos, cabello y expresiones"
-                >
-                  <ZoomIn className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                  <span>Rostro</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCameraZoom('body')}
-                  className={`px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl text-[10px] sm:text-[11px] font-black flex items-center gap-1 transition-all cursor-pointer ${
-                    cameraZoom === 'body'
-                      ? 'bg-amber-400 text-black shadow-sm'
-                      : 'text-zinc-300 hover:text-white'
-                  }`}
-                  title="Alejar cámara para ver atuendo y cuerpo entero"
-                >
-                  <User className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                  <span>Cuerpo</span>
-                </button>
-              </div>
-
-              {/* Insignia de Nivel */}
-              <div className="absolute top-2.5 sm:top-3 right-2.5 sm:right-3 z-30 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white text-[9px] sm:text-[10px] font-black tracking-wider uppercase shadow-md">
-                Nivel {stats.level || 1}
-              </div>
-
-              {/* CONTENEDOR CON TRANSFORM ZOOM SUAVE Y CONTORNO NEÓN PEGADO A LA SILUETA */}
-              <div 
-                className="w-full h-full flex items-center justify-center transition-transform duration-500 ease-out neon-hero-contour"
-                style={{
-                  transform: cameraZoom === 'face' 
-                    ? 'scale(1.9) translateY(24%)' 
-                    : 'scale(1.05) translateY(0%)',
-                  transformOrigin: '50% 50%',
-                  willChange: 'transform'
-                }}
-              >
-                <ModularAnimeAvatarSprite
-                  gender={selectedGender}
-                  skinTone={selectedSkinTone}
-                  hairStyle={selectedHairStyle}
-                  hairColor={selectedHairColor}
-                  eyesStyle={selectedEyesStyle}
-                  raceFeature={selectedRaceFeature}
-                  bodyScale={selectedScale}
-                  equippedShoes={selectedShoes}
-                  equippedBottom={selectedBottom}
-                  equippedTop={selectedTop}
-                  equippedOuterwear={selectedOuterwear}
-                  equippedHat={selectedHat}
-                  equippedAccessory={selectedAccessory}
-                  animationState={previewAnimation}
-                  width={240}
-                  height={280}
-                />
-              </div>
-
-              {/* Nombre del avatar clickeable */}
-              <div className="absolute bottom-2.5 sm:bottom-3 inset-x-2.5 sm:inset-x-3 z-30 flex items-center justify-center">
-                {isEditingName ? (
-                  <input
-                    type="text"
-                    value={avatarName}
-                    onChange={(e) => setAvatarName(e.target.value)}
-                    onBlur={() => setIsEditingName(false)}
-                    onKeyDown={(e) => e.key === 'Enter' && setIsEditingName(false)}
-                    autoFocus
-                    className="w-40 sm:w-48 text-center font-black text-xs bg-white dark:bg-zinc-900 border-2 border-amber-500 rounded-xl px-2 py-0.5 sm:py-1 outline-none text-zinc-900 dark:text-zinc-100 shadow-lg"
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setIsEditingName(true)}
-                    className="px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white text-[11px] sm:text-xs font-black flex items-center gap-1.5 shadow-md hover:scale-105 transition-transform"
-                  >
-                    <span className="truncate max-w-[120px]">{avatarName}</span>
-                    <span className="text-[10px] text-amber-300">✏️</span>
-                  </button>
+                    <div className="p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700">
+                      <span className="text-xs font-black uppercase text-zinc-500 dark:text-zinc-400 block mb-2">Altura / Proporción</span>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {[
+                          { id: 'compact' as const, label: 'Compacto (S)' },
+                          { id: 'normal' as const, label: 'Estándar (M)' },
+                          { id: 'tall' as const, label: 'Atlético (L)' }
+                        ].map((s) => (
+                          <button
+                            key={s.id}
+                            type="button"
+                            onClick={() => handleScaleSelect(s.id)}
+                            className={`py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                              selectedScale === s.id
+                                ? 'bg-indigo-600 text-white shadow-md'
+                                : 'bg-white dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200'
+                            }`}
+                          >
+                            {s.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
-            </div>
+            )}
 
-            {/* BOTONES DE PRUEBA DE ANIMACIÓN EN VIVO (HECHIZO, CELEBRAR, REPOSO) - Visible en sm y superior */}
-            <div className="hidden sm:block w-full mt-3 bg-[#EDE1D1] dark:bg-zinc-900/80 p-2 sm:p-2.5 rounded-2xl border border-[#D8C6B1] dark:border-zinc-800 shadow-sm shrink-0">
-              <p className="text-[10px] font-black text-zinc-600 dark:text-zinc-400 uppercase tracking-wider mb-1.5 text-center">
-                Probar Animación en Vivo
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => triggerAnim('cast')}
-                  className={`py-1.5 sm:py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                    previewAnimation === 'cast'
-                      ? 'bg-pink-600 text-white shadow-lg shadow-pink-600/40 scale-105'
-                      : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-pink-50 hover:text-pink-600'
-                  }`}
-                >
-                  <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span>Hechizo</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => triggerAnim('cheer')}
-                  className={`py-1.5 sm:py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                    previewAnimation === 'cheer'
-                      ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/40 scale-105'
-                      : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-amber-50 hover:text-amber-600'
-                  }`}
-                >
-                  <PartyPopper className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span>Celebrar</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => triggerAnim('idle')}
-                  className={`py-1.5 sm:py-2 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                    previewAnimation === 'idle'
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/40 scale-105'
-                      : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
-                >
-                  <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span>Reposo</span>
-                </button>
+            {/* SECCIÓN B: POSES DE ENTRENADOR */}
+            {activeCategory === 'poses' && (
+              <div className="flex flex-col gap-2.5">
+                {[
+                  { id: 'idle' as const, label: 'Reposo Natural', desc: 'Respiración tranquila y postura erguida', icon: '🧍' },
+                  { id: 'pose' as const, label: 'Pose de Combate', desc: 'Mano en la cintura y mirada confiada (Postura de Duelo)', icon: '🥋' },
+                  { id: 'cast' as const, label: 'Canalización Mágica', desc: 'Brazo levantado y rayos de plasma brillante', icon: '⚡' },
+                  { id: 'cheer' as const, label: 'Salto de Victoria', desc: 'Celebración enérgica con sonrisa radiante', icon: '🎉' },
+                  { id: 'walk' as const, label: 'Paso de Marcha', desc: 'Animación fluida de exploración', icon: '🚶' }
+                ].map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => triggerAnim(p.id)}
+                    className={`p-3 rounded-2xl border text-left flex items-center gap-3 transition-all cursor-pointer ${
+                      previewAnimation === p.id
+                        ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/50 ring-2 ring-cyan-400'
+                        : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 hover:bg-zinc-50'
+                    }`}
+                  >
+                    <span className="text-2xl">{p.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <span className="font-black text-xs block text-slate-900 dark:text-white">{p.label}</span>
+                      <span className="text-[10px] text-zinc-500 block truncate">{p.desc}</span>
+                    </div>
+                    {previewAnimation === p.id && <Check className="w-4 h-4 text-cyan-500 stroke-[3]" />}
+                  </button>
+                ))}
               </div>
-            </div>
+            )}
 
-            {/* Selector Rápido de Género y Altura debajo del Avatar (solo desktop para no apretar tablet/móvil) */}
-            <div className="hidden lg:flex w-full mt-3 items-center justify-between gap-2 shrink-0">
-              <div className="flex-1 bg-[#EDE1D1] dark:bg-zinc-900/80 p-2 rounded-2xl border border-[#D8C6B1] dark:border-zinc-800">
-                <span className="block text-[9px] text-zinc-500 dark:text-zinc-400 font-bold uppercase mb-1">Género</span>
-                <div className="flex gap-1">
-                  {[
-                    { id: 'female' as const, label: '♀ F' },
-                    { id: 'male' as const, label: '♂ M' },
-                    { id: 'neutral' as const, label: '✦ N' }
-                  ].map((g) => (
-                    <button
-                      key={g.id}
-                      type="button"
-                      onClick={() => handleGenderSelect(g.id)}
-                      className={`flex-1 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer ${
-                        selectedGender === g.id
-                          ? 'bg-blue-600 text-white shadow-sm scale-105'
-                          : 'bg-white/80 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+            {/* SECCIÓN C: CATÁLOGO DE PRENDAS MODULARES */}
+            {activeCategory !== 'appearance' && activeCategory !== 'poses' && (
+              <div className="grid grid-cols-1 gap-2.5">
+                {currentItems.map((item) => {
+                  const isEquipped = 
+                    selectedShoes === item.id ||
+                    selectedBottom === item.id ||
+                    selectedTop === item.id ||
+                    selectedOuterwear === item.id ||
+                    selectedHat === item.id ||
+                    selectedAccessory === item.id;
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => {
+                        if (isEquipped && (item.category === 'outerwear' || item.category === 'hat' || item.category === 'accessory') && !item.id.endsWith('_none')) {
+                          const noneMap: Record<string, string> = {
+                            outerwear: 'outerwear_none',
+                            hat: 'hat_none',
+                            accessory: 'acc_none'
+                          };
+                          handleEquip(item.category, noneMap[item.category] || item.id);
+                        } else {
+                          handleEquip(item.category, item.id);
+                        }
+                      }}
+                      className={`p-3 rounded-2xl border flex items-center gap-3 transition-all cursor-pointer select-none hover:shadow-md ${
+                        isEquipped
+                          ? 'border-cyan-500 bg-cyan-50/80 dark:bg-cyan-950/40 ring-2 ring-cyan-400'
+                          : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800/80 hover:border-cyan-300'
                       }`}
                     >
-                      {g.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                      {/* Miniatura SVG */}
+                      <div className="w-12 h-12 rounded-xl bg-zinc-100 dark:bg-zinc-900 p-1 flex items-center justify-center shrink-0 border border-zinc-200 dark:border-zinc-700">
+                        <ClothingItemPreviewSvg item={item} />
+                      </div>
 
-              <div className="flex-1 bg-[#EDE1D1] dark:bg-zinc-900/80 p-2 rounded-2xl border border-[#D8C6B1] dark:border-zinc-800">
-                <span className="block text-[9px] text-zinc-500 dark:text-zinc-400 font-bold uppercase mb-1">Altura</span>
-                <div className="flex gap-1">
-                  {[
-                    { id: 'compact' as const, label: 'S' },
-                    { id: 'normal' as const, label: 'M' },
-                    { id: 'tall' as const, label: 'L' }
-                  ].map((s) => (
-                    <button
-                      key={s.id}
-                      type="button"
-                      onClick={() => handleScaleSelect(s.id)}
-                      className={`flex-1 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer ${
-                        selectedScale === s.id
-                          ? 'bg-purple-600 text-white shadow-sm scale-105'
-                          : 'bg-white/80 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
-                      }`}
-                    >
-                      {s.label}
-                    </button>
-                  ))}
-                </div>
+                      {/* Info de prenda */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-black block text-slate-900 dark:text-white truncate">
+                            {item.name}
+                          </span>
+                          {item.price > 0 && (
+                            <span className="inline-flex items-center gap-0.5 text-[9px] font-extrabold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded-md border border-amber-200/50 dark:border-amber-800/50 shrink-0">
+                              <Coins className="w-2.5 h-2.5" />
+                              {item.price}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-zinc-500 block truncate mb-1">
+                          {item.description}
+                        </span>
+                        
+                        {/* Rarity tag */}
+                        <span className={`inline-block text-[9px] font-black uppercase px-2 py-0.2 rounded-full ${
+                          item.rarity === 'legendary' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200' :
+                          item.rarity === 'epic' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
+                          item.rarity === 'rare' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                          'bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200'
+                        }`}>
+                          {item.rarity}
+                        </span>
+                      </div>
+
+                      {/* Botón de acción (Puesto / Usar) */}
+                      <div className="shrink-0">
+                        {isEquipped ? (
+                          (item.category === 'outerwear' || item.category === 'hat' || item.category === 'accessory') && !item.id.endsWith('_none') ? (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const noneMap: Record<string, string> = {
+                                  outerwear: 'outerwear_none',
+                                  hat: 'hat_none',
+                                  accessory: 'acc_none'
+                                };
+                                handleEquip(item.category, noneMap[item.category] || item.id);
+                              }}
+                              className="px-3 py-1.5 rounded-xl bg-cyan-500 hover:bg-rose-500 text-white text-xs font-black flex items-center gap-1 shadow transition-colors cursor-pointer group"
+                              title="Haz clic para quitar esta prenda"
+                            >
+                              <Check className="w-3.5 h-3.5 stroke-[3] group-hover:hidden" />
+                              <span className="group-hover:hidden">Puesto</span>
+                              <span className="hidden group-hover:inline">Quitar</span>
+                            </button>
+                          ) : (
+                            <span className="px-3 py-1.5 rounded-xl bg-cyan-500 text-white text-xs font-black flex items-center gap-1 shadow">
+                              <Check className="w-3.5 h-3.5 stroke-[3]" />
+                              <span>Puesto</span>
+                            </span>
+                          )
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEquip(item.category, item.id);
+                            }}
+                            className="px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-700 border-2 border-cyan-500 text-cyan-600 dark:text-cyan-400 text-xs font-black hover:bg-cyan-500 hover:text-white transition-all cursor-pointer shadow-sm flex items-center gap-1"
+                          >
+                            <span>Usar</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            </div>
+            )}
 
           </div>
+
+          {/* ----------------------------------------------------------------------- */}
+          {/* 3. ESCENARIO CENTRAL DEL ENTRENADOR 3D CEL-SHADED SOBRE PEDESTAL         */}
+          {/* ----------------------------------------------------------------------- */}
+          <div className="flex-1 flex flex-col items-center justify-center relative p-4 overflow-hidden">
+            
+            {/* Controles flotantes de cámara y perspectiva */}
+            <div className="absolute top-4 right-4 z-20 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setCameraZoom(cameraZoom === 'full' ? 'face' : 'full')}
+                className="px-3 py-1.5 rounded-full bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md border border-cyan-300 dark:border-zinc-700 text-cyan-700 dark:text-cyan-300 text-xs font-bold shadow-md hover:scale-105 transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                {cameraZoom === 'full' ? <ZoomIn className="w-3.5 h-3.5" /> : <ZoomOut className="w-3.5 h-3.5" />}
+                <span>{cameraZoom === 'full' ? 'Enfocar Rostro' : 'Cuerpo Entero'}</span>
+              </button>
+            </div>
+
+            {/* Selector rápido de Poses flotante en la base */}
+            <div className="absolute bottom-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/85 dark:bg-zinc-900/85 backdrop-blur-md border border-cyan-300/60 dark:border-zinc-700 shadow-lg">
+              {[
+                { id: 'idle' as const, label: 'Reposo' },
+                { id: 'pose' as const, label: 'Pose' },
+                { id: 'cast' as const, label: 'Poder' },
+                { id: 'cheer' as const, label: 'Celebrar' }
+              ].map((anim) => (
+                <button
+                  key={anim.id}
+                  type="button"
+                  onClick={() => triggerAnim(anim.id)}
+                  className={`px-3 py-1 rounded-full text-[11px] font-black transition-all cursor-pointer ${
+                    previewAnimation === anim.id
+                      ? 'bg-cyan-500 text-white shadow-md'
+                      : 'text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                  }`}
+                >
+                  {anim.label}
+                </button>
+              ))}
+            </div>
+
+            {/* AVATAR 3D CEL-SHADED DE CUERPO COMPLETO CON PEDESTAL HOLOGRÁFICO */}
+            <div className="w-full h-full max-h-[82vh] flex items-center justify-center">
+              <ModularAnimeAvatarSprite
+                gender={selectedGender}
+                skinTone={selectedSkinTone}
+                hairStyle={selectedHairStyle}
+                hairColor={selectedHairColor}
+                eyesStyle={selectedEyesStyle}
+                raceFeature={selectedRaceFeature}
+                bodyScale={selectedScale}
+                equippedShoes={selectedShoes}
+                equippedBottom={selectedBottom}
+                equippedTop={selectedTop}
+                equippedOuterwear={selectedOuterwear}
+                equippedHat={selectedHat}
+                equippedAccessory={selectedAccessory}
+                animationState={previewAnimation}
+                showPedestal={true}
+                zoom={cameraZoom}
+                className="w-full h-full max-h-[78vh]"
+              />
+            </div>
+          </div>
+
         </div>
 
         {/* ========================================================================= */}
-        {/* BARRA INFERIOR: BOTÓN APPLY (GUARDAR) Y BACK (VOLVER) (Estilo Referencia)   */}
+        {/* BARRA INFERIOR DE CONFIRMACIÓN (APPLY / BACK)                              */}
         {/* ========================================================================= */}
-        <div className="px-6 py-4 bg-[#F2E7D5] dark:bg-zinc-900/90 border-t border-[#E3D3BE] dark:border-zinc-800 flex items-center justify-between shrink-0">
+        <div className="px-6 py-3.5 bg-white/90 dark:bg-zinc-900/90 border-t border-cyan-200/50 dark:border-zinc-800 flex items-center justify-between shrink-0 z-20">
           <button
             type="button"
-            onClick={handleApply}
-            className="px-8 py-2.5 rounded-2xl bg-[#FFE6C7] hover:bg-[#FFD8AA] active:scale-95 text-[#633300] font-black text-sm uppercase tracking-wider shadow-md border-2 border-[#DCA876] transition-all cursor-pointer flex items-center gap-2"
+            onClick={onClose}
+            className="px-6 py-2 rounded-2xl bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-black text-xs uppercase tracking-wider transition-all cursor-pointer"
           >
-            <Check className="w-4 h-4 stroke-[3]" />
-            <span>APPLY (Guardar)</span>
+            Cancelar
           </button>
 
           <button
             type="button"
-            onClick={onClose}
-            className="px-8 py-2.5 rounded-2xl bg-[#FAF3E8] hover:bg-white active:scale-95 text-zinc-700 dark:text-zinc-300 font-black text-sm uppercase tracking-wider shadow-md border-2 border-[#D8C5AE] dark:border-zinc-700 transition-all cursor-pointer flex items-center gap-1.5"
+            onClick={handleApply}
+            className="px-8 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-450 hover:to-blue-550 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-cyan-500/25 active:scale-95 transition-all cursor-pointer flex items-center gap-2"
           >
-            <span>BACK (Volver)</span>
+            <Check className="w-4 h-4 stroke-[3]" />
+            <span>Guardar Aspecto</span>
           </button>
         </div>
 

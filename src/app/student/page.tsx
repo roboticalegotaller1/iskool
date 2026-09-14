@@ -243,6 +243,11 @@ export default function StudentDashboard() {
 
   // Renderizador estático del Avatar en SVG con Contorno Neón Pegado a la Silueta (Estilo Neón Cian/Magenta)
   const renderAvatarPreview = (width = 120, height = 120, customViewBox?: string) => {
+    const isFullBody = height > 180;
+    const resolvedViewBox = customViewBox === "20 4 110 138" 
+      ? "10 15 180 415" 
+      : customViewBox || (isFullBody ? "10 15 180 415" : "45 25 110 150");
+
     return (
       <div 
         className="relative flex items-center justify-center rounded-2xl overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 border border-cyan-500/30 shadow-xl select-none" 
@@ -252,25 +257,27 @@ export default function StudentDashboard() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(6,182,212,0.15)_0%,rgba(236,72,153,0.1)_50%,transparent_80%)] pointer-events-none" />
 
         {/* Sprite del Avatar con Contorno Neón Pegado a su Silueta */}
-        <div className="w-full h-full p-1 relative z-10 neon-hero-contour">
+        <div className="w-full h-full p-1 relative z-10 neon-hero-contour flex items-center justify-center">
           <AnimeAvatarSprite 
             gender={(avatar as any)?.gender ?? 'female'}
             rpgClass={(avatar as any)?.rpg_class ?? avatar?.outfit_style ?? 'mago'}
             headType={(avatar as any)?.head_type ?? avatar?.eyes_style ?? 'standard'}
             skinTone={(avatar as any)?.skin_tone ?? 'light'}
-            hairColor={avatar?.hair_color ?? 'pink'}
+            hairColor={avatar?.hair_color ?? 'yellow'}
             hairStyle={avatar?.hair_style ?? 'spiky'}
             eyesStyle={avatar?.eyes_style ?? 'determined'}
             raceFeature={avatar?.race_feature}
             bodyScale={(avatar as any)?.body_scale ?? 'normal'}
-            equippedShoes={avatar?.equipped_shoes}
-            equippedBottom={avatar?.equipped_bottom}
-            equippedTop={avatar?.equipped_top}
+            equippedShoes={avatar?.equipped_shoes || 'shoes_tan_boots'}
+            equippedBottom={avatar?.equipped_bottom || 'bottom_ripped_jeans'}
+            equippedTop={avatar?.equipped_top || 'top_dia_de_muertos'}
             equippedOuterwear={avatar?.equipped_outerwear}
-            equippedHat={avatar?.equipped_hat}
-            equippedAccessory={avatar?.equipped_accessory}
+            equippedHat={avatar?.equipped_hat || 'hat_snapback_trainer'}
+            equippedAccessory={avatar?.equipped_accessory || 'acc_red_backpack'}
             equippedArtifacts={ownedArtifactIds}
-            viewBox={customViewBox}
+            showPedestal={isFullBody}
+            zoom={isFullBody ? 'full' : 'upper'}
+            viewBox={resolvedViewBox}
             className="w-full h-full"
           />
         </div>
@@ -714,17 +721,18 @@ export default function StudentDashboard() {
 
               {/* Botón de la Tienda de Artefactos y Personalización */}
               <div className="flex flex-col sm:flex-row gap-3">
-                <Link
+                <button
                   id="rpg-avatar-edit-button"
-                  href="/student/avatar"
-                  className="relative group overflow-hidden px-6 py-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl shadow-emerald-950/20 transition-all duration-300 border border-emerald-500/35 active:scale-95 flex flex-col items-center gap-1.5 min-w-[140px]"
+                  type="button"
+                  onClick={() => setIsCustomizerOpen(true)}
+                  className="relative group overflow-hidden px-6 py-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-xl shadow-emerald-950/20 transition-all duration-300 border border-emerald-500/35 active:scale-95 flex flex-col items-center gap-1.5 min-w-[140px] cursor-pointer"
                 >
                   <span className="text-2xl">🧙‍♂️</span>
                   <span className="relative z-10 flex items-center gap-2">
                     Edita tu Avatar
                   </span>
                   <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                </Link>
+                </button>
 
                 <Link
                   id="rpg-shop-banner-button"

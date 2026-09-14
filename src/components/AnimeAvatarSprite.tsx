@@ -21,6 +21,8 @@ export interface AnimeAvatarSpriteProps {
   equippedAccessory?: string;
   animationState?: 'idle' | 'cast' | 'cheer' | 'walk';
   equippedArtifacts?: string[];
+  showPedestal?: boolean;
+  zoom?: 'full' | 'face' | 'upper';
   viewBox?: string;
   className?: string;
 }
@@ -43,6 +45,8 @@ export const AnimeAvatarSprite: React.FC<AnimeAvatarSpriteProps> = ({
   equippedAccessory,
   animationState = 'idle',
   equippedArtifacts = [],
+  showPedestal,
+  zoom,
   viewBox,
   className = "w-full h-full"
 }) => {
@@ -99,6 +103,8 @@ export const AnimeAvatarSprite: React.FC<AnimeAvatarSpriteProps> = ({
       equippedHat={resolvedHat}
       equippedAccessory={resolvedAccessory}
       animationState={animationState}
+      showPedestal={showPedestal}
+      zoom={zoom}
       viewBox={viewBox}
       className={className}
     />

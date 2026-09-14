@@ -57,6 +57,21 @@ function runTests() {
   assert(!!witchCloak, 'Existe capa de bruja con lazo');
   assert(!!witchSkirt, 'Existe falda plisada de bruja con medias');
 
+  // 5. Validar prendas icónicas de la remodelación 3D Cel-Shaded (Inspiración Pokémon GO)
+  const topDiaDeMuertos = AVATAR_CLOTHING_ITEMS.find(item => item.id === 'top_dia_de_muertos');
+  const outerwearFurDuster = AVATAR_CLOTHING_ITEMS.find(item => item.id === 'outerwear_fur_duster');
+  const bottomRippedJeans = AVATAR_CLOTHING_ITEMS.find(item => item.id === 'bottom_ripped_jeans');
+  const shoesTanBoots = AVATAR_CLOTHING_ITEMS.find(item => item.id === 'shoes_tan_boots');
+  const hatSnapbackTrainer = AVATAR_CLOTHING_ITEMS.find(item => item.id === 'hat_snapback_trainer');
+  const accRedBackpack = AVATAR_CLOTHING_ITEMS.find(item => item.id === 'acc_red_backpack');
+
+  assert(!!topDiaDeMuertos, 'Existe playera gráfica de calavera Día de Muertos');
+  assert(!!outerwearFurDuster, 'Existe abrigo largo de invierno con cuello y puños de peluche grueso');
+  assert(!!bottomRippedJeans, 'Existe jeans skinny oscuros con rasgaduras en rodillas');
+  assert(!!shoesTanBoots, 'Existe botas de gamuza/nubuck color trigo con suela de tracción');
+  assert(!!hatSnapbackTrainer, 'Existe gorra snapback negra de entrenador');
+  assert(!!accRedBackpack, 'Existe mochila de expedición con tirantes rojos');
+
   console.log(`\n=== RESUMEN DE PRUEBAS: ${passed} PASADAS, ${failed} FALLADAS ===`);
   if (failed > 0) {
     process.exit(1);
