@@ -17,12 +17,14 @@ import {
   ChevronDown, ChevronUp, RefreshCw, FileCode,
   ZoomIn, ZoomOut, Maximize2, Users, Palette,
   X, MapPin, Phone, Mail, User, AlertTriangle, Bell,
-  Bookmark, Save, Sparkles, Lock, ArrowLeft, Zap
+  Bookmark, Save, Sparkles, Lock, ArrowLeft, Zap, Search
 } from 'lucide-react';
 import { FormattedDate } from '@/components/FormattedDate';
 import dynamic from 'next/dynamic';
 import { DetailedStudent, AttendanceStatus, Attendance, ParentMessage, Quest, QuizQuestion, UserProfile } from '@/types';
 import { TeacherHubCards } from '@/components/TeacherHubCards';
+import { RowActionMenu } from '@/components/ui';
+import { useDebounce } from '@/hooks/useDebounce';
 
 // Carga diferida de pestañas y modales pesados bajo demanda
 const PlanningTab = dynamic(
@@ -248,6 +250,13 @@ export default function TeacherDashboard() {
 
   // Navegación principal del portal del profesor (Por defecto: 'hub' - Regla de los 3 Clics de Apple)
   const [currentMenuTab, setCurrentMenuTab] = useState<'hub' | 'classroom' | 'evaluation' | 'attendance' | 'tasks' | 'design' | 'planning' | 'canvas' | 'community'>('hub');
+
+  // Estados para búsqueda optimizada con debounce en tablas
+  const [attendanceSearch, setAttendanceSearch] = useState('');
+  const debouncedAttendanceSearch = useDebounce(attendanceSearch, 300);
+
+  const [taskSearch, setTaskSearch] = useState('');
+  const debouncedTaskSearch = useDebounce(taskSearch, 300);
 
   // Realtime toast notification state
   const [realtimeToast, setRealtimeToast] = useState<{ studentName: string; questTitle: string } | null>(null);
@@ -793,7 +802,7 @@ export default function TeacherDashboard() {
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
         
-        {/* VISTA 1: HUB CENTRAL (DISEÑO MINIMALISTA DE ISKOOL) */}
+        {/* VISTA 1: HUB CENTRAL (DISEÑO MINIMALISTA DE ISKOOL - SISTEMA BENTO) */}
         {currentMenuTab === 'hub' && (
           <TeacherHubCards
             teacherName={`${currentTeacher.first_name || 'Profesor(a)'} ${currentTeacher.last_name || ''}`}
@@ -802,6 +811,8 @@ export default function TeacherDashboard() {
               if (action === 'classes') setCurrentMenuTab('evaluation');
               if (action === 'studio') router.push('/teacher/studio');
               if (action === 'community') router.push('/teacher/community');
+              if (action === 'planning') setCurrentMenuTab('planning');
+              if (action === 'attendance') setCurrentMenuTab('attendance');
             }}
           />
         )}
@@ -1812,50 +1823,68 @@ export default function TeacherDashboard() {
               </div>
             </div>
 
-            {/* Tabla de Alumnos */}
-            <div className="overflow-x-auto border border-zinc-200/50 dark:border-zinc-800 rounded-2xl">
+            {/* Buscador de Alumnos con Debounce */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  value={attendanceSearch}
+                  onChange={(e) => setAttendanceSearch(e.target.value)}
+                  placeholder="Filtrar por nombre o matrícula..."
+                  className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl text-xs text-slate-800 dark:text-zinc-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                />
+              </div>
+              <div className="text-xs text-slate-500 dark:text-zinc-400 font-medium">
+                {detailedStudents.filter(s => s.group_id === selectedAttendanceGroup && (debouncedAttendanceSearch === '' || formatStudentName(s).toLowerCase().includes(debouncedAttendanceSearch.toLowerCase()))).length} alumnos en lista
+              </div>
+            </div>
+
+            {/* Tabla de Alumnos Minimalista */}
+            <div className="overflow-x-auto bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 rounded-3xl shadow-xs">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200/60 dark:border-zinc-800/80 text-[10px] text-zinc-400 font-black uppercase tracking-wider">
-                    <th className="py-3.5 px-4">Alumno</th>
-                    <th className="py-3.5 px-4 text-center">Estado de Asistencia</th>
-                    <th className="py-3.5 px-4">Observaciones / Justificaciones</th>
+                  <tr className="bg-slate-50/75 dark:bg-zinc-950/75 border-b border-slate-100 dark:border-zinc-800/80 text-[10px] text-slate-400 dark:text-zinc-400 font-bold uppercase tracking-wider">
+                    <th className="py-4 px-6">Alumno</th>
+                    <th className="py-4 px-6 text-center">Estado de Asistencia</th>
+                    <th className="py-4 px-6">Observaciones / Justificaciones</th>
+                    <th className="py-4 px-6 text-right">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200/40 dark:divide-zinc-800/50">
+                <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/50">
                   {detailedStudents
-                    .filter(s => s.group_id === selectedAttendanceGroup)
+                    .filter(s => s.group_id === selectedAttendanceGroup && (debouncedAttendanceSearch === '' || formatStudentName(s).toLowerCase().includes(debouncedAttendanceSearch.toLowerCase())))
                     .sort((a, b) => formatStudentName(a).localeCompare(formatStudentName(b)))
                     .map((student) => {
                       const record = attendanceRecords[student.id] || { status: 'presente', comments: '' };
                       return (
-                        <tr key={student.id} className="hover:bg-zinc-50/30 dark:hover:bg-zinc-900/30 transition-colors">
-                          <td className="py-3 px-4">
+                        <tr key={student.id} className="hover:bg-slate-50/70 dark:hover:bg-zinc-800/30 transition-colors">
+                          <td className="py-4 px-6">
                             <div className="flex items-center gap-3">
-                              <div className="h-8 w-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-center font-extrabold text-[10px]">
+                              <div className="h-9 w-9 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 flex items-center justify-center font-black text-xs shadow-inner">
                                 {student.first_name[0]}{student.last_name_1?.[0] || ''}
                               </div>
                               <div>
                                 <span
                                   onClick={() => setSelectedStudent(student)}
-                                  className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline cursor-pointer font-bold text-zinc-900 dark:text-white"
+                                  className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline cursor-pointer font-bold text-slate-900 dark:text-white"
                                 >
                                   {formatStudentName(student)}
                                 </span>
-                                <span className="block text-[9px] text-zinc-400 font-mono mt-0.5">{student.enrollment_id}</span>
+                                <span className="block text-[10px] text-slate-400 font-mono mt-0.5">{student.enrollment_id}</span>
                               </div>
                             </div>
                           </td>
-                          <td className="py-3 px-4">
+                          <td className="py-4 px-6">
                             <div className="flex justify-center items-center">
-                              <div className="flex bg-zinc-100 dark:bg-zinc-950 p-1 rounded-xl border border-zinc-200/40 dark:border-zinc-805/40 max-w-xs">
+                              <div className="flex bg-slate-100 dark:bg-zinc-950 p-1 rounded-2xl border border-slate-200/60 dark:border-zinc-800 max-w-xs">
                                 {(['presente', 'falta', 'retardo', 'justificado'] as const).map((st) => {
                                   const isActive = record.status === st;
                                   const colorClass = 
-                                    st === 'presente' ? 'bg-emerald-500 text-white shadow-sm' :
-                                    st === 'falta' ? 'bg-rose-500 text-white shadow-sm' :
-                                    st === 'retardo' ? 'bg-amber-500 text-white shadow-sm' :
-                                    'bg-blue-500 text-white shadow-sm';
+                                    st === 'presente' ? 'bg-emerald-500 text-white shadow-xs' :
+                                    st === 'falta' ? 'bg-rose-500 text-white shadow-xs' :
+                                    st === 'retardo' ? 'bg-amber-500 text-white shadow-xs' :
+                                    'bg-blue-500 text-white shadow-xs';
                                   
                                   return (
                                     <button
@@ -1870,8 +1899,8 @@ export default function TeacherDashboard() {
                                           }
                                         }));
                                       }}
-                                      className={`px-3 py-1.5 rounded-lg text-[9px] font-extrabold capitalize transition-all ${
-                                        isActive ? colorClass : 'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-250'
+                                      className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold capitalize transition-all cursor-pointer ${
+                                        isActive ? colorClass : 'text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200'
                                       }`}
                                     >
                                       {st}
@@ -1881,7 +1910,7 @@ export default function TeacherDashboard() {
                               </div>
                             </div>
                           </td>
-                          <td className="py-3 px-4">
+                          <td className="py-4 px-6">
                             <input
                               type="text"
                               value={record.comments || ''}
@@ -1895,17 +1924,45 @@ export default function TeacherDashboard() {
                                 }));
                               }}
                               placeholder="Observación del comportamiento o retardo..."
-                              className="w-full text-xs p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-150 focus:outline-none focus:border-blue-500"
+                              className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                            />
+                          </td>
+                          <td className="py-4 px-6 text-right">
+                            <RowActionMenu
+                              actions={[
+                                {
+                                  label: 'Ver Expediente',
+                                  icon: User,
+                                  onClick: () => setSelectedStudent(student)
+                                },
+                                {
+                                  label: 'Marcar Presente',
+                                  icon: Check,
+                                  onClick: () => setAttendanceRecords(prev => ({ ...prev, [student.id]: { ...prev[student.id], status: 'presente' } }))
+                                },
+                                {
+                                  label: 'Marcar Falta',
+                                  icon: X,
+                                  variant: 'danger',
+                                  onClick: () => setAttendanceRecords(prev => ({ ...prev, [student.id]: { ...prev[student.id], status: 'falta' } }))
+                                },
+                                {
+                                  label: 'Marcar Justificado',
+                                  icon: CheckCircle2,
+                                  variant: 'warning',
+                                  onClick: () => setAttendanceRecords(prev => ({ ...prev, [student.id]: { ...prev[student.id], status: 'justificado' } }))
+                                }
+                              ]}
                             />
                           </td>
                         </tr>
                       );
                     })
                   }
-                  {detailedStudents.filter(s => s.group_id === selectedAttendanceGroup).length === 0 && (
+                  {detailedStudents.filter(s => s.group_id === selectedAttendanceGroup && (debouncedAttendanceSearch === '' || formatStudentName(s).toLowerCase().includes(debouncedAttendanceSearch.toLowerCase()))).length === 0 && (
                     <tr>
-                      <td colSpan={3} className="py-8 text-center text-zinc-400">
-                        No hay alumnos registrados en este grupo.
+                      <td colSpan={4} className="py-12 text-center text-slate-400 dark:text-zinc-500">
+                        No se encontraron alumnos en este grupo.
                       </td>
                     </tr>
                   )}
@@ -1981,19 +2038,37 @@ export default function TeacherDashboard() {
               </div>
             </div>
 
-            {/* Listado de Alumnos y Estado de Entrega */}
-            <div className="overflow-x-auto border border-zinc-200/50 dark:border-zinc-800 rounded-2xl">
+            {/* Buscador de Alumnos en Tareas con Debounce */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  value={taskSearch}
+                  onChange={(e) => setTaskSearch(e.target.value)}
+                  placeholder="Buscar alumno en esta entrega..."
+                  className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl text-xs text-slate-800 dark:text-zinc-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                />
+              </div>
+              <div className="text-xs text-slate-500 dark:text-zinc-400 font-medium">
+                {detailedStudents.filter(s => s.group_id === selectedTaskGroup && (debouncedTaskSearch === '' || formatStudentName(s).toLowerCase().includes(debouncedTaskSearch.toLowerCase()))).length} alumnos en seguimiento
+              </div>
+            </div>
+
+            {/* Listado de Alumnos y Estado de Entrega Minimalista */}
+            <div className="overflow-x-auto bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 rounded-3xl shadow-xs">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-zinc-50 dark:bg-zinc-955 border-b border-zinc-200/60 dark:border-zinc-800/80 text-[10px] text-zinc-400 font-black uppercase tracking-wider">
-                    <th className="py-3.5 px-4">Alumno</th>
-                    <th className="py-3.5 px-4 text-center">Estado de la Tarea</th>
-                    <th className="py-3.5 px-4">Canal de Alertas a Padres</th>
+                  <tr className="bg-slate-50/75 dark:bg-zinc-950/75 border-b border-slate-100 dark:border-zinc-800/80 text-[10px] text-slate-400 dark:text-zinc-400 font-bold uppercase tracking-wider">
+                    <th className="py-4 px-6">Alumno</th>
+                    <th className="py-4 px-6 text-center">Estado de la Tarea</th>
+                    <th className="py-4 px-6">Canal de Alertas a Padres</th>
+                    <th className="py-4 px-6 text-right">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-200/40 dark:divide-zinc-800/50">
+                <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/50">
                   {detailedStudents
-                    .filter(s => s.group_id === selectedTaskGroup)
+                    .filter(s => s.group_id === selectedTaskGroup && (debouncedTaskSearch === '' || formatStudentName(s).toLowerCase().includes(debouncedTaskSearch.toLowerCase())))
                     .sort((a, b) => formatStudentName(a).localeCompare(formatStudentName(b)))
                     .map((student) => {
                       // Buscar entrega
@@ -2011,24 +2086,24 @@ export default function TeacherDashboard() {
                       );
 
                       return (
-                        <tr key={student.id} className="hover:bg-zinc-50/30 dark:hover:bg-zinc-900/30 transition-colors">
-                          <td className="py-4 px-4 align-top">
+                        <tr key={student.id} className="hover:bg-slate-50/70 dark:hover:bg-zinc-800/30 transition-colors">
+                          <td className="py-4 px-6 align-top">
                             <div className="flex items-center gap-3">
-                              <div className="h-8 w-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-center font-extrabold text-[10px]">
+                              <div className="h-9 w-9 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 flex items-center justify-center font-black text-xs shadow-inner">
                                 {student.first_name[0]}{student.last_name_1?.[0] || ''}
                               </div>
                               <div>
                                 <span
                                   onClick={() => setSelectedStudent(student)}
-                                  className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline cursor-pointer font-bold text-zinc-900 dark:text-white"
+                                  className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline cursor-pointer font-bold text-slate-900 dark:text-white"
                                 >
                                   {formatStudentName(student)}
                                 </span>
-                                <span className="block text-[9px] text-zinc-400 font-mono mt-0.5">{student.enrollment_id}</span>
+                                <span className="block text-[10px] text-slate-400 font-mono mt-0.5">{student.enrollment_id}</span>
                               </div>
                             </div>
                           </td>
-                          <td className="py-4 px-4 text-center align-top">
+                          <td className="py-4 px-6 text-center align-top">
                             {submission ? (
                               <div className="inline-flex flex-col items-center gap-1">
                                 {submission.status === 'approved' ? (
@@ -2044,7 +2119,7 @@ export default function TeacherDashboard() {
                                     <Clock className="h-3 w-3" /> Pendiente de Revisión
                                   </span>
                                 )}
-                                <span className="text-[9px] text-zinc-400">
+                                <span className="text-[10px] text-slate-400">
                                   XP: +{submission.xp_breakdown 
                                     ? Object.values(submission.xp_breakdown).reduce((sum, val) => sum + (val || 0), 0)
                                     : (missions.flatMap(m => m.quests || []).find(q => q.id === submission.quest_id)?.xp_reward || 100)
@@ -2057,7 +2132,7 @@ export default function TeacherDashboard() {
                                     setActiveTab(submission.status === 'submitted' ? 'pending' : 'reviewed');
                                     setSelectedItemId(submission.id);
                                   }}
-                                  className="mt-1.5 px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 rounded-lg text-[9px] font-extrabold flex items-center gap-1 transition-all"
+                                  className="mt-1.5 px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 rounded-xl text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer"
                                 >
                                   <FileText className="h-3 w-3" />
                                   Revisar Evidencia
@@ -2065,7 +2140,7 @@ export default function TeacherDashboard() {
                               </div>
                             ) : (
                               <div className="inline-flex flex-col items-center gap-1.5">
-                                <span className="px-2.5 py-0.5 rounded bg-red-50 dark:bg-red-955/40 text-red-600 dark:text-red-400 text-[10px] font-bold border border-red-100 dark:border-red-900/30 flex items-center gap-1 justify-center mx-auto w-max">
+                                <span className="px-2.5 py-0.5 rounded bg-rose-50 dark:bg-rose-955/40 text-rose-600 dark:text-rose-400 text-[10px] font-bold border border-rose-100 dark:border-rose-900/30 flex items-center gap-1 justify-center mx-auto w-max">
                                   <AlertCircle className="h-3 w-3" /> Sin Entregar
                                 </span>
                                 <button
@@ -2079,30 +2154,30 @@ export default function TeacherDashboard() {
                                     setMockEvidenceFileType('image');
                                     setIsLinkModalOpen(true);
                                   }}
-                                  className="mt-1 px-2.5 py-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-750 rounded-lg text-[9px] font-extrabold flex items-center gap-1 transition-all"
+                                  className="mt-1 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-750 rounded-xl text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer"
                                 >
                                   Vincular Evidencia 🔗
                                 </button>
                               </div>
                             )}
                           </td>
-                          <td className="py-4 px-4 align-top">
+                          <td className="py-4 px-6 align-top">
                             {sentAlert ? (
-                              <div className="flex flex-col gap-2 p-3 bg-zinc-55 dark:bg-zinc-950 border border-zinc-150 dark:border-zinc-800 rounded-2xl max-w-md">
-                                <div className="flex items-center justify-between text-[9px] text-zinc-400">
-                                  <span className="flex items-center gap-1 text-[9px] font-bold">
+                              <div className="flex flex-col gap-2 p-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200/80 dark:border-zinc-800 rounded-2xl max-w-md">
+                                <div className="flex items-center justify-between text-[10px] text-slate-400">
+                                  <span className="flex items-center gap-1 text-[10px] font-bold">
                                     <Bell className="h-3 w-3 text-amber-500" />
                                     Aviso Enviado
                                   </span>
-                                  <FormattedDate date={sentAlert.sent_at} className="text-[9px]" />
+                                  <FormattedDate date={sentAlert.sent_at} className="text-[10px]" />
                                 </div>
-                                <p className="text-[10.5px] text-zinc-650 dark:text-zinc-350 leading-relaxed italic">
+                                <p className="text-[11px] text-slate-600 dark:text-zinc-300 leading-relaxed italic">
                                   "{sentAlert.message}"
                                 </p>
-                                <div className="flex items-center justify-between border-t border-dashed border-zinc-200 dark:border-zinc-800 pt-1.5 mt-1">
+                                <div className="flex items-center justify-between border-t border-dashed border-slate-200 dark:border-zinc-800 pt-1.5 mt-1">
                                   <span className="flex items-center gap-1">
-                                    <span className={`h-1.5 w-1.5 rounded-full ${sentAlert.is_read ? 'bg-emerald-500' : 'bg-zinc-400'}`} />
-                                    <span className="text-[9px] text-zinc-400 font-bold">{sentAlert.is_read ? 'Leído por tutor' : 'No leído aún'}</span>
+                                    <span className={`h-1.5 w-1.5 rounded-full ${sentAlert.is_read ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                                    <span className="text-[10px] text-slate-400 font-bold">{sentAlert.is_read ? 'Leído por tutor' : 'No leído aún'}</span>
                                   </span>
                                   <button
                                     onClick={() => {
@@ -2110,16 +2185,16 @@ export default function TeacherDashboard() {
                                       setIsNotifyModalOpen(true);
                                       setNotificationTemplate('late');
                                     }}
-                                    className="text-[9px] font-black text-blue-600 dark:text-blue-400 hover:underline"
+                                    className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
                                   >
                                     Re-enviar Aviso
                                   </button>
                                 </div>
                                 {sentAlert.parent_reply && (
-                                  <div className="bg-indigo-50/20 dark:bg-indigo-950/20 border border-indigo-100/35 dark:border-indigo-900/40 p-2 rounded-xl mt-1 text-[10.5px] text-zinc-700 dark:text-zinc-300">
-                                    <strong className="text-indigo-650 dark:text-indigo-400">Tutor respondió: </strong>
+                                  <div className="bg-indigo-50/30 dark:bg-indigo-950/20 border border-indigo-100/40 dark:border-indigo-900/40 p-2 rounded-xl mt-1 text-[11px] text-slate-700 dark:text-zinc-300">
+                                    <strong className="text-indigo-600 dark:text-indigo-400">Tutor respondió: </strong>
                                     <span>"{sentAlert.parent_reply}"</span>
-                                    <span className="block text-[8px] text-zinc-400 mt-0.5">
+                                    <span className="block text-[9px] text-slate-400 mt-0.5">
                                       <FormattedDate date={sentAlert.replied_at || ''} prefix="El " />
                                     </span>
                                   </div>
@@ -2133,21 +2208,62 @@ export default function TeacherDashboard() {
                                   setIsNotifyModalOpen(true);
                                   setNotificationTemplate('late');
                                 }}
-                                className="px-4.5 py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
+                                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
                               >
                                 <Bell className="h-3.5 w-3.5" />
                                 Notificar Tutor
                               </button>
                             )}
                           </td>
+                          <td className="py-4 px-6 text-right align-top">
+                            <RowActionMenu
+                              actions={[
+                                {
+                                  label: 'Ver Expediente',
+                                  icon: User,
+                                  onClick: () => setSelectedStudent(student)
+                                },
+                                ...(submission ? [{
+                                  label: 'Revisar Evidencia',
+                                  icon: FileText,
+                                  onClick: () => {
+                                    setCurrentMenuTab('evaluation');
+                                    setActiveTab(submission.status === 'submitted' ? 'pending' : 'reviewed');
+                                    setSelectedItemId(submission.id);
+                                  }
+                                }] : [{
+                                  label: 'Vincular Evidencia',
+                                  icon: Check,
+                                  onClick: () => {
+                                    setLinkingStudent(student);
+                                    const qTitle = missions.flatMap(m => m.quests || []).find(q => q.id === selectedTaskQuest)?.title || '';
+                                    setMockEvidenceTitle(`Evidencia de ${student.first_name} - ${qTitle}`);
+                                    setMockEvidenceDesc('Trabajo o proyecto escolar presentado físicamente en el aula y evaluado conforme a los PDA.');
+                                    setMockEvidenceFileUrl(selectedTaskSubject === 'sub-sci' ? 'https://images.unsplash.com/photo-1507668077129-56e32842fceb?q=80&w=600' : 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=600');
+                                    setMockEvidenceFileType('image');
+                                    setIsLinkModalOpen(true);
+                                  }
+                                }]),
+                                {
+                                  label: 'Notificar Tutor',
+                                  icon: Bell,
+                                  onClick: () => {
+                                    setNotifyingStudent(student);
+                                    setIsNotifyModalOpen(true);
+                                    setNotificationTemplate('late');
+                                  }
+                                }
+                              ]}
+                            />
+                          </td>
                         </tr>
                       );
                     })
                   }
-                  {detailedStudents.filter(s => s.group_id === selectedTaskGroup).length === 0 && (
+                  {detailedStudents.filter(s => s.group_id === selectedTaskGroup && (debouncedTaskSearch === '' || formatStudentName(s).toLowerCase().includes(debouncedTaskSearch.toLowerCase()))).length === 0 && (
                     <tr>
-                      <td colSpan={3} className="py-8 text-center text-zinc-400">
-                        No hay alumnos registrados en este grupo.
+                      <td colSpan={4} className="py-12 text-center text-slate-400 dark:text-zinc-500">
+                        No se encontraron alumnos en esta tarea.
                       </td>
                     </tr>
                   )}

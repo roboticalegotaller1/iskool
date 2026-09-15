@@ -1,7 +1,6 @@
 "use client";
 
 import React from 'react';
-import Link from 'next/link';
 import { 
   BookOpen, 
   Sparkles, 
@@ -15,11 +14,15 @@ import {
   GraduationCap,
   Shield,
   Zap,
-  Radio
+  Radio,
+  FileSpreadsheet,
+  CheckCheck,
+  Compass
 } from 'lucide-react';
+import { BentoCard } from '@/components/ui/BentoCard';
 
-interface TeacherHubCardsProps {
-  onSelectAction: (action: 'classroom' | 'classes' | 'studio' | 'community') => void;
+export interface TeacherHubCardsProps {
+  onSelectAction: (action: 'classroom' | 'classes' | 'studio' | 'community' | 'planning' | 'attendance') => void;
   teacherName?: string;
 }
 
@@ -29,223 +32,231 @@ export const TeacherHubCards: React.FC<TeacherHubCardsProps> = ({
 }) => {
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-6 sm:py-8 sm:px-6 lg:px-8 space-y-8 sm:space-y-10 animate-fade-in">
-      {/* Saludo y Cabecera del Hub - Diseño Minimalista y Sofisticado */}
-      <div className="text-center max-w-3xl mx-auto space-y-2.5 sm:space-y-3">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/50 border border-blue-200/60 dark:border-blue-800/40 text-blue-700 dark:text-blue-300 text-xs font-semibold shadow-xs">
-          <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-          <span>Panel Docente • Acciones Clave en 1 Clic</span>
+      {/* Cabecera del Hub - Diseño Minimalista B2B */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-slate-200/60 dark:border-zinc-800/60">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/50 border border-blue-200/60 dark:border-blue-800/40 text-blue-700 dark:text-blue-300 text-xs font-semibold shadow-xs">
+            <Sparkles className="w-3.5 h-3.5 text-blue-500" />
+            <span>Sistema Bento • Centro de Mando Docente</span>
+          </div>
+          
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+            ¡Hola, <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-500 bg-clip-text text-transparent">{teacherName}</span>!
+          </h1>
+          
+          <p className="text-xs sm:text-sm font-normal text-slate-600 dark:text-zinc-400 max-w-xl leading-relaxed">
+            Navegación asimétrica optimizada para reducir clics y maximizar la productividad pedagógica diaria.
+          </p>
         </div>
-        
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white tracking-tight leading-snug">
-          ¡Hola, <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-blue-500 bg-clip-text text-transparent">{teacherName}</span>!
-        </h1>
-        
-        <p className="text-sm sm:text-base font-normal text-slate-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-          Bienvenido a tu espacio docente. Diseñado para trabajar sin fricción cognitiva: selecciona un módulo para iniciar tu sesión.
-        </p>
+
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-zinc-400 bg-white dark:bg-zinc-900 px-4 py-2 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-xs shrink-0">
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Periodo Escolar Activo • Ciclo 2026-2027</span>
+        </div>
       </div>
 
-      {/* Grid de las 4 Tarjetas de Módulo */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 pt-2">
+      {/* Cuadrícula Asimétrica: SISTEMA BENTO */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 auto-rows-[minmax(180px,auto)]">
         
-        {/* TARJETA 1: AULA DIGITAL & GREMIO (ÍNDIGO & LLAMA NARANJA) */}
-        <div 
-          onClick={() => onSelectAction('classroom')}
-          className="group relative bg-white dark:bg-zinc-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-zinc-800/80 rounded-3xl p-5 sm:p-6 shadow-xs hover:shadow-xl hover:border-indigo-400/50 transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 cursor-pointer flex flex-col justify-between overflow-hidden"
-        >
-          <div className="absolute -top-12 -right-12 w-28 h-28 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-all" />
-
-          <div className="space-y-4 relative z-10">
-            <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-                <Shield className="w-6 h-6" />
-              </div>
-              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60">
-                ⚡ En Vivo
-              </span>
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                Convivencia & Dinámicas
-              </div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                🏛️ Aula Digital & Gremio
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed line-clamp-3">
-                Edictos del aula, termómetro socioemocional, modo proyector en vivo y ruleta del héroe.
-              </p>
-            </div>
-
-            <ul className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-zinc-800/60 text-xs">
-              <li className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-zinc-400">
-                <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                <span>Proyector y Ruleta</span>
-              </li>
-              <li className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-zinc-400">
-                <Radio className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                <span>Termómetro Socioemocional</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="pt-4 mt-4 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between text-indigo-600 dark:text-indigo-400 font-semibold text-xs group-hover:translate-x-0.5 transition-transform relative z-10">
-            <span>Entrar al Aula</span>
-            <div className="w-7 h-7 rounded-full bg-indigo-50 dark:bg-indigo-950 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
-              <ArrowRight className="w-3.5 h-3.5" />
-            </div>
-          </div>
-        </div>
-
-        {/* TARJETA 2: MIS CLASES & EVALUACIÓN (AZUL ZAFIRO & CIAN ACADÉMICO) */}
-        <div 
-          onClick={() => onSelectAction('classes')}
-          className="group relative bg-white dark:bg-zinc-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-zinc-800/80 rounded-3xl p-5 sm:p-6 shadow-xs hover:shadow-xl hover:border-blue-400/50 transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 cursor-pointer flex flex-col justify-between overflow-hidden"
-        >
-          <div className="absolute -top-12 -right-12 w-28 h-28 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all" />
-
-          <div className="space-y-4 relative z-10">
-            <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
-                <BookOpen className="w-6 h-6" />
-              </div>
-              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60">
-                📋 Gestión Oficial
-              </span>
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-xs font-semibold text-blue-600 dark:text-blue-400">
-                Estructura & Seguimiento
-              </div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                📚 Mis Clases & Evaluación
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed line-clamp-3">
-                Gestiona la asistencia diaria, portafolio de evidencias y asigna calificaciones formativas NEM.
-              </p>
-            </div>
-
-            <ul className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-zinc-800/60 text-xs">
-              <li className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-zinc-400">
-                <CheckCircle2 className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                <span>Portafolio de evidencias</span>
-              </li>
-              <li className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-zinc-400">
-                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
-                <span>Control de asistencia rápido</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="pt-4 mt-4 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between text-blue-600 dark:text-blue-400 font-semibold text-xs group-hover:translate-x-0.5 transition-transform relative z-10">
-            <span>Entrar a Mis Clases</span>
-            <div className="w-7 h-7 rounded-full bg-blue-50 dark:bg-blue-950 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all">
-              <ArrowRight className="w-3.5 h-3.5" />
-            </div>
-          </div>
-        </div>
-
-        {/* TARJETA 3: CREAR ACTIVIDAD (HERO CARD - ESMERALDA & TURQUESA) */}
-        <Link 
-          href="/teacher/studio"
+        {/* CARD HERO 1: ESTUDIO ISKOOL (Creación con Inteligencia Artificial Pedagógica) */}
+        {/* Ocupa 2 columnas y 2 filas para dominio visual */}
+        <BentoCard
+          colSpan="col-span-1 md:col-span-2 lg:col-span-2"
+          rowSpan="row-span-1 md:row-span-2"
+          className="bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white border-indigo-500/30 shadow-xl shadow-indigo-950/20 flex flex-col justify-between"
           onClick={() => onSelectAction('studio')}
-          className="group relative bg-gradient-to-br from-slate-900 via-blue-950 to-emerald-950 text-white rounded-3xl p-5 sm:p-6 shadow-lg shadow-emerald-950/40 hover:shadow-2xl hover:shadow-emerald-500/20 border border-emerald-500/40 hover:border-teal-400/60 transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 cursor-pointer flex flex-col justify-between overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 bg-emerald-400/15 rounded-full blur-2xl group-hover:scale-125 transition-transform" />
-          
-          <div className="space-y-4 relative z-10">
-            <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 backdrop-blur-md border border-emerald-400/30 flex items-center justify-center text-white shadow-inner group-hover:scale-105 transition-transform">
-                <Palette className="w-6 h-6 text-teal-300" />
-              </div>
-              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-amber-400" />
-                <span>Creación Pedagógica</span>
+          icon={
+            <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 backdrop-blur-md border border-indigo-400/40 flex items-center justify-center text-white shadow-inner">
+              <Palette className="w-6 h-6 text-teal-300" />
+            </div>
+          }
+          badge={
+            <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center gap-1.5 shadow-xs">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Motor de IA Pedagógica</span>
+            </span>
+          }
+          subtitle="Creación & Gamificación Curricular"
+          title={<span className="text-xl sm:text-2xl font-black text-white">🎨 Estudio ISkool</span>}
+          footer={
+            <div className="flex items-center justify-between text-teal-300 font-bold text-xs pt-2">
+              <span className="flex items-center gap-1.5">
+                <span>Abrir Estudio Interactivo</span>
+                <span className="text-[10px] text-slate-400 font-normal">(Trilingüe ES/EN/FR)</span>
               </span>
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-xs font-semibold text-teal-300">
-                Estudio Interactivo
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-teal-400 to-emerald-400 text-slate-950 flex items-center justify-center shadow-md shadow-emerald-500/30 group-hover:translate-x-1 transition-transform">
+                <ArrowRight className="w-4 h-4 font-black" />
               </div>
-              <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
-                🎨 Crear Actividad
-              </h2>
-              <p className="text-xs text-slate-300 leading-relaxed line-clamp-3">
-                Diseña experiencias interactivas y retos gamificados alineados al currículo oficial.
-              </p>
             </div>
-
-            <ul className="space-y-1.5 pt-2 border-t border-slate-700/60 text-xs">
-              <li className="flex items-center gap-1.5 font-medium text-slate-200">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <span>40+ Retos y Dinámicas</span>
-              </li>
-              <li className="flex items-center gap-1.5 font-medium text-slate-200">
-                <BrainCircuit className="w-3.5 h-3.5 text-teal-400 shrink-0" />
-                <span>Alineación oficial con PDAs</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="pt-4 mt-4 border-t border-slate-700/60 flex items-center justify-between text-amber-300 font-semibold text-xs group-hover:translate-x-0.5 transition-transform relative z-10">
-            <span>Abrir Estudio ISkool</span>
-            <div className="w-7 h-7 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 flex items-center justify-center group-hover:scale-105 transition-all shadow-md shadow-amber-500/30">
-              <ArrowRight className="w-3.5 h-3.5 font-bold" />
-            </div>
-          </div>
-        </Link>
-
-        {/* TARJETA 4: COMUNIDAD DOCENTE (VERDE ESMERALDA & MENTA) */}
-        <Link 
-          href="/teacher/community"
-          onClick={() => onSelectAction('community')}
-          className="group relative bg-white dark:bg-zinc-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-zinc-800/80 rounded-3xl p-5 sm:p-6 shadow-xs hover:shadow-xl hover:border-emerald-400/50 transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5 cursor-pointer flex flex-col justify-between overflow-hidden"
+          }
         >
-          <div className="absolute -top-12 -right-12 w-28 h-28 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all" />
+          <div className="space-y-4 pt-1">
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Genera retos gamificados, evaluaciones formativas y secuencias didácticas alineadas con precisión a los PDAs oficiales de la SEP y NEM 2024.
+            </p>
 
-          <div className="space-y-4 relative z-10">
-            <div className="flex items-center justify-between">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
-                <Globe className="w-6 h-6" />
+            <div className="grid grid-cols-2 gap-2.5 pt-2">
+              <div className="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs">
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Catálogo</div>
+                <div className="text-sm font-bold text-white mt-0.5">40+ Retos y Dinámicas</div>
               </div>
-              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60">
-                🌱 Red Colaborativa
-              </span>
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                Crecimiento & Prácticas
+              <div className="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs">
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Currículo</div>
+                <div className="text-sm font-bold text-teal-300 mt-0.5">NEM SEP Certificado</div>
               </div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                🌍 Comunidad Docente
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed line-clamp-3">
-                Explora actividades creadas por otros profesores, vota por tus favoritas y clónalas a tu aula.
-              </p>
             </div>
-
-            <ul className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-zinc-800/60 text-xs">
-              <li className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-zinc-400">
-                <HeartHandshake className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                <span>Votación comunitaria</span>
-              </li>
-              <li className="flex items-center gap-1.5 font-medium text-slate-600 dark:text-zinc-400">
-                <CheckCircle2 className="w-3.5 h-3.5 text-teal-500 shrink-0" />
-                <span>Clona plantillas listas para usar</span>
-              </li>
-            </ul>
           </div>
+        </BentoCard>
 
-          <div className="pt-4 mt-4 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between text-emerald-600 dark:text-emerald-400 font-semibold text-xs group-hover:translate-x-0.5 transition-transform relative z-10">
-            <span>Explorar Comunidad</span>
-            <div className="w-7 h-7 rounded-full bg-emerald-50 dark:bg-emerald-950 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all">
+        {/* CARD 2: MIS CLASES & EVALUACIÓN */}
+        {/* Ocupa 2 columnas en pantallas medianas/grandes */}
+        <BentoCard
+          colSpan="col-span-1 md:col-span-2 lg:col-span-2"
+          onClick={() => onSelectAction('classes')}
+          className="border-slate-200/80 dark:border-zinc-800/80"
+          icon={
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+              <BookOpen className="w-6 h-6" />
+            </div>
+          }
+          badge={
+            <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60">
+              📋 Gestión Oficial
+            </span>
+          }
+          subtitle="Seguimiento Formativo & Evidencias"
+          title="📚 Mis Clases & Evaluación"
+          footer={
+            <div className="flex items-center justify-between text-blue-600 dark:text-blue-400 font-bold text-xs">
+              <span>Entrar al Portafolio y Calificaciones</span>
+              <div className="w-7 h-7 rounded-full bg-blue-50 dark:bg-blue-950 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all">
+                <ArrowRight className="w-3.5 h-3.5" />
+              </div>
+            </div>
+          }
+        >
+          <div className="space-y-3 pt-1">
+            <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
+              Supervisa alumnos por grupo, revisa evidencias entregadas y asigna retroalimentación con rúbricas analíticas de evaluación formativa.
+            </p>
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-zinc-300">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+              <span>Portafolio de Evidencias y Rúbricas NEM</span>
+            </div>
+          </div>
+        </BentoCard>
+
+        {/* CARD 3: AULA DIGITAL & GREMIO */}
+        <BentoCard
+          colSpan="col-span-1 md:col-span-1 lg:col-span-1"
+          onClick={() => onSelectAction('classroom')}
+          icon={
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+              <Shield className="w-5 h-5" />
+            </div>
+          }
+          badge={
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60">
+              ⚡ En Vivo
+            </span>
+          }
+          subtitle="Convivencia"
+          title="🏛️ Aula Digital"
+          footer={
+            <div className="flex items-center justify-between text-indigo-600 dark:text-indigo-400 font-bold text-xs">
+              <span>Modo Proyector</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </div>
-          </div>
-        </Link>
+          }
+        >
+          <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
+            Edictos de clase, ruleta de participación y termómetro socioemocional interactivo.
+          </p>
+        </BentoCard>
+
+        {/* CARD 4: COMUNIDAD DOCENTE */}
+        <BentoCard
+          colSpan="col-span-1 md:col-span-1 lg:col-span-1"
+          onClick={() => onSelectAction('community')}
+          icon={
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+              <Globe className="w-5 h-5" />
+            </div>
+          }
+          badge={
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60">
+              🌱 Red Global
+            </span>
+          }
+          subtitle="Colaboración"
+          title="🌍 Comunidad"
+          footer={
+            <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400 font-bold text-xs">
+              <span>Clonar Plantillas</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          }
+        >
+          <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
+            Explora actividades creadas por otros profesores, vota y clónalas directamente a tus materias.
+          </p>
+        </BentoCard>
+
+        {/* CARD 5: PLANEACIÓN CURRICULAR NEM */}
+        <BentoCard
+          colSpan="col-span-1 md:col-span-1 lg:col-span-1"
+          onClick={() => onSelectAction('planning')}
+          icon={
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-600 to-violet-600 flex items-center justify-center text-white shadow-md shadow-purple-500/20">
+              <Compass className="w-5 h-5" />
+            </div>
+          }
+          badge={
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/60">
+              📖 Bóveda Curricular
+            </span>
+          }
+          subtitle="Secuencias Didácticas"
+          title="📑 Planeación NEM"
+          footer={
+            <div className="flex items-center justify-between text-purple-600 dark:text-purple-400 font-bold text-xs">
+              <span>Abrir Planeador</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          }
+        >
+          <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
+            Consulta inmediata desde la Bóveda Central con fallback pedagógico de Inteligencia Artificial.
+          </p>
+        </BentoCard>
+
+        {/* CARD 6: CONTROL DE ASISTENCIA DIARIA */}
+        <BentoCard
+          colSpan="col-span-1 md:col-span-1 lg:col-span-1"
+          onClick={() => onSelectAction('attendance')}
+          icon={
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-sky-600 to-blue-500 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
+              <CheckCheck className="w-5 h-5" />
+            </div>
+          }
+          badge={
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-sky-50 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 border border-sky-200/60 dark:border-sky-800/60">
+              ⏱️ 1 Clic
+            </span>
+          }
+          subtitle="Pase de Lista"
+          title="📋 Asistencia Diaria"
+          footer={
+            <div className="flex items-center justify-between text-sky-600 dark:text-sky-400 font-bold text-xs">
+              <span>Tomar Lista</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          }
+        >
+          <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
+            Registro ágil por grupo: presente, falta, retardo y justificación con sincronización institucional.
+          </p>
+        </BentoCard>
 
       </div>
     </div>

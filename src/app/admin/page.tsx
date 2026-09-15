@@ -79,6 +79,8 @@ import ExecutiveAnalyticsStudio from '@/components/admin/ExecutiveAnalyticsStudi
 import { SuperUserCompendiumStudio } from '@/components/books/SuperUserCompendiumStudio';
 import { SchoolStatusSlider } from '@/components/admin/SchoolStatusSlider';
 import { useSchoolBooksStore } from '@/store/useSchoolBooksStore';
+import { RowActionMenu } from '@/components/ui';
+import { useDebounce } from '@/hooks/useDebounce';
 
 type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll' | 'analytics' | 'deletions' | 'books_compendium';
 
@@ -234,17 +236,22 @@ export default function SuperUserAdminPage() {
     }
   };
 
-  // Filtros de búsqueda
+  // Filtros de búsqueda optimizados con Debounce
   const [studentSearch, setStudentSearch] = useState('');
+  const debouncedStudentSearch = useDebounce(studentSearch, 300);
+
   const [studentGradeFilter, setStudentGradeFilter] = useState('all');
   const [studentStatusFilter, setStudentStatusFilter] = useState('all');
   
   const [teacherSearch, setTeacherSearch] = useState('');
+  const debouncedTeacherSearch = useDebounce(teacherSearch, 300);
 
   // Estados de Auditoría de Bajas para Super Usuario
   const studentDeletionAuditLogs = useSchoolAdminStore(state => state.studentDeletionAuditLogs) || [];
   const deleteStudent = useSchoolAdminStore(state => state.deleteStudent);
   const [deletionSearchTerm, setDeletionSearchTerm] = useState('');
+  const debouncedDeletionSearch = useDebounce(deletionSearchTerm, 300);
+
   const [studentToDeleteAdmin, setStudentToDeleteAdmin] = useState<DetailedStudent | null>(null);
   const [adminDeleteReason, setAdminDeleteReason] = useState('Baja administrativa directa por Super Usuario');
 
@@ -253,8 +260,8 @@ export default function SuperUserAdminPage() {
   }, [studentDeletionAuditLogs, isSuperUser, effectiveSchoolId]);
 
   const filteredDeletionLogs = useMemo(() => {
-    if (!deletionSearchTerm.trim()) return schoolDeletionLogs;
-    const q = deletionSearchTerm.toLowerCase();
+    if (!debouncedDeletionSearch.trim()) return schoolDeletionLogs;
+    const q = debouncedDeletionSearch.toLowerCase();
     return schoolDeletionLogs.filter(l => 
       l.student_name.toLowerCase().includes(q) ||
       (l.curp && l.curp.toLowerCase().includes(q)) ||
@@ -263,7 +270,7 @@ export default function SuperUserAdminPage() {
       (l.deleted_by_name && l.deleted_by_name.toLowerCase().includes(q)) ||
       (l.school_name && l.school_name.toLowerCase().includes(q))
     );
-  }, [schoolDeletionLogs, deletionSearchTerm]);
+  }, [schoolDeletionLogs, debouncedDeletionSearch]);
   
   // Modales
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
@@ -361,6 +368,8 @@ export default function SuperUserAdminPage() {
   // Estados para Personal Administrativo (Directores, Coordinadores, Cobranza)
   const [staffRoleFilter, setStaffRoleFilter] = useState<'all' | 'director' | 'coordinator' | 'billing'>('all');
   const [staffSearchQuery, setStaffSearchQuery] = useState('');
+  const debouncedStaffSearch = useDebounce(staffSearchQuery, 300);
+
   const [showAddStaffModal, setShowAddStaffModal] = useState(false);
   const [copiedStaffPasswordId, setCopiedStaffPasswordId] = useState<string | null>(null);
   const [newStaffForm, setNewStaffForm] = useState({
@@ -376,6 +385,7 @@ export default function SuperUserAdminPage() {
 
   // Estados para Finanzas & Nóminas del Personal (Portal del Dueño)
   const [payrollSearchTerm, setPayrollSearchTerm] = useState('');
+  const debouncedPayrollSearch = useDebounce(payrollSearchTerm, 300);
   const [payrollDepartmentFilter, setPayrollDepartmentFilter] = useState('all');
   const [payrollStatusFilter, setPayrollStatusFilter] = useState('all');
   const [selectedPayrollRecordForStub, setSelectedPayrollRecordForStub] = useState<StaffPayrollRecord | null>(null);
@@ -682,7 +692,7 @@ export default function SuperUserAdminPage() {
   const filteredStaffList = useMemo(() => {
     return schoolStaff.filter(s => {
       const matchRole = staffRoleFilter === 'all' || s.role === staffRoleFilter;
-      const q = staffSearchQuery.toLowerCase().trim();
+      const q = debouncedStaffSearch.toLowerCase().trim();
       const matchQuery = !q ||
         s.first_name.toLowerCase().includes(q) ||
         s.last_name.toLowerCase().includes(q) ||
@@ -691,7 +701,7 @@ export default function SuperUserAdminPage() {
         (s.campus_name && s.campus_name.toLowerCase().includes(q));
       return matchRole && matchQuery;
     });
-  }, [schoolStaff, staffRoleFilter, staffSearchQuery]);
+  }, [schoolStaff, staffRoleFilter, debouncedStaffSearch]);
 
   // Nómina y Finanzas del Colegio (Supervisión del Dueño)
   const schoolPayroll = useMemo(() => {
@@ -710,7 +720,7 @@ export default function SuperUserAdminPage() {
         (payrollDepartmentFilter === 'directivos' && (p.role === 'director' || p.role === 'coordinator')) ||
         (payrollDepartmentFilter === 'cobranza' && p.role === 'billing');
       const matchStatus = payrollStatusFilter === 'all' || p.status === payrollStatusFilter;
-      const q = payrollSearchTerm.toLowerCase().trim();
+      const q = debouncedPayrollSearch.toLowerCase().trim();
       const matchQuery = !q ||
         p.employee_name.toLowerCase().includes(q) ||
         p.position_title.toLowerCase().includes(q) ||
@@ -720,7 +730,7 @@ export default function SuperUserAdminPage() {
         (p.receipt_folio && p.receipt_folio.toLowerCase().includes(q));
       return matchDept && matchStatus && matchQuery;
     });
-  }, [schoolPayroll, payrollDepartmentFilter, payrollStatusFilter, payrollSearchTerm]);
+  }, [schoolPayroll, payrollDepartmentFilter, payrollStatusFilter, debouncedPayrollSearch]);
 
   const payrollMetrics = useMemo(() => {
     const totalPayroll = schoolPayroll.reduce((sum, p) => sum + p.net_salary, 0);
@@ -875,13 +885,13 @@ export default function SuperUserAdminPage() {
     });
   };
 
-  // Filtrado de Alumnos (dentro del colegio activo)
+  // Filtrado de Alumnos (dentro del colegio activo) con búsqueda optimizada por debounce
   const filteredStudents = useMemo(() => {
     return schoolStudents.filter(s => {
       const fullName = `${s.first_name} ${s.second_name || ''} ${s.last_name_1} ${s.last_name_2 || ''}`.toLowerCase();
-      const matchesSearch = fullName.includes(studentSearch.toLowerCase()) || 
-        (s.curp && s.curp.toLowerCase().includes(studentSearch.toLowerCase())) ||
-        (s.email && s.email.toLowerCase().includes(studentSearch.toLowerCase()));
+      const matchesSearch = fullName.includes(debouncedStudentSearch.toLowerCase()) || 
+        (s.curp && s.curp.toLowerCase().includes(debouncedStudentSearch.toLowerCase())) ||
+        (s.email && s.email.toLowerCase().includes(debouncedStudentSearch.toLowerCase()));
 
       const matchesCampus = selectedCampus === 'all' || s.campus_name?.toLowerCase() === selectedCampus.toLowerCase();
       const matchesGrade = studentGradeFilter === 'all' || s.grade === studentGradeFilter;
@@ -890,21 +900,21 @@ export default function SuperUserAdminPage() {
 
       return matchesSearch && matchesCampus && matchesGrade && matchesStatus;
     });
-  }, [schoolStudents, studentSearch, selectedCampus, studentGradeFilter, studentStatusFilter]);
+  }, [schoolStudents, debouncedStudentSearch, selectedCampus, studentGradeFilter, studentStatusFilter]);
 
-  // Filtrado de Profesores (dentro del colegio activo)
+  // Filtrado de Profesores (dentro del colegio activo) con búsqueda optimizada por debounce
   const filteredTeachers = useMemo(() => {
     return schoolTeachers.filter(t => {
       const fullName = `${t.first_name} ${t.last_name}`.toLowerCase();
-      const matchesSearch = fullName.includes(teacherSearch.toLowerCase()) || 
-        (t.email && t.email.toLowerCase().includes(teacherSearch.toLowerCase()));
+      const matchesSearch = fullName.includes(debouncedTeacherSearch.toLowerCase()) || 
+        (t.email && t.email.toLowerCase().includes(debouncedTeacherSearch.toLowerCase()));
       const matchesCampus = selectedCampus === 'all' || 
         t.campus_name?.toLowerCase() === selectedCampus.toLowerCase() || 
         t.campus_name === 'Todos los Planteles';
 
       return matchesSearch && matchesCampus;
     });
-  }, [schoolTeachers, teacherSearch, selectedCampus]);
+  }, [schoolTeachers, debouncedTeacherSearch, selectedCampus]);
 
   // Manejo de Creación de Alumno Individual
   const handleCreateStudent = (e: React.FormEvent) => {
@@ -2551,39 +2561,31 @@ export default function SuperUserAdminPage() {
                               </span>
                             )}
                           </td>
-                          <td className="p-4 text-right">
-                            <div className="flex items-center justify-end gap-1.5">
-                              {/* Botón Cambiar Contraseña */}
-                              <button
-                                onClick={() => setShowPasswordModal({
-                                  isOpen: true,
-                                  userId: teacher.id,
-                                  userName: `${teacher.first_name} ${teacher.last_name}`,
-                                  role: 'teacher',
-                                  currentPassword: teacher.temporary_password || 'Isr9X2'
-                                })}
-                                title="Cambiar Contraseña Directa"
-                                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 border border-white/10 transition-all cursor-pointer"
-                              >
-                                <KeyRound className="h-4 w-4" />
-                              </button>
-
-                              {/* Botón Bloqueo Inmediato */}
-                              <button
-                                onClick={() => {
-                                  toggleUserBlock(teacher.id, 'teacher', !isBlocked);
-                                  showToast(isBlocked ? `Profesor ${teacher.first_name} desbloqueado.` : `Profesor ${teacher.first_name} bloqueado.`);
-                                }}
-                                title={isBlocked ? "Desbloquear Cuenta" : "Bloquear / Cancelar Cuenta"}
-                                className={`p-2 rounded-xl border transition-all cursor-pointer ${
-                                  isBlocked 
-                                    ? 'bg-emerald-600/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-600/30' 
-                                    : 'bg-red-600/20 text-red-400 border-red-500/30 hover:bg-red-600/30'
-                                }`}
-                              >
-                                {isBlocked ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
-                              </button>
-                            </div>
+                          <td className="p-5 text-right">
+                            <RowActionMenu
+                              actions={[
+                                {
+                                  label: 'Cambiar Contraseña',
+                                  icon: KeyRound,
+                                  onClick: () => setShowPasswordModal({
+                                    isOpen: true,
+                                    userId: teacher.id,
+                                    userName: `${teacher.first_name} ${teacher.last_name}`,
+                                    role: 'teacher',
+                                    currentPassword: teacher.temporary_password || 'Isr9X2'
+                                  })
+                                },
+                                {
+                                  label: isBlocked ? 'Desbloquear Docente' : 'Bloquear Cuenta',
+                                  icon: isBlocked ? Unlock : Lock,
+                                  variant: isBlocked ? 'default' : 'warning',
+                                  onClick: () => {
+                                    toggleUserBlock(teacher.id, 'teacher', !isBlocked);
+                                    showToast(isBlocked ? `Profesor ${teacher.first_name} desbloqueado.` : `Profesor ${teacher.first_name} bloqueado.`);
+                                  }
+                                }
+                              ]}
+                            />
                           </td>
                         </tr>
                       );
@@ -2728,48 +2730,37 @@ export default function SuperUserAdminPage() {
                               </span>
                             )}
                           </td>
-                          <td className="p-4 text-right">
-                            <div className="flex items-center justify-end gap-1.5">
-                              {/* Botón Cambiar Contraseña */}
-                              <button
-                                onClick={() => setShowPasswordModal({
-                                  isOpen: true,
-                                  userId: student.id,
-                                  userName: `${student.first_name} ${student.last_name_1}`,
-                                  role: 'student',
-                                  currentPassword: tempPass
-                                })}
-                                title="Cambiar Contraseña Directa"
-                                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 border border-white/10 transition-all cursor-pointer"
-                              >
-                                <KeyRound className="h-4 w-4" />
-                              </button>
-
-                              {/* Botón Bloqueo Inmediato */}
-                              <button
-                                onClick={() => {
-                                  toggleUserBlock(student.id, 'student', !isBlocked);
-                                  showToast(isBlocked ? `Alumno ${student.first_name} desbloqueado.` : `Alumno ${student.first_name} bloqueado.`);
-                                }}
-                                title={isBlocked ? "Desbloquear Cuenta" : "Bloquear / Cancelar Cuenta"}
-                                className={`p-2 rounded-xl border transition-all cursor-pointer ${
-                                  isBlocked 
-                                    ? 'bg-emerald-600/20 text-emerald-400 border-emerald-500/30 hover:bg-emerald-600/30' 
-                                    : 'bg-red-600/20 text-red-400 border-red-500/30 hover:bg-red-600/30'
-                                }`}
-                              >
-                                {isBlocked ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
-                              </button>
-
-                              {/* Botón Eliminar Alumno (Acción Directiva / Super Usuario) */}
-                              <button
-                                onClick={() => setStudentToDeleteAdmin(student)}
-                                title="Dar de Baja Definitiva / Retirar de Sistema (Con Auditoría)"
-                                className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-all cursor-pointer"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
+                          <td className="p-5 text-right">
+                            <RowActionMenu
+                              actions={[
+                                {
+                                  label: 'Cambiar Contraseña',
+                                  icon: KeyRound,
+                                  onClick: () => setShowPasswordModal({
+                                    isOpen: true,
+                                    userId: student.id,
+                                    userName: `${student.first_name} ${student.last_name_1}`,
+                                    role: 'student',
+                                    currentPassword: tempPass
+                                  })
+                                },
+                                {
+                                  label: isBlocked ? 'Desbloquear Cuenta' : 'Bloquear Cuenta',
+                                  icon: isBlocked ? Unlock : Lock,
+                                  variant: isBlocked ? 'default' : 'warning',
+                                  onClick: () => {
+                                    toggleUserBlock(student.id, 'student', !isBlocked);
+                                    showToast(isBlocked ? `Alumno ${student.first_name} desbloqueado.` : `Alumno ${student.first_name} bloqueado.`);
+                                  }
+                                },
+                                {
+                                  label: 'Dar de Baja / Retirar',
+                                  icon: Trash2,
+                                  variant: 'danger',
+                                  onClick: () => setStudentToDeleteAdmin(student)
+                                }
+                              ]}
+                            />
                           </td>
                         </tr>
                       );
