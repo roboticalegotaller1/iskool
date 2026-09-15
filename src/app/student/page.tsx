@@ -257,7 +257,7 @@ export default function StudentDashboard() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(6,182,212,0.15)_0%,rgba(236,72,153,0.1)_50%,transparent_80%)] pointer-events-none" />
 
         {/* Sprite del Avatar con Contorno Neón Pegado a su Silueta */}
-        <div className="w-full h-full p-1 relative z-10 neon-hero-contour flex items-center justify-center">
+        <div className="w-full h-full p-1 relative z-10 flex items-center justify-center">
           <AnimeAvatarSprite 
             gender={(avatar as any)?.gender ?? 'female'}
             rpgClass={(avatar as any)?.rpg_class ?? avatar?.outfit_style ?? 'mago'}

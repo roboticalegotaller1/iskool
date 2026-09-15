@@ -650,7 +650,7 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
                     {/* Sprite del Avatar con Contorno Neón Pegado a su Silueta (3x tamaño = 186px de alto) */}
                     <div 
                       style={{ width: avatarMapWidth, height: avatarMapHeight }} 
-                      className="relative shrink-0 neon-hero-contour"
+                      className="relative shrink-0"
                     >
                       <ModularAnimeAvatarSprite
                         gender={(avatar as any)?.gender ?? 'female'}

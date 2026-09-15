@@ -279,113 +279,141 @@ export const RaceFeaturePreviewSvg: React.FC<{ featureId: string; skinColor?: st
   return (
     <svg viewBox="0 0 52 52" className="w-full h-full">
       {/* Silueta de Cabeza Base */}
-      <circle cx="26" cy="30" r="14" fill={skinColor} opacity="0.8" />
+      <circle cx="26" cy="30" r="14" fill={skinColor} opacity="0.85" />
       
       {featureId === 'human' && (
         <g>
-          <ellipse cx="12" cy="30" rx="3.5" ry="5" fill={skinColor} stroke="#000000" strokeWidth="0.5" strokeOpacity="0.2" />
-          <ellipse cx="40" cy="30" rx="3.5" ry="5" fill={skinColor} stroke="#000000" strokeWidth="0.5" strokeOpacity="0.2" />
+          <ellipse cx="12" cy="30" rx="3" ry="4.5" fill={skinColor} stroke="#000000" strokeWidth="0.8" strokeOpacity="0.25" />
+          <ellipse cx="40" cy="30" rx="3" ry="4.5" fill={skinColor} stroke="#000000" strokeWidth="0.8" strokeOpacity="0.25" />
         </g>
       )}
 
-      {(featureId === 'elf_long' || featureId === 'elf_short') && (
+      {featureId === 'elf_long' && (
         <g>
-          <polygon points="13,31 2,18 14,24" fill={skinColor} stroke="#000000" strokeWidth="0.8" strokeOpacity="0.25" />
-          <polygon points="39,31 50,18 38,24" fill={skinColor} stroke="#000000" strokeWidth="0.8" strokeOpacity="0.25" />
+          <path d="M 14,31 C 10,26 4,20 1,17 C 2,21 8,28 13,34 Z" fill={skinColor} stroke="#0F172A" strokeWidth="0.8" />
+          <circle cx="7" cy="23" r="1" fill="#FACC15" />
+          <path d="M 38,31 C 42,26 48,20 51,17 C 50,21 44,28 39,34 Z" fill={skinColor} stroke="#0F172A" strokeWidth="0.8" />
+          <circle cx="45" cy="23" r="1" fill="#FACC15" />
+        </g>
+      )}
+
+      {featureId === 'elf_short' && (
+        <g>
+          <path d="M 14,30 C 11,26 6,22 4,20 C 5,23 9,28 13,32 Z" fill={skinColor} stroke="#0F172A" strokeWidth="0.8" />
+          <circle cx="8" cy="24" r="0.9" fill="#FACC15" />
+          <path d="M 38,30 C 41,26 46,22 48,20 C 47,23 43,28 39,32 Z" fill={skinColor} stroke="#0F172A" strokeWidth="0.8" />
+          <circle cx="44" cy="24" r="0.9" fill="#FACC15" />
         </g>
       )}
 
       {featureId === 'cat_ears' && (
         <g>
-          <polygon points="14,22 8,6 22,16" fill={hairColor} />
-          <polygon points="14,20 11,9 20,17" fill="#F472B6" />
-          <polygon points="38,22 44,6 30,16" fill={hairColor} />
-          <polygon points="38,20 41,9 32,17" fill="#F472B6" />
+          <path d="M 14,20 C 12,14 8,8 6,6 C 9,8 16,14 18,19 Z" fill={hairColor} stroke="#0F172A" strokeWidth="0.8" />
+          <path d="M 13,17 C 11,13 8,9 8,8 C 10,10 15,14 16,17 Z" fill="#FB7185" />
+          <path d="M 38,20 C 40,14 44,8 46,6 C 43,8 36,14 34,19 Z" fill={hairColor} stroke="#0F172A" strokeWidth="0.8" />
+          <path d="M 39,17 C 41,13 44,9 44,8 C 42,10 37,14 36,17 Z" fill="#FB7185" />
         </g>
       )}
 
       {featureId === 'wolf_ears' && (
         <g>
-          <polygon points="15,22 7,8 21,16" fill="#4B5563" />
-          <polygon points="15,20 10,11 19,16" fill="#D1D5DB" />
-          <polygon points="37,22 45,8 31,16" fill="#4B5563" />
-          <polygon points="37,20 42,11 33,16" fill="#D1D5DB" />
+          <path d="M 14,20 C 12,13 7,7 5,5 C 9,7 16,13 18,19 Z" fill="#334155" stroke="#0F172A" strokeWidth="0.8" />
+          <path d="M 13,17 C 11,13 8,9 8,8 C 10,10 15,14 16,17 Z" fill="#64748B" />
+          <ellipse cx="6" cy="8" rx="1.2" ry="1.8" fill="none" stroke="#E2E8F0" strokeWidth="0.6" />
+          <path d="M 38,20 C 40,13 45,7 47,5 C 43,7 36,13 34,19 Z" fill="#334155" stroke="#0F172A" strokeWidth="0.8" />
+          <path d="M 39,17 C 41,13 44,9 44,8 C 42,10 37,14 36,17 Z" fill="#64748B" />
         </g>
       )}
 
       {featureId === 'bunny_ears' && (
         <g>
-          <ellipse cx="18" cy="14" rx="4" ry="12" fill="#FFFFFF" stroke="#E2E8F0" />
-          <ellipse cx="18" cy="14" rx="2" ry="8" fill="#F472B6" />
-          <ellipse cx="34" cy="14" rx="4" ry="12" fill="#FFFFFF" stroke="#E2E8F0" />
-          <ellipse cx="34" cy="14" rx="2" ry="8" fill="#F472B6" />
+          <path d="M 16,18 C 14,11 12,4 16,2 C 20,4 19,11 18,18 Z" fill="#FFFFFF" stroke="#0F172A" strokeWidth="0.8" />
+          <ellipse cx="16" cy="10" rx="1.5" ry="5.5" fill="#F472B6" />
+          <path d="M 36,18 C 37,11 40,6 43,5 C 45,7 41,12 38,18 Z" fill="#FFFFFF" stroke="#0F172A" strokeWidth="0.8" />
+          <path d="M 43,5 C 45,7 45,10 42,10 C 41,8 41,6 43,5 Z" fill="#E2E8F0" stroke="#0F172A" strokeWidth="0.6" />
         </g>
       )}
 
       {featureId === 'dragon_horns' && (
         <g>
-          <path d="M 16,22 Q 6,6 12,2 Q 18,10 20,20" fill="#F59E0B" stroke="#B45309" strokeWidth="1" />
-          <path d="M 36,22 Q 46,6 40,2 Q 34,10 32,20" fill="#F59E0B" stroke="#B45309" strokeWidth="1" />
+          <path d="M 18,20 C 13,18 7,13 4,9 C 6,9 12,13 19,18 Z" fill="#F59E0B" stroke="#78350F" strokeWidth="0.9" />
+          <line x1="8" y1="12" x2="11" y2="15" stroke="#FEF08A" strokeWidth="0.6" />
+          <line x1="12" y1="15" x2="15" y2="18" stroke="#FEF08A" strokeWidth="0.6" />
+          <path d="M 34,20 C 39,18 45,13 48,9 C 46,9 40,13 33,18 Z" fill="#F59E0B" stroke="#78350F" strokeWidth="0.9" />
+          <line x1="44" y1="12" x2="41" y2="15" stroke="#FEF08A" strokeWidth="0.6" />
+          <line x1="40" y1="15" x2="37" y2="18" stroke="#FEF08A" strokeWidth="0.6" />
         </g>
       )}
 
       {featureId === 'demon_horns' && (
         <g>
-          <path d="M 16,22 Q 6,10 10,4 Q 18,12 20,20" fill="#DC2626" stroke="#991B1B" strokeWidth="1" />
-          <path d="M 36,22 Q 46,10 42,4 Q 34,12 32,20" fill="#DC2626" stroke="#991B1B" strokeWidth="1" />
+          <path d="M 18,20 C 14,18 10,12 11,8 C 13,11 16,16 19,19 Z" fill="#18181B" stroke="#DC2626" strokeWidth="0.9" />
+          <circle cx="11" cy="8" r="0.8" fill="#FEF08A" />
+          <path d="M 34,20 C 38,18 42,12 41,8 C 39,11 36,16 33,19 Z" fill="#18181B" stroke="#DC2626" strokeWidth="0.9" />
+          <circle cx="41" cy="8" r="0.8" fill="#FEF08A" />
         </g>
       )}
 
       {featureId === 'angel_halo' && (
         <g>
-          <ellipse cx="26" cy="10" rx="18" ry="4.5" fill="none" stroke="#FDE047" strokeWidth="3" />
-          <ellipse cx="26" cy="10" rx="18" ry="4.5" fill="none" stroke="#FEF08A" strokeWidth="1.5" />
+          <ellipse cx="26" cy="8" rx="16" ry="4.5" fill="none" stroke="#FDE047" strokeWidth="2.5" opacity="0.8" />
+          <ellipse cx="26" cy="8" rx="16" ry="4.5" fill="none" stroke="#FFFFFF" strokeWidth="1" />
+          <circle cx="14" cy="7" r="1" fill="#FFFFFF" />
+          <circle cx="38" cy="9" r="1" fill="#FFFFFF" />
         </g>
       )}
 
       {featureId === 'fairy_wings' && (
-        <g opacity="0.8">
-          <path d="M 18,28 C -2,12 -4,34 16,36 Z" fill="#93C5FD" stroke="#60A5FA" strokeWidth="1" />
-          <path d="M 34,28 C 54,12 56,34 36,36 Z" fill="#93C5FD" stroke="#60A5FA" strokeWidth="1" />
+        <g opacity="0.9">
+          <path d="M 18,28 C 9,20 2,16 5,23 C 8,28 14,29 18,28 Z" fill="#67E8F9" stroke="#0284C7" strokeWidth="0.7" opacity="0.8" />
+          <path d="M 34,28 C 43,20 50,16 47,23 C 44,28 38,29 34,28 Z" fill="#67E8F9" stroke="#0284C7" strokeWidth="0.7" opacity="0.8" />
         </g>
       )}
 
       {featureId === 'crystal_crown' && (
-        <g fill="#38BDF8" stroke="#0284C7" strokeWidth="0.8">
-          <polygon points="26,8 23,18 29,18" />
-          <polygon points="18,12 16,20 22,20" />
-          <polygon points="34,12 30,20 36,20" />
+        <g>
+          <path d="M 16,21 C 21,18 31,18 36,21" fill="none" stroke="#FACC15" strokeWidth="1" strokeLinecap="round" />
+          <polygon points="26,10 23,17 29,17" fill="#0284C7" stroke="#38BDF8" strokeWidth="0.6" />
+          <polygon points="20,13 18,18 23,18" fill="#7E22CE" stroke="#C084FC" strokeWidth="0.5" />
+          <polygon points="32,13 29,18 34,18" fill="#7E22CE" stroke="#C084FC" strokeWidth="0.5" />
+          <circle cx="26" cy="19.5" r="1.2" fill="#E11D48" />
         </g>
       )}
 
       {featureId === 'rune_tattoo' && (
-        <g stroke="#EC4899" strokeWidth="1.5" fill="none">
-          <path d="M 15,31 L 18,34 L 15,37" />
-          <path d="M 37,31 L 34,34 L 37,37" />
-          <circle cx="26" cy="20" r="1.5" fill="#EC4899" />
+        <g stroke="#00F0FF" strokeWidth="1.2" fill="none">
+          <path d="M 16,30 Q 19,32 21,30" />
+          <circle cx="21" cy="30" r="0.7" fill="#FFFFFF" />
+          <path d="M 36,30 Q 33,32 31,30" />
+          <circle cx="31" cy="30" r="0.7" fill="#FFFFFF" />
+          <polygon points="26,20 27,22 26,24 25,22" fill="#00F0FF" />
         </g>
       )}
 
       {featureId === 'cosmic_antennae' && (
         <g>
-          <path d="M 21,20 Q 16,10 14,11" stroke="#A855F7" strokeWidth="1.8" fill="none" />
-          <circle cx="13" cy="10" r="2.5" fill="#38BDF8" />
-          <path d="M 31,20 Q 36,10 38,11" stroke="#A855F7" strokeWidth="1.8" fill="none" />
-          <circle cx="39" cy="10" r="2.5" fill="#38BDF8" />
+          <path d="M 21,19 Q 17,13 16,9" stroke="#06B6D4" strokeWidth="1.4" strokeLinecap="round" fill="none" />
+          <circle cx="16" cy="8" r="2.4" fill="#00F0FF" stroke="#FFFFFF" strokeWidth="0.6" />
+          <path d="M 31,19 Q 35,13 36,9" stroke="#06B6D4" strokeWidth="1.4" strokeLinecap="round" fill="none" />
+          <circle cx="36" cy="8" r="2.4" fill="#00F0FF" stroke="#FFFFFF" strokeWidth="0.6" />
         </g>
       )}
 
       {featureId === 'merfolk_fins' && (
-        <g fill="#2DD4BF" stroke="#0F766E" strokeWidth="0.8">
-          <path d="M 12,25 Q 2,20 4,32 Q 8,30 12,32 Z" />
-          <path d="M 40,25 Q 50,20 48,32 Q 44,30 40,32 Z" />
+        <g fill="#22D3EE" stroke="#083344" strokeWidth="0.8">
+          <path d="M 14,29 C 10,26 4,22 2,18 C 5,23 5,26 3,29 C 7,29 11,29 14,31 Z" />
+          <path d="M 38,29 C 42,26 48,22 50,18 C 47,23 47,26 49,29 C 45,29 41,29 38,31 Z" />
         </g>
       )}
 
       {featureId === 'stag_antlers' && (
-        <g stroke="#92400E" strokeWidth="2.2" strokeLinecap="round" fill="none">
-          <path d="M 18,22 L 14,10 L 8,6 M 14,10 L 18,6" />
-          <path d="M 34,22 L 38,10 L 44,6 M 38,10 L 34,6" />
+        <g stroke="#78350F" strokeWidth="1.6" strokeLinecap="round" fill="none">
+          <path d="M 18,20 C 16,15 13,10 9,7" />
+          <path d="M 14,14 L 11,10" />
+          <circle cx="9" cy="7" r="0.9" fill="#22C55E" />
+          <path d="M 34,20 C 36,15 39,10 43,7" />
+          <path d="M 38,14 L 41,10" />
+          <circle cx="43" cy="7" r="0.9" fill="#22C55E" />
         </g>
       )}
     </svg>

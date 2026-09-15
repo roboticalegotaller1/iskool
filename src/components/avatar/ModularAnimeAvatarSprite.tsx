@@ -72,7 +72,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
   equippedHat = 'hat_snapback_trainer',
   equippedAccessory = 'acc_none',
   animationState = 'idle',
-  showPedestal = true,
+  showPedestal = false,
   zoom = 'full',
   width,
   height,
@@ -182,43 +182,44 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
           bantu_knots: 'afro'
         };
 
-        const hairAssetKey = (!isFemale && !isNeutral && hairStyle !== 'spiky')
-          ? (HAIR_ASSET_MAP[hairStyle] || null)
-          : null;
+        // El estilo 'spiky' representa el peinado canónico/natural de cada modelo
+        const hairAssetKey = hairStyle !== 'spiky' ? (HAIR_ASSET_MAP[hairStyle] || null) : null;
+        const prefix = isFemale ? 'female' : isNeutral ? 'neutral' : 'male';
 
-        const baseSrc = isFemale 
+        const v = '?v=20260915_zero_collar_final';
+        const baseSrc = (hairAssetKey
+          ? `/images/avatar/hairstyles/trainer_${prefix}_${hairAssetKey}.png`
+          : isFemale 
           ? '/images/avatar/trainer_female_clean.png' 
-          : isNeutral 
+          : isNeutral
           ? '/images/avatar/trainer_neutral_clean.png' 
-          : hairAssetKey
-          ? `/images/avatar/hairstyles/trainer_male_${hairAssetKey}.png`
-          : '/images/avatar/trainer_base_clean.png';
+          : '/images/avatar/trainer_base_clean.png') + v;
 
-        const skinMaskSrc = isFemale 
+        const skinMaskSrc = (isFemale 
           ? '/images/avatar/trainer_female_skin_mask.png' 
-          : isNeutral 
+          : isNeutral
           ? '/images/avatar/trainer_neutral_skin_mask.png' 
-          : '/images/avatar/trainer_clean_skin_mask.png';
+          : '/images/avatar/trainer_clean_skin_mask.png') + v;
 
-        const hairMaskSrc = isFemale 
+        const hairMaskSrc = (hairAssetKey
+          ? `/images/avatar/hairstyles/trainer_${prefix}_${hairAssetKey}_hair_mask.png`
+          : isFemale 
           ? '/images/avatar/trainer_female_hair_mask.png' 
-          : isNeutral 
+          : isNeutral
           ? '/images/avatar/trainer_neutral_hair_mask.png' 
-          : hairAssetKey
-          ? `/images/avatar/hairstyles/trainer_male_${hairAssetKey}_hair_mask.png`
-          : '/images/avatar/trainer_hair_mask.png';
+          : '/images/avatar/trainer_hair_mask.png') + v;
 
-        const pantsMaskSrc = isFemale 
+        const pantsMaskSrc = (isFemale 
           ? '/images/avatar/trainer_female_pants_mask.png' 
-          : isNeutral 
+          : isNeutral
           ? '/images/avatar/trainer_neutral_pants_mask.png' 
-          : '/images/avatar/trainer_pants_mask.png';
+          : '/images/avatar/trainer_pants_mask.png') + v;
 
-        const bootsMaskSrc = isFemale 
+        const bootsMaskSrc = (isFemale 
           ? '/images/avatar/trainer_female_boots_mask.png' 
-          : isNeutral 
+          : isNeutral
           ? '/images/avatar/trainer_neutral_boots_mask.png' 
-          : '/images/avatar/trainer_boots_mask.png';
+          : '/images/avatar/trainer_boots_mask.png') + v;
 
         const [baseImg, skinMask, hairMask, pantsMask, bootsMask] = await Promise.all([
           loadImg(baseSrc),
@@ -241,9 +242,10 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
           canvas.height = h;
         }
 
-        // 1. Dibujar imagen base sin fondo
+        // 1. Dibujar imagen base sin fondo con cabello natural integrado
         ctx.clearRect(0, 0, w, h);
         ctx.drawImage(baseImg, 0, 0, w, h);
+
         const baseData = ctx.getImageData(0, 0, w, h);
 
         // 2. Cargar máscaras a canvas temporales para lectura rápida de canales
@@ -292,10 +294,11 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
             bd[idx + 1] = Math.min(255, Math.max(0, Math.round(skinRgb[1] * f)));
             bd[idx + 2] = Math.min(255, Math.max(0, Math.round(skinRgb[2] * f)));
           }
-          // B) Cabello dinámico (Coloreado anatómico de alta fidelidad)
+          // B) Cabello dinámico (Coloreado anatómico de alta fidelidad según género)
           else if (hmData[idx] > 50) {
             if (!isDefaultHair) {
-              const f = lum / 85;
+              const hairNorm = (isNeutral && !hairAssetKey) ? 200 : isFemale ? 75 : 85;
+              const f = lum / hairNorm;
               bd[idx] = Math.min(255, Math.max(0, Math.round(hairRgb[0] * f)));
               bd[idx + 1] = Math.min(255, Math.max(0, Math.round(hairRgb[1] * f)));
               bd[idx + 2] = Math.min(255, Math.max(0, Math.round(hairRgb[2] * f)));
@@ -353,34 +356,36 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
     setTimeout(() => setClickReaction(false), 500);
   }, []);
 
-  // Zoom transform
+  // Zoom transform calibrado para centrar exactamente el rostro y mirada en la cámara
   const zoomStyle = zoom === 'face' 
-    ? 'scale(2.2) translateY(24%)' 
+    ? 'translateY(34%) scale(2.45)' 
     : zoom === 'upper' 
-    ? 'scale(1.4) translateY(12%)' 
-    : 'scale(1) translateY(0%)';
+    ? 'translateY(12%) scale(1.5)' 
+    : 'scale(1)';
+
+  const zoomOrigin = zoom === 'face' ? '50% 16%' : zoom === 'upper' ? '50% 25%' : '50% 50%';
 
   const bodyScaleTransform = useMemo(() => {
     if (bodyScale === 'compact') {
-      return 'scale(0.82, 0.84) translateY(8%)';
+      return 'scale(0.82, 0.84) translateY(4%)';
     }
     if (bodyScale === 'tall') {
-      return 'scale(1.12, 1.16) translateY(-5%)';
+      return 'scale(0.96, 0.98) translateY(2%)';
     }
-    return 'scale(1.0, 1.0) translateY(0%)';
+    return 'scale(0.91, 0.91) translateY(2%)';
   }, [bodyScale]);
 
   // Coordenadas oculares calibradas con precisión milimétrica dentro de las cuencas anatómicas
   const eyeCoords = useMemo(() => {
     if (gender === 'female') {
       return {
-        left: { cx: 347, cy: 197, rx: 9, ry: 9.5 },
-        right: { cx: 418, cy: 192, rx: 9, ry: 9.5 },
+        left: { cx: 349, cy: 196, rx: 12, ry: 11 },
+        right: { cx: 416, cy: 196, rx: 12, ry: 11 },
         isFemale: true,
-        leftSocket: 'M 328,197 Q 347,184 368,198 Q 347,209 328,197 Z',
-        rightSocket: 'M 398,194 Q 418,180 438,192 Q 418,204 398,194 Z',
-        leftLid: 'M 368,198 Q 347,184 328,197',
-        rightLid: 'M 398,194 Q 418,180 438,192'
+        leftSocket: 'M 368,199 C 364,190 357,186 349,186 C 340,186 334,190 329,195 C 334,201.5 341,205 349,205 C 357,205 364,202.5 368,199 Z',
+        rightSocket: 'M 398,199 C 402,190 409,186 416,186 C 425,186 431,190 436,195 C 431,201.5 424,205 416,205 C 408,205 402,202.5 398,199 Z',
+        leftLid: 'M 368,199 C 363,189.5 356,185.5 349,185.5 C 340,185.5 333,189.5 327,194 L 323,191.5 C 328,188.5 336,185 349,185 C 358,185 365,189 368,199 Z',
+        rightLid: 'M 398,199 C 403,189.5 410,185.5 416,185.5 C 425,185.5 432,189.5 438,194 L 442,191.5 C 437,188.5 429,185 416,185 C 408,185 401,189 398,199 Z'
       };
     }
     if (gender === 'neutral') {
@@ -416,11 +421,56 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
   // ACOPLADOS CON PRECISIÓN MILIMÉTRICA MEDIANTE MÁSCARAS DE RECORTE SVG
   // =========================================================================
   const renderEyes = () => {
-    if (eyesStyle === 'determined') {
-      return null; // Los ojos nativos del modelo anime se lucen 100% nítidos
-    }
-
     const { left, right, isFemale, leftSocket, rightSocket, leftLid, rightLid } = eyeCoords;
+    const lidStroke = isFemale ? "3.8" : "3";
+
+    // El modelo femenino y sus peinados ya tienen los ojos removidos y la piel limpia
+    const renderFemaleSkinBase = () => null;
+
+    const renderUpperScleraShadow = (side: 'left' | 'right') => {
+      if (!isFemale) return null;
+      if (side === 'left') {
+        return <path d="M 368,199 C 364,190 357,186 349,186 C 340,186 334,190 329,195 L 329,186 L 368,186 Z" fill="#64748B" opacity="0.32" />;
+      }
+      return <path d="M 398,199 C 402,190 409,186 416,186 C 425,186 431,190 436,195 L 436,186 L 398,186 Z" fill="#64748B" opacity="0.32" />;
+    };
+
+    const renderLid = (side: 'left' | 'right') => {
+      const pathD = side === 'left' ? leftLid : rightLid;
+      if (isFemale) {
+        return <path d={pathD} fill="#0F172A" />;
+      }
+      return <path d={pathD} fill="none" stroke="#0F172A" strokeWidth={lidStroke} strokeLinecap="round" strokeLinejoin="round" />;
+    };
+
+    const renderFemaleLashes = () => {
+      if (!isFemale) return null;
+      return (
+        <>
+          {/* Pestañas aladas exteriores sutiles y elegantes */}
+          <path d="M 327,194 L 322,191 L 326,188 Z" fill="#0F172A" />
+          <path d="M 438,194 L 443,191 L 439,188 Z" fill="#0F172A" />
+          {/* Párpado inferior delicado */}
+          <path d="M 364,201 C 360,203.5 355,205 349,205 C 343,205 337,203.5 333,200" fill="none" stroke="#0F172A" strokeWidth="1.5" opacity="0.75" strokeLinecap="round" />
+          <path d="M 401,201 C 405,203.5 410,205 416,205 C 422,205 428,203.5 432,200" fill="none" stroke="#0F172A" strokeWidth="1.5" opacity="0.75" strokeLinecap="round" />
+          {/* Pliegue del párpado superior anime */}
+          <path d="M 363,181 Q 349,177.5 336,181" fill="none" stroke="#9A3412" strokeWidth="1.2" opacity="0.32" strokeLinecap="round" />
+          <path d="M 402,181 Q 416,177.5 429,181" fill="none" stroke="#9A3412" strokeWidth="1.2" opacity="0.32" strokeLinecap="round" />
+        </>
+      );
+    };
+
+    const renderIrisLayers = (cx: number, cy: number, rx: number, ry: number, darkCol: string, midCol: string, glowCol: string) => (
+      <>
+        <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill={darkCol} />
+        <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill="none" stroke="#090E1F" strokeWidth="1.2" />
+        <ellipse cx={cx} cy={cy + 1.5} rx={rx - 1.5} ry={ry - 2} fill={midCol} />
+        <path d={`M ${cx - 7},${cy + 4} Q ${cx},${cy + 8.5} ${cx + 7},${cy + 4}`} fill="none" stroke={glowCol} strokeWidth="2" opacity="0.9" strokeLinecap="round" />
+        <circle cx={cx} cy={cy - 0.5} r="4.2" fill="#090E1F" />
+        <circle cx={cx - 3.8} cy={cy - 3.5} r="3" fill="#FFFFFF" />
+        <circle cx={cx + 4.2} cy={cy + 3.5} r="1.6" fill="#FFFFFF" opacity="0.9" />
+      </>
+    );
 
     const renderSocketDefs = () => (
       <defs>
@@ -433,50 +483,96 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
       </defs>
     );
 
+    if (eyesStyle === 'determined') {
+      if (!isFemale) {
+        return null; // Los ojos nativos de masculino y neutro se lucen sin superposición
+      }
+      return (
+        <g id="eyes_determined_female">
+          {renderFemaleSkinBase()}
+          {renderSocketDefs()}
+          <g clipPath="url(#eyeSocketLeft)">
+            <rect x={left.cx - 30} y={left.cy - 16} width="60" height="35" fill="#F8FAFC" />
+            {renderUpperScleraShadow('left')}
+            {renderIrisLayers(left.cx, left.cy, left.rx, left.ry, '#0F172A', '#1D4ED8', '#38BDF8')}
+          </g>
+          {renderLid('left')}
+
+          <g clipPath="url(#eyeSocketRight)">
+            <rect x={right.cx - 30} y={right.cy - 16} width="60" height="35" fill="#F8FAFC" />
+            {renderUpperScleraShadow('right')}
+            {renderIrisLayers(right.cx, right.cy, right.rx, right.ry, '#0F172A', '#1D4ED8', '#38BDF8')}
+          </g>
+          {renderLid('right')}
+          {renderFemaleLashes()}
+        </g>
+      );
+    }
+
     switch (eyesStyle) {
       case 'cheerful': // Alegres y Radiantes (Sonrisa anime con ojos curvados cerrados ^_^)
         return (
           <g id="eyes_cheerful">
-            {/* Parches del párpado superior integrado con la piel */}
-            <path d={`M ${left.cx - 18},${left.cy - 7} Q ${left.cx},${left.cy - 10} ${left.cx + 18},${left.cy - 6} L ${left.cx + 17},${left.cy + 7} Q ${left.cx},${left.cy + 9} ${left.cx - 17},${left.cy + 7} Z`} fill={skinHex} />
-            <path d={`M ${right.cx - 18},${right.cy - 6} Q ${right.cx},${right.cy - 10} ${right.cx + 18},${right.cy - 7} L ${right.cx + 17},${right.cy + 7} Q ${right.cx},${right.cy + 9} ${right.cx - 17},${right.cy + 7} Z`} fill={skinHex} />
-            {/* Rubor delicado en las mejillas */}
-            <ellipse cx={left.cx - 10} cy={left.cy + 20} rx="12" ry="5" fill="#F43F5E" opacity="0.38" />
-            <ellipse cx={right.cx + 10} cy={right.cy + 20} rx="12" ry="5" fill="#F43F5E" opacity="0.38" />
-            {/* Arcos curvados anime en las cuencas */}
-            <path d={leftLid} fill="none" stroke="#0F172A" strokeWidth="3.5" strokeLinecap="round" />
-            <path d={rightLid} fill="none" stroke="#0F172A" strokeWidth="3.5" strokeLinecap="round" />
-            {isFemale && (
+            {/* Parches del párpado superior integrado con la piel (masculino/neutro) */}
+            {!isFemale && (
               <>
-                <path d="M 342,200 Q 338,196 335,193" fill="none" stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" />
-                <path d="M 426,198 Q 429,195 432,192" fill="none" stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" />
+                <path d={`M ${left.cx - 15},${left.cy - 5} Q ${left.cx},${left.cy - 8} ${left.cx + 15},${left.cy - 5} L ${left.cx + 14},${left.cy + 5} Q ${left.cx},${left.cy + 7} ${left.cx - 14},${left.cy + 5} Z`} fill={skinHex} />
+                <path d={`M ${right.cx - 15},${right.cy - 5} Q ${right.cx},${right.cy - 8} ${right.cx + 15},${right.cy - 5} L ${right.cx + 14},${right.cy + 5} Q ${right.cx},${right.cy + 7} ${right.cx - 14},${right.cy + 5} Z`} fill={skinHex} />
+              </>
+            )}
+            {/* Rubor delicado en las mejillas */}
+            <ellipse cx={left.cx - 7} cy={left.cy + 18} rx="11" ry="5.5" fill="#F43F5E" opacity="0.4" />
+            <ellipse cx={right.cx + 7} cy={right.cy + 18} rx="11" ry="5.5" fill="#F43F5E" opacity="0.4" />
+            {/* Arcos curvados anime en las cuencas */}
+            {isFemale ? (
+              <>
+                <path d="M 330,197 Q 349,187 368,197" fill="none" stroke="#0F172A" strokeWidth="4" strokeLinecap="round" />
+                <path d="M 328,195 Q 325,191 322,189" fill="none" stroke="#0F172A" strokeWidth="2" strokeLinecap="round" />
+                <path d="M 398,197 Q 416,187 436,197" fill="none" stroke="#0F172A" strokeWidth="4" strokeLinecap="round" />
+                <path d="M 438,195 Q 441,191 444,189" fill="none" stroke="#0F172A" strokeWidth="2" strokeLinecap="round" />
+              </>
+            ) : (
+              <>
+                <path d={leftLid} fill="none" stroke="#0F172A" strokeWidth={lidStroke} strokeLinecap="round" />
+                <path d={rightLid} fill="none" stroke="#0F172A" strokeWidth={lidStroke} strokeLinecap="round" />
               </>
             )}
           </g>
         );
 
-      case 'wink': // Guiño Pícaro (>_• con estrella de destello)
+      case 'wink': // Guiño Pícaro (>_• con destello)
         return (
           <g id="eyes_wink">
             {renderSocketDefs()}
             {/* Ojo izquierdo abierto con iris zafiro brillante y destello */}
             <g clipPath="url(#eyeSocketLeft)">
-              <rect x="330" y="185" width="45" height="30" fill="#F8FAFC" />
-              <ellipse cx={left.cx} cy={left.cy} rx={left.rx} ry={left.ry} fill="#0284C7" />
-              <ellipse cx={left.cx} cy={left.cy + 2} rx={left.rx - 1} ry="4" fill="#38BDF8" opacity="0.8" />
-              <circle cx={left.cx} cy={left.cy} r="4" fill="#09090B" />
+              <rect x={left.cx - 30} y={left.cy - 16} width="60" height="35" fill="#F8FAFC" />
+              {renderUpperScleraShadow('left')}
+              {renderIrisLayers(left.cx, left.cy, left.rx, left.ry, '#082F49', '#0284C7', '#38BDF8')}
               <polygon points={`${left.cx},${left.cy - 5} ${left.cx + 2.5},${left.cy - 1} ${left.cx + 5},${left.cy} ${left.cx + 2.5},${left.cy + 1} ${left.cx},${left.cy + 5} ${left.cx - 2.5},${left.cy + 1} ${left.cx - 5},${left.cy} ${left.cx - 2.5},${left.cy - 1}`} fill="#FFFFFF" />
-              <circle cx={left.cx - 3} cy={left.cy - 3} r="2.2" fill="#FFFFFF" />
             </g>
-            <path d={leftLid} fill="none" stroke="#0F172A" strokeWidth="3" strokeLinecap="round" />
+            {renderLid('left')}
+            {isFemale && (
+              <>
+                <path d="M 327,194 L 322,191 L 326,188 Z" fill="#0F172A" />
+                <path d="M 364,201 C 360,203.5 355,205 349,205 C 343,205 337,203.5 333,200" fill="none" stroke="#0F172A" strokeWidth="1.5" opacity="0.75" strokeLinecap="round" />
+                <path d="M 363,181 Q 349,177.5 336,181" fill="none" stroke="#9A3412" strokeWidth="1.2" opacity="0.32" strokeLinecap="round" />
+              </>
+            )}
 
             {/* Ojo derecho guiñado en arco anime */}
-            <path d={`M ${right.cx - 18},${right.cy - 6} Q ${right.cx},${right.cy - 10} ${right.cx + 18},${right.cy - 7} L ${right.cx + 17},${right.cy + 7} Q ${right.cx},${right.cy + 9} ${right.cx - 17},${right.cy + 7} Z`} fill={skinHex} />
-            <path d={rightLid} fill="none" stroke="#0F172A" strokeWidth="3.5" strokeLinecap="round" />
-            <ellipse cx={right.cx + 8} cy={right.cy + 16} rx="10" ry="5" fill="#F43F5E" opacity="0.38" />
-            {isFemale && (
-              <path d="M 426,198 Q 429,195 432,192" fill="none" stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" />
+            {!isFemale && (
+              <path d={`M ${right.cx - 15},${right.cy - 5} Q ${right.cx},${right.cy - 8} ${right.cx + 15},${right.cy - 5} L ${right.cx + 14},${right.cy + 5} Q ${right.cx},${right.cy + 7} ${right.cx - 14},${right.cy + 5} Z`} fill={skinHex} />
             )}
+            {isFemale ? (
+              <>
+                <path d="M 398,197 Q 416,187 436,197" fill="none" stroke="#0F172A" strokeWidth="4" strokeLinecap="round" />
+                <path d="M 438,195 Q 441,191 444,189" fill="none" stroke="#0F172A" strokeWidth="2" strokeLinecap="round" />
+              </>
+            ) : (
+              <path d={rightLid} fill="none" stroke="#0F172A" strokeWidth={lidStroke} strokeLinecap="round" />
+            )}
+            <ellipse cx={right.cx + 7} cy={right.cy + 18} rx="11" ry="5.5" fill="#F43F5E" opacity="0.4" />
           </g>
         );
 
@@ -485,28 +581,29 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
           <g id="eyes_cat">
             {renderSocketDefs()}
             <g clipPath="url(#eyeSocketLeft)">
-              <rect x="330" y="185" width="45" height="30" fill="#FFFBEB" />
-              <ellipse cx={left.cx} cy={left.cy} rx={left.rx} ry={left.ry} fill="#D97706" />
-              <ellipse cx={left.cx} cy={left.cy + 2} rx={left.rx - 1} ry="4" fill="#FBBF24" />
-              <ellipse cx={left.cx} cy={left.cy} rx="2" ry="7" fill="#09090B" />
-              <circle cx={left.cx - 3} cy={left.cy - 3} r="2" fill="#FFFFFF" />
+              <rect x={left.cx - 30} y={left.cy - 16} width="60" height="35" fill="#FFFBEB" />
+              {renderUpperScleraShadow('left')}
+              <ellipse cx={left.cx} cy={left.cy} rx={left.rx} ry={left.ry} fill="#78350F" />
+              <ellipse cx={left.cx} cy={left.cy} rx={left.rx} ry={left.ry} fill="none" stroke="#451A03" strokeWidth="1.2" />
+              <ellipse cx={left.cx} cy={left.cy + 1.5} rx={left.rx - 1.5} ry={left.ry - 2} fill="#D97706" />
+              <ellipse cx={left.cx} cy={left.cy} rx="2.5" ry={left.ry * 0.75} fill="#09090B" />
+              <path d={`M ${left.cx - 7},${left.cy + 4} Q ${left.cx},${left.cy + 8.5} ${left.cx + 7},${left.cy + 4}`} fill="none" stroke="#FEF08A" strokeWidth="2" opacity="0.9" strokeLinecap="round" />
+              <circle cx={left.cx - 3.8} cy={left.cy - 3.5} r="2.8" fill="#FFFFFF" />
             </g>
-            <path d={leftLid} fill="none" stroke="#0F172A" strokeWidth="3" strokeLinecap="round" />
+            {renderLid('left')}
 
             <g clipPath="url(#eyeSocketRight)">
-              <rect x="390" y="185" width="45" height="30" fill="#FFFBEB" />
-              <ellipse cx={right.cx} cy={right.cy} rx={right.rx} ry={right.ry} fill="#D97706" />
-              <ellipse cx={right.cx} cy={right.cy + 2} rx={right.rx - 1} ry="4" fill="#FBBF24" />
-              <ellipse cx={right.cx} cy={right.cy} rx="2" ry="7" fill="#09090B" />
-              <circle cx={right.cx - 3} cy={right.cy - 3} r="2" fill="#FFFFFF" />
+              <rect x={right.cx - 30} y={right.cy - 16} width="60" height="35" fill="#FFFBEB" />
+              {renderUpperScleraShadow('right')}
+              <ellipse cx={right.cx} cy={right.cy} rx={right.rx} ry={right.ry} fill="#78350F" />
+              <ellipse cx={right.cx} cy={right.cy} rx={right.rx} ry={right.ry} fill="none" stroke="#451A03" strokeWidth="1.2" />
+              <ellipse cx={right.cx} cy={right.cy + 1.5} rx={right.rx - 1.5} ry={right.ry - 2} fill="#D97706" />
+              <ellipse cx={right.cx} cy={right.cy} rx="2.5" ry={right.ry * 0.75} fill="#09090B" />
+              <path d={`M ${right.cx - 7},${right.cy + 4} Q ${right.cx},${right.cy + 8.5} ${right.cx + 7},${right.cy + 4}`} fill="none" stroke="#FEF08A" strokeWidth="2" opacity="0.9" strokeLinecap="round" />
+              <circle cx={right.cx - 3.8} cy={right.cy - 3.5} r="2.8" fill="#FFFFFF" />
             </g>
-            <path d={rightLid} fill="none" stroke="#0F172A" strokeWidth="3" strokeLinecap="round" />
-            {isFemale && (
-              <>
-                <path d="M 342,200 Q 338,196 335,193" fill="none" stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" />
-                <path d="M 426,198 Q 429,195 432,192" fill="none" stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" />
-              </>
-            )}
+            {renderLid('right')}
+            {renderFemaleLashes()}
           </g>
         );
 
@@ -515,28 +612,31 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
           <g id="eyes_flame">
             {renderSocketDefs()}
             <g clipPath="url(#eyeSocketLeft)">
-              <rect x="330" y="185" width="45" height="30" fill="#FEF2F2" />
-              <ellipse cx={left.cx} cy={left.cy} rx={left.rx} ry={left.ry} fill="#DC2626" />
-              <circle cx={left.cx} cy={left.cy + 2} r="5" fill="#F59E0B" />
+              <rect x={left.cx - 30} y={left.cy - 16} width="60" height="35" fill="#FEF2F2" />
+              {renderUpperScleraShadow('left')}
+              <ellipse cx={left.cx} cy={left.cy} rx={left.rx} ry={left.ry} fill="#7F1D1D" />
+              <ellipse cx={left.cx} cy={left.cy} rx={left.rx} ry={left.ry} fill="none" stroke="#450A0A" strokeWidth="1.2" />
+              <ellipse cx={left.cx} cy={left.cy + 1.5} rx={left.rx - 1.5} ry={left.ry - 2} fill="#DC2626" />
+              <path d={`M ${left.cx - 7},${left.cy + 4} Q ${left.cx},${left.cy + 8.5} ${left.cx + 7},${left.cy + 4}`} fill="none" stroke="#FBBF24" strokeWidth="2" opacity="0.9" strokeLinecap="round" />
+              <circle cx={left.cx} cy={left.cy - 0.5} r="4.2" fill="#09090B" />
               <polygon points={`${left.cx},${left.cy - 4} ${left.cx + 2},${left.cy} ${left.cx - 1},${left.cy + 3} ${left.cx - 2.5},${left.cy - 1}`} fill="#FEF08A" />
-              <circle cx={left.cx - 3} cy={left.cy - 3} r="2" fill="#FFFFFF" />
+              <circle cx={left.cx - 3.8} cy={left.cy - 3.5} r="2.8" fill="#FFFFFF" />
             </g>
-            <path d={leftLid} fill="none" stroke="#0F172A" strokeWidth="3" strokeLinecap="round" />
+            {renderLid('left')}
 
             <g clipPath="url(#eyeSocketRight)">
-              <rect x="390" y="185" width="45" height="30" fill="#FEF2F2" />
-              <ellipse cx={right.cx} cy={right.cy} rx={right.rx} ry={right.ry} fill="#DC2626" />
-              <circle cx={right.cx} cy={right.cy + 2} r="5" fill="#F59E0B" />
+              <rect x={right.cx - 30} y={right.cy - 16} width="60" height="35" fill="#FEF2F2" />
+              {renderUpperScleraShadow('right')}
+              <ellipse cx={right.cx} cy={right.cy} rx={right.rx} ry={right.ry} fill="#7F1D1D" />
+              <ellipse cx={right.cx} cy={right.cy} rx={right.rx} ry={right.ry} fill="none" stroke="#450A0A" strokeWidth="1.2" />
+              <ellipse cx={right.cx} cy={right.cy + 1.5} rx={right.rx - 1.5} ry={right.ry - 2} fill="#DC2626" />
+              <path d={`M ${right.cx - 7},${right.cy + 4} Q ${right.cx},${right.cy + 8.5} ${right.cx + 7},${right.cy + 4}`} fill="none" stroke="#FBBF24" strokeWidth="2" opacity="0.9" strokeLinecap="round" />
+              <circle cx={right.cx} cy={right.cy - 0.5} r="4.2" fill="#09090B" />
               <polygon points={`${right.cx},${right.cy - 4} ${right.cx + 2},${right.cy} ${right.cx - 1},${right.cy + 3} ${right.cx - 2.5},${right.cy - 1}`} fill="#FEF08A" />
-              <circle cx={right.cx - 3} cy={right.cy - 3} r="2" fill="#FFFFFF" />
+              <circle cx={right.cx - 3.8} cy={right.cy - 3.5} r="2.8" fill="#FFFFFF" />
             </g>
-            <path d={rightLid} fill="none" stroke="#0F172A" strokeWidth="3" strokeLinecap="round" />
-            {isFemale && (
-              <>
-                <path d="M 342,200 Q 338,196 335,193" fill="none" stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" />
-                <path d="M 426,198 Q 429,195 432,192" fill="none" stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" />
-              </>
-            )}
+            {renderLid('right')}
+            {renderFemaleLashes()}
           </g>
         );
 
@@ -545,28 +645,31 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
           <g id="eyes_lightning">
             {renderSocketDefs()}
             <g clipPath="url(#eyeSocketLeft)">
-              <rect x="330" y="185" width="45" height="30" fill="#F0F9FF" />
-              <ellipse cx={left.cx} cy={left.cy} rx={left.rx} ry={left.ry} fill="#0284C7" />
-              <circle cx={left.cx} cy={left.cy + 2} r="5.5" fill="#38BDF8" />
+              <rect x={left.cx - 30} y={left.cy - 16} width="60" height="35" fill="#F0F9FF" />
+              {renderUpperScleraShadow('left')}
+              <ellipse cx={left.cx} cy={left.cy} rx={left.rx} ry={left.ry} fill="#082F49" />
+              <ellipse cx={left.cx} cy={left.cy} rx={left.rx} ry={left.ry} fill="none" stroke="#031E30" strokeWidth="1.2" />
+              <ellipse cx={left.cx} cy={left.cy + 1.5} rx={left.rx - 1.5} ry={left.ry - 2} fill="#0284C7" />
+              <path d={`M ${left.cx - 7},${left.cy + 4} Q ${left.cx},${left.cy + 8.5} ${left.cx + 7},${left.cy + 4}`} fill="none" stroke="#38BDF8" strokeWidth="2" opacity="0.9" strokeLinecap="round" />
+              <circle cx={left.cx} cy={left.cy - 0.5} r="4.2" fill="#09090B" />
               <polygon points={`${left.cx},${left.cy - 4} ${left.cx + 2.5},${left.cy - 1} ${left.cx},${left.cy} ${left.cx + 1.5},${left.cy + 4} ${left.cx - 1.5},${left.cy + 1} ${left.cx},${left.cy}`} fill="#FFFFFF" />
-              <circle cx={left.cx - 3} cy={left.cy - 3} r="2.2" fill="#FFFFFF" />
+              <circle cx={left.cx - 3.8} cy={left.cy - 3.5} r="2.8" fill="#FFFFFF" />
             </g>
-            <path d={leftLid} fill="none" stroke="#0F172A" strokeWidth="3" strokeLinecap="round" />
+            {renderLid('left')}
 
             <g clipPath="url(#eyeSocketRight)">
-              <rect x="390" y="185" width="45" height="30" fill="#F0F9FF" />
-              <ellipse cx={right.cx} cy={right.cy} rx={right.rx} ry={right.ry} fill="#0284C7" />
-              <circle cx={right.cx} cy={right.cy + 2} r="5.5" fill="#38BDF8" />
+              <rect x={right.cx - 30} y={right.cy - 16} width="60" height="35" fill="#F0F9FF" />
+              {renderUpperScleraShadow('right')}
+              <ellipse cx={right.cx} cy={right.cy} rx={right.rx} ry={right.ry} fill="#082F49" />
+              <ellipse cx={right.cx} cy={right.cy} rx={right.rx} ry={right.ry} fill="none" stroke="#031E30" strokeWidth="1.2" />
+              <ellipse cx={right.cx} cy={right.cy + 1.5} rx={right.rx - 1.5} ry={right.ry - 2} fill="#0284C7" />
+              <path d={`M ${right.cx - 7},${right.cy + 4} Q ${right.cx},${right.cy + 8.5} ${right.cx + 7},${right.cy + 4}`} fill="none" stroke="#38BDF8" strokeWidth="2" opacity="0.9" strokeLinecap="round" />
+              <circle cx={right.cx} cy={right.cy - 0.5} r="4.2" fill="#09090B" />
               <polygon points={`${right.cx},${right.cy - 4} ${right.cx + 2.5},${right.cy - 1} ${right.cx},${right.cy} ${right.cx + 1.5},${right.cy + 4} ${right.cx - 1.5},${right.cy + 1} ${right.cx},${right.cy}`} fill="#FFFFFF" />
-              <circle cx={right.cx - 3} cy={right.cy - 3} r="2.2" fill="#FFFFFF" />
+              <circle cx={right.cx - 3.8} cy={right.cy - 3.5} r="2.8" fill="#FFFFFF" />
             </g>
-            <path d={rightLid} fill="none" stroke="#0F172A" strokeWidth="3" strokeLinecap="round" />
-            {isFemale && (
-              <>
-                <path d="M 342,200 Q 338,196 335,193" fill="none" stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" />
-                <path d="M 426,198 Q 429,195 432,192" fill="none" stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" />
-              </>
-            )}
+            {renderLid('right')}
+            {renderFemaleLashes()}
           </g>
         );
 
@@ -575,28 +678,19 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
           <g id="eyes_heterochromia">
             {renderSocketDefs()}
             <g clipPath="url(#eyeSocketLeft)">
-              <rect x="330" y="185" width="45" height="30" fill="#FFFBEB" />
-              <ellipse cx={left.cx} cy={left.cy} rx={left.rx} ry={left.ry} fill="#D97706" />
-              <circle cx={left.cx} cy={left.cy + 2} r="5" fill="#FBBF24" />
-              <circle cx={left.cx} cy={left.cy} r="3.5" fill="#78350F" />
-              <circle cx={left.cx - 3} cy={left.cy - 3} r="2" fill="#FFFFFF" />
+              <rect x={left.cx - 30} y={left.cy - 16} width="60" height="35" fill="#FFFBEB" />
+              {renderUpperScleraShadow('left')}
+              {renderIrisLayers(left.cx, left.cy, left.rx, left.ry, '#451A03', '#D97706', '#FDE047')}
             </g>
-            <path d={leftLid} fill="none" stroke="#0F172A" strokeWidth="3" strokeLinecap="round" />
+            {renderLid('left')}
 
             <g clipPath="url(#eyeSocketRight)">
-              <rect x="390" y="185" width="45" height="30" fill="#F0FDFA" />
-              <ellipse cx={right.cx} cy={right.cy} rx={right.rx} ry={right.ry} fill="#0284C7" />
-              <circle cx={right.cx} cy={right.cy + 2} r="5" fill="#38BDF8" />
-              <circle cx={right.cx} cy={right.cy} r="3.5" fill="#0C4A6E" />
-              <circle cx={right.cx - 3} cy={right.cy - 3} r="2" fill="#FFFFFF" />
+              <rect x={right.cx - 30} y={right.cy - 16} width="60" height="35" fill="#F0FDFA" />
+              {renderUpperScleraShadow('right')}
+              {renderIrisLayers(right.cx, right.cy, right.rx, right.ry, '#082F49', '#0284C7', '#38BDF8')}
             </g>
-            <path d={rightLid} fill="none" stroke="#0F172A" strokeWidth="3" strokeLinecap="round" />
-            {isFemale && (
-              <>
-                <path d="M 342,200 Q 338,196 335,193" fill="none" stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" />
-                <path d="M 426,198 Q 429,195 432,192" fill="none" stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" />
-              </>
-            )}
+            {renderLid('right')}
+            {renderFemaleLashes()}
           </g>
         );
 
@@ -609,36 +703,34 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
       case 'nebula_eyes':
       case 'sparkle':
       default: {
-        const irisCol = eyesStyle === 'emerald' ? '#059669' : eyesStyle === 'ruby' ? '#DC2626' : eyesStyle === 'sapphire' ? '#2563EB' : eyesStyle === 'scholar' ? '#0D9488' : eyesStyle === 'nebula_eyes' ? '#7C3AED' : eyesStyle === 'sparkle' ? '#4F46E5' : '#9333EA';
-        const glowCol = eyesStyle === 'emerald' ? '#34D399' : eyesStyle === 'ruby' ? '#F87171' : eyesStyle === 'sapphire' ? '#60A5FA' : eyesStyle === 'scholar' ? '#5EEAD4' : eyesStyle === 'nebula_eyes' ? '#C084FC' : eyesStyle === 'sparkle' ? '#818CF8' : '#C084FC';
+        const palette = {
+          emerald: { dark: '#064E3B', mid: '#059669', glow: '#6EE7B7' },
+          ruby: { dark: '#7F1D1D', mid: '#DC2626', glow: '#FCA5A5' },
+          sapphire: { dark: '#08152B', mid: '#1D4ED8', glow: '#60A5FA' },
+          scholar: { dark: '#134E4A', mid: '#0D9488', glow: '#5EEAD4' },
+          nebula_eyes: { dark: '#3B0764', mid: '#7C3AED', glow: '#C084FC' },
+          sparkle: { dark: '#1E1B4B', mid: '#4F46E5', glow: '#818CF8' },
+          amethyst: { dark: '#3B0764', mid: '#9333EA', glow: '#D8B4FE' },
+          mysterious: { dark: '#3B0764', mid: '#9333EA', glow: '#C084FC' },
+        }[eyesStyle] || { dark: '#08152B', mid: '#1D4ED8', glow: '#38BDF8' };
+
         return (
           <g id="eyes_colored">
             {renderSocketDefs()}
             <g clipPath="url(#eyeSocketLeft)">
-              <rect x="330" y="185" width="45" height="30" fill="#FFFFFF" />
-              <ellipse cx={left.cx} cy={left.cy} rx={left.rx} ry={left.ry} fill={irisCol} />
-              <ellipse cx={left.cx} cy={left.cy + 2} rx={left.rx - 1} ry="4" fill={glowCol} />
-              <circle cx={left.cx} cy={left.cy} r="4" fill="#09090B" />
-              <circle cx={left.cx - 3} cy={left.cy - 3} r="2.2" fill="#FFFFFF" />
-              <circle cx={left.cx + 3} cy={left.cy + 3} r="1.3" fill="#FFFFFF" opacity="0.75" />
+              <rect x={left.cx - 30} y={left.cy - 16} width="60" height="35" fill="#F8FAFC" />
+              {renderUpperScleraShadow('left')}
+              {renderIrisLayers(left.cx, left.cy, left.rx, left.ry, palette.dark, palette.mid, palette.glow)}
             </g>
-            <path d={leftLid} fill="none" stroke="#0F172A" strokeWidth="3" strokeLinecap="round" />
+            {renderLid('left')}
 
             <g clipPath="url(#eyeSocketRight)">
-              <rect x="390" y="185" width="45" height="30" fill="#FFFFFF" />
-              <ellipse cx={right.cx} cy={right.cy} rx={right.rx} ry={right.ry} fill={irisCol} />
-              <ellipse cx={right.cx} cy={right.cy + 2} rx={right.rx - 1} ry="4" fill={glowCol} />
-              <circle cx={right.cx} cy={right.cy} r="4" fill="#09090B" />
-              <circle cx={right.cx - 3} cy={right.cy - 3} r="2.2" fill="#FFFFFF" />
-              <circle cx={right.cx + 3} cy={right.cy + 3} r="1.3" fill="#FFFFFF" opacity="0.75" />
+              <rect x={right.cx - 30} y={right.cy - 16} width="60" height="35" fill="#F8FAFC" />
+              {renderUpperScleraShadow('right')}
+              {renderIrisLayers(right.cx, right.cy, right.rx, right.ry, palette.dark, palette.mid, palette.glow)}
             </g>
-            <path d={rightLid} fill="none" stroke="#0F172A" strokeWidth="3" strokeLinecap="round" />
-            {isFemale && (
-              <>
-                <path d="M 342,200 Q 338,196 335,193" fill="none" stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" />
-                <path d="M 426,198 Q 429,195 432,192" fill="none" stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" />
-              </>
-            )}
+            {renderLid('right')}
+            {renderFemaleLashes()}
           </g>
         );
       }
@@ -785,141 +877,463 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
       case 'cat_ears': // Orejas de Gato / Kitsune
         return (
           <g id="race_cat_ears">
-            <path d="M 315,160 L 300,75 C 315,80 345,115 355,145 Z" fill={hairHex} stroke="#09090B" strokeWidth="5" />
-            <path d="M 318,145 L 308,90 C 318,95 338,118 345,138 Z" fill="#F472B6" />
-            <polygon points="325,120 335,130 328,135" fill="#FFFFFF" />
-            <path d="M 453,160 L 468,75 C 453,80 423,115 413,145 Z" fill={hairHex} stroke="#09090B" strokeWidth="5" />
-            <path d="M 450,145 L 460,90 C 450,95 430,118 423,138 Z" fill="#F472B6" />
-            <polygon points="443,120 433,130 440,135" fill="#FFFFFF" />
+            <defs>
+              <linearGradient id="catInnerPinkL" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#E11D48" />
+                <stop offset="50%" stopColor="#FB7185" />
+                <stop offset="100%" stopColor="#FECDD3" />
+              </linearGradient>
+              <linearGradient id="catInnerPinkR" x1="1" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#E11D48" />
+                <stop offset="50%" stopColor="#FB7185" />
+                <stop offset="100%" stopColor="#FECDD3" />
+              </linearGradient>
+              <filter id="catEarShadow" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="3" stdDeviation="4" floodColor="#090D1A" floodOpacity="0.38" />
+              </filter>
+            </defs>
+
+            {/* OREJA IZQUIERDA (Corona Parietal) */}
+            <g filter="url(#catEarShadow)">
+              <path d="M 305,108 C 298,92 288,72 278,54 C 274,48 274,44 280,44 C 292,50 318,68 340,90 C 352,102 358,114 360,118 C 352,121 340,121 328,120 C 316,118 308,114 305,108 Z" 
+                    fill={hairHex} stroke="#0F172A" strokeWidth="3.6" strokeLinejoin="round" />
+              <path d="M 280,44 C 286,58 296,80 304,98 C 300,105 296,112 296,114 C 288,96 280,68 280,44 Z" 
+                    fill="#000000" opacity="0.32" />
+              <path d="M 292,76 C 286,58 285,48 288,46 C 298,54 318,74 334,92 C 344,104 346,112 346,114 C 336,116 314,108 292,76 Z" 
+                    fill="url(#catInnerPinkL)" stroke="#9F1239" strokeWidth="1.8" />
+              <path d="M 290,110 C 298,102 308,92 312,80 C 315,88 320,95 326,98 C 330,88 334,80 336,70 C 338,80 342,88 348,96 C 342,106 330,114 316,116 C 304,116 294,114 290,110 Z" 
+                    fill="#FFFFFF" stroke="#0F172A" strokeWidth="2.2" strokeLinejoin="round" />
+              <path d="M 298,105 C 306,97 312,89 313,83 C 316,91 322,95 325,97" 
+                    fill="none" stroke="#FFE4E6" strokeWidth="2.2" strokeLinecap="round" />
+            </g>
+
+            {/* OREJA DERECHA (Corona Parietal) */}
+            <g filter="url(#catEarShadow)">
+              <path d="M 463,108 C 470,92 480,72 490,54 C 494,48 494,44 488,44 C 476,50 450,68 428,90 C 416,102 410,114 408,118 C 416,121 428,121 440,120 C 452,118 460,114 463,108 Z" 
+                    fill={hairHex} stroke="#0F172A" strokeWidth="3.6" strokeLinejoin="round" />
+              <path d="M 488,44 C 482,58 472,80 464,98 C 468,105 472,112 472,114 C 480,96 488,68 488,44 Z" 
+                    fill="#000000" opacity="0.32" />
+              <path d="M 476,76 C 482,58 483,48 480,46 C 470,54 450,74 434,92 C 424,104 422,112 422,114 C 432,116 454,108 476,76 Z" 
+                    fill="url(#catInnerPinkR)" stroke="#9F1239" strokeWidth="1.8" />
+              <path d="M 478,110 C 470,102 460,92 456,80 C 453,88 448,95 442,98 C 438,88 434,80 432,70 C 430,80 426,88 420,96 C 426,106 438,114 452,116 C 464,116 474,114 478,110 Z" 
+                    fill="#FFFFFF" stroke="#0F172A" strokeWidth="2.2" strokeLinejoin="round" />
+              <path d="M 470,105 C 462,97 456,89 455,83 C 452,91 446,95 443,97" 
+                    fill="none" stroke="#FFE4E6" strokeWidth="2.2" strokeLinecap="round" />
+            </g>
           </g>
         );
 
       case 'wolf_ears': // Lobo de las Tormentas
         return (
           <g id="race_wolf_ears">
-            <path d="M 320,155 L 295,65 C 315,75 350,120 360,150 Z" fill="#374151" stroke="#111827" strokeWidth="5" />
-            <path d="M 322,140 L 305,82 C 318,90 340,120 348,140 Z" fill="#6B7280" />
-            <polygon points="295,65 305,80 300,90" fill="#111827" />
-            <circle cx="302" cy="98" r="5" fill="none" stroke="#E2E8F0" strokeWidth="3" />
-            <path d="M 448,155 L 473,65 C 453,75 418,120 408,150 Z" fill="#374151" stroke="#111827" strokeWidth="5" />
-            <path d="M 446,140 L 463,82 C 450,90 428,120 420,140 Z" fill="#6B7280" />
-            <polygon points="473,65 463,80 468,90" fill="#111827" />
+            <defs>
+              <linearGradient id="wolfSlateL" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#0F172A" />
+                <stop offset="45%" stopColor="#334155" />
+                <stop offset="100%" stopColor="#475569" />
+              </linearGradient>
+              <linearGradient id="wolfSlateR" x1="1" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#0F172A" />
+                <stop offset="45%" stopColor="#334155" />
+                <stop offset="100%" stopColor="#475569" />
+              </linearGradient>
+              <filter id="wolfShadow" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#090D1A" floodOpacity="0.45" />
+              </filter>
+            </defs>
+
+            {/* OREJA IZQUIERDA DE LOBO */}
+            <g filter="url(#wolfShadow)">
+              <path d="M 308,112 C 298,96 284,72 272,48 C 268,40 268,36 274,36 C 286,42 308,60 334,84 C 348,98 356,112 358,118 C 348,122 330,122 308,112 Z" 
+                    fill="url(#wolfSlateL)" stroke="#090D1A" strokeWidth="3.6" strokeLinejoin="round" />
+              <path d="M 274,36 C 280,44 290,60 298,72 C 290,66 282,52 274,36 Z" fill="#020617" />
+              <path d="M 284,68 C 280,54 282,46 284,44 C 292,52 306,70 320,88 C 328,98 332,108 332,112 C 322,114 304,104 284,68 Z" 
+                    fill="#64748B" stroke="#1E293B" strokeWidth="1.8" />
+              <path d="M 284,108 C 294,100 306,86 310,74 C 314,84 320,92 326,96 C 330,86 334,78 338,68 C 340,78 342,88 344,96 C 336,108 324,116 310,118 C 298,118 288,114 284,108 Z" 
+                    fill="#F8FAFC" stroke="#0F172A" strokeWidth="2" strokeLinejoin="round" />
+              <ellipse cx="274" cy="46" rx="3.5" ry="6" fill="none" stroke="#E2E8F0" strokeWidth="2.6" transform="rotate(-30 274 46)" />
+              <ellipse cx="279" cy="62" rx="3" ry="5" fill="none" stroke="#E2E8F0" strokeWidth="2.2" transform="rotate(-30 279 62)" />
+            </g>
+
+            {/* OREJA DERECHA DE LOBO */}
+            <g filter="url(#wolfShadow)">
+              <path d="M 460,112 C 470,96 484,72 496,48 C 500,40 500,36 494,36 C 482,42 460,60 434,84 C 420,98 412,112 410,118 C 420,122 438,122 460,112 Z" 
+                    fill="url(#wolfSlateR)" stroke="#090D1A" strokeWidth="3.6" strokeLinejoin="round" />
+              <path d="M 494,36 C 488,44 478,60 470,72 C 478,66 486,52 494,36 Z" fill="#020617" />
+              <path d="M 484,68 C 488,54 486,46 484,44 C 476,52 462,70 448,88 C 440,98 436,108 436,112 C 446,114 464,104 484,68 Z" 
+                    fill="#64748B" stroke="#1E293B" strokeWidth="1.8" />
+              <path d="M 484,108 C 474,100 462,86 458,74 C 454,84 448,92 442,96 C 438,86 434,78 430,68 C 428,78 426,88 424,96 C 432,108 444,116 458,118 C 470,118 480,114 484,108 Z" 
+                    fill="#F8FAFC" stroke="#0F172A" strokeWidth="2" strokeLinejoin="round" />
+            </g>
           </g>
         );
 
       case 'bunny_ears': // Orejitas de Conejo Lunar
         return (
           <g id="race_bunny_ears">
-            <path d="M 335,150 C 315,100 310,20 338,15 C 355,20 360,95 352,150 Z" fill="#FFFFFF" stroke="#09090B" strokeWidth="5" />
-            <path d="M 338,135 C 326,95 322,35 338,30 C 348,35 352,90 346,135 Z" fill="#FBCFE8" />
-            <path d="M 416,150 C 424,95 430,45 448,40 C 462,45 460,75 440,90 C 445,105 442,130 433,150 Z" fill="#FFFFFF" stroke="#09090B" strokeWidth="5" />
-            <path d="M 423,135 C 430,90 435,55 446,50 C 454,54 445,78 433,88 C 435,105 432,125 425,135 Z" fill="#FBCFE8" />
+            <defs>
+              <filter id="bunnyShadow" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="#0F172A" floodOpacity="0.32" />
+              </filter>
+              <linearGradient id="bunnyPinkCore" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#F472B6" />
+                <stop offset="65%" stopColor="#FBCFE8" />
+                <stop offset="100%" stopColor="#FFF1F2" />
+              </linearGradient>
+            </defs>
+
+            {/* OREJA IZQUIERDA DE CONEJO */}
+            <g filter="url(#bunnyShadow)">
+              <path d="M 330,118 C 322,92 312,50 308,18 C 305,-4 318,-16 332,-14 C 348,-12 358,12 360,50 C 362,88 356,110 348,118 C 340,122 334,122 330,118 Z" 
+                    fill="#FFFFFF" stroke="#0F172A" strokeWidth="3.6" strokeLinejoin="round" />
+              <path d="M 308,18 C 305,-4 318,-16 332,-14 C 324,-8 320,4 322,28 C 326,68 333,100 340,116 C 334,114 326,92 308,18 Z" 
+                    fill="#E2E8F0" opacity="0.65" />
+              <path d="M 330,102 C 326,78 320,42 318,15 C 316,2 322,-5 328,-4 C 336,-2 342,12 344,38 C 346,68 344,92 338,105 C 334,107 332,105 330,102 Z" 
+                    fill="url(#bunnyPinkCore)" stroke="#F472B6" strokeWidth="1.4" />
+            </g>
+
+            {/* OREJA DERECHA DE CONEJO CON PLIEGUE CHARMING */}
+            <g filter="url(#bunnyShadow)">
+              <path d="M 420,118 C 424,102 430,70 438,36 C 444,14 458,4 470,10 C 478,16 472,36 458,54 C 454,80 448,104 438,120 C 430,122 425,121 420,118 Z" 
+                    fill="#FFFFFF" stroke="#0F172A" strokeWidth="3.6" strokeLinejoin="round" />
+              <path d="M 430,110 C 432,90 438,65 444,42 C 447,28 454,22 460,25 C 463,30 458,44 450,56 C 445,80 440,100 436,110 Z" 
+                    fill="url(#bunnyPinkCore)" stroke="#F472B6" strokeWidth="1.4" />
+              <path d="M 458,4 C 470,10 480,18 474,40 C 464,30 454,26 444,30 C 450,16 454,8 458,4 Z" 
+                    fill="#F1F5F9" stroke="#0F172A" strokeWidth="2.6" strokeLinejoin="round" />
+            </g>
           </g>
         );
 
       case 'dragon_horns': // Cuernos de Dragón Dorado
         return (
           <g id="race_dragon_horns">
-            <path d="M 330,165 C 290,130 280,75 320,55 C 330,85 345,130 355,160 Z" fill="#F59E0B" stroke="#78350F" strokeWidth="5" />
-            <line x1="305" y1="95" x2="335" y2="105" stroke="#FEF08A" strokeWidth="3" />
-            <line x1="312" y1="125" x2="345" y2="135" stroke="#FEF08A" strokeWidth="3" />
-            <path d="M 438,165 C 478,130 488,75 448,55 C 438,85 423,130 413,160 Z" fill="#F59E0B" stroke="#78350F" strokeWidth="5" />
-            <line x1="463" y1="95" x2="433" y2="105" stroke="#FEF08A" strokeWidth="3" />
-            <line x1="456" y1="125" x2="423" y2="135" stroke="#FEF08A" strokeWidth="3" />
+            <defs>
+              <linearGradient id="dragonGoldL" x1="0" y1="1" x2="1" y2="0">
+                <stop offset="0%" stopColor="#78350F" />
+                <stop offset="25%" stopColor="#B45309" />
+                <stop offset="60%" stopColor="#F59E0B" />
+                <stop offset="90%" stopColor="#FDE047" />
+                <stop offset="100%" stopColor="#FFFFFF" />
+              </linearGradient>
+              <linearGradient id="dragonGoldR" x1="1" y1="1" x2="0" y2="0">
+                <stop offset="0%" stopColor="#78350F" />
+                <stop offset="25%" stopColor="#B45309" />
+                <stop offset="60%" stopColor="#F59E0B" />
+                <stop offset="90%" stopColor="#FDE047" />
+                <stop offset="100%" stopColor="#FFFFFF" />
+              </linearGradient>
+              <filter id="dragonAura" x="-40%" y="-40%" width="180%" height="180%">
+                <feDropShadow dx="0" dy="2" stdDeviation="6" floodColor="#F59E0B" floodOpacity="0.65" />
+              </filter>
+            </defs>
+
+            {/* CUERNO IZQUIERDO DE DRAGÓN */}
+            <g filter="url(#dragonAura)">
+              <path d="M 334,122 C 314,118 284,106 256,86 C 235,70 220,52 216,40 C 222,40 242,54 274,72 C 306,90 338,106 348,120 Z" 
+                    fill="url(#dragonGoldL)" stroke="#451A03" strokeWidth="3.6" strokeLinejoin="round" />
+              <path d="M 230,48 Q 240,56 252,50" fill="none" stroke="#78350F" strokeWidth="2.8" strokeLinecap="round" />
+              <path d="M 250,64 Q 264,74 278,66" fill="none" stroke="#78350F" strokeWidth="3" strokeLinecap="round" />
+              <path d="M 274,80 Q 292,92 308,82" fill="none" stroke="#78350F" strokeWidth="3.2" strokeLinecap="round" />
+              <path d="M 302,96 Q 322,108 336,96" fill="none" stroke="#78350F" strokeWidth="3.4" strokeLinecap="round" />
+              <path d="M 218,41 C 230,53 262,78 316,106" fill="none" stroke="#FFFBEB" strokeWidth="2.5" strokeLinecap="round" opacity="0.95" />
+              <circle cx="216" cy="40" r="2.8" fill="#FFFFFF" />
+            </g>
+
+            {/* CUERNO DERECHO DE DRAGÓN */}
+            <g filter="url(#dragonAura)">
+              <path d="M 434,122 C 454,118 484,106 512,86 C 533,70 548,52 552,40 C 546,40 526,54 494,72 C 462,90 430,106 420,120 Z" 
+                    fill="url(#dragonGoldR)" stroke="#451A03" strokeWidth="3.6" strokeLinejoin="round" />
+              <path d="M 538,48 Q 528,56 516,50" fill="none" stroke="#78350F" strokeWidth="2.8" strokeLinecap="round" />
+              <path d="M 518,64 Q 504,74 490,66" fill="none" stroke="#78350F" strokeWidth="3" strokeLinecap="round" />
+              <path d="M 494,80 Q 476,92 460,82" fill="none" stroke="#78350F" strokeWidth="3.2" strokeLinecap="round" />
+              <path d="M 466,96 Q 446,108 432,96" fill="none" stroke="#78350F" strokeWidth="3.4" strokeLinecap="round" />
+              <path d="M 550,41 C 538,53 506,78 452,106" fill="none" stroke="#FFFBEB" strokeWidth="2.5" strokeLinecap="round" opacity="0.95" />
+              <circle cx="552" cy="40" r="2.8" fill="#FFFFFF" />
+            </g>
           </g>
         );
 
       case 'demon_horns': // Cuernitos de Gárgola
         return (
           <g id="race_demon_horns">
-            <path d="M 335,165 C 300,140 305,90 340,80 C 335,110 345,140 355,165 Z" fill="#18181B" stroke="#991B1B" strokeWidth="4" />
-            <polygon points="338,80 344,88 335,92" fill="#EF4444" />
-            <path d="M 433,165 C 468,140 463,90 428,80 C 433,110 423,140 413,165 Z" fill="#18181B" stroke="#991B1B" strokeWidth="4" />
-            <polygon points="430,80 424,88 433,92" fill="#EF4444" />
+            <defs>
+              <filter id="magmaGlow" x="-40%" y="-40%" width="180%" height="180%">
+                <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="#DC2626" floodOpacity="0.85" />
+              </filter>
+            </defs>
+
+            {/* CUERNO IZQUIERDO */}
+            <g filter="url(#magmaGlow)">
+              <path d="M 334,124 C 316,118 288,98 276,70 C 270,52 274,32 284,24 C 286,30 286,46 298,66 C 314,90 336,112 348,124 Z" 
+                    fill="#18181B" stroke="#09090B" strokeWidth="3.6" strokeLinejoin="round" />
+              <path d="M 284,28 Q 278,54 286,76 Q 302,100 334,122" fill="none" stroke="#EF4444" strokeWidth="2.8" strokeLinecap="round" />
+              <path d="M 284,28 Q 278,54 286,76 Q 302,100 334,122" fill="none" stroke="#FEF08A" strokeWidth="1.2" strokeLinecap="round" />
+              <circle cx="284" cy="24" r="2.2" fill="#FEF08A" />
+            </g>
+
+            {/* CUERNO DERECHO */}
+            <g filter="url(#magmaGlow)">
+              <path d="M 434,124 C 452,118 480,98 492,70 C 498,52 494,32 484,24 C 482,30 482,46 470,66 C 454,90 432,112 420,124 Z" 
+                    fill="#18181B" stroke="#09090B" strokeWidth="3.6" strokeLinejoin="round" />
+              <path d="M 484,28 Q 490,54 482,76 Q 466,100 434,122" fill="none" stroke="#EF4444" strokeWidth="2.8" strokeLinecap="round" />
+              <path d="M 484,28 Q 490,54 482,76 Q 466,100 434,122" fill="none" stroke="#FEF08A" strokeWidth="1.2" strokeLinecap="round" />
+              <circle cx="484" cy="24" r="2.2" fill="#FEF08A" />
+            </g>
           </g>
         );
 
       case 'stag_antlers': // Astas de Ciervo Silvestre
         return (
           <g id="race_stag_antlers">
-            <path d="M 335,150 L 305,80 L 280,65 M 305,80 L 315,50 M 310,105 L 285,100" fill="none" stroke="#78350F" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx="280" cy="65" r="4" fill="#22C55E" />
-            <circle cx="315" cy="50" r="4" fill="#22C55E" />
-            <path d="M 433,150 L 463,80 L 488,65 M 463,80 L 453,50 M 458,105 L 483,100" fill="none" stroke="#78350F" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx="488" cy="65" r="4" fill="#22C55E" />
-            <circle cx="453" cy="50" r="4" fill="#22C55E" />
+            <defs>
+              <filter id="natureAura" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#16A34A" floodOpacity="0.4" />
+              </filter>
+            </defs>
+
+            {/* CORNAMENTA IZQUIERDA */}
+            <g filter="url(#natureAura)">
+              <path d="M 336,118 C 330,98 316,72 292,48 C 274,30 252,18 244,15 C 248,22 266,42 280,66 C 294,90 302,108 308,122 Z" 
+                    fill="#78350F" stroke="#451A03" strokeWidth="3.2" strokeLinejoin="round" />
+              <path d="M 280,62 C 274,46 264,30 252,22 C 255,30 266,48 272,66 Z" fill="#854D0E" stroke="#451A03" strokeWidth="2.2" />
+              <path d="M 318,92 C 304,82 286,80 274,82 C 284,88 302,92 312,100 Z" fill="#854D0E" stroke="#451A03" strokeWidth="2.2" />
+              <circle cx="244" cy="15" r="4" fill="#86EFAC" stroke="#15803D" strokeWidth="1.2" />
+              <circle cx="252" cy="22" r="3" fill="#BBF7D0" />
+              <path d="M 274,54 Q 266,52 264,46 Q 272,46 276,52 Z" fill="#22C55E" />
+              <path d="M 288,78 Q 282,74 278,68 Q 286,70 290,76 Z" fill="#22C55E" />
+            </g>
+
+            {/* CORNAMENTA DERECHA */}
+            <g filter="url(#natureAura)">
+              <path d="M 432,118 C 438,98 452,72 476,48 C 494,30 516,18 524,15 C 520,22 502,42 488,66 C 474,90 466,108 460,122 Z" 
+                    fill="#78350F" stroke="#451A03" strokeWidth="3.2" strokeLinejoin="round" />
+              <path d="M 488,62 C 494,46 504,30 516,22 C 513,30 502,48 496,66 Z" fill="#854D0E" stroke="#451A03" strokeWidth="2.2" />
+              <path d="M 450,92 C 464,82 482,80 494,82 C 484,88 466,92 456,100 Z" fill="#854D0E" stroke="#451A03" strokeWidth="2.2" />
+              <circle cx="524" cy="15" r="4" fill="#86EFAC" stroke="#15803D" strokeWidth="1.2" />
+              <circle cx="516" cy="22" r="3" fill="#BBF7D0" />
+              <path d="M 494,54 Q 502,52 504,46 Q 496,46 492,52 Z" fill="#22C55E" />
+              <path d="M 480,78 Q 486,74 490,68 Q 482,70 478,76 Z" fill="#22C55E" />
+            </g>
           </g>
         );
+
+      case 'elf_long': // Elfo Boreal (Largas)
+        return (
+          <g id="race_elf_long">
+            <defs>
+              <filter id="elfShadow" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="-1" dy="2" stdDeviation="3" floodColor="#0F172A" floodOpacity="0.25" />
+              </filter>
+            </defs>
+
+            {/* OREJA ÉLFICA IZQUIERDA (Sustituye la oreja humana en ángulo de 35°) */}
+            <g filter="url(#elfShadow)">
+              <path d="M 328,192 C 314,184 285,168 250,150 C 246,148 245,153 249,158 C 270,185 304,218 322,238 C 326,240 330,234 330,224 C 330,214 329,202 328,192 Z" 
+                    fill={skinHex} stroke="#0F172A" strokeWidth="3" strokeLinejoin="round" />
+              <path d="M 324,196 C 310,190 286,176 264,164 C 280,182 304,206 320,226 Z" fill="#9A3412" opacity="0.25" />
+              <path d="M 326,194 C 314,188 296,178 278,170" fill="none" stroke="#9A3412" strokeWidth="1.8" opacity="0.4" strokeLinecap="round" />
+              <path d="M 284,174 Q 286,182 280,188" fill="none" stroke="#FACC15" strokeWidth="2.6" strokeLinecap="round" />
+              <circle cx="283" cy="181" r="2" fill="#FEF08A" />
+              <polygon points="280,190 278,197 282,197" fill="#38BDF8" stroke="#0284C7" strokeWidth="0.8" />
+            </g>
+
+            {/* OREJA ÉLFICA DERECHA */}
+            <g filter="url(#elfShadow)">
+              <path d="M 440,192 C 454,184 483,168 518,150 C 522,148 523,153 519,158 C 498,185 464,218 446,238 C 442,240 438,234 438,224 C 438,214 439,202 440,192 Z" 
+                    fill={skinHex} stroke="#0F172A" strokeWidth="3" strokeLinejoin="round" />
+              <path d="M 444,196 C 458,190 482,176 504,164 C 488,182 464,206 448,226 Z" fill="#9A3412" opacity="0.25" />
+              <path d="M 442,194 C 454,188 472,178 490,170" fill="none" stroke="#9A3412" strokeWidth="1.8" opacity="0.4" strokeLinecap="round" />
+              <path d="M 484,174 Q 482,182 488,188" fill="none" stroke="#FACC15" strokeWidth="2.6" strokeLinecap="round" />
+              <circle cx="485" cy="181" r="2" fill="#FEF08A" />
+              <polygon points="488,190 490,197 486,197" fill="#38BDF8" stroke="#0284C7" strokeWidth="0.8" />
+            </g>
+          </g>
+        );
+
+      case 'elf_short': // Elfo Ágil (Cortas)
+        return (
+          <g id="race_elf_short">
+            <defs>
+              <filter id="elfShortShadow" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="-1" dy="2" stdDeviation="3" floodColor="#0F172A" floodOpacity="0.25" />
+              </filter>
+            </defs>
+
+            {/* OREJA CORTA IZQUIERDA */}
+            <g filter="url(#elfShortShadow)">
+              <path d="M 328,194 C 316,188 290,178 268,166 C 265,164 264,169 268,174 C 284,194 308,218 324,232 C 328,234 330,228 330,220 C 330,212 329,202 328,194 Z" 
+                    fill={skinHex} stroke="#0F172A" strokeWidth="3" strokeLinejoin="round" />
+              <path d="M 322,198 C 310,192 292,182 278,174 C 290,188 308,206 320,222 Z" fill="#9A3412" opacity="0.2" />
+              <circle cx="282" cy="186" r="2.2" fill="#FACC15" stroke="#713F12" strokeWidth="0.8" />
+            </g>
+
+            {/* OREJA CORTA DERECHA */}
+            <g filter="url(#elfShortShadow)">
+              <path d="M 440,194 C 452,188 478,178 500,166 C 503,164 504,169 500,174 C 484,194 460,218 444,232 C 440,234 438,228 438,220 C 438,212 439,202 440,194 Z" 
+                    fill={skinHex} stroke="#0F172A" strokeWidth="3" strokeLinejoin="round" />
+              <path d="M 446,198 C 458,192 476,182 490,174 C 478,188 460,206 448,222 Z" fill="#9A3412" opacity="0.2" />
+              <circle cx="486" cy="186" r="2.2" fill="#FACC15" stroke="#713F12" strokeWidth="0.8" />
+            </g>
+          </g>
+        );
+
+      case 'merfolk_fins': // Aletas Acuáticas de Sirena
+        return (
+          <g id="race_merfolk_fins">
+            <defs>
+              <linearGradient id="finCyanGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#06B6D4" stopOpacity="0.9" />
+                <stop offset="50%" stopColor="#22D3EE" stopOpacity="0.8" />
+                <stop offset="100%" stopColor="#67E8F9" stopOpacity="0.65" />
+              </linearGradient>
+              <filter id="waterGlow" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#00F0FF" floodOpacity="0.75" />
+              </filter>
+            </defs>
+
+            {/* ALETA ACUÁTICA IZQUIERDA */}
+            <g filter="url(#waterGlow)">
+              <path d="M 328,194 C 298,172 264,152 238,132 C 248,162 250,186 236,204 C 254,208 266,218 254,232 C 274,230 304,226 328,234 Z" 
+                    fill="url(#finCyanGrad)" stroke="#083344" strokeWidth="2.8" strokeLinejoin="round" />
+              <path d="M 326,202 Q 284,168 240,134" fill="none" stroke="#E0F2FE" strokeWidth="2.2" strokeLinecap="round" />
+              <path d="M 326,212 Q 286,192 240,205" fill="none" stroke="#E0F2FE" strokeWidth="2" strokeLinecap="round" />
+              <path d="M 326,222 Q 296,222 258,233" fill="none" stroke="#E0F2FE" strokeWidth="1.8" strokeLinecap="round" />
+              <circle cx="242" cy="138" r="2.8" fill="#FFFFFF" opacity="0.9" />
+            </g>
+
+            {/* ALETA ACUÁTICA DERECHA */}
+            <g filter="url(#waterGlow)">
+              <path d="M 440,194 C 470,172 504,152 530,132 C 520,162 518,186 532,204 C 514,208 502,218 514,232 C 494,230 464,226 440,234 Z" 
+                    fill="url(#finCyanGrad)" stroke="#083344" strokeWidth="2.8" strokeLinejoin="round" />
+              <path d="M 442,202 Q 484,168 528,134" fill="none" stroke="#E0F2FE" strokeWidth="2.2" strokeLinecap="round" />
+              <path d="M 442,212 Q 482,192 528,205" fill="none" stroke="#E0F2FE" strokeWidth="2" strokeLinecap="round" />
+              <path d="M 442,222 Q 472,222 510,233" fill="none" stroke="#E0F2FE" strokeWidth="1.8" strokeLinecap="round" />
+              <circle cx="526" cy="138" r="2.8" fill="#FFFFFF" opacity="0.9" />
+            </g>
+          </g>
+        );
+
+      case 'fairy_wings': // Alas Minis de Hada (renderizadas en la capa posterior zIndex 5)
+        return null;
 
       case 'angel_halo': // Aureola Sagrada Flotante
         return (
-          <g id="race_angel_halo" transform="translate(384, 70)" className="animate-pulse">
-            <ellipse cx="0" cy="0" rx="75" ry="18" fill="none" stroke="#FDE047" strokeWidth="7" opacity="0.95" />
-            <ellipse cx="0" cy="0" rx="75" ry="18" fill="none" stroke="#FFFFFF" strokeWidth="2.5" />
-            <circle cx="-50" cy="-6" r="3.5" fill="#FFFFFF" />
-            <circle cx="45" cy="4" r="3.5" fill="#FFFFFF" />
+          <g id="race_angel_halo" transform="translate(384, 68)">
+            <defs>
+              <filter id="haloGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feDropShadow dx="0" dy="0" stdDeviation="8" floodColor="#FACC15" floodOpacity="0.9" />
+              </filter>
+            </defs>
+            <g filter="url(#haloGlow)">
+              <ellipse cx="0" cy="0" rx="82" ry="20" fill="none" stroke="#FEF08A" strokeWidth="8" opacity="0.4" />
+              <ellipse cx="0" cy="0" rx="78" ry="18" fill="none" stroke="#FBBF24" strokeWidth="6" />
+              <ellipse cx="0" cy="0" rx="78" ry="18" fill="none" stroke="#FFFFFF" strokeWidth="2.2" />
+              <polygon points="-55,-10 -53,-5 -48,-3 -53,-1 -55,4 -57,-1 -62,-3 -57,-5" fill="#FFFFFF" />
+              <polygon points="55,10 57,5 62,3 57,1 55,-4 53,1 48,3 53,5" fill="#FFFFFF" />
+            </g>
           </g>
         );
 
-      case 'crystal_crown': // Corona Rúnica de Cristal Flotante
+      case 'crystal_crown': // Corona Rúnica de Cristal
         return (
-          <g id="race_crystal_crown" transform="translate(384, 130)">
-            <polygon points="0,-42 -8,-10 0,-18 8,-10" fill="#00F0FF" stroke="#0284C7" strokeWidth="2" />
-            <polygon points="-32,-30 -38,-5 -30,-12 -24,-5" fill="#A855F7" stroke="#6B21A8" strokeWidth="2" />
-            <polygon points="32,-30 24,-5 30,-12 38,-5" fill="#A855F7" stroke="#6B21A8" strokeWidth="2" />
-            <polygon points="-60,-15 -64,5 -58,0 -52,5" fill="#38BDF8" stroke="#0284C7" strokeWidth="2" />
-            <polygon points="60,-15 52,5 58,0 64,5" fill="#38BDF8" stroke="#0284C7" strokeWidth="2" />
+          <g id="race_crystal_crown" transform="translate(384, 136)">
+            <defs>
+              <filter id="tiaraGlow" x="-40%" y="-40%" width="180%" height="180%">
+                <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="#38BDF8" floodOpacity="0.85" />
+              </filter>
+              <linearGradient id="crystalCentralGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#FFFFFF" />
+                <stop offset="35%" stopColor="#7DD3FC" />
+                <stop offset="80%" stopColor="#0284C7" />
+                <stop offset="100%" stopColor="#0369A1" />
+              </linearGradient>
+              <linearGradient id="crystalAmethystGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#FAF5FF" />
+                <stop offset="40%" stopColor="#C084FC" />
+                <stop offset="100%" stopColor="#7E22CE" />
+              </linearGradient>
+            </defs>
+
+            <g filter="url(#tiaraGlow)">
+              <path d="M -72,8 C -40,-2 40,-2 72,8" fill="none" stroke="#B45309" strokeWidth="4.5" strokeLinecap="round" />
+              <path d="M -70,8 C -40,-2 40,-2 70,8" fill="none" stroke="#FACC15" strokeWidth="3" strokeLinecap="round" />
+              <path d="M -48,4 Q -35,-8 -20,2" fill="none" stroke="#FDE047" strokeWidth="1.8" />
+              <path d="M 48,4 Q 35,-8 20,2" fill="none" stroke="#FDE047" strokeWidth="1.8" />
+
+              {/* Prisma Central Celeste */}
+              <polygon points="0,-48 -11,-12 0,-18 11,-12" fill="url(#crystalCentralGrad)" stroke="#0284C7" strokeWidth="1.8" />
+              <polygon points="0,-48 0,-18 11,-12" fill="#FFFFFF" opacity="0.45" />
+              
+              {/* Prismas Amatista Flanqueantes */}
+              <polygon points="-28,-36 -37,-8 -28,-14 -19,-8" fill="url(#crystalAmethystGrad)" stroke="#581C87" strokeWidth="1.6" />
+              <polygon points="-28,-36 -28,-14 -19,-8" fill="#FFFFFF" opacity="0.4" />
+
+              <polygon points="28,-36 19,-8 28,-14 37,-8" fill="url(#crystalAmethystGrad)" stroke="#581C87" strokeWidth="1.6" />
+              <polygon points="28,-36 28,-14 37,-8" fill="#FFFFFF" opacity="0.4" />
+              
+              {/* Cristales Cianos Exteriores */}
+              <polygon points="-54,-24 -60,-2 -54,-6 -48,-2" fill="url(#crystalCentralGrad)" stroke="#0284C7" strokeWidth="1.4" />
+              <polygon points="54,-24 48,-2 54,-6 60,-2" fill="url(#crystalCentralGrad)" stroke="#0284C7" strokeWidth="1.4" />
+
+              {/* Rubí Central Radiante */}
+              <circle cx="0" cy="0" r="5" fill="#E11D48" stroke="#881337" strokeWidth="1.5" />
+              <circle cx="-1.5" cy="-1.5" r="1.5" fill="#FFE4E6" />
+            </g>
+          </g>
+        );
+
+      case 'rune_tattoo': // Tatuajes Rúnicos Faciales
+        return (
+          <g id="race_rune_tattoo">
+            <defs>
+              <filter id="runeGlow" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#00F0FF" floodOpacity="0.9" />
+              </filter>
+            </defs>
+
+            <g filter="url(#runeGlow)">
+              <path d="M 324,228 Q 338,235 348,225 M 326,236 Q 338,242 346,234" fill="none" stroke="#00F0FF" strokeWidth="2.2" strokeLinecap="round" />
+              <circle cx="352" cy="223" r="2" fill="#FFFFFF" />
+
+              <path d="M 444,228 Q 430,235 420,225 M 442,236 Q 430,242 422,234" fill="none" stroke="#00F0FF" strokeWidth="2.2" strokeLinecap="round" />
+              <circle cx="416" cy="223" r="2" fill="#FFFFFF" />
+
+              <polygon points="384,152 387,159 384,166 381,159" fill="#00F0FF" stroke="#FFFFFF" strokeWidth="1" />
+              <circle cx="384" cy="159" r="1.6" fill="#FFFFFF" />
+            </g>
           </g>
         );
 
       case 'cosmic_antennae': // Antenas Cósmicas Estelares
         return (
           <g id="race_cosmic_antennae">
-            <path d="M 355,140 Q 330,100 325,65" fill="none" stroke="#06B6D4" strokeWidth="4.5" strokeLinecap="round" />
-            <circle cx="325" cy="65" r="9" fill="#00F0FF" className="animate-ping" opacity="0.6" />
-            <circle cx="325" cy="65" r="7" fill="#00F0FF" stroke="#FFFFFF" strokeWidth="2" />
-            <path d="M 413,140 Q 438,100 443,65" fill="none" stroke="#06B6D4" strokeWidth="4.5" strokeLinecap="round" />
-            <circle cx="443" cy="65" r="9" fill="#00F0FF" className="animate-ping" opacity="0.6" />
-            <circle cx="443" cy="65" r="7" fill="#00F0FF" stroke="#FFFFFF" strokeWidth="2" />
-          </g>
-        );
+            <defs>
+              <filter id="antennaGlow" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="#00F0FF" floodOpacity="0.9" />
+              </filter>
+            </defs>
 
-      case 'elf_long': // Elfo Boreal
-        return (
-          <g id="race_elf_long">
-            <path d="M 315,200 C 290,195 245,170 240,160 C 255,185 285,215 315,225 Z" fill={skinHex} stroke="#09090B" strokeWidth="4" />
-            <path d="M 305,202 C 285,195 260,180 255,172 C 265,185 285,205 305,212 Z" fill="#F43F5E" opacity="0.25" />
-            <rect x="270" y="180" width="6" height="12" rx="2" fill="#FACC15" stroke="#713F12" strokeWidth="1" />
-            <path d="M 453,200 C 478,195 523,170 528,160 C 513,185 483,215 453,225 Z" fill={skinHex} stroke="#09090B" strokeWidth="4" />
-            <path d="M 463,202 C 483,195 508,180 513,172 C 503,185 483,205 463,212 Z" fill="#F43F5E" opacity="0.25" />
-            <rect x="492" y="180" width="6" height="12" rx="2" fill="#FACC15" stroke="#713F12" strokeWidth="1" />
-          </g>
-        );
+            {/* ANTENA IZQUIERDA */}
+            <g filter="url(#antennaGlow)">
+              <rect x="340" y="112" width="7" height="10" rx="2.5" fill="#334155" stroke="#0F172A" strokeWidth="1.4" />
+              <path d="M 343,114 Q 320,80 316,40" fill="none" stroke="#06B6D4" strokeWidth="3.6" strokeLinecap="round" />
+              <path d="M 343,114 Q 320,80 316,40" fill="none" stroke="#E0F2FE" strokeWidth="1.6" strokeLinecap="round" />
+              <circle cx="316" cy="38" r="10" fill="#00F0FF" opacity="0.35" />
+              <circle cx="316" cy="38" r="7.5" fill="#00F0FF" stroke="#FFFFFF" strokeWidth="1.8" />
+              <circle cx="314" cy="36" r="2.8" fill="#FFFFFF" />
+              <ellipse cx="316" cy="38" rx="13" ry="4.5" fill="none" stroke="#FEF08A" strokeWidth="1.4" transform="rotate(-25 316 38)" />
+            </g>
 
-      case 'elf_short': // Elfo Ágil
-        return (
-          <g id="race_elf_short">
-            <path d="M 315,202 C 298,196 275,180 270,172 C 280,188 300,208 315,218 Z" fill={skinHex} stroke="#09090B" strokeWidth="3.5" />
-            <circle cx="282" cy="192" r="3" fill="#FACC15" />
-            <path d="M 453,202 C 470,196 493,180 498,172 C 488,188 468,208 453,218 Z" fill={skinHex} stroke="#09090B" strokeWidth="3.5" />
-            <circle cx="486" cy="192" r="3" fill="#FACC15" />
-          </g>
-        );
-
-      case 'merfolk_fins': // Aletas de Sirena
-        return (
-          <g id="race_merfolk_fins">
-            <path d="M 315,195 C 275,175 255,190 245,170 C 265,205 270,225 315,230 Z" fill="#06B6D4" opacity="0.75" stroke="#083344" strokeWidth="3" />
-            <path d="M 453,195 C 493,175 513,190 523,170 C 503,205 498,225 453,230 Z" fill="#06B6D4" opacity="0.75" stroke="#083344" strokeWidth="3" />
-          </g>
-        );
-
-      case 'rune_tattoo': // Tatuajes Rúnicos Faciales
-        return (
-          <g id="race_rune_tattoo" className="animate-pulse">
-            <path d="M 330,230 L 338,245 L 346,230 M 338,226 L 338,252" fill="none" stroke="#00F0FF" strokeWidth="3.5" strokeLinecap="round" />
-            <path d="M 438,230 L 430,245 L 422,230 M 430,226 L 430,252" fill="none" stroke="#00F0FF" strokeWidth="3.5" strokeLinecap="round" />
-            <polygon points="384,170 388,178 384,186 380,178" fill="#F43F5E" />
+            {/* ANTENA DERECHA */}
+            <g filter="url(#antennaGlow)">
+              <rect x="421" y="112" width="7" height="10" rx="2.5" fill="#334155" stroke="#0F172A" strokeWidth="1.4" />
+              <path d="M 425,114 Q 448,80 452,40" fill="none" stroke="#06B6D4" strokeWidth="3.6" strokeLinecap="round" />
+              <path d="M 425,114 Q 448,80 452,40" fill="none" stroke="#E0F2FE" strokeWidth="1.6" strokeLinecap="round" />
+              <circle cx="452" cy="38" r="10" fill="#00F0FF" opacity="0.35" />
+              <circle cx="452" cy="38" r="7.5" fill="#00F0FF" stroke="#FFFFFF" strokeWidth="1.8" />
+              <circle cx="450" cy="36" r="2.8" fill="#FFFFFF" />
+              <ellipse cx="452" cy="38" rx="13" ry="4.5" fill="none" stroke="#FEF08A" strokeWidth="1.4" transform="rotate(25 452 38)" />
+            </g>
           </g>
         );
 
@@ -967,7 +1381,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
           <g id="outerwear_varsity_layer">
             {/* Torso azul real ajustado al cuerpo */}
             <path 
-              d="M 340,275 C 315,285 275,305 252,330 C 240,365 240,420 286,465 L 274,642 L 492,642 L 504,465 C 550,420 550,365 538,330 C 515,305 475,285 450,275 Z" 
+              d="M 340,285 C 315,295 275,310 252,330 C 240,365 240,420 286,465 L 274,642 L 492,642 L 504,465 C 550,420 550,365 538,330 C 515,310 475,295 450,285 C 440,312 416,346 384,354 C 352,346 328,312 340,285 Z" 
               fill="#1D4ED8" 
               stroke="#09090B" 
               strokeWidth="4.5" 
@@ -1001,16 +1415,16 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
             <polygon points="512,661 576,654 574,669 510,676" fill="#1E3A8A" stroke="#09090B" strokeWidth="2.5" />
             <line x1="512" y1="668" x2="574" y2="661" stroke="#FFFFFF" strokeWidth="2" strokeDasharray="5,4" />
 
-            {/* Cuello elástico a rayas */}
-            <path d="M 330,278 Q 384,325 440,278" fill="none" stroke="#1E3A8A" strokeWidth="16" strokeLinecap="round" />
-            <path d="M 330,278 Q 384,325 440,278" fill="none" stroke="#FFFFFF" strokeWidth="4" strokeDasharray="14,10" strokeLinecap="round" />
+            {/* Cuello elástico a rayas pegado al cuerpo */}
+            <path d="M 338,290 Q 384,346 430,290" fill="none" stroke="#1E3A8A" strokeWidth="14" strokeLinecap="round" />
+            <path d="M 338,290 Q 384,346 430,290" fill="none" stroke="#FFFFFF" strokeWidth="3" strokeDasharray="12,8" strokeLinecap="round" />
 
             {/* Botones y botonera central */}
-            <line x1="384" y1="310" x2="384" y2="626" stroke="#1E40AF" strokeWidth="6" />
-            <circle cx="384" cy="365" r="5" fill="#FFFFFF" stroke="#09090B" strokeWidth="2" />
-            <circle cx="384" cy="425" r="5" fill="#FFFFFF" stroke="#09090B" strokeWidth="2" />
-            <circle cx="384" cy="485" r="5" fill="#FFFFFF" stroke="#09090B" strokeWidth="2" />
-            <circle cx="384" cy="545" r="5" fill="#FFFFFF" stroke="#09090B" strokeWidth="2" />
+            <line x1="384" y1="340" x2="384" y2="626" stroke="#1E40AF" strokeWidth="6" />
+            <circle cx="384" cy="370" r="5" fill="#FFFFFF" stroke="#09090B" strokeWidth="2" />
+            <circle cx="384" cy="430" r="5" fill="#FFFFFF" stroke="#09090B" strokeWidth="2" />
+            <circle cx="384" cy="490" r="5" fill="#FFFFFF" stroke="#09090B" strokeWidth="2" />
+            <circle cx="384" cy="550" r="5" fill="#FFFFFF" stroke="#09090B" strokeWidth="2" />
 
             {/* Pretina elástica inferior a rayas */}
             <rect x="270" y="626" width="226" height="20" rx="4" fill="#1E3A8A" stroke="#09090B" strokeWidth="3.5" />
@@ -1028,7 +1442,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
         return (
           <g id="outerwear_hoodie_layer">
             <path 
-              d="M 340,275 C 315,285 275,305 252,330 C 240,365 240,420 286,465 L 274,642 L 492,642 L 504,465 C 550,420 550,365 538,330 C 515,305 475,285 450,275 Z" 
+              d="M 340,285 C 315,295 275,310 252,330 C 240,365 240,420 286,465 L 274,642 L 492,642 L 504,465 C 550,420 550,365 538,330 C 515,310 475,295 450,285 C 440,312 416,346 384,354 C 352,346 328,312 340,285 Z" 
               fill="#0284C7" 
               stroke="#09090B" 
               strokeWidth="4.5" 
@@ -1053,17 +1467,17 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
             <path d="M 578,520 Q 558,530 538,515" fill="none" stroke="#0369A1" strokeWidth="4" strokeLinecap="round" />
             <polygon points="512,661 576,654 574,669 510,676" fill="#0369A1" stroke="#09090B" strokeWidth="2.5" />
 
-            {/* Capucha drapeada en el cuello */}
-            <path d="M 310,290 C 330,260 384,255 438,260 C 458,290 448,340 384,345 C 320,340 310,290 310,290 Z" fill="#0369A1" stroke="#09090B" strokeWidth="4.5" />
-            <path d="M 325,295 C 345,280 384,275 423,280 C 435,305 425,330 384,335 C 343,330 333,305 325,295 Z" fill="#0284C7" />
+            {/* Cuello y capucha drapeada pegada perfectamente al cuerpo */}
+            <path d="M 336,288 C 356,320 372,348 384,352 C 396,348 412,320 432,288 C 440,294 424,335 384,360 C 344,335 328,294 336,288 Z" fill="#0369A1" stroke="#09090B" strokeWidth="3.5" />
+            <path d="M 346,296 C 362,324 376,346 384,350 C 392,346 406,324 422,296 C 414,312 400,336 384,342 C 368,336 354,312 346,296 Z" fill="#0284C7" />
 
-            {/* Cordones blancos con herrajes */}
-            <path d="M 355,330 C 352,380 350,420 352,460" fill="none" stroke="#FFFFFF" strokeWidth="4" strokeLinecap="round" />
-            <rect x="349" y="455" width="6" height="12" rx="2" fill="#94A3B8" />
-            <path d="M 413,330 C 416,380 418,420 416,460" fill="none" stroke="#FFFFFF" strokeWidth="4" strokeLinecap="round" />
-            <rect x="413" y="455" width="6" height="12" rx="2" fill="#94A3B8" />
+            {/* Cordones blancos con herrajes que caen desde la base del cuello */}
+            <path d="M 366,350 C 364,390 362,420 364,455" fill="none" stroke="#FFFFFF" strokeWidth="3.5" strokeLinecap="round" />
+            <rect x="361" y="450" width="6" height="12" rx="2" fill="#94A3B8" />
+            <path d="M 402,350 C 404,390 406,420 404,455" fill="none" stroke="#FFFFFF" strokeWidth="3.5" strokeLinecap="round" />
+            <rect x="401" y="450" width="6" height="12" rx="2" fill="#94A3B8" />
 
-            {/* Bolsillo canguro frontal */}
+            {/* Bolsillo canguro frontal y pretina */}
             <path d="M 320,525 L 448,525 L 460,615 L 308,615 Z" fill="#0369A1" stroke="#09090B" strokeWidth="3.5" />
             <rect x="270" y="626" width="226" height="20" rx="4" fill="#0369A1" stroke="#09090B" strokeWidth="3" />
           </g>
@@ -1073,7 +1487,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
         return (
           <g id="outerwear_bomber_layer">
             <path 
-              d="M 340,275 C 315,285 275,305 252,330 C 240,365 240,420 286,465 L 274,642 L 492,642 L 504,465 C 550,420 550,365 538,330 C 515,305 475,285 450,275 Z" 
+              d="M 340,285 C 315,295 275,310 252,330 C 240,365 240,420 286,465 L 274,642 L 492,642 L 504,465 C 550,420 550,365 538,330 C 515,310 475,295 450,285 C 440,312 416,346 384,354 C 352,346 328,312 340,285 Z" 
               fill="#9A3412" 
               stroke="#09090B" 
               strokeWidth="4.5" 
@@ -1097,13 +1511,13 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
             <path d="M 578,520 Q 558,530 538,515" fill="none" stroke="#451A03" strokeWidth="4" strokeLinecap="round" />
             <polygon points="512,661 576,654 574,669 510,676" fill="#451A03" stroke="#09090B" strokeWidth="2.5" />
 
-            {/* Cuello de borrego abullonado */}
-            <path d="M 310,285 C 335,320 375,325 384,395 C 393,325 433,320 458,285 C 440,265 330,265 310,285 Z" fill="#FEF3C7" stroke="#09090B" strokeWidth="4.5" />
-            <circle cx="340" cy="305" r="12" fill="#FDE68A" />
-            <circle cx="428" cy="305" r="12" fill="#FDE68A" />
+            {/* Cuello de borrego abullonado pegado al cuello */}
+            <path d="M 332,290 C 354,324 372,352 384,380 C 396,352 414,324 436,290 C 446,298 426,358 384,390 C 342,358 322,298 332,290 Z" fill="#FEF3C7" stroke="#09090B" strokeWidth="4" />
+            <circle cx="348" cy="315" r="10" fill="#FDE68A" />
+            <circle cx="420" cy="315" r="10" fill="#FDE68A" />
 
             {/* Cremallera de latón */}
-            <line x1="384" y1="395" x2="384" y2="626" stroke="#F59E0B" strokeWidth="5" />
+            <line x1="384" y1="380" x2="384" y2="626" stroke="#F59E0B" strokeWidth="5" />
             <rect x="380" y="415" width="8" height="14" rx="2" fill="#D97706" />
 
             {/* Parche de aviador */}
@@ -1203,7 +1617,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
         return (
           <g id="outerwear_fur_duster_layer">
             <path 
-              d="M 340,275 C 315,285 275,305 252,330 C 240,365 240,420 286,465 L 274,642 L 492,642 L 504,465 C 550,420 550,365 538,330 C 515,305 475,285 450,275 Z" 
+              d="M 340,285 C 315,295 275,310 252,330 C 240,365 240,420 286,465 L 274,642 L 492,642 L 504,465 C 550,420 550,365 538,330 C 515,310 475,295 450,285 C 440,312 416,346 384,354 C 352,346 328,312 340,285 Z" 
               fill="#18181B" 
               stroke="#09090B" 
               strokeWidth="4.5" 
@@ -1225,15 +1639,15 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
             />
             <polygon points="512,661 576,654 574,669 510,676" fill="#3F3F46" stroke="#18181B" strokeWidth="2.5" />
 
-            {/* Cuello de felpa / borrego esponjoso */}
-            <path d="M 285,305 C 315,285 355,335 384,375 C 413,335 453,285 483,305 C 460,395 410,430 384,440 C 358,430 308,395 285,305 Z" fill="#3F3F46" stroke="#18181B" strokeWidth="4.5" />
-            <circle cx="315" cy="345" r="18" fill="#52525B" />
-            <circle cx="453" cy="345" r="18" fill="#52525B" />
-            <circle cx="384" cy="400" r="16" fill="#71717A" />
+            {/* Cuello de felpa / borrego esponjoso pegado al cuerpo */}
+            <path d="M 326,290 C 352,325 372,355 384,385 C 396,355 416,325 442,290 C 454,350 416,410 384,420 C 352,410 314,350 326,290 Z" fill="#3F3F46" stroke="#18181B" strokeWidth="4" />
+            <circle cx="335" cy="335" r="14" fill="#52525B" />
+            <circle cx="433" cy="335" r="14" fill="#52525B" />
+            <circle cx="384" cy="380" r="14" fill="#71717A" />
 
             {/* Broche plateado rúnico central */}
-            <circle cx="384" cy="430" r="12" fill="#CBD5E1" stroke="#475569" strokeWidth="3" />
-            <circle cx="384" cy="430" r="5" fill="#0284C7" />
+            <circle cx="384" cy="405" r="10" fill="#CBD5E1" stroke="#475569" strokeWidth="2.5" />
+            <circle cx="384" cy="405" r="4" fill="#0284C7" />
           </g>
         );
 
@@ -1242,13 +1656,37 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
     }
   };
 
+  // Prenda Superior Modular (Top / Playera / Camisa / Chaleco / Túnica)
+  // Calibrada anatómicamente por género (femenino, masculino, neutro) con estilo cel-shaded realista
+  const renderTop = () => {
+    if (!equippedTop) {
+      return null;
+    }
+
+    const prefix = gender === 'female' ? 'female' : gender === 'neutral' ? 'neutral' : 'male';
+    const topSrc = `/images/avatar/tops/${prefix}_${equippedTop}.png?v=20260915_zero_collar_final`;
+
+    return (
+      <image
+        id={`top_${equippedTop}_layer`}
+        href={topSrc}
+        x="0"
+        y="0"
+        width="768"
+        height="1376"
+        preserveAspectRatio="xMidYMid meet"
+        className="pointer-events-none"
+      />
+    );
+  };
+
   return (
     <div 
       ref={containerRef}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
       onClick={handleAvatarClick}
-      className={`relative select-none flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing ${className}`}
+      className={`relative select-none flex items-center justify-center overflow-visible cursor-grab active:cursor-grabbing ${className}`}
       style={{
         perspective: '1200px',
         width: width || '100%',
@@ -1269,7 +1707,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
           className="relative w-full h-full flex items-center justify-center"
           style={{
             transform: `${zoomStyle} ${bodyScaleTransform}`,
-            transformOrigin: '50% 65%',
+            transformOrigin: zoomOrigin,
             transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
           }}
         >
@@ -1277,7 +1715,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
           {/* SILUETA DEL AVATAR CON HALO NEÓN PEGADO (.neon-hero-contour)        */}
           {/* Y EMOTES ANIMADOS ESTILO FORTNITE CON MOVIMIENTO VISIBLE DE PIES Y MANOS */}
           {/* =================================================================== */}
-          <div className={`relative flex items-center justify-center h-full max-h-[94%] neon-hero-contour ${
+          <div className={`relative flex items-center justify-center h-full max-h-full neon-hero-contour ${
             isCheer ? 'animate-victory-jump' : isCombat ? 'animate-combat-ready' : isPower ? 'animate-power-surge' : isWalk ? 'animate-march-stride' : 'animate-breathing-loop'
           }`}>
             
@@ -1288,10 +1726,38 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
                 className="absolute inset-0 m-auto w-auto h-full max-h-full pointer-events-none overflow-visible animate-pulse"
                 style={{ zIndex: 5 }}
               >
-                <path d="M 330,440 C 200,320 120,400 130,520 C 150,600 270,550 330,490 Z" fill="#38BDF8" opacity="0.65" stroke="#0284C7" strokeWidth="4" />
-                <path d="M 320,460 C 230,400 180,450 180,510 C 200,560 270,530 320,490 Z" fill="#F472B6" opacity="0.4" />
-                <path d="M 438,440 C 568,320 648,400 638,520 C 618,600 498,550 438,490 Z" fill="#38BDF8" opacity="0.65" stroke="#0284C7" strokeWidth="4" />
-                <path d="M 448,460 C 538,400 588,450 588,510 C 568,560 498,530 448,490 Z" fill="#F472B6" opacity="0.4" />
+                <defs>
+                  <linearGradient id="fairyWingGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#A7F3D0" stopOpacity="0.85" />
+                    <stop offset="50%" stopColor="#67E8F9" stopOpacity="0.75" />
+                    <stop offset="100%" stopColor="#C4B5FD" stopOpacity="0.65" />
+                  </linearGradient>
+                  <filter id="fairyGlow" x="-30%" y="-30%" width="160%" height="160%">
+                    <feDropShadow dx="0" dy="0" stdDeviation="8" floodColor="#67E8F9" floodOpacity="0.9" />
+                  </filter>
+                </defs>
+
+                {/* PAR DE ALAS IZQUIERDAS */}
+                <g filter="url(#fairyGlow)">
+                  <path d="M 330,420 C 260,340 180,260 120,230 C 130,270 160,370 220,430 C 270,480 310,460 330,420 Z" 
+                        fill="url(#fairyWingGrad)" stroke="#0284C7" strokeWidth="2.5" />
+                  <path d="M 120,230 Q 220,330 325,420" fill="none" stroke="#FFFFFF" strokeWidth="2" opacity="0.85" />
+                  <path d="M 310,440 C 260,465 190,490 160,525 C 190,535 250,515 295,480 Z" 
+                        fill="url(#fairyWingGrad)" stroke="#0284C7" strokeWidth="2" />
+                  <circle cx="120" cy="230" r="3" fill="#FFFFFF" />
+                  <circle cx="160" cy="525" r="2.5" fill="#FFFFFF" />
+                </g>
+
+                {/* PAR DE ALAS DERECHAS */}
+                <g filter="url(#fairyGlow)">
+                  <path d="M 438,420 C 508,340 588,260 648,230 C 638,270 608,370 548,430 C 498,480 458,460 438,420 Z" 
+                        fill="url(#fairyWingGrad)" stroke="#0284C7" strokeWidth="2.5" />
+                  <path d="M 648,230 Q 548,330 443,420" fill="none" stroke="#FFFFFF" strokeWidth="2" opacity="0.85" />
+                  <path d="M 458,440 C 508,465 578,490 608,525 C 578,535 518,515 473,480 Z" 
+                        fill="url(#fairyWingGrad)" stroke="#0284C7" strokeWidth="2" />
+                  <circle cx="648" cy="230" r="3" fill="#FFFFFF" />
+                  <circle cx="608" cy="525" r="2.5" fill="#FFFFFF" />
+                </g>
               </svg>
             )}
 
@@ -1371,7 +1837,10 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
                 </g>
               )}
 
-              {/* 6. MOCHILA Y TIRANTES (SOLO SI ESTÁ EQUIPADA) */}
+              {/* 6. PRENDA SUPERIOR MODULAR ANATÓMICA (TOP) */}
+              {renderTop()}
+
+              {/* 7. MOCHILA Y TIRANTES (SOLO SI ESTÁ EQUIPADA) */}
               {equippedAccessory === 'acc_red_backpack' && (
                 <g id="acc_backpack_straps_layer">
                   <path d="M 305,370 C 315,450 322,500 328,570" fill="none" stroke="#DC2626" strokeWidth="20" strokeLinecap="round" />
@@ -1426,17 +1895,6 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
             </svg>
           </div>
 
-          {/* Pedestal Holográfico Futurista Circular */}
-          {showPedestal && (
-            <div className="absolute bottom-2 pointer-events-none flex items-center justify-center -z-10">
-              <svg viewBox="0 0 320 80" className="w-80 h-20 overflow-visible">
-                <ellipse cx="160" cy="40" rx="140" ry="32" fill="none" stroke="#00F0FF" strokeWidth="3.5" opacity="0.9" />
-                <ellipse cx="160" cy="40" rx="110" ry="24" fill="#06B6D4" fillOpacity="0.2" stroke="#38BDF8" strokeWidth="2.5" />
-                <ellipse cx="160" cy="40" rx="75" ry="16" fill="none" stroke="#A5F3FC" strokeWidth="2" strokeDasharray="12,6" />
-                <ellipse cx="160" cy="40" rx="35" ry="8" fill="#00F0FF" fillOpacity="0.4" />
-              </svg>
-            </div>
-          )}
         </div>
       </div>
 

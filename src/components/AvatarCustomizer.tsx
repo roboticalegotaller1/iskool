@@ -859,8 +859,8 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
               ))}
             </div>
 
-            {/* AVATAR 3D CEL-SHADED DE CUERPO COMPLETO CON PEDESTAL HOLOGRÁFICO */}
-            <div className="w-full h-full max-h-[82vh] flex items-center justify-center">
+            {/* AVATAR 3D CEL-SHADED DE CUERPO COMPLETO CON MÁXIMA VISIBILIDAD */}
+            <div className="w-full h-full max-h-[85vh] flex items-center justify-center py-2">
               <ModularAnimeAvatarSprite
                 gender={selectedGender}
                 skinTone={selectedSkinTone}
@@ -876,9 +876,9 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                 equippedHat={selectedHat}
                 equippedAccessory={selectedAccessory}
                 animationState={previewAnimation}
-                showPedestal={true}
+                showPedestal={false}
                 zoom={cameraZoom}
-                className="w-full h-full max-h-[78vh]"
+                className="w-full h-full max-h-[84vh]"
               />
             </div>
           </div>
