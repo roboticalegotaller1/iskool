@@ -725,6 +725,55 @@ function getMockCommunityActivities(): CommunityActivity[] {
           }
         ]
       }
+    },
+    {
+      id: 'act-mock-escape-room',
+      teacher_id: 'usr-teacher-escape',
+      title: 'Escape Room Lógico: Los Secretos del Agua y la Presión Hidrostática',
+      template_type: 'escape_room',
+      upvotes: 56,
+      created_at: new Date().toISOString(),
+      teacher_name: 'Profra. Marcela Silva',
+      content_json: {
+        title: 'Escape Room Lógico: Los Secretos del Agua y la Presión Hidrostática',
+        description: 'Examina el códice pedagógico de evidencias y descifra cada enigma para desbloquear los candados de la sala.',
+        readingText: `El comportamiento de los fluidos bajo condiciones de presión variable representa uno de los descubrimientos más transformadores de la física moderna. A través de los postulados formulados por Blaise Pascal en el siglo XVII, se comprobó experimentalmente que cualquier incremento de presión aplicado en la superficie de un líquido incompresible y en reposo se transmite con idéntica intensidad y en todas direcciones a través de todo el volumen del recipiente.\n\nEste principio no solo revolucionó la comprensión científica de la hidrostática, sino que hizo posible el desarrollo de maquinaria pesada, prensas hidráulicas y sistemas de frenado automotriz. Para abrir los candados de este recinto hermético y escapar con éxito, los investigadores deben conectar con precisión las propiedades de incompresibilidad de los fluidos con su capacidad multiplicadora de fuerzas.`,
+        questions: [
+          {
+            question: 'De acuerdo con el códice de lectura, ¿cómo se transmite un incremento de presión aplicado en un fluido incompresible?',
+            options: [
+              'Con idéntica intensidad y en todas direcciones a través de todo el volumen',
+              'Únicamente hacia el fondo del recipiente por efecto gravitacional',
+              'De manera decreciente conforme aumenta la distancia de la superficie',
+              'Solamente en las paredes laterales del contenedor'
+            ],
+            correctIndex: 0,
+            explanation: 'El principio de Pascal demuestra que la presión se transmite íntegra e indistintamente en todas direcciones.'
+          },
+          {
+            question: 'Según el segundo párrafo del texto, ¿cuál de las siguientes aplicaciones tecnológicas fue posible gracias a este principio?',
+            options: [
+              'Prensas hidráulicas y sistemas de frenado automotriz',
+              'Circuitos integrados de silicio de alta densidad',
+              'Motores de combustión interna sin lubricante',
+              'Paneles solares fotovoltaicos de última generación'
+            ],
+            correctIndex: 0,
+            explanation: 'El texto señala explícitamente el desarrollo de prensas hidráulicas y frenos gracias a la multiplicación de fuerzas.'
+          },
+          {
+            question: '¿Qué propiedad física de los líquidos es señalada como indispensable para la multiplicación de fuerzas?',
+            options: [
+              'Su condición de fluido incompresible en reposo',
+              'Su alta evaporación a temperatura ambiente',
+              'Su cambio rápido de fase líquida a gaseosa',
+              'Su elasticidad molecular ante el calor extremo'
+            ],
+            correctIndex: 0,
+            explanation: 'La incompresibilidad del líquido garantiza que el esfuerzo mecánico aplicado no se disipe en compresión de volumen.'
+          }
+        ]
+      }
     }
   ];
 

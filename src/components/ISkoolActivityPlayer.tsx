@@ -7,6 +7,7 @@ import { TriviaPlayer } from '@/components/games/TriviaPlayer';
 import { MemoramaPlayer } from '@/components/games/MemoramaPlayer';
 import { AhorcadoPlayer } from '@/components/games/AhorcadoPlayer';
 import { FlashcardsPlayer } from '@/components/games/FlashcardsPlayer';
+import { EscapeRoomPlayer } from '@/components/games/EscapeRoomPlayer';
 import { GenericGameStub } from '@/components/games/GenericGameStub';
 import { InteractiveUniversalGamePlayer } from '@/components/games/InteractiveUniversalGamePlayer';
 import { LogicMathInteractivePlayer } from '@/components/studio/player/LogicMathInteractivePlayer';
@@ -120,6 +121,9 @@ export const ISkoolActivityPlayer: React.FC<ISkoolActivityPlayerProps> = ({
       
       case 'flashcards':
         return <FlashcardsPlayer activity={activity} onClose={onClose} onComplete={onComplete} />;
+
+      case 'escape_room':
+        return <EscapeRoomPlayer activity={activity} onClose={onClose} onComplete={onComplete} />;
 
       default:
         return (

@@ -27,7 +27,8 @@ import {
   ListOrdered,
   Link2,
   Trophy,
-  Award
+  Award,
+  Globe
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -39,6 +40,7 @@ export default function TeacherStudioPage() {
   const [aiTopic, setAiTopic] = useState('');
   const [faseNem, setFaseNem] = useState('Fase 5');
   const [gamificationStyle, setGamificationStyle] = useState<'rpg_adventure' | 'escape_room' | 'scientific_expedition' | 'olympic_tournament'>('rpg_adventure');
+  const [generationLanguage, setGenerationLanguage] = useState<'Español' | 'Inglés B2' | 'Francés A2'>('Español');
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [generationStep, setGenerationStep] = useState('');
 
@@ -64,6 +66,7 @@ export default function TeacherStudioPage() {
             topic: aiTopic.trim(),
             faseNem,
             gamificationStyle,
+            language: generationLanguage,
             questionCount: 5
           })
         });
@@ -81,7 +84,8 @@ export default function TeacherStudioPage() {
         projectResult = await generateGamifiedProject({
           topic: aiTopic.trim(),
           faseNem,
-          gamificationStyle
+          gamificationStyle,
+          language: generationLanguage
         });
       }
 
@@ -222,13 +226,20 @@ export default function TeacherStudioPage() {
               </div>
             </div>
 
-            {/* Entrada del Tema */}
+            {/* Entrada del Tema e Idioma de Generación */}
             <div className="space-y-3 text-left">
-              <label className="text-xs font-bold text-slate-200">
-                Tema de la Actividad o Aprendizaje Esperado (PDA):
-              </label>
-              <div className="flex flex-col sm:flex-row gap-2.5">
+              <div className="flex items-center justify-between">
+                <label htmlFor="ai-topic-input" className="text-xs font-bold text-slate-200">
+                  Tema de la Actividad o Aprendizaje Esperado (PDA):
+                </label>
+                <span className="text-[11px] font-semibold text-emerald-400/90 hidden sm:inline-flex items-center gap-1">
+                  <Globe className="w-3.5 h-3.5" />
+                  Soporte Trilingüe para Colegios Internacionales
+                </span>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
                 <input
+                  id="ai-topic-input"
                   type="text"
                   value={aiTopic}
                   onChange={(e) => setAiTopic(e.target.value)}
@@ -237,8 +248,28 @@ export default function TeacherStudioPage() {
                   disabled={isGeneratingAi}
                   className="flex-1 px-4 py-3 rounded-2xl bg-slate-800/90 border border-slate-700 text-sm font-semibold text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 disabled:opacity-50"
                 />
+
+                {/* Dropdown con Diseño Minimalista para Idioma de Generación */}
+                <div className="relative shrink-0">
+                  <select
+                    id="generation-language-dropdown"
+                    value={generationLanguage}
+                    onChange={(e) => setGenerationLanguage(e.target.value as any)}
+                    disabled={isGeneratingAi}
+                    aria-label="Idioma de Generación"
+                    title="Idioma de Generación"
+                    className="w-full sm:w-auto h-[46px] px-4 py-2.5 rounded-2xl bg-slate-800/90 border border-slate-700/90 text-xs sm:text-sm font-bold text-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 disabled:opacity-50 cursor-pointer appearance-none pr-9 transition-all hover:bg-slate-750 hover:border-emerald-500/50 shadow-sm"
+                  >
+                    <option value="Español" className="bg-slate-900 text-white">🇪🇸 Español</option>
+                    <option value="Inglés B2" className="bg-slate-900 text-white">🇬🇧 Inglés B2</option>
+                    <option value="Francés A2" className="bg-slate-900 text-white">🇫🇷 Francés A2</option>
+                  </select>
+                  <Globe className="w-4 h-4 text-emerald-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+
                 <button
                   type="button"
+                  id="generate-project-btn"
                   onClick={handleGenerateWithAi}
                   disabled={!aiTopic.trim() || isGeneratingAi}
                   className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-sm shadow-xl shadow-amber-500/30 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 transition-all border border-amber-400/50 hover:scale-[1.02] active:scale-95 shrink-0"

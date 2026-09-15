@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useStudentStore } from '@/store/useStudentStore';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
+import { supabase } from '@/lib/supabaseClient';
 
 type DemoCategory = 'docentes' | 'estudiantes' | 'gestion';
 
@@ -177,11 +178,80 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeDemoCategory, setActiveDemoCategory] = useState<DemoCategory>('docentes');
   const [showDemoSelector, setShowDemoSelector] = useState(false);
+  const [isSsoLoading, setIsSsoLoading] = useState(false);
 
-  const { login, loading: authLoading } = useAuth();
+  const { login, loading: authLoading, user } = useAuth();
   const switchStudent = useStudentStore(state => state.switchStudent);
   const router = useRouter();
   const isSchoolSuspended = useSchoolAdminStore(state => state.isSchoolSuspended);
+
+  // Redirección reactiva si el usuario ya está autenticado (o tras retorno de OAuth)
+  React.useEffect(() => {
+    if (user) {
+      routeUserByRole(user);
+    }
+  }, [user]);
+
+  // Listener para capturar el evento SIGNED_IN de Supabase Auth
+  React.useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      if (event === 'SIGNED_IN' && currentSession?.user) {
+        setIsSubmitting(true);
+        const userEmail = currentSession.user.email || '';
+        const matchedDemo = DEMO_ACCOUNTS.find(d => d.email.toLowerCase() === userEmail.toLowerCase());
+        const userProfile = matchedDemo ? {
+          id: matchedDemo.id,
+          first_name: matchedDemo.name.split(' ')[0],
+          last_name: matchedDemo.name.split(' ').slice(1).join(' '),
+          role: matchedDemo.role as any,
+          email: matchedDemo.email,
+          school_id: 'sch-test-case',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        } : {
+          id: currentSession.user.id,
+          first_name: currentSession.user.user_metadata?.first_name || currentSession.user.user_metadata?.given_name || (currentSession.user.user_metadata?.full_name ? currentSession.user.user_metadata.full_name.split(' ')[0] : 'Docente/Estudiante'),
+          last_name: currentSession.user.user_metadata?.last_name || currentSession.user.user_metadata?.family_name || '',
+          role: (currentSession.user.user_metadata?.role || (userEmail.includes('docente') || userEmail.includes('profesor') ? 'teacher' : 'student')) as any,
+          email: userEmail,
+          school_id: 'sch-test-case',
+          created_at: currentSession.user.created_at,
+          updated_at: new Date().toISOString()
+        };
+        await routeUserByRole(userProfile);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleInstitutionalSSO = async () => {
+    setErrorMsg('');
+    setIsSsoLoading(true);
+    try {
+      const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}/login` : undefined;
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'select_account'
+          }
+        }
+      });
+
+      if (error) {
+        setErrorMsg(error.message || 'Error al conectar con el proveedor de autenticación institucional.');
+        setIsSsoLoading(false);
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'No fue posible iniciar la sesión única institucional.');
+      setIsSsoLoading(false);
+    }
+  };
 
   // Comprobar si hay una notificación flash de suspensión institucional
   React.useEffect(() => {
@@ -405,6 +475,37 @@ export default function LoginPage() {
               </div>
             </div>
           )}
+
+          {/* Botón Primario de Inicio de Sesión Único Institucional (SSO para Aulas Digitales / Chromebooks) */}
+          <div className="flex flex-col gap-3">
+            <button
+              id="btn-institutional-sso"
+              type="button"
+              onClick={handleInstitutionalSSO}
+              disabled={isSubmitting || authLoading || isSsoLoading}
+              className="w-full py-4 px-6 bg-zinc-950 dark:bg-white hover:bg-zinc-850 dark:hover:bg-zinc-100 text-white dark:text-zinc-950 font-bold text-sm sm:text-base rounded-2xl shadow-md transition-all duration-200 flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50 active:scale-[0.99] border border-zinc-800 dark:border-zinc-200 group"
+            >
+              {isSsoLoading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin text-white dark:text-zinc-950" />
+                  <span>Conectando con cuenta institucional...</span>
+                </>
+              ) : (
+                <>
+                  <GraduationCap className="h-5 w-5 text-blue-400 dark:text-blue-600 group-hover:scale-110 transition-transform" />
+                  <span>Iniciar sesión con cuenta institucional</span>
+                </>
+              )}
+            </button>
+
+            {/* Separador con Diseño Minimalista */}
+            <div className="relative my-2 flex items-center justify-center">
+              <div className="border-t border-zinc-200 dark:border-zinc-800 w-full" />
+              <span className="bg-white dark:bg-zinc-950 px-3 text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest absolute">
+                o accede con credenciales
+              </span>
+            </div>
+          </div>
 
           {/* Formulario Principal de Autenticación */}
           <form onSubmit={handleLoginSubmit} className="flex flex-col gap-4">

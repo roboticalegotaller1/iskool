@@ -11,6 +11,7 @@ import { usePortfolioStore } from '../store/usePortfolioStore';
 import { Flame, Coins, Trophy, RefreshCw, GraduationCap, Users, User, ArrowRight, LogOut, HelpCircle, Menu, X } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { isPlatformSuperUser } from '@/types';
+import { useWhiteLabelStore } from '@/store/useWhiteLabelStore';
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
@@ -26,6 +27,11 @@ export const Header: React.FC = () => {
   const institutionsList = useSchoolAdminStore(state => state.institutionsList);
   const rawSchoolSettings = useSchoolAdminStore(state => state.schoolSettings);
 
+  // Marca Blanca Dinámica (Zustand)
+  const whiteLabelLogo = useWhiteLabelStore(state => state.logoUrl);
+  const whiteLabelPrimary = useWhiteLabelStore(state => state.primaryColor);
+  const whiteLabelSchoolName = useWhiteLabelStore(state => state.schoolName);
+
   // En el portal de alumno, derivar el colegio directamente del perfil del estudiante activo
   const activeStudentProfile = detailedStudents?.find(s => s.id === activeStudentId);
   const studentSchoolId = (user?.role === 'student' && user.school_id && user.school_id !== 'sch-jjrosseau')
@@ -37,6 +43,9 @@ export const Header: React.FC = () => {
     : resolveEffectiveSchoolId(user, activeSchoolId, 'sch-jjrosseau');
   const currentInstitution = institutionsList.find(i => i.id === effectiveSchoolId);
   const schoolSettings = currentInstitution?.settings || rawSchoolSettings;
+
+  const effectiveLogoUrl = whiteLabelLogo || schoolSettings?.logoUrl;
+  const effectiveSchoolName = whiteLabelSchoolName || schoolSettings?.name || 'ISkool';
 
   useEffect(() => {
     if (schoolSettings?.themeColors) {
@@ -94,6 +103,7 @@ export const Header: React.FC = () => {
     if (isSuperUser) {
       return [
         { href: '/admin', label: 'Directorio de Colegios', icon: '🏢' },
+        { href: '/admin/whitelabel', label: 'Marca Blanca', icon: '🎨' },
         { href: '/teacher', label: 'Portal Docente', icon: '📖' },
         { href: '/director', label: 'Supervisión Directiva', icon: '🏛️' },
         { href: '/coordinator/billing', label: 'Finanzas & Nómina', icon: '💵' },
@@ -102,6 +112,7 @@ export const Header: React.FC = () => {
     if (user?.role === 'owner') {
       return [
         { href: '/admin', label: 'Presidencia Institucional', icon: '🏛️' },
+        { href: '/admin/whitelabel', label: 'Marca Blanca', icon: '🎨' },
         { href: '/director', label: 'Supervisión Directiva', icon: '📊' },
         { href: '/coordinator/billing', label: 'Finanzas & Nómina', icon: '💵' },
       ];
@@ -180,20 +191,28 @@ export const Header: React.FC = () => {
             aria-label="Página de inicio institucional"
             className="flex items-center gap-2.5 group hover:opacity-90 transition-opacity"
           >
-            {schoolSettings.logoUrl ? (
+            {effectiveLogoUrl ? (
               <img 
-                src={schoolSettings.logoUrl} 
-                alt={schoolSettings.name || "Logo Institucional"} 
+                src={effectiveLogoUrl} 
+                alt={effectiveSchoolName || "Logo Institucional"} 
                 className="h-8 w-8 sm:h-9 sm:w-9 object-contain rounded-lg group-hover:scale-105 transition-transform"
               />
             ) : (
-              <GraduationCap className="h-7 w-7 sm:h-8 sm:w-8 group-hover:scale-105 transition-transform" style={{ color: 'var(--brand-primary)' }} />
+              <GraduationCap className="h-7 w-7 sm:h-8 sm:w-8 group-hover:scale-105 transition-transform" style={{ color: 'var(--brand-primary, #2563EB)' }} />
             )}
             <div className="text-base sm:text-lg xl:text-xl font-bold tracking-tight text-zinc-900 dark:text-white flex items-baseline gap-1.5 min-w-0">
-              <span className="truncate max-w-[130px] min-[400px]:max-w-[180px] sm:max-w-[220px] md:max-w-[260px] lg:max-w-[300px] xl:max-w-none group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                {schoolSettings.name || 'ISkool'}
+              <span 
+                className="truncate max-w-[130px] min-[400px]:max-w-[180px] sm:max-w-[220px] md:max-w-[260px] lg:max-w-[300px] xl:max-w-none transition-colors"
+                style={{ color: 'inherit' }}
+              >
+                {effectiveSchoolName}
               </span>
-              <span className="font-semibold text-[10px] sm:text-xs text-blue-600 dark:text-blue-400 shrink-0">Académico</span>
+              <span 
+                className="font-semibold text-[10px] sm:text-xs shrink-0"
+                style={{ color: 'var(--brand-primary, #2563EB)' }}
+              >
+                Académico
+              </span>
             </div>
           </Link>
         </div>

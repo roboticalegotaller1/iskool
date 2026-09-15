@@ -1070,12 +1070,14 @@ export interface StudioActivityJSON {
   title: string;
   description: string;
   questions: StudioActivityQuestion[];
+  readingText?: string; // Texto base de comprensión lectora para el Escape Room Lógico
   task_type?: string;
   blocks?: any[];
   connections?: any[];
   startNodeId?: string | null;
   metadata?: any;
   logicChallengeData?: any;
+  language?: string;
 }
 export type CanvasActivityJSON = StudioActivityJSON;
 

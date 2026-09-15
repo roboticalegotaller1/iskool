@@ -1457,6 +1457,13 @@ export default function SuperUserAdminPage() {
                 <Brain className="h-4 w-4" /> <span>Compendios & Libros Globales</span>
               </button>
 
+              <Link
+                href="/admin/whitelabel"
+                className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black shadow-lg shadow-blue-600/30 hover:scale-102 transition-all cursor-pointer shrink-0"
+              >
+                <Palette className="h-4 w-4" /> <span>Marca Blanca</span>
+              </Link>
+
               <button
                 onClick={() => setActiveTab('analytics')}
                 className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-black shadow-lg shadow-cyan-600/30 hover:scale-102 transition-all cursor-pointer shrink-0"

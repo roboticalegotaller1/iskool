@@ -6,10 +6,15 @@ import Link from "next/link";
 import { GraduationCap, Trophy, Users, ShieldAlert, Sparkles, BookOpen, Compass, Heart, ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Loader } from "@/components/Loader";
+import { useWhiteLabelStore } from "@/store/useWhiteLabelStore";
 
 export default function Home() {
   const { user, loading } = useAuth();
   const router = useRouter();
+
+  const whiteLabelLogo = useWhiteLabelStore(state => state.logoUrl);
+  const whiteLabelSchoolName = useWhiteLabelStore(state => state.schoolName);
+  const whiteLabelPrimary = useWhiteLabelStore(state => state.primaryColor);
 
   useEffect(() => {
     if (!loading) {
@@ -49,9 +54,19 @@ export default function Home() {
       {/* Navbar Simple */}
       <header className="w-full border-b border-zinc-200/80 bg-white/80 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/80 sticky top-0 z-50">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2">
-            <GraduationCap className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-            <span className="text-xl font-bold tracking-tight">ISkool Académico</span>
+          <div className="flex items-center gap-2.5">
+            {whiteLabelLogo ? (
+              <img
+                src={whiteLabelLogo}
+                alt={whiteLabelSchoolName || "Logo Institucional"}
+                className="h-8 w-8 object-contain rounded-lg shadow-xs"
+              />
+            ) : (
+              <GraduationCap className="h-8 w-8" style={{ color: 'var(--brand-primary, #2563EB)' }} />
+            )}
+            <span className="text-xl font-bold tracking-tight">
+              {whiteLabelSchoolName ? `${whiteLabelSchoolName} • Académico` : 'ISkool Académico'}
+            </span>
           </div>
           <div className="flex items-center gap-3">
             <Link

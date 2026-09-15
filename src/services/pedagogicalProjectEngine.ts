@@ -18,6 +18,8 @@ export interface GenerateProjectOptions {
   gamificationStyle?: 'rpg_adventure' | 'escape_room' | 'scientific_expedition' | 'olympic_tournament';
   questionCount?: number;
   apiKey?: string;
+  language?: string;
+  systemPrompt?: string;
 }
 
 export interface GeneratedProjectResult {
@@ -49,7 +51,14 @@ function sanitizeFaseNem(fase?: string): 'Fase 1' | 'Fase 2' | 'Fase 3' | 'Fase 
  * Generador Maestro de Proyectos Gamificados y Estructurados
  */
 export async function generateGamifiedProject(options: GenerateProjectOptions): Promise<GeneratedProjectResult> {
-  const { topic, faseNem = 'Fase 5', gamificationStyle = 'rpg_adventure', apiKey } = options;
+  const { 
+    topic, 
+    faseNem = 'Fase 5', 
+    gamificationStyle = 'rpg_adventure', 
+    apiKey, 
+    language = 'Español',
+    systemPrompt 
+  } = options;
   const cleanTopic = topic.trim();
   const normalized = normalizeText(cleanTopic);
 
@@ -58,7 +67,7 @@ export async function generateGamifiedProject(options: GenerateProjectOptions): 
 
   if (effectiveApiKey) {
     try {
-      const aiProject = await tryGenerateWithAI(cleanTopic, faseNem, gamificationStyle, effectiveApiKey);
+      const aiProject = await tryGenerateWithAI(cleanTopic, faseNem, gamificationStyle, effectiveApiKey, language, systemPrompt);
       if (aiProject) {
         return aiProject;
       }
@@ -67,15 +76,16 @@ export async function generateGamifiedProject(options: GenerateProjectOptions): 
     }
   }
 
-  // 2. Motor Pedagógico Experto de Bóveda Curricular
-  // Revisa si coincide con temáticas canónicas de alta demanda
-  const presetProject = getDeepCurricularProject(normalized, cleanTopic, faseNem, gamificationStyle);
-  if (presetProject) {
-    return presetProject;
+  // 2. Motor Pedagógico Experto de Bóveda Curricular (activo preferentemente en Español)
+  if (language === 'Español') {
+    const presetProject = getDeepCurricularProject(normalized, cleanTopic, faseNem, gamificationStyle);
+    if (presetProject) {
+      return presetProject;
+    }
   }
 
-  // 3. Generador Heurístico Autónomo de Proyectos Gamificados para Temas Arbitrarios
-  return buildAutonomousGamifiedProject(cleanTopic, faseNem, gamificationStyle);
+  // 3. Generador Heurístico Autónomo de Proyectos Gamificados adaptado al idioma
+  return buildAutonomousGamifiedProject(cleanTopic, faseNem, gamificationStyle, language);
 }
 
 /**
@@ -85,10 +95,16 @@ async function tryGenerateWithAI(
   topic: string, 
   faseNem: string, 
   gamificationStyle: string, 
-  apiKey: string
+  apiKey: string,
+  language: string = 'Español',
+  customSystemPrompt?: string
 ): Promise<GeneratedProjectResult | null> {
-  const prompt = `Actúa como Diseñador Instruccional Senior y Desarrollador de Gamificación Educativa para ISkool (basado en la NEM 2024 de México).
+  const languageInstruction = `Debes generar todo el contenido, preguntas y distractores estrictamente en ${language}. Mantén la estructura JSON intacta.`;
+
+  const prompt = `${customSystemPrompt ? customSystemPrompt + '\n\n' : ''}Actúa como Diseñador Instruccional Senior y Desarrollador de Gamificación Educativa para el Estudio ISkool (basado en la NEM 2024 de México).
+${languageInstruction}
 Genera un proyecto educativo gamificado de alta complejidad y rigor pedagógico para el tema: "${topic}" en "${faseNem}".
+Idioma obligatorio de generación: ${language}.
 El proyecto DEBE ser una aventura con 6 o 7 bloques interconectados:
 1. text_narrative (Diálogo inmersivo con un personaje guía temático, planteamiento del conflicto y misión épica).
 2. ordering_sequence (Secuencia cronológica o algoritmo lógico de 4 pasos con contenido real).
@@ -98,7 +114,7 @@ El proyecto DEBE ser una aventura con 6 o 7 bloques interconectados:
 6. boss_enemy (Duelo de combate RPG contra un jefe temático, con nombre, 120-150 HP, poder de ataque y condición de victoria).
 7. reward_chest (Cofre legendario con XP, monedas y título de honor para el avatar del estudiante).
 
-PROHIBICIÓN ESTRICTA: Queda terminantemente prohibido generar preguntas vacías, opciones tipo "Principio clave de...", "Concepto no relacionado" o respuestas absurdas. Todo el contenido debe ser auténtico, desafiante y formativo.
+PROHIBICIÓN ESTRICTA: Queda terminantemente prohibido generar preguntas vacías, opciones tipo "Principio clave de...", "Concepto no relacionado" o respuestas absurdas. Todo el contenido debe ser auténtico, desafiante y formativo en el idioma ${language}.
 
 Devuelve EXCLUSIVAMENTE un JSON válido con esta estructura:
 {
@@ -770,7 +786,8 @@ function getDeepCurricularProject(
 function buildAutonomousGamifiedProject(
   topic: string, 
   faseNem: string, 
-  gamificationStyle: string
+  gamificationStyle: string,
+  language: string = 'Español'
 ): GeneratedProjectResult {
   const ts = Date.now();
   const titleTopic = topic.length > 45 ? topic.slice(0, 42) + '...' : topic;
@@ -819,12 +836,108 @@ function buildAutonomousGamifiedProject(
     badgeName = `Maestro de las Letras y ${titleTopic} 📖`;
   }
 
+  // Textos y narrativas adaptadas según el idioma seleccionado
+  let dialogueText = `¡Saludos, valientes aprendices de la Academia ISkool! Hemos sido convocados para explorar a fondo los misterios y fundamentos de "${topic}". En esta aventura pondremos a prueba nuestra capacidad analítica, reconstruiremos procesos paso a paso y descubriremos conexiones que pocos logran ver. Cada acierto fortalecerá tu avatar y recargará tu escudo de saberes. ¡Prepárense para iniciar la travesía!`;
+  let orderInstructions = `Ordena los 4 momentos esenciales para comprender y aplicar ${topic}:`;
+  let orderSteps = [
+    `Fase 1: Reconocimiento y delimitación: Identificar el problema central y las evidencias iniciales sobre ${topic}.`,
+    `Fase 2: Análisis estructural: Descomponer los elementos, factores causales y relaciones clave de ${topic}.`,
+    `Fase 3: Contrastación y modelado: Evaluar hipótesis frente a datos comprobados y casos prácticos.`,
+    `Fase 4: Síntesis y propuesta creativa: Formular conclusiones fundamentadas y soluciones aplicadas a la realidad.`
+  ];
+  let matchInstructions = `Relaciona cada dimensión analítica de ${topic} con su propósito pedagógico:`;
+  let matchPairs = [
+    { left: `Fundamento Teórico de ${titleTopic}`, right: `Permite comprender las leyes, principios y conceptos rectores que sustentan la temática.` },
+    { left: `Impacto en la Comunidad`, right: `Demuestra cómo este conocimiento transforma la vida cotidiana y el bienestar social.` },
+    { left: `Pensamiento Crítico y Análisis`, right: `Cuestiona supuestos, compara perspectivas divergentes y busca evidencias comprobables.` },
+    { left: `Aplicación Práctica y Prototipo`, right: `Materializa los aprendizajes en entregables tangibles, proyectos y soluciones reales.` }
+  ];
+  let quizQuestion = `Al analizar a profundidad "${topic}", ¿cuál de las siguientes afirmaciones describe con mayor precisión el enfoque metodológico para resolver problemáticas complejas en este campo?`;
+  let quizOptions = [
+    `Integrar el análisis de causas y evidencias empíricas, vinculando la teoría con el impacto real en la comunidad y evaluando múltiples alternativas antes de concluir.`,
+    `Aceptar únicamente datos memorísticos sin cuestionar su origen ni su aplicación en el contexto actual.`,
+    `Considerar que los fenómenos de este tema ocurren de forma totalmente aislada sin relación con otras disciplinas.`,
+    `Descartar la experimentación y el debate fundamentado por considerarlos innecesarios para el aprendizaje.`
+  ];
+  let quizExplanation = `El aprendizaje auténtico en el marco de la NEM requiere conectar el rigor de los contenidos con el análisis crítico de la realidad y el trabajo colaborativo en la comunidad escolar.`;
+  let secretClue = `Para abrir el cofre sagrado de esta disciplina, debes ingresar la palabra clave de 11 letras que define la habilidad de cuestionar, investigar con rigor y construir juicio propio fundamentado:`;
+  let secretHint = `Palabra de 11 letras que inicia con "INDAGACION". Código clave: "INDAGACION".`;
+  let secretAnswer = 'INDAGACION';
+  let projectTitle = `Aventura Gamificada: ${topic}`;
+  let projectDesc = `Proyecto pedagógico gamificado e interactivo en ${language}. Explora ${topic} mediante narrativa de inmersión, retos de ordenamiento lógico, emparejamiento conceptual, análisis crítico y duelo de saberes.`;
+
+  if (language === 'Inglés B2') {
+    guideName = 'Lead Mentor & Explorer';
+    dialogueText = `Greetings, brave learners of the ISkool Academy! We are summoned to thoroughly investigate the foundations of "${topic}". In this adventure, we will test your critical thinking, reconstruct key analytical processes, and discover connections that lead to authentic mastery. Prepare your avatar and embark on the quest!`;
+    orderInstructions = `Arrange the 4 fundamental stages to analyze and apply ${topic}:`;
+    orderSteps = [
+      `Stage 1: Identification & Scoping: Pinpoint the core inquiry and primary evidence regarding ${topic}.`,
+      `Stage 2: Structural Analysis: Break down driving factors, components, and causal relationships of ${topic}.`,
+      `Stage 3: Evidence Evaluation: Test hypotheses against validated data and real-world case studies.`,
+      `Stage 4: Synthesis & Innovation: Articulate evidence-based conclusions and impactful solutions.`
+    ];
+    matchInstructions = `Match each analytical dimension of ${topic} with its pedagogical objective:`;
+    matchPairs = [
+      { left: `Theoretical Foundation of ${titleTopic}`, right: `Enables a rigorous grasp of principles and governing concepts.` },
+      { left: `Community Impact`, right: `Demonstrates how this knowledge positively transforms daily life and society.` },
+      { left: `Critical Analysis`, right: `Challenges assumptions, contrasts perspectives, and tests verified facts.` },
+      { left: `Applied Deliverable`, right: `Translates insights into tangible solutions and collaborative projects.` }
+    ];
+    quizQuestion = `When analyzing "${topic}" in depth, which of the following statements best describes the most rigorous methodological approach?`;
+    quizOptions = [
+      `Integrating empirical evidence with causal analysis, connecting theory to community impact, and evaluating multiple alternatives.`,
+      `Relying purely on rote memorization without questioning sources or contemporary relevance.`,
+      `Assuming phenomena in this field operate completely isolated from any other scientific or human domain.`,
+      `Dismissing systematic inquiry and constructive debate as unnecessary for actual learning.`
+    ];
+    quizExplanation = `Authentic competence development requires connecting core subject matter with critical inquiry and collaborative problem solving.`;
+    secretClue = `To open the legendary vault for this subject, enter the key term for rigorous search and discovery:`;
+    secretHint = `Key term: "INQUIRY".`;
+    secretAnswer = 'INQUIRY';
+    bossName = `Guardian Colossus of ${titleTopic}`;
+    badgeName = `Master of ${titleTopic} 🏆`;
+    projectTitle = `Gamified Quest: ${topic}`;
+    projectDesc = `Gamified and interactive learning quest in English (B2). Explore ${topic} with immersive storytelling, sequencing challenges, and critical boss encounters.`;
+  } else if (language === 'Francés A2') {
+    guideName = 'Mentor Guide & Savant';
+    dialogueText = `Bonjour et bienvenue à l'Académie ISkool ! Nous sommes réunis pour explorer en profondeur « ${topic} ». Dans cette aventure, nous allons développer notre esprit critique, reconstruire des étapes logiques et relever de grands défis pédagogiques. Préparez vos avatars et commencez la mission !`;
+    orderInstructions = `Remettez dans l'ordre les 4 étapes essentielles pour comprendre ${topic} :`;
+    orderSteps = [
+      `Étape 1 : Observation et définition : Identifier le sujet central et les premiers éléments de ${topic}.`,
+      `Étape 2 : Analyse des composants : Découvrir les facteurs clés et les relations de cause à effet.`,
+      `Étape 3 : Vérification et pratique : Comparer les idées avec des exemples concrets et vérifiés.`,
+      `Étape 4 : Bilan et création : Formuler des conclusions claires et des solutions utiles pour la communauté.`
+    ];
+    matchInstructions = `Associez chaque dimension de ${topic} avec son rôle d'apprentissage :`;
+    matchPairs = [
+      { left: `Base théorique de ${titleTopic}`, right: `Permet de comprendre les notions fondamentales et les lois scientifiques.` },
+      { left: `Impact sur la communauté`, right: `Montre l'utilité directe dans la vie de tous les jours et la société.` },
+      { left: `Esprit critique et analyse`, right: `Pose des questions pertinentes et compare différentes explications.` },
+      { left: `Application pratique`, right: `Permet de concevoir une solution concrète et utile.` }
+    ];
+    quizQuestion = `En étudiant « ${topic} », quelle démarche permet de progresser avec le plus d'efficacité et de rigueur ?`;
+    quizOptions = [
+      `Observer attentivement les faits, relier la théorie à des situations réelles et vérifier les hypothèses.`,
+      `Mémoriser des définitions sans chercher à comprendre leur sens pratique.`,
+      `Considérer que ce thème n'a aucun rapport avec les autres matières ou la vie réelle.`,
+      `Refuser d'expérimenter et de débattre avec ses camarades.`
+    ];
+    quizExplanation = `L'apprentissage actif et durable repose sur la curiosité, l'analyse des faits et le dialogue constructif.`;
+    secretClue = `Pour ouvrir le coffre de la connaissance, entrez le mot de 6 lettres signifiant la recherche et la découverte :`;
+    secretHint = `Indice : Le mot est "SAVOIR".`;
+    secretAnswer = 'SAVOIR';
+    bossName = `Le Gardien des Énigmes de ${titleTopic}`;
+    badgeName = `Grand Maître de ${titleTopic} 🏆`;
+    projectTitle = `Aventure Gamifiée : ${topic}`;
+    projectDesc = `Projet d'apprentissage interactif et gamifié en français (A2). Explorez ${topic} à travers une narration immersive, des énigmes et des défis.`;
+  }
+
   const blocks: StudioBlock[] = [
     // Bloque 1: Text Narrative con Storytelling y Lore
     {
       id: `node-${ts}-1`,
       type: 'text_narrative',
-      title: `1. El Umbral del Saber: La Misión de ${titleTopic}`,
+      title: `1. Lore & Mission: ${titleTopic}`,
       isStartNode: true,
       isCollapsed: false,
       position: { x: 60, y: 150 },
@@ -832,7 +945,7 @@ function buildAutonomousGamifiedProject(
         style: 'dialogue',
         speakerName: guideName,
         speakerAvatar: guideAvatar,
-        content: `¡Saludos, valientes aprendices de la Academia ISkool! Hemos sido convocados para explorar a fondo los misterios y fundamentos de "${topic}". En esta aventura pondremos a prueba nuestra capacidad analítica, reconstruiremos procesos paso a paso y descubriremos conexiones que pocos logran ver. Cada acierto fortalecerá tu avatar y recargará tu escudo de saberes. ¡Prepárense para iniciar la travesía!`
+        content: dialogueText
       }
     } as TextNarrativeBlock,
 
@@ -840,18 +953,13 @@ function buildAutonomousGamifiedProject(
     {
       id: `node-${ts}-2`,
       type: 'ordering_sequence',
-      title: `2. Secuencia Metódica de ${titleTopic}`,
+      title: `2. Sequence: ${titleTopic}`,
       isCollapsed: false,
       position: { x: 380, y: 150 },
       data: {
-        instructions: `Ordena los 4 momentos esenciales para comprender y aplicar ${topic}:`,
+        instructions: orderInstructions,
         randomizeStart: true,
-        stepsInCorrectOrder: [
-          `Fase 1: Reconocimiento y delimitación: Identificar el problema central y las evidencias iniciales sobre ${topic}.`,
-          `Fase 2: Análisis estructural: Descomponer los elementos, factores causales y relaciones clave de ${topic}.`,
-          `Fase 3: Contrastación y modelado: Evaluar hipótesis frente a datos comprobados y casos prácticos.`,
-          `Fase 4: Síntesis y propuesta creativa: Formular conclusiones fundamentadas y soluciones aplicadas a la realidad.`
-        ]
+        stepsInCorrectOrder: orderSteps
       }
     } as OrderingSequenceBlock,
 
@@ -859,30 +967,13 @@ function buildAutonomousGamifiedProject(
     {
       id: `node-${ts}-3`,
       type: 'drag_drop_match',
-      title: `3. Emparejamiento Conceptual de ${titleTopic}`,
+      title: `3. Match & Connect: ${titleTopic}`,
       isCollapsed: false,
       position: { x: 700, y: 150 },
       data: {
-        instructions: `Relaciona cada dimensión analítica de ${topic} con su propósito pedagógico:`,
+        instructions: matchInstructions,
         timeLimitSeconds: 65,
-        pairs: [
-          { 
-            left: `Fundamento Teórico de ${titleTopic}`, 
-            right: `Permite comprender las leyes, principios y conceptos rectores que sustentan la temática.` 
-          },
-          { 
-            left: `Impacto en la Comunidad`, 
-            right: `Demuestra cómo este conocimiento transforma la vida cotidiana y el bienestar social.` 
-          },
-          { 
-            left: `Pensamiento Crítico y Análisis`, 
-            right: `Cuestiona supuestos, compara perspectivas divergentes y busca evidencias comprobables.` 
-          },
-          { 
-            left: `Aplicación Práctica y Prototipo`, 
-            right: `Materializa los aprendizajes en entregables tangibles, proyectos y soluciones reales.` 
-          }
-        ]
+        pairs: matchPairs
       }
     } as DragDropMatchBlock,
 
@@ -890,19 +981,14 @@ function buildAutonomousGamifiedProject(
     {
       id: `node-${ts}-4`,
       type: 'quiz_question',
-      title: `4. Reactivo de Análisis Crítico: ${titleTopic}`,
+      title: `4. Quiz: ${titleTopic}`,
       isCollapsed: false,
       position: { x: 1020, y: 150 },
       data: {
-        question: `Al analizar a profundidad "${topic}", ¿cuál de las siguientes afirmaciones describe con mayor precisión el enfoque metodológico para resolver problemáticas complejas en este campo?`,
-        options: [
-          `Integrar el análisis de causas y evidencias empíricas, vinculando la teoría con el impacto real en la comunidad y evaluando múltiples alternativas antes de concluir.`,
-          `Aceptar únicamente datos memorísticos sin cuestionar su origen ni su aplicación en el contexto actual.`,
-          `Considerar que los fenómenos de este tema ocurren de forma totalmente aislada sin relación con otras disciplinas.`,
-          `Descartar la experimentación y el debate fundamentado por considerarlos innecesarios para el aprendizaje.`
-        ],
+        question: quizQuestion,
+        options: quizOptions,
         correctIndex: 0,
-        explanation: `El aprendizaje auténtico en el marco de la NEM requiere conectar el rigor de los contenidos con el análisis crítico de la realidad y el trabajo colaborativo en la comunidad escolar.`,
+        explanation: quizExplanation,
         timeLimitSeconds: 40
       }
     } as QuizQuestionBlock,
@@ -911,13 +997,13 @@ function buildAutonomousGamifiedProject(
     {
       id: `node-${ts}-5`,
       type: 'secret_code_puzzle',
-      title: `5. El Enigma de la Bóveda de Conocimiento`,
+      title: `5. Secret Code: ${titleTopic}`,
       isCollapsed: false,
       position: { x: 1340, y: 150 },
       data: {
-        clueText: `Para abrir el cofre sagrado de esta disciplina, debes ingresar la palabra clave de 11 letras que define la habilidad de cuestionar, investigar con rigor y construir juicio propio fundamentado:`,
-        hintText: `Palabra de 11 letras que inicia con "PENSAMIENTO" abreviado o "INDAGACION". Código clave: "INDAGACION".`,
-        secretAnswer: 'INDAGACION'
+        clueText: secretClue,
+        hintText: secretHint,
+        secretAnswer: secretAnswer
       }
     } as SecretCodePuzzleBlock,
 
@@ -925,7 +1011,7 @@ function buildAutonomousGamifiedProject(
     {
       id: `node-${ts}-6`,
       type: 'boss_enemy',
-      title: `6. Duelo Magistral: Enfrentamiento contra el Guardián`,
+      title: `6. Boss: ${bossName}`,
       isCollapsed: false,
       position: { x: 1660, y: 150 },
       data: {
@@ -942,7 +1028,7 @@ function buildAutonomousGamifiedProject(
     {
       id: `node-${ts}-7`,
       type: 'reward_chest',
-      title: `7. Cofre Legendario: ¡Maestría en ${titleTopic}!`,
+      title: `7. Chest: ${titleTopic}`,
       isCollapsed: false,
       position: { x: 1980, y: 150 },
       data: {
@@ -956,13 +1042,14 @@ function buildAutonomousGamifiedProject(
   ];
 
   return assembleResult(
-    `Aventura Gamificada: ${topic}`,
-    `Proyecto pedagógico gamificado e interactivo. Explora ${topic} mediante narrativa de inmersión, retos de ordenamiento lógico, emparejamiento conceptual, análisis crítico y duelo de saberes.`,
+    projectTitle,
+    projectDesc,
     subject,
     campoFormativo,
-    `${faseNem} - ${campoFormativo}: Analiza críticamente los conceptos clave, procesos y aplicaciones correspondientes a ${topic}, articulando saberes teóricos con situaciones reales de la comunidad.`,
+    `${faseNem} - ${campoFormativo}: Analiza críticamente los conceptos clave, procesos y aplicaciones correspondientes a ${topic} [${language}].`,
     blocks,
-    faseNem
+    faseNem,
+    language
   );
 }
 
@@ -976,7 +1063,8 @@ function assembleResult(
   campoFormativo: string,
   pdaNem: string,
   blocks: StudioBlock[],
-  faseNem: string
+  faseNem: string,
+  language: string = 'Español'
 ): GeneratedProjectResult {
   const connections: FlowConnection[] = [];
   for (let i = 0; i < blocks.length - 1; i++) {
@@ -1010,6 +1098,7 @@ function assembleResult(
     totalTimeLimit: 0,
     livesCount: 3,
     streakMultiplier: true,
+    language
   };
 
   return {

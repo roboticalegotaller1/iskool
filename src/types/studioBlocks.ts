@@ -438,4 +438,5 @@ export interface ActivityBuilderMetadata {
   totalTimeLimit: number;
   livesCount: number;
   streakMultiplier: boolean;
+  language?: string;
 }
