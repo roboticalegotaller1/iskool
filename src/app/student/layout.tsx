@@ -29,7 +29,7 @@ export default function StudentLayout({
 }) {
   return (
     <Suspense fallback={<Loader />}>
-      <RoleGuard allowedRoles={['student']}>
+      <RoleGuard allowedRoles={['student', 'admin', 'superadmin', 'owner', 'director']}>
         <StudentSyncProvider>
           {children}
         </StudentSyncProvider>

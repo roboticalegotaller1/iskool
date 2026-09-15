@@ -180,17 +180,10 @@ export default function LoginPage() {
   const [showDemoSelector, setShowDemoSelector] = useState(false);
   const [isSsoLoading, setIsSsoLoading] = useState(false);
 
-  const { login, loading: authLoading, user } = useAuth();
+  const { login, logout, loading: authLoading, user } = useAuth();
   const switchStudent = useStudentStore(state => state.switchStudent);
   const router = useRouter();
   const isSchoolSuspended = useSchoolAdminStore(state => state.isSchoolSuspended);
-
-  // Redirección reactiva si el usuario ya está autenticado (o tras retorno de OAuth)
-  React.useEffect(() => {
-    if (user) {
-      routeUserByRole(user);
-    }
-  }, [user]);
 
   // Listener para capturar el evento SIGNED_IN de Supabase Auth
   React.useEffect(() => {
@@ -460,6 +453,50 @@ export default function LoginPage() {
               Inicia sesión con tus credenciales institucionales para acceder a tu portal.
             </p>
           </div>
+
+          {/* Banner de Inspección / Sesión Activa */}
+          {user && (
+            <div className="bg-indigo-50/90 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 p-4 rounded-2xl text-xs flex flex-col gap-3 shadow-xs animate-fade-in">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                  {user.first_name?.[0] || 'U'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-slate-900 dark:text-white truncate">
+                      {user.first_name} {user.last_name}
+                    </p>
+                    <span className="px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold uppercase tracking-wider">
+                      {user.role}
+                    </span>
+                  </div>
+                  <p className="text-slate-500 dark:text-slate-400 text-[11px] truncate">
+                    Sesión activa detectada. Puedes ingresar directamente o probar otras cuentas.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 pt-1 border-t border-indigo-100 dark:border-indigo-800/40">
+                <button
+                  type="button"
+                  onClick={() => routeUserByRole(user)}
+                  className="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                >
+                  <span>Ir a mi portal ({user.role})</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await logout();
+                    router.refresh();
+                  }}
+                  className="py-2 px-3 bg-white dark:bg-zinc-800 hover:bg-rose-50 hover:text-rose-600 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs transition-colors cursor-pointer"
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Mensaje de Error Amigable (Filosofía UX Teacher) */}
           {errorMsg && (

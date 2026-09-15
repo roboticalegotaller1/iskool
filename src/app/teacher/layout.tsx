@@ -11,7 +11,7 @@ export default function TeacherLayout({
 }) {
   return (
     <Suspense fallback={<Loader message="Cargando portal docente..." />}>
-      <RoleGuard allowedRoles={['teacher']}>
+      <RoleGuard allowedRoles={['teacher', 'admin', 'superadmin', 'owner', 'director', 'coordinator']}>
         {children}
       </RoleGuard>
     </Suspense>

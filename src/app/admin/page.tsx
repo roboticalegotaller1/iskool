@@ -164,6 +164,14 @@ export default function SuperUserAdminPage() {
   const [selectedCampus, setSelectedCampus] = useState<string>('all');
   const [selectedLimitsSchoolId, setSelectedLimitsSchoolId] = useState<string>('sch-jjrosseau');
   
+  const tabsNavRef = useRef<HTMLDivElement | null>(null);
+  const scrollTabs = (direction: 'left' | 'right') => {
+    if (tabsNavRef.current) {
+      const scrollAmount = direction === 'left' ? -280 : 280;
+      tabsNavRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+  
   // Modales Multi-Colegios
   const [showAddSchoolModal, setShowAddSchoolModal] = useState(false);
   const [editingSchoolLogoId, setEditingSchoolLogoId] = useState<string | null>(null);
@@ -1970,131 +1978,192 @@ export default function SuperUserAdminPage() {
           )}
 
           {/* NAVIGATION TABS STRIP */}
-          <nav className="bg-white border-b border-slate-200 px-4 sm:px-6 py-2 flex items-center justify-between gap-3 sm:gap-4 overflow-x-auto scrollbar-none">
-            <div className="flex items-center gap-1.5 shrink-0 whitespace-nowrap">
+          <nav className="bg-white border-b border-slate-200 px-3 sm:px-6 py-2 flex items-center justify-between gap-2 sm:gap-3 sticky top-0 z-30 shadow-xs">
+            {/* Botón Scroll Izquierda */}
+            <button
+              type="button"
+              onClick={() => scrollTabs('left')}
+              title="Desplazar menú hacia la izquierda"
+              className="hidden md:flex h-8 w-8 rounded-lg items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-slate-100 border border-slate-200 shrink-0 transition-colors cursor-pointer"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+
+            {/* Contenedor de Pestañas con Scroll Suave */}
+            <div
+              ref={tabsNavRef}
+              className="flex-1 flex items-center gap-1.5 overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300 hover:scrollbar-thumb-slate-400 py-1"
+            >
               <button
                 onClick={() => setActiveTab('overview')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
                   activeTab === 'overview'
                     ? 'bg-indigo-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                <BarChart3 className="h-4 w-4" /> Panel General
+                <BarChart3 className="h-4 w-4" />
+                <span>Panel General</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('staff')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
                   activeTab === 'staff'
                     ? 'bg-indigo-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                <ShieldCheck className="h-4 w-4 text-purple-600" /> Personal & Roles ({schoolStaff.length})
+                <ShieldCheck className={`h-4 w-4 ${activeTab === 'staff' ? 'text-white' : 'text-purple-600'}`} />
+                <span>Personal</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${activeTab === 'staff' ? 'bg-indigo-700 text-white' : 'bg-slate-200/80 text-slate-700'}`}>
+                  {schoolStaff.length}
+                </span>
               </button>
 
               <button
                 onClick={() => setActiveTab('campuses')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
                   activeTab === 'campuses'
                     ? 'bg-indigo-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                <Building2 className="h-4 w-4" /> Planteles & Grupos
+                <Building2 className="h-4 w-4" />
+                <span>Planteles & Grupos</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('teachers')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
                   activeTab === 'teachers'
                     ? 'bg-indigo-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                <Users className="h-4 w-4" /> {isSuperUser ? `Profesores & Tokens IA (${schoolTeachers.length})` : `Plantilla Docente (${schoolTeachers.length})`}
+                <Users className="h-4 w-4" />
+                <span>Docentes</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${activeTab === 'teachers' ? 'bg-indigo-700 text-white' : 'bg-slate-200/80 text-slate-700'}`}>
+                  {schoolTeachers.length}
+                </span>
               </button>
 
               <button
                 onClick={() => setActiveTab('students')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
                   activeTab === 'students'
                     ? 'bg-indigo-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                <GraduationCap className="h-4 w-4" /> Alumnos & Carga Rápida ({schoolStudents.length})
+                <GraduationCap className="h-4 w-4" />
+                <span>Alumnos</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${activeTab === 'students' ? 'bg-indigo-700 text-white' : 'bg-slate-200/80 text-slate-700'}`}>
+                  {schoolStudents.length}
+                </span>
               </button>
 
               <button
                 onClick={() => setActiveTab('subjects')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
                   activeTab === 'subjects'
                     ? 'bg-indigo-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                <BookOpen className="h-4 w-4" /> Materias & Talleres ({schoolSubjects.length})
+                <BookOpen className="h-4 w-4" />
+                <span>Materias</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${activeTab === 'subjects' ? 'bg-indigo-700 text-white' : 'bg-slate-200/80 text-slate-700'}`}>
+                  {schoolSubjects.length}
+                </span>
               </button>
 
               <button
                 onClick={() => setActiveTab('config')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
                   activeTab === 'config'
                     ? 'bg-indigo-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                <ShieldCheck className="h-4 w-4" /> Institución & Seguridad
+                <ShieldCheck className="h-4 w-4" />
+                <span>Institución & Seguridad</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('payroll')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
                   activeTab === 'payroll'
                     ? 'bg-indigo-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                <DollarSign className="h-4 w-4 text-emerald-600" /> Finanzas & Nóminas ({schoolPayroll.length})
+                <DollarSign className={`h-4 w-4 ${activeTab === 'payroll' ? 'text-white' : 'text-emerald-600'}`} />
+                <span>Finanzas</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${activeTab === 'payroll' ? 'bg-indigo-700 text-white' : 'bg-slate-200/80 text-slate-700'}`}>
+                  {schoolPayroll.length}
+                </span>
               </button>
 
               <button
                 onClick={() => setActiveTab('deletions')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
                   activeTab === 'deletions'
                     ? 'bg-rose-600 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                <Trash2 className="h-4 w-4 text-rose-500" /> Registro de Bajas ({schoolDeletionLogs.length})
+                <Trash2 className={`h-4 w-4 ${activeTab === 'deletions' ? 'text-white' : 'text-rose-500'}`} />
+                <span>Bajas</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${activeTab === 'deletions' ? 'bg-rose-700 text-white' : 'bg-slate-200/80 text-slate-700'}`}>
+                  {schoolDeletionLogs.length}
+                </span>
               </button>
 
               <button
                 onClick={() => setActiveTab('analytics')}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border border-indigo-200"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 border border-indigo-200 shadow-2xs"
               >
-                <Sparkles className="h-4 w-4 text-indigo-600 animate-pulse" /> Consultas & Reportes Inteligentes
+                <Sparkles className="h-4 w-4 text-indigo-600 animate-pulse" />
+                <span>Reportes IA</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('books_compendium')}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-purple-700 hover:text-purple-900 hover:bg-purple-50 border border-purple-200"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 text-purple-700 hover:text-purple-900 hover:bg-purple-50 border border-purple-200 shadow-2xs"
               >
-                <Brain className="h-4 w-4 text-purple-600" /> Bóveda & Compendios
+                <Brain className="h-4 w-4 text-purple-600" />
+                <span>Bóveda Curricular</span>
               </button>
+
+              <Link
+                href="/admin/whitelabel"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 text-slate-700 hover:text-indigo-600 hover:bg-indigo-50/60 border border-slate-200"
+              >
+                <Palette className="h-4 w-4 text-indigo-500" />
+                <span>Marca Blanca</span>
+              </Link>
             </div>
 
-            {/* Global Campus Selector Pill */}
-            <div className="flex items-center gap-2 shrink-0 text-xs">
-              <span className="text-slate-500 font-semibold uppercase text-[10px] tracking-wider">Plantel:</span>
+            {/* Botón Scroll Derecha */}
+            <button
+              type="button"
+              onClick={() => scrollTabs('right')}
+              title="Desplazar menú hacia la derecha"
+              className="hidden md:flex h-8 w-8 rounded-lg items-center justify-center text-slate-500 hover:text-indigo-600 hover:bg-slate-100 border border-slate-200 shrink-0 transition-colors cursor-pointer"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+
+            {/* Global Campus Selector Pill Fijo a la Derecha */}
+            <div className="flex items-center gap-1.5 shrink-0 border-l border-slate-200 pl-3 text-xs">
+              <span className="text-slate-500 font-bold uppercase text-[10px] tracking-wider hidden lg:inline">Plantel:</span>
               <select
                 value={selectedCampus}
                 onChange={(e) => setSelectedCampus(e.target.value)}
-                className="bg-slate-100 border border-slate-200 text-slate-800 px-3 py-1.5 rounded-xl text-xs font-bold outline-none focus:border-indigo-500 transition-all cursor-pointer"
+                className="bg-slate-100 hover:bg-slate-200/70 border border-slate-200 text-slate-800 px-2.5 py-1.5 rounded-xl text-xs font-bold outline-none focus:border-indigo-500 transition-all cursor-pointer shadow-xs"
               >
-                <option value="all">🏢 Todos los Planteles</option>
+                <option value="all">🏢 Todos</option>
                 {schoolCampuses.map(c => (
                   <option key={c.id} value={c.name}>{c.name}</option>
                 ))}
