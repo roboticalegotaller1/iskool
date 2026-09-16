@@ -24,13 +24,23 @@ create table public.profiles (
 -- Enable RLS for Profiles
 alter table public.profiles enable row level security;
 
-create policy "Aislamiento de perfiles por colegio"
+create policy "profiles_self_manage"
   on public.profiles for all
   to authenticated
+  using (id = auth.uid())
+  with check (id = auth.uid());
+
+create policy "profiles_superadmin_read"
+  on public.profiles for select
+  to authenticated
+  using (public.is_superadmin());
+
+create policy "profiles_school_colleagues_read"
+  on public.profiles for select
+  to authenticated
   using (
-    id = auth.uid() 
-    or (school_id is not null and school_id in (select p.school_id from public.profiles p where p.id = auth.uid()))
-    or exists (select 1 from public.profiles where id = auth.uid() and role = 'superadmin')
+    school_id is not null 
+    and school_id = public.get_auth_user_school_id()
   );
 
 /**

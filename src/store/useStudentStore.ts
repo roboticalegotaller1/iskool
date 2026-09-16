@@ -1517,10 +1517,10 @@ export const useStudentStore = create<StudentStoreState>()(
         .eq('student_id', dbStudentId);
 
       if (error) {
-        console.error('Error al actualizar estadísticas del examen en Supabase:', error.message);
+        console.warn('Aviso al actualizar estadísticas del examen en Supabase:', error.message);
       }
-    } catch (err) {
-      console.error('Error inesperado al enviar estadísticas del examen a Supabase:', err);
+    } catch (err: any) {
+      console.warn('Aviso de conexión al enviar estadísticas del examen a Supabase:', err?.message || err);
     }
 
     // 2. Actualizar estado local en Zustand
