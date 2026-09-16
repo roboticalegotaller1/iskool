@@ -1326,7 +1326,7 @@ export const useStudentStore = create<StudentStoreState>()(
     if (!studentStats) return;
 
     let currentXP = (studentStats.xp || 0) + xpEarned;
-    let currentCoins = (studentStats.coins || 0) + coinsEarned;
+    const currentCoins = (studentStats.coins || 0) + coinsEarned;
     let level = studentStats.level || 1;
     let leveledUp = false;
     let skillPoints = studentStats.skill_points ?? 0;
@@ -1402,7 +1402,7 @@ export const useStudentStore = create<StudentStoreState>()(
     if (!studentStats) return;
 
     let currentXP = (studentStats.xp || 0) + xpEarned;
-    let currentCoins = (studentStats.coins || 0) + coinsEarned;
+    const currentCoins = (studentStats.coins || 0) + coinsEarned;
     let level = studentStats.level || 1;
     let skillPoints = studentStats.skill_points ?? 0;
 

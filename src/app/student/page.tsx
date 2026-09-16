@@ -80,6 +80,7 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { LivingCompanionEngine } from '@/components/pet/LivingCompanionEngine';
+import { PetSvgRenderer } from '@/components/pet/PetSvgRenderer';
 import { HatchingCinematicModal } from '@/components/pet/HatchingCinematicModal';
 import { PetHomeSanctuaryModal } from '@/components/pet/PetHomeSanctuaryModal';
 import { ELEMENTAL_PET_RACES } from '@/components/pet/types';
@@ -379,72 +380,107 @@ export default function StudentDashboard() {
           <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8">
             
             {/* HÉROE & COMPAÑERO VIVO */}
-            <div className="flex items-center gap-4 sm:gap-6 shrink-0 w-full lg:w-auto justify-center sm:justify-start">
+            <div className="flex items-start gap-4 sm:gap-6 shrink-0 w-full lg:w-auto justify-center sm:justify-start">
               
-              {/* Retrato del Avatar */}
-              <div className="relative group/avatar cursor-pointer" onClick={() => setIsCustomizerOpen(true)}>
-                <div className="w-24 h-28 sm:w-28 sm:h-32 rounded-2xl overflow-hidden bg-slate-900/90 border-2 border-amber-400/60 shadow-xl shadow-amber-500/20 group-hover:scale-105 transition-transform flex items-center justify-center p-1 relative">
-                  <div className="w-full h-full relative flex items-center justify-center">
-                    <AnimeAvatarSprite 
-                      gender={(avatar as any)?.gender ?? 'female'}
-                      rpgClass={(avatar as any)?.rpg_class ?? avatar?.outfit_style ?? 'mago'}
-                      headType={(avatar as any)?.head_type ?? avatar?.eyes_style ?? 'standard'}
-                      skinTone={(avatar as any)?.skin_tone ?? 'light'}
-                      hairColor={avatar?.hair_color ?? 'yellow'}
-                      hairStyle={avatar?.hair_style ?? 'spiky'}
-                      eyesStyle={avatar?.eyes_style ?? 'determined'}
-                      raceFeature={avatar?.race_feature}
-                      bodyScale={(avatar as any)?.body_scale ?? 'normal'}
-                      equippedShoes={avatar?.equipped_shoes || 'shoes_tan_boots'}
-                      equippedBottom={avatar?.equipped_bottom || 'bottom_ripped_jeans'}
-                      equippedTop={avatar?.equipped_top || 'top_dia_de_muertos'}
-                      equippedOuterwear={avatar?.equipped_outerwear}
-                      equippedHat={avatar?.equipped_hat || 'hat_snapback_trainer'}
-                      equippedAccessory={avatar?.equipped_accessory || 'acc_red_backpack'}
-                      equippedArtifacts={ownedArtifactIds}
-                      showPedestal={false}
-                      zoom="upper"
-                      viewBox="45 25 110 150"
-                      className="w-full h-full"
-                    />
+              {/* BLOQUE DÚO: AVATAR Y MASCOTA PERFECTAMENTE ALINEADOS */}
+              <div className="flex items-start gap-3 sm:gap-4 shrink-0">
+                
+                {/* 1. Retrato del Avatar */}
+                <div className="flex flex-col items-center shrink-0">
+                  <div className="relative group/avatar cursor-pointer" onClick={() => setIsCustomizerOpen(true)}>
+                    <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden bg-slate-900/90 border-2 border-amber-400/60 shadow-xl shadow-amber-500/20 group-hover:scale-105 transition-transform flex items-center justify-center p-1 relative">
+                      <div className="w-full h-full relative flex items-center justify-center">
+                        <AnimeAvatarSprite 
+                          gender={(avatar as any)?.gender ?? 'female'}
+                          rpgClass={(avatar as any)?.rpg_class ?? avatar?.outfit_style ?? 'mago'}
+                          headType={(avatar as any)?.head_type ?? avatar?.eyes_style ?? 'standard'}
+                          skinTone={(avatar as any)?.skin_tone ?? 'light'}
+                          hairColor={avatar?.hair_color ?? 'yellow'}
+                          hairStyle={avatar?.hair_style ?? 'spiky'}
+                          eyesStyle={avatar?.eyes_style ?? 'determined'}
+                          raceFeature={avatar?.race_feature}
+                          bodyScale={(avatar as any)?.body_scale ?? 'normal'}
+                          equippedShoes={avatar?.equipped_shoes || 'shoes_tan_boots'}
+                          equippedBottom={avatar?.equipped_bottom || 'bottom_ripped_jeans'}
+                          equippedTop={avatar?.equipped_top || 'top_dia_de_muertos'}
+                          equippedOuterwear={avatar?.equipped_outerwear}
+                          equippedHat={avatar?.equipped_hat || 'hat_snapback_trainer'}
+                          equippedAccessory={avatar?.equipped_accessory || 'acc_red_backpack'}
+                          equippedArtifacts={ownedArtifactIds}
+                          showPedestal={false}
+                          zoom="upper"
+                          viewBox="45 25 110 150"
+                          className="w-full h-full"
+                        />
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+                    </div>
+
+                    {/* Insignia de Nivel */}
+                    <span className="absolute -bottom-2 -right-2 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 border border-yellow-200 shadow-md">
+                      Nv.{currentLevel}
+                    </span>
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+
+                  {/* Badge inferior del Avatar para perfecta simetría y alineación con la mascota */}
+                  <div className="w-28 sm:w-32 mt-2 flex items-center justify-center h-8 bg-slate-950/85 px-2 rounded-xl border border-amber-500/30 text-center shadow-xs">
+                    <span className="text-[10px] font-black uppercase text-amber-300 tracking-wider truncate">
+                      ⭐ {stats?.rpg_class?.toUpperCase() || 'HÉROE'}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Insignia de Nivel */}
-                <span className="absolute -bottom-2 -right-2 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 border border-yellow-200 shadow-md">
-                  Nv.{currentLevel}
-                </span>
-              </div>
+                {/* 2. Compañero Místico: Recuadro del mismo tamaño exacto que el avatar y perfectamente continuo */}
+                <div className="flex flex-col items-center shrink-0">
+                  <div 
+                    className="relative group/pet cursor-pointer"
+                    onClick={() => setIsSanctuaryHomeOpen(true)}
+                    title="Cuidar Mascota (Clic para abrir Santuario)"
+                  >
+                    {/* Recuadro con IDÉNTICO tamaño que el del avatar del alumno: w-28 h-28 sm:w-32 sm:h-32 */}
+                    <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden bg-gradient-to-b from-slate-900 via-slate-900/90 to-teal-950/80 border-2 border-teal-400/60 shadow-xl shadow-teal-500/20 group-hover:scale-105 transition-transform flex items-center justify-center p-2 relative">
+                      {/* Resplandor místico */}
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(20,184,166,0.25)_0%,transparent_75%)] pointer-events-none" />
 
-              {/* Compañero Místico */}
-              <div 
-                className="flex flex-col items-center justify-center p-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md cursor-pointer hover:border-teal-400/50 transition-colors"
-                onClick={() => setIsSanctuaryHomeOpen(true)}
-                title="Cuidar Mascota"
-              >
-                <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
-                  <LivingCompanionEngine
-                    raceId={avatar?.pet_type || 'cryo_dragon'}
-                    stage={stats?.pet_stage || 'egg'}
-                    petName={avatar?.pet_name || 'Compañero'}
-                    happiness={avatar?.pet_happiness ?? stats?.pet_happiness ?? 85}
-                    friendshipExp={stats?.friendship_exp || 120}
-                    tasksCompleted={stats?.tasks_completed_count || 0}
-                    onPetTouch={() => petCompanionTouch(activeStudentId)}
-                    onOpenSanctuary={() => setIsSanctuaryHomeOpen(true)}
-                    onTriggerHatch={() => setIsHatchingModalOpen(true)}
-                    onEvolveStage={() => evolvePetStage(activeStudentId)}
-                    avatarHeight={70}
-                  />
+                      <div className="relative z-10 w-full h-full flex items-center justify-center filter drop-shadow-[0_4px_12px_rgba(20,184,166,0.5)]">
+                        <PetSvgRenderer
+                          raceId={avatar?.pet_type || 'cryo_dragon'}
+                          stage={stats?.pet_stage || 'egg'}
+                          actionId="idle"
+                          className="w-full h-full"
+                        />
+                      </div>
+
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+
+                      {/* Insignia de Etapa Evolutiva */}
+                      <span className="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 border border-teal-200 shadow-md uppercase">
+                        {stats?.pet_stage === 'egg' ? 'Huevo' : stats?.pet_stage === 'baby' ? 'Bebé' : stats?.pet_stage === 'child' ? 'Cría' : stats?.pet_stage === 'teen' ? 'Joven' : 'Adulto'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Estadísticas Visibles Debajo del Avatar de la Mascota */}
+                  <div className="w-28 sm:w-32 mt-2 flex flex-col justify-center h-8 bg-slate-950/85 px-2 rounded-xl border border-teal-500/30 text-center shadow-xs">
+                    <div className="flex items-center justify-between text-[9px] font-black text-teal-300">
+                      <span className="truncate max-w-[65px]">{avatar?.pet_name || 'Compañero'}</span>
+                      <span className="text-rose-400 flex items-center gap-0.5">
+                        ❤️ {avatar?.pet_happiness ?? stats?.pet_happiness ?? 85}%
+                      </span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800 mt-0.5">
+                      <div 
+                        className="h-full bg-gradient-to-r from-rose-500 to-pink-500 rounded-full transition-all duration-500"
+                        style={{ width: `${Math.min(100, avatar?.pet_happiness ?? stats?.pet_happiness ?? 85)}%` }}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <span className="text-[9px] font-black text-teal-300 uppercase tracking-wider mt-1 truncate max-w-[70px]">
-                  {avatar?.pet_name || 'Mascota'}
-                </span>
+
               </div>
 
               {/* Datos de Nombre e Identidad del Héroe */}
-              <div className="flex flex-col min-w-0 text-left">
+              <div className="flex flex-col min-w-0 text-left pt-1">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-indigo-500/25 border border-indigo-400/30 text-indigo-300">
                     {academicLevel.fullGradeLabel}

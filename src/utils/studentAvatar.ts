@@ -74,7 +74,7 @@ export const getStudentAvatarUrl = (student: Partial<DetailedStudent> | null | u
     'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=250&auto=format&fit=crop&q=80'
   ];
 
-  let list = (age <= 12 || student.level === 'primaria')
+  const list = (age <= 12 || student.level === 'primaria')
     ? (isFemale ? kidsGirls : kidsBoys)
     : (isFemale ? teensGirls : teensBoys);
 

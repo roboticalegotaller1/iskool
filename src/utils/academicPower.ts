@@ -75,7 +75,7 @@ export function calculateAcademicPower(
   const homeworkQuests = activeMissionQuests.filter(q => q.type !== 'exam');
   let homeworkMultiplier = 1.0;
   let completedHomeworkCount = 0;
-  let totalHomeworkCount = homeworkQuests.length;
+  const totalHomeworkCount = homeworkQuests.length;
 
   if (totalHomeworkCount > 0) {
     completedHomeworkCount = homeworkQuests.filter(q => {

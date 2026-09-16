@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useStudentStore, useCurrentStudentStats, useCurrentStudentAvatar, useCurrentStudentAcademicPower } from '@/store/useStudentStore';
 import { useGamificationStore } from '@/store/useGamificationStore';
 import { AnimeAvatarSprite } from './AnimeAvatarSprite';
-import { BruxaPixiSprite } from './BruxaPixiSprite';
+import { PetSvgRenderer } from './pet/PetSvgRenderer';
+import { resolvePetRace } from './pet/types';
 import { 
   Volume2, VolumeX, Shield, Swords, Sparkles, HelpCircle, 
   Briefcase, Zap, RotateCcw, Award, Heart, Brain, Play, RefreshCw, AlertCircle
@@ -367,9 +368,24 @@ export function RpgCombatViewport() {
   const subscribeToGuildChanges = useGamificationStore(state => state.subscribeToGuildChanges);
 
   const activeStudentId = useStudentStore(state => state.activeStudentId);
+  const allAvatars = useStudentStore(state => state.allAvatars);
   const studentInventoryMap = useStudentStore(state => state.studentInventoryMap);
   const stats = useCurrentStudentStats();
   const avatar = useCurrentStudentAvatar();
+
+  // Obtener un compañero de clase real para el escuadrón si existe
+  const allyAvatar = useMemo(() => {
+    const allyKeys = Object.keys(allAvatars || {}).filter(id => id !== activeStudentId);
+    return allyKeys.length > 0 ? allAvatars[allyKeys[0]] : null;
+  }, [allAvatars, activeStudentId]);
+
+  // Metadatos de mascotas elementales
+  const heroPetMeta = useMemo(() => resolvePetRace(avatar?.pet_type || 'cryo_dragon'), [avatar?.pet_type]);
+  const allyPetMeta = useMemo(() => resolvePetRace(allyAvatar?.pet_type || 'dragon'), [allyAvatar?.pet_type]);
+
+  // Fases visuales de la animación de ataque
+  const [attackAnimPhase, setAttackAnimPhase] = useState<'none' | 'projectile' | 'impact'>('none');
+  const [attackActionType, setAttackActionType] = useState<'normal' | 'skill'>('normal');
 
   // Control de volumen e hilo musical
   const [volume, setVolume] = useState(0.3);
@@ -442,13 +458,14 @@ export function RpgCombatViewport() {
     };
   }, [fetchActiveGuildBoss, subscribeToGuildChanges]);
 
-  // Actualizar HP local cuando el jefe cambie en tiempo real en el store
+  // Actualizar HP local cuando el jefe cambie en tiempo real en el store (solo en reposo para no reiniciar el combate)
   useEffect(() => {
-    if (guildBoss && guildBoss.id) {
-      setBossHp(guildBoss.hp_actual);
-      setBossMaxHp(guildBoss.hp_max);
+    if (guildBoss && guildBoss.id && battlePhase === 'idle') {
+      const safeBossHp = guildBoss.hp_actual > 0 ? guildBoss.hp_actual : (guildBoss.hp_max || 200);
+      setBossHp(safeBossHp);
+      setBossMaxHp(guildBoss.hp_max || 200);
     }
-  }, [guildBoss]);
+  }, [guildBoss, battlePhase]);
   
   // Retries e Inventario
   const ownedArtifactIds = studentInventoryMap[activeStudentId] || [];
@@ -472,13 +489,10 @@ export function RpgCombatViewport() {
     setCombatState('idle');
     setTurnCount(0);
     setPlayerHp(100);
-    if (guildBoss && guildBoss.id) {
-      setBossHp(guildBoss.hp_actual);
-      setBossMaxHp(guildBoss.hp_max);
-    } else {
-      setBossHp(examContent?.bossHp || 150);
-      setBossMaxHp(examContent?.bossHp || 150);
-    }
+    const targetMaxHp = (guildBoss && guildBoss.hp_max > 0) ? guildBoss.hp_max : (examContent?.bossHp || 200);
+    const targetActualHp = (guildBoss && guildBoss.hp_actual > 0) ? guildBoss.hp_actual : targetMaxHp;
+    setBossHp(targetActualHp);
+    setBossMaxHp(targetMaxHp);
     setUsedAttempts(0);
     setActiveShield(false);
     setBonusDamage(0);
@@ -488,13 +502,10 @@ export function RpgCombatViewport() {
 
   const startFight = () => {
     setPlayerHp(100);
-    if (guildBoss && guildBoss.id) {
-      setBossHp(guildBoss.hp_actual);
-      setBossMaxHp(guildBoss.hp_max);
-    } else {
-      setBossHp(examContent?.bossHp || 150);
-      setBossMaxHp(examContent?.bossHp || 150);
-    }
+    const targetMaxHp = (guildBoss && guildBoss.hp_max > 0) ? guildBoss.hp_max : (examContent?.bossHp || 200);
+    const targetActualHp = (guildBoss && guildBoss.hp_actual > 0) ? guildBoss.hp_actual : targetMaxHp;
+    setBossHp(targetActualHp);
+    setBossMaxHp(targetMaxHp);
     setTurnCount(1);
     setActiveShield(false);
     setBonusDamage(0);
@@ -506,56 +517,70 @@ export function RpgCombatViewport() {
     }
   };
 
-  // ATAQUE DEL JUGADOR
+  // ATAQUE DEL JUGADOR (SIEMPRE DISPARA LA ANIMACIÓN CINEMÁTICA)
   const handlePlayerAttack = (actionType: 'normal' | 'skill') => {
-    if (combatState !== 'idle' || bossHp <= 0 || playerHp <= 0) return;
+    if (combatState !== 'idle') return;
 
-    // Calcular daño basado en Battle Power
-    if (battlePowerPercent === 0) {
-      playSound('error');
-      setSombraText("Sombra: ⚠️ ¡Poder Académico en 0%! Tu ataque no hace daño. ¡Haz tus tareas!");
-      setDamageNumber({ amount: 0, isBoss: true });
-      setTimeout(() => setDamageNumber(null), 1000);
-      
-      // Contraataque inmediato del boss
-      triggerBossTurn();
-      return;
+    // Si el jefe estaba en 0 o negativo, revivirlo a full vida para que el combate continúe
+    let currentTargetHp = bossHp;
+    if (currentTargetHp <= 0) {
+      currentTargetHp = bossMaxHp > 0 ? bossMaxHp : 200;
+      setBossHp(currentTargetHp);
+    }
+    if (playerHp <= 0) {
+      setPlayerHp(100);
     }
 
     setCombatState('player_attack');
+    setAttackActionType(actionType);
+    setAttackAnimPhase('projectile');
     playSound('charge');
 
+    // Fase 1 -> El proyectil de energía sale del jugador y viaja hacia el jefe (550ms)
     setTimeout(() => {
+      // Fase 2 -> Impacto explosivo sobre el jefe (850ms)
+      setAttackAnimPhase('impact');
+      playSound('laser');
+      setCombatState('boss_hurt');
+
       // Calcular daño dinámico en función del Poder Académico Efectivo (Nivel, XP, Misiones, Artefactos, Tareas)
       const actionBase = actionType === 'skill' ? 35 : 20;
       const statBonus = actionType === 'skill' 
         ? (stats.attribute_intelligence || 10) * 1.3 
         : (stats.attribute_strength || 10) * 1.3;
 
-      // El daño escala directamente con el Poder Académico Efectivo del alumno
-      const powerDamageBonus = Math.round(effectivePower / 3.5);
+      // El daño escala directamente con el Poder Académico Efectivo del alumno (mínimo 10 para siempre sentir progreso)
+      const powerDamageBonus = Math.max(8, Math.round((effectivePower || 20) / 3.5));
       let finalDamage = Math.round((actionBase + statBonus + powerDamageBonus + bonusDamage) * (0.85 + Math.random() * 0.3));
       
-      const newBossHp = Math.max(0, bossHp - finalDamage);
+      const newBossHp = Math.max(0, currentTargetHp - finalDamage);
       setBossHp(newBossHp);
       triggerGuildAttack(finalDamage);
       setDamageNumber({ amount: finalDamage, isBoss: true });
-      playSound('laser');
-      setCombatState('boss_hurt');
-      setSombraText(`Sombra: ${actionType === 'skill' ? '🔮 ¡Hechizo Lógico!' : '⚔️ ¡Tajo de Energía!'} Infliges ${finalDamage} de daño al jefe.`);
+      
+      if (battlePowerPercent === 0) {
+        setSombraText(`Sombra: ⚡ ¡Golpe asestado! (${finalDamage} daño). Completa tareas académicas para activar daño crítico masivo.`);
+      } else {
+        setSombraText(`Sombra: ${actionType === 'skill' ? '🔮 ¡Hechizo Lógico!' : '⚔️ ¡Tajo de Energía!'} Infliges ${finalDamage} de daño al jefe.`);
+      }
 
+      // Fase 3 -> Desvanecimiento de impacto y turno del boss o victoria
       setTimeout(() => {
+        setAttackAnimPhase('none');
         setDamageNumber(null);
         setBonusDamage(0); // Consumir bonus
         
         if (newBossHp <= 0) {
           handleVictory();
         } else {
-          triggerBossTurn();
+          // Breve pausa para saborear el impacto antes de la represalia del jefe
+          setTimeout(() => {
+            triggerBossTurn();
+          }, 400);
         }
-      }, 1000);
+      }, 850);
 
-    }, 600);
+    }, 550);
   };
 
   // TURNO DEL ENEMIGO (BOSS)
@@ -721,27 +746,51 @@ export function RpgCombatViewport() {
         .tree-sway-2 { transform-origin: bottom center; animation: treeSwayAlt 6.8s ease-in-out infinite; }
         .tree-sway-3 { transform-origin: bottom center; animation: treeSwaySoft 4.8s ease-in-out infinite 1.2s; }
         .tree-sway-4 { transform-origin: bottom center; animation: treeSwayAlt 7.2s ease-in-out infinite 0.5s; }
+        
+        @keyframes energy-slash-travel {
+          0% { transform: translate(0, 0) scale(0.6) rotate(-15deg); opacity: 0; }
+          15% { opacity: 1; transform: translate(40px, -15px) scale(1) rotate(-10deg); }
+          80% { opacity: 1; transform: translate(320px, -45px) scale(1.35) rotate(15deg); }
+          100% { transform: translate(420px, -55px) scale(1.6) rotate(30deg); opacity: 0; }
+        }
+        @keyframes slash-cross-burst {
+          0% { transform: scale(0.3) rotate(0deg); opacity: 0; filter: brightness(2); }
+          30% { transform: scale(1.4) rotate(20deg); opacity: 1; filter: brightness(2.5); }
+          70% { transform: scale(1.6) rotate(35deg); opacity: 0.9; }
+          100% { transform: scale(2) rotate(50deg); opacity: 0; filter: blur(4px); }
+        }
+        @keyframes boss-hit-shake {
+          0%, 100% { transform: translate(0, 0) scale(1); filter: brightness(1); }
+          20% { transform: translate(-18px, -6px) scale(0.95); filter: brightness(2.2) drop-shadow(0 0 35px rgba(239,68,68,0.95)); }
+          40% { transform: translate(14px, 6px) scale(0.97); filter: brightness(1.8); }
+          60% { transform: translate(-10px, 3px) scale(0.98); }
+          80% { transform: translate(6px, -2px); }
+        }
+        @keyframes hero-strike-lunge {
+          0% { transform: translate(0, 0) scale(1); }
+          40% { transform: translate(40px, -15px) scale(1.15); filter: drop-shadow(0 0 25px #f59e0b); }
+          70% { transform: translate(30px, -10px) scale(1.1); }
+          100% { transform: translate(0, 0) scale(1); }
+        }
+        .animate-slash-travel { animation: energy-slash-travel 0.45s ease-out forwards; }
+        .animate-slash-burst { animation: slash-cross-burst 0.55s ease-out forwards; }
+        .animate-boss-shake { animation: boss-hit-shake 0.65s ease-out forwards; }
+        .animate-hero-lunge { animation: hero-strike-lunge 0.65s ease-out forwards; }
       `}} />
 
-      {/* Contenedor del Celular de la Presentación */}
-      <div className="relative w-full max-w-4xl mx-auto rounded-[46px] bg-zinc-950 border-[14px] border-slate-800 shadow-2xl overflow-hidden aspect-[16/9] flex flex-col justify-between p-3 pb-2 text-white font-sans select-none">
+      {/* Arena de Combate RPG Inmersiva */}
+      <div className="relative w-full max-w-5xl mx-auto rounded-3xl bg-slate-950/95 border-2 border-indigo-500/40 shadow-2xl shadow-indigo-950/60 overflow-hidden min-h-[580px] flex flex-col justify-between p-4 sm:p-6 text-white font-sans select-none">
         
-        {/* Notch en lateral izquierdo */}
-        <div className="absolute top-1/2 left-0 -translate-y-1/2 w-4 h-20 bg-slate-800 rounded-r-2xl z-50 flex flex-col justify-center items-center gap-1.5 shadow-inner">
-          <div className="w-2 h-2 rounded-full bg-zinc-900 border border-zinc-700" />
-          <div className="w-1.5 h-6 rounded-full bg-zinc-900 border border-zinc-700" />
-        </div>
-
         {/* Top Header UI */}
-        <div className="flex justify-between items-start w-full px-4 z-20 mt-1 h-[15%]">
+        <div className="flex flex-wrap justify-between items-center w-full px-2 z-20 pb-3 gap-3 border-b border-slate-800/80">
           {/* Selector de Asignatura */}
-          <div className="flex items-center gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-emerald-500/20">
-            <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">ASIGNATURA:</span>
+          <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-indigo-500/30 shadow-md">
+            <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest">ASIGNATURA:</span>
             <select 
               disabled={battlePhase === 'fight'}
               value={selectedMissionId}
               onChange={(e) => setSelectedMissionId(e.target.value)}
-              className="bg-transparent text-[10px] font-black border-none text-zinc-100 focus:outline-none cursor-pointer uppercase tracking-wider"
+              className="bg-transparent text-xs font-black border-none text-zinc-100 focus:outline-none cursor-pointer uppercase tracking-wider"
             >
               {missions.map(m => (
                 <option key={m.id} value={m.id} className="bg-zinc-900 text-zinc-100">{m.title}</option>
@@ -749,8 +798,25 @@ export function RpgCombatViewport() {
             </select>
           </div>
 
+          {/* Poder de Batalla Dinámico HUD */}
+          <div 
+            className="flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-emerald-500/40 shadow-md group relative cursor-help"
+            title={`Poder Base: ${totalBasePower} | Multiplicador Tareas: ${Math.round(homeworkMultiplier * 100)}% | Poder Efectivo: ${effectivePower}`}
+          >
+            <Zap className="h-4 w-4 text-emerald-400 fill-current animate-pulse" />
+            <div className="flex flex-col text-left">
+              <span className="text-[10px] font-black text-zinc-100 uppercase tracking-widest leading-none flex items-center gap-1.5">
+                PODER ACADÉMICO: <strong className="text-emerald-400 font-extrabold">{effectivePower} PTS</strong>
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono">({battlePowerPercent}%)</span>
+              </span>
+              <span className="text-[8px] text-zinc-400 font-medium leading-tight mt-0.5">
+                Nivel ({breakdown.levelPower}p) + Misiones ({breakdown.questPower}p) + Artefactos ({breakdown.artifactPower}p)
+              </span>
+            </div>
+          </div>
+
           {/* Regulador de Volumen y Reset */}
-          <div className="flex gap-2 bg-slate-900/85 backdrop-blur-md px-2.5 py-1 rounded-xl border border-slate-800/40 shadow-lg items-center">
+          <div className="flex gap-2 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 shadow-md items-center">
             <button 
               onClick={() => {
                 if (volume > 0) {
@@ -760,9 +826,10 @@ export function RpgCombatViewport() {
                   setVolume(prevVolume > 0 ? prevVolume : 0.3);
                 }
               }}
-              className="p-1 rounded bg-zinc-950 border border-slate-800 hover:bg-slate-800 transition-all"
+              className="p-1 rounded bg-zinc-950 border border-slate-800 hover:bg-slate-800 transition-all cursor-pointer"
+              title="Silenciar / Activar sonido"
             >
-              {volume === 0 ? <VolumeX className="h-3 w-3 text-rose-500" /> : <Volume2 className="h-3 w-3 text-emerald-400" />}
+              {volume === 0 ? <VolumeX className="h-3.5 w-3.5 text-rose-500" /> : <Volume2 className="h-3.5 w-3.5 text-emerald-400" />}
             </button>
             <input 
               type="range" 
@@ -771,95 +838,53 @@ export function RpgCombatViewport() {
               step="0.05" 
               value={volume} 
               onChange={(e) => setVolume(parseFloat(e.target.value))}
-              className="w-12 md:w-16 h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-400"
+              className="w-16 h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-400"
             />
             <button 
               onClick={handleReset}
-              className="p-1 rounded bg-zinc-950 border border-slate-800 hover:bg-slate-850 text-zinc-400 hover:text-white transition-all ml-1"
+              className="p-1 rounded bg-zinc-950 border border-slate-800 hover:bg-slate-800 text-zinc-400 hover:text-white transition-all ml-1 cursor-pointer"
               title="Reiniciar batalla"
             >
-              <RotateCcw className="h-3 w-3" />
+              <RotateCcw className="h-3.5 w-3.5" />
             </button>
-          </div>
-
-          {/* Poder de Batalla Dinámico HUD */}
-          <div 
-            className="flex items-center gap-2 bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-emerald-500/30 group relative cursor-help"
-            title={`Poder Base: ${totalBasePower} | Multiplicador Tareas: ${Math.round(homeworkMultiplier * 100)}% | Poder Efectivo: ${effectivePower}`}
-          >
-            <Zap className="h-3.5 w-3.5 text-emerald-400 fill-current animate-pulse" />
-            <div className="flex flex-col text-left">
-              <span className="text-[10px] font-black text-zinc-100 uppercase tracking-widest leading-none flex items-center gap-1.5">
-                PODER ACADÉMICO: <strong className="text-emerald-400 font-extrabold">{effectivePower} PTS</strong>
-                <span className="text-[9px] px-1 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono">({battlePowerPercent}%)</span>
-              </span>
-              <span className="text-[8px] text-zinc-400 font-medium leading-tight">
-                Nivel ({breakdown.levelPower}p) + Misiones ({breakdown.questPower}p) + Artefactos ({breakdown.artifactPower}p)
-              </span>
-            </div>
           </div>
         </div>
 
-        {/* CAMPO DE BATALLA SIDE-VIEW (Classic JRPG) */}
-        <div className="relative h-[55%] w-full flex items-center justify-between px-10 bg-gradient-to-b from-indigo-950 via-emerald-950/50 to-zinc-950 border-y border-zinc-900 overflow-hidden">
+        {/* CAMPO DE BATALLA SIDE-VIEW (Classic JRPG con espacio ampliado) */}
+        <div className="relative min-h-[360px] sm:min-h-[380px] w-full flex items-center justify-between px-4 sm:px-8 py-4 my-2 bg-gradient-to-b from-indigo-950/70 via-slate-950 to-zinc-950 border border-indigo-500/20 rounded-2xl overflow-hidden">
           
           {/* Base Background Image Layer */}
           <div className="absolute inset-0 pointer-events-none z-0">
             <img 
               src="/images/rpg/background/Background.png" 
               alt="Forest Background Base" 
-              className="w-full h-full object-cover opacity-85"
+              className="w-full h-full object-cover opacity-75"
             />
-            {/* Subtle Gradient Overlays for contrast */}
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-indigo-950/30 mix-blend-multiply" />
+            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-indigo-950/30 mix-blend-multiply" />
             <div className="absolute inset-0 bg-gradient-to-b from-blue-950/30 via-transparent to-zinc-950/70" />
           </div>
 
           {/* Layered Animated Forest Trees Layer */}
           <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden flex items-end">
-            
-            {/* Background Trees (Distant, Smaller, Subtle Opacity) */}
             <img 
               src="/images/rpg/background/Dark-Tree.png" 
               alt="Dark Tree" 
-              className="tree-sway-2 absolute bottom-[2%] left-[1%] h-40 opacity-75 object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)]"
+              className="tree-sway-2 absolute bottom-[2%] left-[1%] h-36 opacity-60 object-contain"
             />
             <img 
               src="/images/rpg/background/Red-Tree.png" 
               alt="Red Tree" 
-              className="tree-sway-1 absolute bottom-[5%] left-[15%] h-36 opacity-80 object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)]"
+              className="tree-sway-1 absolute bottom-[5%] left-[15%] h-32 opacity-65 object-contain"
             />
             <img 
               src="/images/rpg/background/Green-Tree.png" 
               alt="Green Tree" 
-              className="tree-sway-3 absolute bottom-[6%] left-[32%] h-40 opacity-80 object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)]"
-            />
-            <img 
-              src="/images/rpg/background/Yellow-Tree.png" 
-              alt="Yellow Tree" 
-              className="tree-sway-4 absolute bottom-[4%] left-[50%] h-38 opacity-75 object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)]"
+              className="tree-sway-3 absolute bottom-[6%] left-[32%] h-36 opacity-65 object-contain"
             />
             <img 
               src="/images/rpg/background/Golden-Tree.png" 
               alt="Golden Tree" 
-              className="tree-sway-2 absolute bottom-[7%] left-[68%] h-42 opacity-80 object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)]"
-            />
-            <img 
-              src="/images/rpg/background/Dark-Tree.png" 
-              alt="Dark Tree Right" 
-              className="tree-sway-1 absolute bottom-[2%] right-[1%] h-44 opacity-75 object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.7)]"
-            />
-
-            {/* Midground Frame Trees */}
-            <img 
-              src="/images/rpg/background/Green-Tree.png" 
-              alt="Foreground Green Tree" 
-              className="tree-sway-3 absolute -bottom-[6%] -left-[4%] h-56 opacity-90 object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.85)] z-10"
-            />
-            <img 
-              src="/images/rpg/background/Golden-Tree.png" 
-              alt="Foreground Golden Tree" 
-              className="tree-sway-4 absolute -bottom-[5%] -right-[4%] h-60 opacity-90 object-contain filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.85)] z-10"
+              className="tree-sway-2 absolute bottom-[7%] left-[68%] h-36 opacity-65 object-contain"
             />
           </div>
 
@@ -869,196 +894,354 @@ export function RpgCombatViewport() {
             <div className="combat-firefly absolute left-[28%] top-[60%] w-1 h-1 rounded-full bg-emerald-400 blur-[0.5px]" style={{ animationDelay: '1.2s' }} />
             <div className="combat-firefly absolute left-[42%] top-[80%] w-2 h-2 rounded-full bg-yellow-300 blur-[1px]" style={{ animationDelay: '0.5s' }} />
             <div className="combat-firefly absolute left-[60%] top-[65%] w-1.5 h-1.5 rounded-full bg-yellow-400 blur-[0.5px]" style={{ animationDelay: '2s' }} />
-            <div className="combat-firefly absolute left-[75%] top-[75%] w-1 h-1 rounded-full bg-emerald-300 blur-[0.5px]" style={{ animationDelay: '3s' }} />
-            <div className="combat-firefly absolute left-[88%] top-[55%] w-2 h-2 rounded-full bg-yellow-300 blur-[1px]" style={{ animationDelay: '1.7s' }} />
+            <div className="combat-firefly absolute left-[80%] top-[55%] w-2 h-2 rounded-full bg-yellow-300 blur-[1px]" style={{ animationDelay: '1.7s' }} />
           </div>
           
           {/* EFECTO DE DAÑO FLOTANTE */}
           {damageNumber && (
             <div 
-              className={`absolute top-[40%] z-50 px-3 py-1 bg-red-600 border border-white text-white font-extrabold text-sm rounded-xl shadow-lg animate-ping`}
-              style={{ left: damageNumber.isBoss ? '70%' : '25%' }}
+              className="absolute top-[22%] z-50 px-4 py-2 bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 border-2 border-yellow-300 text-white font-black text-xl sm:text-2xl rounded-2xl shadow-[0_0_35px_rgba(239,68,68,1)] animate-floating-damage flex items-center gap-2 pointer-events-none"
+              style={{ left: damageNumber.isBoss ? '65%' : '15%' }}
             >
-              -{damageNumber.amount} HP
+              <span className="text-2xl animate-spin">💥</span>
+              <span>-{damageNumber.amount} HP</span>
+              {damageNumber.isBoss && <span className="text-yellow-300 text-xs font-black uppercase tracking-wider ml-1 bg-black/40 px-2 py-0.5 rounded-md border border-yellow-400/40">¡Impacto Crítico!</span>}
             </div>
+          )}
+
+          {/* FLASH CINEMÁTICO AL IMPACTAR */}
+          {attackAnimPhase === 'impact' && (
+            <div className="absolute inset-0 bg-white/25 pointer-events-none z-40 animate-pulse transition-opacity duration-300" />
           )}
 
           {/* SHIELD EFFECT ON PLAYER */}
           {activeShield && combatState === 'player_hurt' && (
-            <div className="absolute left-[20%] top-[45%] z-40 h-20 w-20 border-4 border-cyan-400/80 rounded-full animate-pulse flex items-center justify-center bg-cyan-950/20">
-              <Shield className="h-10 w-10 text-cyan-400 animate-spin" />
+            <div className="absolute left-[15%] top-[35%] z-40 h-24 w-24 border-4 border-cyan-400/80 rounded-full animate-pulse flex items-center justify-center">
+              <Shield className="w-12 h-12 text-cyan-300" />
             </div>
           )}
 
-          {/* LADO IZQUIERDO: ALUMNOS (HUD SIN BORDES INTEGRADO DE ALTA FIDELIDAD) */}
-          <div className="flex items-end gap-6 z-20 self-end mb-2">
-            {/* Elena (Mago / Bruja Pixi.js) */}
-            <div className={`flex items-end gap-3 relative jrpg-idle ${combatState === 'player_attack' ? 'translate-x-6 -translate-y-4 scale-110 duration-200' : 'duration-500'}`}>
-              <div className="relative h-28 w-24 overflow-visible flex items-center justify-center ml-2">
-                <BruxaPixiSprite className="w-24 h-28" width={96} height={112} />
+          {/* LADO IZQUIERDO: ESCUADRÓN ESTUDIANTIL (HÉROE + MASCOTA + ALIADO SANTI + MASCOTA DE SANTI) */}
+          <div className="flex items-end gap-3 sm:gap-6 z-20 self-end mb-2 max-w-[58%]">
+            
+            {/* GRUPO 1: HÉROE Y SU MASCOTA (PERFECTAMENTE ALINEADOS) */}
+            <div className={`flex flex-col items-center relative transition-transform ${
+              combatState === 'player_attack' ? 'translate-x-10 sm:translate-x-16 -translate-y-2 scale-105 duration-200' : 'duration-500'
+            }`}>
+              
+              {/* DUO HÉROE Y MASCOTA EN EL MISMO PLANO HORIZONTAL Y VERTICAL */}
+              <div className="flex items-center gap-2.5 sm:gap-3.5 relative">
+                
+                {/* 1. HÉROE PRINCIPAL */}
+                <div className="flex flex-col items-center relative jrpg-idle">
+                  {/* Badge Flotante de Nombre y Rol */}
+                  <div className="flex items-center gap-1 mb-1 px-2.5 py-0.5 rounded-full bg-slate-950/85 border border-amber-400/40 shadow-md backdrop-blur-sm">
+                    <Sparkles className="w-2.5 h-2.5 text-amber-400 animate-pulse" />
+                    <span className="text-[8.5px] font-black uppercase text-amber-300 tracking-wider truncate max-w-[90px]">
+                      {avatar?.avatar_name || 'Mi Personaje'}
+                    </span>
+                  </div>
+
+                  {/* Sprite del Avatar sin recuadro ni borde, de cuerpo completo */}
+                  <div className="relative h-36 w-24 sm:h-44 sm:w-28 flex items-center justify-center shrink-0">
+                    <AnimeAvatarSprite
+                      gender={(avatar as any)?.gender ?? 'female'}
+                      rpgClass={(avatar as any)?.rpg_class ?? avatar?.outfit_style ?? 'mago'}
+                      headType={(avatar as any)?.head_type ?? avatar?.eyes_style ?? 'standard'}
+                      skinTone={(avatar as any)?.skin_tone ?? 'light'}
+                      hairColor={avatar?.hair_color ?? 'yellow'}
+                      hairStyle={avatar?.hair_style ?? 'spiky'}
+                      eyesStyle={avatar?.eyes_style ?? 'determined'}
+                      raceFeature={avatar?.race_feature}
+                      bodyScale={(avatar as any)?.body_scale ?? 'normal'}
+                      equippedShoes={avatar?.equipped_shoes || 'shoes_tan_boots'}
+                      equippedBottom={avatar?.equipped_bottom || 'bottom_ripped_jeans'}
+                      equippedTop={avatar?.equipped_top || 'top_dia_de_muertos'}
+                      equippedOuterwear={avatar?.equipped_outerwear}
+                      equippedHat={avatar?.equipped_hat || 'hat_snapback_trainer'}
+                      equippedAccessory={avatar?.equipped_accessory || 'acc_red_backpack'}
+                      equippedArtifacts={ownedArtifactIds}
+                      showPedestal={false}
+                      zoom="full"
+                      animationState={
+                        combatState === 'player_attack' ? 'cast' :
+                        combatState === 'victory' ? 'cheer' : 'idle'
+                      }
+                      className="w-full h-full"
+                    />
+                  </div>
+                  {/* Sombra base en el suelo */}
+                  <div className="w-16 h-2.5 bg-black/40 rounded-full blur-[2px] -mt-1 pointer-events-none" />
+                </div>
+
+                {/* 2. COMPAÑERO ELEMENTAL VIVO (MASCOTA ALINEADA AL COSTADO DEL HÉROE) */}
+                <div className="flex flex-col items-center relative jrpg-idle shrink-0">
+                  {/* Halo Luminoso Trasero */}
+                  <div 
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none filter blur-md opacity-85 transition-all duration-300"
+                    style={{
+                      backgroundColor: heroPetMeta.glowColor,
+                      width: '64px',
+                      height: '64px',
+                      boxShadow: `0 0 20px ${heroPetMeta.glowColor}`
+                    }}
+                  />
+                  <div className="relative z-10 w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center filter drop-shadow-[0_0_14px_rgba(45,212,191,0.9)] animate-pet-map-float">
+                    <PetSvgRenderer
+                      raceId={avatar?.pet_type || 'cryo_dragon'}
+                      stage={stats?.pet_stage || 'baby'}
+                      actionId={combatState === 'player_attack' ? 'attack_bite' : combatState === 'victory' ? 'joy_bounce' : 'idle'}
+                      className="w-full h-full"
+                    />
+                  </div>
+                  <div className="w-12 h-2 bg-black/40 rounded-full blur-[2px] mt-1 pointer-events-none" />
+                  <span className="text-[8px] font-black uppercase text-teal-300 tracking-wider truncate max-w-[70px] bg-slate-950/80 backdrop-blur-sm px-2 py-0.5 rounded-md border border-teal-500/30 mt-1 shadow-md z-10">
+                    {avatar?.pet_name || 'Mascota'}
+                  </span>
+                </div>
+
               </div>
-              <div className="flex flex-col mb-1 text-left select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] min-w-[70px] gap-1">
-                <span className="text-[10px] font-black uppercase text-teal-300 tracking-wider">Elena</span>
+
+              {/* Barra de Vida y Maná Flotante del Jugador Centrada */}
+              <div className="w-full max-w-[140px] mt-2 flex flex-col gap-1 bg-slate-950/85 backdrop-blur-md p-1.5 rounded-xl border border-slate-800/80 shadow-md">
                 {/* HP */}
                 <div className="flex flex-col gap-0.5">
-                  <div className="flex justify-between items-center text-[7.5px] font-bold text-zinc-200 font-mono">
-                    <span>HP</span>
+                  <div className="flex justify-between items-center text-[7.5px] font-black text-zinc-200 font-mono">
+                    <span className="text-emerald-400">HP</span>
                     <span>{playerHp}/100</span>
                   </div>
-                  <div className="h-1 w-16 bg-zinc-950/80 rounded-full overflow-hidden">
+                  <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden border border-zinc-800">
                     <div className="h-full bg-gradient-to-r from-teal-400 to-emerald-500 transition-all duration-300" style={{ width: `${playerHp}%` }} />
                   </div>
                 </div>
                 {/* MP */}
                 <div className="flex flex-col gap-0.5">
-                  <div className="flex justify-between items-center text-[7.5px] font-bold text-cyan-400 font-mono">
-                    <span>MP</span>
+                  <div className="flex justify-between items-center text-[7.5px] font-black text-cyan-400 font-mono">
+                    <span className="text-cyan-400">MP</span>
                     <span>85/100</span>
                   </div>
-                  <div className="h-1 w-16 bg-zinc-950/80 rounded-full overflow-hidden">
+                  <div className="h-1 w-full bg-zinc-900 rounded-full overflow-hidden border border-zinc-800">
                     <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-500" style={{ width: '85%' }} />
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Santi (Guerrero) */}
-            <div className="flex items-end gap-3 relative jrpg-idle opacity-95">
-              <div className="relative h-28 w-24 overflow-visible">
-                <img 
-                  src="/images/rpg/santi_sprite.png" 
-                  alt="Santi (Warrior)" 
-                  className="w-full h-full object-contain filter drop-shadow-[0_6px_8px_rgba(0,0,0,0.65)]"
-                />
-              </div>
-              <div className="flex flex-col mb-1 text-left select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] min-w-[70px] gap-1">
-                <span className="text-[10px] font-black uppercase text-rose-300 tracking-wider">Santi</span>
-                {/* HP */}
-                <div className="flex flex-col gap-0.5">
-                  <div className="flex justify-between items-center text-[7.5px] font-bold text-zinc-200 font-mono">
+            {/* GRUPO 2: ALIADO SANTI + SU MASCOTA ACOMPAÑANTE (ALINEADOS AL COSTADO) */}
+            {allyAvatar && (
+              <div className="hidden sm:flex flex-col items-center">
+                <div className="flex items-center gap-2.5 relative">
+                  
+                  {/* Avatar de Santi */}
+                  <div className="flex flex-col items-center relative jrpg-idle opacity-95">
+                    <div className="flex items-center gap-1 mb-1 px-2 py-0.5 rounded-full bg-slate-950/85 border border-slate-700 shadow-md backdrop-blur-sm">
+                      <span className="text-[8px] font-bold text-slate-300 uppercase tracking-wider truncate max-w-[80px]">
+                        {allyAvatar.avatar_name || 'SantiAvatar'}
+                      </span>
+                    </div>
+                    <div className="relative h-36 w-24 sm:h-44 sm:w-28 flex items-center justify-center shrink-0">
+                      <AnimeAvatarSprite
+                        gender={(allyAvatar as any)?.gender ?? 'male'}
+                        rpgClass={(allyAvatar as any)?.rpg_class ?? allyAvatar?.outfit_style ?? 'guerrero'}
+                        headType={(allyAvatar as any)?.head_type ?? 'standard'}
+                        skinTone={(allyAvatar as any)?.skin_tone ?? 'light'}
+                        hairColor={allyAvatar?.hair_color ?? '#4B5563'}
+                        hairStyle={allyAvatar?.hair_style ?? 'spiky'}
+                        eyesStyle={allyAvatar?.eyes_style ?? 'happy'}
+                        raceFeature={allyAvatar?.race_feature}
+                        bodyScale={(allyAvatar as any)?.body_scale ?? 'normal'}
+                        equippedShoes={allyAvatar?.equipped_shoes}
+                        equippedBottom={allyAvatar?.equipped_bottom}
+                        equippedTop={allyAvatar?.equipped_top}
+                        equippedOuterwear={allyAvatar?.equipped_outerwear}
+                        equippedHat={allyAvatar?.equipped_hat}
+                        equippedAccessory={allyAvatar?.equipped_accessory}
+                        showPedestal={false}
+                        zoom="full"
+                        className="w-full h-full"
+                      />
+                    </div>
+                    <div className="w-16 h-2.5 bg-black/40 rounded-full blur-[2px] -mt-1 pointer-events-none" />
+                  </div>
+
+                  {/* Mascota Elemental de Santi */}
+                  <div className="flex flex-col items-center relative jrpg-idle shrink-0">
+                    <div 
+                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none filter blur-md opacity-80 transition-all duration-300"
+                      style={{
+                        backgroundColor: allyPetMeta?.glowColor || '#8B5CF6',
+                        width: '56px',
+                        height: '56px',
+                        boxShadow: `0 0 16px ${allyPetMeta?.glowColor || '#8B5CF6'}`
+                      }}
+                    />
+                    <div className="relative z-10 w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center filter drop-shadow-[0_0_12px_rgba(168,85,247,0.85)] animate-pet-map-float">
+                      <PetSvgRenderer
+                        raceId={allyAvatar?.pet_type || 'dragon'}
+                        stage="baby"
+                        actionId="idle"
+                        className="w-full h-full"
+                      />
+                    </div>
+                    <div className="w-10 h-2 bg-black/40 rounded-full blur-[2px] mt-1 pointer-events-none" />
+                    <span className="text-[7.5px] font-black uppercase text-purple-300 tracking-wider truncate max-w-[60px] bg-slate-950/80 backdrop-blur-sm px-2 py-0.5 rounded-md border border-purple-500/30 mt-1 shadow-md z-10">
+                      {allyAvatar?.pet_name || 'PetSanti'}
+                    </span>
+                  </div>
+
+                </div>
+
+                {/* HP Ally */}
+                <div className="w-full max-w-[130px] mt-2 flex flex-col gap-0.5 bg-slate-950/85 backdrop-blur-md p-1.5 rounded-xl border border-slate-800">
+                  <div className="flex justify-between items-center text-[7px] font-bold text-zinc-300 font-mono">
                     <span>HP</span>
                     <span>100/100</span>
                   </div>
-                  <div className="h-1 w-16 bg-zinc-950/80 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-rose-500 to-red-500" style={{ width: '100%' }} />
+                  <div className="h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-indigo-400 to-teal-400" style={{ width: '100%' }} />
                   </div>
                 </div>
-                {/* MP */}
-                <div className="flex flex-col gap-0.5">
-                  <div className="flex justify-between items-center text-[7.5px] font-bold text-cyan-400 font-mono">
-                    <span>MP</span>
-                    <span>65/100</span>
-                  </div>
-                  <div className="h-1 w-16 bg-zinc-950/80 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-500" style={{ width: '65%' }} />
-                  </div>
+              </div>
+            )}
+          </div>
+
+          {/* =========================================================================
+              ANIMACIÓN DE ATAQUE Y EFECTOS VISUALES CINEMÁTICOS
+              ========================================================================= */}
+          
+          {/* FASE 1: PROYECTIL / TAJO DE ENERGÍA VIAJANDO HACIA EL JEFE */}
+          {attackAnimPhase === 'projectile' && (
+            <div 
+              className="absolute top-[34%] sm:top-[36%] z-50 pointer-events-none animate-energy-travel flex items-center"
+              style={{ width: '180px', height: '60px' }}
+            >
+              <div className="relative flex items-center w-full h-full">
+                {/* Hoja de energía radiante cortando el aire */}
+                <div 
+                  className={`w-36 sm:w-44 h-12 sm:h-14 rounded-full ${
+                    attackActionType === 'skill'
+                      ? 'bg-gradient-to-r from-cyan-400 via-indigo-500 to-fuchsia-400 shadow-[0_0_35px_rgba(34,211,238,1)]'
+                      : 'bg-gradient-to-r from-amber-300 via-yellow-400 to-orange-500 shadow-[0_0_35px_rgba(245,158,11,1)]'
+                  } blur-[1px] rotate-[-12deg] flex items-center justify-center`}
+                >
+                  <div className="w-28 sm:w-32 h-3 bg-white rounded-full blur-[0.5px]" />
+                </div>
+                {/* Estela y chispas cinemáticas */}
+                <div className="absolute -left-8 flex gap-1.5 items-center opacity-95 animate-pulse">
+                  <span className="text-3xl animate-spin">✨</span>
+                  <span className="text-2xl">⚡</span>
+                  <span className="text-xl">🔥</span>
                 </div>
               </div>
             </div>
+          )}
 
-            {/* Lucas (Explorador) */}
-            <div className="flex items-end gap-3 relative jrpg-idle opacity-90">
-              <div className="relative h-28 w-24 overflow-visible">
-                <img 
-                  src="/images/rpg/lucas_sprite.png" 
-                  alt="Lucas (Scout)" 
-                  className="w-full h-full object-contain filter drop-shadow-[0_6px_8px_rgba(0,0,0,0.65)]"
+          {/* FASE 2: IMPACTO Y EXPLOSIÓN CRUZADA SOBRE EL JEFE DRAGÓN */}
+          {attackAnimPhase === 'impact' && (
+            <div 
+              className="absolute top-[18%] sm:top-[20%] left-[60%] sm:left-[64%] z-50 pointer-events-none flex items-center justify-center animate-impact-burst"
+              style={{ width: '260px', height: '260px' }}
+            >
+              <div className="relative w-full h-full flex items-center justify-center">
+                {/* Tajo Diagonal 1 */}
+                <div 
+                  className={`absolute w-64 sm:w-72 h-4 sm:h-5 rounded-full ${
+                    attackActionType === 'skill'
+                      ? 'bg-cyan-300 shadow-[0_0_40px_#22d3ee]'
+                      : 'bg-amber-300 shadow-[0_0_40px_#f59e0b]'
+                  } rotate-45 transform origin-center`}
                 />
+                {/* Tajo Diagonal 2 Cruzado */}
+                <div 
+                  className={`absolute w-64 sm:w-72 h-4 sm:h-5 rounded-full ${
+                    attackActionType === 'skill'
+                      ? 'bg-fuchsia-300 shadow-[0_0_40px_#d946ef]'
+                      : 'bg-yellow-100 shadow-[0_0_40px_#fbbf24]'
+                  } -rotate-45 transform origin-center`}
+                />
+                {/* Flash central supernoval */}
+                <div className="absolute w-40 h-40 rounded-full bg-white/95 blur-xl animate-ping" />
+                {/* Emoticonos y partículas de impacto */}
+                <div className="absolute -top-6 -right-6 text-5xl animate-bounce">💥</div>
+                <div className="absolute -bottom-4 -left-4 text-4xl animate-pulse">⚡</div>
+                <div className="absolute top-2 left-0 text-4xl animate-spin">✨</div>
               </div>
-              <div className="flex flex-col mb-1 text-left select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] min-w-[70px] gap-1">
-                <span className="text-[10px] font-black uppercase text-emerald-300 tracking-wider">Lucas</span>
-                {/* HP */}
-                <div className="flex flex-col gap-0.5">
-                  <div className="flex justify-between items-center text-[7.5px] font-bold text-zinc-200 font-mono">
-                    <span>HP</span>
-                    <span>100/100</span>
-                  </div>
-                  <div className="h-1 w-16 bg-zinc-950/80 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500" style={{ width: '100%' }} />
-                  </div>
-                </div>
-                {/* MP */}
-                <div className="flex flex-col gap-0.5">
-                  <div className="flex justify-between items-center text-[7.5px] font-bold text-cyan-400 font-mono">
-                    <span>MP</span>
-                    <span>90/100</span>
-                  </div>
-                  <div className="h-1 w-16 bg-zinc-950/80 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-500" style={{ width: '90%' }} />
-                  </div>
-                </div>
-              </div>
+            </div>
+          )}
+
+          {/* VS INDICATOR CENTRADO */}
+          <div className="flex flex-col items-center justify-center z-20 select-none px-2">
+            <div className="px-3 py-1.5 rounded-2xl bg-slate-950/85 border border-indigo-500/30 shadow-lg text-indigo-300 font-black text-xs font-mono tracking-widest flex items-center gap-1.5 backdrop-blur-md">
+              <Swords className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+              <span>VS</span>
             </div>
           </div>
 
-
-          {/* VS INDICATOR */}
-          <div className="text-zinc-700 font-black text-xl font-mono tracking-widest select-none">VS</div>
-
-          {/* LADO DERECHO: ENEMIGOS (TAREAS Y BOSS) */}
-          <div className="flex flex-col items-end gap-3 z-20">
+          {/* LADO DERECHO: ENEMIGOS (TAREAS Y BOSS GIGANTE) */}
+          <div className="flex flex-col items-end gap-3 z-20 max-w-[48%]">
             {battlePhase !== 'fight' ? (
               // Vista de Tareas Pendientes como Monstruos
-              <div className="flex flex-row gap-4">
+              <div className="flex flex-wrap justify-end gap-3">
                 {homeworkQuests.map((quest, idx) => {
                   const status = questAttempts.some(a => a.quest_id === quest.id && (a.is_completed || a.score >= 60)) ? 'completed' : 'pending';
-                  const isMath = activeMission.subject_id === 'sub-math';
                   
                   return (
-                    <div key={quest.id} className="flex flex-col items-center gap-1.5 bg-slate-900/60 p-2.5 rounded-2xl border border-slate-800">
-                      <div className="relative h-32 w-32 flex items-center justify-center">
+                    <div key={quest.id} className="flex flex-col items-center gap-1 bg-slate-900/80 p-2 sm:p-2.5 rounded-2xl border border-slate-800 shadow-md">
+                      <div className="relative h-24 w-24 sm:h-28 sm:w-28 flex items-center justify-center">
                         {status === 'completed' ? (
                           // Enemigo Derrotado
                           <div className="opacity-45 text-center flex flex-col items-center">
-                            <span className="text-4xl grayscale">☠️</span>
-                            <span className="text-[9px] text-emerald-400 font-black uppercase tracking-wider block mt-1">Vencido</span>
+                            <span className="text-3xl grayscale">☠️</span>
+                            <span className="text-[8px] text-emerald-400 font-black uppercase tracking-wider block mt-1">Vencido</span>
                           </div>
                         ) : (
-                          // Tarea Activa (Dragón Gigante)
+                          // Tarea Activa (Dragón)
                           <div className="jrpg-idle flex flex-col items-center relative">
                             <img 
                               src={getDragonSpriteForQuest(quest.id, idx)} 
                               alt={quest.title} 
-                              className="w-32 h-32 object-contain filter drop-shadow-[0_4px_16px_rgba(239,68,68,0.85)]"
+                              className="w-24 h-24 sm:w-28 sm:h-28 object-contain filter drop-shadow-[0_4px_14px_rgba(239,68,68,0.7)]"
                             />
                             {/* HP Bar */}
-                            <div className="w-20 h-2 bg-red-950 border border-slate-800 rounded-full mt-1 overflow-hidden">
+                            <div className="w-16 h-1.5 bg-red-950 border border-slate-800 rounded-full mt-1 overflow-hidden">
                               <div className="h-full bg-red-500 w-full" />
                             </div>
                           </div>
                         )}
                       </div>
-                      <span className="text-[9px] font-bold text-zinc-300 text-center truncate w-28">{quest.title}</span>
+                      <span className="text-[8.5px] font-bold text-zinc-300 text-center truncate w-24">{quest.title}</span>
                     </div>
                   );
                 })}
               </div>
             ) : (
               // Vista en Combate: Examen Boss Final Activo
-              <div className={`flex flex-col items-center relative gap-2 duration-300 ${combatState === 'boss_attack' ? '-translate-x-20 scale-105 duration-200' : ''}`}>
+              <div className={`flex flex-col items-center relative gap-2 duration-300 ${combatState === 'boss_attack' ? '-translate-x-12 scale-105 duration-200' : ''}`}>
                 
-                {/* Sprite del Jefe Final Dragón (Gigante) */}
-                <div className={`relative ${combatState === 'boss_hurt' ? 'animate-bounce opacity-85' : 'jrpg-idle'}`}>
+                {/* Sprite del Jefe Final Dragón con Reacción Sísmica a los Golpes */}
+                <div className={`relative ${
+                  (combatState === 'boss_hurt' || attackAnimPhase === 'impact') ? 'animate-boss-hit' : 'jrpg-idle'
+                }`}>
                   <img 
                     src={getDragonSpriteForQuest(selectedMissionId, 0)} 
                     alt={examContent.bossName || "Dragón Jefe Examen"} 
-                    className="w-72 h-72 object-contain filter drop-shadow-[0_0_40px_rgba(239,68,68,0.95)]"
+                    className="w-48 h-48 sm:w-60 sm:h-60 object-contain filter drop-shadow-[0_0_35px_rgba(239,68,68,0.85)]"
                   />
-                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-yellow-500/20 border border-yellow-400/40 backdrop-blur-sm px-3 py-0.5 rounded-full flex items-center gap-1 shadow-lg animate-bounce">
-                    <span className="text-base">👑</span>
-                    <span className="text-[10px] font-black text-yellow-300 uppercase tracking-widest">Jefe Boss</span>
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow-500/20 border border-yellow-400/40 backdrop-blur-sm px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
+                    <span className="text-xs">👑</span>
+                    <span className="text-[9px] font-black text-yellow-300 uppercase tracking-widest">Jefe Boss</span>
                   </div>
 
-                  {/* Glitch Overlay en daño */}
-                  {combatState === 'boss_hurt' && (
-                    <div className="absolute inset-0 bg-red-500/30 mix-blend-color-dodge animate-ping" />
+                  {/* Glitch y Flash Rojo en Daño */}
+                  {(combatState === 'boss_hurt' || attackAnimPhase === 'impact') && (
+                    <div className="absolute inset-0 bg-red-500/40 mix-blend-color-dodge animate-ping rounded-full" />
                   )}
                 </div>
 
                 {/* HP Bar del Jefe */}
-                <div className="w-44 bg-zinc-950 p-2 rounded-xl border border-teal-900/60 shadow-lg text-center">
-                  <div className="flex justify-between items-center text-[8.5px] font-black text-teal-300 uppercase tracking-widest mb-1">
-                    <span>{examContent?.bossName || 'EXAMEN FINAL'}</span>
+                <div className="w-40 sm:w-48 bg-zinc-950/90 p-2 rounded-xl border border-teal-900/60 shadow-lg text-center">
+                  <div className="flex justify-between items-center text-[8px] font-black text-teal-300 uppercase tracking-widest mb-1">
+                    <span className="truncate max-w-[90px]">{examContent?.bossName || 'EXAMEN FINAL'}</span>
                     <span>HP {bossHp}/{bossMaxHp}</span>
                   </div>
                   <div className="h-2 w-full bg-zinc-900 rounded-full overflow-hidden border border-zinc-800">
@@ -1075,38 +1258,38 @@ export function RpgCombatViewport() {
 
         </div>
 
-        {/* CONTROLES Y DIALOGO DE COMBATE (h-[30%]) */}
-        <div className="w-full h-[30%] flex flex-col justify-between px-3 pb-1 z-20">
+        {/* CONTROLES Y DIÁLOGO DE COMBATE */}
+        <div className="w-full flex flex-col justify-between pt-2 gap-3 z-20 border-t border-slate-800/80">
           
-          {/* Diálogo */}
-          <div className="relative bg-zinc-950/95 border border-teal-500/40 rounded-xl p-2 flex gap-2.5 items-center backdrop-blur-md shadow-[0_0_12px_rgba(45,212,191,0.15)]">
-            <div className="absolute -top-3 left-4 px-2.5 py-0.5 bg-teal-500 text-[8px] font-black uppercase tracking-wider text-slate-950 rounded-t-md rounded-br-md shadow-lg">
+          {/* Diálogo Sombra */}
+          <div className="relative bg-zinc-950/95 border border-teal-500/40 rounded-2xl p-2.5 sm:p-3 flex gap-3 items-center backdrop-blur-md shadow-lg">
+            <div className="absolute -top-3 left-4 px-2.5 py-0.5 bg-teal-500 text-[8px] font-black uppercase tracking-wider text-slate-950 rounded-t-md rounded-br-md shadow-md">
               SOMBRA LOG
             </div>
             
-            <div className="h-6 w-6 rounded bg-teal-950/80 border border-teal-400/50 flex items-center justify-center text-[10px] animate-bounce shrink-0">
+            <div className="h-7 w-7 rounded-xl bg-teal-950/80 border border-teal-400/50 flex items-center justify-center text-xs animate-bounce shrink-0">
               💡
             </div>
-            <div className="flex-1 overflow-y-auto max-h-[35px]">
-              <p className="text-[9.5px] md:text-xs text-zinc-200 font-medium leading-tight">
+            <div className="flex-1 overflow-y-auto max-h-[45px]">
+              <p className="text-[10px] sm:text-xs text-zinc-200 font-medium leading-relaxed">
                 {sombraText}
               </p>
             </div>
           </div>
 
           {/* Menú de Botones e Interacciones */}
-          <div className="flex justify-between items-center gap-4">
+          <div className="flex flex-wrap justify-between items-center gap-3">
             {/* Opciones en reposo */}
             {battlePhase === 'idle' && (
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2 items-center">
                 <button
                   onClick={startFight}
-                  className="px-6 py-2 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 text-[10px] md:text-xs font-black tracking-widest uppercase rounded-xl transition-all shadow-lg shadow-amber-500/30 flex items-center gap-1.5 border border-amber-400/40 cursor-pointer active:scale-95"
+                  className="px-6 py-2 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 text-xs font-black tracking-widest uppercase rounded-xl transition-all shadow-lg shadow-amber-500/30 flex items-center gap-1.5 border border-amber-400/40 cursor-pointer active:scale-95"
                 >
-                  <Swords className="h-4.5 w-4.5" />
+                  <Swords className="h-4 w-4" />
                   Iniciar Examen Boss ⚔️
                 </button>
-                <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 px-3 py-1 rounded-xl text-[9px] font-bold text-zinc-400">
+                <div className="flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-xl text-[10px] font-bold text-zinc-400">
                   <AlertCircle className="h-3.5 w-3.5 text-zinc-500" />
                   {completedHomeworkCount}/{totalHomeworkCount} Tareas completas
                 </div>
@@ -1115,33 +1298,33 @@ export function RpgCombatViewport() {
 
             {/* Opciones en Combate */}
             {battlePhase === 'fight' && (
-              <div className="flex items-center gap-2 w-full justify-between">
+              <div className="flex items-center gap-2 w-full justify-between flex-wrap">
                 {/* Comandos del Jugador */}
                 <div className="flex gap-2">
                   <button 
                     disabled={combatState !== 'idle'}
                     onClick={() => handlePlayerAttack('normal')}
-                    className="px-4 py-2 bg-teal-800 hover:bg-teal-700 disabled:opacity-40 text-[9px] md:text-xs font-black rounded-lg border border-teal-500/30 tracking-wider transition-all uppercase text-white shadow cursor-pointer active:scale-95"
+                    className="px-4 py-2 bg-teal-800 hover:bg-teal-700 disabled:opacity-40 text-xs font-black rounded-xl border border-teal-500/30 tracking-wider transition-all uppercase text-white shadow cursor-pointer active:scale-95"
                   >
                     [ ⚔️ Atacar ]
                   </button>
                   <button 
                     disabled={combatState !== 'idle'}
                     onClick={() => handlePlayerAttack('skill')}
-                    className="px-4 py-2 bg-indigo-800 hover:bg-indigo-700 disabled:opacity-40 text-[9px] md:text-xs font-black rounded-lg border border-indigo-500/30 tracking-wider transition-all uppercase text-white shadow cursor-pointer active:scale-95"
+                    className="px-4 py-2 bg-indigo-800 hover:bg-indigo-700 disabled:opacity-40 text-xs font-black rounded-xl border border-indigo-500/30 tracking-wider transition-all uppercase text-white shadow cursor-pointer active:scale-95"
                   >
                     [ 🔮 Habilidad ]
                   </button>
                   <button 
                     disabled={combatState !== 'idle' || ownedArtifacts.length === 0}
                     onClick={() => setIsUsingItem(prev => !prev)}
-                    className="px-4 py-2 bg-amber-800 hover:bg-amber-700 disabled:opacity-40 text-[9px] md:text-xs font-black rounded-lg border border-amber-500/30 tracking-wider transition-all uppercase text-white shadow cursor-pointer active:scale-95"
+                    className="px-4 py-2 bg-amber-800 hover:bg-amber-700 disabled:opacity-40 text-xs font-black rounded-xl border border-amber-500/30 tracking-wider transition-all uppercase text-white shadow cursor-pointer active:scale-95"
                   >
                     [ 🎒 Objetos ({ownedArtifacts.length}) ]
                   </button>
                 </div>
 
-                <div className="text-[10px] font-bold text-teal-400 bg-teal-950/45 px-2.5 py-1 rounded border border-teal-900/40 font-black">
+                <div className="text-xs font-bold text-teal-400 bg-teal-950/60 px-3 py-1.5 rounded-xl border border-teal-900/40 font-mono font-black">
                   Ronda: {turnCount}
                 </div>
               </div>
@@ -1149,7 +1332,7 @@ export function RpgCombatViewport() {
 
             {/* Pantalla de Victoria */}
             {battlePhase === 'victory' && (
-              <div className="flex items-center gap-3 w-full justify-between">
+              <div className="flex items-center gap-3 w-full justify-between flex-wrap">
                 <div className="flex items-center gap-2">
                   <Award className="h-5 w-5 text-yellow-400" />
                   <span className="text-xs font-black text-emerald-400 uppercase">¡EXAMEN APROBADO!</span>
@@ -1158,14 +1341,14 @@ export function RpgCombatViewport() {
                   {usedAttempts < totalAttemptsAllowed - 1 && (
                     <button
                       onClick={handleRetryBattle}
-                      className="px-4 py-1.5 bg-yellow-600 hover:bg-yellow-500 text-[10px] font-black uppercase text-white rounded-lg transition-all"
+                      className="px-4 py-1.5 bg-yellow-600 hover:bg-yellow-500 text-xs font-black uppercase text-white rounded-xl transition-all cursor-pointer"
                     >
                       Reintentar Examen (Oportunidad)
                     </button>
                   )}
                   <button 
                     onClick={handleReset}
-                    className="px-4 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-[10px] font-black uppercase text-zinc-300 rounded-lg transition-all"
+                    className="px-4 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-xs font-black uppercase text-zinc-300 rounded-xl transition-all cursor-pointer"
                   >
                     Continuar
                   </button>
@@ -1175,7 +1358,7 @@ export function RpgCombatViewport() {
 
             {/* Pantalla de Derrota */}
             {battlePhase === 'defeat' && (
-              <div className="flex items-center gap-3 w-full justify-between">
+              <div className="flex items-center gap-3 w-full justify-between flex-wrap">
                 <div className="flex items-center gap-2">
                   <AlertCircle className="h-5 w-5 text-red-500" />
                   <span className="text-xs font-black text-red-500 uppercase">Derrota Académica</span>
@@ -1184,18 +1367,18 @@ export function RpgCombatViewport() {
                   {usedAttempts < totalAttemptsAllowed - 1 ? (
                     <button
                       onClick={handleRetryBattle}
-                      className="px-4 py-1.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 text-[10px] font-black uppercase rounded-lg transition-all shadow-lg shadow-amber-500/30 border border-amber-400/40 cursor-pointer active:scale-95"
+                      className="px-4 py-1.5 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 text-xs font-black uppercase rounded-xl transition-all shadow-lg shadow-amber-500/30 border border-amber-400/40 cursor-pointer active:scale-95"
                     >
                       Usar Oportunidad ({usedAttempts + 1}/{totalAttemptsAllowed - 1})
                     </button>
                   ) : (
-                    <div className="text-[9px] text-zinc-500 font-bold bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-lg">
+                    <div className="text-[10px] text-zinc-400 font-bold bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-xl">
                       Oportunidades agotadas. Consigue monedas y compra artefactos en la Tienda.
                     </div>
                   )}
                   <button 
                     onClick={handleReset}
-                    className="px-4 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-[10px] font-black uppercase text-zinc-300 rounded-lg transition-all"
+                    className="px-4 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-xs font-black uppercase text-zinc-300 rounded-xl transition-all cursor-pointer"
                   >
                     Salir
                   </button>
@@ -1207,28 +1390,92 @@ export function RpgCombatViewport() {
 
         {/* Dropdown de Items para usar */}
         {isUsingItem && battlePhase === 'fight' && (
-          <div className="absolute left-[38%] bottom-[35%] z-50 w-64 bg-zinc-900 border border-amber-500/40 rounded-xl p-3 shadow-2xl flex flex-col gap-2 max-h-40 overflow-y-auto">
-            <span className="text-[9px] font-black text-amber-500 uppercase border-b border-zinc-800 pb-1">Selecciona un artefacto:</span>
+          <div className="absolute left-[30%] sm:left-[38%] bottom-[25%] z-50 w-72 bg-zinc-900/95 backdrop-blur-xl border border-amber-500/50 rounded-2xl p-3 shadow-2xl flex flex-col gap-2 max-h-48 overflow-y-auto">
+            <span className="text-[10px] font-black text-amber-400 uppercase border-b border-zinc-800 pb-1">Selecciona un artefacto:</span>
             {ownedArtifacts.map((art) => (
               <button
                 key={art.id}
                 onClick={() => handleUseItem(art)}
-                className="flex items-center justify-between p-1.5 rounded bg-zinc-950/80 hover:bg-zinc-800 text-left text-[9px] text-zinc-200 hover:text-white transition-all font-semibold"
+                className="flex items-center justify-between p-2 rounded-xl bg-zinc-950/80 hover:bg-zinc-800 text-left text-xs text-zinc-200 hover:text-white transition-all font-semibold cursor-pointer"
               >
                 <span>{art.name}</span>
-                <span className="text-[8px] text-amber-400 italic font-medium">{art.effect === 'extra_attempt' ? 'Oportunidad' : 'Efecto'}</span>
+                <span className="text-[9px] text-amber-400 italic font-medium">{art.effect === 'extra_attempt' ? 'Oportunidad' : 'Efecto'}</span>
               </button>
             ))}
           </div>
         )}
 
-        {/* Indicador inferior */}
-        <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 text-[8px] font-bold text-slate-600 tracking-widest uppercase pointer-events-none">
-          one-hand interactive
-        </div>
+        {/* Estilos e Inyección de Keyframes Cinemáticos JRPG */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes energy-travel {
+            0% {
+              left: 28%;
+              opacity: 0;
+              transform: scale(0.6) translateY(0) rotate(-15deg);
+            }
+            15% {
+              opacity: 1;
+            }
+            80% {
+              opacity: 1;
+              transform: scale(1.15) translateY(-8px) rotate(8deg);
+            }
+            100% {
+              left: 66%;
+              opacity: 0.95;
+              transform: scale(1.35) translateY(-12px) rotate(22deg);
+            }
+          }
+          .animate-energy-travel {
+            animation: energy-travel 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+          }
+          @keyframes impact-burst {
+            0% {
+              transform: scale(0.3);
+              opacity: 1;
+            }
+            35% {
+              transform: scale(1.3);
+              opacity: 1;
+            }
+            100% {
+              transform: scale(1.55);
+              opacity: 0;
+            }
+          }
+          .animate-impact-burst {
+            animation: impact-burst 0.75s ease-out forwards;
+          }
+          @keyframes boss-hit-shake {
+            0%, 100% { 
+              transform: translateX(0) scale(1); 
+              filter: brightness(1) drop-shadow(0 0 35px rgba(239,68,68,0.85)); 
+            }
+            15% { 
+              transform: translateX(18px) rotate(4deg) scale(1.05); 
+              filter: brightness(2) drop-shadow(0 0 50px rgba(255,255,255,1)); 
+            }
+            30% { 
+              transform: translateX(-18px) rotate(-4deg); 
+              filter: brightness(1.8) drop-shadow(0 0 45px rgba(239,68,68,1)); 
+            }
+            45% { 
+              transform: translateX(12px) rotate(2deg); 
+              filter: brightness(1.5); 
+            }
+            60% { 
+              transform: translateX(-10px) rotate(-2deg); 
+            }
+            75% { 
+              transform: translateX(6px); 
+            }
+          }
+          .animate-boss-hit {
+            animation: boss-hit-shake 0.7s ease-in-out;
+          }
+        `}} />
+
       </div>
-
-
     </div>
   );
 }
