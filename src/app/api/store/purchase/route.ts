@@ -82,15 +82,21 @@ export async function POST(req: NextRequest) {
 
           if (error) {
             // Errores específicos de negocio
-            if (error.message.includes('Insufficient coins')) {
+            if (error.message.includes('Insufficient coins') || error.message.includes('Fondos insuficientes')) {
               return NextResponse.json(
                 { error: 'No posees suficientes monedas escolares para esta compra.', code: 'INSUFFICIENT_FUNDS' },
                 { status: 400 }
               );
             }
-            if (error.message.includes('already owns')) {
+            if (error.message.includes('already owns') || error.message.includes('ya posee')) {
               return NextResponse.json(
                 { error: 'Ya posees este artefacto en tu inventario.', code: 'ALREADY_OWNED' },
+                { status: 400 }
+              );
+            }
+            if (error.message.includes('Stock insuficiente') || error.message.includes('stock')) {
+              return NextResponse.json(
+                { error: 'El stock de este artefacto se ha agotado entre clics.', code: 'OUT_OF_STOCK' },
                 { status: 400 }
               );
             }

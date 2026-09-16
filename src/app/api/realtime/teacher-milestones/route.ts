@@ -47,14 +47,20 @@ export async function GET(req: NextRequest) {
         }
       });
 
-      // 3. Heartbeat periódico para evitar cierres de conexión por proxies o navegadores
+      // 3. Heartbeat formal periódico (Ping/Pong cada 25-30s) para monitoreo de liveness
       heartbeatInterval = setInterval(() => {
         try {
-          controller.enqueue(encoder.encode(`: heartbeat ${Date.now()}\n\n`));
+          const pingData = JSON.stringify({
+            type: 'ping',
+            timestamp: Date.now(),
+            status: 'alive'
+          });
+          controller.enqueue(encoder.encode(`event: ping\ndata: ${pingData}\n\n`));
+          controller.enqueue(encoder.encode(`: keep-alive ${Date.now()}\n\n`));
         } catch {
           if (heartbeatInterval) clearInterval(heartbeatInterval);
         }
-      }, 15000);
+      }, 25000);
     },
     cancel() {
       if (unsubscribe) {

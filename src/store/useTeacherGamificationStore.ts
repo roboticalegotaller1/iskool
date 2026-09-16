@@ -15,6 +15,7 @@ import {
   ISimulatorCompletionEvent
 } from '@/types/teacherGamification';
 import { TeacherGamificationService } from '@/services/teacherGamificationService';
+import { broadcastStoreChange, subscribeToStoreSync } from '@/lib/broadcastSync';
 
 interface TeacherGamificationState {
   teacherId: string;
@@ -242,3 +243,38 @@ export const useTeacherGamificationStore = create<TeacherGamificationState>()(
     }
   )
 );
+
+// Sincronización multi-pestaña en tiempo real vía BroadcastChannel
+if (typeof window !== 'undefined') {
+  let isReceivingRemoteSync = false;
+
+  // 1. Recibir cambios emitidos desde otras pestañas
+  subscribeToStoreSync('iskool_teacher_gamification_store', (remotePayload) => {
+    isReceivingRemoteSync = true;
+    try {
+      useTeacherGamificationStore.setState((current) => ({
+        ...current,
+        ...remotePayload
+      }));
+    } finally {
+      isReceivingRemoteSync = false;
+    }
+  });
+
+  // 2. Emitir cambios locales hacia otras pestañas
+  useTeacherGamificationStore.subscribe((state, prevState) => {
+    if (isReceivingRemoteSync) return;
+
+    if (
+      state.stats !== prevState.stats ||
+      state.loopProgress !== prevState.loopProgress ||
+      state.badges !== prevState.badges
+    ) {
+      broadcastStoreChange('iskool_teacher_gamification_store', {
+        stats: state.stats,
+        loopProgress: state.loopProgress,
+        badges: state.badges
+      });
+    }
+  });
+}

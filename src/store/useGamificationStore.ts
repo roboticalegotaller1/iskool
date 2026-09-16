@@ -4,6 +4,7 @@ import { Mission, QuestAttempt, StudentBadge, GuildBoss, GuildMemberSubmission, 
 import { MISSIONS_SEED, BOSS_SEED, GUILD_SUBMISSIONS_SEED, DEFAULT_ARTIFACTS_SEED, SUBJECTS_SEED, BADGES_SEED } from './seeds';
 import { useStudentStore } from './useStudentStore';
 import { supabase } from '@/lib/supabaseClient';
+import { broadcastStoreChange, subscribeToStoreSync } from '@/lib/broadcastSync';
 
 const isUuid = (str?: string): boolean => {
   if (!str) return false;
@@ -1458,3 +1459,40 @@ export const useGamificationStore = create<GamificationStoreState>()(
     }
   )
 );
+
+// Sincronización multi-pestaña en tiempo real vía BroadcastChannel
+if (typeof window !== 'undefined') {
+  let isReceivingRemoteSync = false;
+
+  // 1. Recibir cambios emitidos desde otras pestañas
+  subscribeToStoreSync('iskool_gamification_store', (remotePayload) => {
+    isReceivingRemoteSync = true;
+    try {
+      useGamificationStore.setState((current) => ({
+        ...current,
+        ...remotePayload
+      }));
+    } finally {
+      isReceivingRemoteSync = false;
+    }
+  });
+
+  // 2. Emitir cambios locales hacia otras pestañas
+  useGamificationStore.subscribe((state, prevState) => {
+    if (isReceivingRemoteSync) return;
+
+    if (
+      state.missionsList !== prevState.missionsList ||
+      state.questAttempts !== prevState.questAttempts ||
+      state.studentBadges !== prevState.studentBadges ||
+      state.shopArtifacts !== prevState.shopArtifacts
+    ) {
+      broadcastStoreChange('iskool_gamification_store', {
+        missionsList: state.missionsList,
+        questAttempts: state.questAttempts,
+        studentBadges: state.studentBadges,
+        shopArtifacts: state.shopArtifacts
+      });
+    }
+  });
+}

@@ -8,6 +8,7 @@ import { calculateAcademicPower, AcademicPowerResult } from '@/utils/academicPow
 import { useGamificationStore } from './useGamificationStore';
 import { useSchoolAdminStore } from './useSchoolAdminStore';
 import { getStudentAcademicLevelInfo, StudentAcademicLevelInfo } from '@/lib/academicLevels';
+import { broadcastStoreChange, subscribeToStoreSync } from '@/lib/broadcastSync';
 
 let statsChannel: any = null;
 const inFlightPurchases = new Set<string>();
@@ -1708,6 +1709,45 @@ export const useStudentStore = create<StudentStoreState>()(
     }
   )
 );
+
+// Sincronización multi-pestaña en tiempo real vía BroadcastChannel
+if (typeof window !== 'undefined') {
+  let isReceivingRemoteSync = false;
+
+  // 1. Recibir cambios emitidos desde otras pestañas
+  subscribeToStoreSync('iskool_student_store', (remotePayload) => {
+    isReceivingRemoteSync = true;
+    try {
+      useStudentStore.setState((current) => ({
+        ...current,
+        ...remotePayload
+      }));
+    } finally {
+      isReceivingRemoteSync = false;
+    }
+  });
+
+  // 2. Emitir cambios locales hacia otras pestañas
+  useStudentStore.subscribe((state, prevState) => {
+    if (isReceivingRemoteSync) return;
+
+    if (
+      state.activeStudentId !== prevState.activeStudentId ||
+      state.allStats !== prevState.allStats ||
+      state.allAvatars !== prevState.allAvatars ||
+      state.studentInventoryMap !== prevState.studentInventoryMap ||
+      state.studentMessages !== prevState.studentMessages
+    ) {
+      broadcastStoreChange('iskool_student_store', {
+        activeStudentId: state.activeStudentId,
+        allStats: state.allStats,
+        allAvatars: state.allAvatars,
+        studentInventoryMap: state.studentInventoryMap,
+        studentMessages: state.studentMessages
+      });
+    }
+  });
+}
 
 export const isUuid = (str?: string): boolean => {
   if (!str) return false;
