@@ -183,7 +183,7 @@ export const AssignToClassModal: React.FC<AssignToClassModalProps> = ({
             <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 flex items-center gap-1">
               <Award className="w-3.5 h-3.5 text-amber-500" /> Recompensa XP
             </span>
-            <input
+            <input aria-label="Cantidad numérica"
               type="number"
               value={xpReward}
               onChange={e => setXpReward(Number(e.target.value))}
@@ -196,7 +196,7 @@ export const AssignToClassModal: React.FC<AssignToClassModalProps> = ({
             <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 flex items-center gap-1">
               <Coins className="w-3.5 h-3.5 text-yellow-500" /> Recompensa Monedas
             </span>
-            <input
+            <input aria-label="Cantidad numérica"
               type="number"
               value={coinsReward}
               onChange={e => setCoinsReward(Number(e.target.value))}

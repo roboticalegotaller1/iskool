@@ -51,7 +51,7 @@ export const RewardChestBlockView: React.FC<Props> = ({ block }) => {
             <span>Puntos de Experiencia (XP):</span>
           </label>
           <div className="flex items-center gap-2">
-            <input
+            <input aria-label="Campo de texto de formulario"
               type="range"
               min={25}
               max={500}
@@ -72,7 +72,7 @@ export const RewardChestBlockView: React.FC<Props> = ({ block }) => {
             <span>Monedas de Oro Recompensadas:</span>
           </label>
           <div className="flex items-center gap-2">
-            <input
+            <input aria-label="Campo de texto de formulario"
               type="range"
               min={5}
               max={100}
@@ -94,7 +94,7 @@ export const RewardChestBlockView: React.FC<Props> = ({ block }) => {
           <Award className="w-3.5 h-3.5 text-teal-500" />
           <span>Insignia o Medalla Desbloqueable (Opcional):</span>
         </label>
-        <input
+        <input aria-label="Ej. Explorador Insurgente, Mente Brillante..."
           type="text"
           value={badgeName || ''}
           onChange={(e) => updateBlockData(block.id, { badgeName: e.target.value })}

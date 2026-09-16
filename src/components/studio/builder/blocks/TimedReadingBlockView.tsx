@@ -224,7 +224,7 @@ export const TimedReadingBlockView: React.FC<Props> = ({ block }) => {
             <Clock className="w-3.5 h-3.5" />
             <span className="text-[10px] font-black uppercase tracking-wider">Tiempo</span>
           </div>
-          <select
+          <select aria-label="Seleccionar opción"
             value={timeLimitSeconds}
             onChange={(e) => updateBlockData(block.id, { timeLimitSeconds: Number(e.target.value) })}
             className="text-xs font-black text-teal-700 dark:text-teal-300 bg-transparent focus:outline-none cursor-pointer mt-0.5"
@@ -268,7 +268,7 @@ export const TimedReadingBlockView: React.FC<Props> = ({ block }) => {
           </div>
         </div>
 
-        <textarea
+        <textarea aria-label="Pega aquí el fragmento, cuento, artículo o texto científico que el alumno leerá con cronómetro..."
           rows={5}
           value={readingText}
           onChange={(e) => handleTextChange(e.target.value)}
@@ -381,7 +381,7 @@ export const TimedReadingBlockView: React.FC<Props> = ({ block }) => {
                         <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">
                           Enunciado del Reactivo:
                         </label>
-                        <input
+                        <input aria-label="Escribe la pregunta sobre la lectura..."
                           type="text"
                           value={q.question}
                           onChange={(e) => handleUpdateQuestion(q.id, { question: e.target.value })}
@@ -423,7 +423,7 @@ export const TimedReadingBlockView: React.FC<Props> = ({ block }) => {
                                   {isCorrect ? <CheckCircle2 className="w-3.5 h-3.5" /> : letter}
                                 </button>
 
-                                <input
+                                <input aria-label="Campo de texto de formulario"
                                   type="text"
                                   value={opt}
                                   onChange={(e) => handleOptionChange(q.id, optIdx, e.target.value)}
@@ -465,7 +465,7 @@ export const TimedReadingBlockView: React.FC<Props> = ({ block }) => {
                           <HelpCircle className="w-3 h-3 text-blue-500" />
                           <span>Retroalimentación pedagógica explicativa:</span>
                         </label>
-                        <input
+                        <input aria-label="Por qué esta respuesta es la correcta..."
                           type="text"
                           value={q.explanation || ''}
                           onChange={(e) => handleUpdateQuestion(q.id, { explanation: e.target.value })}

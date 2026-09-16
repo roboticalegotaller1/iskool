@@ -43,7 +43,7 @@ export const ExternalEmbedBlockView: React.FC<Props> = ({ block }) => {
             </a>
           )}
         </label>
-        <input
+        <input aria-label="https://phet.colorado.edu/sims/html/forces-and-motion-basics/latest/forces-and-motion-basics_es.html"
           type="text"
           value={embedUrl}
           onChange={(e) => updateBlockData(block.id, { embedUrl: e.target.value })}
@@ -98,7 +98,7 @@ export const ExternalEmbedBlockView: React.FC<Props> = ({ block }) => {
         <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400">
           Nombre del Recurso:
         </label>
-        <input
+        <input aria-label="Ej. Simulador de Fuerzas y Movimiento PhET..."
           type="text"
           value={resourceTitle}
           onChange={(e) => updateBlockData(block.id, { resourceTitle: e.target.value })}
@@ -113,7 +113,7 @@ export const ExternalEmbedBlockView: React.FC<Props> = ({ block }) => {
           <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
           <span>Instrucciones para la interacción:</span>
         </label>
-        <input
+        <input aria-label="Ej. Interactúa con los controles del simulador antes de continuar con la siguiente pregunta."
           type="text"
           value={instructions}
           onChange={(e) => updateBlockData(block.id, { instructions: e.target.value })}
@@ -133,6 +133,8 @@ export const ExternalEmbedBlockView: React.FC<Props> = ({ block }) => {
               src={embedUrl}
               title={resourceTitle || 'Simulador Web'}
               className="w-full h-full"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
             />

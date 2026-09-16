@@ -551,7 +551,7 @@ export function RpgCombatViewport() {
 
       // El daño escala directamente con el Poder Académico Efectivo del alumno (mínimo 10 para siempre sentir progreso)
       const powerDamageBonus = Math.max(8, Math.round((effectivePower || 20) / 3.5));
-      let finalDamage = Math.round((actionBase + statBonus + powerDamageBonus + bonusDamage) * (0.85 + Math.random() * 0.3));
+      const finalDamage = Math.round((actionBase + statBonus + powerDamageBonus + bonusDamage) * (0.85 + Math.random() * 0.3));
       
       const newBossHp = Math.max(0, currentTargetHp - finalDamage);
       setBossHp(newBossHp);
@@ -786,7 +786,7 @@ export function RpgCombatViewport() {
           {/* Selector de Asignatura */}
           <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-indigo-500/30 shadow-md">
             <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest">ASIGNATURA:</span>
-            <select 
+            <select aria-label="Seleccionar opción" 
               disabled={battlePhase === 'fight'}
               value={selectedMissionId}
               onChange={(e) => setSelectedMissionId(e.target.value)}
@@ -831,7 +831,7 @@ export function RpgCombatViewport() {
             >
               {volume === 0 ? <VolumeX className="h-3.5 w-3.5 text-rose-500" /> : <Volume2 className="h-3.5 w-3.5 text-emerald-400" />}
             </button>
-            <input 
+            <input aria-label="Campo de texto de formulario" 
               type="range" 
               min="0" 
               max="1" 
@@ -843,7 +843,7 @@ export function RpgCombatViewport() {
             <button 
               onClick={handleReset}
               className="p-1 rounded bg-zinc-950 border border-slate-800 hover:bg-slate-800 text-zinc-400 hover:text-white transition-all ml-1 cursor-pointer"
-              title="Reiniciar batalla"
+              title="Reiniciar batalla" aria-label="Reiniciar batalla"
             >
               <RotateCcw className="h-3.5 w-3.5" />
             </button>

@@ -144,7 +144,7 @@ export const GuildBoardView: React.FC<Props> = ({
 
         {/* Acciones Rápidas: Proyector y Grupo */}
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          <select
+          <select aria-label="Seleccionar opción"
             value={selectedGroupId}
             onChange={e => setSelectedGroupId(e.target.value)}
             className="px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs font-bold text-slate-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500"
@@ -342,14 +342,14 @@ export const GuildBoardView: React.FC<Props> = ({
             <form onSubmit={handleCreateEdictoSubmit} className="space-y-3">
               <input
                 type="text"
-                placeholder="Título del edicto..."
+                placeholder="Título del edicto..." aria-label="Título del edicto..."
                 value={newTitle}
                 onChange={e => setNewTitle(e.target.value)}
                 required
                 className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs font-bold"
               />
 
-              <textarea
+              <textarea aria-label="Escribe el mensaje motivador o las instrucciones para el aula..."
                 placeholder="Escribe el mensaje motivador o las instrucciones para el aula..."
                 value={newContent}
                 onChange={e => setNewContent(e.target.value)}
@@ -360,7 +360,7 @@ export const GuildBoardView: React.FC<Props> = ({
 
               <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
                 <div className="flex items-center gap-3 text-xs">
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={newType}
                     onChange={e => setNewType(e.target.value as EdictoType)}
                     className="p-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 font-bold"
@@ -372,7 +372,7 @@ export const GuildBoardView: React.FC<Props> = ({
                     <option value="honor_shoutout">⭐ Cuadro de Honor</option>
                   </select>
 
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={newPriority}
                     onChange={e => setNewPriority(e.target.value as EdictoPriority)}
                     className="p-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 font-bold"
@@ -531,13 +531,13 @@ export const GuildBoardView: React.FC<Props> = ({
                 <div className="flex items-center gap-2 pt-1">
                   <input
                     type="text"
-                    placeholder="Escribe un comentario o respuesta motivadora..."
+                    placeholder="Escribe un comentario o respuesta motivadora..." aria-label="Escribe un comentario o respuesta motivadora..."
                     value={commentInputs[edicto.id] || ''}
                     onChange={e => setCommentInputs(prev => ({ ...prev, [edicto.id]: e.target.value }))}
                     onKeyDown={e => e.key === 'Enter' && handleAddComment(edicto.id)}
                     className="flex-1 p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs font-medium focus:ring-2 focus:ring-indigo-500"
                   />
-                  <button
+                  <button aria-label="Enviar mensaje o formulario"
                     type="button"
                     onClick={() => handleAddComment(edicto.id)}
                     className="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition-all cursor-pointer"

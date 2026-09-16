@@ -1756,15 +1756,18 @@ const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const browserExecutable = fs.existsSync(edgePath) ? edgePath : chromePath;
 
-const command = `"${browserExecutable}" --headless --disable-gpu --run-all-compositor-stages-before-draw --print-to-pdf="${pdfFilePath}" --no-pdf-header-footer "${htmlFilePath}"`;
+// Optimización de flags para evitar saturación de memoria RAM y procesos zombies
+const command = `"${browserExecutable}" --headless=new --disable-gpu --disable-dev-shm-usage --no-sandbox --disable-extensions --js-flags="--max-old-space-size=512" --run-all-compositor-stages-before-draw --print-to-pdf="${pdfFilePath}" --no-pdf-header-footer "${htmlFilePath}"`;
 
 try {
   console.log('Generando PDF mediante:', browserExecutable);
-  execSync(command);
+  execSync(command, { stdio: 'inherit', timeout: 90000 });
   const stats = fs.statSync(pdfFilePath);
   console.log('✓ PDF con Prioridad Académica y Tema Claro generado exitosamente!');
   console.log('Ruta:', pdfFilePath);
   console.log('Tamaño:', (stats.size / (1024 * 1024)).toFixed(2), 'MB');
 } catch (err) {
-  console.error('Error al generar PDF:', err);
+  console.error('Error al generar PDF:', err.message);
+} finally {
+  console.log('Proceso de renderizado concluido y recursos liberados.');
 }

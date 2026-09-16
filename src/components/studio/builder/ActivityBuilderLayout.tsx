@@ -479,7 +479,7 @@ export const ActivityBuilderLayout: React.FC = () => {
             </span>
           </div>
 
-          <input
+          <input aria-label="Título de la Actividad..."
             type="text"
             value={metadata.title}
             onChange={(e) => updateMetadata({ title: e.target.value })}
@@ -518,7 +518,7 @@ export const ActivityBuilderLayout: React.FC = () => {
               type="button"
               onClick={undo}
               disabled={historyIndex <= 0}
-              title="Deshacer (Ctrl+Z)"
+              title="Deshacer (Ctrl+Z)" aria-label="Deshacer (Ctrl+Z)"
               className="p-1.5 rounded-lg text-slate-600 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-700 disabled:opacity-30 transition-all cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -535,7 +535,7 @@ export const ActivityBuilderLayout: React.FC = () => {
             <button
               type="button"
               onClick={resetWorkspace}
-              title="Limpiar y empezar en blanco"
+              title="Limpiar y empezar en blanco" aria-label="Limpiar y empezar en blanco"
               className="p-1.5 rounded-lg text-slate-600 dark:text-zinc-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-all cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -659,7 +659,7 @@ export const ActivityBuilderLayout: React.FC = () => {
                 </h3>
               </div>
 
-              <button
+              <button aria-label="Cerrar"
                 type="button"
                 onClick={() => setIsPreviewOpen(false)}
                 className="p-1.5 rounded-xl bg-slate-200/80 dark:bg-zinc-750 hover:bg-rose-500 hover:text-white text-slate-600 dark:text-zinc-300 transition-all cursor-pointer"
@@ -701,7 +701,7 @@ export const ActivityBuilderLayout: React.FC = () => {
                 </div>
               </div>
 
-              <button
+              <button aria-label="Cerrar"
                 type="button"
                 onClick={() => setIsTemplatesModalOpen(false)}
                 className="p-2 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-rose-500 hover:text-white text-slate-500 dark:text-zinc-400 transition-all cursor-pointer"
@@ -871,7 +871,7 @@ export const ActivityBuilderLayout: React.FC = () => {
                 </div>
               </div>
 
-              <button
+              <button aria-label="Cerrar"
                 type="button"
                 onClick={() => setIsAiModalOpen(false)}
                 disabled={isGeneratingAiModal}
@@ -888,7 +888,7 @@ export const ActivityBuilderLayout: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
               <div>
                 <label className="text-[11px] font-bold text-slate-300 block mb-1">Fase Curricular NEM:</label>
-                <select
+                <select aria-label="Seleccionar opción"
                   value={aiModalFase}
                   onChange={(e) => setAiModalFase(e.target.value)}
                   disabled={isGeneratingAiModal}
@@ -902,7 +902,7 @@ export const ActivityBuilderLayout: React.FC = () => {
               </div>
               <div>
                 <label className="text-[11px] font-bold text-slate-300 block mb-1">Estilo de Juego:</label>
-                <select
+                <select aria-label="Seleccionar opción"
                   value={aiModalStyle}
                   onChange={(e) => setAiModalStyle(e.target.value as any)}
                   disabled={isGeneratingAiModal}
@@ -921,7 +921,7 @@ export const ActivityBuilderLayout: React.FC = () => {
                 Tema de la Actividad o Aprendizaje Esperado (PDA):
               </label>
               <div className="flex flex-col sm:flex-row gap-2">
-                <input
+                <input aria-label="Ej. Causas de la Independencia de México, Ecosistemas..."
                   type="text"
                   value={aiModalTopic}
                   onChange={(e) => setAiModalTopic(e.target.value)}
@@ -994,7 +994,7 @@ export const ActivityBuilderLayout: React.FC = () => {
                   </h3>
                 </div>
               </div>
-              <button
+              <button aria-label="Cerrar"
                 type="button"
                 onClick={() => setIsSettingsOpen(false)}
                 className="p-1.5 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-rose-500 hover:text-white text-slate-600 dark:text-zinc-300 transition-all cursor-pointer"
@@ -1007,7 +1007,7 @@ export const ActivityBuilderLayout: React.FC = () => {
               {/* Descripción de la Actividad */}
               <div className="space-y-1">
                 <label className="font-bold text-slate-700 dark:text-zinc-300">Descripción / Misión Narrativa:</label>
-                <textarea
+                <textarea aria-label="Describe de forma formativa o gamificada el propósito de esta secuencia..."
                   rows={2}
                   value={metadata.description}
                   onChange={(e) => updateMetadata({ description: e.target.value })}
@@ -1020,7 +1020,7 @@ export const ActivityBuilderLayout: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="font-bold text-slate-700 dark:text-zinc-300">Fase Curricular (SEP):</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={metadata.faseNem || 'Fase 4'}
                     onChange={(e) => updateMetadata({ faseNem: e.target.value as any })}
                     className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 text-slate-800 dark:text-zinc-200 focus:outline-none font-bold"
@@ -1036,7 +1036,7 @@ export const ActivityBuilderLayout: React.FC = () => {
 
                 <div className="space-y-1">
                   <label className="font-bold text-slate-700 dark:text-zinc-300">Campo Formativo Principal:</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={metadata.campoFormativo}
                     onChange={(e) => updateMetadata({ campoFormativo: e.target.value })}
                     className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 text-slate-800 dark:text-zinc-200 focus:outline-none font-bold"
@@ -1089,7 +1089,7 @@ export const ActivityBuilderLayout: React.FC = () => {
                   <span>PDA Oficial Evaluado:</span>
                   <span className="text-[10px] text-slate-400">Texto curricular SEP</span>
                 </label>
-                <input
+                <input aria-label="Describe el PDA correspondiente..."
                   type="text"
                   value={metadata.pdaNem}
                   onChange={(e) => updateMetadata({ pdaNem: e.target.value })}
@@ -1115,7 +1115,7 @@ export const ActivityBuilderLayout: React.FC = () => {
                     const suggestionsList = dynamicSuggestions.length > 0 ? dynamicSuggestions : (PDA_SUGGESTIONS[metadata.subjectId || 'sub-math'] || PDA_SUGGESTIONS['sub-math']);
 
                     return (
-                      <select
+                      <select aria-label="Seleccionar opción"
                         onChange={(e) => {
                           if (e.target.value) updateMetadata({ pdaNem: e.target.value });
                         }}
@@ -1138,7 +1138,7 @@ export const ActivityBuilderLayout: React.FC = () => {
                   <span className="text-[10px] font-black text-amber-700 dark:text-amber-400 flex items-center gap-1">
                     <Award className="w-3.5 h-3.5" /> Recompensa de Experiencia (XP)
                   </span>
-                  <input
+                  <input aria-label="Cantidad numérica"
                     type="number"
                     value={metadata.xpReward || 100}
                     onChange={(e) => updateMetadata({ xpReward: Number(e.target.value) })}
@@ -1149,7 +1149,7 @@ export const ActivityBuilderLayout: React.FC = () => {
                   <span className="text-[10px] font-black text-yellow-700 dark:text-yellow-400 flex items-center gap-1">
                     <Coins className="w-3.5 h-3.5" /> Monedas de Galeón (Oro)
                   </span>
-                  <input
+                  <input aria-label="Cantidad numérica"
                     type="number"
                     value={metadata.coinsReward || 15}
                     onChange={(e) => updateMetadata({ coinsReward: Number(e.target.value) })}

@@ -362,7 +362,7 @@ export const ContextualAIAssistantModal: React.FC<ContextualAIAssistantModalProp
           }}
           className="p-3 bg-white dark:bg-zinc-900 border-t border-zinc-100 dark:border-zinc-800 flex items-center gap-2"
         >
-          <input
+          <input aria-label="Campo de texto de formulario"
             type="text"
             placeholder={isTeacher ? "Formula tu duda pedagógica o curricular..." : "Pregunta sobre tu reto, atributos o lección..."}
             value={inputMessage}

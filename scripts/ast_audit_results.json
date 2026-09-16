@@ -1,0 +1,5770 @@
+{
+  "totalFilesScanned": 132,
+  "deadEndLinks": [],
+  "unhandledButtons": [],
+  "iconButtonsMissingAria": [],
+  "inputsMissingAria": [],
+  "imagesMissingAlt": [],
+  "buttonsMissingFocusOrDisabled": [
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 1404,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 1433,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 1471,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 1485,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 1492,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 1527,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 1533,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 1621,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 1699,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 1777,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 1794,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 1845,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 1867,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 1940,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 1980,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 1993,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2007,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2019,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2034,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2046,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2058,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2073,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2088,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2100,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2115,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2130,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2138,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2156,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2203,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2327,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2432,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2438,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2468,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2541,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2643,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2649,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2710,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2792,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2908,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2934,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 2960,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3011,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3021,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3031,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3041,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3167,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3183,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3209,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3224,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3262,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3278,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3292,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3306,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3404,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3450,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3468,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3475,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3505,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3670,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3676,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3728,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3788,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3860,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 3906,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 4000,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 4049,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 4056,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 4174,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 4317,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 4326,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 4336,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 4592,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 4610,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 4621,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 4632,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 4663,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 4712,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 4744,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 4808,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 4902,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 4920,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5089,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5096,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5119,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5133,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5180,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5192,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5200,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5223,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5236,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5246,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5257,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5278,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5337,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5344,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5370,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5508,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5517,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5551,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5560,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5574,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5581,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5602,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5671,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5678,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5696,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5760,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5767,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5785,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5813,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5820,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5843,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5967,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 5974,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6026,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6041,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6052,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6065,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6078,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6091,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6110,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6154,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6169,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6201,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6272,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6363,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6394,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6446,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6453,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6473,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6507,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6514,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6534,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6570,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6577,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6751,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6759,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6788,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6867,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6874,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6955,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 6962,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 7074,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\admin\\page.tsx",
+      "line": 7086,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\admin\\whitelabel\\page.tsx",
+      "line": 200,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\whitelabel\\page.tsx",
+      "line": 208,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\admin\\whitelabel\\page.tsx",
+      "line": 269,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\whitelabel\\page.tsx",
+      "line": 279,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\whitelabel\\page.tsx",
+      "line": 296,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\whitelabel\\page.tsx",
+      "line": 390,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\whitelabel\\page.tsx",
+      "line": 488,
+      "missingFocus": false,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\admin\\whitelabel\\page.tsx",
+      "line": 502,
+      "missingFocus": false,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\checkout\\[sessionId]\\page.tsx",
+      "line": 226,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\checkout\\[sessionId]\\page.tsx",
+      "line": 241,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\checkout\\[sessionId]\\page.tsx",
+      "line": 256,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\checkout\\[sessionId]\\page.tsx",
+      "line": 325,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\checkout\\[sessionId]\\page.tsx",
+      "line": 354,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 456,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 475,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 510,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 587,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 721,
+      "missingFocus": false,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 791,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 799,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 807,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 818,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 859,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 873,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 957,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 964,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 993,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 1042,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 1123,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 1130,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 1159,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 1199,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 1213,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 1254,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 1294,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 1375,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 1382,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 1421,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 1474,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\billing\\page.tsx",
+      "line": 1482,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\fiscal\\page.tsx",
+      "line": 360,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\fiscal\\page.tsx",
+      "line": 420,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\fiscal\\page.tsx",
+      "line": 431,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\fiscal\\page.tsx",
+      "line": 442,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\fiscal\\page.tsx",
+      "line": 509,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\fiscal\\page.tsx",
+      "line": 586,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\fiscal\\page.tsx",
+      "line": 771,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\coordinator\\fiscal\\page.tsx",
+      "line": 1003,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\fiscal\\page.tsx",
+      "line": 1028,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\fiscal\\page.tsx",
+      "line": 1074,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\fiscal\\page.tsx",
+      "line": 1081,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 673,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 710,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 721,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 732,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 743,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 754,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 775,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 836,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 953,
+      "missingFocus": false,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 1087,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 1097,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 1203,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 1235,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 1349,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 1396,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 1428,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 1485,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 1578,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 1676,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 1751,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 1778,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 1789,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 1927,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 1940,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 2087,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 2168,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 2319,
+      "missingFocus": false,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 2364,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 2375,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 2398,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 2429,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 2461,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 2470,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 2529,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 2625,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 2833,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 2840,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 2863,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 2873,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 2885,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3058,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3083,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3090,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3131,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3175,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3200,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3207,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3248,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3324,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3338,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3405,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3412,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3434,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3506,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3513,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3535,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3696,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3703,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3729,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\coordinator\\page.tsx",
+      "line": 3735,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 452,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 627,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 638,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 654,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 665,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 676,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 824,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 852,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 920,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 941,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 962,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 983,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 1004,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 1025,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 1046,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 1119,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 1198,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 1210,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 1259,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 1267,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 1275,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 1301,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 1353,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 1408,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 1591,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 1671,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 1678,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 1706,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 1919,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 1926,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 1954,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 2061,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\director\\page.tsx",
+      "line": 2068,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\guide\\page.tsx",
+      "line": 583,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\guide\\page.tsx",
+      "line": 596,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\guide\\page.tsx",
+      "line": 609,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\guide\\page.tsx",
+      "line": 622,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\guide\\page.tsx",
+      "line": 648,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\guide\\page.tsx",
+      "line": 661,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\guide\\page.tsx",
+      "line": 674,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\guide\\page.tsx",
+      "line": 687,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\guide\\page.tsx",
+      "line": 715,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\guide\\page.tsx",
+      "line": 727,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\guide\\page.tsx",
+      "line": 850,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\guide\\page.tsx",
+      "line": 892,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\guide\\page.tsx",
+      "line": 1024,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\guide\\page.tsx",
+      "line": 1038,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\guide\\page.tsx",
+      "line": 1546,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\guide\\page.tsx",
+      "line": 1600,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\guide\\page.tsx",
+      "line": 1631,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\guide\\page.tsx",
+      "line": 1663,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\login\\page.tsx",
+      "line": 479,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\login\\page.tsx",
+      "line": 487,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\login\\page.tsx",
+      "line": 518,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\login\\page.tsx",
+      "line": 599,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\login\\page.tsx",
+      "line": 611,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\login\\page.tsx",
+      "line": 632,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\login\\page.tsx",
+      "line": 652,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\login\\page.tsx",
+      "line": 663,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\login\\page.tsx",
+      "line": 674,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\login\\page.tsx",
+      "line": 694,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\parent\\financial\\page.tsx",
+      "line": 292,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\parent\\financial\\page.tsx",
+      "line": 373,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\parent\\financial\\page.tsx",
+      "line": 387,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\parent\\financial\\page.tsx",
+      "line": 401,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\parent\\financial\\page.tsx",
+      "line": 525,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\parent\\financial\\page.tsx",
+      "line": 535,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\parent\\financial\\page.tsx",
+      "line": 765,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\parent\\financial\\statement\\print\\page.tsx",
+      "line": 100,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\parent\\page.tsx",
+      "line": 203,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\parent\\page.tsx",
+      "line": 238,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\parent\\page.tsx",
+      "line": 249,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\parent\\page.tsx",
+      "line": 433,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\parent\\page.tsx",
+      "line": 444,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\parent\\page.tsx",
+      "line": 567,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\pay\\[token]\\page.tsx",
+      "line": 300,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\pay\\[token]\\page.tsx",
+      "line": 316,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\pay\\[token]\\page.tsx",
+      "line": 332,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\pay\\[token]\\page.tsx",
+      "line": 421,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\pay\\[token]\\page.tsx",
+      "line": 451,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\promo\\page.tsx",
+      "line": 562,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\promo\\page.tsx",
+      "line": 576,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\promo\\page.tsx",
+      "line": 586,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\promo\\page.tsx",
+      "line": 602,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\promo\\page.tsx",
+      "line": 611,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\promo\\page.tsx",
+      "line": 620,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\promo\\page.tsx",
+      "line": 720,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\promo\\page.tsx",
+      "line": 794,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\promo\\page.tsx",
+      "line": 801,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\promo\\page.tsx",
+      "line": 812,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\promo\\page.tsx",
+      "line": 828,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\promo\\page.tsx",
+      "line": 852,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\promo\\page.tsx",
+      "line": 920,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\promo\\page.tsx",
+      "line": 958,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\promo\\page.tsx",
+      "line": 973,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\promo\\page.tsx",
+      "line": 1052,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\promo\\page.tsx",
+      "line": 1075,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 655,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 702,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 741,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 796,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 827,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 910,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 932,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 940,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 948,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 956,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 992,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 1002,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 1030,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 1053,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 1062,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 1119,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 1144,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 1192,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 1311,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 1350,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 1438,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 1480,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\missions\\[id]\\page.tsx",
+      "line": 1486,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\page.tsx",
+      "line": 503,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\page.tsx",
+      "line": 510,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\page.tsx",
+      "line": 629,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\page.tsx",
+      "line": 659,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\page.tsx",
+      "line": 671,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\page.tsx",
+      "line": 683,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\page.tsx",
+      "line": 725,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\page.tsx",
+      "line": 735,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\page.tsx",
+      "line": 745,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\page.tsx",
+      "line": 834,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\page.tsx",
+      "line": 900,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\page.tsx",
+      "line": 952,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\page.tsx",
+      "line": 960,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\page.tsx",
+      "line": 975,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\page.tsx",
+      "line": 988,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\page.tsx",
+      "line": 1020,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\portfolio\\page.tsx",
+      "line": 283,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\portfolio\\page.tsx",
+      "line": 304,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\portfolio\\page.tsx",
+      "line": 315,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\portfolio\\page.tsx",
+      "line": 627,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\student\\shop\\page.tsx",
+      "line": 349,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\student\\shop\\page.tsx",
+      "line": 440,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\AttendanceCompendiumModal.tsx",
+      "line": 458,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\AttendanceCompendiumModal.tsx",
+      "line": 468,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\AttendanceCompendiumModal.tsx",
+      "line": 478,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\AttendanceCompendiumModal.tsx",
+      "line": 562,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\AttendanceCompendiumModal.tsx",
+      "line": 569,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\AttendanceCompendiumModal.tsx",
+      "line": 576,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\AttendanceCompendiumModal.tsx",
+      "line": 583,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\AttendanceCompendiumModal.tsx",
+      "line": 590,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\AttendanceCompendiumModal.tsx",
+      "line": 610,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\AttendanceCompendiumModal.tsx",
+      "line": 707,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\AttendanceCompendiumModal.tsx",
+      "line": 719,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\AttendanceCompendiumModal.tsx",
+      "line": 731,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\AttendanceCompendiumModal.tsx",
+      "line": 1045,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\AttendanceCompendiumModal.tsx",
+      "line": 1284,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\community\\page.tsx",
+      "line": 35,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\EmergencyModal.tsx",
+      "line": 412,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\EmergencyModal.tsx",
+      "line": 441,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\EmergencyModal.tsx",
+      "line": 464,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\EmergencyModal.tsx",
+      "line": 562,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\EmergencyModal.tsx",
+      "line": 598,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\EmergencyModal.tsx",
+      "line": 607,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\grades\\page.tsx",
+      "line": 288,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\grades\\page.tsx",
+      "line": 431,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\grades\\page.tsx",
+      "line": 510,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\grades\\page.tsx",
+      "line": 571,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\grades\\page.tsx",
+      "line": 587,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\grades\\page.tsx",
+      "line": 603,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\grades\\page.tsx",
+      "line": 633,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\teacher\\grades\\page.tsx",
+      "line": 678,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\grades\\page.tsx",
+      "line": 911,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 651,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 826,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 871,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 881,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 891,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 901,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 911,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 925,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 934,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 943,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1005,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1017,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1027,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1048,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1086,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1168,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1178,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1204,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1206,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1391,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1416,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1447,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1455,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1463,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1491,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1511,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1659,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1671,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1683,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1695,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1775,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1783,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1800,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 1890,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2128,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2146,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2182,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2204,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2297,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2304,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2331,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2382,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2453,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2488,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2508,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2539,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2568,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2574,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2612,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2665,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2675,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2685,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2908,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2929,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2935,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 2973,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 3058,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 3090,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\page.tsx",
+      "line": 3149,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 1447,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 1459,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 1506,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 1530,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 1651,
+      "missingFocus": false,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 1749,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 1789,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 1799,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 1839,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 1847,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 1932,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 1954,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 2295,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 2372,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 2382,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 2436,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 2780,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 2788,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 2796,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 2855,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 2979,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 2988,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 3064,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 3159,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 3197,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\PlanningTab.tsx",
+      "line": 3206,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\teacher\\studio\\page.tsx",
+      "line": 127,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\studio\\page.tsx",
+      "line": 138,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\studio\\page.tsx",
+      "line": 151,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\app\\teacher\\studio\\page.tsx",
+      "line": 270,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\app\\teacher\\studio\\page.tsx",
+      "line": 349,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 952,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1093,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1178,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1187,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1258,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1267,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1276,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1315,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1422,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1454,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1473,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1487,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1500,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1515,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1526,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1538,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1549,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1580,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1586,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1592,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1645,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1676,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 1870,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 2005,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 2086,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 2184,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 2194,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 2319,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 2329,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 2395,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 2402,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveAnalyticsStudio.tsx",
+      "line": 2420,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveChartVisualizer.tsx",
+      "line": 371,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveChartVisualizer.tsx",
+      "line": 908,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveChartVisualizer.tsx",
+      "line": 923,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveChartVisualizer.tsx",
+      "line": 938,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveChartVisualizer.tsx",
+      "line": 953,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveChartVisualizer.tsx",
+      "line": 968,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveChartVisualizer.tsx",
+      "line": 983,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveChartVisualizer.tsx",
+      "line": 1065,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveChartVisualizer.tsx",
+      "line": 1134,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveChartVisualizer.tsx",
+      "line": 1175,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\admin\\ExecutiveChartVisualizer.tsx",
+      "line": 1230,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AdventureCarousel.tsx",
+      "line": 265,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AdventureCarousel.tsx",
+      "line": 273,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AdventureCarousel.tsx",
+      "line": 405,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\AdventureCarousel.tsx",
+      "line": 446,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AssignToClassModal.tsx",
+      "line": 112,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\AssignToClassModal.tsx",
+      "line": 211,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\AvatarCustomizer.tsx",
+      "line": 373,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AvatarCustomizer.tsx",
+      "line": 395,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AvatarCustomizer.tsx",
+      "line": 439,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AvatarCustomizer.tsx",
+      "line": 493,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AvatarCustomizer.tsx",
+      "line": 520,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AvatarCustomizer.tsx",
+      "line": 540,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AvatarCustomizer.tsx",
+      "line": 562,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AvatarCustomizer.tsx",
+      "line": 582,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AvatarCustomizer.tsx",
+      "line": 604,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AvatarCustomizer.tsx",
+      "line": 633,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AvatarCustomizer.tsx",
+      "line": 657,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AvatarCustomizer.tsx",
+      "line": 687,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AvatarCustomizer.tsx",
+      "line": 777,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AvatarCustomizer.tsx",
+      "line": 802,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AvatarCustomizer.tsx",
+      "line": 829,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AvatarCustomizer.tsx",
+      "line": 847,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AvatarCustomizer.tsx",
+      "line": 892,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\AvatarCustomizer.tsx",
+      "line": 900,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\books\\SchoolBooksManagerSection.tsx",
+      "line": 204,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\books\\SchoolBooksManagerSection.tsx",
+      "line": 228,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\books\\SchoolBooksManagerSection.tsx",
+      "line": 240,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\books\\SchoolBooksManagerSection.tsx",
+      "line": 268,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\books\\SchoolBooksManagerSection.tsx",
+      "line": 325,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\books\\SchoolBooksManagerSection.tsx",
+      "line": 334,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\books\\SchoolBooksManagerSection.tsx",
+      "line": 390,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\books\\SchoolBooksManagerSection.tsx",
+      "line": 428,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\books\\SchoolBooksManagerSection.tsx",
+      "line": 525,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\books\\SchoolBooksManagerSection.tsx",
+      "line": 532,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\books\\SmartBookNotebookModal.tsx",
+      "line": 229,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\books\\SmartBookNotebookModal.tsx",
+      "line": 242,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\books\\SmartBookNotebookModal.tsx",
+      "line": 256,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\books\\SmartBookNotebookModal.tsx",
+      "line": 340,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\books\\SmartBookNotebookModal.tsx",
+      "line": 371,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\books\\SuperUserCompendiumStudio.tsx",
+      "line": 100,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\books\\SuperUserCompendiumStudio.tsx",
+      "line": 120,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\books\\SuperUserCompendiumStudio.tsx",
+      "line": 210,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\books\\SuperUserCompendiumStudio.tsx",
+      "line": 217,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\books\\SuperUserCompendiumStudio.tsx",
+      "line": 299,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\books\\SuperUserCompendiumStudio.tsx",
+      "line": 309,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\GuildBoardView.tsx",
+      "line": 158,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\GuildBoardView.tsx",
+      "line": 199,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\GuildBoardView.tsx",
+      "line": 303,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\GuildBoardView.tsx",
+      "line": 315,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\GuildBoardView.tsx",
+      "line": 328,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\GuildBoardView.tsx",
+      "line": 387,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\GuildBoardView.tsx",
+      "line": 394,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\GuildBoardView.tsx",
+      "line": 456,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\GuildBoardView.tsx",
+      "line": 474,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\GuildBoardView.tsx",
+      "line": 518,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\GuildBoardView.tsx",
+      "line": 540,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\InteractiveRubricModal.tsx",
+      "line": 161,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\InteractiveRubricModal.tsx",
+      "line": 264,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\classroom\\InteractiveRubricModal.tsx",
+      "line": 299,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\InteractiveRubricModal.tsx",
+      "line": 306,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 719,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 732,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 745,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 779,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 788,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 797,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 835,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 847,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 861,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 996,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1019,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1034,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1113,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1183,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1191,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1199,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1207,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1221,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1247,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1284,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1299,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1314,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1329,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1341,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1433,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1483,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1493,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1514,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1534,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1565,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1581,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1593,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1604,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1611,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\LiveClassModeModal.tsx",
+      "line": 1642,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\RosterImporterModal.tsx",
+      "line": 160,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\RosterImporterModal.tsx",
+      "line": 188,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\RosterImporterModal.tsx",
+      "line": 206,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\classroom\\RosterImporterModal.tsx",
+      "line": 227,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\RosterImporterModal.tsx",
+      "line": 273,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\RosterImporterModal.tsx",
+      "line": 281,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\StudentSubmissionModal.tsx",
+      "line": 113,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\StudentSubmissionModal.tsx",
+      "line": 136,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\StudentSubmissionModal.tsx",
+      "line": 170,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\StudentSubmissionModal.tsx",
+      "line": 264,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\StudentSubmissionModal.tsx",
+      "line": 283,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\classroom\\StudentSubmissionModal.tsx",
+      "line": 290,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\ContextualAIAssistantModal.tsx",
+      "line": 175,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\ContextualAIAssistantModal.tsx",
+      "line": 229,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\ContextualAIAssistantModal.tsx",
+      "line": 238,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\ContextualAIAssistantModal.tsx",
+      "line": 247,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\ContextualAIAssistantModal.tsx",
+      "line": 286,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\ContextualAIAssistantModal.tsx",
+      "line": 345,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\ContextualAIAssistantModal.tsx",
+      "line": 373,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\CoopInviteWidget.tsx",
+      "line": 54,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\CoopInviteWidget.tsx",
+      "line": 78,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\ErrorBoundary.tsx",
+      "line": 55,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\games\\AhorcadoPlayer.tsx",
+      "line": 112,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\games\\AhorcadoPlayer.tsx",
+      "line": 158,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\games\\AhorcadoPlayer.tsx",
+      "line": 173,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\games\\EscapeRoomPlayer.tsx",
+      "line": 163,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\games\\EscapeRoomPlayer.tsx",
+      "line": 171,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\games\\EscapeRoomPlayer.tsx",
+      "line": 312,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\games\\EscapeRoomPlayer.tsx",
+      "line": 363,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\games\\EscapeRoomPlayer.tsx",
+      "line": 372,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\games\\FlashcardsPlayer.tsx",
+      "line": 147,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\games\\FlashcardsPlayer.tsx",
+      "line": 156,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\games\\FlashcardsPlayer.tsx",
+      "line": 168,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\games\\GenericGameStub.tsx",
+      "line": 57,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\games\\InteractiveUniversalGamePlayer.tsx",
+      "line": 315,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\games\\InteractiveUniversalGamePlayer.tsx",
+      "line": 361,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\games\\InteractiveUniversalGamePlayer.tsx",
+      "line": 371,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\games\\InteractiveUniversalGamePlayer.tsx",
+      "line": 397,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\games\\InteractiveUniversalGamePlayer.tsx",
+      "line": 463,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\games\\InteractiveUniversalGamePlayer.tsx",
+      "line": 497,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\games\\MemoramaPlayer.tsx",
+      "line": 169,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\GrimoireReadingQuestView.tsx",
+      "line": 333,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\GrimoireReadingQuestView.tsx",
+      "line": 342,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\GrimoireReadingQuestView.tsx",
+      "line": 430,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\GrimoireReadingQuestView.tsx",
+      "line": 508,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\GrimoireReadingQuestView.tsx",
+      "line": 543,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\GrimoireReadingQuestView.tsx",
+      "line": 640,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\Header.tsx",
+      "line": 384,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\Header.tsx",
+      "line": 396,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\Header.tsx",
+      "line": 408,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\Header.tsx",
+      "line": 496,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\Header.tsx",
+      "line": 502,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\help\\GlobalHelpFab.tsx",
+      "line": 64,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\help\\GlobalHelpFab.tsx",
+      "line": 102,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\layout\\StudentHUD.tsx",
+      "line": 174,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\layout\\StudentHUD.tsx",
+      "line": 183,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\layout\\TeacherNavbar.tsx",
+      "line": 140,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\layout\\TeacherNavbar.tsx",
+      "line": 150,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\layout\\TeacherNavbar.tsx",
+      "line": 206,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\HatchingCinematicModal.tsx",
+      "line": 185,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\LivingCompanionEngine.tsx",
+      "line": 320,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\LivingCompanionEngine.tsx",
+      "line": 336,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\LivingCompanionEngine.tsx",
+      "line": 350,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\PetHomeSanctuaryModal.tsx",
+      "line": 151,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\PetHomeSanctuaryModal.tsx",
+      "line": 165,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\PetHomeSanctuaryModal.tsx",
+      "line": 187,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\PetHomeSanctuaryModal.tsx",
+      "line": 254,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\PetHomeSanctuaryModal.tsx",
+      "line": 274,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\PetHomeSanctuaryModal.tsx",
+      "line": 286,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\PetHomeSanctuaryModal.tsx",
+      "line": 295,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\PetHomeSanctuaryModal.tsx",
+      "line": 304,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\PetHomeSanctuaryModal.tsx",
+      "line": 313,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\PetHomeSanctuaryModal.tsx",
+      "line": 379,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\PetHomeSanctuaryModal.tsx",
+      "line": 390,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\PetHomeSanctuaryModal.tsx",
+      "line": 414,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\PetHomeSanctuaryModal.tsx",
+      "line": 427,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\SanctuaryRoomView.tsx",
+      "line": 352,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\SanctuaryRoomView.tsx",
+      "line": 373,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\SanctuaryRoomView.tsx",
+      "line": 414,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\SanctuaryShopModal.tsx",
+      "line": 104,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\SanctuaryShopModal.tsx",
+      "line": 132,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\pet\\SanctuaryShopModal.tsx",
+      "line": 225,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\PetSanctuary.tsx",
+      "line": 147,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\PetSanctuary.tsx",
+      "line": 159,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\PetSanctuary.tsx",
+      "line": 215,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\PetSanctuary.tsx",
+      "line": 226,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\PetSanctuary.tsx",
+      "line": 249,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\promo\\HighTechPresentationRenderer.tsx",
+      "line": 67,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\QuestCard.tsx",
+      "line": 167,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\QuestCard.tsx",
+      "line": 176,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\QuestCard.tsx",
+      "line": 185,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\QuestCardModal.tsx",
+      "line": 500,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\QuestCardModal.tsx",
+      "line": 588,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\QuestCardModal.tsx",
+      "line": 751,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\QuestCardModal.tsx",
+      "line": 792,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\QuestCardModal.tsx",
+      "line": 818,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\QuestCardModal.tsx",
+      "line": 835,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\QuestCardModal.tsx",
+      "line": 844,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\QuestCardModal.tsx",
+      "line": 853,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\QuestCardModal.tsx",
+      "line": 862,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\QuestCardModal.tsx",
+      "line": 895,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\QuestCardModal.tsx",
+      "line": 907,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\QuestCardModal.tsx",
+      "line": 928,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\QuestCardModal.tsx",
+      "line": 951,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\QuestCardModal.tsx",
+      "line": 1014,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\QuestCardModal.tsx",
+      "line": 1046,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\QuestCardModal.tsx",
+      "line": 1063,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\RpgCombatViewport.tsx",
+      "line": 820,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\RpgCombatViewport.tsx",
+      "line": 843,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\RpgCombatViewport.tsx",
+      "line": 1285,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\RpgCombatViewport.tsx",
+      "line": 1304,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\RpgCombatViewport.tsx",
+      "line": 1311,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\RpgCombatViewport.tsx",
+      "line": 1318,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\RpgCombatViewport.tsx",
+      "line": 1342,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\RpgCombatViewport.tsx",
+      "line": 1349,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\RpgCombatViewport.tsx",
+      "line": 1368,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\RpgCombatViewport.tsx",
+      "line": 1379,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\RpgCombatViewport.tsx",
+      "line": 1396,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\SagaMap.tsx",
+      "line": 465,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\SagaMap.tsx",
+      "line": 478,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\SagaMap.tsx",
+      "line": 500,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\SagaMap.tsx",
+      "line": 587,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\SagaMap.tsx",
+      "line": 769,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\SagaMap.tsx",
+      "line": 883,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 494,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 505,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 517,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 526,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 535,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 547,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 558,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 569,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 580,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 590,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 601,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 614,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 625,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 662,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 704,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 874,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 933,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 963,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 997,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 1064,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ActivityBuilderLayout.tsx",
+      "line": 1163,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\AudioSfxBlockView.tsx",
+      "line": 32,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\BossEnemyBlockView.tsx",
+      "line": 52,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\DragDropMatchBlockView.tsx",
+      "line": 88,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\DragDropMatchBlockView.tsx",
+      "line": 100,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\ExternalEmbedBlockView.tsx",
+      "line": 61,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\ExternalEmbedBlockView.tsx",
+      "line": 72,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\ExternalEmbedBlockView.tsx",
+      "line": 83,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\LogicMathBlockView.tsx",
+      "line": 108,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\LogicMathBlockView.tsx",
+      "line": 124,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\LogicMathBlockView.tsx",
+      "line": 221,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\LogicMathBlockView.tsx",
+      "line": 241,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\LogicMathBlockView.tsx",
+      "line": 271,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\MinigameBlockView.tsx",
+      "line": 43,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\MinigameBlockView.tsx",
+      "line": 65,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\MinigameBlockView.tsx",
+      "line": 93,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\MinigameBlockView.tsx",
+      "line": 113,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\OrderingSequenceBlockView.tsx",
+      "line": 80,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\OrderingSequenceBlockView.tsx",
+      "line": 88,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\OrderingSequenceBlockView.tsx",
+      "line": 97,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\OrderingSequenceBlockView.tsx",
+      "line": 109,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\QuizQuestionBlockView.tsx",
+      "line": 101,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\QuizQuestionBlockView.tsx",
+      "line": 110,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\QuizQuestionBlockView.tsx",
+      "line": 202,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\QuizQuestionBlockView.tsx",
+      "line": 227,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\QuizQuestionBlockView.tsx",
+      "line": 243,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\RewardChestBlockView.tsx",
+      "line": 30,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\TextNarrativeBlockView.tsx",
+      "line": 22,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\TextNarrativeBlockView.tsx",
+      "line": 33,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\TextNarrativeBlockView.tsx",
+      "line": 44,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\TimedReadingBlockView.tsx",
+      "line": 258,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\TimedReadingBlockView.tsx",
+      "line": 285,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\TimedReadingBlockView.tsx",
+      "line": 306,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\TimedReadingBlockView.tsx",
+      "line": 356,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\TimedReadingBlockView.tsx",
+      "line": 413,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\TimedReadingBlockView.tsx",
+      "line": 435,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\blocks\\TimedReadingBlockView.tsx",
+      "line": 451,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ExtendedToolsDrawer.tsx",
+      "line": 366,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ExtendedToolsDrawer.tsx",
+      "line": 387,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\ExtendedToolsDrawer.tsx",
+      "line": 425,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\NodeConfigDrawer.tsx",
+      "line": 163,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\NodeConfigDrawer.tsx",
+      "line": 208,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\NodeConfigDrawer.tsx",
+      "line": 270,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\NodeConfigDrawer.tsx",
+      "line": 280,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\NodeConfigDrawer.tsx",
+      "line": 292,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\NodeConfigDrawer.tsx",
+      "line": 305,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\NodeGraphBoard.tsx",
+      "line": 346,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\NodeGraphBoard.tsx",
+      "line": 356,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\NodeGraphBoard.tsx",
+      "line": 366,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\NodeGraphBoard.tsx",
+      "line": 379,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\NodeGraphBoard.tsx",
+      "line": 562,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\NodeGraphBoard.tsx",
+      "line": 576,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\NodeGraphBoard.tsx",
+      "line": 586,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\NodeGraphBoard.tsx",
+      "line": 595,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\NodeGraphBoard.tsx",
+      "line": 613,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\NodeGraphBoard.tsx",
+      "line": 622,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\NodeGraphBoard.tsx",
+      "line": 631,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\NodeGraphBoard.tsx",
+      "line": 642,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\SidebarToolbar.tsx",
+      "line": 510,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\SortableBlockWrapper.tsx",
+      "line": 294,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\SortableBlockWrapper.tsx",
+      "line": 329,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\SortableBlockWrapper.tsx",
+      "line": 355,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\studio\\builder\\SortableBlockWrapper.tsx",
+      "line": 368,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\studio\\builder\\SortableBlockWrapper.tsx",
+      "line": 383,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\SortableBlockWrapper.tsx",
+      "line": 398,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\SortableBlockWrapper.tsx",
+      "line": 413,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\WorkspaceArea.tsx",
+      "line": 88,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\WorkspaceArea.tsx",
+      "line": 101,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\WorkspaceArea.tsx",
+      "line": 116,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\WorkspaceArea.tsx",
+      "line": 183,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\WorkspaceConnectionLine.tsx",
+      "line": 28,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\WorkspaceConnectionLine.tsx",
+      "line": 36,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\WorkspaceConnectionLine.tsx",
+      "line": 43,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\builder\\WorkspaceConnectionLine.tsx",
+      "line": 50,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\LogicMathInteractivePlayer.tsx",
+      "line": 274,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\LogicMathInteractivePlayer.tsx",
+      "line": 311,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\LogicMathInteractivePlayer.tsx",
+      "line": 359,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\LogicMathInteractivePlayer.tsx",
+      "line": 441,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\LogicMathInteractivePlayer.tsx",
+      "line": 450,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\LogicMathInteractivePlayer.tsx",
+      "line": 462,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\LogicMathInteractivePlayer.tsx",
+      "line": 490,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\LogicMathInteractivePlayer.tsx",
+      "line": 552,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\LogicMathInteractivePlayer.tsx",
+      "line": 607,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\studio\\player\\LogicMathInteractivePlayer.tsx",
+      "line": 637,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\studio\\player\\LogicMathInteractivePlayer.tsx",
+      "line": 652,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\LogicMathInteractivePlayer.tsx",
+      "line": 661,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\LogicMathInteractivePlayer.tsx",
+      "line": 693,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 556,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 572,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 621,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 868,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 908,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 933,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 985,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1036,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1105,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1135,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1162,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1199,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1229,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1271,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1279,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1294,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1315,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1349,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1365,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1399,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1415,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1458,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1466,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1481,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1515,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1532,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1569,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1607,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1660,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1695,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1755,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1763,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1771,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1782,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1830,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1863,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1892,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1921,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\studio\\player\\StudioFlowPlayer.tsx",
+      "line": 1950,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\StudioTriviaPlayer.tsx",
+      "line": 125,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\StudioTriviaPlayer.tsx",
+      "line": 134,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\StudioTriviaPlayer.tsx",
+      "line": 202,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\StudioTriviaPlayer.tsx",
+      "line": 241,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\teacher\\PedagogicalSuggestionsSection.tsx",
+      "line": 197,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\teacher\\PedagogicalSuggestionsSection.tsx",
+      "line": 228,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\teacher\\PedagogicalSuggestionsSection.tsx",
+      "line": 267,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\teacher\\PedagogicalSuggestionsSection.tsx",
+      "line": 278,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\teacher\\PedagogicalSuggestionsSection.tsx",
+      "line": 289,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\teacher\\PedagogicalSuggestionsSection.tsx",
+      "line": 403,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\teacher\\PedagogicalSuggestionsSection.tsx",
+      "line": 426,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\teacher\\PedagogicalSuggestionsSection.tsx",
+      "line": 497,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\teacher\\PedagogicalSuggestionsSection.tsx",
+      "line": 593,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\teacher\\PedagogicalSuggestionsSection.tsx",
+      "line": 625,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\teacher\\PedagogicalSuggestionsSection.tsx",
+      "line": 683,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\teacher\\PedagogicalSuggestionsSection.tsx",
+      "line": 721,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\teacher\\PedagogicalSuggestionsSection.tsx",
+      "line": 729,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\TeacherCommunityView.tsx",
+      "line": 316,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\TeacherCommunityView.tsx",
+      "line": 332,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\TeacherCommunityView.tsx",
+      "line": 345,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\TeacherCommunityView.tsx",
+      "line": 359,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\TeacherCommunityView.tsx",
+      "line": 372,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\TeacherCommunityView.tsx",
+      "line": 385,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\TeacherCommunityView.tsx",
+      "line": 398,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\TeacherCommunityView.tsx",
+      "line": 411,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\TeacherCommunityView.tsx",
+      "line": 439,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\TeacherCommunityView.tsx",
+      "line": 476,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\TeacherCommunityView.tsx",
+      "line": 575,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\TeacherCommunityView.tsx",
+      "line": 634,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\TeacherCommunityView.tsx",
+      "line": 650,
+      "missingFocus": true,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\ui\\Button.tsx",
+      "line": 59,
+      "missingFocus": true,
+      "missingDisabled": false
+    },
+    {
+      "file": "src\\components\\ui\\ComingSoonModal.tsx",
+      "line": 98,
+      "missingFocus": false,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\ui\\ComingSoonModal.tsx",
+      "line": 141,
+      "missingFocus": false,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\ui\\RowActionMenu.tsx",
+      "line": 57,
+      "missingFocus": false,
+      "missingDisabled": true
+    },
+    {
+      "file": "src\\components\\ui\\RowActionMenu.tsx",
+      "line": 86,
+      "missingFocus": true,
+      "missingDisabled": false
+    }
+  ]
+}

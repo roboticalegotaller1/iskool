@@ -1,4 +1,4 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Reglas de exclusión para el Repositorio Central y entorno de desarrollo.
 
 # dependencies
 /node_modules
@@ -50,14 +50,7 @@ high_tech_raw*.webm
 *v3.0.mp4
 
 # Knowledge vault workspace files
-.obsidian/workspace
-.obsidian/workspace.json
-.obsidian/workspace-mobile.json
-.obsidian/graph.json
-.obsidian/cache/
+.obsidian/
+*.canvas
 .smart-env/
-.obsidian/plugins/smart-connections/.smart-connections/
-.obsidian/plugins/smart-connections/embeddings.json
-.obsidian/plugins/smart-connections/embeddings.db
-.obsidian/plugins/smart-connections/smart-connections-cache.json
 

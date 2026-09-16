@@ -49,7 +49,7 @@ export const OrderingSequenceBlockView: React.FC<Props> = ({ block }) => {
           <ListOrdered className="w-4 h-4 text-blue-600" />
           <span>Instrucciones de la Secuencia:</span>
         </label>
-        <input
+        <input aria-label="Ej. Ordena cronológicamente los acontecimientos históricos:"
           type="text"
           value={instructions}
           onChange={(e) => updateBlockData(block.id, { instructions: e.target.value })}
@@ -70,14 +70,14 @@ export const OrderingSequenceBlockView: React.FC<Props> = ({ block }) => {
               <span className="w-6 h-6 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-black flex items-center justify-center shrink-0">
                 {idx + 1}
               </span>
-              <input
+              <input aria-label="Campo de texto de formulario"
                 type="text"
                 value={step}
                 onChange={(e) => handleUpdateStep(idx, e.target.value)}
                 placeholder={`Acontecimiento o paso ${idx + 1}...`}
                 className="flex-1 px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
               />
-              <button
+              <button aria-label="Acción institucional"
                 type="button"
                 disabled={idx === 0}
                 onClick={() => handleMoveStep(idx, 'up')}
@@ -85,7 +85,7 @@ export const OrderingSequenceBlockView: React.FC<Props> = ({ block }) => {
               >
                 <ArrowUp className="w-3.5 h-3.5" />
               </button>
-              <button
+              <button aria-label="Acción institucional"
                 type="button"
                 disabled={idx === stepsInCorrectOrder.length - 1}
                 onClick={() => handleMoveStep(idx, 'down')}
@@ -94,7 +94,7 @@ export const OrderingSequenceBlockView: React.FC<Props> = ({ block }) => {
                 <ArrowDown className="w-3.5 h-3.5" />
               </button>
               {stepsInCorrectOrder.length > 2 && (
-                <button
+                <button aria-label="Eliminar"
                   type="button"
                   onClick={() => handleRemoveStep(idx)}
                   className="p-1 text-slate-400 hover:text-rose-600"

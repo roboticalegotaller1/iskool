@@ -10,6 +10,7 @@ import { useSchoolAdminStore } from './useSchoolAdminStore';
 import { getStudentAcademicLevelInfo, StudentAcademicLevelInfo } from '@/lib/academicLevels';
 
 let statsChannel: any = null;
+const inFlightPurchases = new Set<string>();
 
 interface StudentStoreState {
   activeStudentId: string;
@@ -639,6 +640,13 @@ export const useStudentStore = create<StudentStoreState>()(
   purchaseSanctuaryItem: (studentId, itemId, price) => {
     const rawId = studentId || get().activeStudentId;
     const activeId = normalizeStudentId(rawId);
+    const lockKey = `sanctuary:${activeId}:${itemId}`;
+    if (inFlightPurchases.has(lockKey)) {
+      return { success: false, reason: 'Transacción en proceso. Por favor espera.' };
+    }
+    inFlightPurchases.add(lockKey);
+    setTimeout(() => inFlightPurchases.delete(lockKey), 1000);
+
     const currentStats = get().allStats[activeId] || get().allStats[rawId];
     const currentAv = get().allAvatars[activeId] || get().allAvatars[rawId] || { student_id: activeId, avatar_name: 'Estudiante', hair_style: 'classic', hair_color: '#4B5563', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: [] };
     const coins = currentStats?.coins || 0;
@@ -858,6 +866,13 @@ export const useStudentStore = create<StudentStoreState>()(
   purchaseClothingItem: (studentId, itemId, price) => {
     const rawId = studentId || get().activeStudentId;
     const activeId = normalizeStudentId(rawId);
+    const lockKey = `clothing:${activeId}:${itemId}`;
+    if (inFlightPurchases.has(lockKey)) {
+      return { success: false, reason: 'Transacción en proceso. Por favor espera.' };
+    }
+    inFlightPurchases.add(lockKey);
+    setTimeout(() => inFlightPurchases.delete(lockKey), 1000);
+
     const currentStats = get().allStats[activeId] || get().allStats[rawId] || { coins: 0 };
     const currentAv = get().allAvatars[activeId] || get().allAvatars[rawId] || { 
       student_id: activeId, 
@@ -1105,8 +1120,64 @@ export const useStudentStore = create<StudentStoreState>()(
   purchaseArtifact: async (studentId, artifactId) => {
     const normId = normalizeStudentId(studentId);
     const dbStudentId = mapStudentIdToUuid(normId);
+    const lockKey = `artifact:${normId}:${artifactId}`;
+
+    // Prevención de condiciones de carrera (Race Conditions) por clics rápidos concurrentes
+    if (inFlightPurchases.has(lockKey)) {
+      console.warn('Transacción de compra ya en proceso para este artefacto:', lockKey);
+      return;
+    }
+    inFlightPurchases.add(lockKey);
 
     try {
+      // 1. Intentar compra a través del endpoint API con control de concurrencia y ACID
+      try {
+        const res = await fetch('/api/store/purchase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentId: dbStudentId || normId, artifactId })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            const newCoins = data.newCoins;
+            const newInventory = data.inventory || [];
+            const newMessage = data.newMessage;
+
+            set((state) => {
+              const currentStats = state.allStats[normId] || state.allStats[studentId] || {};
+              const updatedStats = { ...currentStats, coins: newCoins };
+              return {
+                allStats: {
+                  ...state.allStats,
+                  [studentId]: updatedStats,
+                  [normId]: updatedStats
+                },
+                studentInventoryMap: {
+                  ...state.studentInventoryMap,
+                  [studentId]: newInventory,
+                  [normId]: newInventory
+                },
+                studentMessages: newMessage ? [newMessage, ...state.studentMessages] : state.studentMessages
+              };
+            });
+            return;
+          }
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          if (errData.error) {
+            if (typeof window !== 'undefined' && window.alert) {
+              window.alert(errData.error);
+            }
+            return;
+          }
+        }
+      } catch (apiErr) {
+        console.warn('Endpoint /api/store/purchase no respondió, intentando RPC directa:', apiErr);
+      }
+
+      // 2. Intentar llamar directamente a la RPC purchase_artifact de Supabase
       if (isUuid(dbStudentId)) {
         const response = await supabase.rpc('purchase_artifact', {
           p_student_id: dbStudentId,
@@ -1135,66 +1206,68 @@ export const useStudentStore = create<StudentStoreState>()(
               studentMessages: newMessage ? [newMessage, ...state.studentMessages] : state.studentMessages
             };
           });
-          alert('¡Compraste el artefacto con éxito!');
           return;
         }
       }
-    } catch (err: any) {
-      console.warn('RPC purchase_artifact no disponible o falló. Ejecutando lógica de respaldo:', err);
-    }
 
-    // Fallback de compra directa
-    const { allStats, studentInventoryMap } = get();
-    const currentStats = allStats[normId] || allStats[studentId];
-    if (!currentStats) return;
+      // 3. Fallback atómico local optimista
+      const { allStats, studentInventoryMap } = get();
+      const currentStats = allStats[normId] || allStats[studentId];
+      if (!currentStats) return;
 
-    // Verificar precio y saldo
-    const price = 50; // Costo estándar si no hay datos de tienda
-    if ((currentStats.coins || 0) < price) {
-      alert(`¡No tienes suficientes monedas! Se requieren ${price} monedas.`);
-      return;
-    }
-
-    const currentInventory = studentInventoryMap[normId] || studentInventoryMap[studentId] || [];
-    if (currentInventory.includes(artifactId)) {
-      alert('¡Ya posees este artefacto en tu inventario!');
-      return;
-    }
-
-    const updatedCoins = currentStats.coins - price;
-    const updatedInventory = [...currentInventory, artifactId];
-
-    if (isUuid(dbStudentId)) {
-      try {
-        await supabase
-          .from('student_stats')
-          .update({ coins: updatedCoins, updated_at: new Date().toISOString() })
-          .eq('student_id', dbStudentId);
-
-        await supabase
-          .from('student_inventory')
-          .insert({ student_id: dbStudentId, artifact_id: artifactId, acquired_at: new Date().toISOString() });
-      } catch (e) {
-        console.error('Error en fallback de compra de artefacto:', e);
-      }
-    }
-
-    set((state) => {
-      const updatedStats = { ...currentStats, coins: updatedCoins };
-      return {
-        allStats: {
-          ...state.allStats,
-          [studentId]: updatedStats,
-          [normId]: updatedStats
-        },
-        studentInventoryMap: {
-          ...state.studentInventoryMap,
-          [studentId]: updatedInventory,
-          [normId]: updatedInventory
+      const price = 50;
+      if ((currentStats.coins || 0) < price) {
+        if (typeof window !== 'undefined' && window.alert) {
+          window.alert(`¡No tienes suficientes monedas! Se requieren ${price} monedas.`);
         }
-      };
-    });
-    alert('¡Compraste el artefacto con éxito!');
+        return;
+      }
+
+      const currentInventory = studentInventoryMap[normId] || studentInventoryMap[studentId] || [];
+      if (currentInventory.includes(artifactId)) {
+        if (typeof window !== 'undefined' && window.alert) {
+          window.alert('¡Ya posees este artefacto en tu inventario!');
+        }
+        return;
+      }
+
+      const updatedCoins = currentStats.coins - price;
+      const updatedInventory = [...currentInventory, artifactId];
+
+      if (isUuid(dbStudentId)) {
+        try {
+          await supabase
+            .from('student_stats')
+            .update({ coins: updatedCoins, updated_at: new Date().toISOString() })
+            .eq('student_id', dbStudentId);
+
+          await supabase
+            .from('student_inventory')
+            .insert({ student_id: dbStudentId, artifact_id: artifactId, acquired_at: new Date().toISOString() });
+        } catch (e) {
+          console.error('Error en fallback de compra de artefacto:', e);
+        }
+      }
+
+      set((state) => {
+        const updatedStats = { ...currentStats, coins: updatedCoins };
+        return {
+          allStats: {
+            ...state.allStats,
+            [studentId]: updatedStats,
+            [normId]: updatedStats
+          },
+          studentInventoryMap: {
+            ...state.studentInventoryMap,
+            [studentId]: updatedInventory,
+            [normId]: updatedInventory
+          }
+        };
+      });
+    } finally {
+      // Liberar bloqueo de concurrencia
+      inFlightPurchases.delete(lockKey);
+    }
   },
 
   grantArtifact: async (studentId, artifactId) => {

@@ -44,6 +44,15 @@ function getEscapeRoomReadingText(topic: string, language: string): string {
 
 export async function POST(req: NextRequest) {
   try {
+    // 0. Verificación estricta de Autenticación Zero-Trust
+    const auth = await validateApiAuth(req);
+    if (!auth.authenticated) {
+      return NextResponse.json(
+        { error: auth.error || 'No autorizado. Se requiere sesión activa de ISkool para generar actividades en el Estudio.' },
+        { status: 401 }
+      );
+    }
+
     // 1. Sanitización y validación estricta del cuerpo de la petición con Zod
     const body = await req.json().catch(() => null);
     const parsedBody = StudioGenerateSchema.safeParse(body);

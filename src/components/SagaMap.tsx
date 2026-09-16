@@ -766,7 +766,7 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
                 </span>
                 <h3 className="text-xl font-black text-white mt-1.5">{selectedMission.title}</h3>
               </div>
-              <button 
+              <button aria-label="Cerrar" 
                 onClick={() => setSelectedMission(null)}
                 className="p-2 rounded-full bg-zinc-950/60 border border-zinc-800 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-all shadow"
               >

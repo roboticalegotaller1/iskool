@@ -481,3 +481,40 @@ body {
   will-change: transform, opacity;
 }
 
+/* =========================================================================
+   ESTÁNDARES DE ACCESIBILIDAD Y ESTADOS INTERACTIVOS (WCAG 2.1 AA / IBIME)
+   ========================================================================= */
+@layer base {
+  /* Foco visible universal con alto contraste para navegación por teclado */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid hsl(var(--color-primary-hsl));
+    outline-offset: 2px;
+  }
+
+  /* Estados deshabilitados consistentes */
+  button:disabled,
+  input:disabled,
+  select:disabled,
+  textarea:disabled {
+    opacity: 0.55;
+    cursor: not-allowed !important;
+    pointer-events: none;
+  }
+
+  /* Reducción de movimiento para usuarios con sensibilidad vestibular */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+

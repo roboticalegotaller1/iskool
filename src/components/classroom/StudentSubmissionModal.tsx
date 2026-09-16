@@ -110,13 +110,11 @@ export const StudentSubmissionModal: React.FC<Props> = ({
             </div>
           </div>
 
-          <button
+          <button aria-label="Cerrar"
             type="button"
             onClick={onClose}
             className="p-2 text-slate-400 hover:text-rose-500 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          ><X className="h-4 w-4" /></button>
         </div>
 
         {/* Formulario con Scroll */}
@@ -156,7 +154,7 @@ export const StudentSubmissionModal: React.FC<Props> = ({
               <div className="space-y-2">
                 <input
                   type="text"
-                  placeholder="Pega el enlace de tu imagen o foto..."
+                  placeholder="Pega el enlace de tu imagen o foto..." aria-label="Pega el enlace de tu imagen o foto..."
                   value={evidenceUrl}
                   onChange={e => setEvidenceUrl(e.target.value)}
                   className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs font-medium"
@@ -190,7 +188,7 @@ export const StudentSubmissionModal: React.FC<Props> = ({
             )}
 
             {evidenceType === 'text_document' && (
-              <textarea
+              <textarea aria-label="Escribe el desarrollo y conclusiones de tu misión..."
                 rows={3}
                 placeholder="Escribe el desarrollo y conclusiones de tu misión..."
                 value={evidenceText}
@@ -202,7 +200,7 @@ export const StudentSubmissionModal: React.FC<Props> = ({
             {evidenceType === 'link' && (
               <input
                 type="url"
-                placeholder="https://mi-proyecto-educativo.com"
+                placeholder="https://mi-proyecto-educativo.com" aria-label="https://mi-proyecto-educativo.com"
                 value={evidenceUrl}
                 onChange={e => setEvidenceUrl(e.target.value)}
                 className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs font-medium"
@@ -224,7 +222,7 @@ export const StudentSubmissionModal: React.FC<Props> = ({
                 </label>
                 <input
                   type="text"
-                  placeholder="Ej: Calibrar los materiales para que no se rompieran..."
+                  placeholder="Ej: Calibrar los materiales para que no se rompieran..." aria-label="Ej: Calibrar los materiales para que no se rompieran..."
                   value={mainChallenge}
                   onChange={e => setMainChallenge(e.target.value)}
                   className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs"
@@ -237,7 +235,7 @@ export const StudentSubmissionModal: React.FC<Props> = ({
                 </label>
                 <input
                   type="text"
-                  placeholder="Ej: Consulté la Bóveda Curricular y le pedí consejo a mi equipo..."
+                  placeholder="Ej: Consulté la Bóveda Curricular y le pedí consejo a mi equipo..." aria-label="Ej: Consulté la Bóveda Curricular y le pedí consejo a mi equipo..."
                   value={strategyUsed}
                   onChange={e => setStrategyUsed(e.target.value)}
                   className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs"
@@ -250,7 +248,7 @@ export const StudentSubmissionModal: React.FC<Props> = ({
                 </label>
                 <input
                   type="text"
-                  placeholder="Ej: Logré que funcionara el mecanismo sin fallar..."
+                  placeholder="Ej: Logré que funcionara el mecanismo sin fallar..." aria-label="Ej: Logré que funcionara el mecanismo sin fallar..."
                   value={prideHighlight}
                   onChange={e => setPrideHighlight(e.target.value)}
                   className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs"
@@ -263,7 +261,7 @@ export const StudentSubmissionModal: React.FC<Props> = ({
                 </label>
                 <div className="flex items-center gap-2">
                   {[1, 2, 3, 4, 5].map(stars => (
-                    <button
+                    <button aria-label="Acción institucional"
                       key={stars}
                       type="button"
                       onClick={() => setSatisfactionRating(stars)}

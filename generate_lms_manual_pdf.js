@@ -382,11 +382,15 @@ const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const browserExecutable = fs.existsSync(edgePath) ? edgePath : chromePath;
 
-const command = `"${browserExecutable}" --headless --disable-gpu --run-all-compositor-stages-before-draw --print-to-pdf="${pdfFilePath}" --no-pdf-header-footer "${htmlFilePath}"`;
+// Optimización de flags para evitar saturación de memoria RAM y procesos zombies
+const command = `"${browserExecutable}" --headless=new --disable-gpu --disable-dev-shm-usage --no-sandbox --disable-extensions --js-flags="--max-old-space-size=512" --run-all-compositor-stages-before-draw --print-to-pdf="${pdfFilePath}" --no-pdf-header-footer "${htmlFilePath}"`;
 
 try {
-  execSync(command);
-  console.log('PDF actualizado exitosamente en:', pdfFilePath);
+  console.log('Iniciando generación de PDF con límites de memoria...');
+  execSync(command, { stdio: 'inherit', timeout: 60000 });
+  console.log('✓ PDF actualizado exitosamente en:', pdfFilePath);
 } catch (err) {
-  console.error('Error al generar PDF:', err);
+  console.error('Error al generar PDF:', err.message);
+} finally {
+  console.log('Proceso de renderizado concluido y recursos liberados.');
 }

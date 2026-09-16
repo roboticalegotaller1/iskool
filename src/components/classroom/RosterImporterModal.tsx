@@ -157,13 +157,11 @@ Diego	Navarro Peña	4º A - Primaria	tutor.diego@gmail.com	5555667788`;
             </div>
           </div>
 
-          <button
+          <button aria-label="Cerrar"
             type="button"
             onClick={onClose}
             className="p-2 text-slate-400 hover:text-rose-500 transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          ><X className="h-4 w-4" /></button>
         </div>
 
         {/* Cuerpo */}
@@ -196,7 +194,7 @@ Diego	Navarro Peña	4º A - Primaria	tutor.diego@gmail.com	5555667788`;
                 </button>
               </div>
 
-              <textarea
+              <textarea aria-label="Nombre [Tab] Apellidos [Tab] Grupo [Tab] Correo Tutor [Tab] Teléfono&#10;Mateo	Morales González	4º A - Primaria	tutor@gmail.com	5512345678"
                 rows={8}
                 value={rawText}
                 onChange={e => setRawText(e.target.value)}

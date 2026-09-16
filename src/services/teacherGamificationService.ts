@@ -204,7 +204,7 @@ export class TeacherGamificationService {
    */
   static async fetchTeacherBadges(teacherId: string): Promise<TeacherBadge[]> {
     const teacherUuid = mapTeacherIdToUuid(teacherId);
-    let unlockedCodes = new Set<string>(['FIRST_CREATOR']);
+    const unlockedCodes = new Set<string>(['FIRST_CREATOR']);
 
     try {
       const { data, error } = await supabase

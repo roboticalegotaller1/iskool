@@ -10,6 +10,7 @@ import {
   applyWhiteLabelCssVariables 
 } from '@/store/useWhiteLabelStore';
 import { supabase } from '@/lib/supabaseClient';
+import { useComingSoon } from '@/components/ui/ComingSoonModal';
 import { 
   Paintbrush, 
   Image as ImageIcon, 
@@ -70,6 +71,7 @@ export default function WhiteLabelAdminPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { showComingSoon } = useComingSoon();
 
   // Sincronizar estado local si el store se actualiza
   useEffect(() => {
@@ -198,7 +200,7 @@ export default function WhiteLabelAdminPage() {
             <button
               onClick={handleReset}
               className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-xs sm:text-sm font-bold transition-all flex items-center gap-2"
-              title="Restaurar a los valores por defecto"
+              title="Restaurar a los valores por defecto" aria-label="Restaurar a los valores por defecto"
             >
               <RotateCcw className="w-4 h-4" />
               <span>Restaurar</span>
@@ -246,7 +248,7 @@ export default function WhiteLabelAdminPage() {
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-400 mb-1.5">
                     URL de la Imagen (PNG, SVG o JPG)
                   </label>
-                  <input
+                  <input aria-label="https://tu-colegio.edu.mx/logo.png"
                     type="url"
                     value={logoUrl}
                     onChange={(e) => setLogoUrl(e.target.value)}
@@ -257,7 +259,7 @@ export default function WhiteLabelAdminPage() {
 
                 {/* Subir archivo local */}
                 <div className="flex flex-wrap items-center gap-3">
-                  <input
+                  <input aria-label="Subir archivo o comprobante"
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFileUpload}
@@ -322,7 +324,7 @@ export default function WhiteLabelAdminPage() {
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-400 mb-1.5">
                   Nombre Oficial del Colegio o Campus
                 </label>
-                <input
+                <input aria-label="Ej. Colegio Jean Piaget • Campus Norte"
                   type="text"
                   value={schoolName}
                   onChange={(e) => setSchoolName(e.target.value)}
@@ -347,7 +349,7 @@ export default function WhiteLabelAdminPage() {
               {/* Selector de Color y Código Hex */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <div className="flex items-center gap-3">
-                  <input
+                  <input aria-label="Campo de texto de formulario"
                     type="color"
                     value={primaryColor}
                     onChange={(e) => handleLiveColorChange(e.target.value)}
@@ -358,7 +360,7 @@ export default function WhiteLabelAdminPage() {
                     <label className="block text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                       Código Hex
                     </label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       value={primaryColor}
                       onChange={(e) => handleLiveColorChange(e.target.value)}
@@ -485,7 +487,12 @@ export default function WhiteLabelAdminPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
-                    className="px-4 py-2.5 rounded-xl text-white text-xs font-bold shadow-md flex items-center justify-center gap-1.5 transition-transform active:scale-95"
+                    onClick={() => showComingSoon({
+                      title: 'Demostración de Botón Primario',
+                      category: 'Previsualizador de Marca',
+                      description: 'Este botón refleja el llamado a la acción primario para tus docentes y coordinadores con la paleta de tu colegio.'
+                    })}
+                    className="px-4 py-2.5 rounded-xl text-white text-xs font-bold shadow-md flex items-center justify-center gap-1.5 transition-transform hover:scale-102 active:scale-95 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
                     style={{ backgroundColor: primaryColor }}
                   >
                     <Sparkles className="w-3.5 h-3.5" />
@@ -494,7 +501,12 @@ export default function WhiteLabelAdminPage() {
 
                   <button
                     type="button"
-                    className="px-4 py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                    onClick={() => showComingSoon({
+                      title: 'Demostración de Botón Secundario',
+                      category: 'Previsualizador de Marca',
+                      description: 'Este botón refleja los controles secundarios configurados con el tono derivado de la identidad institucional.'
+                    })}
+                    className="px-4 py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all hover:scale-102 active:scale-95 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
                     style={{ 
                       borderColor: primaryColor,
                       color: primaryColor,

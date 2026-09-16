@@ -173,7 +173,7 @@ export const HatchingCinematicModal: React.FC<HatchingCinematicModalProps> = ({
               <label className="text-[11px] font-bold text-slate-300 block">
                 Nombra a tu nuevo compañero:
               </label>
-              <input
+              <input aria-label="Ej. Copito, Flamis, Axito..."
                 type="text"
                 value={customPetName}
                 onChange={(e) => setCustomPetName(e.target.value)}

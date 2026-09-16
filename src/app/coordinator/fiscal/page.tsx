@@ -462,7 +462,7 @@ export default function CoordinatorFiscalPage() {
               <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
               <input
                 type="text"
-                placeholder="Buscar por UUID, RFC, Alumno o Folio..."
+                placeholder="Buscar por UUID, RFC, Alumno o Folio..." aria-label="Buscar por UUID, RFC, Alumno o Folio..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-600"
@@ -472,7 +472,7 @@ export default function CoordinatorFiscalPage() {
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <Filter className="w-3.5 h-3.5 text-slate-400" />
               <span className="text-xs text-slate-500 font-medium">Estatus:</span>
-              <select
+              <select aria-label="Seleccionar opción"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
                 className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-blue-600 font-medium"
@@ -632,7 +632,7 @@ export default function CoordinatorFiscalPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-slate-700 font-semibold mb-1">RFC del Receptor:</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       required
                       value={manualForm.rfcReceptor}
@@ -643,7 +643,7 @@ export default function CoordinatorFiscalPage() {
 
                   <div>
                     <label className="block text-slate-700 font-semibold mb-1">Razón Social / Nombre:</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       required
                       value={manualForm.taxName}
@@ -654,7 +654,7 @@ export default function CoordinatorFiscalPage() {
 
                   <div>
                     <label className="block text-slate-700 font-semibold mb-1">Régimen Fiscal Receptor:</label>
-                    <select
+                    <select aria-label="Seleccionar opción"
                       value={manualForm.taxRegime}
                       onChange={(e) => setManualForm({ ...manualForm, taxRegime: e.target.value })}
                       className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-900 focus:outline-none focus:border-blue-600"
@@ -668,7 +668,7 @@ export default function CoordinatorFiscalPage() {
 
                   <div>
                     <label className="block text-slate-700 font-semibold mb-1">Código Postal Fiscal:</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       required
                       maxLength={5}
@@ -689,7 +689,7 @@ export default function CoordinatorFiscalPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-emerald-50/50 p-3.5 rounded-xl border border-emerald-200">
                   <div>
                     <label className="block text-emerald-950 font-semibold mb-1">Nombre Completo del Alumno:</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       required
                       value={manualForm.studentName}
@@ -700,7 +700,7 @@ export default function CoordinatorFiscalPage() {
 
                   <div>
                     <label className="block text-emerald-950 font-semibold mb-1">CURP del Alumno (18 Caracteres):</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       required
                       maxLength={18}
@@ -712,7 +712,7 @@ export default function CoordinatorFiscalPage() {
 
                   <div>
                     <label className="block text-emerald-950 font-semibold mb-1">Nivel Educativo:</label>
-                    <select
+                    <select aria-label="Seleccionar opción"
                       value={manualForm.educationLevel}
                       onChange={(e) => setManualForm({ ...manualForm, educationLevel: e.target.value })}
                       className="w-full bg-white border border-emerald-300 rounded-lg p-2 text-slate-900 focus:outline-none focus:border-emerald-600"
@@ -726,7 +726,7 @@ export default function CoordinatorFiscalPage() {
 
                   <div>
                     <label className="block text-emerald-950 font-semibold mb-1">Clave de Autorización RVOE SEP:</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       required
                       value={manualForm.rvoe}
@@ -743,7 +743,7 @@ export default function CoordinatorFiscalPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-slate-700 font-semibold mb-1">Descripción del Servicio Educativo:</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       required
                       value={manualForm.concept}
@@ -754,7 +754,7 @@ export default function CoordinatorFiscalPage() {
 
                   <div>
                     <label className="block text-slate-700 font-semibold mb-1">Monto Total (MXN):</label>
-                    <input
+                    <input aria-label="Cantidad numérica"
                       type="number"
                       step="0.01"
                       required
@@ -856,7 +856,7 @@ export default function CoordinatorFiscalPage() {
               <div className="space-y-3">
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">Razón Social Institucional:</label>
-                  <input
+                  <input aria-label="Campo de texto de formulario"
                     type="text"
                     value={schoolConfig.razonSocial}
                     onChange={(e) => setSchoolConfig({ ...schoolConfig, razonSocial: e.target.value })}
@@ -867,7 +867,7 @@ export default function CoordinatorFiscalPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-slate-700 font-semibold mb-1">RFC Emisor:</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       value={schoolConfig.rfcEmisor}
                       onChange={(e) => setSchoolConfig({ ...schoolConfig, rfcEmisor: e.target.value })}
@@ -876,7 +876,7 @@ export default function CoordinatorFiscalPage() {
                   </div>
                   <div>
                     <label className="block text-slate-700 font-semibold mb-1">Código Postal (Lugar Expedición):</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       value={schoolConfig.codigoPostal}
                       onChange={(e) => setSchoolConfig({ ...schoolConfig, codigoPostal: e.target.value })}
@@ -887,7 +887,7 @@ export default function CoordinatorFiscalPage() {
 
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">Régimen Fiscal Institucional:</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={schoolConfig.regimenFiscal}
                     onChange={(e) => setSchoolConfig({ ...schoolConfig, regimenFiscal: e.target.value })}
                     className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-slate-900 font-medium"
@@ -905,7 +905,7 @@ export default function CoordinatorFiscalPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-slate-700 font-semibold mb-1">RVOE Preescolar:</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       value={schoolConfig.rvoePreescolar}
                       onChange={(e) => setSchoolConfig({ ...schoolConfig, rvoePreescolar: e.target.value })}
@@ -914,7 +914,7 @@ export default function CoordinatorFiscalPage() {
                   </div>
                   <div>
                     <label className="block text-slate-700 font-semibold mb-1">RVOE Primaria:</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       value={schoolConfig.rvoePrimaria}
                       onChange={(e) => setSchoolConfig({ ...schoolConfig, rvoePrimaria: e.target.value })}
@@ -923,7 +923,7 @@ export default function CoordinatorFiscalPage() {
                   </div>
                   <div>
                     <label className="block text-slate-700 font-semibold mb-1">RVOE Secundaria:</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       value={schoolConfig.rvoeSecundaria}
                       onChange={(e) => setSchoolConfig({ ...schoolConfig, rvoeSecundaria: e.target.value })}
@@ -932,7 +932,7 @@ export default function CoordinatorFiscalPage() {
                   </div>
                   <div>
                     <label className="block text-slate-700 font-semibold mb-1">RVOE Bachillerato:</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       value={schoolConfig.rvoeBachillerato}
                       onChange={(e) => setSchoolConfig({ ...schoolConfig, rvoeBachillerato: e.target.value })}
@@ -951,7 +951,7 @@ export default function CoordinatorFiscalPage() {
               <div className="space-y-3">
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">Ambiente del PAC:</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={schoolConfig.pacEnvironment}
                     onChange={(e) => setSchoolConfig({ ...schoolConfig, pacEnvironment: e.target.value })}
                     className="w-full bg-white border border-slate-300 rounded-lg p-2 text-slate-900 font-semibold"
@@ -965,7 +965,7 @@ export default function CoordinatorFiscalPage() {
                   <label className="block text-slate-700 font-semibold mb-1">Clave de API / Llave de Acceso del PAC:</label>
                   <div className="flex items-center gap-2 bg-white border border-slate-300 rounded-lg p-2">
                     <Lock className="w-3.5 h-3.5 text-slate-400" />
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="password"
                       value={schoolConfig.pacApiKey}
                       onChange={(e) => setSchoolConfig({ ...schoolConfig, pacApiKey: e.target.value })}
@@ -984,7 +984,7 @@ export default function CoordinatorFiscalPage() {
                 </div>
 
                 <div className="flex items-start gap-2.5 p-3 rounded-xl bg-blue-50 border border-blue-200">
-                  <input
+                  <input aria-label="Seleccionar opción"
                     type="checkbox"
                     id="chkAutoInvoiceSchool"
                     checked={schoolConfig.autoInvoiceOnPayment}
@@ -1025,7 +1025,7 @@ export default function CoordinatorFiscalPage() {
                 <AlertTriangle className="w-5 h-5" />
                 <h3 className="font-bold text-base text-slate-900">Solicitud de Cancelación Fiscal SAT</h3>
               </div>
-              <button
+              <button aria-label="Cerrar"
                 onClick={() => setCancellingRecord(null)}
                 className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100"
               >
@@ -1043,7 +1043,7 @@ export default function CoordinatorFiscalPage() {
             <div className="space-y-3 text-xs">
               <div>
                 <label className="block text-slate-700 font-bold mb-1">Motivo Oficial de Cancelación (SAT):</label>
-                <select
+                <select aria-label="Seleccionar opción"
                   value={cancelMotivo}
                   onChange={(e) => setCancelMotivo(e.target.value as any)}
                   className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900 focus:outline-none focus:border-blue-600 font-medium"
@@ -1061,7 +1061,7 @@ export default function CoordinatorFiscalPage() {
                   <input
                     type="text"
                     required
-                    placeholder="Ej. 8F4A2B1C-3D4E-5F6A-7B8C-9D0E1F2A3B4C"
+                    placeholder="Ej. 8F4A2B1C-3D4E-5F6A-7B8C-9D0E1F2A3B4C" aria-label="Ej. 8F4A2B1C-3D4E-5F6A-7B8C-9D0E1F2A3B4C"
                     value={cancelReplacementUuid}
                     onChange={(e) => setCancelReplacementUuid(e.target.value.toUpperCase())}
                     className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono text-slate-900 focus:outline-none focus:border-blue-600 uppercase"

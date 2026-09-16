@@ -982,7 +982,7 @@ export default function ExecutiveChartVisualizer({
           {mode === 'compact' && onExpandToFull && (
             <button
               onClick={onExpandToFull}
-              title="Abrir en pestaña de Vista Gráfica completa"
+              title="Abrir en pestaña de Vista Gráfica completa" aria-label="Abrir en pestaña de Vista Gráfica completa"
               className="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-slate-200 transition cursor-pointer ml-1"
             >
               <Maximize2 className="h-3.5 w-3.5" />

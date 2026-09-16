@@ -2289,7 +2289,7 @@ export function getPedagogicalSuggestionsForPlanning(planning: {
   const isLinkBroken = useBrokenLinksStore.getState().isLinkBroken;
 
   // Lista activa de videos filtrados
-  let activeVideos = matchedTopicData.videos.filter(v => !isLinkBroken(v.url));
+  const activeVideos = matchedTopicData.videos.filter(v => !isLinkBroken(v.url));
 
   // Si algún video fue reportado como caído, incorporar videos de respaldo comprobados para mantener al menos 4-5 videos
   if (activeVideos.length < 5 && matchedTopicData.backupVideos?.length > 0) {

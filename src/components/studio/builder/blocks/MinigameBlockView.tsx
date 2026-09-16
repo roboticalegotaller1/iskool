@@ -90,7 +90,7 @@ export const MinigameBlockView: React.FC<Props> = ({ block }) => {
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
             >
               <span>{item}</span>
-              <button
+              <button aria-label="Cerrar"
                 type="button"
                 onClick={() => handleRemoveItem(idx)}
                 className="hover:text-rose-500 cursor-pointer"
@@ -102,7 +102,7 @@ export const MinigameBlockView: React.FC<Props> = ({ block }) => {
         </div>
 
         <div className="flex items-center gap-2">
-          <input
+          <input aria-label="Añadir concepto..."
             type="text"
             value={newItemText}
             onChange={(e) => setNewItemText(e.target.value)}

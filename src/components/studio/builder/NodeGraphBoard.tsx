@@ -642,7 +642,7 @@ export const NodeGraphBoard: React.FC = () => {
         <button
           type="button"
           onClick={autoLayoutNodes}
-          title="Auto-organizar Nodos en el tablero"
+          title="Auto-organizar Nodos en el tablero" aria-label="Auto-organizar Nodos en el tablero"
           className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 font-bold transition-all cursor-pointer flex items-center gap-1 text-xs"
         >
           <Layers className="w-4 h-4" />

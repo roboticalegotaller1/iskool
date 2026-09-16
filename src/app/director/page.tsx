@@ -510,7 +510,7 @@ export default function DirectorPortalPage() {
               <div className="flex items-center gap-2 bg-white border border-slate-200 px-3.5 py-2 rounded-2xl shadow-xs">
                 <Building2 className="h-4 w-4 text-purple-600" />
                 <span className="text-xs font-bold text-slate-700">Filtrar Plantel:</span>
-                <select
+                <select aria-label="Seleccionar opción"
                   value={selectedCampusFilter}
                   onChange={(e) => setSelectedCampusFilter(e.target.value)}
                   className="bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-2.5 py-1 text-xs font-bold focus:outline-none focus:border-purple-500 cursor-pointer"
@@ -917,7 +917,7 @@ export default function DirectorPortalPage() {
                       Permite que los coordinadores vean y gestionen cobros y estados de cuenta familiares.
                     </span>
                   </div>
-                  <button
+                  <button aria-label="Acción institucional"
                     type="button"
                     onClick={() => handleToggleGovernance('allowCoordinatorBilling')}
                     className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
@@ -938,7 +938,7 @@ export default function DirectorPortalPage() {
                       Permite que los coordinadores eliminen o den de baja alumnos y grupos sin visto bueno directivo.
                     </span>
                   </div>
-                  <button
+                  <button aria-label="Acción institucional"
                     type="button"
                     onClick={() => handleToggleGovernance('allowCoordinatorDelete' as any)}
                     className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
@@ -959,7 +959,7 @@ export default function DirectorPortalPage() {
                       Habilita a los profesores la modificación de calificaciones fuera del periodo ordinario.
                     </span>
                   </div>
-                  <button
+                  <button aria-label="Acción institucional"
                     type="button"
                     onClick={() => handleToggleGovernance('allowTeacherGradeEditing')}
                     className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
@@ -980,7 +980,7 @@ export default function DirectorPortalPage() {
                       Activa la tienda gamificada y canje de avatares para los estudiantes de este colegio.
                     </span>
                   </div>
-                  <button
+                  <button aria-label="Acción institucional"
                     type="button"
                     onClick={() => handleToggleGovernance('allowStudentGamification')}
                     className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
@@ -1001,7 +1001,7 @@ export default function DirectorPortalPage() {
                       Habilita la generación asistida por IA de planeaciones, rúbricas y proyectos formativos.
                     </span>
                   </div>
-                  <button
+                  <button aria-label="Acción institucional"
                     type="button"
                     onClick={() => handleToggleGovernance('allowAiAssistantTeachers')}
                     className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
@@ -1022,7 +1022,7 @@ export default function DirectorPortalPage() {
                       Permite que los alumnos reciban retroalimentación inteligente durante las misiones.
                     </span>
                   </div>
-                  <button
+                  <button aria-label="Acción institucional"
                     type="button"
                     onClick={() => handleToggleGovernance('allowAiAssistantStudents')}
                     className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
@@ -1043,7 +1043,7 @@ export default function DirectorPortalPage() {
                       Exige el visto bueno formal de Dirección antes de que un docente pueda aplicar una planeación.
                     </span>
                   </div>
-                  <button
+                  <button aria-label="Acción institucional"
                     type="button"
                     onClick={() => handleToggleGovernance('requirePlanningApproval')}
                     className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
@@ -1288,7 +1288,7 @@ export default function DirectorPortalPage() {
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="relative flex-1 max-w-md">
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <input
+                    <input aria-label="Buscar alumno por nombre, matrícula o CURP..."
                       type="text"
                       value={searchStudent}
                       onChange={(e) => setSearchStudent(e.target.value)}
@@ -1395,7 +1395,7 @@ export default function DirectorPortalPage() {
                 <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
                   <div className="relative flex-1 max-w-md">
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <input
+                    <input aria-label="Buscar docente por nombre o correo..."
                       type="text"
                       value={searchTeacher}
                       onChange={(e) => setSearchTeacher(e.target.value)}
@@ -1588,7 +1588,7 @@ export default function DirectorPortalPage() {
                   <p className="text-xs text-slate-500">Establecer validación directiva o pausa pedagógica institucional</p>
                 </div>
               </div>
-              <button
+              <button aria-label="Cerrar"
                 type="button"
                 onClick={() => setShowAddTopicModal(false)}
                 className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100"
@@ -1602,7 +1602,7 @@ export default function DirectorPortalPage() {
                 <label className="text-xs font-bold text-slate-700 block mb-1">
                   Título o Contenido de la Temática *
                 </label>
-                <input
+                <input aria-label="Ej. Sexualidad Integral y Género, Geopolítica Contemporánea"
                   type="text"
                   required
                   value={newRestrictedTopic.topicTitle}
@@ -1617,7 +1617,7 @@ export default function DirectorPortalPage() {
                   <label className="text-xs font-bold text-slate-700 block mb-1">
                     Materia / Asignatura
                   </label>
-                  <input
+                  <input aria-label="Ej. Formación Cívica y Ética"
                     type="text"
                     value={newRestrictedTopic.subjectName}
                     onChange={(e) => setNewRestrictedTopic(prev => ({ ...prev, subjectName: e.target.value }))}
@@ -1630,7 +1630,7 @@ export default function DirectorPortalPage() {
                   <label className="text-xs font-bold text-slate-700 block mb-1">
                     Grado Escolar
                   </label>
-                  <input
+                  <input aria-label="Ej. Secundaria (2º)"
                     type="text"
                     value={newRestrictedTopic.grade}
                     onChange={(e) => setNewRestrictedTopic(prev => ({ ...prev, grade: e.target.value }))}
@@ -1644,7 +1644,7 @@ export default function DirectorPortalPage() {
                 <label className="text-xs font-bold text-slate-700 block mb-1">
                   Tipo de Restricción
                 </label>
-                <select
+                <select aria-label="Seleccionar opción"
                   value={newRestrictedTopic.status}
                   onChange={(e) => setNewRestrictedTopic(prev => ({ ...prev, status: e.target.value as any }))}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-500 cursor-pointer"
@@ -1658,7 +1658,7 @@ export default function DirectorPortalPage() {
                 <label className="text-xs font-bold text-slate-700 block mb-1">
                   Motivo Institucional o Pedagógico
                 </label>
-                <textarea
+                <textarea aria-label="Explica el criterio por el cual esta temática debe ser supervisada..."
                   rows={3}
                   value={newRestrictedTopic.reason}
                   onChange={(e) => setNewRestrictedTopic(prev => ({ ...prev, reason: e.target.value }))}
@@ -1703,7 +1703,7 @@ export default function DirectorPortalPage() {
                   </p>
                 </div>
               </div>
-              <button
+              <button aria-label="Cerrar"
                 type="button"
                 onClick={() => setShowAddStudentModal(false)}
                 className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100"
@@ -1726,7 +1726,7 @@ export default function DirectorPortalPage() {
                   <label className="text-xs font-bold text-slate-700 block mb-1">
                     Primer Nombre *
                   </label>
-                  <input
+                  <input aria-label="Ej. Mateo"
                     type="text"
                     required
                     value={newStudentForm.first_name}
@@ -1740,7 +1740,7 @@ export default function DirectorPortalPage() {
                   <label className="text-xs font-bold text-slate-700 block mb-1">
                     Segundo Nombre
                   </label>
-                  <input
+                  <input aria-label="Ej. Alexander"
                     type="text"
                     value={newStudentForm.second_name}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, second_name: e.target.value }))}
@@ -1753,7 +1753,7 @@ export default function DirectorPortalPage() {
                   <label className="text-xs font-bold text-slate-700 block mb-1">
                     Primer Apellido *
                   </label>
-                  <input
+                  <input aria-label="Ej. Morales"
                     type="text"
                     required
                     value={newStudentForm.last_name_1}
@@ -1767,7 +1767,7 @@ export default function DirectorPortalPage() {
                   <label className="text-xs font-bold text-slate-700 block mb-1">
                     Segundo Apellido
                   </label>
-                  <input
+                  <input aria-label="Ej. Ruiz"
                     type="text"
                     value={newStudentForm.last_name_2}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, last_name_2: e.target.value }))}
@@ -1782,7 +1782,7 @@ export default function DirectorPortalPage() {
                   <label className="text-xs font-bold text-slate-700 block mb-1">
                     Nivel Educativo
                   </label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={newStudentForm.level}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, level: e.target.value as any }))}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 cursor-pointer"
@@ -1797,7 +1797,7 @@ export default function DirectorPortalPage() {
                   <label className="text-xs font-bold text-slate-700 block mb-1">
                     Grado
                   </label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={newStudentForm.grade}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, grade: e.target.value }))}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 cursor-pointer"
@@ -1815,7 +1815,7 @@ export default function DirectorPortalPage() {
                   <label className="text-xs font-bold text-slate-700 block mb-1">
                     Plantel de Asignación
                   </label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={newStudentForm.campus_name}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, campus_name: e.target.value }))}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 cursor-pointer"
@@ -1832,7 +1832,7 @@ export default function DirectorPortalPage() {
                   <label className="text-xs font-bold text-slate-700 block mb-1">
                     CURP del Alumno
                   </label>
-                  <input
+                  <input aria-label="Auto o 18 caracteres"
                     type="text"
                     value={newStudentForm.curp}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, curp: e.target.value.toUpperCase() }))}
@@ -1846,7 +1846,7 @@ export default function DirectorPortalPage() {
                   <label className="text-xs font-bold text-slate-700 block mb-1">
                     Nombre del Tutor / Familiar
                   </label>
-                  <input
+                  <input aria-label="Ej. Roberto Morales Sánchez"
                     type="text"
                     value={newStudentForm.tutor_name}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, tutor_name: e.target.value }))}
@@ -1862,7 +1862,7 @@ export default function DirectorPortalPage() {
                   <label className="text-xs font-bold text-slate-700 block mb-1">
                     Porcentaje de Beca (%)
                   </label>
-                  <input
+                  <input aria-label="Cantidad numérica"
                     type="number"
                     min={0}
                     max={directorLimits?.maxScholarshipDiscountPercent ?? 50}
@@ -1879,7 +1879,7 @@ export default function DirectorPortalPage() {
                   <label className="text-xs font-bold text-slate-700 block mb-1">
                     Tipo de Beca
                   </label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={newStudentForm.scholarship_type}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, scholarship_type: e.target.value as any }))}
                     className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 cursor-pointer"
@@ -1899,7 +1899,7 @@ export default function DirectorPortalPage() {
                   Correo Institucional Autogenerado *
                 </label>
                 <div className="flex items-center">
-                  <input
+                  <input aria-label="Campo de texto de formulario"
                     type="text"
                     value={newStudentForm.email}
                     onChange={(e) => setNewStudentForm(prev => ({ ...prev, email: e.target.value }))}
@@ -1951,7 +1951,7 @@ export default function DirectorPortalPage() {
                   </p>
                 </div>
               </div>
-              <button
+              <button aria-label="Cerrar"
                 type="button"
                 onClick={() => setShowAddTeacherModal(false)}
                 className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100"
@@ -1966,7 +1966,7 @@ export default function DirectorPortalPage() {
                   <label className="text-xs font-bold text-slate-700 block mb-1">
                     Nombre(s) del Docente *
                   </label>
-                  <input
+                  <input aria-label="Ej. Laura"
                     type="text"
                     required
                     value={newTeacherForm.first_name}
@@ -1980,7 +1980,7 @@ export default function DirectorPortalPage() {
                   <label className="text-xs font-bold text-slate-700 block mb-1">
                     Apellidos *
                   </label>
-                  <input
+                  <input aria-label="Ej. Gómez Silva"
                     type="text"
                     required
                     value={newTeacherForm.last_name}
@@ -1996,7 +1996,7 @@ export default function DirectorPortalPage() {
                   <label className="text-xs font-bold text-slate-700 block mb-1">
                     Materia / Asignatura Principal
                   </label>
-                  <input
+                  <input aria-label="Ej. Matemáticas, Ciencias, Robótica"
                     type="text"
                     required
                     value={newTeacherForm.assigned_subject}
@@ -2010,7 +2010,7 @@ export default function DirectorPortalPage() {
                   <label className="text-xs font-bold text-slate-700 block mb-1">
                     Plantel de Adscripción
                   </label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={newTeacherForm.campus_name}
                     onChange={(e) => setNewTeacherForm(prev => ({ ...prev, campus_name: e.target.value }))}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-500 cursor-pointer"
@@ -2026,7 +2026,7 @@ export default function DirectorPortalPage() {
                 <label className="text-xs font-bold text-slate-700 block mb-1">
                   Teléfono de Contacto
                 </label>
-                <input
+                <input aria-label="Ej. 55-4160-8800"
                   type="text"
                   value={newTeacherForm.phone}
                   onChange={(e) => setNewTeacherForm(prev => ({ ...prev, phone: e.target.value }))}
@@ -2041,7 +2041,7 @@ export default function DirectorPortalPage() {
                   Correo Institucional Autogenerado *
                 </label>
                 <div className="flex items-center">
-                  <input
+                  <input aria-label="Campo de texto de formulario"
                     type="text"
                     value={newTeacherForm.email}
                     onChange={(e) => setNewTeacherForm(prev => ({ ...prev, email: e.target.value }))}

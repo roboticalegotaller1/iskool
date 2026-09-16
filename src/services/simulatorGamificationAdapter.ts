@@ -8,6 +8,7 @@
 import { ISimulatorCompletionEvent } from '@/types/teacherGamification';
 import { useStudentStore } from '@/store/useStudentStore';
 import { useTeacherGamificationStore } from '@/store/useTeacherGamificationStore';
+import { broadcastTeacherMilestone } from '@/lib/teacherMilestoneBroadcaster';
 
 export interface SimulatorDescriptor {
   id: string;
@@ -92,6 +93,25 @@ export class SimulatorGamificationAdapter {
       }
     } catch (err) {
       console.warn('Advertencia alimentando Teacher Social Loop:', err);
+    }
+
+    // 3. Difusión en tiempo real hacia el flujo SSE del docente (sin polling)
+    try {
+      broadcastTeacherMilestone({
+        teacherId: event.teacherId,
+        studentId: event.studentId,
+        studentName: `Alumno ${event.studentId.substring(0, 7)}`,
+        milestoneType: event.score >= 90 ? 'simulator_mastered' : 'quest_completed',
+        title: descriptor.name,
+        score: event.score,
+        xpEarned: studentXp,
+        coinsEarned: studentCoins,
+        teacherKarmaReward: 2,
+        teacherXpReward: 5,
+        message: `🧪 Simulación completada: "${descriptor.name}" (${descriptor.provider}) con ${event.score}% de precisión.`
+      });
+    } catch (sseErr) {
+      console.warn('Aviso notificando evento SSE de simulador:', sseErr);
     }
 
     return {

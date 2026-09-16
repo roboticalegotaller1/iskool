@@ -21,7 +21,7 @@ export const OpenPollWordcloudBlockView: React.FC<Props> = ({ block }) => {
           <MessageSquare className="w-4 h-4 text-cyan-600" />
           <span>Pregunta Detonadora o Reflexión Abierta:</span>
         </label>
-        <textarea
+        <textarea aria-label="Ej. Explica con tus propias palabras qué sucedería si no existiera la gravedad..."
           rows={2}
           value={prompt}
           onChange={(e) => updateBlockData(block.id, { prompt: e.target.value })}
@@ -36,7 +36,7 @@ export const OpenPollWordcloudBlockView: React.FC<Props> = ({ block }) => {
           <Sparkles className="w-3.5 h-3.5 text-cyan-500" />
           <span>Criterios de Evaluación Pedagógica por IA (Rúbrica Formativa):</span>
         </label>
-        <input
+        <input aria-label="Ej. Valora si menciona atracción gravitacional y consecuencias en la atmósfera..."
           type="text"
           value={aiFeedbackRubric || ''}
           onChange={(e) => updateBlockData(block.id, { aiFeedbackRubric: e.target.value })}
@@ -50,7 +50,7 @@ export const OpenPollWordcloudBlockView: React.FC<Props> = ({ block }) => {
         <label className="font-bold text-slate-600 dark:text-zinc-400">
           Mínimo de palabras requeridas:
         </label>
-        <input
+        <input aria-label="Cantidad numérica"
           type="number"
           min="5"
           max="100"

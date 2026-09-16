@@ -459,7 +459,7 @@ export function AttendanceCompendiumModal({
               type="button"
               onClick={handleExportCSV}
               className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-zinc-700 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-xl transition-all shadow-sm"
-              title="Descargar archivo CSV compatible con Excel"
+              title="Descargar archivo CSV compatible con Excel" aria-label="Descargar archivo CSV compatible con Excel"
             >
               <Download className="w-4 h-4 text-zinc-500" />
               <span className="hidden md:inline">Exportar</span> CSV
@@ -469,7 +469,7 @@ export function AttendanceCompendiumModal({
               type="button"
               onClick={handlePrint}
               className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition-all shadow-md shadow-blue-500/20"
-              title="Imprimir boleta / guardar en PDF"
+              title="Imprimir boleta / guardar en PDF" aria-label="Imprimir boleta / guardar en PDF"
             >
               <Printer className="w-4 h-4" />
               <span>Imprimir / PDF</span>
@@ -479,7 +479,7 @@ export function AttendanceCompendiumModal({
               type="button"
               onClick={onClose}
               className="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              title="Cerrar modal"
+              title="Cerrar modal" aria-label="Cerrar modal"
             >
               <X className="w-5 h-5" />
             </button>
@@ -497,7 +497,7 @@ export function AttendanceCompendiumModal({
               <label className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
                 Grupo Escolar
               </label>
-              <select
+              <select aria-label="Seleccionar opción"
                 value={selectedGroupId}
                 onChange={(e) => setSelectedGroupId(e.target.value)}
                 className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 font-semibold focus:outline-none focus:border-indigo-500 shadow-sm"
@@ -515,7 +515,7 @@ export function AttendanceCompendiumModal({
               <label className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
                 Asignatura
               </label>
-              <select
+              <select aria-label="Seleccionar opción"
                 value={selectedSubjectId}
                 onChange={(e) => setSelectedSubjectId(e.target.value)}
                 className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 font-semibold focus:outline-none focus:border-indigo-500 shadow-sm"
@@ -532,7 +532,7 @@ export function AttendanceCompendiumModal({
               <label className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider flex items-center gap-1">
                 <Calendar className="w-3 h-3 text-indigo-500" /> Fecha Inicio
               </label>
-              <input
+              <input aria-label="Seleccionar fecha"
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
@@ -545,7 +545,7 @@ export function AttendanceCompendiumModal({
               <label className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider flex items-center gap-1">
                 <Calendar className="w-3 h-3 text-indigo-500" /> Fecha Fin
               </label>
-              <input
+              <input aria-label="Seleccionar fecha"
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
@@ -601,7 +601,7 @@ export function AttendanceCompendiumModal({
               <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-zinc-400" />
               <input
                 type="text"
-                placeholder="Buscar por nombre o matrícula..."
+                placeholder="Buscar por nombre o matrícula..." aria-label="Buscar por nombre o matrícula..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full text-xs pl-8 pr-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 focus:outline-none focus:border-indigo-500"

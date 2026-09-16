@@ -24,7 +24,7 @@ export const YouTubeVideoBlockView: React.FC<Props> = ({ block }) => {
           <Video className="w-4 h-4 text-rose-600" />
           <span>Enlace de Video (YouTube):</span>
         </label>
-        <input
+        <input aria-label="https://www.youtube.com/watch?v=wmC0wF8WuqU"
           type="text"
           value={videoUrl}
           onChange={(e) => updateBlockData(block.id, { videoUrl: e.target.value })}
@@ -38,7 +38,7 @@ export const YouTubeVideoBlockView: React.FC<Props> = ({ block }) => {
         <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400">
           Título de la Cápsula Audiovisual:
         </label>
-        <input
+        <input aria-label="Ej. Fuerza: Elementos y Tipos explicados..."
           type="text"
           value={videoTitle || ''}
           onChange={(e) => updateBlockData(block.id, { videoTitle: e.target.value })}
@@ -54,7 +54,10 @@ export const YouTubeVideoBlockView: React.FC<Props> = ({ block }) => {
             src={embedUrl}
             title={videoTitle || 'Vista previa YouTube'}
             className="w-full h-full"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
             allowFullScreen
           />
         </div>

@@ -11,6 +11,7 @@ import {
   generateDetonatingQuestions,
   sanitizeSpanishPedagogicalGrammar
 } from '@/lib/curriculumEngine';
+import { renderSanitizedMarkdown, invalidateVaultCache } from '@/lib/vaultMarkdownEngine';
 import { exec } from 'child_process';
 import util from 'util';
 
@@ -259,7 +260,7 @@ export async function GET(request: NextRequest) {
 
     if (subjectParam) {
       const cleanSub = cleanString(subjectParam);
-      let subKeywords = [cleanSub];
+      const subKeywords = [cleanSub];
       if (cleanSub.includes('mat')) subKeywords.push('matematicas', 'mat');
       if (cleanSub.includes('cien') || cleanSub.includes('medio')) subKeywords.push('conocimiento_del_medio', 'ciencias', 'cie', 'bio', 'fis', 'qui');
       if (cleanSub.includes('esp') || cleanSub.includes('leng')) subKeywords.push('espanol', 'lenguajes', 'esp');
@@ -448,7 +449,8 @@ export async function GET(request: NextRequest) {
           evaluacion: evalMatch ? sanitizeSpanishPedagogicalGrammar(evalMatch[1].trim()) : `RÚBRICA FORMATIVA ANALÍTICA (NIVELES NEM 2024):\n• ${proyectoIntegrador.rubrica.criterio1.nombre}:\n  - Sobresaliente: ${proyectoIntegrador.rubrica.criterio1.sobresaliente}\n  - Satisfactorio: ${proyectoIntegrador.rubrica.criterio1.satisfactorio}\n  - En Proceso: ${proyectoIntegrador.rubrica.criterio1.enProceso}\n• ${proyectoIntegrador.rubrica.criterio2.nombre}:\n  - Sobresaliente: ${proyectoIntegrador.rubrica.criterio2.sobresaliente}\n  - Satisfactorio: ${proyectoIntegrador.rubrica.criterio2.satisfactorio}\n  - En Proceso: ${proyectoIntegrador.rubrica.criterio2.enProceso}\n• ${proyectoIntegrador.rubrica.criterio3.nombre}:\n  - Sobresaliente: ${proyectoIntegrador.rubrica.criterio3.sobresaliente}\n  - Satisfactorio: ${proyectoIntegrador.rubrica.criterio3.satisfactorio}\n  - En Proceso: ${proyectoIntegrador.rubrica.criterio3.enProceso}`,
           materiales: matMatch ? sanitizeSpanishPedagogicalGrammar(matMatch[1].trim()) : `MATERIALES POR SESIÓN Y RECURSOS DIDÁCTICOS:\n• Libros de Texto Gratuitos de la SEP asignados con páginas específicas.\n• Materiales manipulables (fichas, regletas, instrumentos de medición, papel bond, colores).\n• Entregables parciales acumulables en la bitácora escolar.\n\nEVIDENCIA ENTREGABLE DEL PROYECTO:\n• ${proyectoIntegrador.productoFinal}`,
           createdAt,
-          isFromVault: true
+          isFromVault: true,
+          renderedHtml: renderSanitizedMarkdown(rawContent)
         }
       };
 
@@ -585,6 +587,7 @@ ${planning.materiales || ''}
       fs.writeFileSync(filePath, markdownContent, 'utf8');
       vaultIndexCache = null; // Invalidar caché de archivos
       parsedPlanningCache.clear(); // Invalidar caché de respuestas parseadas
+      invalidateVaultCache(); // Invalidar caché de Bóveda Curricular SSG/ISR
       console.log(`✅ Planeación guardada en Bóveda Curricular estructurada por Nivel/Grado/Materia: ${filePath}`);
     } catch (writeErr: any) {
       console.warn("Aviso de guardado en disco:", writeErr?.message);

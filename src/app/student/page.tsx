@@ -1007,7 +1007,7 @@ export default function StudentDashboard() {
             {/* Nombre de la Mascota */}
             <div className="mb-6">
               <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1.5">Nombre de la Mascota</label>
-              <input
+              <input aria-label="Ej. Llamita"
                 type="text"
                 value={avatar?.pet_name || ''}
                 onChange={(e) => changeAvatar({ pet_name: e.target.value })}

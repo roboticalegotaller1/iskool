@@ -150,7 +150,7 @@ export const NodeConfigDrawer: React.FC = () => {
                     </span>
                   )}
                 </div>
-                <input
+                <input aria-label="Título del nodo..."
                   type="text"
                   value={selectedBlock.title}
                   onChange={(e) => updateBlockTitle(selectedBlock.id, e.target.value)}
@@ -225,7 +225,7 @@ export const NodeConfigDrawer: React.FC = () => {
                 {/* Selector rápido para añadir conexión */}
                 {availableTargetNodes.length > 0 && (
                   <div className="pt-2">
-                    <select
+                    <select aria-label="Seleccionar opción"
                       onChange={(e) => {
                         if (e.target.value) {
                           addConnection(selectedBlock.id, e.target.value);

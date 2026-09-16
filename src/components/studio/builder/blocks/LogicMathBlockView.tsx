@@ -149,7 +149,7 @@ export const LogicMathBlockView: React.FC<Props> = ({ block }) => {
           <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400">
             Nivel Educativo (NEM):
           </label>
-          <select
+          <select aria-label="Seleccionar opción"
             value={data.educationalLevel || 'fase_3'}
             onChange={(e) => handleFieldChange('educationalLevel', e.target.value)}
             className="w-full p-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs font-semibold focus:ring-2 focus:ring-cyan-500"
@@ -165,7 +165,7 @@ export const LogicMathBlockView: React.FC<Props> = ({ block }) => {
           <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400">
             Motor de Simulación Visual:
           </label>
-          <select
+          <select aria-label="Seleccionar opción"
             value={data.interactiveEngine || 'circuit_gates'}
             onChange={(e) => handleFieldChange('interactiveEngine', e.target.value)}
             className="w-full p-2 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs font-semibold focus:ring-2 focus:ring-cyan-500"
@@ -188,7 +188,7 @@ export const LogicMathBlockView: React.FC<Props> = ({ block }) => {
             <BookOpen className="w-3.5 h-3.5 text-cyan-500" />
             <span>Narrativa / Contexto del Problema:</span>
           </label>
-          <textarea
+          <textarea aria-label="Describe la situación, las reglas y los elementos interactivos del reto..."
             value={data.storyText || ''}
             onChange={(e) => handleFieldChange('storyText', e.target.value)}
             rows={3}
@@ -202,7 +202,7 @@ export const LogicMathBlockView: React.FC<Props> = ({ block }) => {
             <HelpCircle className="w-3.5 h-3.5 text-indigo-500" />
             <span>Pregunta / Consigna Específica:</span>
           </label>
-          <input
+          <input aria-label="¿Cuál es la configuración correcta que cumple con todas las reglas?"
             type="text"
             value={data.problemQuestion || ''}
             onChange={(e) => handleFieldChange('problemQuestion', e.target.value)}
@@ -252,7 +252,7 @@ export const LogicMathBlockView: React.FC<Props> = ({ block }) => {
                 <span className="text-[10px]">{opt.isCorrect ? 'Correcta' : 'Hacer Correcta'}</span>
               </button>
 
-              <input
+              <input aria-label="Texto de la opción..."
                 type="text"
                 value={opt.label || ''}
                 onChange={(e) => handleOptionChange(idx, 'label', e.target.value)}
@@ -260,7 +260,7 @@ export const LogicMathBlockView: React.FC<Props> = ({ block }) => {
                 className="flex-1 p-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-xs font-medium focus:ring-2 focus:ring-cyan-500"
               />
 
-              <input
+              <input aria-label="Explicación formativa..."
                 type="text"
                 value={opt.detail || ''}
                 onChange={(e) => handleOptionChange(idx, 'detail', e.target.value)}
@@ -288,7 +288,7 @@ export const LogicMathBlockView: React.FC<Props> = ({ block }) => {
             <Cpu className="w-3.5 h-3.5 text-indigo-500" />
             <span>¿Cómo es Informática / Pensamiento Computacional?</span>
           </label>
-          <textarea
+          <textarea aria-label="Explica el principio de ciencias de la computación involucrado (Turing, Grafos, BFS, Binario, etc.)..."
             value={data.pedagogicalExplanation || ''}
             onChange={(e) => handleFieldChange('pedagogicalExplanation', e.target.value)}
             rows={3}
@@ -302,7 +302,7 @@ export const LogicMathBlockView: React.FC<Props> = ({ block }) => {
             <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
             <span>Continúa Aprendiendo (Dinámica en Aula sin Computadora):</span>
           </label>
-          <textarea
+          <textarea aria-label="Actividad física o con tarjetas para que los alumnos practiquen el concepto en el aula..."
             value={data.classroomActivity || ''}
             onChange={(e) => handleFieldChange('classroomActivity', e.target.value)}
             rows={3}

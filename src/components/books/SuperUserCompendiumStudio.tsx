@@ -132,7 +132,7 @@ export const SuperUserCompendiumStudio: React.FC = () => {
                 <label className="font-bold text-slate-700 dark:text-zinc-300">
                   Título del Compendio:
                 </label>
-                <input
+                <input aria-label="ej. Compendio Integral de Ciencias y Matemáticas NEM 2026"
                   type="text"
                   required
                   value={compendiumTitle}
@@ -146,7 +146,7 @@ export const SuperUserCompendiumStudio: React.FC = () => {
                 <label className="font-bold text-slate-700 dark:text-zinc-300">
                   Descripción o Enfoque Pedagógico:
                 </label>
-                <input
+                <input aria-label="ej. Análisis transversal para juntas de academia y planeaciones colegiadas"
                   type="text"
                   value={compendiumDesc}
                   onChange={(e) => setCompendiumDesc(e.target.value)}
@@ -163,7 +163,7 @@ export const SuperUserCompendiumStudio: React.FC = () => {
                   Selecciona los Libros a Integrar ({selectedBookIds.length} seleccionados):
                 </label>
                 <div className="w-60">
-                  <input
+                  <input aria-label="Filtrar por colegio o materia..."
                     type="text"
                     value={searchFilter}
                     onChange={(e) => setSearchFilter(e.target.value)}

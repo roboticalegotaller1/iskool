@@ -759,7 +759,7 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
         {/* Controles: Grupo, Audio, Fullscreen & Cerrar */}
         <div className="flex items-center gap-2">
           <div className="relative">
-            <select
+            <select aria-label="Seleccionar opción"
               value={selectedGroupId}
               onChange={(e) => {
                 playSfx('click');
@@ -789,7 +789,7 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
             type="button"
             onClick={toggleFullscreen}
             className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
-            title="Pantalla Completa"
+            title="Pantalla Completa" aria-label="Pantalla Completa"
           >
             {isFullscreen ? <Minimize2 className="w-5 h-5 text-indigo-400" /> : <Maximize2 className="w-5 h-5 text-slate-300" />}
           </button>
@@ -1288,7 +1288,7 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
                         >
                           -
                         </button>
-                        <input
+                        <input aria-label="Cantidad numérica"
                           type="number"
                           min={0}
                           max={180}
@@ -1318,7 +1318,7 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
                         >
                           -
                         </button>
-                        <input
+                        <input aria-label="Cantidad numérica"
                           type="number"
                           min={0}
                           max={59}
@@ -1372,7 +1372,7 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
                 </label>
 
                 <div className="relative">
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={isCustomizingTime ? 'custom' : initialTimerSeconds}
                     onChange={(e) => {
                       const val = e.target.value;
@@ -1415,7 +1415,7 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
                 </label>
 
                 <div className="flex items-center gap-2">
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={selectedTimerSound}
                     onChange={(e) => {
                       setSelectedTimerSound(e.target.value as TimerSoundProfile);
@@ -1484,7 +1484,7 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
                         type="button"
                         onClick={handleStartEditPoll}
                         className="px-3 py-1.5 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-300 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
-                        title="Modificar la pregunta y las opciones"
+                        title="Modificar la pregunta y las opciones" aria-label="Modificar la pregunta y las opciones"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
                         <span>Editar Pregunta</span>
@@ -1494,7 +1494,7 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
                         type="button"
                         onClick={handleResetPollVotes}
                         className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-xs font-bold transition-all border border-slate-700 flex items-center gap-1 cursor-pointer"
-                        title="Poner en 0 todos los votos"
+                        title="Poner en 0 todos los votos" aria-label="Poner en 0 todos los votos"
                       >
                         <RefreshCw className="w-3.5 h-3.5" />
                         <span>Reiniciar</span>
@@ -1515,14 +1515,14 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
                       type="button"
                       onClick={handleClearAllPoll}
                       className="text-[11px] text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 cursor-pointer"
-                      title="Vaciar pregunta y opciones para escribir desde cero"
+                      title="Vaciar pregunta y opciones para escribir desde cero" aria-label="Vaciar pregunta y opciones para escribir desde cero"
                     >
                       <span>🧹 Limpiar todo el formulario</span>
                     </button>
                   </div>
 
                   <div className="relative flex items-center">
-                    <input
+                    <input aria-label="Escribe la pregunta para el aula..."
                       type="text"
                       value={editPollQuestion}
                       onFocus={(e) => e.target.select()}
@@ -1549,7 +1549,7 @@ export const LiveClassModeModal: React.FC<Props> = ({ onClose }) => {
                     {editPollOptions.map((opt, idx) => (
                       <div key={opt.id} className="flex items-center gap-2">
                         <div className="relative flex-1 flex items-center">
-                          <input
+                          <input aria-label="Campo de texto de formulario"
                             type="text"
                             value={opt.text}
                             onFocus={(e) => e.target.select()}

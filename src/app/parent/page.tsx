@@ -418,7 +418,7 @@ export default function ParentDashboard() {
                     {/* Formulario de Comentario de Padre de Familia / Tutor */}
                     <form onSubmit={(e) => handleCommentSubmit(e, item.id)} className="flex gap-3 items-end mt-2">
                       <div className="flex-1">
-                        <textarea
+                        <textarea aria-label="Escribe palabras de apoyo y motivación para tu hijo..."
                           rows={1}
                           value={parentComment[item.id] || ''}
                           onChange={(e) => setParentComment(prev => ({ ...prev, [item.id]: e.target.value }))}
@@ -556,7 +556,7 @@ export default function ParentDashboard() {
                               className="flex gap-3 items-end"
                             >
                               <div className="flex-1">
-                                <textarea
+                                <textarea aria-label="Confirmar de enterado o responder al maestro..."
                                   rows={1}
                                   value={replyTexts[msg.id] || ''}
                                   onChange={(e) => setReplyTexts(prev => ({ ...prev, [msg.id]: e.target.value }))}

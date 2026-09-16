@@ -361,7 +361,7 @@ export default function PayTokenPage({ params }: PayTokenPageProps) {
                       <label className="block text-slate-700 font-semibold mb-1">Número de Tarjeta</label>
                       <input
                         type="text"
-                        placeholder="4000 1234 5678 9010"
+                        placeholder="4000 1234 5678 9010" aria-label="4000 1234 5678 9010"
                         value={cardNumber}
                         onChange={handleCardNumberChange}
                         maxLength={19}
@@ -374,7 +374,7 @@ export default function PayTokenPage({ params }: PayTokenPageProps) {
                         <label className="block text-slate-700 font-semibold mb-1">Vencimiento (MM/AA)</label>
                         <input
                           type="text"
-                          placeholder="12/28"
+                          placeholder="12/28" aria-label="12/28"
                           value={cardExpiry}
                           onChange={handleExpiryChange}
                           maxLength={5}
@@ -386,7 +386,7 @@ export default function PayTokenPage({ params }: PayTokenPageProps) {
                         <label className="block text-slate-700 font-semibold mb-1">Código de Seguridad (CVV)</label>
                         <input
                           type="password"
-                          placeholder="•••"
+                          placeholder="•••" aria-label="•••"
                           value={cardCvv}
                           onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
                           maxLength={4}
@@ -397,7 +397,7 @@ export default function PayTokenPage({ params }: PayTokenPageProps) {
                     </div>
                     <div>
                       <label className="block text-slate-700 font-semibold mb-1">Nombre del Titular</label>
-                      <input
+                      <input aria-label="Campo de texto de formulario"
                         type="text"
                         value={cardHolder}
                         onChange={(e) => setCardHolder(e.target.value)}

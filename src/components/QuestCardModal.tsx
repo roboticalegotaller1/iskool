@@ -870,7 +870,7 @@ export default function QuestCardModal() {
                             </button>
                           </div>
 
-                          <textarea
+                          <textarea aria-label="Inscribe en este pergamino qué hiciste en la actividad y tu reflexión sobre lo que aprendiste."
                             ref={textareaRef}
                             value={reflection}
                             onChange={(e) => setReflection(e.target.value)}
@@ -939,7 +939,7 @@ export default function QuestCardModal() {
                         </div>
 
                         {/* Selector de archivos nativo oculto */}
-                        <input 
+                        <input aria-label="Subir archivo o comprobante" 
                           type="file" 
                           ref={fileInputRef} 
                           onChange={handleRealFileChange} 

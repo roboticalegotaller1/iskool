@@ -21,7 +21,7 @@ export const CheckpointGateBlockView: React.FC<Props> = ({ block }) => {
           <ShieldCheck className="w-4 h-4 text-slate-600 dark:text-slate-400" />
           <span>Título del Punto de Control / Checkpoint:</span>
         </label>
-        <input
+        <input aria-label="Ej. Revisión de Saberes Intermedios y Metacognición"
           type="text"
           value={checkpointTitle}
           onChange={(e) => updateBlockData(block.id, { checkpointTitle: e.target.value })}
@@ -35,7 +35,7 @@ export const CheckpointGateBlockView: React.FC<Props> = ({ block }) => {
         <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400">
           Pregunta de Autoevaluación o Reflexión Formativa:
         </label>
-        <input
+        <input aria-label="Ej. ¿Qué tan seguro te sientes aplicando las leyes de Newton en problemas cotidianos?"
           type="text"
           value={reflectionPrompt}
           onChange={(e) => updateBlockData(block.id, { reflectionPrompt: e.target.value })}
@@ -49,7 +49,7 @@ export const CheckpointGateBlockView: React.FC<Props> = ({ block }) => {
         <label className="font-bold text-slate-600 dark:text-zinc-400">
           Porcentaje mínimo requerido para aprobar el checkpoint:
         </label>
-        <input
+        <input aria-label="Cantidad numérica"
           type="number"
           min="50"
           max="100"

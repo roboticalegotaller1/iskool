@@ -285,7 +285,7 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
             {/* Acciones Rápidas del Compañero */}
             <button
               onClick={handleFeed}
-              title="Alimentar con monedas o comida (-20🪙)"
+              title="Alimentar con monedas o comida (-20🪙)" aria-label="Alimentar con monedas o comida (-20🪙)"
               className="px-2 sm:px-2.5 py-1.5 rounded-xl bg-emerald-950/70 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
             >
               <span>🍖</span>
@@ -294,7 +294,7 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
 
             <button
               onClick={handlePlay}
-              title="Jugar con tu compañero (-15🪙)"
+              title="Jugar con tu compañero (-15🪙)" aria-label="Jugar con tu compañero (-15🪙)"
               className="px-2 sm:px-2.5 py-1.5 rounded-xl bg-indigo-950/70 hover:bg-indigo-900 border border-indigo-500/40 text-indigo-300 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
             >
               <span>🎾</span>
@@ -303,7 +303,7 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
 
             <button
               onClick={handleSleep}
-              title="Descansar en la cama (+Energía)"
+              title="Descansar en la cama (+Energía)" aria-label="Descansar en la cama (+Energía)"
               className="px-2 sm:px-2.5 py-1.5 rounded-xl bg-purple-950/70 hover:bg-purple-900 border border-purple-500/40 text-purple-300 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
             >
               <span>💤</span>
@@ -312,7 +312,7 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
 
             <button
               onClick={handlePetTouch}
-              title="Acariciar (Mecánica de caricias)"
+              title="Acariciar (Mecánica de caricias)" aria-label="Acariciar (Mecánica de caricias)"
               className="px-2 sm:px-2.5 py-1.5 rounded-xl bg-rose-950/70 hover:bg-rose-900 border border-rose-500/40 text-rose-300 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
             >
               <Heart className="w-3.5 h-3.5 fill-current" />
@@ -376,7 +376,7 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
                     Categorías permitidas: {selectedSlotConfig.allowedCategories.join(', ')}
                   </p>
                 </div>
-                <button
+                <button aria-label="Cerrar"
                   onClick={() => setSelectedSlotForPlacement(null)}
                   className="p-1 rounded-lg text-zinc-400 hover:text-white"
                 >

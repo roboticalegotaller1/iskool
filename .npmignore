@@ -1,0 +1,29 @@
+# Ignorar dependencias y directorios de desarrollo
+node_modules/
+.next/
+out/
+build/
+.git/
+.vscode/
+
+# Configuración y archivos de la Bóveda de Conocimiento
+.obsidian/
+*.canvas
+.smart-env/
+planeaciones/
+
+# Archivos de pruebas y documentación temporal
+test_*.ts
+presentation_screenshots/
+verify_frames_v3_1/
+iskool-docs/
+temp_frames/
+*.mp4
+*.pdf
+*.html
+
+# Logs y variables de entorno
+*.log
+.env*
+.DS_Store
+Thumbs.db

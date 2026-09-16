@@ -59,7 +59,7 @@ export const TextNarrativeBlockView: React.FC<Props> = ({ block }) => {
       {style !== 'instruction' && (
         <div className="flex items-center gap-2">
           <User className="w-4 h-4 text-teal-500" />
-          <input
+          <input aria-label="Nombre del personaje o guía (ej. Sabio Lucas, Prof. Garza)..."
             type="text"
             value={speakerName || ''}
             onChange={(e) => updateBlockData(block.id, { speakerName: e.target.value })}
@@ -74,7 +74,7 @@ export const TextNarrativeBlockView: React.FC<Props> = ({ block }) => {
         <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400">
           Contenido de la lectura o instrucción:
         </label>
-        <textarea
+        <textarea aria-label="Escribe aquí las instrucciones o la historia que leerá el estudiante..."
           rows={3}
           value={content}
           onChange={(e) => updateBlockData(block.id, { content: e.target.value })}

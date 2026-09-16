@@ -36,7 +36,7 @@ export const FillInBlanksBlockView: React.FC<Props> = ({ block }) => {
           <FileEdit className="w-4 h-4 text-teal-600" />
           <span>Instrucción de la Actividad:</span>
         </label>
-        <input
+        <input aria-label="Ej. Rellena los espacios en blanco con la palabra adecuada:"
           type="text"
           value={instructions}
           onChange={(e) => updateBlockData(block.id, { instructions: e.target.value })}
@@ -51,7 +51,7 @@ export const FillInBlanksBlockView: React.FC<Props> = ({ block }) => {
           <span>Texto con palabras clave entre corchetes [ ]:</span>
           <span className="text-[10px] text-teal-600 font-bold">Usa [palabra] para ocultar</span>
         </label>
-        <textarea
+        <textarea aria-label="Ej. La [gravedad] atrae a los cuerpos hacia el centro de la [Tierra]."
           rows={3}
           value={textWithBlanks}
           onChange={(e) => handleTextChange(e.target.value)}
@@ -66,7 +66,7 @@ export const FillInBlanksBlockView: React.FC<Props> = ({ block }) => {
           <Sparkles className="w-3.5 h-3.5 text-teal-500" />
           <span>Banco de Palabras (Separadas por coma, incluye distractores):</span>
         </label>
-        <input
+        <input aria-label="gravedad, Tierra, fricción, masa..."
           type="text"
           value={wordBank.join(', ')}
           onChange={(e) => handleWordBankChange(e.target.value)}

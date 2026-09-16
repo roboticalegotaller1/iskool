@@ -2,6 +2,22 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+
+const HighTechPresentationRenderer = dynamic(
+  () => import("@/components/promo/HighTechPresentationRenderer").then((m) => m.HighTechPresentationRenderer),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[550px] flex items-center justify-center bg-slate-950 rounded-3xl border border-emerald-500/30">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-mono text-emerald-400">Diferiendo carga de animación 60 FPS...</span>
+        </div>
+      </div>
+    ),
+  }
+);
 import {
   GraduationCap,
   Trophy,
@@ -377,6 +393,7 @@ export default function PromoPage() {
   const [isTeleprompterOpen, setIsTeleprompterOpen] = useState<boolean>(false);
   const [isDemoModalOpen, setIsDemoModalOpen] = useState<boolean>(false);
   const [demoRequested, setDemoRequested] = useState<boolean>(false);
+  const [isHighTechModalOpen, setIsHighTechModalOpen] = useState<boolean>(false);
 
   // Form state para agendar prueba piloto
   const [schoolName, setSchoolName] = useState<string>("");
@@ -555,6 +572,16 @@ export default function PromoPage() {
             <span className="hidden sm:inline">Guión de Ventas</span>
           </button>
 
+          {/* Botón Renderizador Gráfico 60 FPS (Diferido) */}
+          <button
+            onClick={() => setIsHighTechModalOpen(true)}
+            title="Abrir Renderizador Gráfico de Alta Fidelidad a 60 FPS"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600/30 to-teal-600/30 hover:from-emerald-600/50 hover:to-teal-600/50 border border-emerald-500/40 text-xs font-bold text-emerald-300 transition-all cursor-pointer shadow-sm"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+            <span className="hidden lg:inline">Renderizador 60 FPS</span>
+          </button>
+
           {/* Reproducción Automática Suave */}
           <button
             onClick={togglePlay}
@@ -583,7 +610,7 @@ export default function PromoPage() {
           {/* Reiniciar */}
           <button
             onClick={restartPresentation}
-            title="Reiniciar presentación"
+            title="Reiniciar presentación" aria-label="Reiniciar presentación"
             className="p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-emerald-500/30 text-slate-300 transition-all cursor-pointer"
           >
             <RotateCcw className="h-4 w-4" />
@@ -592,7 +619,7 @@ export default function PromoPage() {
           {/* Pantalla Completa */}
           <button
             onClick={toggleFullscreen}
-            title="Pantalla completa"
+            title="Pantalla completa" aria-label="Pantalla completa"
             className="p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-emerald-500/30 text-slate-300 transition-all cursor-pointer"
           >
             <Maximize2 className="h-4 w-4" />
@@ -822,7 +849,7 @@ export default function PromoPage() {
                 <p className="text-[10px] text-teal-400 font-semibold">Tácticas de alto valor para directores</p>
               </div>
             </div>
-            <button
+            <button aria-label="Cerrar"
               onClick={() => setIsTeleprompterOpen(false)}
               className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
             >
@@ -928,7 +955,7 @@ export default function PromoPage() {
                   <p className="text-xs text-teal-300 font-medium">Entorno institucional configurado para tus grupos</p>
                 </div>
               </div>
-              <button
+              <button aria-label="Cerrar"
                 onClick={() => setIsDemoModalOpen(false)}
                 className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
               >
@@ -965,7 +992,7 @@ export default function PromoPage() {
                   <label className="block text-[11px] font-bold text-teal-300 uppercase tracking-wider mb-1">
                     Nombre del Colegio o Institución Educativa
                   </label>
-                  <input
+                  <input aria-label="Ej. Colegio Bilingüe Siglo XXI"
                     type="text"
                     required
                     value={schoolName}
@@ -980,7 +1007,7 @@ export default function PromoPage() {
                     <label className="block text-[11px] font-bold text-teal-300 uppercase tracking-wider mb-1">
                       Nombre del Directivo o Responsable
                     </label>
-                    <input
+                    <input aria-label="Ej. Prof. Roberto Morales"
                       type="text"
                       required
                       value={contactName}
@@ -993,7 +1020,7 @@ export default function PromoPage() {
                     <label className="block text-[11px] font-bold text-teal-300 uppercase tracking-wider mb-1">
                       Teléfono / WhatsApp de Contacto
                     </label>
-                    <input
+                    <input aria-label="Ej. 55 1234 5678"
                       type="tel"
                       required
                       value={contactPhone}
@@ -1008,7 +1035,7 @@ export default function PromoPage() {
                   <label className="block text-[11px] font-bold text-teal-300 uppercase tracking-wider mb-1">
                     Correo Electrónico Institucional
                   </label>
-                  <input
+                  <input aria-label="direccion@colegio.edu.mx"
                     type="email"
                     required
                     value={contactEmail}
@@ -1032,6 +1059,29 @@ export default function PromoPage() {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Renderizador Gráfico 60 FPS (Diferido con next/dynamic) */}
+      {isHighTechModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-3 sm:p-6 animate-fadeIn">
+          <div className="relative w-full max-w-5xl bg-slate-900 border border-emerald-500/40 rounded-3xl overflow-hidden shadow-2xl shadow-emerald-500/20 flex flex-col max-h-[92vh]">
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-800 bg-slate-950/80">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-emerald-400" />
+                <h3 className="text-xs sm:text-sm font-bold text-white">Visualizador Gráfico de Alta Fidelidad (60 FPS)</h3>
+              </div>
+              <button aria-label="Cerrar"
+                onClick={() => setIsHighTechModalOpen(false)}
+                className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="p-3 sm:p-5 overflow-y-auto">
+              <HighTechPresentationRenderer autoPlay={true} className="w-full h-[62vh] min-h-[400px]" />
+            </div>
           </div>
         </div>
       )}

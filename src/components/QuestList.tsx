@@ -155,7 +155,8 @@ export default function QuestList({ quests, getQuestStatus, onQuestClick }: Ques
                     <Lock className="h-4 w-4" />
                   </div>
                 ) : (
-                  <button
+                  <span
+                    role="presentation"
                     className={`px-4.5 py-2.5 rounded-xl text-xs font-black transition-all duration-300 flex items-center gap-1.5 active:scale-95 ${
                       isCompleted
                         ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 border border-zinc-700/50'
@@ -172,7 +173,7 @@ export default function QuestList({ quests, getQuestStatus, onQuestClick }: Ques
                     ) : (
                       isCompleted ? 'Reintentar' : <span className="drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">Jugar ⚡</span>
                     )}
-                  </button>
+                  </span>
                 )}
               </div>
             </>

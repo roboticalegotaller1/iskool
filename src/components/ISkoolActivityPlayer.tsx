@@ -13,6 +13,7 @@ import { InteractiveUniversalGamePlayer } from '@/components/games/InteractiveUn
 import { LogicMathInteractivePlayer } from '@/components/studio/player/LogicMathInteractivePlayer';
 import { StudioFlowPlayer } from '@/components/studio/player/StudioFlowPlayer';
 import { LogicActivityPreset } from '@/data/mathematicalLogicActivities';
+import { SimulatorIframePlayer } from '@/components/games/SimulatorIframePlayer';
 
 interface ISkoolActivityPlayerProps {
   activity: CanvasActivityJSON;
@@ -124,6 +125,12 @@ export const ISkoolActivityPlayer: React.FC<ISkoolActivityPlayerProps> = ({
 
       case 'escape_room':
         return <EscapeRoomPlayer activity={activity} onClose={onClose} onComplete={onComplete} />;
+
+      case 'external_embed':
+      case 'simulator':
+      case 'simulador':
+      case 'laboratorio':
+        return <SimulatorIframePlayer activity={activity} onClose={onClose} onComplete={onComplete} />;
 
       default:
         return (

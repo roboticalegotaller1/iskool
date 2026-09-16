@@ -704,7 +704,7 @@ function GuideContent() {
         <div className="relative">
           <div className="relative flex items-center">
             <Search className="w-5 h-5 absolute left-4 text-purple-500 dark:text-purple-400" />
-            <input
+            <input aria-label="Buscar en el Centro de Ayuda (ej. mascotas, santuario, avatar, libros SEP, tokens, suspensión, 17 bloques)..."
               type="text"
               value={guideSearchQuery}
               onChange={(e) => setGuideSearchQuery(e.target.value)}
@@ -712,7 +712,7 @@ function GuideContent() {
               className="w-full pl-12 pr-10 py-3.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs sm:text-sm text-slate-900 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder:text-slate-400"
             />
             {guideSearchQuery && (
-              <button
+              <button aria-label="Cerrar"
                 type="button"
                 onClick={() => setGuideSearchQuery('')}
                 className="absolute right-3.5 p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200"
@@ -1522,7 +1522,7 @@ function GuideContent() {
                 {/* Buscador de simuladores en tiempo real */}
                 <div className="relative w-full md:w-72">
                   <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
+                  <input aria-label="Buscar simulador o tema..."
                     type="text"
                     value={simSearchQuery}
                     onChange={(e) => setSimSearchQuery(e.target.value)}

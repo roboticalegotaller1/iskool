@@ -2,9 +2,9 @@ const fs = require('fs');
 const path = require('path');
 
 // ============================================================================
-// CONFIGURACIÓN: RUTA DESTINO DE OBSIDIAN (Escapada para Windows)
+// CONFIGURACIÓN: RUTA DESTINO DE LA BÓVEDA CURRICULAR (Escapada para Windows)
 // ============================================================================
-const OBSIDIAN_VAULT_PATH = 'C:\\Users\\kami-\\Desktop\\2025-2026\\iskool\\obsidean\\brain\\iskool';
+const CURRICULAR_VAULT_PATH = 'C:\\Users\\kami-\\Desktop\\2025-2026\\iskool\\obsidean\\brain\\iskool';
 
 // Lista de archivos críticos de arquitectura a sincronizar
 const FILES_TO_SYNC = [
@@ -28,14 +28,14 @@ function determineLanguage(filePath) {
 }
 
 /**
- * Procesa y sincroniza los archivos
+ * Procesa y sincroniza los archivos con la Bóveda Curricular
  */
 function syncFiles() {
-  console.log('🚀 Iniciando sincronización de archivos de arquitectura a Obsidian...');
-  console.log(`📂 Ruta de la bóveda: ${OBSIDIAN_VAULT_PATH}\n`);
+  console.log('🚀 Iniciando sincronización de archivos de arquitectura a la Bóveda Curricular...');
+  console.log(`📂 Ruta de la bóveda: ${CURRICULAR_VAULT_PATH}\n`);
 
-  if (!fs.existsSync(OBSIDIAN_VAULT_PATH)) {
-    console.error(`❌ Error: La ruta de la bóveda de Obsidian no existe: ${OBSIDIAN_VAULT_PATH}`);
+  if (!fs.existsSync(CURRICULAR_VAULT_PATH)) {
+    console.error(`❌ Error: La ruta de la Bóveda Curricular no existe: ${CURRICULAR_VAULT_PATH}`);
     process.exit(1);
   }
 
@@ -55,7 +55,7 @@ function syncFiles() {
 
       // 2. Determinar la ruta relativa y absoluta del destino con extensión .md
       const destRelativePath = srcRelativePath.replace(/\.[^/.]+$/, '') + '.md';
-      const destFullPath = path.join(OBSIDIAN_VAULT_PATH, destRelativePath);
+      const destFullPath = path.join(CURRICULAR_VAULT_PATH, destRelativePath);
 
       // 3. Creación segura de directorios previos
       const destDir = path.dirname(destFullPath);

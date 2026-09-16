@@ -73,7 +73,7 @@ export const QuizQuestionBlockView: React.FC<Props> = ({ block }) => {
           <span>Pregunta / Reactivo Didáctico:</span>
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-bold text-slate-400">Tiempo:</span>
-            <select
+            <select aria-label="Seleccionar opción"
               value={timeLimitSeconds}
               onChange={(e) => updateBlockData(block.id, { timeLimitSeconds: Number(e.target.value) })}
               className="px-2 py-0.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-750 text-slate-700 dark:text-zinc-300 focus:outline-none"
@@ -86,7 +86,7 @@ export const QuizQuestionBlockView: React.FC<Props> = ({ block }) => {
             </select>
           </div>
         </label>
-        <textarea
+        <textarea aria-label="Escribe la pregunta o problema a resolver..."
           rows={2}
           value={question}
           onChange={(e) => updateBlockData(block.id, { question: e.target.value })}
@@ -122,7 +122,7 @@ export const QuizQuestionBlockView: React.FC<Props> = ({ block }) => {
             <div className="flex flex-col sm:flex-row items-center gap-2">
               <div className="flex-1 w-full relative">
                 <LinkIcon className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
-                <input
+                <input aria-label="Pega la URL de una imagen..."
                   type="text"
                   value={imageUrl || ''}
                   onChange={(e) => updateBlockData(block.id, { imageUrl: e.target.value })}
@@ -133,7 +133,7 @@ export const QuizQuestionBlockView: React.FC<Props> = ({ block }) => {
               <label className="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 flex items-center gap-1.5 cursor-pointer shrink-0">
                 <Upload className="w-3.5 h-3.5" />
                 <span>Subir Archivo</span>
-                <input
+                <input aria-label="Subir archivo o comprobante"
                   type="file"
                   accept="image/*"
                   onChange={handleFileUpload}
@@ -214,7 +214,7 @@ export const QuizQuestionBlockView: React.FC<Props> = ({ block }) => {
                 </button>
 
                 {/* Input del Texto de la Opción */}
-                <input
+                <input aria-label="Campo de texto de formulario"
                   type="text"
                   value={opt}
                   onChange={(e) => handleOptionChange(idx, e.target.value)}
@@ -257,7 +257,7 @@ export const QuizQuestionBlockView: React.FC<Props> = ({ block }) => {
           <HelpCircle className="w-3.5 h-3.5 text-blue-500" />
           <span>Retroalimentación Didáctica al Responder:</span>
         </label>
-        <input
+        <input aria-label="Explica por qué la respuesta correcta es la adecuada para que el alumno aprenda..."
           type="text"
           value={explanation || ''}
           onChange={(e) => updateBlockData(block.id, { explanation: e.target.value })}

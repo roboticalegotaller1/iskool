@@ -26,10 +26,12 @@ import {
 import { DetailedStudent, ClassSchedule, Group, SchoolSettings, UserProfile, ROLE_HIERARCHY_LEVEL, UserRole } from '@/types';
 import { getStudentAvatarUrl } from '@/utils/studentAvatar';
 import { SchoolBooksManagerSection } from '@/components/books/SchoolBooksManagerSection';
+import { useComingSoon } from '@/components/ui/ComingSoonModal';
 
 export default function CoordinatorDashboard() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const { showComingSoon } = useComingSoon();
 
   const activeSchoolId = useSchoolAdminStore(state => state.activeSchoolId);
   const effectiveSchoolId = React.useMemo(() => {
@@ -258,13 +260,13 @@ export default function CoordinatorDashboard() {
 
   const hexToHsl = (hex: string) => {
     if (!hex || hex.length < 7) return '250 84% 54%';
-    let r = parseInt(hex.slice(1, 3), 16) / 255;
-    let g = parseInt(hex.slice(3, 5), 16) / 255;
-    let b = parseInt(hex.slice(5, 7), 16) / 255;
-    let max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
     let h = 0, s = 0, l = (max + min) / 2;
     if (max !== min) {
-      let d = max - min;
+      const d = max - min;
       s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
       switch(max){
         case r: h = (g - b) / d + (g < b ? 6 : 0); break;
@@ -799,7 +801,7 @@ export default function CoordinatorDashboard() {
                 {/* Búsqueda */}
                 <div className="relative flex-1 min-w-[200px]">
                   <Search className="absolute left-3 top-3.5 h-4 w-4 text-zinc-400" />
-                  <input
+                  <input aria-label="Buscar por nombre, CURP o matrícula..."
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -808,7 +810,7 @@ export default function CoordinatorDashboard() {
                   />
                 </div>
                 {/* Nivel */}
-                <select
+                <select aria-label="Seleccionar opción"
                   value={levelFilter}
                   onChange={(e: any) => setLevelFilter(e.target.value)}
                   className="p-2.5 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-brand-primary shrink-0"
@@ -819,7 +821,7 @@ export default function CoordinatorDashboard() {
                   <option value="preparatoria">Preparatoria</option>
                 </select>
                 {/* Asignación */}
-                <select
+                <select aria-label="Seleccionar opción"
                   value={groupFilter}
                   onChange={(e: any) => setGroupFilter(e.target.value)}
                   className="p-2.5 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs text-zinc-700 dark:text-zinc-300 focus:outline-none focus:border-brand-primary shrink-0"
@@ -987,7 +989,7 @@ export default function CoordinatorDashboard() {
                               </div>
                             </td>
                             <td className="p-4 text-center">
-                              <select
+                              <select aria-label="Seleccionar opción"
                                 value={student.status}
                                 onChange={(e) => {
                                   const newStatus = e.target.value as 'activo' | 'suspendido' | 'baja';
@@ -1033,7 +1035,7 @@ export default function CoordinatorDashboard() {
 
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Nivel Educativo</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={selectedGroupLevel}
                     onChange={(e: any) => {
                       setSelectedGroupLevel(e.target.value);
@@ -1049,7 +1051,7 @@ export default function CoordinatorDashboard() {
 
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Grado Escolar</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={selectedGroupGrade}
                     onChange={(e) => setSelectedGroupGrade(e.target.value)}
                     className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-100 focus:outline-none focus:border-violet-500"
@@ -1074,7 +1076,7 @@ export default function CoordinatorDashboard() {
 
                 {/* Individual */}
                 <div className="flex gap-2">
-                  <input
+                  <input aria-label="Letra/Nombre (ej. C)"
                     type="text"
                     value={customGroupName}
                     onChange={(e) => setCustomGroupName(e.target.value)}
@@ -1125,7 +1127,7 @@ export default function CoordinatorDashboard() {
                   <input
                     type="text"
                     id="search-unassigned-input"
-                    placeholder="Buscar alumno sin grupo por nombre o CURP..."
+                    placeholder="Buscar alumno sin grupo por nombre o CURP..." aria-label="Buscar alumno sin grupo por nombre o CURP..."
                     className="w-full pl-9 pr-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-xs focus:outline-none focus:border-brand-primary text-zinc-900 dark:text-white"
                     onChange={(e) => {
                       const val = e.target.value.toLowerCase();
@@ -1160,7 +1162,7 @@ export default function CoordinatorDashboard() {
                         </div>
                         
                         {/* Selector de Grupo */}
-                        <select
+                        <select aria-label="Seleccionar opción"
                           defaultValue=""
                           onChange={(e) => {
                             if (e.target.value) {
@@ -1270,7 +1272,7 @@ export default function CoordinatorDashboard() {
                 {/* Seleccionar Grupo */}
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Grupo a planificar</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={activeGroupId}
                     onChange={(e) => setActiveGroupId(e.target.value)}
                     className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-850 dark:text-zinc-100 focus:outline-none focus:border-violet-500 font-bold"
@@ -1287,7 +1289,7 @@ export default function CoordinatorDashboard() {
                 {/* Seleccionar Asignatura */}
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Asignatura</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={selectedSubject}
                     onChange={(e) => setSelectedSubject(e.target.value)}
                     className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-850 dark:text-zinc-100 focus:outline-none focus:border-violet-500"
@@ -1302,7 +1304,7 @@ export default function CoordinatorDashboard() {
                 {/* Seleccionar Profesor */}
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Profesor Responsable</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={selectedTeacher}
                     onChange={(e) => setSelectedTeacher(e.target.value)}
                     className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-850 dark:text-zinc-100 focus:outline-none focus:border-violet-500"
@@ -1316,7 +1318,7 @@ export default function CoordinatorDashboard() {
                 {/* Seleccionar Día de la Semana */}
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Día de la Semana</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={selectedDay}
                     onChange={(e: any) => setSelectedDay(e.target.value)}
                     className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-850 dark:text-zinc-100 focus:outline-none focus:border-violet-500"
@@ -1332,7 +1334,7 @@ export default function CoordinatorDashboard() {
                 {/* Seleccionar Rango Horario */}
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Horario (Time Slot)</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={selectedTimeSlot}
                     onChange={(e) => setSelectedTimeSlot(e.target.value)}
                     className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-850 dark:text-zinc-100 focus:outline-none focus:border-violet-500 font-mono"
@@ -1366,7 +1368,7 @@ export default function CoordinatorDashboard() {
                     <input
                       type="text"
                       id="new-subject-name"
-                      placeholder="Ej. Robótica, Historia"
+                      placeholder="Ej. Robótica, Historia" aria-label="Ej. Robótica, Historia"
                       className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-850 dark:text-zinc-100 focus:outline-none focus:border-violet-500 font-bold"
                     />
                   </div>
@@ -1375,13 +1377,13 @@ export default function CoordinatorDashboard() {
                     <input
                       type="text"
                       id="new-subject-code"
-                      placeholder="Ej. ROB-123"
+                      placeholder="Ej. ROB-123" aria-label="Ej. ROB-123"
                       className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-850 dark:text-zinc-100 focus:outline-none focus:border-violet-500"
                     />
                   </div>
                   <div>
                     <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Grado/Nivel Destino</label>
-                    <select
+                    <select aria-label="Seleccionar opción de lista"
                       id="new-subject-grade"
                       className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-850 dark:text-zinc-100 focus:outline-none focus:border-violet-500 font-bold"
                     >
@@ -1423,7 +1425,7 @@ export default function CoordinatorDashboard() {
                           <div className="text-[9px] text-zinc-400 font-mono uppercase">{sub.level_grade_id.split('-').join(' ')} {sub.sep_code ? `| ${sub.sep_code}` : ''}</div>
                         </div>
                         {sub.id.startsWith('sub-') && sub.id !== 'sub-math' && sub.id !== 'sub-span' && sub.id !== 'sub-sci' ? (
-                          <button
+                          <button aria-label="Eliminar"
                             onClick={() => deleteSubject(sub.id)}
                             className="text-red-500 hover:text-red-400 p-1 cursor-pointer"
                           >
@@ -1452,7 +1454,7 @@ export default function CoordinatorDashboard() {
                       <input
                         type="text"
                         id="new-teacher-first-name"
-                        placeholder="Ej. Juan"
+                        placeholder="Ej. Juan" aria-label="Ej. Juan"
                         className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-850 dark:text-zinc-100 focus:outline-none focus:border-violet-500 font-bold"
                       />
                     </div>
@@ -1461,7 +1463,7 @@ export default function CoordinatorDashboard() {
                       <input
                         type="text"
                         id="new-teacher-last-name"
-                        placeholder="Ej. Pérez"
+                        placeholder="Ej. Pérez" aria-label="Ej. Pérez"
                         className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-850 dark:text-zinc-100 focus:outline-none focus:border-violet-500 font-bold"
                       />
                     </div>
@@ -1472,7 +1474,7 @@ export default function CoordinatorDashboard() {
                       <input
                         type="text"
                         id="new-teacher-email-prefix"
-                        placeholder="profesor.apellido"
+                        placeholder="profesor.apellido" aria-label="profesor.apellido"
                         className="flex-1 text-xs p-2.5 rounded-l-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-850 dark:text-zinc-100 focus:outline-none focus:border-violet-500 font-mono"
                       />
                       <span className="bg-violet-100 dark:bg-violet-950/70 text-violet-700 dark:text-violet-300 border border-l-0 border-zinc-200 dark:border-zinc-800 text-xs px-2.5 py-2.5 rounded-r-xl font-mono font-bold">
@@ -1651,7 +1653,7 @@ export default function CoordinatorDashboard() {
                         <label className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-xs font-bold cursor-pointer transition-all shadow-md shadow-violet-500/10 flex items-center gap-1.5">
                           <Upload className="h-3.5 w-3.5" />
                           Cargar Nuevo Logotipo
-                          <input
+                          <input aria-label="Subir archivo o comprobante"
                             type="file"
                             accept="image/*"
                             className="hidden"
@@ -1687,7 +1689,7 @@ export default function CoordinatorDashboard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Nombre del Plantel</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       value={schoolSettings.name}
                       onChange={(e) => saveSchoolSettings({ ...schoolSettings, name: e.target.value })}
@@ -1696,7 +1698,7 @@ export default function CoordinatorDashboard() {
                   </div>
                   <div>
                     <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Clave de Centro de Trabajo (CCT)</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       value={schoolSettings.cct}
                       onChange={(e) => saveSchoolSettings({ ...schoolSettings, cct: e.target.value })}
@@ -1708,7 +1710,7 @@ export default function CoordinatorDashboard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Teléfono Institucional</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       value={schoolSettings.phone}
                       onChange={(e) => saveSchoolSettings({ ...schoolSettings, phone: e.target.value })}
@@ -1717,7 +1719,7 @@ export default function CoordinatorDashboard() {
                   </div>
                   <div>
                     <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Sitio Web Oficial</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       value={schoolSettings.website}
                       onChange={(e) => saveSchoolSettings({ ...schoolSettings, website: e.target.value })}
@@ -1728,7 +1730,7 @@ export default function CoordinatorDashboard() {
 
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Dirección del Plantel</label>
-                  <input
+                  <input aria-label="Campo de texto de formulario"
                     type="text"
                     value={schoolSettings.address}
                     onChange={(e) => saveSchoolSettings({ ...schoolSettings, address: e.target.value })}
@@ -1821,7 +1823,7 @@ export default function CoordinatorDashboard() {
                   <div>
                     <label className="text-[10px] font-bold text-zinc-500 uppercase block mb-1">Color Primario (Botones y Títulos)</label>
                     <div className="flex gap-2 items-center">
-                      <input
+                      <input aria-label="Campo de texto de formulario"
                         type="color"
                         value={hslToHex(schoolSettings.themeColors.primary)}
                         onChange={(e) => {
@@ -1833,7 +1835,7 @@ export default function CoordinatorDashboard() {
                         }}
                         className="h-9 w-9 rounded-xl border border-zinc-300 dark:border-zinc-700 cursor-pointer overflow-hidden"
                       />
-                      <input
+                      <input aria-label="250 84% 54%"
                         type="text"
                         value={schoolSettings.themeColors.primary}
                         onChange={(e) => saveSchoolSettings({
@@ -1850,7 +1852,7 @@ export default function CoordinatorDashboard() {
                   <div>
                     <label className="text-[10px] font-bold text-zinc-500 uppercase block mb-1">Color Secundario (Fondos y Bordes)</label>
                     <div className="flex gap-2 items-center">
-                      <input
+                      <input aria-label="Campo de texto de formulario"
                         type="color"
                         value={hslToHex(schoolSettings.themeColors.secondary)}
                         onChange={(e) => {
@@ -1862,7 +1864,7 @@ export default function CoordinatorDashboard() {
                         }}
                         className="h-9 w-9 rounded-xl border border-zinc-300 dark:border-zinc-700 cursor-pointer overflow-hidden"
                       />
-                      <input
+                      <input aria-label="221 83% 53%"
                         type="text"
                         value={schoolSettings.themeColors.secondary}
                         onChange={(e) => saveSchoolSettings({
@@ -1879,7 +1881,7 @@ export default function CoordinatorDashboard() {
                   <div>
                     <label className="text-[10px] font-bold text-zinc-500 uppercase block mb-1">Color de Acento (Destacados y Éxito)</label>
                     <div className="flex gap-2 items-center">
-                      <input
+                      <input aria-label="Campo de texto de formulario"
                         type="color"
                         value={hslToHex(schoolSettings.themeColors.accent)}
                         onChange={(e) => {
@@ -1891,7 +1893,7 @@ export default function CoordinatorDashboard() {
                         }}
                         className="h-9 w-9 rounded-xl border border-zinc-300 dark:border-zinc-700 cursor-pointer overflow-hidden"
                       />
-                      <input
+                      <input aria-label="142 71% 45%"
                         type="text"
                         value={schoolSettings.themeColors.accent}
                         onChange={(e) => saveSchoolSettings({
@@ -2002,7 +2004,7 @@ export default function CoordinatorDashboard() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="text-[10px] font-bold text-zinc-450 uppercase block mb-1">Nombre de la Institución *</label>
-                      <input
+                      <input aria-label="Ej. Colegio Anglo Mexicano"
                         required
                         type="text"
                         value={onboardingData.name}
@@ -2013,7 +2015,7 @@ export default function CoordinatorDashboard() {
                     </div>
                     <div>
                       <label className="text-[10px] font-bold text-zinc-455 uppercase block mb-1">Clave de Centro de Trabajo (CCT) *</label>
-                      <input
+                      <input aria-label="Ej. 09DPR5678X"
                         required
                         type="text"
                         value={onboardingData.cct}
@@ -2027,7 +2029,7 @@ export default function CoordinatorDashboard() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="text-[10px] font-bold text-zinc-450 uppercase block mb-1">Teléfono Institucional *</label>
-                      <input
+                      <input aria-label="Ej. 555-123-4567"
                         required
                         type="text"
                         value={onboardingData.phone}
@@ -2038,7 +2040,7 @@ export default function CoordinatorDashboard() {
                     </div>
                     <div>
                       <label className="text-[10px] font-bold text-zinc-450 uppercase block mb-1">Sitio Web Oficial</label>
-                      <input
+                      <input aria-label="Ej. https://escuela.edu.mx"
                         type="url"
                         value={onboardingData.website}
                         onChange={(e) => setOnboardingData({ ...onboardingData, website: e.target.value })}
@@ -2050,7 +2052,7 @@ export default function CoordinatorDashboard() {
 
                   <div>
                     <label className="text-[10px] font-bold text-zinc-450 uppercase block mb-1">Dirección Física *</label>
-                    <input
+                    <input aria-label="Calle, Número, Colonia, Delegación"
                       required
                       type="text"
                       value={onboardingData.address}
@@ -2075,7 +2077,7 @@ export default function CoordinatorDashboard() {
                       <div>
                         <label className="text-[10px] font-bold text-zinc-450 uppercase block mb-1">Dominio de la Escuela (Web)</label>
                         <div className="flex gap-2">
-                          <input
+                          <input aria-label="Ej. unam.mx o anglomexicano.edu.mx"
                             type="text"
                             value={simulatedDomainName}
                             onChange={(e) => setSimulatedDomainName(e.target.value)}
@@ -2137,7 +2139,7 @@ export default function CoordinatorDashboard() {
                             <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Sube el logotipo (.png, .jpg, .svg)</p>
                             <p className="text-[9.5px] text-zinc-400">Extraeremos el color principal de forma dinámica</p>
                           </div>
-                          <input
+                          <input aria-label="Subir archivo o comprobante"
                             type="file"
                             accept="image/*"
                             className="hidden"
@@ -2228,7 +2230,7 @@ export default function CoordinatorDashboard() {
                       <div>
                         <label className="text-[10px] font-bold text-zinc-450 uppercase block mb-1">Color Principal (Primario)</label>
                         <div className="flex gap-2 items-center">
-                          <input
+                          <input aria-label="Campo de texto de formulario"
                             type="text"
                             value={onboardingData.themeColors.primary}
                             onChange={(e) => setOnboardingData({
@@ -2237,7 +2239,7 @@ export default function CoordinatorDashboard() {
                             })}
                             className="flex-1 text-xs p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-zinc-900 dark:text-white font-mono"
                           />
-                          <input
+                          <input aria-label="Campo de texto de formulario"
                             type="color"
                             value={hslToHex(onboardingData.themeColors.primary)}
                             onChange={(e) => {
@@ -2256,7 +2258,7 @@ export default function CoordinatorDashboard() {
                       <div>
                         <label className="text-[10px] font-bold text-zinc-450 uppercase block mb-1">Color Secundario (Bordes/Headers)</label>
                         <div className="flex gap-2 items-center">
-                          <input
+                          <input aria-label="Campo de texto de formulario"
                             type="text"
                             value={onboardingData.themeColors.secondary}
                             onChange={(e) => setOnboardingData({
@@ -2265,7 +2267,7 @@ export default function CoordinatorDashboard() {
                             })}
                             className="flex-1 text-xs p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-zinc-900 dark:text-white font-mono"
                           />
-                          <input
+                          <input aria-label="Campo de texto de formulario"
                             type="color"
                             value={hslToHex(onboardingData.themeColors.secondary)}
                             onChange={(e) => {
@@ -2284,7 +2286,7 @@ export default function CoordinatorDashboard() {
                       <div>
                         <label className="text-[10px] font-bold text-zinc-455 uppercase block mb-1">Color de Acento (Logros/Éxito)</label>
                         <div className="flex gap-2 items-center">
-                          <input
+                          <input aria-label="Campo de texto de formulario"
                             type="text"
                             value={onboardingData.themeColors.accent}
                             onChange={(e) => setOnboardingData({
@@ -2293,7 +2295,7 @@ export default function CoordinatorDashboard() {
                             })}
                             className="flex-1 text-xs p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-zinc-900 dark:text-white font-mono"
                           />
-                          <input
+                          <input aria-label="Campo de texto de formulario"
                             type="color"
                             value={hslToHex(onboardingData.themeColors.accent)}
                             onChange={(e) => {
@@ -2316,7 +2318,12 @@ export default function CoordinatorDashboard() {
                       {/* Botón */}
                       <button
                         type="button"
-                        className="py-2.5 px-4 rounded-xl text-xs font-bold text-white shadow-md transition-all text-center"
+                        onClick={() => showComingSoon({
+                          title: 'Demostración de Botón Primario',
+                          category: 'Previsualizador de Identidad',
+                          description: 'Muestra interactiva de los botones primarios para coordinadores y directores escolares con la paleta de color activa.'
+                        })}
+                        className="py-2.5 px-4 rounded-xl text-xs font-bold text-white shadow-md transition-all text-center hover:scale-102 active:scale-95 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none cursor-pointer"
                         style={{ backgroundColor: `hsl(${onboardingData.themeColors.primary})`, boxShadow: `0 4px 6px -1px hsl(${onboardingData.themeColors.primary} / 0.15)` }}
                       >
                         Botón de Muestra (Primario)
@@ -2362,7 +2369,7 @@ export default function CoordinatorDashboard() {
                         <input
                           type="text"
                           id="onb-coord-input"
-                          placeholder="Nombre del Coordinador"
+                          placeholder="Nombre del Coordinador" aria-label="Nombre del Coordinador"
                           className="flex-1 text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-zinc-900 dark:text-white focus:outline-none"
                         />
                         <button
@@ -2416,7 +2423,7 @@ export default function CoordinatorDashboard() {
                         <input
                           type="text"
                           id="onb-teach-input"
-                          placeholder="Nombre del Docente"
+                          placeholder="Nombre del Docente" aria-label="Nombre del Docente"
                           className="flex-1 text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-zinc-900 dark:text-white focus:outline-none"
                         />
                         <button
@@ -2467,8 +2474,8 @@ export default function CoordinatorDashboard() {
                     setOnboardingStep(prev => prev + 1);
                   } else {
                     // Capturar valores pendientes en campos de texto antes de finalizar
-                    let finalTeachers = [...onboardingData.teachers];
-                    let finalCoords = [...onboardingData.coordinators];
+                    const finalTeachers = [...onboardingData.teachers];
+                    const finalCoords = [...onboardingData.coordinators];
 
                     const teachEl = document.getElementById('onb-teach-input') as HTMLInputElement;
                     if (teachEl && teachEl.value.trim()) {
@@ -2537,7 +2544,7 @@ export default function CoordinatorDashboard() {
                   
                   <div>
                     <label className="text-[9.5px] font-bold text-zinc-400 uppercase">Primer Nombre *</label>
-                    <input
+                    <input aria-label="Ej. Juan"
                       required
                       type="text"
                       value={newStudentData.first_name}
@@ -2549,7 +2556,7 @@ export default function CoordinatorDashboard() {
 
                   <div>
                     <label className="text-[9.5px] font-bold text-zinc-400 uppercase">Segundo Nombre</label>
-                    <input
+                    <input aria-label="Ej. Carlos"
                       type="text"
                       value={newStudentData.second_name}
                       onChange={(e) => setNewStudentData(prev => ({ ...prev, second_name: e.target.value }))}
@@ -2560,7 +2567,7 @@ export default function CoordinatorDashboard() {
 
                   <div>
                     <label className="text-[9.5px] font-bold text-zinc-400 uppercase">Primer Apellido *</label>
-                    <input
+                    <input aria-label="Ej. Pérez"
                       required
                       type="text"
                       value={newStudentData.last_name_1}
@@ -2572,7 +2579,7 @@ export default function CoordinatorDashboard() {
 
                   <div>
                     <label className="text-[9.5px] font-bold text-zinc-400 uppercase">Segundo Apellido</label>
-                    <input
+                    <input aria-label="Ej. Gómez"
                       type="text"
                       value={newStudentData.last_name_2}
                       onChange={(e) => setNewStudentData(prev => ({ ...prev, last_name_2: e.target.value }))}
@@ -2583,7 +2590,7 @@ export default function CoordinatorDashboard() {
 
                   <div>
                     <label className="text-[9.5px] font-bold text-zinc-400 uppercase block mb-0.5">Fecha Nacimiento *</label>
-                    <input
+                    <input aria-label="Seleccionar fecha"
                       required
                       type="date"
                       value={newStudentData.birth_date}
@@ -2595,7 +2602,7 @@ export default function CoordinatorDashboard() {
                   <div className="flex gap-2">
                     <div className="flex-1">
                       <label className="text-[9.5px] font-bold text-zinc-400 uppercase">Género</label>
-                      <select
+                      <select aria-label="Seleccionar opción"
                         value={newStudentData.gender}
                         onChange={(e) => setNewStudentData(prev => ({ ...prev, gender: e.target.value }))}
                         className="w-full text-xs p-2 rounded-lg border border-zinc-200 dark:border-zinc-850 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200"
@@ -2623,7 +2630,7 @@ export default function CoordinatorDashboard() {
                         Autogenerar CURP
                       </button>
                     </div>
-                    <input
+                    <input aria-label="CURP de 18 caracteres"
                       type="text"
                       value={newStudentData.curp}
                       onChange={(e) => setNewStudentData(prev => ({ ...prev, curp: e.target.value.toUpperCase() }))}
@@ -2631,7 +2638,7 @@ export default function CoordinatorDashboard() {
                       maxLength={18}
                       className="w-full text-xs p-2 rounded-lg border border-zinc-200 dark:border-zinc-850 bg-transparent text-zinc-900 dark:text-white font-mono focus:outline-none focus:border-violet-500"
                     />
-                    <input
+                    <input aria-label="Matrícula Oficial"
                       type="text"
                       value={newStudentData.enrollment_id}
                       onChange={(e) => setNewStudentData(prev => ({ ...prev, enrollment_id: e.target.value.toUpperCase() }))}
@@ -2642,7 +2649,7 @@ export default function CoordinatorDashboard() {
 
                   <div>
                     <label className="text-[9.5px] font-bold text-zinc-400 uppercase">Nivel Educativo *</label>
-                    <select
+                    <select aria-label="Seleccionar opción"
                       value={newStudentData.level}
                       onChange={(e: any) => {
                         const lvl = e.target.value;
@@ -2658,7 +2665,7 @@ export default function CoordinatorDashboard() {
 
                   <div>
                     <label className="text-[9.5px] font-bold text-zinc-400 uppercase">Grado Escolar *</label>
-                    <select
+                    <select aria-label="Seleccionar opción"
                       value={newStudentData.grade}
                       onChange={(e) => setNewStudentData(prev => ({ ...prev, grade: e.target.value }))}
                       className="w-full text-xs p-2 rounded-lg border border-zinc-200 dark:border-zinc-850 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:outline-none"
@@ -2671,7 +2678,7 @@ export default function CoordinatorDashboard() {
 
                   <div>
                     <label className="text-[9.5px] font-bold text-zinc-400 uppercase">Turno Escolar</label>
-                    <select
+                    <select aria-label="Seleccionar opción"
                       value={newStudentData.shift}
                       onChange={(e: any) => setNewStudentData(prev => ({ ...prev, shift: e.target.value }))}
                       className="w-full text-xs p-2 rounded-lg border border-zinc-200 dark:border-zinc-850 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200"
@@ -2684,7 +2691,7 @@ export default function CoordinatorDashboard() {
 
                   <div>
                     <label className="text-[9.5px] font-bold text-zinc-400 uppercase">Escuela de Procedencia</label>
-                    <input
+                    <input aria-label="Nombre del plantel anterior"
                       type="text"
                       value={newStudentData.previous_school}
                       onChange={(e) => setNewStudentData(prev => ({ ...prev, previous_school: e.target.value }))}
@@ -2700,14 +2707,14 @@ export default function CoordinatorDashboard() {
                   
                   <div>
                     <label className="text-[9.5px] font-bold text-zinc-400 uppercase">Nombre de la Madre / Padre</label>
-                    <input
+                    <input aria-label="Nombre de la Madre"
                       type="text"
                       value={newStudentData.mother_name}
                       onChange={(e) => setNewStudentData(prev => ({ ...prev, mother_name: e.target.value }))}
                       placeholder="Nombre de la Madre"
                       className="w-full text-xs p-2 rounded-lg border border-zinc-200 dark:border-zinc-850 bg-transparent text-zinc-900 dark:text-white mb-1.5 focus:outline-none focus:border-violet-500"
                     />
-                    <input
+                    <input aria-label="Nombre del Padre"
                       type="text"
                       value={newStudentData.father_name}
                       onChange={(e) => setNewStudentData(prev => ({ ...prev, father_name: e.target.value }))}
@@ -2718,14 +2725,14 @@ export default function CoordinatorDashboard() {
 
                   <div>
                     <label className="text-[9.5px] font-bold text-zinc-400 uppercase">Contacto de Emergencia</label>
-                    <input
+                    <input aria-label="Nombre Completo"
                       type="text"
                       value={newStudentData.emergency_contact_name}
                       onChange={(e) => setNewStudentData(prev => ({ ...prev, emergency_contact_name: e.target.value }))}
                       placeholder="Nombre Completo"
                       className="w-full text-xs p-2 rounded-lg border border-zinc-200 dark:border-zinc-850 bg-transparent text-zinc-900 dark:text-white mb-1.5 focus:outline-none focus:border-violet-500"
                     />
-                    <input
+                    <input aria-label="Teléfono de Emergencia"
                       type="text"
                       value={newStudentData.emergency_contact_phone}
                       onChange={(e) => setNewStudentData(prev => ({ ...prev, emergency_contact_phone: e.target.value }))}
@@ -2737,7 +2744,7 @@ export default function CoordinatorDashboard() {
                   <div className="flex gap-2">
                     <div className="flex-1">
                       <label className="text-[9.5px] font-bold text-zinc-400 uppercase">Tipo Sangre</label>
-                      <select
+                      <select aria-label="Seleccionar opción"
                         value={newStudentData.blood_type}
                         onChange={(e) => setNewStudentData(prev => ({ ...prev, blood_type: e.target.value }))}
                         className="w-full text-xs p-2 rounded-lg border border-zinc-200 dark:border-zinc-850 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200"
@@ -2756,7 +2763,7 @@ export default function CoordinatorDashboard() {
 
                   <div>
                     <label className="text-[9.5px] font-bold text-zinc-400 uppercase">Alergias o Restricciones Médicas</label>
-                    <textarea
+                    <textarea aria-label="Especifica alergias alimentarias o medicamentos..."
                       value={newStudentData.medical_notes}
                       onChange={(e) => setNewStudentData(prev => ({ ...prev, medical_notes: e.target.value }))}
                       placeholder="Especifica alergias alimentarias o medicamentos..."
@@ -2766,7 +2773,7 @@ export default function CoordinatorDashboard() {
 
                   <div>
                     <label className="text-[9.5px] font-bold text-zinc-400 uppercase">Comentarios Académicos</label>
-                    <textarea
+                    <textarea aria-label="Historial cualitativo u observaciones..."
                       value={newStudentData.academic_notes}
                       onChange={(e) => setNewStudentData(prev => ({ ...prev, academic_notes: e.target.value }))}
                       placeholder="Historial cualitativo u observaciones..."
@@ -2777,7 +2784,7 @@ export default function CoordinatorDashboard() {
                   {/* Campos de contacto */}
                   <div>
                     <label className="text-[9.5px] font-bold text-zinc-400 uppercase">Dirección de Contacto</label>
-                    <input
+                    <input aria-label="Calle, Número y Colonia"
                       type="text"
                       value={newStudentData.address}
                       onChange={(e) => setNewStudentData(prev => ({ ...prev, address: e.target.value }))}
@@ -2787,7 +2794,7 @@ export default function CoordinatorDashboard() {
                   </div>
                   <div>
                     <label className="text-[9.5px] font-bold text-zinc-400 uppercase">Teléfono Fijo / Móvil</label>
-                    <input
+                    <input aria-label="Número de 10 dígitos"
                       type="text"
                       value={newStudentData.phone}
                       onChange={(e) => setNewStudentData(prev => ({ ...prev, phone: e.target.value }))}
@@ -2798,7 +2805,7 @@ export default function CoordinatorDashboard() {
                   <div>
                     <label className="text-[9.5px] font-bold text-zinc-400 uppercase">Correo Institucional Oficial *</label>
                     <div className="flex items-center">
-                      <input
+                      <input aria-label="Campo de texto de formulario"
                         type="text"
                         value={newStudentData.email ? newStudentData.email.split('@')[0] : ''}
                         onChange={(e) => {
@@ -2875,7 +2882,7 @@ export default function CoordinatorDashboard() {
                   <Edit3 className="h-3.5 w-3.5 shrink-0" />
                   <span className="hidden sm:inline">Editar Expediente</span>
                 </button>
-                <button 
+                <button aria-label="Cerrar" 
                   onClick={() => setSelectedStudent(null)}
                   className="p-1.5 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
                 >
@@ -2961,7 +2968,7 @@ export default function CoordinatorDashboard() {
                     </div>
                     <div>
                       <span className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Estado en el Sistema</span>
-                      <select
+                      <select aria-label="Seleccionar opción"
                         value={selectedStudent.status}
                         onChange={(e) => {
                           const newStatus = e.target.value as 'activo' | 'suspendido' | 'baja';
@@ -3059,14 +3066,14 @@ export default function CoordinatorDashboard() {
 
                       {showAddReportForm && (
                         <div className="p-3 bg-rose-50/60 dark:bg-rose-955/20 border border-rose-200 dark:border-rose-900 rounded-xl mb-3 space-y-2">
-                          <input
+                          <input aria-label="Quien reporta (Ej. Coordinación)"
                             type="text"
                             value={newReportReporter}
                             onChange={(e) => setNewReportReporter(e.target.value)}
                             placeholder="Quien reporta (Ej. Coordinación)"
                             className="w-full text-xs p-2 rounded-lg border border-rose-200 dark:border-rose-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
                           />
-                          <textarea
+                          <textarea aria-label="Descripción de la incidencia o reporte de conducta..."
                             value={newReportDescription}
                             onChange={(e) => setNewReportDescription(e.target.value)}
                             placeholder="Descripción de la incidencia o reporte de conducta..."
@@ -3176,14 +3183,14 @@ export default function CoordinatorDashboard() {
 
                       {showAddNoteForm && (
                         <div className="p-3 bg-violet-50/60 dark:bg-violet-955/20 border border-violet-200 dark:border-violet-900 rounded-xl mb-3 space-y-2">
-                          <input
+                          <input aria-label="Nombre del Profesor (Ej. Israel López)"
                             type="text"
                             value={newTeacherNoteName}
                             onChange={(e) => setNewTeacherNoteName(e.target.value)}
                             placeholder="Nombre del Profesor (Ej. Israel López)"
                             className="w-full text-xs p-2 rounded-lg border border-violet-200 dark:border-violet-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
                           />
-                          <textarea
+                          <textarea aria-label="Anotación del docente sobre el desempeño o comportamiento..."
                             value={newTeacherNoteText}
                             onChange={(e) => setNewTeacherNoteText(e.target.value)}
                             placeholder="Anotación del docente sobre el desempeño o comportamiento..."
@@ -3380,7 +3387,7 @@ export default function CoordinatorDashboard() {
               <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
                 Motivo de la baja o retiro:
               </label>
-              <select
+              <select aria-label="Seleccionar opción"
                 value={deleteReason}
                 onChange={(e) => setDeleteReason(e.target.value)}
                 className="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-rose-500 cursor-pointer"
@@ -3424,7 +3431,7 @@ export default function CoordinatorDashboard() {
                 <UserPlus className="h-5 w-5 text-brand-primary" />
                 {editingTeacher ? 'Editar Información del Profesor' : 'Dar de Alta Nuevo Profesor'}
               </h3>
-              <button
+              <button aria-label="Cerrar"
                 onClick={() => setIsTeacherModalOpen(false)}
                 className="p-1 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
               >
@@ -3462,7 +3469,7 @@ export default function CoordinatorDashboard() {
             >
               <div>
                 <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Nombre(s) *</label>
-                <input
+                <input aria-label="Ej. Ana María"
                   type="text"
                   required
                   value={teacherFormData.first_name}
@@ -3474,7 +3481,7 @@ export default function CoordinatorDashboard() {
 
               <div>
                 <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Apellido(s) *</label>
-                <input
+                <input aria-label="Ej. González Ruiz"
                   type="text"
                   required
                   value={teacherFormData.last_name}
@@ -3486,7 +3493,7 @@ export default function CoordinatorDashboard() {
 
               <div>
                 <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Correo Electrónico Institucional</label>
-                <input
+                <input aria-label="ana.gonzalez@iskool.edu.mx"
                   type="email"
                   value={teacherFormData.email}
                   onChange={(e) => setTeacherFormData(prev => ({ ...prev, email: e.target.value }))}
@@ -3525,7 +3532,7 @@ export default function CoordinatorDashboard() {
                 <Edit3 className="h-5 w-5 text-violet-500" />
                 Editar Expediente del Alumno
               </h3>
-              <button
+              <button aria-label="Cerrar"
                 type="button"
                 onClick={() => setIsEditStudentModalOpen(false)}
                 className="p-1 rounded-full text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
@@ -3550,7 +3557,7 @@ export default function CoordinatorDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Primer Nombre *</label>
-                  <input
+                  <input aria-label="Campo de texto de formulario"
                     type="text"
                     required
                     value={editingStudentData.first_name || ''}
@@ -3560,7 +3567,7 @@ export default function CoordinatorDashboard() {
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Segundo Nombre</label>
-                  <input
+                  <input aria-label="Campo de texto de formulario"
                     type="text"
                     value={editingStudentData.second_name || ''}
                     onChange={(e) => setEditingStudentData({ ...editingStudentData, second_name: e.target.value })}
@@ -3569,7 +3576,7 @@ export default function CoordinatorDashboard() {
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Primer Apellido *</label>
-                  <input
+                  <input aria-label="Campo de texto de formulario"
                     type="text"
                     required
                     value={editingStudentData.last_name_1 || ''}
@@ -3579,7 +3586,7 @@ export default function CoordinatorDashboard() {
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Segundo Apellido</label>
-                  <input
+                  <input aria-label="Campo de texto de formulario"
                     type="text"
                     value={editingStudentData.last_name_2 || ''}
                     onChange={(e) => setEditingStudentData({ ...editingStudentData, last_name_2: e.target.value })}
@@ -3592,7 +3599,7 @@ export default function CoordinatorDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Fecha de Nacimiento</label>
-                  <input
+                  <input aria-label="Seleccionar fecha"
                     type="date"
                     value={editingStudentData.birth_date || ''}
                     onChange={(e) => setEditingStudentData({ ...editingStudentData, birth_date: e.target.value })}
@@ -3601,7 +3608,7 @@ export default function CoordinatorDashboard() {
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Género</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={editingStudentData.gender || 'Masculino'}
                     onChange={(e) => setEditingStudentData({ ...editingStudentData, gender: e.target.value })}
                     className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-zinc-900 dark:text-white"
@@ -3612,7 +3619,7 @@ export default function CoordinatorDashboard() {
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">CURP</label>
-                  <input
+                  <input aria-label="Campo de texto de formulario"
                     type="text"
                     value={editingStudentData.curp || ''}
                     onChange={(e) => setEditingStudentData({ ...editingStudentData, curp: e.target.value.toUpperCase() })}
@@ -3625,7 +3632,7 @@ export default function CoordinatorDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Correo Electrónico</label>
-                  <input
+                  <input aria-label="Campo de texto de formulario"
                     type="email"
                     value={editingStudentData.email || ''}
                     onChange={(e) => setEditingStudentData({ ...editingStudentData, email: e.target.value })}
@@ -3634,7 +3641,7 @@ export default function CoordinatorDashboard() {
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Teléfono</label>
-                  <input
+                  <input aria-label="Campo de texto de formulario"
                     type="text"
                     value={editingStudentData.phone || ''}
                     onChange={(e) => setEditingStudentData({ ...editingStudentData, phone: e.target.value })}
@@ -3647,7 +3654,7 @@ export default function CoordinatorDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Nombre de la Madre</label>
-                  <input
+                  <input aria-label="Campo de texto de formulario"
                     type="text"
                     value={editingStudentData.mother_name || ''}
                     onChange={(e) => setEditingStudentData({ ...editingStudentData, mother_name: e.target.value })}
@@ -3656,7 +3663,7 @@ export default function CoordinatorDashboard() {
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Nombre del Padre</label>
-                  <input
+                  <input aria-label="Campo de texto de formulario"
                     type="text"
                     value={editingStudentData.father_name || ''}
                     onChange={(e) => setEditingStudentData({ ...editingStudentData, father_name: e.target.value })}
@@ -3669,7 +3676,7 @@ export default function CoordinatorDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Alergias / Notas Médicas</label>
-                  <textarea
+                  <textarea aria-label="Campo de texto de formulario"
                     value={editingStudentData.medical_notes || ''}
                     onChange={(e) => setEditingStudentData({ ...editingStudentData, medical_notes: e.target.value })}
                     className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-zinc-900 dark:text-white h-16 resize-none"
@@ -3677,7 +3684,7 @@ export default function CoordinatorDashboard() {
                 </div>
                 <div>
                   <label className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Notas de Coordinación Académica</label>
-                  <textarea
+                  <textarea aria-label="Campo de texto de formulario"
                     value={editingStudentData.academic_notes || ''}
                     onChange={(e) => setEditingStudentData({ ...editingStudentData, academic_notes: e.target.value })}
                     className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent text-zinc-900 dark:text-white h-16 resize-none"

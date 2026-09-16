@@ -563,7 +563,7 @@ export default function LoginPage() {
                   type="email"
                   autoComplete="username"
                   required
-                  placeholder="ejemplo@iskool.edu.mx"
+                  placeholder="ejemplo@iskool.edu.mx" aria-label="ejemplo@iskool.edu.mx"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200"
@@ -586,7 +586,7 @@ export default function LoginPage() {
               </div>
               <div className="relative">
                 <Key className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 dark:text-zinc-500 pointer-events-none" />
-                <input
+                <input aria-label="Campo password"
                   id="login-password"
                   name="password"
                   type={showPassword ? 'text' : 'password'}

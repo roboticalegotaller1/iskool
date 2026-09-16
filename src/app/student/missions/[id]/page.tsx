@@ -965,7 +965,7 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                             <span className="text-[9px] font-black text-zinc-650 uppercase tracking-widest">Editor Markdown</span>
                           </div>
 
-                          <textarea
+                          <textarea aria-label="Escribe aquí tu explicación detallada de lo que hiciste en la actividad y tu reflexión sobre qué aprendiste."
                             id="reflection"
                             ref={textareaRef}
                             value={evidenceReflection}
@@ -1039,7 +1039,7 @@ function MissionPageContent({ params }: MissionPageContentProps) {
                         </div>
 
                         {/* Input de archivo nativo oculto */}
-                        <input 
+                        <input aria-label="Subir archivo o comprobante" 
                           type="file" 
                           ref={fileInputRef} 
                           onChange={handleRealFileChange} 

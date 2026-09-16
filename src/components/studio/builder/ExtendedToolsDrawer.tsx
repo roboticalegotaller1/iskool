@@ -354,7 +354,7 @@ export const ExtendedToolsDrawer: React.FC = () => {
               <div className="flex items-center gap-2">
                 <div className="relative w-full sm:w-60">
                   <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
+                  <input aria-label="Buscar mecánica o tipo..."
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}

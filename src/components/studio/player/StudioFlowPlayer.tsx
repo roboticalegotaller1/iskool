@@ -1091,6 +1091,8 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                     src={activeBlock.data.embedUrl}
                     title={activeBlock.data.resourceTitle || 'Simulador Web'}
                     className="w-full h-full"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
                   />
@@ -1135,7 +1137,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={handleReshuffleMatchPairs}
-                    title="Revolver aleatoriamente las opciones de la derecha"
+                    title="Revolver aleatoriamente las opciones de la derecha" aria-label="Revolver aleatoriamente las opciones de la derecha"
                     className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Shuffle className="w-3.5 h-3.5 text-teal-500" />
@@ -1268,7 +1270,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                     </div>
 
                     <div className="flex items-center gap-1">
-                      <button
+                      <button aria-label="Acción institucional"
                         type="button"
                         disabled={idx === 0}
                         onClick={() => handleMoveSequenceItem(idx, idx - 1)}
@@ -1276,7 +1278,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                       >
                         <ArrowUp className="w-4 h-4" />
                       </button>
-                      <button
+                      <button aria-label="Acción institucional"
                         type="button"
                         disabled={idx === orderedList.length - 1}
                         onClick={() => handleMoveSequenceItem(idx, idx + 1)}
@@ -1386,7 +1388,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                 </h3>
               </div>
 
-              <textarea
+              <textarea aria-label="Escribe tu argumento pedagógico aquí..."
                 rows={3}
                 value={openAnswerText}
                 onChange={(e) => setOpenAnswerText(e.target.value)}
@@ -1440,7 +1442,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
 
                 {!isSecretUnlocked ? (
                   <div className="space-y-3 max-w-xs mx-auto">
-                    <input
+                    <input aria-label="CÓDIGO SECRETO"
                       type="text"
                       value={secretCodeInput}
                       onChange={(e) => setSecretCodeInput(e.target.value.toUpperCase())}
@@ -1512,7 +1514,7 @@ export const StudioFlowPlayer: React.FC<Props> = ({
               {/* Escala de Confianza (Estrellas) */}
               <div className="flex items-center justify-center gap-2 pt-2">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <button
+                  <button aria-label="Acción institucional"
                     key={star}
                     type="button"
                     onClick={() => {

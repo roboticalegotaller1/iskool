@@ -276,7 +276,7 @@ export default function CheckoutPage(props: CheckoutPageProps) {
                     <label className="block text-slate-300 font-medium mb-1.5">Número de Tarjeta</label>
                     <input
                       type="text"
-                      placeholder="4000 1234 5678 9010"
+                      placeholder="4000 1234 5678 9010" aria-label="4000 1234 5678 9010"
                       maxLength={19}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-mono placeholder:text-slate-600 focus:outline-none focus:border-blue-500"
                     />
@@ -286,7 +286,7 @@ export default function CheckoutPage(props: CheckoutPageProps) {
                       <label className="block text-slate-300 font-medium mb-1.5">Vencimiento (MM/AA)</label>
                       <input
                         type="text"
-                        placeholder="12/28"
+                        placeholder="12/28" aria-label="12/28"
                         maxLength={5}
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-mono placeholder:text-slate-600 focus:outline-none focus:border-blue-500"
                       />
@@ -295,7 +295,7 @@ export default function CheckoutPage(props: CheckoutPageProps) {
                       <label className="block text-slate-300 font-medium mb-1.5">Código de Seguridad (CVV)</label>
                       <input
                         type="password"
-                        placeholder="•••"
+                        placeholder="•••" aria-label="•••"
                         maxLength={4}
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-mono placeholder:text-slate-600 focus:outline-none focus:border-blue-500"
                       />
@@ -303,7 +303,7 @@ export default function CheckoutPage(props: CheckoutPageProps) {
                   </div>
                   <div>
                     <label className="block text-slate-300 font-medium mb-1.5">Nombre del Titular</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       defaultValue={invoiceData.parentName}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500"

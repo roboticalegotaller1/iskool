@@ -772,11 +772,13 @@ export function PlanningTab({ currentTeacher, subjects, schedulesList, groupsLis
   }, [inputText, selectedLevel, selectedSubject, displaySubjects, selectedSuggestedPda]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // --- Estados de Clave de IA ---
+  // --- Estados de Clave de IA (Protección Zero-Trust: Memoria de Sesión Epímera) ---
   const [apiSettingsOpen, setApiSettingsOpen] = useState(false);
   const [aiApiKey, setAiApiKey] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('iskool_ai_api_key') || '';
+      // Purgar de forma proactiva almacenamiento no volátil de localStorage
+      localStorage.removeItem('iskool_ai_api_key');
+      return sessionStorage.getItem('iskool_ai_api_key') || '';
     }
     return '';
   });
@@ -940,11 +942,14 @@ export function PlanningTab({ currentTeacher, subjects, schedulesList, groupsLis
     }
   };
 
-  // --- Guardar API Key ---
+  // --- Guardar API Key en Memoria Efímera Segura (Zero-Trust) ---
   const handleSaveApiKey = (key: string) => {
     setAiApiKey(key);
-    localStorage.setItem('iskool_ai_api_key', key);
-    alert('Clave de Inteligencia Artificial guardada de forma segura en tu navegador.');
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('iskool_ai_api_key', key);
+      localStorage.removeItem('iskool_ai_api_key');
+    }
+    alert('Clave de Inteligencia Artificial configurada para la sesión actual.');
     setApiSettingsOpen(false);
   };
 
@@ -1515,7 +1520,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
               Opcional. Si deseas usar el motor de inteligencia artificial en la nube en lugar del motor pedagógico local, introduce tu clave de acceso. Se almacena únicamente en tu navegador de forma segura.
             </p>
             <div className="flex gap-2">
-              <input
+              <input aria-label="Clave de API..."
                 type="password"
                 value={aiApiKey}
                 onChange={(e) => setAiApiKey(e.target.value)}
@@ -1536,7 +1541,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
         <div className="grid grid-cols-2 gap-4 font-bold text-xs text-zinc-800 dark:text-zinc-200">
           <div className="flex flex-col gap-1.5">
             <label className="text-[9.5px] text-zinc-400 uppercase tracking-wider">Nivel Educativo</label>
-            <select
+            <select aria-label="Seleccionar opción"
               value={selectedLevel}
               onChange={(e) => {
                 const newLevel = e.target.value;
@@ -1561,7 +1566,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
 
           <div className="flex flex-col gap-1.5">
             <label className="text-[9.5px] text-zinc-400 uppercase tracking-wider">Asignatura</label>
-            <select
+            <select aria-label="Seleccionar opción"
               value={selectedSubject}
               onChange={(e) => {
                 const newSubId = e.target.value;
@@ -1617,7 +1622,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
             </span>
           </div>
 
-          <select
+          <select aria-label="Seleccionar opción"
             value={sessionCount}
             onChange={(e) => setSessionCount(Number(e.target.value))}
             className="w-full p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-150 focus:outline-none focus:border-blue-500 font-bold"
@@ -1643,7 +1648,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
               <p className="text-[9.5px] text-zinc-500 dark:text-zinc-400">Forzar una planeación didáctica diferente sin reutilizar registros previos de la Bóveda</p>
             </div>
           </div>
-          <button
+          <button aria-label="Acción institucional"
             type="button"
             onClick={() => setBypassVault(!bypassVault)}
             className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${bypassVault ? 'bg-blue-600' : 'bg-zinc-300 dark:bg-zinc-700'}`}
@@ -1658,7 +1663,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
         {/* Entrada de Texto o Párrafo */}
         <div className="flex flex-col gap-1.5 text-xs relative">
           <label className="text-[9.5px] text-zinc-400 font-bold uppercase tracking-wider">Idea, Palabra Clave o Párrafo (Tema)</label>
-          <textarea
+          <textarea aria-label="Escribe el tema de la clase, ejemplo: 'fracciones equivalentes con pizza', 'cuidado del agua', 'biodigestores', 'leyendas prehispánicas'..."
             rows={4}
             value={inputText}
             onChange={(e) => {
@@ -1699,7 +1704,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                 </span>
               </div>
               
-              <select
+              <select aria-label="Seleccionar opción"
                 onChange={(e) => {
                   setSelectedSuggestedPda(e.target.value);
                 }}
@@ -1732,7 +1737,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
         <div className="flex flex-col gap-2.5">
           <label className="text-[9.5px] text-zinc-400 font-bold uppercase tracking-wider">Subir Fotografía o Archivo PDF</label>
           
-          <input
+          <input aria-label="Subir archivo o comprobante"
             type="file"
             ref={fileInputRef}
             onChange={handleFileChange}
@@ -1781,13 +1786,11 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                 </div>
               </div>
 
-              <button
+              <button aria-label="Eliminar"
                 type="button"
                 onClick={removeFile}
                 className="p-1 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-rose-500 transition-colors"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
+              ><Trash2 className="h-4 w-4" /></button>
             </div>
           )}
         </div>
@@ -1841,7 +1844,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                       <span className="truncate">{plan.title}</span>
                     </button>
                     
-                    <button
+                    <button aria-label="Eliminar"
                       onClick={(e) => handleDeletePlanning(plan.id, e)}
                       className="p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-rose-500 transition-colors flex-shrink-0"
                     >
@@ -2115,7 +2118,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
               <div className="mb-5 flex flex-col gap-1.5 print-section">
                 <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider">Título del Proyecto Didáctico</span>
                 {/* Pantalla: Textarea auto-expandible */}
-                <textarea
+                <textarea aria-label="Campo de texto de formulario"
                   value={activePlanning.title}
                   onChange={(e) => updateActivePlanningField('title', e.target.value)}
                   rows={2}
@@ -2216,7 +2219,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
 
                 <div className="flex flex-col gap-1 md:col-span-2">
                   <span className="text-[9px] text-zinc-400 uppercase tracking-wider font-bold">Campo Formativo (NEM)</span>
-                  <input
+                  <input aria-label="Campo de texto de formulario"
                     type="text"
                     value={activePlanning.campoFormativo}
                     onChange={(e) => updateActivePlanningField('campoFormativo', e.target.value)}
@@ -2229,7 +2232,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
 
                 <div className="flex flex-col gap-1">
                   <span className="text-[9px] text-zinc-400 uppercase tracking-wider font-bold">Duración Estimada</span>
-                  <input
+                  <input aria-label="Campo de texto de formulario"
                     type="text"
                     value={activePlanning.duration}
                     onChange={(e) => updateActivePlanningField('duration', e.target.value)}
@@ -2270,7 +2273,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                   
                   {/* Selector rápido para añadir Eje (solo en pantalla) */}
                   <div className="relative inline-block no-print">
-                    <select
+                    <select aria-label="Seleccionar opción"
                       value=""
                       onChange={(e) => {
                         if (!e.target.value) return;
@@ -2380,7 +2383,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                         type="button"
                         onClick={handleEnrichPlanningWithBook}
                         className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shadow-md shadow-indigo-600/20 hover:scale-102 transition-all cursor-pointer"
-                        title="Integrar citas exactas de páginas y ejercicios en las sesiones"
+                        title="Integrar citas exactas de páginas y ejercicios en las sesiones" aria-label="Integrar citas exactas de páginas y ejercicios en las sesiones"
                       >
                         <Wand2 className="h-3.5 w-3.5" />
                         <span>{isEnrichedWithBook ? 'Actualizar Enriquecimiento' : 'Enriquecer con este Libro'}</span>
@@ -2814,7 +2817,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-black text-zinc-450 uppercase tracking-wider text-left">Bitácora de Exploración (Diagnóstico de la Comunidad)</label>
-                  <textarea
+                  <textarea aria-label="Analiza las condiciones socioeconómicas, familiares, geográficas o culturales de tu comunidad que impactan el aprendizaje de tus alumnos..."
                     rows={6}
                     value={realityDiagnosis}
                     onChange={(e) => setRealityDiagnosis(e.target.value)}
@@ -2826,7 +2829,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                 <div className="flex flex-col gap-5">
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-black text-zinc-450 uppercase tracking-wider text-left">Amenazas del Reino (Problemáticas del Entorno)</label>
-                    <textarea
+                    <textarea aria-label="Ej. Malos hábitos de alimentación, acoso escolar, escasez de áreas verdes, falta de agua..."
                       rows={2}
                       value={problematic}
                       onChange={(e) => setProblematic(e.target.value)}
@@ -2837,7 +2840,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
 
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-black text-zinc-450 uppercase tracking-wider text-left">Atributos del Gremio (Intereses y Necesidades de Alumnos)</label>
-                    <textarea
+                    <textarea aria-label="Ej. Interés por videojuegos, artes escénicas, deportes grupales, necesidad de apoyo socioemocional..."
                       rows={2}
                       value={studentNeeds}
                       onChange={(e) => setStudentNeeds(e.target.value)}
@@ -2883,7 +2886,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                 <div className="md:col-span-1 flex flex-col gap-4 bg-zinc-50 dark:bg-zinc-950/30 p-4.5 rounded-2xl border border-zinc-150 dark:border-zinc-850">
                   <div className="flex flex-col gap-1.5 text-xs font-bold text-zinc-800 dark:text-zinc-200">
                     <label className="text-[10px] text-zinc-455 uppercase tracking-wider text-left">Asignatura de la Campaña</label>
-                    <select
+                    <select aria-label="Seleccionar opción"
                       value={selectedNEMSubject}
                       onChange={(e) => setSelectedNEMSubject(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-855 dark:text-zinc-150 font-bold focus:outline-none"
@@ -2896,7 +2899,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
 
                   <div className="flex flex-col gap-1.5 text-xs font-bold text-zinc-800 dark:text-zinc-200">
                     <label className="text-[10px] text-zinc-455 uppercase tracking-wider text-left">Nivel / Fase</label>
-                    <select
+                    <select aria-label="Seleccionar opción"
                       value={selectedNEMLevel}
                       onChange={(e) => setSelectedNEMLevel(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-855 dark:text-zinc-150 font-bold focus:outline-none"
@@ -2912,7 +2915,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
 
                   <div className="flex flex-col gap-1.5 text-xs font-bold text-zinc-800 dark:text-zinc-200">
                     <label className="text-[10px] text-zinc-455 uppercase tracking-wider text-left">Campo Formativo Asociado</label>
-                    <select
+                    <select aria-label="Seleccionar opción"
                       value={selectedCampoId}
                       onChange={(e) => {
                         setSelectedCampoId(e.target.value);
@@ -2954,7 +2957,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                             }}
                             className={`p-3 rounded-xl border transition-all cursor-pointer flex gap-3 text-xs leading-normal font-medium text-left ${isChecked ? 'bg-amber-500/10 border-amber-400 text-zinc-850 dark:text-zinc-100' : 'bg-white dark:bg-zinc-950 border-zinc-150 dark:border-zinc-850 text-zinc-500 hover:border-zinc-300'}`}
                           >
-                            <input
+                            <input aria-label="Seleccionar opción"
                               type="checkbox"
                               checked={isChecked}
                               readOnly
@@ -3014,7 +3017,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
               {/* Titulo de Campaña */}
               <div className="flex flex-col gap-1.5 text-xs font-bold">
                 <label className="text-[10px] text-zinc-400 uppercase tracking-wider text-left">Título de la Campaña de Gremio</label>
-                <input
+                <input aria-label="Ej. Campaña del Bosque Nutrido (Alimentación Sostenible)"
                   type="text"
                   value={campaignTitle}
                   onChange={(e) => setCampaignTitle(e.target.value)}
@@ -3058,7 +3061,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                             </div>
                           </div>
 
-                          <button
+                          <button aria-label="Eliminar"
                             type="button"
                             onClick={() => setCampaignQuests(campaignQuests.filter((_, qIdx) => qIdx !== idx))}
                             className="p-1 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-zinc-400 transition-colors self-start cursor-pointer"
@@ -3082,14 +3085,14 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                     <input
                       id="new-quest-title"
                       type="text"
-                      placeholder="Ej. Cuestionario de los Microbios Beneficiosos"
+                      placeholder="Ej. Cuestionario de los Microbios Beneficiosos" aria-label="Ej. Cuestionario de los Microbios Beneficiosos"
                       className="p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold focus:outline-none"
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[9.5px] text-zinc-400 uppercase tracking-wider text-left">Objetivo / Bitácora de Misión</label>
-                    <textarea
+                    <textarea aria-label="Explica qué deben investigar o responder en esta misión..."
                       id="new-quest-desc"
                       rows={2}
                       placeholder="Explica qué deben investigar o responder en esta misión..."
@@ -3100,7 +3103,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                   <div className="grid grid-cols-3 gap-3">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[9.5px] text-zinc-400 uppercase tracking-wider text-left">Tipo de Reto</label>
-                      <select
+                      <select aria-label="Seleccionar opción de lista"
                         id="new-quest-type"
                         className="p-2.5 rounded-xl border border-zinc-250 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold focus:outline-none"
                       >
@@ -3111,7 +3114,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
 
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[9.5px] text-zinc-400 uppercase tracking-wider text-left">💎 Recompensa XP</label>
-                      <input
+                      <input aria-label="Cantidad numérica"
                         id="new-quest-xp"
                         type="number"
                         defaultValue={50}
@@ -3123,7 +3126,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
 
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[9.5px] text-zinc-400 uppercase tracking-wider text-left">🪙 Monedas</label>
-                      <input
+                      <input aria-label="Cantidad numérica"
                         id="new-quest-coins"
                         type="number"
                         defaultValue={10}
@@ -3263,7 +3266,7 @@ function EditableField({ value, onChange, placeholder }: { value: string; onChan
   return (
     <div className="editable-field-wrap w-full">
       {/* Textarea: visible only on screen */}
-      <textarea
+      <textarea aria-label="Campo de texto de formulario"
         ref={textareaRef}
         value={value}
         onChange={(e) => { onChange(e.target.value); adjustHeight(); }}

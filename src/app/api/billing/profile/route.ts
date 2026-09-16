@@ -1,31 +1,69 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
 import { PaymentGatewayService } from '@/lib/paymentGateway';
+import { validateApiAuth } from '@/lib/authValidator';
+import { z } from 'zod';
+
+const BillingProfilePostSchema = z.object({
+  parent_id: z.string().min(1, 'El ID de padre o tutor es obligatorio'),
+  school_id: z.string().min(1, 'El ID de colegio es obligatorio'),
+  rfc: z.string().min(12).max(13),
+  tax_name: z.string().min(3).max(250),
+  tax_regime: z.string().default('605'),
+  postal_code: z.string().regex(/^[0-9]{5}$/, 'El Código Postal debe contener 5 dígitos'),
+  cfdi_use: z.string().default('D10'),
+  billing_email: z.string().email('Email de facturación inválido'),
+  auto_invoice_on_payment: z.boolean().optional().default(true)
+});
 
 export async function GET(req: NextRequest) {
   try {
-    const parentId = req.nextUrl.searchParams.get('parent_id') || 'usr-parent-001';
+    // 1. Verificación estricta de Autenticación Zero-Trust
+    const auth = await validateApiAuth(req);
+    if (!auth.authenticated || !auth.user) {
+      return NextResponse.json({ success: false, error: 'No autorizado. Se requiere sesión activa.' }, { status: 401 });
+    }
 
-    const { data, error } = await supabase
+    const requestedParentId = req.nextUrl.searchParams.get('parent_id') || auth.user.id;
+
+    // 2. Aislamiento Estricto de Inquilinos (Tenant Isolation):
+    // Un usuario no puede consultar los datos fiscales de otro salvo que sea superadmin
+    const isSuperAdmin = auth.user.role === 'superadmin' || auth.user.role === 'admin';
+    if (!isSuperAdmin && requestedParentId !== auth.user.id) {
+      return NextResponse.json(
+        { success: false, error: 'Acceso denegado: Violación de aislamiento de datos fiscales.' },
+        { status: 403 }
+      );
+    }
+
+    const effectiveSchoolId = auth.user.school_id || 'sch-001';
+
+    let query = supabase
       .from('billing_profiles')
       .select('*')
-      .eq('parent_id', parentId)
-      .maybeSingle();
+      .eq('parent_id', requestedParentId);
+
+    // Si no es superadmin, restringir la consulta estrictamente al colegio del usuario autenticado
+    if (!isSuperAdmin && auth.user.school_id) {
+      query = query.eq('school_id', auth.user.school_id);
+    }
+
+    const { data, error } = await query.maybeSingle();
 
     if (error && error.code !== 'PGRST116') {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    // Si no existe aún registro en base de datos, devolver datos semilla por defecto
+    // Datos por defecto si no existe registro previo en base de datos
     const profile = data || {
-      parent_id: parentId,
-      school_id: 'sch-001',
-      rfc: 'LOAI840512AB3',
-      tax_name: 'ISRAEL LOPEZ ANGELES',
-      tax_regime: '605',
+      parent_id: requestedParentId,
+      school_id: effectiveSchoolId,
+      rfc: 'XAXX010101000',
+      tax_name: 'PÚBLICO EN GENERAL',
+      tax_regime: '616',
       postal_code: '06700',
-      cfdi_use: 'D10',
-      billing_email: 'israel.lopez@ejemplo.com',
+      cfdi_use: 'S01',
+      billing_email: auth.user.email || 'facturacion@iskool.edu.mx',
       auto_invoice_on_payment: true,
       is_default: true
     };
@@ -38,7 +76,22 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    // 1. Verificación estricta de Autenticación Zero-Trust
+    const auth = await validateApiAuth(req);
+    if (!auth.authenticated || !auth.user) {
+      return NextResponse.json({ success: false, error: 'No autorizado. Se requiere sesión activa.' }, { status: 401 });
+    }
+
+    const body = await req.json().catch(() => null);
+    const parsed = BillingProfilePostSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json({ 
+        success: false, 
+        error: parsed.error.issues[0]?.message || 'Parámetros fiscales inválidos.' 
+      }, { status: 400 });
+    }
+
     const { 
       parent_id, 
       school_id, 
@@ -49,10 +102,27 @@ export async function POST(req: NextRequest) {
       cfdi_use, 
       billing_email, 
       auto_invoice_on_payment 
-    } = body;
+    } = parsed.data;
 
-    // Validación estricta de RFC ante el SAT
-    const rfcValidation = PaymentGatewayService.validateRFC(rfc || '');
+    // 2. Control de Tenencia: Impedir manipulación de perfiles de otros usuarios o colegios ajenos
+    const isSuperAdmin = auth.user.role === 'superadmin' || auth.user.role === 'admin';
+    if (!isSuperAdmin) {
+      if (parent_id !== auth.user.id) {
+        return NextResponse.json({ 
+          success: false, 
+          error: 'Acceso denegado: No puedes modificar datos fiscales de otro usuario.' 
+        }, { status: 403 });
+      }
+      if (auth.user.school_id && school_id !== auth.user.school_id) {
+        return NextResponse.json({ 
+          success: false, 
+          error: 'Acceso denegado: El colegio asignado no coincide con tu perfil.' 
+        }, { status: 403 });
+      }
+    }
+
+    // 3. Validación estricta de RFC ante el SAT
+    const rfcValidation = PaymentGatewayService.validateRFC(rfc);
     if (!rfcValidation.isValid) {
       return NextResponse.json({ 
         success: false, 
@@ -60,34 +130,19 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    // Validación de Código Postal (5 dígitos numéricos)
-    if (!postal_code || !/^[0-9]{5}$/.test(postal_code.trim())) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'El Código Postal Fiscal debe contener exactamente 5 dígitos numéricos.' 
-      }, { status: 400 });
-    }
+    const cleanTaxName = tax_name.trim().toUpperCase();
 
-    // Validación de Razón Social / Nombre
-    const cleanTaxName = (tax_name || '').trim().toUpperCase();
-    if (cleanTaxName.length < 3) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'La Razón Social o Nombre Fiscal debe coincidir con la Constancia de Situación Fiscal.' 
-      }, { status: 400 });
-    }
-
-    // Upsert en la tabla billing_profiles
+    // 4. Upsert seguro acotado al tenant
     const profilePayload = {
-      parent_id: parent_id || 'usr-parent-001',
-      school_id: school_id || 'sch-001',
+      parent_id,
+      school_id,
       rfc: rfc.trim().toUpperCase(),
       tax_name: cleanTaxName,
-      tax_regime: tax_regime || '605',
+      tax_regime,
       postal_code: postal_code.trim(),
-      cfdi_use: cfdi_use || 'D10',
-      billing_email: (billing_email || '').trim().toLowerCase(),
-      auto_invoice_on_payment: auto_invoice_on_payment ?? true,
+      cfdi_use,
+      billing_email: billing_email.trim().toLowerCase(),
+      auto_invoice_on_payment,
       is_default: true,
       updated_at: new Date().toISOString()
     };

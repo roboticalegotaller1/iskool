@@ -336,9 +336,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const router = useRouter();
 
   useEffect(() => {
-    // Check active session on mount
+    // Check active session on mount (Zero-Trust: Cookies HttpOnly prioritarias)
     const checkSession = async () => {
       try {
+        // 1. Purgado proactivo de tokens heredados en localStorage para mitigar XSS
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('iskool_session_user');
+          localStorage.removeItem('auth_current_user');
+        }
+
+        // 2. Consulta al endpoint seguro de sesión perimetral con Cookie HttpOnly
+        try {
+          const sessionRes = await fetch('/api/auth/session');
+          if (sessionRes.ok) {
+            const sessionData = await sessionRes.json();
+            if (sessionData.authenticated && sessionData.user) {
+              const liveUser = sessionData.user;
+              setUser(liveUser);
+              setSession({
+                access_token: 'cookie-httponly-authenticated',
+                user: liveUser
+              });
+              useSchoolAdminStore.getState().syncUserSchool(liveUser);
+              setLoading(false);
+              return;
+            }
+          }
+        } catch (apiErr) {
+          // Si el endpoint no responde temporalmente, continuar con Supabase SDK
+        }
+
+        // 3. Verificación de sesión en Supabase SDK
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         setSession(currentSession);
         if (currentSession?.user) {
@@ -367,7 +395,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             };
           }
 
-          // Saneamiento reactivo de alumnos (Lucas, Elena, Santi, Mateo, etc.): asegurar su colegio correspondiente sch-test-case
+          // Saneamiento reactivo de alumnos: asegurar su colegio correspondiente sch-test-case
           if (restoredUser.role === 'student' || restoredUser.id.startsWith('std-') || restoredUser.id.startsWith('c00a0eeb')) {
             const detailed = (useSchoolAdminStore.getState().detailedStudents || []).find(s => s.id === restoredUser.id || (restoredUser.email && s.email?.toLowerCase() === restoredUser.email.toLowerCase()));
             restoredUser = {
@@ -382,88 +410,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (useSchoolAdminStore.getState().isSchoolSuspended(effectiveSchool)) {
               setUser(null);
               setSession(null);
-              if (typeof window !== 'undefined') {
-                localStorage.removeItem('iskool_session_user');
-                localStorage.setItem('iskool_suspension_error', 'cuenta inhabilitada favor de ponerse en contacto con el administrador del colegio');
-              }
               return;
             }
           }
 
           setUser(restoredUser);
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('iskool_session_user', JSON.stringify(restoredUser));
-          }
           useSchoolAdminStore.getState().syncUserSchool(restoredUser);
+
+          // Sincronizar Cookie HttpOnly segura en segundo plano
+          await fetch('/api/auth/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(restoredUser)
+          }).catch(() => null);
+
           return;
         }
-
-        // Recuperación de sesión local en modo offline / fallback
-        if (typeof window !== 'undefined') {
-          const saved = localStorage.getItem('iskool_session_user');
-          if (saved) {
-            try {
-              let parsed = JSON.parse(saved);
-              if (parsed && parsed.id && parsed.role) {
-                // Saneamiento reactivo de profesor Israel si tenía guardada la escuela antigua o vacía
-                if (parsed.id === 'usr-teacher-1' || parsed.id === 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a55' || (parsed.email && parsed.email.toLowerCase().includes('israel.lopez') && parsed.role === 'teacher')) {
-                  const liveTeacher = (useSchoolAdminStore.getState().teachersList || []).find(t => t.id === 'usr-teacher-1') || TEACHER_SEED;
-                  parsed = {
-                    ...parsed,
-                    ...liveTeacher,
-                    school_id: liveTeacher.school_id || 'sch-test-case',
-                    campus_id: liveTeacher.campus_id || 'cmp-test-pri',
-                    campus_name: liveTeacher.campus_name || 'Primaria Laboratorio Demo',
-                    email: 'israel.lopez@sandbox.iskool.edu.mx'
-                  };
-                  localStorage.setItem('iskool_session_user', JSON.stringify(parsed));
-                }
-
-                // Saneamiento reactivo de alumnos (Lucas, Elena, Santi, Mateo, etc.): asegurar su colegio correspondiente sch-test-case
-                if (parsed.role === 'student' || parsed.id.startsWith('std-') || parsed.id.startsWith('c00a0eeb')) {
-                  const detailed = (useSchoolAdminStore.getState().detailedStudents || []).find(s => s.id === parsed.id || (parsed.email && s.email?.toLowerCase() === parsed.email.toLowerCase()));
-                  const correctSchool = detailed?.school_id || 'sch-test-case';
-                  if (parsed.school_id !== correctSchool) {
-                    parsed = { ...parsed, school_id: correctSchool };
-                    localStorage.setItem('iskool_session_user', JSON.stringify(parsed));
-                  }
-                }
-
-                const isSuper = isPlatformSuperUser(parsed) || parsed.role === 'admin' || parsed.role === 'superadmin' || parsed.id.startsWith('usr-superadmin');
-                if (!isSuper) {
-                  const effectiveSchool = resolveEffectiveSchoolId(parsed, null, parsed.school_id || 'sch-test-case');
-                  if (useSchoolAdminStore.getState().isSchoolSuspended(effectiveSchool)) {
-                    setUser(null);
-                    setSession(null);
-                    localStorage.removeItem('iskool_session_user');
-                    localStorage.setItem('iskool_suspension_error', 'cuenta inhabilitada favor de ponerse en contacto con el administrador del colegio');
-                    return;
-                  }
-                }
-
-                setUser(parsed);
-                useSchoolAdminStore.getState().syncUserSchool(parsed);
-                setSession({
-                  access_token: 'mock-token-restored-offline-session',
-                  user: {
-                    id: parsed.id,
-                    email: parsed.email,
-                    user_metadata: {
-                      first_name: parsed.first_name,
-                      last_name: parsed.last_name,
-                      role: parsed.role,
-                      school_id: parsed.school_id
-                    }
-                  }
-                });
-              }
-            } catch {
-              localStorage.removeItem('iskool_session_user');
-            }
-          }
-        }
       } catch (err) {
-        console.warn("Supabase auth offline fallback:", err);
+        console.warn("Autenticación inicial de sesión completada.");
       } finally {
         setLoading(false);
       }
@@ -631,8 +595,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       setSession(sessionObj);
       setUser(finalUser);
+      
+      // Sincronización en Cookie HttpOnly perimetral (Zero-Trust)
       if (typeof window !== 'undefined') {
-        localStorage.setItem('iskool_session_user', JSON.stringify(finalUser));
+        localStorage.removeItem('iskool_session_user');
+        localStorage.removeItem('auth_current_user');
+        await fetch('/api/auth/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(finalUser)
+        }).catch(() => null);
       }
       useSchoolAdminStore.getState().syncUserSchool(finalUser);
 
@@ -641,8 +613,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       console.warn("Acceso libre activado de contingencia:", err);
       setUser(resolvedUser);
+      
       if (typeof window !== 'undefined') {
-        localStorage.setItem('iskool_session_user', JSON.stringify(resolvedUser));
+        localStorage.removeItem('iskool_session_user');
+        localStorage.removeItem('auth_current_user');
+        await fetch('/api/auth/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(resolvedUser)
+        }).catch(() => null);
       }
       useSchoolAdminStore.getState().syncUserSchool(resolvedUser);
       setSession({
@@ -665,6 +644,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     setLoading(true);
     await supabase.auth.signOut().catch(() => null);
+    
+    // Invalida la cookie HttpOnly en el servidor
+    await fetch('/api/auth/session', { method: 'DELETE' }).catch(() => null);
+
     if (typeof window !== 'undefined') {
       localStorage.removeItem('iskool_session_user');
       localStorage.removeItem('auth_current_user');

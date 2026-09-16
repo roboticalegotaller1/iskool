@@ -209,7 +209,57 @@ export const useGamificationStore = create<GamificationStoreState>()(
     const activeStudentId = studentStore.activeStudentId;
     const dbStudentId = mapStudentIdToUuid(activeStudentId);
 
-    // 1. Intentar llamar a la RPC `submit_quiz` de Supabase con UUID normalizado
+    // 1. Llamada prioritaria al endpoint Server-Side Anti-Cheat
+    try {
+      const res = await fetch('/api/gamification/submit-quiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questId,
+          studentId: dbStudentId || activeStudentId,
+          answers: answers || {}
+        })
+      });
+
+      if (res.ok) {
+        const verifiedData = await res.json();
+        if (verifiedData.success) {
+          const newAttempt: QuestAttempt = {
+            id: verifiedData.attemptId || `att-${Date.now()}`,
+            student_id: activeStudentId,
+            quest_id: questId,
+            score: verifiedData.verifiedScore,
+            is_completed: verifiedData.isPassed,
+            answers: answers,
+            feedback: verifiedData.feedback,
+            created_at: new Date().toISOString()
+          };
+
+          set((state) => ({
+            questAttempts: [newAttempt, ...state.questAttempts]
+          }));
+
+          let leveledUp = false;
+          await useStudentStore.getState().addXpAndCoins(
+            activeStudentId,
+            verifiedData.xpEarned,
+            verifiedData.coinsEarned,
+            (lvl) => { leveledUp = lvl; }
+          );
+
+          return {
+            xpEarned: verifiedData.xpEarned,
+            coinsEarned: verifiedData.coinsEarned,
+            leveledUp: verifiedData.leveledUp || leveledUp,
+            badgeEarned: null
+          };
+        }
+      }
+    } catch (apiErr) {
+      console.warn('API /api/gamification/submit-quiz no disponible, intentando RPC/fallback:', apiErr);
+    }
+
+    // 2. Intentar llamar a la RPC `submit_quiz` de Supabase con UUID normalizado
     try {
       if (isUuid(dbStudentId)) {
         const response = await supabase.rpc('submit_quiz', {
@@ -264,24 +314,47 @@ export const useGamificationStore = create<GamificationStoreState>()(
         }
       }
     } catch (err) {
-      console.warn('RPC submit_quiz falló, ejecutando lógica de respaldo:', err);
+      console.warn('RPC submit_quiz falló, ejecutando lógica de respaldo anti-cheat:', err);
     }
 
-    // 2. Fallback de respaldo cuando la RPC no está disponible o falla
+    // 3. Fallback de respaldo con validación Anti-Cheat de respuestas (sin confiar en el payload de score)
+    let quest: Quest | undefined;
     let xpBase = 100;
     let coinsBase = 20;
     
     for (const m of get().missionsList) {
       const q = m.quests?.find(item => item.id === questId);
       if (q) {
+        quest = q;
         xpBase = q.xp_reward || 100;
         coinsBase = q.coins_reward || 20;
         break;
       }
     }
 
-    const xpEarned = Math.round(xpBase * (score / 100.0));
-    const coinsEarned = score === 100 ? coinsBase + 5 : Math.round(coinsBase * (score / 100.0));
+    // Recalcular puntaje estrictamente a partir de las respuestas contra las soluciones del reto
+    let verifiedScore = score;
+    const questions: any[] = (quest?.content as any)?.questions || [];
+    if (questions.length > 0 && answers && typeof answers === 'object') {
+      let correctCount = 0;
+      for (const q of questions) {
+        const studentAns = answers[q.id];
+        const correctIdx = q.correctAnswerIndex ?? q.correctIndex;
+        if (correctIdx !== undefined) {
+          if (Number(studentAns) === Number(correctIdx)) {
+            correctCount++;
+          } else if (q.options?.[correctIdx]?.toString().trim().toLowerCase() === studentAns?.toString().trim().toLowerCase()) {
+            correctCount++;
+          }
+        } else if (q.correctAnswer && studentAns?.toString().trim().toLowerCase() === q.correctAnswer.toString().trim().toLowerCase()) {
+          correctCount++;
+        }
+      }
+      verifiedScore = Math.round((correctCount / questions.length) * 100);
+    }
+
+    const xpEarned = verifiedScore >= 60 ? Math.round(xpBase * (verifiedScore / 100.0)) : Math.round(xpBase * 0.1);
+    const coinsEarned = verifiedScore === 100 ? coinsBase + 5 : (verifiedScore >= 60 ? Math.round(coinsBase * (verifiedScore / 100.0)) : 0);
 
     let leveledUp = false;
     await useStudentStore.getState().addXpAndCoins(activeStudentId, xpEarned, coinsEarned, (lvl) => {
@@ -289,7 +362,7 @@ export const useGamificationStore = create<GamificationStoreState>()(
     });
 
     const attemptId = `att-${Date.now()}`;
-    const feedback = score >= 60 ? '¡Bien hecho! Has superado este reto.' : 'Sigue practicando para dominar el tema.';
+    const feedback = verifiedScore >= 60 ? '¡Bien hecho! Has superado este reto.' : 'Sigue practicando para dominar el tema.';
     const newAttempt: QuestAttempt = {
       id: attemptId,
       student_id: activeStudentId,

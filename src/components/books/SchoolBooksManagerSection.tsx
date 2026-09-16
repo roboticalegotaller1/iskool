@@ -215,7 +215,7 @@ export const SchoolBooksManagerSection: React.FC<SchoolBooksManagerSectionProps>
       <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="relative w-full sm:w-80">
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
+          <input aria-label="Buscar por título, autor o concepto..."
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -425,7 +425,7 @@ export const SchoolBooksManagerSection: React.FC<SchoolBooksManagerSectionProps>
                 </div>
               </div>
 
-              <button
+              <button aria-label="Cerrar"
                 type="button"
                 onClick={() => setIsUploadModalOpen(false)}
                 className="p-1.5 rounded-xl hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-500 cursor-pointer"
@@ -439,7 +439,7 @@ export const SchoolBooksManagerSection: React.FC<SchoolBooksManagerSectionProps>
                 <label className="font-bold text-slate-700 dark:text-zinc-300">
                   Título Completo de la Obra:
                 </label>
-                <input
+                <input aria-label="ej. Matemáticas Aplicadas al Pensamiento Crítico 2º"
                   type="text"
                   required
                   value={uploadForm.titulo}
@@ -454,7 +454,7 @@ export const SchoolBooksManagerSection: React.FC<SchoolBooksManagerSectionProps>
                   <label className="font-bold text-slate-700 dark:text-zinc-300">
                     Materia / Disciplina:
                   </label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={uploadForm.materia}
                     onChange={(e) => setUploadForm({ ...uploadForm, materia: e.target.value })}
                     className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white"
@@ -473,7 +473,7 @@ export const SchoolBooksManagerSection: React.FC<SchoolBooksManagerSectionProps>
                   <label className="font-bold text-slate-700 dark:text-zinc-300">
                     Grado Escolar:
                   </label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={uploadForm.grado}
                     onChange={(e) => {
                       const g = e.target.value;
@@ -501,7 +501,7 @@ export const SchoolBooksManagerSection: React.FC<SchoolBooksManagerSectionProps>
                 <label className="font-bold text-slate-700 dark:text-zinc-300">
                   Autor / Editorial Institucional:
                 </label>
-                <input
+                <input aria-label="Campo de texto de formulario"
                   type="text"
                   value={uploadForm.autorEditorial}
                   onChange={(e) => setUploadForm({ ...uploadForm, autorEditorial: e.target.value })}

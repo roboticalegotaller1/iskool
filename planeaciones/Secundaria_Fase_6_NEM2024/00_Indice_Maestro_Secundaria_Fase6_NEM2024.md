@@ -21,7 +21,7 @@ tags:
 
 > [!NOTE] Metadatos del Repositorio Curricular
 > - **Total de Planeaciones:** **200 Planeaciones Didácticas Nuevas** (50 por Campo Formativo).
-> - **Docente Responsable:** [[Prof. Israel López Ángeles]] (`usr-teacher-1`).
+> - **Docente Responsable:** [[Prof_Israel_Lopez_Angeles]] (`usr-teacher-1`).
 > - **Documento Base Oficial:** *PROGRAMA DE ESTUDIO PARA LA EDUCACIÓN SECUNDARIA: PROGRAMA SINTÉTICO DE LA FASE 6 (SEP 2024)*.
 > - **Grados Cubiertos:** 1º, 2º y 3º de Secundaria en todas sus disciplinas formativas.
 

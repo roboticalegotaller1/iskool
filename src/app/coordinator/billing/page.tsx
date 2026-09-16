@@ -453,7 +453,7 @@ export default function CoordinatorBillingDashboardPage() {
         <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs px-5 py-3.5 rounded-xl border border-slate-700 shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
-          <button onClick={() => setToastMessage(null)} className="text-slate-400 hover:text-white ml-2">
+          <button aria-label="Cerrar" onClick={() => setToastMessage(null)} className="text-slate-400 hover:text-white ml-2">
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -475,7 +475,7 @@ export default function CoordinatorBillingDashboardPage() {
           <button
             onClick={handleOpenPricingModal}
             className="inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold px-4 py-2.5 rounded-lg transition-all text-xs shadow-sm hover:shadow-md"
-            title="Configurar los precios y cuotas mensuales por cada nivel educativo"
+            title="Configurar los precios y cuotas mensuales por cada nivel educativo" aria-label="Configurar los precios y cuotas mensuales por cada nivel educativo"
           >
             <DollarSign className="w-4 h-4 text-emerald-200" />
             <span>Aranceles y Colegiaturas</span>
@@ -620,7 +620,7 @@ export default function CoordinatorBillingDashboardPage() {
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Buscar por alumno, tutor, folio o concepto..."
+              placeholder="Buscar por alumno, tutor, folio o concepto..." aria-label="Buscar por alumno, tutor, folio o concepto..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 shadow-sm transition-all"
@@ -631,7 +631,7 @@ export default function CoordinatorBillingDashboardPage() {
           <div className="flex flex-wrap items-center gap-2.5">
             
             {/* Filtro de Nivel */}
-            <select
+            <select aria-label="Seleccionar opción"
               value={selectedLevel}
               onChange={(e) => setSelectedLevel(e.target.value)}
               className="bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-700 focus:outline-none focus:border-blue-600 shadow-sm"
@@ -643,7 +643,7 @@ export default function CoordinatorBillingDashboardPage() {
             </select>
 
             {/* Filtro de Grado */}
-            <select
+            <select aria-label="Seleccionar opción"
               value={selectedGrade}
               onChange={(e) => setSelectedGrade(e.target.value)}
               className="bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-700 focus:outline-none focus:border-blue-600 shadow-sm"
@@ -658,7 +658,7 @@ export default function CoordinatorBillingDashboardPage() {
             </select>
 
             {/* Filtro de Grupo */}
-            <select
+            <select aria-label="Seleccionar opción"
               value={selectedGroup}
               onChange={(e) => setSelectedGroup(e.target.value)}
               className="bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-700 focus:outline-none focus:border-blue-600 shadow-sm"
@@ -669,7 +669,7 @@ export default function CoordinatorBillingDashboardPage() {
             </select>
 
             {/* Filtro de Estatus */}
-            <select
+            <select aria-label="Seleccionar opción"
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-700 focus:outline-none focus:border-blue-600 shadow-sm"
@@ -856,7 +856,7 @@ export default function CoordinatorBillingDashboardPage() {
                   <p className="text-xs text-slate-500">Asigna los precios de colegiatura e inscripción para cada nivel educativo</p>
                 </div>
               </div>
-              <button
+              <button aria-label="Cerrar"
                 onClick={() => setShowPricingModal(false)}
                 className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100"
               >
@@ -899,7 +899,7 @@ export default function CoordinatorBillingDashboardPage() {
                       <label className="block text-[11px] font-bold text-slate-700 mb-1">Colegiatura Mensual (MXN):</label>
                       <div className="relative">
                         <span className="absolute left-3 top-2 text-slate-400 font-bold">$</span>
-                        <input
+                        <input aria-label="Cantidad numérica"
                           type="number"
                           step="50"
                           value={pricing.monthly_fee}
@@ -917,7 +917,7 @@ export default function CoordinatorBillingDashboardPage() {
                       <label className="block text-[11px] font-semibold text-slate-700 mb-1">Inscripción Anual (MXN):</label>
                       <div className="relative">
                         <span className="absolute left-3 top-2 text-slate-400 font-bold">$</span>
-                        <input
+                        <input aria-label="Cantidad numérica"
                           type="number"
                           step="50"
                           value={pricing.annual_inscription}
@@ -935,7 +935,7 @@ export default function CoordinatorBillingDashboardPage() {
                       <label className="block text-[11px] font-semibold text-slate-700 mb-1">Cuota de Materiales (MXN):</label>
                       <div className="relative">
                         <span className="absolute left-3 top-2 text-slate-400 font-bold">$</span>
-                        <input
+                        <input aria-label="Cantidad numérica"
                           type="number"
                           step="50"
                           value={pricing.materials_fee}
@@ -990,7 +990,7 @@ export default function CoordinatorBillingDashboardPage() {
                   <p className="text-xs text-slate-500">Aplica descuentos porcentuales o becas de excelencia institucional</p>
                 </div>
               </div>
-              <button
+              <button aria-label="Cerrar"
                 onClick={() => setActiveScholarshipStudent(null)}
                 className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100"
               >
@@ -1058,7 +1058,7 @@ export default function CoordinatorBillingDashboardPage() {
 
               {/* Slider o Input Libre */}
               <div className="flex items-center gap-3 pt-1">
-                <input
+                <input aria-label="Campo de texto de formulario"
                   type="range"
                   min="0"
                   max="100"
@@ -1075,7 +1075,7 @@ export default function CoordinatorBillingDashboardPage() {
               {/* Tipo de Beca */}
               <div>
                 <label className="block text-slate-700 font-semibold mb-1">Categoría / Modalidad de Beca:</label>
-                <select
+                <select aria-label="Seleccionar opción"
                   value={scholarshipType}
                   onChange={(e) => setScholarshipType(e.target.value)}
                   className="w-full bg-white border border-slate-300 rounded-lg p-2 text-slate-800 text-xs focus:outline-none focus:border-purple-600"
@@ -1091,7 +1091,7 @@ export default function CoordinatorBillingDashboardPage() {
               {/* Justificación / Folio */}
               <div>
                 <label className="block text-slate-700 font-semibold mb-1">Folio de Aprobación o Justificación:</label>
-                <input
+                <input aria-label="Ej. Aprobado por Comité de Becas en Sesión Ordinaria 2026-B"
                   type="text"
                   value={scholarshipNotes}
                   onChange={(e) => setScholarshipNotes(e.target.value)}
@@ -1156,7 +1156,7 @@ export default function CoordinatorBillingDashboardPage() {
                   <p className="text-xs text-slate-500">Magic Link cifrado con pasarela bancaria</p>
                 </div>
               </div>
-              <button
+              <button aria-label="Cerrar"
                 onClick={() => setActiveModalRecord(null)}
                 className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100"
               >
@@ -1190,7 +1190,7 @@ export default function CoordinatorBillingDashboardPage() {
                 <div>
                   <label className="block text-slate-700 font-bold mb-1">Enlace Seguro de Pago (Magic Link):</label>
                   <div className="flex items-center gap-2">
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       readOnly
                       value={magicLinkResult.paymentUrl}
@@ -1251,7 +1251,7 @@ export default function CoordinatorBillingDashboardPage() {
                   <p className="text-xs text-slate-500">Conciliación directa de colegiatura o cuota</p>
                 </div>
               </div>
-              <button
+              <button aria-label="Cerrar"
                 onClick={() => setManualPaymentRecord(null)}
                 className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100"
               >
@@ -1311,7 +1311,7 @@ export default function CoordinatorBillingDashboardPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">Folio / Voucher / Ref:</label>
-                  <input
+                  <input aria-label="Ej. AUT-891230"
                     type="text"
                     value={manualReference}
                     onChange={(e) => setManualReference(e.target.value)}
@@ -1321,7 +1321,7 @@ export default function CoordinatorBillingDashboardPage() {
                 </div>
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">Fecha de Cobro:</label>
-                  <input
+                  <input aria-label="Seleccionar fecha"
                     type="date"
                     value={manualDate}
                     onChange={(e) => setManualDate(e.target.value)}
@@ -1334,7 +1334,7 @@ export default function CoordinatorBillingDashboardPage() {
                 <label className="block text-slate-700 font-semibold mb-1">Monto Cobrado (MXN):</label>
                 <div className="relative">
                   <span className="absolute left-3 top-2 text-slate-400 font-bold">$</span>
-                  <input
+                  <input aria-label="Cantidad numérica"
                     type="number"
                     step="0.01"
                     value={manualAmount}
@@ -1345,7 +1345,7 @@ export default function CoordinatorBillingDashboardPage() {
               </div>
 
               <div className="flex items-start gap-2.5 p-3 rounded-xl bg-blue-50/50 border border-blue-100">
-                <input
+                <input aria-label="Seleccionar opción"
                   type="checkbox"
                   id="chkAutoInvoice"
                   checked={manualAutoInvoice}
@@ -1360,7 +1360,7 @@ export default function CoordinatorBillingDashboardPage() {
 
               <div>
                 <label className="block text-slate-700 font-semibold mb-1">Observaciones / Notas Internas:</label>
-                <input
+                <input aria-label="Ej. Pago en ventanilla escolar entregado por el tutor"
                   type="text"
                   value={manualNotes}
                   onChange={(e) => setManualNotes(e.target.value)}
@@ -1418,7 +1418,7 @@ export default function CoordinatorBillingDashboardPage() {
                   <p className="text-[10px] text-slate-500 uppercase tracking-wider">Recibo Oficial de Pago • Control Escolar</p>
                 </div>
               </div>
-              <button
+              <button aria-label="Cerrar"
                 onClick={() => setViewReceiptRecord(null)}
                 className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100"
               >

@@ -54,7 +54,7 @@ export const AudioSfxBlockView: React.FC<Props> = ({ block }) => {
             <span>Volumen:</span>
           </label>
           <div className="flex items-center gap-2">
-            <input
+            <input aria-label="Campo de texto de formulario"
               type="range"
               min={0.1}
               max={1.0}
@@ -73,7 +73,7 @@ export const AudioSfxBlockView: React.FC<Props> = ({ block }) => {
           <label className="text-xs font-bold text-slate-700 dark:text-zinc-300">
             Reproducir automáticamente al llegar a este bloque:
           </label>
-          <input
+          <input aria-label="Seleccionar opción"
             type="checkbox"
             checked={autoPlay}
             onChange={(e) => updateBlockData(block.id, { autoPlay: e.target.checked })}

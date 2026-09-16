@@ -239,13 +239,11 @@ export const SmartBookNotebookModal: React.FC<SmartBookNotebookModalProps> = ({
               {isSpeaking ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </button>
 
-            <button
+            <button aria-label="Cerrar"
               type="button"
               onClick={onClose}
               className="p-2 rounded-xl bg-white dark:bg-zinc-800 text-slate-500 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer border border-slate-200 dark:border-zinc-700"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            ><X className="h-4 w-4" /></button>
           </div>
         </div>
 
@@ -354,7 +352,7 @@ export const SmartBookNotebookModal: React.FC<SmartBookNotebookModalProps> = ({
 
           {/* Campo de Texto */}
           <div className="flex-1 relative">
-            <input
+            <input aria-label="Campo de texto de formulario"
               type="text"
               value={inputQuery}
               onChange={(e) => setInputQuery(e.target.value)}
@@ -370,7 +368,7 @@ export const SmartBookNotebookModal: React.FC<SmartBookNotebookModalProps> = ({
           </div>
 
           {/* Botón de Enviar */}
-          <button
+          <button aria-label="Enviar mensaje o formulario"
             type="button"
             onClick={() => handleSendQuery()}
             disabled={!inputQuery.trim()}

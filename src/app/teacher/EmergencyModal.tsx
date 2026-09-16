@@ -478,7 +478,7 @@ export function EmergencyModal({ isOpen, onClose, currentTeacher, detailedStuden
             {/* Entrada Manual de Texto */}
             <div className="flex flex-col gap-1.5 text-xs text-left">
               <label className="text-[9.5px] text-zinc-400 font-bold uppercase tracking-wider">Redacción Manual del Suceso (Opcional)</label>
-              <textarea
+              <textarea aria-label="O escribe la situación directamente aquí..."
                 rows={3}
                 value={transcriptText}
                 onChange={(e) => {
@@ -584,7 +584,7 @@ export function EmergencyModal({ isOpen, onClose, currentTeacher, detailedStuden
                 {/* Notas adicionales del Reporte */}
                 <div className="flex flex-col gap-1.5 text-xs">
                   <label className="text-[9.5px] text-zinc-400 font-bold uppercase tracking-wider">Anotaciones de Control de la Emergencia</label>
-                  <textarea
+                  <textarea aria-label="Agrega anotaciones sobre la hora del reporte médico, estado físico actual, personas contactadas, etc."
                     rows={2}
                     value={additionalNotes}
                     onChange={(e) => setAdditionalNotes(e.target.value)}

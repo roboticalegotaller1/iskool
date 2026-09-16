@@ -99,7 +99,7 @@ export const GlobalHelpFab: React.FC = () => {
                   </div>
                 </div>
 
-                <button
+                <button aria-label="Cerrar"
                   type="button"
                   onClick={() => setIsOpen(false)}
                   className="p-1.5 rounded-xl hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-500 cursor-pointer transition-colors"

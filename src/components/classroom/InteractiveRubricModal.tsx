@@ -158,13 +158,11 @@ export const InteractiveRubricModal: React.FC<Props> = ({
             </div>
           </div>
 
-          <button
+          <button aria-label="Cerrar"
             type="button"
             onClick={onClose}
             className="p-2 text-slate-400 hover:text-rose-500 rounded-xl transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          ><X className="h-4 w-4" /></button>
         </div>
 
         {/* Cuerpo con Scroll */}
@@ -232,7 +230,7 @@ export const InteractiveRubricModal: React.FC<Props> = ({
 
                       {/* Lista Desplegable del Criterio */}
                       <div className="relative">
-                        <select
+                        <select aria-label="Seleccionar opción"
                           value={selectedLevelKey}
                           onChange={(e) => handleSelectLevel(crit.key, e.target.value)}
                           className="w-full sm:w-80 px-3.5 py-2 bg-white dark:bg-zinc-900 border-2 border-indigo-200 dark:border-indigo-800/70 hover:border-indigo-500 rounded-xl text-xs font-black text-indigo-700 dark:text-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-400 shadow-sm cursor-pointer"
@@ -274,7 +272,7 @@ export const InteractiveRubricModal: React.FC<Props> = ({
               </button>
             </div>
 
-            <textarea
+            <textarea aria-label="Escribe comentarios formativos para el alumno y su familia..."
               rows={3}
               value={feedbackText}
               onChange={e => setFeedbackText(e.target.value)}

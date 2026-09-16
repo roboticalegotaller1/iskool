@@ -48,7 +48,7 @@ export const DragDropMatchBlockView: React.FC<Props> = ({ block }) => {
           <Link2 className="w-4 h-4 text-teal-600" />
           <span>Instrucción del Emparejamiento:</span>
         </label>
-        <input
+        <input aria-label="Ej. Conecta cada concepto con su definición correcta:"
           type="text"
           value={instructions}
           onChange={(e) => updateBlockData(block.id, { instructions: e.target.value })}
@@ -69,7 +69,7 @@ export const DragDropMatchBlockView: React.FC<Props> = ({ block }) => {
               <span className="w-5 h-5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 text-[10px] font-black flex items-center justify-center shrink-0">
                 {idx + 1}
               </span>
-              <input
+              <input aria-label="Término / Concepto..."
                 type="text"
                 value={pair.left}
                 onChange={(e) => handleUpdatePair(idx, 'left', e.target.value)}
@@ -77,7 +77,7 @@ export const DragDropMatchBlockView: React.FC<Props> = ({ block }) => {
                 className="flex-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-900 dark:text-white"
               />
               <span className="text-slate-400 font-black text-xs">↔️</span>
-              <input
+              <input aria-label="Definición o Imagen..."
                 type="text"
                 value={pair.right}
                 onChange={(e) => handleUpdatePair(idx, 'right', e.target.value)}
@@ -85,7 +85,7 @@ export const DragDropMatchBlockView: React.FC<Props> = ({ block }) => {
                 className="flex-1 px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 focus:outline-none focus:ring-2 focus:ring-teal-500 text-slate-800 dark:text-zinc-200"
               />
               {pairs.length > 2 && (
-                <button
+                <button aria-label="Eliminar"
                   type="button"
                   onClick={() => handleRemovePair(idx)}
                   className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg"
@@ -113,7 +113,7 @@ export const DragDropMatchBlockView: React.FC<Props> = ({ block }) => {
           <Clock className="w-3.5 h-3.5 text-slate-400" />
           <span>Tiempo Límite (segundos):</span>
         </label>
-        <input
+        <input aria-label="Cantidad numérica"
           type="number"
           min="10"
           max="120"

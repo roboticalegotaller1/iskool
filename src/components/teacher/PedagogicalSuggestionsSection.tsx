@@ -194,7 +194,7 @@ export const PedagogicalSuggestionsSection: React.FC<PedagogicalSuggestionsSecti
         <div className="fixed bottom-6 right-6 z-50 bg-slate-900/95 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-700 text-xs font-semibold flex items-center gap-3 backdrop-blur-md animate-bounce">
           <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
-          <button 
+          <button aria-label="Cerrar" 
             onClick={() => setToastMessage(null)}
             className="ml-2 hover:bg-slate-800 p-1 rounded-lg text-slate-400 hover:text-white"
           >
@@ -622,7 +622,7 @@ export const PedagogicalSuggestionsSection: React.FC<PedagogicalSuggestionsSecti
                   {previewVideo.title}
                 </h4>
               </div>
-              <button
+              <button aria-label="Cerrar"
                 onClick={() => setPreviewVideo(null)}
                 className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
               >
@@ -680,7 +680,7 @@ export const PedagogicalSuggestionsSection: React.FC<PedagogicalSuggestionsSecti
                 </div>
               </div>
 
-              <button
+              <button aria-label="Cerrar"
                 onClick={() => setReportModalItem(null)}
                 className="p-1 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white"
               >
@@ -701,7 +701,7 @@ export const PedagogicalSuggestionsSection: React.FC<PedagogicalSuggestionsSecti
               <label className="text-xs font-bold text-slate-700 dark:text-zinc-300">
                 Motivo del Reporte:
               </label>
-              <select
+              <select aria-label="Seleccionar opción"
                 value={reportReason}
                 onChange={(e) => setReportReason(e.target.value)}
                 className="w-full text-xs p-2.5 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 text-slate-800 dark:text-white outline-none focus:border-rose-500"

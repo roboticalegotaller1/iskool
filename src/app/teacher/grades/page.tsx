@@ -621,7 +621,7 @@ export default function TeacherGrades() {
                                   {/* Comentarios */}
                                   <div className="md:col-span-7 flex flex-col gap-1.5">
                                     <label className="text-[9px] font-black text-zinc-505 uppercase tracking-wide">Retroalimentación Cualitativa (Reportes SEP)</label>
-                                    <textarea
+                                    <textarea aria-label="Escribe comentarios formativos..."
                                       rows={2}
                                       onClick={(e) => e.stopPropagation()}
                                       value={feedbackText}
@@ -675,7 +675,7 @@ export default function TeacherGrades() {
             
             {/* Cabecera del Modal */}
             <div className="relative p-6 border-b border-zinc-800 flex flex-col md:flex-row items-center gap-6 bg-zinc-950/40">
-              <button 
+              <button aria-label="Cerrar" 
                 onClick={() => setSelectedStudent(null)}
                 className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 transition-colors"
               >

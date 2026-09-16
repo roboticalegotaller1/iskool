@@ -195,7 +195,7 @@ export default function TeacherStudioPage() {
                   <BookOpen className="w-3.5 h-3.5 text-teal-400" />
                   Fase Curricular / Grado NEM:
                 </label>
-                <select
+                <select aria-label="Seleccionar opción"
                   value={faseNem}
                   onChange={(e) => setFaseNem(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
@@ -213,7 +213,7 @@ export default function TeacherStudioPage() {
                   <Gamepad2 className="w-3.5 h-3.5 text-amber-400" />
                   Estilo y Dinámica de Juego:
                 </label>
-                <select
+                <select aria-label="Seleccionar opción"
                   value={gamificationStyle}
                   onChange={(e) => setGamificationStyle(e.target.value as any)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
@@ -238,7 +238,7 @@ export default function TeacherStudioPage() {
                 </span>
               </div>
               <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
-                <input
+                <input aria-label="Ej. Causas de la Independencia de México, Ecosistemas, Fracciones..."
                   id="ai-topic-input"
                   type="text"
                   value={aiTopic}

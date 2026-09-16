@@ -5,7 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useHydration } from '@/hooks/useHydration';
 import { Loader } from '@/components/Loader';
-import { AvatarCustomizer } from '@/components/AvatarCustomizer';
+import dynamic from 'next/dynamic';
+
+const AvatarCustomizer = dynamic(
+  () => import('@/components/AvatarCustomizer').then((m) => m.AvatarCustomizer),
+  {
+    ssr: false,
+    loading: () => <Loader message="Cargando vestidor interactivo de avatar..." />,
+  }
+);
 
 export default function AvatarCustomizerPage() {
   const router = useRouter();

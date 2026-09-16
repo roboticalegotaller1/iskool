@@ -21,7 +21,7 @@ export const BadgeCertificateBlockView: React.FC<Props> = ({ block }) => {
           <Award className="w-4 h-4 text-amber-500" />
           <span>Título del Diploma / Reconocimiento Digital:</span>
         </label>
-        <input
+        <input aria-label="Ej. Certificado de Honor en Ciencias Naturales"
           type="text"
           value={certificateTitle}
           onChange={(e) => updateBlockData(block.id, { certificateTitle: e.target.value })}
@@ -35,7 +35,7 @@ export const BadgeCertificateBlockView: React.FC<Props> = ({ block }) => {
         <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400">
           Título de Honor o Grado de Maestría Otorgado:
         </label>
-        <input
+        <input aria-label="Ej. Gran Maestro de la Física y el Movimiento"
           type="text"
           value={recipientHonor}
           onChange={(e) => updateBlockData(block.id, { recipientHonor: e.target.value })}
@@ -49,7 +49,7 @@ export const BadgeCertificateBlockView: React.FC<Props> = ({ block }) => {
         <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400">
           Firma o Entidad Emisora:
         </label>
-        <input
+        <input aria-label="Ej. Academia de Ciencias Colegio Anglo Mexicano"
           type="text"
           value={teacherSignatureName}
           onChange={(e) => updateBlockData(block.id, { teacherSignatureName: e.target.value })}

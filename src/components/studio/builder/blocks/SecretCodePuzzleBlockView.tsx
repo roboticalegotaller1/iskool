@@ -21,7 +21,7 @@ export const SecretCodePuzzleBlockView: React.FC<Props> = ({ block }) => {
           <KeyRound className="w-4 h-4 text-amber-500" />
           <span>Enigma o Pista del Código Secreto (Escape Room):</span>
         </label>
-        <textarea
+        <textarea aria-label="Ej. Descifra la palabra secreta de 6 letras: F _ _ _ Z A"
           rows={2}
           value={clueText}
           onChange={(e) => updateBlockData(block.id, { clueText: e.target.value })}
@@ -36,7 +36,7 @@ export const SecretCodePuzzleBlockView: React.FC<Props> = ({ block }) => {
           <Lock className="w-3.5 h-3.5 text-amber-500" />
           <span>Respuesta Secreta Correcta (No distingue mayúsculas):</span>
         </label>
-        <input
+        <input aria-label="FUERZA"
           type="text"
           value={secretAnswer}
           onChange={(e) => updateBlockData(block.id, { secretAnswer: e.target.value.toUpperCase() })}
@@ -50,7 +50,7 @@ export const SecretCodePuzzleBlockView: React.FC<Props> = ({ block }) => {
         <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400">
           Pista de Auxilio Opcional (Si el alumno se bloquea):
         </label>
-        <input
+        <input aria-label="Ej. Es la magnitud que medimos en Newtons (N)."
           type="text"
           value={hintText || ''}
           onChange={(e) => updateBlockData(block.id, { hintText: e.target.value })}

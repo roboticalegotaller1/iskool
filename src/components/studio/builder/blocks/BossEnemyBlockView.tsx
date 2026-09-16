@@ -33,7 +33,7 @@ export const BossEnemyBlockView: React.FC<Props> = ({ block }) => {
         <label className="text-xs font-bold text-slate-700 dark:text-zinc-300">
           Nombre del Jefe o Guardián de la Prueba:
         </label>
-        <input
+        <input aria-label="Nombre del rival..."
           type="text"
           value={bossName}
           onChange={(e) => updateBlockData(block.id, { bossName: e.target.value })}
@@ -77,7 +77,7 @@ export const BossEnemyBlockView: React.FC<Props> = ({ block }) => {
             <span>Puntos de Vida del Jefe (HP):</span>
           </label>
           <div className="flex items-center gap-2">
-            <input
+            <input aria-label="Campo de texto de formulario"
               type="range"
               min={50}
               max={300}
@@ -97,7 +97,7 @@ export const BossEnemyBlockView: React.FC<Props> = ({ block }) => {
             <Flame className="w-4 h-4 text-amber-500" />
             <span>Escenario de Fondo:</span>
           </label>
-          <select
+          <select aria-label="Seleccionar opción"
             value={backgroundScene}
             onChange={(e) => updateBlockData(block.id, { backgroundScene: e.target.value })}
             className="w-full px-2.5 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 focus:outline-none"

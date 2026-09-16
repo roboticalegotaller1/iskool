@@ -571,7 +571,7 @@ export const useActivityBuilderStore = create<ActivityBuilderState>()(
         }
 
         // Conexión automática desde el nodo anterior o el seleccionado
-        let newConnections = [...state.connections];
+        const newConnections = [...state.connections];
         const previousNodeId = state.selectedBlockId || (state.blocks.length > 0 ? state.blocks[state.blocks.length - 1].id : null);
         
         if (previousNodeId && previousNodeId !== newBlock.id) {

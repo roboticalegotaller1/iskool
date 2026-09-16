@@ -592,7 +592,7 @@ export default function ParentFinancialStatementPage() {
                 </div>
 
                 <label className="relative inline-flex items-center cursor-pointer shrink-0 ml-4">
-                  <input
+                  <input aria-label="Seleccionar opción"
                     type="checkbox"
                     checked={taxData.autoInvoiceOnPayment}
                     onChange={(e) => setTaxData({ ...taxData, autoInvoiceOnPayment: e.target.checked })}
@@ -618,7 +618,7 @@ export default function ParentFinancialStatementPage() {
                     value={taxData.rfc}
                     onChange={handleRfcChange}
                     maxLength={13}
-                    placeholder="ABCD800101XYZ"
+                    placeholder="ABCD800101XYZ" aria-label="ABCD800101XYZ"
                     className={`w-full bg-white border rounded-lg px-3 py-2.5 text-slate-900 font-mono uppercase focus:outline-none ${
                       rfcValidation.isValid ? 'border-slate-300 focus:border-blue-600' : 'border-rose-300 focus:border-rose-500'
                     }`}
@@ -631,7 +631,7 @@ export default function ParentFinancialStatementPage() {
 
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">Código Postal Fiscal del Receptor</label>
-                  <input
+                  <input aria-label="06700"
                     type="text"
                     value={taxData.postalCode}
                     onChange={(e) => setTaxData({ ...taxData, postalCode: e.target.value.replace(/\D/g, '').slice(0, 5) })}
@@ -649,7 +649,7 @@ export default function ParentFinancialStatementPage() {
                 <label className="block text-slate-700 font-semibold mb-1">
                   Nombre o Razón Social (Mayúsculas, sin régimen societario)
                 </label>
-                <input
+                <input aria-label="NOMBRE APELLIDO PATERNO MATERNO"
                   type="text"
                   value={taxData.taxName}
                   onChange={(e) => setTaxData({ ...taxData, taxName: e.target.value.toUpperCase() })}
@@ -664,7 +664,7 @@ export default function ParentFinancialStatementPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">Régimen Fiscal SAT</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={taxData.taxRegime}
                     onChange={(e) => setTaxData({ ...taxData, taxRegime: e.target.value })}
                     className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600"
@@ -681,7 +681,7 @@ export default function ParentFinancialStatementPage() {
 
                 <div>
                   <label className="block text-slate-700 font-semibold mb-1">Uso de CFDI</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={taxData.cfdiUse}
                     onChange={(e) => setTaxData({ ...taxData, cfdiUse: e.target.value })}
                     className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-slate-900 focus:outline-none focus:border-blue-600"
@@ -724,7 +724,7 @@ export default function ParentFinancialStatementPage() {
                         value={taxData.studentCurp}
                         onChange={handleCurpChange}
                         maxLength={18}
-                        placeholder="AAAA000000HDFXXX00"
+                        placeholder="AAAA000000HDFXXX00" aria-label="AAAA000000HDFXXX00"
                         className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-900 font-mono uppercase focus:outline-none focus:border-emerald-600"
                         required
                       />
@@ -732,7 +732,7 @@ export default function ParentFinancialStatementPage() {
 
                     <div>
                       <label className="block text-slate-700 font-semibold mb-1 text-xs">Nivel Educativo:</label>
-                      <select
+                      <select aria-label="Seleccionar opción"
                         value={taxData.educationLevel}
                         onChange={(e) => setTaxData({ ...taxData, educationLevel: e.target.value })}
                         className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-900 focus:outline-none focus:border-emerald-600"
@@ -751,7 +751,7 @@ export default function ParentFinancialStatementPage() {
               {/* Correo Electrónico Fiscal */}
               <div>
                 <label className="block text-slate-700 font-semibold mb-1">Correo Electrónico de Recepción de XML y PDF</label>
-                <input
+                <input aria-label="Campo de texto de formulario"
                   type="email"
                   value={taxData.billingEmail}
                   onChange={(e) => setTaxData({ ...taxData, billingEmail: e.target.value.toLowerCase() })}

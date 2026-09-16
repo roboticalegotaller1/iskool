@@ -5,6 +5,15 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  {
+    rules: {
+      // Reglas estrictas de calidad de código y tipado
+      "@typescript-eslint/no-explicit-any": "error",
+      "react-hooks/exhaustive-deps": "error",
+      "prefer-const": "error",
+      "no-var": "error",
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
@@ -27,6 +36,7 @@ const eslintConfig = defineConfig([
     "generate_lms_manual_pdf.js",
     "generate_pitch_presentation_pdf.js",
     "render_mp4.js",
+    "*.js",
   ]),
 ]);
 

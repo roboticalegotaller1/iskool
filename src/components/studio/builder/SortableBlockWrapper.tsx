@@ -295,6 +295,7 @@ export const SortableBlockWrapper: React.FC<Props> = ({ block, index, totalBlock
               type="button"
               {...attributes}
               {...listeners}
+              onClick={(e) => e.stopPropagation()}
               aria-label="Arrastra para reordenar"
               title="Arrastra para reordenar"
               className="p-1.5 rounded-xl text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 cursor-grab active:cursor-grabbing hover:scale-110 active:scale-95 transition-all duration-150"
@@ -316,7 +317,7 @@ export const SortableBlockWrapper: React.FC<Props> = ({ block, index, totalBlock
             {/* Título editable */}
             {isEditingTitle ? (
               <div className="flex items-center gap-1">
-                <input
+                <input aria-label="Campo de texto de formulario"
                   type="text"
                   value={block.title}
                   autoFocus
@@ -325,7 +326,7 @@ export const SortableBlockWrapper: React.FC<Props> = ({ block, index, totalBlock
                   onChange={(e) => updateBlockTitle(block.id, e.target.value)}
                   className="px-2 py-0.5 text-xs font-bold bg-white dark:bg-zinc-800 border border-emerald-400 rounded-lg text-slate-900 dark:text-white focus:outline-none shadow-sm"
                 />
-                <button
+                <button aria-label="Confirmar selección"
                   type="button"
                   onClick={() => setIsEditingTitle(false)}
                   className="p-1 text-emerald-500 hover:bg-emerald-50 rounded hover:scale-110 active:scale-95 transition-transform"

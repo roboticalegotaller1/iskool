@@ -179,6 +179,7 @@ const RUBRIC_CRITERIA = [
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
+import { useTeacherSocialLoopStream } from '@/hooks/useTeacherSocialLoopStream';
 
 export default function TeacherDashboard() {
   const { user, loading } = useAuth();
@@ -281,6 +282,12 @@ export default function TeacherDashboard() {
       unsubscribeFromPortfolioChanges();
     };
   }, [subscribeToPortfolioChanges, unsubscribeFromPortfolioChanges]);
+
+  // Teacher Social Loop en tiempo real vía Server-Sent Events (SSE sin polling)
+  const { latestMilestone, clearMilestone } = useTeacherSocialLoopStream({
+    teacherId: normalizedTeacherId,
+    enabled: Boolean(user)
+  });
 
   // Estados para Asistencia
   const [selectedAttendanceGroup, setSelectedAttendanceGroup] = useState<string>('');
@@ -1201,9 +1208,9 @@ export default function TeacherDashboard() {
                           />
                           {/* Controles de Zoom */}
                           <div className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-white/95 dark:bg-zinc-900/95 p-1 px-2.5 rounded-full shadow-lg border border-zinc-100 dark:border-zinc-800 text-[10px] font-semibold text-zinc-500">
-                            <button onClick={() => setZoomLevel(z => Math.max(50, z - 25))} className="hover:text-zinc-800"><ZoomOut className="h-3 w-3" /></button>
+                            <button aria-label="Acción institucional" onClick={() => setZoomLevel(z => Math.max(50, z - 25))} className="hover:text-zinc-800"><ZoomOut className="h-3 w-3" /></button>
                             <span className="w-8 text-center">{zoomLevel}%</span>
-                            <button onClick={() => setZoomLevel(z => Math.min(200, z + 25))} className="hover:text-zinc-800"><ZoomIn className="h-3 w-3" /></button>
+                            <button aria-label="Acción institucional" onClick={() => setZoomLevel(z => Math.min(200, z + 25))} className="hover:text-zinc-800"><ZoomIn className="h-3 w-3" /></button>
                           </div>
                         </div>
                       ) : (
@@ -1474,7 +1481,7 @@ export default function TeacherDashboard() {
                         <div className="relative rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden bg-white dark:bg-zinc-900 shadow-inner group">
                           
                           {/* Textarea */}
-                          <textarea
+                          <textarea aria-label="Campo de texto de formulario"
                             value={commentText}
                             disabled={isEvaluated}
                             onChange={(e) => setCommentText(e.target.value)}
@@ -1572,7 +1579,7 @@ export default function TeacherDashboard() {
                               <span className="text-zinc-500 dark:text-zinc-400">🔬 Pensamiento Científico:</span>
                               <span className="text-indigo-600 dark:text-indigo-400">+{xpBreakdown.scientific} XP</span>
                             </div>
-                            <input
+                            <input aria-label="Campo de texto de formulario"
                               type="range"
                               min="0"
                               max="50"
@@ -1590,7 +1597,7 @@ export default function TeacherDashboard() {
                               <span className="text-zinc-500 dark:text-zinc-400">🧠 Pensamiento Crítico:</span>
                               <span className="text-purple-600 dark:text-purple-400">+{xpBreakdown.critical} XP</span>
                             </div>
-                            <input
+                            <input aria-label="Campo de texto de formulario"
                               type="range"
                               min="0"
                               max="50"
@@ -1608,7 +1615,7 @@ export default function TeacherDashboard() {
                               <span className="text-zinc-500 dark:text-zinc-400">🤝 Trabajo Colaborativo:</span>
                               <span className="text-emerald-600 dark:text-emerald-400">+{xpBreakdown.collaborative} XP</span>
                             </div>
-                            <input
+                            <input aria-label="Campo de texto de formulario"
                               type="range"
                               min="0"
                               max="50"
@@ -1626,7 +1633,7 @@ export default function TeacherDashboard() {
                               <span className="text-zinc-500 dark:text-zinc-400">💬 Comunicación y Lenguaje:</span>
                               <span className="text-pink-600 dark:text-pink-400">+{xpBreakdown.communication} XP</span>
                             </div>
-                            <input
+                            <input aria-label="Campo de texto de formulario"
                               type="range"
                               min="0"
                               max="50"
@@ -1725,7 +1732,7 @@ export default function TeacherDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800">
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-bold text-zinc-400 uppercase">Grupo</label>
-                <select
+                <select aria-label="Seleccionar opción"
                   value={selectedAttendanceGroup}
                   onChange={(e) => setSelectedAttendanceGroup(e.target.value)}
                   className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
@@ -1741,7 +1748,7 @@ export default function TeacherDashboard() {
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-bold text-zinc-400 uppercase">Asignatura</label>
-                <select
+                <select aria-label="Seleccionar opción"
                   value={selectedAttendanceSubject}
                   onChange={(e) => setSelectedAttendanceSubject(e.target.value)}
                   className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
@@ -1757,7 +1764,7 @@ export default function TeacherDashboard() {
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-bold text-zinc-400 uppercase">Fecha de Asistencia</label>
-                <input
+                <input aria-label="Seleccionar fecha"
                   type="date"
                   value={attendanceDate}
                   onChange={(e) => setAttendanceDate(e.target.value)}
@@ -1827,7 +1834,7 @@ export default function TeacherDashboard() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
+                <input aria-label="Filtrar por nombre o matrícula..."
                   type="text"
                   value={attendanceSearch}
                   onChange={(e) => setAttendanceSearch(e.target.value)}
@@ -1911,7 +1918,7 @@ export default function TeacherDashboard() {
                             </div>
                           </td>
                           <td className="py-4 px-6">
-                            <input
+                            <input aria-label="Observación del comportamiento o retardo..."
                               type="text"
                               value={record.comments || ''}
                               onChange={(e) => {
@@ -1981,7 +1988,7 @@ export default function TeacherDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800">
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-bold text-zinc-400 uppercase">Grupo</label>
-                <select
+                <select aria-label="Seleccionar opción"
                   value={selectedTaskGroup}
                   onChange={(e) => setSelectedTaskGroup(e.target.value)}
                   className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
@@ -1997,7 +2004,7 @@ export default function TeacherDashboard() {
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-bold text-zinc-400 uppercase">Asignatura</label>
-                <select
+                <select aria-label="Seleccionar opción"
                   value={selectedTaskSubject}
                   onChange={(e) => setSelectedTaskSubject(e.target.value)}
                   className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
@@ -2013,7 +2020,7 @@ export default function TeacherDashboard() {
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-bold text-zinc-400 uppercase">Tarea Escolar (Quest)</label>
-                <select
+                <select aria-label="Seleccionar opción"
                   value={selectedTaskQuest}
                   onChange={(e) => {
                     setSelectedTaskQuest(e.target.value);
@@ -2042,7 +2049,7 @@ export default function TeacherDashboard() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
+                <input aria-label="Buscar alumno en esta entrega..."
                   type="text"
                   value={taskSearch}
                   onChange={(e) => setTaskSearch(e.target.value)}
@@ -2328,7 +2335,7 @@ export default function TeacherDashboard() {
                 <Bookmark className="h-5 w-5 text-blue-500 animate-pulse" />
                 Vincular Evidencia a Tarea
               </h3>
-              <button 
+              <button aria-label="Cerrar" 
                 onClick={() => setIsLinkModalOpen(false)} 
                 className="p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
               >
@@ -2403,7 +2410,7 @@ export default function TeacherDashboard() {
                 <div className="bg-zinc-50/50 dark:bg-zinc-950/20 p-4 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 flex flex-col gap-4 text-xs font-bold text-left">
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[9px] text-zinc-400 uppercase font-bold">Título de la Evidencia</label>
-                    <input
+                    <input aria-label="Ej. Proyecto Físico Entregado en Clase"
                       type="text"
                       value={mockEvidenceTitle}
                       onChange={(e) => setMockEvidenceTitle(e.target.value)}
@@ -2414,7 +2421,7 @@ export default function TeacherDashboard() {
 
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[9px] text-zinc-400 uppercase font-bold">Detalles / Anotación del Profesor</label>
-                    <textarea
+                    <textarea aria-label="Indica observaciones breves sobre lo entregado físicamente..."
                       rows={2}
                       value={mockEvidenceDesc}
                       onChange={(e) => setMockEvidenceDesc(e.target.value)}
@@ -2426,7 +2433,7 @@ export default function TeacherDashboard() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-bold">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[9px] text-zinc-400 uppercase font-bold">Tipo de Entrega</label>
-                      <select
+                      <select aria-label="Seleccionar opción"
                         value={mockEvidenceFileType}
                         onChange={(e) => setMockEvidenceFileType(e.target.value as any)}
                         className="w-full text-xs p-2.5 rounded-xl border border-zinc-250 dark:border-zinc-800 bg-white dark:bg-zinc-955 text-zinc-800 dark:text-zinc-150 focus:outline-none focus:border-blue-500 font-bold"
@@ -2440,7 +2447,7 @@ export default function TeacherDashboard() {
 
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[9px] text-zinc-400 uppercase font-bold">Imagen de Evidencia (Simulada)</label>
-                      <input
+                      <input aria-label="https://..."
                         type="text"
                         value={mockEvidenceFileUrl}
                         onChange={(e) => setMockEvidenceFileUrl(e.target.value)}
@@ -2505,7 +2512,7 @@ export default function TeacherDashboard() {
                 <Bell className="h-5 w-5 text-amber-500 animate-bounce" />
                 Enviar Alerta Escolar a Tutor
               </h3>
-              <button 
+              <button aria-label="Cerrar" 
                 onClick={() => setIsNotifyModalOpen(false)} 
                 className="p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
               >
@@ -2554,7 +2561,7 @@ export default function TeacherDashboard() {
             {/* Campo de Mensaje Personalizable */}
             <div className="flex flex-col gap-1.5">
               <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wide">Cuerpo del Mensaje (Editable)</label>
-              <textarea
+              <textarea aria-label="Escribe el aviso personalizado..."
                 rows={5}
                 value={customMessage}
                 onChange={(e) => setCustomMessage(e.target.value)}
@@ -2609,7 +2616,7 @@ export default function TeacherDashboard() {
             
             {/* Cabecera del Modal */}
             <div className="relative p-6 border-b border-zinc-100 dark:border-zinc-850 flex flex-col md:flex-row items-center gap-6 bg-zinc-50/50 dark:bg-zinc-950/20">
-              <button 
+              <button aria-label="Cerrar" 
                 onClick={() => setSelectedStudent(null)}
                 className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
               >
@@ -2920,7 +2927,7 @@ export default function TeacherDashboard() {
                                   <input
                                     type="text"
                                     required
-                                    placeholder="Ej. Incumplimiento o distracción reiterada en clase."
+                                    placeholder="Ej. Incumplimiento o distracción reiterada en clase." aria-label="Ej. Incumplimiento o distracción reiterada en clase."
                                     value={revocationReason}
                                     onChange={(e) => setRevocationReason(e.target.value)}
                                     className="w-full text-xs p-2 rounded-lg border border-rose-200 bg-white text-zinc-900 font-medium"
@@ -3003,7 +3010,7 @@ export default function TeacherDashboard() {
                       <input
                         type="text"
                         required
-                        placeholder="Ej. Pergamino de la Razón"
+                        placeholder="Ej. Pergamino de la Razón" aria-label="Ej. Pergamino de la Razón"
                         value={newArtName}
                         onChange={(e) => setNewArtName(e.target.value)}
                         className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent mt-1 text-zinc-900 dark:text-white font-bold"
@@ -3013,7 +3020,7 @@ export default function TeacherDashboard() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="text-[10px] font-bold text-zinc-400 uppercase">Costo en Monedas:</label>
-                        <input
+                        <input aria-label="Cantidad numérica"
                           type="number"
                           min="5"
                           max="500"
@@ -3024,7 +3031,7 @@ export default function TeacherDashboard() {
                       </div>
                       <div>
                         <label className="text-[10px] font-bold text-zinc-400 uppercase">Icono Visual:</label>
-                        <select
+                        <select aria-label="Seleccionar opción"
                           value={newArtIcon}
                           onChange={(e) => setNewArtIcon(e.target.value)}
                           className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-transparent dark:bg-zinc-900 mt-1 text-zinc-900 dark:text-white font-bold"
@@ -3044,7 +3051,7 @@ export default function TeacherDashboard() {
 
                     <div>
                       <label className="text-[10px] font-bold text-zinc-400 uppercase">Descripción de Lore:</label>
-                      <textarea
+                      <textarea aria-label="Describe la historia del artefacto y cómo ayuda al alumno."
                         required
                         placeholder="Describe la historia del artefacto y cómo ayuda al alumno."
                         value={newArtDesc}
@@ -3135,6 +3142,26 @@ export default function TeacherDashboard() {
         <RosterImporterModal
           onClose={() => setIsRosterImporterOpen(false)}
         />
+      )}
+
+      {latestMilestone && (
+        <div className="fixed bottom-6 right-6 z-[250] bg-zinc-950/95 border-2 border-cyan-500/50 backdrop-blur-xl p-4 rounded-2xl shadow-[0_0_30px_rgba(6,182,212,0.4)] flex items-center gap-3 animate-in slide-in-from-bottom-8 duration-300 max-w-md">
+          <div className="text-3xl p-2 bg-cyan-950/60 border border-cyan-500/30 rounded-xl select-none animate-pulse">🎯</div>
+          <div className="flex-1 text-left">
+            <div className="flex items-center gap-2">
+              <strong className="text-[10px] font-black text-cyan-400 uppercase tracking-widest block">Teacher Social Loop en Vivo</strong>
+              <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">SSE Activo</span>
+            </div>
+            <p className="text-xs text-zinc-100 font-bold mt-0.5">
+              {latestMilestone.message}
+            </p>
+            <div className="flex items-center gap-3 mt-1 text-[10px] text-zinc-400">
+              <span className="text-amber-400 font-black">+{latestMilestone.teacherKarmaReward} Karma</span>
+              <span className="text-cyan-400 font-black">+{latestMilestone.teacherXpReward} XP Docente</span>
+            </div>
+          </div>
+          <button onClick={clearMilestone} className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition-colors">✕</button>
+        </div>
       )}
 
       {realtimeToast && (

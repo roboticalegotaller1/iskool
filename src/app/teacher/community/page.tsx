@@ -2,9 +2,24 @@
 
 import React from 'react';
 import { Header } from '@/components/Header';
-import { TeacherCommunityView } from '@/components/TeacherCommunityView';
+import dynamic from 'next/dynamic';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+
+const TeacherCommunityView = dynamic(
+  () => import('@/components/TeacherCommunityView').then((m) => m.TeacherCommunityView),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-96 flex items-center justify-center bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800/80">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-bold text-slate-500 dark:text-zinc-400">Cargando Red Social Docente...</span>
+        </div>
+      </div>
+    ),
+  }
+);
 
 export default function TeacherCommunityPage() {
   const router = useRouter();

@@ -1196,7 +1196,7 @@ export default function SuperUserAdminPage() {
           campus = 'Primaria Torres';
         }
 
-        let level: 'primaria' | 'secundaria' = campus.includes('Secundaria') ? 'secundaria' : 'primaria';
+        const level: 'primaria' | 'secundaria' = campus.includes('Secundaria') ? 'secundaria' : 'primaria';
         let grade = '1º';
         const gradeMatch = line.match(/([1-6])º?/);
         if (gradeMatch) {
@@ -1618,7 +1618,7 @@ export default function SuperUserAdminPage() {
                     </div>
                     <span className="leading-relaxed">{deletionFeedback}</span>
                   </div>
-                  <button 
+                  <button aria-label="Cerrar" 
                     onClick={() => setDeletionFeedback(null)} 
                     className="p-1 rounded-lg text-emerald-700 hover:bg-emerald-100/60 cursor-pointer shrink-0 ml-2"
                   >
@@ -1917,7 +1917,7 @@ export default function SuperUserAdminPage() {
               {isSuperUser ? (
                 <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-xl text-xs shrink-0">
                   <span className="text-slate-500 font-bold">Colegio:</span>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={activeSchoolId || ''}
                     onChange={(e) => selectSchool(e.target.value === 'none' ? null : e.target.value)}
                     className="bg-transparent text-slate-900 font-black outline-none cursor-pointer"
@@ -2052,10 +2052,7 @@ export default function SuperUserAdminPage() {
                 }`}
               >
                 <Users className="h-4 w-4" />
-                <span>Docentes</span>
-                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${activeTab === 'teachers' ? 'bg-indigo-700 text-white' : 'bg-slate-200/80 text-slate-700'}`}>
-                  {schoolTeachers.length}
-                </span>
+                <span>{isSuperUser ? `Profesores & Tokens IA (${schoolTeachers.length})` : `Plantilla Docente (${schoolTeachers.length})`}</span>
               </button>
 
               <button
@@ -2168,7 +2165,7 @@ export default function SuperUserAdminPage() {
             {/* Global Campus Selector Pill Fijo a la Derecha */}
             <div className="flex items-center gap-1.5 shrink-0 border-l border-slate-200 pl-3 text-xs">
               <span className="text-slate-500 font-bold uppercase text-[10px] tracking-wider hidden lg:inline">Plantel:</span>
-              <select
+              <select aria-label="Seleccionar opción"
                 value={selectedCampus}
                 onChange={(e) => setSelectedCampus(e.target.value)}
                 className="bg-slate-100 hover:bg-slate-200/70 border border-slate-200 text-slate-800 px-2.5 py-1.5 rounded-xl text-xs font-bold outline-none focus:border-indigo-500 transition-all cursor-pointer shadow-xs"
@@ -2457,7 +2454,7 @@ export default function SuperUserAdminPage() {
               <div className="flex items-center gap-2 w-full sm:w-auto flex-1 max-w-md">
                 <div className="relative w-full">
                   <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-500" />
-                  <input
+                  <input aria-label="Buscar profesor por nombre o correo..."
                     type="text"
                     value={teacherSearch}
                     onChange={(e) => setTeacherSearch(e.target.value)}
@@ -2605,7 +2602,7 @@ export default function SuperUserAdminPage() {
               <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
                 <div className="relative flex-1 min-w-[220px]">
                   <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-500" />
-                  <input
+                  <input aria-label="Buscar por nombre, CURP o correo..."
                     type="text"
                     value={studentSearch}
                     onChange={(e) => setStudentSearch(e.target.value)}
@@ -2614,7 +2611,7 @@ export default function SuperUserAdminPage() {
                   />
                 </div>
 
-                <select
+                <select aria-label="Seleccionar opción"
                   value={studentGradeFilter}
                   onChange={(e) => setStudentGradeFilter(e.target.value)}
                   className="bg-slate-950 border border-white/10 text-slate-300 px-3 py-2 rounded-xl text-xs font-bold outline-none focus:border-indigo-500"
@@ -2631,7 +2628,7 @@ export default function SuperUserAdminPage() {
                   <option value="3º Sec">3º de Secundaria</option>
                 </select>
 
-                <select
+                <select aria-label="Seleccionar opción"
                   value={studentStatusFilter}
                   onChange={(e) => setStudentStatusFilter(e.target.value)}
                   className="bg-slate-950 border border-white/10 text-slate-300 px-3 py-2 rounded-xl text-xs font-bold outline-none focus:border-indigo-500"
@@ -2885,7 +2882,7 @@ export default function SuperUserAdminPage() {
 
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-slate-300">Colegio a Regular:</span>
-                      <select
+                      <select aria-label="Seleccionar opción"
                         value={selectedLimitsSchoolId}
                         onChange={(e) => setSelectedLimitsSchoolId(e.target.value)}
                         className="bg-slate-950 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
@@ -2908,7 +2905,7 @@ export default function SuperUserAdminPage() {
                           {currentDirectorLimits.canManageCampuses ? 'Habilitado para Dirección' : 'Exclusivo del Dueño'}
                         </span>
                       </div>
-                      <button
+                      <button aria-label="Acción institucional"
                         type="button"
                         onClick={() => {
                           updateDirectorLimits(selectedLimitsSchoolId, {
@@ -2934,7 +2931,7 @@ export default function SuperUserAdminPage() {
                           {currentDirectorLimits.canModifyTuitionFees ? 'Autorizado al Director' : 'Fijado por Presidencia'}
                         </span>
                       </div>
-                      <button
+                      <button aria-label="Acción institucional"
                         type="button"
                         onClick={() => {
                           updateDirectorLimits(selectedLimitsSchoolId, {
@@ -2960,7 +2957,7 @@ export default function SuperUserAdminPage() {
                           {currentDirectorLimits.canRegisterCoordinators ? 'Director puede registrar' : 'Solo Dueño de Empresa'}
                         </span>
                       </div>
-                      <button
+                      <button aria-label="Acción institucional"
                         type="button"
                         onClick={() => {
                           updateDirectorLimits(selectedLimitsSchoolId, {
@@ -2986,7 +2983,7 @@ export default function SuperUserAdminPage() {
                           Máx. beca sin autorización
                         </span>
                       </div>
-                      <select
+                      <select aria-label="Seleccionar opción"
                         value={currentDirectorLimits.maxScholarshipDiscountPercent}
                         onChange={(e) => {
                           updateDirectorLimits(selectedLimitsSchoolId, {
@@ -3055,7 +3052,7 @@ export default function SuperUserAdminPage() {
 
               <div className="relative flex-1 min-w-[240px] max-w-md">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-                <input
+                <input aria-label="Buscar por nombre, correo, campus o rol..."
                   type="text"
                   value={staffSearchQuery}
                   onChange={(e) => setStaffSearchQuery(e.target.value)}
@@ -3262,7 +3259,7 @@ export default function SuperUserAdminPage() {
                         <p className="text-xs text-slate-400">Registrar cuenta oficial con credenciales institucionales</p>
                       </div>
                     </div>
-                    <button
+                    <button aria-label="Cerrar"
                       type="button"
                       onClick={() => setShowAddStaffModal(false)}
                       className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
@@ -3329,7 +3326,7 @@ export default function SuperUserAdminPage() {
                           Colegio Asignado *
                         </label>
                         {isSuperUser ? (
-                          <select
+                          <select aria-label="Seleccionar opción"
                             value={newStaffForm.school_id}
                             onChange={(e) => setNewStaffForm(prev => ({ ...prev, school_id: e.target.value }))}
                             className="w-full bg-slate-950/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
@@ -3352,7 +3349,7 @@ export default function SuperUserAdminPage() {
                         <label className="text-xs font-bold text-slate-300 block mb-1">
                           Plantel / Área Operativa
                         </label>
-                        <input
+                        <input aria-label="Ej. Dirección General, Primaria Jardines"
                           type="text"
                           value={newStaffForm.campus_name}
                           onChange={(e) => setNewStaffForm(prev => ({ ...prev, campus_name: e.target.value }))}
@@ -3368,7 +3365,7 @@ export default function SuperUserAdminPage() {
                         <label className="text-xs font-bold text-slate-300 block mb-1">
                           Nombre(s) *
                         </label>
-                        <input
+                        <input aria-label="Ej. Roberto"
                           type="text"
                           required
                           value={newStaffForm.first_name}
@@ -3382,7 +3379,7 @@ export default function SuperUserAdminPage() {
                         <label className="text-xs font-bold text-slate-300 block mb-1">
                           Apellidos *
                         </label>
-                        <input
+                        <input aria-label="Ej. Garza Hernández"
                           type="text"
                           required
                           value={newStaffForm.last_name}
@@ -3421,7 +3418,7 @@ export default function SuperUserAdminPage() {
                             </button>
                           </div>
                         </div>
-                        <input
+                        <input aria-label="Campo de texto de formulario"
                           type="email"
                           value={newStaffForm.email}
                           onChange={(e) => setNewStaffForm(prev => ({ ...prev, email: e.target.value }))}
@@ -3434,7 +3431,7 @@ export default function SuperUserAdminPage() {
                         <label className="text-xs font-bold text-slate-300 block mb-1">
                           Teléfono Institucional
                         </label>
-                        <input
+                        <input aria-label="55-4160-8800"
                           type="text"
                           value={newStaffForm.phone}
                           onChange={(e) => setNewStaffForm(prev => ({ ...prev, phone: e.target.value }))}
@@ -3458,7 +3455,7 @@ export default function SuperUserAdminPage() {
                           <RefreshCw className="h-3 w-3" /> Generar otra
                         </button>
                       </div>
-                      <input
+                      <input aria-label="Campo de texto de formulario"
                         type="text"
                         value={newStaffForm.temporary_password}
                         onChange={(e) => setNewStaffForm(prev => ({ ...prev, temporary_password: e.target.value }))}
@@ -3889,7 +3886,7 @@ export default function SuperUserAdminPage() {
                   <label className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold border border-white/10 flex items-center gap-1.5 text-xs cursor-pointer transition-all">
                     <ImageIcon className="h-4 w-4 text-indigo-400" />
                     <span>Cambiar Imagen</span>
-                    <input
+                    <input aria-label="Subir archivo o comprobante"
                       type="file"
                       accept="image/*"
                       className="hidden"
@@ -3921,7 +3918,7 @@ export default function SuperUserAdminPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                 <div>
                   <label className="text-slate-300 font-bold block mb-1">Nombre Institucional Oficial *</label>
-                  <input
+                  <input aria-label="Ej. Colegio Montessori del Valle"
                     type="text"
                     required
                     value={instEditForm.name}
@@ -3933,7 +3930,7 @@ export default function SuperUserAdminPage() {
 
                 <div>
                   <label className="text-slate-300 font-bold block mb-1">Clave de Centro de Trabajo (CCT / SEP) *</label>
-                  <input
+                  <input aria-label="Ej. 09PPR8800M"
                     type="text"
                     required
                     value={instEditForm.cct}
@@ -3945,7 +3942,7 @@ export default function SuperUserAdminPage() {
 
                 <div>
                   <label className="text-slate-300 font-bold block mb-1">Lema o Tagline Institucional</label>
-                  <input
+                  <input aria-label="Ej. Excelencia educativa con valores y tecnología"
                     type="text"
                     value={instEditForm.tagline}
                     onChange={(e) => setInstEditForm({ ...instEditForm, tagline: e.target.value })}
@@ -3956,7 +3953,7 @@ export default function SuperUserAdminPage() {
 
                 <div>
                   <label className="text-slate-300 font-bold block mb-1">Director / Coordinador General</label>
-                  <input
+                  <input aria-label="Ej. Dirección General"
                     type="text"
                     value={instEditForm.coordinatorName}
                     onChange={(e) => setInstEditForm({ ...instEditForm, coordinatorName: e.target.value })}
@@ -3967,7 +3964,7 @@ export default function SuperUserAdminPage() {
 
                 <div>
                   <label className="text-slate-300 font-bold block mb-1">Dirección Corporativa Principal</label>
-                  <input
+                  <input aria-label="Ej. Av. Universidad 1200, Col. Del Valle, CDMX"
                     type="text"
                     value={instEditForm.address}
                     onChange={(e) => setInstEditForm({ ...instEditForm, address: e.target.value })}
@@ -3978,7 +3975,7 @@ export default function SuperUserAdminPage() {
 
                 <div>
                   <label className="text-slate-300 font-bold block mb-1">Teléfono Institucional</label>
-                  <input
+                  <input aria-label="Ej. 55-0000-0000"
                     type="text"
                     value={instEditForm.phone}
                     onChange={(e) => setInstEditForm({ ...instEditForm, phone: e.target.value })}
@@ -3989,7 +3986,7 @@ export default function SuperUserAdminPage() {
 
                 <div className="md:col-span-2">
                   <label className="text-slate-300 font-bold block mb-1">Sitio Web Oficial</label>
-                  <input
+                  <input aria-label="Ej. https://montessoridelvalle.edu.mx"
                     type="text"
                     value={instEditForm.website}
                     onChange={(e) => setInstEditForm({ ...instEditForm, website: e.target.value })}
@@ -4166,7 +4163,7 @@ export default function SuperUserAdminPage() {
               <div className="flex flex-wrap items-center gap-2.5">
                 <div className="relative min-w-[240px]">
                   <Search className="h-4 w-4 absolute left-3 top-3 text-slate-400" />
-                  <input
+                  <input aria-label="Buscar por colaborador, RFC o cargo..."
                     type="text"
                     value={payrollSearchTerm}
                     onChange={(e) => setPayrollSearchTerm(e.target.value)}
@@ -4174,7 +4171,7 @@ export default function SuperUserAdminPage() {
                     className="w-full bg-slate-950 border border-white/10 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-emerald-500 transition-all"
                   />
                   {payrollSearchTerm && (
-                    <button
+                    <button aria-label="Cerrar"
                       onClick={() => setPayrollSearchTerm('')}
                       className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white cursor-pointer"
                     >
@@ -4184,7 +4181,7 @@ export default function SuperUserAdminPage() {
                 </div>
 
                 {/* Filtro por Departamento */}
-                <select
+                <select aria-label="Seleccionar opción"
                   value={payrollDepartmentFilter}
                   onChange={(e) => setPayrollDepartmentFilter(e.target.value)}
                   className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs font-bold text-slate-200 outline-none focus:border-emerald-500 transition-all cursor-pointer"
@@ -4196,7 +4193,7 @@ export default function SuperUserAdminPage() {
                 </select>
 
                 {/* Filtro por Estatus */}
-                <select
+                <select aria-label="Seleccionar opción"
                   value={payrollStatusFilter}
                   onChange={(e) => setPayrollStatusFilter(e.target.value)}
                   className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs font-bold text-slate-200 outline-none focus:border-emerald-500 transition-all cursor-pointer"
@@ -4444,7 +4441,7 @@ export default function SuperUserAdminPage() {
             <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
               <div className="relative min-w-[280px] flex-1 max-w-md">
                 <Search className="h-4 w-4 absolute left-3 top-3 text-slate-400" />
-                <input
+                <input aria-label="Buscar por alumno, matrícula, CURP, motivo u operador..."
                   type="text"
                   value={deletionSearchTerm}
                   onChange={(e) => setDeletionSearchTerm(e.target.value)}
@@ -4592,7 +4589,7 @@ export default function SuperUserAdminPage() {
                 </div>
               </div>
 
-              <button 
+              <button aria-label="Cerrar" 
                 onClick={() => setSelectedWorkshopDetail(null)} 
                 className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer"
               >
@@ -4824,7 +4821,7 @@ export default function SuperUserAdminPage() {
 
                   <div className="relative min-w-[200px]">
                     <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-500" />
-                    <input
+                    <input aria-label="Buscar alumno en grupo..."
                       type="text"
                       value={workshopStudentSearch}
                       onChange={(e) => setWorkshopStudentSearch(e.target.value)}
@@ -4927,7 +4924,7 @@ export default function SuperUserAdminPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-400 font-bold block mb-1">Nombre(s) *</label>
-                  <input
+                  <input aria-label="Ej. Rodrigo"
                     type="text"
                     required
                     value={newStudentForm.first_name}
@@ -4938,7 +4935,7 @@ export default function SuperUserAdminPage() {
                 </div>
                 <div>
                   <label className="text-slate-400 font-bold block mb-1">Segundo Nombre</label>
-                  <input
+                  <input aria-label="Ej. Andrés"
                     type="text"
                     value={newStudentForm.second_name}
                     onChange={(e) => setNewStudentForm({ ...newStudentForm, second_name: e.target.value })}
@@ -4951,7 +4948,7 @@ export default function SuperUserAdminPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-400 font-bold block mb-1">Primer Apellido *</label>
-                  <input
+                  <input aria-label="Ej. Morales"
                     type="text"
                     required
                     value={newStudentForm.last_name_1}
@@ -4962,7 +4959,7 @@ export default function SuperUserAdminPage() {
                 </div>
                 <div>
                   <label className="text-slate-400 font-bold block mb-1">Segundo Apellido</label>
-                  <input
+                  <input aria-label="Ej. Ríos"
                     type="text"
                     value={newStudentForm.last_name_2}
                     onChange={(e) => setNewStudentForm({ ...newStudentForm, last_name_2: e.target.value })}
@@ -4975,7 +4972,7 @@ export default function SuperUserAdminPage() {
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="text-slate-400 font-bold block mb-1">Nivel Educativo *</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={newStudentForm.level}
                     onChange={(e) => {
                       const lvl = e.target.value as 'primaria' | 'secundaria' | 'preparatoria';
@@ -4997,7 +4994,7 @@ export default function SuperUserAdminPage() {
                 </div>
                 <div>
                   <label className="text-slate-400 font-bold block mb-1">Grado Escolar *</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={newStudentForm.grade}
                     onChange={(e) => setNewStudentForm({ ...newStudentForm, grade: e.target.value })}
                     className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-bold outline-none focus:border-indigo-500"
@@ -5033,7 +5030,7 @@ export default function SuperUserAdminPage() {
                 </div>
                 <div>
                   <label className="text-slate-400 font-bold block mb-1">Plantel / Sede *</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={newStudentForm.campus_name}
                     onChange={(e) => {
                       const selCampus = schoolCampuses.find(c => c.name === e.target.value);
@@ -5055,7 +5052,7 @@ export default function SuperUserAdminPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-400 font-bold block mb-1">Beca Inicial (%)</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={newStudentForm.scholarship_percentage}
                     onChange={(e) => setNewStudentForm({ ...newStudentForm, scholarship_percentage: Number(e.target.value) })}
                     className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-indigo-500"
@@ -5070,7 +5067,7 @@ export default function SuperUserAdminPage() {
                 </div>
                 <div>
                   <label className="text-slate-400 font-bold block mb-1">Modalidad de Beca</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={newStudentForm.scholarship_type}
                     onChange={(e) => setNewStudentForm({ ...newStudentForm, scholarship_type: e.target.value as any })}
                     className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-indigo-500"
@@ -5126,7 +5123,7 @@ export default function SuperUserAdminPage() {
             <div className="space-y-3">
               {/* Opción 1: Archivo */}
               <div className="p-4 rounded-2xl bg-slate-950 border border-dashed border-white/20 text-center space-y-2">
-                <input
+                <input aria-label="Subir archivo o comprobante"
                   type="file"
                   ref={fileInputRef}
                   onChange={handleFileUpload}
@@ -5146,7 +5143,7 @@ export default function SuperUserAdminPage() {
               {/* Opción 2: Pegado de Texto */}
               <div>
                 <label className="text-xs font-bold text-slate-400 block mb-1">O pega el texto copiado de Excel:</label>
-                <textarea
+                <textarea aria-label="Ejemplo:&#10;Mateo, Ortiz, Medina, Primaria Torres, 4º&#10;Valentina, Hernández, Silva, Primaria Jardines, 1º&#10;Diego, Jiménez, Ríos, Secundaria Torres, 2º"
                   rows={4}
                   value={bulkTextInput}
                   onChange={(e) => {
@@ -5236,7 +5233,7 @@ export default function SuperUserAdminPage() {
                 <label className="text-slate-400 font-bold block mb-1">Contraseña Actual:</label>
                 <div className="p-2.5 rounded-xl bg-slate-950 border border-white/10 font-mono text-amber-400 font-bold flex items-center justify-between">
                   <span>{showPasswordModal.currentPassword || '---'}</span>
-                  <button
+                  <button aria-label="Copiar al portapapeles"
                     onClick={() => copyToClipboard(showPasswordModal.currentPassword || '', 'modal-pwd')}
                     className="text-slate-400 hover:text-white cursor-pointer"
                   >
@@ -5285,7 +5282,7 @@ export default function SuperUserAdminPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-400 font-bold block mb-1">Nombre(s) *</label>
-                  <input
+                  <input aria-label="Ej. Laura"
                     type="text"
                     required
                     value={newTeacherForm.first_name}
@@ -5296,7 +5293,7 @@ export default function SuperUserAdminPage() {
                 </div>
                 <div>
                   <label className="text-slate-400 font-bold block mb-1">Apellidos *</label>
-                  <input
+                  <input aria-label="Ej. González"
                     type="text"
                     required
                     value={newTeacherForm.last_name}
@@ -5309,7 +5306,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-400 font-bold block mb-1">Plantel Principal *</label>
-                <select
+                <select aria-label="Seleccionar opción"
                   value={newTeacherForm.campus_name}
                   onChange={(e) => setNewTeacherForm({ ...newTeacherForm, campus_name: e.target.value })}
                   className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-indigo-500"
@@ -5323,7 +5320,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-400 font-bold block mb-1">Materias Asignadas (separadas por coma)</label>
-                <input
+                <input aria-label="Ej. Matemáticas, Robótica"
                   type="text"
                   value={newTeacherForm.assigned_subjects}
                   onChange={(e) => setNewTeacherForm({ ...newTeacherForm, assigned_subjects: e.target.value })}
@@ -5379,7 +5376,7 @@ export default function SuperUserAdminPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-2">
                   <label className="text-slate-300 font-bold block mb-1">Nombre del Taller Académico *</label>
-                  <input
+                  <input aria-label="Ej. Ajedrez Estratégico, Programación con Python..."
                     type="text"
                     required
                     value={newWorkshopForm.name}
@@ -5398,7 +5395,7 @@ export default function SuperUserAdminPage() {
 
                 <div>
                   <label className="text-slate-300 font-bold block mb-1">Clave Oficial / SEP</label>
-                  <input
+                  <input aria-label="Ej. OPT-AJE"
                     type="text"
                     value={newWorkshopForm.sep_code}
                     onChange={(e) => setNewWorkshopForm({ ...newWorkshopForm, sep_code: e.target.value.toUpperCase() })}
@@ -5412,7 +5409,7 @@ export default function SuperUserAdminPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-300 font-bold block mb-1">Categoría del Taller *</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={newWorkshopForm.workshop_category}
                     onChange={(e) => setNewWorkshopForm({ ...newWorkshopForm, workshop_category: e.target.value as any })}
                     className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-amber-500 cursor-pointer"
@@ -5427,7 +5424,7 @@ export default function SuperUserAdminPage() {
 
                 <div>
                   <label className="text-slate-300 font-bold block mb-1">Plantel(es) donde se imparte *</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={newWorkshopForm.campus_name}
                     onChange={(e) => setNewWorkshopForm({ ...newWorkshopForm, campus_name: e.target.value })}
                     className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-amber-500 cursor-pointer"
@@ -5444,7 +5441,7 @@ export default function SuperUserAdminPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-300 font-bold block mb-1">Profesor / Instructor Responsable</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={newWorkshopForm.instructor_name}
                     onChange={(e) => setNewWorkshopForm({ ...newWorkshopForm, instructor_name: e.target.value })}
                     className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-amber-500 cursor-pointer"
@@ -5460,7 +5457,7 @@ export default function SuperUserAdminPage() {
 
                 <div>
                   <label className="text-slate-300 font-bold block mb-1">Horario y Días</label>
-                  <input
+                  <input aria-label="Ej. Martes y Jueves 16:00 - 17:30"
                     type="text"
                     value={newWorkshopForm.schedule}
                     onChange={(e) => setNewWorkshopForm({ ...newWorkshopForm, schedule: e.target.value })}
@@ -5473,7 +5470,7 @@ export default function SuperUserAdminPage() {
               {/* Descripción */}
               <div>
                 <label className="text-slate-300 font-bold block mb-1">Objetivos Pedagógicos y Descripción</label>
-                <textarea
+                <textarea aria-label="Describe las competencias que desarrollarán los alumnos en este taller..."
                   rows={2}
                   value={newWorkshopForm.description}
                   onChange={(e) => setNewWorkshopForm({ ...newWorkshopForm, description: e.target.value })}
@@ -5496,7 +5493,7 @@ export default function SuperUserAdminPage() {
                     )}
                   </div>
 
-                  <input
+                  <input aria-label="Subir archivo o comprobante"
                     type="file"
                     ref={workshopImageRef}
                     accept="image/*"
@@ -5538,7 +5535,7 @@ export default function SuperUserAdminPage() {
                     )}
                   </div>
 
-                  <input
+                  <input aria-label="Subir archivo o comprobante"
                     type="file"
                     ref={workshopSyllabusRef}
                     accept=".pdf,.doc,.docx,.txt"
@@ -5608,7 +5605,7 @@ export default function SuperUserAdminPage() {
             <form onSubmit={handleSaveAnnualPlan} className="space-y-3 text-xs">
               <div>
                 <label className="text-slate-300 font-bold block mb-1">Título de la Planeación Anual</label>
-                <input
+                <input aria-label="Ej. Planeación Anual 2026 - Robótica 4º Primaria Jardines"
                   type="text"
                   required
                   value={annualPlanForm.plan_title}
@@ -5620,7 +5617,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-300 font-bold block mb-1">Eje Formativo / PDA Oficial de la SEP</label>
-                <input
+                <input aria-label="Ej. Pensamiento analítico y resolución colaborativa..."
                   type="text"
                   value={annualPlanForm.pda_focus}
                   onChange={(e) => setAnnualPlanForm({ ...annualPlanForm, pda_focus: e.target.value })}
@@ -5631,7 +5628,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-300 font-bold block mb-1">Proyecto Comunitario Integrador</label>
-                <input
+                <input aria-label="Ej. Eco-Robot Comunitario para el patio escolar"
                   type="text"
                   value={annualPlanForm.project_title}
                   onChange={(e) => setAnnualPlanForm({ ...annualPlanForm, project_title: e.target.value })}
@@ -5642,7 +5639,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-300 font-bold block mb-1">Trimestre 1 (Objetivos & Actividades)</label>
-                <textarea
+                <textarea aria-label="Campo de texto de formulario"
                   rows={2}
                   value={annualPlanForm.term_1}
                   onChange={(e) => setAnnualPlanForm({ ...annualPlanForm, term_1: e.target.value })}
@@ -5652,7 +5649,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-300 font-bold block mb-1">Trimestre 2 (Objetivos & Actividades)</label>
-                <textarea
+                <textarea aria-label="Campo de texto de formulario"
                   rows={2}
                   value={annualPlanForm.term_2}
                   onChange={(e) => setAnnualPlanForm({ ...annualPlanForm, term_2: e.target.value })}
@@ -5662,7 +5659,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-300 font-bold block mb-1">Trimestre 3 (Objetivos & Actividades)</label>
-                <textarea
+                <textarea aria-label="Campo de texto de formulario"
                   rows={2}
                   value={annualPlanForm.term_3}
                   onChange={(e) => setAnnualPlanForm({ ...annualPlanForm, term_3: e.target.value })}
@@ -5703,7 +5700,7 @@ export default function SuperUserAdminPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-300 font-bold block mb-1">Identificador de Bloque</label>
-                  <input
+                  <input aria-label="Ej. Bloque 5"
                     type="text"
                     required
                     value={newTopicForm.block}
@@ -5714,7 +5711,7 @@ export default function SuperUserAdminPage() {
                 </div>
                 <div>
                   <label className="text-slate-300 font-bold block mb-1">Duración (Semanas)</label>
-                  <input
+                  <input aria-label="Ej. 4 Semanas"
                     type="text"
                     required
                     value={newTopicForm.weeks}
@@ -5727,7 +5724,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-300 font-bold block mb-1">Título del Módulo o Tema *</label>
-                <input
+                <input aria-label="Ej. Aplicaciones Avanzadas y Torneo Escolar"
                   type="text"
                   required
                   value={newTopicForm.title}
@@ -5739,7 +5736,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-300 font-bold block mb-1">Descripción de Contenidos</label>
-                <textarea
+                <textarea aria-label="Temas que se impartirán en este bloque..."
                   rows={2}
                   value={newTopicForm.description}
                   onChange={(e) => setNewTopicForm({ ...newTopicForm, description: e.target.value })}
@@ -5750,7 +5747,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-300 font-bold block mb-1">Entregable Tangible / Evaluación</label>
-                <input
+                <input aria-label="Ej. Rúbrica y prototipo final"
                   type="text"
                   value={newTopicForm.deliverable}
                   onChange={(e) => setNewTopicForm({ ...newTopicForm, deliverable: e.target.value })}
@@ -5791,7 +5788,7 @@ export default function SuperUserAdminPage() {
             <form onSubmit={handleCreateSubject} className="space-y-3 text-xs">
               <div>
                 <label className="text-slate-400 font-bold block mb-1">Nombre de la Disciplina *</label>
-                <input
+                <input aria-label="Ej. Lengua Extranjera Inglés"
                   type="text"
                   required
                   value={newSubjectForm.name}
@@ -5803,7 +5800,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-400 font-bold block mb-1">Clave Curricular</label>
-                <input
+                <input aria-label="Ej. NEM-ING"
                   type="text"
                   value={newSubjectForm.sep_code}
                   onChange={(e) => setNewSubjectForm({ ...newSubjectForm, sep_code: e.target.value })}
@@ -5849,7 +5846,7 @@ export default function SuperUserAdminPage() {
             <form onSubmit={handleCreateSchool} className="space-y-3.5 text-xs">
               <div>
                 <label className="text-slate-400 font-bold block mb-1">Nombre Oficial del Colegio *</label>
-                <input
+                <input aria-label="Ej. Colegio Montessori del Valle"
                   type="text"
                   required
                   value={newSchoolForm.name}
@@ -5862,7 +5859,7 @@ export default function SuperUserAdminPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-400 font-bold block mb-1">Clave SEP / CCT *</label>
-                  <input
+                  <input aria-label="Ej. 09PPR8800M"
                     type="text"
                     required
                     value={newSchoolForm.cct}
@@ -5873,7 +5870,7 @@ export default function SuperUserAdminPage() {
                 </div>
                 <div>
                   <label className="text-slate-400 font-bold block mb-1">Planteles Iniciales</label>
-                  <select
+                  <select aria-label="Seleccionar opción"
                     value={newSchoolForm.campusesCount}
                     onChange={(e) => setNewSchoolForm({ ...newSchoolForm, campusesCount: Number(e.target.value) })}
                     className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white outline-none focus:border-indigo-500 font-bold"
@@ -5887,7 +5884,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-400 font-bold block mb-1">Lema o Tagline Institucional</label>
-                <input
+                <input aria-label="Ej. Formando líderes con valores y tecnología"
                   type="text"
                   value={newSchoolForm.tagline}
                   onChange={(e) => setNewSchoolForm({ ...newSchoolForm, tagline: e.target.value })}
@@ -5899,7 +5896,7 @@ export default function SuperUserAdminPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-400 font-bold block mb-1">Director / Coordinador General</label>
-                  <input
+                  <input aria-label="Ej. Dr. Fernando Morales"
                     type="text"
                     value={newSchoolForm.coordinatorName}
                     onChange={(e) => setNewSchoolForm({ ...newSchoolForm, coordinatorName: e.target.value })}
@@ -5909,7 +5906,7 @@ export default function SuperUserAdminPage() {
                 </div>
                 <div>
                   <label className="text-slate-400 font-bold block mb-1">Teléfono Institucional</label>
-                  <input
+                  <input aria-label="Ej. 55-1234-5678"
                     type="text"
                     value={newSchoolForm.phone}
                     onChange={(e) => setNewSchoolForm({ ...newSchoolForm, phone: e.target.value })}
@@ -5921,7 +5918,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-400 font-bold block mb-1">Dirección Principal</label>
-                <input
+                <input aria-label="Ej. Av. Universidad 1200, Col. Del Valle, CDMX"
                   type="text"
                   value={newSchoolForm.address}
                   onChange={(e) => setNewSchoolForm({ ...newSchoolForm, address: e.target.value })}
@@ -5933,7 +5930,7 @@ export default function SuperUserAdminPage() {
               <div>
                 <label className="text-slate-400 font-bold block mb-1">Logotipo Institucional (URL o Subir)</label>
                 <div className="flex gap-2">
-                  <input
+                  <input aria-label="https://... o sube una imagen"
                     type="text"
                     value={newSchoolForm.logoUrl}
                     onChange={(e) => setNewSchoolForm({ ...newSchoolForm, logoUrl: e.target.value })}
@@ -5943,7 +5940,7 @@ export default function SuperUserAdminPage() {
                   <label className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold border border-white/10 flex items-center gap-1 cursor-pointer">
                     <ImageIcon className="h-4 w-4" />
                     <span>Subir</span>
-                    <input
+                    <input aria-label="Subir archivo o comprobante"
                       type="file"
                       accept="image/*"
                       className="hidden"
@@ -6041,7 +6038,7 @@ export default function SuperUserAdminPage() {
                 >
                   <Edit3 className="h-3.5 w-3.5 text-amber-400" /> Editar Plantel
                 </button>
-                <button
+                <button aria-label="Cerrar"
                   onClick={() => setSelectedCampusDetail(null)}
                   className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-all cursor-pointer"
                 >
@@ -6192,7 +6189,7 @@ export default function SuperUserAdminPage() {
                 <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-950 p-3 rounded-2xl border border-white/10">
                   <div className="relative flex-1 min-w-[220px]">
                     <Search className="absolute left-3.5 top-2.5 h-4 w-4 text-slate-500" />
-                    <input
+                    <input aria-label="Buscar alumnos en este plantel por nombre, CURP o grado..."
                       type="text"
                       value={campusSearchStudent}
                       onChange={(e) => setCampusSearchStudent(e.target.value)}
@@ -6324,7 +6321,7 @@ export default function SuperUserAdminPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="text-slate-400 font-bold block mb-1">Nombre del Plantel</label>
-                      <input
+                      <input aria-label="Campo de texto de formulario"
                         type="text"
                         disabled
                         value={selectedCampusDetail.name}
@@ -6333,7 +6330,7 @@ export default function SuperUserAdminPage() {
                     </div>
                     <div>
                       <label className="text-slate-400 font-bold block mb-1">Nivel Educativo</label>
-                      <input
+                      <input aria-label="Campo de texto de formulario"
                         type="text"
                         disabled
                         value={`Nivel ${selectedCampusDetail.level.toUpperCase()}`}
@@ -6344,7 +6341,7 @@ export default function SuperUserAdminPage() {
 
                   <div>
                     <label className="text-slate-400 font-bold block mb-1">Dirección Oficial</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       disabled
                       value={selectedCampusDetail.address || 'Ciudad de México'}
@@ -6354,7 +6351,7 @@ export default function SuperUserAdminPage() {
 
                   <div>
                     <label className="text-slate-400 font-bold block mb-1">Teléfono</label>
-                    <input
+                    <input aria-label="Campo de texto de formulario"
                       type="text"
                       disabled
                       value={selectedCampusDetail.phone || '55-4160-8800'}
@@ -6400,7 +6397,7 @@ export default function SuperUserAdminPage() {
             <form onSubmit={handleCreateCampus} className="space-y-3.5 text-xs">
               <div>
                 <label className="text-slate-400 font-bold block mb-1">Nombre del Plantel *</label>
-                <input
+                <input aria-label="Ej. Primaria Campestre, Campus Sur..."
                   type="text"
                   required
                   value={newCampusForm.name}
@@ -6412,7 +6409,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-400 font-bold block mb-1">Nivel Educativo *</label>
-                <select
+                <select aria-label="Seleccionar opción"
                   value={newCampusForm.level}
                   onChange={(e) => setNewCampusForm({ ...newCampusForm, level: e.target.value as any })}
                   className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-bold outline-none focus:border-indigo-500"
@@ -6425,7 +6422,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-400 font-bold block mb-1">Dirección del Plantel</label>
-                <input
+                <input aria-label="Ej. Av. De las Rosas 500, CDMX"
                   type="text"
                   value={newCampusForm.address}
                   onChange={(e) => setNewCampusForm({ ...newCampusForm, address: e.target.value })}
@@ -6436,7 +6433,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-400 font-bold block mb-1">Teléfono</label>
-                <input
+                <input aria-label="Ej. 55-4160-8800"
                   type="text"
                   value={newCampusForm.phone}
                   onChange={(e) => setNewCampusForm({ ...newCampusForm, phone: e.target.value })}
@@ -6483,7 +6480,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-400 font-bold block mb-1">Grado Escolar *</label>
-                <select
+                <select aria-label="Seleccionar opción"
                   value={newGroupForm.grade}
                   onChange={(e) => setNewGroupForm({ ...newGroupForm, grade: e.target.value })}
                   className="w-full bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-white font-bold outline-none focus:border-indigo-500"
@@ -6496,7 +6493,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-400 font-bold block mb-1">Letra / Identificador de Grupo *</label>
-                <input
+                <input aria-label="Ej. B, C, D..."
                   type="text"
                   required
                   value={newGroupForm.name}
@@ -6540,7 +6537,7 @@ export default function SuperUserAdminPage() {
             <form onSubmit={handleUpdateCampus} className="space-y-3.5 text-xs">
               <div>
                 <label className="text-slate-400 font-bold block mb-1">Nombre del Plantel *</label>
-                <input
+                <input aria-label="Campo de texto de formulario"
                   type="text"
                   required
                   value={editingCampusForm.name}
@@ -6551,7 +6548,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-400 font-bold block mb-1">Dirección</label>
-                <input
+                <input aria-label="Campo de texto de formulario"
                   type="text"
                   value={editingCampusForm.address}
                   onChange={(e) => setEditingCampusForm({ ...editingCampusForm, address: e.target.value })}
@@ -6561,7 +6558,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-400 font-bold block mb-1">Teléfono</label>
-                <input
+                <input aria-label="Campo de texto de formulario"
                   type="text"
                   value={editingCampusForm.phone}
                   onChange={(e) => setEditingCampusForm({ ...editingCampusForm, phone: e.target.value })}
@@ -6788,7 +6785,7 @@ export default function SuperUserAdminPage() {
                   </p>
                 </div>
               </div>
-              <button
+              <button aria-label="Cerrar"
                 onClick={() => setSelectedPayrollRecordForAdjust(null)}
                 className="text-slate-400 hover:text-white"
               >
@@ -6801,7 +6798,7 @@ export default function SuperUserAdminPage() {
                 <label className="text-slate-300 font-bold block mb-1">
                   Sueldo Base Quincenal ($ MXN)
                 </label>
-                <input
+                <input aria-label="Cantidad numérica"
                   type="number"
                   min="0"
                   step="100"
@@ -6816,7 +6813,7 @@ export default function SuperUserAdminPage() {
                 <label className="text-slate-300 font-bold block mb-1">
                   Bonos Pedagógicos / Desempeño ($ MXN)
                 </label>
-                <input
+                <input aria-label="Cantidad numérica"
                   type="number"
                   min="0"
                   step="50"
@@ -6830,7 +6827,7 @@ export default function SuperUserAdminPage() {
                 <label className="text-slate-300 font-bold block mb-1">
                   Retenciones y Deducciones de Ley ($ MXN)
                 </label>
-                <input
+                <input aria-label="Cantidad numérica"
                   type="number"
                   min="0"
                   step="50"
@@ -6844,7 +6841,7 @@ export default function SuperUserAdminPage() {
                 <label className="text-slate-300 font-bold block mb-1">
                   Notas / Justificación del Ajuste
                 </label>
-                <textarea
+                <textarea aria-label="Ej: Bono otorgado por metas alcanzadas en NEM 2024..."
                   rows={2}
                   value={adjustSalaryForm.notes}
                   onChange={(e) => setAdjustSalaryForm({ ...adjustSalaryForm, notes: e.target.value })}
@@ -6887,7 +6884,7 @@ export default function SuperUserAdminPage() {
       )}
 
       {/* Input oculto para cambio de logotipo de colegios existentes */}
-      <input
+      <input aria-label="Subir archivo o comprobante"
         type="file"
         ref={schoolLogoFileInputRef}
         accept="image/*"
@@ -6940,7 +6937,7 @@ export default function SuperUserAdminPage() {
               <label className="text-xs font-bold text-slate-700">
                 Motivo de la baja:
               </label>
-              <select
+              <select aria-label="Seleccionar opción"
                 value={adminDeleteReason}
                 onChange={(e) => setAdminDeleteReason(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-900 focus:outline-none focus:border-rose-500 cursor-pointer"
@@ -7065,7 +7062,7 @@ export default function SuperUserAdminPage() {
               </label>
               <input
                 type="text"
-                placeholder="Escribe ELIMINAR para confirmar"
+                placeholder="Escribe ELIMINAR para confirmar" aria-label="Escribe ELIMINAR para confirmar"
                 value={deleteConfirmationText}
                 onChange={(e) => setDeleteConfirmationText(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20"

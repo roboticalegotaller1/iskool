@@ -25,7 +25,7 @@ export const LogicBranchBlockView: React.FC<Props> = ({ block }) => {
           <span>Regla de Ramificación Pedagógica:</span>
         </label>
         <div className="flex flex-col sm:flex-row items-center gap-2">
-          <select
+          <select aria-label="Seleccionar opción"
             value={condition}
             onChange={(e) => updateBlockData(block.id, { condition: e.target.value })}
             className="flex-1 w-full px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-750 text-slate-800 dark:text-zinc-200 focus:outline-none"
@@ -38,7 +38,7 @@ export const LogicBranchBlockView: React.FC<Props> = ({ block }) => {
           {condition === 'score_above_percentage' && (
             <div className="flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-950 px-3 py-1 rounded-xl border border-indigo-200 dark:border-indigo-800">
               <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">Umbral:</span>
-              <input
+              <input aria-label="Cantidad numérica"
                 type="number"
                 min={10}
                 max={100}
@@ -61,7 +61,7 @@ export const LogicBranchBlockView: React.FC<Props> = ({ block }) => {
             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
             <span>Si se cumple la condición:</span>
           </label>
-          <select
+          <select aria-label="Seleccionar opción"
             value={ifTrueNextBlockId || ''}
             onChange={(e) => updateBlockData(block.id, { ifTrueNextBlockId: e.target.value || null })}
             className="w-full px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-zinc-850 border border-emerald-200 dark:border-emerald-800 text-slate-800 dark:text-zinc-200 focus:outline-none"
@@ -81,7 +81,7 @@ export const LogicBranchBlockView: React.FC<Props> = ({ block }) => {
             <XCircle className="w-4 h-4 text-rose-500" />
             <span>Si NO se cumple (Refuerzo):</span>
           </label>
-          <select
+          <select aria-label="Seleccionar opción"
             value={ifFalseNextBlockId || ''}
             onChange={(e) => updateBlockData(block.id, { ifFalseNextBlockId: e.target.value || null })}
             className="w-full px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-zinc-850 border border-rose-200 dark:border-rose-800 text-slate-800 dark:text-zinc-200 focus:outline-none"

@@ -374,7 +374,7 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
             type="button"
             onClick={onClose}
             className="w-11 h-11 rounded-full bg-white dark:bg-zinc-800 shadow-md border-2 border-cyan-400 dark:border-cyan-600 flex items-center justify-center text-cyan-600 dark:text-cyan-400 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-            title="Volver"
+            title="Volver" aria-label="Volver"
           >
             <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
           </button>
@@ -382,7 +382,7 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
           {/* Nombre y Título de Entrenador */}
           <div className="flex items-center gap-2">
             {isEditingName ? (
-              <input
+              <input aria-label="Campo de texto de formulario"
                 type="text"
                 value={avatarName}
                 onChange={(e) => setAvatarName(e.target.value)}

@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeSync } from "@/components/ThemeSync";
 import { AuthProvider } from "@/context/AuthContext";
 import { GlobalHelpFab } from "@/components/help/GlobalHelpFab";
+import { ComingSoonProvider } from "@/components/ui/ComingSoonModal";
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -38,8 +39,10 @@ export default function RootLayout({
       <body className="min-h-full w-full max-w-full overflow-x-hidden flex flex-col bg-slate-50 text-slate-900 font-sans">
         <ThemeSync />
         <AuthProvider>
-          {children}
-          <GlobalHelpFab />
+          <ComingSoonProvider>
+            {children}
+            <GlobalHelpFab />
+          </ComingSoonProvider>
         </AuthProvider>
       </body>
     </html>
