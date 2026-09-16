@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useMemo } from 'react';
-import { StudentStats, StudentAvatar, StudentMessage, UserProfile, Quest, ElementalPetRace, PetEvolutionStage } from '../types';
-import { STATS_MAP_SEED, AVATAR_MAP_SEED, STUDENT_INVENTORY_SEED, STUDENT_MESSAGES_SEED, STUDENTS_LIST_SEED } from './seeds';
+import { StudentStats, StudentAvatar, StudentMessage, UserProfile, Quest, ElementalPetRace, PetEvolutionStage, DetailedStudent } from '../types';
+import { STATS_MAP_SEED, AVATAR_MAP_SEED, STUDENT_INVENTORY_SEED, STUDENT_MESSAGES_SEED, STUDENTS_LIST_SEED, DETAILED_STUDENTS_SEED } from './seeds';
 import { supabase } from '@/lib/supabaseClient';
 import { calculateAcademicPower, AcademicPowerResult } from '@/utils/academicPower';
 import { useGamificationStore } from './useGamificationStore';
@@ -1752,6 +1752,33 @@ export const useCurrentStudentAcademicLevel = (): StudentAcademicLevelInfo => {
     }
     // Fallback pedagógico predeterminado a Primaria Baja (1º de Primaria)
     return getStudentAcademicLevelInfo({ level: 'primaria', grade: '1º' });
+  }, [activeStudentId, detailedStudents]);
+};
+
+export const useCurrentDetailedStudent = (): DetailedStudent | undefined => {
+  const activeStudentId = useStudentStore(state => state.activeStudentId);
+  const detailedStudents = useSchoolAdminStore(state => state.detailedStudents);
+  
+  return useMemo(() => {
+    const norm = normalizeStudentId(activeStudentId);
+    // 1. Buscar en detailedStudents de useSchoolAdminStore
+    const fromDetailed = detailedStudents?.find(s => 
+      s.id === activeStudentId || 
+      s.id === norm || 
+      mapStudentIdToUuid(s.id) === activeStudentId
+    );
+    if (fromDetailed) return fromDetailed;
+
+    // 2. Buscar en DETAILED_STUDENTS_SEED (expedientes 360 completos)
+    const fromSeed = DETAILED_STUDENTS_SEED.find(s => 
+      s.id === activeStudentId || 
+      s.id === norm || 
+      mapStudentIdToUuid(s.id) === activeStudentId
+    );
+    if (fromSeed) return fromSeed;
+
+    // 3. Fallback predeterminado a Lucas Hernández (std-pa)
+    return DETAILED_STUDENTS_SEED.find(s => s.id === 'std-pa');
   }, [activeStudentId, detailedStudents]);
 };
 

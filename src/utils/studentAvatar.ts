@@ -1,10 +1,40 @@
 import { DetailedStudent } from '@/types';
 
 export const getStudentAvatarUrl = (student: Partial<DetailedStudent> | null | undefined): string => {
-  if (!student) return 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=250&auto=format&fit=crop&q=80';
+  if (!student) return '/images/students/lucas.png';
   
-  if (student.photo_url && student.photo_url.startsWith('http')) {
+  // 1. Si el expediente 360 cuenta con URL de foto (local, remota o base64)
+  if (student.photo_url && (student.photo_url.startsWith('http') || student.photo_url.startsWith('/') || student.photo_url.startsWith('data:'))) {
+    if (student.photo_url.includes('std-pa') || student.photo_url.includes('lucas')) {
+      return '/images/students/lucas.png';
+    }
+    if (student.photo_url.includes('std-pb') || student.photo_url.includes('santi')) {
+      return '/images/students/santi.png';
+    }
+    if (student.photo_url.includes('std-sec') || student.photo_url.includes('elena')) {
+      return '/images/students/elena.png';
+    }
+    if (student.photo_url.includes('std-prep') || student.photo_url.includes('mateo')) {
+      return '/images/students/mateo.png';
+    }
     return student.photo_url;
+  }
+
+  // 2. Coincidencia por ID o Nombre de pila oficial del alumno
+  const id = (student.id || '').toLowerCase();
+  const firstName = (student.first_name || '').toLowerCase();
+
+  if (id === 'std-pa' || firstName.includes('lucas')) {
+    return '/images/students/lucas.png';
+  }
+  if (id === 'std-pb' || firstName.includes('santi')) {
+    return '/images/students/santi.png';
+  }
+  if (id === 'std-sec' || firstName.includes('elena')) {
+    return '/images/students/elena.png';
+  }
+  if (id === 'std-prep' || firstName.includes('mateo')) {
+    return '/images/students/mateo.png';
   }
   
   const birthYear = student.birth_date ? parseInt(student.birth_date.split('-')[0]) : 2012;

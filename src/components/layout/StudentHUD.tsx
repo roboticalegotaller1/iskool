@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { useStudentStore, useCurrentStudentStats, useCurrentStudentAcademicLevel } from '@/store/useStudentStore';
+import { useStudentStore, useCurrentStudentStats, useCurrentStudentAcademicLevel, useCurrentDetailedStudent } from '@/store/useStudentStore';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { getStudentAvatarUrl } from '@/utils/studentAvatar';
 import { 
@@ -32,15 +32,15 @@ export function StudentHUD() {
 
   const stats = useCurrentStudentStats();
   const activeLevel = useCurrentStudentAcademicLevel();
-  const activeStudentId = useStudentStore(state => state.activeStudentId);
-  const detailedStudents = useSchoolAdminStore(state => state.detailedStudents);
-  const activeStudent = detailedStudents.find(s => s.id === activeStudentId);
+  const activeStudent = useCurrentDetailedStudent();
 
   const isSuperUser = isPlatformSuperUser(user);
   const isManagementRole = isSuperUser || user?.role === 'owner' || user?.role === 'admin' || user?.role === 'director';
 
   const avatarUrl = getStudentAvatarUrl(activeStudent);
-  const studentName = activeStudent ? `${activeStudent.first_name} ${activeStudent.last_name_1}` : 'Héroe Estudiante';
+  const studentName = activeStudent 
+    ? `${activeStudent.first_name} ${activeStudent.last_name_1 || ''}`.trim() 
+    : 'Lucas Hernández';
 
   // Cálculo de progreso de XP hacia el próximo nivel
   const currentLevel = stats?.level || 1;
@@ -62,13 +62,16 @@ export function StudentHUD() {
         
         {/* LADO IZQUIERDO: HUD AVATAR & RANGO DEL JUGADOR */}
         <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
-          <Link href="/student/avatar" className="relative group/avatar cursor-pointer" title="Personalizar Avatar">
+          <Link href="/student/avatar" className="relative group/avatar cursor-pointer" title={`Expediente 360° · ${studentName}`}>
             <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-2xl p-0.5 bg-gradient-to-tr from-amber-500 via-indigo-500 to-teal-400 group-hover:scale-105 transition-transform shadow-md shadow-indigo-950/60">
               <div className="w-full h-full rounded-[14px] bg-slate-900 overflow-hidden flex items-center justify-center">
                 <img
                   src={avatarUrl}
                   alt={studentName}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = '/images/students/lucas.png';
+                  }}
                 />
               </div>
             </div>
