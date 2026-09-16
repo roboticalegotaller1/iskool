@@ -1,7 +1,7 @@
 ---
 tags: [iskool, arquitectura, smart-connections]
 archivo_origen: "src/types/index.ts"
-fecha_sincronizacion: "2026-09-07T03:59:13.456Z"
+fecha_sincronizacion: "2026-09-16T03:20:41.351Z"
 ---
 
 # index.ts
@@ -17,16 +17,46 @@ Este archivo contiene el código fuente de arquitectura para **index.ts**.
 export type UserRole = 'owner' | 'superadmin' | 'admin' | 'director' | 'coordinator' | 'billing' | 'teacher' | 'student' | 'parent' | 'tutor';
 
 export const ROLE_HIERARCHY_LEVEL: Record<UserRole, number> = {
-  owner: 1,
-  superadmin: 1,
-  admin: 1,
-  director: 2,
-  coordinator: 3,
-  billing: 3,
-  teacher: 4,
-  student: 5,
-  parent: 5,
-  tutor: 5
+  superadmin: 1, // Directivos de ISkool (Super Usuario Global de Plataforma)
+  admin: 1,      // Directivos de ISkool (Super Usuario Global de Plataforma)
+  owner: 2,      // Dueño de Escuela / Presidencia (Restringido exclusivamente a su school_id)
+  director: 3,   // Director General de Plantel
+  coordinator: 4,
+  billing: 4,
+  teacher: 5,
+  student: 6,
+  parent: 6,
+  tutor: 6
+};
+
+/**
+ * Predicado de Super Usuario de Plataforma:
+ * Solo aplica a las 3 cuentas de directivos de ISkool (superadmin / admin global).
+ * Los dueños de escuela hacia abajo quedan estrictamente circunscritos a su propio sistema escolar.
+ */
+export const isPlatformSuperUser = (userProfile?: { role?: string; email?: string } | null): boolean => {
+  if (!userProfile) return false;
+  return userProfile.role === 'superadmin' || userProfile.role === 'admin';
+};
+
+/**
+ * Resolver de Escuela Eficaz (Single Source of Truth para Aislamiento Multi-Colegio):
+ * Garantiza cero desincronización:
+ * 1. Para no superusuarios con school_id asignado, devuelve de forma inmutable su propio colegio.
+ * 2. Para superusuarios, respeta la escuela activa seleccionada en el conmutador de plataforma.
+ */
+export const resolveEffectiveSchoolId = (
+  userProfile?: { role?: string; email?: string; school_id?: string } | null,
+  activeSchoolId?: string | null,
+  fallback: string = 'sch-jjrosseau'
+): string => {
+  if (userProfile && !isPlatformSuperUser(userProfile) && userProfile.school_id) {
+    return userProfile.school_id === 'sch-jjr' ? 'sch-jjrosseau' : userProfile.school_id;
+  }
+  if (activeSchoolId) {
+    return activeSchoolId === 'sch-jjr' ? 'sch-jjrosseau' : activeSchoolId;
+  }
+  return fallback;
 };
 
 /**
@@ -98,6 +128,8 @@ export interface UserProfile {
   role: UserRole;
   email: string;
   phone?: string;
+  birth_date?: string; // Fecha de nacimiento (ISO YYYY-MM-DD)
+  age?: number; // Edad en años cumplidos
   campus_id?: string;
   campus_name?: string;
   ai_tokens_consumed?: number; // Contador de tokens consumidos del Asistente Pedagógico IA
@@ -421,9 +453,12 @@ export interface StudentStats {
   funding_credits?: number;
 
   // Mascotas y Compañeros Místicos
-  pet_stage?: 'egg' | 'baby' | 'adult' | 'mystic';
+  pet_stage?: PetEvolutionStage;
   pet_energy?: number;
   pet_happiness?: number;
+  pet_bonded?: boolean;
+  tasks_completed_count?: number;
+  friendship_exp?: number;
 
   // Afinidades Elementales / Stats NEM (Nueva Escuela Mexicana)
   stat_lenguajes?: number;
@@ -431,6 +466,33 @@ export interface StudentStats {
   stat_etica?: number;
   stat_de_lo_humano?: number;
 }
+
+/**
+ * @typedef {('cryo_dragon' | 'pyros_dragon' | 'aqua_dragon' | 'voltfang_wolf' | 'flora_stag' | 'astro_caterpillar' | 'umbra_cat' | 'solari_phoenix' | 'terra_golem' | 'axo_axolotl' | 'dragon' | 'lobo' | 'venado' | 'gusano' | 'gatito')} ElementalPetRace
+ * @description 10 Razas elementales místicas de compañeros escolares + compatibilidad retroactiva.
+ */
+export type ElementalPetRace =
+  | 'cryo_dragon'       // Dragón Glacial (Hielo)
+  | 'pyros_dragon'      // Dragón Solar (Fuego)
+  | 'aqua_dragon'       // Dragón de Mareas (Agua)
+  | 'voltfang_wolf'     // Lobo Tormenta (Rayo)
+  | 'flora_stag'        // Venado Silvestre (Planta)
+  | 'astro_caterpillar' // Gusano Alquímico (Cosmos)
+  | 'umbra_cat'         // Felino Sombrío (Luna)
+  | 'solari_phoenix'    // Fénix Dorado (Luz)
+  | 'terra_golem'       // Gólem de Cristal (Tierra)
+  | 'axo_axolotl'       // Axolote Éter (Bioluminiscencia)
+  | 'dragon'            // Alias heredado (Cryo)
+  | 'lobo'              // Alias heredado (Voltfang)
+  | 'venado'            // Alias heredado (Flora)
+  | 'gusano'            // Alias heredado (Astro)
+  | 'gatito';           // Alias heredado (Umbra)
+
+/**
+ * @typedef {('egg' | 'baby' | 'child' | 'teen' | 'adult' | 'mystic')} PetEvolutionStage
+ * @description 5 Etapas evolutivas del compañero (Huevo, Bebé, Niño, Adolescente, Adulto).
+ */
+export type PetEvolutionStage = 'egg' | 'baby' | 'child' | 'teen' | 'adult' | 'mystic';
 
 /**
  * @interface StudentAvatar
@@ -451,18 +513,37 @@ export interface StudentAvatar {
   unlocked_items: string[];
   updated_at: string;
 
-  // Mascota Virtual (Solo nivel Primaria Baja)
-  pet_type?: 'dragon' | 'lobo' | 'venado' | 'gusano' | 'gatito';
+  // Mascota Virtual y Compañero Místico
+  pet_type?: ElementalPetRace;
   pet_name?: string;
   pet_hunger?: number;
   pet_happiness?: number;
   pet_outfit?: string;
+  pet_bonded?: boolean;
+  pet_birth_date?: string;
+
+  // Santuario y Hogar del Compañero
+  sanctuary_house_type?: 'forest_cabin' | 'cosmic_observatory' | 'ice_temple' | 'magma_forge' | 'coral_sanctuary';
+  sanctuary_placed_items?: Record<number, string>;
+  sanctuary_inventory?: string[];
 
   // RPG Customizer fields
-  gender?: 'male' | 'female';
+  gender?: 'female' | 'male' | 'neutral';
   rpg_class?: string;
   head_type?: string;
   skin_tone?: string;
+  race_feature?: string;
+  body_scale?: 'compact' | 'normal' | 'tall';
+  animation_state?: 'idle' | 'cast' | 'cheer' | 'walk';
+
+  // Vestimenta Modular
+  equipped_shoes?: string;
+  equipped_bottom?: string;
+  equipped_top?: string;
+  equipped_outerwear?: string;
+  equipped_hat?: string;
+  equipped_accessory?: string;
+  wardrobe_inventory?: string[];
 }
 
 /**
@@ -831,6 +912,38 @@ export interface DetailedStudent {
   monthly_tuition_override?: number;
   behavior_reports?: { id?: string; date: string; description: string; reporter: string; parent_reply?: string; replied_at?: string }[];
   teacher_notes?: { id?: string; date: string; note: string; teacher_name: string; parent_reply?: string; replied_at?: string }[];
+  average_grade?: number; // Promedio general de calificaciones (escala 0-10)
+  academic_standing?: 'excelente' | 'notable' | 'suficiente' | 'regular' | 'en_riesgo';
+  subject_grades?: { subject_name: string; grade: number }[];
+  deleted_at?: string;
+  deleted_by?: string;
+  deleted_reason?: string;
+}
+
+/**
+ * @interface StudentDeletionAuditLog
+ * @description Registro de auditoría inmutable de alumnos dados de baja o eliminados del sistema.
+ * @stateImpact Consultado por el portal de Super Usuario para trazabilidad de fecha y hora exacta.
+ */
+export interface StudentDeletionAuditLog {
+  id: string;
+  student_id: string;
+  student_name: string;
+  enrollment_id?: string;
+  curp?: string;
+  school_id: string;
+  school_name?: string;
+  campus_name?: string;
+  level: string;
+  grade: string;
+  deleted_at: string; // ISO timestamp
+  deleted_at_formatted: string; // Fecha y hora completa legible
+  deleted_by_id: string;
+  deleted_by_name: string;
+  deleted_by_role: UserRole;
+  deleted_by_email: string;
+  reason: string;
+  previous_status?: string;
 }
 
 export interface TuitionPricing {
@@ -968,12 +1081,14 @@ export interface StudioActivityJSON {
   title: string;
   description: string;
   questions: StudioActivityQuestion[];
+  readingText?: string; // Texto base de comprensión lectora para el Escape Room Lógico
   task_type?: string;
   blocks?: any[];
   connections?: any[];
   startNodeId?: string | null;
   metadata?: any;
   logicChallengeData?: any;
+  language?: string;
 }
 export type CanvasActivityJSON = StudioActivityJSON;
 

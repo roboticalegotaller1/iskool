@@ -1,7 +1,7 @@
 ---
 tags: [iskool, arquitectura, smart-connections]
 archivo_origen: "schema_gamification.sql"
-fecha_sincronizacion: "2026-09-07T03:59:13.448Z"
+fecha_sincronizacion: "2026-09-16T03:20:41.343Z"
 ---
 
 # schema_gamification.sql
