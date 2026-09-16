@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useMemo } from 'react';
 import { StudentStats, StudentAvatar, StudentMessage, UserProfile, Quest, ElementalPetRace, PetEvolutionStage, DetailedStudent } from '../types';
-import { STATS_MAP_SEED, AVATAR_MAP_SEED, STUDENT_INVENTORY_SEED, STUDENT_MESSAGES_SEED, STUDENTS_LIST_SEED, DETAILED_STUDENTS_SEED } from './seeds';
+import { STATS_MAP_SEED, AVATAR_MAP_SEED, STUDENT_INVENTORY_SEED, STUDENT_MESSAGES_SEED, STUDENTS_LIST_SEED, DETAILED_STUDENTS_SEED, DEFAULT_ARTIFACTS_SEED } from './seeds';
 import { supabase } from '@/lib/supabaseClient';
 import { calculateAcademicPower, AcademicPowerResult } from '@/utils/academicPower';
 import { useGamificationStore } from './useGamificationStore';
@@ -1215,7 +1215,8 @@ export const useStudentStore = create<StudentStoreState>()(
       const currentStats = allStats[normId] || allStats[studentId];
       if (!currentStats) return;
 
-      const price = 50;
+      const targetArtifact = DEFAULT_ARTIFACTS_SEED.find(a => a.id === artifactId);
+      const price = targetArtifact?.price || 25;
       if ((currentStats.coins || 0) < price) {
         if (typeof window !== 'undefined' && window.alert) {
           window.alert(`¡No tienes suficientes monedas! Se requieren ${price} monedas.`);

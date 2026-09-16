@@ -1020,13 +1020,26 @@ export interface ParentMessage {
  * @database Mapea a la tabla `public.shop_artifacts`.
  * @stateImpact Listado en la tienda de `useGamificationStore`. Adquirible mediante las monedas ganadas por el alumno.
  */
+export type ShopArtifactCategory = 
+  | 'rpg_combat' 
+  | 'academic_challenges' 
+  | 'progression_economy' 
+  | 'sanctuary_companions' 
+  | 'avatar_cosmetics';
+
+export type ShopArtifactRarity = 'common' | 'rare' | 'epic' | 'legendary';
+
 export interface ShopArtifact {
   id: string;
   name: string;
   description: string;
   price: number;
-  icon: string; // "Footprints" | "Shield" | "PenTool" | "Wine" | "Scroll" | "Dumbbell" | "GlassWater" | "Sparkles" | "Shirt" | "Wand2" | "Gem" | "Clock" | "Crown" | "BookOpen" | "Heart"
+  icon: string;
   effect: string;
+  detailedEffect?: string;
+  category?: ShopArtifactCategory;
+  rarity?: ShopArtifactRarity;
+  mechanic?: string;
   created_by?: string;
 }
 

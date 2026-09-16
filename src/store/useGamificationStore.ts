@@ -1439,6 +1439,16 @@ export const useGamificationStore = create<GamificationStoreState>()(
 }),
     {
       name: 'iskool_gamification_store',
+      version: 2,
+      migrate: (persistedState: any, version: number) => {
+        if (version < 2 || !persistedState?.shopArtifacts?.some((a: any) => a.id === 'art-hp-potion')) {
+          return {
+            ...persistedState,
+            shopArtifacts: DEFAULT_ARTIFACTS_SEED
+          };
+        }
+        return persistedState;
+      },
       partialize: (state) => ({
         missionsList: state.missionsList,
         questAttempts: state.questAttempts,

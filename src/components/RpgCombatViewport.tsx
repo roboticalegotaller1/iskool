@@ -639,16 +639,21 @@ export function RpgCombatViewport() {
     setIsUsingItem(false);
     playSound('powerup');
     
-    // Aplicar efectos según el artefacto
-    if (artifact.id.includes('shield') || artifact.id.includes('cape')) {
+    const mechanic = artifact.mechanic || '';
+    // Aplicar efectos según el artefacto y su mecánica
+    if (mechanic === 'shield_50' || artifact.id.includes('shield') || artifact.id.includes('cape')) {
       setActiveShield(true);
-      setSombraText(`Sombra: 🛡️ Usaste "${artifact.name}". Tu defensa se eleva para el próximo ataque.`);
-    } else if (artifact.id.includes('potion') || artifact.id.includes('water') || artifact.id.includes('heart')) {
+      setSombraText(`Sombra: 🛡️ Usaste "${artifact.name}". Tu defensa rúnica se eleva para el próximo ataque.`);
+    } else if (mechanic === 'heal_50' || artifact.id.includes('potion') || artifact.id.includes('water') || artifact.id.includes('heart')) {
       setPlayerHp(prev => Math.min(100, prev + 50));
-      setSombraText(`Sombra: ❤️ Usaste "${artifact.name}". Te has curado +50 HP.`);
-    } else if (artifact.id.includes('wand') || artifact.id.includes('dumbbell') || artifact.id.includes('pen')) {
-      setBonusDamage(30);
-      setSombraText(`Sombra: 💥 Usaste "${artifact.name}". Tu próximo ataque tendrá +30 de daño bonus.`);
+      setSombraText(`Sombra: ❤️ Usaste "${artifact.name}". Te has restaurado +50 HP de vigor.`);
+    } else if (mechanic === 'damage_40' || artifact.id.includes('mana') || artifact.id.includes('wand') || artifact.id.includes('dumbbell')) {
+      setBonusDamage(40);
+      setSombraText(`Sombra: 💥 Usaste "${artifact.name}". Tu próximo ataque científico infligirá +40 de daño bonus.`);
+    } else if (mechanic === 'revive_40' || artifact.id.includes('phoenix') || artifact.id.includes('pen')) {
+      setPlayerHp(prev => Math.min(100, prev + 40));
+      setActiveShield(true);
+      setSombraText(`Sombra: 🪶 Usaste "${artifact.name}". Alma renovada: +40 HP y escudo de concentración activo.`);
     } else {
       setPlayerHp(prev => Math.min(100, prev + 25));
       setBonusDamage(15);
