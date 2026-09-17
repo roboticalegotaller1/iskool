@@ -1,7 +1,7 @@
 ---
 tags: [iskool, arquitectura, smart-connections]
 archivo_origen: "schema.sql"
-fecha_sincronizacion: "2026-09-16T03:55:42.833Z"
+fecha_sincronizacion: "2026-09-17T01:12:33.960Z"
 ---
 
 # schema.sql

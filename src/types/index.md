@@ -1,7 +1,7 @@
 ---
 tags: [iskool, arquitectura, smart-connections]
 archivo_origen: "src/types/index.ts"
-fecha_sincronizacion: "2026-09-16T03:55:42.847Z"
+fecha_sincronizacion: "2026-09-17T01:12:33.979Z"
 ---
 
 # index.ts
@@ -1649,6 +1649,34 @@ export interface StaffPayrollRecord {
   curp?: string;
   receipt_folio?: string;
   notes?: string;
+}
+
+export interface CampusData {
+  id: string;
+  name: string;
+  location: string;
+  students: number;
+  teachers: number;
+  collectionRate: number; // Porcentaje de cobranza
+  admissionsInProgress: number;
+  academicHealth: number; // 0-100
+  focalIssues: number;
+  curriculumCoverage?: number;
+  retentionRate?: number;
+}
+
+export interface OrganizationHolding {
+  id: string;
+  name: string;
+  tagline: string;
+  directorName?: string;
+  logoUrl?: string;
+  slug?: string;
+  currency?: string;
+  targetCollectionRate?: number;
+  targetCurriculumCoverage?: number;
+  targetRetentionRate?: number;
+  campuses: CampusData[];
 }
 
 export * from './teacherGamification';
