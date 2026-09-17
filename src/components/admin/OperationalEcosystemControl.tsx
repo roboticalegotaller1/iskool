@@ -121,7 +121,7 @@ export const ECOSYSTEM_ROLES: EcosystemRoleTelemetry[] = [
       'Bóveda Central de Conocimiento (Planeaciones)'
     ],
     sampleRecentActions: [
-      'Pase de lista completado en 3° Primaria B (Anglo CDMX)',
+      'Pase de lista completado en 3° Primaria B (Campus Montes)',
       'Planeación de Fase 4 indexada en Bóveda Curricular',
       'Rúbrica formativa de indagación aplicada a 28 alumnos'
     ]
@@ -151,7 +151,7 @@ export const ECOSYSTEM_ROLES: EcosystemRoleTelemetry[] = [
     ],
     sampleRecentActions: [
       'Factura CFDI 4.0 timbrada con complemento IEDU ($7,850 MXN)',
-      'Conciliación SPEI automática aplicada a Anglo Satélite',
+      'Conciliación SPEI automática aplicada a Campus Lagos',
       'Convenio de pago acordado con tutor legal (15% beca)'
     ]
   },
@@ -288,7 +288,7 @@ export const INITIAL_LIVE_EVENTS: LiveEcosystemEvent[] = [
     id: 'evt-1',
     role: 'docente',
     actorName: 'Profr. Carlos Mendoza',
-    campusName: 'Anglo CDMX',
+    campusName: 'Campus Montes (Sede Matriz)',
     actionText: 'Concluyó pase de lista en 3° Secundaria Grupo A (32 alumnos presentes)',
     automationTriggered: 'Alerta de Inasistencias',
     impactMetric: 'Asistencia Sede: 96.8%',
@@ -299,10 +299,10 @@ export const INITIAL_LIVE_EVENTS: LiveEcosystemEvent[] = [
     id: 'evt-2',
     role: 'padre',
     actorName: 'Sra. Mariana Garza (Tutor)',
-    campusName: 'Anglo Satélite',
-    actionText: 'Realizó pago de Colegiatura vía transferencia bancaria SPEI ($7,450 MXN)',
-    automationTriggered: 'Timbrado SAT CFDI 4.0 IEDU',
-    impactMetric: 'Cobranza Satélite: 96.2%',
+    campusName: 'Campus Lagos',
+    actionText: 'Realizó pago de Colegiatura vía transferencia bancaria SPEI ($4,250 MXN)',
+    automationTriggered: 'Timbrado SAT CFDI 4.0 IEDU (RFC IBI040818K24)',
+    impactMetric: 'Cobranza Lagos: 96.2%',
     timestamp: '16:18:42',
     status: 'completado'
   },
@@ -310,7 +310,7 @@ export const INITIAL_LIVE_EVENTS: LiveEcosystemEvent[] = [
     id: 'evt-3',
     role: 'administrativo',
     actorName: 'Lic. Roberto Solís (Tesorería)',
-    campusName: 'Anglo Pedregal',
+    campusName: 'Campus San Cristóbal',
     actionText: 'Emitió factura deducible y aplicó convenio de pago con 15% de beca',
     automationTriggered: 'Conciliación en Ledger',
     impactMetric: 'Focos de Cobranza: Resuelto',
@@ -320,9 +320,9 @@ export const INITIAL_LIVE_EVENTS: LiveEcosystemEvent[] = [
   {
     id: 'evt-4',
     role: 'alumno',
-    actorName: 'Camila Robles (4° Primaria)',
-    campusName: 'Anglo CDMX',
-    actionText: 'Completó simulador interactivo de ciencias en el Lienzo Digital (+150 XP)',
+    actorName: 'Camila Robles (5° Primaria)',
+    campusName: 'Campus Montes',
+    actionText: 'Completó simulador interactivo de robótica STEAM en el Lienzo Digital (+150 XP)',
     automationTriggered: 'Bitácora de Aprovechamiento',
     impactMetric: 'XP Comunitario: +150',
     timestamp: '16:12:30',
@@ -332,7 +332,7 @@ export const INITIAL_LIVE_EVENTS: LiveEcosystemEvent[] = [
     id: 'evt-5',
     role: 'docente',
     actorName: 'Mtra. Sofía Valdés',
-    campusName: 'Anglo Satélite',
+    campusName: 'Campus Coacalco',
     actionText: 'Sincronizó planeación de Fase 5 con PDA oficial SEP en Bóveda Curricular',
     automationTriggered: 'Auditoría NEM Nocturna',
     impactMetric: 'Cobertura SEP: 95.4%',
@@ -342,7 +342,7 @@ export const INITIAL_LIVE_EVENTS: LiveEcosystemEvent[] = [
 ];
 
 export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlProps> = ({
-  holdingName = 'Colegio Nacional Mexico',
+  holdingName = 'Instituto Bilingüe IBIME',
   campusCount = 4,
   totalStudents = 5784,
   totalTeachers = 142,
@@ -402,7 +402,7 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
       id: `sim-${Date.now()}`,
       role: flow.originRole,
       actorName: newActor,
-      campusName: 'Anglo CDMX',
+      campusName: 'Campus Montes (Sede Matriz)',
       actionText: newAction,
       automationTriggered: flow.name,
       impactMetric: newImpact,

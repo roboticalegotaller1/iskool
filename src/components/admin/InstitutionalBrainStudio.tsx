@@ -448,90 +448,90 @@ export const INSTITUTIONAL_GRAPH_NODES: BrainNode[] = [
     actionType: 'academico'
   },
 
-  // 4. NODOS DE SEDES / PLANTELES
+  // 4. NODOS DE SEDES / PLANTELES IBIME
   {
-    id: 'node-campus-cdmx',
-    title: 'Anglo CDMX (Campus Central)',
-    subtitle: '2,120 Alumnos • Cobertura NEM 96%',
+    id: 'node-campus-montes',
+    title: 'Campus Montes (Sede Matriz & CCH)',
+    subtitle: '1,620 Alumnos • Cobertura Curricular 96%',
     cluster: 'pedagogico',
     x: 390,
     y: 120,
     radius: 23,
     reads: 2100,
-    bovedaPath: 'boveda://sedes/anglo-cdmx.md',
-    summary: 'Plantel insignia en Ciudad de México. 142 docentes, excelencia curricular NEM del 96% y cobranza consolidada del 94%.',
-    keywords: ['cdmx', 'central', 'campus', 'anglo', 'sede'],
+    bovedaPath: 'boveda://sedes/ibime-montes.md',
+    summary: 'Plantel matriz en Jardines de Morelos, Ecatepec. Preescolar, Primaria (la más grande de Ecatepec), Secundaria y Bachillerato CCH UNAM (Clave 7998). 84 docentes.',
+    keywords: ['montes', 'matriz', 'cch', 'unam', 'ecatepec', 'ibime', 'sede'],
     kpis: [
-      { label: 'Matrícula', value: '2,120' },
-      { label: 'Cobranza', value: '94%' },
+      { label: 'Matrícula', value: '1,620' },
+      { label: 'Cobranza', value: '95%' },
       { label: 'Cobertura', value: '96%' }
     ],
     wikilinks: ['core-holding', 'hub-pedagogico'],
-    actionLabel: 'Filtrar a CDMX',
+    actionLabel: 'Filtrar a Montes',
     actionType: 'campus'
   },
   {
-    id: 'node-campus-satelite',
-    title: 'Anglo Satélite',
-    subtitle: '1,894 Alumnos • Cobranza 96%',
+    id: 'node-campus-lagos',
+    title: 'Campus Lagos (Fundador 2004)',
+    subtitle: '710 Alumnos • Cobranza 96%',
     cluster: 'fiscal',
     x: 610,
     y: 120,
     radius: 23,
     reads: 1750,
-    bovedaPath: 'boveda://sedes/anglo-satelite.md',
-    summary: 'Plantel líder en eficiencia de cobranza financiera (96%). 134 docentes activos y 95% de avance en proyectos de aula comunitarios.',
-    keywords: ['satelite', 'edomex', 'campus', 'anglo', 'sede'],
+    bovedaPath: 'boveda://sedes/ibime-lagos.md',
+    summary: 'Sede fundadora de 2004 en Lago Erie #26, Jardines de Morelos Sección Lagos. Preescolar y Primaria Menor con 38 docentes y 96% de cobranza.',
+    keywords: ['lagos', 'fundador', 'erie', 'preescolar', 'primaria', 'ibime', 'sede'],
     kpis: [
-      { label: 'Matrícula', value: '1,894' },
+      { label: 'Matrícula', value: '710' },
       { label: 'Cobranza', value: '96%' },
       { label: 'Cobertura', value: '95%' }
     ],
     wikilinks: ['core-holding', 'hub-fiscal'],
-    actionLabel: 'Filtrar a Satélite',
+    actionLabel: 'Filtrar a Lagos',
     actionType: 'campus'
   },
   {
-    id: 'node-campus-pedregal',
-    title: 'Anglo Pedregal',
-    subtitle: '980 Alumnos • Foco de Cobranza (91%)',
-    cluster: 'fiscal',
-    x: 880,
-    y: 430,
-    radius: 23,
-    reads: 1980,
-    bovedaPath: 'boveda://sedes/anglo-pedregal.md',
-    summary: 'Plantel con plan de contingencia financiera en marcha: cobranza al 91% frente al umbral corporativo de 95%. Gestión de aging en proceso.',
-    keywords: ['pedregal', 'sur', 'campus', 'foco', 'cobranza'],
-    kpis: [
-      { label: 'Matrícula', value: '980' },
-      { label: 'Cobranza', value: '91% (Alerta)' },
-      { label: 'Focos', value: '1 Activo' }
-    ],
-    wikilinks: ['core-holding', 'hub-fiscal', 'node-fiscal-aging'],
-    actionLabel: 'Gestionar Foco Pedregal',
-    actionType: 'cobranza'
-  },
-  {
-    id: 'node-campus-guadalajara',
-    title: 'Anglo Guadalajara',
-    subtitle: '790 Alumnos • Cobertura NEM 94%',
+    id: 'node-campus-sancristobal',
+    title: 'Campus San Cristóbal (Ecatepec Centro)',
+    subtitle: '830 Alumnos • Cobertura 94%',
     cluster: 'pedagogico',
     x: 650,
     y: 430,
     radius: 23,
-    reads: 1620,
-    bovedaPath: 'boveda://sedes/anglo-guadalajara.md',
-    summary: 'Plantel de Occidente. 68 docentes activos, 94% de cumplimiento en proyectos comunitarios NEM y cobranza al 95.2%.',
-    keywords: ['guadalajara', 'occidente', 'jalisco', 'campus', 'anglo', 'sede'],
+    reads: 1980,
+    bovedaPath: 'boveda://sedes/ibime-sancristobal.md',
+    summary: 'Sede en Av. Insurgentes #5, Lomas de Atzolco, Ecatepec Centro. Preescolar, Primaria y Secundaria. Centro preparador Cambridge English con 46 docentes.',
+    keywords: ['sancristobal', 'insurgentes', 'atzolco', 'centro', 'cambridge', 'ibime', 'sede'],
     kpis: [
-      { label: 'Matrícula', value: '790' },
-      { label: 'Cobranza', value: '95.2%' },
+      { label: 'Matrícula', value: '830' },
+      { label: 'Cobranza', value: '93%' },
       { label: 'Cobertura', value: '94%' }
     ],
     wikilinks: ['core-holding', 'hub-pedagogico'],
-    actionLabel: 'Filtrar a Guadalajara',
+    actionLabel: 'Filtrar a San Cristóbal',
     actionType: 'campus'
+  },
+  {
+    id: 'node-campus-coacalco',
+    title: 'Campus Coacalco (Metropolitano)',
+    subtitle: '580 Alumnos • Foco de Cobranza (91%)',
+    cluster: 'fiscal',
+    x: 880,
+    y: 430,
+    radius: 23,
+    reads: 1620,
+    bovedaPath: 'boveda://sedes/ibime-coacalco.md',
+    summary: 'Sede en Guadalupe Victoria sobre Vía Morelos límite Ecatepec-Coacalco. Preescolar, Primaria, Secundaria y Bachillerato con 32 docentes y seguimiento de tesorería.',
+    keywords: ['coacalco', 'obraje', 'victoria', 'morelos', 'ibime', 'sede'],
+    kpis: [
+      { label: 'Matrícula', value: '580' },
+      { label: 'Cobranza', value: '91% (Alerta)' },
+      { label: 'Focos', value: '1 Activo' }
+    ],
+    wikilinks: ['core-holding', 'hub-fiscal', 'node-fiscal-aging'],
+    actionLabel: 'Gestionar Foco Coacalco',
+    actionType: 'cobranza'
   }
 ];
 
@@ -547,15 +547,15 @@ export const INSTITUTIONAL_GRAPH_EDGES: BrainEdge[] = [
   { source: 'hub-pedagogico', target: 'node-nem-planeaciones', label: 'Planeación', strength: 2 },
   { source: 'hub-pedagogico', target: 'node-nem-fases', label: 'Fases 1-6', strength: 2 },
   { source: 'hub-pedagogico', target: 'node-nem-rubricas', label: 'Evaluación', strength: 2 },
-  { source: 'hub-pedagogico', target: 'node-campus-cdmx', label: 'Sede Sólida', strength: 2 },
-  { source: 'hub-pedagogico', target: 'node-campus-guadalajara', label: 'Sede Occidente', strength: 2 },
+  { source: 'hub-pedagogico', target: 'node-campus-montes', label: 'Sede Matriz', strength: 2 },
+  { source: 'hub-pedagogico', target: 'node-campus-sancristobal', label: 'Sede Centro', strength: 2 },
 
   // Hub Fiscal a Hojas
   { source: 'hub-fiscal', target: 'node-fiscal-cfdi', label: 'PAC SAT', strength: 2 },
   { source: 'hub-fiscal', target: 'node-fiscal-iedu', label: 'Deducción', strength: 2 },
   { source: 'hub-fiscal', target: 'node-fiscal-aging', label: 'Mora SPEI', strength: 2 },
-  { source: 'hub-fiscal', target: 'node-campus-satelite', label: 'Líder 96%', strength: 2 },
-  { source: 'hub-fiscal', target: 'node-campus-pedregal', label: 'Foco 91%', strength: 2 },
+  { source: 'hub-fiscal', target: 'node-campus-lagos', label: 'Líder 96%', strength: 2 },
+  { source: 'hub-fiscal', target: 'node-campus-coacalco', label: 'Foco 91%', strength: 2 },
 
   // Hub Médico a Hojas
   { source: 'hub-medico', target: 'node-medico-expediente', label: 'Expediente', strength: 2 },
@@ -574,9 +574,9 @@ export const INSTITUTIONAL_GRAPH_EDGES: BrainEdge[] = [
   { source: 'node-nem-rubricas', target: 'node-game-misiones', label: 'Criterios de Evaluación', strength: 1 },
   { source: 'node-medico-expediente', target: 'node-crm-pipeline', label: 'Alta Expediente', strength: 1 },
   { source: 'node-fiscal-cfdi', target: 'node-fiscal-iedu', label: 'Complemento Fiscal', strength: 2 },
-  { source: 'node-fiscal-aging', target: 'node-campus-pedregal', label: 'Acción Correctiva', strength: 2 },
-  { source: 'node-campus-cdmx', target: 'node-nem-planeaciones', label: 'Adopción NEM', strength: 1 },
-  { source: 'core-holding', target: 'node-campus-guadalajara', label: 'Occidente', strength: 2 }
+  { source: 'node-fiscal-aging', target: 'node-campus-coacalco', label: 'Acción Correctiva', strength: 2 },
+  { source: 'node-campus-montes', target: 'node-nem-planeaciones', label: 'Adopción NEM', strength: 1 },
+  { source: 'core-holding', target: 'node-campus-lagos', label: 'Sede Fundadora', strength: 2 }
 ];
 
 // Colores del Clúster
@@ -1258,24 +1258,24 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
         finalText = `**Protocolo Médico y Alergias en Expediente 360:**\n\nLa enfermería y cuerpo directivo tienen acceso inmediato (< 2 clics) a las directivas de choque anafiláctico y antecedentes de alergias de cada estudiante. Ante cualquier contingencia:\n\n- Aplicación de estabilización primaria en menos de 90 segundos.\n- Notificación push certificada a tutores legales en < 3 minutos.\n- Asignación de folio único de bitácora médico-legal protegida.`;
       } else if (bestNode.id === 'node-medico-sismo') {
         finalText = `**Protocolo Institucional de Protección Civil y Sismo:**\n\nDirectivas de evacuación y repliegue seguro para los 4 planteles de la red:\n\n1. **Fase de Repliegue (Primeros 30s):** Colocación en zonas de menor riesgo dentro del aula.\n2. **Evacuación Guiada (< 90s):** Traslado a los puntos de reunión exteriores por brigadas escolares certificadas.\n3. **Pase de Lista Digital:** Conteo biométrico en tiempo real desde la aplicación directiva con reporte inmediato a central.`;
-      } else if (bestNode.id === 'node-campus-pedregal') {
-        finalText = `**Auditoría Directiva Anglo Pedregal (Foco de Cobranza):**\n\nEl plantel registra una cobranza del 91.0% frente al umbral institucional del 95.0%. Acciones inmediatas en curso:\n\n1. **Gestión de Cartera Vencida:** 3.1% de mora > 60 días con 14 convenios de pago digitales vía SPEI activados.\n2. **Comunicación Preventiva:** Notificaciones automatizadas sin fricción a tutores legales antes del corte mensual.\n3. **Mesa de Acompañamiento:** Dirección administrativa y tesorería en revisión diaria con el holding corporativo.`;
-      } else if (bestNode.id === 'node-campus-cdmx') {
-        finalText = `**Reporte Operativo Anglo CDMX (Campus Central):**\n\nPlantel insignia con 2,120 estudiantes y 142 docentes. Indicadores clave:\n\n- **Adopción NEM 2024:** 96.0% de planeaciones estructuradas en 3 momentos y articuladas a los PDA SEP.\n- **Salud Financiera:** Cobranza consolidada al 94.0% con timbrado PAC automatizado.\n- **Proyectos de Aula:** 38 iniciativas comunitarias activas con impacto directo en la comunidad escolar.`;
-      } else if (bestNode.id === 'node-campus-satelite') {
-        finalText = `**Reporte Operativo Anglo Satélite:**\n\nPlantel líder en eficiencia de cobranza con 1,894 estudiantes y 134 docentes:\n\n- **Eficiencia Financiera:** 96.0% de cobranza corriente, el índice más alto de la Red Nacional.\n- **Cobertura Curricular:** 95.0% de avance analítico NEM con proyectos comunitarios y rúbricas formativas.\n- **Comunidad Digital:** 92.4% de participación de familias en la app escolar de seguimiento.`;
-      } else if (bestNode.id === 'node-campus-guadalajara') {
-        finalText = `**Reporte Operativo Anglo Guadalajara:**\n\nSede Occidente con 790 alumnos y 68 docentes activos:\n\n- **Rendimiento Académico:** 94.0% de cobertura curricular NEM con proyectos de vinculación comunitaria.\n- **Tesorería:** 95.2% de recaudación en tiempo y forma bajo conciliación bancaria SPEI.\n- **Admisiones:** 18 prospectos en fase de inducción para el próximo ciclo escolar.`;
+      } else if (bestNode.id === 'node-campus-coacalco') {
+        finalText = `**Auditoría Directiva Campus Coacalco (Foco de Cobranza):**\n\nEl plantel registra una cobranza del 91.0% frente al umbral institucional del 95.0%. Acciones inmediatas en curso:\n\n1. **Gestión de Cartera Vencida:** Conciliación bancaria SPEI con 12 convenios estructurados para familias de la zona industrial/Vía Morelos.\n2. **Comunicación Preventiva:** Notificaciones automatizadas sin fricción a tutores legales antes del corte mensual.\n3. **Mesa de Acompañamiento:** Dirección administrativa de Coacalco y tesorería central en seguimiento semanal.`;
+      } else if (bestNode.id === 'node-campus-montes') {
+        finalText = `**Reporte Operativo Campus Montes (Sede Matriz & CCH):**\n\nPlantel insignia en Ecatepec con 1,620 estudiantes y 84 docentes. Indicadores clave:\n\n- **Adopción NEM 2024 & CCH UNAM:** 96.0% de planeaciones estructuradas en 3 momentos y articuladas a los PDA SEP y plan CCH (Clave 7998).\n- **Salud Financiera:** Cobranza consolidada al 95.0% con timbrado PAC automatizado a 0 tokens.\n- **Infraestructura:** Laboratorio de robótica STEAM, aulas digitales y canchas multideportivas en plena operación.`;
+      } else if (bestNode.id === 'node-campus-lagos') {
+        finalText = `**Reporte Operativo Campus Lagos (Fundador 2004):**\n\nSede fundadora con 710 estudiantes de Preescolar y Primaria Menor y 38 docentes:\n\n- **Eficiencia Financiera:** 96.0% de cobranza corriente, el índice más alto de la Red IBIME.\n- **Cobertura Curricular:** 95.0% de avance analítico NEM con estimulación temprana y bilingüe Cambridge.\n- **Comunidad Digital:** 94.8% de participación de familias en la app escolar de seguimiento.`;
+      } else if (bestNode.id === 'node-campus-sancristobal') {
+        finalText = `**Reporte Operativo Campus San Cristóbal (Ecatepec Centro):**\n\nSede Centro con 830 alumnos y 46 docentes activos:\n\n- **Rendimiento Académico:** 94.0% de cobertura curricular NEM y preparación Cambridge KET/PET.\n- **Tesorería:** 93.0% de recaudación en tiempo y forma bajo conciliación bancaria SPEI.\n- **Admisiones:** 9 prospectos en fase avanzada de inducción para el próximo ciclo escolar.`;
       } else if (bestNode.id === 'node-crm-pipeline') {
-        finalText = `**Pipeline de Conversión Familiar (Admisiones CRM):**\n\nProceso estructurado de acompañamiento a familias aspirantes en 5 fases:\n\n1. **Prospecto Digital:** Registro de contacto y perfil de interés educativo.\n2. **Tour de Experiencia:** Recorrido guiado por instalaciones y presentación del modelo pedagógico.\n3. **Diagnóstico Psicopedagógico:** Sesión de evaluación de estilo de aprendizaje y madurez.\n4. **Entrevista Directiva:** Alineación de valores familiares y plan de formación.\n5. **Inscripción & Expediente 360:** Formalización contractual y apertura de expediente integral.`;
+        finalText = `**Pipeline de Conversión Familiar (Admisiones CRM IBIME):**\n\nProceso estructurado de acompañamiento a familias aspirantes en 5 fases:\n\n1. **Prospecto Digital:** Registro de contacto y perfil de interés educativo.\n2. **Tour de Experiencia:** Recorrido guiado por instalaciones (Montes, Lagos, San Cristóbal, Coacalco).\n3. **Diagnóstico Psicopedagógico:** Sesión de evaluación de estilo de aprendizaje y bilingüismo.\n4. **Entrevista Directiva:** Alineación de valores familiares y proyecto formativo.\n5. **Inscripción & Expediente 360:** Formalización contractual con RFC IBI040818K24 y apertura de expediente integral.`;
       } else if (bestNode.id === 'node-crm-diagnostico') {
-        finalText = `**Batería de Diagnóstico Psicopedagógico:**\n\nEvaluación integral para el ingreso y seguimiento del estudiante:\n\n- **Dimensión Cognitiva:** Madurez de razonamiento lógico-matemático y comprensión lectora.\n- **Dimensión Socioemocional:** Autorregulación, empatía y adaptación grupal.\n- **Estilo de Aprendizaje:** Canales preferentes (visual, auditivo, kinestésico) para orientación al docente titular.\n\n*Dictamen:* Informe ejecutivo generado en 24 horas y compartido confidencialmente con los tutores.`;
+        finalText = `**Batería de Diagnóstico Psicopedagógico IBIME:**\n\nEvaluación integral para el ingreso y seguimiento del estudiante:\n\n- **Dimensión Cognitiva:** Madurez de razonamiento lógico-matemático y comprensión lectora bilingüe.\n- **Dimensión Socioemocional:** Autorregulación, empatía y adaptación grupal.\n- **Estilo de Aprendizaje:** Canales preferentes (visual, auditivo, kinestésico) para orientación al docente titular.\n\n*Dictamen:* Informe ejecutivo generado en 24 horas y compartido confidencialmente con los tutores.`;
       } else if (bestNode.id === 'node-game-misiones') {
-        finalText = `**Misiones Comunitarias NEM & Proyectos ABP:**\n\nGamificación aplicada a proyectos con impacto comunitario real:\n\n- **Aprendizaje Basado en Proyectos (ABP):** 38 proyectos activos en áreas de ecología, ciencia y cultura.\n- **Sistema de Maestría:** Insignias digitales y puntos de experiencia (XP) por colaboración y perseverancia.\n- **Reconocimiento Público:** Muestra de logros bimestral ante la comunidad escolar y padres de familia.`;
+        finalText = `**Misiones Comunitarias NEM & Proyectos ABP IBIME:**\n\nGamificación aplicada a proyectos con impacto comunitario real en Ecatepec y Coacalco:\n\n- **Aprendizaje Basado en Proyectos (ABP):** Proyectos activos en áreas de ecología, ciencia y cultura local.\n- **Sistema de Maestría:** Insignias digitales y puntos de experiencia (XP) por colaboración y perseverancia.\n- **Reconocimiento Público:** Muestra de logros bimestral ante la comunidad escolar y padres de familia.`;
       } else if (bestNode.id === 'node-game-lienzo') {
         finalText = `**Lienzo Digital de Actividades en Vivo:**\n\nEstudio interactivo de clase para resolución de retos y simuladores formativos:\n\n- **Interactividad en Tiempo Real:** Cuestionarios, retos prácticos y simulaciones ejecutables desde cualquier dispositivo.\n- **Analítica de Dominio:** Detección instantánea de áreas de oportunidad por estudiante y por grupo.\n- **Sincronización Curricular:** Vinculación directa con los PDA de la sesión pedagógica planificada.`;
       } else if (bestNode.id === 'core-holding') {
-        finalText = `**Núcleo Directivo ISkool • Holding Escolar Nacional:**\n\nConsolidado ejecutivo de los 4 planteles (Anglo CDMX, Anglo Satélite, Anglo Pedregal y Anglo Guadalajara):\n\n- **Matrícula Total:** 5,784 estudiantes activos.\n- **Eficacia de Cobranza:** 94.2% global consolidado.\n- **Alineación NEM:** 94.2% de cobertura analítica en todas las fases escolares.\n- **Consumo de Recursos:** Operación autónoma en memoria a 0 Tokens.`;
+        finalText = `**Consorcio Escolar Instituto Bilingüe IBIME S.C. • Plataforma ISkool:**\n\nConsolidado ejecutivo de los 4 planteles (Campus Montes, Campus Lagos, Campus San Cristóbal y Campus Coacalco):\n\n- **Matrícula Total:** 3,740 estudiantes activos (3,900 asientos contratados bajo Licencia SaaS Enterprise).\n- **Eficacia de Cobranza:** 94.6% global consolidado.\n- **Alineación NEM & CCH:** 95.2% de cobertura analítica en todas las fases escolares.\n- **Consumo de Recursos:** Operación autónoma en memoria a 0 Tokens.`;
       } else {
         finalText = `**Dictamen del Motor Pedagógico Institucional:**\n\n${bestNode.summary}\n\nConforme a los lineamientos vigentes registrados en la **Bóveda Central de Conocimiento**, este procedimiento cuenta con indexación inmutable y vinculación directa con el Sistema Escolar de ISkool. Todo evento asociado genera bitácora auditada sin incurrir en consumo de tokens externos.`;
       }

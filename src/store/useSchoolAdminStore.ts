@@ -276,22 +276,19 @@ export const getSchoolBillingRecords = (billingList: FamilyBillingRecord[], scho
   if (!schoolId) return allRecords;
 
   const studentIds = new Set((schoolStudents || []).map(s => s.id));
-  const filtered = allRecords.filter(rec => {
+  return allRecords.filter(rec => {
     // 1. Si el estudiante pertenece a la lista de alumnos del colegio
     if (rec.studentId && studentIds.size > 0 && studentIds.has(rec.studentId)) return true;
     
     // 2. Coincidencia por ID institucional
     if (rec.school_id === schoolId || (schoolId === 'sch-jjrosseau' && (rec.school_id === 'sch-jjr' || rec.school_id === 'sch-test-case'))) {
+      if (schoolId === 'sch-jjrosseau') {
+        return !rec.studentId?.includes('test') && !rec.studentName.toLowerCase().includes('demo');
+      }
       return true;
     }
-
-    if (schoolId === 'sch-jjrosseau') {
-      return !rec.studentId?.includes('test') && !rec.studentName.toLowerCase().includes('demo');
-    }
-    return true;
+    return false;
   });
-
-  return filtered.length > 0 ? filtered : allRecords;
 };
 
 export const getSchoolTuitionPricings = (pricingsList: TuitionPricing[], schoolId: string | null): TuitionPricing[] => {
@@ -689,12 +686,14 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
       schoolGovernance: {
         'sch-jjrosseau': DEFAULT_GOVERNANCE_SETTINGS,
         'sch-test-case': DEFAULT_GOVERNANCE_SETTINGS,
-        'sch-montessori': DEFAULT_GOVERNANCE_SETTINGS
+        'sch-montessori': DEFAULT_GOVERNANCE_SETTINGS,
+        'sch-ibime': DEFAULT_GOVERNANCE_SETTINGS
       },
       directorLimits: {
         'sch-jjrosseau': DEFAULT_DIRECTOR_LIMITS,
         'sch-test-case': DEFAULT_DIRECTOR_LIMITS,
-        'sch-montessori': DEFAULT_DIRECTOR_LIMITS
+        'sch-montessori': DEFAULT_DIRECTOR_LIMITS,
+        'sch-ibime': DEFAULT_DIRECTOR_LIMITS
       },
       syncError: null,
 
@@ -2298,12 +2297,14 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           schoolGovernance: {
             'sch-jjrosseau': DEFAULT_GOVERNANCE_SETTINGS,
             'sch-test-case': DEFAULT_GOVERNANCE_SETTINGS,
-            'sch-montessori': DEFAULT_GOVERNANCE_SETTINGS
+            'sch-montessori': DEFAULT_GOVERNANCE_SETTINGS,
+            'sch-ibime': DEFAULT_GOVERNANCE_SETTINGS
           },
           directorLimits: {
             'sch-jjrosseau': DEFAULT_DIRECTOR_LIMITS,
             'sch-test-case': DEFAULT_DIRECTOR_LIMITS,
-            'sch-montessori': DEFAULT_DIRECTOR_LIMITS
+            'sch-montessori': DEFAULT_DIRECTOR_LIMITS,
+            'sch-ibime': DEFAULT_DIRECTOR_LIMITS
           },
           syncError: null
         });
@@ -2315,9 +2316,63 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           const existingIds = new Set(current.map(s => s.id));
           const deletedIds = new Set((state.studentDeletionAuditLogs || []).map(l => l.student_id));
           const missing = DETAILED_STUDENTS_SEED.filter(s => !existingIds.has(s.id) && !deletedIds.has(s.id));
-          if (missing.length === 0) return state;
+          
+          // Reconciliar también instituciones (garantizar sch-ibime disponible en clientes existentes)
+          const currentInsts = state.institutionsList || [];
+          const existingInstIds = new Set(currentInsts.map(i => i.id));
+          const missingInsts = INSTITUTIONS_SEED.filter(i => !existingInstIds.has(i.id));
+
+          // Reconciliar planteles
+          const currentCampuses = state.campusesList || [];
+          const existingCampIds = new Set(currentCampuses.map(c => c.id));
+          const missingCampuses = CAMPUSES_SEED.filter(c => !existingCampIds.has(c.id));
+
+          // Reconciliar aranceles
+          const currentPricings = state.tuitionPricings || [];
+          const existingPricingIds = new Set(currentPricings.map(p => p.id));
+          const missingPricings = TUITION_PRICINGS_SEED.filter(p => !existingPricingIds.has(p.id));
+
+          // Reconciliar grupos
+          const currentGroups = state.groupsList || [];
+          const existingGroupIds = new Set(currentGroups.map(g => g.id));
+          const missingGroups = GROUPS_SEED.filter(g => !existingGroupIds.has(g.id));
+
+          // Reconciliar materias
+          const currentSubjects = state.subjectsList || [];
+          const existingSubjectIds = new Set(currentSubjects.map(s => s.id));
+          const missingSubjects = SUBJECTS_SEED.filter(s => !existingSubjectIds.has(s.id));
+
+          // Reconciliar docentes
+          const currentTeachers = state.teachersList || [];
+          const existingTeacherIds = new Set(currentTeachers.map(t => t.id));
+          const missingTeachers = TEACHERS_LIST_SEED.filter(t => !existingTeacherIds.has(t.id));
+
+          // Reconciliar personal administrativo
+          const currentStaff = state.staffUsers || [];
+          const existingStaffIds = new Set(currentStaff.map(s => s.id));
+          const missingStaff = STAFF_USERS_SEED.filter(s => !existingStaffIds.has(s.id));
+
+          // Reconciliar nómina
+          const currentPayroll = state.staffPayroll || [];
+          const existingPayrollIds = new Set(currentPayroll.map(p => p.id));
+          const missingPayroll = STAFF_PAYROLL_SEED.filter(p => !existingPayrollIds.has(p.id));
+
+          // Reconciliar registros de cobro
+          const currentBilling = state.billingRecords || [];
+          const existingBillingIds = new Set(currentBilling.map(b => b.id));
+          const missingBilling = BILLING_RECORDS_SEED.filter(b => !existingBillingIds.has(b.id));
+
           return {
-            detailedStudents: [...current, ...missing]
+            detailedStudents: missing.length > 0 ? [...current, ...missing] : current,
+            institutionsList: missingInsts.length > 0 ? [...currentInsts, ...missingInsts] : currentInsts,
+            campusesList: missingCampuses.length > 0 ? [...currentCampuses, ...missingCampuses] : currentCampuses,
+            tuitionPricings: missingPricings.length > 0 ? [...currentPricings, ...missingPricings] : currentPricings,
+            groupsList: missingGroups.length > 0 ? [...currentGroups, ...missingGroups] : currentGroups,
+            subjectsList: missingSubjects.length > 0 ? [...currentSubjects, ...missingSubjects] : currentSubjects,
+            teachersList: missingTeachers.length > 0 ? [...currentTeachers, ...missingTeachers] : currentTeachers,
+            staffUsers: missingStaff.length > 0 ? [...currentStaff, ...missingStaff] : currentStaff,
+            staffPayroll: missingPayroll.length > 0 ? [...currentPayroll, ...missingPayroll] : currentPayroll,
+            billingRecords: missingBilling.length > 0 ? [...currentBilling, ...missingBilling] : currentBilling
           };
         });
       }

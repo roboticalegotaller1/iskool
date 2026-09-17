@@ -169,6 +169,20 @@ export interface Institution {
   settings?: SchoolSettings;
   governance?: SchoolGovernanceSettings;
   directorLimits?: DirectorLimitsSettings;
+  licensing?: {
+    tier: 'Enterprise School Network' | 'Standard Campus' | 'Growth';
+    planName: string;
+    isSoftwareOwner: false; // Garantiza en tipado que la institución es cliente licenciatario, no dueño del software
+    licenseKey: string;
+    licensee: string;
+    licensor: string;
+    contractedSeats: number;
+    assignedSeats: number;
+    validUntil: string;
+    billingCycle: 'Anual' | 'Mensual';
+    status: 'active' | 'trial' | 'past_due';
+    ipNotice: string;
+  };
 }
 
 /**
@@ -938,7 +952,7 @@ export interface StudentDeletionAuditLog {
 export interface TuitionPricing {
   id: string;
   school_id?: string;
-  level: 'primaria_baja' | 'primaria_alta' | 'secundaria' | 'preparatoria';
+  level: 'preescolar' | 'primaria' | 'primaria_baja' | 'primaria_alta' | 'secundaria' | 'preparatoria';
   name: string;
   description: string;
   monthly_fee: number;

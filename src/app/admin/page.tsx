@@ -76,7 +76,7 @@ import {
 } from '@/store/useSchoolAdminStore';
 import { DetailedStudent, Subject, GroupAnnualPlan, SyllabusTopic, Campus, Group, canManageTargetRole, StaffPayrollRecord, isPlatformSuperUser, StudentDeletionAuditLog, UserRole, Institution } from '@/types';
 import ExecutiveAnalyticsStudio from '@/components/admin/ExecutiveAnalyticsStudio';
-import CEOExecutiveDashboard, { DEFAULT_IBIME_HOLDING } from '@/components/admin/CEOExecutiveDashboard';
+import CEOExecutiveDashboard, { DEFAULT_IBIME_HOLDING, buildHoldingForInstitution } from '@/components/admin/CEOExecutiveDashboard';
 import { SuperUserCompendiumStudio } from '@/components/books/SuperUserCompendiumStudio';
 import { SchoolStatusSlider } from '@/components/admin/SchoolStatusSlider';
 import { useSchoolBooksStore } from '@/store/useSchoolBooksStore';
@@ -130,8 +130,13 @@ export default function SuperUserAdminPage() {
     updatePayrollRecord,
     dispersePayrollBatch,
     adjustSalary,
-    toggleSchoolSuspension
+    toggleSchoolSuspension,
+    reconcileSeedsWithStore
   } = useSchoolAdminStore();
+
+  useEffect(() => {
+    reconcileSeedsWithStore?.();
+  }, [reconcileSeedsWithStore]);
 
   // Verificación estricta de Super Usuario ISkool (Nivel 1) vs Dueño de Colegio (Nivel 2)
   const isSuperUser = useMemo(() => isPlatformSuperUser(user), [user]);
@@ -475,6 +480,11 @@ export default function SuperUserAdminPage() {
   const currentSchool = useMemo(() => {
     return (institutionsList || []).find(i => i.id === effectiveSchoolId) || null;
   }, [institutionsList, effectiveSchoolId]);
+
+  // Holding Dinámico para la Institución Activa (Aplica a CUALQUIER colegio: IBIME, Rosseau, Sandbox, Montessori, o nuevos)
+  const currentSchoolHolding = useMemo(() => {
+    return buildHoldingForInstitution(currentSchool, campusesList, detailedStudents, teachersList);
+  }, [currentSchool, campusesList, detailedStudents, teachersList]);
 
   // Estado para Edición de Ficha Institucional en Tab Config
   const [instEditForm, setInstEditForm] = useState({
@@ -1448,10 +1458,6 @@ export default function SuperUserAdminPage() {
             <SuperUserCompendiumStudio />
           </main>
         </div>
-      ) : (overviewMode === 'executive' && activeTab === 'overview') ? (
-        <CEOExecutiveDashboard
-          onSwitchToOperational={() => setOverviewMode('classic')}
-        />
       ) : (!activeSchoolId && isSuperUser) ? (
         <div className="flex-1 flex flex-col">
           {/* MULTI-SCHOOL GLOBAL HEADER */}
@@ -1478,7 +1484,7 @@ export default function SuperUserAdminPage() {
                 href="/admin/ceo"
                 className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black shadow-lg shadow-slate-900/30 hover:scale-102 transition-all cursor-pointer shrink-0"
               >
-                <TrendingUp className="h-4 w-4 text-amber-400" /> <span>Visión Ejecutiva CEO (IBIME)</span>
+                <TrendingUp className="h-4 w-4 text-amber-400" /> <span>Visión Ejecutiva de Colegios</span>
               </Link>
 
               <button
@@ -1788,8 +1794,11 @@ export default function SuperUserAdminPage() {
                       {/* Botones de Acción de la Tarjeta */}
                       <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
                         <button
-                          onClick={() => selectSchool(inst.id)}
-                          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black shadow-sm transition-all cursor-pointer ${
+                          onClick={() => {
+                            selectSchool(inst.id);
+                            setOverviewMode('classic');
+                          }}
+                          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-black shadow-sm transition-all cursor-pointer ${
                             isSuspended
                               ? 'bg-rose-700 hover:bg-rose-600 text-white shadow-rose-700/20'
                               : isTest
@@ -1800,8 +1809,20 @@ export default function SuperUserAdminPage() {
                           {isSuspended
                             ? '🔒 Supervisión'
                             : isTest
-                            ? '🧪 Entrar a Sandbox'
-                            : 'Entrar al Panel Institucional'} <ChevronRight className="h-4 w-4" />
+                            ? '🧪 Sandbox Operativo'
+                            : 'Panel Operativo'} <ChevronRight className="h-3.5 w-3.5" />
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            selectSchool(inst.id);
+                            setOverviewMode('executive');
+                          }}
+                          className="px-3 py-2.5 rounded-xl border border-slate-300 hover:border-indigo-400 bg-white hover:bg-indigo-50 text-slate-800 hover:text-indigo-700 text-xs font-black transition-all flex items-center gap-1 cursor-pointer shadow-xs shrink-0"
+                          title={`Abrir Visión Ejecutiva CEO de ${inst.name}`}
+                        >
+                          <TrendingUp className="h-3.5 w-3.5 text-amber-500" />
+                          <span>Visión CEO</span>
                         </button>
 
                         <button
@@ -1811,11 +1832,10 @@ export default function SuperUserAdminPage() {
                             setDeleteConfirmationText('');
                             setShowDeleteSchoolModal(true);
                           }}
-                          className="px-3 py-2.5 rounded-xl border border-rose-200 hover:border-rose-400 bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer shadow-xs shrink-0"
+                          className="p-2.5 rounded-xl border border-rose-200 hover:border-rose-400 bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 text-xs font-black transition-all flex items-center justify-center cursor-pointer shadow-xs shrink-0"
                           title={`Eliminar completamente ${inst.name} del sistema`}
                         >
                           <Trash2 className="h-3.5 w-3.5 text-rose-500" />
-                          <span>Eliminar</span>
                         </button>
                       </div>
                     </div>
@@ -1846,6 +1866,16 @@ export default function SuperUserAdminPage() {
             </div>
 
           </main>
+        </div>
+      ) : (overviewMode === 'executive' && activeTab === 'overview') ? (
+        <div className="flex-1 flex flex-col">
+          <CEOExecutiveDashboard
+            holding={currentSchoolHolding}
+            schoolId={currentSchool?.id}
+            isSuperUser={isSuperUser}
+            onSwitchToOperational={() => setOverviewMode('classic')}
+            onBackToDirectory={() => selectSchool(null)}
+          />
         </div>
       ) : (
         /* VISTA 2: DASHBOARD DE LA INSTITUCIÓN SELECCIONADA */

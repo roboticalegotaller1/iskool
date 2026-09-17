@@ -148,20 +148,22 @@ export default function CoordinatorFiscalPage() {
   const [isStamping, setIsStamping] = useState(false);
   const [lastStampedResult, setLastStampedResult] = useState<any>(null);
 
-  const defaultRfc = currentInstitution?.id === 'sch-test-case' 
-    ? 'CPB260901XX4' 
-    : (currentInstitution?.id === 'sch-montessori' ? 'IMV180512MK3' : 'UPJ980115XX1');
+  const defaultRfc = currentInstitution?.id === 'sch-ibime'
+    ? 'IBI040818K24'
+    : (currentInstitution?.id === 'sch-test-case' 
+      ? 'CPB260901XX4' 
+      : (currentInstitution?.id === 'sch-montessori' ? 'IMV180512MK3' : 'UPJ980115XX1'));
 
   // Configuración del Plantel
   const [schoolConfig, setSchoolConfig] = useState({
     rfcEmisor: defaultRfc,
-    razonSocial: currentInstitution?.name || 'UP Juan Jacobo Rosseau',
+    razonSocial: currentInstitution?.id === 'sch-ibime' ? 'Instituto Bilingüe IBIME S.C.' : (currentInstitution?.name || 'UP Juan Jacobo Rosseau'),
     regimenFiscal: '603',
-    codigoPostal: '06700',
-    rvoePreescolar: 'SEP-RVOE-2022-PRE-012',
-    rvoePrimaria: 'SEP-RVOE-2023-PRI-045',
-    rvoeSecundaria: 'SEP-RVOE-2024-SEC-098',
-    rvoeBachillerato: 'SEP-RVOE-2025-BAC-110',
+    codigoPostal: currentInstitution?.id === 'sch-ibime' ? '55050' : '06700',
+    rvoePreescolar: currentInstitution?.id === 'sch-ibime' ? 'SEP-RVOE-15PPR3322G-PRE' : 'SEP-RVOE-2022-PRE-012',
+    rvoePrimaria: currentInstitution?.id === 'sch-ibime' ? 'SEP-RVOE-15PPR3322G-PRI' : 'SEP-RVOE-2023-PRI-045',
+    rvoeSecundaria: currentInstitution?.id === 'sch-ibime' ? 'SEP-RVOE-15PPR3322G-SEC' : 'SEP-RVOE-2024-SEC-098',
+    rvoeBachillerato: currentInstitution?.id === 'sch-ibime' ? 'UNAM-CCH-INC-7998' : 'SEP-RVOE-2025-BAC-110',
     pacEnvironment: 'sandbox',
     pacApiKey: 'sk_live_pac_fiscal_sat_auth_2026_cam',
     csdCertNumber: '30001000000500003416',
@@ -171,12 +173,20 @@ export default function CoordinatorFiscalPage() {
 
   useEffect(() => {
     if (currentInstitution) {
+      const isIbime = currentInstitution.id === 'sch-ibime';
       setSchoolConfig(prev => ({
         ...prev,
-        razonSocial: currentInstitution.name || prev.razonSocial,
-        rfcEmisor: currentInstitution.id === 'sch-test-case' 
-          ? 'CPB260901XX4' 
-          : (currentInstitution.id === 'sch-montessori' ? 'IMV180512MK3' : 'UPJ980115XX1')
+        razonSocial: isIbime ? 'Instituto Bilingüe IBIME S.C.' : (currentInstitution.name || prev.razonSocial),
+        rfcEmisor: isIbime 
+          ? 'IBI040818K24'
+          : (currentInstitution.id === 'sch-test-case' 
+            ? 'CPB260901XX4' 
+            : (currentInstitution.id === 'sch-montessori' ? 'IMV180512MK3' : 'UPJ980115XX1')),
+        codigoPostal: isIbime ? '55050' : prev.codigoPostal,
+        rvoePreescolar: isIbime ? 'SEP-RVOE-15PPR3322G-PRE' : prev.rvoePreescolar,
+        rvoePrimaria: isIbime ? 'SEP-RVOE-15PPR3322G-PRI' : prev.rvoePrimaria,
+        rvoeSecundaria: isIbime ? 'SEP-RVOE-15PPR3322G-SEC' : prev.rvoeSecundaria,
+        rvoeBachillerato: isIbime ? 'UNAM-CCH-INC-7998' : prev.rvoeBachillerato
       }));
     }
   }, [currentInstitution]);

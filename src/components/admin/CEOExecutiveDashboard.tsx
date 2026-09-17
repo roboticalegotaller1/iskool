@@ -17,6 +17,7 @@ import {
   Zap,
   Clock,
   ChevronRight,
+  ChevronLeft,
   Search,
   Bell,
   HelpCircle,
@@ -66,7 +67,7 @@ import {
   ClipboardList,
   Menu
 } from 'lucide-react';
-import { CampusData, OrganizationHolding, DetailedStudent, Campus, FamilyBillingRecord } from '@/types';
+import { CampusData, OrganizationHolding, DetailedStudent, Campus, FamilyBillingRecord, Institution } from '@/types';
 import { 
   useSchoolAdminStore, 
   getSchoolCampuses, 
@@ -87,148 +88,209 @@ import { InstitutionalBrainStudio } from './InstitutionalBrainStudio';
 import { OperationalEcosystemControl } from './OperationalEcosystemControl';
 
 // ==========================================
-// SEED DEFAULT ADAPTADO A GRUPO IBIME
-// (Multirregional, 5 Sedes, 6,800+ Alumnos)
+// ==========================================
+// SEED OFICIAL DEL CASO REAL INSTITUTO BILINGÜE IBIME
+// (Red de 4 Planteles en Ecatepec y Coacalco, 3,740 Alumnos, Licencia SaaS ISkool)
 // ==========================================
 export const DEFAULT_IBIME_HOLDING: OrganizationHolding = {
   id: 'org-ibime-holding',
-  name: 'Colegio Nacional Mexico',
+  name: 'Instituto Bilingüe IBIME',
   slug: 'ibime',
-  tagline: 'Excelencia Educativa Multisede y Liderazgo Académico',
+  tagline: 'Excelencia Bilingüe y Formación Humana desde 2004 · Bachillerato UNAM CCH · 4 Planteles',
   currency: 'MXN',
   targetCollectionRate: 95,
   targetCurriculumCoverage: 90,
   targetRetentionRate: 95,
   campuses: [
     { 
-      id: 'cdmx', 
-      name: 'Anglo CDMX (Campus Central)', 
-      location: 'Ciudad de México', 
-      students: 2120, 
-      teachers: 142, 
-      collectionRate: 94, 
-      admissionsInProgress: 8, 
+      id: 'montes', 
+      name: 'Campus Montes (Sede Matriz & CCH)', 
+      location: 'Jardines de Morelos Secc. Montes, Ecatepec', 
+      students: 1620, 
+      teachers: 84, 
+      collectionRate: 95, 
+      admissionsInProgress: 14, 
       academicHealth: 96, 
       focalIssues: 0,
       curriculumCoverage: 96,
       retentionRate: 97
     },
     { 
-      id: 'satelite', 
-      name: 'Anglo Satélite', 
-      location: 'Estado de México', 
-      students: 1894, 
-      teachers: 134, 
+      id: 'lagos', 
+      name: 'Campus Lagos (Fundador 2004)', 
+      location: 'Jardines de Morelos Secc. Lagos, Ecatepec', 
+      students: 710, 
+      teachers: 38, 
       collectionRate: 96, 
-      admissionsInProgress: 6, 
+      admissionsInProgress: 8, 
       academicHealth: 95, 
       focalIssues: 0,
       curriculumCoverage: 95,
       retentionRate: 96
     },
     { 
-      id: 'pedregal', 
-      name: 'Anglo Pedregal', 
-      location: 'Ciudad de México Sur', 
-      students: 980, 
-      teachers: 72, 
+      id: 'sancristobal', 
+      name: 'Campus San Cristóbal (Ecatepec Centro)', 
+      location: 'Av. Insurgentes, Lomas de Atzolco, Ecatepec', 
+      students: 830, 
+      teachers: 46, 
+      collectionRate: 93, 
+      admissionsInProgress: 9, 
+      academicHealth: 93, 
+      focalIssues: 1,
+      curriculumCoverage: 94,
+      retentionRate: 95
+    },
+    { 
+      id: 'coacalco', 
+      name: 'Campus Coacalco (Metropolitano)', 
+      location: 'Col. Guadalupe Victoria, Ecatepec-Coacalco', 
+      students: 580, 
+      teachers: 32, 
       collectionRate: 91, 
-      admissionsInProgress: 4, 
+      admissionsInProgress: 6, 
       academicHealth: 92, 
       focalIssues: 1,
       curriculumCoverage: 93,
       retentionRate: 94
     },
-    { 
-      id: 'queretaro', 
-      name: 'Anglo Querétaro (Juriquilla)', 
-      location: 'Querétaro, Qro.', 
-      students: 1450, 
-      teachers: 112, 
-      collectionRate: 88, 
-      admissionsInProgress: 7, 
-      academicHealth: 88, 
-      focalIssues: 2,
-      curriculumCoverage: 91,
-      retentionRate: 91
-    },
-    { 
-      id: 'sanluis', 
-      name: 'Anglo San Luis', 
-      location: 'San Luis Potosí', 
-      students: 1282, 
-      teachers: 95, 
-      collectionRate: 89, 
-      admissionsInProgress: 3, 
-      academicHealth: 90, 
-      focalIssues: 1,
-      curriculumCoverage: 92,
-      retentionRate: 93
-    },
   ]
 };
 
-// Base de conocimiento exhaustiva de la Bóveda Institucional (0 Tokens)
+/**
+ * Generador dinámico de Holding para cualquier colegio dentro de ISkool.
+ * Permite que cada institución (IBIME, Rosseau, Sandbox, Montessori o colegios nuevos)
+ * cuente con su propia suite ejecutiva completa (Visión CEO, Colegios, Académico, Finanzas, Bóveda, Operación).
+ */
+export function buildHoldingForInstitution(
+  institution?: Institution | null,
+  campusesList?: Campus[],
+  detailedStudents?: DetailedStudent[],
+  teachersList?: any[]
+): OrganizationHolding {
+  if (!institution) return DEFAULT_IBIME_HOLDING;
+
+  // Caso específico IBIME
+  if (institution.id === 'sch-ibime' || institution.name?.includes('IBIME')) {
+    return DEFAULT_IBIME_HOLDING;
+  }
+
+  const allCampuses = campusesList || [];
+  const schoolCampuses = getSchoolCampuses(allCampuses, institution.id);
+  const schoolStudents = getSchoolStudents(detailedStudents || [], institution.id, schoolCampuses);
+  const schoolTeachers = getSchoolTeachers(teachersList || [], institution.id, schoolCampuses);
+
+  const mappedCampuses: CampusData[] = schoolCampuses.length > 0
+    ? schoolCampuses.map((c, idx) => {
+        const campStudents = (detailedStudents || []).filter(s => s.campus_id === c.id);
+        const campTeachers = (teachersList || []).filter(t => t.campus_id === c.id);
+        const stCount = campStudents.length || Math.max(12, Math.floor(schoolStudents.length / schoolCampuses.length)) || 350;
+        const tcCount = campTeachers.length || Math.max(2, Math.floor(schoolTeachers.length / schoolCampuses.length)) || 24;
+
+        return {
+          id: c.id,
+          name: c.name,
+          location: c.address || `${c.name} · Sede Oficial`,
+          students: stCount,
+          teachers: tcCount,
+          collectionRate: Math.max(88, 95 - (idx % 3)),
+          admissionsInProgress: Math.floor(8 + idx * 3),
+          academicHealth: Math.max(90, 96 - (idx % 2)),
+          focalIssues: idx === 1 ? 1 : 0,
+          curriculumCoverage: Math.min(98, 94 + (idx % 3)),
+          retentionRate: Math.min(98, 96 - (idx % 2))
+        };
+      })
+    : [
+        {
+          id: `${institution.id}-matriz`,
+          name: `${institution.name} · Plantel Central`,
+          location: institution.address || 'Sede Central',
+          students: schoolStudents.length || 450,
+          teachers: schoolTeachers.length || 28,
+          collectionRate: 95,
+          admissionsInProgress: 16,
+          academicHealth: 96,
+          focalIssues: 0,
+          curriculumCoverage: 95,
+          retentionRate: 96
+        }
+      ];
+
+  return {
+    id: `org-${institution.id}-holding`,
+    name: institution.name,
+    slug: institution.id.replace('sch-', ''),
+    tagline: institution.tagline || 'Institución de formación integral y excelencia académica.',
+    currency: 'MXN',
+    targetCollectionRate: 95,
+    targetCurriculumCoverage: 90,
+    targetRetentionRate: 95,
+    campuses: mappedCampuses
+  };
+}
+
+// Base de conocimiento exhaustiva de la Bóveda Institucional IBIME (0 Tokens)
 const INSTITUTIONAL_KNOWLEDGE_BASE = [
   {
     id: 'kb-1',
     topic: 'Protocolo de Emergencia Médica y Alergias (Alineado Expediente 360)',
     category: 'Normativa Médica & Urgencias',
-    sede: 'Estándar Corporativo Red',
+    sede: 'Red IBIME / Sede Matriz Montes',
     reads: '1,420 consultas',
-    keywords: ['emergencia', 'medica', 'alergia', 'medico', 'salud', 'expediente', '360', 'enfermeria', 'protocolo', 'shock', 'ambulancia', 'caida'],
-    summary: 'Protocolo estandarizado de actuación inmediata para shock anafiláctico, caídas y notificación a padres en < 3 minutos desde el Expediente 360 del alumno.',
-    answer: 'El protocolo de emergencia médica estandarizado establece que el personal de enfermería y coordinación debe verificar inmediatamente el Expediente 360 del alumno en pantalla, aplicar el protocolo de estabilización primaria y emitir la alerta push al padre de familia antes de 3 minutos. Todo evento genera un folio inmutable de bitácora médico-legal con estampa de tiempo.'
+    keywords: ['emergencia', 'medica', 'alergia', 'medico', 'salud', 'expediente', '360', 'enfermeria', 'protocolo', 'shock', 'ambulancia', 'caida', 'ibime'],
+    summary: 'Protocolo estandarizado de actuación inmediata para shock anafiláctico, caídas y notificación a padres en < 3 minutos desde el Expediente 360 del alumno en planteles IBIME.',
+    answer: 'El protocolo de emergencia médica IBIME establece que el personal de enfermería y coordinación debe verificar inmediatamente el Expediente 360 del alumno en pantalla, aplicar el protocolo de estabilización primaria y emitir la alerta push al padre de familia antes de 3 minutos. Todo evento genera un folio inmutable de bitácora médico-legal con estampa de tiempo.'
   },
   {
     id: 'kb-2',
-    topic: 'Matriz de Cobertura Curricular y Planeaciones NEM 2024',
-    category: 'Pedagógico Oficial SEP',
-    sede: 'Anglo CDMX / Red Nacional',
+    topic: 'Matriz de Cobertura Curricular NEM 2024 y Bachillerato CCH UNAM',
+    category: 'Pedagógico Oficial SEP / UNAM',
+    sede: 'Campus Montes / Lagos / San Cristóbal / Coacalco',
     reads: '1,890 consultas',
-    keywords: ['nem', 'curricular', 'planeacion', 'planeaciones', 'sep', 'programa', 'analitico', 'fases', 'pda', 'pedagogico', 'cobertura', 'rubricas'],
-    summary: 'Planeaciones de aula cronometradas (Inicio, Desarrollo, Cierre) alineadas al Programa Analítico, Fases 1-6 y Procesos de Desarrollo de Aprendizaje (PDA) de la SEP.',
-    answer: 'La cobertura curricular consolidada en la Red alcanza el 94.2%. Se utilizan planeaciones estructuradas bajo la Nueva Escuela Mexicana (NEM 2024) con Procesos de Desarrollo de Aprendizaje (PDA) textuales oficiales, rúbricas analíticas formativas, sesiones cronometradas (Inicio/Desarrollo/Cierre) y verificación prioritaria en Bóveda Curricular.'
+    keywords: ['nem', 'curricular', 'planeacion', 'planeaciones', 'sep', 'programa', 'analitico', 'fases', 'pda', 'cch', 'unam', 'pedagogico', 'cobertura', 'rubricas', 'cambridge'],
+    summary: 'Planeaciones de aula cronometradas (Inicio, Desarrollo, Cierre) alineadas al Programa Analítico SEP, Fases 2-6, Bachillerato UNAM CCH (Clave 7998) y certificaciones Cambridge English.',
+    answer: 'La cobertura curricular consolidada en la Red IBIME alcanza el 95.2%. Se articulan las planeaciones estructuradas bajo la Nueva Escuela Mexicana (NEM 2024) y el modelo CCH UNAM con Procesos de Desarrollo de Aprendizaje (PDA) oficiales, rúbricas analíticas formativas, sesiones cronometradas y verificación prioritaria en la Bóveda Curricular.'
   },
   {
     id: 'kb-3',
     topic: 'Manual de Cobranza y Timbrado SAT CFDI 4.0 Complemento IEDU',
     category: 'Financiero & Fiscal SAT',
-    sede: 'Tesorería Central Corporativa',
+    sede: 'Tesorería Central IBIME S.C.',
     reads: '980 consultas',
-    keywords: ['cobranza', 'cfdi', 'sat', 'factura', 'iedu', 'timbrado', 'fiscal', 'pagos', 'recibo', 'colegiatura', 'pac', 'deduccion'],
-    summary: 'Procedimiento de emisión automatizada de comprobantes fiscales de colegiatura con deducción IEDU, claves de producto SAT y CURP del alumno.',
-    answer: 'La facturación opera bajo CFDI 4.0 con timbrado PAC instantáneo a 0 tokens. El complemento IEDU incluye de forma automatizada: RFC del tutor legal, CURP validada del alumno, nivel educativo y clave RVOE del plantel correspondiente al conciliar la cobranza en el ledger financiero.'
+    keywords: ['cobranza', 'cfdi', 'sat', 'factura', 'iedu', 'timbrado', 'fiscal', 'pagos', 'recibo', 'colegiatura', 'pac', 'deduccion', 'ibime'],
+    summary: 'Procedimiento de emisión automatizada de comprobantes fiscales de colegiatura para Instituto Bilingüe IBIME S.C. (RFC IBI040818K24) con deducción IEDU y CURP del alumno.',
+    answer: 'La facturación opera bajo CFDI 4.0 con timbrado PAC instantáneo a 0 tokens. El complemento IEDU incluye de forma automatizada: RFC del tutor legal, CURP validada del alumno, nivel educativo y claves CCT de los planteles IBIME (15PPR3322G, 15PJN2222K, 15PPR3657T, 15PES1023O) al conciliar la cobranza en el ledger financiero.'
   },
   {
     id: 'kb-4',
-    topic: 'Protocolo de Sismo, Evacuación y Protección Civil Escolar',
+    topic: 'Protocolo de Sismo, Evacuación y Protección Civil (Zona Sísmica III Ecatepec)',
     category: 'Seguridad & Protección Civil',
-    sede: 'Dirección de Operaciones Grupo',
+    sede: 'Dirección de Protección Civil IBIME',
     reads: '1,150 consultas',
-    keywords: ['sismo', 'terremoto', 'evacuacion', 'alarma', 'seguridad', 'proteccion', 'civil', 'punto', 'reunion', 'simulacro', 'brigada'],
-    summary: 'Directrices de evacuación inmediata ante alerta sísmica: Repliegue inicial, ruta a puntos de reunión externos y pase de lista biométrico en < 90 segundos.',
-    answer: 'Ante activación de alerta sísmica o sismo perceptible: 1) Repliegue preventivo en zonas de menor riesgo dentro de aula durante los primeros 30s. 2) Evacuación ordenada guiada por brigadistas hacia el punto de reunión central. 3) Pase de lista inmediato mediante la app de asistencia de ISkool. 4) Ningún alumno es liberado sin cotejo de credencial digital autorizada.'
+    keywords: ['sismo', 'terremoto', 'evacuacion', 'alarma', 'seguridad', 'proteccion', 'civil', 'punto', 'reunion', 'simulacro', 'brigada', 'ecatepec', 'sasmex'],
+    summary: 'Directrices de evacuación inmediata ante alerta sísmica SASMEX en el Valle de México y Ecatepec: Repliegue inicial, evacuación a canchas centrales de Montes/Lagos y pase de lista biométrico en < 90 segundos.',
+    answer: 'Ante activación de la alerta sísmica o sismo perceptible en los planteles de Ecatepec y Coacalco: 1) Repliegue preventivo en zonas de menor riesgo dentro del aula durante los primeros 30s. 2) Evacuación ordenada guiada por brigadistas hacia el patio central o canchas deportivas. 3) Pase de lista inmediato mediante la app de asistencia de ISkool. 4) Ningún alumno es liberado sin cotejo de credencial digital autorizada.'
   },
   {
     id: 'kb-5',
-    topic: 'Protocolo de Admisiones e Inducción a Nuevas Familias 2026-2027',
+    topic: 'Protocolo de Admisiones e Inducción a Nuevas Familias IBIME 2026-2027',
     category: 'Admisiones & Matrícula',
-    sede: 'Red Anglo Nacional',
+    sede: 'Coordinación de Admisiones Red IBIME',
     reads: '820 consultas',
-    keywords: ['admision', 'admisiones', 'prospecto', 'inscripcion', 'psicopedagogico', 'diagnostico', 'nuevo', 'ingreso', 'pipeline'],
-    summary: 'Ruta de conversión de prospectos: Diagnóstico psicopedagógico, entrevista directiva, carta de asignación y pago de inscripción online.',
-    answer: 'El ciclo de admisiones consta de 4 hitos: Registro de prospecto en CRM escolar, examen diagnóstico psicopedagógico, entrevista directiva con la familia y confirmación de pago digital de reserva de plaza con expediente 360 provisional.'
+    keywords: ['admision', 'admisiones', 'prospecto', 'inscripcion', 'psicopedagogico', 'diagnostico', 'nuevo', 'ingreso', 'pipeline', 'ibime'],
+    summary: 'Ruta de conversión de prospectos IBIME: Diagnóstico psicopedagógico, entrevista directiva en campus Montes/Lagos/San Cristóbal/Coacalco, carta de asignación y pago de inscripción online.',
+    answer: 'El ciclo de admisiones IBIME consta de 4 hitos: Registro de prospecto en CRM escolar, examen diagnóstico psicopedagógico bilingüe, entrevista directiva con la familia y confirmación de pago digital de reserva de plaza con expediente 360 provisional.'
   },
   {
     id: 'kb-6',
-    topic: 'Protocolo de Convivencia Escolar y Prevención del Acoso (SEP 2026)',
+    topic: 'Protocolo de Convivencia Escolar y Prevención del Acoso (SEP / UNAM)',
     category: 'Jurídico & Bienestar',
-    sede: 'Dirección de Convivencia Escolar',
+    sede: 'Comité de Convivencia Escolar IBIME',
     reads: '710 consultas',
-    keywords: ['convivencia', 'acoso', 'bullying', 'disciplina', 'reglamento', 'mediacion', 'paz', 'derechos', 'comite'],
-    summary: 'Directrices obligatorias de mediación, resguardo emocional y canalización ante comités de paz escolar sin revictimización con citatorio en 24 horas.',
-    answer: 'Cero tolerancia a cualquier forma de acoso o discriminación. El protocolo activa de inmediato el Comité de Convivencia, medidas cautelares de protección para el educando, registro del incidente en bitácora protegida y citatorio formal a padres en un plazo no mayor a 24 horas hábiles.'
+    keywords: ['convivencia', 'acoso', 'bullying', 'disciplina', 'reglamento', 'mediacion', 'paz', 'derechos', 'comite', 'ibime'],
+    summary: 'Directrices obligatorias de mediación, resguardo emocional y canalización ante comités de paz escolar sin revictimización con citatorio a familias en 24 horas.',
+    answer: 'Cero tolerancia a cualquier forma de acoso o discriminación en todos los planteles IBIME. El protocolo activa de inmediato el Comité de Convivencia, medidas cautelares de protección para el educando, registro del incidente en bitácora protegida y citatorio formal a padres en un plazo no mayor a 24 horas hábiles.'
   }
 ];
 
@@ -259,13 +321,13 @@ export const INITIAL_PROSPECTS_DATA: ProspectFamily[] = [
     tutorName: 'Lic. Fernando Reyes',
     phone: '55 4192 8841',
     email: 'fernando.reyes@email.com',
-    campusId: 'cdmx',
-    campusName: 'Anglo CDMX (Campus Central)',
+    campusId: 'montes',
+    campusName: 'Campus Montes (Sede Matriz & CCH)',
     stage: 4,
     stageName: '4. Carta de Asignación Emitida',
     channel: 'Recomendación Familiar',
     registeredDate: 'Hace 3 días',
-    notes: 'Carta emitida con plaza reservada en 2° A. En espera de pago de inscripción vía SPEI.'
+    notes: 'Carta emitida con plaza reservada en 2° A Bilingüe. En espera de pago de inscripción vía SPEI.'
   },
   {
     id: 'prospect-seed-2',
@@ -274,13 +336,13 @@ export const INITIAL_PROSPECTS_DATA: ProspectFamily[] = [
     tutorName: 'Mtra. Claudia Albarrán',
     phone: '55 8320 1194',
     email: 'claudia.albarran@email.com',
-    campusId: 'satelite',
-    campusName: 'Anglo Satélite',
+    campusId: 'sancristobal',
+    campusName: 'Campus San Cristóbal (Ecatepec Centro)',
     stage: 3,
     stageName: '3. Examen Diagnóstico Psicopedagógico',
     channel: 'Canales Digitales & Web',
     registeredDate: 'Hace 5 días',
-    notes: 'Diagnóstico psicopedagógico completado por psicología. Dictamen favorable para bilingüe.'
+    notes: 'Diagnóstico psicopedagógico completado por psicología escolar. Dictamen favorable para programa Cambridge KET.'
   },
   {
     id: 'prospect-seed-3',
@@ -289,58 +351,58 @@ export const INITIAL_PROSPECTS_DATA: ProspectFamily[] = [
     tutorName: 'Dr. Roberto Garza',
     phone: '55 3190 2481',
     email: 'roberto.garza@hospital.com',
-    campusId: 'cdmx',
-    campusName: 'Anglo CDMX (Campus Central)',
+    campusId: 'lagos',
+    campusName: 'Campus Lagos (Fundador 2004)',
     stage: 5,
     stageName: '5. Inscripción y Reserva Pagada',
     channel: 'Recomendación Familiar',
     registeredDate: 'Hace 1 semana',
-    notes: 'Inscripción liquidada al 100%. CFDI 4.0 con complemento IEDU timbrado en tesorería.'
+    notes: 'Inscripción liquidada al 100%. CFDI 4.0 con complemento IEDU emitido con RFC IBI040818K24.'
   },
   {
     id: 'prospect-seed-4',
     studentName: 'Diego Alejandro Montes',
-    grade: 'Preparatoria 1°',
+    grade: 'Preparatoria 1° (CCH UNAM)',
     tutorName: 'Ing. Carlos Montes',
     phone: '55 9012 3456',
     email: 'carlos.montes@techcorp.mx',
-    campusId: 'interlomas',
-    campusName: 'Anglo Interlomas',
+    campusId: 'montes',
+    campusName: 'Campus Montes (Sede Matriz & CCH)',
     stage: 2,
     stageName: '2. Tours y Visitas de Campus',
     channel: 'Convenios Corporativos',
     registeredDate: 'Hace 2 días',
-    notes: 'Tour guiado por laboratorios STEAM y canchas deportivas completado con el Director.'
+    notes: 'Tour guiado por laboratorios STEAM, canchas y aulas CCH UNAM completado con el Director.'
   },
   {
     id: 'prospect-seed-5',
     studentName: 'Camila Navarro Ruiz',
     grade: 'Primaria 5°',
     tutorName: 'Dra. Andrea Ruiz',
-    phone: '442 390 1284',
-    email: 'andrea.ruiz@saludqro.gob.mx',
-    campusId: 'queretaro',
-    campusName: 'Anglo Querétaro (Juriquilla)',
+    phone: '55 3901 1284',
+    email: 'andrea.ruiz@salud.gob.mx',
+    campusId: 'coacalco',
+    campusName: 'Campus Coacalco (Metropolitano)',
     stage: 1,
     stageName: '1. Prospectos Registrados en CRM',
     channel: 'Canales Digitales & Web',
     registeredDate: 'Ayer',
-    notes: 'Formulario web completado. Asesor de admisiones asignado para llamada de bienvenida.'
+    notes: 'Formulario web completado desde portal IBIME. Asesor de admisiones asignado para llamada de bienvenida.'
   },
   {
     id: 'prospect-seed-6',
     studentName: 'Leonardo Daniel Pineda',
     grade: 'Secundaria 3°',
     tutorName: 'Lic. Javier Pineda',
-    phone: '444 812 9033',
+    phone: '55 8129 9033',
     email: 'javier.pineda@notaria.mx',
-    campusId: 'sanluis',
-    campusName: 'Anglo San Luis',
+    campusId: 'sancristobal',
+    campusName: 'Campus San Cristóbal (Ecatepec Centro)',
     stage: 4,
     stageName: '4. Carta de Asignación Emitida',
     channel: 'Feria Escolar',
     registeredDate: 'Hace 4 días',
-    notes: 'Cupo asignado en Grupo 3° B. Fecha límite de pago de reserva: 3 días hábiles.'
+    notes: 'Cupo asignado en Grupo 3° B Secundaria. Fecha límite de pago de reserva: 3 días hábiles.'
   },
   {
     id: 'prospect-seed-7',
@@ -349,13 +411,13 @@ export const INITIAL_PROSPECTS_DATA: ProspectFamily[] = [
     tutorName: 'Arq. Patricia Cordero',
     phone: '55 2381 0092',
     email: 'patricia.cordero@estudio.mx',
-    campusId: 'satelite',
-    campusName: 'Anglo Satélite',
+    campusId: 'lagos',
+    campusName: 'Campus Lagos (Fundador 2004)',
     stage: 2,
     stageName: '2. Tours y Visitas de Campus',
     channel: 'Recomendación Familiar',
     registeredDate: 'Hace 3 días',
-    notes: 'Visita con directores completada. Agendando prueba diagnóstica de admisión.'
+    notes: 'Visita con directores de Lagos completada. Agendando prueba diagnóstica de admisión bilingüe.'
   },
   {
     id: 'prospect-seed-8',
@@ -364,8 +426,8 @@ export const INITIAL_PROSPECTS_DATA: ProspectFamily[] = [
     tutorName: 'Mtro. Daniel Carrillo',
     phone: '55 4910 8273',
     email: 'daniel.carrillo@profesor.mx',
-    campusId: 'interlomas',
-    campusName: 'Anglo Interlomas',
+    campusId: 'coacalco',
+    campusName: 'Campus Coacalco (Metropolitano)',
     stage: 3,
     stageName: '3. Examen Diagnóstico Psicopedagógico',
     channel: 'Canales Digitales & Web',
@@ -375,45 +437,51 @@ export const INITIAL_PROSPECTS_DATA: ProspectFamily[] = [
   {
     id: 'prospect-seed-9',
     studentName: 'Regina Domínguez Garza',
-    grade: 'Preparatoria 2°',
+    grade: 'Preparatoria 2° (CCH UNAM)',
     tutorName: 'Lic. Mariana Garza',
     phone: '55 7712 9901',
     email: 'mariana.garza@consultores.mx',
-    campusId: 'cdmx',
-    campusName: 'Anglo CDMX (Campus Central)',
+    campusId: 'montes',
+    campusName: 'Campus Montes (Sede Matriz & CCH)',
     stage: 5,
     stageName: '5. Inscripción y Reserva Pagada',
     channel: 'Convenios Corporativos',
     registeredDate: 'Hace 2 semanas',
-    notes: 'Matrícula formalizada. Expediente 360 y credencial digital generados en Control Escolar.'
+    notes: 'Matrícula formalizada en CCH UNAM. Expediente 360 y credencial digital generados en Control Escolar.'
   },
   {
     id: 'prospect-seed-10',
     studentName: 'Bruno Alexander Ortiz',
     grade: 'Secundaria 2°',
     tutorName: 'Ing. Héctor Ortiz',
-    phone: '442 710 4455',
+    phone: '55 7104 4455',
     email: 'hector.ortiz@aero.com',
-    campusId: 'queretaro',
-    campusName: 'Anglo Querétaro (Juriquilla)',
+    campusId: 'coacalco',
+    campusName: 'Campus Coacalco (Metropolitano)',
     stage: 1,
     stageName: '1. Prospectos Registrados en CRM',
     channel: 'Recomendación Familiar',
     registeredDate: 'Hoy',
-    notes: 'Interés por recomendación de familia activa en 1° de Primaria. Solicitó informes de costos.'
+    notes: 'Interés por recomendación de familia activa en Primaria Coacalco. Solicitó informes de costos y programa bilingüe.'
   }
 ];
 
 interface CEOExecutiveDashboardProps {
   holding?: OrganizationHolding;
+  schoolId?: string;
+  isSuperUser?: boolean;
   onNavigateTab?: (tabId: string) => void;
   onSwitchToOperational?: () => void;
+  onBackToDirectory?: () => void;
 }
 
 export default function CEOExecutiveDashboard({
-  holding = DEFAULT_IBIME_HOLDING,
+  holding: propHolding,
+  schoolId,
+  isSuperUser,
   onNavigateTab,
-  onSwitchToOperational
+  onSwitchToOperational,
+  onBackToDirectory
 }: CEOExecutiveDashboardProps) {
   // ------------------------------------------
   // Conexión al Almacén Central de Datos (Live Store)
@@ -430,6 +498,22 @@ export default function CEOExecutiveDashboard({
     activeSchoolId,
     schoolSettings
   } = useSchoolAdminStore();
+
+  // Resolución Dinámica del Holding Escolar para la escuela seleccionada
+  const holding = useMemo<OrganizationHolding>(() => {
+    if (propHolding) return propHolding;
+    const targetInst = institutionsList.find(i => i.id === (schoolId || activeSchoolId)) 
+      || institutionsList[0];
+    return buildHoldingForInstitution(targetInst, campusesList, detailedStudents, teachersList);
+  }, [propHolding, schoolId, activeSchoolId, institutionsList, campusesList, detailedStudents, teachersList]);
+
+  // Institución Activa para datos de licencia e identidad
+  const currentInstitution = useMemo(() => {
+    return institutionsList.find(i => i.id === (schoolId || activeSchoolId))
+      || institutionsList.find(i => i.name === holding.name)
+      || institutionsList.find(i => holding.slug && i.id.includes(holding.slug))
+      || institutionsList[0];
+  }, [institutionsList, schoolId, activeSchoolId, holding]);
 
   // ------------------------------------------
   // Estados de Control de Vista y Filtros
@@ -610,7 +694,7 @@ export default function CEOExecutiveDashboard({
       phone: newProspectForm.phone || '55 0000 0000',
       email: newProspectForm.email || 'contacto@familia.mx',
       campusId: newProspectForm.campusId,
-      campusName: campusObj?.name || 'Anglo CDMX (Campus Central)',
+      campusName: campusObj?.name || 'Campus Montes (Sede Matriz & CCH)',
       stage: newProspectForm.initialStage,
       stageName: stageNames[newProspectForm.initialStage],
       channel: newProspectForm.channel,
@@ -623,7 +707,7 @@ export default function CEOExecutiveDashboard({
     setNewProspectForm({
       studentName: '',
       grade: 'Primaria 1°',
-      campusId: 'cdmx',
+      campusId: 'montes',
       tutorName: '',
       phone: '',
       email: '',
@@ -1148,6 +1232,20 @@ export default function CEOExecutiveDashboard({
 
         {/* Footer Sidebar Desktop */}
         <div className="p-3 border-t border-slate-100 space-y-2">
+          {onBackToDirectory && (
+            <button
+              onClick={onBackToDirectory}
+              className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 transition-colors cursor-pointer active:scale-98"
+              title="Volver al Directorio Institucional de Colegios"
+            >
+              <div className="flex items-center gap-1.5">
+                <ChevronLeft size={14} className="text-indigo-600" />
+                <span>Directorio Colegios</span>
+              </div>
+              <span className="text-[9px] font-black bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded">Super</span>
+            </button>
+          )}
+
           {onSwitchToOperational && (
             <button
               onClick={onSwitchToOperational}
@@ -1246,6 +1344,22 @@ export default function CEOExecutiveDashboard({
 
             {/* Footer del Drawer Móvil */}
             <div className="p-3 border-t border-slate-100 space-y-2 bg-slate-50/50">
+              {onBackToDirectory && (
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onBackToDirectory();
+                  }}
+                  className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 bg-slate-200/80 hover:bg-slate-300/80 border border-slate-300 transition-colors cursor-pointer active:scale-98"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <ChevronLeft size={14} className="text-indigo-600" />
+                    <span>Directorio de Colegios</span>
+                  </div>
+                  <span className="text-[9px] font-black bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded">Super</span>
+                </button>
+              )}
+
               {onSwitchToOperational && (
                 <button
                   onClick={() => {
@@ -1318,6 +1432,18 @@ export default function CEOExecutiveDashboard({
 
           {/* Acciones Rápidas del Header */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {/* Botón Volver al Directorio de Colegios (Exclusivo Super Usuario) */}
+            {onBackToDirectory && (
+              <button
+                onClick={onBackToDirectory}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-lg border border-indigo-200 shadow-xs transition-all cursor-pointer active:scale-95"
+                title="Volver a la consola global de colegios ISkool"
+              >
+                <ChevronLeft size={14} className="text-indigo-600" />
+                <span className="hidden sm:inline">Directorio Colegios</span>
+              </button>
+            )}
+
             {/* Buscador Rápido (Cmd+K) en Desktop, icono en Móvil */}
             <button 
               onClick={() => setIsSearchOpen(true)}
@@ -1389,6 +1515,45 @@ export default function CEOExecutiveDashboard({
               >
                 <RefreshCw size={12} />
                 <span>Forzar Pulso Analítico</span>
+              </button>
+            </div>
+          </div>
+
+          {/* TARJETA DE LICENCIA SAAS EMPRESARIAL ISKOOL • TENANT ESCOLAR */}
+          <div className="bg-white p-4 rounded-2xl border border-indigo-100 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-900 to-indigo-950 text-amber-400 flex items-center justify-center shrink-0 shadow-xs">
+                <Building2 size={20} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-sm font-bold text-slate-900">
+                    {currentInstitution?.licensing?.licensee || currentInstitution?.name || holding.name}
+                  </h3>
+                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                    {currentInstitution?.licensing?.planName || 'Licencia SaaS Enterprise Activa'}
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
+                    ID: {currentInstitution?.licensing?.licenseKey || `ISK-LIC-2026-${(holding.slug || 'ENT').toUpperCase()}-${holding.campuses.length}CAMPUS`}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  <span className="font-semibold text-slate-700">Licenciatario:</span> {currentInstitution?.name || holding.name} ({holding.campuses.length} Planteles) • <span className="font-semibold text-slate-700">Software Propietario:</span> {currentInstitution?.licensing?.licensor || 'ISkool Technologies Inc.'} • <span className="text-indigo-600 font-medium">Asientos: {metrics.totalStudents.toLocaleString()} en uso de {(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200)).toLocaleString()} contratados ({Math.min(100, Math.round(((metrics.totalStudents) / (currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200))) * 1000) / 10)}% ocupación)</span>
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 self-end md:self-auto shrink-0">
+              <div className="text-right hidden sm:block">
+                <div className="text-[11px] font-bold text-slate-700">Vigencia Anual: 2026-2027</div>
+                <div className="text-[10px] text-emerald-600 font-semibold">● Timbrado CFDI/IEDU 0 Tokens Activo</div>
+              </div>
+              <button
+                onClick={() => triggerToast(`✓ Contrato de Licencia SaaS verificado: ${(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200)).toLocaleString()} asientos autorizados para ${currentInstitution?.name || holding.name}`)}
+                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
+              >
+                <FileCheck2 size={14} />
+                <span>Auditoría de Licencia</span>
               </button>
             </div>
           </div>
@@ -1631,8 +1796,8 @@ export default function CEOExecutiveDashboard({
                         onClick={() => setActiveFocalModal({
                           isOpen: true,
                           title: 'Desviación en Meta de Cobranza',
-                          description: 'Anglo Querétaro (88%) y Anglo San Luis (89%) presentan rezago en pagos frente al umbral corporativo de 95%.',
-                          campusAffected: ['Anglo Querétaro', 'Anglo San Luis'],
+                          description: 'Campus Coacalco (91%) y Campus San Cristóbal (93%) presentan seguimiento en pagos frente al umbral corporativo de 95%.',
+                          campusAffected: ['Campus Coacalco', 'Campus San Cristóbal'],
                           actionType: 'cobranza'
                         })}
                         className="p-3.5 rounded-xl border border-slate-100 hover:border-rose-300 hover:bg-rose-50/30 transition-all cursor-pointer flex items-center justify-between group active:scale-98"
@@ -1646,7 +1811,7 @@ export default function CEOExecutiveDashboard({
                               Cobranza
                             </div>
                             <div className="text-xs text-slate-500 mt-0.5">
-                              2 colegios por debajo de la meta (88% y 89%)
+                              2 planteles en seguimiento (91% y 93%)
                             </div>
                           </div>
                         </div>
@@ -1657,8 +1822,8 @@ export default function CEOExecutiveDashboard({
                         onClick={() => setActiveFocalModal({
                           isOpen: true,
                           title: 'Campaña de Reinscripciones Pendiente',
-                          description: 'Se requiere activar el recordatorio vía portal y WhatsApp institucional en Anglo Querétaro, Anglo San Luis y Anglo Pedregal.',
-                          campusAffected: ['Anglo Querétaro', 'Anglo San Luis', 'Anglo Pedregal'],
+                          description: 'Se requiere activar el recordatorio vía portal y WhatsApp institucional en Campus San Cristóbal y Campus Coacalco.',
+                          campusAffected: ['Campus San Cristóbal', 'Campus Coacalco'],
                           actionType: 'reinscripcion'
                         })}
                         className="p-3.5 rounded-xl border border-slate-100 hover:border-amber-300 hover:bg-amber-50/30 transition-all cursor-pointer flex items-center justify-between group active:scale-98"
@@ -1672,7 +1837,7 @@ export default function CEOExecutiveDashboard({
                               Reinscripciones
                             </div>
                             <div className="text-xs text-slate-500 mt-0.5">
-                              Iniciar campaña formal en 3 colegios
+                              Iniciar campaña formal en 2 planteles
                             </div>
                           </div>
                         </div>
@@ -1684,7 +1849,7 @@ export default function CEOExecutiveDashboard({
                           isOpen: true,
                           title: 'Auditoría Curricular y Desempeño NEM',
                           description: 'Evaluaciones formativas de Secundaria en Fase 6 muestran dispersión en el campo formativo Saberes y Pensamiento Científico.',
-                          campusAffected: ['Anglo Querétaro', 'Anglo Pedregal'],
+                          campusAffected: ['Campus San Cristóbal', 'Campus Coacalco'],
                           actionType: 'academico'
                         })}
                         className="p-3.5 rounded-xl border border-slate-100 hover:border-blue-300 hover:bg-blue-50/30 transition-all cursor-pointer flex items-center justify-between group active:scale-98"
@@ -1709,8 +1874,8 @@ export default function CEOExecutiveDashboard({
                         onClick={() => setActiveFocalModal({
                           isOpen: true,
                           title: 'Alerta Temprana de Rotación Docente',
-                          description: 'Se han procesado 3 bajas de docentes titulares en el último mes (2 en Querétaro y 1 en San Luis). Bóveda de reemplazo activada.',
-                          campusAffected: ['Anglo Querétaro', 'Anglo San Luis'],
+                          description: 'Se han procesado 2 bajas de docentes titulares de reemplazo temporal en Campus Coacalco y Campus San Cristóbal. Bóveda de reemplazo activada.',
+                          campusAffected: ['Campus Coacalco', 'Campus San Cristóbal'],
                           actionType: 'docentes'
                         })}
                         className="p-3.5 rounded-xl border border-slate-100 hover:border-purple-300 hover:bg-purple-50/30 transition-all cursor-pointer flex items-center justify-between group active:scale-98"
@@ -1874,9 +2039,9 @@ export default function CEOExecutiveDashboard({
                     </div>
                     <div className="space-y-3 text-xs">
                       {[
-                        { title: 'Auditoría curricular completada', campus: 'Anglo Querétaro', time: 'hace 2 hrs', icon: FileText, color: 'text-blue-500' },
-                        { title: 'Prospecto nuevo en CRM', campus: 'Anglo Pedregal', time: 'hace 4 hrs', icon: UserCheck, color: 'text-teal-500' },
-                        { title: 'Cobranza preventiva 142 folios', campus: 'Holding Central', time: 'hace 1 día', icon: Zap, color: 'text-purple-500' },
+                        { title: 'Auditoría curricular completada', campus: 'Campus Montes', time: 'hace 2 hrs', icon: FileText, color: 'text-blue-500' },
+                        { title: 'Prospecto nuevo en CRM', campus: 'Campus San Cristóbal', time: 'hace 4 hrs', icon: UserCheck, color: 'text-teal-500' },
+                        { title: 'Cobranza preventiva 142 folios', campus: 'Red IBIME Central', time: 'hace 1 día', icon: Zap, color: 'text-purple-500' },
                       ].map((act, i) => {
                         const Icon = act.icon;
                         return (
@@ -2254,11 +2419,10 @@ export default function CEOExecutiveDashboard({
               {/* GRID DE LAS 5 SEDES */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {[
-                  { id: 'cdmx', name: 'Anglo CDMX (Campus Central)', loc: 'Ciudad de México', dir: 'Lic. Roberto Garza', rvoe: '0912SEP402', cap: 2400, stu: 2120, tea: 142, col: 94, cov: 96, ret: 97, status: 'Óptimo' },
-                  { id: 'satelite', name: 'Anglo Satélite', loc: 'Estado de México', dir: 'Mtra. Elena Morales', rvoe: '1548SEP108', cap: 2000, stu: 1894, tea: 134, col: 96, cov: 95, ret: 96, status: 'Líder en Cobranza' },
-                  { id: 'pedregal', name: 'Anglo Pedregal', loc: 'CDMX Sur', dir: 'Dr. Alejandro Vega', rvoe: '0920SEP519', cap: 1200, stu: 980, tea: 72, col: 91, cov: 93, ret: 94, status: 'Capacidad Disponible' },
-                  { id: 'queretaro', name: 'Anglo Querétaro (Juriquilla)', loc: 'Querétaro, Qro.', dir: 'Dra. Sofía Landa', rvoe: '2201SEP304', cap: 1700, stu: 1450, tea: 112, col: 88, cov: 91, ret: 91, status: 'En Alerta de Cobranza' },
-                  { id: 'sanluis', name: 'Anglo San Luis', loc: 'San Luis Potosí', dir: 'Lic. Marco Antonio Ruiz', rvoe: '2408SEP712', cap: 1500, stu: 1282, tea: 95, col: 89, cov: 92, ret: 93, status: 'Seguimiento' }
+                  { id: 'montes', name: 'Campus Montes (Sede Matriz & CCH)', loc: 'Jardines de Morelos, Ecatepec', dir: 'Lic. Roberto González', rvoe: '15PPR3322G / UNAM 7998', cap: 1800, stu: 1620, tea: 84, col: 95, cov: 96, ret: 97, status: 'Sede Matriz' },
+                  { id: 'lagos', name: 'Campus Lagos (Fundador 2004)', loc: 'Jardines de Morelos Secc. Lagos', dir: 'Mtra. Patricia Salmerón', rvoe: '15PJN2222K / 15PPR3657T', cap: 800, stu: 710, tea: 38, col: 96, cov: 95, ret: 96, status: 'Líder en Cobranza' },
+                  { id: 'sancristobal', name: 'Campus San Cristóbal', loc: 'Ecatepec Centro (Insurgentes)', dir: 'Dr. Andrés Morales', rvoe: '15PPR4012S / 15PES1240K', cap: 950, stu: 830, tea: 46, col: 93, cov: 94, ret: 95, status: 'Óptimo' },
+                  { id: 'coacalco', name: 'Campus Coacalco (Metropolitano)', loc: 'Guadalupe Victoria, Ecatepec-Coacalco', dir: 'Dra. Carmen Del Valle', rvoe: '15PPR5110Z / 15PES1405M', cap: 700, stu: 580, tea: 32, col: 91, cov: 93, ret: 94, status: 'Seguimiento' }
                 ].map((c) => {
                   const occRate = ((c.stu / c.cap) * 100).toFixed(1);
                   return (
@@ -2550,11 +2714,10 @@ export default function CEOExecutiveDashboard({
                         className="bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800 px-2.5 py-1 focus:outline-none cursor-pointer shadow-2xs"
                       >
                         <option value="consolidado">Consolidado Red (5 Sedes)</option>
-                        <option value="cdmx">Anglo CDMX (Campus Central)</option>
-                        <option value="satelite">Anglo Satélite</option>
-                        <option value="pedregal">Anglo Pedregal</option>
-                        <option value="queretaro">Anglo Querétaro</option>
-                        <option value="sanluis">Anglo San Luis</option>
+                        <option value="montes">Campus Montes (Sede Matriz & CCH)</option>
+                        <option value="lagos">Campus Lagos (Fundador 2004)</option>
+                        <option value="sancristobal">Campus San Cristóbal</option>
+                        <option value="coacalco">Campus Coacalco</option>
                       </select>
                     </div>
 
@@ -2567,13 +2730,12 @@ export default function CEOExecutiveDashboard({
                 {/* COMPUTO DINÁMICO DE RADAR METRICS SEGÚN SEDE */}
                 {(() => {
                   const radarValues = {
-                    consolidado: { lenguajes: 96.2, saberes: 94.8, etica: 93.5, humano: 95.1, target: 90, name: 'Consolidado Red' },
-                    cdmx: { lenguajes: 97.5, saberes: 96.2, etica: 95.0, humano: 96.0, target: 90, name: 'Anglo CDMX' },
-                    satelite: { lenguajes: 96.8, saberes: 95.5, etica: 94.2, humano: 95.5, target: 90, name: 'Anglo Satélite' },
-                    pedregal: { lenguajes: 94.2, saberes: 93.0, etica: 91.8, humano: 93.5, target: 90, name: 'Anglo Pedregal' },
-                    queretaro: { lenguajes: 93.0, saberes: 91.5, etica: 90.2, humano: 92.0, target: 90, name: 'Anglo Querétaro' },
-                    sanluis: { lenguajes: 93.8, saberes: 92.4, etica: 91.0, humano: 93.0, target: 90, name: 'Anglo San Luis' },
-                  }[curriculumRadarCampus] || { lenguajes: 96.2, saberes: 94.8, etica: 93.5, humano: 95.1, target: 90, name: 'Consolidado Red' };
+                    consolidado: { lenguajes: 96.2, saberes: 94.8, etica: 93.5, humano: 95.1, target: 90, name: 'Consolidado Red IBIME' },
+                    montes: { lenguajes: 97.5, saberes: 96.2, etica: 95.0, humano: 96.0, target: 90, name: 'Campus Montes' },
+                    lagos: { lenguajes: 96.8, saberes: 95.5, etica: 94.2, humano: 95.5, target: 90, name: 'Campus Lagos' },
+                    sancristobal: { lenguajes: 94.5, saberes: 93.8, etica: 92.5, humano: 94.0, target: 90, name: 'Campus San Cristóbal' },
+                    coacalco: { lenguajes: 93.8, saberes: 92.6, etica: 91.5, humano: 93.2, target: 90, name: 'Campus Coacalco' },
+                  }[curriculumRadarCampus] || { lenguajes: 96.2, saberes: 94.8, etica: 93.5, humano: 95.1, target: 90, name: 'Consolidado Red IBIME' };
 
                   // Geometría del Radar SVG (cx=160, cy=160, R=110)
                   const rcx = 160;
@@ -3880,10 +4042,10 @@ export default function CEOExecutiveDashboard({
 
             <div className="space-y-3">
               {[
-                { title: 'Desviación en Meta de Cobranza', sedes: ['Anglo Querétaro (88%)', 'Anglo San Luis (89%)'], desc: 'Cobranza por debajo de la meta del 95%. Se sugiere activar recordatorio preventivo.', type: 'cobranza' as const },
-                { title: 'Campaña de Reinscripciones', sedes: ['Anglo Querétaro', 'Anglo San Luis', 'Anglo Pedregal'], desc: 'Lanzamiento de campaña formal de reserva de plaza para el ciclo 2026-2027.', type: 'reinscripcion' as const },
-                { title: 'Auditoría Curricular NEM 2024', sedes: ['Anglo Querétaro', 'Anglo Pedregal'], desc: 'Dispersión detectada en evaluaciones formativas de Fase 6 en Secundaria.', type: 'academico' as const },
-                { title: 'Rotación Docente Preventiva', sedes: ['Anglo Querétaro (2)', 'Anglo San Luis (1)'], desc: 'Bajas docentes registradas. Cartera de reemplazo activa en Bóveda de Talento.', type: 'docentes' as const },
+                { title: 'Desviación en Meta de Cobranza', sedes: ['Campus Coacalco (91%)', 'Campus San Cristóbal (93%)'], desc: 'Cobranza en seguimiento respecto al umbral institucional de 95%. Se sugiere activar conciliación SPEI y recordatorio preventivo.', type: 'cobranza' as const },
+                { title: 'Campaña de Reinscripciones', sedes: ['Campus San Cristóbal', 'Campus Coacalco'], desc: 'Lanzamiento de campaña formal de reserva de plaza para el ciclo 2026-2027.', type: 'reinscripcion' as const },
+                { title: 'Auditoría Curricular NEM 2024 / CCH', sedes: ['Campus San Cristóbal', 'Campus Coacalco'], desc: 'Dispersión detectada en evaluaciones formativas de Fase 6 en Secundaria.', type: 'academico' as const },
+                { title: 'Rotación Docente Preventiva', sedes: ['Campus Coacalco (1)', 'Campus San Cristóbal (1)'], desc: 'Bajas docentes registradas por reemplazo. Cartera de reemplazo activa en Bóveda Curricular.', type: 'docentes' as const },
               ].map((f, i) => (
                 <div key={i} className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
                   <div className="flex justify-between items-start">
@@ -4068,12 +4230,12 @@ export default function CEOExecutiveDashboard({
 
             <div className="space-y-2.5 text-xs">
               {[
-                { title: 'Auditoría Curricular Bimestral Completada', campus: 'Anglo Querétaro', time: 'Hoy 11:30 hrs', cat: 'Académico', user: 'Coordinación Secundaria' },
-                { title: 'Prospecto Nuevo Registrado en CRM', campus: 'Anglo Pedregal', time: 'Hoy 09:15 hrs', cat: 'Admisiones', user: 'Admisiones Pedregal' },
-                { title: 'Reglamento de Convivencia Actualizado SEP 2026', campus: 'Normativa General', time: 'Ayer 18:00 hrs', cat: 'Operativo', user: 'Dirección Jurídica' },
-                { title: 'Conciliación Bancaria y Timbrado CFDI 4.0 (142 Folios)', campus: 'Holding Central', time: 'Ayer 16:20 hrs', cat: 'Financiero', user: 'Tesorería Central' },
-                { title: 'Simulacro de Evacuación y Pase de Lista Digital', campus: 'Anglo Satélite', time: 'Hace 2 días', cat: 'Operativo', user: 'Protección Civil' },
-                { title: 'Campaña de Reinscripciones Despachada (640 tutores)', campus: 'Anglo CDMX', time: 'Hace 3 días', cat: 'Admisiones', user: 'Dirección de Admisiones' }
+                { title: 'Auditoría Curricular Bimestral Completada', campus: 'Campus Montes', time: 'Hoy 11:30 hrs', cat: 'Académico', user: 'Coordinación Secundaria CCH' },
+                { title: 'Prospecto Nuevo Registrado en CRM', campus: 'Campus San Cristóbal', time: 'Hoy 09:15 hrs', cat: 'Admisiones', user: 'Admisiones San Cristóbal' },
+                { title: 'Reglamento de Convivencia Actualizado SEP 2026', campus: 'Normativa General IBIME', time: 'Ayer 18:00 hrs', cat: 'Operativo', user: 'Dirección Jurídica' },
+                { title: 'Conciliación Bancaria y Timbrado CFDI 4.0 (142 Folios)', campus: 'Tesorería Central IBIME', time: 'Ayer 16:20 hrs', cat: 'Financiero', user: 'Tesorería Central' },
+                { title: 'Simulacro de Evacuación y Pase de Lista Digital', campus: 'Campus Lagos', time: 'Hace 2 días', cat: 'Operativo', user: 'Protección Civil Ecatepec' },
+                { title: 'Campaña de Reinscripciones Despachada (640 tutores)', campus: 'Campus Coacalco', time: 'Hace 3 días', cat: 'Admisiones', user: 'Dirección de Admisiones' }
               ].map((log, i) => (
                 <div key={i} className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
                   <div>
