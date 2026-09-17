@@ -76,6 +76,7 @@ import {
 } from '@/store/useSchoolAdminStore';
 import { DetailedStudent, Subject, GroupAnnualPlan, SyllabusTopic, Campus, Group, canManageTargetRole, StaffPayrollRecord, isPlatformSuperUser, StudentDeletionAuditLog, UserRole, Institution } from '@/types';
 import ExecutiveAnalyticsStudio from '@/components/admin/ExecutiveAnalyticsStudio';
+import CEOExecutiveDashboard, { DEFAULT_IBIME_HOLDING } from '@/components/admin/CEOExecutiveDashboard';
 import { SuperUserCompendiumStudio } from '@/components/books/SuperUserCompendiumStudio';
 import { SchoolStatusSlider } from '@/components/admin/SchoolStatusSlider';
 import { useSchoolBooksStore } from '@/store/useSchoolBooksStore';
@@ -163,6 +164,7 @@ export default function SuperUserAdminPage() {
   }, [authLoading, user, isSuperUser, activeSchoolId, selectSchool]);
 
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
+  const [overviewMode, setOverviewMode] = useState<'executive' | 'classic'>('executive');
   const [selectedCampus, setSelectedCampus] = useState<string>('all');
   const [selectedLimitsSchoolId, setSelectedLimitsSchoolId] = useState<string>('sch-jjrosseau');
   
@@ -1446,6 +1448,10 @@ export default function SuperUserAdminPage() {
             <SuperUserCompendiumStudio />
           </main>
         </div>
+      ) : (overviewMode === 'executive' && activeTab === 'overview') ? (
+        <CEOExecutiveDashboard
+          onSwitchToOperational={() => setOverviewMode('classic')}
+        />
       ) : (!activeSchoolId && isSuperUser) ? (
         <div className="flex-1 flex flex-col">
           {/* MULTI-SCHOOL GLOBAL HEADER */}
@@ -1468,6 +1474,13 @@ export default function SuperUserAdminPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <Link
+                href="/admin/ceo"
+                className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black shadow-lg shadow-slate-900/30 hover:scale-102 transition-all cursor-pointer shrink-0"
+              >
+                <TrendingUp className="h-4 w-4 text-amber-400" /> <span>Visión Ejecutiva CEO (IBIME)</span>
+              </Link>
+
               <button
                 onClick={() => setActiveTab('books_compendium')}
                 className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-lg shadow-purple-600/30 hover:scale-102 transition-all cursor-pointer shrink-0"
@@ -2184,6 +2197,25 @@ export default function SuperUserAdminPage() {
         {/* TAB 1: OVERVIEW / DASHBOARD */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
+            {/* Banner de Conmutación a Visión Ejecutiva CEO */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md border border-indigo-900/50">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-indigo-600/30 text-indigo-400 border border-indigo-500/40 flex items-center justify-center font-bold text-xs">
+                  CEO
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-white">Tablero Operativo Clásico Activo</h4>
+                  <p className="text-[11px] text-indigo-200">Puedes conmutar en cualquier momento al Tablero Ejecutivo de Red para Directores y Dueños.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setOverviewMode('executive')}
+                className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
+                <span>Activar Visión Ejecutiva CEO</span>
+              </button>
+            </div>
             {/* Banner de Acceso Directo al Estudio Ejecutivo de Información (Voz & Texto) */}
             <div className="p-5 rounded-2xl bg-gradient-to-r from-cyan-50/80 via-white to-indigo-50/80 border border-cyan-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-3.5">

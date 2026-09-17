@@ -1640,4 +1640,32 @@ export interface StaffPayrollRecord {
   notes?: string;
 }
 
+export interface CampusData {
+  id: string;
+  name: string;
+  location: string;
+  students: number;
+  teachers: number;
+  collectionRate: number; // Porcentaje de cobranza
+  admissionsInProgress: number;
+  academicHealth: number; // 0-100
+  focalIssues: number;
+  curriculumCoverage?: number;
+  retentionRate?: number;
+}
+
+export interface OrganizationHolding {
+  id: string;
+  name: string;
+  tagline: string;
+  directorName?: string;
+  logoUrl?: string;
+  slug?: string;
+  currency?: string;
+  targetCollectionRate?: number;
+  targetCurriculumCoverage?: number;
+  targetRetentionRate?: number;
+  campuses: CampusData[];
+}
+
 export * from './teacherGamification';

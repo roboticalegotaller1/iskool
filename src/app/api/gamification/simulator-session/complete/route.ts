@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
 
     // 5. Cálculo de Recompensas Autorizadas por el Servidor
     const verifiedScore = Math.min(100, Math.max(0, Number(score) || 100));
-    const descriptor = SimulatorGamificationAdapter.getSimulator(payload.simulatorId);
+    const descriptor = SimulatorGamificationAdapter.getSimulator(payload.simulatorId || 'sim-circuits-v1');
 
     const performanceFactor = Math.max(0.2, verifiedScore / 100);
     const studentXp = Math.round(descriptor.xpBaseReward * performanceFactor);
