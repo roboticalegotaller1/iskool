@@ -291,6 +291,11 @@ export interface TimedReadingBlock extends BaseStudioBlock {
     wordCount: number;
     targetWpm?: number;
     comprehensionQuestions: ComprehensionQuestion[];
+    chapterTitle?: string;
+    faseNem?: string;
+    discipline?: string;
+    pedagogicalAxiom?: string;
+    pedagogicalAxiomTitle?: string;
   };
 }
 
