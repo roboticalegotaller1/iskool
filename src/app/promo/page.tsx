@@ -194,7 +194,7 @@ const SLIDES: SlideData[] = [
       { label: "Simulador", value: "Ejecución en Tiempo Real" }
     ],
     features: [],
-    portalUrl: "/teacher/studio",
+    portalUrl: "/teacher/studio?embed=true",
     pitchScript: "Este es el lienzo en acción. Observen cómo cada nodo representa un momento didáctico: una introducción narrativa con personajes históricos, un reactivo analítico, un reto de escape room y un cofre de recompensas al concluir. Todo es visual y configurable.",
     keySalesPoint: "Flexibilidad total para diseñar desde una prueba corta formativa hasta proyectos transversales gamificados.",
     diagnosticQuestion: "¿Conoce alguna otra herramienta escolar que integre un editor de flujos interactivos adaptado al modelo educativo mexicano e internacional?",
@@ -752,7 +752,7 @@ export default function PromoPage() {
             </div>
 
             {/* Contenedor del Iframe con Borde Neón */}
-            <div className="relative w-full h-[62vh] min-h-[420px] rounded-3xl border border-teal-400/40 bg-slate-950 overflow-hidden shadow-2xl shadow-teal-500/10">
+            <div className="relative w-full h-[68vh] min-h-[480px] sm:min-h-[520px] rounded-3xl border border-teal-400/40 bg-slate-950 overflow-hidden shadow-2xl shadow-teal-500/10">
               {currentSlide.portalUrl ? (
                 <iframe
                   src={currentSlide.portalUrl}

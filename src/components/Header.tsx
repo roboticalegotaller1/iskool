@@ -120,6 +120,7 @@ export const Header: React.FC = () => {
     if (currentRole === 'student') {
       return [
         { href: '/student', label: 'Misiones', icon: '🗺️' },
+        { href: '/student/idiomas', label: 'Idiomas', icon: '🗣️' },
         { href: '/student/portfolio', label: 'Mi Portafolio', icon: '📋' },
         { href: '/student/avatar', label: 'Avatar & Mascota', icon: '🐾' },
         { href: '/student/shop', label: 'Tienda Mágica', icon: '✨' },
@@ -129,6 +130,7 @@ export const Header: React.FC = () => {
       return [
         { href: '/teacher', label: 'Planeación & Portafolio', icon: '📖' },
         { href: '/teacher/studio', label: 'Estudio Docente', icon: '🎨' },
+        { href: '/teacher/idiomas', label: 'Idiomas & Fonética', icon: '🗣️' },
         { href: '/teacher/community', label: 'Comunidad Docente', icon: '🌍' },
         { href: '/teacher/grades', label: 'Boleta SEP', icon: '⭐' },
       ];

@@ -109,6 +109,7 @@ Al comprender que el calor representa la transferencia energética derivada de u
 
   // Estados del Ebook 3D y Paginación
   const [currentSpreadIndex, setCurrentSpreadIndex] = useState<number>(0);
+  const [mobileActiveFolio, setMobileActiveFolio] = useState<'left' | 'right'>('left');
   const [isFlipping, setIsFlipping] = useState<boolean>(false);
 
   // =========================================================================
@@ -358,6 +359,7 @@ Al comprender que el calor representa la transferencia energética derivada de u
       playSfx('page_flip');
       setTimeout(() => {
         setCurrentSpreadIndex(prev => prev + 1);
+        setMobileActiveFolio('left');
         setIsFlipping(false);
       }, 350);
     }
@@ -370,8 +372,30 @@ Al comprender que el calor representa la transferencia energética derivada de u
       playSfx('page_flip');
       setTimeout(() => {
         setCurrentSpreadIndex(prev => prev - 1);
+        setMobileActiveFolio('left');
         setIsFlipping(false);
       }, 350);
+    }
+  };
+
+  const handleNextMobileFolio = () => {
+    if (mobileActiveFolio === 'left' && currentSpread.rightFolio) {
+      setMobileActiveFolio('right');
+      playSfx('page_flip');
+    } else {
+      handleNextPage();
+    }
+  };
+
+  const handlePrevMobileFolio = () => {
+    if (mobileActiveFolio === 'right') {
+      setMobileActiveFolio('left');
+      playSfx('page_flip');
+    } else {
+      handlePrevPage();
+      if (currentSpreadIndex > 0) {
+        setMobileActiveFolio('right');
+      }
     }
   };
 
@@ -1030,6 +1054,39 @@ Al comprender que el calor representa la transferencia energética derivada de u
           {/* EL TOMO / GRIMORIO 3D */}
           <div className="lg:col-span-8 flex flex-col items-center">
             <div className="relative w-full rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] border-4 border-[#3e2723] bg-[#1a120b]">
+              {/* Selector táctil de folios para pantallas móviles */}
+              {currentSpread.rightFolio && (
+                <div className="flex md:hidden items-center justify-between bg-[#120a06] border-b border-[#3e2723] px-3 py-2 w-full">
+                  <span className="text-[11px] font-serif text-amber-300/80 font-bold">
+                    Modo Lectura Portátil:
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setMobileActiveFolio('left')}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-serif font-bold transition-all ${
+                        mobileActiveFolio === 'left'
+                          ? 'bg-[#5c2416] text-amber-100 border border-amber-500/60 shadow-xs'
+                          : 'bg-[#241711] text-[#8c6d48] border border-[#3e2723]'
+                      }`}
+                    >
+                      Folio {toRoman(currentSpread.leftIdx + 1)}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMobileActiveFolio('right')}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-serif font-bold transition-all ${
+                        mobileActiveFolio === 'right'
+                          ? 'bg-[#5c2416] text-amber-100 border border-amber-500/60 shadow-xs'
+                          : 'bg-[#241711] text-[#8c6d48] border border-[#3e2723]'
+                      }`}
+                    >
+                      Folio {toRoman((currentSpread.rightIdx ?? currentSpread.leftIdx + 1) + 1)}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div 
                 className="relative w-full min-h-[520px] sm:min-h-[580px] p-6 sm:p-10 flex flex-col md:flex-row gap-6 md:gap-10 transition-transform duration-500"
                 style={{
@@ -1051,10 +1108,16 @@ Al comprender que el calor representa la transferencia energética derivada de u
                 )}
 
                 {/* FOLIO IZQUIERDO */}
-                {renderFolio(currentSpread.leftFolio, currentSpread.leftIdx, false)}
+                <div className={`w-full ${mobileActiveFolio === 'right' ? 'hidden md:flex' : 'flex'} flex-1 flex-col`}>
+                  {renderFolio(currentSpread.leftFolio, currentSpread.leftIdx, false)}
+                </div>
 
                 {/* FOLIO DERECHO (AHORA TOTALMENTE DINÁMICO Y LLENADO CON TEXTO ESCRITO O LÁMINA) */}
-                {renderFolio(currentSpread.rightFolio, currentSpread.rightIdx ?? currentSpread.leftIdx + 1, true)}
+                {currentSpread.rightFolio && (
+                  <div className={`w-full ${mobileActiveFolio === 'left' ? 'hidden md:flex' : 'flex'} flex-1 flex-col`}>
+                    {renderFolio(currentSpread.rightFolio, currentSpread.rightIdx ?? currentSpread.leftIdx + 1, true)}
+                  </div>
+                )}
               </div>
 
               {/* BARRA INFERIOR DE PASO DE PÁGINAS EBOOK 3D */}
@@ -1066,7 +1129,35 @@ Al comprender que el calor representa la transferencia energética derivada de u
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                {/* Controles en móvil */}
+                <div className="flex md:hidden items-center gap-2 w-full justify-between pt-1 border-t border-[#3e2723]/50">
+                  <button
+                    type="button"
+                    onClick={handlePrevMobileFolio}
+                    disabled={(currentSpreadIndex === 0 && mobileActiveFolio === 'left') || isFlipping}
+                    className="px-2.5 py-1.5 rounded-xl bg-[#2a170d] hover:bg-[#3d2214] disabled:opacity-30 disabled:pointer-events-none text-amber-300 font-bold text-xs flex items-center gap-1 border border-[#522d1b] transition-all cursor-pointer"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span>Folio Ant.</span>
+                  </button>
+
+                  <span className="font-serif text-xs font-bold text-amber-400">
+                    Folio {mobileActiveFolio === 'left' ? toRoman(currentSpread.leftIdx + 1) : toRoman((currentSpread.rightIdx ?? currentSpread.leftIdx + 1) + 1)} de {toRoman(bookFolios.length)}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={handleNextMobileFolio}
+                    disabled={(currentSpreadIndex >= spreads.length - 1 && (mobileActiveFolio === 'right' || !currentSpread.rightFolio)) || isFlipping}
+                    className="px-2.5 py-1.5 rounded-xl bg-teal-700 hover:bg-teal-600 disabled:opacity-30 disabled:pointer-events-none text-white font-bold text-xs flex items-center gap-1 border border-teal-500/40 transition-all cursor-pointer"
+                  >
+                    <span>Folio Sig.</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Controles en Desktop / Tablet */}
+                <div className="hidden md:flex items-center gap-2">
                   <button
                     type="button"
                     onClick={handlePrevPage}

@@ -360,7 +360,11 @@ export const SCRATCH_CATEGORIES: BlockCategoryItem[] = [
   }
 ];
 
-export const SidebarToolbar: React.FC = () => {
+export interface SidebarToolbarProps {
+  onBlockAdded?: () => void;
+}
+
+export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) => {
   const { 
     blocks, 
     addBlock, 
@@ -373,6 +377,7 @@ export const SidebarToolbar: React.FC = () => {
     multimedia: false,
     gamification: false,
     pedagogy: false,
+    logic_math: false,
   });
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -381,7 +386,7 @@ export const SidebarToolbar: React.FC = () => {
   const [hoveredTool, setHoveredTool] = useState<BlockToolItem | null>(null);
   const [hoveredCategory, setHoveredCategory] = useState<BlockCategoryItem | null>(null);
 
-  // Estados de Arrastre Global con el Mouse hacia el tablero
+  // Estados de Arrastre Global (Touch + Mouse) hacia el tablero
   const [draggingTool, setDraggingTool] = useState<BlockToolItem | null>(null);
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
@@ -392,23 +397,23 @@ export const SidebarToolbar: React.FC = () => {
     }));
   };
 
-  // Iniciar arrastre con clic sostenido
-  const handleMouseDownTool = (e: React.MouseEvent, tool: BlockToolItem) => {
-    e.preventDefault();
+  // Iniciar arrastre con puntero (Touch, Mouse, Stylus)
+  const handlePointerDownTool = (e: React.PointerEvent, tool: BlockToolItem) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
     setDraggingTool(tool);
     setDraggedNewBlockType(tool.type);
     setCursorPos({ x: e.clientX, y: e.clientY });
   };
 
-  // Manejar movimiento global y drop al soltar el clic
+  // Manejar movimiento global y drop al soltar el puntero
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const handlePointerMove = (e: PointerEvent) => {
       if (draggingTool) {
         setCursorPos({ x: e.clientX, y: e.clientY });
       }
     };
 
-    const handleMouseUp = (e: MouseEvent) => {
+    const handlePointerUp = (e: PointerEvent) => {
       if (draggingTool) {
         // Localizar el contenedor del tablero de trabajo
         const targetElement = document.elementFromPoint(e.clientX, e.clientY);
@@ -425,25 +430,28 @@ export const SidebarToolbar: React.FC = () => {
 
           addBlock(draggingTool.type, undefined, { x: dropX, y: dropY });
         } else {
-          // Si se soltó fuera, añadirlo con posición automática
+          // Si se soltó fuera, añadirlo con posición automática en lienzo
           addBlock(draggingTool.type);
         }
 
         setDraggingTool(null);
         setDraggedNewBlockType(null);
+        onBlockAdded?.();
       }
     };
 
     if (draggingTool) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('pointermove', handlePointerMove, { passive: true });
+      window.addEventListener('pointerup', handlePointerUp);
+      window.addEventListener('pointercancel', handlePointerUp);
     }
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
     };
-  }, [draggingTool, addBlock, setDraggedNewBlockType]);
+  }, [draggingTool, addBlock, setDraggedNewBlockType, onBlockAdded]);
 
   // Filtrar bloques si hay búsqueda activa
   const filteredCategories = SCRATCH_CATEGORIES.map(cat => {
@@ -548,12 +556,16 @@ export const SidebarToolbar: React.FC = () => {
                       return (
                         <div
                           key={tool.type}
-                          onMouseDown={(e) => handleMouseDownTool(e, tool)}
+                          onPointerDown={(e) => handlePointerDownTool(e, tool)}
                           onClick={() => {
-                            if (!draggingTool) addBlock(tool.type);
+                            if (!draggingTool) {
+                              addBlock(tool.type);
+                              onBlockAdded?.();
+                            }
                           }}
                           onMouseEnter={() => setHoveredTool(tool)}
                           onMouseLeave={() => setHoveredTool(null)}
+                          style={{ touchAction: 'none' }}
                           className="group p-2 rounded-xl border border-slate-200/80 dark:border-zinc-800 hover:border-emerald-400 dark:hover:border-emerald-500 bg-white dark:bg-zinc-850 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-between gap-2 transition-all cursor-grab active:cursor-grabbing hover:scale-[1.01] shadow-2xs"
                         >
                           <div className="flex items-center gap-2 min-w-0">

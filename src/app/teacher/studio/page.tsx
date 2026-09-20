@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Header } from '@/components/Header';
 import { Loader } from '@/components/Loader';
@@ -30,10 +30,18 @@ import {
   Award,
   Globe
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function TeacherStudioPage() {
+function TeacherStudioContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isIframe, setIsIframe] = useState(false);
+
+  useEffect(() => {
+    setIsIframe(typeof window !== 'undefined' && window.self !== window.top);
+  }, []);
+
+  const isEmbedded = searchParams?.get('embed') === 'true' || isIframe;
   const { loadPresetBlocks } = useActivityBuilderStore();
 
   const [activeTab, setActiveTab] = useState<'builder' | 'ai_assistant'>('builder');
@@ -116,56 +124,59 @@ export default function TeacherStudioPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-900 text-slate-100 relative selection:bg-emerald-500 selection:text-slate-950">
+    <div className={`min-h-screen flex flex-col bg-slate-900 text-slate-100 relative selection:bg-emerald-500 selection:text-slate-950 ${isEmbedded ? 'p-0' : ''}`}>
       {/* Atmósfera oscura inmersiva */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(30,58,138,0.25),rgba(15,23,42,0))] pointer-events-none" />
-      <Header />
+      
+      {!isEmbedded && <Header />}
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 relative z-10">
+      <main className={`flex-1 w-full ${isEmbedded ? 'max-w-none px-2 py-2 sm:px-4 sm:py-3 space-y-3' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6'} relative z-10`}>
         {/* Navegación y Selector de Modo */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <button
-            type="button"
-            onClick={() => router.push('/teacher')}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-800/90 border border-slate-700/80 text-slate-200 font-bold text-xs hover:bg-slate-750 hover:border-teal-500/50 hover:text-white transition-all shadow-sm group w-fit cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4 text-teal-400 group-hover:-translate-x-1 transition-transform" />
-            <span>Volver al Hub Docente</span>
-          </button>
-
-          {/* Switch de Vistas */}
-          <div className="flex items-center gap-1.5 bg-slate-850 p-1 rounded-2xl border border-slate-750 self-start sm:self-auto shadow-inner">
+        {!isEmbedded && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <button
               type="button"
-              onClick={() => setActiveTab('builder')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                activeTab === 'builder'
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 shadow-sm shadow-emerald-950/40 font-black'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
+              onClick={() => router.push('/teacher')}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-800/90 border border-slate-700/80 text-slate-200 font-bold text-xs hover:bg-slate-750 hover:border-teal-500/50 hover:text-white transition-all shadow-sm group w-fit cursor-pointer"
             >
-              <Layers className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Lienzo de Bloques</span>
+              <ArrowLeft className="w-4 h-4 text-teal-400 group-hover:-translate-x-1 transition-transform" />
+              <span>Volver al Hub Docente</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab('ai_assistant')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                activeTab === 'ai_assistant'
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 shadow-sm shadow-emerald-950/40 font-black'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Wand2 className="w-3.5 h-3.5 text-amber-400" />
-              <span>Generar con IA</span>
-            </button>
+            {/* Switch de Vistas */}
+            <div className="flex items-center gap-1.5 bg-slate-850 p-1 rounded-2xl border border-slate-750 self-start sm:self-auto shadow-inner">
+              <button
+                type="button"
+                onClick={() => setActiveTab('builder')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'builder'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 shadow-sm shadow-emerald-950/40 font-black'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Lienzo de Bloques</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('ai_assistant')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'ai_assistant'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 shadow-sm shadow-emerald-950/40 font-black'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Wand2 className="w-3.5 h-3.5 text-amber-400" />
+                <span>Generar con IA</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Vista 1: Lienzo de Bloques Interactivo */}
         {activeTab === 'builder' && (
-          <ActivityBuilderLayout />
+          <ActivityBuilderLayout isEmbedded={isEmbedded} />
         )}
 
         {/* Vista 2: Asistente Generativo con IA */}
@@ -361,5 +372,13 @@ export default function TeacherStudioPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function TeacherStudioPage() {
+  return (
+    <React.Suspense fallback={<Loader message="Iniciando Estudio Docente..." />}>
+      <TeacherStudioContent />
+    </React.Suspense>
   );
 }

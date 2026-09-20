@@ -90,7 +90,11 @@ const PDA_SUGGESTIONS: Record<string, string[]> = {
   ]
 };
 
-export const ActivityBuilderLayout: React.FC = () => {
+export interface ActivityBuilderLayoutProps {
+  isEmbedded?: boolean;
+}
+
+export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ isEmbedded = false }) => {
   const { user } = useAuth();
   const {
     metadata,
@@ -638,7 +642,7 @@ export const ActivityBuilderLayout: React.FC = () => {
       {/* Contenido Principal: Panel de Agrupaciones (Izquierda) + Tablero de Trabajo (Central) */}
       <div className="flex flex-col lg:flex-row items-start gap-6 relative">
         <div className={`w-full lg:w-72 xl:w-80 shrink-0 relative z-30 ${mobileStudioTab === 'sidebar' ? 'block' : 'hidden lg:block'}`}>
-          <SidebarToolbar />
+          <SidebarToolbar onBlockAdded={() => setMobileStudioTab('canvas')} />
         </div>
         <div className={`flex-1 w-full min-w-0 relative z-10 ${mobileStudioTab === 'canvas' ? 'block' : 'hidden lg:block'}`}>
           <WorkspaceArea />
@@ -648,7 +652,7 @@ export const ActivityBuilderLayout: React.FC = () => {
       {/* Modal de Previsualización en Vivo */}
       {isPreviewOpen && typeof document !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-sm flex items-start justify-center p-3 sm:p-4 pt-6 sm:pt-10 overflow-y-auto animate-fade-in">
-          <div className="relative w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden my-auto sm:my-2 animate-scale-in">
+          <div className="relative w-full max-w-4xl bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden my-auto sm:my-2 animate-scale-in">
             <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 dark:border-zinc-800 bg-slate-50/90 dark:bg-zinc-850/90">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">

@@ -13,7 +13,9 @@ const nextConfig: NextConfig = {
       "@dnd-kit/core",
       "@dnd-kit/sortable",
       "@dnd-kit/utilities",
-      "zustand"
+      "zustand",
+      "marked",
+      "isomorphic-dompurify"
     ],
   },
   // Optimización de imágenes de alto rendimiento
@@ -42,15 +44,17 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https:",
               "font-src 'self' data: https:",
               "img-src 'self' data: blob: https:",
+              "media-src 'self' data: blob: https:",
               "connect-src 'self' https: wss:",
-              "frame-ancestors 'none'",
+              "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://phet.colorado.edu https://www.geogebra.org https://www.desmos.com blob:",
+              "frame-ancestors 'self'",
               "object-src 'none'",
               "base-uri 'self'"
             ].join("; "),
           },
           {
             key: "X-Frame-Options",
-            value: "DENY",
+            value: "SAMEORIGIN",
           },
           {
             key: "X-Content-Type-Options",
