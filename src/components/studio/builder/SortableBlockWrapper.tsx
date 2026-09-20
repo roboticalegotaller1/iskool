@@ -39,7 +39,9 @@ import {
   Bot,
   Boxes,
   ToggleLeft,
-  BrainCircuit
+  BrainCircuit,
+  Languages,
+  Mic
 } from 'lucide-react';
 
 export interface Props {
@@ -217,6 +219,22 @@ export const BLOCK_META: Record<StudioBlockType, { label: string; icon: any; col
     colorScheme: 'border-amber-200/90 dark:border-amber-900/60 shadow-amber-500/5',
     badgeBg: 'bg-amber-100/90 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-200/60',
     glow: 'hover:border-amber-400 dark:hover:border-amber-700 hover:shadow-amber-500/10'
+  },
+  languages_practice_portal: {
+    label: 'Avatar Conversacional en Idiomas',
+    icon: Languages,
+    colorScheme: 'border-violet-200/90 dark:border-violet-900/60 shadow-violet-500/5',
+    badgeBg: 'bg-violet-100/90 dark:bg-violet-950 text-violet-700 dark:text-violet-300 border-violet-200/60',
+    glow: 'hover:border-violet-400 dark:hover:border-violet-700 hover:shadow-violet-500/10',
+    color: 'from-violet-600 via-indigo-600 to-purple-700'
+  },
+  languages_karaoke_block: {
+    label: 'Karaoke de Fluidez Fonética',
+    icon: Mic,
+    colorScheme: 'border-purple-200/90 dark:border-purple-900/60 shadow-purple-500/5',
+    badgeBg: 'bg-purple-100/90 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-200/60',
+    glow: 'hover:border-purple-400 dark:hover:border-purple-700 hover:shadow-purple-500/10',
+    color: 'from-indigo-600 via-purple-600 to-pink-600'
   },
 };
 

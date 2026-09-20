@@ -20,6 +20,7 @@ import { BadgeCertificateBlockView } from './BadgeCertificateBlockView';
 import { AudioSfxBlockView } from './AudioSfxBlockView';
 import { TimedReadingBlockView } from './TimedReadingBlockView';
 import { LogicMathBlockView } from './LogicMathBlockView';
+import { LanguagesBlockView } from './LanguagesBlockView';
 
 interface Props {
   block: StudioBlock;
@@ -37,6 +38,9 @@ export const BlockDispatcher: React.FC<Props> = ({ block }) => {
       return <RewardChestBlockView block={block} />;
     case 'boss_enemy':
       return <BossEnemyBlockView block={block} />;
+    case 'languages_practice_portal':
+    case 'languages_karaoke_block':
+      return <LanguagesBlockView block={block} />;
     case 'logic_challenge_interactive':
     case 'boolean_circuit_builder':
     case 'graph_network_path':

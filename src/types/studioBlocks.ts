@@ -18,6 +18,10 @@ export type StudioBlockType =
   | 'turing_step_simulator'       // Autómatas finitos y cinta de máquina de Turing
   | 'constraint_scheduler'        // Satisfacción de restricciones (CSP), colas FIFO y balanceo
 
+  // Herramientas de Lenguajes, Idiomas & Fonética
+  | 'languages_practice_portal'   // Portal y avatar interactivo de conversación en idiomas
+  | 'languages_karaoke_block'     // Karaoke de fluidez fonética con reconocimiento y lectura
+
   // Herramientas Extendidas LMS (Menú [+])
   | 'youtube_video'        // Video educativo incrustado con marcas de tiempo
   | 'external_embed'       // Simuladores interactivos (PhET, GeoGebra, Desmos)
@@ -389,6 +393,34 @@ export interface ConstraintSchedulerBlock extends BaseStudioBlock {
 }
 
 /**
+ * 23. Bloque de Práctica Conversacional & Portal de Lenguajes
+ */
+export interface LanguagesPracticeBlock extends BaseStudioBlock {
+  type: 'languages_practice_portal';
+  data: {
+    language: 'en' | 'fr' | 'de' | 'it';
+    mode: 'avatar' | 'karaoke' | 'both';
+    targetPhrase?: string;
+    portalUrl: string;
+    pedagogicalGoal?: string;
+  };
+}
+
+/**
+ * 24. Bloque de Karaoke de Fluidez Fonética
+ */
+export interface LanguagesKaraokeBlock extends BaseStudioBlock {
+  type: 'languages_karaoke_block';
+  data: {
+    language: 'en' | 'fr';
+    tempoWpm?: number;
+    targetSentence?: string;
+    portalUrl: string;
+    difficulty?: 'principiante' | 'intermedio' | 'avanzado';
+  };
+}
+
+/**
  * Unión discriminada de todos los bloques didácticos (Lienzo Digital)
  */
 export type StudioBlock =
@@ -402,6 +434,8 @@ export type StudioBlock =
   | GraphNetworkPathBlock
   | TuringStepSimulatorBlock
   | ConstraintSchedulerBlock
+  | LanguagesPracticeBlock
+  | LanguagesKaraokeBlock
   | YouTubeVideoBlock
   | ExternalEmbedBlock
   | DragDropMatchBlock

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { StudioBlock, StudioBlockType, FlowConnection, FlowNodePosition } from '@/types/studioBlocks';
 import { 
@@ -37,7 +38,10 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize2,
-  RotateCcw
+  RotateCcw,
+  Languages,
+  Mic,
+  ExternalLink
 } from 'lucide-react';
 
 interface DraggingNodeState {
@@ -57,6 +61,7 @@ interface PendingConnectionState {
 }
 
 export const NodeGraphBoard: React.FC = () => {
+  const router = useRouter();
   const {
     blocks,
     connections,
@@ -712,6 +717,64 @@ export const NodeGraphBoard: React.FC = () => {
                       <span className="text-[9px] bg-pink-200/80 dark:bg-pink-900/60 px-1.5 py-0.5 rounded-md shrink-0">
                         SFX
                       </span>
+                    </div>
+                  )}
+
+                  {/* 18. Avatar Conversacional en Lenguajes */}
+                  {block.type === 'languages_practice_portal' && (
+                    <div className="p-2.5 rounded-xl bg-violet-50/80 dark:bg-violet-950/50 border border-violet-200/70 dark:border-violet-800/60 text-[11px] space-y-2">
+                      <div className="flex items-center justify-between font-bold text-violet-800 dark:text-violet-300">
+                        <span className="flex items-center gap-1.5">
+                          <Languages className="w-3.5 h-3.5 text-violet-600" />
+                          <span>Avatar Didáctico IA</span>
+                        </span>
+                        <span className="text-[9px] bg-violet-200/80 dark:bg-violet-900/70 text-violet-800 dark:text-violet-200 px-1.5 py-0.5 rounded-md font-black">
+                          {block.data.language === 'fr' ? '🇫🇷 Francés' : '🇺🇸 Inglés'}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-600 dark:text-zinc-400 line-clamp-2 italic">
+                        &ldquo;{block.data.targetPhrase || 'Hello students! Welcome to our interactive language session.'}&rdquo;
+                      </p>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push('/teacher/idiomas');
+                        }}
+                        className="w-full py-1.5 px-2.5 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-black text-[10px] flex items-center justify-center gap-1.5 shadow-sm hover:shadow transition-all cursor-pointer"
+                      >
+                        <span>Acceder al Portal de Lenguajes</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* 19. Karaoke de Fluidez Fonética */}
+                  {block.type === 'languages_karaoke_block' && (
+                    <div className="p-2.5 rounded-xl bg-purple-50/80 dark:bg-purple-950/50 border border-purple-200/70 dark:border-purple-800/60 text-[11px] space-y-2">
+                      <div className="flex items-center justify-between font-bold text-purple-800 dark:text-purple-300">
+                        <span className="flex items-center gap-1.5">
+                          <Mic className="w-3.5 h-3.5 text-purple-600" />
+                          <span>Karaoke Fonético</span>
+                        </span>
+                        <span className="text-[9px] bg-purple-200/80 dark:bg-purple-900/70 text-purple-800 dark:text-purple-200 px-1.5 py-0.5 rounded-md font-black">
+                          {block.data.tempoWpm || 110} WPM
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-600 dark:text-zinc-400 line-clamp-2 font-medium">
+                        🎤 {block.data.targetSentence || 'The quick brown fox jumps over the lazy dog'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push('/teacher/idiomas');
+                        }}
+                        className="w-full py-1.5 px-2.5 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black text-[10px] flex items-center justify-center gap-1.5 shadow-sm hover:shadow transition-all cursor-pointer"
+                      >
+                        <span>Acceder al Portal de Lenguajes</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </button>
                     </div>
                   )}
 

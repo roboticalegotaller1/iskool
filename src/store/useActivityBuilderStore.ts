@@ -517,6 +517,38 @@ const createDefaultBlock = (type: StudioBlockType, index: number = 0): StudioBlo
         }
       } as any;
 
+    case 'languages_practice_portal':
+      return {
+        id,
+        type: 'languages_practice_portal',
+        title: 'Avatar Conversacional en Idiomas',
+        isCollapsed: false,
+        position,
+        data: {
+          language: 'en',
+          mode: 'avatar',
+          targetPhrase: 'Hello students! Welcome to our interactive language session.',
+          portalUrl: '/teacher/idiomas',
+          pedagogicalGoal: 'Conversación interactiva y fluidez auditiva con gesticulación anatómica'
+        }
+      } as any;
+
+    case 'languages_karaoke_block':
+      return {
+        id,
+        type: 'languages_karaoke_block',
+        title: 'Karaoke de Fluidez Fonética',
+        isCollapsed: false,
+        position,
+        data: {
+          language: 'en',
+          tempoWpm: 110,
+          targetSentence: 'The quick brown fox jumps over the lazy dog',
+          portalUrl: '/teacher/idiomas',
+          difficulty: 'intermedio'
+        }
+      } as any;
+
     default:
       return {
         id,

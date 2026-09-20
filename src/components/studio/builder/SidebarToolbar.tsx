@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
 import { StudioBlockType } from '@/types/studioBlocks';
@@ -34,11 +35,14 @@ import {
   Boxes,
   Bot,
   ToggleLeft,
-  BrainCircuit
+  BrainCircuit,
+  Languages,
+  Mic,
+  ExternalLink
 } from 'lucide-react';
 
 export interface BlockCategoryItem {
-  id: 'assessments' | 'multimedia' | 'gamification' | 'pedagogy' | 'logic_math';
+  id: 'assessments' | 'multimedia' | 'gamification' | 'pedagogy' | 'logic_math' | 'languages';
   name: string;
   badge: string;
   icon: any;
@@ -357,6 +361,39 @@ export const SCRATCH_CATEGORIES: BlockCategoryItem[] = [
         glowColor: 'shadow-amber-500/30'
       }
     ]
+  },
+  {
+    id: 'languages',
+    name: 'Lenguajes',
+    badge: '2 Bloques',
+    icon: Languages,
+    color: 'from-violet-600 via-indigo-600 to-purple-600',
+    description: 'Estudio de lenguajes e idiomas, avatares pedagógicos gesticulantes, fluidez fonética por micrófono y karaoke interactivo.',
+    example: 'Práctica conversacional guiada en inglés/francés y karaoke de pronunciación fonética palabra por palabra.',
+    blocks: [
+      {
+        type: 'languages_practice_portal',
+        title: 'Avatar Conversacional en Idiomas',
+        category: 'Lenguajes',
+        badge: '🗣️ Práctica & IA',
+        description: 'Práctica conversacional guiada en idiomas (inglés/francés) con avatar anatómico parlante y gesticulación en tiempo real.',
+        example: 'Conversación interactiva en inglés con pronunciación nativa y retroalimentación pedagógica.',
+        icon: Languages,
+        gradient: 'from-violet-600 via-indigo-600 to-purple-700',
+        glowColor: 'shadow-violet-500/30'
+      },
+      {
+        type: 'languages_karaoke_block',
+        title: 'Karaoke de Fluidez Fonética',
+        category: 'Lenguajes',
+        badge: '🎤 Karaoke & Lectura',
+        description: 'Reto de lectura fonética guiada palabra por palabra con reconocimiento por micrófono y reporte de precisión al alumno.',
+        example: 'Lectura guiada de frases en inglés con iluminación sincronizada y retroalimentación fonética precisa.',
+        icon: Mic,
+        gradient: 'from-indigo-600 via-purple-600 to-pink-600',
+        glowColor: 'shadow-indigo-500/30'
+      }
+    ]
   }
 ];
 
@@ -365,6 +402,7 @@ export interface SidebarToolbarProps {
 }
 
 export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) => {
+  const router = useRouter();
   const { 
     blocks, 
     addBlock, 
@@ -373,11 +411,12 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
 
   // Estados de categorías desplegadas (acordeón múltiple o individual)
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
-    assessments: true,
+    assessments: false,
     multimedia: false,
     gamification: false,
     pedagogy: false,
     logic_math: false,
+    languages: true, // Desplegado por defecto para máxima visibilidad inmediata
   });
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -487,7 +526,7 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
         </div>
 
         <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold text-[10px] border border-emerald-200/60 dark:border-emerald-800/60">
-          17 Nodos
+          {SCRATCH_CATEGORIES.reduce((acc, c) => acc + c.blocks.length, 0)} Nodos
         </span>
       </div>
 
@@ -553,6 +592,8 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
                   >
                     {cat.blocks.map((tool) => {
                       const ToolIcon = tool.icon;
+                      const isLanguageTool = cat.id === 'languages';
+
                       return (
                         <div
                           key={tool.type}
@@ -561,19 +602,30 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
                             if (!draggingTool) {
                               addBlock(tool.type);
                               onBlockAdded?.();
+                              if (isLanguageTool) {
+                                router.push('/teacher/idiomas');
+                              }
                             }
                           }}
                           onMouseEnter={() => setHoveredTool(tool)}
                           onMouseLeave={() => setHoveredTool(null)}
                           style={{ touchAction: 'none' }}
-                          className="group p-2 rounded-xl border border-slate-200/80 dark:border-zinc-800 hover:border-emerald-400 dark:hover:border-emerald-500 bg-white dark:bg-zinc-850 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center justify-between gap-2 transition-all cursor-grab active:cursor-grabbing hover:scale-[1.01] shadow-2xs"
+                          className={`group p-2 rounded-xl border border-slate-200/80 dark:border-zinc-800 ${
+                            isLanguageTool 
+                              ? 'hover:border-violet-500 dark:hover:border-violet-500 bg-violet-50/20 dark:bg-violet-950/20 hover:bg-violet-50 dark:hover:bg-violet-950/40' 
+                              : 'hover:border-emerald-400 dark:hover:border-emerald-500 bg-white dark:bg-zinc-850 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
+                          } flex items-center justify-between gap-2 transition-all cursor-grab active:cursor-grabbing hover:scale-[1.01] shadow-2xs`}
                         >
                           <div className="flex items-center gap-2 min-w-0">
                             <div className={`w-7 h-7 rounded-lg bg-gradient-to-tr ${tool.gradient} text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-110 transition-transform`}>
                               <ToolIcon className="w-3.5 h-3.5" />
                             </div>
                             <div className="min-w-0">
-                              <h5 className="text-[11px] font-black text-slate-800 dark:text-zinc-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 truncate">
+                              <h5 className={`text-[11px] font-black truncate ${
+                                isLanguageTool 
+                                  ? 'text-slate-800 dark:text-zinc-200 group-hover:text-violet-600 dark:group-hover:text-violet-400' 
+                                  : 'text-slate-800 dark:text-zinc-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400'
+                              }`}>
                                 {tool.title}
                               </h5>
                               <span className="text-[9px] font-bold text-slate-400 block truncate">
@@ -582,9 +634,26 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
                             </div>
                           </div>
 
-                          <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                            + Añadir
-                          </span>
+                          {isLanguageTool ? (
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  router.push('/teacher/idiomas');
+                                }}
+                                className="px-2 py-1 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white text-[10px] font-black flex items-center gap-1 shadow-sm transition-all hover:scale-105 cursor-pointer"
+                                title="Acceder al Portal de Lenguajes"
+                              >
+                                <span>Portal</span>
+                                <ExternalLink className="w-2.5 h-2.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                              + Añadir
+                            </span>
+                          )}
                         </div>
                       );
                     })}

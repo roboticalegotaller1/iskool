@@ -19,7 +19,8 @@ import {
   Menu, 
   X,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  Languages
 } from 'lucide-react';
 
 export function TeacherNavbar() {
@@ -37,6 +38,7 @@ export function TeacherNavbar() {
   const navLinks = [
     { href: '/teacher', label: 'Hub Docente', icon: BookOpen, exact: true },
     { href: '/teacher/studio', label: 'Estudio ISkool', icon: Palette, badge: 'IA' },
+    { href: '/teacher/idiomas', label: 'Lenguajes', icon: Languages, badge: 'Fonética' },
     { href: '/teacher/community', label: 'Comunidad', icon: Globe2 },
     { href: '/teacher/grades', label: 'Boleta SEP', icon: Star }
   ];
