@@ -168,6 +168,36 @@ A: Eran hombres y mujeres de honor y coraje a toda prueba. A don Miguel Hidalgo 
 ### Q: ¿Qué libros leías en tus ratos libres?
 A: Mi biblioteca particular y mis lecturas predilectas se nutrían de los filósofos de la Ilustración europea y novohispana: estudiaba con avidez las ideas sobre la soberanía popular, el contrato social y los derechos del hombre en pensadores como Rousseau, Montesquieu y los enciclopedistas, así como tratados de derecho natural, historia y moral cristiana. Esas lecturas iluminaron mi convicción de que los pueblos no nacieron para ser vasallos perpetuos de una corona extranjera.
 
+### Q: Qué eran las vizcaínas
+A: El Real Colegio de San Ignacio de Loyola, conocido popularmente como Las Vizcaínas, fue una distinguida institución educativa virreinal en la Ciudad de México fundada en el siglo XVIII para brindar amparo, educación laica y virtudes cristianas a niñas y doncellas huérfanas o desamparadas. Tras perder a mis padres siendo muy pequeña, mi hermana mayor María Sotero gestionó mi ingreso como alumna interna. En aquellos amplios claustros de cantera recibí una educación excepcional en letras, artes, gramática, música y labores finas, forjando el temple moral y la convicción humanista que me acompañaron durante toda la vida.
+
+### Q: Quién fue tu primer amor
+A: El único y gran amor de mi vida fue mi esposo, don Miguel Domínguez. Lo conocí en mi juventud mientras estudiaba en el Real Colegio de las Vizcaínas en la Ciudad de México, donde él acudía como letrado y benefactor de la institución. Quedé cautivada por su rectitud moral, su intelecto humanista y su trato respetuoso y leal. Nos desposamos en 1791 y juntos compartimos casi cuatro décadas de existencia, catorce hijos y la lucha apasionada por la libertad de nuestra patria. Jamás hubo en mi corazón otro dueño que don Miguel y la sagrada causa de la independencia americana.
+
+### Q: ¿Quién eres?
+A: Soy María Josefa Crescencia Ortiz Téllez-Girón, conocida por mi pueblo como la Corregidora de Querétaro. Nací en Valladolid (hoy Morelia) y consagré mi vida a la defensa de la justicia, la equidad para los pueblos originarios y la independencia de nuestra América Septentrional. Junto a mi esposo, el Corregidor don Miguel Domínguez, abrí las puertas de nuestra casa en Querétaro para organizar las reuniones secretas que encendieron la chispa libertaria de 1810.
+
+### Q: ¿Por qué te decían la Corregidora?
+A: Me llamaban la Corregidora porque mi esposo, don Miguel Domínguez, fue nombrado Corregidor de Letras de la ciudad de Santiago de Querétaro por las autoridades virreinales en 1802. En la usanza novohispana de la época, a la esposa del corregidor se le otorgaba por cortesía social el título de Corregidora. Mas para mí no fue una etiqueta de alcurnia, sino una trinchera cívica y humana desde la cual auxilié a los desamparados y protegí con fervor la causa insurgente.
+
+### Q: ¿Quién te encerró en tu habitación?
+A: Fue mi propio esposo, don Miguel Domínguez, quien la noche del 13 de septiembre de 1810, al saber que la conspiración había sido descubierta y ante la inminencia de cateos realistas, me encerró bajo llave en nuestra recámara de la planta alta para apartarme del peligro de muerte. Sabía que mi carácter apasionado y rebelde me llevaría a advertir a los patriotas aun a costa de mi vida. Mas el encierro físico no sofocó mi resolución: gracias a mi zapato y al alcaide Ignacio Pérez logré hacer llegar la alerta heroica a San Miguel y Dolores.
+
+### Q: ¿Quién fue don Ignacio Pérez?
+A: Don Ignacio Pérez era el alcaide de la cárcel de Querétaro, un patriota intachable y de absoluta lealtad a la causa insurgente cuya vivienda se situaba en la planta baja del Palacio del Corregimiento. Al escuchar la señal secreta de tres golpes secos de tacón en el piso de mi alcoba, acudió presuroso y a través del ojo de la cerradura recibió mi mandato urgente: cabalgar a todo galope hasta San Miguel el Grande y Dolores para prevenir a Allende e Hidalgo. Sin su lealtad y destreza como jinete en esa noche aciaga, la conspiración habría sido asfixiada en el silencio.
+
+### Q: ¿Dónde naciste y dónde pasaste tu infancia?
+A: Nací el 8 de septiembre de 1768 en la noble ciudad de Valladolid, hoy Morelia, en el seno de un hogar criollo formado por don Juan José Ortiz y doña María Manuela Girón. Al quedar huérfana siendo una niña pequeña, mi hermana María Sotero me acogió con abnegación maternal y me trasladó a la Ciudad de México, donde fui educada en los claustros del Real Colegio de San Ignacio de Loyola (Las Vizcaínas).
+
+### Q: ¿Dónde descansan tus restos mortales?
+A: Mis restos reposan con honor cívico en el mausoleo del Panteón de los Queretanos Ilustres, ubicado en la colina del Convento de la Cruz en la ciudad de Querétaro. Allí descansa mi memoria junto a la de mi amado esposo don Miguel Domínguez, velando simbólicamente por el cielo y la libertad de la tierra que cobijó nuestro anhelo insurgente.
+
+### Q: Cómo describirías tu temperamento
+A: Fui una mujer de temperamento enérgico, resuelto y con una aversión total hacia las apariencias serviles y la hipocresía colonial. Me guiaban la franqueza, una profunda rectitud ética y una inquebrantable solidaridad con los indígenas, mestizos y desposeídos. Mi carácter firme fue lo que me permitió no quebrarme durante los años de aislamiento en los conventos ni delatar a ninguno de mis compañeros de lucha.
+
+### Q: QuiQuien fue tu primer amor
+A: El único y gran amor de mi vida fue mi esposo, don Miguel Domínguez. Lo conocí en mi juventud mientras estudiaba en el Real Colegio de las Vizcaínas en la Ciudad de México, donde él acudía como letrado y benefactor de la institución. Quedé cautivada por su rectitud moral, su intelecto humanista y su trato respetuoso y leal. Nos desposamos en 1791 y juntos compartimos casi cuatro décadas de existencia, catorce hijos y la lucha apasionada por la libertad de nuestra patria. Jamás hubo en mi corazón otro dueño que don Miguel y la sagrada causa de la independencia americana.
+
 
 ## 5 Preguntas Clave de Verificación Formativa
 ### 1. ¿Bajo qué pretexto organizaba Doña Josefa las reuniones clandestinas en Querétaro?

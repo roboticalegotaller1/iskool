@@ -416,7 +416,7 @@ export function searchQaInVaultNode(slug: string, question: string): { found: bo
     const normItem = normalizeQuestionText(item.question);
     // Búsqueda ESTRICTA y EXACTA: solo coincide si es la misma pregunta exacta
     if (normItem === normTarget) {
-      // Validar que no sea una respuesta genérica o evasiva anterior
+      // Validar que no sea una respuesta genérica, evasiva o fragmento corrompido anterior
       const isGeneric = 
         item.answer.includes('Escudriña en los documentos') ||
         item.answer.includes('Escudrina en los documentos') ||
@@ -426,10 +426,22 @@ export function searchQaInVaultNode(slug: string, question: string): { found: bo
         item.answer.includes('Escudriña en nuestras memorias') ||
         item.answer.includes('Escudrina en nuestras memorias') ||
         item.answer.includes('En aquellos años definitorios en Querétaro') ||
-        item.answer.includes('Frente a tu interrogante, ten por seguro');
+        item.answer.includes('Frente a tu interrogante, ten por seguro') ||
+        item.answer.includes('exterminador') ||
+        item.answer.includes('El vestido de novia') ||
+        item.answer.includes('película animada') ||
+        item.answer.includes('película') ||
+        item.answer.includes('Héroes verdaderos') ||
+        item.answer.includes('Trayectoria') ||
+        item.answer.includes('Alicia de Roc') ||
+        item.answer.includes('En los registros documentales de nuestra historia patria consta que') ||
+        item.answer.includes('En los registros fidedignos de nuestra historia patria consta que') ||
+        /\(19\d\d\)|\(20\d\d\)/.test(item.answer);
+
       if (item.answer && item.answer.trim().length > 25 && !isGeneric) {
         return { found: true, answer: item.answer.trim() };
       }
+
     }
   }
 

@@ -16,6 +16,23 @@ import {
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * Filtro estricto anti-farandula, anti-anacronismos y anti-tercera persona
+ */
+function sanitizePersonaAnswer(text: string, characterName: string): string {
+  if (!text) return '';
+  // Rechazar menciones de películas, series, telenovelas, actores, créditos y años contemporáneos
+  if (/(pel[ií]cula|telenovela|actriz|actor|serie|exterminador|vestido de novia|h[eé]roes verdaderos|trayectoria|reparto|\(19\d\d\)|\(20\d\d\))/i.test(text)) {
+    return '';
+  }
+  // Rechazar si habla de sí mismo en tercera persona como enciclopedia (ej. "Josefa Ortiz fue una...")
+  const thirdPersonRegex = new RegExp(`(^|\\b)(${characterName}|Josefa Ortiz|Miguel Hidalgo)\\s+(fue|era|naci[oó]|muri[oó]|falleci[oó])`, 'i');
+  if (thirdPersonRegex.test(text)) {
+    return '';
+  }
+  return text.trim();
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -119,14 +136,17 @@ DIRECTRICES PEDAGÓGICAS MANDATORIAS:
                 ]
               })
             });
-            clearTimeout(timeoutId);
+              clearTimeout(timeoutId);
 
-            if (aiRes.ok) {
+              if (aiRes.ok) {
               const data = await aiRes.json();
               const candidate = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
               if (candidate && candidate.length > 20) {
-                answer = candidate;
-                break;
+                const cleaned = sanitizePersonaAnswer(candidate, characterName);
+                if (cleaned) {
+                  answer = cleaned;
+                  break;
+                }
               }
             }
           } catch (e) {
@@ -157,7 +177,11 @@ DIRECTRICES PEDAGÓGICAS MANDATORIAS:
 
           if (aiRes.ok) {
             const data = await aiRes.json();
-            answer = data.choices?.[0]?.message?.content || '';
+            const rawChoice = data.choices?.[0]?.message?.content || '';
+            const cleaned = sanitizePersonaAnswer(rawChoice, characterName);
+            if (cleaned) {
+              answer = cleaned;
+            }
           }
         } catch (e) {
           console.warn('Fallo en canal secundario de IA:', e);
@@ -625,22 +649,105 @@ async function generateFigureWithAiFallback(
  * Clasificador Semántico de Intenciones Históricas con Alta Precisión (Zero-False-Positives)
  */
 function classifyHistoricalIntent(normQ: string): string {
-  // 1. Música, Canto, Danza, Instrumentos
+  // 0. Identidad y Presentación: ¿Quién eres? ¿Cómo te llamas?
+  if (/(quien eres|como te llamas|presentate|hablame de ti|cuentame tu historia|quien es josefa|quien fue josefa|tu biografia)/i.test(normQ)) {
+    return 'WHO_AM_I';
+  }
+
+  // 0b. Apodo de La Corregidora
+  if (/(por que te decian la corregidora|que significa corregidora|por que te llaman la corregidora|corregidora de queretaro|por que la corregidora)/i.test(normQ)) {
+    return 'CORREGIDORA_NICKNAME';
+  }
+
+  // 0c. Encierro en la habitación por su esposo Miguel Domínguez
+  if (/(quien te encerro|por que te encerro|por que te encerraron|te encerro tu esposo|por que te encerro miguel)/i.test(normQ)) {
+    return 'LOCKED_ROOM';
+  }
+
+  // 0d. Ignacio Pérez (alcaide de Querétaro)
+  if (/(quien fue ignacio perez|quien era ignacio perez|que hizo ignacio perez|el alcaide|alcaide ignacio perez)/i.test(normQ)) {
+    return 'IGNACIO_PEREZ';
+  }
+
+  // 0e. Lugar de nacimiento, orígenes
+  if (/(donde naciste|de donde eres|lugar de nacimiento|ciudad natal|donde creciste|de donde eras|cual es tu origen)/i.test(normQ)) {
+    return 'BIRTHPLACE';
+  }
+
+  // 0f. Tumba, Mausoleo, Restos Mortales
+  if (/(donde estas enterrada|donde descansan tus restos|donde esta tu tumba|panteon de los queretanos ilustres|restos mortales)/i.test(normQ)) {
+    return 'RESTING_PLACE';
+  }
+
+  // 0g. Legado y trascendencia
+  if (/(legado|cual fue tu legado|por que te recuerdan|cual es tu mayor logro|que aportaste|tu mayor aportacion)/i.test(normQ)) {
+    return 'LEGACY';
+  }
+
+  // 0h. Qué pasó después de 1810 / Años posteriores
+  if (/(despues de 1810|despues de la conspiracion|que te paso despues|como termino tu vida|anos posteriores)/i.test(normQ)) {
+    return 'AFTER_1810';
+  }
+
+  // 1. Amor, Romance, Primer Amor, Noviazgo, Pareja
+  if (/(amor|primer amor|enamor|novio|novia|noviazgo|pretendiente|romance|cortejo|pareja|corazon|te gusto alguien|amante|conquist)/i.test(normQ)) {
+    return 'LOVE_ROMANCE';
+  }
+
+  // 2. Colegio de las Vizcaínas (institución educativa virreinal)
+  if (/(vizcaina|vizcainas|san ignacio de loyola|que eran las vizcainas|colegio de las vizcainas)/i.test(normQ)) {
+    return 'VIZCAINAS_COLLEGE';
+  }
+
+  // 3. Apariencia física, Retrato, Estatura, Físico
+  if (
+    /(como eras|como eras fisicamente|apariencia|fisico|estatura|alta|baja|ojos|cabello|pelo|peinado|bonita|hermosa|linda|fea|retrato|semblante)/i.test(normQ) &&
+    !/(como vestias|que ropa|que vestias)/i.test(normQ)
+  ) {
+    return 'PHYSICAL_APPEARANCE';
+  }
+
+  // 4. Secretos, Claves, Códigos Cifrados, Cartas secretas
+  if (/(secreto|clave|codigo|cifrad|carta secreta|esquela secreta|mensaje secreto|como se comunicaban)/i.test(normQ)) {
+    return 'SECRETS_CODES';
+  }
+
+  // 5. Hogar, Casa del Corregimiento, Dónde vivías, Cómo era Querétaro
+  if (/(donde vivias|como era tu casa|casona|casa del corregimiento|palacio de la corregidora|como era queretaro|tu habitacion|tu alcoba|donde habitabas)/i.test(normQ)) {
+    return 'HOME_CITY';
+  }
+
+  // 6. Personalidad, Carácter, Virtudes, Defectos
+  if (/(personalidad|caracter|virtud|defecto|enojona|estricta|fuerte de caracter|como te considerabas|temperamento)/i.test(normQ)) {
+    return 'PERSONALITY';
+  }
+
+  // 7. Dinero, Riquezas, Fortuna, Pobreza
+  if (/(dinero|riqueza|fortuna|pobre|pobreza|oro|bienes|sueldo|salario|pension gubernamental)/i.test(normQ)) {
+    return 'MONEY';
+  }
+
+  // 8. Papel de la mujer, Equidad, Niñas
+  if (/(papel de la mujer|rol de la mujer|mujeres en la independencia|machismo|derechos de la mujer|a las mujeres|a las ninas)/i.test(normQ)) {
+    return 'WOMEN_ROLE';
+  }
+
+  // 9. Música, Canto, Danza, Instrumentos
   if (/(musica|cantar|cancion|instrumento|sonata|tocar|baile|bailar|clavec|arpa|guitarra|organo|partitura|villancico|melodia|ritmo|sones)/i.test(normQ)) {
     return 'MUSIC';
   }
 
-  // 2. Colores preferidos
+  // 10. Colores preferidos
   if (/(color|colores|tonalidad|color favorito|color preferido)/i.test(normQ) && !/(vestid|ropa|traje)/i.test(normQ)) {
     return 'COLOR';
   }
 
-  // 3. Libros, Lecturas, Filosofía, Ilustración
+  // 11. Libros, Lecturas, Filosofía, Ilustración
   if (/(libro|libros|lectura|leer|leias|biblioteca|filosofia|ilustracion|enciclopedia|autores|escritores)/i.test(normQ)) {
     return 'BOOKS';
   }
 
-  // 4. Vestimenta, Ropa, Trajes, Zapatos, Calzado, Tacón (cuando es sobre atuendo)
+  // 12. Vestimenta, Ropa, Trajes, Zapatos, Calzado, Tacón (cuando es sobre atuendo)
   if (
     /(vestid|ropa|traje|peinado|rebozo|camisa|saya|corset|atuendo|sombrero|peineta|seda|zapatilla|calzado|como vestias|que vestias|que te ponias)/i.test(normQ) &&
     !/(taconeo|alerta|cerradura|perez|aviso)/i.test(normQ)
@@ -648,7 +755,7 @@ function classifyHistoricalIntent(normQ: string): string {
     return 'CLOTHING';
   }
 
-  // 5. Gastronomía, Platillos, Comida, Bebidas, Dulces (DISAMBIGUADO - requiere término culinario)
+  // 13. Gastronomía, Platillos, Comida, Bebidas, Dulces (DISAMBIGUADO - requiere término culinario)
   if (
     /(platill|plato|comida|manjar|guiso|guisado|antojo|alimento|comer|comias|comian|desayun|cenab|cenas|cenar|bebida|beber|bebias|postre|dulce|chocolat|pan dulce|marquesote|tamal|mole|atole|corunda|manchamanteles|degust|receta|cocina|almorz)/i.test(normQ) ||
     ((normQ.includes('favorit') || normQ.includes('preferid') || normQ.includes('gustaba')) && (normQ.includes('com') || normQ.includes('beb') || normQ.includes('plat') || normQ.includes('guis') || normQ.includes('sabor')))
@@ -656,87 +763,87 @@ function classifyHistoricalIntent(normQ: string): string {
     return 'FOOD';
   }
 
-  // 6. Mascotas, Animales, Caballos
+  // 14. Mascotas, Animales, Caballos
   if (/(mascota|animal|perro|gato|caballo|caballeriza|pajaro|ave|cenzontle|jilguero)/i.test(normQ)) {
     return 'ANIMALS';
   }
 
-  // 7. Pasatiempos, Ocio, Rutina Diaria, Bordado
+  // 15. Pasatiempos, Ocio, Rutina Diaria, Bordado
   if (/(pasatiempo|tiempo libre|ocio|aficion|rutina|dia a dia|cotidiano|dia tipico|bordad|costura|pasear|juegos de nina|a que jugabas)/i.test(normQ)) {
     return 'HOBBIES';
   }
 
-  // 8. Taconeo Heroico, Aviso, Alcaide Ignacio Pérez, Cerradura
+  // 16. Taconeo Heroico, Aviso, Alcaide Ignacio Pérez, Cerradura
   if (/(taconeo|tacon|taconazo|golpe en el piso|tres golpes|alerta|aviso|ignacio perez|cerradura|ojo de la cerradura|cerrojo)/i.test(normQ)) {
     return 'TACONEO_ALERT';
   }
 
-  // 9. Conspiración de Querétaro, Tertulias Literarias Clandestinas
+  // 17. Conspiración de Querétaro, Tertulias Literarias Clandestinas
   if (/(conspiracion|tertulia|reunion clandestina|reuniones secretas|armas|polvora|cartuchos|levantamiento)/i.test(normQ) && !/(comian|servian|chocolate|dulce)/i.test(normQ)) {
     return 'CONSPIRACY';
   }
 
-  // 10. Traición, Delación, Descubrimiento
+  // 18. Traición, Delación, Descubrimiento
   if (/(delat|traicion|descubier|denuncia|arias|buera|cateo|traidor)/i.test(normQ)) {
     return 'BETRAYAL';
   }
 
-  // 11. Edad, Años, Nacimiento, Cumpleaños
+  // 19. Edad, Años, Nacimiento, Cumpleaños
   if (/(edad|cuantos a[nñ]os|que edad|cuando naciste|fecha de nacimiento|natalicio|cumplea[nñ]os)/i.test(normQ)) {
     return 'AGE';
   }
 
-  // 12. Matrimonio, Esposo Miguel Domínguez
+  // 20. Matrimonio, Esposo Miguel Domínguez
   if (/(casas|casar|casaste|casaron|casamiento|boda|nupcias|esposo|marido|miguel dominguez|matrimonio|conyuge|casada)/i.test(normQ)) {
     return 'MARRIAGE';
   }
 
-  // 13. Hijos, Familia, Maternidad
+  // 21. Hijos, Familia, Maternidad
   if (/(hijo|hija|hijos|hijas|cuantos hijos|familia|descendencia|maternidad)/i.test(normQ)) {
     return 'CHILDREN';
   }
 
-  // 14. Infancia, Niñez, Orfandad, Colegio de las Vizcaínas, Hermana
-  if (/(infancia|ninez|nina|huerfana|colegio|vizcainas|estudi|escuela|hermana|maria sotero|padres)/i.test(normQ)) {
+  // 22. Infancia, Niñez, Orfandad, Hermana
+  if (/(infancia|ninez|nina|huerfana|estudi|escuela|hermana|maria sotero|padres)/i.test(normQ)) {
     return 'INFANCY';
   }
 
-  // 15. Prisión, Conventos, Castigo (Santa Clara, Santa Teresa, Santa Catalina)
+  // 23. Prisión, Conventos, Castigo (Santa Clara, Santa Teresa, Santa Catalina)
   if (/(prisi|c[aá]rcel|encierr|convento|santa clara|santa teresa|santa catalina|incomunicada|cautiv)/i.test(normQ)) {
     return 'PRISON';
   }
 
-  // 16. Momento más Difícil, Miedo, Sufrimiento, Valentía
+  // 24. Momento más Difícil, Miedo, Sufrimiento, Valentía
   if (/(dific|dif[ií]cil|duro|sufr|dolor|triste|peor|miedo|temor|arrepent|valentia|coraje)/i.test(normQ)) {
     return 'CHALLENGE_COURAGE';
   }
 
-  // 17. Próceres: Hidalgo, Allende, Aldama, Leona Vicario
+  // 25. Próceres: Hidalgo, Allende, Aldama, Leona Vicario
   if (/(hidalgo|allende|aldama|leona vicario|morelos|amigo|amiga|amistad|confidente)/i.test(normQ)) {
     return 'HEROES_RELATION';
   }
 
-  // 18. Imperio de Iturbide, Rechazo a la Corte
+  // 26. Imperio de Iturbide, Rechazo a la Corte
   if (/(iturbide|imperio|corona|dama de honor|monarquia|corte|pension)/i.test(normQ)) {
     return 'ITURBIDE_REJECTION';
   }
 
-  // 19. Religión, Fe, Dios, Virgen de Guadalupe
+  // 27. Religión, Fe, Dios, Virgen de Guadalupe
   if (/(dios|religion|fe|rezar|iglesia|catolica|oracion|creias|cristiana|providencia|virgen|guadalupe)/i.test(normQ)) {
     return 'FAITH';
   }
 
-  // 20. Muerte, Panteón de los Queretanos Ilustres, Restos
+  // 28. Muerte, Panteón de los Queretanos Ilustres, Restos
   if (/(muerte|moriste|tumba|panteon|fallec|ultimos a[nñ]os|restos|mausoleo)/i.test(normQ)) {
     return 'DEATH';
   }
 
-  // 21. Mensaje a los Jóvenes y Estudiantes
+  // 29. Mensaje a los Jóvenes y Estudiantes
   if (/(mensaje|joven|estudiante|alumno|consejo|escuela)/i.test(normQ)) {
     return 'MESSAGE_STUDENTS';
   }
 
-  // 22. Salud, Pulmón, Vejez
+  // 30. Salud, Pulmón, Vejez
   if (/(salud|enfermedad|pulmon|pulmonar|vejez)/i.test(normQ)) {
     return 'HEALTH';
   }
@@ -746,35 +853,58 @@ function classifyHistoricalIntent(normQ: string): string {
 
 /**
  * Consulta en tiempo real a repositorios enciclopédicos abiertos para obtener hechos fidedignos
+ * APLICA FILTROS ESTRICTOS ANTI-FARÁNDULA Y ANTI-ANACRONISMOS:
+ * - Rechaza terminantemente fragmentos de series, películas, elencos o citas de siglos XX/XXI
+ * - Consulta directamente la biografía formal del personaje histórico
  */
 async function fetchEncyclopedicSnippet(characterName: string, question: string): Promise<string | null> {
   try {
-    const cleanSearch = `${characterName} ${question}`.replace(/[¿?¡!.,:;()"'`_/\-\\]/g, ' ').trim();
-    const url = `https://es.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanSearch)}&utf8=1&format=json`;
+    let canonicalTitle = characterName.trim();
+    const norm = characterName.toLowerCase();
+    if (norm.includes('josefa') || norm.includes('corregidora')) {
+      canonicalTitle = 'Josefa Ortiz de Domínguez';
+    } else if (norm.includes('hidalgo')) {
+      canonicalTitle = 'Miguel Hidalgo y Costilla';
+    } else if (norm.includes('morelos')) {
+      canonicalTitle = 'José María Morelos';
+    } else if (norm.includes('allende')) {
+      canonicalTitle = 'Ignacio Allende';
+    } else if (norm.includes('juarez')) {
+      canonicalTitle = 'Benito Juárez';
+    } else if (norm.includes('leona')) {
+      canonicalTitle = 'Leona Vicario';
+    }
+
+    const summaryUrl = `https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(canonicalTitle)}`;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3500);
-    const res = await fetch(url, {
-      headers: { 'User-Agent': 'ISkoolPedagogicalEngine/1.0' },
+    const res = await fetch(summaryUrl, {
+      headers: { 'User-Agent': 'ISkoolPedagogicalEngine/2.0 (educativo)' },
       signal: controller.signal
     });
     clearTimeout(timeoutId);
 
     if (res.ok) {
       const data = await res.json();
-      const firstHit = data?.query?.search?.[0];
-      if (firstHit && firstHit.snippet) {
-        const cleanSnippet = firstHit.snippet
-          .replace(/<[^>]+>/g, '')
-          .replace(/&quot;/g, '"')
-          .replace(/&amp;/g, '&')
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>')
-          .trim();
-        if (cleanSnippet.length > 25) return cleanSnippet;
+      const extract = data?.extract;
+      if (extract && typeof extract === 'string') {
+        const isCorruptOrModern = 
+          /(pelicula|telenovela|actriz|actor|cine|television|trayectoria|reparto|serie|h[eé]roes verdaderos|vestido de novia|exterminador|\(19\d\d\)|\(20\d\d\))/i.test(extract);
+        
+        if (!isCorruptOrModern && extract.length > 30) {
+          const sentences = extract.split(/(?<=[.!?])\s+/);
+          const validSentences = sentences.filter(s => 
+            s.length > 25 && 
+            !/(pelicula|actriz|reparto|television|trayectoria|exterminador)/i.test(s)
+          );
+          if (validSentences.length > 0) {
+            return validSentences.slice(0, 2).join(' ');
+          }
+        }
       }
     }
   } catch {
-    // Si falla o hay timeout, continúa con el motor ontológico histórico
+    // Si falla o no pasa el filtro de rigor, retorna null para usar la ontología pedagógica directa
   }
   return null;
 }
@@ -801,6 +931,30 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
   // =========================================================================
   if (isJosefa) {
     switch (intent) {
+      case 'LOVE_ROMANCE':
+        return `El único y gran amor de mi vida fue mi esposo, don Miguel Domínguez. Lo conocí en mi juventud mientras estudiaba en el Real Colegio de las Vizcaínas en la Ciudad de México, donde él acudía como letrado y benefactor de la institución. Quedé cautivada por su rectitud moral, su intelecto humanista y su trato respetuoso y leal. Nos desposamos en 1791 y juntos compartimos casi cuatro décadas de existencia, catorce hijos y la lucha apasionada por la libertad de nuestra patria. Jamás hubo en mi corazón otro dueño que don Miguel y la sagrada causa de la independencia americana.`;
+
+      case 'VIZCAINAS_COLLEGE':
+        return `El Real Colegio de San Ignacio de Loyola, conocido como Las Vizcaínas, fue una distinguida institución educativa virreinal en la Ciudad de México fundada para brindar amparo, instrucción laica y piedad a niñas y doncellas huérfanas o desamparadas. Tras perder a mis padres siendo muy pequeña, mi hermana María Sotero logró mi ingreso como alumna interna. En sus claustros recibí una educación excepcional en letras, gramática, música y labores finas, forjando el temple moral y la convicción humanista que me acompañaron toda la vida.`;
+
+      case 'PHYSICAL_APPEARANCE':
+        return `En mi madurez era de estatura media, porte erguido y mirada firme y decidida, de tez clara y cabello castaño oscuro que acostumbraba peinar recogido en moño alto sujeto con peinetas novohispanas de carey. Mi semblante reflejaba la serenidad y la severidad propias de quien no tolera las injusticias. Más allá de la apariencia física, procuraba que mi presencia proyectara la dignidad moral y el decoro necesarios para inspirar respeto y lealtad a la causa libertaria.`;
+
+      case 'SECRETS_CODES':
+        return `En tiempos donde las sospechas y los espías virreinales acechaban cada esquina, la cautela era vital: nos comunicábamos mediante esquelas breves escritas con tinta disimulada, transportadas por correos de entera confianza en los dobladillos de las ropas o entre las monturas de los caballos. Con el alcaide don Ignacio Pérez acordé la contraseña secreta de los tres golpes firmes en el suelo de madera de mi alcoba, lo que nos permitió comunicarnos a través del ojo de la cerradura sin despertar la alarma de la guardia realista.`;
+
+      case 'HOME_CITY':
+        return `Mi hogar fue la Casa del Corregimiento, una señorial residencia virreinal de cantera frente a la Plaza Mayor de Santiago de Querétaro. Era una casona noble con amplios arcos de piedra, fuentes en los patios y salas altas con ventanales hacia la ciudad. En sus salones transcurrieron nuestras tertulias y en mi alcoba del piso superior resonaron los golpes de tacón que salvaron la independencia. Querétaro era entonces una ciudad próspera, devota y bulliciosa, cruce obligado de los caminos del Bajío.`;
+
+      case 'PERSONALITY':
+        return `Fui una mujer de temperamento enérgico, resuelto y con una aversión total hacia las apariencias serviles y la hipocresía colonial. Me guiaban la franqueza, una profunda rectitud ética y una inquebrantable solidaridad con los indígenas, mestizos y desposeídos. Mi carácter firme fue lo que me permitió no quebrarme durante los años de aislamiento en los conventos ni delatar a ninguno de mis compañeros de lucha.`;
+
+      case 'MONEY':
+        return `En Querétaro gozamos de la holgura económica propia de la investidura del Corregidor y de nuestros bienes patrimoniales, mas todo recurso estuvo supeditado al bienestar común y al apoyo de la causa independentista. Tras la consumación de la libertad viví en suma modestia en la Ciudad de México y rehusé con orgullo cualquier pensión o remuneración gubernamental: la patria no se vende ni se cobra con monedas.`;
+
+      case 'WOMEN_ROLE':
+        return `En la gesta libertaria demostramos que el patriotismo no tiene distingos de género. En una época virreinal donde a las mujeres se nos pretendía confinar exclusivamente al silencio del hogar o al claustro conventual, muchas decidimos convertir nuestras casas en trincheras de libertad, aportar nuestro ingenio, recursos y la propia vida. A las niñas y jóvenes de hoy les digo con orgullo que su voz, su inteligencia y su participación activa son indispensables para construir una patria justa y soberana.`;
+
       case 'FOOD':
         return `Entre los manjares y guisos de nuestra tierra novohispana, sentía una predilección entrañable por el mole de olla y el manchamanteles de cerdo y gallina aromatizado con fruta del Bajío, canela y chiles secos, así como por los tradicionales tamales de nata y corundas típicos de mi natal Valladolid (hoy Morelia). En las tardes de Querétaro y durante nuestras tertulias, disfrutaba sobremanera de una jícara de chocolate de metate espeso y bien espumoso, batido con molinillo de madera y perfumado con vainilla, servido junto a marquesotes y pan dulce de huevo recién horneado. La mesa virreinal era un reflejo vivo de la generosidad y el mestizaje de nuestra patria.`;
 
@@ -867,18 +1021,39 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
       case 'MESSAGE_STUDENTS':
         return `A ti, joven estudiante que hoy te educas en un México soberano: te encomiendo cuidar esta patria como el bien más sagrado. La independencia que hoy disfrutas en tus libros y en tus calles no fue una concesión graciosa de la Corona; fue conquistada con lágrimas, presidio y la sangre generosa de quienes lo sacrificamos todo. Tu campo de honor hoy no requiere sables ni pólvora, sino disciplina intelectual, pensamiento crítico, honestidad inquebrantable y la defensa apasionada del más desamparado. ¡Ama la verdad, estudia con ahínco y jamás consientas la tiranía ni la indiferencia ciudadana!`;
 
+      case 'WHO_AM_I':
+        return `Soy María Josefa Crescencia Ortiz Téllez-Girón, conocida con cariño y honor patrio como la Corregidora de Querétaro. Nací en Valladolid (hoy Morelia) y consagré mi vida a la libertad de América Septentrional y a la defensa de los más desprotegidos. Junto a mi esposo don Miguel Domínguez, abrí las puertas de nuestra residencia en Querétaro para que bajo la fachada de tertulias literarias se encendiera la chispa de la Independencia de 1810.`;
+
+      case 'CORREGIDORA_NICKNAME':
+        return `Me llamaban la Corregidora porque mi esposo, don Miguel Domínguez, ostentaba el cargo virreinal de Corregidor de Letras de Santiago de Querétaro desde 1802. En aquella época virreinal, a la esposa del corregidor se le otorgaba por usanza social el título de Corregidora. Mas para mí no fue una distinción mundana de la nobleza colonial, sino una trinchera humana desde la cual auxilié a los indígenas, mestizos y criollos, y protegí en secreto a los patriotas de la conspiración.`;
+
+      case 'LOCKED_ROOM':
+        return `Fue mi propio esposo, don Miguel Domínguez, quien la noche del 13 de septiembre de 1810 me encerró con llave en nuestra recámara alta. Al saber que la conspiración había sido descubierta por las autoridades virreinales y que él estaba obligado a catear casas sospechosas, temió desesperadamente que mi carácter vehemente me expusiera al cadalso. Mas encerrar mis pasos no impidió mi deber: con tres golpes secos de mis tacones sobre el entarimado alerté al alcaide Ignacio Pérez y la alerta libertaria llegó a Dolores.`;
+
+      case 'IGNACIO_PEREZ':
+        return `Don Ignacio Pérez era el alcaide de la cárcel de Querétaro, un patriota intachable y de absoluta lealtad a la causa cuya vivienda se situaba en la planta baja del Palacio del Corregimiento. Al escuchar mi señal secreta de tres golpes de tacón, subió al zaguán y a través del ojo de la cerradura recibió mi orden apremiante: cabalgar sin descanso hasta San Miguel el Grande y Dolores para prevenir a Allende e Hidalgo. Sin su heroica cabalgata nocturna, los caudillos habrían sido capturados y la independencia sofocada en la cuna.`;
+
+      case 'BIRTHPLACE':
+        return `Nací el 8 de septiembre de 1768 en la noble ciudad de Valladolid, hoy Morelia, Michoacán. Al quedar huérfana siendo muy pequeña, mi hermana mayor María Sotero me cuidó y gestionó mi ingreso al Real Colegio de San Ignacio de Loyola (Las Vizcaínas) en la Ciudad de México, donde recibí una esmerada educación. Más tarde el destino me llevó a Santiago de Querétaro, donde transcurrió la etapa más decisiva de mi vida en favor de la patria.`;
+
+      case 'RESTING_PLACE':
+        return `Mis restos mortales descansan con honor cívico en el mausoleo del Panteón de los Queretanos Ilustres, ubicado en la colina del Convento de la Cruz en Santiago de Querétaro. Allí reposo junto a mi esposo don Miguel Domínguez, velando simbólicamente por el cielo y la libertad de la patria mexicana.`;
+
+      case 'LEGACY':
+        return `Mi mayor legado fue demostrar que la determinación y la valentía cívica pueden vencer a los imperios más poderosos. Se me recuerda como la heroína que alertó a Hidalgo y Allende, mas mi mayor satisfacción es saber que hoy las jóvenes y estudiantes de nuestra nación crecen en una patria libre, educándose con dignidad y defendiendo la justicia para todos los mexicanos.`;
+
+      case 'AFTER_1810':
+        return `Tras la delación de septiembre de 1810 fui aprehendida por las autoridades virreinales y recluida en condiciones muy duras en el Convento de Santa Clara en Querétaro y más tarde en Santa Teresa y Santa Catalina en la Ciudad de México, separada de mis catorce hijos. Al consumarse la independencia viví con sobriedad republicana y rechacé con orgullo los oropeles de la corte imperial de Iturbide. Fallecí en paz el 2 de marzo de 1829 en la Ciudad de México.`;
+
       case 'HEALTH':
         return `En mis últimos años padecí graves afecciones pleuropulmonares, consecuencia del frío y la humedad de los calabozos virreinales durante mis años de encierro. A pesar del quebranto corporal, conservé la serenidad de conciencia hasta mi fallecimiento en marzo de 1829.`;
 
       default: {
-        const liveFact = await fetchEncyclopedicSnippet(name, question);
-        if (liveFact) {
-          return `En los registros documentales de nuestra historia patria consta que ${liveFact}. Como protagonista de aquellos acontecimientos en Querétaro y la Nueva España, puedo asegurarte con la verdad por delante que cada acción en mi vida respondió al mandato de ver a nuestra tierra libre, digna y soberana.`;
-        }
-        return `En mi vida cotidiana entre Valladolid, el Colegio de las Vizcaínas en la capital y el Palacio de la Corregidora en Querétaro, procuré siempre que mis actos reflejaran decoro, rectitud moral y dedicación hacia mi familia y nuestra gente. Respecto a lo que me preguntas, en aquella época novohispana de principios del siglo XIX cada costumbre y quehacer diario estaba impregnado de devoción, trabajo esmerado y el anhelo de forjar una sociedad armónica en nuestra tierra queretana.`;
+        return `Como Doña Josefa Ortiz de Domínguez, he de decirte con franqueza y honor patriótico que en aquellos tiempos novohispanos cada pensamiento, conversación y decisión en mi vida estuvo guiada por la rectitud moral, el amor a mi familia y el compromiso inquebrantable con la libertad de nuestra tierra. Sobre lo que me preguntas, vivimos una época de profunda prueba donde la templanza cívica y la lealtad a los principios eran la brújula innegociable con la que forjamos el porvenir de la patria.`;
       }
     }
   }
+
 
   // =========================================================================
   // 2. DON MIGUEL HIDALGO Y COSTILLA
