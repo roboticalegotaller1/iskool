@@ -72,6 +72,27 @@ const frSpoken = "Je voudrais un croisant crustillant et un cafe au lait sil vou
 const t8 = alignSpokenTokensToTarget(frSpoken, frTarget, 'fr');
 assert(t8.accuracy >= 90, `8. Francés con apóstrofe y fonética nasal: ${t8.accuracy}% de precisión`);
 
+// 9. SILENCIO TOTAL: Tokens hablados vacíos -> 0 matches, 0% precisión
+const t9 = alignSpokenTokensToTarget([], targetWords, 'en');
+assert(t9.matchedIndices.length === 0, '9. Silencio total: 0 palabras emparejadas');
+assert(t9.accuracy === 0, '9. Silencio total: 0% de precisión');
+
+// 10. RUIDO O PALABRAS TOTALMENTE NO RELACIONADAS
+const t10 = alignSpokenTokensToTarget(['hola', 'amigos', 'buenos', 'dias'], targetWords, 'en');
+assert(t10.matchedIndices.length === 0, '10. Ruido o conversación ajena en español: 0 palabras emparejadas');
+assert(t10.accuracy === 0, '10. Ruido no relacionado: 0% de precisión');
+
+// 11. DISCRIMINACIÓN ESTRICTA DE PALABRAS CORTAS ("is" vs "in", "it", "if")
+const t11a = isPhoneticallyEquivalent('in', 'is', 'en');
+const t11b = isPhoneticallyEquivalent('it', 'is', 'en');
+const t11c = isPhoneticallyEquivalent('is', 'is', 'en');
+assert(!t11a && !t11b, '11a. "is" NO hace match con "in" o "it"');
+assert(t11c, '11b. "is" coincide consigo misma');
+
+// 12. NO MATCH ESPURIO: "like" no debe emparejar "would"
+const t12 = isPhoneticallyEquivalent('like', 'would', 'en');
+assert(!t12, '12. "like" NO coincide con "would"');
+
 console.log(`\n📊 Resumen: ${passedTests}/${totalTests} pruebas aprobadas.`);
 if (passedTests === totalTests) {
   console.log('🌟 ¡CALIBRACIÓN FONÉTICA 100% EXITOSA!\n');

@@ -99,21 +99,21 @@ export const CONTRACTIONS_MAP: Record<string, string[]> = {
 
 // Diccionario exhaustivo de equivalencias fonéticas de aprendizaje para hispanohablantes
 const EN_PHONETIC_VARIANTS: Record<string, string[]> = {
-  'i': ['i', 'eye', 'ay', 'ai', 'ah', 'me', 'id'],
-  'would': ['would', 'wood', 'wud', 'could', 'woud', 'hood', 'good', 'wad', 'd', 'dlike', 'like'],
+  'i': ['i', 'eye', 'ay', 'ai', 'ah', 'id'],
+  'would': ['would', 'wood', 'wud', 'woud', 'hood', 'good', 'wad', 'd'],
   'like': ['like', 'liked', 'lik', 'laik', 'light', 'lake', 'lai'],
-  'a': ['a', 'uh', 'ah', 'eh', 'one', 'an', 'un', 'ha', 'the', 'er'],
-  'warm': ['warm', 'worm', 'warn', 'warmed', 'won', 'one', 'wom', 'wurm', 'war'],
-  'cappuccino': ['cappuccino', 'capuchino', 'cappucino', 'capuccino', 'coffee', 'chino', 'kapuchino', 'cappuccinos', 'cup of chino', 'cup of tea', 'capochino'],
-  'and': ['and', 'an', 'und', 'end', 'hand', 'n', 'en', 'ond', 'in'],
+  'a': ['a', 'uh', 'ah', 'eh', 'an', 'un'],
+  'warm': ['warm', 'worm', 'warn', 'warmed', 'wom', 'wurm', 'war'],
+  'cappuccino': ['cappuccino', 'capuchino', 'cappucino', 'capuccino', 'chino', 'kapuchino', 'cappuccinos', 'capochino'],
+  'and': ['and', 'an', 'und', 'end', 'hand', 'n', 'en', 'ond'],
   'fresh': ['fresh', 'fres', 'frech', 'flash', 'frash', 'flesh', 'frex'],
   'blueberry': ['blueberry', 'blueberries', 'bluberry', 'blue', 'berry', 'bleuberry', 'bluberi', 'blackberry', 'blooberry'],
   'muffin': ['muffin', 'muffins', 'moffin', 'muffen', 'muff', 'mafin', 'moffen', 'muffing'],
   'please': ['please', 'pleas', 'plz', 'peace', 'police', 'plis', 'plise', 'polite'],
-  'could': ['could', 'cud', 'good', 'would', 'wood'],
+  'could': ['could', 'cud', 'good', 'wood'],
   'you': ['you', 'yu', 'u', 'your', 'ya'],
   'recommend': ['recommend', 'recomended', 'recomen', 'recomend'],
-  'your': ['your', 'ur', 'youre', 'yo', 'you'],
+  'your': ['your', 'ur', 'youre', 'yo'],
   'most': ['most', 'mus', 'mos'],
   'popular': ['popular', 'populer', 'poplar'],
   'breakfast': ['breakfast', 'brekfast', 'brekfest', 'brekfas'],
@@ -121,7 +121,7 @@ const EN_PHONETIC_VARIANTS: Record<string, string[]> = {
   'today': ['today', 'todey', 'tudei'],
   'the': ['the', 'da', 'de', 'di', 'za', 'ze', 'tha'],
   'weather': ['weather', 'wether', 'weder', 'wezer'],
-  'is': ['is', 'iz', 'es', 'iss', 'his', 'as'],
+  'is': ['is', 'iz', 'es', 'iss'],
   'absolutely': ['absolutely', 'absolutly', 'abslutly'],
   'magnificent': ['magnificent', 'magnificent', 'magnificen'],
   'for': ['for', 'fo', 'fer', 'four'],
@@ -165,11 +165,11 @@ const FR_PHONETIC_VARIANTS: Record<string, string[]> = {
 };
 
 /**
- * Validador fonético multinivel:
+ * Validador fonético multinivel y riguroso:
  * 1. Coincidencia exacta tras normalización
- * 2. Diccionario de variantes fonéticas
- * 3. Distancia de edición (Levenshtein) <= 1 para palabras cortas o <= 2 para palabras largas
- * 4. Subcadena prefijo/sufijo
+ * 2. Diccionario de variantes fonéticas precisas
+ * 3. Prohibición de matches por distancia en palabras de 1-2 letras (ej. 'is' no coincide con 'in')
+ * 4. Distancia de edición controlada según longitud de palabra
  */
 export function isPhoneticallyEquivalent(
   spokenToken: string,
@@ -182,24 +182,36 @@ export function isPhoneticallyEquivalent(
   if (!s || !t) return false;
   if (s === t) return true;
 
-  // Variantes específicas del idioma
+  // Variantes específicas del idioma (diccionario fonético exacto)
   const dict = lang === 'fr' ? FR_PHONETIC_VARIANTS : EN_PHONETIC_VARIANTS;
   if (dict[t]?.includes(s)) return true;
   if (dict[s]?.includes(t)) return true;
 
-  // Tolerancia por distancia de edición
   const maxLen = Math.max(s.length, t.length);
+  const minLen = Math.min(s.length, t.length);
+
+  // Palabras muy cortas (1-2 caracteres): NUNCA permitir distancia Levenshtein libre
+  // Ej: 'is' no debe coincidir con 'in', 'it', 'if'; 'to' no con 'do'; 'a' no con 'i'
+  if (minLen <= 2) {
+    return false;
+  }
+
   const dist = levenshteinDistance(s, t);
 
-  if (maxLen <= 3) {
-    if (dist <= 1 && (s.startsWith(t[0]) || s.endsWith(t[t.length - 1]))) return true;
+  if (maxLen === 3) {
+    // Para palabras de 3 letras (ej. and, the, you, can), solo permitir dist <= 1 si comparten inicio y fin
+    return dist <= 1 && s[0] === t[0] && s[s.length - 1] === t[t.length - 1];
   } else if (maxLen <= 6) {
-    if (dist <= 2) return true;
+    // Para palabras medianas (4-6 letras: warm, fresh, like):
+    if (dist <= 1) return true;
+    if (dist <= 2 && s[0] === t[0] && maxLen >= 5) return true;
+    return false;
   } else {
-    // Palabras largas (ej. cappuccino, blueberry, station)
-    if (dist <= 3) return true;
-    if (s.length >= 4 && t.length >= 4) {
-      if (s.includes(t.slice(0, 4)) || t.includes(s.slice(0, 4))) return true;
+    // Palabras largas (> 6 letras: cappuccino, blueberry, popular, breakfast):
+    if (dist <= 2) return true;
+    if (dist <= 3 && s[0] === t[0] && s[1] === t[1]) return true;
+    if (s.length >= 5 && t.length >= 5 && (s.startsWith(t.slice(0, 4)) || t.startsWith(s.slice(0, 4)))) {
+      return dist <= 3;
     }
   }
 
@@ -406,9 +418,9 @@ export function calculateDecibelsFromRms(rms: number): {
   let label: 'Silencio' | 'Ruido Ambiente' | 'Voz Detectada' | 'Nivel Óptimo' | 'Saturación' = 'Silencio';
   if (dBFS > -4) {
     label = 'Saturación';
-  } else if (dBFS >= -20) {
+  } else if (dBFS >= -18) {
     label = 'Nivel Óptimo';
-  } else if (dBFS >= -38) {
+  } else if (dBFS >= -30) {
     label = 'Voz Detectada';
   } else if (dBFS >= -48) {
     label = 'Ruido Ambiente';

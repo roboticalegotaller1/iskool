@@ -165,9 +165,8 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     speechStartTime: number;
     silenceStartTime: number;
     voicedFramesCount: number;
+    accumulatedTranscript: string;
     allCapturedTokens: string[];
-    lastVoicePulseTime: number;
-    acousticAdvancesCount: number;
   }>({
     currentWordIndex: 0,
     completedIndices: [],
@@ -175,9 +174,8 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     speechStartTime: 0,
     silenceStartTime: 0,
     voicedFramesCount: 0,
-    allCapturedTokens: [],
-    lastVoicePulseTime: 0,
-    acousticAdvancesCount: 0
+    accumulatedTranscript: '',
+    allCapturedTokens: []
   });
 
   // Descomposición de la frase objetivo en palabras
@@ -497,41 +495,31 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     } else {
       const state = voiceStateRef.current;
       
-      // 1. EVALUACIÓN PRIORITARIA: Alinear todos los tokens de voz capturados durante la sesión
-      const tokensToAlign = state.allCapturedTokens.length > 0 
-        ? state.allCapturedTokens 
-        : detectedSpeechText.toLowerCase().replace(/[^a-z0-9\s'’]/gi, ' ').split(/\s+/).filter(Boolean);
+      if (karaokeMode === 'mic') {
+        // En modo micrófono, evaluar estrictamente los tokens hablados reconocidos
+        const tokensToAlign = state.allCapturedTokens.length > 0 
+          ? state.allCapturedTokens 
+          : detectedSpeechText.toLowerCase().replace(/[^a-z0-9\s'’]/gi, ' ').split(/\s+/).filter(Boolean);
 
-      const alignment = alignSpokenTokensToTarget(tokensToAlign, targetWords, language);
+        const alignment = alignSpokenTokensToTarget(tokensToAlign, targetWords, language);
 
-      // Si la alineación fonética encontró palabras coincidentes
-      if (alignment.matchedIndices.length > 0) {
-        const combined = new Set([...state.completedIndices, ...alignment.matchedIndices]);
-        finalCorrectIndices = Array.from(combined).sort((a, b) => a - b);
-        finalErrorIndices = targetWords.map((_, i) => i).filter(i => !combined.has(i));
+        if (alignment.matchedIndices.length > 0) {
+          finalCorrectIndices = [...alignment.matchedIndices];
+          finalErrorIndices = targetWords.map((_, i) => i).filter(i => !alignment.matchedIndices.includes(i));
+          calculatedAcc = Math.round((finalCorrectIndices.length / targetWords.length) * 100);
+          evalSource = 'stt';
+        } else {
+          // Silencio o sin palabras reconocidas: Cero absoluto, sin falsos positivos
+          finalCorrectIndices = [];
+          finalErrorIndices = targetWords.map((_, i) => i);
+          calculatedAcc = 0;
+          evalSource = 'stt';
+        }
+      } else {
+        // En Modo Guiado / Táctil / Teclado
+        finalCorrectIndices = [...state.completedIndices];
+        finalErrorIndices = targetWords.map((_, i) => i).filter(i => !state.completedIndices.includes(i));
         calculatedAcc = Math.round((finalCorrectIndices.length / targetWords.length) * 100);
-        evalSource = 'stt';
-      } 
-      // 2. FALLBACK ACÚSTICO: Si el dictado de texto de Chrome no entregó transcripción,
-      // pero el hardware registró fonación vocal activa o cadencia de voz
-      else if (state.completedIndices.length > 0 || state.voicedFramesCount > 10) {
-        const indices = state.completedIndices.length > 0 
-          ? state.completedIndices 
-          : Array.from(
-              { length: Math.min(targetWords.length, Math.max(1, Math.round(state.voicedFramesCount / 10))) }, 
-              (_, i) => i
-            );
-        
-        finalCorrectIndices = [...indices];
-        finalErrorIndices = targetWords.map((_, i) => i).filter(i => !indices.includes(i));
-        calculatedAcc = Math.round((finalCorrectIndices.length / targetWords.length) * 100);
-        evalSource = 'acoustic';
-      }
-      // 3. SILENCIO TOTAL O SIN CAPTACIÓN
-      else {
-        finalCorrectIndices = [];
-        finalErrorIndices = targetWords.map((_, i) => i);
-        calculatedAcc = 0;
         evalSource = 'manual';
       }
     }
@@ -551,11 +539,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       setFeedbackAlert('No se detectó pronunciación de palabras. Asegúrate de hablar frente a tu micrófono o probarlo en vivo arriba.');
       playSfx('wrong');
     } else if (calculatedAcc >= 80) {
-      if (evalSource === 'acoustic') {
-        setFeedbackAlert('🎙️ Pronunciación captada por el sensor acústico de hardware. ¡Excelente fluidez y entonación vocal!');
-      } else {
-        setFeedbackAlert(null);
-      }
+      setFeedbackAlert(null);
       playSfx('victory');
     } else {
       setFeedbackAlert(`Pronunciaste ${finalCorrectIndices.length} de ${targetWords.length} palabras (${calculatedAcc}% de precisión). Toca las palabras en rojo para escuchar cómo pronunciarlas despacio.`);
@@ -605,40 +589,34 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     if (rawTokens.length === 0) return;
 
     const state = voiceStateRef.current;
-    
-    // Acumular tokens únicos capturados para la sesión
-    for (const t of rawTokens) {
-      state.allCapturedTokens.push(t);
-    }
+    state.accumulatedTranscript = transcript;
+    state.allCapturedTokens = rawTokens;
 
-    // Ejecutar alineación fonética multi-ventana y multi-token
-    const alignment = alignSpokenTokensToTarget(state.allCapturedTokens, targetWords, language);
+    // Ejecutar alineación fonética multi-ventana y multi-token sobre la transcripción real
+    const alignment = alignSpokenTokensToTarget(rawTokens, targetWords, language);
 
-    let newlyMatched = 0;
-    for (const idx of alignment.matchedIndices) {
-      if (!state.completedIndices.includes(idx)) {
-        state.completedIndices.push(idx);
-        newlyMatched++;
-      }
-    }
+    // Combinar con cualquier avance previo
+    const newMatchedSet = new Set([...state.completedIndices, ...alignment.matchedIndices]);
+    const newlyMatchedCount = newMatchedSet.size - state.completedIndices.length;
 
-    if (newlyMatched > 0) {
-      state.completedIndices.sort((a, b) => a - b);
-      setCompletedIndices([...state.completedIndices]);
-      const words = state.completedIndices.map(i => targetWords[i]);
+    if (newlyMatchedCount > 0 || alignment.matchedIndices.length > state.completedIndices.length) {
+      const sortedIndices = Array.from(newMatchedSet).sort((a, b) => a - b);
+      state.completedIndices = sortedIndices;
+      setCompletedIndices([...sortedIndices]);
+      const words = sortedIndices.map(i => targetWords[i]);
       setCompletedWords(words);
       playSfx('correct');
 
       // Buscar el siguiente índice no completado
       let nextIdx = 0;
-      while (nextIdx < targetWords.length && state.completedIndices.includes(nextIdx)) {
+      while (nextIdx < targetWords.length && sortedIndices.includes(nextIdx)) {
         nextIdx++;
       }
       state.currentWordIndex = nextIdx;
       setActiveWordIndex(nextIdx);
 
       // Si se completaron todas las palabras de la frase
-      if (state.completedIndices.length >= targetWords.length) {
+      if (sortedIndices.length >= targetWords.length) {
         setTimeout(() => {
           completeEvaluation(100, []);
         }, 350);
@@ -876,9 +854,8 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       speechStartTime: 0,
       silenceStartTime: 0,
       voicedFramesCount: 0,
-      allCapturedTokens: [],
-      lastVoicePulseTime: 0,
-      acousticAdvancesCount: 0
+      accumulatedTranscript: '',
+      allCapturedTokens: []
     };
 
     // Temporizador de duración
@@ -975,7 +952,8 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
 
               const now = performance.now();
               const state = voiceStateRef.current;
-              const isVoiceActive = dBFS >= -38 || percentage >= 14;
+              // Detección vocal: requiere potencia vocal real (>= -30 dBFS y nivel >= 20%)
+              const isVoiceActive = dBFS >= -30 && percentage >= 20;
 
               setIsUserSpeakingNow(isVoiceActive);
 
@@ -986,43 +964,12 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                   state.speechStartTime = now;
                   state.silenceStartTime = 0;
                 }
-
-                // Cadencia acústica en vivo (cada ~320ms de fonación sostenida)
-                // Si el alumno está articulando palabras y la palabra actual no ha avanzado:
-                const voiceDuration = now - state.speechStartTime;
-                if (voiceDuration > 260 && (now - state.lastVoicePulseTime > 360)) {
-                  state.lastVoicePulseTime = now;
-                  state.acousticAdvancesCount++;
-
-                  const currentIdx = state.currentWordIndex;
-                  if (currentIdx < targetWords.length && !state.completedIndices.includes(currentIdx)) {
-                    state.completedIndices.push(currentIdx);
-                    state.completedIndices.sort((a, b) => a - b);
-                    setCompletedIndices([...state.completedIndices]);
-                    setCompletedWords(state.completedIndices.map(i => targetWords[i]));
-                    playSfx('correct');
-
-                    let nextIdx = currentIdx + 1;
-                    while (nextIdx < targetWords.length && state.completedIndices.includes(nextIdx)) {
-                      nextIdx++;
-                    }
-                    state.currentWordIndex = nextIdx;
-                    setActiveWordIndex(nextIdx);
-
-                    if (state.completedIndices.length >= targetWords.length) {
-                      setTimeout(() => {
-                        completeEvaluation(100, []);
-                      }, 350);
-                      return;
-                    }
-                  }
-                }
               } else {
                 if (state.isSpeaking) {
                   if (state.silenceStartTime === 0) {
                     state.silenceStartTime = now;
                   }
-                  if (now - state.silenceStartTime > 85) {
+                  if (now - state.silenceStartTime > 120) {
                     state.isSpeaking = false;
                     state.silenceStartTime = 0;
                   }
@@ -1048,18 +995,25 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
           recognition.lang = language === 'fr' ? 'fr-FR' : 'en-US';
 
           recognition.onresult = (event: any) => {
-            let currentTranscript = '';
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-              currentTranscript += event.results[i][0].transcript + ' ';
+            let fullTranscript = '';
+            for (let i = 0; i < event.results.length; ++i) {
+              fullTranscript += event.results[i][0].transcript + ' ';
             }
-            if (currentTranscript.trim()) {
-              processSpokenTranscript(currentTranscript);
+            const cleanText = fullTranscript.trim();
+            if (cleanText) {
+              processSpokenTranscript(cleanText);
             }
           };
 
           recognition.onerror = (e: any) => {
-            if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+            console.warn('SpeechRecognition error:', e?.error);
+            if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'network') {
               canUseSpeechRecognitionRef.current = false;
+              if (e.error === 'network') {
+                setFeedbackAlert(
+                  '🦁 Aviso de Reconocimiento por Voz: El navegador (ej. Brave o modo privado estricto) o la red restringieron el servicio de voz en la nube. Puedes habilitar los servicios de voz en Configuración de Brave > Privacidad, utilizar Google Chrome o Microsoft Edge, o practicar con el "Modo Guiado / Táctil" tocando las palabras.'
+                );
+              }
             }
           };
 
@@ -1232,7 +1186,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
           setDecibelValue(dBFS);
           setDecibelLabel(label);
           setAudioLevel(percentage);
-          setIsUserSpeakingNow(dBFS >= -38 || percentage >= 14);
+          setIsUserSpeakingNow(dBFS >= -30 && percentage >= 20);
 
           // 2. Bandas de frecuencia en vivo
           analyser.getByteFrequencyData(freqData);
@@ -1264,12 +1218,13 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
             }
           };
           rec.onresult = (e: any) => {
-            let t = '';
-            for (let i = e.resultIndex; i < e.results.length; ++i) {
-              t += e.results[i][0].transcript + ' ';
+            let fullText = '';
+            for (let i = 0; i < e.results.length; ++i) {
+              fullText += e.results[i][0].transcript + ' ';
             }
-            if (t.trim()) {
-              setTestDetectedSpeechText(t.trim());
+            const cleanText = fullText.trim();
+            if (cleanText) {
+              setTestDetectedSpeechText(cleanText);
             }
           };
           try {
