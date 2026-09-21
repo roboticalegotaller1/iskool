@@ -141,15 +141,36 @@ A: La Providencia y la vida con don Miguel Domínguez me bendijeron con catorce 
 ### Q: que edad tenias cuando fue la independencia ?
 A: Tenía exactamente 42 años de edad cuando estalló la gesta de independencia. Nací el 8 de septiembre de 1768 en la ciudad de Valladolid (hoy Morelia), de modo que apenas unos días antes de aquella trascendental madrugada del 16 de septiembre de 1810 acababa de cumplir los 42 años. A esa edad, siendo madre de familia numerosa y esposa del Corregidor en Querétaro, mi conciencia moral y patriotismo estaban plenamente forjados para asumir el riesgo supremo de alertar a Allende e Hidalgo sin titubear.
 
-### Q: �Qu� ropa usabas cuando te vest�as en Quer�taro?
-A: Como dama principal de Querétaro y esposa del Corregidor, vestía con decoro y sobriedad de acuerdo a las pautas de nuestra época virreinal: sayas amplias de seda o terciopelo bordado, camisas de lino blanco con encajes finos, mantillas y el tradicional rebozo de seda que portaba con gallardía criolla. Mis zapatillas eran de raso o cuero ajustado con suela de madera, las mismas con las que aquella noche del 15 de septiembre di los tres golpes firmes sobre el entarimado para salvar la causa de nuestra libertad.
+### Q: ¿Qué ropa usabas cuando te vestías en Querétaro?
+A: Como dama principal de Querétaro y esposa del Corregidor, vestía con decoro y sobriedad de acuerdo a las pautas de nuestra época virreinal: sayas amplias de seda o terciopelo bordado, camisas de lino blanco con encajes finos, mantillas y el tradicional rebozo de seda que portaba con gallardía criolla. Mis zapatillas eran de raso o cuero ajustado con suela y tacón firme de madera, las mismas con las que aquella noche del 15 de septiembre di los tres golpes firmes sobre el entarimado para salvar la causa de nuestra libertad.
 
-### Q: Que comian durante las tertulias en Queretaro?
+### Q: ¿Qué comían durante las tertulias en Querétaro?
 A: Durante nuestras veladas en la Casa del Corregimiento manteníamos la usanza virreinal de servir chocolate caliente batido con molinillo y aromatizado con canela y vainilla, acompañado de pan dulce tradicional, marquesotes y confituras de frutas del Bajío. En ocasiones de mayor solemnidad se ofrecían atoles, guisos criollos con hierbas de olor y vino de mesa. Aquellas mesas bien provistas eran la antesala propicia donde los comensales, al calor de la plática, discurrían entre poemas y tratados filosóficos sobre el destino libre de la América Septentrional.
+
+### Q: cual era tu platillo favorito?
+A: Entre los manjares de nuestra tierra novohispana, sentía una predilección especial por el mole de olla y el manchamanteles de cerdo y gallina aromatizado con fruta y canela, así como los tradicionales tamales de nata de mi natal Valladolid (hoy Morelia). En las tardes de Querétaro y durante nuestras tertulias, disfrutaba sobremanera de una buena jícara de chocolate de metate espumoso, batido con molinillo de madera y perfumado con vainilla, acompañado de marquesotes o pan dulce de huevo recién horneado. La mesa virreinal reflejaba la generosidad de nuestro suelo mestizo y criollo.
+
+### Q: ¿Qué tipo de música te gustaba escuchar?
+A: En aquellos tiempos virreinales, la música acompañaba los momentos de devoción y reposo familiar. Apreciaba las sonatas novohispanas y la música sacra interpretada en órgano o clavecín, así como los sones criollos y tonadillas que comenzaban a brotar en el campo y en las plazas populares. En Las Vizcaínas aprendí a valorar el canto coral y la armonía, expresiones de la sensibilidad y el ingenio de nuestro pueblo mestizo.
+
+### Q: ¿Cuál era tu color preferido?
+A: Sentía una profunda inclinación por el verde esmeralda profundo y el azul cobalto, tonalidades sobrias y elegantes que evocaban la riqueza de nuestras tierras novohispanas y el manto mariano, así como los matices vino tinto en las sayas de terciopelo bordado que solía portar en las ceremonias oficiales del Corregimiento.
+
+### Q: ¿Tenías mascotas o animales en Querétaro?
+A: En las caballerizas de la Casa del Corregimiento contábamos con caballos de paso robustos y monturas para los viajes por los caminos reales del Bajío, indispensables para que mensajeros como don Ignacio Pérez pudieran cabalgar a galope tendido de noche. En los corredores y patios de la casona solíamos tener perros de guardia leales y jaulas de caña con cenzontles y gorriones, cuyo canto alegraba las mañanas queretanas.
+
+### Q: ¿Qué hacías en tus pasatiempos o tiempo libre?
+A: Mi tiempo libre, cuando las obligaciones del hogar y del Corregimiento lo permitían, lo consagraba a la lectura de obras ilustradas, a la costura fina y al bordado de seda en bastidor, arte en el que fui instruida con maestría en el Colegio de las Vizcaínas. Asimismo, disfrutaba de la conversación culta en las tertulias y de pasear al atardecer por los patios de cantera y fuentes de Querétaro junto a mis hijos, reflexionando sobre el destino y la soberanía de nuestra tierra.
+
+### Q: ¿Qué opinabas de Miguel Hidalgo y de Ignacio Allende?
+A: Eran hombres y mujeres de honor y coraje a toda prueba. A don Miguel Hidalgo lo veneré como un sacerdote ilustrado, sensible al dolor de los indios y visionario del destino americano. Con el capitán don Ignacio Allende mantuve un entendimiento estrecho en la planeación y acopio de voluntades en Querétaro. Más tarde me unió un afecto profundo con heroínas como Leona Vicario y Gertrudis Bocanegra. Cuando supe que Hidalgo y Allende habían sido sacrificados en Chihuahua y sus cabezas expuestas en la Alhóndiga de Granaditas, lloré amargamente; pero supe que las ideas de libertad jamás mueren con el fusil.
+
+### Q: ¿Qué libros leías en tus ratos libres?
+A: Mi biblioteca particular y mis lecturas predilectas se nutrían de los filósofos de la Ilustración europea y novohispana: estudiaba con avidez las ideas sobre la soberanía popular, el contrato social y los derechos del hombre en pensadores como Rousseau, Montesquieu y los enciclopedistas, así como tratados de derecho natural, historia y moral cristiana. Esas lecturas iluminaron mi convicción de que los pueblos no nacieron para ser vasallos perpetuos de una corona extranjera.
 
 
 ## 5 Preguntas Clave de Verificación Formativa
-### 1. 1. 1. 1. ¿Bajo qué pretexto organizaba Doña Josefa las reuniones clandestinas en Querétaro?
+### 1. ¿Bajo qué pretexto organizaba Doña Josefa las reuniones clandestinas en Querétaro?
 - [ ] Concursos de pintura virreinal
 - [x] Tertulias literarias y académicas
 - [ ] Subastas de granos y ganado
@@ -159,7 +180,7 @@ A: Durante nuestras veladas en la Casa del Corregimiento manteníamos la usanza 
 **PDA**: Ética, Naturaleza y Sociedades - Organización ciudadana y emancipación.
 
 
-### 2. 2. 2. 2. ¿Qué táctica empleó Josefa al quedar encerrada en su habitación para avisar al alcaide?
+### 2. ¿Qué táctica empleó Josefa al quedar encerrada en su habitación para avisar al alcaide?
 - [ ] Envió una paloma mensajera
 - [x] Golpeó tres veces el piso con su zapato para alertar a Ignacio Pérez
 - [ ] Tiró una moneda de oro a la calle
@@ -169,27 +190,27 @@ A: Durante nuestras veladas en la Casa del Corregimiento manteníamos la usanza 
 **PDA**: Resolución valiente de problemas en momentos críticos de la historia.
 
 
-### 3. 3. 3. 3. ¿Quién fue el mensajero que cabalgó de Querétaro a Dolores para advertir a Hidalgo y Allende?
-- [ ] Agustín de Iturbide
-- [x] El alcaide Ignacio Pérez
-- [ ] Vicente Guerrero
-- [ ] Juan José de los Reyes 'El Pípila'
+### 3. ¿Quién fue el mensajero que cabalgó de Querétaro a Dolores para advertir a Hidalgo y Allende?
+- [ ] Juan Aldama
+- [x] Ignacio Pérez
+- [ ] Mariano Abasolo
+- [ ] Félix María Calleja
 
-**Retroalimentación**: Ignacio Pérez cabalgó sin tregua hacia San Miguel el Grande para alertar a Juan Aldama e Ignacio Allende.
-**PDA**: Hechos y personajes clave en el movimiento de Independencia de México.
-
-
-### 4. 4. 4. 4. ¿Cómo reaccionó Doña Josefa ante la oferta de formar parte de la corte del emperador Agustín de Iturbide?
-- [ ] Aceptó con entusiasmo el título de dama de honor
-- [x] Rechazó tajantemente la oferta, defendiendo que la lucha fue por una República libre y no un nuevo imperio
-- [ ] Pidió ser nombrada ministra de gobierno
-- [ ] Se exilió voluntariamente en Europa
-
-**Retroalimentación**: Doña Josefa rechazó ser dama de compañía de la emperatriz Ana María Huarte, manteniendo firmes sus convicciones republicanas contra la monarquía.
-**PDA**: Formación cívica, soberanía popular y congruencia ética.
+**Retroalimentación**: Ignacio Pérez cabalgó sin tregua hacia San Miguel y Dolores tras recibir la alerta secreta de la Corregidora por la cerradura.
+**PDA**: Cronología y redes de comunicación en la gesta insurgente.
 
 
-### 5. 5. 5. 5. ¿En qué recinto descansan actualmente con veneración cívica los restos mortales de Doña Josefa?
+### 4. ¿En qué prestigiado colegio novohispano se educó Doña Josefa tras quedar huérfana en su niñez?
+- [ ] Colegio de San Ildefonso
+- [x] Real Colegio de San Ignacio de Loyola (Las Vizcaínas)
+- [ ] Colegio de la Santa Cruz de Tlatelolco
+- [ ] Real Seminario de Minería
+
+**Retroalimentación**: En Las Vizcaínas de la Ciudad de México recibió una sólida formación ilustrada en letras, artes y principios humanistas.
+**PDA**: Educación y pensamiento ilustrado en el siglo XVIII novohispano.
+
+
+### 5. ¿En qué recinto descansan actualmente con veneración cívica los restos mortales de Doña Josefa?
 - [ ] Catedral Metropolitana de la Ciudad de México
 - [x] Panteón de los Queretanos Ilustres
 - [ ] Columna de la Independencia en Paseo de la Reforma

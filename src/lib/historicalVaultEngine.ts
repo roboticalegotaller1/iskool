@@ -389,7 +389,7 @@ ${(data.qaCache && data.qaCache.length > 0)
 }
 
 ## 5 Preguntas Clave de Verificación Formativa
-${(data.verificationQuestions || []).map((q, idx) => `### ${idx + 1}. ${q.question}
+${(data.verificationQuestions || []).map((q, idx) => `### ${idx + 1}. ${q.question.replace(/^(\d+\.\s*)+/, '').trim()}
 ${q.options.map((opt, oIdx) => `- [${oIdx === q.correctIndex ? 'x' : ' '}] ${opt}`).join('\n')}
 
 **Retroalimentación**: ${q.explanation}
@@ -424,7 +424,9 @@ export function searchQaInVaultNode(slug: string, question: string): { found: bo
         item.answer.includes('Respecto a lo que me interrogas sobre') ||
         item.answer.includes('he de responderte en primera persona y con la verdad histórica') ||
         item.answer.includes('Escudriña en nuestras memorias') ||
-        item.answer.includes('Escudrina en nuestras memorias');
+        item.answer.includes('Escudrina en nuestras memorias') ||
+        item.answer.includes('En aquellos años definitorios en Querétaro') ||
+        item.answer.includes('Frente a tu interrogante, ten por seguro');
       if (item.answer && item.answer.trim().length > 25 && !isGeneric) {
         return { found: true, answer: item.answer.trim() };
       }
