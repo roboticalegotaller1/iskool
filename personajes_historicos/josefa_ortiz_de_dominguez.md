@@ -132,9 +132,15 @@ A: Mi entrega a la causa nació del clamor de justicia que ardía en mi corazón
 ### Q: ¿Qué mensaje le das a los jóvenes de hoy?
 A: A ti, joven estudiante que hoy te educas en un México soberano: te encomiendo cuidar esta patria como el bien más sagrado. La independencia que hoy disfrutas en tus libros y en tus calles no fue una concesión graciosa de la Corona; fue conquistada con lágrimas, presidio y la sangre generosa de quienes lo sacrificamos todo. Tu campo de honor hoy no requiere sables ni pólvora, sino disciplina intelectual, pensamiento crítico, honestidad inquebrantable y la defensa apasionada del más desamparado. ¡Ama la verdad, estudia con ahínco y jamás consientas la tiranía ni la indiferencia ciudadana!
 
+### Q: cuando te casaste?
+A: Contraje santo matrimonio con don Miguel Domínguez en 1791 en la Ciudad de México, tras habernos conocido en el Real Colegio de las Vizcaínas donde yo cursaba mis estudios y él servía como letrado y benefactor. Juntos formamos una hermosa y numerosa familia de catorce hijos, compartiendo siempre el fervor por la rectitud cívica y la emancipación de nuestra patria. En 1802 nos trasladamos a Querétaro al ser él nombrado Corregidor.
+
+### Q: ¿Cuántos hijos tuviste?
+A: La Providencia y la vida con don Miguel Domínguez me bendijeron con catorce hijos. Cuidar de ellos y velar por su porvenir en medio de la agitación virreinal y los años de persecución fue la encomienda más entrañable de mi corazón. Cuando fui recluida en conventos y prisiones virreinales por la causa insurgente, el dolor de la separación fue inmenso, pero sabía que solo en una patria libre mis hijos tendrían un destino digno.
+
 
 ## 5 Preguntas Clave de Verificación Formativa
-### 1. 1. 1. 1. 1. ¿Bajo qué pretexto organizaba Doña Josefa las reuniones clandestinas en Querétaro?
+### 1. ¿Bajo qué pretexto organizaba Doña Josefa las reuniones clandestinas en Querétaro?
 - [ ] Concursos de pintura virreinal
 - [x] Tertulias literarias y académicas
 - [ ] Subastas de granos y ganado
@@ -144,7 +150,7 @@ A: A ti, joven estudiante que hoy te educas en un México soberano: te encomiend
 **PDA**: Ética, Naturaleza y Sociedades - Organización ciudadana y emancipación.
 
 
-### 2. 2. 2. 2. 2. ¿Qué táctica empleó Josefa al quedar encerrada en su habitación para avisar al alcaide?
+### 2. ¿Qué táctica empleó Josefa al quedar encerrada en su habitación para avisar al alcaide?
 - [ ] Envió una paloma mensajera
 - [x] Golpeó tres veces el piso con su zapato para alertar a Ignacio Pérez
 - [ ] Tiró una moneda de oro a la calle
@@ -154,32 +160,33 @@ A: A ti, joven estudiante que hoy te educas en un México soberano: te encomiend
 **PDA**: Resolución valiente de problemas en momentos críticos de la historia.
 
 
-### 3. 3. 3. 3. 3. ¿Quién fue el mensajero que cabalgó de Querétaro a Dolores para advertir a Hidalgo y Allende?
-- [ ] Juan José de los Reyes Martínez (El Pípila)
+### 3. ¿Quién fue el mensajero que cabalgó de Querétaro a Dolores para advertir a Hidalgo y Allende?
+- [ ] Agustín de Iturbide
 - [x] El alcaide Ignacio Pérez
 - [ ] Vicente Guerrero
-- [ ] Hermenegildo Galeana
+- [ ] Juan José de los Reyes 'El Pípila'
 
-**Retroalimentación**: Ignacio Pérez cabalgó con heroísmo durante la noche para entregar la advertencia sellada a Juan Aldama en San Miguel el Grande y luego a Miguel Hidalgo en Dolores.
-**PDA**: Acontecimientos clave de la primera etapa del movimiento independentista.
-
-
-### 4. 4. 4. 4. 4. ¿En qué ciudad novohispana se concentró la conspiración liderada por los Corregidores?
-- [ ] Valladolid
-- [x] Santiago de Querétaro
-- [ ] Puebla de los Ángeles
-- [ ] Oaxaca de Juárez
-
-**Retroalimentación**: Santiago de Querétaro fue el epicentro logístico y político donde confluían criollos insurgentes bajo la protección cívica de Josefa.
-**PDA**: Cartografía histórica y desarrollo regional del movimiento de 1810.
+**Retroalimentación**: Ignacio Pérez cabalgó sin tregua hacia San Miguel el Grande para alertar a Juan Aldama e Ignacio Allende.
+**PDA**: Hechos y personajes clave en el movimiento de Independencia de México.
 
 
-### 5. 5. 5. 5. 5. ¿Cuál es el mayor legado cívico y ético de Josefa Ortiz de Domínguez para la sociedad actual?
-- [ ] Promover la lealtad ciega a la corona
-- [x] Demostrar que el compromiso con la justicia, la equidad y la libertad trasciende cualquier imposición
-- [ ] Financiar ejércitos mercenarios
-- [ ] Ocupar cargos diplomáticos en ultramar
+### 4. ¿Cómo reaccionó Doña Josefa ante la oferta de formar parte de la corte del emperador Agustín de Iturbide?
+- [ ] Aceptó con entusiasmo el título de dama de honor
+- [x] Rechazó tajantemente la oferta, defendiendo que la lucha fue por una República libre y no un nuevo imperio
+- [ ] Pidió ser nombrada ministra de gobierno
+- [ ] Se exilió voluntariamente en Europa
 
-**Retroalimentación**: Josefa simboliza el liderazgo cívico, la firmeza ante la tiranía y la convicción de que las libertades se conquistan con entereza moral.
-**PDA**: Pensamiento crítico y valoración de figuras históricas fundamentales de México.
+**Retroalimentación**: Doña Josefa rechazó ser dama de compañía de la emperatriz Ana María Huarte, manteniendo firmes sus convicciones republicanas contra la monarquía.
+**PDA**: Formación cívica, soberanía popular y congruencia ética.
+
+
+### 5. ¿En qué recinto descansan actualmente con veneración cívica los restos mortales de Doña Josefa?
+- [ ] Catedral Metropolitana de la Ciudad de México
+- [x] Panteón de los Queretanos Ilustres
+- [ ] Columna de la Independencia en Paseo de la Reforma
+- [ ] Alhóndiga de Granaditas
+
+**Retroalimentación**: Sus restos reposan en el mausoleo del Panteón de los Queretanos Ilustres en la ciudad de Querétaro, rindiendo honor perpetuo a su gesta.
+**PDA**: Memoria colectiva, patrimonio cívico e identidad comunitaria.
+
 

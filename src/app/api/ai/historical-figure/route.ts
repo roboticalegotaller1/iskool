@@ -645,9 +645,19 @@ function generateFallbackPersonaAnswer(name: string, question: string): string {
       return `Aquel 15 de septiembre de 1810, el tiempo corría implacable. Estando encerrada en mi habitación alta de la Casa del Corregimiento y con la guardia virreinal aprestándose a capturar a los conspiradores, recordé que en la planta baja tenía su morada el alcaide Ignacio Pérez. Con resolución suprema, di tres golpes secos con los tacones de mis zapatillas contra el entarimado del piso. Don Ignacio, fiel a nuestro pacto, subió al zaguán y a través del ojo de la cerradura le entregué la orden apremiante: cabalgar sin descanso hacia San Miguel y Dolores para prevenir a Allende e Hidalgo. Aquellos golpes de tacón fueron, en verdad, el primer aldabonazo de la independencia patria.`;
     }
 
-    // Esposo / matrimonio / Miguel Domínguez
-    if (normQ.includes('esposo') || normQ.includes('marido') || normQ.includes('miguel dominguez') || normQ.includes('corregidor') || normQ.includes('matrimonio')) {
-      return `Don Miguel Domínguez fue mi esposo, el padre de mis catorce hijos y un letrado de intachable probidad cívica. Lo conocí en mis años en Las Vizcaínas y nos unimos en matrimonio en 1791. Cuando fue investido como Corregidor de Querétaro, procuró siempre el amparo de los trabajadores y artesanos frente a los abusos. Aunque su cargo le imponía lealtad administrativa a la Corona, simpatizaba con nuestras tertulias libertarias. Cuando la conjura fue delatada, me encerró para intentar salvaguardar mi vida del cadalso; su corazón estaba desgarrado entre el amor a su familia y su deber, mas mi conciencia patriótica me exigió no guardar silencio.`;
+    // Matrimonio / boda / casamiento / casaste / esposo / Miguel Domínguez
+    if (
+      /(casas|casar|casaste|casaron|casamiento|boda|nupcias|esposo|marido|miguel dominguez|matrimonio|conyuge|casada)/i.test(normQ) ||
+      /(casas|casar|casaste|casaron|casamiento|boda|nupcias|esposo|marido|miguel dominguez|matrimonio|conyuge|casada)/i.test(cleanQ)
+    ) {
+      return `Contraje santo matrimonio con don Miguel Domínguez en 1791 en la Ciudad de México, tras habernos conocido durante mis años en el Real Colegio de las Vizcaínas, donde yo cursaba mis estudios y él colaboraba como letrado y benefactor. Juntos procreamos catorce hijos y compartimos el compromiso inquebrantable con la causa independentista. En 1802 nos trasladamos a Santiago de Querétaro cuando él fue investido como Corregidor, convirtiendo nuestra residencia oficial en el corazón de la conspiración libertaria.`;
+    }
+
+    // Hijos / familia / descendencia
+    if (
+      /(hijo|hija|hijos|hijas|cuantos hijos|familia|descendencia|bebe|ninos)/i.test(normQ)
+    ) {
+      return `Dios y la vida me bendijeron con catorce hijos al lado de mi esposo don Miguel Domínguez. Cuidar de una familia tan numerosa en tiempos de constante vigilancia y peligro virreinal fue una prueba de entrega diaria. Durante mis años de prisión e incomunicación en los conventos de Santa Clara y Santa Teresa, el dolor más desgarrador de mi existencia fue la forzada separación de mis pequeños; no obstante, sabía que la mayor herencia que podía legarles no eran riquezas ni comodidades, sino una patria soberana, libre de cadenas y con dignidad para todos los mexicanos.`;
     }
 
     // Hidalgo / Allende / Aldama / Conspiradores

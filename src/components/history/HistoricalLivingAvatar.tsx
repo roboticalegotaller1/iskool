@@ -17,6 +17,7 @@ import {
   ShieldAlert,
   HelpCircle
 } from 'lucide-react';
+import { configureHistoricalUtterance } from '@/lib/historicalVoiceEngine';
 
 export interface HistoricalLivingAvatarProps {
   characterName: string;
@@ -169,14 +170,8 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
     const cleanText = text.replace(/[*#_`]/g, '');
     const utterance = new SpeechSynthesisUtterance(cleanText);
 
-    // Buscar voz adecuada en español
-    const voices = window.speechSynthesis.getVoices();
-    const esVoice = voices.find(v => v.lang.startsWith('es') && (v.name.includes('Natural') || v.name.includes('Sabina') || v.name.includes('Jorge') || v.name.includes('Mexico')));
-    if (esVoice) utterance.voice = esVoice;
-
-    utterance.lang = 'es-MX';
-    utterance.rate = 0.95; // Tono solemne y pausado
-    utterance.pitch = characterName.toLowerCase().includes('josefa') ? 1.05 : 0.9;
+    // Configurar voz y tono estricto acorde al sexo y personaje
+    configureHistoricalUtterance(utterance, characterName);
 
     utterance.onstart = () => {
       startLipSyncAnimation();
@@ -213,6 +208,10 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
     setIsLoading(true);
 
     try {
+      const clientApiKey = typeof window !== 'undefined' 
+        ? (sessionStorage.getItem('iskool_ai_api_key') || localStorage.getItem('iskool_ai_api_key') || '')
+        : '';
+
       const res = await fetch('/api/ai/historical-figure', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -220,7 +219,8 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
           action: 'chat_persona',
           characterName,
           slug,
-          question: query
+          question: query,
+          userApiKey: clientApiKey
         })
       });
 

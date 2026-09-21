@@ -14,6 +14,7 @@ import {
   Sparkles 
 } from 'lucide-react';
 import { HistoricalFigureMoment } from '@/types/studioBlocks';
+import { configureHistoricalUtterance } from '@/lib/historicalVoiceEngine';
 
 export interface HistoricalTimelineComicProps {
   moments: HistoricalFigureMoment[];
@@ -32,13 +33,20 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
 
   const resolveMomentImage = (mom: HistoricalFigureMoment, idx: number): string => {
-    if (mom.imageUrl && mom.imageUrl.trim()) return mom.imageUrl;
     const defaultMoments = [
       '/images/history/josefa_conspiracion_comic_1.png',
       '/images/history/josefa_taconeo_comic_2.png',
       '/images/history/josefa_alerta_comic_3.png',
       '/images/history/hidalgo_grito_comic_4.png'
     ];
+
+    // Si el momento tiene imagen pero es idéntica a la del momento 0 en índices posteriores, forzar secuencia
+    if (mom.imageUrl && mom.imageUrl.trim()) {
+      if (idx > 0 && (mom.imageUrl.includes('josefa_conspiracion_comic_1') || (moments[0]?.imageUrl && mom.imageUrl === moments[0].imageUrl))) {
+        return defaultMoments[idx % defaultMoments.length];
+      }
+      return mom.imageUrl;
+    }
     return defaultMoments[idx % defaultMoments.length];
   };
 
@@ -55,14 +63,11 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
     }
 
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'es-MX';
-    utterance.rate = 0.95;
-    utterance.pitch = 0.95;
+    const cleanText = text.replace(/[*#_`]/g, '');
+    const utterance = new SpeechSynthesisUtterance(cleanText);
 
-    const voices = window.speechSynthesis.getVoices();
-    const esVoice = voices.find(v => v.lang.startsWith('es'));
-    if (esVoice) utterance.voice = esVoice;
+    // Configurar voz femenina auténtica acorde al sexo y personaje
+    configureHistoricalUtterance(utterance, characterName);
 
     utterance.onstart = () => setIsPlayingAudio(true);
     utterance.onend = () => setIsPlayingAudio(false);
@@ -143,13 +148,13 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
           {/* Sombra dramática estilo cómic */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
 
-          {/* Caja de Texto Narrativo Estilo Cómic de Época (Top-Left, idéntico a Imagen 2) */}
+          {/* Caja de Texto Narrativo Estilo Cómic de Época (Translúcida elegante para no tapar burbujas de diálogo) */}
           <motion.div 
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="absolute top-4 left-4 max-w-[85%] sm:max-w-md p-3 sm:p-4 rounded-xl bg-amber-100/95 text-stone-900 border-2 border-stone-800 shadow-2xl font-serif text-xs sm:text-sm leading-relaxed"
+            className="absolute top-3 left-3 max-w-[65%] sm:max-w-sm p-2.5 sm:p-3 rounded-xl bg-black/80 backdrop-blur-md text-amber-100 border border-amber-500/40 shadow-2xl font-serif text-[11px] sm:text-xs leading-snug pointer-events-none"
           >
-            <p className="font-semibold text-stone-900">
+            <p className="font-medium text-amber-200/95">
               {activeMoment.narrativeCaption || activeMoment.description}
             </p>
           </motion.div>

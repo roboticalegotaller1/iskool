@@ -415,8 +415,14 @@ export function searchQaInVaultNode(slug: string, question: string): { found: bo
     const normItem = normalizeQuestionText(item.question);
     // Match exacto o coincidencia de subcadena alta
     if (normItem === normTarget || normItem.includes(normTarget) || normTarget.includes(normItem)) {
-      // Validar que no sea una respuesta genérica obsoleta anterior
-      if (item.answer && !item.answer.includes('Escudriña en los documentos de la época') && !item.answer.includes('Escudrina en los documentos')) {
+      // Validar que no sea una respuesta genérica o evasiva anterior
+      const isGeneric = 
+        item.answer.includes('Escudriña en los documentos de la época') ||
+        item.answer.includes('Escudrina en los documentos') ||
+        item.answer.includes('miro con beneplácito tu interés') ||
+        item.answer.includes('Respecto a lo que me interrogas sobre') ||
+        item.answer.includes('he de responderte en primera persona y con la verdad histórica por delante');
+      if (item.answer && !isGeneric) {
         return { found: true, answer: item.answer };
       }
     }
