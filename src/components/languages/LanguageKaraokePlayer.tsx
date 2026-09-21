@@ -83,6 +83,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   const [testDetectedSpeechText, setTestDetectedSpeechText] = useState<string>('');
   const [testMicError, setTestMicError] = useState<string | null>(null);
   const [permissionBlocked, setPermissionBlocked] = useState<boolean>(false);
+  const [karaokeMode, setKaraokeMode] = useState<'mic' | 'interactive'>('mic');
 
   // Estados del Karaoke Fonético Real (100% reactivo a la voz)
   const [activeWordIndex, setActiveWordIndex] = useState<number>(0);
@@ -531,14 +532,33 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   }, [targetWords, isPhoneticallySimilar, playSfx, completeEvaluation]);
 
   // Avanzar palabra manualmente (Modo Asistido / Clic / Teclado)
-  const advanceWordManually = (word: string, idx: number) => {
+  const advanceWordManually = useCallback((word: string, idx: number) => {
     const state = voiceStateRef.current;
     if (idx !== state.currentWordIndex) return;
+
+    if (!isRecordingRef.current) {
+      isRecordingRef.current = true;
+      setIsRecording(true);
+      setIsCompleted(false);
+      setRecordingDuration(0);
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = setInterval(() => {
+        setRecordingDuration(prev => prev + 1);
+      }, 1000);
+    }
 
     if (!state.completed.includes(word)) {
       state.completed.push(word);
       setCompletedWords([...state.completed]);
       playSfx('correct');
+
+      // Animación de pulso visual para respuesta interactiva inmediata
+      setAudioLevel(75);
+      setIsUserSpeakingNow(true);
+      setTimeout(() => {
+        setAudioLevel(0);
+        setIsUserSpeakingNow(false);
+      }, 260);
 
       const nextIdx = idx + 1;
       state.currentWordIndex = nextIdx;
@@ -550,7 +570,25 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
         }, 350);
       }
     }
-  };
+  }, [targetWords, playSfx, completeEvaluation]);
+
+  // Soporte de barra espaciadora para avanzar palabras en Modo Guiado
+  useEffect(() => {
+    if (!isRecording) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) return;
+      if (e.code === 'Space' || e.key === ' ') {
+        e.preventDefault();
+        const state = voiceStateRef.current;
+        if (state.currentWordIndex < targetWords.length) {
+          const currentWord = targetWords[state.currentWordIndex];
+          advanceWordManually(currentWord, state.currentWordIndex);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isRecording, targetWords, advanceWordManually]);
 
   // Función robusta para obtener stream de audio del micrófono seleccionado
   const getMicrophoneStream = async (deviceIdToUse?: string) => {
@@ -562,7 +600,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     // 2. echoCancellation: true conecta con el subsistema de audio nativo
     // 3. noiseSuppression: false previene el recorte de formantes y consonantes suaves
     // 4. deviceId con { ideal: targetId } para evitar OverconstrainedError
-    const audioConstraints: MediaTrackConstraints = targetId
+    const audioConstraints: MediaTrackConstraints = (targetId && targetId !== '')
       ? {
           deviceId: { ideal: targetId },
           echoCancellation: true,
@@ -662,186 +700,191 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       setRecordingDuration(prev => prev + 1);
     }, 1000);
 
-    const stream = await getMicrophoneStream();
-    if (!stream) {
-      setFeedbackAlert('No se pudo acceder al micrófono. Por favor verifica los permisos en el candado del navegador y que el micrófono esté conectado.');
-      setIsRecording(false);
-      isRecordingRef.current = false;
-      return;
+    let stream: MediaStream | null = null;
+    if (karaokeMode === 'mic') {
+      stream = await getMicrophoneStream();
+      if (!stream) {
+        // En lugar de abortar y bloquear la experiencia del usuario, activamos el Modo Guiado Asistido
+        setKaraokeMode('interactive');
+        setPermissionBlocked(true);
+        setFeedbackAlert('✨ Modo Asistido activo: El navegador retiene el acceso al hardware. La práctica continúa activa en pantalla: pulsa el botón "Pronunciar Palabra", usa la barra espaciadora o toca directamente cada palabra.');
+      }
     }
 
-    audioStreamRef.current = stream;
-    setHardwareMicAvailable(true);
+    if (stream) {
+      audioStreamRef.current = stream;
+      setHardwareMicAvailable(true);
+      setPermissionBlocked(false);
 
-    // 3. CONECTAR ANALIZADOR ESPECTRAL Y AMPLIFICADOR CON RESUME GARANTIZADO
-    try {
-      const ctx = localCtx || (AudioCtx ? new AudioCtx() : null);
-      if (ctx) {
-        if (ctx.state === 'suspended') {
-          await ctx.resume();
-        }
-        audioContextRef.current = ctx;
-
-        const source = ctx.createMediaStreamSource(stream);
-        const gainNode = ctx.createGain();
-        gainNode.gain.value = micGainValue;
-        gainNodeRef.current = gainNode;
-
-        const analyser = ctx.createAnalyser();
-        analyser.fftSize = 256;
-        analyser.smoothingTimeConstant = 0.2;
-
-        source.connect(gainNode);
-        gainNode.connect(analyser);
-        analyserRef.current = analyser;
-
-        const freqData = new Uint8Array(analyser.frequencyBinCount);
-        const timeData = new Uint8Array(analyser.fftSize);
-
-        const analyzeAudio = () => {
-          if (!isRecordingRef.current) return;
-
+      // 3. CONECTAR ANALIZADOR ESPECTRAL Y AMPLIFICADOR CON RESUME GARANTIZADO
+      try {
+        const ctx = localCtx || (AudioCtx ? new AudioCtx() : null);
+        if (ctx) {
           if (ctx.state === 'suspended') {
-            ctx.resume();
+            await ctx.resume();
           }
+          audioContextRef.current = ctx;
 
-          if (analyserRef.current) {
-            // Frecuencias de formantes vocales humanos
-            analyserRef.current.getByteFrequencyData(freqData);
-            let freqSum = 0;
-            const maxBin = Math.min(freqData.length, 64);
-            for (let i = 1; i < maxBin; i++) freqSum += freqData[i];
-            const freqAvg = freqSum / (maxBin - 1);
+          const source = ctx.createMediaStreamSource(stream);
+          const gainNode = ctx.createGain();
+          gainNode.gain.value = micGainValue;
+          gainNodeRef.current = gainNode;
 
-            // RMS temporal
-            analyserRef.current.getByteTimeDomainData(timeData);
-            let sumSquare = 0;
-            for (let i = 0; i < timeData.length; i++) {
-              const val = (timeData[i] - 128) / 128;
-              sumSquare += val * val;
+          const analyser = ctx.createAnalyser();
+          analyser.fftSize = 256;
+          analyser.smoothingTimeConstant = 0.2;
+
+          source.connect(gainNode);
+          gainNode.connect(analyser);
+          analyserRef.current = analyser;
+
+          const freqData = new Uint8Array(analyser.frequencyBinCount);
+          const timeData = new Uint8Array(analyser.fftSize);
+
+          const analyzeAudio = () => {
+            if (!isRecordingRef.current) return;
+
+            if (ctx.state === 'suspended') {
+              ctx.resume();
             }
-            const rms = Math.sqrt(sumSquare / timeData.length);
 
-            // Cálculo ponderado con ganancia
-            const volRms = Math.min(100, Math.round(rms * 100 * micGainValue * 2.5));
-            const volFreq = Math.min(100, Math.round((freqAvg / 128) * 100 * 1.8));
-            const volumePercent = Math.max(volRms, volFreq);
+            if (analyserRef.current) {
+              // Frecuencias de formantes vocales humanos
+              analyserRef.current.getByteFrequencyData(freqData);
+              let freqSum = 0;
+              const maxBin = Math.min(freqData.length, 64);
+              for (let i = 1; i < maxBin; i++) freqSum += freqData[i];
+              const freqAvg = freqSum / (maxBin - 1);
 
-            setAudioLevel(volumePercent);
-
-            const now = performance.now();
-            const state = voiceStateRef.current;
-            const isVoiceActive = volumePercent >= 12; // Umbral óptimo para evitar falsos positivos de ruido ambiental
-
-            setIsUserSpeakingNow(isVoiceActive);
-
-            if (isVoiceActive) {
-              state.voicedFramesCount++;
-              if (!state.isSpeaking) {
-                state.isSpeaking = true;
-                state.speechStartTime = now;
-                state.silenceStartTime = 0;
+              // RMS temporal
+              analyserRef.current.getByteTimeDomainData(timeData);
+              let sumSquare = 0;
+              for (let i = 0; i < timeData.length; i++) {
+                const val = (timeData[i] - 128) / 128;
+                sumSquare += val * val;
               }
-            } else {
-              if (state.isSpeaking) {
-                if (state.silenceStartTime === 0) {
-                  state.silenceStartTime = now;
-                }
-                if (now - state.silenceStartTime > 90) {
-                  const wordDuration = state.silenceStartTime - state.speechStartTime;
-                  state.isSpeaking = false;
+              const rms = Math.sqrt(sumSquare / timeData.length);
+
+              // Cálculo ponderado con ganancia
+              const volRms = Math.min(100, Math.round(rms * 100 * micGainValue * 2.5));
+              const volFreq = Math.min(100, Math.round((freqAvg / 128) * 100 * 1.8));
+              const volumePercent = Math.max(volRms, volFreq);
+
+              setAudioLevel(volumePercent);
+
+              const now = performance.now();
+              const state = voiceStateRef.current;
+              const isVoiceActive = volumePercent >= 12;
+
+              setIsUserSpeakingNow(isVoiceActive);
+
+              if (isVoiceActive) {
+                state.voicedFramesCount++;
+                if (!state.isSpeaking) {
+                  state.isSpeaking = true;
+                  state.speechStartTime = now;
                   state.silenceStartTime = 0;
+                }
+              } else {
+                if (state.isSpeaking) {
+                  if (state.silenceStartTime === 0) {
+                    state.silenceStartTime = now;
+                  }
+                  if (now - state.silenceStartTime > 90) {
+                    const wordDuration = state.silenceStartTime - state.speechStartTime;
+                    state.isSpeaking = false;
+                    state.silenceStartTime = 0;
 
-                  // Si articuló sonido vocal sostenido (>140ms) y la palabra no fue avanzada por SpeechRec
-                  if (wordDuration >= 140) {
-                    const currentTarget = targetWords[state.currentWordIndex];
-                    if (currentTarget && !state.completed.includes(currentTarget)) {
-                      state.completed.push(currentTarget);
-                      setCompletedWords([...state.completed]);
-                      playSfx('correct');
+                    // Si articuló sonido vocal sostenido (>140ms) y la palabra no fue avanzada por SpeechRec
+                    if (wordDuration >= 140) {
+                      const currentTarget = targetWords[state.currentWordIndex];
+                      if (currentTarget && !state.completed.includes(currentTarget)) {
+                        state.completed.push(currentTarget);
+                        setCompletedWords([...state.completed]);
+                        playSfx('correct');
 
-                      const nextIdx = state.currentWordIndex + 1;
-                      state.currentWordIndex = nextIdx;
-                      setActiveWordIndex(nextIdx);
+                        const nextIdx = state.currentWordIndex + 1;
+                        state.currentWordIndex = nextIdx;
+                        setActiveWordIndex(nextIdx);
 
-                      if (nextIdx >= targetWords.length) {
-                        setTimeout(() => {
-                          completeEvaluation(100, []);
-                        }, 350);
-                        return;
+                        if (nextIdx >= targetWords.length) {
+                          setTimeout(() => {
+                            completeEvaluation(100, []);
+                          }, 350);
+                          return;
+                        }
                       }
                     }
                   }
                 }
               }
             }
-          }
+            animFrameRef.current = requestAnimationFrame(analyzeAudio);
+          };
+
           animFrameRef.current = requestAnimationFrame(analyzeAudio);
-        };
-
-        animFrameRef.current = requestAnimationFrame(analyzeAudio);
+        }
+      } catch (e) {
+        console.warn('AudioContext setup:', e);
       }
-    } catch (e) {
-      console.warn('AudioContext setup:', e);
-    }
 
-    // 4. INICIALIZAR RECONOCIMIENTO DE VOZ NATIVO (SPEECH RECOGNITION) CON AUTO-RESTART
-    try {
-      const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRec) {
-        const recognition = new SpeechRec();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = language === 'fr' ? 'fr-FR' : 'en-US';
+      // 4. INICIALIZAR RECONOCIMIENTO DE VOZ NATIVO (SPEECH RECOGNITION) CON AUTO-RESTART
+      try {
+        const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (SpeechRec) {
+          const recognition = new SpeechRec();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.lang = language === 'fr' ? 'fr-FR' : 'en-US';
 
-        recognition.onresult = (event: any) => {
-          let currentTranscript = '';
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            currentTranscript += event.results[i][0].transcript + ' ';
-          }
-          if (currentTranscript.trim()) {
-            processSpokenTranscript(currentTranscript);
-          }
-        };
+          recognition.onresult = (event: any) => {
+            let currentTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+              currentTranscript += event.results[i][0].transcript + ' ';
+            }
+            if (currentTranscript.trim()) {
+              processSpokenTranscript(currentTranscript);
+            }
+          };
 
-        recognition.onerror = (e: any) => {
-          if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+          recognition.onerror = (e: any) => {
+            if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+              canUseSpeechRecognitionRef.current = false;
+            }
+          };
+
+          recognition.onend = () => {
+            if (isRecordingRef.current && canUseSpeechRecognitionRef.current) {
+              try { recognition.start(); } catch {}
+            }
+          };
+
+          try {
+            recognition.start();
+            speechRecRef.current = recognition;
+          } catch {
             canUseSpeechRecognitionRef.current = false;
           }
-        };
-
-        recognition.onend = () => {
-          // Si la sesión de grabación sigue activa y no fue bloqueada por permisos, reiniciar
-          if (isRecordingRef.current && canUseSpeechRecognitionRef.current) {
-            try { recognition.start(); } catch {}
-          }
-        };
-
-        try {
-          recognition.start();
-          speechRecRef.current = recognition;
-        } catch {
-          canUseSpeechRecognitionRef.current = false;
         }
+      } catch {
+        canUseSpeechRecognitionRef.current = false;
       }
-    } catch {
-      canUseSpeechRecognitionRef.current = false;
-    }
 
-    // 5. GRABACIÓN DE AUDIO CON MEDIARECORDER
-    try {
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) audioChunksRef.current.push(e.data);
-      };
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        setRecordedAudioUrl(URL.createObjectURL(audioBlob));
-      };
-      mediaRecorder.start(100);
-    } catch (e) {
-      console.warn('MediaRecorder setup:', e);
+      // 5. GRABACIÓN DE AUDIO CON MEDIARECORDER
+      try {
+        const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) audioChunksRef.current.push(e.data);
+        };
+        mediaRecorder.onstop = () => {
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          setRecordedAudioUrl(URL.createObjectURL(audioBlob));
+        };
+        mediaRecorder.start(100);
+      } catch (e) {
+        console.warn('MediaRecorder setup:', e);
+      }
     }
   };
 
@@ -1102,18 +1145,50 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
               </span>
               <span className="font-bold text-slate-200">
                 {isRecording 
-                  ? isUserSpeakingNow 
-                    ? '🎙️ Voz Detectada (Hablando)' 
-                    : '🎙️ En Silencio (Esperando que hables)'
+                  ? karaokeMode === 'interactive'
+                    ? '✨ Modo Guiado Asistido (Sesión Activa)'
+                    : isUserSpeakingNow 
+                      ? '🎙️ Voz Detectada (Hablando)' 
+                      : '🎙️ En Silencio (Esperando que hables)'
                   : isTestingMicLive
                     ? isUserSpeakingNow
                       ? '🔊 Prueba en Vivo: ¡Micrófono Captando Audio!'
                       : '🔊 Prueba en Vivo: Esperando sonido...'
-                    : 'Micrófono Vinculado'}
+                    : karaokeMode === 'interactive'
+                      ? '✨ Modo Guiado / Táctil Seleccionado'
+                      : 'Micrófono Físico'}
               </span>
             </div>
 
-            {/* Selector de Micrófono & Ganancia */}
+            {/* Selector de Modo: Micrófono Físico vs Modo Guiado */}
+            <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-indigo-700/60">
+              <button
+                type="button"
+                onClick={() => setKaraokeMode('mic')}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                  karaokeMode === 'mic'
+                    ? 'bg-cyan-500 text-slate-950 shadow-sm font-black'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Captura tu voz con el micrófono físico de tu equipo"
+              >
+                🎙️ Micrófono Físico
+              </button>
+              <button
+                type="button"
+                onClick={() => setKaraokeMode('interactive')}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                  karaokeMode === 'interactive'
+                    ? 'bg-emerald-400 text-slate-950 shadow-sm font-black'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Avanza tu práctica tocando las palabras o pulsando la barra espaciadora"
+              >
+                ✨ Modo Guiado / Táctil
+              </button>
+            </div>
+
+            {/* Controles de Micrófono & Ganancia */}
             <div className="flex flex-wrap items-center gap-2">
               {/* Selector de Dispositivo Hardware */}
               {availableMics.length > 0 && (
@@ -1241,32 +1316,61 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
         {/* ÁREA PRINCIPAL DE LECTURA TIPO KARAOKE */}
         <div className="p-6 rounded-2xl bg-slate-950/90 border border-slate-800 shadow-inner space-y-4">
           <div className="flex items-center justify-between text-xs text-slate-400 font-semibold">
-            <span>Pronuncia cada palabra en voz alta o tócala para avanzar:</span>
+            <span>Pronuncia cada palabra en voz alta, pulsa espacio o tócala para avanzar:</span>
             <span className="text-teal-400 flex items-center gap-1 text-[11px]">
               <Volume2 className="w-3.5 h-3.5" />
               Toca una palabra roja para escucharla despacio
             </span>
           </div>
 
-          {/* AVISO DE PERMISO BLOQUEADO O PENDIENTE DE RECARGA */}
+          {/* AVISO DE PERMISO BLOQUEADO O PENDIENTE DE RECARGA CON ASISTENCIA COMPLETA */}
           {permissionBlocked && (
-            <div className="p-3.5 rounded-2xl bg-amber-950/70 border border-amber-500/80 text-amber-200 text-xs space-y-2 animate-fade-in shadow-xl">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2 font-bold text-amber-300">
-                  <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span>El navegador o Windows requiere recargar para aplicar el permiso:</span>
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-950 border-2 border-amber-500/80 text-amber-200 text-xs space-y-3 animate-fade-in shadow-2xl">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 font-black text-amber-300 text-sm">
+                  <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 animate-bounce" />
+                  <span>El navegador Chrome o Edge tiene el micrófono en espera:</span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => window.location.reload()}
-                  className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95"
-                >
-                  <span>🔄 Recargar Página Ahora</span>
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setKaraokeMode('interactive');
+                      setPermissionBlocked(false);
+                      if (!isRecording) startRecording();
+                    }}
+                    className="px-3.5 py-1.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>✨ Practicar sin Micrófono (Modo Guiado)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => window.location.reload()}
+                    className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95"
+                  >
+                    <span>🔄 Recargar Página Ahora</span>
+                  </button>
+                </div>
               </div>
-              <p className="text-[11px] text-amber-200/90 leading-relaxed">
-                💡 Al activar el interruptor de micrófono en el candado de Chrome, el navegador retiene la señal hasta recargar la pestaña. Mientras tanto, <strong>puedes tocar directamente cada palabra en pantalla</strong> para avanzar tu práctica de fluidez.
-              </p>
+
+              <div className="bg-slate-950/90 p-3.5 rounded-xl border border-amber-500/40 text-[11px] leading-relaxed space-y-2">
+                <div className="font-bold text-amber-200 flex items-center gap-1.5">
+                  <span>💡 Instrucción para desbloquear el micrófono en tu pantalla:</span>
+                </div>
+                <p className="text-slate-300">
+                  En el menú de Chrome que tienes desplegado a la izquierda, fíjate en la opción inferior: <strong className="text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-600">Restablecer permisos</strong>. Al hacer clic en él y pulsar <strong>Recargar Página</strong>, Chrome liberará el bloqueo interno y te pedirá confirmación limpia.
+                </p>
+                <div className="pt-1 flex flex-wrap items-center gap-2 text-slate-400">
+                  <span>¿Deseas probar en origen directo sin bloqueo?</span>
+                  <a
+                    href="http://127.0.0.1:3000/teacher/idiomas"
+                    className="text-cyan-300 hover:text-cyan-200 underline font-bold"
+                  >
+                    🌐 http://127.0.0.1:3000/teacher/idiomas
+                  </a>
+                </div>
+              </div>
             </div>
           )}
 
@@ -1301,7 +1405,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                     isWordError 
                       ? `Toca para escuchar "${word}" despacio` 
                       : isCurrentAwaiting 
-                        ? `Toca para confirmar la palabra "${word}" o pronúnciala al micrófono`
+                        ? `Toca para confirmar la palabra "${word}", pulsa espacio o pronúnciala al micrófono`
                         : word
                   }
                 >
@@ -1337,7 +1441,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
               {/* Medidor visual real de decibeles */}
               <div className="space-y-1 pt-1">
                 <div className="flex items-center justify-between text-[10px] text-slate-400">
-                  <span>Nivel del Micrófono en Vivo:</span>
+                  <span>Nivel de Voz / Entrada en Vivo:</span>
                   <span className={`font-mono font-bold ${audioLevel > 10 ? 'text-emerald-400' : 'text-slate-500'}`}>
                     {audioLevel > 10 ? `${audioLevel}% (Voz detectada)` : `${audioLevel}% (Silencio)`}
                   </span>
@@ -1365,7 +1469,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
             <div className="p-3.5 rounded-2xl bg-amber-950/60 border-2 border-amber-500/80 text-xs text-amber-200 flex items-start gap-2.5 animate-fade-in shadow-xl">
               <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <span className="font-bold block text-amber-100">Resultado de Pronunciación:</span>
+                <span className="font-bold block text-amber-100">Estado de Pronunciación:</span>
                 <span>{feedbackAlert}</span>
               </div>
             </div>
@@ -1418,28 +1522,59 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
             )}
           </button>
 
-          {/* BOTÓN GIGANTE DE INICIAR / DETENER PRONUNCIACIÓN */}
-          <button
-            type="button"
-            onClick={isRecording ? () => completeEvaluation() : startRecording}
-            className={`px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-wider flex items-center gap-3 transition-all cursor-pointer shadow-2xl active:scale-95 ${
-              isRecording
-                ? 'bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white animate-pulse border-2 border-rose-300 scale-105'
-                : 'bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-400 hover:from-teal-300 hover:to-cyan-300 text-slate-950 font-black shadow-emerald-500/40 border-2 border-emerald-200 scale-105'
-            }`}
-          >
-            {isRecording ? (
-              <>
-                <MicOff className="w-5 h-5 text-white" />
-                <span>DETENER & EVALUAR PRONUNCIACIÓN</span>
-              </>
-            ) : (
-              <>
-                <Mic className="w-5 h-5 text-slate-950" />
-                <span>{isCompleted ? 'Volver a Practicar' : 'INICIAR PRONUNCIACIÓN'}</span>
-              </>
+          {/* ACCIONES DE PRONUNCIACIÓN: ASISTIDA / TECLADO & DETENER/INICIAR */}
+          <div className="flex flex-wrap items-center gap-3">
+            {isRecording && (
+              <button
+                type="button"
+                onClick={() => {
+                  const state = voiceStateRef.current;
+                  if (state.currentWordIndex < targetWords.length) {
+                    const currentWord = targetWords[state.currentWordIndex];
+                    advanceWordManually(currentWord, state.currentWordIndex);
+                  }
+                }}
+                className="px-6 py-4 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 text-slate-950 font-black text-sm uppercase tracking-wider flex items-center gap-2.5 shadow-xl shadow-emerald-500/30 cursor-pointer animate-pulse active:scale-95 border-2 border-emerald-200"
+                title="Pulsa aquí o presiona la barra espaciadora para confirmar y avanzar la palabra actual"
+              >
+                <Sparkles className="w-5 h-5 text-slate-950" />
+                <span>🗣️ Pronunciar: "{targetWords[activeWordIndex] || 'Finalizar'}" (Espacio)</span>
+              </button>
             )}
-          </button>
+
+            {/* BOTÓN GIGANTE DE INICIAR / DETENER PRONUNCIACIÓN */}
+            <button
+              type="button"
+              onClick={isRecording ? () => completeEvaluation() : startRecording}
+              className={`px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-wider flex items-center gap-3 transition-all cursor-pointer shadow-2xl active:scale-95 ${
+                isRecording
+                  ? 'bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white border-2 border-rose-300'
+                  : 'bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-400 hover:from-teal-300 hover:to-cyan-300 text-slate-950 font-black shadow-emerald-500/40 border-2 border-emerald-200 scale-105'
+              }`}
+            >
+              {isRecording ? (
+                <>
+                  <MicOff className="w-5 h-5 text-white" />
+                  <span>DETENER & EVALUAR</span>
+                </>
+              ) : (
+                <>
+                  {karaokeMode === 'interactive' ? (
+                    <Sparkles className="w-5 h-5 text-slate-950" />
+                  ) : (
+                    <Mic className="w-5 h-5 text-slate-950" />
+                  )}
+                  <span>
+                    {isCompleted 
+                      ? 'Volver a Practicar' 
+                      : karaokeMode === 'interactive'
+                        ? '✨ INICIAR PRÁCTICA GUIADA'
+                        : 'INICIAR PRONUNCIACIÓN'}
+                  </span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* ACCIONES DE SIMULACIÓN DIDÁCTICA (MODO AUDITORÍA DOCENTE) */}
