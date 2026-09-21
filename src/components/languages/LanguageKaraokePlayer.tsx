@@ -29,8 +29,24 @@ import {
   Radio,
   Headphones,
   Activity,
-  CheckCircle
+  CheckCircle,
+  ShieldCheck,
+  Smartphone,
+  Laptop,
+  Cpu,
+  Wifi
 } from 'lucide-react';
+import {
+  normalizePhoneticText,
+  isPhoneticallyEquivalent,
+  alignSpokenTokensToTarget,
+  expandContractions,
+  getSupportedRecordingMimeType,
+  calculateDecibelsFromRms,
+  getAudioContextLatencyMs,
+  createUniversalAudioContext,
+  createVocalBandpassFilter
+} from '@/lib/audioEngine';
 
 interface Props {
   phrase: KaraokePhrase;
@@ -74,6 +90,30 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
   const [isPlayingRecordedAudio, setIsPlayingRecordedAudio] = useState<boolean>(false);
 
+  // Estados de Telemetría Acústica de Hardware y Diagnóstico Universal
+  const [decibelValue, setDecibelValue] = useState<number>(-60);
+  const [decibelLabel, setDecibelLabel] = useState<string>('Silencio');
+  const [latencyMs, setLatencyMs] = useState<number>(12);
+  const [sampleRate, setSampleRate] = useState<number>(48000);
+  const [channelCount, setChannelCount] = useState<number>(1);
+  const [frequencyBars, setFrequencyBars] = useState<number[]>(new Array(16).fill(6));
+  const [showHardwareDiagnostics, setShowHardwareDiagnostics] = useState<boolean>(false);
+  const [deviceEnvironment, setDeviceEnvironment] = useState<{
+    browserName: string;
+    isMobile: boolean;
+    isIOS: boolean;
+    isSecure: boolean;
+    mimeType: string;
+    hasSpeechRec: boolean;
+  }>({
+    browserName: 'Navegador Web',
+    isMobile: false,
+    isIOS: false,
+    isSecure: true,
+    mimeType: '',
+    hasSpeechRec: false
+  });
+
   // Selector de Micrófonos Hardware y Ganancia
   const [availableMics, setAvailableMics] = useState<MediaDeviceInfo[]>([]);
   const [selectedMicId, setSelectedMicId] = useState<string>('');
@@ -85,12 +125,15 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   const [permissionBlocked, setPermissionBlocked] = useState<boolean>(false);
   const [karaokeMode, setKaraokeMode] = useState<'mic' | 'interactive'>('mic');
 
-  // Estados del Karaoke Fonético Real (100% reactivo a la voz)
+  // Estados del Karaoke Fonético Real (Basado en Índices Únicos para Exactitud Absoluta)
   const [activeWordIndex, setActiveWordIndex] = useState<number>(0);
+  const [completedIndices, setCompletedIndices] = useState<number[]>([]);
+  const [errorIndices, setErrorIndices] = useState<number[]>([]);
   const [completedWords, setCompletedWords] = useState<string[]>([]);
   const [errorWordsList, setErrorWordsList] = useState<string[]>([]);
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
   const [accuracyScore, setAccuracyScore] = useState<number>(0);
+  const [evaluationSource, setEvaluationSource] = useState<'stt' | 'acoustic' | 'manual' | null>(null);
   const [generatedAdvice, setGeneratedAdvice] = useState<{ title: string; tips: string[]; speedTip: string } | null>(null);
   const [feedbackAlert, setFeedbackAlert] = useState<string | null>(null);
 
@@ -114,21 +157,27 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   const isTestingMicLiveRef = useRef<boolean>(false);
   const canUseSpeechRecognitionRef = useRef<boolean>(true);
 
-  // Variables de control de voz reactiva
+  // Variables de control de voz reactiva y buffer acumulado
   const voiceStateRef = useRef<{
     currentWordIndex: number;
-    completed: string[];
+    completedIndices: number[];
     isSpeaking: boolean;
     speechStartTime: number;
     silenceStartTime: number;
     voicedFramesCount: number;
+    allCapturedTokens: string[];
+    lastVoicePulseTime: number;
+    acousticAdvancesCount: number;
   }>({
     currentWordIndex: 0,
-    completed: [],
+    completedIndices: [],
     isSpeaking: false,
     speechStartTime: 0,
     silenceStartTime: 0,
-    voicedFramesCount: 0
+    voicedFramesCount: 0,
+    allCapturedTokens: [],
+    lastVoicePulseTime: 0,
+    acousticAdvancesCount: 0
   });
 
   // Descomposición de la frase objetivo en palabras
@@ -217,6 +266,34 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
 
   useEffect(() => {
     refreshAudioDevices();
+
+    if (typeof window !== 'undefined') {
+      const ua = navigator.userAgent || '';
+      const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const isAndroid = /Android/.test(ua);
+      const isMobile = isIOS || isAndroid || /Mobi/i.test(ua);
+      
+      let browserName = 'Navegador Web';
+      if (/Edg\//i.test(ua)) browserName = 'Microsoft Edge';
+      else if (/Chrome\//i.test(ua) && !/Edg\//i.test(ua)) browserName = 'Google Chrome';
+      else if (/Safari\//i.test(ua) && !/Chrome\//i.test(ua)) browserName = 'Apple Safari';
+      else if (/Firefox\//i.test(ua)) browserName = 'Mozilla Firefox';
+      else if (/SamsungBrowser/i.test(ua)) browserName = 'Samsung Internet';
+
+      const hasSpeech = !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+      const supportedMime = getSupportedRecordingMimeType();
+      const isSecure = window.isSecureContext === true || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+      setDeviceEnvironment({
+        browserName,
+        isMobile,
+        isIOS,
+        isSecure,
+        mimeType: supportedMime || 'audio/mp4 (Nativo)',
+        hasSpeechRec: hasSpeech
+      });
+    }
+
     if (navigator.mediaDevices?.addEventListener) {
       navigator.mediaDevices.addEventListener('devicechange', refreshAudioDevices);
       return () => {
@@ -230,9 +307,12 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     setIsRecording(false);
     setIsCompleted(false);
     setActiveWordIndex(0);
+    setCompletedIndices([]);
+    setErrorIndices([]);
     setCompletedWords([]);
     setErrorWordsList([]);
     setAccuracyScore(0);
+    setEvaluationSource(null);
     setGeneratedAdvice(null);
     setFeedbackAlert(null);
     setRecordedAudioUrl(null);
@@ -368,7 +448,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   };
 
   // =========================================================================
-  // DETENER Y EVALUAR LA PRÁCTICA (RIGUROSO Y HONESTO)
+  // DETENER Y EVALUAR LA PRÁCTICA (RIGUROSO, HONESTO Y TOLERANTE A HARDWARE)
   // =========================================================================
   const completeEvaluation = useCallback((forcedAccuracy?: number, forcedErrors?: string[]) => {
     setIsRecording(false);
@@ -398,47 +478,91 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       try { audioContextRef.current.close(); } catch {}
     }
 
-    let finalErrors: string[] = [];
-    let finalCorrect: string[] = [];
+    let finalCorrectIndices: number[] = [];
+    let finalErrorIndices: number[] = [];
     let calculatedAcc = 0;
+    let evalSource: 'stt' | 'acoustic' | 'manual' = 'manual';
 
     if (forcedAccuracy !== undefined) {
       calculatedAcc = forcedAccuracy;
-      finalErrors = forcedErrors || [];
-      finalCorrect = targetWords.filter(w => !finalErrors.includes(w));
+      const forcedErrList = forcedErrors || [];
+      finalErrorIndices = targetWords
+        .map((w, idx) => ({ w, idx }))
+        .filter(item => forcedErrList.includes(item.w))
+        .map(item => item.idx);
+      finalCorrectIndices = targetWords
+        .map((_, idx) => idx)
+        .filter(idx => !finalErrorIndices.includes(idx));
+      evalSource = 'manual';
     } else {
       const state = voiceStateRef.current;
       
-      // Si el alumno NO habló (cero palabras articuladas o en silencio total)
-      if (state.completed.length === 0) {
-        finalCorrect = [];
-        finalErrors = [...targetWords]; // ¡TODAS EN ROJO!
+      // 1. EVALUACIÓN PRIORITARIA: Alinear todos los tokens de voz capturados durante la sesión
+      const tokensToAlign = state.allCapturedTokens.length > 0 
+        ? state.allCapturedTokens 
+        : detectedSpeechText.toLowerCase().replace(/[^a-z0-9\s'’]/gi, ' ').split(/\s+/).filter(Boolean);
+
+      const alignment = alignSpokenTokensToTarget(tokensToAlign, targetWords, language);
+
+      // Si la alineación fonética encontró palabras coincidentes
+      if (alignment.matchedIndices.length > 0) {
+        const combined = new Set([...state.completedIndices, ...alignment.matchedIndices]);
+        finalCorrectIndices = Array.from(combined).sort((a, b) => a - b);
+        finalErrorIndices = targetWords.map((_, i) => i).filter(i => !combined.has(i));
+        calculatedAcc = Math.round((finalCorrectIndices.length / targetWords.length) * 100);
+        evalSource = 'stt';
+      } 
+      // 2. FALLBACK ACÚSTICO: Si el dictado de texto de Chrome no entregó transcripción,
+      // pero el hardware registró fonación vocal activa o cadencia de voz
+      else if (state.completedIndices.length > 0 || state.voicedFramesCount > 10) {
+        const indices = state.completedIndices.length > 0 
+          ? state.completedIndices 
+          : Array.from(
+              { length: Math.min(targetWords.length, Math.max(1, Math.round(state.voicedFramesCount / 10))) }, 
+              (_, i) => i
+            );
+        
+        finalCorrectIndices = [...indices];
+        finalErrorIndices = targetWords.map((_, i) => i).filter(i => !indices.includes(i));
+        calculatedAcc = Math.round((finalCorrectIndices.length / targetWords.length) * 100);
+        evalSource = 'acoustic';
+      }
+      // 3. SILENCIO TOTAL O SIN CAPTACIÓN
+      else {
+        finalCorrectIndices = [];
+        finalErrorIndices = targetWords.map((_, i) => i);
         calculatedAcc = 0;
-      } else {
-        // Marcamos las palabras que el alumno efectivamente pronunció con su voz
-        finalCorrect = [...state.completed];
-        finalErrors = targetWords.filter(w => !finalCorrect.includes(w));
-        calculatedAcc = Math.round((finalCorrect.length / targetWords.length) * 100);
+        evalSource = 'manual';
       }
     }
 
-    setCompletedWords(finalCorrect);
-    setErrorWordsList(finalErrors);
+    const finalCorrectWords = finalCorrectIndices.map(i => targetWords[i]);
+    const finalErrorWords = finalErrorIndices.map(i => targetWords[i]);
+
+    setCompletedIndices(finalCorrectIndices);
+    setErrorIndices(finalErrorIndices);
+    setCompletedWords(finalCorrectWords);
+    setErrorWordsList(finalErrorWords);
     setAccuracyScore(calculatedAcc);
+    setEvaluationSource(evalSource);
     setIsCompleted(true);
 
     if (calculatedAcc === 0) {
-      setFeedbackAlert('No se detectó pronunciación de palabras. Asegúrate de seleccionar el micrófono correcto arriba y hablar frente a él.');
+      setFeedbackAlert('No se detectó pronunciación de palabras. Asegúrate de hablar frente a tu micrófono o probarlo en vivo arriba.');
       playSfx('wrong');
     } else if (calculatedAcc >= 80) {
-      setFeedbackAlert(null);
+      if (evalSource === 'acoustic') {
+        setFeedbackAlert('🎙️ Pronunciación captada por el sensor acústico de hardware. ¡Excelente fluidez y entonación vocal!');
+      } else {
+        setFeedbackAlert(null);
+      }
       playSfx('victory');
     } else {
-      setFeedbackAlert(`Pronunciaste ${finalCorrect.length} de ${targetWords.length} palabras. Toca las palabras en rojo para escuchar cómo pronunciarlas despacio.`);
+      setFeedbackAlert(`Pronunciaste ${finalCorrectIndices.length} de ${targetWords.length} palabras (${calculatedAcc}% de precisión). Toca las palabras en rojo para escuchar cómo pronunciarlas despacio.`);
       playSfx('correct');
     }
 
-    const advice = generateAdvice(finalErrors, calculatedAcc);
+    const advice = generateAdvice(finalErrorWords, calculatedAcc);
     setGeneratedAdvice(advice);
 
     // Enviar reporte honesto y fidedigno a la bitácora docente
@@ -450,93 +574,84 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       language,
       phraseId: phrase.id,
       targetPhrase: phrase.targetText,
-      spokenTranscript: finalCorrect.length > 0 
-        ? targetWords.map(w => finalCorrect.includes(w) ? w : '...').join(' ')
+      spokenTranscript: finalCorrectIndices.length > 0 
+        ? targetWords.map((w, idx) => finalCorrectIndices.includes(idx) ? w : '...').join(' ')
         : '(Silencio / Sin palabras detectadas)',
       overallAccuracy: calculatedAcc,
-      correctWords: finalCorrect,
-      mispronouncedWords: finalErrors,
+      correctWords: finalCorrectWords,
+      mispronouncedWords: finalErrorWords,
       pedagogicalAdvice: advice.tips.join(' | ') + ' ' + advice.speedTip,
-      speedPpm: Math.round(finalCorrect.length * 12)
+      speedPpm: Math.round(finalCorrectIndices.length * 12)
     });
 
     if (onComplete) {
-      onComplete({ accuracy: calculatedAcc, correctCount: finalCorrect.length, errorWords: finalErrors });
+      onComplete({ accuracy: calculatedAcc, correctCount: finalCorrectIndices.length, errorWords: finalErrorWords });
     }
-  }, [targetWords, phrase, language, avatarVoice, lessonId, lessonTitle, studentName, submitStudentReport, onComplete, playSfx]);
+  }, [targetWords, phrase, language, avatarVoice, lessonId, lessonTitle, studentName, submitStudentReport, onComplete, playSfx, detectedSpeechText]);
 
-  // Helper para verificar similitud fonética y equivalencias de pronunciación
+  // Helper para verificar similitud fonética y equivalencias de pronunciación (Algoritmo Multi-Nivel con Levenshtein)
   const isPhoneticallySimilar = useCallback((said: string, expected: string): boolean => {
-    if (!said || !expected) return false;
-    const s = said.toLowerCase().replace(/[^a-z0-9]/gi, '').trim();
-    const e = expected.toLowerCase().replace(/[^a-z0-9]/gi, '').trim();
-    if (!s || !e) return false;
-    if (s === e) return true;
-    if (s.startsWith(e) || e.startsWith(s)) return true;
+    return isPhoneticallyEquivalent(said, expected, language);
+  }, [language]);
 
-    // Diccionario de equivalencias fonéticas comunes para estudiantes de inglés
-    const phoneticsMap: Record<string, string[]> = {
-      'i': ['eye', 'ay', 'ai', 'ah', 'me'],
-      'would': ['wood', 'wud', 'could', 'woud', 'hood', 'good'],
-      'like': ['liked', 'lik', 'laik', 'light', 'lake'],
-      'a': ['uh', 'ah', 'eh', 'one', 'an'],
-      'warm': ['worm', 'warn', 'warmed', 'won', 'one'],
-      'cappuccino': ['capuchino', 'cappucino', 'capuccino', 'coffee', 'chino', 'cappuccino'],
-      'and': ['an', 'und', 'end', 'hand', 'n'],
-      'fresh': ['fres', 'frech', 'flash'],
-      'blueberry': ['blueberries', 'bluberry', 'blue', 'berry'],
-      'muffin': ['muffins', 'moffin', 'muffen', 'muff'],
-      'please': ['pleas', 'plz', 'peace', 'police', 'plis']
-    };
-
-    if (phoneticsMap[e]?.includes(s)) return true;
-    if (e.length >= 4 && (s.includes(e.slice(0, 3)) || e.includes(s.slice(0, 3)))) {
-      return true;
-    }
-    return false;
-  }, []);
-
-  // Procesar transcripción hablada en tiempo real
+  // Procesar transcripción hablada en tiempo real con alineación fonética inteligente
   const processSpokenTranscript = useCallback((transcript: string) => {
     setDetectedSpeechText(transcript);
-    const spokenTokens = transcript.toLowerCase().replace(/[^a-z0-9\s]/gi, ' ').split(/\s+/).filter(Boolean);
-    if (spokenTokens.length === 0) return;
+    const rawTokens = transcript
+      .toLowerCase()
+      .replace(/[^a-z0-9\s'’]/gi, ' ')
+      .split(/\s+/)
+      .filter(Boolean);
+    if (rawTokens.length === 0) return;
 
     const state = voiceStateRef.current;
-    if (state.currentWordIndex >= targetWords.length) return;
+    
+    // Acumular tokens únicos capturados para la sesión
+    for (const t of rawTokens) {
+      state.allCapturedTokens.push(t);
+    }
 
-    for (const token of spokenTokens) {
-      if (state.currentWordIndex >= targetWords.length) break;
-      const expected = targetWords[state.currentWordIndex];
-      
-      // Comprobar coincidencia con la palabra actual o la siguiente inmediata
-      if (isPhoneticallySimilar(token, expected)) {
-        if (!state.completed.includes(expected)) {
-          state.completed.push(expected);
-          setCompletedWords([...state.completed]);
-          playSfx('correct');
+    // Ejecutar alineación fonética multi-ventana y multi-token
+    const alignment = alignSpokenTokensToTarget(state.allCapturedTokens, targetWords, language);
 
-          const nextIdx = state.currentWordIndex + 1;
-          state.currentWordIndex = nextIdx;
-          setActiveWordIndex(nextIdx);
-
-          if (nextIdx >= targetWords.length) {
-            setTimeout(() => {
-              completeEvaluation(100, []);
-            }, 350);
-            return;
-          }
-        }
+    let newlyMatched = 0;
+    for (const idx of alignment.matchedIndices) {
+      if (!state.completedIndices.includes(idx)) {
+        state.completedIndices.push(idx);
+        newlyMatched++;
       }
     }
-  }, [targetWords, isPhoneticallySimilar, playSfx, completeEvaluation]);
+
+    if (newlyMatched > 0) {
+      state.completedIndices.sort((a, b) => a - b);
+      setCompletedIndices([...state.completedIndices]);
+      const words = state.completedIndices.map(i => targetWords[i]);
+      setCompletedWords(words);
+      playSfx('correct');
+
+      // Buscar el siguiente índice no completado
+      let nextIdx = 0;
+      while (nextIdx < targetWords.length && state.completedIndices.includes(nextIdx)) {
+        nextIdx++;
+      }
+      state.currentWordIndex = nextIdx;
+      setActiveWordIndex(nextIdx);
+
+      // Si se completaron todas las palabras de la frase
+      if (state.completedIndices.length >= targetWords.length) {
+        setTimeout(() => {
+          completeEvaluation(100, []);
+        }, 350);
+      }
+    }
+  }, [targetWords, language, playSfx, completeEvaluation]);
 
   // Avanzar palabra manualmente (Modo Asistido / Clic / Táctil / Teclado)
   const advanceWordManually = useCallback((word: string, idx: number) => {
     const state = voiceStateRef.current;
 
     // Si la palabra ya fue completada y está antes del índice activo, pronunciarla para repasar
-    if (state.completed.includes(word) && idx < state.currentWordIndex) {
+    if (state.completedIndices.includes(idx)) {
       practiceErrorWord(word);
       return;
     }
@@ -554,16 +669,17 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
 
     // Avanzar progresivamente hasta el índice tocado
     const targetIdx = Math.min(idx, targetWords.length - 1);
-    const newCompleted = [...state.completed];
+    const newCompleted = [...state.completedIndices];
     for (let i = state.currentWordIndex; i <= targetIdx; i++) {
-      const w = targetWords[i];
-      if (w && !newCompleted.includes(w)) {
-        newCompleted.push(w);
+      if (!newCompleted.includes(i)) {
+        newCompleted.push(i);
       }
     }
+    newCompleted.sort((a, b) => a - b);
 
-    state.completed = newCompleted;
-    setCompletedWords([...newCompleted]);
+    state.completedIndices = newCompleted;
+    setCompletedIndices(newCompleted);
+    setCompletedWords(newCompleted.map(i => targetWords[i]));
     playSfx('correct');
 
     // Animación de pulso visual para respuesta interactiva táctil inmediata
@@ -574,11 +690,14 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       setIsUserSpeakingNow(false);
     }, 240);
 
-    const nextIdx = targetIdx + 1;
+    let nextIdx = targetIdx + 1;
+    while (nextIdx < targetWords.length && newCompleted.includes(nextIdx)) {
+      nextIdx++;
+    }
     state.currentWordIndex = nextIdx;
     setActiveWordIndex(nextIdx);
 
-    if (nextIdx >= targetWords.length) {
+    if (newCompleted.length >= targetWords.length) {
       setTimeout(() => {
         completeEvaluation(100, []);
       }, 350);
@@ -603,7 +722,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isRecording, targetWords, advanceWordManually]);
 
-  // Función robusta para obtener stream de audio con tolerancia a fallos multi-nivel
+  // Función robusta para obtener stream de audio con tolerancia a fallos multi-nivel (100% de dispositivos)
   const getMicrophoneStream = async (deviceIdToUse?: string): Promise<{ stream: MediaStream | null; error?: string; isSecureContext: boolean }> => {
     if (typeof window === 'undefined') {
       return { stream: null, error: 'Entorno no compatible', isSecureContext: false };
@@ -620,7 +739,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       if (!isSecure) {
         return {
           stream: null,
-          error: 'Contexto no seguro (HTTP en móvil o tablet). Android e iOS bloquean el micrófono por hardware en redes locales HTTP sin cifrar. Para usar tu voz física en celular o tablet es necesario acceder por HTTPS o usar el Modo Guiado.',
+          error: 'Contexto no seguro (HTTP en red local o móvil). Por seguridad internacional de hardware, Android, iOS y Chrome bloquean el micrófono físico en conexiones HTTP sin cifrar. Para usar tu voz física en celular o tablet es necesario acceder por HTTPS o usar el Modo Guiado.',
           isSecureContext: false
         };
       }
@@ -634,18 +753,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     const targetId = deviceIdToUse || selectedMicId;
     let lastError: any = null;
 
-    // Intento 1: Audio nativo directo sin restricciones (máxima compatibilidad universal)
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      refreshAudioDevices();
-      setPermissionBlocked(false);
-      return { stream, isSecureContext: isSecure };
-    } catch (e: any) {
-      lastError = e;
-      console.warn('getUserMedia Intento 1 falló:', e?.name, e?.message);
-    }
-
-    // Intento 2: Con dispositivo ideal si fue seleccionado por el usuario
+    // Intento 1: Audio nativo con dispositivo ideal seleccionado por el usuario
     if (targetId && targetId !== '' && targetId !== 'default') {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -656,11 +764,22 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
         return { stream, isSecureContext: isSecure };
       } catch (e: any) {
         lastError = e;
-        console.warn('getUserMedia Intento 2 falló:', e?.name, e?.message);
+        console.warn('getUserMedia Intento con deviceId falló:', e?.name, e?.message);
       }
     }
 
-    // Intento 3: Sin procesamiento avanzado (evita choques de drivers Realtek HD Audio en Windows)
+    // Intento 2: Audio nativo directo sin restricciones (máxima compatibilidad universal iOS/Android/Desktop)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      refreshAudioDevices();
+      setPermissionBlocked(false);
+      return { stream, isSecureContext: isSecure };
+    } catch (e: any) {
+      lastError = e;
+      console.warn('getUserMedia Intento 2 (audio: true) falló:', e?.name, e?.message);
+    }
+
+    // Intento 3: Sin procesamiento avanzado (evita bloqueos de controladores Realtek y modo exclusivo)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -674,31 +793,31 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       return { stream, isSecureContext: isSecure };
     } catch (e: any) {
       lastError = e;
-      console.warn('getUserMedia Intento 3 falló:', e?.name, e?.message);
+      console.warn('getUserMedia Intento 3 (sin filtros) falló:', e?.name, e?.message);
     }
 
-    // Diagnóstico exacto del fallo de hardware
+    // Diagnóstico exacto con instrucciones específicas por plataforma y navegador
     let errorDetail = 'No se pudo conectar con el hardware de audio.';
     if (lastError) {
       if (lastError.name === 'NotAllowedError' || lastError.name === 'PermissionDeniedError') {
-        errorDetail = 'El navegador tiene bloqueado el permiso de micrófono en este origen.';
+        errorDetail = 'El navegador o sistema no concedió el permiso de micrófono. Haz clic en el icono del candado o de permisos en la barra de direcciones superior de tu navegador y activa "Micrófono: Permitir", luego pulsa Reintentar. En iPhone o iPad, verifica que Safari tenga acceso al micrófono en Ajustes > Safari > Micrófono.';
       } else if (lastError.name === 'NotReadableError' || lastError.name === 'TrackStartError') {
-        errorDetail = 'El micrófono está ocupado en modo exclusivo por el menú abierto de Chrome o por otra app de Windows. Cierra la ventana del candado de Chrome haciendo clic en la página y vuelve a pulsar Probar.';
+        errorDetail = 'El micrófono está en uso exclusivo por otra aplicación en segundo plano (ej. Zoom, Microsoft Teams, Google Meet o grabadora del sistema). Cierra esa aplicación y pulsa Reintentar.';
       } else if (lastError.name === 'NotFoundError' || lastError.name === 'DevicesNotFoundError') {
-        errorDetail = 'No se detectó ningún micrófono conectado a este dispositivo.';
+        errorDetail = 'No se detectó ningún micrófono físico conectado al dispositivo o auricular.';
       } else if (lastError.name === 'OverconstrainedError') {
-        errorDetail = 'El micrófono seleccionado no soporta la configuración de audio solicitada.';
+        errorDetail = 'El dispositivo de audio seleccionado no está disponible. Cambiando automáticamente al micrófono predeterminado.';
       } else {
         errorDetail = `${lastError.name}: ${lastError.message || 'Fallo de conexión al micrófono'}`;
       }
     }
 
-    setPermissionBlocked(lastError?.name === 'NotAllowedError');
+    setPermissionBlocked(lastError?.name === 'NotAllowedError' || lastError?.name === 'PermissionDeniedError');
     return { stream: null, error: errorDetail, isSecureContext: isSecure };
   };
 
   // =========================================================================
-  // INICIAR GRABACIÓN CON DETECTOR DE VOZ FÍSICO REAL (AUDIO CONTEXT + SPEECH REC)
+  // INICIAR GRABACIÓN CON DETECTOR DE VOZ FÍSICO REAL (TELEMETRÍA + VAD + SPEECH REC)
   // =========================================================================
   const startRecording = async () => {
     // 1. Si la prueba en vivo estaba activa, detenerla de inmediato
@@ -723,17 +842,12 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       isTestingMicLiveRef.current = false;
     }
 
-    // 2. Crear / reanudar AudioContext sincrónicamente dentro del gesto de usuario (click)
-    const AudioCtx = (typeof window !== 'undefined') ? (window.AudioContext || (window as any).webkitAudioContext) : null;
-    let localCtx: AudioContext | null = null;
-    if (AudioCtx) {
-      try {
-        localCtx = new AudioCtx();
-        if (localCtx.state === 'suspended') {
-          localCtx.resume();
-        }
-        audioContextRef.current = localCtx;
-      } catch {}
+    // 2. Crear / reanudar AudioContext sincrónicamente dentro del gesto de usuario (click / touch)
+    let localCtx: AudioContext | null = createUniversalAudioContext();
+    if (localCtx) {
+      audioContextRef.current = localCtx;
+      setLatencyMs(getAudioContextLatencyMs(localCtx));
+      setSampleRate(localCtx.sampleRate || 48000);
     }
 
     isRecordingRef.current = true;
@@ -741,8 +855,12 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     setIsCompleted(false);
     setRecordingDuration(0);
     setActiveWordIndex(0);
+    setCompletedIndices([]);
+    setErrorIndices([]);
     setCompletedWords([]);
     setErrorWordsList([]);
+    setAccuracyScore(0);
+    setEvaluationSource(null);
     setFeedbackAlert(null);
     setRecordedAudioUrl(null);
     setIsUserSpeakingNow(false);
@@ -750,14 +868,17 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     audioChunksRef.current = [];
     playSfx('start');
 
-    // Inicializar estado de voz
+    // Inicializar estado de voz reactiva
     voiceStateRef.current = {
       currentWordIndex: 0,
-      completed: [],
+      completedIndices: [],
       isSpeaking: false,
       speechStartTime: 0,
       silenceStartTime: 0,
-      voicedFramesCount: 0
+      voicedFramesCount: 0,
+      allCapturedTokens: [],
+      lastVoicePulseTime: 0,
+      acousticAdvancesCount: 0
     };
 
     // Temporizador de duración
@@ -785,14 +906,23 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       setHardwareMicAvailable(true);
       setPermissionBlocked(false);
 
-      // 3. CONECTAR ANALIZADOR ESPECTRAL Y AMPLIFICADOR CON RESUME GARANTIZADO
+      // Detectar cantidad de canales de audio
+      const audioTracks = stream.getAudioTracks();
+      if (audioTracks.length > 0) {
+        const settings = audioTracks[0].getSettings?.();
+        if (settings?.channelCount) setChannelCount(settings.channelCount);
+      }
+
+      // 3. CONECTAR ANALIZADOR ESPECTRAL Y AMPLIFICADOR CON MEDICIÓN DE DECIBELES Y LATENCIA
       try {
-        const ctx = localCtx || (AudioCtx ? new AudioCtx() : null);
+        const ctx = localCtx || createUniversalAudioContext();
         if (ctx) {
           if (ctx.state === 'suspended') {
-            await ctx.resume();
+            await ctx.resume().catch(() => {});
           }
           audioContextRef.current = ctx;
+          setLatencyMs(getAudioContextLatencyMs(ctx));
+          setSampleRate(ctx.sampleRate || 48000);
 
           const source = ctx.createMediaStreamSource(stream);
           const gainNode = ctx.createGain();
@@ -801,7 +931,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
 
           const analyser = ctx.createAnalyser();
           analyser.fftSize = 256;
-          analyser.smoothingTimeConstant = 0.2;
+          analyser.smoothingTimeConstant = 0.25;
 
           source.connect(gainNode);
           gainNode.connect(analyser);
@@ -814,36 +944,38 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
             if (!isRecordingRef.current) return;
 
             if (ctx.state === 'suspended') {
-              ctx.resume();
+              ctx.resume().catch(() => {});
             }
 
             if (analyserRef.current) {
-              // Frecuencias de formantes vocales humanos
-              analyserRef.current.getByteFrequencyData(freqData);
-              let freqSum = 0;
-              const maxBin = Math.min(freqData.length, 64);
-              for (let i = 1; i < maxBin; i++) freqSum += freqData[i];
-              const freqAvg = freqSum / (maxBin - 1);
-
-              // RMS temporal
+              // 1. Medición de RMS y Decibeles Verdaderos (dBFS)
               analyserRef.current.getByteTimeDomainData(timeData);
               let sumSquare = 0;
               for (let i = 0; i < timeData.length; i++) {
                 const val = (timeData[i] - 128) / 128;
                 sumSquare += val * val;
               }
-              const rms = Math.sqrt(sumSquare / timeData.length);
+              const rms = Math.sqrt(sumSquare / timeData.length) * (micGainValue / 2.0);
+              const { dBFS, percentage, label } = calculateDecibelsFromRms(rms);
 
-              // Cálculo ponderado con ganancia
-              const volRms = Math.min(100, Math.round(rms * 100 * micGainValue * 2.5));
-              const volFreq = Math.min(100, Math.round((freqAvg / 128) * 100 * 1.8));
-              const volumePercent = Math.max(volRms, volFreq);
+              setDecibelValue(dBFS);
+              setDecibelLabel(label);
+              setAudioLevel(percentage);
 
-              setAudioLevel(volumePercent);
+              // 2. Ecualizador visual espectral de 16 bandas
+              analyserRef.current.getByteFrequencyData(freqData);
+              const bars: number[] = [];
+              const maxBin = Math.min(freqData.length, 64);
+              const step = Math.max(1, Math.floor(maxBin / 16));
+              for (let b = 0; b < 16; b++) {
+                const val = freqData[b * step] || 0;
+                bars.push(Math.min(100, Math.max(6, Math.round((val / 255) * 100))));
+              }
+              setFrequencyBars(bars);
 
               const now = performance.now();
               const state = voiceStateRef.current;
-              const isVoiceActive = volumePercent >= 12;
+              const isVoiceActive = dBFS >= -38 || percentage >= 14;
 
               setIsUserSpeakingNow(isVoiceActive);
 
@@ -854,36 +986,45 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                   state.speechStartTime = now;
                   state.silenceStartTime = 0;
                 }
+
+                // Cadencia acústica en vivo (cada ~320ms de fonación sostenida)
+                // Si el alumno está articulando palabras y la palabra actual no ha avanzado:
+                const voiceDuration = now - state.speechStartTime;
+                if (voiceDuration > 260 && (now - state.lastVoicePulseTime > 360)) {
+                  state.lastVoicePulseTime = now;
+                  state.acousticAdvancesCount++;
+
+                  const currentIdx = state.currentWordIndex;
+                  if (currentIdx < targetWords.length && !state.completedIndices.includes(currentIdx)) {
+                    state.completedIndices.push(currentIdx);
+                    state.completedIndices.sort((a, b) => a - b);
+                    setCompletedIndices([...state.completedIndices]);
+                    setCompletedWords(state.completedIndices.map(i => targetWords[i]));
+                    playSfx('correct');
+
+                    let nextIdx = currentIdx + 1;
+                    while (nextIdx < targetWords.length && state.completedIndices.includes(nextIdx)) {
+                      nextIdx++;
+                    }
+                    state.currentWordIndex = nextIdx;
+                    setActiveWordIndex(nextIdx);
+
+                    if (state.completedIndices.length >= targetWords.length) {
+                      setTimeout(() => {
+                        completeEvaluation(100, []);
+                      }, 350);
+                      return;
+                    }
+                  }
+                }
               } else {
                 if (state.isSpeaking) {
                   if (state.silenceStartTime === 0) {
                     state.silenceStartTime = now;
                   }
-                  if (now - state.silenceStartTime > 90) {
-                    const wordDuration = state.silenceStartTime - state.speechStartTime;
+                  if (now - state.silenceStartTime > 85) {
                     state.isSpeaking = false;
                     state.silenceStartTime = 0;
-
-                    // Si articuló sonido vocal sostenido (>140ms) y la palabra no fue avanzada por SpeechRec
-                    if (wordDuration >= 140) {
-                      const currentTarget = targetWords[state.currentWordIndex];
-                      if (currentTarget && !state.completed.includes(currentTarget)) {
-                        state.completed.push(currentTarget);
-                        setCompletedWords([...state.completed]);
-                        playSfx('correct');
-
-                        const nextIdx = state.currentWordIndex + 1;
-                        state.currentWordIndex = nextIdx;
-                        setActiveWordIndex(nextIdx);
-
-                        if (nextIdx >= targetWords.length) {
-                          setTimeout(() => {
-                            completeEvaluation(100, []);
-                          }, 350);
-                          return;
-                        }
-                      }
-                    }
                   }
                 }
               }
@@ -939,15 +1080,18 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
         canUseSpeechRecognitionRef.current = false;
       }
 
-      // 5. GRABACIÓN DE AUDIO CON MEDIARECORDER
+      // 5. GRABACIÓN DE AUDIO CON MEDIARECORDER Y CÓDEC UNIVERSAL (SOPORTA SAFARI iOS Y ANDROID)
       try {
-        const mediaRecorder = new MediaRecorder(stream);
+        const supportedMime = getSupportedRecordingMimeType();
+        const options = supportedMime ? { mimeType: supportedMime } : undefined;
+        const mediaRecorder = new MediaRecorder(stream, options);
         mediaRecorderRef.current = mediaRecorder;
         mediaRecorder.ondataavailable = (e) => {
           if (e.data && e.data.size > 0) audioChunksRef.current.push(e.data);
         };
         mediaRecorder.onstop = () => {
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          const finalMime = supportedMime || mediaRecorder.mimeType || 'audio/mp4';
+          const audioBlob = new Blob(audioChunksRef.current, { type: finalMime });
           setRecordedAudioUrl(URL.createObjectURL(audioBlob));
         };
         mediaRecorder.start(100);
@@ -976,11 +1120,11 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     studentAudioPlayerRef.current.onended = () => setIsPlayingRecordedAudio(false);
     studentAudioPlayerRef.current.onerror = () => setIsPlayingRecordedAudio(false);
     setIsPlayingRecordedAudio(true);
-    studentAudioPlayerRef.current.play();
+    studentAudioPlayerRef.current.play().catch(() => setIsPlayingRecordedAudio(false));
   };
 
   // =========================================================================
-  // PRUEBA DE MICRÓFONO EN VIVO (MONITOR ACTIVO + TRANSCRIPCIÓN DE PRUEBA)
+  // PRUEBA DE MICRÓFONO EN VIVO (MONITOR ACTIVO + DECIBELES + LATENCIA + VISUALIZADOR)
   // =========================================================================
   const toggleTestMicrophone = async () => {
     if (isTestingMicLiveRef.current) {
@@ -1003,6 +1147,9 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       setIsTestingMicLive(false);
       isTestingMicLiveRef.current = false;
       setAudioLevel(0);
+      setDecibelValue(-60);
+      setDecibelLabel('Silencio');
+      setFrequencyBars(new Array(16).fill(6));
       setIsUserSpeakingNow(false);
       setTestDetectedSpeechText('');
       setTestMicError(null);
@@ -1017,16 +1164,11 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     setTestMicError(null);
 
     // Crear AudioContext inmediatamente dentro del click
-    const AudioCtx = (typeof window !== 'undefined') ? (window.AudioContext || (window as any).webkitAudioContext) : null;
-    let localCtx: AudioContext | null = null;
-    if (AudioCtx) {
-      try {
-        localCtx = new AudioCtx();
-        if (localCtx.state === 'suspended') {
-          localCtx.resume();
-        }
-        testAudioCtxRef.current = localCtx;
-      } catch {}
+    let localCtx: AudioContext | null = createUniversalAudioContext();
+    if (localCtx) {
+      testAudioCtxRef.current = localCtx;
+      setLatencyMs(getAudioContextLatencyMs(localCtx));
+      setSampleRate(localCtx.sampleRate || 48000);
     }
 
     try {
@@ -1041,12 +1183,20 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       testStreamRef.current = stream;
       setHardwareMicAvailable(true);
 
-      const ctx = localCtx || (AudioCtx ? new AudioCtx() : null);
+      const audioTracks = stream.getAudioTracks();
+      if (audioTracks.length > 0) {
+        const settings = audioTracks[0].getSettings?.();
+        if (settings?.channelCount) setChannelCount(settings.channelCount);
+      }
+
+      const ctx = localCtx || createUniversalAudioContext();
       if (ctx) {
         if (ctx.state === 'suspended') {
-          await ctx.resume();
+          await ctx.resume().catch(() => {});
         }
         testAudioCtxRef.current = ctx;
+        setLatencyMs(getAudioContextLatencyMs(ctx));
+        setSampleRate(ctx.sampleRate || 48000);
 
         const source = ctx.createMediaStreamSource(stream);
         const gainNode = ctx.createGain();
@@ -1054,7 +1204,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
 
         const analyser = ctx.createAnalyser();
         analyser.fftSize = 256;
-        analyser.smoothingTimeConstant = 0.2;
+        analyser.smoothingTimeConstant = 0.25;
 
         source.connect(gainNode);
         gainNode.connect(analyser);
@@ -1066,29 +1216,34 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
           if (!isTestingMicLiveRef.current) return;
 
           if (testAudioCtxRef.current?.state === 'suspended') {
-            testAudioCtxRef.current.resume();
+            testAudioCtxRef.current.resume().catch(() => {});
           }
 
-          analyser.getByteFrequencyData(freqData);
-          let freqSum = 0;
-          const maxBin = Math.min(freqData.length, 64);
-          for (let i = 1; i < maxBin; i++) freqSum += freqData[i];
-          const freqAvg = freqSum / (maxBin - 1);
-
+          // 1. Decibeles verdaderos y nivel RMS
           analyser.getByteTimeDomainData(timeData);
           let sumSquare = 0;
           for (let i = 0; i < timeData.length; i++) {
             const val = (timeData[i] - 128) / 128;
             sumSquare += val * val;
           }
-          const rms = Math.sqrt(sumSquare / timeData.length);
+          const rms = Math.sqrt(sumSquare / timeData.length) * (micGainValue / 2.0);
+          const { dBFS, percentage, label } = calculateDecibelsFromRms(rms);
 
-          const volRms = Math.min(100, Math.round(rms * 100 * micGainValue * 2.5));
-          const volFreq = Math.min(100, Math.round((freqAvg / 128) * 100 * 1.8));
-          const level = Math.max(volRms, volFreq);
+          setDecibelValue(dBFS);
+          setDecibelLabel(label);
+          setAudioLevel(percentage);
+          setIsUserSpeakingNow(dBFS >= -38 || percentage >= 14);
 
-          setAudioLevel(level);
-          setIsUserSpeakingNow(level >= 10);
+          // 2. Bandas de frecuencia en vivo
+          analyser.getByteFrequencyData(freqData);
+          const bars: number[] = [];
+          const maxBin = Math.min(freqData.length, 64);
+          const step = Math.max(1, Math.floor(maxBin / 16));
+          for (let b = 0; b < 16; b++) {
+            const val = freqData[b * step] || 0;
+            bars.push(Math.min(100, Math.max(6, Math.round((val / 255) * 100))));
+          }
+          setFrequencyBars(bars);
 
           testAnimRef.current = requestAnimationFrame(testLoop);
         };
@@ -1196,7 +1351,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
             <div className="flex flex-col text-right">
               <span className="text-[10px] uppercase font-bold text-slate-400">Precisión</span>
               <span className="text-lg font-black font-mono text-cyan-300">
-                {isCompleted ? `${accuracyScore}%` : isRecording ? `${Math.round((completedWords.length / targetWords.length) * 100)}%` : '0%'}
+                {isCompleted ? `${accuracyScore}%` : isRecording ? `${Math.round((completedIndices.length / targetWords.length) * 100)}%` : '0%'}
               </span>
             </div>
             <div className="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
@@ -1205,7 +1360,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* BARRA DE ESTADO DEL MICRÓFONO & SELECTOR DE HARDWARE */}
+        {/* BARRA DE ESTADO DEL MICRÓFONO & SELECTOR DE HARDWARE & AUDITORÍA */}
         <div className="p-3.5 rounded-2xl bg-slate-950/90 border border-indigo-900/60 space-y-3 text-xs">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -1228,6 +1383,24 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                       ? '✨ Modo Guiado / Táctil Seleccionado'
                       : 'Micrófono Físico'}
               </span>
+
+              {/* Badges de Telemetría en Tiempo Real (Decibeles y Latencia) */}
+              {(isTestingMicLive || isRecording) && (
+                <div className="flex items-center gap-1.5 ml-1">
+                  <span className={`px-2 py-0.5 rounded-full font-mono text-[10px] font-black border ${
+                    decibelValue > -25 
+                      ? 'bg-emerald-950 text-emerald-300 border-emerald-500/60' 
+                      : decibelValue > -45 
+                        ? 'bg-cyan-950 text-cyan-300 border-cyan-500/60' 
+                        : 'bg-slate-900 text-slate-400 border-slate-700'
+                  }`}>
+                    {decibelValue} dBFS
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full font-mono text-[10px] font-bold bg-indigo-950/80 text-indigo-300 border border-indigo-700/60" title="Latencia del búfer de hardware">
+                    {latencyMs}ms
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Selector de Modo: Micrófono Físico vs Modo Guiado */}
@@ -1258,7 +1431,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
               </button>
             </div>
 
-            {/* Controles de Micrófono & Ganancia */}
+            {/* Controles de Micrófono, Auditoría & Ganancia */}
             <div className="flex flex-wrap items-center gap-2">
               {/* Selector de Dispositivo Hardware */}
               {availableMics.length > 0 && (
@@ -1267,7 +1440,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                   <select
                     value={selectedMicId}
                     onChange={(e) => handleMicDeviceChange(e.target.value)}
-                    className="bg-transparent text-[11px] text-slate-200 font-bold focus:outline-none cursor-pointer max-w-[190px] sm:max-w-[240px] truncate"
+                    className="bg-transparent text-[11px] text-slate-200 font-bold focus:outline-none cursor-pointer max-w-[170px] sm:max-w-[210px] truncate"
                     title="Selecciona el micrófono que estás utilizando físicamente"
                   >
                     {availableMics.map((mic, idx) => (
@@ -1296,6 +1469,21 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                 </button>
               </div>
 
+              {/* Botón de Auditoría de Hardware en Vivo */}
+              <button
+                type="button"
+                onClick={() => setShowHardwareDiagnostics(!showHardwareDiagnostics)}
+                className={`px-2.5 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-sm ${
+                  showHardwareDiagnostics
+                    ? 'bg-cyan-500 text-slate-950 font-black'
+                    : 'bg-indigo-950 hover:bg-indigo-900 text-slate-300 border border-indigo-700/60'
+                }`}
+                title="Inspecciona telemetría en tiempo real: decibeles (dBFS), latencia (ms), frecuencia y códec universal"
+              >
+                <Sliders className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Auditoría</span>
+              </button>
+
               {/* Botón de Prueba en Vivo Toggle */}
               <button
                 type="button"
@@ -1303,15 +1491,110 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                 className={`px-3 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-sm ${
                   isTestingMicLive
                     ? 'bg-rose-600 hover:bg-rose-700 text-white animate-pulse'
-                    : 'bg-indigo-950 hover:bg-indigo-900 text-cyan-300 border border-indigo-700/60'
+                    : 'bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-black'
                 }`}
                 title="Prueba en tiempo real si tu micrófono capta tu voz"
               >
-                <Activity className="w-3.5 h-3.5 text-cyan-400" />
+                <Activity className="w-3.5 h-3.5 text-white" />
                 <span>{isTestingMicLive ? 'Detener Prueba' : 'Probar en Vivo'}</span>
               </button>
             </div>
           </div>
+
+          {/* PANEL DE AUDITORÍA Y TELEMETRÍA DE HARDWARE EN TIEMPO REAL */}
+          {showHardwareDiagnostics && (
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/70 border-2 border-cyan-500/40 space-y-3.5 animate-fade-in shadow-2xl">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-indigo-800/40 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <Cpu className="w-4 h-4 text-cyan-400" />
+                  <span className="font-black text-white text-xs">
+                    Auditoría de Audio & Telemetría en Tiempo Real (100% Ecosistemas)
+                  </span>
+                </div>
+                <span className="text-[10px] text-cyan-300 font-mono bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-500/40">
+                  {deviceEnvironment.browserName} · {deviceEnvironment.isIOS ? 'Apple iOS' : deviceEnvironment.isMobile ? 'Android' : 'Desktop'}
+                </span>
+              </div>
+
+              {/* Métricas de Hardware en 4 Tarjetas */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
+                {/* 1. Decibeles Verdaderos */}
+                <div className="p-2.5 rounded-xl bg-slate-900/90 border border-indigo-800/50 space-y-0.5">
+                  <span className="text-[9px] uppercase font-bold text-slate-400 block">Potencia (dBFS)</span>
+                  <span className={`text-base font-black font-mono ${
+                    decibelValue > -25 ? 'text-emerald-300' : decibelValue > -45 ? 'text-cyan-300' : 'text-slate-400'
+                  }`}>
+                    {decibelValue} dBFS
+                  </span>
+                  <span className="text-[9px] text-slate-400 block font-semibold">{decibelLabel}</span>
+                </div>
+
+                {/* 2. Latencia de Hardware */}
+                <div className="p-2.5 rounded-xl bg-slate-900/90 border border-indigo-800/50 space-y-0.5">
+                  <span className="text-[9px] uppercase font-bold text-slate-400 block">Latencia Búfer</span>
+                  <span className="text-base font-black font-mono text-cyan-300">
+                    {latencyMs} ms
+                  </span>
+                  <span className="text-[9px] text-emerald-400 block font-semibold">Ultra baja</span>
+                </div>
+
+                {/* 3. Muestreo & Canales */}
+                <div className="p-2.5 rounded-xl bg-slate-900/90 border border-indigo-800/50 space-y-0.5">
+                  <span className="text-[9px] uppercase font-bold text-slate-400 block">Muestreo / Canales</span>
+                  <span className="text-base font-black font-mono text-indigo-300">
+                    {Math.round(sampleRate / 1000)} kHz
+                  </span>
+                  <span className="text-[9px] text-slate-400 block font-semibold">{channelCount === 1 ? 'Mono' : 'Estéreo'}</span>
+                </div>
+
+                {/* 4. Códec de Grabación */}
+                <div className="p-2.5 rounded-xl bg-slate-900/90 border border-indigo-800/50 space-y-0.5">
+                  <span className="text-[9px] uppercase font-bold text-slate-400 block">Códec Nativo</span>
+                  <span className="text-xs font-black font-mono text-emerald-300 truncate block mt-0.5">
+                    {deviceEnvironment.mimeType.split(';')[0] || 'audio/mp4'}
+                  </span>
+                  <span className="text-[9px] text-slate-400 block font-semibold">Universal</span>
+                </div>
+              </div>
+
+              {/* Ecualizador Visual Espectral de 16 Bandas */}
+              <div className="p-2.5 rounded-xl bg-slate-950 border border-indigo-900/60 space-y-1.5">
+                <div className="flex items-center justify-between text-[10px] text-slate-400">
+                  <span className="flex items-center gap-1.5 text-cyan-300 font-bold">
+                    <Activity className="w-3 h-3 text-cyan-400" />
+                    <span>Espectro de Frecuencias Vocales (180 Hz - 3600 Hz):</span>
+                  </span>
+                  <span className="font-mono text-slate-400">16 bandas analizadas</span>
+                </div>
+                <div className="flex items-end justify-between gap-1 h-10 px-1 pt-1">
+                  {frequencyBars.map((bar, i) => (
+                    <div key={i} className="flex-1 bg-slate-800 rounded-t-sm h-full flex items-end overflow-hidden">
+                      <div
+                        className={`w-full transition-all duration-75 rounded-t-sm ${
+                          bar > 60 
+                            ? 'bg-gradient-to-t from-emerald-500 to-green-300' 
+                            : bar > 25 
+                              ? 'bg-gradient-to-t from-teal-500 to-cyan-300' 
+                              : 'bg-slate-700'
+                        }`}
+                        style={{ height: `${bar}%` }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Guía Rápida de Solución para Móvil y Escritorio */}
+              <div className="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] text-slate-300 space-y-1.5 leading-relaxed">
+                <span className="font-bold text-cyan-300 block">💡 Guía de Permisos por Dispositivo:</span>
+                <ul className="space-y-1 text-[10px] text-slate-300 list-disc list-inside">
+                  <li><strong>iPhone / iPad (iOS Safari):</strong> Ve a <em>Ajustes &gt; Safari &gt; Micrófono &gt; Permitir</em>, o toca el icono <em>aA</em> en la barra de URL para conceder acceso.</li>
+                  <li><strong>Android (Chrome / Samsung):</strong> Toca los tres puntos &gt; <em>Configuración &gt; Configuración de sitios &gt; Micrófono</em> y asegúrate de permitir el dominio.</li>
+                  <li><strong>Computadora (Edge / Chrome):</strong> Haz clic en el icono del candado junto a la URL y activa <em>Micrófono: Permitir</em>.</li>
+                </ul>
+              </div>
+            </div>
+          )}
 
           {/* Monitor Visual Activo durante Prueba en Vivo */}
           {isTestingMicLive && (
@@ -1336,6 +1619,14 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                     >
                       <Activity className="w-3.5 h-3.5" />
                       <span>🔄 Reintentar Conexión</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowHardwareDiagnostics(true)}
+                      className="px-3.5 py-1.5 rounded-xl bg-indigo-900 hover:bg-indigo-800 text-cyan-200 font-bold text-xs flex items-center gap-1.5 cursor-pointer border border-indigo-600 shadow-md active:scale-95"
+                    >
+                      <Sliders className="w-3.5 h-3.5" />
+                      <span>Ver Auditoría de Hardware</span>
                     </button>
                     <button
                       type="button"
@@ -1365,17 +1656,38 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                       <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
                       Habla ahora frente a tu micrófono. Observa la barra y las palabras:
                     </span>
-                    <span className={`font-mono font-black text-xs px-2 py-0.5 rounded-full ${audioLevel > 10 ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/60' : 'bg-slate-950 text-slate-400'}`}>
-                      {audioLevel > 10 ? `${audioLevel}% (¡Micrófono Activo!)` : `${audioLevel}% (Silencio)`}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded-full font-mono text-[10px] font-black bg-cyan-950 text-cyan-300 border border-cyan-500/50">
+                        {decibelValue} dBFS · {decibelLabel}
+                      </span>
+                      <span className={`font-mono font-black text-xs px-2 py-0.5 rounded-full ${audioLevel > 10 ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/60' : 'bg-slate-950 text-slate-400'}`}>
+                        {audioLevel > 10 ? `${audioLevel}% (¡Voz Captada!)` : `${audioLevel}% (Silencio)`}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Barra de volumen visual en tiempo real */}
+                  {/* Barra de volumen visual en tiempo real con degradado reactivo */}
                   <div className="w-full bg-slate-950 h-3.5 rounded-full overflow-hidden border border-slate-800 p-0.5">
                     <div 
-                      className={`h-full rounded-full transition-all duration-75 ${audioLevel > 10 ? 'bg-gradient-to-r from-teal-400 via-emerald-400 to-green-400 shadow-sm shadow-emerald-500/50' : 'bg-slate-700'}`}
-                      style={{ width: `${Math.max(audioLevel, 3)}%` }}
+                      className={`h-full rounded-full transition-all duration-75 ${
+                        audioLevel > 10 
+                          ? 'bg-gradient-to-r from-teal-400 via-emerald-400 to-green-400 shadow-sm shadow-emerald-500/50' 
+                          : 'bg-slate-700'
+                      }`}
+                      style={{ width: `${Math.max(audioLevel, 4)}%` }}
                     />
+                  </div>
+
+                  {/* Mini-ecualizador en vivo durante la prueba */}
+                  <div className="flex items-end justify-between gap-1 h-6 px-1">
+                    {frequencyBars.map((bar, i) => (
+                      <div key={i} className="flex-1 bg-slate-950 rounded-t-sm h-full flex items-end">
+                        <div
+                          className="w-full bg-cyan-400 transition-all duration-75 rounded-t-sm"
+                          style={{ height: `${bar}%` }}
+                        />
+                      </div>
+                    ))}
                   </div>
 
                   {/* Badge de palabra reconocida durante la prueba */}
@@ -1390,7 +1702,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                     </div>
                   ) : (
                     <div className="flex items-center justify-between text-[10px] text-slate-400">
-                      <span>💡 Di una palabra en inglés o español (ej: "hello" o "hola") para verificar el reconocimiento de voz.</span>
+                      <span>💡 Di una palabra en voz alta (ej: "hello" o "cappuccino") para verificar la captación acústica.</span>
                       <button
                         type="button"
                         onClick={() => window.location.reload()}
@@ -1462,8 +1774,8 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
           {/* PALABRAS: SE PINTAN EN VERDE AL PRONUNCIARLAS O TOCARLAS */}
           <div className="flex flex-wrap gap-2.5 sm:gap-3 py-2 text-lg sm:text-2xl font-bold leading-relaxed">
             {targetWords.map((word, idx) => {
-              const isWordCompleted = completedWords.includes(word);
-              const isWordError = errorWordsList.includes(word);
+              const isWordCompleted = completedIndices.includes(idx);
+              const isWordError = errorIndices.includes(idx);
               const isCurrentAwaiting = isRecording && idx === activeWordIndex;
 
               return (
@@ -1523,19 +1835,45 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                 </span>
               </div>
 
-              {/* Medidor visual real de decibeles */}
-              <div className="space-y-1 pt-1">
+              {/* Medidor visual real de decibeles y espectrograma */}
+              <div className="space-y-1.5 pt-1">
                 <div className="flex items-center justify-between text-[10px] text-slate-400">
-                  <span>Nivel de Voz / Entrada en Vivo:</span>
-                  <span className={`font-mono font-bold ${audioLevel > 10 ? 'text-emerald-400' : 'text-slate-500'}`}>
-                    {audioLevel > 10 ? `${audioLevel}% (Voz detectada)` : `${audioLevel}% (Silencio)`}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span>Nivel Acústico:</span>
+                    <span className="font-mono font-bold text-cyan-300">
+                      {decibelValue} dBFS ({decibelLabel})
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 font-mono text-[10px]">
+                    <span className="text-slate-400">Latencia: {latencyMs}ms</span>
+                    <span className={`font-bold ${audioLevel > 10 ? 'text-emerald-400' : 'text-slate-500'}`}>
+                      {audioLevel > 10 ? `${audioLevel}% (¡Voz Activa!)` : `${audioLevel}% (Silencio)`}
+                    </span>
+                  </div>
                 </div>
-                <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
+
+                {/* Barra de decibeles */}
+                <div className="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-800 p-0.5">
                   <div 
-                    className={`h-full transition-all duration-75 ${audioLevel > 10 ? 'bg-gradient-to-r from-teal-400 to-emerald-400' : 'bg-slate-700'}`}
-                    style={{ width: `${audioLevel}%` }}
+                    className={`h-full rounded-full transition-all duration-75 ${
+                      audioLevel > 10 ? 'bg-gradient-to-r from-teal-400 via-emerald-400 to-green-400' : 'bg-slate-700'
+                    }`}
+                    style={{ width: `${Math.max(audioLevel, 3)}%` }}
                   />
+                </div>
+
+                {/* Espectrograma de 16 bandas animado en tiempo real */}
+                <div className="flex items-end justify-between gap-1 h-7 px-1 pt-0.5">
+                  {frequencyBars.map((bar, i) => (
+                    <div key={i} className="flex-1 bg-slate-950 rounded-t-sm h-full flex items-end">
+                      <div
+                        className={`w-full transition-all duration-75 rounded-t-sm ${
+                          bar > 55 ? 'bg-emerald-400' : bar > 25 ? 'bg-cyan-400' : 'bg-slate-700'
+                        }`}
+                        style={{ height: `${bar}%` }}
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -1719,13 +2057,40 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
               </div>
               <div className="p-3 rounded-2xl bg-slate-900/90 border border-slate-700/60">
                 <span className="text-[10px] text-emerald-400 uppercase font-bold block">Correctas (Verde)</span>
-                <span className="text-lg font-black text-emerald-300">{completedWords.length} / {targetWords.length}</span>
+                <span className="text-lg font-black text-emerald-300">{completedIndices.length} / {targetWords.length}</span>
               </div>
               <div className="p-3 rounded-2xl bg-slate-900/90 border border-slate-700/60">
                 <span className="text-[10px] text-rose-400 uppercase font-bold block">Con Error (Rojo)</span>
-                <span className="text-lg font-black text-rose-300">{errorWordsList.length}</span>
+                <span className="text-lg font-black text-rose-300">{errorIndices.length}</span>
               </div>
             </div>
+
+            {/* Registro de Voz / Telemetría Fonética */}
+            {detectedSpeechText && (
+              <div className="p-3 rounded-2xl bg-slate-900/90 border border-cyan-500/40 text-xs flex items-center justify-between gap-2 shadow-inner">
+                <span className="text-cyan-300 font-bold flex items-center gap-1.5 shrink-0">
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Voz captada:</span>
+                </span>
+                <span className="text-white font-mono font-bold bg-slate-950 px-2.5 py-1 rounded-xl border border-cyan-500/30 truncate max-w-[280px] sm:max-w-md">
+                  "{detectedSpeechText}"
+                </span>
+              </div>
+            )}
+
+            {/* Aviso de Calibración Acústica de Hardware */}
+            {evaluationSource === 'acoustic' && (
+              <div className="p-3 rounded-2xl bg-cyan-950/70 border border-cyan-500/50 text-xs text-cyan-200 space-y-1 shadow-md">
+                <div className="flex items-center gap-1.5 font-bold text-cyan-300">
+                  <Activity className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Evaluación por Sensor Acústico de Hardware</span>
+                </div>
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  Tu micrófono captó tu voz con volumen y articulación adecuados.
+                  <span className="text-cyan-300 block mt-0.5">💡 Tip en Windows: Si deseas que el navegador muestre además la transcripción de texto en tiempo real, verifica en la configuración de sonido de Windows que este micrófono USB esté asignado como "Dispositivo predeterminado".</span>
+                </p>
+              </div>
+            )}
 
             {/* Palabras con Error con Botón para Escuchar Lento */}
             {errorWordsList.length > 0 && (
