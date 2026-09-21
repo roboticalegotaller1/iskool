@@ -531,10 +531,15 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     }
   }, [targetWords, isPhoneticallySimilar, playSfx, completeEvaluation]);
 
-  // Avanzar palabra manualmente (Modo Asistido / Clic / Teclado)
+  // Avanzar palabra manualmente (Modo Asistido / Clic / Táctil / Teclado)
   const advanceWordManually = useCallback((word: string, idx: number) => {
     const state = voiceStateRef.current;
-    if (idx !== state.currentWordIndex) return;
+
+    // Si la palabra ya fue completada y está antes del índice activo, pronunciarla para repasar
+    if (state.completed.includes(word) && idx < state.currentWordIndex) {
+      practiceErrorWord(word);
+      return;
+    }
 
     if (!isRecordingRef.current) {
       isRecordingRef.current = true;
@@ -547,28 +552,36 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       }, 1000);
     }
 
-    if (!state.completed.includes(word)) {
-      state.completed.push(word);
-      setCompletedWords([...state.completed]);
-      playSfx('correct');
-
-      // Animación de pulso visual para respuesta interactiva inmediata
-      setAudioLevel(75);
-      setIsUserSpeakingNow(true);
-      setTimeout(() => {
-        setAudioLevel(0);
-        setIsUserSpeakingNow(false);
-      }, 260);
-
-      const nextIdx = idx + 1;
-      state.currentWordIndex = nextIdx;
-      setActiveWordIndex(nextIdx);
-
-      if (nextIdx >= targetWords.length) {
-        setTimeout(() => {
-          completeEvaluation(100, []);
-        }, 350);
+    // Avanzar progresivamente hasta el índice tocado
+    const targetIdx = Math.min(idx, targetWords.length - 1);
+    const newCompleted = [...state.completed];
+    for (let i = state.currentWordIndex; i <= targetIdx; i++) {
+      const w = targetWords[i];
+      if (w && !newCompleted.includes(w)) {
+        newCompleted.push(w);
       }
+    }
+
+    state.completed = newCompleted;
+    setCompletedWords([...newCompleted]);
+    playSfx('correct');
+
+    // Animación de pulso visual para respuesta interactiva táctil inmediata
+    setAudioLevel(80);
+    setIsUserSpeakingNow(true);
+    setTimeout(() => {
+      setAudioLevel(0);
+      setIsUserSpeakingNow(false);
+    }, 240);
+
+    const nextIdx = targetIdx + 1;
+    state.currentWordIndex = nextIdx;
+    setActiveWordIndex(nextIdx);
+
+    if (nextIdx >= targetWords.length) {
+      setTimeout(() => {
+        completeEvaluation(100, []);
+      }, 350);
     }
   }, [targetWords, playSfx, completeEvaluation]);
 
@@ -590,45 +603,98 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isRecording, targetWords, advanceWordManually]);
 
-  // Función robusta para obtener stream de audio del micrófono seleccionado
-  const getMicrophoneStream = async (deviceIdToUse?: string) => {
-    if (typeof window === 'undefined' || !navigator.mediaDevices?.getUserMedia) return null;
-    const targetId = deviceIdToUse || selectedMicId;
+  // Función robusta para obtener stream de audio con tolerancia a fallos multi-nivel
+  const getMicrophoneStream = async (deviceIdToUse?: string): Promise<{ stream: MediaStream | null; error?: string; isSecureContext: boolean }> => {
+    if (typeof window === 'undefined') {
+      return { stream: null, error: 'Entorno no compatible', isSecureContext: false };
+    }
 
-    // En Windows con Realtek HD Audio y navegadores Chromium:
-    // 1. autoGainControl: true es VITAL para activar el preamplificador de Windows/WebRTC
-    // 2. echoCancellation: true conecta con el subsistema de audio nativo
-    // 3. noiseSuppression: false previene el recorte de formantes y consonantes suaves
-    // 4. deviceId con { ideal: targetId } para evitar OverconstrainedError
-    const audioConstraints: MediaTrackConstraints = (targetId && targetId !== '')
-      ? {
-          deviceId: { ideal: targetId },
-          echoCancellation: true,
-          noiseSuppression: false,
-          autoGainControl: true
-        }
-      : {
-          echoCancellation: true,
-          noiseSuppression: false,
-          autoGainControl: true
+    const isSecure = typeof window !== 'undefined' && (
+      window.isSecureContext === true || 
+      window.location.hostname === 'localhost' || 
+      window.location.hostname === '127.0.0.1' ||
+      window.location.protocol === 'https:'
+    );
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      if (!isSecure) {
+        return {
+          stream: null,
+          error: 'Contexto no seguro (HTTP en móvil o tablet). Android e iOS bloquean el micrófono por hardware en redes locales HTTP sin cifrar. Para usar tu voz física en celular o tablet es necesario acceder por HTTPS o usar el Modo Guiado.',
+          isSecureContext: false
         };
+      }
+      return {
+        stream: null,
+        error: 'Tu navegador no soporta captura de audio mediante MediaDevices.',
+        isSecureContext: isSecure
+      };
+    }
 
+    const targetId = deviceIdToUse || selectedMicId;
+    let lastError: any = null;
+
+    // Intento 1: Audio nativo directo sin restricciones (máxima compatibilidad universal)
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       refreshAudioDevices();
       setPermissionBlocked(false);
-      return stream;
-    } catch {
+      return { stream, isSecureContext: isSecure };
+    } catch (e: any) {
+      lastError = e;
+      console.warn('getUserMedia Intento 1 falló:', e?.name, e?.message);
+    }
+
+    // Intento 2: Con dispositivo ideal si fue seleccionado por el usuario
+    if (targetId && targetId !== '' && targetId !== 'default') {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: { deviceId: { ideal: targetId } }
+        });
         refreshAudioDevices();
         setPermissionBlocked(false);
-        return stream;
-      } catch {
-        setPermissionBlocked(true);
-        return null;
+        return { stream, isSecureContext: isSecure };
+      } catch (e: any) {
+        lastError = e;
+        console.warn('getUserMedia Intento 2 falló:', e?.name, e?.message);
       }
     }
+
+    // Intento 3: Sin procesamiento avanzado (evita choques de drivers Realtek HD Audio en Windows)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false
+        }
+      });
+      refreshAudioDevices();
+      setPermissionBlocked(false);
+      return { stream, isSecureContext: isSecure };
+    } catch (e: any) {
+      lastError = e;
+      console.warn('getUserMedia Intento 3 falló:', e?.name, e?.message);
+    }
+
+    // Diagnóstico exacto del fallo de hardware
+    let errorDetail = 'No se pudo conectar con el hardware de audio.';
+    if (lastError) {
+      if (lastError.name === 'NotAllowedError' || lastError.name === 'PermissionDeniedError') {
+        errorDetail = 'El navegador tiene bloqueado el permiso de micrófono en este origen.';
+      } else if (lastError.name === 'NotReadableError' || lastError.name === 'TrackStartError') {
+        errorDetail = 'El micrófono está ocupado en modo exclusivo por el menú abierto de Chrome o por otra app de Windows. Cierra la ventana del candado de Chrome haciendo clic en la página y vuelve a pulsar Probar.';
+      } else if (lastError.name === 'NotFoundError' || lastError.name === 'DevicesNotFoundError') {
+        errorDetail = 'No se detectó ningún micrófono conectado a este dispositivo.';
+      } else if (lastError.name === 'OverconstrainedError') {
+        errorDetail = 'El micrófono seleccionado no soporta la configuración de audio solicitada.';
+      } else {
+        errorDetail = `${lastError.name}: ${lastError.message || 'Fallo de conexión al micrófono'}`;
+      }
+    }
+
+    setPermissionBlocked(lastError?.name === 'NotAllowedError');
+    return { stream: null, error: errorDetail, isSecureContext: isSecure };
   };
 
   // =========================================================================
@@ -702,12 +768,15 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
 
     let stream: MediaStream | null = null;
     if (karaokeMode === 'mic') {
-      stream = await getMicrophoneStream();
+      const micResult = await getMicrophoneStream();
+      stream = micResult.stream;
       if (!stream) {
-        // En lugar de abortar y bloquear la experiencia del usuario, activamos el Modo Guiado Asistido
         setKaraokeMode('interactive');
-        setPermissionBlocked(true);
-        setFeedbackAlert('✨ Modo Asistido activo: El navegador retiene el acceso al hardware. La práctica continúa activa en pantalla: pulsa el botón "Pronunciar Palabra", usa la barra espaciadora o toca directamente cada palabra.');
+        if (!micResult.isSecureContext) {
+          setFeedbackAlert('📱 Conexión HTTP detectada en móvil/tablet: Los sistemas móviles bloquean el micrófono físico en HTTP sin cifrar. El Modo Guiado está activo para que practiques tocando palabras.');
+        } else {
+          setFeedbackAlert(`ℹ️ ${micResult.error || 'El hardware no entregó señal'}. La práctica continúa activa en Modo Guiado.`);
+        }
       }
     }
 
@@ -961,10 +1030,11 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     }
 
     try {
-      const stream = await getMicrophoneStream();
+      const micResult = await getMicrophoneStream();
+      const stream = micResult.stream;
       if (!stream) {
         setHardwareMicAvailable(false);
-        setTestMicError('El navegador o sistema no entregó señal de audio. Si acabas de conceder permisos en el candado de la barra de direcciones de Chrome, es necesario recargar la página para que Windows y el navegador apliquen los permisos.');
+        setTestMicError(micResult.error || 'El navegador o sistema no entregó señal de audio.');
         return;
       }
 
@@ -1247,21 +1317,45 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
           {isTestingMicLive && (
             <div className="p-3.5 rounded-2xl bg-slate-900/95 border border-cyan-500/50 space-y-3 animate-fade-in shadow-xl">
               {testMicError ? (
-                <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-500/70 text-rose-200 text-xs space-y-2 animate-fade-in shadow-lg">
+                <div className="p-3.5 rounded-2xl bg-rose-950/80 border border-rose-500/70 text-rose-200 text-xs space-y-2.5 animate-fade-in shadow-lg">
                   <div className="flex items-center gap-2 font-bold text-rose-300">
                     <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                    <span>Atención con los permisos de micrófono:</span>
+                    <span>Diagnóstico de Conexión del Micrófono:</span>
                   </div>
-                  <p className="leading-relaxed">{testMicError}</p>
-                  <div className="pt-1 flex flex-wrap items-center gap-3">
+                  <p className="leading-relaxed font-medium">{testMicError}</p>
+                  <div className="pt-1 flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsTestingMicLive(false);
+                        isTestingMicLiveRef.current = false;
+                        setTestMicError(null);
+                        setTimeout(() => toggleTestMicrophone(), 120);
+                      }}
+                      className="px-3.5 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95"
+                    >
+                      <Activity className="w-3.5 h-3.5" />
+                      <span>🔄 Reintentar Conexión</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsTestingMicLive(false);
+                        isTestingMicLiveRef.current = false;
+                        setKaraokeMode('interactive');
+                      }}
+                      className="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>✨ Usar Modo Guiado / Táctil</span>
+                    </button>
                     <button
                       type="button"
                       onClick={() => window.location.reload()}
-                      className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95"
+                      className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs flex items-center gap-1.5 cursor-pointer border border-slate-600 active:scale-95"
                     >
-                      <span>🔄 Recargar Página Ahora</span>
+                      <span>Recargar Página</span>
                     </button>
-                    <span className="text-[10px] text-rose-300">Aplica los cambios del candado de Chrome/Edge</span>
                   </div>
                 </div>
               ) : (
@@ -1323,53 +1417,44 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
             </span>
           </div>
 
-          {/* AVISO DE PERMISO BLOQUEADO O PENDIENTE DE RECARGA CON ASISTENCIA COMPLETA */}
+          {/* AVISO DISCRETO Y AMIGABLE DE HARDWARE / PERMISOS */}
           {permissionBlocked && (
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-950 border-2 border-amber-500/80 text-amber-200 text-xs space-y-3 animate-fade-in shadow-2xl">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5 font-black text-amber-300 text-sm">
-                  <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 animate-bounce" />
-                  <span>El navegador Chrome o Edge tiene el micrófono en espera:</span>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setKaraokeMode('interactive');
-                      setPermissionBlocked(false);
-                      if (!isRecording) startRecording();
-                    }}
-                    className="px-3.5 py-1.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>✨ Practicar sin Micrófono (Modo Guiado)</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => window.location.reload()}
-                    className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95"
-                  >
-                    <span>🔄 Recargar Página Ahora</span>
-                  </button>
+            <div className="p-3.5 rounded-2xl bg-amber-950/70 border border-amber-500/60 text-amber-200 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in shadow-lg">
+              <div className="flex items-center gap-2.5">
+                <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                <div className="space-y-0.5">
+                  <span className="font-bold text-amber-300 block">
+                    Micrófono en espera o uso exclusivo:
+                  </span>
+                  <span className="text-[11px] text-slate-300 block">
+                    Cierra la ventana del candado de Chrome haciendo clic en la página. También puedes practicar de inmediato tocando las palabras.
+                  </span>
                 </div>
               </div>
-
-              <div className="bg-slate-950/90 p-3.5 rounded-xl border border-amber-500/40 text-[11px] leading-relaxed space-y-2">
-                <div className="font-bold text-amber-200 flex items-center gap-1.5">
-                  <span>💡 Instrucción para desbloquear el micrófono en tu pantalla:</span>
-                </div>
-                <p className="text-slate-300">
-                  En el menú de Chrome que tienes desplegado a la izquierda, fíjate en la opción inferior: <strong className="text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-600">Restablecer permisos</strong>. Al hacer clic en él y pulsar <strong>Recargar Página</strong>, Chrome liberará el bloqueo interno y te pedirá confirmación limpia.
-                </p>
-                <div className="pt-1 flex flex-wrap items-center gap-2 text-slate-400">
-                  <span>¿Deseas probar en origen directo sin bloqueo?</span>
-                  <a
-                    href="http://127.0.0.1:3000/teacher/idiomas"
-                    className="text-cyan-300 hover:text-cyan-200 underline font-bold"
-                  >
-                    🌐 http://127.0.0.1:3000/teacher/idiomas
-                  </a>
-                </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setKaraokeMode('interactive');
+                    setPermissionBlocked(false);
+                    if (!isRecording) startRecording();
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>✨ Modo Táctil / Guiado</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPermissionBlocked(false);
+                    toggleTestMicrophone();
+                  }}
+                  className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs cursor-pointer border border-slate-600 active:scale-95"
+                  title="Reintentar conexión con el micrófono"
+                >
+                  🔄 Reintentar
+                </button>
               </div>
             </div>
           )}
