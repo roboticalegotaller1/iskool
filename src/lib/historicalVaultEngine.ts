@@ -51,14 +51,15 @@ export function normalizeHistoricalSlug(name: string): string {
 }
 
 /**
- * Normaliza texto para búsqueda de preguntas en el caché de la Bóveda Curricular
+ * Normaliza texto para búsqueda exacta de preguntas en el caché de la Bóveda Curricular
  */
 export function normalizeQuestionText(q: string): string {
   return q
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[¿?¡!.,:;()"'`-]/g, '')
+    .replace(/[¿?¡!.,:;()"'`_/\-\\]/g, '')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -413,17 +414,19 @@ export function searchQaInVaultNode(slug: string, question: string): { found: bo
 
   for (const item of figure.qaCache) {
     const normItem = normalizeQuestionText(item.question);
-    // Match exacto o coincidencia de subcadena alta
-    if (normItem === normTarget || normItem.includes(normTarget) || normTarget.includes(normItem)) {
+    // Búsqueda ESTRICTA y EXACTA: solo coincide si es la misma pregunta exacta
+    if (normItem === normTarget) {
       // Validar que no sea una respuesta genérica o evasiva anterior
       const isGeneric = 
-        item.answer.includes('Escudriña en los documentos de la época') ||
+        item.answer.includes('Escudriña en los documentos') ||
         item.answer.includes('Escudrina en los documentos') ||
-        item.answer.includes('miro con beneplácito tu interés') ||
+        item.answer.includes('miro con beneplácito') ||
         item.answer.includes('Respecto a lo que me interrogas sobre') ||
-        item.answer.includes('he de responderte en primera persona y con la verdad histórica por delante');
-      if (item.answer && !isGeneric) {
-        return { found: true, answer: item.answer };
+        item.answer.includes('he de responderte en primera persona y con la verdad histórica') ||
+        item.answer.includes('Escudriña en nuestras memorias') ||
+        item.answer.includes('Escudrina en nuestras memorias');
+      if (item.answer && item.answer.trim().length > 25 && !isGeneric) {
+        return { found: true, answer: item.answer.trim() };
       }
     }
   }
@@ -440,16 +443,20 @@ export function appendQaToVaultNode(slug: string, question: string, answer: stri
 
   if (!figure.qaCache) figure.qaCache = [];
   
+  const cleanAnswer = answer.trim();
+  if (!cleanAnswer) return;
+
   const normTarget = normalizeQuestionText(question);
   const existingIdx = figure.qaCache.findIndex(i => normalizeQuestionText(i.question) === normTarget);
   
   if (existingIdx !== -1) {
-    figure.qaCache[existingIdx].answer = answer.trim();
+    figure.qaCache[existingIdx].question = question.trim();
+    figure.qaCache[existingIdx].answer = cleanAnswer;
     figure.qaCache[existingIdx].timestamp = Date.now();
   } else {
     figure.qaCache.push({
       question: question.trim(),
-      answer: answer.trim(),
+      answer: cleanAnswer,
       timestamp: Date.now()
     });
   }

@@ -15,7 +15,10 @@ import {
   Bot,
   User,
   ShieldAlert,
-  HelpCircle
+  HelpCircle,
+  Key,
+  X,
+  Check
 } from 'lucide-react';
 import { configureHistoricalUtterance } from '@/lib/historicalVoiceEngine';
 
@@ -75,6 +78,33 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
     cost: 0,
     source: 'Bóveda Curricular (0 Tokens)'
   });
+  const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState('');
+  const [hasApiKey, setHasApiKey] = useState(false);
+
+  // Inicializar estado de API Key desde almacenamiento de sesión
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem('iskool_ai_api_key') || localStorage.getItem('iskool_ai_api_key') || '';
+      setHasApiKey(Boolean(stored));
+      setApiKeyInput(stored);
+    }
+  }, []);
+
+  const handleSaveApiKey = (key: string) => {
+    if (typeof window !== 'undefined') {
+      const cleanKey = key.trim();
+      if (cleanKey) {
+        sessionStorage.setItem('iskool_ai_api_key', cleanKey);
+        setHasApiKey(true);
+      } else {
+        sessionStorage.removeItem('iskool_ai_api_key');
+        localStorage.removeItem('iskool_ai_api_key');
+        setHasApiKey(false);
+      }
+    }
+    setIsKeyModalOpen(false);
+  };
 
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -420,7 +450,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
       </div>
 
       {/* ================= PANEL DERECHO: INTERFAZ DE DIÁLOGO HISTÓRICO ================= */}
-      <div className="flex-1 flex flex-col justify-between h-[420px] sm:h-[460px] bg-black/40 rounded-2xl border border-amber-500/20 p-3 sm:p-4 overflow-hidden">
+      <div className="flex-1 flex flex-col justify-between h-[420px] sm:h-[460px] bg-black/40 rounded-2xl border border-amber-500/20 p-3 sm:p-4 overflow-hidden relative">
         {/* Cabecera del Chat */}
         <div className="flex items-center justify-between pb-2.5 border-b border-amber-500/15">
           <div className="flex items-center gap-2">
@@ -429,9 +459,24 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
               Entrevista Histórica en Vivo
             </span>
           </div>
-          <span className="text-[10px] text-amber-400/80 bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-500/20">
-            Responde en 1ª Persona
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsKeyModalOpen(true)}
+              className={`text-[10px] flex items-center gap-1 px-2 py-0.5 rounded-full border transition-all cursor-pointer ${
+                hasApiKey
+                  ? 'bg-emerald-950/70 text-emerald-300 border-emerald-500/40 hover:bg-emerald-900/80 shadow-sm'
+                  : 'bg-amber-950/60 text-amber-300/80 border-amber-500/30 hover:bg-amber-900/60'
+              }`}
+              title="Configurar clave para generación con tokens de Inteligencia Artificial"
+            >
+              <Key className="w-2.5 h-2.5" />
+              <span>{hasApiKey ? 'Tokens IA Activos' : 'Configurar Clave IA'}</span>
+            </button>
+            <span className="text-[10px] text-amber-400/80 bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-500/20">
+              Responde en 1ª Persona
+            </span>
+          </div>
         </div>
 
         {/* Historial de Mensajes con Scroll */}
@@ -458,9 +503,13 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
                   <p className="font-serif">{msg.text}</p>
                   <div className="flex items-center justify-between gap-3 mt-1.5 pt-1 border-t border-white/10 text-[9px] text-amber-300/60">
                     <span>{msg.timestamp}</span>
-                    {msg.isCached && (
+                    {msg.isCached ? (
                       <span className="text-emerald-400 font-mono font-bold flex items-center gap-0.5">
                         <Database className="w-2.5 h-2.5" /> 0 Tokens (Bóveda)
+                      </span>
+                    ) : (
+                      <span className="text-amber-300 font-mono font-bold flex items-center gap-0.5">
+                        <Sparkles className="w-2.5 h-2.5" /> Tokens IA (Guardado en Bóveda)
                       </span>
                     )}
                   </div>
@@ -537,6 +586,83 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Modal de Configuración de Clave de Tokens */}
+      <AnimatePresence>
+        {isKeyModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 rounded-3xl"
+          >
+            <div className="bg-slate-900 border border-amber-500/40 rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl">
+              <div className="flex items-center justify-between border-b border-amber-500/20 pb-3">
+                <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
+                  <Key className="w-4 h-4 text-amber-400" />
+                  <span>Tokens e Inteligencia Artificial</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsKeyModalOpen(false)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
+                Las preguntas que ya existen en la <strong className="text-amber-300">Bóveda Curricular</strong> se responden al instante con <span className="text-emerald-400 font-bold">0 Tokens</span>.
+                Para preguntas inéditas en tiempo real, puedes vincular tu clave del <strong className="text-amber-300">Motor de IA Pedagógica</strong> (se almacena de forma segura solo en tu sesión).
+              </p>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-amber-400/80">
+                  Clave de Inferencia IA (Opcional)
+                </label>
+                <input
+                  type="password"
+                  value={apiKeyInput}
+                  onChange={(e) => setApiKeyInput(e.target.value)}
+                  placeholder="Introduce tu clave de IA..."
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-amber-500/30 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono"
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/10">
+                {hasApiKey ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setApiKeyInput('');
+                      handleSaveApiKey('');
+                    }}
+                    className="text-[10px] text-rose-400 hover:underline cursor-pointer font-bold"
+                  >
+                    Eliminar Clave
+                  </button>
+                ) : <span />}
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsKeyModalOpen(false)}
+                    className="px-3 py-1.5 rounded-xl text-xs text-slate-300 hover:bg-white/10 transition-all cursor-pointer"
+                  >
+                    Cerrar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSaveApiKey(apiKeyInput)}
+                    className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-bold text-xs shadow-md cursor-pointer transition-all"
+                  >
+                    Guardar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

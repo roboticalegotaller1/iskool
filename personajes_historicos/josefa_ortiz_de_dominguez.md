@@ -138,9 +138,18 @@ A: Contraje santo matrimonio con don Miguel Domínguez en 1791 en la Ciudad de M
 ### Q: ¿Cuántos hijos tuviste?
 A: La Providencia y la vida con don Miguel Domínguez me bendijeron con catorce hijos. Cuidar de ellos y velar por su porvenir en medio de la agitación virreinal y los años de persecución fue la encomienda más entrañable de mi corazón. Cuando fui recluida en conventos y prisiones virreinales por la causa insurgente, el dolor de la separación fue inmenso, pero sabía que solo en una patria libre mis hijos tendrían un destino digno.
 
+### Q: que edad tenias cuando fue la independencia ?
+A: Tenía exactamente 42 años de edad cuando estalló la gesta de independencia. Nací el 8 de septiembre de 1768 en la ciudad de Valladolid (hoy Morelia), de modo que apenas unos días antes de aquella trascendental madrugada del 16 de septiembre de 1810 acababa de cumplir los 42 años. A esa edad, siendo madre de familia numerosa y esposa del Corregidor en Querétaro, mi conciencia moral y patriotismo estaban plenamente forjados para asumir el riesgo supremo de alertar a Allende e Hidalgo sin titubear.
+
+### Q: �Qu� ropa usabas cuando te vest�as en Quer�taro?
+A: Como dama principal de Querétaro y esposa del Corregidor, vestía con decoro y sobriedad de acuerdo a las pautas de nuestra época virreinal: sayas amplias de seda o terciopelo bordado, camisas de lino blanco con encajes finos, mantillas y el tradicional rebozo de seda que portaba con gallardía criolla. Mis zapatillas eran de raso o cuero ajustado con suela de madera, las mismas con las que aquella noche del 15 de septiembre di los tres golpes firmes sobre el entarimado para salvar la causa de nuestra libertad.
+
+### Q: Que comian durante las tertulias en Queretaro?
+A: Durante nuestras veladas en la Casa del Corregimiento manteníamos la usanza virreinal de servir chocolate caliente batido con molinillo y aromatizado con canela y vainilla, acompañado de pan dulce tradicional, marquesotes y confituras de frutas del Bajío. En ocasiones de mayor solemnidad se ofrecían atoles, guisos criollos con hierbas de olor y vino de mesa. Aquellas mesas bien provistas eran la antesala propicia donde los comensales, al calor de la plática, discurrían entre poemas y tratados filosóficos sobre el destino libre de la América Septentrional.
+
 
 ## 5 Preguntas Clave de Verificación Formativa
-### 1. ¿Bajo qué pretexto organizaba Doña Josefa las reuniones clandestinas en Querétaro?
+### 1. 1. 1. 1. ¿Bajo qué pretexto organizaba Doña Josefa las reuniones clandestinas en Querétaro?
 - [ ] Concursos de pintura virreinal
 - [x] Tertulias literarias y académicas
 - [ ] Subastas de granos y ganado
@@ -150,7 +159,7 @@ A: La Providencia y la vida con don Miguel Domínguez me bendijeron con catorce 
 **PDA**: Ética, Naturaleza y Sociedades - Organización ciudadana y emancipación.
 
 
-### 2. ¿Qué táctica empleó Josefa al quedar encerrada en su habitación para avisar al alcaide?
+### 2. 2. 2. 2. ¿Qué táctica empleó Josefa al quedar encerrada en su habitación para avisar al alcaide?
 - [ ] Envió una paloma mensajera
 - [x] Golpeó tres veces el piso con su zapato para alertar a Ignacio Pérez
 - [ ] Tiró una moneda de oro a la calle
@@ -160,7 +169,7 @@ A: La Providencia y la vida con don Miguel Domínguez me bendijeron con catorce 
 **PDA**: Resolución valiente de problemas en momentos críticos de la historia.
 
 
-### 3. ¿Quién fue el mensajero que cabalgó de Querétaro a Dolores para advertir a Hidalgo y Allende?
+### 3. 3. 3. 3. ¿Quién fue el mensajero que cabalgó de Querétaro a Dolores para advertir a Hidalgo y Allende?
 - [ ] Agustín de Iturbide
 - [x] El alcaide Ignacio Pérez
 - [ ] Vicente Guerrero
@@ -170,7 +179,7 @@ A: La Providencia y la vida con don Miguel Domínguez me bendijeron con catorce 
 **PDA**: Hechos y personajes clave en el movimiento de Independencia de México.
 
 
-### 4. ¿Cómo reaccionó Doña Josefa ante la oferta de formar parte de la corte del emperador Agustín de Iturbide?
+### 4. 4. 4. 4. ¿Cómo reaccionó Doña Josefa ante la oferta de formar parte de la corte del emperador Agustín de Iturbide?
 - [ ] Aceptó con entusiasmo el título de dama de honor
 - [x] Rechazó tajantemente la oferta, defendiendo que la lucha fue por una República libre y no un nuevo imperio
 - [ ] Pidió ser nombrada ministra de gobierno
@@ -180,7 +189,7 @@ A: La Providencia y la vida con don Miguel Domínguez me bendijeron con catorce 
 **PDA**: Formación cívica, soberanía popular y congruencia ética.
 
 
-### 5. ¿En qué recinto descansan actualmente con veneración cívica los restos mortales de Doña Josefa?
+### 5. 5. 5. 5. ¿En qué recinto descansan actualmente con veneración cívica los restos mortales de Doña Josefa?
 - [ ] Catedral Metropolitana de la Ciudad de México
 - [x] Panteón de los Queretanos Ilustres
 - [ ] Columna de la Independencia en Paseo de la Reforma
@@ -188,5 +197,4 @@ A: La Providencia y la vida con don Miguel Domínguez me bendijeron con catorce 
 
 **Retroalimentación**: Sus restos reposan en el mausoleo del Panteón de los Queretanos Ilustres en la ciudad de Querétaro, rindiendo honor perpetuo a su gesta.
 **PDA**: Memoria colectiva, patrimonio cívico e identidad comunitaria.
-
 
