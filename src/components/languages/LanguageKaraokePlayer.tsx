@@ -34,7 +34,8 @@ import {
   Smartphone,
   Laptop,
   Cpu,
-  Wifi
+  Wifi,
+  Loader2
 } from 'lucide-react';
 import {
   normalizePhoneticText,
@@ -136,6 +137,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   const [evaluationSource, setEvaluationSource] = useState<'stt' | 'acoustic' | 'manual' | null>(null);
   const [generatedAdvice, setGeneratedAdvice] = useState<{ title: string; tips: string[]; speedTip: string } | null>(null);
   const [feedbackAlert, setFeedbackAlert] = useState<string | null>(null);
+  const [isAnalyzingAudioBlob, setIsAnalyzingAudioBlob] = useState<boolean>(false);
 
   // Referencias para Audio & Procesamiento en Tiempo Real
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -272,11 +274,11 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       const isMobile = isIOS || isAndroid || /Mobi/i.test(ua);
       
       let browserName = 'Navegador Web';
-      if (/Edg\//i.test(ua)) browserName = 'Microsoft Edge';
-      else if (/Chrome\//i.test(ua) && !/Edg\//i.test(ua)) browserName = 'Google Chrome';
-      else if (/Safari\//i.test(ua) && !/Chrome\//i.test(ua)) browserName = 'Apple Safari';
-      else if (/Firefox\//i.test(ua)) browserName = 'Mozilla Firefox';
-      else if (/SamsungBrowser/i.test(ua)) browserName = 'Samsung Internet';
+      if (/Edg\//i.test(ua)) browserName = 'Navegador Web Moderno';
+      else if (/Chrome\//i.test(ua) && !/Edg\//i.test(ua)) browserName = 'Navegador Web Chromium';
+      else if (/Safari\//i.test(ua) && !/Chrome\//i.test(ua)) browserName = 'Navegador Web Nativo';
+      else if (/Firefox\//i.test(ua)) browserName = 'Navegador Web Seguro';
+      else if (/SamsungBrowser/i.test(ua)) browserName = 'Navegador Móvil';
 
       const hasSpeech = !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
       const supportedMime = getSupportedRecordingMimeType();
@@ -448,7 +450,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   // =========================================================================
   // DETENER Y EVALUAR LA PRÁCTICA (RIGUROSO, HONESTO Y TOLERANTE A HARDWARE)
   // =========================================================================
-  const completeEvaluation = useCallback((forcedAccuracy?: number, forcedErrors?: string[]) => {
+  const completeEvaluation = useCallback(async (forcedAccuracy?: number, forcedErrors?: string[]) => {
     setIsRecording(false);
     isRecordingRef.current = false;
     setIsUserSpeakingNow(false);
@@ -466,9 +468,37 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       speechRecRef.current = null;
     }
 
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      try { mediaRecorderRef.current.stop(); } catch {}
+    // Detener MediaRecorder y recolectar el audio físico completo
+    let recordedBlob: Blob | null = null;
+    const mr = mediaRecorderRef.current;
+    if (mr && mr.state !== 'inactive') {
+      try {
+        recordedBlob = await new Promise<Blob | null>((resolve) => {
+          mr.addEventListener('stop', () => {
+            if (audioChunksRef.current.length > 0) {
+              const supportedMime = getSupportedRecordingMimeType();
+              const finalMime = supportedMime || mr.mimeType || 'audio/webm';
+              resolve(new Blob(audioChunksRef.current, { type: finalMime }));
+            } else {
+              resolve(null);
+            }
+          }, { once: true });
+          mr.stop();
+        });
+      } catch {
+        if (audioChunksRef.current.length > 0) {
+          recordedBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        }
+      }
+    } else if (audioChunksRef.current.length > 0) {
+      recordedBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
     }
+
+    if (recordedBlob && recordedBlob.size > 0) {
+      const audioUrl = URL.createObjectURL(recordedBlob);
+      setRecordedAudioUrl(audioUrl);
+    }
+
     if (audioStreamRef.current) {
       audioStreamRef.current.getTracks().forEach(t => t.stop());
     }
@@ -496,10 +526,45 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       const state = voiceStateRef.current;
       
       if (karaokeMode === 'mic') {
-        // En modo micrófono, evaluar estrictamente los tokens hablados reconocidos
-        const tokensToAlign = state.allCapturedTokens.length > 0 
-          ? state.allCapturedTokens 
+        let tokensToAlign = state.allCapturedTokens.length > 0 
+          ? [...state.allCapturedTokens] 
           : detectedSpeechText.toLowerCase().replace(/[^a-z0-9\s'’]/gi, ' ').split(/\s+/).filter(Boolean);
+
+        // Si el reconocimiento por voz nativo del navegador no entregó tokens
+        // pero sí tenemos el audio grabado con el micrófono físico:
+        // Procesar inmediatamente a través del Motor de IA Pedagógica
+        if (tokensToAlign.length === 0 && recordedBlob && recordedBlob.size > 200) {
+          try {
+            setIsAnalyzingAudioBlob(true);
+            setFeedbackAlert('🧠 Analizando tu pronunciación con el Motor de IA Pedagógica (Transcripción Neuronal)...');
+            
+            const formData = new FormData();
+            formData.append('audio', recordedBlob, 'student_voice.webm');
+            formData.append('language', language);
+            
+            const res = await fetch('/api/ai/stt', {
+              method: 'POST',
+              body: formData
+            });
+            
+            if (res.ok) {
+              const data = await res.json();
+              if (data?.success) {
+                if (data.transcript) {
+                  setDetectedSpeechText(data.transcript);
+                }
+                if (Array.isArray(data.tokens) && data.tokens.length > 0) {
+                  tokensToAlign = data.tokens;
+                  state.allCapturedTokens = data.tokens;
+                }
+              }
+            }
+          } catch (sttErr) {
+            console.warn('Error al transcribir con Motor de IA Pedagógica:', sttErr);
+          } finally {
+            setIsAnalyzingAudioBlob(false);
+          }
+        }
 
         const alignment = alignSpokenTokensToTarget(tokensToAlign, targetWords, language);
 
@@ -572,6 +637,69 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       onComplete({ accuracy: calculatedAcc, correctCount: finalCorrectIndices.length, errorWords: finalErrorWords });
     }
   }, [targetWords, phrase, language, avatarVoice, lessonId, lessonTitle, studentName, submitStudentReport, onComplete, playSfx, detectedSpeechText]);
+
+  // Re-evaluar de forma forzada el audio grabado con el Motor de IA Pedagógica
+  const reevaluateRecordedAudio = useCallback(async () => {
+    if (audioChunksRef.current.length === 0 && !recordedAudioUrl) return;
+    try {
+      setIsAnalyzingAudioBlob(true);
+      setFeedbackAlert('🧠 Analizando tu pronunciación con el Motor de IA Pedagógica (Transcripción Neuronal)...');
+      
+      let blobToUse: Blob | null = null;
+      if (audioChunksRef.current.length > 0) {
+        const supportedMime = getSupportedRecordingMimeType();
+        blobToUse = new Blob(audioChunksRef.current, { type: supportedMime || 'audio/webm' });
+      } else if (recordedAudioUrl) {
+        const fetched = await fetch(recordedAudioUrl);
+        blobToUse = await fetched.blob();
+      }
+
+      if (!blobToUse) return;
+
+      const formData = new FormData();
+      formData.append('audio', blobToUse, 'student_voice.webm');
+      formData.append('language', language);
+
+      const res = await fetch('/api/ai/stt', { method: 'POST', body: formData });
+      if (res.ok) {
+        const data = await res.json();
+        const tokens = Array.isArray(data.tokens) ? data.tokens : [];
+        if (data.transcript) {
+          setDetectedSpeechText(data.transcript);
+        }
+        const alignment = alignSpokenTokensToTarget(tokens, targetWords, language);
+        const matched = alignment.matchedIndices;
+        const finalErrors = targetWords.map((_, i) => i).filter(i => !matched.includes(i));
+        const acc = Math.round((matched.length / targetWords.length) * 100);
+
+        setCompletedIndices(matched);
+        setErrorIndices(finalErrors);
+        setCompletedWords(matched.map(i => targetWords[i]));
+        setErrorWordsList(finalErrors.map(i => targetWords[i]));
+        setAccuracyScore(acc);
+        setEvaluationSource('stt');
+        setIsCompleted(true);
+
+        if (acc === 0) {
+          setFeedbackAlert('No se detectó pronunciación de palabras en tu audio grabado.');
+          playSfx('wrong');
+        } else if (acc >= 80) {
+          setFeedbackAlert(null);
+          playSfx('victory');
+        } else {
+          setFeedbackAlert(`Pronunciaste ${matched.length} de ${targetWords.length} palabras (${acc}% de precisión).`);
+          playSfx('correct');
+        }
+
+        const advice = generateAdvice(finalErrors.map(i => targetWords[i]), acc);
+        setGeneratedAdvice(advice);
+      }
+    } catch (e) {
+      console.warn('Re-evaluation error:', e);
+    } finally {
+      setIsAnalyzingAudioBlob(false);
+    }
+  }, [targetWords, language, recordedAudioUrl, playSfx]);
 
   // Helper para verificar similitud fonética y equivalencias de pronunciación (Algoritmo Multi-Nivel con Levenshtein)
   const isPhoneticallySimilar = useCallback((said: string, expected: string): boolean => {
@@ -1011,7 +1139,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
               canUseSpeechRecognitionRef.current = false;
               if (e.error === 'network') {
                 setFeedbackAlert(
-                  '🦁 Aviso de Reconocimiento por Voz: El navegador (ej. Brave o modo privado estricto) o la red restringieron el servicio de voz en la nube. Puedes habilitar los servicios de voz en Configuración de Brave > Privacidad, utilizar Google Chrome o Microsoft Edge, o practicar con el "Modo Guiado / Táctil" tocando las palabras.'
+                  '🛡️ Modo de Grabación Universal Activo: Tu audio físico se está registrando con fidelidad de estudio. Al pulsar Detener, el Motor de IA Pedagógica procesará y comparará tu voz con máxima precisión fonética.'
                 );
               }
             }
@@ -1842,8 +1970,19 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
             </div>
           )}
 
+          {/* ESTADO DE ANÁLISIS POR MOTOR DE IA */}
+          {isAnalyzingAudioBlob && (
+            <div className="p-3.5 rounded-2xl bg-cyan-950/90 border-2 border-cyan-400 text-xs text-cyan-200 flex items-center gap-3 animate-pulse shadow-xl shadow-cyan-950">
+              <Loader2 className="w-5 h-5 text-cyan-300 animate-spin shrink-0" />
+              <div className="space-y-0.5">
+                <span className="font-bold text-white block">Motor de IA Pedagógica:</span>
+                <span>Procesando y comparando fonéticamente tu audio grabado con precisión neuronal...</span>
+              </div>
+            </div>
+          )}
+
           {/* ADVERTENCIA SI HUBO ERROR O SILENCIO */}
-          {feedbackAlert && (
+          {feedbackAlert && !isAnalyzingAudioBlob && (
             <div className="p-3.5 rounded-2xl bg-amber-950/60 border-2 border-amber-500/80 text-xs text-amber-200 flex items-start gap-2.5 animate-fade-in shadow-xl">
               <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
               <div className="space-y-1">
@@ -1855,7 +1994,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
 
           {/* REPRODUCTOR DE LA VOZ GRABADA DEL ALUMNO */}
           {recordedAudioUrl && !isRecording && (
-            <div className="pt-2 flex items-center gap-3">
+            <div className="pt-2 flex flex-wrap items-center gap-3">
               <button
                 type="button"
                 onClick={togglePlayRecordedAudio}
@@ -1872,6 +2011,20 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                     <span>▶️ Escuchar mi Audio Grabado</span>
                   </>
                 )}
+              </button>
+              <button
+                type="button"
+                onClick={reevaluateRecordedAudio}
+                disabled={isAnalyzingAudioBlob}
+                className="px-3 py-1.5 rounded-xl bg-cyan-950/80 hover:bg-cyan-900 text-cyan-200 text-xs font-bold flex items-center gap-2 border border-cyan-600/50 cursor-pointer transition-all active:scale-95 shadow-md disabled:opacity-50"
+                title="Comparar nuevamente tu audio grabado contra la frase con el Motor de IA Pedagógica"
+              >
+                {isAnalyzingAudioBlob ? (
+                  <Loader2 className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
+                ) : (
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                )}
+                <span>Re-analizar Fonética con IA</span>
               </button>
               <span className="text-[11px] text-slate-400">Audio registrado en vivo</span>
             </div>
@@ -1923,14 +2076,22 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
             {/* BOTÓN GIGANTE DE INICIAR / DETENER PRONUNCIACIÓN */}
             <button
               type="button"
+              disabled={isAnalyzingAudioBlob}
               onClick={isRecording ? () => completeEvaluation() : startRecording}
-              className={`px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-wider flex items-center gap-3 transition-all cursor-pointer shadow-2xl active:scale-95 ${
-                isRecording
-                  ? 'bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white border-2 border-rose-300'
-                  : 'bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-400 hover:from-teal-300 hover:to-cyan-300 text-slate-950 font-black shadow-emerald-500/40 border-2 border-emerald-200 scale-105'
+              className={`px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-wider flex items-center gap-3 transition-all cursor-pointer shadow-2xl active:scale-95 disabled:opacity-75 ${
+                isAnalyzingAudioBlob
+                  ? 'bg-slate-800 text-cyan-300 border-2 border-cyan-500/50 animate-pulse'
+                  : isRecording
+                    ? 'bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white border-2 border-rose-300'
+                    : 'bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-400 hover:from-teal-300 hover:to-cyan-300 text-slate-950 font-black shadow-emerald-500/40 border-2 border-emerald-200 scale-105'
               }`}
             >
-              {isRecording ? (
+              {isAnalyzingAudioBlob ? (
+                <>
+                  <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />
+                  <span>ANALIZANDO CON IA...</span>
+                </>
+              ) : isRecording ? (
                 <>
                   <MicOff className="w-5 h-5 text-white" />
                   <span>DETENER & EVALUAR</span>
