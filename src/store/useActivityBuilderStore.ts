@@ -549,6 +549,148 @@ const createDefaultBlock = (type: StudioBlockType, index: number = 0): StudioBlo
         }
       } as any;
 
+    case 'historical_figure_block':
+      return {
+        id,
+        type: 'historical_figure_block',
+        title: 'Josefa Ortiz de Domínguez',
+        isCollapsed: false,
+        position,
+        data: {
+          characterName: 'Josefa Ortiz de Domínguez',
+          isGeographicSite: false,
+          historicalEra: 'Guerra de Independencia de México (1810)',
+          birthDeathDates: '1768 - 1829',
+          shortBio: 'Heroína e insurgente novohispana clave en la Conspiración de Querétaro de 1810. Su oportuno aviso a Ignacio Pérez permitió el inicio del movimiento de Independencia.',
+          detailedContext: 'Nacida en Valladolid (hoy Morelia), esposa del corregidor Miguel Domínguez. En su casa se organizaron las tertulias literarias que gestaron la insurgencia nacional.',
+          avatarImageUrl: '/images/history/josefa_ortiz_portrait.webp',
+          bookSpineStyle: 'diario_republicano',
+          moments: [
+            {
+              id: 'm-1',
+              title: 'La Conspiración de Querétaro',
+              yearOrDate: 'Septiembre de 1810',
+              description: 'En la casa del Corregimiento se reúnen criollos insurgentes para trazar los planos de la soberanía nacional.',
+              imageUrl: '/images/history/josefa_conspiracion_comic.webp',
+              locationName: 'Casa de la Corregidora, Querétaro',
+              coordinates: { lat: 20.5931, lng: -100.3928 },
+              narrativeCaption: 'Bajo la penumbra de las velas, se trazan los destinos de una nación soberana.'
+            },
+            {
+              id: 'm-2',
+              title: 'El Mensaje a Caballo en la Noche',
+              yearOrDate: '13-15 de Septiembre de 1810',
+              description: 'Al ser descubierta la conspiración y encerrada en su alcoba, Josefa logra comunicarse con el alcaide Ignacio Pérez para enviar el correo urgente a San Miguel y Dolores.',
+              imageUrl: '/images/history/josefa_mensajero_comic.webp',
+              locationName: 'Santiago de Querétaro a San Miguel el Grande',
+              coordinates: { lat: 20.9144, lng: -100.7452 },
+              narrativeCaption: 'Un golpe en el piso de la alcoba y una carta sellada desatan el galope de la libertad.'
+            },
+            {
+              id: 'm-3',
+              title: 'El Grito de Dolores',
+              yearOrDate: '16 de Septiembre de 1810',
+              description: 'El cura Miguel Hidalgo, alertado por el mensaje de Josefa, llama al pueblo con las campanas de la parroquia a levantarse en armas.',
+              imageUrl: '/images/history/hidalgo_grito_comic.webp',
+              locationName: 'Parroquia de Nuestra Señora de los Dolores',
+              coordinates: { lat: 21.1561, lng: -100.9328 },
+              narrativeCaption: 'El llamado de la campana en la madrugada consuma la insurrección popular.'
+            },
+            {
+              id: 'm-4',
+              title: 'Dignidad Republicana Inquebrantable',
+              yearOrDate: '1823 - 1829',
+              description: 'Tras la independencia, Josefa rechaza honores imperiales de Iturbide, manteniéndose fiel a los ideales republicanos y federalistas hasta sus últimos días.',
+              imageUrl: '/images/history/josefa_republicana_comic.webp',
+              locationName: 'Ciudad de México',
+              coordinates: { lat: 19.4326, lng: -99.1332 },
+              narrativeCaption: 'Rechazó las coronas imperiales; su único título fue haber servido a la patria con lealtad.'
+            }
+          ],
+          keyLocations: [
+            {
+              id: 'loc-1',
+              name: 'Casa de la Corregidora (Palacio de Gobierno de Querétaro)',
+              stateOrCountry: 'Querétaro, México',
+              coordinates: { lat: 20.5931, lng: -100.3928 },
+              significance: 'Sede de las tertulias secretas de la conspiración de 1810 y sitio del encierro donde Josefa dio aviso a la patria.'
+            },
+            {
+              id: 'loc-2',
+              name: 'San Miguel de Allende (San Miguel el Grande)',
+              stateOrCountry: 'Guanajuato, México',
+              coordinates: { lat: 20.9144, lng: -100.7452 },
+              significance: 'Destino del correo a galope llevado por Ignacio Pérez para prevenir al capitán Ignacio Allende.'
+            },
+            {
+              id: 'loc-3',
+              name: 'Parroquia de Dolores Hidalgo',
+              stateOrCountry: 'Guanajuato, México',
+              coordinates: { lat: 21.1561, lng: -100.9328 },
+              significance: 'Cuna de la Independencia nacional donde Hidalgo proclamó el inicio de la gesta armada.'
+            }
+          ],
+          videoClip: {
+            videoUrl: 'https://www.youtube.com/watch?v=25cq1V8AsTg',
+            durationSeconds: 15,
+            title: 'El Correo de la Libertad: Josefa Ortiz de Domínguez',
+            narratorScript: 'En septiembre de 1810, la conspiración de Querétaro fue descubierta. Encerrada en su alcoba, Josefa Ortiz de Domínguez logró enviar un mensaje urgente que cambió la historia de México para siempre.'
+          },
+          verificationQuestions: [
+            {
+              id: 'vq-1',
+              question: '¿Qué acción decisiva realizó Josefa Ortiz de Domínguez al enterarse de que la conspiración había sido descubierta?',
+              options: [
+                'Huyó de inmediato al extranjero',
+                'Alertó oportunamente a través de un mensajero a los líderes insurgentes',
+                'Entregó las armas al ejército realista',
+                'Se declaró neutral ante el conflicto'
+              ],
+              correctIndex: 1,
+              explanation: 'Josefa dio aviso a Ignacio Pérez, quien cabalgó de noche para alertar a Allende e Hidalgo, precipitando el Grito de Dolores.'
+            },
+            {
+              id: 'vq-2',
+              question: '¿En qué ciudad se llevaron a cabo las tertulias literarias que en realidad eran reuniones conspirativas?',
+              options: ['Guadalajara', 'Veracruz', 'Santiago de Querétaro', 'Puebla'],
+              correctIndex: 2,
+              explanation: 'Las tertulias se realizaban en la casa de los corregidores en la ciudad de Santiago de Querétaro.'
+            },
+            {
+              id: 'vq-3',
+              question: '¿Por qué Josefa Ortiz de Domínguez rechazó los honores ofrecidos por Agustín de Iturbide?',
+              options: [
+                'Porque defendía firmemente los ideales de una República y no de un Imperio',
+                'Porque prefería vivir en España',
+                'Por motivos de salud',
+                'Porque no le interesaban los asuntos de la nación'
+              ],
+              correctIndex: 0,
+              explanation: 'Fiel a los ideales de libertad e igualdad, rechazó servir como dama de honor en la corte del efímero Imperio de Iturbide.'
+            },
+            {
+              id: 'vq-4',
+              question: '¿Quién fue el mensajero que cabalgó desde Querétaro para llevar la advertencia de Josefa?',
+              options: ['Vicente Guerrero', 'Ignacio Pérez', 'Mariano Abasolo', 'José María Morelos'],
+              correctIndex: 1,
+              explanation: 'El alcaide Ignacio Pérez fue quien recibió la señal y montó a caballo para advertir a los insurgentes.'
+            },
+            {
+              id: 'vq-5',
+              question: '¿Cuál es el valor histórico y cívico del papel de las mujeres como Josefa Ortiz en la Independencia?',
+              options: [
+                'Demostraron liderazgo, valentía y convicción patriótica decisiva para el nacimiento de la nación',
+                'Su participación fue únicamente decorativa',
+                'Solo apoyaron con recursos económicos secundarios',
+                'No tuvieron impacto en las decisiones estratégicas'
+              ],
+              correctIndex: 0,
+              explanation: 'Su valentía y visión política fueron determinantes para que el movimiento de Independencia no fuera aniquilado antes de nacer.'
+            }
+          ]
+        }
+      } as any;
+
     default:
       return {
         id,

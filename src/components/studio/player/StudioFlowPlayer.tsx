@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { StudioBlock, ActivityBuilderMetadata, FlowConnection } from '@/types/studioBlocks';
 import { LogicMathInteractivePlayer } from './LogicMathInteractivePlayer';
 import { GrimorioTimedReadingPlayer } from './GrimorioTimedReadingPlayer';
+import { MagicHistoryBookPlayer } from '@/components/history/MagicHistoryBookPlayer';
 import { LogicActivityPreset } from '@/data/mathematicalLogicActivities';
 import { 
   Sparkles, 
@@ -1673,6 +1674,28 @@ export const StudioFlowPlayer: React.FC<Props> = ({
                   className="px-6 py-2.5 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-black text-xs shadow-md shadow-teal-500/25 flex items-center justify-center gap-2 mx-auto cursor-pointer"
                 >
                   <span>Continuar (+10 XP)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ================= 17. PERSONAJES & SITIOS HISTÓRICOS 3D ================= */}
+          {activeBlock?.type === 'historical_figure_block' && (
+            <div className="space-y-4">
+              <MagicHistoryBookPlayer
+                data={activeBlock.data}
+                onComplete={() => {
+                  handleNextStep(50);
+                }}
+              />
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => handleNextStep(50)}
+                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 flex items-center gap-2 cursor-pointer"
+                >
+                  <span>Continuar Misión Histórica (+50 XP)</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>

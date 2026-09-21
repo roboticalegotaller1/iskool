@@ -41,7 +41,8 @@ import {
   ToggleLeft,
   BrainCircuit,
   Languages,
-  Mic
+  Mic,
+  Landmark
 } from 'lucide-react';
 
 export interface Props {
@@ -236,6 +237,14 @@ export const BLOCK_META: Record<StudioBlockType, { label: string; icon: any; col
     glow: 'hover:border-purple-400 dark:hover:border-purple-700 hover:shadow-purple-500/10',
     color: 'from-indigo-600 via-purple-600 to-pink-600'
   },
+  historical_figure_block: {
+    label: 'Personaje o Sitio Histórico 3D',
+    icon: Landmark,
+    colorScheme: 'border-amber-200/90 dark:border-amber-900/60 shadow-amber-500/5',
+    badgeBg: 'bg-amber-100/90 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-200/60',
+    glow: 'hover:border-amber-400 dark:hover:border-amber-700 hover:shadow-amber-500/10',
+    color: 'from-amber-600 via-orange-600 to-yellow-600'
+  }
 };
 
 export const SortableBlockWrapper: React.FC<Props> = ({ block, index, totalBlocks }) => {

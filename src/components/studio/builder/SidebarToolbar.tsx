@@ -38,11 +38,12 @@ import {
   BrainCircuit,
   Languages,
   Mic,
-  ExternalLink
+  ExternalLink,
+  Landmark
 } from 'lucide-react';
 
 export interface BlockCategoryItem {
-  id: 'assessments' | 'multimedia' | 'gamification' | 'pedagogy' | 'logic_math' | 'languages';
+  id: 'assessments' | 'multimedia' | 'gamification' | 'pedagogy' | 'logic_math' | 'languages' | 'history_figures';
   name: string;
   badge: string;
   icon: any;
@@ -394,6 +395,28 @@ export const SCRATCH_CATEGORIES: BlockCategoryItem[] = [
         glowColor: 'shadow-indigo-500/30'
       }
     ]
+  },
+  {
+    id: 'history_figures',
+    name: 'Personajes & Sitios Históricos',
+    badge: '1 Bloque',
+    icon: Landmark,
+    color: 'from-amber-700 via-orange-600 to-amber-900',
+    description: 'Exploración de personajes históricos y sitios emblemáticos con avatar parlante en tiempo real, cómic interactivo, mapa cartográfico satelital, video cinematográfico y libro mágico 3D.',
+    example: 'Josefa Ortiz de Domínguez, Miguel Hidalgo, Benito Juárez o lugares como Santiago de Querétaro y Chichén Itzá.',
+    blocks: [
+      {
+        type: 'historical_figure_block',
+        title: 'Personaje o Sitio Histórico 3D',
+        category: 'Historia & Geografía',
+        badge: '🏛️ Libro Mágico & Avatar',
+        description: 'Libro mágico interactivo con 5 estilos de lomo, mapa satelital funcional con pines, cómic cronológico (Timelapse), video narrado y avatar vivo con gesticulaciones humanas e IA conversacional.',
+        example: 'Josefa Ortiz de Domínguez en Querétaro 1810 con mapa de hitos, cómic de la conspiración y avatar en 1ª persona.',
+        icon: Landmark,
+        gradient: 'from-amber-600 via-orange-600 to-yellow-600',
+        glowColor: 'shadow-amber-500/30'
+      }
+    ]
   }
 ];
 
@@ -416,7 +439,8 @@ export const SidebarToolbar: React.FC<SidebarToolbarProps> = ({ onBlockAdded }) 
     gamification: false,
     pedagogy: false,
     logic_math: false,
-    languages: true, // Desplegado por defecto para máxima visibilidad inmediata
+    languages: false,
+    history_figures: true, // Desplegado por defecto para máxima visibilidad inmediata
   });
 
   const [searchQuery, setSearchQuery] = useState('');

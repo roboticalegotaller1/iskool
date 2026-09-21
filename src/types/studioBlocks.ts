@@ -22,6 +22,9 @@ export type StudioBlockType =
   | 'languages_practice_portal'   // Portal y avatar interactivo de conversación en idiomas
   | 'languages_karaoke_block'     // Karaoke de fluidez fonética con reconocimiento y lectura
 
+  // Herramientas de Historia, Humanidades & Segundo Cerebro
+  | 'historical_figure_block'     // Personaje o Sitio Histórico Interactivo con Libro Mágico y Avatar Vivo
+
   // Herramientas Extendidas LMS (Menú [+])
   | 'youtube_video'        // Video educativo incrustado con marcas de tiempo
   | 'external_embed'       // Simuladores interactivos (PhET, GeoGebra, Desmos)
@@ -421,6 +424,75 @@ export interface LanguagesKaraokeBlock extends BaseStudioBlock {
 }
 
 /**
+ * 25. Bloque de Personajes y Sitios Históricos (Segundo Cerebro Vault-First & Libro Mágico)
+ */
+export type BookSpineStyle = 
+  | 'codice_antiguo' 
+  | 'tomo_imperial' 
+  | 'diario_republicano' 
+  | 'grimorio_dorado' 
+  | 'cuaderno_cronista';
+
+export interface HistoricalFigureMoment {
+  id: string;
+  title: string;
+  yearOrDate?: string;
+  yearOrPeriod?: string;
+  description: string;
+  imageUrl: string;
+  locationName: string;
+  coordinates: { lat: number; lng: number };
+  narrativeCaption: string; // Caja de texto estilo cómic de época
+}
+
+export interface HistoricalKeyLocation {
+  id: string;
+  name: string;
+  stateOrCountry: string;
+  coordinates: { lat: number; lng: number };
+  significance: string;
+  imageUrl?: string;
+  currentDayPhoto?: string;
+}
+
+export interface HistoricalVerificationQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+  pdaRelevance?: string;
+}
+
+export interface HistoricalFigureBlockData {
+  characterName: string;
+  isGeographicSite?: boolean;
+  historicalEra?: string;
+  birthDeathDates?: string;
+  shortBio: string;
+  detailedContext: string;
+  avatarImageUrl: string;
+  bookSpineStyle: BookSpineStyle;
+  moments: HistoricalFigureMoment[];
+  keyLocations: HistoricalKeyLocation[];
+  videoClip?: {
+    videoUrl: string;
+    durationSeconds: number;
+    title: string;
+    narratorScript: string;
+  };
+  verificationQuestions: HistoricalVerificationQuestion[];
+  qaCache?: Array<{ question: string; answer: string; timestamp?: number }>;
+  vaultNodeSlug?: string;
+  isFromVault?: boolean;
+}
+
+export interface HistoricalFigureBlock extends BaseStudioBlock {
+  type: 'historical_figure_block';
+  data: HistoricalFigureBlockData;
+}
+
+/**
  * Unión discriminada de todos los bloques didácticos (Lienzo Digital)
  */
 export type StudioBlock =
@@ -436,6 +508,7 @@ export type StudioBlock =
   | ConstraintSchedulerBlock
   | LanguagesPracticeBlock
   | LanguagesKaraokeBlock
+  | HistoricalFigureBlock
   | YouTubeVideoBlock
   | ExternalEmbedBlock
   | DragDropMatchBlock

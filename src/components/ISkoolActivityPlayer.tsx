@@ -14,6 +14,8 @@ import { LogicMathInteractivePlayer } from '@/components/studio/player/LogicMath
 import { StudioFlowPlayer } from '@/components/studio/player/StudioFlowPlayer';
 import { LogicActivityPreset } from '@/data/mathematicalLogicActivities';
 import { SimulatorIframePlayer } from '@/components/games/SimulatorIframePlayer';
+import { MagicHistoryBookPlayer } from '@/components/history/MagicHistoryBookPlayer';
+import { HistoricalFigureBlockData } from '@/types/studioBlocks';
 
 interface ISkoolActivityPlayerProps {
   activity: CanvasActivityJSON;
@@ -131,6 +133,22 @@ export const ISkoolActivityPlayer: React.FC<ISkoolActivityPlayerProps> = ({
       case 'simulador':
       case 'laboratorio':
         return <SimulatorIframePlayer activity={activity} onClose={onClose} onComplete={onComplete} />;
+
+      case 'historical_figure':
+      case 'personajes_historicos':
+      case 'historical_figure_block': {
+        const histData = (activity as any).historicalFigureData || (activity as any).data || {
+          characterName: activity.title || 'Josefa Ortiz de Domínguez',
+          shortBio: activity.description || 'Heroína de la Independencia de México.',
+          detailedContext: activity.description || 'Heroína de la Independencia de México.',
+          avatarImageUrl: '/images/history/josefa_ortiz_avatar.png',
+          bookSpineStyle: 'diario_republicano',
+          moments: [],
+          keyLocations: [],
+          verificationQuestions: []
+        };
+        return <MagicHistoryBookPlayer data={histData} onClose={onClose} onComplete={onComplete} />;
+      }
 
       default:
         return (

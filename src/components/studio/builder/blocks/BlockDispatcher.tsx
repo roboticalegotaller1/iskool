@@ -21,6 +21,7 @@ import { AudioSfxBlockView } from './AudioSfxBlockView';
 import { TimedReadingBlockView } from './TimedReadingBlockView';
 import { LogicMathBlockView } from './LogicMathBlockView';
 import { LanguagesBlockView } from './LanguagesBlockView';
+import { HistoricalFigureBlockView } from './HistoricalFigureBlockView';
 
 interface Props {
   block: StudioBlock;
@@ -28,6 +29,8 @@ interface Props {
 
 export const BlockDispatcher: React.FC<Props> = ({ block }) => {
   switch (block.type) {
+    case 'historical_figure_block':
+      return <HistoricalFigureBlockView block={block} />;
     case 'text_narrative':
       return <TextNarrativeBlockView block={block} />;
     case 'quiz_question':
