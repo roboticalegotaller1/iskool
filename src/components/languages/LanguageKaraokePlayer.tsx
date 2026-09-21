@@ -64,7 +64,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   const [speechRate, setSpeechRate] = useState<number>(0.85);
   const [slowWordToHear, setSlowWordToHear] = useState<string | null>(null);
 
-  // Estados del Micrófono Físico
+  // Estados del Micrófono Físico & Dispositivos
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [recordingDuration, setRecordingDuration] = useState<number>(0);
   const [audioLevel, setAudioLevel] = useState<number>(0);
@@ -73,6 +73,15 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   const [micTested, setMicTested] = useState<boolean>(false);
   const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
   const [isPlayingRecordedAudio, setIsPlayingRecordedAudio] = useState<boolean>(false);
+
+  // Selector de Micrófonos Hardware y Ganancia
+  const [availableMics, setAvailableMics] = useState<MediaDeviceInfo[]>([]);
+  const [selectedMicId, setSelectedMicId] = useState<string>('');
+  const [micGainValue, setMicGainValue] = useState<number>(4.0);
+  const [isTestingMicLive, setIsTestingMicLive] = useState<boolean>(false);
+  const [detectedSpeechText, setDetectedSpeechText] = useState<string>('');
+  const [testDetectedSpeechText, setTestDetectedSpeechText] = useState<string>('');
+  const [testMicError, setTestMicError] = useState<string | null>(null);
 
   // Estados del Karaoke Fonético Real (100% reactivo a la voz)
   const [activeWordIndex, setActiveWordIndex] = useState<number>(0);
@@ -93,6 +102,14 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   const audioContextRef = useRef<AudioContext | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const speechRecRef = useRef<any>(null);
+  const testSpeechRecRef = useRef<any>(null);
+  const testStreamRef = useRef<MediaStream | null>(null);
+  const testAudioCtxRef = useRef<AudioContext | null>(null);
+  const testAnimRef = useRef<number | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
+  const isRecordingRef = useRef<boolean>(false);
+  const isTestingMicLiveRef = useRef<boolean>(false);
 
   // Variables de control de voz reactiva
   const voiceStateRef = useRef<{
@@ -173,17 +190,37 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     } catch {}
   }, []);
 
-  // Chequeo inicial del micrófono
-  useEffect(() => {
-    if (typeof window !== 'undefined' && navigator.mediaDevices?.enumerateDevices) {
-      navigator.mediaDevices.enumerateDevices().then(devices => {
-        const hasAudioInput = devices.some(d => d.kind === 'audioinput');
-        setHardwareMicAvailable(hasAudioInput);
-      }).catch(() => {
-        setHardwareMicAvailable(true);
-      });
+  // Enumerar micrófonos disponibles y seleccionar el más adecuado (ej. Realtek o USB)
+  const refreshAudioDevices = useCallback(async () => {
+    if (typeof window === 'undefined' || !navigator.mediaDevices?.enumerateDevices) return;
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const audioInputs = devices.filter(d => d.kind === 'audioinput');
+      setAvailableMics(audioInputs);
+      setHardwareMicAvailable(audioInputs.length > 0);
+      
+      if (audioInputs.length > 0 && !selectedMicId) {
+        // Si hay varios, priorizar el que contenga 'realtek', 'mic' o 'default'
+        const preferred = audioInputs.find(m => 
+          /realtek|micrófono|microphone|headset|usb/i.test(m.label)
+        ) || audioInputs[0];
+        setSelectedMicId(preferred.deviceId);
+      }
+    } catch (e) {
+      console.warn('Error enumerando dispositivos de audio:', e);
+      setHardwareMicAvailable(true);
     }
-  }, []);
+  }, [selectedMicId]);
+
+  useEffect(() => {
+    refreshAudioDevices();
+    if (navigator.mediaDevices?.addEventListener) {
+      navigator.mediaDevices.addEventListener('devicechange', refreshAudioDevices);
+      return () => {
+        navigator.mediaDevices.removeEventListener('devicechange', refreshAudioDevices);
+      };
+    }
+  }, [refreshAudioDevices]);
 
   // Reiniciar estado al cambiar de frase
   useEffect(() => {
@@ -332,10 +369,21 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   // =========================================================================
   const completeEvaluation = useCallback((forcedAccuracy?: number, forcedErrors?: string[]) => {
     setIsRecording(false);
+    isRecordingRef.current = false;
     setIsUserSpeakingNow(false);
 
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+
+    if (speechRecRef.current) {
+      try {
+        speechRecRef.current.onresult = null;
+        speechRecRef.current.onend = null;
+        speechRecRef.current.onerror = null;
+        speechRecRef.current.stop();
+      } catch {}
+      speechRecRef.current = null;
+    }
 
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       try { mediaRecorderRef.current.stop(); } catch {}
@@ -377,7 +425,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     setIsCompleted(true);
 
     if (calculatedAcc === 0) {
-      setFeedbackAlert('No se detectó pronunciación de palabras. Asegúrate de hablar frente al micrófono y pronunciar cada palabra.');
+      setFeedbackAlert('No se detectó pronunciación de palabras. Asegúrate de seleccionar el micrófono correcto arriba y hablar frente a él.');
       playSfx('wrong');
     } else if (calculatedAcc >= 80) {
       setFeedbackAlert(null);
@@ -414,10 +462,152 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     }
   }, [targetWords, phrase, language, avatarVoice, lessonId, lessonTitle, studentName, submitStudentReport, onComplete, playSfx]);
 
+  // Helper para verificar similitud fonética y equivalencias de pronunciación
+  const isPhoneticallySimilar = useCallback((said: string, expected: string): boolean => {
+    if (!said || !expected) return false;
+    const s = said.toLowerCase().replace(/[^a-z0-9]/gi, '').trim();
+    const e = expected.toLowerCase().replace(/[^a-z0-9]/gi, '').trim();
+    if (!s || !e) return false;
+    if (s === e) return true;
+    if (s.startsWith(e) || e.startsWith(s)) return true;
+
+    // Diccionario de equivalencias fonéticas comunes para estudiantes de inglés
+    const phoneticsMap: Record<string, string[]> = {
+      'i': ['eye', 'ay', 'ai', 'ah', 'me'],
+      'would': ['wood', 'wud', 'could', 'woud', 'hood', 'good'],
+      'like': ['liked', 'lik', 'laik', 'light', 'lake'],
+      'a': ['uh', 'ah', 'eh', 'one', 'an'],
+      'warm': ['worm', 'warn', 'warmed', 'won', 'one'],
+      'cappuccino': ['capuchino', 'cappucino', 'capuccino', 'coffee', 'chino', 'cappuccino'],
+      'and': ['an', 'und', 'end', 'hand', 'n'],
+      'fresh': ['fres', 'frech', 'flash'],
+      'blueberry': ['blueberries', 'bluberry', 'blue', 'berry'],
+      'muffin': ['muffins', 'moffin', 'muffen', 'muff'],
+      'please': ['pleas', 'plz', 'peace', 'police', 'plis']
+    };
+
+    if (phoneticsMap[e]?.includes(s)) return true;
+    if (e.length >= 4 && (s.includes(e.slice(0, 3)) || e.includes(s.slice(0, 3)))) {
+      return true;
+    }
+    return false;
+  }, []);
+
+  // Procesar transcripción hablada en tiempo real
+  const processSpokenTranscript = useCallback((transcript: string) => {
+    setDetectedSpeechText(transcript);
+    const spokenTokens = transcript.toLowerCase().replace(/[^a-z0-9\s]/gi, ' ').split(/\s+/).filter(Boolean);
+    if (spokenTokens.length === 0) return;
+
+    const state = voiceStateRef.current;
+    if (state.currentWordIndex >= targetWords.length) return;
+
+    for (const token of spokenTokens) {
+      if (state.currentWordIndex >= targetWords.length) break;
+      const expected = targetWords[state.currentWordIndex];
+      
+      // Comprobar coincidencia con la palabra actual o la siguiente inmediata
+      if (isPhoneticallySimilar(token, expected)) {
+        if (!state.completed.includes(expected)) {
+          state.completed.push(expected);
+          setCompletedWords([...state.completed]);
+          playSfx('correct');
+
+          const nextIdx = state.currentWordIndex + 1;
+          state.currentWordIndex = nextIdx;
+          setActiveWordIndex(nextIdx);
+
+          if (nextIdx >= targetWords.length) {
+            setTimeout(() => {
+              completeEvaluation(100, []);
+            }, 350);
+            return;
+          }
+        }
+      }
+    }
+  }, [targetWords, isPhoneticallySimilar, playSfx, completeEvaluation]);
+
+  // Función robusta para obtener stream de audio del micrófono seleccionado
+  const getMicrophoneStream = async (deviceIdToUse?: string) => {
+    if (typeof window === 'undefined' || !navigator.mediaDevices?.getUserMedia) return null;
+    const targetId = deviceIdToUse || selectedMicId;
+
+    // En Windows con Realtek HD Audio y navegadores Chromium:
+    // 1. autoGainControl: true es VITAL para activar el preamplificador de Windows/WebRTC
+    // 2. echoCancellation: true conecta con el subsistema de audio nativo
+    // 3. noiseSuppression: false previene el recorte de formantes y consonantes suaves
+    // 4. deviceId con { ideal: targetId } para evitar OverconstrainedError
+    const audioConstraints: MediaTrackConstraints = targetId
+      ? {
+          deviceId: { ideal: targetId },
+          echoCancellation: true,
+          noiseSuppression: false,
+          autoGainControl: true
+        }
+      : {
+          echoCancellation: true,
+          noiseSuppression: false,
+          autoGainControl: true
+        };
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
+      refreshAudioDevices();
+      return stream;
+    } catch (err) {
+      console.warn('Fallo con restricciones específicas, intentando fallback estándar:', err);
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        refreshAudioDevices();
+        return stream;
+      } catch (e) {
+        console.error('Error accediendo al micrófono:', e);
+        return null;
+      }
+    }
+  };
+
   // =========================================================================
-  // INICIAR GRABACIÓN CON DETECTOR DE VOZ FÍSICO REAL (CON AMPLIFICACIÓN GAIN)
+  // INICIAR GRABACIÓN CON DETECTOR DE VOZ FÍSICO REAL (AUDIO CONTEXT + SPEECH REC)
   // =========================================================================
   const startRecording = async () => {
+    // 1. Si la prueba en vivo estaba activa, detenerla de inmediato
+    if (isTestingMicLiveRef.current) {
+      if (testStreamRef.current) {
+        testStreamRef.current.getTracks().forEach(t => t.stop());
+        testStreamRef.current = null;
+      }
+      if (testSpeechRecRef.current) {
+        try { testSpeechRecRef.current.stop(); } catch {}
+        testSpeechRecRef.current = null;
+      }
+      if (testAudioCtxRef.current) {
+        try { testAudioCtxRef.current.close(); } catch {}
+        testAudioCtxRef.current = null;
+      }
+      if (testAnimRef.current) {
+        cancelAnimationFrame(testAnimRef.current);
+        testAnimRef.current = null;
+      }
+      setIsTestingMicLive(false);
+      isTestingMicLiveRef.current = false;
+    }
+
+    // 2. Crear / reanudar AudioContext sincrónicamente dentro del gesto de usuario (click)
+    const AudioCtx = (typeof window !== 'undefined') ? (window.AudioContext || (window as any).webkitAudioContext) : null;
+    let localCtx: AudioContext | null = null;
+    if (AudioCtx) {
+      try {
+        localCtx = new AudioCtx();
+        if (localCtx.state === 'suspended') {
+          localCtx.resume();
+        }
+        audioContextRef.current = localCtx;
+      } catch {}
+    }
+
+    isRecordingRef.current = true;
     setIsRecording(true);
     setIsCompleted(false);
     setRecordingDuration(0);
@@ -427,6 +617,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     setFeedbackAlert(null);
     setRecordedAudioUrl(null);
     setIsUserSpeakingNow(false);
+    setDetectedSpeechText('');
     audioChunksRef.current = [];
     playSfx('start');
 
@@ -441,138 +632,185 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     };
 
     // Temporizador de duración
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     timerIntervalRef.current = setInterval(() => {
       setRecordingDuration(prev => prev + 1);
     }, 1000);
 
-    // Capturar audio físico del micrófono USB
-    if (typeof window !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
-      try {
-        let stream: MediaStream | null = null;
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
-          });
-        } catch {
-          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const stream = await getMicrophoneStream();
+    if (!stream) {
+      setFeedbackAlert('No se pudo acceder al micrófono. Por favor verifica los permisos en el candado del navegador y que el micrófono esté conectado.');
+      setIsRecording(false);
+      isRecordingRef.current = false;
+      return;
+    }
+
+    audioStreamRef.current = stream;
+    setHardwareMicAvailable(true);
+
+    // 3. CONECTAR ANALIZADOR ESPECTRAL Y AMPLIFICADOR CON RESUME GARANTIZADO
+    try {
+      const ctx = localCtx || (AudioCtx ? new AudioCtx() : null);
+      if (ctx) {
+        if (ctx.state === 'suspended') {
+          await ctx.resume();
         }
+        audioContextRef.current = ctx;
 
-        if (stream) {
-          audioStreamRef.current = stream;
-          setHardwareMicAvailable(true);
+        const source = ctx.createMediaStreamSource(stream);
+        const gainNode = ctx.createGain();
+        gainNode.gain.value = micGainValue;
+        gainNodeRef.current = gainNode;
 
-          const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-          if (AudioCtx) {
-            const ctx = new AudioCtx();
-            audioContextRef.current = ctx;
-            const source = ctx.createMediaStreamSource(stream);
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.2;
 
-            // NODO DE GANANCIA (3.5x) para amplificar micrófonos USB PnP de bajo volumen
-            const gainNode = ctx.createGain();
-            gainNode.gain.value = 3.5;
+        source.connect(gainNode);
+        gainNode.connect(analyser);
+        analyserRef.current = analyser;
 
-            const analyser = ctx.createAnalyser();
-            analyser.fftSize = 128;
-            analyser.smoothingTimeConstant = 0.2;
+        const freqData = new Uint8Array(analyser.frequencyBinCount);
+        const timeData = new Uint8Array(analyser.fftSize);
 
-            source.connect(gainNode);
-            gainNode.connect(analyser);
-            analyserRef.current = analyser;
+        const analyzeAudio = () => {
+          if (!isRecordingRef.current) return;
 
-            const timeData = new Uint8Array(analyser.fftSize);
+          if (ctx.state === 'suspended') {
+            ctx.resume();
+          }
 
-            // Umbral de habla calibrado
-            const SPEECH_THRESHOLD = 10; // Con 3.5x de ganancia, cualquier voz normal supera 15-40%
+          if (analyserRef.current) {
+            // Frecuencias de formantes vocales humanos
+            analyserRef.current.getByteFrequencyData(freqData);
+            let freqSum = 0;
+            const maxBin = Math.min(freqData.length, 64);
+            for (let i = 1; i < maxBin; i++) freqSum += freqData[i];
+            const freqAvg = freqSum / (maxBin - 1);
 
-            const analyzeAudio = () => {
-              if (analyserRef.current) {
-                analyserRef.current.getByteTimeDomainData(timeData);
+            // RMS temporal
+            analyserRef.current.getByteTimeDomainData(timeData);
+            let sumSquare = 0;
+            for (let i = 0; i < timeData.length; i++) {
+              const val = (timeData[i] - 128) / 128;
+              sumSquare += val * val;
+            }
+            const rms = Math.sqrt(sumSquare / timeData.length);
 
-                let sumSquare = 0;
-                for (let i = 0; i < timeData.length; i++) {
-                  const val = (timeData[i] - 128) / 128;
-                  sumSquare += val * val;
+            // Cálculo ponderado con ganancia
+            const volRms = Math.min(100, Math.round(rms * 100 * micGainValue * 2.5));
+            const volFreq = Math.min(100, Math.round((freqAvg / 128) * 100 * 1.8));
+            const volumePercent = Math.max(volRms, volFreq);
+
+            setAudioLevel(volumePercent);
+
+            const now = performance.now();
+            const state = voiceStateRef.current;
+            const isVoiceActive = volumePercent >= 12; // Umbral óptimo para evitar falsos positivos de ruido ambiental
+
+            setIsUserSpeakingNow(isVoiceActive);
+
+            if (isVoiceActive) {
+              state.voicedFramesCount++;
+              if (!state.isSpeaking) {
+                state.isSpeaking = true;
+                state.speechStartTime = now;
+                state.silenceStartTime = 0;
+              }
+            } else {
+              if (state.isSpeaking) {
+                if (state.silenceStartTime === 0) {
+                  state.silenceStartTime = now;
                 }
-                const rms = Math.sqrt(sumSquare / timeData.length);
-                const volumePercent = Math.min(100, Math.round(rms * 280));
-                setAudioLevel(volumePercent);
+                if (now - state.silenceStartTime > 90) {
+                  const wordDuration = state.silenceStartTime - state.speechStartTime;
+                  state.isSpeaking = false;
+                  state.silenceStartTime = 0;
 
-                const now = performance.now();
-                const state = voiceStateRef.current;
-                const isVoiceActive = volumePercent >= SPEECH_THRESHOLD;
+                  // Si articuló sonido vocal sostenido (>140ms) y la palabra no fue avanzada por SpeechRec
+                  if (wordDuration >= 140) {
+                    const currentTarget = targetWords[state.currentWordIndex];
+                    if (currentTarget && !state.completed.includes(currentTarget)) {
+                      state.completed.push(currentTarget);
+                      setCompletedWords([...state.completed]);
+                      playSfx('correct');
 
-                setIsUserSpeakingNow(isVoiceActive);
+                      const nextIdx = state.currentWordIndex + 1;
+                      state.currentWordIndex = nextIdx;
+                      setActiveWordIndex(nextIdx);
 
-                if (isVoiceActive) {
-                  state.voicedFramesCount++;
-                  // El alumno comenzó a emitir sonido para la palabra actual
-                  if (!state.isSpeaking) {
-                    state.isSpeaking = true;
-                    state.speechStartTime = now;
-                    state.silenceStartTime = 0;
-                  }
-                } else {
-                  // El alumno se calló o hizo una pausa entre palabras
-                  if (state.isSpeaking) {
-                    if (state.silenceStartTime === 0) {
-                      state.silenceStartTime = now;
-                    }
-
-                    // Si la pausa dura más de 90ms, confirmamos que terminó de decir la palabra
-                    if (now - state.silenceStartTime > 90) {
-                      const wordDuration = state.silenceStartTime - state.speechStartTime;
-                      state.isSpeaking = false;
-                      state.silenceStartTime = 0;
-
-                      // Si emitió voz durante más de 120ms (tiempo típico de una palabra)
-                      if (wordDuration >= 120) {
-                        const wordPronounced = targetWords[state.currentWordIndex];
-                        if (wordPronounced && !state.completed.includes(wordPronounced)) {
-                          state.completed.push(wordPronounced);
-                          setCompletedWords([...state.completed]);
-                          playSfx('correct');
-
-                          const nextIdx = state.currentWordIndex + 1;
-                          state.currentWordIndex = nextIdx;
-                          setActiveWordIndex(nextIdx);
-
-                          // Si pronunció todas las palabras de la frase
-                          if (nextIdx >= targetWords.length) {
-                            setTimeout(() => {
-                              completeEvaluation(100, []);
-                            }, 350);
-                            return;
-                          }
-                        }
+                      if (nextIdx >= targetWords.length) {
+                        setTimeout(() => {
+                          completeEvaluation(100, []);
+                        }, 350);
+                        return;
                       }
                     }
                   }
                 }
               }
-
-              animFrameRef.current = requestAnimationFrame(analyzeAudio);
-            };
-
-            animFrameRef.current = requestAnimationFrame(analyzeAudio);
+            }
           }
+          animFrameRef.current = requestAnimationFrame(analyzeAudio);
+        };
 
-          // Grabar el audio con MediaRecorder
-          try {
-            const mediaRecorder = new MediaRecorder(stream);
-            mediaRecorderRef.current = mediaRecorder;
-            mediaRecorder.ondataavailable = (e) => {
-              if (e.data && e.data.size > 0) audioChunksRef.current.push(e.data);
-            };
-            mediaRecorder.onstop = () => {
-              const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-              setRecordedAudioUrl(URL.createObjectURL(audioBlob));
-            };
-            mediaRecorder.start(100);
-          } catch {}
-        }
-      } catch (err) {
-        console.warn('Acceso a micrófono:', err);
+        animFrameRef.current = requestAnimationFrame(analyzeAudio);
       }
+    } catch (e) {
+      console.warn('AudioContext setup:', e);
+    }
+
+    // 4. INICIALIZAR RECONOCIMIENTO DE VOZ NATIVO (SPEECH RECOGNITION) CON AUTO-RESTART
+    try {
+      const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRec) {
+        const recognition = new SpeechRec();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = language === 'fr' ? 'fr-FR' : 'en-US';
+
+        recognition.onresult = (event: any) => {
+          let currentTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            currentTranscript += event.results[i][0].transcript + ' ';
+          }
+          if (currentTranscript.trim()) {
+            processSpokenTranscript(currentTranscript);
+          }
+        };
+
+        recognition.onerror = (e: any) => {
+          console.warn('SpeechRecognition error:', e.error);
+        };
+
+        recognition.onend = () => {
+          // Si la sesión de grabación sigue activa, reiniciar automáticamente
+          if (isRecordingRef.current) {
+            try { recognition.start(); } catch {}
+          }
+        };
+
+        recognition.start();
+        speechRecRef.current = recognition;
+      }
+    } catch (e) {
+      console.warn('SpeechRecognition setup:', e);
+    }
+
+    // 5. GRABACIÓN DE AUDIO CON MEDIARECORDER
+    try {
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        setRecordedAudioUrl(URL.createObjectURL(audioBlob));
+      };
+      mediaRecorder.start(100);
+    } catch (e) {
+      console.warn('MediaRecorder setup:', e);
     }
   };
 
@@ -598,43 +836,157 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     studentAudioPlayerRef.current.play();
   };
 
-  // Prueba rápida de micrófono
-  const testMicrophoneDirectly = async () => {
+  // =========================================================================
+  // PRUEBA DE MICRÓFONO EN VIVO (MONITOR ACTIVO + TRANSCRIPCIÓN DE PRUEBA)
+  // =========================================================================
+  const toggleTestMicrophone = async () => {
+    if (isTestingMicLiveRef.current) {
+      if (testStreamRef.current) {
+        testStreamRef.current.getTracks().forEach(t => t.stop());
+        testStreamRef.current = null;
+      }
+      if (testSpeechRecRef.current) {
+        try { testSpeechRecRef.current.stop(); } catch {}
+        testSpeechRecRef.current = null;
+      }
+      if (testAudioCtxRef.current) {
+        try { testAudioCtxRef.current.close(); } catch {}
+        testAudioCtxRef.current = null;
+      }
+      if (testAnimRef.current) {
+        cancelAnimationFrame(testAnimRef.current);
+        testAnimRef.current = null;
+      }
+      setIsTestingMicLive(false);
+      isTestingMicLiveRef.current = false;
+      setAudioLevel(0);
+      setIsUserSpeakingNow(false);
+      setTestDetectedSpeechText('');
+      setTestMicError(null);
+      return;
+    }
+
+    // Activar prueba
+    isTestingMicLiveRef.current = true;
+    setIsTestingMicLive(true);
     setMicTested(true);
+    setTestDetectedSpeechText('');
+    setTestMicError(null);
+
+    // Crear AudioContext inmediatamente dentro del click
+    const AudioCtx = (typeof window !== 'undefined') ? (window.AudioContext || (window as any).webkitAudioContext) : null;
+    let localCtx: AudioContext | null = null;
+    if (AudioCtx) {
+      try {
+        localCtx = new AudioCtx();
+        if (localCtx.state === 'suspended') {
+          localCtx.resume();
+        }
+        testAudioCtxRef.current = localCtx;
+      } catch {}
+    }
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await getMicrophoneStream();
+      if (!stream) {
+        setHardwareMicAvailable(false);
+        setTestMicError('El navegador o sistema no entregó señal de audio. Si acabas de conceder permisos en el candado de la barra de direcciones de Chrome, es necesario recargar la página para que Windows y el navegador apliquen los permisos.');
+        return;
+      }
+
+      testStreamRef.current = stream;
       setHardwareMicAvailable(true);
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (AudioCtx) {
-        const ctx = new AudioCtx();
+
+      const ctx = localCtx || (AudioCtx ? new AudioCtx() : null);
+      if (ctx) {
+        if (ctx.state === 'suspended') {
+          await ctx.resume();
+        }
+        testAudioCtxRef.current = ctx;
+
         const source = ctx.createMediaStreamSource(stream);
         const gainNode = ctx.createGain();
-        gainNode.gain.value = 3.5;
+        gainNode.gain.value = micGainValue;
+
         const analyser = ctx.createAnalyser();
-        analyser.fftSize = 64;
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.2;
+
         source.connect(gainNode);
         gainNode.connect(analyser);
-        
-        let frames = 0;
+
+        const freqData = new Uint8Array(analyser.frequencyBinCount);
+        const timeData = new Uint8Array(analyser.fftSize);
+
         const testLoop = () => {
-          const data = new Uint8Array(analyser.frequencyBinCount);
-          analyser.getByteFrequencyData(data);
-          let sum = 0;
-          for (let i = 0; i < data.length; i++) sum += data[i];
-          setAudioLevel(Math.min(100, Math.round((sum / data.length / 128) * 100)));
-          frames++;
-          if (frames < 80) {
-            requestAnimationFrame(testLoop);
-          } else {
-            stream.getTracks().forEach(t => t.stop());
-            ctx.close();
-            setAudioLevel(0);
+          if (!isTestingMicLiveRef.current) return;
+
+          if (testAudioCtxRef.current?.state === 'suspended') {
+            testAudioCtxRef.current.resume();
           }
+
+          analyser.getByteFrequencyData(freqData);
+          let freqSum = 0;
+          const maxBin = Math.min(freqData.length, 64);
+          for (let i = 1; i < maxBin; i++) freqSum += freqData[i];
+          const freqAvg = freqSum / (maxBin - 1);
+
+          analyser.getByteTimeDomainData(timeData);
+          let sumSquare = 0;
+          for (let i = 0; i < timeData.length; i++) {
+            const val = (timeData[i] - 128) / 128;
+            sumSquare += val * val;
+          }
+          const rms = Math.sqrt(sumSquare / timeData.length);
+
+          const volRms = Math.min(100, Math.round(rms * 100 * micGainValue * 2.5));
+          const volFreq = Math.min(100, Math.round((freqAvg / 128) * 100 * 1.8));
+          const level = Math.max(volRms, volFreq);
+
+          setAudioLevel(level);
+          setIsUserSpeakingNow(level >= 10);
+
+          testAnimRef.current = requestAnimationFrame(testLoop);
         };
         testLoop();
       }
-    } catch {
-      setHardwareMicAvailable(false);
+
+      // Reconocimiento de voz para la prueba en vivo
+      try {
+        const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (SpeechRec) {
+          const rec = new SpeechRec();
+          rec.continuous = true;
+          rec.interimResults = true;
+          rec.lang = language === 'fr' ? 'fr-FR' : 'en-US';
+          rec.onresult = (e: any) => {
+            let t = '';
+            for (let i = e.resultIndex; i < e.results.length; ++i) {
+              t += e.results[i][0].transcript + ' ';
+            }
+            if (t.trim()) {
+              setTestDetectedSpeechText(t.trim());
+            }
+          };
+          rec.start();
+          testSpeechRecRef.current = rec;
+        }
+      } catch {}
+    } catch (e: any) {
+      console.warn('Error en prueba de micrófono:', e);
+      setTestMicError('Error al acceder al micrófono: ' + (e?.message || 'verifica permisos y recarga la página.'));
+    }
+  };
+
+  // Cambiar micrófono en vivo
+  const handleMicDeviceChange = async (newDeviceId: string) => {
+    setSelectedMicId(newDeviceId);
+    // Si estaba probando en vivo o grabando, reconectar inmediatamente
+    if (isTestingMicLiveRef.current) {
+      toggleTestMicrophone(); // apaga
+      setTimeout(() => {
+        toggleTestMicrophone(); // reinicia con nuevo deviceId
+      }, 150);
     }
   };
 
@@ -698,36 +1050,150 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* BARRA DE ESTADO DEL MICRÓFONO & PRUEBA */}
-        <div className="p-3 rounded-2xl bg-slate-950/90 border border-indigo-900/60 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-3 w-3">
-              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isRecording ? 'bg-rose-400' : 'bg-emerald-400'}`} />
-              <span className={`relative inline-flex rounded-full h-3 w-3 ${isRecording ? 'bg-rose-500' : 'bg-emerald-500'}`} />
-            </span>
-            <span className="font-bold text-slate-200">
-              {isRecording 
-                ? isUserSpeakingNow 
-                  ? '🎙️ Voz Detectada (Hablando)' 
-                  : '🎙️ En Silencio (Esperando que hables)'
-                : 'Micrófono Listo y Vinculado'}
-            </span>
+        {/* BARRA DE ESTADO DEL MICRÓFONO & SELECTOR DE HARDWARE */}
+        <div className="p-3.5 rounded-2xl bg-slate-950/90 border border-indigo-900/60 space-y-3 text-xs">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-3 w-3">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isRecording || isTestingMicLive ? 'bg-rose-400' : 'bg-emerald-400'}`} />
+                <span className={`relative inline-flex rounded-full h-3 w-3 ${isRecording || isTestingMicLive ? 'bg-rose-500' : 'bg-emerald-500'}`} />
+              </span>
+              <span className="font-bold text-slate-200">
+                {isRecording 
+                  ? isUserSpeakingNow 
+                    ? '🎙️ Voz Detectada (Hablando)' 
+                    : '🎙️ En Silencio (Esperando que hables)'
+                  : isTestingMicLive
+                    ? isUserSpeakingNow
+                      ? '🔊 Prueba en Vivo: ¡Micrófono Captando Audio!'
+                      : '🔊 Prueba en Vivo: Esperando sonido...'
+                    : 'Micrófono Vinculado'}
+              </span>
+            </div>
+
+            {/* Selector de Micrófono & Ganancia */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Selector de Dispositivo Hardware */}
+              {availableMics.length > 0 && (
+                <div className="flex items-center gap-1.5 bg-slate-900 px-2 py-1 rounded-xl border border-indigo-700/60 shadow-xs">
+                  <Headphones className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                  <select
+                    value={selectedMicId}
+                    onChange={(e) => handleMicDeviceChange(e.target.value)}
+                    className="bg-transparent text-[11px] text-slate-200 font-bold focus:outline-none cursor-pointer max-w-[190px] sm:max-w-[240px] truncate"
+                    title="Selecciona el micrófono que estás utilizando físicamente"
+                  >
+                    {availableMics.map((mic, idx) => (
+                      <option key={mic.deviceId || idx} value={mic.deviceId} className="bg-slate-900 text-white">
+                        {mic.label || `Micrófono ${idx + 1}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Selector de Ganancia / Amplificación */}
+              <div className="flex items-center gap-1 bg-slate-900 px-2 py-1 rounded-xl border border-indigo-700/60 text-[10px] font-bold">
+                <span className="text-slate-400">Ganancia:</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextGain = micGainValue === 2.0 ? 4.0 : micGainValue === 4.0 ? 7.0 : 2.0;
+                    setMicGainValue(nextGain);
+                    if (gainNodeRef.current) gainNodeRef.current.gain.value = nextGain;
+                  }}
+                  className="px-1.5 py-0.5 rounded bg-indigo-950 hover:bg-indigo-900 text-cyan-300 font-black cursor-pointer"
+                  title="Toca para alternar la sensibilidad y amplificación de tu micrófono"
+                >
+                  {micGainValue}x
+                </button>
+              </div>
+
+              {/* Botón de Prueba en Vivo Toggle */}
+              <button
+                type="button"
+                onClick={toggleTestMicrophone}
+                className={`px-3 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-sm ${
+                  isTestingMicLive
+                    ? 'bg-rose-600 hover:bg-rose-700 text-white animate-pulse'
+                    : 'bg-indigo-950 hover:bg-indigo-900 text-cyan-300 border border-indigo-700/60'
+                }`}
+                title="Prueba en tiempo real si tu micrófono capta tu voz"
+              >
+                <Activity className="w-3.5 h-3.5 text-cyan-400" />
+                <span>{isTestingMicLive ? 'Detener Prueba' : 'Probar en Vivo'}</span>
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={testMicrophoneDirectly}
-              className="px-2.5 py-1 rounded-lg bg-indigo-950 hover:bg-indigo-900 text-cyan-300 border border-indigo-700/60 text-[11px] font-bold flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-sm"
-              title="Probar que el micrófono capta tu voz"
-            >
-              <Activity className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{micTested ? 'Probado ✓' : 'Probar Micrófono'}</span>
-            </button>
-            <span className="text-[11px] text-slate-400">
-              Ganancia Amplificada 3.5x
-            </span>
-          </div>
+          {/* Monitor Visual Activo durante Prueba en Vivo */}
+          {isTestingMicLive && (
+            <div className="p-3.5 rounded-2xl bg-slate-900/95 border border-cyan-500/50 space-y-3 animate-fade-in shadow-xl">
+              {testMicError ? (
+                <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-500/70 text-rose-200 text-xs space-y-2 animate-fade-in shadow-lg">
+                  <div className="flex items-center gap-2 font-bold text-rose-300">
+                    <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>Atención con los permisos de micrófono:</span>
+                  </div>
+                  <p className="leading-relaxed">{testMicError}</p>
+                  <div className="pt-1 flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => window.location.reload()}
+                      className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95"
+                    >
+                      <span>🔄 Recargar Página Ahora</span>
+                    </button>
+                    <span className="text-[10px] text-rose-300">Aplica los cambios del candado de Chrome/Edge</span>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                    <span className="text-cyan-300 font-bold flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
+                      Habla ahora frente a tu micrófono. Observa la barra y las palabras:
+                    </span>
+                    <span className={`font-mono font-black text-xs px-2 py-0.5 rounded-full ${audioLevel > 10 ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/60' : 'bg-slate-950 text-slate-400'}`}>
+                      {audioLevel > 10 ? `${audioLevel}% (¡Micrófono Activo!)` : `${audioLevel}% (Silencio)`}
+                    </span>
+                  </div>
+
+                  {/* Barra de volumen visual en tiempo real */}
+                  <div className="w-full bg-slate-950 h-3.5 rounded-full overflow-hidden border border-slate-800 p-0.5">
+                    <div 
+                      className={`h-full rounded-full transition-all duration-75 ${audioLevel > 10 ? 'bg-gradient-to-r from-teal-400 via-emerald-400 to-green-400 shadow-sm shadow-emerald-500/50' : 'bg-slate-700'}`}
+                      style={{ width: `${Math.max(audioLevel, 3)}%` }}
+                    />
+                  </div>
+
+                  {/* Badge de palabra reconocida durante la prueba */}
+                  {testDetectedSpeechText ? (
+                    <div className="p-2.5 rounded-xl bg-emerald-950/80 border border-emerald-500/70 text-emerald-200 text-xs font-bold flex items-center justify-between gap-3 shadow-md animate-fade-in">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">🎉</span>
+                        <span>Voz captada con éxito:</span>
+                        <span className="font-mono text-white bg-slate-900 px-2 py-0.5 rounded border border-emerald-400/50">"{testDetectedSpeechText}"</span>
+                      </div>
+                      <span className="text-[10px] text-emerald-400 font-bold">¡Tu micrófono funciona perfectamente!</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between text-[10px] text-slate-400">
+                      <span>💡 Di una palabra en inglés o español (ej: "hello" o "hola") para verificar el reconocimiento de voz.</span>
+                      <button
+                        type="button"
+                        onClick={() => window.location.reload()}
+                        className="text-amber-400 hover:text-amber-300 underline font-bold cursor-pointer"
+                        title="Si cambiaste permisos en el navegador, recarga para que surtan efecto"
+                      >
+                        🔄 Recargar Página
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         {/* ÁREA PRINCIPAL DE LECTURA TIPO KARAOKE */}
@@ -778,7 +1244,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
 
           {/* ESTADO EN VIVO DURANTE LA GRABACIÓN */}
           {isRecording && (
-            <div className="p-3.5 rounded-2xl bg-slate-900 border border-cyan-500/50 space-y-2 animate-fade-in">
+            <div className="p-3.5 rounded-2xl bg-slate-900 border border-cyan-500/50 space-y-2.5 animate-fade-in">
               <div className="flex items-center justify-between text-xs font-bold text-cyan-300">
                 <span className="flex items-center gap-2">
                   <span className={`w-2.5 h-2.5 rounded-full ${isUserSpeakingNow ? 'bg-emerald-400 animate-ping' : 'bg-slate-500'}`} />
@@ -808,6 +1274,14 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                   />
                 </div>
               </div>
+
+              {/* Transcripción captada en vivo durante la práctica */}
+              {detectedSpeechText && (
+                <div className="text-[11px] text-cyan-300 bg-slate-950/90 p-2 rounded-xl border border-cyan-500/30 flex items-center gap-2">
+                  <span>🎙️ Voz captada:</span>
+                  <span className="text-white font-mono font-bold">"{detectedSpeechText}"</span>
+                </div>
+              )}
             </div>
           )}
 
