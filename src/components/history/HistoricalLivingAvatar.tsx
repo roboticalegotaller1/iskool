@@ -20,7 +20,72 @@ import {
   X,
   Check
 } from 'lucide-react';
-import { configureHistoricalUtterance } from '@/lib/historicalVoiceEngine';
+import { configureHistoricalUtterance, getPersonaGender } from '@/lib/historicalVoiceEngine';
+
+interface CharacterAnatomicalMouth {
+  x1: number;         // Comisura izquierda en espacio 1024
+  y1: number;
+  cx: number;         // Centro anatómico
+  cy: number;
+  x2: number;         // Comisura derecha en espacio 1024
+  y2: number;
+  maxOpening: number; // Apertura vertical máxima en px
+  cavityDarkColor: string;
+  cavityMidColor: string;
+  cavityRimColor: string;
+  lowerLipRimColor: string;
+  teethColor: string;
+}
+
+function getCharacterMouthConfig(name: string): CharacterAnatomicalMouth {
+  const norm = (name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (norm.includes('josefa') || norm.includes('corregidora')) {
+    return {
+      x1: 454,
+      y1: 374,
+      cx: 491,
+      cy: 374,
+      x2: 528,
+      y2: 373,
+      maxOpening: 12.5,
+      cavityDarkColor: '#0a0102',
+      cavityMidColor: '#240407',
+      cavityRimColor: '#450d13',
+      lowerLipRimColor: 'rgba(150, 48, 54, 0.92)',
+      teethColor: '#f2ede4'
+    };
+  }
+  if (norm.includes('hidalgo')) {
+    return {
+      x1: 456,
+      y1: 358,
+      cx: 500,
+      cy: 358,
+      x2: 544,
+      y2: 358,
+      maxOpening: 13.5,
+      cavityDarkColor: '#090203',
+      cavityMidColor: '#210508',
+      cavityRimColor: '#3c0f14',
+      lowerLipRimColor: 'rgba(165, 80, 75, 0.88)',
+      teethColor: '#eee6da'
+    };
+  }
+  return {
+    x1: 460,
+    y1: 370,
+    cx: 500,
+    cy: 370,
+    x2: 540,
+    y2: 370,
+    maxOpening: 13,
+    cavityDarkColor: '#0a0102',
+    cavityMidColor: '#240407',
+    cavityRimColor: '#450d13',
+    lowerLipRimColor: 'rgba(160, 60, 65, 0.88)',
+    teethColor: '#f0ece2'
+  };
+}
 
 export interface HistoricalLivingAvatarProps {
   characterName: string;
@@ -106,10 +171,39 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
     setIsKeyModalOpen(false);
   };
 
+  const mouthCfg = getCharacterMouthConfig(characterName);
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const speechSynthRef = useRef<SpeechSynthesisUtterance | null>(null);
   const mouthIntervalRef = useRef<any>(null);
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const animFrameRef = useRef<number | null>(null);
+
+  // Limpieza al desmontar
+  useEffect(() => {
+    return () => {
+      if (currentAudioRef.current) {
+        currentAudioRef.current.pause();
+        currentAudioRef.current = null;
+      }
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+        animFrameRef.current = null;
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close().catch(() => {});
+        audioContextRef.current = null;
+      }
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      if (mouthIntervalRef.current) {
+        clearInterval(mouthIntervalRef.current);
+        mouthIntervalRef.current = null;
+      }
+    };
+  }, []);
 
   // Auto-scroll al recibir mensajes
   useEffect(() => {
@@ -169,7 +263,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
     return () => clearInterval(blinkInterval);
   }, [isBlinking]);
 
-  // Sincronización de labios (Lip-sync simulado armónico)
+  // Sincronización de labios (Lip-sync simulado armónico de respaldo)
   const startLipSyncAnimation = useCallback(() => {
     setIsSpeaking(true);
     let step = 0;
@@ -179,8 +273,8 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
       step++;
       // Variación orgánica de apertura de boca y gesticulación mandibular
       const ratio = (Math.sin(step * 0.8) + 1) / 2 * 0.85 + (Math.sin(step * 1.5) * 0.15);
-      setMouthOpenRatio(Math.max(0.1, Math.min(1, ratio)));
-    }, 120);
+      setMouthOpenRatio(Math.max(0.15, Math.min(1, ratio)));
+    }, 110);
   }, []);
 
   const stopLipSyncAnimation = useCallback(() => {
@@ -192,32 +286,163 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
     setMouthOpenRatio(0);
   }, []);
 
-  // Reproducción de voz con SpeechSynthesis
-  const speakText = useCallback((text: string) => {
-    if (!audioEnabled || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-
+  // Fallback de síntesis de voz en navegador
+  const fallbackSpeechSynthesis = useCallback((cleanText: string) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
-    const cleanText = text.replace(/[*#_`]/g, '');
     const utterance = new SpeechSynthesisUtterance(cleanText);
-
-    // Configurar voz y tono estricto acorde al sexo y personaje
     configureHistoricalUtterance(utterance, characterName);
 
     utterance.onstart = () => {
       startLipSyncAnimation();
     };
-
     utterance.onend = () => {
       stopLipSyncAnimation();
     };
-
     utterance.onerror = () => {
       stopLipSyncAnimation();
     };
 
     speechSynthRef.current = utterance;
     window.speechSynthesis.speak(utterance);
-  }, [audioEnabled, characterName, startLipSyncAnimation, stopLipSyncAnimation]);
+  }, [characterName, startLipSyncAnimation, stopLipSyncAnimation]);
+
+  // Reproducción de voz humana neural ultra-realista con sincronización de ondas sonoras
+  const speakText = useCallback(async (text: string) => {
+    if (!audioEnabled || typeof window === 'undefined') return;
+
+    // Detener cualquier audio previo
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current = null;
+    }
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
+    if (audioContextRef.current) {
+      audioContextRef.current.close().catch(() => {});
+      audioContextRef.current = null;
+    }
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+
+    const cleanText = text
+      .replace(/[*#_`~>]/g, '')
+      .replace(/\[\[(.*?)\]\]/g, '$1')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!cleanText) return;
+
+    const gender = getPersonaGender(characterName);
+    // Voz femenina adulta, solemne y cálida (Dalia Neural mexicana) o masculina (Jorge Neural)
+    const selectedVoice = gender === 'female' ? 'es-MX-DaliaNeural' : 'es-MX-JorgeNeural';
+
+    try {
+      const ttsRes = await fetch('/api/ai/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: cleanText,
+          voice: selectedVoice,
+          rate: 0.94, // Cadencia pausada, reflexiva y solemne de dama virreinal
+          pitch: gender === 'female' ? 0.98 : 1.0 // -2Hz para entonación madura, cálida y natural de adulta
+        })
+      });
+
+      if (ttsRes.ok) {
+        const audioBlob = await ttsRes.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        currentAudioRef.current = audio;
+
+        let setupAnalyserSuccess = false;
+        try {
+          const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+          if (AudioContextClass) {
+            const ctx = new AudioContextClass();
+            audioContextRef.current = ctx;
+            const src = ctx.createMediaElementSource(audio);
+            const analyser = ctx.createAnalyser();
+            analyser.fftSize = 256;
+            src.connect(analyser);
+            analyser.connect(ctx.destination);
+
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+
+            const checkAudioLevel = () => {
+              if (audio.paused || audio.ended) return;
+              analyser.getByteFrequencyData(dataArray);
+              let total = 0;
+              for (let i = 0; i < bufferLength; i++) {
+                total += dataArray[i];
+              }
+              const avg = total / bufferLength;
+              const ratio = Math.min(1, Math.max(0, (avg - 8) / 36));
+              setMouthOpenRatio(ratio);
+              animFrameRef.current = requestAnimationFrame(checkAudioLevel);
+            };
+
+            audio.onplay = () => {
+              setIsSpeaking(true);
+              if (ctx.state === 'suspended') {
+                ctx.resume();
+              }
+              checkAudioLevel();
+            };
+            setupAnalyserSuccess = true;
+          }
+        } catch (analyserErr) {
+          console.warn('AudioContext analyser falló, usando sincronización armónica:', analyserErr);
+        }
+
+        if (!setupAnalyserSuccess) {
+          audio.onplay = () => {
+            startLipSyncAnimation();
+          };
+        }
+
+        audio.onended = () => {
+          if (animFrameRef.current) {
+            cancelAnimationFrame(animFrameRef.current);
+            animFrameRef.current = null;
+          }
+          if (audioContextRef.current) {
+            audioContextRef.current.close().catch(() => {});
+            audioContextRef.current = null;
+          }
+          stopLipSyncAnimation();
+          URL.revokeObjectURL(audioUrl);
+          currentAudioRef.current = null;
+        };
+
+        audio.onerror = () => {
+          if (animFrameRef.current) {
+            cancelAnimationFrame(animFrameRef.current);
+            animFrameRef.current = null;
+          }
+          if (audioContextRef.current) {
+            audioContextRef.current.close().catch(() => {});
+            audioContextRef.current = null;
+          }
+          stopLipSyncAnimation();
+          URL.revokeObjectURL(audioUrl);
+          currentAudioRef.current = null;
+          fallbackSpeechSynthesis(cleanText);
+        };
+
+        await audio.play();
+        return;
+      }
+    } catch (ttsErr) {
+      console.warn('Fallo al solicitar voz neural humana, recurriendo a voz de navegador:', ttsErr);
+    }
+
+    fallbackSpeechSynthesis(cleanText);
+  }, [audioEnabled, characterName, startLipSyncAnimation, stopLipSyncAnimation, fallbackSpeechSynthesis]);
 
   // Envío de pregunta al avatar
   const handleSendMessage = async (textToSend?: string) => {
@@ -382,10 +607,28 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
           <button 
             type="button" 
             onClick={() => {
-              setAudioEnabled(!audioEnabled);
-              if (audioEnabled) window.speechSynthesis?.cancel();
+              const nextState = !audioEnabled;
+              setAudioEnabled(nextState);
+              if (!nextState) {
+                if (currentAudioRef.current) {
+                  currentAudioRef.current.pause();
+                  currentAudioRef.current = null;
+                }
+                if (animFrameRef.current) {
+                  cancelAnimationFrame(animFrameRef.current);
+                  animFrameRef.current = null;
+                }
+                if (audioContextRef.current) {
+                  audioContextRef.current.close().catch(() => {});
+                  audioContextRef.current = null;
+                }
+                if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+                  window.speechSynthesis.cancel();
+                }
+                stopLipSyncAnimation();
+              }
             }}
-            className="p-1 rounded-lg hover:bg-white/10 transition-all text-amber-400"
+            className="p-1 rounded-lg hover:bg-white/10 transition-all text-amber-400 cursor-pointer"
             title={audioEnabled ? 'Silenciar voz' : 'Activar voz'}
           >
             {audioEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5 text-rose-400" />}
@@ -416,18 +659,64 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
               transition={{ duration: 0.12 }}
             />
 
-            {/* Capa de Movimiento Mandibular / Boca (Lip-sync orgánico) */}
-            {isSpeaking && (
-              <motion.div 
-                className="absolute bottom-6 w-12 h-3.5 rounded-full bg-stone-900/90 border-t border-amber-700/60 shadow-inner blur-[0.5px]"
-                animate={{
-                  scaleY: 0.4 + mouthOpenRatio * 1.6,
-                  scaleX: 0.9 + mouthOpenRatio * 0.2,
-                  opacity: 0.85
-                }}
-                transition={{ duration: 0.08 }}
-              />
-            )}
+            {/* Capa de Movimiento Mandibular / Boca (Lip-sync anatómico de precisión con SVG en espacio 1024) */}
+            <svg 
+              viewBox="0 0 1024 1024" 
+              className="absolute inset-0 w-full h-full pointer-events-none select-none"
+            >
+              <defs>
+                <radialGradient id={`avatarCavity_${(characterName || 'char').replace(/\s+/g, '_')}`} cx="48%" cy="30%" r="65%">
+                  <stop offset="0%" stopColor={mouthCfg.cavityDarkColor} />
+                  <stop offset="55%" stopColor={mouthCfg.cavityMidColor} />
+                  <stop offset="100%" stopColor={mouthCfg.cavityRimColor} />
+                </radialGradient>
+                <linearGradient id={`avatarTeeth_${(characterName || 'char').replace(/\s+/g, '_')}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor={mouthCfg.teethColor} stopOpacity="0.95" />
+                  <stop offset="70%" stopColor="#ded4c3" stopOpacity="0.85" />
+                  <stop offset="100%" stopColor="#aa9680" stopOpacity="0.1" />
+                </linearGradient>
+                <linearGradient id={`avatarLowerLip_${(characterName || 'char').replace(/\s+/g, '_')}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor={mouthCfg.lowerLipRimColor} />
+                  <stop offset="60%" stopColor="rgba(185, 78, 80, 0.65)" />
+                  <stop offset="100%" stopColor="rgba(210, 110, 105, 0.15)" />
+                </linearGradient>
+              </defs>
+
+              {isSpeaking && mouthOpenRatio > 0.04 && (
+                <g>
+                  {/* Cavidad bucal anatómica (sombra interior de boca abierta) */}
+                  <path 
+                    d={`M ${mouthCfg.x1} ${mouthCfg.y1} Q ${mouthCfg.cx} ${mouthCfg.cy - mouthOpenRatio * 1.5} ${mouthCfg.x2} ${mouthCfg.y2} Q ${mouthCfg.cx} ${mouthCfg.cy + mouthOpenRatio * mouthCfg.maxOpening} ${mouthCfg.x1} ${mouthCfg.y1} Z`} 
+                    fill={`url(#avatarCavity_${(characterName || 'char').replace(/\s+/g, '_')})`} 
+                  />
+                  
+                  {/* Fila superior de dientes naturales nacarados */}
+                  <path 
+                    d={`M ${mouthCfg.cx - 18} ${mouthCfg.cy - 1} Q ${mouthCfg.cx} ${mouthCfg.cy - 2.2} ${mouthCfg.cx + 18} ${mouthCfg.cy - 1.5} Q ${mouthCfg.cx + 18} ${mouthCfg.cy - 1 + Math.min(mouthOpenRatio * mouthCfg.maxOpening * 0.45, 5)} Q ${mouthCfg.cx} ${mouthCfg.cy + Math.min(mouthOpenRatio * mouthCfg.maxOpening * 0.45, 5)} ${mouthCfg.cx - 18} ${mouthCfg.cy - 1 + Math.min(mouthOpenRatio * mouthCfg.maxOpening * 0.45, 5)} Z`} 
+                    fill={`url(#avatarTeeth_${(characterName || 'char').replace(/\s+/g, '_')})`} 
+                  />
+                  
+                  {/* Sombra de lengua / fondo bucal para fonemas abiertos */}
+                  {mouthOpenRatio > 0.45 && (
+                    <ellipse 
+                      cx={mouthCfg.cx} 
+                      cy={mouthCfg.cy + mouthOpenRatio * mouthCfg.maxOpening * 0.75} 
+                      rx={10 + mouthOpenRatio * 4} 
+                      ry={1.5 + mouthOpenRatio * 1.5} 
+                      fill="#54141b" 
+                      opacity={0.85} 
+                    />
+                  )}
+                  
+                  {/* Reborde carnoso y textura del labio inferior descendiendo de forma natural con la mandíbula */}
+                  <path 
+                    d={`M ${mouthCfg.x1 + 2} ${mouthCfg.y1 + 0.5} Q ${mouthCfg.cx} ${mouthCfg.cy + mouthOpenRatio * mouthCfg.maxOpening} ${mouthCfg.x2 - 2} ${mouthCfg.y2 + 0.5} Q ${mouthCfg.cx} ${mouthCfg.cy + mouthOpenRatio * mouthCfg.maxOpening + 3} ${mouthCfg.x1 + 2} ${mouthCfg.y1 + 0.5} Z`} 
+                    fill={`url(#avatarLowerLip_${(characterName || 'char').replace(/\s+/g, '_')})`} 
+                    opacity={0.88} 
+                  />
+                </g>
+              )}
+            </svg>
 
             {/* Sombra de época y velo dramático */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />

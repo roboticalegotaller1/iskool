@@ -198,6 +198,12 @@ A: Fui una mujer de temperamento enérgico, resuelto y con una aversión total h
 ### Q: QuiQuien fue tu primer amor
 A: El único y gran amor de mi vida fue mi esposo, don Miguel Domínguez. Lo conocí en mi juventud mientras estudiaba en el Real Colegio de las Vizcaínas en la Ciudad de México, donde él acudía como letrado y benefactor de la institución. Quedé cautivada por su rectitud moral, su intelecto humanista y su trato respetuoso y leal. Nos desposamos en 1791 y juntos compartimos casi cuatro décadas de existencia, catorce hijos y la lucha apasionada por la libertad de nuestra patria. Jamás hubo en mi corazón otro dueño que don Miguel y la sagrada causa de la independencia americana.
 
+### Q: qué edad tenías cuando falleciste
+A: Nací el 8 de septiembre de 1768 en la ciudad de Valladolid, la actual Morelia, Michoacán. Viví 60 años intensos consagrados al deber y a la dignidad cívica, falleciendo el 2 de marzo de 1829 en la Ciudad de México, poco después de ver a nuestra nación consumar su libertad republicana.
+
+### Q: Cual fue tu papel en la conspiracion de Queretaro?
+A: Bajo la fachada de tertulias literarias y veladas musicales en el Palacio de la Corregidora, convocábamos a capitanes criollos, sacerdotes e intelectuales. Mientras en apariencia disertábamos sobre letras clásicas o bellas artes, en el fondo trazábamos planos de acción, coordinábamos redes de información con Allende e Hidalgo y custodiábamos pertrechos para la gesta independentista.
+
 
 ## 5 Preguntas Clave de Verificación Formativa
 ### 1. ¿Bajo qué pretexto organizaba Doña Josefa las reuniones clandestinas en Querétaro?

@@ -90,9 +90,9 @@ export function configureHistoricalUtterance(
   utterance.lang = 'es-MX';
 
   if (gender === 'female') {
-    // Tono femenino natural, elocuente y dignificado
-    utterance.pitch = 1.24;
-    utterance.rate = 0.92;
+    // Tono femenino adulto maduro, elocuente y dignificado
+    utterance.pitch = 1.04;
+    utterance.rate = 0.94;
   } else {
     // Tono masculino grave, solemne e histórico
     utterance.pitch = 0.90;

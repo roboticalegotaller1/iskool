@@ -31,7 +31,7 @@ export const NEURAL_VOICES = [
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { text, voice = 'es-MX-DaliaNeural', rate = 1.0 } = body;
+    const { text, voice = 'es-MX-DaliaNeural', rate = 1.0, pitch = 1.0 } = body;
 
     if (!text || typeof text !== 'string' || !text.trim()) {
       return NextResponse.json({ error: 'El texto es obligatorio' }, { status: 400 });
@@ -53,11 +53,19 @@ export async function POST(req: NextRequest) {
     const tts = new MsEdgeTTS();
     await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
 
-    // Ajuste de cadencia/prosodia pedagógica
+    // Ajuste de cadencia y tono de prosodia pedagógica
     const ratePercent = Math.round((rate - 1.0) * 100);
     const prosodyRate = ratePercent >= 0 ? `+${ratePercent}%` : `${ratePercent}%`;
 
-    const { audioStream } = tts.toStream(cleanText, { rate: prosodyRate });
+    const pitchHz = Math.round((pitch - 1.0) * 100);
+    const prosodyPitch = pitchHz >= 0 ? `+${pitchHz}Hz` : `${pitchHz}Hz`;
+
+    const streamOptions: any = { rate: prosodyRate };
+    if (pitchHz !== 0) {
+      streamOptions.pitch = prosodyPitch;
+    }
+
+    const { audioStream } = tts.toStream(cleanText, streamOptions);
 
     const chunks: Buffer[] = [];
     await new Promise<void>((resolve, reject) => {
