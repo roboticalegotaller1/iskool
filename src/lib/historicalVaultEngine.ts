@@ -415,7 +415,10 @@ export function searchQaInVaultNode(slug: string, question: string): { found: bo
     const normItem = normalizeQuestionText(item.question);
     // Match exacto o coincidencia de subcadena alta
     if (normItem === normTarget || normItem.includes(normTarget) || normTarget.includes(normItem)) {
-      return { found: true, answer: item.answer };
+      // Validar que no sea una respuesta genérica obsoleta anterior
+      if (item.answer && !item.answer.includes('Escudriña en los documentos de la época') && !item.answer.includes('Escudrina en los documentos')) {
+        return { found: true, answer: item.answer };
+      }
     }
   }
 
@@ -423,7 +426,7 @@ export function searchQaInVaultNode(slug: string, question: string): { found: bo
 }
 
 /**
- * Añade una nueva pregunta y respuesta al caché de la Bóveda Curricular para ese personaje
+ * Añade o actualiza una pregunta y respuesta en el caché de la Bóveda Curricular para ese personaje
  */
 export function appendQaToVaultNode(slug: string, question: string, answer: string): void {
   const figure = findHistoricalFigureInVault(slug);
@@ -431,17 +434,20 @@ export function appendQaToVaultNode(slug: string, question: string, answer: stri
 
   if (!figure.qaCache) figure.qaCache = [];
   
-  // Evitar duplicados
   const normTarget = normalizeQuestionText(question);
-  const exists = figure.qaCache.some(i => normalizeQuestionText(i.question) === normTarget);
-  if (!exists) {
+  const existingIdx = figure.qaCache.findIndex(i => normalizeQuestionText(i.question) === normTarget);
+  
+  if (existingIdx !== -1) {
+    figure.qaCache[existingIdx].answer = answer.trim();
+    figure.qaCache[existingIdx].timestamp = Date.now();
+  } else {
     figure.qaCache.push({
       question: question.trim(),
       answer: answer.trim(),
       timestamp: Date.now()
     });
-    saveHistoricalFigureToVault(figure);
   }
+  saveHistoricalFigureToVault(figure);
 }
 
 /**

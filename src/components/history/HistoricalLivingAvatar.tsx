@@ -370,8 +370,11 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
             transition={{ type: 'spring', stiffness: 120, damping: 14 }}
           >
             <img 
-              src={avatarImageUrl} 
+              src={avatarImageUrl || '/images/history/josefa_ortiz_avatar.png'} 
               alt={characterName} 
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/images/history/josefa_ortiz_avatar.png';
+              }}
               className="w-full h-full object-cover select-none pointer-events-none filter contrast-105 brightness-95"
             />
 

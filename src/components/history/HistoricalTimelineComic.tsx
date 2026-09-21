@@ -31,7 +31,19 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
   const [activeMomentIndex, setActiveMomentIndex] = useState<number>(0);
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
 
+  const resolveMomentImage = (mom: HistoricalFigureMoment, idx: number): string => {
+    if (mom.imageUrl && mom.imageUrl.trim()) return mom.imageUrl;
+    const defaultMoments = [
+      '/images/history/josefa_conspiracion_comic_1.png',
+      '/images/history/josefa_taconeo_comic_2.png',
+      '/images/history/josefa_alerta_comic_3.png',
+      '/images/history/hidalgo_grito_comic_4.png'
+    ];
+    return defaultMoments[idx % defaultMoments.length];
+  };
+
   const activeMoment = moments[activeMomentIndex] || moments[0];
+  const activeMomentImage = resolveMomentImage(activeMoment, activeMomentIndex);
 
   const handlePlayNarrativeAudio = (text: string) => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
@@ -116,9 +128,12 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
         {/* Imagen del Panel Ilustrado */}
         <div className="relative w-full h-[280px] sm:h-[420px] bg-slate-950 overflow-hidden">
           <motion.img 
-            key={activeMoment.id}
-            src={activeMoment.imageUrl} 
+            key={`${activeMoment.id}-${activeMomentIndex}`}
+            src={activeMomentImage} 
             alt={activeMoment.title}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/images/history/josefa_conspiracion_comic_1.png';
+            }}
             initial={{ opacity: 0, scale: 1.05 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
@@ -209,8 +224,11 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
             >
               <div className="relative w-full h-20 sm:h-24 rounded-xl overflow-hidden bg-slate-950 border border-amber-500/20">
                 <img 
-                  src={mom.imageUrl} 
+                  src={resolveMomentImage(mom, idx)} 
                   alt={mom.title} 
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/images/history/josefa_conspiracion_comic_1.png';
+                  }}
                   className="w-full h-full object-cover"
                 />
                 <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-amber-400 text-slate-950 text-[10px] font-black font-mono">

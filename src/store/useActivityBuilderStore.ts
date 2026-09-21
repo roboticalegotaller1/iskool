@@ -563,7 +563,7 @@ const createDefaultBlock = (type: StudioBlockType, index: number = 0): StudioBlo
           birthDeathDates: '1768 - 1829',
           shortBio: 'Heroína e insurgente novohispana clave en la Conspiración de Querétaro de 1810. Su oportuno aviso a Ignacio Pérez permitió el inicio del movimiento de Independencia.',
           detailedContext: 'Nacida en Valladolid (hoy Morelia), esposa del corregidor Miguel Domínguez. En su casa se organizaron las tertulias literarias que gestaron la insurgencia nacional.',
-          avatarImageUrl: '/images/history/josefa_ortiz_portrait.webp',
+          avatarImageUrl: '/images/history/josefa_ortiz_avatar.png',
           bookSpineStyle: 'diario_republicano',
           moments: [
             {
@@ -571,7 +571,7 @@ const createDefaultBlock = (type: StudioBlockType, index: number = 0): StudioBlo
               title: 'La Conspiración de Querétaro',
               yearOrDate: 'Septiembre de 1810',
               description: 'En la casa del Corregimiento se reúnen criollos insurgentes para trazar los planos de la soberanía nacional.',
-              imageUrl: '/images/history/josefa_conspiracion_comic.webp',
+              imageUrl: '/images/history/josefa_conspiracion_comic_1.png',
               locationName: 'Casa de la Corregidora, Querétaro',
               coordinates: { lat: 20.5931, lng: -100.3928 },
               narrativeCaption: 'Bajo la penumbra de las velas, se trazan los destinos de una nación soberana.'
@@ -581,30 +581,30 @@ const createDefaultBlock = (type: StudioBlockType, index: number = 0): StudioBlo
               title: 'El Mensaje a Caballo en la Noche',
               yearOrDate: '13-15 de Septiembre de 1810',
               description: 'Al ser descubierta la conspiración y encerrada en su alcoba, Josefa logra comunicarse con el alcaide Ignacio Pérez para enviar el correo urgente a San Miguel y Dolores.',
-              imageUrl: '/images/history/josefa_mensajero_comic.webp',
+              imageUrl: '/images/history/josefa_taconeo_comic_2.png',
               locationName: 'Santiago de Querétaro a San Miguel el Grande',
               coordinates: { lat: 20.9144, lng: -100.7452 },
               narrativeCaption: 'Un golpe en el piso de la alcoba y una carta sellada desatan el galope de la libertad.'
             },
             {
               id: 'm-3',
-              title: 'El Grito de Dolores',
-              yearOrDate: '16 de Septiembre de 1810',
-              description: 'El cura Miguel Hidalgo, alertado por el mensaje de Josefa, llama al pueblo con las campanas de la parroquia a levantarse en armas.',
-              imageUrl: '/images/history/hidalgo_grito_comic.webp',
-              locationName: 'Parroquia de Nuestra Señora de los Dolores',
-              coordinates: { lat: 21.1561, lng: -100.9328 },
-              narrativeCaption: 'El llamado de la campana en la madrugada consuma la insurrección popular.'
+              title: 'La Cabalgata Nocturna de Ignacio Pérez',
+              yearOrDate: '15 de Septiembre de 1810',
+              description: 'El mensajero Ignacio Pérez cabalga a toda prisa por veredas coloniales para advertir a Allende y Aldama antes del cateo realista.',
+              imageUrl: '/images/history/josefa_alerta_comic_3.png',
+              locationName: 'Ruta Querétaro - San Miguel de Allende - Dolores',
+              coordinates: { lat: 20.9144, lng: -100.7452 },
+              narrativeCaption: 'Cada legua acorta el tiempo hacia la libertad en medio de la noche colonial.'
             },
             {
               id: 'm-4',
-              title: 'Dignidad Republicana Inquebrantable',
-              yearOrDate: '1823 - 1829',
-              description: 'Tras la independencia, Josefa rechaza honores imperiales de Iturbide, manteniéndose fiel a los ideales republicanos y federalistas hasta sus últimos días.',
-              imageUrl: '/images/history/josefa_republicana_comic.webp',
-              locationName: 'Ciudad de México',
-              coordinates: { lat: 19.4326, lng: -99.1332 },
-              narrativeCaption: 'Rechazó las coronas imperiales; su único título fue haber servido a la patria con lealtad.'
+              title: 'El Grito de Dolores',
+              yearOrDate: '16 de Septiembre de 1810',
+              description: 'El cura Miguel Hidalgo, alertado por el mensaje de Josefa, llama al pueblo con las campanas de la parroquia a levantarse en armas.',
+              imageUrl: '/images/history/hidalgo_grito_comic_4.png',
+              locationName: 'Parroquia de Nuestra Señora de los Dolores',
+              coordinates: { lat: 21.1561, lng: -100.9328 },
+              narrativeCaption: 'El llamado de la campana en la madrugada consuma la insurrección popular.'
             }
           ],
           keyLocations: [
@@ -613,21 +613,32 @@ const createDefaultBlock = (type: StudioBlockType, index: number = 0): StudioBlo
               name: 'Casa de la Corregidora (Palacio de Gobierno de Querétaro)',
               stateOrCountry: 'Querétaro, México',
               coordinates: { lat: 20.5931, lng: -100.3928 },
-              significance: 'Sede de las tertulias secretas de la conspiración de 1810 y sitio del encierro donde Josefa dio aviso a la patria.'
+              significance: 'Sede de las tertulias secretas de la conspiración de 1810 y sitio del encierro donde Josefa dio aviso a la patria.',
+              imageUrl: '/images/history/casa_corregidora_queretaro.jpg'
             },
             {
               id: 'loc-2',
               name: 'San Miguel de Allende (San Miguel el Grande)',
               stateOrCountry: 'Guanajuato, México',
               coordinates: { lat: 20.9144, lng: -100.7452 },
-              significance: 'Destino del correo a galope llevado por Ignacio Pérez para prevenir al capitán Ignacio Allende.'
+              significance: 'Destino del correo a galope llevado por Ignacio Pérez para prevenir al capitán Ignacio Allende.',
+              imageUrl: '/images/history/san_miguel_allende.jpg'
             },
             {
               id: 'loc-3',
               name: 'Parroquia de Dolores Hidalgo',
               stateOrCountry: 'Guanajuato, México',
               coordinates: { lat: 21.1561, lng: -100.9328 },
-              significance: 'Cuna de la Independencia nacional donde Hidalgo proclamó el inicio de la gesta armada.'
+              significance: 'Cuna de la Independencia nacional donde Hidalgo proclamó el inicio de la gesta armada.',
+              imageUrl: '/images/history/parroquia_dolores.jpg'
+            },
+            {
+              id: 'loc-4',
+              name: 'Panteón de los Queretanos Ilustres',
+              stateOrCountry: 'Querétaro, México',
+              coordinates: { lat: 20.5975, lng: -100.3840 },
+              significance: 'Mausoleo cívico donde reposan con veneración nacional los restos de Doña Josefa Ortiz.',
+              imageUrl: '/images/history/panteon_queretanos_ilustres.jpg'
             }
           ],
           videoClip: {

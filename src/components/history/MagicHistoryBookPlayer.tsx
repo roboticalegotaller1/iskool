@@ -335,6 +335,9 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                   <img 
                     src={data.avatarImageUrl || '/images/history/josefa_ortiz_avatar.png'} 
                     alt={data.characterName} 
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/images/history/josefa_ortiz_avatar.png';
+                    }}
                     className="w-full h-full object-cover filter contrast-105"
                   />
                 </div>
@@ -431,6 +434,9 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                               <img 
                                 src={data.avatarImageUrl || '/images/history/josefa_ortiz_avatar.png'} 
                                 alt={data.characterName} 
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = '/images/history/josefa_ortiz_avatar.png';
+                                }}
                                 className="w-full h-full object-cover"
                               />
                             </div>
