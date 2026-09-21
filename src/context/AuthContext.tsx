@@ -18,7 +18,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const getDemoUser = (email: string): UserProfile => {
+export const getDemoUser = (email: string): UserProfile => {
   const emailLower = email.toLowerCase().trim();
 
   // 1. Verificar si coincide con personal administrativo registrado (Director, Coordinador, Cobranza)
@@ -543,8 +543,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const password = userPassword || 'ISkoolPassword2026!';
 
     try {
-      // 1. Intentar autenticación remota
-      const signInResult = await supabase.auth.signInWithPassword({ email, password }).catch(() => null);
+      // 1. Intentar autenticación remota con límite estricto de 1.2s para no bloquear al usuario
+      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 1200));
+      const signInPromise = supabase.auth.signInWithPassword({ email, password }).catch(() => null);
+      const signInResult: any = await Promise.race([signInPromise, timeoutPromise]);
       
       let userObj: any = null;
       let sessionObj: any = null;
@@ -553,7 +555,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         userObj = signInResult.data.user;
         sessionObj = signInResult.data.session;
       } else {
-        // Modo libre inmediato: Si falla o hay rate limit, entrar de forma fluida con el usuario local
+        // Modo libre inmediato: Si falla o da timeout, entrar de forma fluida con el perfil resuelto
         userObj = {
           id: resolvedUser.id,
           email: resolvedUser.email,
@@ -596,15 +598,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(sessionObj);
       setUser(finalUser);
       
-      // Sincronización en Cookie HttpOnly perimetral (Zero-Trust)
+      // Sincronización en Cookie HttpOnly perimetral (Zero-Trust) con timeout de 800ms
       if (typeof window !== 'undefined') {
         localStorage.removeItem('iskool_session_user');
         localStorage.removeItem('auth_current_user');
-        await fetch('/api/auth/session', {
+        const sessionPost = fetch('/api/auth/session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(finalUser)
         }).catch(() => null);
+        const fetchTimeout = new Promise((resolve) => setTimeout(resolve, 800));
+        await Promise.race([sessionPost, fetchTimeout]);
       }
       useSchoolAdminStore.getState().syncUserSchool(finalUser);
 
@@ -617,11 +621,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (typeof window !== 'undefined') {
         localStorage.removeItem('iskool_session_user');
         localStorage.removeItem('auth_current_user');
-        await fetch('/api/auth/session', {
+        const sessionPost = fetch('/api/auth/session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(resolvedUser)
         }).catch(() => null);
+        const fetchTimeout = new Promise((resolve) => setTimeout(resolve, 800));
+        await Promise.race([sessionPost, fetchTimeout]);
       }
       useSchoolAdminStore.getState().syncUserSchool(resolvedUser);
       setSession({

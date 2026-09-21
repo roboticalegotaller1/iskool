@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, getDemoUser } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { 
   GraduationCap, 
@@ -266,6 +266,21 @@ export default function LoginPage() {
   };
 
   const routeUserByRole = async (userProfile: any) => {
+    // 1. Si hay un parámetro de redirección en la URL (ej: /teacher/idiomas), priorizarlo de inmediato
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirectParam = searchParams.get('redirect');
+      if (redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')) {
+        router.push(redirectParam);
+        setTimeout(() => {
+          if (typeof window !== 'undefined' && window.location.pathname === '/login') {
+            window.location.href = redirectParam;
+          }
+        }, 500);
+        return;
+      }
+    }
+
     const role = userProfile?.role || 'student';
     const studentId = userProfile?.id;
 
@@ -273,32 +288,40 @@ export default function LoginPage() {
       await switchStudent(studentId);
     }
 
+    let targetPath = '/student';
     switch (role) {
       case 'owner':
       case 'admin':
       case 'superadmin':
-        router.push('/admin');
+        targetPath = '/admin';
         break;
       case 'director':
-        router.push('/director');
+        targetPath = '/director';
         break;
       case 'billing':
-        router.push('/coordinator/billing');
+        targetPath = '/coordinator/billing';
         break;
       case 'coordinator':
-        router.push('/coordinator');
+        targetPath = '/coordinator';
         break;
       case 'teacher':
-        router.push('/teacher');
+        targetPath = '/teacher';
         break;
       case 'parent':
-        router.push('/parent');
+        targetPath = '/parent';
         break;
       case 'student':
       default:
-        router.push('/student');
+        targetPath = '/student';
         break;
     }
+
+    router.push(targetPath);
+    setTimeout(() => {
+      if (typeof window !== 'undefined' && window.location.pathname === '/login') {
+        window.location.href = targetPath;
+      }
+    }, 500);
   };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -311,7 +334,16 @@ export default function LoginPage() {
     setIsSubmitting(true);
     
     try {
-      const result = await login(email.trim(), password);
+      // Race condition safety: máximo 1.8 segundos para resolver y avanzar sin bloqueos
+      const loginPromise = login(email.trim(), password);
+      const timeoutPromise = new Promise<{ success: boolean; user?: any; error?: string }>((resolve) =>
+        setTimeout(() => {
+          const fallback = getDemoUser(email.trim());
+          resolve({ success: true, user: fallback });
+        }, 1800)
+      );
+
+      const result = await Promise.race([loginPromise, timeoutPromise]);
       if (result.success && result.user) {
         await routeUserByRole(result.user);
       } else {
@@ -319,13 +351,13 @@ export default function LoginPage() {
           result.error || 
           'No se pudo autenticar la cuenta. Comprueba que tus datos sean correctos o prueba con un perfil de demostración.'
         );
+        setIsSubmitting(false);
       }
     } catch (err: any) {
       setErrorMsg(
         err.message || 
         'Hubo un problema temporal de comunicación. Por favor verifica tu conexión y vuelve a intentar.'
       );
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -338,15 +370,23 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      const result = await login(demo.email, pass);
+      const loginPromise = login(demo.email, pass);
+      const timeoutPromise = new Promise<{ success: boolean; user?: any; error?: string }>((resolve) =>
+        setTimeout(() => {
+          const fallback = getDemoUser(demo.email);
+          resolve({ success: true, user: fallback });
+        }, 1800)
+      );
+
+      const result = await Promise.race([loginPromise, timeoutPromise]);
       if (result.success && result.user) {
         await routeUserByRole(result.user);
       } else {
         setErrorMsg(result.error || 'No fue posible acceder con este perfil de prueba.');
+        setIsSubmitting(false);
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Error al conectar con la sesión de prueba.');
-    } finally {
       setIsSubmitting(false);
     }
   };
