@@ -3,6 +3,17 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Turbopack config (Next.js 16 default bundler)
   turbopack: {},
+  productionBrowserSourceMaps: false,
+  outputFileTracingExcludes: {
+    '*': [
+      './planeaciones/**/*',
+      './*.pdf',
+      './*.mp4',
+      './*.wav',
+      './node_modules/@ffmpeg-installer/**/*',
+      './node_modules/puppeteer/**/*'
+    ]
+  },
   // Habilitar compresión HTTP gzip / brotli para respuestas estáticas y dinámicas
   compress: true,
   // Optimización de importaciones de paquetes masivos para acelerar carga y reducir bundle
