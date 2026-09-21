@@ -82,6 +82,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   const [detectedSpeechText, setDetectedSpeechText] = useState<string>('');
   const [testDetectedSpeechText, setTestDetectedSpeechText] = useState<string>('');
   const [testMicError, setTestMicError] = useState<string | null>(null);
+  const [permissionBlocked, setPermissionBlocked] = useState<boolean>(false);
 
   // Estados del Karaoke Fonético Real (100% reactivo a la voz)
   const [activeWordIndex, setActiveWordIndex] = useState<number>(0);
@@ -110,6 +111,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   const gainNodeRef = useRef<GainNode | null>(null);
   const isRecordingRef = useRef<boolean>(false);
   const isTestingMicLiveRef = useRef<boolean>(false);
+  const canUseSpeechRecognitionRef = useRef<boolean>(true);
 
   // Variables de control de voz reactiva
   const voiceStateRef = useRef<{
@@ -528,6 +530,28 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     }
   }, [targetWords, isPhoneticallySimilar, playSfx, completeEvaluation]);
 
+  // Avanzar palabra manualmente (Modo Asistido / Clic / Teclado)
+  const advanceWordManually = (word: string, idx: number) => {
+    const state = voiceStateRef.current;
+    if (idx !== state.currentWordIndex) return;
+
+    if (!state.completed.includes(word)) {
+      state.completed.push(word);
+      setCompletedWords([...state.completed]);
+      playSfx('correct');
+
+      const nextIdx = idx + 1;
+      state.currentWordIndex = nextIdx;
+      setActiveWordIndex(nextIdx);
+
+      if (nextIdx >= targetWords.length) {
+        setTimeout(() => {
+          completeEvaluation(100, []);
+        }, 350);
+      }
+    }
+  };
+
   // Función robusta para obtener stream de audio del micrófono seleccionado
   const getMicrophoneStream = async (deviceIdToUse?: string) => {
     if (typeof window === 'undefined' || !navigator.mediaDevices?.getUserMedia) return null;
@@ -554,15 +578,16 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints });
       refreshAudioDevices();
+      setPermissionBlocked(false);
       return stream;
-    } catch (err) {
-      console.warn('Fallo con restricciones específicas, intentando fallback estándar:', err);
+    } catch {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         refreshAudioDevices();
+        setPermissionBlocked(false);
         return stream;
-      } catch (e) {
-        console.error('Error accediendo al micrófono:', e);
+      } catch {
+        setPermissionBlocked(true);
         return null;
       }
     }
@@ -780,21 +805,27 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
         };
 
         recognition.onerror = (e: any) => {
-          console.warn('SpeechRecognition error:', e.error);
+          if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+            canUseSpeechRecognitionRef.current = false;
+          }
         };
 
         recognition.onend = () => {
-          // Si la sesión de grabación sigue activa, reiniciar automáticamente
-          if (isRecordingRef.current) {
+          // Si la sesión de grabación sigue activa y no fue bloqueada por permisos, reiniciar
+          if (isRecordingRef.current && canUseSpeechRecognitionRef.current) {
             try { recognition.start(); } catch {}
           }
         };
 
-        recognition.start();
-        speechRecRef.current = recognition;
+        try {
+          recognition.start();
+          speechRecRef.current = recognition;
+        } catch {
+          canUseSpeechRecognitionRef.current = false;
+        }
       }
-    } catch (e) {
-      console.warn('SpeechRecognition setup:', e);
+    } catch {
+      canUseSpeechRecognitionRef.current = false;
     }
 
     // 5. GRABACIÓN DE AUDIO CON MEDIARECORDER
@@ -954,11 +985,16 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       // Reconocimiento de voz para la prueba en vivo
       try {
         const SpeechRec = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-        if (SpeechRec) {
+        if (SpeechRec && canUseSpeechRecognitionRef.current) {
           const rec = new SpeechRec();
           rec.continuous = true;
           rec.interimResults = true;
           rec.lang = language === 'fr' ? 'fr-FR' : 'en-US';
+          rec.onerror = (e: any) => {
+            if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+              canUseSpeechRecognitionRef.current = false;
+            }
+          };
           rec.onresult = (e: any) => {
             let t = '';
             for (let i = e.resultIndex; i < e.results.length; ++i) {
@@ -968,10 +1004,16 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
               setTestDetectedSpeechText(t.trim());
             }
           };
-          rec.start();
-          testSpeechRecRef.current = rec;
+          try {
+            rec.start();
+            testSpeechRecRef.current = rec;
+          } catch {
+            canUseSpeechRecognitionRef.current = false;
+          }
         }
-      } catch {}
+      } catch {
+        canUseSpeechRecognitionRef.current = false;
+      }
     } catch (e: any) {
       console.warn('Error en prueba de micrófono:', e);
       setTestMicError('Error al acceder al micrófono: ' + (e?.message || 'verifica permisos y recarga la página.'));
@@ -1199,14 +1241,36 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
         {/* ÁREA PRINCIPAL DE LECTURA TIPO KARAOKE */}
         <div className="p-6 rounded-2xl bg-slate-950/90 border border-slate-800 shadow-inner space-y-4">
           <div className="flex items-center justify-between text-xs text-slate-400 font-semibold">
-            <span>Pronuncia cada palabra en voz alta frente al micrófono:</span>
+            <span>Pronuncia cada palabra en voz alta o tócala para avanzar:</span>
             <span className="text-teal-400 flex items-center gap-1 text-[11px]">
               <Volume2 className="w-3.5 h-3.5" />
               Toca una palabra roja para escucharla despacio
             </span>
           </div>
 
-          {/* PALABRAS: SOLO SE PINTAN EN VERDE SI EL USUARIO REALMENTE HABLÓ */}
+          {/* AVISO DE PERMISO BLOQUEADO O PENDIENTE DE RECARGA */}
+          {permissionBlocked && (
+            <div className="p-3.5 rounded-2xl bg-amber-950/70 border border-amber-500/80 text-amber-200 text-xs space-y-2 animate-fade-in shadow-xl">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2 font-bold text-amber-300">
+                  <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span>El navegador o Windows requiere recargar para aplicar el permiso:</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => window.location.reload()}
+                  className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95"
+                >
+                  <span>🔄 Recargar Página Ahora</span>
+                </button>
+              </div>
+              <p className="text-[11px] text-amber-200/90 leading-relaxed">
+                💡 Al activar el interruptor de micrófono en el candado de Chrome, el navegador retiene la señal hasta recargar la pestaña. Mientras tanto, <strong>puedes tocar directamente cada palabra en pantalla</strong> para avanzar tu práctica de fluidez.
+              </p>
+            </div>
+          )}
+
+          {/* PALABRAS: SE PINTAN EN VERDE AL PRONUNCIARLAS O TOCARLAS */}
           <div className="flex flex-wrap gap-2.5 sm:gap-3 py-2 text-lg sm:text-2xl font-bold leading-relaxed">
             {targetWords.map((word, idx) => {
               const isWordCompleted = completedWords.includes(word);
@@ -1217,18 +1281,29 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                 <button
                   key={idx}
                   type="button"
-                  onClick={() => isWordError && practiceErrorWord(word)}
-                  disabled={!isWordError}
-                  className={`px-3.5 py-2 rounded-2xl transition-all duration-200 text-left select-none ${
+                  onClick={() => {
+                    if (isWordError) {
+                      practiceErrorWord(word);
+                    } else if (isRecording || !isCompleted) {
+                      advanceWordManually(word, idx);
+                    }
+                  }}
+                  className={`px-3.5 py-2 rounded-2xl transition-all duration-200 text-left select-none cursor-pointer hover:scale-105 active:scale-95 ${
                     isWordError
-                      ? 'bg-rose-500/25 text-rose-300 border-2 border-rose-500 underline decoration-rose-400 decoration-2 cursor-pointer hover:scale-105 active:scale-95 shadow-lg shadow-rose-950'
+                      ? 'bg-rose-500/25 text-rose-300 border-2 border-rose-500 underline decoration-rose-400 decoration-2 shadow-lg shadow-rose-950'
                       : isWordCompleted
                         ? 'bg-emerald-500/25 text-emerald-300 border-2 border-emerald-400 shadow-lg shadow-emerald-950 scale-105'
                         : isCurrentAwaiting
-                          ? 'bg-cyan-500/30 text-cyan-200 border-2 border-cyan-400 scale-110 shadow-cyan-500/30 shadow-lg'
-                          : 'bg-slate-800/60 text-slate-400 border border-slate-700/60 cursor-default'
+                          ? 'bg-cyan-500/30 text-cyan-200 border-2 border-cyan-400 scale-110 shadow-cyan-500/30 shadow-lg animate-pulse'
+                          : 'bg-slate-800/60 text-slate-400 border border-slate-700/60 hover:border-cyan-500/50'
                   }`}
-                  title={isWordError ? `Toca para escuchar "${word}" despacio` : word}
+                  title={
+                    isWordError 
+                      ? `Toca para escuchar "${word}" despacio` 
+                      : isCurrentAwaiting 
+                        ? `Toca para confirmar la palabra "${word}" o pronúnciala al micrófono`
+                        : word
+                  }
                 >
                   <span>{word}</span>
                   {isWordCompleted && !isWordError && (
