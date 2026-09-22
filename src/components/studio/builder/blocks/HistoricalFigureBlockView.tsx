@@ -47,6 +47,16 @@ export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
   const [showBookPreviewModal, setShowBookPreviewModal] = useState(false);
   const [projectorMode, setProjectorMode] = useState(false);
 
+  // Sincronizar estado local si cambian las propiedades del bloque
+  useEffect(() => {
+    if (data.characterName && data.characterName !== inputName) {
+      setInputName(data.characterName);
+    }
+    if (data.bookSpineStyle && data.bookSpineStyle !== selectedSpine) {
+      setSelectedSpine(data.bookSpineStyle);
+    }
+  }, [data.characterName, data.bookSpineStyle]);
+
   // Actualizar datos del bloque en el store
   const handleUpdateData = (patch: Partial<HistoricalFigureBlockData>) => {
     updateBlockData(block.id, patch);
@@ -65,10 +75,12 @@ export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
       const vaultData = await vaultRes.json();
 
       if (vaultData.found && vaultData.figure) {
+        const spineToUse = vaultData.figure.bookSpineStyle || selectedSpine;
+        setSelectedSpine(spineToUse);
         handleUpdateData({
           ...vaultData.figure,
-          characterName: inputName,
-          bookSpineStyle: selectedSpine,
+          characterName: vaultData.figure.characterName || inputName,
+          bookSpineStyle: spineToUse,
           isFromVault: true
         });
         setFeedbackStatus({
@@ -98,11 +110,14 @@ export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
 
       const aiData = await aiRes.json();
       if (aiData.success && aiData.figure) {
+        const spineToUse = aiData.figure.bookSpineStyle || selectedSpine;
+        setSelectedSpine(spineToUse);
         handleUpdateData({
           ...aiData.figure,
-          characterName: inputName,
+          characterName: aiData.figure.characterName || inputName,
           isGeographicSite: isSite,
-          bookSpineStyle: selectedSpine
+          bookSpineStyle: spineToUse,
+          isFromVault: true
         });
         setFeedbackStatus({
           type: 'ai',

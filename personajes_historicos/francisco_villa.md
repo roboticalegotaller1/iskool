@@ -10,11 +10,11 @@ avatarImageUrl: "/images/history/francisco_villa_avatar.png"
 tags:
   - "[[francisco_villa]]"
   - "[[personajes_historicos]]"
-  - "[[revolucion_mexicana_1910]]"
+  - "[[revolucion_mexicana_1910_1923]]"
 lastUpdated: "2026-09-22"
 ---
 
-# Francisco Villa (José Doroteo Arango Arámbula)
+# Francisco Villa
 
 ## Biografía y Contexto Histórico
 Conocido popularmente como **El Centauro del Norte**, el General Francisco Villa (nacido como José Doroteo Arango Arámbula) fue uno de los caudillos militares y sociales más determinantes, audaces eインfluyentes de la Revolución Mexicana. Lideró la legendaria **División del Norte**, el cuerpo militar de caballería y trenes artillados más formidable y temido de América Latina durante la década de 1910.
@@ -55,12 +55,13 @@ Al entrar triunfales a la capital con 50,000 revolucionarios, Villa visitó Pala
 ### La Incursión en Columbus y la Resistencia a la Expedición Punitiva
 **Fecha**: 9 de Marzo de 1916 - 1917
 **Lugar**: Columbus, Nuevo México y Cañones de Chihuahua
-**Coordenadas**: 31.8310, -107.6417
+**Coordenadas**: 31.831, -107.6417
 **Narrativa**: En represalia por el embargo de armas y el reconocimiento de Washington a Carranza, Villa atacó el destacamento militar estadounidense en Columbus. Durante once meses, 12,000 soldados comandados por el general John J. Pershing intentaron capturarlo en las serranías chihuahuenses sin éxito alguno.
 
 ![La Incursión en Columbus y la Resistencia a la Expedición Punitiva](/images/history/villa_columbus_comic_4.png)
 
 A lomo de caballo y conociendo cada cañón, manantial y vereda de la Sierra Madre, Villa y sus Dorados burlaron aviones, reflectores y camiones blindados, convirtiendo la resistencia en una gesta de soberanía popular.
+
 
 ## Hitos Cartográficos y Geográficos
 ### Hacienda de San Juan de Canutillo
@@ -71,6 +72,7 @@ Hacienda donde Francisco Villa se retiró a la vida civil tras los acuerdos de p
 
 ![Hacienda de San Juan de Canutillo](/images/history/hacienda_canutillo_villa.jpg)
 
+
 ### Cerro de la Bufa
 **Estado**: Zacatecas, México
 **Coordenadas**: 22.7758, -102.5694
@@ -79,13 +81,15 @@ Monumental cresta rocosa que domina la ciudad colonial de Zacatecas. Fue el balu
 
 ![Cerro de la Bufa](/images/history/cerro_bufa_zacatecas.jpg)
 
+
 ### Columbus y Parque Estatal Pancho Villa
 **Estado**: Nuevo México, Estados Unidos
-**Coordenadas**: 31.8310, -107.6417
+**Coordenadas**: 31.831, -107.6417
 
 Poblado fronterizo escenario del sorpresivo ataque nocturno del 9 de marzo de 1916. Actualmente alberga el museo histórico y parque estatal que documenta la incursión militar villista y el fallido despliegue de la Expedición Punitiva.
 
 ![Columbus y Parque Estatal Pancho Villa](/images/history/columbus_nuevo_mexico.jpg)
+
 
 ### Palacio Nacional (Salón Presidencial de 1914)
 **Estado**: Ciudad de México
@@ -95,6 +99,8 @@ Sede histórica del poder ejecutivo donde en diciembre de 1914 Francisco Villa y
 
 ![Palacio Nacional (Salón Presidencial de 1914)](/images/history/palacio_nacional_villa_zapata.jpg)
 
+
+
 ## Cápsula Cinematográfica y Video
 **Título**: Francisco Villa: El Viento y la Carga del Centauro del Norte
 **URL**: https://youtu.be/25cq1V8AsTg
@@ -102,6 +108,7 @@ Sede histórica del poder ejecutivo donde en diciembre de 1914 Francisco Villa y
 
 **Guion**:
 Las vías del tren retumban bajo el cielo del norte. De las serranías de Durango a la vanguardia de Zacatecas, un hombre del pueblo forjó el ejército popular más formidable de México. Con su División del Norte y su amor por la educación campesina, Francisco Villa demostró que la dignidad de los humildes no se negocia.
+
 
 ## Registro de Preguntas y Respuestas (Caché Bóveda Curricular - 0 Tokens)
 ### Q: ¿Cuál fue tu momento más difícil?
@@ -149,6 +156,10 @@ A: Soy el General Francisco Villa, llamado por mi pueblo El Centauro del Norte. 
 ### Q: ¿Por qué te uniste a Francisco I. Madero?
 A: Porque en 1910 don Francisco I. Madero encarnó la esperanza de terminar con más de treinta años de tiranía porfirista y prometió devolver las tierras usurpadas a los pueblos campesinos en el Plan de San Luis. A don Pancho Madero lo quise y lo respeté con lealtad sincera como a un padre cívico; cuando el traidor Victoriano Huerta lo asesinó cobardemente en 1913, juré no descansar hasta vengar su memoria y restaurar la legalidad.
 
+### Q: de que murio
+A: Como General Francisco Villa, afirmo que la Revolución Mexicana no fue un capricho de cuartel, sino el grito desgarrador de justicia de un pueblo cansado de ser despojado. Mi lealtad estuvo siempre con los humildes y con la soberanía de la patria.
+
+
 ## 5 Preguntas Clave de Verificación Formativa
 ### 1. ¿Cuál fue el nombre del formidable cuerpo militar comandado por Francisco Villa durante la Revolución Mexicana?
 - [ ] El Ejército Libertador del Sur
@@ -159,6 +170,7 @@ A: Porque en 1910 don Francisco I. Madero encarnó la esperanza de terminar con 
 **Retroalimentación**: La División del Norte fue la fuerza militar popular más poderosa y disciplinada del movimiento revolucionario, célebre por su caballería y trenes artillados.
 **PDA**: Ética, Naturaleza y Sociedades - Procesos revolucionarios y justicia social en el México del siglo XX.
 
+
 ### 2. ¿Qué batalla decisiva librada en junio de 1914 por la División del Norte causó la derrota definitiva del usurpador Victoriano Huerta?
 - [ ] La Batalla de Puebla
 - [x] La Batalla de Zacatecas (Toma del Cerro de la Bufa)
@@ -167,6 +179,7 @@ A: Porque en 1910 don Francisco I. Madero encarnó la esperanza de terminar con 
 
 **Retroalimentación**: La Toma de Zacatecas, planeada con el apoyo artillero de Felipe Ángeles, destrozó al ejército federal y forzó la renuncia de Huerta.
 **PDA**: Transformaciones políticas y caída del régimen autoritario en 1914.
+
 
 ### 3. ¿Qué emblemático acuerdo de unidad campesina sellaron Francisco Villa y Emiliano Zapata en diciembre de 1914?
 - [ ] Los Tratados de Córdoba
@@ -177,6 +190,7 @@ A: Porque en 1910 don Francisco I. Madero encarnó la esperanza de terminar con 
 **Retroalimentación**: En Xochimilco, los ejércitos del Norte y del Sur coordinaron sus fuerzas bajo la bandera del reparto agrario y el bienestar popular.
 **PDA**: Movimientos campesinos y alianzas populares en la historia nacional.
 
+
 ### 4. Durante su mandato como gobernador de Chihuahua y en su retiro en Canutillo, ¿qué sector priorizó Villa con pasión constructiva?
 - [ ] La construcción de casinos y bancos
 - [x] La educación popular, fundando escuelas y pagando a maestros
@@ -186,6 +200,7 @@ A: Porque en 1910 don Francisco I. Madero encarnó la esperanza de terminar con 
 **Retroalimentación**: Villa fundó más de 50 escuelas en un solo mes en Chihuahua y construyó la escuela Felipe Ángeles en Canutillo, convencido de que la educación era la salvación de la patria.
 **PDA**: Valoración del derecho a la educación pública como motor de transformación social.
 
+
 ### 5. ¿Por qué es históricamente célebre la incursión villista en Columbus, Nuevo México en 1916?
 - [ ] Porque México anexó formalmente dicho territorio
 - [x] Porque fue la única invasión militar al territorio continental de Estados Unidos en el siglo XX y desató la fallida Expedición Punitiva
@@ -194,3 +209,4 @@ A: Porque en 1910 don Francisco I. Madero encarnó la esperanza de terminar con 
 
 **Retroalimentación**: La incursión en Columbus y la posterior elusión de la Expedición Punitiva de Pershing convirtieron la resistencia de Villa en un símbolo de soberanía nacional.
 **PDA**: Relaciones internacionales, soberanía nacional y memoria histórica popular.
+

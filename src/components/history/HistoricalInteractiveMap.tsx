@@ -60,25 +60,48 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
     setPanOffset({ x: 0, y: 0 });
   }, [activeLoc.id]);
 
-  // Helper para resolver imagen del lugar con respaldo garantizado
+  // Helper para resolver imagen del lugar con respaldo garantizado y contextualizado
   const resolveLocationImage = (loc: HistoricalKeyLocation): string => {
     if (loc.imageUrl && loc.imageUrl.trim()) return loc.imageUrl;
     if (loc.currentDayPhoto && loc.currentDayPhoto.trim()) return loc.currentDayPhoto;
     
     const n = (loc.name || '').toLowerCase();
-    if (n.includes('corregidora') || n.includes('palacio') || n.includes('gobierno') || n.includes('queretaro')) {
+    // Lugares Villistas / Revolución
+    if (n.includes('canutillo') || n.includes('durango')) {
+      return '/images/history/hacienda_canutillo_villa.jpg';
+    }
+    if (n.includes('bufa') || n.includes('zacatecas')) {
+      return '/images/history/cerro_bufa_zacatecas.jpg';
+    }
+    if (n.includes('columbus') || n.includes('nuevo mexico') || n.includes('punitiva')) {
+      return '/images/history/columbus_nuevo_mexico.jpg';
+    }
+    if (n.includes('palacio nacional') || (n.includes('palacio') && (n.includes('zapata') || n.includes('presidencial')))) {
+      return '/images/history/palacio_nacional_villa_zapata.jpg';
+    }
+
+    // Lugares Insurgentes / Independencia
+    if (n.includes('corregidora') || (n.includes('palacio') && n.includes('queretaro')) || n.includes('gobierno de queretaro')) {
       return '/images/history/casa_corregidora_queretaro.jpg';
     }
     if (n.includes('san miguel') || n.includes('allende')) {
       return '/images/history/san_miguel_allende.jpg';
     }
-    if (n.includes('dolores') || n.includes('parroquia') || n.includes('hidalgo')) {
+    if (n.includes('dolores') || n.includes('parroquia')) {
       return '/images/history/parroquia_dolores.jpg';
     }
     if (n.includes('panteon') || n.includes('ilustres') || n.includes('mausoleo')) {
       return '/images/history/panteon_queretanos_ilustres.jpg';
     }
-    return '/images/history/casa_corregidora_queretaro.jpg';
+
+    const normChar = (characterName || '').toLowerCase();
+    if (normChar.includes('villa') || normChar.includes('doroteo') || normChar.includes('centauro')) {
+      return '/images/history/hacienda_canutillo_villa.jpg';
+    }
+    if (normChar.includes('josefa') || normChar.includes('corregidora')) {
+      return '/images/history/casa_corregidora_queretaro.jpg';
+    }
+    return '';
   };
 
   const activeImageUrl = resolveLocationImage(activeLoc);

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BookOpen, 
@@ -19,6 +19,7 @@ import { configureHistoricalUtterance } from '@/lib/historicalVoiceEngine';
 export interface HistoricalTimelineComicProps {
   moments: HistoricalFigureMoment[];
   characterName: string;
+  avatarImageUrl?: string;
   onSelectMomentOnMap?: (moment: HistoricalFigureMoment) => void;
   className?: string;
 }
@@ -26,31 +27,56 @@ export interface HistoricalTimelineComicProps {
 export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = ({
   moments,
   characterName,
+  avatarImageUrl,
   onSelectMomentOnMap,
   className = ''
 }) => {
   const [activeMomentIndex, setActiveMomentIndex] = useState<number>(0);
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
 
-  const resolveMomentImage = (mom: HistoricalFigureMoment, idx: number): string => {
-    const defaultMoments = [
-      '/images/history/josefa_conspiracion_comic_1.png',
-      '/images/history/josefa_taconeo_comic_2.png',
-      '/images/history/josefa_alerta_comic_3.png',
-      '/images/history/hidalgo_grito_comic_4.png'
-    ];
+  // Reiniciar momento activo si cambia el personaje
+  useEffect(() => {
+    setActiveMomentIndex(0);
+  }, [characterName]);
 
-    // Si el momento tiene imagen pero es idéntica a la del momento 0 en índices posteriores, forzar secuencia
+  const resolveMomentImage = (mom: HistoricalFigureMoment, idx: number): string => {
     if (mom.imageUrl && mom.imageUrl.trim()) {
-      if (idx > 0 && (mom.imageUrl.includes('josefa_conspiracion_comic_1') || (moments[0]?.imageUrl && mom.imageUrl === moments[0].imageUrl))) {
-        return defaultMoments[idx % defaultMoments.length];
-      }
       return mom.imageUrl;
     }
-    return defaultMoments[idx % defaultMoments.length];
+
+    const norm = (characterName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (norm.includes('villa') || norm.includes('doroteo') || norm.includes('centauro')) {
+      const villaMoments = [
+        '/images/history/villa_toma_juarez_comic_1.png',
+        '/images/history/villa_batalla_zacatecas_comic_2.png',
+        '/images/history/villa_pacto_xochimilco_comic_3.png',
+        '/images/history/villa_columbus_comic_4.png'
+      ];
+      return villaMoments[idx % villaMoments.length];
+    }
+
+    if (norm.includes('josefa') || norm.includes('corregidora')) {
+      const josefaMoments = [
+        '/images/history/josefa_conspiracion_comic_1.png',
+        '/images/history/josefa_taconeo_comic_2.png',
+        '/images/history/josefa_alerta_comic_3.png',
+        '/images/history/hidalgo_grito_comic_4.png'
+      ];
+      return josefaMoments[idx % josefaMoments.length];
+    }
+
+    return avatarImageUrl || '/images/history/francisco_villa_avatar.png';
   };
 
-  const activeMoment = moments[activeMomentIndex] || moments[0];
+  const activeMoment = moments[activeMomentIndex] || moments[0] || {
+    id: 'def-mom',
+    yearOrPeriod: 'Historia',
+    title: `${characterName}: Hito Fundamental`,
+    description: `${characterName} en la historia patria.`,
+    imageUrl: avatarImageUrl || '/images/history/francisco_villa_avatar.png',
+    locationName: 'México',
+    narrativeCaption: `${characterName} en la historia patria.`
+  };
   const activeMomentImage = resolveMomentImage(activeMoment, activeMomentIndex);
 
   const handlePlayNarrativeAudio = (text: string) => {
@@ -137,7 +163,9 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
             src={activeMomentImage} 
             alt={activeMoment.title}
             onError={(e) => {
-              (e.target as HTMLImageElement).src = '/images/history/josefa_conspiracion_comic_1.png';
+              if (avatarImageUrl) {
+                (e.target as HTMLImageElement).src = avatarImageUrl;
+              }
             }}
             initial={{ opacity: 0, scale: 1.05 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -232,7 +260,9 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
                   src={resolveMomentImage(mom, idx)} 
                   alt={mom.title} 
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/images/history/josefa_conspiracion_comic_1.png';
+                    if (avatarImageUrl) {
+                      (e.target as HTMLImageElement).src = avatarImageUrl;
+                    }
                   }}
                   className="w-full h-full object-cover"
                 />

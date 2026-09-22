@@ -17,12 +17,17 @@ import {
 } from 'lucide-react';
 import { getYouTubeEmbedUrl } from '@/components/studio/player/StudioFlowPlayer';
 
+import { HistoricalFigureMoment } from '@/types/studioBlocks';
+
 export interface HistoricalCinematicVideoProps {
   videoUrl?: string;
   durationSeconds?: number;
   title?: string;
   narratorScript?: string;
   characterName: string;
+  moments?: HistoricalFigureMoment[];
+  avatarImageUrl?: string;
+  shortBio?: string;
   className?: string;
 }
 
@@ -42,6 +47,9 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
   title = 'Cápsulas Cinematográficas Históricas',
   narratorScript,
   characterName,
+  moments,
+  avatarImageUrl,
+  shortBio,
   className = ''
 }) => {
   const [currentCapsuleIndex, setCurrentCapsuleIndex] = useState(0);
@@ -53,42 +61,118 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  // 4 Cápsulas Cinematográficas completamente diferenciadas
-  const capsules: HistoricalCapsule[] = [
-    {
-      id: 'cap-1',
-      title: `${characterName}: La Conspiración Clandestina`,
-      duration: durationSeconds || 15,
-      imageUrl: '/images/history/josefa_conspiracion_comic_1.png',
-      script: narratorScript || 'Santiago de Querétaro, agosto de 1810. Bajo la apariencia de tertulias literarias, en la Casa del Corregimiento se gesta la independencia. A la luz de las velas, mapas y voluntades sellan el destino de una patria libre.',
-      cameraMovement: 'zoom_in',
-      youtubeUrl: videoUrl
-    },
-    {
-      id: 'cap-2',
-      title: 'El Taconeo en la Soledad de la Alcoba',
-      duration: 18,
-      imageUrl: '/images/history/josefa_taconeo_comic_2.png',
-      script: '15 de septiembre de 1810. Con la conjura descubierta y encerrada bajo llave por su esposo, Josefa no duda. Tres golpes secos de sus zapatillas en el entarimado alertan al alcaide Ignacio Pérez. El aviso que salva la gesta insurgente.',
-      cameraMovement: 'pan_slow'
-    },
-    {
-      id: 'cap-3',
-      title: 'La Cabalgata Nocturna por la Libertad',
-      duration: 16,
-      imageUrl: '/images/history/josefa_alerta_comic_3.png',
-      script: 'Bajo el manto de la noche colonial, Ignacio Pérez cabalga sin tregua hacia San Miguel el Grande y Dolores. Cada galope acorta la distancia hacia la libertad, esquivando a las patrullas virreinales antes del cateo.',
-      cameraMovement: 'gallop_sweep'
-    },
-    {
-      id: 'cap-4',
-      title: 'El Grito de Dolores y el Alba de la Patria',
-      duration: 20,
-      imageUrl: '/images/history/hidalgo_grito_comic_4.png',
-      script: 'Madrugada del 16 de septiembre de 1810. Advertido a tiempo por la valentía de Josefa, el cura Miguel Hidalgo repica la campana parroquial y convoca al pueblo con voz de trueno: ¡Viva la América soberana!',
-      cameraMovement: 'dawn_ascend'
+  // Reiniciar cápsula activa si cambia el personaje
+  useEffect(() => {
+    setCurrentCapsuleIndex(0);
+    setProgress(0);
+    setIsPlaying(false);
+  }, [characterName]);
+
+  // Generar cápsulas cinematográficas DINÁMICAMENTE acordes al personaje específico
+  const capsules: HistoricalCapsule[] = React.useMemo(() => {
+    if (moments && moments.length > 0) {
+      return moments.map((m, idx) => ({
+        id: `cap-${idx + 1}`,
+        title: m.title || `${characterName}: Hito ${idx + 1}`,
+        duration: idx === 0 ? (durationSeconds || 18) : (16 + (idx * 2)),
+        imageUrl: m.imageUrl || avatarImageUrl || '/images/history/francisco_villa_avatar.png',
+        script: idx === 0 && narratorScript 
+          ? narratorScript 
+          : (m.narrativeCaption || m.description || `${characterName}: acontecimiento histórico en ${m.locationName || 'México'}.`),
+        cameraMovement: (['zoom_in', 'pan_slow', 'gallop_sweep', 'dawn_ascend'][idx % 4]) as HistoricalCapsule['cameraMovement'],
+        youtubeUrl: idx === 0 ? videoUrl : undefined
+      }));
     }
-  ];
+
+    const norm = (characterName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (norm.includes('villa') || norm.includes('doroteo') || norm.includes('centauro')) {
+      return [
+        {
+          id: 'cap-1',
+          title: 'Toma de Ciudad Juárez (1911)',
+          duration: 18,
+          imageUrl: '/images/history/villa_toma_juarez_comic_1.png',
+          script: narratorScript || 'Mayo de 1911. Francisco Villa y las fuerzas revolucionarias asaltan Ciudad Juárez, desmoronando la dictadura de Porfirio Díaz.',
+          cameraMovement: 'zoom_in',
+          youtubeUrl: videoUrl
+        },
+        {
+          id: 'cap-2',
+          title: 'Batalla de Zacatecas (1914)',
+          duration: 20,
+          imageUrl: '/images/history/villa_batalla_zacatecas_comic_2.png',
+          script: '23 de junio de 1914. La legendaria División del Norte toma el Cerro de la Bufa en una épica carga de artillería e infantería, sellando el destino de Victoriano Huerta.',
+          cameraMovement: 'pan_slow'
+        },
+        {
+          id: 'cap-3',
+          title: 'El Pacto de Xochimilco y Entrada a CDMX (1914)',
+          duration: 16,
+          imageUrl: '/images/history/villa_pacto_xochimilco_comic_3.png',
+          script: 'Diciembre de 1914. Francisco Villa y Emiliano Zapata sellan el pacto de hermandad campesina en Xochimilco y desfilan al frente de sus tropas populares.',
+          cameraMovement: 'gallop_sweep'
+        },
+        {
+          id: 'cap-4',
+          title: 'Incursión en Columbus y la Punitiva (1916)',
+          duration: 18,
+          imageUrl: '/images/history/villa_columbus_comic_4.png',
+          script: 'Marzo de 1916. En respuesta a las agresiones y embargos, Villa cruza la frontera y ataca Columbus, burlando luego la expedición punitiva de Pershing.',
+          cameraMovement: 'dawn_ascend'
+        }
+      ];
+    }
+
+    if (norm.includes('josefa') || norm.includes('corregidora')) {
+      return [
+        {
+          id: 'cap-1',
+          title: `${characterName}: La Conspiración Clandestina`,
+          duration: durationSeconds || 15,
+          imageUrl: '/images/history/josefa_conspiracion_comic_1.png',
+          script: narratorScript || 'Santiago de Querétaro, agosto de 1810. Bajo la apariencia de tertulias literarias, en la Casa del Corregimiento se gesta la independencia.',
+          cameraMovement: 'zoom_in',
+          youtubeUrl: videoUrl
+        },
+        {
+          id: 'cap-2',
+          title: 'El Taconeo en la Soledad de la Alcoba',
+          duration: 18,
+          imageUrl: '/images/history/josefa_taconeo_comic_2.png',
+          script: '15 de septiembre de 1810. Encerrada bajo llave por su esposo, Josefa no duda: tres golpes secos de sus zapatillas alertan al alcaide Ignacio Pérez.',
+          cameraMovement: 'pan_slow'
+        },
+        {
+          id: 'cap-3',
+          title: 'La Cabalgata Nocturna por la Libertad',
+          duration: 16,
+          imageUrl: '/images/history/josefa_alerta_comic_3.png',
+          script: 'Bajo el manto de la noche colonial, Ignacio Pérez cabalga sin tregua hacia San Miguel y Dolores, avisando a los líderes antes del cateo virreinal.',
+          cameraMovement: 'gallop_sweep'
+        },
+        {
+          id: 'cap-4',
+          title: 'El Grito de Dolores y el Alba de la Patria',
+          duration: 20,
+          imageUrl: '/images/history/hidalgo_grito_comic_4.png',
+          script: 'Madrugada del 16 de septiembre de 1810. Advertido a tiempo por Josefa, el cura Miguel Hidalgo repica la campana parroquial llamando a la libertad.',
+          cameraMovement: 'dawn_ascend'
+        }
+      ];
+    }
+
+    return [
+      {
+        id: 'cap-1',
+        title: title || `${characterName}: Acontecimiento Clave`,
+        duration: durationSeconds || 18,
+        imageUrl: avatarImageUrl || '/images/history/francisco_villa_avatar.png',
+        script: narratorScript || shortBio || `${characterName} transformó la historia con su liderazgo y convicción patriótica.`,
+        cameraMovement: 'zoom_in',
+        youtubeUrl: videoUrl
+      }
+    ];
+  }, [moments, characterName, narratorScript, durationSeconds, videoUrl, title, avatarImageUrl, shortBio]);
 
   const activeCapsule = capsules[currentCapsuleIndex] || capsules[0];
   const embedUrl = getYouTubeEmbedUrl(activeCapsule.youtubeUrl || videoUrl);
@@ -281,7 +365,9 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
                 ease: 'linear'
               }}
               onError={(e) => {
-                (e.target as HTMLImageElement).src = '/images/history/josefa_conspiracion_comic_1.png';
+                if (avatarImageUrl) {
+                  (e.target as HTMLImageElement).src = avatarImageUrl;
+                }
               }}
               className="w-full h-full object-cover filter contrast-105 brightness-95"
             />
@@ -430,7 +516,9 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
                     src={cap.imageUrl} 
                     alt={cap.title}
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/images/history/josefa_conspiracion_comic_1.png';
+                      if (avatarImageUrl) {
+                        (e.target as HTMLImageElement).src = avatarImageUrl;
+                      }
                     }}
                     className="w-full h-full object-cover"
                   />

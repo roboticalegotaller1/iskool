@@ -106,7 +106,7 @@ export const BOOK_SPINE_THEMES: Record<BookSpineStyle, {
   },
   cuaderno_cronista: {
     name: 'Cuaderno del Cronista',
-    badge: '🖋️ Lino & Lacre Carmesí',
+    badge: '🖋️ Crónica Revolucionaria (1910)',
     coverGradient: 'from-stone-900 via-stone-950 to-stone-900',
     spineGradient: 'from-stone-800 via-stone-900 to-black',
     borderDecor: 'border-rose-600/50 shadow-rose-950/40',
@@ -333,10 +333,12 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
               <div className="z-10 space-y-4 my-auto">
                 <div className="w-32 h-32 rounded-full border-4 border-amber-400/60 p-1 shadow-2xl mx-auto overflow-hidden bg-black/60">
                   <img 
-                    src={data.avatarImageUrl || '/images/history/josefa_ortiz_avatar.png'} 
+                    src={data.avatarImageUrl || '/images/history/francisco_villa_avatar.png'} 
                     alt={data.characterName} 
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/images/history/josefa_ortiz_avatar.png';
+                      if (data.avatarImageUrl) {
+                        (e.target as HTMLImageElement).src = data.avatarImageUrl;
+                      }
                     }}
                     className="w-full h-full object-cover filter contrast-105"
                   />
@@ -432,10 +434,12 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                           <div className="lg:col-span-4 text-center">
                             <div className="w-44 h-44 rounded-full border-4 border-amber-500/40 p-1 shadow-2xl mx-auto overflow-hidden bg-slate-950">
                               <img 
-                                src={data.avatarImageUrl || '/images/history/josefa_ortiz_avatar.png'} 
+                                src={data.avatarImageUrl || '/images/history/francisco_villa_avatar.png'} 
                                 alt={data.characterName} 
                                 onError={(e) => {
-                                  (e.target as HTMLImageElement).src = '/images/history/josefa_ortiz_avatar.png';
+                                  if (data.avatarImageUrl) {
+                                    (e.target as HTMLImageElement).src = data.avatarImageUrl;
+                                  }
                                 }}
                                 className="w-full h-full object-cover"
                               />
@@ -495,6 +499,7 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                       <HistoricalTimelineComic 
                         moments={data.moments || []} 
                         characterName={data.characterName}
+                        avatarImageUrl={data.avatarImageUrl}
                         onSelectMomentOnMap={() => setCurrentPage(2)}
                       />
                     </motion.div>
@@ -531,6 +536,9 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                         title={data.videoClip?.title}
                         narratorScript={data.videoClip?.narratorScript}
                         characterName={data.characterName}
+                        moments={data.moments}
+                        avatarImageUrl={data.avatarImageUrl}
+                        shortBio={data.shortBio}
                       />
                     </motion.div>
                   )}
