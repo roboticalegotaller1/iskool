@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { TimedReadingBlock, ComprehensionQuestion } from '@/types/studioBlocks';
+import { selectHistoricalSpeechVoice, stopAllIskoolAudio } from '@/lib/historicalVoiceEngine';
 import { 
   BookOpen, 
   Clock, 
@@ -118,8 +119,8 @@ Al comprender que el calor representa la transferencia energética derivada de u
   const HUMAN_NEURAL_VOICES = useMemo(() => [
     { id: 'es-MX-DaliaNeural', label: 'Dalia (México) · Mentora', badge: '100% Humana', tag: 'Femenina Cálida & Dulce' },
     { id: 'es-MX-JorgeNeural', label: 'Jorge (México) · Profesor', badge: '100% Humana', tag: 'Masculina Serena & Madura' },
-    { id: 'es-ES-ElviraNeural', label: 'Elvira (España) · Narradora', badge: '100% Humana', tag: 'Femenina Castellana Clásica' },
-    { id: 'es-ES-AlvaroNeural', label: 'Álvaro (España) · Cronista', badge: '100% Humana', tag: 'Masculina Profunda & Solemne' },
+    { id: 'es-US-PalomaNeural', label: 'Paloma (Latina) · Narradora', badge: '100% Humana', tag: 'Femenina Dinámica & Moderna' },
+    { id: 'es-CO-GonzaloNeural', label: 'Gonzalo (Colombia) · Cronista', badge: '100% Humana', tag: 'Masculina Elegante & Serena' },
     { id: 'es-CO-SalomeNeural', label: 'Salomé (Colombia) · Didáctica', badge: '100% Humana', tag: 'Femenina Acento Neutro' },
     { id: 'es-AR-ElenaNeural', label: 'Elena (Argentina) · Expresiva', badge: '100% Humana', tag: 'Femenina Rioplatense' },
   ], []);
@@ -344,9 +345,7 @@ Al comprender que el calor representa la transferencia energética derivada de u
       audioPlayerRef.current.pause();
       audioPlayerRef.current.currentTime = 0;
     }
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
+    stopAllIskoolAudio();
     setIsSpeaking(false);
     setIsAudioLoading(false);
   };
@@ -444,7 +443,9 @@ Al comprender que el calor representa la transferencia energética derivada de u
           body: JSON.stringify({
             text: cleanText,
             voice: selectedNeuralVoice,
-            rate: speechRate
+            rate: speechRate,
+            role: 'narrator',
+            narratorMode: 'wisdom_guide'
           })
         });
 
@@ -480,19 +481,16 @@ Al comprender que el calor representa la transferencia energética derivada de u
       console.warn('Fallback a síntesis local debido a:', err);
       setIsAudioLoading(false);
 
-      // Fallback a SpeechSynthesis del navegador si no hay conexión al motor neural
+      // Fallback a SpeechSynthesis del navegador con bloqueo anti-castellano
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(cleanText);
-        // Filtrar estrictamente voces femeninas en español, bloqueando Pablo
-        const voices = window.speechSynthesis.getVoices();
-        const femaleVoice = voices.find(v => 
-          v.lang.toLowerCase().startsWith('es') && 
-          !/pablo|david|jorge|raul|alonso|male|hombre/i.test(v.name)
-        );
-        if (femaleVoice) {
-          utterance.voice = femaleVoice;
+        const isMaleVoice = /jorge|gonzalo|alex|alonso|tomas|luis|emilio|juan|manuel/i.test(selectedNeuralVoice);
+        const certifiedVoice = selectHistoricalSpeechVoice(isMaleVoice ? 'male' : 'female');
+        if (certifiedVoice) {
+          utterance.voice = certifiedVoice;
         }
+        utterance.lang = 'es-MX';
         utterance.rate = 0.95 * speechRate;
         utterance.onend = () => setIsSpeaking(false);
         utterance.onerror = () => setIsSpeaking(false);

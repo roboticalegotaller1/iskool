@@ -18,6 +18,11 @@ import {
 import { getYouTubeEmbedUrl } from '@/components/studio/player/StudioFlowPlayer';
 
 import { HistoricalFigureMoment } from '@/types/studioBlocks';
+import { 
+  playUniversalIskoolVoice, 
+  stopAllIskoolAudio, 
+  UniversalAudioController 
+} from '@/lib/historicalVoiceEngine';
 
 export interface HistoricalCinematicVideoProps {
   videoUrl?: string;
@@ -60,6 +65,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
 
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const audioCtrlRef = useRef<UniversalAudioController | null>(null);
 
   // Reiniciar cápsula activa si cambia el personaje
   useEffect(() => {
@@ -216,21 +222,24 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
     }
   };
 
-  // Manejo de la locución en primera/tercera persona
+  // Manejo de la locución en primera/tercera persona con motor neural latino
   const speakNarrator = () => {
-    if (isAudioMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
+    if (isAudioMuted || typeof window === 'undefined') return;
+    audioCtrlRef.current?.stop();
+    stopAllIskoolAudio();
     
-    const utterance = new SpeechSynthesisUtterance(activeCapsule.script);
-    utterance.lang = 'es-MX';
-    utterance.rate = 0.92;
-    utterance.pitch = 0.95;
-
-    const voices = window.speechSynthesis.getVoices();
-    const esVoice = voices.find(v => v.lang.startsWith('es'));
-    if (esVoice) utterance.voice = esVoice;
-
-    window.speechSynthesis.speak(utterance);
+    playUniversalIskoolVoice({
+      text: activeCapsule.script,
+      characterName: characterName || 'Narrador Histórico',
+      role: 'narrator',
+      narratorMode: 'epic_chronist',
+      rate: 0.94,
+      onStart: () => {},
+      onEnd: () => {},
+      onError: (err) => console.warn('Error en narración cinematográfica:', err)
+    }).then(ctrl => {
+      audioCtrlRef.current = ctrl;
+    });
   };
 
   const handleStartPlay = () => {
@@ -260,9 +269,8 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
   const handlePause = () => {
     setIsPlaying(false);
     if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
+    audioCtrlRef.current?.stop();
+    stopAllIskoolAudio();
   };
 
   const handleRestart = () => {
@@ -273,15 +281,14 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
     }, 150);
   };
 
-  // Limpiar timers al desmontar o cambiar cápsula
+  // Limpiar timers y locución al desmontar o cambiar cápsula
   useEffect(() => {
     handlePause();
     setProgress(0);
     return () => {
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
+      audioCtrlRef.current?.stop();
+      stopAllIskoolAudio();
     };
   }, [currentCapsuleIndex]);
 

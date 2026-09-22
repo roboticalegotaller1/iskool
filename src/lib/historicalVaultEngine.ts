@@ -189,6 +189,12 @@ export function parseHistoricalMarkdown(rawContent: string, slug: string): Histo
     ? rawSpine
     : 'diario_republicano';
   const avatarImageUrl = getFmValue('avatarImageUrl') || '/images/history/josefa_ortiz_avatar.png';
+  const voiceId = getFmValue('voiceId');
+  const voiceCohort = getFmValue('voiceCohort') as HistoricalFigureBlockData['voiceCohort'];
+  const voiceRate = getFmValue('voiceRate');
+  const voicePitch = getFmValue('voicePitch');
+  const oratoricalTone = getFmValue('oratoricalTone');
+  const narratorMode = getFmValue('narratorMode');
 
   // Parsear secciones del cuerpo
   const sections = bodyText.split(/^##\s+/m);
@@ -346,7 +352,13 @@ export function parseHistoricalMarkdown(rawContent: string, slug: string): Histo
     verificationQuestions,
     qaCache,
     vaultNodeSlug: slug,
-    isFromVault: true
+    isFromVault: true,
+    voiceId: voiceId || undefined,
+    voiceCohort: voiceCohort || undefined,
+    voiceRate: voiceRate || undefined,
+    voicePitch: voicePitch || undefined,
+    oratoricalTone: oratoricalTone || undefined,
+    narratorMode: narratorMode || undefined
   };
 }
 
@@ -401,6 +413,12 @@ birthOrEstablishment: "${data.birthDeathDates?.split('-')[0]?.trim() || ''}"
 deathOrPresentState: "${data.birthDeathDates?.split('-')[1]?.trim() || ''}"
 bookSpineStyle: "${data.bookSpineStyle || 'diario_republicano'}"
 avatarImageUrl: "${data.avatarImageUrl || '/images/history/josefa_ortiz_avatar.png'}"
+voiceId: "${data.voiceId || ''}"
+voiceCohort: "${data.voiceCohort || ''}"
+voiceRate: "${data.voiceRate || '-5%'}"
+voicePitch: "${data.voicePitch || '-2Hz'}"
+oratoricalTone: "${data.oratoricalTone || ''}"
+narratorMode: "${data.narratorMode || ''}"
 tags:
 ${tagsList.map(t => `  - ${t}`).join('\n')}
 lastUpdated: "${today}"
@@ -481,7 +499,25 @@ export function isCorruptOrGenericPersonaAnswer(answer: string): boolean {
   if (text.includes('Como Leona Vicario')) return true;
   if (text.includes('Como Ignacio Allende')) return true;
 
-  // Evasivas genéricas
+  // Fugas de Metadatos, Scratchpad o Prompt del Sistema (TERMINANTEMENTE PROHIBIDO)
+  if (
+    text.includes('* Persona:') ||
+    text.includes('Persona:') ||
+    text.includes('Constraint') ||
+    text.includes('Audience:') ||
+    text.includes('Historical records for') ||
+    text.includes('Direct Answer') ||
+    text.includes('Conciseness') ||
+    text.includes('thoughtSignature') ||
+    text.includes('Desired Output:') ||
+    text.includes('Simple response:') ||
+    /(persona:|audience:|constraint\s*\d|historical records for|direct answer|conciseness)/i.test(text) ||
+    /^\s*\*\s*(persona|audience|constraint|question|instruction):/im.test(text)
+  ) {
+    return true;
+  }
+
+  // Evasivas genéricas y sermones abstractos prohibidos
   if (
     text.includes('Escudriña en los documentos') ||
     text.includes('Escudrina en los documentos') ||
@@ -493,7 +529,14 @@ export function isCorruptOrGenericPersonaAnswer(answer: string): boolean {
     text.includes('En aquellos años definitorios en Querétaro') ||
     text.includes('Frente a tu interrogante, ten por seguro') ||
     text.includes('En los registros documentales de nuestra historia patria consta que') ||
-    text.includes('En los registros fidedignos de nuestra historia patria consta que')
+    text.includes('En los registros fidedignos de nuestra historia patria consta que') ||
+    text.includes('Sobre lo que me preguntas, vivimos una época de profunda prueba') ||
+    text.includes('Sobre lo que me preguntas, vivimos una época') ||
+    text.includes('cada pensamiento, conversación y decisión en mi vida estuvo guiada por la rectitud moral') ||
+    text.includes('En aquellos tiempos novohispanos cada pensamiento') ||
+    text.includes('mi compromiso estuvo siempre enfocado en defender la justicia, la verdad') ||
+    text.includes('En cada momento de mi trayectoria histórica actué con absoluta convicción cívica') ||
+    text.includes('la templanza cívica y la lealtad a los principios eran la brújula innegociable')
   ) {
     return true;
   }
@@ -558,8 +601,275 @@ export function matchesHistoricalTheme(q1: string, q2: string): boolean {
   return false;
 }
 
+export interface HistoricalQuestionAnalysis {
+  normalizedQuestion: string;
+  isNegated: boolean;
+  interrogativeType: 
+    | 'ASKING_NAMES'        // ¿cómo se llamaba(n)?, ¿quiénes eran?, ¿cuáles eran los nombres?
+    | 'ASKING_COUNT'        // ¿cuántos?, ¿qué cantidad?
+    | 'ASKING_LOCATION'     // ¿dónde?, ¿hacia dónde?
+    | 'ASKING_DATE_TIME'    // ¿cuándo?, ¿en qué año?, ¿qué fecha?
+    | 'ASKING_AGE'          // ¿qué edad?, ¿cuántos años?
+    | 'ASKING_CAUSE_WHY'    // ¿por qué?, ¿cuál fue el motivo?
+    | 'ASKING_METHOD_HOW'   // ¿cómo hiciste?, ¿de qué manera?
+    | 'ASKING_CONFIRMATION' // ¿alguna vez?, ¿es verdad que?, ¿fuiste?
+    | 'GENERAL';
+  targetEntity: 
+    | 'ENEMIES_RIVALS'
+    | 'TRAITORS_BETRAYAL'
+    | 'FRIENDS_ALLIES'
+    | 'CHILDREN'
+    | 'SPOUSE'
+    | 'PARENTS'
+    | 'SISTER'
+    | 'CONSPIRATORS'
+    | 'ALCAIDE_PEREZ'
+    | 'WEAPONS'
+    | 'WOUNDS_COMBAT'
+    | 'CLOTHING'
+    | 'FOOD'
+    | 'DEATH_BURIAL'
+    | 'PRISON_CONVENT'
+    | 'TACONEO_ALERT'
+    | 'IDENTITY'
+    | 'GENERAL';
+  specificIntent: string;
+  requiredKeywords?: string[];
+  instructionForAI: string;
+}
+
+/**
+ * Analizador Sintáctico y Semántico de Preguntas Históricas
+ * Descompone el tipo de interrogación, polaridad (negación/aversión) y la entidad objetivo.
+ */
+export function analyzeHistoricalQuestion(question: string): HistoricalQuestionAnalysis {
+  const norm = normalizeQuestionText(question);
+
+  // Detección profunda de polaridad negativa, aversión o rechazo
+  const isNegated = /(no te gust|no le gust|no te agrad|no le agrad|no comias|no comia|no querias|no queria|te desagrad|le desagrad|desagrad|disgust|odiab|detestab|rechazab|aborrec|repudi|asco|asquito|mal sabor|que te chocaba|que te fastidiaba|en contra de|repugnan)/i.test(norm);
+
+  let interrogativeType: HistoricalQuestionAnalysis['interrogativeType'] = 'GENERAL';
+  if (/(como se llamab|cual.*nombre|como se llama|quienes eran|quienes fueron|nombres de|que nombres|quien era|quien fue)/i.test(norm)) {
+    interrogativeType = 'ASKING_NAMES';
+  } else if (/(cuantos|cuantas|que cantidad|a cuantos|numero de)/i.test(norm)) {
+    interrogativeType = 'ASKING_COUNT';
+  } else if (/(donde|de donde|en que lugar|hacia donde|a donde|en que ciudad)/i.test(norm)) {
+    interrogativeType = 'ASKING_LOCATION';
+  } else if (/(cuando|en que ano|en que fecha|que dia|en que epoca)/i.test(norm)) {
+    interrogativeType = 'ASKING_DATE_TIME';
+  } else if (/(que edad|cuantos anos)/i.test(norm)) {
+    interrogativeType = 'ASKING_AGE';
+  } else if (/(por que|cual fue el motivo|a razon de|para que|a causa de)/i.test(norm)) {
+    interrogativeType = 'ASKING_CAUSE_WHY';
+  } else if (/(como hiciste|de que forma|como lograste|como avisaste|como te comunicabas|de que manera)/i.test(norm)) {
+    interrogativeType = 'ASKING_METHOD_HOW';
+  } else if (/(alguna vez|es verdad que|acaso|llegaste a|sufriste|tuviste|fuiste|saliste)/i.test(norm)) {
+    interrogativeType = 'ASKING_CONFIRMATION';
+  }
+
+  // Identificación estricta de entidad objetivo (prioridad a entidades específicas sobre identidad general)
+  let targetEntity: HistoricalQuestionAnalysis['targetEntity'] = 'GENERAL';
+  if (/(enemig|adversari|rival|opositor|antagonist|contra quien luch|perseguidor|virrey|calleja|venegas|bataller|gachupin|realistas|ejercito realista)/i.test(norm)) {
+    targetEntity = 'ENEMIES_RIVALS';
+  } else if (/(traici|traidor|delat|delator|quien te delato|quien delato|quien te traiciono|quien los traiciono|arias|arriaga|buera)/i.test(norm)) {
+    targetEntity = 'TRAITORS_BETRAYAL';
+  } else if (/(amig|amiga|amistad|confidente|aliad|companero de lucha)/i.test(norm)) {
+    targetEntity = 'FRIENDS_ALLIES';
+  } else if (/(hijo|hija|hijos|hijas|descendencia|vastago|pequenos|ninos)/i.test(norm)) {
+    targetEntity = 'CHILDREN';
+  } else if (/(esposo|marido|conyuge|miguel dominguez|matrimonio|boda|casaste)/i.test(norm)) {
+    targetEntity = 'SPOUSE';
+  } else if (/(padres|papa|mama|progenitor)/i.test(norm)) {
+    targetEntity = 'PARENTS';
+  } else if (/(hermana|maria sotero)/i.test(norm)) {
+    targetEntity = 'SISTER';
+  } else if (/(conspirad|allende|hidalgo|aldama|abasolo|companeros)/i.test(norm)) {
+    targetEntity = 'CONSPIRATORS';
+  } else if (/(alcaide|ignacio perez|mensajero|jinete)/i.test(norm)) {
+    targetEntity = 'ALCAIDE_PEREZ';
+  } else if (/(herid|balazo|disparo|sangre|lastim|dolor fisico)/i.test(norm)) {
+    targetEntity = 'WOUNDS_COMBAT';
+  } else if (/(muert|moriste|muri[oó]|fallec|tumba|restos|panteon)/i.test(norm)) {
+    targetEntity = 'DEATH_BURIAL';
+  } else if (/(tacon|taconeo|zapato|tres golpes|golpeaste)/i.test(norm)) {
+    targetEntity = 'TACONEO_ALERT';
+  } else if (/(prisi|carcel|convento|santa clara|santa teresa|incomunicad)/i.test(norm)) {
+    targetEntity = 'PRISON_CONVENT';
+  } else if (/(arma|fusil|pistola|30-30|mauser|sable|espada)/i.test(norm)) {
+    targetEntity = 'WEAPONS';
+  } else if (/(ropa|vestid|sayas|rebozo|peineta)/i.test(norm)) {
+    targetEntity = 'CLOTHING';
+  } else if (/(comida|platillo|guiso|chocolate|manjar|alimento|comer|desayun|cenab|pan|atole)/i.test(norm)) {
+    targetEntity = 'FOOD';
+  } else if (
+    /(quien eres tu|quien eres|como te llamas|cual es tu nombre|presentate|dime quien eres|hablame de ti|cuentame sobre ti|cual es tu biografia|dime tu biografia)/i.test(norm)
+  ) {
+    if (!/(enemig|espos|marid|hij|padr|herman|amig|virrey|alcaide|traidor|autor|personaje|rival|presidente)/i.test(norm)) {
+      targetEntity = 'IDENTITY';
+    }
+  }
+
+  // Sintetizar intención fina y directrices de validación
+  let specificIntent = 'GENERAL_QUESTION';
+  let requiredKeywords: string[] | undefined = undefined;
+  let instructionForAI = 'Responde con fidelidad histórica en primera persona, contestando directamente la pregunta en la primera oración.';
+
+  if (targetEntity === 'ENEMIES_RIVALS') {
+    specificIntent = 'ENEMIES_RIVALS';
+    instructionForAI = 'El estudiante pregunta quién era tu enemigo, adversario o contra quién luchabas. Responde directamente en primera persona indicando con nombres y hechos históricos reales quiénes fueron tus mayores opresores y adversarios (los virreyes Francisco Xavier Venegas y Félix María Calleja, los jueces de la Real Audiencia y los delatores que vendieron la conspiración como Joaquín Arias). Queda TERMINANTEMENTE PROHIBIDO hablar de tu propia biografía o presentarte como si fueras tu propio enemigo.';
+  } else if (targetEntity === 'TRAITORS_BETRAYAL') {
+    specificIntent = 'TRAITORS_BETRAYAL';
+    instructionForAI = 'El estudiante pregunta quién te traicionó o delató la conspiración. Menciona en la primera oración con nombres exactos a los delatores: el capitán Joaquín Arias, Francisco Buera y Rafael Arriaga, explicando cómo vendieron la conjura a inicios de septiembre de 1810.';
+  } else if (targetEntity === 'FRIENDS_ALLIES') {
+    specificIntent = 'FRIENDS_ALLIES';
+    instructionForAI = 'El estudiante pregunta quiénes eran tus amigos o aliados de mayor confianza. Menciona con afecto y respeto patriótico a don Miguel Hidalgo, Ignacio Allende, Juan Aldama, el alcaide Ignacio Pérez y heroínas como Leona Vicario.';
+  } else if (targetEntity === 'IDENTITY') {
+    specificIntent = 'WHO_AM_I';
+    instructionForAI = 'Preséntate con dignidad en primera persona indicando tu nombre, lugar de origen y tu papel histórico en la independencia.';
+  } else if (targetEntity === 'CHILDREN') {
+    if (interrogativeType === 'ASKING_NAMES') {
+      specificIntent = 'CHILDREN_NAMES';
+      requiredKeywords = ['Mariano', 'Miguel', 'Dolores', 'Micaela', 'Juana', 'Josefa', 'Magdalena', 'Manuela', 'Ignacio', 'Camilo'];
+      instructionForAI = 'El estudiante pide expresamente los NOMBRES de tus hijos. Menciona en la primera oración sus nombres reales (Mariano, Miguel, Dolores, Micaela, Juana, Josefa, Magdalena, Manuela, Ignacio, Camilo) y aclara que con don Miguel tuviste catorce hijos. Queda terminantemente prohibido evadir dar los nombres o hablar en abstracto.';
+    } else if (interrogativeType === 'ASKING_COUNT') {
+      specificIntent = 'CHILDREN_COUNT';
+      requiredKeywords = ['catorce', '14'];
+      instructionForAI = 'El estudiante pregunta cuántos hijos tuviste. Contesta de inmediato que tuviste catorce hijos con don Miguel Domínguez (además de criar a dos de su primer matrimonio).';
+    } else if (norm.includes('prision') || norm.includes('carcel') || norm.includes('convento') || norm.includes('quedo') || norm.includes('cuido')) {
+      specificIntent = 'CHILDREN_CARE_PRISON';
+      instructionForAI = 'Explica directamente quién cuidó de tus hijos mientras estuviste recluida en los conventos de Santa Clara y Santa Teresa.';
+    } else {
+      specificIntent = 'CHILDREN_GENERAL';
+    }
+  } else if (targetEntity === 'SPOUSE') {
+    if (interrogativeType === 'ASKING_NAMES') {
+      specificIntent = 'SPOUSE_NAME';
+      requiredKeywords = ['Miguel Domínguez', 'Miguel Dominguez'];
+      instructionForAI = 'Indica directamente el nombre de tu esposo: don Miguel Domínguez Trujillo, Corregidor de Querétaro.';
+    } else if (interrogativeType === 'ASKING_DATE_TIME') {
+      specificIntent = 'MARRIAGE_DATE';
+      requiredKeywords = ['1791'];
+      instructionForAI = 'Indica el año de tu matrimonio (1791 en la Ciudad de México).';
+    }
+  } else if (targetEntity === 'PARENTS') {
+    if (interrogativeType === 'ASKING_NAMES') {
+      specificIntent = 'PARENTS_NAMES';
+      requiredKeywords = ['Juan José Ortiz', 'María Manuela Girón', 'Juan Jose', 'Manuela Giron'];
+      instructionForAI = 'Indica los nombres de tus padres: don Juan José Ortiz y doña María Manuela Girón.';
+    }
+  } else if (targetEntity === 'SISTER') {
+    if (interrogativeType === 'ASKING_NAMES') {
+      specificIntent = 'SISTER_NAME';
+      requiredKeywords = ['María Sotero', 'Maria Sotero'];
+      instructionForAI = 'Indica el nombre de tu hermana mayor: María Sotero Ortiz.';
+    }
+  } else if (targetEntity === 'FOOD') {
+    if (isNegated) {
+      specificIntent = 'FOOD_DISLIKES';
+      instructionForAI = 'El estudiante pregunta qué comida NO le gustaba, le causaba aversión o repudiaba al personaje histórico. Contesta de inmediato en primera persona señalando los excesos culinarios virreinales que repudiaba (los pesados banquetes peninsulares rebosantes de manteca rancia, carnes grasosas y bacalao seco importado servidos con insolencia mientras el pueblo pasaba hambre) y los alimentos descompuestos o agrios (atoles agrios, frijoles desabridos, pan duro y mohoso) que sufrió durante su encierro en los conventos de Santa Clara y Santa Teresa. Queda TERMINANTEMENTE PROHIBIDO responder con platillos favoritos como mole, manchamanteles o chocolate.';
+    } else {
+      specificIntent = 'FOOD_FAVORITES';
+      instructionForAI = 'El estudiante pregunta cuál era tu comida o platillo favorito. Menciona con afecto los manjares novohispanos como el mole de olla, el manchamanteles y el chocolate de metate batido con molinillo.';
+    }
+  } else if (targetEntity === 'WOUNDS_COMBAT') {
+    specificIntent = 'WOUNDS_COMBAT_HURT';
+    instructionForAI = 'Aclara directamente en la primera oración si saliste herida o no: no combatiste en las líneas de fuego con armas y no sufriste heridas de bala, pero tu padecimiento físico fue una grave afección pleuropulmonar por el encierro en los conventos de Santa Clara y Santa Teresa.';
+  } else if (targetEntity === 'DEATH_BURIAL') {
+    if (interrogativeType === 'ASKING_LOCATION') {
+      specificIntent = 'RESTING_PLACE';
+      requiredKeywords = ['Panteón de los Queretanos Ilustres', 'Queretanos Ilustres', 'Santa Teresa'];
+    } else if (interrogativeType === 'ASKING_AGE') {
+      specificIntent = 'DEATH_AGE';
+      requiredKeywords = ['60 años', '60 anos', 'sesenta'];
+    } else {
+      specificIntent = 'DEATH_CAUSE';
+      instructionForAI = 'Indica cómo y cuándo moriste: falleciste el 2 de marzo de 1829 a los 60 años en la Ciudad de México por una afección pulmonar.';
+    }
+  }
+
+  return {
+    normalizedQuestion: norm,
+    isNegated,
+    interrogativeType,
+    targetEntity,
+    specificIntent,
+    requiredKeywords,
+    instructionForAI
+  };
+}
+
+/**
+ * Validador estricto de concordancia semántica entre la pregunta y la respuesta.
+ * Evita que respuestas genéricas o no pertinentes se entreguen o se almacenen en caché.
+ */
+export function isAnswerSemanticallyAligned(question: string, answer: string): boolean {
+  if (!answer || isCorruptOrGenericPersonaAnswer(answer)) return false;
+  const analysis = analyzeHistoricalQuestion(question);
+  const normAnswer = answer.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  // 1. Guardián de Identidad Cruzada: Si la pregunta indaga sobre enemigos, traidores, cónyuge, hijos o terceros,
+  // la respuesta JAMÁS puede ser una auto-presentación biográfica ("Soy [Nombre]...").
+  const isSelfIntroduction = /^(soy|mi nombre es)\s+([a-z\s]+)(conocida|conocido|llamada|llamado|naci|consagre)/i.test(normAnswer);
+  if (['ENEMIES_RIVALS', 'TRAITORS_BETRAYAL', 'SPOUSE', 'CHILDREN', 'PARENTS', 'SISTER', 'ALCAIDE_PEREZ', 'FOOD_DISLIKES', 'WEAPONS', 'WOUNDS_COMBAT'].includes(analysis.specificIntent)) {
+    if (isSelfIntroduction) {
+      console.warn(`[SemanticGuard] Rechazada auto-presentación para pregunta de entidad externa: "${analysis.specificIntent}"`);
+      return false;
+    }
+  }
+
+  // 2. Guardián de Enemigos/Rivales: La respuesta DEBE contener al menos una referencia a los adversarios, opresores o virreyes
+  if (analysis.specificIntent === 'ENEMIES_RIVALS') {
+    const hasEnemyContext = /(enemig|virrey|virreyes|venegas|calleja|bataller|audiencia|corona|opresi|tiran|traidor|arias|arriaga|realista|adversari|huerta|terrateniente|pershing|maximiliano|frances|invasor|conservador|miramon|mejia|inquisicion|carranza|guajardo|hacendado|porfirio)/i.test(normAnswer);
+    if (!hasEnemyContext) {
+      console.warn(`[SemanticGuard] Rechazada respuesta a enemigos que no menciona adversarios u opresores.`);
+      return false;
+    }
+  }
+
+  // 3. Guardián de Traición/Delación: Debe contener a los delatores o hechos de la denuncia
+  if (analysis.specificIntent === 'TRAITORS_BETRAYAL') {
+    const hasBetrayalContext = /(delat|traici|arias|arriaga|buera|denuncia|cateo|descubier|elizondo|guajardo|carranco|salas barraza)/i.test(normAnswer);
+    if (!hasBetrayalContext) return false;
+  }
+
+  // 4. Si la pregunta es sobre comida que NO le gustaba / aversión (FOOD_DISLIKES):
+  if (analysis.specificIntent === 'FOOD_DISLIKES') {
+    // Prohibir terminantemente respuestas que afirmen predilección o platillos favoritos
+    if (/(predilecci[oó]n entra[nñ]able|platillo favorito|comida favorita|manjar predilecto|disfrutaba sobremanera|delicia|me encantaba)/i.test(normAnswer)) {
+      return false;
+    }
+    // Debe contener términos verídicos de desagrado, desprecio o raciones carcelarias
+    const hasDislikeTerms = /(desagrad|repudi|rechaz|aver|pesad|ranc|convento|prision|encierro|desabr|agri|miser|privaci|derroche|opulen)/i.test(normAnswer);
+    if (!hasDislikeTerms) {
+      return false;
+    }
+  }
+
+  // 5. Si la pregunta es sobre comida favorita (FOOD_FAVORITES):
+  if (analysis.specificIntent === 'FOOD_FAVORITES') {
+    if (/(repudiaba con vehemencia|me desagradaban|raciones miserables|atoles agrios)/i.test(normAnswer) && !/(predileccion|favorit|disfrutaba|manjar)/i.test(normAnswer)) {
+      return false;
+    }
+  }
+
+  // 6. Si la pregunta requería palabras clave obligatorias (como nombres concretos o fechas)
+  if (analysis.requiredKeywords && analysis.requiredKeywords.length > 0) {
+    const hasAnyRequired = analysis.requiredKeywords.some(kw => {
+      const normKw = kw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      return normAnswer.includes(normKw);
+    });
+    if (!hasAnyRequired) {
+      return false; // La respuesta NO respondió lo preguntado
+    }
+  }
+
+  return true;
+}
+
 /**
  * Busca si una pregunta formulada por un estudiante ya fue respondida en el caché del nodo (0 TOKENS)
+ * REGLA ESTRICTA: Coincidencia EXACTA de pregunta y validación de concordancia semántica.
+ * Si no es coincidencia exacta, retorna { found: false } para que el sistema use tokens reales de inmediato.
  */
 export function searchQaInVaultNode(slug: string, question: string): { found: boolean; answer?: string } {
   const figure = findHistoricalFigureInVault(slug);
@@ -570,27 +880,25 @@ export function searchQaInVaultNode(slug: string, question: string): { found: bo
   const normTarget = normalizeQuestionText(question);
   if (!normTarget || normTarget.length < 3) return { found: false };
 
-  // 1. Coincidencia exacta de pregunta
+  // Coincidencia EXACTA de la pregunta en la Bóveda Curricular
+  // Se erradica el matching difuso temático para no generar falsos positivos con polaridades opuestas.
   for (const item of figure.qaCache) {
     const normItem = normalizeQuestionText(item.question);
-    if (normItem === normTarget && !isCorruptOrGenericPersonaAnswer(item.answer)) {
-      return { found: true, answer: item.answer.trim() };
-    }
-  }
-
-  // 2. Coincidencia temática/semántica con respuestas fidedignas ya persistidas (0 tokens)
-  for (const item of figure.qaCache) {
-    if (!isCorruptOrGenericPersonaAnswer(item.answer) && matchesHistoricalTheme(normTarget, normalizeQuestionText(item.question))) {
-      return { found: true, answer: item.answer.trim() };
+    if (normItem === normTarget) {
+      if (isAnswerSemanticallyAligned(question, item.answer)) {
+        return { found: true, answer: item.answer.trim() };
+      } else {
+        console.warn(`[Bóveda Curricular] Entrada en caché para "${item.question}" no concuerda semánticamente con la pregunta. Descartada para re-inferencia.`);
+      }
     }
   }
 
   return { found: false };
 }
 
-
 /**
  * Añade o actualiza una pregunta y respuesta en el caché de la Bóveda Curricular para ese personaje
+ * Exige concordancia semántica estricta para garantizar que el archivo Markdown de la Bóveda se mantenga inmaculado.
  */
 export function appendQaToVaultNode(slug: string, question: string, answer: string): void {
   const figure = findHistoricalFigureInVault(slug);
@@ -599,7 +907,7 @@ export function appendQaToVaultNode(slug: string, question: string, answer: stri
   if (!figure.qaCache) figure.qaCache = [];
   
   const cleanAnswer = answer.trim();
-  if (!cleanAnswer) return;
+  if (!cleanAnswer || !isAnswerSemanticallyAligned(question, cleanAnswer)) return;
 
   const normTarget = normalizeQuestionText(question);
   const existingIdx = figure.qaCache.findIndex(i => normalizeQuestionText(i.question) === normTarget);

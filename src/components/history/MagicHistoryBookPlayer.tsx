@@ -557,6 +557,10 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                         slug={data.vaultNodeSlug}
                         avatarImageUrl={data.avatarImageUrl}
                         isGeographicSite={data.isGeographicSite}
+                        voiceId={data.voiceId}
+                        voiceRate={data.voiceRate}
+                        voicePitch={data.voicePitch}
+                        oratoricalTone={data.oratoricalTone}
                       />
                     </motion.div>
                   )}

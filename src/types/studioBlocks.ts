@@ -485,6 +485,12 @@ export interface HistoricalFigureBlockData {
   qaCache?: Array<{ question: string; answer: string; timestamp?: number }>;
   vaultNodeSlug?: string;
   isFromVault?: boolean;
+  voiceId?: string;
+  voiceCohort?: 'child_male' | 'child_female' | 'teen_male' | 'teen_female' | 'young_adult_male' | 'young_adult_female' | 'adult_male' | 'adult_female' | 'elder_male' | 'elder_female';
+  voiceRate?: string;
+  voicePitch?: string;
+  oratoricalTone?: string;
+  narratorMode?: string;
 }
 
 export interface HistoricalFigureBlock extends BaseStudioBlock {

@@ -7,6 +7,11 @@ import {
 } from '@/types/schoolBooks';
 import { generateGroundedVoiceResponse } from '@/lib/schoolBookMapper';
 import { 
+  playUniversalIskoolVoice, 
+  stopAllIskoolAudio, 
+  UniversalAudioController 
+} from '@/lib/historicalVoiceEngine';
+import { 
   X, 
   Mic, 
   MicOff, 
@@ -48,6 +53,9 @@ export const SmartBookNotebookModal: React.FC<SmartBookNotebookModalProps> = ({
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputQuery, setInputQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<'chat' | 'glossary' | 'qa' | 'summary'>('chat');
+  const [selectedGlossaryTerm, setSelectedGlossaryTerm] = useState<any | null>(null);
+  const audioCtrlRef = useRef<UniversalAudioController | null>(null);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
@@ -116,16 +124,19 @@ export const SmartBookNotebookModal: React.FC<SmartBookNotebookModalProps> = ({
   // Detener voz al cerrar
   useEffect(() => {
     if (!isOpen) {
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
-      if (recognitionRef.current && isListening) {
-        recognitionRef.current.stop();
-      }
+      audioCtrlRef.current?.stop();
+      stopAllIskoolAudio();
       setIsSpeaking(false);
       setIsListening(false);
     }
   }, [isOpen, isListening]);
+
+  useEffect(() => {
+    return () => {
+      audioCtrlRef.current?.stop();
+      stopAllIskoolAudio();
+    };
+  }, []);
 
   const toggleListening = () => {
     if (!speechSupported || !recognitionRef.current) {
@@ -147,24 +158,30 @@ export const SmartBookNotebookModal: React.FC<SmartBookNotebookModalProps> = ({
   };
 
   const handleSpeakText = (text: string) => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    if (typeof window === 'undefined') return;
 
     if (isSpeaking) {
-      window.speechSynthesis.cancel();
+      audioCtrlRef.current?.stop();
+      stopAllIskoolAudio();
       setIsSpeaking(false);
       return;
     }
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'es-MX';
-    utterance.rate = 1.05;
-    utterance.pitch = 1.0;
+    const cleanText = text.replace(/[*#_`]/g, '').trim();
+    if (!cleanText) return;
 
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-
-    setIsSpeaking(true);
-    window.speechSynthesis.speak(utterance);
+    playUniversalIskoolVoice({
+      text: cleanText,
+      role: 'pedagogical',
+      voiceId: 'es-MX-DaliaNeural',
+      gender: 'female',
+      rate: 1.0,
+      onStart: () => setIsSpeaking(true),
+      onEnd: () => setIsSpeaking(false),
+      onError: () => setIsSpeaking(false)
+    }).then(ctrl => {
+      audioCtrlRef.current = ctrl;
+    });
   };
 
   const handleSendQuery = (queryText?: string) => {

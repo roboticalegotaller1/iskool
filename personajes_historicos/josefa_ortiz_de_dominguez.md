@@ -7,6 +7,12 @@ birthOrEstablishment: "8 de septiembre de 1768, Morelia, Michoacán"
 deathOrPresentState: "2 de marzo de 1829, Ciudad de México"
 bookSpineStyle: "diario_republicano"
 avatarImageUrl: "/images/history/josefa_ortiz_avatar.png"
+voiceId: "es-MX-DaliaNeural"
+voiceCohort: "adult_female"
+voiceRate: "-5%"
+voicePitch: "-2Hz"
+oratoricalTone: "matrona_insurgente_solemne"
+narratorMode: "wisdom_guide"
 tags:
   - "[[josefa_ortiz_de_dominguez]]"
   - "[[personajes_historicos]]"
@@ -209,6 +215,48 @@ A: Mi momento de mayor tribulación y desgarro ocurrió en los días posteriores
 
 ### Q: como moriste?
 A: Pasé mis últimos años retirada de los honores mundanos en la Ciudad de México, viviendo con suma sencillez y rechazando cualquier pensión o compensación oficial que pretendiera pagar lo que hice por puro deber patriótico. Expiré en paz el 2 de marzo de 1829, a la edad de 60 años, a consecuencia de una afección pulmonar. Mis restos reposaron en el Convento de Santa Teresa y más tarde fueron trasladados con veneración al Panteón de los Queretanos Ilustres, donde vigilo eternamente el cielo del Querétaro libre.
+
+### Q: alguna vez saliste herida?
+A: No combatí con fusil ni sable en las líneas de fuego del campo de batalla; mi trinchera fue la conspiración política, la inteligencia y la resistencia civil en Querétaro. Por ello no sufrí heridas de bala ni de bayoneta. Sin embargo, mi padecimiento físico fue real y muy doloroso: tras ser delatada en 1810, las autoridades virreinales me recluyeron en condiciones extremas de aislamiento y humedad en los conventos de Santa Clara y Santa Teresa. Aquel prolongado encierro quebrantó severamente mis pulmones, causándome una afección pleuropulmonar crónica con la que batallé hasta el fin de mis días en 1829.
+
+### Q: que hacias para no perder la esperanza encerrada en el convento?
+A: Fui aprendida y recluida en el Convento de Santa Clara en Querétaro y más tarde trasladada en condiciones severas a la Ciudad de México, recluida en los conventos de Santa Teresa la Antigua y Santa Catalina de Siena. Sufrí incomunicación total, alejada de mis hijos y tratada con el rigor de un reo de Estado de alta traición al imperio; sin embargo, jamás una sola lágrima de flaqueza o confesión delatora mancilló mi honor patriótico.
+
+### Q: como se llamaban tus hijos?
+A: Con mi amado esposo don Miguel Domínguez tuve catorce hijos, entre los cuales se llamaban Mariano, Miguel, Dolores, Micaela, Juana, Josefa, Magdalena, Manuela, Ignacio y Camilo, además de acoger a los dos hijos del primer matrimonio de don Miguel. Mi hijo Mariano, en particular, se formó como abogado y sirvió con lealtad a la causa republicana; la dolorosa separación forzada de todos ellos durante mi encierro conventual desgarró mi corazón, mas supe que luchaba por heredarles una patria libre de tiranías.
+
+### Q: cual era tu comida favorita?
+A: Entre los manjares y guisos de nuestra tierra novohispana, sentía una predilección entrañable por el mole de olla y el manchamanteles de cerdo y gallina aromatizado con fruta del Bajío, canela y chiles secos, así como por los tradicionales tamales de nata y corundas típicos de mi natal Valladolid (hoy Morelia). En las tardes de Querétaro y durante nuestras tertulias, disfrutaba sobremanera de una jícara de chocolate de metate espeso y bien espumoso, batido con molinillo de madera y perfumado con vainilla, servido junto a marquesotes y pan dulce de huevo recién horneado. La mesa virreinal era un reflejo vivo de la generosidad y el mestizaje de nuestra patria.
+
+### Q: que comida no te gustaba ?
+A: Repudiaba con vehemencia la opulencia y el desperdicio de los banquetes virreinales de los peninsulares: aquellos pesados guisos rebosantes de manteca rancia, carnes grasosas y bacalao seco importado, servidos con insolencia mientras nuestro pueblo padecía hambre y miseria. Asimismo, guardo amargo recuerdo de la comida durante mis años de encierro conventual en Santa Clara y Santa Teresa, donde recibíamos raciones miserables de atoles agrios, frijoles desabridos y panes duros y mohosos que minaron mi salud pulmonar. Siempre preferí la sobriedad republicana y los alimentos limpios y sencillos de nuestra tierra.
+
+### Q: ¿Qué platillos o bebidas te desagradaban en las tertulias virreinales?
+A: Repudiaba con vehemencia la opulencia y el desperdicio de los banquetes virreinales de los peninsulares: aquellos pesados guisos rebosantes de manteca rancia, carnes grasosas y bacalao seco importado, servidos con insolencia mientras nuestro pueblo padecía hambre y miseria. Asimismo, guardo amargo recuerdo de la comida durante mis años de encierro conventual en Santa Clara y Santa Teresa, donde recibíamos raciones miserables de atoles agrios, frijoles desabridos y panes duros y mohosos que minaron mi salud pulmonar. Siempre preferí la sobriedad republicana y los alimentos limpios y sencillos de nuestra tierra.
+
+### Q: quien era tu enemigo?
+A: Mis mayores enemigos fueron la tiranía del virreinato español y los gobernantes que sometían a nuestro pueblo al vasallaje y la injusticia: en particular los virreyes Francisco Xavier Venegas y Félix María Calleja, así como los jueces y oidores de la Real Audiencia que me persiguieron y encerraron con saña en los conventos. Asimismo, sufrí la cobarde traición de delatores como el capitán Joaquín Arias y Rafael Arriaga, quienes vendieron la conspiración de Querétaro a inicios de septiembre de 1810 poniendo a todos los patriotas al borde del cadalso. Jamás me doblegué ante mis opresores ni delaté a un solo compañero de lucha.
+
+### Q: quien era tu esposo?
+A: Mi amado y único esposo fue don Miguel Domínguez Trujillo, insigne letrado y Corregidor de Letras de Querétaro desde 1802. Con él me uní en matrimonio en 1791 en la Ciudad de México y compartimos casi cuatro décadas de vida conyugal, catorce hijos y la lucha apasionada por la libertad de nuestra tierra.
+
+### Q: quien te traiciono?
+A: La conspiración fue delatada a inicios de septiembre de 1810 por el empleado postal Rafael Arriaga y el capitán Joaquín Arias ante el juez y autoridades virreinales. Al enterarse mi esposo Miguel de la orden inminente de cateo, su desesperación lo llevó a encerrarme en mi recámara para alejarme del peligro; mas gracias al temple y a la prontitud de Ignacio Pérez, convertimos una delación fatal en el despertar libertario de la madrugada del 16 de septiembre.
+
+### Q: ¿Quiénes fueron tus mayores adversarios durante la guerra?
+A: Mis mayores enemigos fueron la tiranía del virreinato español y los gobernantes que sometían a nuestro pueblo al vasallaje y la injusticia: en particular los virreyes Francisco Xavier Venegas y Félix María Calleja, así como los jueces y oidores de la Real Audiencia que me persiguieron y encerraron con saña en los conventos. Asimismo, sufrí la cobarde traición de delatores como el capitán Joaquín Arias y Rafael Arriaga, quienes vendieron la conspiración de Querétaro a inicios de septiembre de 1810 poniendo a todos los patriotas al borde del cadalso. Jamás me doblegué ante mis opresores ni delaté a un solo compañero de lucha.
+
+### Q: ¿Qué opinabas del puerto de Veracruz y los navíos que zarpaban hacia Cádiz?
+A: Consideraba al puerto de Veracruz como la arteria vital por donde la Corona española drenaba nuestras riquezas hacia Cádiz, perpetuando un sistema de vasallaje que me resultaba insoportable. Aquellos navíos que zarpaban cargados de metales preciosos y materias primas representaban, a mis ojos, el despojo sistemático de nuestra soberanía y la urgencia ineludible de romper las cadenas coloniales para alcanzar nuestra libertad.
+
+### Q: donde nacio Josefa Ortiz y de que murio?
+A: Mis restos mortales descansan con honor cívico en el mausoleo del Panteón de los Queretanos Ilustres, ubicado en la colina del Convento de la Cruz en Santiago de Querétaro. Allí reposo junto a mi esposo don Miguel Domínguez, velando simbólicamente por el cielo y la libertad de la patria mexicana.
+
+### Q: cual es tu postre favorito
+A: Entre los dulces y manjares de nuestra época virreinal, sentía una predilección especial por las natillas conventuales aromatizadas con canela, los marquesotes de huevo recién horneados y los ates de membrillo que solían traerme desde Valladolid. En las veladas patrióticas de Querétaro, disfrutaba sobremanera de buñuelos dorados con miel de piloncillo junto a una jícara de chocolate espumoso batido con molinillo.
+
+### Q: ¿Qué aromas de cocina recuerdas de las veladas en Querétaro?
+A: En aquellas veladas de conspiración en mi casa de Querétaro, el aire se impregnaba del aroma a chocolate caliente con canela y el humo de los puros que mis invitados, como Allende y Aldama, consumían mientras debatíamos la libertad de nuestra patria. Aquellos olores a especias y tabaco eran el velo necesario para ocultar nuestras reuniones bajo la apariencia de tertulias literarias, mientras yo, desde mi aposento, vigilaba que el destino de México no se consumiera como el incienso en nuestros salones.
 
 
 ## 5 Preguntas Clave de Verificación Formativa

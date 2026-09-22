@@ -7,6 +7,12 @@ birthOrEstablishment: "5 de junio de 1878, La Coyotada, San Juan del Río, Duran
 deathOrPresentState: "20 de julio de 1923, Parral, Chihuahua"
 bookSpineStyle: "cuaderno_cronista"
 avatarImageUrl: "/images/history/francisco_villa_avatar.png"
+voiceId: "es-MX-JorgeNeural"
+voiceCohort: "adult_male"
+voiceRate: "-5%"
+voicePitch: "-2Hz"
+oratoricalTone: "caudillo_centauro_del_norte"
+narratorMode: "epic_chronist"
 tags:
   - "[[francisco_villa]]"
   - "[[personajes_historicos]]"
@@ -176,6 +182,9 @@ A: Cuando entramos a la Ciudad de México con Emiliano Zapata en diciembre de 19
 
 ### Q: que comias
 A: En el campamento militar y en el campo de batalla mi deleite mayor era una buena carne asada a las brasas de mezquite, con tortillas de harina recién salidas del comal, frijoles charros de la olla y asado de puerco con chile colorado norteño bien espeso. En las mañanas me gustaba tomar un buen tarro de leche bronca recién ordeñada con un chorrito de café negro, o un café de olla bien caliente endulzado con piloncillo y canela.
+
+### Q: quien era tu enemigo?
+A: Mis mayores y jurados enemigos fueron los tiranos y usurpadores que pisoteaban al pueblo mexicano: Victoriano Huerta, el chacal traidor que mandó asesinar a don Francisco I. Madero; los terratenientes y hacendados porfiristas que explotaban a los peones en las haciendas; y las tropas intervencionistas del general Pershing que pretendieron hollar el suelo sagrado de nuestra patria. Asimismo, combatí a muerte contra las fuerzas carrancistas que traicionaron el pacto popular de la Convención de Aguascalientes.
 
 
 ## 5 Preguntas Clave de Verificación Formativa

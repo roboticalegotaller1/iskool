@@ -5,7 +5,9 @@ import {
   searchQaInVaultNode, 
   appendQaToVaultNode, 
   normalizeHistoricalSlug,
-  normalizeQuestionText 
+  normalizeQuestionText,
+  analyzeHistoricalQuestion,
+  isAnswerSemanticallyAligned 
 } from '@/lib/historicalVaultEngine';
 import { 
   HistoricalFigureBlockData, 
@@ -23,6 +25,18 @@ export const dynamic = 'force-dynamic';
 function sanitizePersonaAnswer(text: string, characterName: string): string {
   if (!text) return '';
   let cleaned = text.trim();
+
+  // 0. BLOQUEO TOTAL DE FUGAS DE SCRATCHPAD, PROMPT O RAZONAMIENTO INTERNO (ZERO LEAKAGE)
+  if (
+    /(persona:|audience:|constraint\s*\d|historical records for|direct answer|conciseness|thoughtsignature|desired output:|instruction:|simple response:|style\))/i.test(cleaned) ||
+    /^\s*\*\s*(persona|audience|constraint|question|instruction|input):/im.test(cleaned) ||
+    cleaned.startsWith('* Persona:') ||
+    cleaned.startsWith('* Audience:') ||
+    cleaned.startsWith('* Constraint')
+  ) {
+    console.error(`[AntiLeakGuard] Rechazada fuga de prompt o scratchpad en respuesta: "${cleaned.substring(0, 90)}..."`);
+    return '';
+  }
 
   // Rechazar menciones de películas, series, telenovelas, actores, créditos y años contemporáneos
   if (/(pel[ií]cula|telenovela|actriz|actor|serie|exterminador|vestido de novia|h[eé]roes verdaderos|trayectoria|reparto|\(19\d\d\)|\(20\d\d\))/i.test(cleaned)) {
@@ -120,7 +134,7 @@ export async function POST(req: NextRequest) {
           answer: cached.answer,
           cached: true,
           tokenCost: 0,
-          message: 'Respuesta recuperada del caché de la Bóveda Curricular con 0 tokens.'
+          message: 'Respuesta recuperada del caché de la Bóveda Curricular'
         });
       }
 
@@ -128,31 +142,56 @@ export async function POST(req: NextRequest) {
       const figureNode = findHistoricalFigureInVault(nodeSlug);
       let factsGrounding = '';
       if (figureNode) {
-        factsGrounding = `\nHECHOS HISTÓRICOS REALES DOCUMENTADOS EN TU BÓVEDA CURRICULAR:
-- Época y Fechas: ${figureNode.historicalEra} (${figureNode.birthDeathDates || ''})
-- Contexto biográfico: ${figureNode.shortBio} ${figureNode.detailedContext || ''}
-${(figureNode.moments || []).map(m => `- Momento clave (${m.yearOrPeriod}): ${m.title}. ${m.description}`).join('\n')}`;
+        // Optimización estricta de tokens: extraer solo hechos afines a las palabras clave de la pregunta
+        const qWords = question.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(/\s+/).filter((w: string) => w.length > 3);
+        const relevantMoments = (figureNode.moments || []).filter(m => {
+          const mText = `${m.title} ${m.description} ${m.locationName}`.toLowerCase();
+          return qWords.some((w: string) => mText.includes(w));
+        });
+        const momentsToInclude = relevantMoments.length > 0 ? relevantMoments : (figureNode.moments || []).slice(0, 2);
+
+        factsGrounding = `\nHECHOS HISTÓRICOS VERIFICADOS (BÓVEDA CURRICULAR):
+- Fechas y Periodo: ${figureNode.historicalEra} (${figureNode.birthDeathDates || ''})
+- Semblanza básica: ${figureNode.shortBio}
+${momentsToInclude.map(m => `- ${m.title} (${m.yearOrPeriod}): ${m.description}`).join('\n')}`;
       }
 
-      const systemPrompt = `Eres “${characterName}” hablando en primera persona a un estudiante en una experiencia educativa inmersiva de historia.
-DIRECTRICES PEDAGÓGICAS Y CANÓNICAS INVIOLABLES:
-1. VOZ EN PRIMERA PERSONA ESTRICTA: Habla SIEMPRE en primera persona ("Fui...", "Nací...", "Mi causa...", "Luché...").
-   - NUNCA uses fórmulas metadiscursivas como "Como [Nombre], afirmo que...", "Como personaje...", "En calidad de...".
-   - NUNCA hables de ti mismo en tercera persona ("${characterName} fue...", "${characterName} murió...").
-   - Aunque la pregunta del alumno venga formulada en tercera persona (como "¿de qué murió?" o "¿dónde nació?"), responde SIEMPRE en primera persona ("Fui emboscado...", "Nací en...").
-2. FIDELIDAD HISTÓRICA EXACTA Y CERO EVASIVAS: Queda terminantemente prohibido dar discursos abstractos o evasivas. Responde detallando exactamente los hechos verídicos: fechas precisas, nombres de lugares, acompañantes, causas y objetos reales.
-3. Mantén calidez pedagógica, dignidad y cercanía humana.${factsGrounding}`;
+      const questionAnalysis = analyzeHistoricalQuestion(question);
+
+      const isJosefaFigure = characterName.toLowerCase().includes('josefa') || characterName.toLowerCase().includes('corregidora');
+      const voiceMatronPrompt = isJosefaFigure 
+        ? "Habla con voz de adulto mujer matrona, solemne, dignificada, noble y firme de 1810." 
+        : "Habla con dignidad patriótica y calidez pedagógica.";
+
+      const systemPrompt = `Eres “${characterName}” hablando en primera persona a un estudiante en una experiencia educativa de historia.
+${voiceMatronPrompt}
+
+ANÁLISIS OBLIGATORIO DE LA PREGUNTA:
+- Tipo de interrogativo detectado: ${questionAnalysis.interrogativeType}
+- Entidad o sujeto clave: ${questionAnalysis.targetEntity}
+- Polaridad / Sentido: ${questionAnalysis.isNegated ? '⚠️ PREGUNTA DE NEGACIÓN / AVERSIÓN / RECHAZO (QUÉ NO LE GUSTABA / QUÉ REPUDIABA)' : 'Pregunta ordinaria / preferencia positiva'}
+- Instrucción directa obligatoria: ${questionAnalysis.instructionForAI}
+
+REGLAS PEDAGÓGICAS INVIOLABLES (CANON HISTÓRICO):
+1. RESPUESTA DIRECTA A LA PREGUNTA: En la primera oración contesta directamente lo preguntado aportando los datos exactos requeridos (nombres concretos, fechas o hechos verídicos).
+${questionAnalysis.isNegated ? '⚠️ REGLA CRÍTICA DE POLARIDAD: La pregunta pide expresamente lo que NO le gustaba o repudiaba. Queda TERMINANTEMENTE PROHIBIDO responder afirmando gusto o predilección por nada.' : ''}
+2. FIDELIDAD HISTÓRICA EXACTA: Aporta datos verídicos contrastados (lugares precisos, fechas, nombres de acompañantes, causas y objetos reales).
+3. PROHIBICIÓN ABSOLUTA DE EVASIVAS Y SERMONES: Queda terminantemente prohibido emitir discursos morales abstractos de relleno o evasivas.
+4. VOZ EN PRIMERA PERSONA ESTRICTA: Habla siempre en primera persona ("Fui...", "Nací...", "Mi causa...", "Mi encierro...", "Repudiaba...", "Me desagradaba..."). Prohibido usar fórmulas como "Como [Nombre]..." o hablar en tercera persona.
+5. CONCISIÓN Y ECONOMÍA DE TOKENS: Responde en 2 a 3 oraciones precisas y contundentes (máximo 80-90 palabras).${factsGrounding}`;
 
       let answer = '';
+      let liveTokensUsed = 0;
+      let usedExternalAi = false;
       const googleApiKey = process.env.MOTOR_IA_API_KEY || process.env.AI_API_KEY || process.env.GEMINI_API_KEY || body.userApiKey;
       const openAiKey = process.env.OPENAI_API_KEY;
 
       // Intentar primero con el Motor de Inteligencia Artificial Pedagógica
       if (googleApiKey) {
         const endpoints = [
-          Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMS41LWZsYXNoOmdlbmVyYXRlQ29udGVudA==', 'base64').toString('ascii'),
-          Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMi4wLWZsYXNoOmdlbmVyYXRlQ29udGVudA==', 'base64').toString('ascii'),
-          Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMi41LWZsYXNoOmdlbmVyYXRlQ29udGVudA==', 'base64').toString('ascii')
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent',
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent',
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent'
         ];
 
         for (const ep of endpoints) {
@@ -167,21 +206,42 @@ DIRECTRICES PEDAGÓGICAS Y CANÓNICAS INVIOLABLES:
                 contents: [
                   {
                     parts: [
-                      { text: `${systemPrompt}\n\nPregunta exacta del estudiante: "${question}"\n\nResponde en primera persona como ${characterName}, contestando directamente lo preguntado con exactitud histórica y fidedigna:` }
+                      { text: `${systemPrompt}\n\nPregunta exacta del estudiante: "${question}"\n\nResponde en primera persona como ${characterName}, contestando directamente lo preguntado con exactitud histórica y concisión:` }
                     ]
                   }
-                ]
+                ],
+                generationConfig: {
+                  temperature: 0.25,
+                  maxOutputTokens: 250,
+                  thinkingConfig: {
+                    thinkingBudget: 0
+                  }
+                }
               })
             });
-              clearTimeout(timeoutId);
+            clearTimeout(timeoutId);
 
-              if (aiRes.ok) {
+            if (aiRes.ok) {
               const data = await aiRes.json();
-              const candidate = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+              const rawParts = data.candidates?.[0]?.content?.parts || [];
+              // Filtrar estrictamente cualquier parte que sea pensamiento, scratchpad o thought
+              const validTextParts = rawParts.filter((p: any) => !p.thought && p.text && typeof p.text === 'string');
+              let candidate = '';
+              if (validTextParts.length > 0) {
+                candidate = validTextParts.map((p: any) => p.text).join('\n').trim();
+              } else if (rawParts.length > 0) {
+                const lastPart = rawParts[rawParts.length - 1];
+                if (lastPart.text && !lastPart.thought) {
+                  candidate = lastPart.text.trim();
+                }
+              }
+
               if (candidate && candidate.length > 20) {
                 const cleaned = sanitizePersonaAnswer(candidate, characterName);
-                if (cleaned) {
+                if (cleaned && isAnswerSemanticallyAligned(question, cleaned)) {
                   answer = cleaned;
+                  liveTokensUsed = data.usageMetadata?.totalTokenCount || 120;
+                  usedExternalAi = true;
                   break;
                 }
               }
@@ -207,8 +267,8 @@ DIRECTRICES PEDAGÓGICAS Y CANÓNICAS INVIOLABLES:
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: question }
               ],
-              temperature: 0.7,
-              max_tokens: 380
+              temperature: 0.25,
+              max_tokens: 220
             })
           });
 
@@ -216,8 +276,10 @@ DIRECTRICES PEDAGÓGICAS Y CANÓNICAS INVIOLABLES:
             const data = await aiRes.json();
             const rawChoice = data.choices?.[0]?.message?.content || '';
             const cleaned = sanitizePersonaAnswer(rawChoice, characterName);
-            if (cleaned) {
+            if (cleaned && isAnswerSemanticallyAligned(question, cleaned)) {
               answer = cleaned;
+              liveTokensUsed = data.usage?.total_tokens || 120;
+              usedExternalAi = true;
             }
           }
         } catch (e) {
@@ -237,7 +299,9 @@ DIRECTRICES PEDAGÓGICAS Y CANÓNICAS INVIOLABLES:
         success: true,
         answer,
         cached: false,
-        tokenCost: 120,
+        tokenCost: liveTokensUsed || 120,
+        fromLiveTokens: usedExternalAi,
+        source: usedExternalAi ? 'Motor de IA Pedagógica (Tokens Reales)' : 'Motor Pedagógico Integrado',
         message: 'Respuesta generada en primera persona y persistida en la Bóveda Curricular.'
       });
     }
@@ -270,6 +334,12 @@ async function generateFigureWithAiFallback(
       detailedContext: 'Nacida en Valladolid (hoy Morelia), Josefa abrazó las causas criollas y la justicia social en la Nueva España. Desde su residencia oficial en Santiago de Querétaro organizó reuniones clandestinas bajo el velo de tertulias literarias. Al ser descubierta la conspiración en septiembre de 1810, encerrada en su habitación por su esposo el Corregidor Miguel Domínguez, logró comunicarse golpeando el piso con sus tacones para alertar al alcaide Ignacio Pérez, quien cabalgó a San Miguel el Grande y Dolores para prevenir a Miguel Hidalgo e Ignacio Allende.',
       avatarImageUrl: '/images/history/josefa_ortiz_avatar.png',
       bookSpineStyle: spineStyle || 'diario_republicano',
+      voiceId: 'es-MX-DaliaNeural',
+      voiceCohort: 'adult_female',
+      voiceRate: '-5%',
+      voicePitch: '-2Hz',
+      oratoricalTone: 'matrona_insurgente_solemne',
+      narratorMode: 'wisdom_guide',
       moments: [
         {
           id: 'mom-1',
@@ -420,6 +490,12 @@ async function generateFigureWithAiFallback(
       detailedContext: 'Rector del Colegio de San Nicolás en Valladolid y párroco de Dolores, promovió el desarrollo agrícola e industrial comunitario. Al recibir la misiva enviada por Josefa Ortiz de Domínguez la madrugada del 16 de septiembre de 1810, proclamó el inicio de la lucha armada.',
       avatarImageUrl: '/images/history/hidalgo_avatar.png',
       bookSpineStyle: spineStyle || 'grimorio_dorado',
+      voiceId: 'es-MX-JorgeNeural',
+      voiceCohort: 'elder_male',
+      voiceRate: '-8%',
+      voicePitch: '-4Hz',
+      oratoricalTone: 'padre_de_la_patria_solemne',
+      narratorMode: 'wisdom_guide',
       moments: [
         {
           id: 'm-1',
@@ -561,6 +637,12 @@ async function generateFigureWithAiFallback(
       detailedContext: 'Nacido en La Coyotada, Durango, como José Doroteo Arango Arámbula, Villa se unió al movimiento maderista en 1910 para derrocar la dictadura porfirista. Tras el cuartelazo traidor de Huerta, formó la División del Norte con campesinos, vaqueros y ferrocarrileros, logrando victorias fulgurantes en Torreón, Ciudad Juárez y la Toma de Zacatecas (1914). Como gobernador de Chihuahua abarató los alimentos y fundó decenas de escuelas. Tras retirarse en Canutillo, impulsó la educación agrícola antes de morir asesinado en Parral en 1923.',
       avatarImageUrl: '/images/history/francisco_villa_avatar.png',
       bookSpineStyle: spineStyle || 'cuaderno_cronista',
+      voiceId: 'es-MX-JorgeNeural',
+      voiceCohort: 'adult_male',
+      voiceRate: '-5%',
+      voicePitch: '-2Hz',
+      oratoricalTone: 'caudillo_centauro_del_norte',
+      narratorMode: 'epic_chronist',
       moments: [
         {
           id: 'v-m1',
@@ -747,6 +829,12 @@ async function generateFigureWithAiFallback(
       : `En su tiempo histórico, ${name} enfrentó desafíos éticos, políticos y sociales de gran magnitud, contribuyendo con valentía, pensamiento reflexivo y vocación de servicio al ideario republicano y democrático.`,
     avatarImageUrl: isSite ? '/images/history/sitio_historico_default.jpg' : '/images/history/personaje_generico_avatar.png',
     bookSpineStyle: spineStyle || (isSite ? 'codice_antiguo' : 'cuaderno_cronista'),
+    voiceId: isSite ? 'es-MX-DaliaNeural' : undefined,
+    voiceCohort: isSite ? 'adult_female' : undefined,
+    voiceRate: isSite ? '-4%' : '-5%',
+    voicePitch: isSite ? '-1Hz' : '-2Hz',
+    oratoricalTone: isSite ? 'cronista_patrimonial_solemne' : 'vocero_historico_solemne',
+    narratorMode: isSite ? 'epic_chronist' : 'wisdom_guide',
     moments: [
       {
         id: 'gen-m1',
@@ -888,8 +976,21 @@ async function generateFigureWithAiFallback(
  * Soporta consultas tanto en 2ª persona ("¿dónde naciste?") como en 3ª persona ("¿dónde nació?").
  */
 function classifyHistoricalIntent(normQ: string): string {
-  // 0. Identidad y Presentación: ¿Quién eres? ¿Cómo te llamas?
-  if (/(quien eres|como te llamas|presentate|hablame de ti|cuentame tu historia|quien fue|quien era|quien es|tu biografia)/i.test(normQ)) {
+  // Análisis sintáctico y semántico profundo previo
+  const analysis = analyzeHistoricalQuestion(normQ);
+  if (analysis.specificIntent && analysis.specificIntent !== 'GENERAL_QUESTION') {
+    return analysis.specificIntent;
+  }
+
+  // 0a. Enemigos, Rivales y Opositores (Prioridad Máxima)
+  if (/(enemig|rival|adversari|opositor|antagonist|contra quien luch|perseguidor|virrey|calleja|venegas|bataller)/i.test(normQ)) {
+    return 'ENEMIES_RIVALS';
+  }
+
+  // 0b. Identidad y Presentación: Únicamente sobre la persona del prócer
+  const isDirectIdentity = /(^|\b)(quien eres|quien eras tu|quien fuiste|como te llamas|cual es tu nombre|presentate|hablame de ti|cuentame tu historia|cual es tu biografia|dime tu biografia)(\b|$)/i.test(normQ);
+  const isThirdPersonSelf = /^(quien fue|quien era|quien es)\s+(josefa|la corregidora|francisco villa|villa|pancho villa|hidalgo|morelos|juarez|leona vicario)(\b|\?|$)/i.test(normQ);
+  if (isDirectIdentity || isThirdPersonSelf) {
     return 'WHO_AM_I';
   }
 
@@ -999,6 +1100,9 @@ function classifyHistoricalIntent(normQ: string): string {
     /(platill|plato|comida|manjar|guiso|guisado|antojo|alimento|comer|comias|comia|comian|desayun|cenab|cenas|cenar|bebida|beber|bebias|bebia|postre|dulce|chocolat|pan dulce|marquesote|tamal|mole|atole|corunda|manchamanteles|degust|receta|cocina|almorz|carne asada|frijol|frijoles|leche bronca|cafe de olla|alcohol|tequila|cerveza|vino|abstemio)/i.test(normQ) ||
     ((normQ.includes('favorit') || normQ.includes('preferid') || normQ.includes('gustaba')) && (normQ.includes('com') || normQ.includes('beb') || normQ.includes('plat') || normQ.includes('guis') || normQ.includes('sabor')))
   ) {
+    if (analysis.isNegated || /(no te gust|no le gust|no comias|no comia|no querias|no queria|desagrad|repudi|aborrec|disgust|asco)/i.test(normQ)) {
+      return 'FOOD_DISLIKES';
+    }
     return 'FOOD';
   }
 
@@ -1117,6 +1221,26 @@ function classifyHistoricalIntent(normQ: string): string {
     return 'HEALTH';
   }
 
+  // 37. Heridas, Lastimaduras, Disparos, Daño Físico, Sangre, Balazos
+  if (/(herid|heriste|saliste herid|te hirieron|te lastimaron|lastimad|dispararon|te dispararon|balazo|recibiste un tiro|cicatriz|sangre|sufrimiento fisico|tortura|te golpearon)/i.test(normQ)) {
+    return 'WOUNDS_COMBAT_HURT';
+  }
+
+  // 38. Rol Militar en Combate / Si fue a la guerra
+  if (/(fuiste a la guerra|peleaste en batallas|estuviste en la guerra|empunaste armas|peleaste con fusil|combatiste en el frente|campo de batalla)/i.test(normQ)) {
+    return 'WAR_COMBAT_ROLE';
+  }
+
+  // 39. Mitos, Amantes, Allende, Infidelidad
+  if (/(amante|amantes|enganaste|infiel|relacion amorosa con allende|romance con allende)/i.test(normQ)) {
+    return 'SCANDAL_RUMORS_LOVERS';
+  }
+
+  // 40. Miedo, Temor, Valentía Personal
+  if (/(tuviste miedo|sentiste miedo|temblaste|tuviste temor|temiste por tu vida)/i.test(normQ)) {
+    return 'FEAR_COURAGE';
+  }
+
   return 'UNKNOWN';
 }
 
@@ -1233,6 +1357,9 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
       case 'FOOD':
         return `Entre los manjares y guisos de nuestra tierra novohispana, sentía una predilección entrañable por el mole de olla y el manchamanteles de cerdo y gallina aromatizado con fruta del Bajío, canela y chiles secos, así como por los tradicionales tamales de nata y corundas típicos de mi natal Valladolid (hoy Morelia). En las tardes de Querétaro y durante nuestras tertulias, disfrutaba sobremanera de una jícara de chocolate de metate espeso y bien espumoso, batido con molinillo de madera y perfumado con vainilla, servido junto a marquesotes y pan dulce de huevo recién horneado. La mesa virreinal era un reflejo vivo de la generosidad y el mestizaje de nuestra patria.`;
 
+      case 'FOOD_DISLIKES':
+        return `Repudiaba con vehemencia la opulencia y el desperdicio de los banquetes virreinales de los peninsulares: aquellos pesados guisos rebosantes de manteca rancia, carnes grasosas y bacalao seco importado, servidos con insolencia mientras nuestro pueblo padecía hambre y miseria. Asimismo, guardo amargo recuerdo de la comida durante mis años de encierro conventual en Santa Clara y Santa Teresa, donde recibíamos raciones miserables de atoles agrios, frijoles desabridos y panes duros y mohosos que minaron mi salud pulmonar. Siempre preferí la sobriedad republicana y los alimentos limpios y sencillos de nuestra tierra.`;
+
       case 'MUSIC':
         return `En aquellos tiempos virreinales, la música acompañaba los momentos de devoción y reposo familiar. Apreciaba las sonatas novohispanas y la música sacra interpretada en órgano o clavecín, así como los sones criollos y tonadillas que comenzaban a brotar en el campo y en las plazas populares. En Las Vizcaínas aprendí a valorar el canto coral y la armonía, expresiones de la sensibilidad y el ingenio de nuestro pueblo mestizo.`;
 
@@ -1263,8 +1390,30 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
       case 'MARRIAGE':
         return `Contraje santo matrimonio con don Miguel Domínguez en 1791 en la Ciudad de México, tras habernos conocido durante mis años en el Real Colegio de las Vizcaínas, donde yo cursaba mis estudios y él colaboraba como letrado y benefactor. Juntos procreamos catorce hijos y compartimos el compromiso inquebrantable con la causa independentista. En 1802 nos trasladamos a Santiago de Querétaro cuando él fue investido como Corregidor, convirtiendo nuestra residencia oficial en el corazón de la conspiración libertaria.`;
 
+      case 'CHILDREN_NAMES':
+        return `Con mi amado esposo don Miguel Domínguez tuve catorce hijos, entre los cuales se llamaban Mariano, Miguel, Dolores, Micaela, Juana, Josefa, Magdalena, Manuela, Ignacio y Camilo, además de acoger con cariño a los dos hijos del primer matrimonio de don Miguel. Mi hijo Mariano, en particular, se formó como abogado y sirvió con honor a la causa republicana; la dolorosa separación forzada de todos ellos durante mi encierro conventual desgarró mi corazón, mas supe que luchaba por heredarles una patria libre de tiranías.`;
+
+      case 'CHILDREN_COUNT':
+        return `Dios y la vida me bendijeron con catorce hijos nacidos de mi matrimonio con don Miguel Domínguez, sumando en nuestro hogar a los dos hijos de su primer matrimonio. Criar y proteger a dieciséis vástagos en un hogar bajo constante acecho virreinal fue una prueba de entrega diaria absoluta.`;
+
+      case 'CHILDREN_CARE_PRISON':
+        return `Al ser aprehendida y recluida en los conventos de Santa Clara y Santa Teresa, la mayor congoja de mi alma fue la separación de mis pequeños hijos. Mi esposo don Miguel, a pesar de estar bajo sospecha y vigilancia de la Real Audiencia, junto a familiares leales, se hicieron cargo de su cuidado y protección en Querétaro mientras yo resistía en la prisión conventual.`;
+
       case 'CHILDREN':
-        return `Dios y la vida me bendijeron con catorce hijos al lado de mi esposo don Miguel Domínguez. Cuidar de una familia tan numerosa en tiempos de constante vigilancia y peligro virreinal fue una prueba de entrega diaria. Durante mis años de prisión e incomunicación en los conventos de Santa Clara y Santa Teresa, el dolor más desgarrador de mi existencia fue la forzada separación de mis pequeños; no obstante, sabía que la mayor herencia que podía legarles no eran riquezas ni comodidades, sino una patria soberana, libre de cadenas y con dignidad para todos los mexicanos.`;
+      case 'CHILDREN_GENERAL':
+        return `Con mi amado esposo don Miguel Domínguez tuve catorce hijos, entre ellos Mariano, Miguel, Dolores, Micaela, Juana, Josefa, Magdalena, Manuela, Ignacio y Camilo. Cuidar de una familia tan numerosa bajo el peligro virreinal fue un desafío constante, pero la mayor herencia que nos propusimos legarles no fueron riquezas, sino una patria soberana y libre de cadenas.`;
+
+      case 'SPOUSE_NAME':
+        return `Mi amado y único esposo fue don Miguel Domínguez Trujillo, insigne letrado y Corregidor de Letras de Querétaro desde 1802. Con él me uní en matrimonio en 1791 en la Ciudad de México y compartimos casi cuatro décadas de vida conyugal, catorce hijos y la lucha apasionada por la libertad de nuestra tierra.`;
+
+      case 'PARENTS_NAMES':
+        return `Mis padres fueron don Juan José Ortiz, capitán de caballería del regimiento de Los Morados, y doña María Manuela Girón Calderón. Por designios de la Providencia quedé huérfana siendo una niña muy pequeña, tras lo cual mi hermana mayor María Sotero asumió mi cuidado amoroso.`;
+
+      case 'SISTER_NAME':
+        return `Mi querida hermana mayor fue María Sotero Ortiz. Al quedar ambas huérfanas tras la muerte de nuestros padres, ella fue mi protectora maternal: gestionó con tenacidad y amor mi ingreso como alumna interna en el Real Colegio de las Vizcaínas en la Ciudad de México, donde recibí una esmerada educación.`;
+
+      case 'DEATH_CAUSE':
+        return `Fallecí en paz el 2 de marzo de 1829 en la Ciudad de México, a la edad de 60 años, a consecuencia de una grave afección pleuropulmonar que padecí desde mis años de reclusión y frío en los conventos virreinales de Santa Clara y Santa Teresa. Mis restos reposan hoy en el Panteón de los Queretanos Ilustres.`;
 
       case 'TACONEO_ALERT':
         return `Aquel 15 de septiembre de 1810, el tiempo corría implacable. Estando encerrada en mi habitación alta de la Casa del Corregimiento y con la guardia virreinal aprestándose a capturar a los conspiradores, recordé que en la planta baja tenía su morada el alcaide Ignacio Pérez. Con resolución suprema, di tres golpes secos con los tacones de mis zapatillas contra el entarimado del piso. Don Ignacio, fiel a nuestro pacto, subió al zaguán y a través del ojo de la cerradura le entregué la orden apremiante: cabalgar sin descanso hacia San Miguel y Dolores para prevenir a Allende e Hidalgo. Aquellos golpes de tacón fueron, en verdad, el primer aldabonazo de la independencia patria.`;
@@ -1272,7 +1421,11 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
       case 'CONSPIRACY':
         return `Bajo la fachada de tertulias literarias y veladas musicales en el Palacio de la Corregidora, convocábamos a capitanes criollos, sacerdotes e intelectuales. Mientras en apariencia disertábamos sobre letras clásicas o bellas artes, en el fondo trazábamos planos de acción, coordinábamos redes de información con Allende e Hidalgo y custodiábamos pertrechos para la gesta independentista.`;
 
+      case 'ENEMIES_RIVALS':
+        return `Mis mayores enemigos fueron la tiranía del virreinato español y los gobernantes que sometían a nuestro pueblo al vasallaje y la injusticia: en particular los virreyes Francisco Xavier Venegas y Félix María Calleja, así como los jueces y oidores de la Real Audiencia que me persiguieron y encerraron con saña en los conventos. Asimismo, sufrí la cobarde traición de delatores como el capitán Joaquín Arias y Rafael Arriaga, quienes vendieron la conspiración de Querétaro a inicios de septiembre de 1810 poniendo a todos los patriotas al borde del cadalso. Jamás me doblegué ante mis opresores ni delaté a un solo compañero de lucha.`;
+
       case 'BETRAYAL':
+      case 'TRAITORS_BETRAYAL':
         return `La conspiración fue delatada a inicios de septiembre de 1810 por el empleado postal Rafael Arriaga y el capitán Joaquín Arias ante el juez y autoridades virreinales. Al enterarse mi esposo Miguel de la orden inminente de cateo, su desesperación lo llevó a encerrarme en mi recámara para alejarme del peligro; mas gracias al temple y a la prontitud de Ignacio Pérez, convertimos una delación fatal en el despertar libertario de la madrugada del 16 de septiembre.`;
 
       case 'PRISON':
@@ -1282,6 +1435,7 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
         return `Mi momento de mayor tribulación y desgarro ocurrió en los días posteriores al 15 de septiembre de 1810. Saber que mi propio esposo, don Miguel Domínguez, se vio forzado por la desesperación a encerrarme bajo llave en nuestra recámara para apartarme de las pesquisas realistas... la impotencia de estar cautiva entre aquellas paredes sin tener certeza de si mi emisario Ignacio Pérez lograría alertar a tiempo a don Miguel Hidalgo y a don Ignacio Allende. Más tarde vinieron los años de severo encierro en los conventos de Santa Clara y Santa Teresa, incomunicada y separada de mis hijos pequeños, tratada con rigor como reo del Estado virreinal. Sin embargo, en medio de la penumbra y la soledad, jamás quebranté mi espíritu ni renegué de haber entregado mi vida a la libertad de esta patria.`;
 
       case 'HEROES_RELATION':
+      case 'FRIENDS_ALLIES':
         return `Eran hombres y mujeres de honor y coraje a toda prueba. A don Miguel Hidalgo lo veneré como un sacerdote ilustrado, sensible al dolor de los indios y visionario del destino americano. Con el capitán don Ignacio Allende mantuve un entendimiento estrecho en la planeación y acopio de voluntades en Querétaro. Más tarde me unió un afecto profundo con heroínas como Leona Vicario y Gertrudis Bocanegra. Cuando supe que Hidalgo y Allende habían sido sacrificados en Chihuahua y sus cabezas expuestas en la Alhóndiga de Granaditas, lloré amargamente; pero supe que las ideas de libertad jamás mueren con el fusil.`;
 
       case 'ITURBIDE_REJECTION':
@@ -1321,10 +1475,49 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
         return `Tras la delación de septiembre de 1810 fui aprehendida por las autoridades virreinales y recluida en condiciones muy duras en el Convento de Santa Clara en Querétaro y más tarde en Santa Teresa y Santa Catalina en la Ciudad de México, separada de mis catorce hijos. Al consumarse la independencia viví con sobriedad republicana y rechacé con orgullo los oropeles de la corte imperial de Iturbide. Fallecí en paz el 2 de marzo de 1829 en la Ciudad de México.`;
 
       case 'HEALTH':
-        return `En mis últimos años padecí graves afecciones pleuropulmonares, consecuencia del frío y la humedad de los calabozos virreinales durante mis años de encierro. A pesar del quebranto corporal, conservé la serenidad de conciencia hasta mi fallecimiento en marzo de 1829.`;
+        return `En mis últimos años padecí graves afecciones pleuropulmonares, consecuencia del frío y la humedad de los conventos y calabozos virreinales durante mis años de encierro. A pesar del quebranto corporal, conservé la serenidad de conciencia hasta mi fallecimiento en marzo de 1829.`;
+
+      case 'WOUNDS_COMBAT_HURT':
+        return `No combatí con fusil ni sable en las líneas de fuego del campo de batalla; mi trinchera fue la conspiración política, la inteligencia y la resistencia civil en Querétaro. Por ello no sufrí heridas de bala ni de bayoneta. Sin embargo, mi padecimiento físico fue real y muy doloroso: tras ser delatada en 1810, las autoridades virreinales me recluyeron en condiciones extremas de aislamiento y humedad en los conventos de Santa Clara y Santa Teresa. Aquel prolongado encierro quebrantó severamente mis pulmones, causándome una afección pleuropulmonar crónica con la que batallé hasta el fin de mis días en 1829.`;
+
+      case 'WAR_COMBAT_ROLE':
+        return `Mi papel no fue empuñar bayonetas o cañones al frente de regimientos como lo hicieron Allende o Morelos; mi trinchera estuvo en el Palacio del Corregimiento de Querétaro, organizando la conspiración, financiando pertrechos y protegiendo a los patriotas bajo el velo de tertulias literarias. Mi mayor batalla la libré con inteligencia y entereza: alertar a Hidalgo y Allende la noche del 15 de septiembre con los golpes de mi tacón y resistir años de prisión sin delatar a un solo insurgente.`;
+
+      case 'SCANDAL_RUMORS_LOVERS':
+        return `¡Esos fueron viles infundios propagados por los jueces y panfletistas realistas para desacreditar mi honor y la causa insurgente! Jamás tuve otro amor ni otra lealtad que mi esposo don Miguel Domínguez, con quien compartí casi cuarenta años y catorce hijos. Con don Ignacio Allende mantuve únicamente una estrecha, respetuosa y patriótica colaboración para planear la independencia de nuestra tierra. Mi vida estuvo cimentada en la fidelidad conyugal y en la dignidad republicana.`;
+
+      case 'FEAR_COURAGE':
+        return `El temor es una emoción natural ante la fuerza desmedida de un imperio virreinal y la inminencia del cadalso o la tortura. Sin embargo, el amor a mis compatriotas, la indignación ante la servidumbre de nuestro pueblo y la certeza de que la causa de la independencia era justa fueron infinitamente superiores a cualquier miedo. Quien abraza una causa grande aprende a templar su espíritu frente a la adversidad.`;
 
       default: {
-        return `En aquellos tiempos novohispanos cada pensamiento, conversación y decisión en mi vida estuvo guiada por la rectitud moral, el amor a mi familia y el compromiso inquebrantable con la libertad de nuestra tierra. Sobre lo que me preguntas, vivimos una época de profunda prueba donde la templanza cívica y la lealtad a los principios eran la brújula innegociable con la que forjamos el porvenir de la patria.`;
+        // Búsqueda profunda en el nodo curricular del personaje para responder con hechos fidedignos
+        const nodeSlug = normalizeHistoricalSlug(name);
+        const figureNode = findHistoricalFigureInVault(nodeSlug);
+        if (figureNode) {
+          // 1. Buscar en momentos históricos clave
+          const matchedMom = (figureNode.moments || []).find(m => {
+            const mText = `${m.title} ${m.description} ${m.locationName}`.toLowerCase();
+            return normQ.split(/\s+/).filter((w: string) => w.length > 4).some((w: string) => mText.includes(w));
+          });
+          if (matchedMom) {
+            return `Respecto a ello en ${matchedMom.yearOrPeriod} en ${matchedMom.locationName}: ${matchedMom.description} Aquel acontecimiento marcó con firmeza el rumbo de nuestra causa libertaria.`;
+          }
+
+          // 2. Buscar en contexto detallado
+          if (figureNode.detailedContext) {
+            const sentences = figureNode.detailedContext.split(/(?<=[.!?])\s+/);
+            const matchedSentence = sentences.find(s => {
+              const sNorm = s.toLowerCase();
+              return normQ.split(/\s+/).filter((w: string) => w.length > 4).some((w: string) => sNorm.includes(w));
+            });
+            if (matchedSentence) {
+              return `En nuestra historia en Querétaro y la Nueva España: ${matchedSentence} Esa convicción guio cada una de mis acciones por la libertad de la patria.`;
+            }
+          }
+        }
+
+        // Respuesta fidedigna y acotada históricamente, erradicando evasivas abstractas
+        return `Sobre ese aspecto concreto de mi vida, los registros de nuestra causa libertaria en Querétaro dan cuenta de que consagré cada esfuerzo a la conspiración de 1810 y a resistir los años de encierro virreinal. Puedes preguntarme sobre el secreto del taconeo, las tertulias en la Casa del Corregimiento, mi familia con don Miguel Domínguez o los próceres de nuestra independencia.`;
       }
     }
   }
@@ -1334,6 +1527,15 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
   // 2. DON MIGUEL HIDALGO Y COSTILLA
   // =========================================================================
   if (isHidalgo) {
+    if (intent === 'ENEMIES_RIVALS' || normQ.includes('enemigo') || normQ.includes('contra quien')) {
+      return `Mis mayores enemigos fueron el despótico régimen virreinal y los defensores de los privilegios coloniales que mantuvieron trescientos años en la servidumbre a nuestro pueblo: el virrey Francisco Xavier Venegas, el brigadier Félix María Calleja y sus tropas realistas que pasaban a sangre y fuego a los pueblos insurgentes, así como el tribunal de la Inquisición que nos persiguió y excomulgó con saña por proclamar la libertad y la abolición de la esclavitud.`;
+    }
+    if (intent === 'BETRAYAL' || intent === 'TRAITORS_BETRAYAL' || normQ.includes('traicion') || normQ.includes('delat')) {
+      return `Fuimos víctimas de la vil traición del capitán Ignacio Elizondo en Acatita de Baján, Coahuila, el 21 de marzo de 1811. Fingiendo lealtad a la insurgencia, nos tendió una emboscada en el desierto donde fuimos capturados todos los caudillos cuando buscábamos pertrechos en el norte. De allí fuimos conducidos con grillos y cadenas hacia Monclova y Chihuahua.`;
+    }
+    if (intent === 'FOOD_DISLIKES') {
+      return `Detestaba los banquetes ostentosos y cargados de grasa que consumía la élite virreinal mientras los campesinos e indígenas no tenían ni para un puñado de maíz. Asimismo, me causaban profundo rechazo las provisiones rancias y el agua turbia que debíamos consumir en las marchas apresuradas de nuestra campaña libertaria.`;
+    }
     if (intent === 'FOOD') {
       return `En mi curato y en las comidas campesinas del Bajío, disfrutaba de los frijoles de la olla aderezados con epazote y chile cascabel, asados criollos de cerdo con nopales tiernos y tortillas recién bajadas del comal de barro. En las mañanas frías compartía con mis feligreses atole blanco de maíz o un jarro de chocolate espeso, fomentando siempre la sobriedad en la mesa y la fraternidad entre hermanos.`;
     }
@@ -1368,6 +1570,15 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
   // 3. JOSÉ MARÍA MORELOS Y PAVÓN
   // =========================================================================
   if (isMorelos) {
+    if (intent === 'ENEMIES_RIVALS' || normQ.includes('enemigo') || normQ.includes('contra quien')) {
+      return `Mis enemigos jurados fueron los virreyes Francisco Xavier Venegas y Félix María Calleja, los ejércitos realistas que sitiaron con crueldad a nuestra gente en Cuautla y las autoridades coloniales que sostenían la odiosa distinción de castas y la tiranía en América. Jamás combatí por odio a los hombres, sino para derribar el régimen de opresión y lograr que la soberanía residiera para siempre en el pueblo mexicano.`;
+    }
+    if (intent === 'BETRAYAL' || intent === 'TRAITORS_BETRAYAL' || normQ.includes('traicion') || normQ.includes('delat')) {
+      return `Fui capturado en Tezmalaca el 5 de noviembre de 1815 tras la delación y traición de Matías Carranco, un antiguo oficial insurgente que defeccionó al bando realista. Guió a las tropas de Manuel de la Concha para sorprendernos mientras yo cubría la retaguardia para salvar a los diputados del Congreso de Anáhuac.`;
+    }
+    if (intent === 'FOOD_DISLIKES') {
+      return `Repudiaba el derroche insolente de las mesas virreinales españolas. En las serranías del sur y durante el épico sitio de Cuautla padecimos el hambre más atroz y aprendimos a valorar cada grano de maíz; por ello, me causaba aversión cualquier desperdicio de alimento frente a la indigencia de nuestro pueblo.`;
+    }
     if (intent === 'FOOD') {
       return `En las campañas del sur y en mi natal Michoacán, mi alimento predilecto era el aporreadillo de cecina con huevo en salsa roja de guajillo, la morisqueta con frijoles bayos y los charales asados de Pátzcuaro, acompañados de tortillas calientes y agua fresca de limón con chía.`;
     }
@@ -1413,6 +1624,15 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
   // 6. BENITO JUÁREZ
   // =========================================================================
   if (isJuarez) {
+    if (intent === 'ENEMIES_RIVALS' || normQ.includes('enemigo') || normQ.includes('contra quien')) {
+      return `Mis mayores adversarios fueron los conservadores traidores a la patria que fueron a postrarse a Europa para traer un príncipe extranjero; el archiduque Maximiliano de Habsburgo y el ejército invasor francés de Napoleón III que ensangrentaron nuestro territorio nacional violando nuestra soberanía. Asimismo, enfrenté a los generales traidores como Miguel Miramón y Tomás Mejía, a quienes las leyes republicanas juzgaron por alta traición en el Cerro de las Campanas.`;
+    }
+    if (intent === 'BETRAYAL' || intent === 'TRAITORS_BETRAYAL' || normQ.includes('traicion') || normQ.includes('delat')) {
+      return `La mayor traición que presenció mi generación fue la de los malos mexicanos que renegaron de la República y entregaron la patria a las bayonetas del emperador Napoleón III. Contra esa vileza mantuvimos en pie las instituciones de la patria aun en la carroza republicana a lo largo y ancho del desierto del norte.`;
+    }
+    if (intent === 'FOOD_DISLIKES') {
+      return `Me disgustaban sobremanera los manjares afrancesados y el protocolo cortesano que intentó implantar el imperio de Maximiliano en Palacio Nacional. La República se sostiene con sobriedad y austeridad, no con banquetes cortesanos pagados con la sangre del pueblo mexicano.`;
+    }
     if (intent === 'FOOD') {
       return `En mi amado Oaxaca disfrutaba de las tlayudas de asiento con cecina y quesillo, el tasajo asado, los moles tradicionales y el chocolate de agua con pan de yema, comida austera y noble de nuestras comunidades.`;
     }
@@ -1429,6 +1649,12 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
   // 7. GENERAL FRANCISCO VILLA (EL CENTAURO DEL NORTE) - CANON INVIOLABLE 1ª PERSONA
   // =========================================================================
   if (isVilla) {
+    if (intent === 'ENEMIES_RIVALS' || normQ.includes('enemigo') || normQ.includes('contra quien')) {
+      return `Mis mayores y jurados enemigos fueron los tiranos y usurpadores que pisoteaban al pueblo mexicano: Victoriano Huerta, el chacal traidor que mandó asesinar a don Francisco I. Madero; los terratenientes y hacendados porfiristas que explotaban a los peones en las haciendas; y las tropas intervencionistas del general Pershing que pretendieron hollar el suelo sagrado de nuestra patria. Asimismo, combatí a muerte contra las fuerzas carrancistas que traicionaron el pacto popular de la Convención de Aguascalientes.`;
+    }
+    if (intent === 'BETRAYAL' || intent === 'TRAITORS_BETRAYAL' || normQ.includes('traicion') || normQ.includes('delat')) {
+      return `Padecí la traición en carne viva: la traición de Carranza a los principios campesinos de la Revolución, y sobre todo la vileza de quienes urdieron mi asesinato en Parral pagados por el gobierno de Obregón y Calles, ejecutado por pistoleros como Jesús Salas Barraza y Melitón Lozoya apostados cobardemente en una casa para acribillarme por la espalda.`;
+    }
     if (intent === 'DEATH' || normQ.includes('parral') || normQ.includes('moriste') || normQ.includes('murio') || normQ.includes('emboscada') || normQ.includes('mataron') || normQ.includes('asesinaron')) {
       return `Fui asesinado en una cobarde emboscada la mañana del 20 de julio de 1923 en Hidalgo del Parral, Chihuahua. Me dirigía en mi automóvil Dodge a una fiesta familiar acompañado por mi secretario Miguel Trillo y mi escolta de Dorados. Al doblar en la calle Gabino Barreda, un grupo de tiradores apostados en una casa abrió fuego cerrado con fusiles de alto poder. Mi automóvil recibió más de ciento cincuenta impactos de bala y yo recibí nueve tiros que me privaron de la vida de manera instantánea detrás del volante. Mis restos descansan hoy con honor patrio en el Monumento a la Revolución en la Ciudad de México.`;
     }
@@ -1452,6 +1678,9 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
     }
     if (intent === 'RESTING_PLACE' || normQ.includes('tumba') || normQ.includes('monumento') || normQ.includes('restos')) {
       return `Mis restos descansan con honor patrio en el Monumento a la Revolución, en la Plaza de la República de la Ciudad de México. Allí reposo junto a los próceres que ofrendamos la vida para que la soberanía y la justicia social triunfaran sobre la tiranía.`;
+    }
+    if (intent === 'FOOD_DISLIKES') {
+      return `Despreciaba con furia los platillos refinados y ostentosos de los señoritos porfiristas y banqueros de la capital, y por encima de todo aborrecía el alcohol y las cantinas; fusilaba a quien metiera vicio a mis tropas. En la División del Norte comíamos lo que daba la tierra norteña: pinole, carne seca y frijoles de la olla.`;
     }
     if (intent === 'FOOD' || normQ.includes('platillo') || normQ.includes('comida') || normQ.includes('comias')) {
       return `En el campamento militar y en el campo de batalla mi deleite mayor era una buena carne asada a las brasas de mezquite, con tortillas de harina recién salidas del comal, frijoles charros de la olla y asado de puerco con chile colorado norteño bien espeso. En las mañanas me gustaba tomar un buen tarro de leche bronca recién ordeñada con un chorrito de café negro, o un café de olla bien caliente endulzado con piloncillo y canela.`;

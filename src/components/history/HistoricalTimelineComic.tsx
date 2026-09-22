@@ -14,7 +14,12 @@ import {
   Sparkles 
 } from 'lucide-react';
 import { HistoricalFigureMoment } from '@/types/studioBlocks';
-import { configureHistoricalUtterance } from '@/lib/historicalVoiceEngine';
+import { 
+  configureHistoricalUtterance,
+  playUniversalIskoolVoice,
+  stopAllIskoolAudio,
+  UniversalAudioController 
+} from '@/lib/historicalVoiceEngine';
 
 export interface HistoricalTimelineComicProps {
   moments: HistoricalFigureMoment[];
@@ -33,11 +38,22 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
 }) => {
   const [activeMomentIndex, setActiveMomentIndex] = useState<number>(0);
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
+  const audioCtrlRef = React.useRef<UniversalAudioController | null>(null);
 
   // Reiniciar momento activo si cambia el personaje
   useEffect(() => {
     setActiveMomentIndex(0);
+    audioCtrlRef.current?.stop();
+    stopAllIskoolAudio();
   }, [characterName]);
+
+  // Detener audio al desmontar
+  useEffect(() => {
+    return () => {
+      audioCtrlRef.current?.stop();
+      stopAllIskoolAudio();
+    };
+  }, []);
 
   const resolveMomentImage = (mom: HistoricalFigureMoment, idx: number): string => {
     if (mom.imageUrl && mom.imageUrl.trim()) {
@@ -80,26 +96,26 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
   const activeMomentImage = resolveMomentImage(activeMoment, activeMomentIndex);
 
   const handlePlayNarrativeAudio = (text: string) => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-
     if (isPlayingAudio) {
-      window.speechSynthesis.cancel();
+      audioCtrlRef.current?.stop();
+      stopAllIskoolAudio();
       setIsPlayingAudio(false);
       return;
     }
 
-    window.speechSynthesis.cancel();
-    const cleanText = text.replace(/[*#_`]/g, '');
-    const utterance = new SpeechSynthesisUtterance(cleanText);
+    const cleanText = text.replace(/[*#_`]/g, '').trim();
+    if (!cleanText) return;
 
-    // Configurar voz femenina auténtica acorde al sexo y personaje
-    configureHistoricalUtterance(utterance, characterName);
-
-    utterance.onstart = () => setIsPlayingAudio(true);
-    utterance.onend = () => setIsPlayingAudio(false);
-    utterance.onerror = () => setIsPlayingAudio(false);
-
-    window.speechSynthesis.speak(utterance);
+    playUniversalIskoolVoice({
+      text: cleanText,
+      characterName,
+      role: 'character',
+      onStart: () => setIsPlayingAudio(true),
+      onEnd: () => setIsPlayingAudio(false),
+      onError: () => setIsPlayingAudio(false)
+    }).then(ctrl => {
+      audioCtrlRef.current = ctrl;
+    });
   };
 
   return (
@@ -126,7 +142,8 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
             type="button"
             disabled={activeMomentIndex === 0}
             onClick={() => {
-              window.speechSynthesis?.cancel();
+              audioCtrlRef.current?.stop();
+              stopAllIskoolAudio();
               setIsPlayingAudio(false);
               setActiveMomentIndex(prev => Math.max(0, prev - 1));
             }}
@@ -142,7 +159,8 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
             type="button"
             disabled={activeMomentIndex === moments.length - 1}
             onClick={() => {
-              window.speechSynthesis?.cancel();
+              audioCtrlRef.current?.stop();
+              stopAllIskoolAudio();
               setIsPlayingAudio(false);
               setActiveMomentIndex(prev => Math.min(moments.length - 1, prev + 1));
             }}
@@ -245,7 +263,8 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
               key={mom.id || idx}
               type="button"
               onClick={() => {
-                window.speechSynthesis?.cancel();
+                audioCtrlRef.current?.stop();
+                stopAllIskoolAudio();
                 setIsPlayingAudio(false);
                 setActiveMomentIndex(idx);
               }}

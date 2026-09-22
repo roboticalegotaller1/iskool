@@ -20,7 +20,12 @@ import {
   X,
   Check
 } from 'lucide-react';
-import { configureHistoricalUtterance, getPersonaGender } from '@/lib/historicalVoiceEngine';
+import { 
+  configureHistoricalUtterance, 
+  getPersonaGender, 
+  generateHistoricalSSML, 
+  getPersonaProfile 
+} from '@/lib/historicalVoiceEngine';
 
 interface CharacterAnatomicalMouth {
   x1: number;         // Comisura izquierda en espacio 1024
@@ -103,12 +108,98 @@ function getCharacterMouthConfig(name: string): CharacterAnatomicalMouth {
   };
 }
 
+/**
+ * Generador procedural de respuesta al impulso de sala histórica (RT60: ~0.42s).
+ * Emula la acústica arquitectónica de un recinto de época (casona virreinal / salón de cantera).
+ */
+function createHistoricRoomReverbBuffer(ctx: AudioContext, duration = 0.42, decay = 3.8): AudioBuffer {
+  const length = Math.floor(ctx.sampleRate * duration);
+  const buffer = ctx.createBuffer(2, length, ctx.sampleRate);
+  const left = buffer.getChannelData(0);
+  const right = buffer.getChannelData(1);
+
+  for (let i = 0; i < length; i++) {
+    const t = i / ctx.sampleRate;
+    // Decaimiento exponencial para RT60 realista
+    const envelope = Math.exp(-t * decay);
+    // Decorrelación estéreo sutil para sensación de espacio arquitectónico físico
+    left[i] = (Math.random() * 2 - 1) * envelope;
+    right[i] = (Math.random() * 2 - 1) * envelope * 0.95;
+  }
+  return buffer;
+}
+
+/**
+ * Generador procedural de micro-respiración pulmonar y foley orgánico de inhalación humana.
+ * Ruido rosa modelado acústicamente con filtro paso banda a 1200Hz y envolvente ADSR de 120ms (-28dB).
+ */
+function playSyntheticMicroBreath(
+  ctx: AudioContext, 
+  destination: AudioNode, 
+  onBreathStart?: () => void
+): void {
+  try {
+    const duration = 0.12; // 120ms
+    const bufferSize = Math.floor(ctx.sampleRate * duration);
+    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+
+    // Generador de ruido rosa (aproximación de Voss-McCartney de 3 polos)
+    let b0 = 0, b1 = 0, b2 = 0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.99886 * b0 + white * 0.0555179;
+      b1 = 0.99332 * b1 + white * 0.0750759;
+      b2 = 0.96900 * b2 + white * 0.1538520;
+      output[i] = (b0 + b1 + b2 + white * 0.5362) * 0.12;
+    }
+
+    const noiseSource = ctx.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+
+    // Filtro Paso Banda ~1200Hz para emular resonancia traqueal humana
+    const bandpass = ctx.createBiquadFilter();
+    bandpass.type = 'bandpass';
+    bandpass.frequency.value = 1200;
+    bandpass.Q.value = 1.4;
+
+    // Envolvente ADSR de 120ms atenuada a -28dB
+    const gainNode = ctx.createGain();
+    const now = ctx.currentTime;
+    const targetGain = Math.pow(10, -28 / 20); // ~0.0398
+
+    gainNode.gain.setValueAtTime(0.0001, now);
+    gainNode.gain.linearRampToValueAtTime(targetGain, now + 0.030); // Attack 30ms
+    gainNode.gain.linearRampToValueAtTime(targetGain * 0.45, now + 0.065); // Decay 35ms a Sustain 0.45
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration); // Release a 120ms
+
+    noiseSource.connect(bandpass);
+    bandpass.connect(gainNode);
+    gainNode.connect(destination);
+
+    if (onBreathStart) {
+      onBreathStart();
+    }
+
+    noiseSource.start(now);
+    noiseSource.stop(now + duration);
+  } catch (e) {
+    // Protección contra suspensiones de contexto
+  }
+}
+
 export interface HistoricalLivingAvatarProps {
   characterName: string;
   slug?: string;
   avatarImageUrl?: string;
   initialGreeting?: string;
   isGeographicSite?: boolean;
+  historicalAge?: number;
+  variantIndex?: 0 | 1 | 2;
+  voiceId?: string;
+  voiceRate?: string;
+  voicePitch?: string;
+  oratoricalTone?: string;
   onQuestionAsked?: (question: string, answer: string, fromCache: boolean) => void;
   className?: string;
 }
@@ -129,6 +220,12 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
   avatarImageUrl = '/images/history/josefa_ortiz_avatar.png',
   initialGreeting,
   isGeographicSite = false,
+  historicalAge,
+  variantIndex = 0,
+  voiceId,
+  voiceRate,
+  voicePitch,
+  oratoricalTone,
   onQuestionAsked,
   className = ''
 }) => {
@@ -136,6 +233,8 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isBlinking, setIsBlinking] = useState(false);
   const [mouthOpenRatio, setMouthOpenRatio] = useState(0);
+  const [mouthWidthRatio, setMouthWidthRatio] = useState(0.5); // Bifactorial F2 (sonrisa / ancho)
+  const [chestLift, setChestLift] = useState(false); // Elevación torácica por respiración (1.5px)
   const [activeGesture, setActiveGesture] = useState<IdleGesture | null>(null);
   const [lastInteractionTime, setLastInteractionTime] = useState<number>(Date.now());
 
@@ -302,9 +401,11 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
 
     mouthIntervalRef.current = setInterval(() => {
       step++;
-      // Variación orgánica de apertura de boca y gesticulación mandibular
-      const ratio = (Math.sin(step * 0.8) + 1) / 2 * 0.85 + (Math.sin(step * 1.5) * 0.15);
-      setMouthOpenRatio(Math.max(0.15, Math.min(1, ratio)));
+      // Variación orgánica bifactorial de apertura vertical y extensión de comisuras
+      const ratioF1 = (Math.sin(step * 0.8) + 1) / 2 * 0.85 + (Math.sin(step * 1.5) * 0.15);
+      const ratioF2 = 0.5 + Math.sin(step * 0.6) * 0.25;
+      setMouthOpenRatio(Math.max(0.15, Math.min(1, ratioF1)));
+      setMouthWidthRatio(ratioF2);
     }, 110);
   }, []);
 
@@ -315,31 +416,87 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
     }
     setIsSpeaking(false);
     setMouthOpenRatio(0);
+    setMouthWidthRatio(0.5);
+    setChestLift(false);
   }, []);
 
-  // Fallback de síntesis de voz en navegador
-  const fallbackSpeechSynthesis = useCallback((cleanText: string) => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    configureHistoricalUtterance(utterance, characterName);
+  // Fallback de síntesis de voz en navegador con bloqueo anti-castellano
+  const fallbackSpeechSynthesis = useCallback((cleanText: string, onPlaybackStart?: () => void) => {
+    if (typeof window === 'undefined') return;
 
-    utterance.onstart = () => {
-      startLipSyncAnimation();
-    };
-    utterance.onend = () => {
-      stopLipSyncAnimation();
-    };
-    utterance.onerror = () => {
-      stopLipSyncAnimation();
-    };
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      const isConfiguredLatin = configureHistoricalUtterance(utterance, characterName, historicalAge);
 
-    speechSynthRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
-  }, [characterName, startLipSyncAnimation, stopLipSyncAnimation]);
+      if (isConfiguredLatin) {
+        utterance.onstart = () => {
+          onPlaybackStart?.();
+          startLipSyncAnimation();
+        };
+        utterance.onend = () => {
+          stopLipSyncAnimation();
+        };
+        utterance.onerror = () => {
+          onPlaybackStart?.();
+          stopLipSyncAnimation();
+        };
+
+        speechSynthRef.current = utterance;
+        window.speechSynthesis.speak(utterance);
+        return;
+      }
+    }
+
+    // PILAR 1: Si no hay voces latinas locales en el navegador (o solo existen voces de España),
+    // se aplica el filtro de rechazo y se utiliza el fallback HTTP directo hacia el servidor.
+    const profile = getPersonaProfile(characterName, historicalAge, variantIndex);
+    const resolvedVoiceId = voiceId || profile.voiceId;
+    fetch('/api/ai/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: cleanText,
+        characterName,
+        historicalAge,
+        variantIndex,
+        voice: resolvedVoiceId
+      })
+    })
+      .then(async (res) => {
+        if (res.ok) {
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const audio = new Audio(url);
+          currentAudioRef.current = audio;
+          audio.onplay = () => {
+            onPlaybackStart?.();
+            startLipSyncAnimation();
+          };
+          audio.onended = () => {
+            stopLipSyncAnimation();
+            URL.revokeObjectURL(url);
+            currentAudioRef.current = null;
+          };
+          audio.onerror = () => {
+            onPlaybackStart?.();
+            stopLipSyncAnimation();
+            URL.revokeObjectURL(url);
+            currentAudioRef.current = null;
+          };
+          await audio.play();
+        } else {
+          onPlaybackStart?.();
+        }
+      })
+      .catch(() => {
+        onPlaybackStart?.();
+        stopLipSyncAnimation();
+      });
+  }, [characterName, historicalAge, variantIndex, voiceId, startLipSyncAnimation, stopLipSyncAnimation]);
 
   // Reproducción de voz humana neural ultra-realista con sincronización de ondas sonoras
-  const speakText = useCallback(async (text: string) => {
+  const speakText = useCallback(async (text: string, onPlaybackStart?: () => void) => {
     if (!audioEnabled || typeof window === 'undefined') return;
 
     // Detener cualquier audio previo
@@ -367,19 +524,28 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
 
     if (!cleanText) return;
 
-    const gender = getPersonaGender(characterName);
-    // Voz femenina adulta, solemne y cálida (Dalia Neural mexicana) o masculina (Jorge Neural)
-    const selectedVoice = gender === 'female' ? 'es-MX-DaliaNeural' : 'es-MX-JorgeNeural';
+    const profile = getPersonaProfile(characterName, historicalAge, variantIndex);
+    const resolvedVoiceId = voiceId || profile.voiceId;
+    const resolvedRate = voiceRate || profile.prosodyRate;
+    const resolvedPitch = voicePitch || profile.prosodyPitch;
+
+    const ssmlPayload = generateHistoricalSSML(cleanText, characterName, historicalAge, variantIndex, {
+      voiceId: resolvedVoiceId,
+      voiceRate: resolvedRate,
+      voicePitch: resolvedPitch
+    });
 
     try {
       const ttsRes = await fetch('/api/ai/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          ssml: ssmlPayload,
+          characterName,
+          historicalAge,
+          variantIndex,
           text: cleanText,
-          voice: selectedVoice,
-          rate: gender === 'female' ? 0.94 : 0.93, // Cadencia solemne y pausada (femenina virreinal o masculina militar)
-          pitch: gender === 'female' ? 0.98 : 0.96 // -2Hz para voz femenina adulta madura, -4Hz para voz masculina grave y autoritaria
+          voice: resolvedVoiceId
         })
       });
 
@@ -391,29 +557,144 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
 
         let setupAnalyserSuccess = false;
         try {
-          const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+            const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
           if (AudioContextClass) {
             const ctx = new AudioContextClass();
             audioContextRef.current = ctx;
             const src = ctx.createMediaElementSource(audio);
             const analyser = ctx.createAnalyser();
-            analyser.fftSize = 256;
-            src.connect(analyser);
+
+            // DSP Avanzado: FFT 512 y constante de suavizado exponencial 0.82
+            analyser.fftSize = 512;
+            analyser.smoothingTimeConstant = 0.82;
+
+            // =========================================================================
+            // CADENA DE MASTERIZACIÓN DSP CON WEB AUDIO API
+            // =========================================================================
+
+            // 1. Compensación de Resonancia Torácica (Warmth EQ): Peaking 180Hz, Q 1.2, +2.5dB
+            const warmthFilter = ctx.createBiquadFilter();
+            warmthFilter.type = 'peaking';
+            warmthFilter.frequency.value = 180;
+            warmthFilter.Q.value = 1.2;
+            warmthFilter.gain.value = 2.5;
+
+            // 2. Atenuador de Sibilancias (De-Esser Dinámico Pasivo): Highshelf 6500Hz, -1.8dB
+            const deEsserFilter = ctx.createBiquadFilter();
+            deEsserFilter.type = 'highshelf';
+            deEsserFilter.frequency.value = 6500;
+            deEsserFilter.gain.value = -1.8;
+
+            // 3. Convolución Ambiental Conmutable (Reverb de Sala Histórica RT60 ~0.42s)
+            const convolver = ctx.createConvolver();
+            convolver.buffer = createHistoricRoomReverbBuffer(ctx, 0.42, 3.8);
+
+            const dryGain = ctx.createGain();
+            dryGain.gain.value = 0.90; // 90% señal directa
+
+            const wetGain = ctx.createGain();
+            wetGain.gain.value = 0.10; // 10% señal reverberada
+
+            // Conexión en serie de ecualización y de-essing
+            src.connect(warmthFilter);
+            warmthFilter.connect(deEsserFilter);
+
+            // Bifurcación Dry / Wet para espacialidad física
+            deEsserFilter.connect(dryGain);
+            deEsserFilter.connect(convolver);
+            convolver.connect(wetGain);
+
+            // Reagrupación en el nodo analizador espectral
+            dryGain.connect(analyser);
+            wetGain.connect(analyser);
+
+            // Salida a los altavoces
             analyser.connect(ctx.destination);
 
             const bufferLength = analyser.frequencyBinCount;
             const dataArray = new Uint8Array(bufferLength);
+            const sampleRate = ctx.sampleRate || 44100;
+            const binSize = sampleRate / analyser.fftSize;
+
+            // =========================================================================
+            // FORMANTES VOZ HUMANA BIFACTORIAL:
+            // Canal F1 (Apertura Mandibular): 300 Hz a 900 Hz
+            // Canal F2 (Extensión Comisuras / Sonrisa): 1200 Hz a 2800 Hz
+            // =========================================================================
+            const minF1Bin = Math.max(1, Math.floor(300 / binSize));
+            const maxF1Bin = Math.min(bufferLength - 1, Math.ceil(900 / binSize));
+
+            const minF2Bin = Math.max(minF1Bin + 1, Math.floor(1200 / binSize));
+            const maxF2Bin = Math.min(bufferLength - 1, Math.ceil(2800 / binSize));
+
+            let smoothedF1 = 0;
+            let smoothedF2 = 0.5;
+            let silenceFrames = 0;
+            let lastPauseGestureTimestamp = 0;
 
             const checkAudioLevel = () => {
               if (audio.paused || audio.ended) return;
               analyser.getByteFrequencyData(dataArray);
-              let total = 0;
-              for (let i = 0; i < bufferLength; i++) {
-                total += dataArray[i];
+
+              // 1. Energía Canal F1 (Apertura vertical)
+              let f1Sum = 0;
+              let f1Count = 0;
+              for (let i = minF1Bin; i <= maxF1Bin; i++) {
+                f1Sum += dataArray[i];
+                f1Count++;
               }
-              const avg = total / bufferLength;
-              const ratio = Math.min(1, Math.max(0, (avg - 8) / 36));
-              setMouthOpenRatio(ratio);
+              const avgF1 = f1Count > 0 ? f1Sum / f1Count : 0;
+
+              // 2. Energía Canal F2 (Ancho horizontal / Sonrisa)
+              let f2Sum = 0;
+              let f2Count = 0;
+              for (let i = minF2Bin; i <= maxF2Bin; i++) {
+                f2Sum += dataArray[i];
+                f2Count++;
+              }
+              const avgF2 = f2Count > 0 ? f2Sum / f2Count : 0;
+
+              // Mapeo F1 (Apertura mandibular con inercia IIR)
+              const rawF1 = Math.min(1, Math.max(0, (avgF1 - 10) / 42));
+              smoothedF1 = smoothedF1 * 0.68 + rawF1 * 0.32;
+              setMouthOpenRatio(smoothedF1);
+
+              // Mapeo F2 (Comisuras: Vocales abiertas E/I ensanchan, O/U estrechan)
+              const f2Ratio = avgF1 > 4 ? Math.min(1, Math.max(0.1, (avgF2 / (avgF1 + 0.1)) * 0.95)) : 0.5;
+              smoothedF2 = smoothedF2 * 0.76 + f2Ratio * 0.24;
+              setMouthWidthRatio(smoothedF2);
+
+              // Detección de silencios y pausas dramáticas de respiración (<break>)
+              const totalVocalEnergy = avgF1 + avgF2;
+              if (totalVocalEnergy < 10) {
+                silenceFrames++;
+                const now = Date.now();
+                // Si la pausa dura entre ~150ms y ~400ms (frames 10-24)
+                if (silenceFrames === 11 && (now - lastPauseGestureTimestamp > 3200)) {
+                  lastPauseGestureTimestamp = now;
+
+                  // Micro-respiración foley + elevación sincronizada de 1.5px en el pecho
+                  playSyntheticMicroBreath(ctx, ctx.destination, () => {
+                    setChestLift(true);
+                    setTimeout(() => setChestLift(false), 260);
+                  });
+
+                  // Micro-parpadeo reflexivo ante la pausa oratoria
+                  setIsBlinking(true);
+                  setTimeout(() => setIsBlinking(false), 160);
+
+                  // Gesto de reflexión oratoria
+                  if (!activeGesture) {
+                    const oratoryPauseGestures: IdleGesture[] = ['brow_focus', 'subtle_nod'];
+                    const chosen = oratoryPauseGestures[Math.floor(Math.random() * oratoryPauseGestures.length)];
+                    setActiveGesture(chosen);
+                    setTimeout(() => setActiveGesture(null), 1400);
+                  }
+                }
+              } else {
+                silenceFrames = 0;
+              }
+
               animFrameRef.current = requestAnimationFrame(checkAudioLevel);
             };
 
@@ -422,6 +703,12 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
               if (ctx.state === 'suspended') {
                 ctx.resume();
               }
+              onPlaybackStart?.();
+              // Micro-inhalación foley de inicio sincronizada con elevación torácica
+              playSyntheticMicroBreath(ctx, ctx.destination, () => {
+                setChestLift(true);
+                setTimeout(() => setChestLift(false), 260);
+              });
               checkAudioLevel();
             };
             setupAnalyserSuccess = true;
@@ -432,6 +719,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
 
         if (!setupAnalyserSuccess) {
           audio.onplay = () => {
+            onPlaybackStart?.();
             startLipSyncAnimation();
           };
         }
@@ -462,7 +750,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
           stopLipSyncAnimation();
           URL.revokeObjectURL(audioUrl);
           currentAudioRef.current = null;
-          fallbackSpeechSynthesis(cleanText);
+          fallbackSpeechSynthesis(cleanText, onPlaybackStart);
         };
 
         await audio.play();
@@ -472,8 +760,8 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
       console.warn('Fallo al solicitar voz neural humana, recurriendo a voz de navegador:', ttsErr);
     }
 
-    fallbackSpeechSynthesis(cleanText);
-  }, [audioEnabled, characterName, startLipSyncAnimation, stopLipSyncAnimation, fallbackSpeechSynthesis]);
+    fallbackSpeechSynthesis(cleanText, onPlaybackStart);
+  }, [audioEnabled, characterName, historicalAge, variantIndex, startLipSyncAnimation, stopLipSyncAnimation, fallbackSpeechSynthesis]);
 
   // Envío de pregunta al avatar
   const handleSendMessage = async (textToSend?: string) => {
@@ -520,7 +808,6 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
 
-        setMessages(prev => [...prev, charMsg]);
         setTokenFeedback({
           cost: data.tokenCost || 0,
           source: data.cached ? 'Bóveda Curricular (0 Tokens)' : 'Motor de IA Pedagógica'
@@ -530,7 +817,29 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
           onQuestionAsked(query, data.answer, Boolean(data.cached));
         }
 
-        speakText(data.answer);
+        // SINCRONIZACIÓN ZERO-LAG:
+        // No mostramos la burbuja de texto hasta que el audio comience a sonar,
+        // garantizando que la voz y el texto aparezcan exactamente al mismo tiempo.
+        let isRevealed = false;
+        const revealSynchronized = () => {
+          if (isRevealed) return;
+          isRevealed = true;
+          setMessages(prev => [...prev, charMsg]);
+          setIsLoading(false);
+        };
+
+        // Salvaguarda: si el audio tarda más de 1.4s o está silenciado, mostrar el texto de inmediato
+        const safetyTimer = setTimeout(revealSynchronized, 1400);
+
+        if (audioEnabled) {
+          speakText(data.answer, () => {
+            clearTimeout(safetyTimer);
+            revealSynchronized();
+          });
+        } else {
+          clearTimeout(safetyTimer);
+          revealSynchronized();
+        }
       } else {
         const fallbackMsg: ChatMessage = {
           id: `c-${Date.now()}`,
@@ -539,10 +848,10 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
         setMessages(prev => [...prev, fallbackMsg]);
+        setIsLoading(false);
       }
     } catch (err) {
       console.error('Error al dialogar con el avatar histórico:', err);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -600,6 +909,10 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
 
   // Determinar transformaciones de gesticulación visual
   const getAvatarTransform = () => {
+    if (chestLift) {
+      // Elevación de pecho / hombros sincronizada con la micro-inhalación oratoria (1.5px)
+      return { y: -1.5, scale: 1.012, rotateX: 2 };
+    }
     if (activeGesture === 'look_left') {
       return { rotateY: -8, rotateZ: -1, x: -6, y: -2 };
     }
@@ -713,40 +1026,47 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
                 </linearGradient>
               </defs>
 
-              {isSpeaking && mouthOpenRatio > 0.04 && (
-                <g>
-                  {/* Cavidad bucal anatómica (sombra interior de boca abierta) */}
-                  <path 
-                    d={`M ${mouthCfg.x1} ${mouthCfg.y1} Q ${mouthCfg.cx} ${mouthCfg.cy - mouthOpenRatio * 1.5} ${mouthCfg.x2} ${mouthCfg.y2} Q ${mouthCfg.cx} ${mouthCfg.cy + mouthOpenRatio * mouthCfg.maxOpening} ${mouthCfg.x1} ${mouthCfg.y1} Z`} 
-                    fill={`url(#avatarCavity_${(characterName || 'char').replace(/\s+/g, '_')})`} 
-                  />
-                  
-                  {/* Fila superior de dientes naturales nacarados */}
-                  <path 
-                    d={`M ${mouthCfg.cx - 18} ${mouthCfg.cy - 1} Q ${mouthCfg.cx} ${mouthCfg.cy - 2.2} ${mouthCfg.cx + 18} ${mouthCfg.cy - 1.5} Q ${mouthCfg.cx + 18} ${mouthCfg.cy - 1 + Math.min(mouthOpenRatio * mouthCfg.maxOpening * 0.45, 5)} Q ${mouthCfg.cx} ${mouthCfg.cy + Math.min(mouthOpenRatio * mouthCfg.maxOpening * 0.45, 5)} ${mouthCfg.cx - 18} ${mouthCfg.cy - 1 + Math.min(mouthOpenRatio * mouthCfg.maxOpening * 0.45, 5)} Z`} 
-                    fill={`url(#avatarTeeth_${(characterName || 'char').replace(/\s+/g, '_')})`} 
-                  />
-                  
-                  {/* Sombra de lengua / fondo bucal para fonemas abiertos */}
-                  {mouthOpenRatio > 0.45 && (
-                    <ellipse 
-                      cx={mouthCfg.cx} 
-                      cy={mouthCfg.cy + mouthOpenRatio * mouthCfg.maxOpening * 0.75} 
-                      rx={10 + mouthOpenRatio * 4} 
-                      ry={1.5 + mouthOpenRatio * 1.5} 
-                      fill="#54141b" 
-                      opacity={0.85} 
+              {isSpeaking && mouthOpenRatio > 0.04 && (() => {
+                // Cálculo dinámico bifactorial F1/F2 (Apertura vertical + Extensión de comisuras)
+                const widthOffset = (mouthWidthRatio - 0.5) * 10;
+                const effX1 = mouthCfg.x1 - widthOffset;
+                const effX2 = mouthCfg.x2 + widthOffset;
+
+                return (
+                  <g>
+                    {/* Cavidad bucal anatómica (sombra interior de boca abierta modulada por F1 y F2) */}
+                    <path 
+                      d={`M ${effX1} ${mouthCfg.y1} Q ${mouthCfg.cx} ${mouthCfg.cy - mouthOpenRatio * 1.5} ${effX2} ${mouthCfg.y2} Q ${mouthCfg.cx} ${mouthCfg.cy + mouthOpenRatio * mouthCfg.maxOpening} ${effX1} ${mouthCfg.y1} Z`} 
+                      fill={`url(#avatarCavity_${(characterName || 'char').replace(/\s+/g, '_')})`} 
                     />
-                  )}
-                  
-                  {/* Reborde carnoso y textura del labio inferior descendiendo de forma natural con la mandíbula */}
-                  <path 
-                    d={`M ${mouthCfg.x1 + 2} ${mouthCfg.y1 + 0.5} Q ${mouthCfg.cx} ${mouthCfg.cy + mouthOpenRatio * mouthCfg.maxOpening} ${mouthCfg.x2 - 2} ${mouthCfg.y2 + 0.5} Q ${mouthCfg.cx} ${mouthCfg.cy + mouthOpenRatio * mouthCfg.maxOpening + 3} ${mouthCfg.x1 + 2} ${mouthCfg.y1 + 0.5} Z`} 
-                    fill={`url(#avatarLowerLip_${(characterName || 'char').replace(/\s+/g, '_')})`} 
-                    opacity={0.88} 
-                  />
-                </g>
-              )}
+                    
+                    {/* Fila superior de dientes naturales nacarados con ajuste de sonrisa F2 */}
+                    <path 
+                      d={`M ${mouthCfg.cx - 18 - widthOffset * 0.4} ${mouthCfg.cy - 1} Q ${mouthCfg.cx} ${mouthCfg.cy - 2.2} ${mouthCfg.cx + 18 + widthOffset * 0.4} ${mouthCfg.cy - 1.5} Q ${mouthCfg.cx + 18 + widthOffset * 0.4} ${mouthCfg.cy - 1 + Math.min(mouthOpenRatio * mouthCfg.maxOpening * 0.45, 5)} Q ${mouthCfg.cx} ${mouthCfg.cy + Math.min(mouthOpenRatio * mouthCfg.maxOpening * 0.45, 5)} ${mouthCfg.cx - 18 - widthOffset * 0.4} ${mouthCfg.cy - 1 + Math.min(mouthOpenRatio * mouthCfg.maxOpening * 0.45, 5)} Z`} 
+                      fill={`url(#avatarTeeth_${(characterName || 'char').replace(/\s+/g, '_')})`} 
+                    />
+                    
+                    {/* Sombra de lengua / fondo bucal para fonemas abiertos */}
+                    {mouthOpenRatio > 0.45 && (
+                      <ellipse 
+                        cx={mouthCfg.cx} 
+                        cy={mouthCfg.cy + mouthOpenRatio * mouthCfg.maxOpening * 0.75} 
+                        rx={10 + mouthOpenRatio * 4 + widthOffset * 0.3} 
+                        ry={1.5 + mouthOpenRatio * 1.5} 
+                        fill="#54141b" 
+                        opacity={0.85} 
+                      />
+                    )}
+                    
+                    {/* Reborde carnoso y textura del labio inferior descendiendo de forma natural con la mandíbula */}
+                    <path 
+                      d={`M ${effX1 + 2} ${mouthCfg.y1 + 0.5} Q ${mouthCfg.cx} ${mouthCfg.cy + mouthOpenRatio * mouthCfg.maxOpening} ${effX2 - 2} ${mouthCfg.y2 + 0.5} Q ${mouthCfg.cx} ${mouthCfg.cy + mouthOpenRatio * mouthCfg.maxOpening + 3} ${effX1 + 2} ${mouthCfg.y1 + 0.5} Z`} 
+                      fill={`url(#avatarLowerLip_${(characterName || 'char').replace(/\s+/g, '_')})`} 
+                      opacity={0.88} 
+                    />
+                  </g>
+                );
+              })()}
             </svg>
 
             {/* Sombra de época y velo dramático */}
