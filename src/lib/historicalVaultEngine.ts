@@ -69,14 +69,75 @@ export function normalizeQuestionText(q: string): string {
 export function findHistoricalFigureInVault(nameOrSlug: string): HistoricalFigureBlockData | null {
   if (!nameOrSlug || !nameOrSlug.trim()) return null;
 
-  const slug = normalizeHistoricalSlug(nameOrSlug);
+  let slug = normalizeHistoricalSlug(nameOrSlug);
   const { localDir, desktopDir } = getHistoricalVaultDirs();
+
+  const ALIASES: Record<string, string> = {
+    'josefa_ortiz': 'josefa_ortiz_de_dominguez',
+    'josefa': 'josefa_ortiz_de_dominguez',
+    'la_corregidora': 'josefa_ortiz_de_dominguez',
+    'corregidora': 'josefa_ortiz_de_dominguez',
+    'dona_josefa': 'josefa_ortiz_de_dominguez',
+    'dona_josefa_ortiz_de_dominguez': 'josefa_ortiz_de_dominguez',
+    'pancho_villa': 'francisco_villa',
+    'villa': 'francisco_villa',
+    'doroteo_arango': 'francisco_villa',
+    'centauro_del_norte': 'francisco_villa',
+    'el_centauro_del_norte': 'francisco_villa',
+    'general_francisco_villa': 'francisco_villa',
+  };
+
+  if (ALIASES[slug]) {
+    slug = ALIASES[slug];
+  }
 
   let targetPath = path.join(localDir, `${slug}.md`);
   if (!fs.existsSync(targetPath) && desktopDir) {
     const dPath = path.join(desktopDir, `${slug}.md`);
     if (fs.existsSync(dPath)) {
       targetPath = dPath;
+    }
+  }
+
+  // Si no se encuentra con coincidencia exacta de slug, buscar en los directorios por coincidencia de nombre o prefijo
+  if (!fs.existsSync(targetPath)) {
+    const searchDirs = [localDir];
+    if (desktopDir) searchDirs.push(desktopDir);
+
+    for (const d of searchDirs) {
+      if (!fs.existsSync(d)) continue;
+      const files = fs.readdirSync(d).filter(f => f.endsWith('.md'));
+      
+      // 1. Coincidencia por inicio de nombre de archivo o contención
+      for (const file of files) {
+        const fileBase = file.replace(/\.md$/, '');
+        if (fileBase === slug || fileBase.startsWith(slug) || slug.startsWith(fileBase) || fileBase.includes(slug)) {
+          targetPath = path.join(d, file);
+          slug = fileBase;
+          break;
+        }
+      }
+      if (fs.existsSync(targetPath)) break;
+
+      // 2. Coincidencia inspeccionando el título/frontmatter
+      for (const file of files) {
+        try {
+          const filePath = path.join(d, file);
+          const raw = fs.readFileSync(filePath, 'utf8');
+          const titleMatch = raw.match(/^title:\s*(.+)$/m);
+          if (titleMatch) {
+            const fileTitleSlug = normalizeHistoricalSlug(titleMatch[1]);
+            if (fileTitleSlug === slug || fileTitleSlug.includes(slug) || slug.includes(fileTitleSlug)) {
+              targetPath = filePath;
+              slug = file.replace(/\.md$/, '');
+              break;
+            }
+          }
+        } catch {
+          // continuar
+        }
+      }
+      if (fs.existsSync(targetPath)) break;
     }
   }
 

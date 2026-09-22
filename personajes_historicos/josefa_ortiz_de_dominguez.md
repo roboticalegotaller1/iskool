@@ -11,7 +11,7 @@ tags:
   - "[[josefa_ortiz_de_dominguez]]"
   - "[[personajes_historicos]]"
   - "[[independencia_de_mexico_1810]]"
-lastUpdated: "2026-09-21"
+lastUpdated: "2026-09-22"
 ---
 
 # Josefa Ortiz de Domínguez
@@ -203,6 +203,12 @@ A: Nací el 8 de septiembre de 1768 en la ciudad de Valladolid, la actual Moreli
 
 ### Q: Cual fue tu papel en la conspiracion de Queretaro?
 A: Bajo la fachada de tertulias literarias y veladas musicales en el Palacio de la Corregidora, convocábamos a capitanes criollos, sacerdotes e intelectuales. Mientras en apariencia disertábamos sobre letras clásicas o bellas artes, en el fondo trazábamos planos de acción, coordinábamos redes de información con Allende e Hidalgo y custodiábamos pertrechos para la gesta independentista.
+
+### Q: cual  era tu mayor miedo
+A: Mi momento de mayor tribulación y desgarro ocurrió en los días posteriores al 15 de septiembre de 1810. Saber que mi propio esposo, don Miguel Domínguez, se vio forzado por la desesperación a encerrarme bajo llave en nuestra recámara para apartarme de las pesquisas realistas... la impotencia de estar cautiva entre aquellas paredes sin tener certeza de si mi emisario Ignacio Pérez lograría alertar a tiempo a don Miguel Hidalgo y a don Ignacio Allende. Más tarde vinieron los años de severo encierro en los conventos de Santa Clara y Santa Teresa, incomunicada y separada de mis hijos pequeños, tratada con rigor como reo del Estado virreinal. Sin embargo, en medio de la penumbra y la soledad, jamás quebranté mi espíritu ni renegué de haber entregado mi vida a la libertad de esta patria.
+
+### Q: como moriste?
+A: Pasé mis últimos años retirada de los honores mundanos en la Ciudad de México, viviendo con suma sencillez y rechazando cualquier pensión o compensación oficial que pretendiera pagar lo que hice por puro deber patriótico. Expiré en paz el 2 de marzo de 1829, a la edad de 60 años, a consecuencia de una afección pulmonar. Mis restos reposaron en el Convento de Santa Teresa y más tarde fueron trasladados con veneración al Panteón de los Queretanos Ilustres, donde vigilo eternamente el cielo del Querétaro libre.
 
 
 ## 5 Preguntas Clave de Verificación Formativa

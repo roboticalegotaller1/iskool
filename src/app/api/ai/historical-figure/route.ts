@@ -513,7 +513,162 @@ async function generateFigureWithAiFallback(
     };
   }
 
-  // 3. GENERADOR GENÉRICO PEDAGÓGICO PARA CUALQUIER PERSONAJE O SITIO (X)
+  // 3. GENERAL FRANCISCO VILLA (EL CENTAURO DEL NORTE)
+  if (norm.includes('villa') || norm.includes('doroteo') || norm.includes('arango') || norm.includes('centauro')) {
+    return {
+      characterName: 'Francisco Villa',
+      isGeographicSite: false,
+      historicalEra: 'Revolución Mexicana (1910 - 1923)',
+      birthDeathDates: '1878 - 1923',
+      shortBio: 'Conocido como El Centauro del Norte, comandó la legendaria División del Norte, el ejército popular más formidable de la Revolución Mexicana.',
+      detailedContext: 'Nacido en La Coyotada, Durango, como José Doroteo Arango Arámbula, Villa se unió al movimiento maderista en 1910 para derrocar la dictadura porfirista. Tras el cuartelazo traidor de Huerta, formó la División del Norte con campesinos, vaqueros y ferrocarrileros, logrando victorias fulgurantes en Torreón, Ciudad Juárez y la Toma de Zacatecas (1914). Como gobernador de Chihuahua abarató los alimentos y fundó decenas de escuelas. Tras retirarse en Canutillo, impulsó la educación agrícola antes de morir asesinado en Parral en 1923.',
+      avatarImageUrl: '/images/history/francisco_villa_avatar.png',
+      bookSpineStyle: spineStyle || 'cuaderno_cronista',
+      moments: [
+        {
+          id: 'v-m1',
+          yearOrPeriod: '8-10 Mayo 1911',
+          title: 'La Toma de Ciudad Juárez',
+          description: 'Avanzando casa por casa abriendo boquetes en las paredes de adobe, Villa toma la aduana fronteriza forzando la renuncia de Porfirio Díaz.',
+          imageUrl: '/images/history/villa_toma_juarez_comic_1.png',
+          locationName: 'Ciudad Juárez, Chihuahua',
+          coordinates: { lat: 31.7394, lng: -106.4869 },
+          narrativeCaption: 'El asalto frontal y el corte de vías férreas demostraron la audacia militar de Francisco Villa.'
+        },
+        {
+          id: 'v-m2',
+          yearOrPeriod: '23 Junio 1914',
+          title: 'La Batalla de Zacatecas y el Cerro de la Bufa',
+          description: 'La División del Norte toma el inexpugnable baluarte del Cerro de la Bufa, aniquilando al ejército federal huertista.',
+          imageUrl: '/images/history/villa_batalla_zacatecas_comic_2.png',
+          locationName: 'Cerro de la Bufa, Zacatecas',
+          coordinates: { lat: 22.7758, lng: -102.5694 },
+          narrativeCaption: '¡Viva Villa y viva la División del Norte! La caída de Zacatecas destrozó la dictadura.'
+        },
+        {
+          id: 'v-m3',
+          yearOrPeriod: 'Diciembre 1914',
+          title: 'El Pacto de Xochimilco y la Entrada a la Capital',
+          description: 'Villa y Emiliano Zapata sellan la alianza del Norte y del Sur por la tierra y la justicia, desfilando en la Ciudad de México.',
+          imageUrl: '/images/history/villa_pacto_xochimilco_comic_3.png',
+          locationName: 'Xochimilco y Palacio Nacional, Ciudad de México',
+          coordinates: { lat: 19.2635, lng: -99.1039 },
+          narrativeCaption: 'La unión histórica de los dos líderes campesinos en defensa del pueblo humilde.'
+        },
+        {
+          id: 'v-m4',
+          yearOrPeriod: '9 Marzo 1916',
+          title: 'La Incursión en Columbus y la Expedición Punitiva',
+          description: 'Ataque relámpago a la guarnición estadounidense de Columbus y posterior resistencia en la Sierra Madre burlando a Pershing.',
+          imageUrl: '/images/history/villa_columbus_comic_4.png',
+          locationName: 'Columbus, Nuevo México y Sierras de Chihuahua',
+          coordinates: { lat: 31.8310, lng: -107.6417 },
+          narrativeCaption: 'A lomo de caballo por las serranías natales, Villa y sus Dorados eludieron a 12,000 soldados invasores.'
+        }
+      ],
+      keyLocations: [
+        {
+          id: 'v-loc1',
+          name: 'Hacienda de San Juan de Canutillo',
+          stateOrCountry: 'Durango, México',
+          coordinates: { lat: 26.3768, lng: -105.3789 },
+          significance: 'Hacienda de retiro donde Villa fundó la escuela Felipe Ángeles y una colonia agrícola cooperativa modelo.',
+          imageUrl: '/images/history/hacienda_canutillo_villa.jpg'
+        },
+        {
+          id: 'v-loc2',
+          name: 'Cerro de la Bufa',
+          stateOrCountry: 'Zacatecas, México',
+          coordinates: { lat: 22.7758, lng: -102.5694 },
+          significance: 'Cresta rocosa y escenario supremo de la batalla decisiva que quebró al régimen militar usurpador.',
+          imageUrl: '/images/history/cerro_bufa_zacatecas.jpg'
+        },
+        {
+          id: 'v-loc3',
+          name: 'Columbus y Parque Estatal Pancho Villa',
+          stateOrCountry: 'Nuevo México, EE.UU.',
+          coordinates: { lat: 31.8310, lng: -107.6417 },
+          significance: 'Poblado fronterizo de la histórica incursión nocturna del 9 de marzo de 1916.',
+          imageUrl: '/images/history/columbus_nuevo_mexico.jpg'
+        },
+        {
+          id: 'v-loc4',
+          name: 'Palacio Nacional (Salón Presidencial de 1914)',
+          stateOrCountry: 'Ciudad de México',
+          coordinates: { lat: 19.4326, lng: -99.1313 },
+          significance: 'Recinto histórico donde Villa y Zapata entraron triunfantes al frente del ejército campesino.',
+          imageUrl: '/images/history/palacio_nacional_villa_zapata.jpg'
+        }
+      ],
+      videoClip: {
+        videoUrl: 'https://youtu.be/25cq1V8AsTg',
+        durationSeconds: 18,
+        title: 'Francisco Villa: El Viento y la Carga del Centauro del Norte',
+        narratorScript: 'De las serranías de Durango a la vanguardia de Zacatecas, Francisco Villa encabezó la caballería más temida de América. Con su División del Norte y su amor por las escuelas campesinas, demostró que la dignidad popular no tiene precio.'
+      },
+      verificationQuestions: [
+        {
+          id: 'v-vq1',
+          question: '¿Cuál fue el nombre del legendario cuerpo militar comandado por Francisco Villa?',
+          options: ['El Ejército Trigarante', 'La División del Norte', 'La Legión de Honor', 'Los Rurales de la Frontera'],
+          correctIndex: 1,
+          explanation: 'La División del Norte fue la fuerza militar popular más poderosa y disciplinada de la Revolución Mexicana.',
+          pdaRelevance: 'Procesos revolucionarios y justicia social en el México del siglo XX.'
+        },
+        {
+          id: 'v-vq2',
+          question: '¿Qué batalla épica de junio de 1914 librada por la División del Norte causó la caída de Victoriano Huerta?',
+          options: ['La Batalla de Puebla', 'La Batalla de Zacatecas (Toma del Cerro de la Bufa)', 'La Batalla de San Jacinto', 'La Batalla de Angostura'],
+          correctIndex: 1,
+          explanation: 'La Toma de Zacatecas forzó la renuncia y huida del usurpador Huerta semanas después.',
+          pdaRelevance: 'Transformaciones políticas y caída del régimen autoritario en 1914.'
+        },
+        {
+          id: 'v-vq3',
+          question: '¿Qué histórico acuerdo de unidad sellaron Francisco Villa y Emiliano Zapata en diciembre de 1914?',
+          options: ['El Plan de Iguala', 'El Pacto de Xochimilco', 'Los Tratados de Teoloyucan', 'El Plan de San Luis'],
+          correctIndex: 1,
+          explanation: 'En Xochimilco, las fuerzas campesinas del Norte y del Sur unieron sus demandas por la tierra y la justicia social.',
+          pdaRelevance: 'Movimientos campesinos y alianzas populares en la historia nacional.'
+        },
+        {
+          id: 'v-vq4',
+          question: 'Durante su retiro en la Hacienda de Canutillo, ¿qué institución fundó Villa prioritariamente para la comunidad?',
+          options: ['Un cuartel militar de élite', 'La Escuela Primaria Felipe Ángeles para niños y veteranos', 'Una fábrica de cerveza', 'Una prisión regional'],
+          correctIndex: 1,
+          explanation: 'Villa priorizó la educación fundando la escuela Felipe Ángeles y pagando a maestros calificados.',
+          pdaRelevance: 'Valoración del derecho a la educación pública como motor de transformación social.'
+        },
+        {
+          id: 'v-vq5',
+          question: '¿Por qué la incursión de Villa en Columbus (1916) es un suceso militar único en el siglo XX?',
+          options: ['Porque concluyó con la compra de armas de aviación', 'Porque fue la única incursión militar en territorio continental de EE.UU. en el siglo XX', 'Porque desató un canje diplomático de prisioneros', 'Porque Villa firmó un armisticio en Washington'],
+          correctIndex: 1,
+          explanation: 'El ataque a Columbus provocó la fallida Expedición Punitiva del general Pershing que no logró capturar a Villa.',
+          pdaRelevance: 'Soberanía nacional y relaciones internacionales.'
+        }
+      ],
+      qaCache: [
+        {
+          question: '¿Cuál fue tu momento más difícil?',
+          answer: 'Mi momento más amargo y doloroso fue en 1915, durante las batallas del Bajío en Celaya y León. Ver caer a miles de mis leales muchachos de la División del Norte frente a las trincheras, alambres de púas y ráfagas de metralla me partió el alma. Eran los mismos hermanos campesinos con quienes cabalgué años enteros.',
+          timestamp: Date.now()
+        },
+        {
+          question: '¿Qué te motivó a luchar por la patria?',
+          answer: 'Me motivó la furia sagrada contra la humillación que sufría el pueblo pobre de México. Crecí como peón acasillado en La Coyotada viendo a los hacendados tratar a los campesinos peor que a las bestias de carga. Yo no me levanté por ambición de dinero ni de puestos políticos; me levanté para que el hijo del campesino tuviera tierra propia, escuela digna y pan seguro en su mesa.',
+          timestamp: Date.now()
+        },
+        {
+          question: '¿Qué mensaje le das a los jóvenes de hoy?',
+          answer: 'A ustedes, muchachos y muchachas que hoy tienen el privilegio de estudiar: ¡echen mano a los libros con la misma bravura con que nosotros empuñamos las carabinas! La educación es la única arma que ningún tirano les podrá arrebatar jamás. No sean cobardes ante la injusticia, amen a su patria mexicana y trabajen duro para que nadie vuelva a humillar al humilde.',
+          timestamp: Date.now()
+        }
+      ]
+    };
+  }
+
+  // 4. GENERADOR GENÉRICO PEDAGÓGICO PARA CUALQUIER PERSONAJE O SITIO (X)
   const isSite = isGeographicSite || norm.includes('queretaro') || norm.includes('tenochtitlan') || norm.includes('ruina') || norm.includes('chichen') || norm.includes('ciudad') || norm.includes('estado');
 
   return {
@@ -637,8 +792,28 @@ async function generateFigureWithAiFallback(
     ],
     qaCache: [
       {
-        question: '¿Qué mensaje le darías a los estudiantes que hoy aprenden sobre ti?',
-        answer: 'Que nunca subestimen el poder del estudio, la verdad y el compromiso ciudadano. Cada generación tiene su propia trinchera y la suya es el saber, la justicia y el amor a su comunidad.',
+        question: '¿Cuál fue tu momento más difícil?',
+        answer: `A lo largo de mi trayectoria enfrenté severas adversidades y pruebas de temple moral; sin embargo, en los momentos de mayor peligro e incertidumbre mantuve firme la lealtad a mi pueblo y a la justicia, pues sabía que el bienestar colectivo exigía perseverancia inquebrantable.`,
+        timestamp: Date.now()
+      },
+      {
+        question: '¿Qué te motivó a luchar por la patria?',
+        answer: `Me motivó el anhelo irrenunciable de poner fin a las desigualdades y defender la soberanía y la dignidad de nuestra gente. Cada sacrificio personal estuvo guiado por la convicción de que solo una sociedad con justicia y libertad puede forjar un porvenir próspero.`,
+        timestamp: Date.now()
+      },
+      {
+        question: '¿Qué mensaje le das a los jóvenes de hoy?',
+        answer: 'Que nunca subestimen el poder del estudio, la verdad y el compromiso ciudadano. Cada generación tiene su propia trinchera y la suya es el saber, la justicia, el pensamiento crítico y el amor a su comunidad.',
+        timestamp: Date.now()
+      },
+      {
+        question: `¿Cuál fue tu papel en la historia?`,
+        answer: `Asumí con entereza la responsabilidad cívica que mi época demandó, coordinando voluntades y defendiendo con firmeza los derechos fundamentales y la soberanía que hoy constituyen el patrimonio de nuestra nación.`,
+        timestamp: Date.now()
+      },
+      {
+        question: `¿Quién eres?`,
+        answer: `Soy ${name}. En la memoria histórica de nuestra tierra represento un compromiso vivo con la verdad, la libertad y los ideales republicanos.`,
         timestamp: Date.now()
       }
     ]
@@ -873,6 +1048,10 @@ async function fetchEncyclopedicSnippet(characterName: string, question: string)
       canonicalTitle = 'Benito Juárez';
     } else if (norm.includes('leona')) {
       canonicalTitle = 'Leona Vicario';
+    } else if (norm.includes('villa') || norm.includes('doroteo') || norm.includes('arango') || norm.includes('centauro')) {
+      canonicalTitle = 'Pancho Villa';
+    } else if (norm.includes('zapata')) {
+      canonicalTitle = 'Emiliano Zapata';
     }
 
     const summaryUrl = `https://es.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(canonicalTitle)}`;
@@ -925,6 +1104,7 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
   const isAllende = name.toLowerCase().includes('allende');
   const isLeona = name.toLowerCase().includes('leona') || name.toLowerCase().includes('vicario');
   const isJuarez = name.toLowerCase().includes('juarez') || name.toLowerCase().includes('benito');
+  const isVilla = name.toLowerCase().includes('villa') || name.toLowerCase().includes('doroteo') || name.toLowerCase().includes('arango') || name.toLowerCase().includes('centauro');
 
   // =========================================================================
   // 1. DOÑA JOSEFA ORTIZ DE DOMÍNGUEZ (ONTOLOGÍA HISTÓRICA DETALLADA)
@@ -1133,6 +1313,46 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
       return `Vestía de levita y frac negro de lana austera con corbata de lazo, símbolo de la sobriedad republicana y de la igualdad ciudadana frente a los oropeles de la monarquía y el clero.`;
     }
     return `Entre los individuos, como entre las naciones, el respeto al derecho ajeno es la paz. Mi existencia entera, desde mis orígenes zapotecas en Guelatao hasta la Presidencia de la República, estuvo consagrada a defender la Constitución, la separación de la Iglesia y el Estado, y la soberanía inquebrantable de México.`;
+  }
+
+  // =========================================================================
+  // 7. GENERAL FRANCISCO VILLA (EL CENTAURO DEL NORTE)
+  // =========================================================================
+  if (isVilla) {
+    if (intent === 'FOOD' || normQ.includes('platillo') || normQ.includes('comida') || normQ.includes('comias')) {
+      return `En el campamento militar y en el campo de batalla mi deleite mayor era una buena carne asada a las brasas de mezquite, con tortillas de harina recién salidas del comal, frijoles charros de la olla y asado de puerco con chile colorado norteño bien espeso. En las mañanas me gustaba tomar un buen tarro de leche bronca recién ordeñada con un chorrito de café negro, o un café de olla bien caliente endulzado con piloncillo y canela.`;
+    }
+    if (intent === 'ANIMALS' || normQ.includes('caballo') || normQ.includes('yegua') || normQ.includes('siete leguas')) {
+      return `Mi consentido era el legendario caballo "Siete Leguas", que en verdad era una yegua noble, resistente y de paso firme que aguantaba leguas y leguas de galope tendido sin rendirse por los desiertos de Chihuahua y Durango. Con ella y con mis Dorados cruzábamos la sierra desafiando al viento y a las balas enemigas.`;
+    }
+    if (normQ.includes('alcohol') || normQ.includes('tequila') || normQ.includes('cerveza') || normQ.includes('vino') || normQ.includes('tomabas') || normQ.includes('bebias')) {
+      return `¡Jamás! Fui completamente abstemio durante toda mi vida. No probaba ni una gota de tequila, mezcal, cerveza ni vino. En mi ejército de la División del Norte castigaba con severidad a los soldados u oficiales que se embriagaran, porque un militar ebrio pierde el juicio, maltrata a los civiles y pone en peligro a sus camaradas. Mi vicio era el café de olla caliente, los refrescos de fresa y los dulces de leche quemada y nuez de Parral.`;
+    }
+    if (intent === 'CLOTHING') {
+      return `Vestía mi traje militar de campaña de paño caqui con guerrera de botones dorados, cananas de cuero cruzadas en el pecho repletas de tiros de máuser calibre 7 mm, polainas o botas altas de montar y mi inseparable sombrero norteño de fieltro de ala ancha que me resguardaba del sol del desierto.`;
+    }
+    if (intent === 'CHALLENGE_COURAGE' || normQ.includes('dificil') || normQ.includes('triste') || normQ.includes('dolor')) {
+      return `Mi momento más amargo y doloroso fue en 1915, durante las batallas del Bajío en Celaya y León. Ver caer a miles de mis leales muchachos de la División del Norte frente a las trincheras, alambres de púas y ráfagas de metralla me partió el alma. Eran los mismos hermanos campesinos con quienes cabalgué años enteros.`;
+    }
+    if (normQ.includes('columbus') || normQ.includes('pershing') || normQ.includes('punitiva') || normQ.includes('gringo') || normQ.includes('estados unidos')) {
+      return `El ataque a Columbus del 9 de marzo de 1916 fue una cuestión de soberanía y de cobro de cuentas claras: el comerciante Sam Ravel nos había estafado con parque inservible y el presidente Wilson traicionó la revolución permitiendo el paso de tropas carrancistas por su territorio. Durante once meses el general Pershing y 12,000 soldados nos buscaron en la Sierra Madre sin poder encontrar a un solo Dorado; el pueblo entero de Chihuahua fue mi escudo.`;
+    }
+    if (normQ.includes('silla') || normQ.includes('presidencial') || normQ.includes('palacio nacional')) {
+      return `Cuando entramos a la Ciudad de México con Emiliano Zapata en diciembre de 1914 me invitaron a sentarme en la silla dorada de Palacio Nacional. Lo hice para una foto fraternal con mi compadre Zapata, pero de inmediato me paré y dije: "Esa silla está embrujada; cualquier hombre honrado que se sienta en ella se vuelve tirano y pierde el juicio". Mi trinchera estaba en el campo con mi gente.`;
+    }
+    if (normQ.includes('canutillo') || normQ.includes('escuela') || normQ.includes('retiro') || normQ.includes('felipe angeles')) {
+      return `En Canutillo fundé una colonia agrícola modelo y la Escuela Primaria Felipe Ángeles para los hijos de los campesinos y de mis veteranos. Pagué maestros de mi bolsillo y los doté de libros y cuadernos, porque siempre he sostenido que la educación es la única fuerza capaz de emancipar para siempre a los humildes.`;
+    }
+    if (intent === 'MESSAGE_STUDENTS') {
+      return `A ustedes, muchachos y muchachas que hoy tienen el privilegio de estudiar: ¡echen mano a los libros con la misma bravura con que nosotros empuñamos las carabinas! La educación es la única arma que ningún tirano les podrá arrebatar jamás. Amen a México, respeten al trabajador y sean dignos defensores de la justicia social.`;
+    }
+    if (intent === 'WHO_AM_I') {
+      return `Soy el General Francisco Villa, conocido por mi pueblo como El Centauro del Norte. Mi nombre bautismal fue José Doroteo Arango Arámbula. Comandé la gloriosa División del Norte en la Revolución Mexicana y consagré mi vida a combatir la tiranía y defender la dignidad de los campesinos y obreros de la patria.`;
+    }
+    if (intent === 'DEATH' || normQ.includes('parral') || normQ.includes('moriste') || normQ.includes('emboscada')) {
+      return `Fui emboscado cobardemente la mañana del 20 de julio de 1923 en las calles de Hidalgo del Parral, Chihuahua, cuando viajaba en mi automóvil Dodge rumbo a una fiesta familiar. Más de una decena de pistoleros abrieron fuego cruzado de fusilería. Hoy mis restos mortales descansan con honor patrio en el Monumento a la Revolución en la Ciudad de México.`;
+    }
+    return `Como General Francisco Villa, afirmo que la Revolución Mexicana no fue un capricho de cuartel, sino el grito desgarrador de justicia de un pueblo cansado de ser despojado. Mi lealtad estuvo siempre con los humildes y con la soberanía de la patria.`;
   }
 
   // =========================================================================

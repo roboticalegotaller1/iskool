@@ -55,6 +55,22 @@ function getCharacterMouthConfig(name: string): CharacterAnatomicalMouth {
       teethColor: '#f2ede4'
     };
   }
+  if (norm.includes('villa') || norm.includes('doroteo') || norm.includes('arango') || norm.includes('centauro')) {
+    return {
+      x1: 490,
+      y1: 343,
+      cx: 516,
+      cy: 343,
+      x2: 542,
+      y2: 343,
+      maxOpening: 11,
+      cavityDarkColor: '#080102',
+      cavityMidColor: '#1f0306',
+      cavityRimColor: '#3d0b11',
+      lowerLipRimColor: 'rgba(145, 60, 50, 0.92)',
+      teethColor: '#ede5d8'
+    };
+  }
   if (norm.includes('hidalgo')) {
     return {
       x1: 456,
@@ -347,8 +363,8 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
         body: JSON.stringify({
           text: cleanText,
           voice: selectedVoice,
-          rate: 0.94, // Cadencia pausada, reflexiva y solemne de dama virreinal
-          pitch: gender === 'female' ? 0.98 : 1.0 // -2Hz para entonación madura, cálida y natural de adulta
+          rate: gender === 'female' ? 0.94 : 0.93, // Cadencia solemne y pausada (femenina virreinal o masculina militar)
+          pitch: gender === 'female' ? 0.98 : 0.96 // -2Hz para voz femenina adulta madura, -4Hz para voz masculina grave y autoritaria
         })
       });
 
