@@ -1,7 +1,7 @@
 ---
 tags: [iskool, arquitectura, smart-connections]
 archivo_origen: "src/types/index.ts"
-fecha_sincronizacion: "2026-09-17T01:12:33.979Z"
+fecha_sincronizacion: "2026-09-20T21:59:39.246Z"
 ---
 
 # index.ts
@@ -180,6 +180,20 @@ export interface Institution {
   settings?: SchoolSettings;
   governance?: SchoolGovernanceSettings;
   directorLimits?: DirectorLimitsSettings;
+  licensing?: {
+    tier: 'Enterprise School Network' | 'Standard Campus' | 'Growth';
+    planName: string;
+    isSoftwareOwner: false; // Garantiza en tipado que la institución es cliente licenciatario, no dueño del software
+    licenseKey: string;
+    licensee: string;
+    licensor: string;
+    contractedSeats: number;
+    assignedSeats: number;
+    validUntil: string;
+    billingCycle: 'Anual' | 'Mensual';
+    status: 'active' | 'trial' | 'past_due';
+    ipNotice: string;
+  };
 }
 
 /**
@@ -949,7 +963,7 @@ export interface StudentDeletionAuditLog {
 export interface TuitionPricing {
   id: string;
   school_id?: string;
-  level: 'primaria_baja' | 'primaria_alta' | 'secundaria' | 'preparatoria';
+  level: 'preescolar' | 'primaria' | 'primaria_baja' | 'primaria_alta' | 'secundaria' | 'preparatoria';
   name: string;
   description: string;
   monthly_fee: number;

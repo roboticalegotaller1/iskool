@@ -1,7 +1,7 @@
 ---
 tags: [iskool, arquitectura, smart-connections]
 archivo_origen: "supabase_functions.sql"
-fecha_sincronizacion: "2026-09-17T01:12:33.975Z"
+fecha_sincronizacion: "2026-09-20T21:59:39.242Z"
 ---
 
 # supabase_functions.sql
