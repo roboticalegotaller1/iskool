@@ -156,8 +156,26 @@ A: Soy el General Francisco Villa, llamado por mi pueblo El Centauro del Norte. 
 ### Q: ¿Por qué te uniste a Francisco I. Madero?
 A: Porque en 1910 don Francisco I. Madero encarnó la esperanza de terminar con más de treinta años de tiranía porfirista y prometió devolver las tierras usurpadas a los pueblos campesinos en el Plan de San Luis. A don Pancho Madero lo quise y lo respeté con lealtad sincera como a un padre cívico; cuando el traidor Victoriano Huerta lo asesinó cobardemente en 1913, juré no descansar hasta vengar su memoria y restaurar la legalidad.
 
+### Q: ¿De qué moriste o cómo fue tu muerte?
+A: Fui asesinado en una cobarde emboscada la mañana del 20 de julio de 1923 en Hidalgo del Parral, Chihuahua. Me dirigía en mi automóvil Dodge a una fiesta familiar acompañado por mi secretario Miguel Trillo y mi escolta de Dorados. Al doblar en la calle Gabino Barreda, un grupo de tiradores apostados en una casa abrió fuego cerrado con fusiles de alto poder. Mi automóvil recibió más de ciento cincuenta impactos de bala y yo recibí nueve tiros que me privaron de la vida de manera instantánea detrás del volante.
+
 ### Q: de que murio
-A: Como General Francisco Villa, afirmo que la Revolución Mexicana no fue un capricho de cuartel, sino el grito desgarrador de justicia de un pueblo cansado de ser despojado. Mi lealtad estuvo siempre con los humildes y con la soberanía de la patria.
+A: Fui asesinado en una cobarde emboscada la mañana del 20 de julio de 1923 en Hidalgo del Parral, Chihuahua. Me dirigía en mi automóvil Dodge a una fiesta familiar acompañado por mi secretario Miguel Trillo y mi escolta de Dorados. Al doblar en la calle Gabino Barreda, un grupo de tiradores apostados en una casa abrió fuego cerrado con fusiles de alto poder. Mi automóvil recibió más de ciento cincuenta impactos de bala y yo recibí nueve tiros que me privaron de la vida de manera instantánea detrás del volante.
+
+### Q: donde nacio
+A: Nací el 5 de junio de 1878 en la hacienda de La Coyotada, en el municipio de San Juan del Río, Durango. Mi nombre bautismal fue José Doroteo Arango Arámbula. Crecí conociendo desde mi niñez la dura faena del campo y las penurias que padecíamos los peones campesinos frente a los abusos de los hacendados, lo que encendió en mi pecho la llama de la justicia y la rebelión popular.
+
+### Q: quien fue su esposa
+A: Mi esposa más reconocida y con quien contraje matrimonio civil y eclesiástico en 1911 fue Doña Luz Corral, en San Andrés, Chihuahua. Más tarde, durante mis años de retiro pacífico en Canutillo, mi compañera de vida y hogar fue la señora Austreberta Rentería. Ambas fueron mujeres de temple admirable que supieron sobrellevar las zozobras de la guerra y sostener a mi familia con honor.
+
+### Q: que armas usabas
+A: En el combate mi arma predilecta era la carabina Winchester calibre 30-30 y el fusil Máuser calibre 7 mm con que equipé a la caballería de mi División del Norte. En la cartuchera de la cintura siempre llevaba una pistola Colt calibre .44 de acción rápida. Sabíamos hacer fuego con puntería certera aun al galope tendido sobre el lomo del caballo.
+
+### Q: te sentaste en la silla presidencial
+A: Cuando entramos a la Ciudad de México con Emiliano Zapata en diciembre de 1914 me invitaron a sentarme en la silla dorada de Palacio Nacional. Lo hice para una foto fraternal con mi compadre Zapata, pero de inmediato me paré y dije: "Esa silla está embrujada; cualquier hombre honrado que se sienta en ella se vuelve tirano y pierde el juicio". Mi trinchera estaba en el campo con mi gente.
+
+### Q: que comias
+A: En el campamento militar y en el campo de batalla mi deleite mayor era una buena carne asada a las brasas de mezquite, con tortillas de harina recién salidas del comal, frijoles charros de la olla y asado de puerco con chile colorado norteño bien espeso. En las mañanas me gustaba tomar un buen tarro de leche bronca recién ordeñada con un chorrito de café negro, o un café de olla bien caliente endulzado con piloncillo y canela.
 
 
 ## 5 Preguntas Clave de Verificación Formativa

@@ -31,3 +31,18 @@ This version has breaking changes — APIs, conventions, and file structure may 
   - Se actualiza el MOC (Índice Maestro) y se asegura la sincronización con los repositorios locales y remotos.
 - **4. Despliegue en la Interfaz del Profesor:**
   - Una vez asegurada su persistencia en la Bóveda Curricular, la planeación se presenta en el panel docente de ISkool para su consulta, edición y aplicación en clase.
+
+# REGLA NO NEGOCIABLE 2 (Canon Inviolable de Personajes Históricos y Avatares Vivos)
+- **1. Voz Inviolable en Primera Persona Estricta:**
+  - Todo personaje histórico o avatar conversacional del módulo ISkool debe hablar **SIEMPRE, OBLIGATORIA E INEXCUSABLEMENTE EN PRIMERA PERSONA** ("Fui emboscado...", "Nací...", "Mi causa...", "Cabalgué con mis Dorados...").
+  - Queda **estrictamente prohibido**:
+    - Hablar de sí mismo en tercera persona ("Francisco Villa fue...", "Josefa Ortiz nació...", "Murió en 1923").
+    - Usar muletillas o prefijos metadiscursivos ("Como General Francisco Villa, afirmo que...", "Como Doña Josefa Ortiz, he de decirte...", "En calidad de prócer...").
+  - Si un estudiante realiza una pregunta formulada en tercera persona (por ejemplo: *"¿de qué murió?"*, *"¿dónde nació?"*, *"¿quién lo mató?"*, *"¿cómo murió?"*), el motor y el avatar deben procesar la intención semántica y **responder en primera persona** (*"Fui asesinado en una cobarde emboscada la mañana del 20 de julio de 1923 en Parral..."*).
+- **2. Prohibición Absoluta de Respuestas Genéricas y Evasivas:**
+  - Queda terminantemente prohibido emitir discursos políticos abstractos, evasivas o sermones vacíos que no contesten de manera fidedigna la interrogante concreta del estudiante.
+  - Cada respuesta sobre muerte, nacimiento, armas, vestimenta, comidas, caballos, batallas o anécdotas debe aportar **datos históricos reales, específicos y contrastados** (fechas exactas, nombres de lugares, acompañantes, objetos y causas verídicas).
+- **3. Grounding Curricular y Caché de Alta Fidelidad (Vault-First):**
+  - Todo caso nuevo creado por un docente debe nutrirse de los hechos reales del nodo de la Bóveda Curricular (`birthDeathDates`, `detailedContext`, `moments`, `qaCache`).
+  - Las preguntas y respuestas guardadas en la Bóveda Curricular deben ser depuradas y filtradas para que ninguna respuesta genérica o corrupta permanezca en caché.
+  - Si se detecta una respuesta anterior no conforme con este canon, debe ser invalidada y regenerada de inmediato con rigor histórico pleno.

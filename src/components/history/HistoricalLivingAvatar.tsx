@@ -172,6 +172,21 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
     }
   }, []);
 
+  // Sincronizar mensaje inicial y reiniciar hilo cuando cambia el personaje seleccionado
+  useEffect(() => {
+    setMessages([
+      {
+        id: `init-${characterName}-${Date.now()}`,
+        sender: 'character',
+        text: initialGreeting || (isGeographicSite 
+          ? `Bienvenido a ${characterName}. Soy la memoria viva de este enclave histórico. Pregúntame sobre los acontecimientos, héroes y batallas que aquí tuvieron lugar.`
+          : `Soy ${characterName}. Con el honor y el deber republicano que rigieron mi vida, estoy aquí para responder a tus inquietudes históricas. ¿Qué deseas saber sobre nuestro tiempo?`),
+        isCached: true,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ]);
+  }, [characterName, isGeographicSite, initialGreeting]);
+
   const handleSaveApiKey = (key: string) => {
     if (typeof window !== 'undefined') {
       const cleanKey = key.trim();

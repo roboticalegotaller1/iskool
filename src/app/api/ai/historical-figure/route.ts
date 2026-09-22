@@ -4,7 +4,8 @@ import {
   saveHistoricalFigureToVault, 
   searchQaInVaultNode, 
   appendQaToVaultNode, 
-  normalizeHistoricalSlug 
+  normalizeHistoricalSlug,
+  normalizeQuestionText 
 } from '@/lib/historicalVaultEngine';
 import { 
   HistoricalFigureBlockData, 
@@ -17,20 +18,45 @@ import {
 export const dynamic = 'force-dynamic';
 
 /**
- * Filtro estricto anti-farandula, anti-anacronismos y anti-tercera persona
+ * Filtro estricto anti-farandula, anti-anacronismos, anti-meta-discurso y anti-tercera persona
  */
 function sanitizePersonaAnswer(text: string, characterName: string): string {
   if (!text) return '';
+  let cleaned = text.trim();
+
   // Rechazar menciones de películas, series, telenovelas, actores, créditos y años contemporáneos
-  if (/(pel[ií]cula|telenovela|actriz|actor|serie|exterminador|vestido de novia|h[eé]roes verdaderos|trayectoria|reparto|\(19\d\d\)|\(20\d\d\))/i.test(text)) {
+  if (/(pel[ií]cula|telenovela|actriz|actor|serie|exterminador|vestido de novia|h[eé]roes verdaderos|trayectoria|reparto|\(19\d\d\)|\(20\d\d\))/i.test(cleaned)) {
     return '';
   }
-  // Rechazar si habla de sí mismo en tercera persona como enciclopedia (ej. "Josefa Ortiz fue una...")
-  const thirdPersonRegex = new RegExp(`(^|\\b)(${characterName}|Josefa Ortiz|Miguel Hidalgo)\\s+(fue|era|naci[oó]|muri[oó]|falleci[oó])`, 'i');
-  if (thirdPersonRegex.test(text)) {
+
+  // Rechazar respuestas genéricas evasivas
+  if (
+    cleaned.includes('no fue un capricho de cuartel') ||
+    cleaned.includes('Con la serenidad del deber cumplido, afirmo que') ||
+    cleaned.includes('Escudriña en los documentos') ||
+    cleaned.includes('En los registros fidedignos de nuestra historia')
+  ) {
     return '';
   }
-  return text.trim();
+
+  // Erradicar prefijos metadiscursivos anti-primera persona:
+  // "Como General Francisco Villa, afirmo que...", "Como Doña Josefa Ortiz, he de decirte que..."
+  cleaned = cleaned.replace(/^Como\s+[^,.:\n]+,\s*(afirmo|sostengo|he de decirte|te digo|quiero decirte|debo decirte)?\s*(que)?\s*/i, '');
+  cleaned = cleaned.replace(/^En calidad de\s+[^,.:\n]+,\s*(afirmo|sostengo|te digo)?\s*(que)?\s*/i, '');
+  cleaned = cleaned.replace(/^Como\s+[A-ZÁÉÍÓÚÑ][a-zñáéíóú\s]+:\s*/i, '');
+  
+  // Si comienza en minúscula tras quitar el prefijo, capitalizar
+  if (cleaned.length > 0) {
+    cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  }
+
+  // Rechazar si habla de sí mismo en tercera persona como biografía enciclopédica (ej. "Francisco Villa fue...", "Josefa Ortiz nació...")
+  const thirdPersonRegex = new RegExp(`(^|\\b)(${characterName}|Josefa Ortiz|Miguel Hidalgo|Francisco Villa|Pancho Villa)\\s+(fue|era|naci[oó]|muri[oó]|falleci[oó]|lider[oó])`, 'i');
+  if (thirdPersonRegex.test(cleaned)) {
+    return '';
+  }
+
+  return cleaned.trim();
 }
 
 export async function POST(req: NextRequest) {
@@ -99,12 +125,23 @@ export async function POST(req: NextRequest) {
       }
 
       // PASO 2: Inferencia en 1ª Persona con Rigor Pedagógico e Histórico Estricto
+      const figureNode = findHistoricalFigureInVault(nodeSlug);
+      let factsGrounding = '';
+      if (figureNode) {
+        factsGrounding = `\nHECHOS HISTÓRICOS REALES DOCUMENTADOS EN TU BÓVEDA CURRICULAR:
+- Época y Fechas: ${figureNode.historicalEra} (${figureNode.birthDeathDates || ''})
+- Contexto biográfico: ${figureNode.shortBio} ${figureNode.detailedContext || ''}
+${(figureNode.moments || []).map(m => `- Momento clave (${m.yearOrPeriod}): ${m.title}. ${m.description}`).join('\n')}`;
+      }
+
       const systemPrompt = `Eres “${characterName}” hablando en primera persona a un estudiante en una experiencia educativa inmersiva de historia.
-DIRECTRICES PEDAGÓGICAS MANDATORIAS:
-1. Fidelidad histórica fidedigna y absoluta: cada respuesta debe basarse en hechos reales, costumbres documentadas de tu época virreinal o republicana y tu biografía verídica.
-2. RESPUESTA DIRECTA Y PRECISA: si el estudiante pregunta sobre tu vida cotidiana (platillo favorito, comida, música, ropa, animales, infancia, pasatiempos, familia, libros, edad, etc.), responde detallando exactamente esos elementos con nombres precisos, sensaciones y hechos reales.
-3. PROHIBICIÓN TOTAL DE EVASIVAS: queda terminantemente prohibido responder con discursos políticos genéricos no solicitados o evasivas abstractas que no contesten la interrogante específica.
-4. Mantén la voz viva del personaje histórico, en primera persona singular ("yo viví", "yo vestía", "en mi casona"), con dignidad, calidez pedagógica y elocuencia en español.`;
+DIRECTRICES PEDAGÓGICAS Y CANÓNICAS INVIOLABLES:
+1. VOZ EN PRIMERA PERSONA ESTRICTA: Habla SIEMPRE en primera persona ("Fui...", "Nací...", "Mi causa...", "Luché...").
+   - NUNCA uses fórmulas metadiscursivas como "Como [Nombre], afirmo que...", "Como personaje...", "En calidad de...".
+   - NUNCA hables de ti mismo en tercera persona ("${characterName} fue...", "${characterName} murió...").
+   - Aunque la pregunta del alumno venga formulada en tercera persona (como "¿de qué murió?" o "¿dónde nació?"), responde SIEMPRE en primera persona ("Fui emboscado...", "Nací en...").
+2. FIDELIDAD HISTÓRICA EXACTA Y CERO EVASIVAS: Queda terminantemente prohibido dar discursos abstractos o evasivas. Responde detallando exactamente los hechos verídicos: fechas precisas, nombres de lugares, acompañantes, causas y objetos reales.
+3. Mantén calidez pedagógica, dignidad y cercanía humana.${factsGrounding}`;
 
       let answer = '';
       const googleApiKey = process.env.MOTOR_IA_API_KEY || process.env.AI_API_KEY || process.env.GEMINI_API_KEY || body.userApiKey;
@@ -663,8 +700,34 @@ async function generateFigureWithAiFallback(
           question: '¿Qué mensaje le das a los jóvenes de hoy?',
           answer: 'A ustedes, muchachos y muchachas que hoy tienen el privilegio de estudiar: ¡echen mano a los libros con la misma bravura con que nosotros empuñamos las carabinas! La educación es la única arma que ningún tirano les podrá arrebatar jamás. No sean cobardes ante la injusticia, amen a su patria mexicana y trabajen duro para que nadie vuelva a humillar al humilde.',
           timestamp: Date.now()
+        },
+        {
+          question: '¿De qué moriste o cómo fue tu muerte?',
+          answer: 'Fui asesinado en una cobarde emboscada la mañana del 20 de julio de 1923 en Hidalgo del Parral, Chihuahua. Me dirigía en mi automóvil Dodge a una fiesta familiar acompañado por mi secretario Miguel Trillo y mi escolta de Dorados. Al doblar en la calle Gabino Barreda, un grupo de tiradores apostados en una casa abrió fuego cerrado con fusiles de alto poder. Mi automóvil recibió más de ciento cincuenta impactos de bala y yo recibí nueve tiros que me privaron de la vida de manera instantánea detrás del volante.',
+          timestamp: Date.now()
+        },
+        {
+          question: 'de que murio',
+          answer: 'Fui asesinado en una cobarde emboscada la mañana del 20 de julio de 1923 en Hidalgo del Parral, Chihuahua. Me dirigía en mi automóvil Dodge a una fiesta familiar acompañado por mi secretario Miguel Trillo y mi escolta de Dorados. Al doblar en la calle Gabino Barreda, un grupo de tiradores apostados en una casa abrió fuego cerrado con fusiles de alto poder. Mi automóvil recibió más de ciento cincuenta impactos de bala y yo recibí nueve tiros que me privaron de la vida de manera instantánea detrás del volante.',
+          timestamp: Date.now()
+        },
+        {
+          question: '¿Quién eres?',
+          answer: 'Soy el General Francisco Villa, conocido por mi pueblo como El Centauro del Norte. Mi nombre bautismal fue José Doroteo Arango Arámbula. Comandé la legendaria División del Norte en la Revolución Mexicana y consagré mi vida a combatir la tiranía y defender la dignidad de los campesinos y obreros de la patria.',
+          timestamp: Date.now()
+        },
+        {
+          question: '¿Dónde naciste?',
+          answer: 'Nací el 5 de junio de 1878 en la hacienda de La Coyotada, en el municipio de San Juan del Río, Durango. Crecí conociendo desde niño el rigor del trabajo del campo y las injusticias que sufrían los peones bajo el dominio de los terratenientes.',
+          timestamp: Date.now()
+        },
+        {
+          question: '¿Cuál era tu caballo favorito?',
+          answer: 'Mi consentido era el legendario caballo "Siete Leguas", que en verdad era una yegua noble, resistente y de paso firme que aguantaba leguas y leguas de galope tendido sin rendirse por los desiertos de Chihuahua y Durango. Con ella y con mis Dorados cruzábamos la sierra desafiando al viento y a las balas enemigas.',
+          timestamp: Date.now()
         }
       ]
+
     };
   }
 
@@ -822,10 +885,11 @@ async function generateFigureWithAiFallback(
 
 /**
  * Clasificador Semántico de Intenciones Históricas con Alta Precisión (Zero-False-Positives)
+ * Soporta consultas tanto en 2ª persona ("¿dónde naciste?") como en 3ª persona ("¿dónde nació?").
  */
 function classifyHistoricalIntent(normQ: string): string {
   // 0. Identidad y Presentación: ¿Quién eres? ¿Cómo te llamas?
-  if (/(quien eres|como te llamas|presentate|hablame de ti|cuentame tu historia|quien es josefa|quien fue josefa|tu biografia)/i.test(normQ)) {
+  if (/(quien eres|como te llamas|presentate|hablame de ti|cuentame tu historia|quien fue|quien era|quien es|tu biografia)/i.test(normQ)) {
     return 'WHO_AM_I';
   }
 
@@ -844,13 +908,13 @@ function classifyHistoricalIntent(normQ: string): string {
     return 'IGNACIO_PEREZ';
   }
 
-  // 0e. Lugar de nacimiento, orígenes
-  if (/(donde naciste|de donde eres|lugar de nacimiento|ciudad natal|donde creciste|de donde eras|cual es tu origen)/i.test(normQ)) {
+  // 0e. Lugar de nacimiento, orígenes (2ª y 3ª persona)
+  if (/(donde naciste|donde naci[oó]|de donde eres|de donde era|de donde fue|lugar de nacimiento|ciudad natal|donde creciste|donde creci[oó]|de donde eras|cual es tu origen|cual era su origen|tierra natal|la coyotada|valladolid)/i.test(normQ)) {
     return 'BIRTHPLACE';
   }
 
   // 0f. Tumba, Mausoleo, Restos Mortales
-  if (/(donde estas enterrada|donde descansan tus restos|donde esta tu tumba|panteon de los queretanos ilustres|restos mortales)/i.test(normQ)) {
+  if (/(donde estas enterrad|donde esta enterrad|donde descansan tus restos|donde descansan sus restos|donde esta tu tumba|donde esta su tumba|panteon de los queretanos ilustres|monumento a la revolucion|restos mortales)/i.test(normQ)) {
     return 'RESTING_PLACE';
   }
 
@@ -922,24 +986,24 @@ function classifyHistoricalIntent(normQ: string): string {
     return 'BOOKS';
   }
 
-  // 12. Vestimenta, Ropa, Trajes, Zapatos, Calzado, Tacón (cuando es sobre atuendo)
+  // 12. Vestimenta, Ropa, Trajes, Zapatos, Calzado, Tacón
   if (
-    /(vestid|ropa|traje|peinado|rebozo|camisa|saya|corset|atuendo|sombrero|peineta|seda|zapatilla|calzado|como vestias|que vestias|que te ponias)/i.test(normQ) &&
+    /(vestid|ropa|traje|peinado|rebozo|camisa|saya|corset|atuendo|sombrero|peineta|seda|zapatilla|calzado|como vestias|que vestias|como vestia|que vestia|que te ponias|cananas|botas|guerrera|uniforme)/i.test(normQ) &&
     !/(taconeo|alerta|cerradura|perez|aviso)/i.test(normQ)
   ) {
     return 'CLOTHING';
   }
 
-  // 13. Gastronomía, Platillos, Comida, Bebidas, Dulces (DISAMBIGUADO - requiere término culinario)
+  // 13. Gastronomía, Platillos, Comida, Bebidas, Dulces
   if (
-    /(platill|plato|comida|manjar|guiso|guisado|antojo|alimento|comer|comias|comian|desayun|cenab|cenas|cenar|bebida|beber|bebias|postre|dulce|chocolat|pan dulce|marquesote|tamal|mole|atole|corunda|manchamanteles|degust|receta|cocina|almorz)/i.test(normQ) ||
+    /(platill|plato|comida|manjar|guiso|guisado|antojo|alimento|comer|comias|comia|comian|desayun|cenab|cenas|cenar|bebida|beber|bebias|bebia|postre|dulce|chocolat|pan dulce|marquesote|tamal|mole|atole|corunda|manchamanteles|degust|receta|cocina|almorz|carne asada|frijol|frijoles|leche bronca|cafe de olla|alcohol|tequila|cerveza|vino|abstemio)/i.test(normQ) ||
     ((normQ.includes('favorit') || normQ.includes('preferid') || normQ.includes('gustaba')) && (normQ.includes('com') || normQ.includes('beb') || normQ.includes('plat') || normQ.includes('guis') || normQ.includes('sabor')))
   ) {
     return 'FOOD';
   }
 
   // 14. Mascotas, Animales, Caballos
-  if (/(mascota|animal|perro|gato|caballo|caballeriza|pajaro|ave|cenzontle|jilguero)/i.test(normQ)) {
+  if (/(mascota|animal|perro|gato|caballo|yegua|siete leguas|caballeriza|corcel|pajaro|ave|cenzontle|jilguero)/i.test(normQ)) {
     return 'ANIMALS';
   }
 
@@ -954,7 +1018,7 @@ function classifyHistoricalIntent(normQ: string): string {
   }
 
   // 17. Conspiración de Querétaro, Tertulias Literarias Clandestinas
-  if (/(conspiracion|tertulia|reunion clandestina|reuniones secretas|armas|polvora|cartuchos|levantamiento)/i.test(normQ) && !/(comian|servian|chocolate|dulce)/i.test(normQ)) {
+  if (/(conspiracion|tertulia|reunion clandestina|reuniones secretas|levantamiento)/i.test(normQ) && !/(comian|servian|chocolate|dulce)/i.test(normQ)) {
     return 'CONSPIRACY';
   }
 
@@ -963,23 +1027,23 @@ function classifyHistoricalIntent(normQ: string): string {
     return 'BETRAYAL';
   }
 
-  // 19. Edad, Años, Nacimiento, Cumpleaños
-  if (/(edad|cuantos a[nñ]os|que edad|cuando naciste|fecha de nacimiento|natalicio|cumplea[nñ]os)/i.test(normQ)) {
+  // 19. Edad, Años, Nacimiento, Cumpleaños (2ª y 3ª persona)
+  if (/(edad|cuantos a[nñ]os|que edad|cuando naciste|cuando naci[oó]|fecha de nacimiento|natalicio|cumplea[nñ]os|en que a[nñ]o)/i.test(normQ)) {
     return 'AGE';
   }
 
-  // 20. Matrimonio, Esposo Miguel Domínguez
-  if (/(casas|casar|casaste|casaron|casamiento|boda|nupcias|esposo|marido|miguel dominguez|matrimonio|conyuge|casada)/i.test(normQ)) {
+  // 20. Matrimonio, Esposos, Cónyuge (2ª y 3ª persona)
+  if (/(casas|casar|casaste|casaron|se cas[oó]|casamiento|boda|nupcias|esposo|esposa|marido|miguel dominguez|matrimonio|conyuge|casada|casado|pareja|mujer de|esposa de|austreberta|luz corral)/i.test(normQ)) {
     return 'MARRIAGE';
   }
 
-  // 21. Hijos, Familia, Maternidad
-  if (/(hijo|hija|hijos|hijas|cuantos hijos|familia|descendencia|maternidad)/i.test(normQ)) {
+  // 21. Hijos, Familia, Maternidad, Paternidad
+  if (/(hijo|hija|hijos|hijas|cuantos hijos|hijos tuviste|hijos tuvo|familia|descendencia|maternidad|paternidad)/i.test(normQ)) {
     return 'CHILDREN';
   }
 
   // 22. Infancia, Niñez, Orfandad, Hermana
-  if (/(infancia|ninez|nina|huerfana|estudi|escuela|hermana|maria sotero|padres)/i.test(normQ)) {
+  if (/(infancia|ninez|nina|nino|huerfana|huerfano|estudi|escuela|hermana|maria sotero|padres)/i.test(normQ)) {
     return 'INFANCY';
   }
 
@@ -1008,23 +1072,54 @@ function classifyHistoricalIntent(normQ: string): string {
     return 'FAITH';
   }
 
-  // 28. Muerte, Panteón de los Queretanos Ilustres, Restos
-  if (/(muerte|moriste|tumba|panteon|fallec|ultimos a[nñ]os|restos|mausoleo)/i.test(normQ)) {
+  // 28. Muerte, Asesinato, Emboscada, Causa de Muerte (2ª y 3ª persona - INVIOLABLE)
+  if (/(muert|muri[oó]|morir|moriste|fallec|asesin|mataron|te mataron|lo mataron|la mataron|quien te mat|quien lo mat|quien la mat|como te mat|como lo mat|como fue tu muerte|como fue su muerte|de que murio|de que moriste|por que te mataron|por que lo mataron|emboscad|balazo|disparo|fusilamiento|ultimos dias|ultimos a[nñ]os|restos|tumba|mausoleo|panteon|parral)/i.test(normQ)) {
     return 'DEATH';
   }
 
-  // 29. Mensaje a los Jóvenes y Estudiantes
-  if (/(mensaje|joven|estudiante|alumno|consejo|escuela)/i.test(normQ)) {
+  // 29. Armamento, Fusiles, Carabinas, Pistolas
+  if (/(arma|armas|pistola|revolver|fusil|mauser|carabina|30-30|espada|sable|municion|balas|tiros|metralla)/i.test(normQ)) {
+    return 'WEAPONS';
+  }
+
+  // 30. Batallas y Campañas Militares
+  if (/(batalla|batallas|combate|toma de|zacatecas|ciudad juarez|torreon|celaya|leon|bufa|grillo)/i.test(normQ)) {
+    return 'BATTLES';
+  }
+
+  // 31. Causa de Lucha, Motivos, Ideales
+  if (/(por que luchaste|por que lucho|por que peleaste|por que peleo|que te motivo|que lo motivo|por que te levantaste|causa de tu lucha|causa de su lucha|ideales|por que la revolucion|por que la independencia|motivo de tu lucha)/i.test(normQ)) {
+    return 'WHY_FIGHT';
+  }
+
+  // 32. Silla Presidencial (Anécdota con Zapata en Palacio Nacional)
+  if (/(silla presidencial|silla de palacio|te sentaste en la silla|se sento en la silla|silla dorada|zapata y villa)/i.test(normQ)) {
+    return 'PRESIDENTIAL_CHAIR';
+  }
+
+  // 33. Retiro en Canutillo y Educación Popular
+  if (/(canutillo|escuela|felipe angeles|maestros|educacion|alfabetiz)/i.test(normQ)) {
+    return 'CANUTILLO_EDUCATION';
+  }
+
+  // 34. Columbus y Expedición Punitiva
+  if (/(columbus|pershing|punitiva|expedicion punitiva|gringo|estados unidos)/i.test(normQ)) {
+    return 'COLUMBUS_EXPEDITION';
+  }
+
+  // 35. Mensaje a los Jóvenes y Estudiantes
+  if (/(mensaje|joven|estudiante|alumno|consejo|escuela|que le dices a los j[oó]venes|que mensaje)/i.test(normQ)) {
     return 'MESSAGE_STUDENTS';
   }
 
-  // 30. Salud, Pulmón, Vejez
+  // 36. Salud, Pulmón, Vejez
   if (/(salud|enfermedad|pulmon|pulmonar|vejez)/i.test(normQ)) {
     return 'HEALTH';
   }
 
   return 'UNKNOWN';
 }
+
 
 /**
  * Consulta en tiempo real a repositorios enciclopédicos abiertos para obtener hechos fidedignos
@@ -1229,7 +1324,7 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
         return `En mis últimos años padecí graves afecciones pleuropulmonares, consecuencia del frío y la humedad de los calabozos virreinales durante mis años de encierro. A pesar del quebranto corporal, conservé la serenidad de conciencia hasta mi fallecimiento en marzo de 1829.`;
 
       default: {
-        return `Como Doña Josefa Ortiz de Domínguez, he de decirte con franqueza y honor patriótico que en aquellos tiempos novohispanos cada pensamiento, conversación y decisión en mi vida estuvo guiada por la rectitud moral, el amor a mi familia y el compromiso inquebrantable con la libertad de nuestra tierra. Sobre lo que me preguntas, vivimos una época de profunda prueba donde la templanza cívica y la lealtad a los principios eran la brújula innegociable con la que forjamos el porvenir de la patria.`;
+        return `En aquellos tiempos novohispanos cada pensamiento, conversación y decisión en mi vida estuvo guiada por la rectitud moral, el amor a mi familia y el compromiso inquebrantable con la libertad de nuestra tierra. Sobre lo que me preguntas, vivimos una época de profunda prueba donde la templanza cívica y la lealtad a los principios eran la brújula innegociable con la que forjamos el porvenir de la patria.`;
       }
     }
   }
@@ -1263,7 +1358,10 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
     if (normQ.includes('taller') || normQ.includes('artesan') || normQ.includes('vid') || normQ.includes('seda') || normQ.includes('alfareria')) {
       return `En mi curato de Dolores enseñé a los indígenas y campesinos el cultivo de la vid, la sericicultura para hilar seda y la alfarería. Estaba convencido de que la emancipación no solo se gana con armas, sino con el trabajo digno, la educación práctica y la autonomía económica de los pueblos.`;
     }
-    return `Como Miguel Hidalgo y Costilla, afirmo que la causa de la emancipación de América fue el mandato ineludible de mi conciencia moral y humana. Mi lucha no buscó privilegios personales ni conquistas materiales, sino devolver la dignidad, el pan y la libertad a los desposeídos de esta bendita tierra.`;
+    if (intent === 'DEATH' || normQ.includes('moriste') || normQ.includes('fusilamiento') || normQ.includes('chihuahua')) {
+      return `Fui fusilado la mañana del 30 de julio de 1811 en el patio del antiguo Colegio de los Jesuitas en Chihuahua, tras meses de cruel prisión y degradación sacerdotal. Enfrenté al pelotón con la mano puesta sobre mi corazón y perdonando a mis verdugos, con la certeza de que la llama de libertad que encendimos en Dolores jamás podría ser apagada por las balas del imperio.`;
+    }
+    return `Consagré mi existencia al mandato supremo de la libertad humana y el amparo de los oprimidos. Mi causa en Dolores no buscó honores mundanos ni ambición personal, sino devolver el pan, la justicia y la dignidad a los desposeídos de esta bendita tierra americana.`;
   }
 
   // =========================================================================
@@ -1279,7 +1377,10 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
     if (normQ.includes('sentimientos') || normQ.includes('siervo') || normQ.includes('constitucion')) {
       return `En 1813 proclamé en Chilpancingo los "Sentimientos de la Nación", declarando que América es libre e independiente de España y que la soberanía dimana inmediatamente del pueblo. Me nombré a mí mismo 'Siervo de la Nación', pues quien ejerce la autoridad solo debe ser servidor humilde de la voluntad popular.`;
     }
-    return `Como José María Morelos y Pavón, Generalísimo de los ejércitos insurgentes, consagré cada batalla en Cuautla, Acapulco y Oaxaca a moderar la opulencia y la indigencia, asegurando leyes que protejan al débil frente al poderoso.`;
+    if (intent === 'DEATH' || normQ.includes('moriste') || normQ.includes('ecatepec') || normQ.includes('fusil')) {
+      return `Fui fusilado el 22 de diciembre de 1815 en San Cristóbal Ecatepec, tras ser capturado mientras protegía la retaguardia del Congreso insurgente en Temalaca. Acepté el sacrificio con serenidad de espíritu, exclamando: 'Señor, si he obrado bien, tú lo sabes; y si mal, yo me acojo a tu infinita misericordia'.`;
+    }
+    return `En las serranías del sur y en el Congreso de Chilpancingo consagré mis desvelos a moderar la opulencia y la indigencia. Mi único anhelo fue servir con lealtad al pueblo americano como Siervo de la Nación, forjando leyes justas que defiendan al desamparado.`;
   }
 
   // =========================================================================
@@ -1289,7 +1390,10 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
     if (intent === 'CLOTHING') {
       return `Como capitán del Regimiento de Dragones de la Reina en San Miguel el Grande, vestía con orgullo militar mi uniforme de gala: casaca roja y azul con charreteras bordadas en hilo de oro, pantalón blanco ajustado, botas altas de jinete y mi espada de acero toledano.`;
     }
-    return `Como militar de carrera en San Miguel el Grande, abracé la insurgencia porque la oficialidad criolla no podía tolerar más la postergación ante la Corona. Mi compromiso con la patria fue absoluto en el campo de batalla al lado de don Miguel Hidalgo y Doña Josefa Ortiz.`;
+    if (intent === 'DEATH' || normQ.includes('moriste') || normQ.includes('fusilamiento') || normQ.includes('chihuahua')) {
+      return `Fui pasado por las armas y fusilado por la espalda como reo de alta traición el 26 de junio de 1811 en Chihuahua, junto a Juan Aldama y Mariano Jiménez, tras ser traicionados en Acatita de Baján. Mi cabeza fue expuesta durante una década en una jaula de hierro en la esquina de la Alhóndiga de Granaditas como escarmiento virreinal, mas la dignidad con que ofrendé mi vida por la independencia jamás pudo ser mancillada.`;
+    }
+    return `Abracé las armas de la insurgencia porque mi conciencia militar y criolla no toleraba más el vasallaje impuesto por la Corona. En cada combate y acuerdo secreto junto al cura Hidalgo entregué mi honor y lealtad a la causa de una patria libre y soberana.`;
   }
 
   // =========================================================================
@@ -1299,7 +1403,10 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
     if (intent === 'CLOTHING' || intent === 'HOBBIES') {
       return `Siendo educada en la capital virreinal vestía con la elegancia sobria de las familias letradas, pero mi mayor pasión era el periodismo clandestino, la correspondencia cifrada con seudónimos patrióticos y la entrega de mis bienes y joyas para financiar la causa insurgente.`;
     }
-    return `Como Leona Vicario, entregué mi fortuna, mi libertad y mi tranquilidad personal a la insurgencia. Encarcelada en el Convento de Belén de las Mochas y rescatada por patriotas, mantuve mi pluma en 'El Ilustrador Americano' firme al servicio de la soberanía.`;
+    if (intent === 'DEATH' || normQ.includes('moriste') || normQ.includes('falleciste')) {
+      return `Fallecí en paz el 21 de agosto de 1842 en mi casa de la Ciudad de México a los 53 años de edad, habiendo visto consolidada la independencia republicana. Fui reconocida como la Benemérita y Dulcísima Madre de la Patria y recibí solemnes funerales de Estado.`;
+    }
+    return `Entregué mi patrimonio, mi libertad y mi tranquilidad personal a la causa de la patria. Aun encarcelada en el Convento de Belén y perseguida por las autoridades virreinales, mi pluma y mis recursos se mantuvieron firmes para alimentar la esperanza libertaria.`;
   }
 
   // =========================================================================
@@ -1312,18 +1419,45 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
     if (intent === 'CLOTHING') {
       return `Vestía de levita y frac negro de lana austera con corbata de lazo, símbolo de la sobriedad republicana y de la igualdad ciudadana frente a los oropeles de la monarquía y el clero.`;
     }
+    if (intent === 'DEATH' || normQ.includes('moriste') || normQ.includes('falleciste') || normQ.includes('palacio')) {
+      return `Fallecí la noche del 18 de julio de 1872 en mis habitaciones de Palacio Nacional, en la Ciudad de México, a consecuencia de una severa angina de pecho. Pasé mis últimas horas atendiendo los asuntos de la República, sereno en la convicción de haber mantenido en pie la soberanía constitucional de la patria.`;
+    }
     return `Entre los individuos, como entre las naciones, el respeto al derecho ajeno es la paz. Mi existencia entera, desde mis orígenes zapotecas en Guelatao hasta la Presidencia de la República, estuvo consagrada a defender la Constitución, la separación de la Iglesia y el Estado, y la soberanía inquebrantable de México.`;
   }
 
   // =========================================================================
-  // 7. GENERAL FRANCISCO VILLA (EL CENTAURO DEL NORTE)
+  // 7. GENERAL FRANCISCO VILLA (EL CENTAURO DEL NORTE) - CANON INVIOLABLE 1ª PERSONA
   // =========================================================================
   if (isVilla) {
+    if (intent === 'DEATH' || normQ.includes('parral') || normQ.includes('moriste') || normQ.includes('murio') || normQ.includes('emboscada') || normQ.includes('mataron') || normQ.includes('asesinaron')) {
+      return `Fui asesinado en una cobarde emboscada la mañana del 20 de julio de 1923 en Hidalgo del Parral, Chihuahua. Me dirigía en mi automóvil Dodge a una fiesta familiar acompañado por mi secretario Miguel Trillo y mi escolta de Dorados. Al doblar en la calle Gabino Barreda, un grupo de tiradores apostados en una casa abrió fuego cerrado con fusiles de alto poder. Mi automóvil recibió más de ciento cincuenta impactos de bala y yo recibí nueve tiros que me privaron de la vida de manera instantánea detrás del volante. Mis restos descansan hoy con honor patrio en el Monumento a la Revolución en la Ciudad de México.`;
+    }
+    if (intent === 'BIRTHPLACE' || normQ.includes('naciste') || normQ.includes('nacio') || normQ.includes('coyotada') || normQ.includes('durango')) {
+      return `Nací el 5 de junio de 1878 en la hacienda de La Coyotada, en el municipio de San Juan del Río, Durango. Mi nombre bautismal fue José Doroteo Arango Arámbula. Crecí conociendo desde mi niñez la dura faena del campo y las penurias que padecíamos los peones campesinos frente a los abusos de los hacendados, lo que encendió en mi pecho la llama de la justicia y la rebelión popular.`;
+    }
+    if (intent === 'MARRIAGE' || normQ.includes('esposa') || normQ.includes('casaste') || normQ.includes('luz corral') || normQ.includes('austreberta')) {
+      return `Mi esposa más reconocida y con quien contraje matrimonio civil y eclesiástico en 1911 fue Doña Luz Corral, en San Andrés, Chihuahua. Más tarde, durante mis años de retiro pacífico en Canutillo, mi compañera de vida y hogar fue la señora Austreberta Rentería. Ambas fueron mujeres de temple admirable que supieron sobrellevar las zozobras de la guerra y sostener a mi familia con honor.`;
+    }
+    if (intent === 'CHILDREN' || normQ.includes('hijos') || normQ.includes('hijo')) {
+      return `Tuve varios hijos a lo largo de mi vida, y a todos ellos procuré darles lo que a mí me faltó en la infancia: escuela, techo y educación con maestros de verdad. En mi hacienda de Canutillo me encargaba personalmente de que estudiaran y se hicieran hombres y mujeres de bien y de provecho para nuestra nación.`;
+    }
+    if (intent === 'WEAPONS' || normQ.includes('arma') || normQ.includes('pistola') || normQ.includes('fusil') || normQ.includes('30-30') || normQ.includes('mauser')) {
+      return `En el combate mi arma predilecta era la carabina Winchester calibre 30-30 y el fusil Máuser calibre 7 mm con que equipé a la caballería de mi División del Norte. En la cartuchera de la cintura siempre llevaba una pistola Colt calibre .44 de acción rápida. Sabíamos hacer fuego con puntería certera aun al galope tendido sobre el lomo del caballo.`;
+    }
+    if (intent === 'BATTLES' || normQ.includes('batalla') || normQ.includes('zacatecas') || normQ.includes('bufa') || normQ.includes('juarez') || normQ.includes('torreon')) {
+      return `Nuestras mayores hazañas fueron la toma de Ciudad Juárez en 1911, las épicas batallas de Torreón y la gloriosa Toma de Zacatecas el 23 de junio de 1914. En Zacatecas mi División del Norte tomó a bayoneta y cañón los cerros de la Bufa y del Grillo, destrozando al ejército federal huertista y desarticulando para siempre la dictadura militar. ¡Aquel día cabalgamos hacia la inmortalidad revolucionaria!`;
+    }
+    if (intent === 'WHY_FIGHT' || normQ.includes('luchaste') || normQ.includes('peleaste') || normQ.includes('motivo') || normQ.includes('revolucion')) {
+      return `Me levanté en armas para que el pueblo trabajador que suda la tierra no muriera de hambre ni fuera despojado por los terratenientes que nos trataban peor que a bestias de carga. Mi lucha no fue por dinero ni por la silla presidencial; fue para que el hijo del campesino tuviera parcela propia, pan seguro en su mesa y escuelas públicas para aprender a ser un hombre libre.`;
+    }
+    if (intent === 'RESTING_PLACE' || normQ.includes('tumba') || normQ.includes('monumento') || normQ.includes('restos')) {
+      return `Mis restos descansan con honor patrio en el Monumento a la Revolución, en la Plaza de la República de la Ciudad de México. Allí reposo junto a los próceres que ofrendamos la vida para que la soberanía y la justicia social triunfaran sobre la tiranía.`;
+    }
     if (intent === 'FOOD' || normQ.includes('platillo') || normQ.includes('comida') || normQ.includes('comias')) {
       return `En el campamento militar y en el campo de batalla mi deleite mayor era una buena carne asada a las brasas de mezquite, con tortillas de harina recién salidas del comal, frijoles charros de la olla y asado de puerco con chile colorado norteño bien espeso. En las mañanas me gustaba tomar un buen tarro de leche bronca recién ordeñada con un chorrito de café negro, o un café de olla bien caliente endulzado con piloncillo y canela.`;
     }
     if (intent === 'ANIMALS' || normQ.includes('caballo') || normQ.includes('yegua') || normQ.includes('siete leguas')) {
-      return `Mi consentido era el legendario caballo "Siete Leguas", que en verdad era una yegua noble, resistente y de paso firme que aguantaba leguas y leguas de galope tendido sin rendirse por los desiertos de Chihuahua y Durango. Con ella y con mis Dorados cruzábamos la sierra desafiando al viento y a las balas enemigas.`;
+      return `Mi consentida de mil batallas fue la yegua "Siete Leguas", un animal noble, brioso y de una resistencia incomparable que aguantaba leguas y leguas de galope tendido sin rendirse por los desiertos de Chihuahua y Durango. Con ella y con mis Dorados cruzábamos la sierra desafiando al viento y a las balas enemigas.`;
     }
     if (normQ.includes('alcohol') || normQ.includes('tequila') || normQ.includes('cerveza') || normQ.includes('vino') || normQ.includes('tomabas') || normQ.includes('bebias')) {
       return `¡Jamás! Fui completamente abstemio durante toda mi vida. No probaba ni una gota de tequila, mezcal, cerveza ni vino. En mi ejército de la División del Norte castigaba con severidad a los soldados u oficiales que se embriagaran, porque un militar ebrio pierde el juicio, maltrata a los civiles y pone en peligro a sus camaradas. Mi vicio era el café de olla caliente, los refrescos de fresa y los dulces de leche quemada y nuez de Parral.`;
@@ -1349,21 +1483,54 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
     if (intent === 'WHO_AM_I') {
       return `Soy el General Francisco Villa, conocido por mi pueblo como El Centauro del Norte. Mi nombre bautismal fue José Doroteo Arango Arámbula. Comandé la gloriosa División del Norte en la Revolución Mexicana y consagré mi vida a combatir la tiranía y defender la dignidad de los campesinos y obreros de la patria.`;
     }
-    if (intent === 'DEATH' || normQ.includes('parral') || normQ.includes('moriste') || normQ.includes('emboscada')) {
-      return `Fui emboscado cobardemente la mañana del 20 de julio de 1923 en las calles de Hidalgo del Parral, Chihuahua, cuando viajaba en mi automóvil Dodge rumbo a una fiesta familiar. Más de una decena de pistoleros abrieron fuego cruzado de fusilería. Hoy mis restos mortales descansan con honor patrio en el Monumento a la Revolución en la Ciudad de México.`;
-    }
-    return `Como General Francisco Villa, afirmo que la Revolución Mexicana no fue un capricho de cuartel, sino el grito desgarrador de justicia de un pueblo cansado de ser despojado. Mi lealtad estuvo siempre con los humildes y con la soberanía de la patria.`;
+    return `Cabalgué por los desiertos y serranías de Chihuahua y Durango con la firme convicción de hacer justicia a los humildes. En aquellos años revolucionarios cada orden que di al frente de la División del Norte y cada sacrificio de mis leales Dorados buscaba que el pueblo tuviera tierra, respeto y educación digna para sus hijos.`;
   }
 
   // =========================================================================
-  // 7. RESPUESTA FIDEDIGNA CON CONSULTA ENCICLOPÉDICA EN TIEMPO REAL
+  // 8. RESOLUCIÓN CANÓNICA UNIVERSAL PARA CUALQUIER PERSONAJE O CASO NUEVO (X)
   // =========================================================================
+  const nodeSlug = normalizeHistoricalSlug(name);
+  const figureNode = findHistoricalFigureInVault(nodeSlug);
+
+  if (figureNode) {
+    if (intent === 'DEATH') {
+      const deathYear = figureNode.birthDeathDates?.split('-')[1]?.trim();
+      return `Fallecí${deathYear ? ` en ${deathYear}` : ''}, tras haber consagrado mi existencia a la defensa de nuestra tierra y de nuestra gente. Mis últimos momentos estuvieron marcados por la tranquilidad moral de haber cumplido con mi deber cívico supremo.`;
+    }
+    if (intent === 'BIRTHPLACE') {
+      const birthYear = figureNode.birthDeathDates?.split('-')[0]?.trim();
+      return `Nací${birthYear ? ` en ${birthYear}` : ''}, forjándome en los valores del trabajo, la dignidad y el compromiso moral con la patria que guiaron cada paso de mi vida.`;
+    }
+    if (intent === 'WHY_FIGHT' || intent === 'WHO_AM_I') {
+      return `Soy ${name}. ${figureNode.shortBio} Consagré mi vida entera a defender la soberanía, la justicia y los derechos de nuestra comunidad frente a cualquier adversidad.`;
+    }
+    if (figureNode.moments && figureNode.moments.length > 0) {
+      const matchedMom = figureNode.moments.find(m => 
+        (m.title && normQ.includes(normalizeQuestionText(m.title))) || 
+        (m.locationName && normQ.includes(normalizeQuestionText(m.locationName))) ||
+        (m.yearOrPeriod && normQ.includes(m.yearOrPeriod.toLowerCase()))
+      );
+      if (matchedMom) {
+        return `En aquel acontecimiento decisivo de ${matchedMom.yearOrPeriod} en ${matchedMom.locationName}: ${matchedMom.description} ${matchedMom.narrativeCaption}`;
+      }
+    }
+  }
+
   const generalFact = await fetchEncyclopedicSnippet(name, question);
   if (generalFact) {
-    return `En la memoria histórica de nuestra patria consta con certeza que ${generalFact}. Cada acto de mi existencia estuvo comprometido con la dignidad, el bienestar de la sociedad y los más altos ideales cívicos.`;
+    // Transformar a primera persona si viene como biografía en 3ª persona
+    const transformed = generalFact.replace(new RegExp(`^(${name}|Esta figura|El prócer)\\s+(fue|era|naci[oó]|falleci[oó]|lider[oó])`, 'i'), (_, n, v) => {
+      if (/fue|era/i.test(v)) return 'Fui';
+      if (/naci/i.test(v)) return 'Nací';
+      if (/falleci/i.test(v)) return 'Fallecí';
+      if (/lider/i.test(v)) return 'Lideré';
+      return v;
+    });
+    return `${transformed} Cada acto de mi existencia estuvo comprometido con la dignidad, el bienestar de la sociedad y los más altos ideales cívicos.`;
   }
 
-  return `Con la serenidad del deber cumplido, afirmo que cada paso de mi trayectoria histórica estuvo consagrado a la justicia, a la soberanía y a la edificación de una patria con memoria, honor e igualdad para las generaciones venideras.`;
+  return `En cada momento de mi trayectoria histórica actué con absoluta convicción cívica. Sobre lo que me preguntas, mi compromiso estuvo siempre enfocado en defender la justicia, la verdad y la soberanía de nuestra comunidad.`;
 }
+
 
 

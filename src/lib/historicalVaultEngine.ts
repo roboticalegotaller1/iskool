@@ -462,6 +462,103 @@ ${q.options.map((opt, oIdx) => `- [${oIdx === q.correctIndex ? 'x' : ' '}] ${opt
 }
 
 /**
+ * Validador estricto para rechazar respuestas genéricas, evasivas, con marcas
+ * o que violen el canon de 1ª persona estricta.
+ */
+export function isCorruptOrGenericPersonaAnswer(answer: string): boolean {
+  if (!answer || answer.trim().length < 20) return true;
+  
+  const text = answer.trim();
+
+  // Prefijos metadiscursivos prohibidos ("Como General...", "Como Doña Josefa...", etc.)
+  if (/^Como\s+[A-ZÁÉÍÓÚÑ]/i.test(text)) return true;
+  if (text.includes('no fue un capricho de cuartel')) return true;
+  if (text.includes('Con la serenidad del deber cumplido, afirmo que')) return true;
+  if (text.includes('Como General Francisco Villa')) return true;
+  if (text.includes('Como Doña Josefa')) return true;
+  if (text.includes('Como Miguel Hidalgo')) return true;
+  if (text.includes('Como José María Morelos')) return true;
+  if (text.includes('Como Leona Vicario')) return true;
+  if (text.includes('Como Ignacio Allende')) return true;
+
+  // Evasivas genéricas
+  if (
+    text.includes('Escudriña en los documentos') ||
+    text.includes('Escudrina en los documentos') ||
+    text.includes('miro con beneplácito') ||
+    text.includes('Respecto a lo que me interrogas sobre') ||
+    text.includes('he de responderte en primera persona y con la verdad histórica') ||
+    text.includes('Escudriña en nuestras memorias') ||
+    text.includes('Escudrina en nuestras memorias') ||
+    text.includes('En aquellos años definitorios en Querétaro') ||
+    text.includes('Frente a tu interrogante, ten por seguro') ||
+    text.includes('En los registros documentales de nuestra historia patria consta que') ||
+    text.includes('En los registros fidedignos de nuestra historia patria consta que')
+  ) {
+    return true;
+  }
+
+  // Anacronismos y farándula
+  if (
+    text.includes('exterminador') ||
+    text.includes('El vestido de novia') ||
+    text.includes('película animada') ||
+    text.includes('película') ||
+    text.includes('Héroes verdaderos') ||
+    text.includes('Trayectoria') ||
+    text.includes('Alicia de Roc') ||
+    /\(19\d\d\)|\(20\d\d\)/.test(text)
+  ) {
+    return true;
+  }
+
+  // Habla en 3ª persona sobre sí mismo
+  if (/^(Francisco Villa|Josefa Ortiz|Miguel Hidalgo|Benito Ju[aá]rez|Emiliano Zapata)\s+(fue|era|naci[oó]|muri[oó]|falleci[oó])/i.test(text)) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Comparador temático/semántico para preguntas clave de historia
+ */
+export function matchesHistoricalTheme(q1: string, q2: string): boolean {
+  const norm1 = normalizeQuestionText(q1);
+  const norm2 = normalizeQuestionText(q2);
+
+  // Muerte / Causa de muerte / Asesinato
+  const deathRegex = /(muert|muri[oó]|morir|moriste|fallec|asesin|mataron|te mataron|lo mataron|quien te mat|quien lo mat|como te mat|como lo mat|como fue tu muerte|como fue su muerte|de que murio|de que moriste|emboscad|parral)/i;
+  if (deathRegex.test(norm1) && deathRegex.test(norm2)) return true;
+
+  // Nacimiento / Origen
+  const birthRegex = /(donde naciste|donde naci[oó]|de donde eres|de donde era|lugar de nacimiento|ciudad natal|tierra natal)/i;
+  if (birthRegex.test(norm1) && birthRegex.test(norm2)) return true;
+
+  // Caballo / Animales
+  const horseRegex = /(caballo|yegua|siete leguas)/i;
+  if (horseRegex.test(norm1) && horseRegex.test(norm2)) return true;
+
+  // Armas
+  const weaponRegex = /(arma|armas|pistola|revolver|fusil|mauser|carabina|30-30)/i;
+  if (weaponRegex.test(norm1) && weaponRegex.test(norm2)) return true;
+
+  // Batallas
+  const battleRegex = /(batalla|combate|toma de|zacatecas|ciudad juarez|torreon)/i;
+  if (battleRegex.test(norm1) && battleRegex.test(norm2)) return true;
+
+  // Causa / Por qué luchó
+  const whyFightRegex = /(por que luchaste|por que lucho|que te motivo|que lo motivo|por que te levantaste)/i;
+  if (whyFightRegex.test(norm1) && whyFightRegex.test(norm2)) return true;
+
+  // Mensaje a los estudiantes
+  const messageRegex = /(mensaje|consejo|que le dices a los j[oó]venes)/i;
+  if (messageRegex.test(norm1) && messageRegex.test(norm2)) return true;
+
+  return false;
+}
+
+/**
  * Busca si una pregunta formulada por un estudiante ya fue respondida en el caché del nodo (0 TOKENS)
  */
 export function searchQaInVaultNode(slug: string, question: string): { found: boolean; answer?: string } {
@@ -473,41 +570,24 @@ export function searchQaInVaultNode(slug: string, question: string): { found: bo
   const normTarget = normalizeQuestionText(question);
   if (!normTarget || normTarget.length < 3) return { found: false };
 
+  // 1. Coincidencia exacta de pregunta
   for (const item of figure.qaCache) {
     const normItem = normalizeQuestionText(item.question);
-    // Búsqueda ESTRICTA y EXACTA: solo coincide si es la misma pregunta exacta
-    if (normItem === normTarget) {
-      // Validar que no sea una respuesta genérica, evasiva o fragmento corrompido anterior
-      const isGeneric = 
-        item.answer.includes('Escudriña en los documentos') ||
-        item.answer.includes('Escudrina en los documentos') ||
-        item.answer.includes('miro con beneplácito') ||
-        item.answer.includes('Respecto a lo que me interrogas sobre') ||
-        item.answer.includes('he de responderte en primera persona y con la verdad histórica') ||
-        item.answer.includes('Escudriña en nuestras memorias') ||
-        item.answer.includes('Escudrina en nuestras memorias') ||
-        item.answer.includes('En aquellos años definitorios en Querétaro') ||
-        item.answer.includes('Frente a tu interrogante, ten por seguro') ||
-        item.answer.includes('exterminador') ||
-        item.answer.includes('El vestido de novia') ||
-        item.answer.includes('película animada') ||
-        item.answer.includes('película') ||
-        item.answer.includes('Héroes verdaderos') ||
-        item.answer.includes('Trayectoria') ||
-        item.answer.includes('Alicia de Roc') ||
-        item.answer.includes('En los registros documentales de nuestra historia patria consta que') ||
-        item.answer.includes('En los registros fidedignos de nuestra historia patria consta que') ||
-        /\(19\d\d\)|\(20\d\d\)/.test(item.answer);
+    if (normItem === normTarget && !isCorruptOrGenericPersonaAnswer(item.answer)) {
+      return { found: true, answer: item.answer.trim() };
+    }
+  }
 
-      if (item.answer && item.answer.trim().length > 25 && !isGeneric) {
-        return { found: true, answer: item.answer.trim() };
-      }
-
+  // 2. Coincidencia temática/semántica con respuestas fidedignas ya persistidas (0 tokens)
+  for (const item of figure.qaCache) {
+    if (!isCorruptOrGenericPersonaAnswer(item.answer) && matchesHistoricalTheme(normTarget, normalizeQuestionText(item.question))) {
+      return { found: true, answer: item.answer.trim() };
     }
   }
 
   return { found: false };
 }
+
 
 /**
  * Añade o actualiza una pregunta y respuesta en el caché de la Bóveda Curricular para ese personaje
