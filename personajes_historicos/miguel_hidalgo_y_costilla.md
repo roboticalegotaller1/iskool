@@ -16,9 +16,8 @@ narratorMode: "wisdom_guide"
 tags:
   - "[[miguel_hidalgo_y_costilla]]"
   - "[[personajes_historicos]]"
-  - "[[padre_de_la_patria]]"
-  - "[[abolicion_esclavitud]]"
-lastUpdated: "2026-09-21"
+  - "[[independencia_de_mexico_1810_1811]]"
+lastUpdated: "2026-09-23"
 ---
 
 # Miguel Hidalgo y Costilla
@@ -35,7 +34,7 @@ Formado en el Colegio de San Nicolás Obispo de Valladolid, del cual llegó a se
 **Coordenadas**: 21.1561, -100.9325
 **Narrativa**: En lugar de limitarse a oficios religiosos, Hidalgo enseña alfarería, cultivo de la vid y telares a indígenas y mestizos para romper la dependencia virreinal.
 
-![Los Talleres de Dolores](/images/history/hidalgo_talleres.jpg)
+![Los Talleres Populares de Dolores](/images/history/hidalgo_talleres.jpg)
 
 En los telares y hornos de alfarería de Dolores se forjaron los lazos de confianza comunitaria que más tarde formarían la base del primer ejército insurgente.
 
@@ -45,29 +44,30 @@ En los telares y hornos de alfarería de Dolores se forjaron los lazos de confia
 **Coordenadas**: 21.1561, -100.9325
 **Narrativa**: Con el repicar de la campana parroquial y el estandarte guadalupano en mano, Hidalgo llama al pueblo a sacudirse trescientos años de tiranía virreinal.
 
-![El Grito de Dolores](/images/history/hidalgo_grito_comic_4.png)
+![El Grito de Independencia en el Atrio](/images/history/hidalgo_grito_comic_4.png)
 
 ¡Viva la independencia! ¡Viva la América libre! ¡Mueran los malos gobiernos! Cientos de campesinos acudieron armados con aperos de labranza y fe inquebrantable.
 
 ### La Toma de la Alhóndiga de Granaditas
 **Fecha**: 28 de Septiembre 1810
 **Lugar**: Ciudad de Guanajuato
-**Coordenadas**: 21.0190, -101.2574
+**Coordenadas**: 21.019, -101.2574
 **Narrativa**: Ante el refugio de las autoridades virreinales en la fortaleza granera, el minero El Pípila quema la puerta principal con una losa en la espalda permitiendo la victoria patriota.
 
-![La Alhóndiga de Granaditas](/images/history/alhondiga_granaditas.jpg)
+![La Toma de la Alhóndiga de Granaditas](/images/history/alhondiga_granaditas.jpg)
 
 La toma del mayor bastión militar y económico de la intendencia demostró la fuerza imparable de la causa insurgente en el Bajío novohispano.
 
 ### El Decreto Histórico de Abolición de la Esclavitud
 **Fecha**: 6 de Diciembre 1810
 **Lugar**: Palacio de Gobierno de Guadalajara, Jalisco
-**Coordenadas**: 20.6770, -103.3470
+**Coordenadas**: 20.677, -103.347
 **Narrativa**: En la capital neogallega, Hidalgo promulga el primer bando en el continente que declara totalmente libres a los esclavos y suprime los tributos de castas.
 
-![Decreto de Abolición](/images/history/hidalgo_decreto_abolicion.jpg)
+![El Decreto Histórico de Abolición de la Esclavitud](/images/history/hidalgo_decreto_abolicion.jpg)
 
 Un acto de justicia universal que antecedió a las grandes declaraciones emancipadoras de América y consagró el carácter social y humanista de la Independencia.
+
 
 ## Hitos Cartográficos y Geográficos
 ### Parroquia de Nuestra Señora de los Dolores
@@ -76,23 +76,26 @@ Un acto de justicia universal que antecedió a las grandes declaraciones emancip
 
 Cuna de la Independencia de México y recinto donde se resguardó la histórica campana tañida en 1810.
 
-![Parroquia de Dolores](/images/history/parroquia_dolores.jpg)
+![Parroquia de Nuestra Señora de los Dolores](/images/history/parroquia_dolores.jpg)
+
 
 ### Alhóndiga de Granaditas
 **Estado**: Guanajuato, México
-**Coordenadas**: 21.0190, -101.2574
+**Coordenadas**: 21.019, -101.2574
 
 Monumento monumental de cantera y piedra que atestiguó la primera gran batalla de la insurgencia.
 
 ![Alhóndiga de Granaditas](/images/history/alhondiga_granaditas.jpg)
 
+
 ### Palacio de Gobierno de Guadalajara
 **Estado**: Jalisco, México
-**Coordenadas**: 20.6770, -103.3470
+**Coordenadas**: 20.677, -103.347
 
 Sede de la redacción del histórico decreto de abolición de la esclavitud en diciembre de 1810.
 
-![Palacio de Guadalajara](/images/history/palacio_guadalajara.jpg)
+![Palacio de Gobierno de Guadalajara](/images/history/palacio_guadalajara.jpg)
+
 
 ### Calabozo de Hidalgo en Chihuahua
 **Estado**: Chihuahua, México
@@ -100,7 +103,9 @@ Sede de la redacción del histórico decreto de abolición de la esclavitud en d
 
 Lugar de su prisión militar y juicio en julio de 1811 antes de su fusilamiento como mártir de la libertad.
 
-![Calabozo de Chihuahua](/images/history/calabozo_hidalgo.jpg)
+![Calabozo de Hidalgo en Chihuahua](/images/history/calabozo_hidalgo.jpg)
+
+
 
 ## Cápsula Cinematográfica y Video
 **Título**: Miguel Hidalgo: La Voz de los Desposeídos
@@ -110,12 +115,23 @@ Lugar de su prisión militar y juicio en julio de 1811 antes de su fusilamiento 
 **Guion**:
 Un cura humanista, un repicar de campanas en la madrugada y el despertar de una nación. Miguel Hidalgo convirtió la indignación en esperanza y decretó la libertad de los esclavos para forjar el alma de México.
 
+
 ## Registro de Preguntas y Respuestas (Caché Bóveda Curricular - 0 Tokens)
 ### Q: ¿Cuál fue tu mayor motivación para iniciar la lucha armada?
 A: Ver el sufrimiento y la humillación de los campesinos, indígenas y castas bajo el yugo virreinal. La dignidad y la libertad son derechos conferidos por Dios que ningún monarca terrenal tiene potestad para usurpar.
 
 ### Q: ¿Por qué decidiste abolir la esclavitud en Guadalajara?
 A: Porque era una afrenta intolerable a la condición humana. No podía concebirse una patria libre si en su seno existían hermanos tratados como mercancía. La emancipación civil debía ser total.
+
+### Q: ¿Cuál fue tu momento más difícil?
+A: Mi momento de mayor tribulación fue la amarga derrota en la Batalla de Puente de Calderón en enero de 1811 frente a las tropas realistas de Calleja, y la posterior traición que sufrimos en Acatita de Baján, donde fuimos apresados y conducidos con grillos hacia Chihuahua para mi degradación y fusilamiento.
+
+### Q: ¿Qué te motivó a luchar por la patria?
+A: Me motivó el dolor inenarrable de ver a los campesinos, indígenas y castas novohispanas viviendo en la miseria y el despojo bajo tres siglos de tiranía virreinal. La dignidad y la libertad son derechos universales que ningún imperio terrenal puede pisotear.
+
+### Q: Dónde naciste
+A: Nací el 8 de mayo de 1753 en la Hacienda de San Diego de Corralejo, en el territorio de Pénjamo, Guanajuato. Allí transcurrieron mis primeros años antes de ingresar al Colegio de San Nicolás Obispo en Valladolid.
+
 
 ## 5 Preguntas Clave de Verificación Formativa
 ### 1. ¿Qué decreto promulgado por Hidalgo en Guadalajara en 1810 es considerado un pilar de los derechos humanos?
@@ -127,6 +143,7 @@ A: Porque era una afrenta intolerable a la condición humana. No podía concebir
 **Retroalimentación**: El 6 de diciembre de 1810 en Guadalajara, Hidalgo ordenó la libertad de todos los esclavos bajo pena capital para quienes incumplieran.
 **PDA**: Derechos humanos y justicia social en la historia de México.
 
+
 ### 2. ¿Qué oficios enseñaba Hidalgo en sus talleres comunales de Dolores?
 - [ ] Minería de plata virreinal
 - [x] Alfarería, cultivo de viñedos y cría del gusano de seda
@@ -135,6 +152,7 @@ A: Porque era una afrenta intolerable a la condición humana. No podía concebir
 
 **Retroalimentación**: Hidalgo capacitó a su comunidad en oficios autosuficientes para elevar su bienestar material y dignidad económica.
 **PDA**: Economía popular y desarrollo comunitario en el Virreinato.
+
 
 ### 3. ¿Qué combatiente insurgente facilitó la toma de la Alhóndiga de Granaditas quemando su puerta?
 - [ ] Hermenegildo Galeana
@@ -145,6 +163,7 @@ A: Porque era una afrenta intolerable a la condición humana. No podía concebir
 **Retroalimentación**: El Pípila protegió su cuerpo con una gruesa losa de piedra para aproximarse a la puerta y prenderle fuego con brea.
 **PDA**: Hechos militares y participación popular en la Independencia.
 
+
 ### 4. ¿En qué centro educativo se formó y fungió como rector don Miguel Hidalgo?
 - [ ] Real y Pontificia Universidad de México
 - [x] Colegio de San Nicolás Obispo en Valladolid (hoy Morelia)
@@ -154,6 +173,7 @@ A: Porque era una afrenta intolerable a la condición humana. No podía concebir
 **Retroalimentación**: En San Nicolás, Hidalgo fue apodado "El Zorro" por su inteligencia y astucia intelectual en el debate humanista.
 **PDA**: Centros educativos novohispanos y pensamiento ilustrado.
 
+
 ### 5. ¿Por qué la figura de Hidalgo es venerada como el "Padre de la Patria"?
 - [ ] Porque redactó el Tratado de Guadalupe Hidalgo
 - [x] Porque inició el movimiento emancipador que culminó con el nacimiento del estado mexicano soberano
@@ -162,3 +182,4 @@ A: Porque era una afrenta intolerable a la condición humana. No podía concebir
 
 **Retroalimentación**: Su audacia en 1810 unió a los diversos sectores novohispanos en la búsqueda irreversible de la soberanía nacional.
 **PDA**: Construcción de la identidad y memoria histórica mexicana.
+

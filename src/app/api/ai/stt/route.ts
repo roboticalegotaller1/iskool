@@ -109,8 +109,12 @@ export async function POST(req: NextRequest) {
 
     // 4. Ejecutar transcripción neuronal
     const transcriber = await getTranscriber();
+    const sttLanguage = (language === 'es' || language === 'es-MX') 
+      ? 'spanish' 
+      : (language === 'fr' ? 'french' : 'english');
+
     const result = await transcriber(float32Samples, {
-      language: language === 'fr' ? 'french' : 'english',
+      language: sttLanguage,
       task: 'transcribe',
     });
 

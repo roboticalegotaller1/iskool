@@ -1560,10 +1560,28 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
     if (normQ.includes('taller') || normQ.includes('artesan') || normQ.includes('vid') || normQ.includes('seda') || normQ.includes('alfareria')) {
       return `En mi curato de Dolores enseñé a los indígenas y campesinos el cultivo de la vid, la sericicultura para hilar seda y la alfarería. Estaba convencido de que la emancipación no solo se gana con armas, sino con el trabajo digno, la educación práctica y la autonomía económica de los pueblos.`;
     }
+    if (intent === 'BIRTHPLACE' || normQ.includes('donde naciste') || normQ.includes('donde nacio') || normQ.includes('lugar de nacimiento') || normQ.includes('de donde eres') || normQ.includes('penjamo')) {
+      return `Nací el 8 de mayo de 1753 en la Hacienda de San Diego de Corralejo, en la jurisdicción de Pénjamo, Guanajuato. Allí transcurrieron mis primeros años en el campo novohispano antes de marchar a Valladolid (hoy Morelia) para formarme en el Colegio de San Nicolás Obispo.`;
+    }
+    if (intent === 'AGE' || normQ.includes('edad') || normQ.includes('cuantos anos') || normQ.includes('cuando naciste')) {
+      return `Nací el 8 de mayo de 1753. Cuando proclamé el Grito de Independencia en Dolores la madrugada del 16 de septiembre de 1810, tenía exactamente 57 años de edad. Viví 58 años hasta mi fusilamiento en Chihuahua el 30 de julio de 1811.`;
+    }
+    if (intent === 'CHALLENGE_COURAGE' || normQ.includes('momento mas dificil') || normQ.includes('mas duro') || normQ.includes('peor momento')) {
+      return `Mi momento más difícil fue la derrota en la Batalla de Puente de Calderón en enero de 1811 y la posterior traición en Acatita de Baján, donde fuimos encadenados y llevados al calabozo en Chihuahua para ser degradados del sacerdocio y fusilados. Mas aun en la prisión mantuve la convicción de que la llama encendida en Dolores jamás se apagaría.`;
+    }
+    if (intent === 'WHO_AM_I' || normQ.includes('quien eres')) {
+      return `Soy Miguel Gregorio Antonio Ignacio Hidalgo y Costilla Mandarte y Villaseñor, sacerdote, catedrático y Padre de la Patria. Nací en Pénjamo, Guanajuato, fui rector del Colegio de San Nicolás en Valladolid y la madrugada del 16 de septiembre de 1810 llamé al pueblo de Dolores a tomar las armas por la independencia y la justicia social de América.`;
+    }
+    if (intent === 'WHY_FIGHT' || normQ.includes('que te motivo') || normQ.includes('por que luchaste')) {
+      return `Me motivó ver el sufrimiento, la miseria y el despojo de los indígenas, campesinos y castas bajo tres siglos de opresión virreinal. La libertad y la dignidad son dones sagrados que ningún monarca terrenal tiene derecho a arrebatar a los hombres.`;
+    }
+    if (intent === 'MESSAGE_STUDENTS' || normQ.includes('mensaje')) {
+      return `A los jóvenes les digo que el mayor tesoro de una nación es la educación, la libertad de pensamiento y la defensa de la justicia para los desposeídos. Luchen siempre por la verdad y jamás consientan la tiranía ni el vasallaje.`;
+    }
     if (intent === 'DEATH' || normQ.includes('moriste') || normQ.includes('fusilamiento') || normQ.includes('chihuahua')) {
       return `Fui fusilado la mañana del 30 de julio de 1811 en el patio del antiguo Colegio de los Jesuitas en Chihuahua, tras meses de cruel prisión y degradación sacerdotal. Enfrenté al pelotón con la mano puesta sobre mi corazón y perdonando a mis verdugos, con la certeza de que la llama de libertad que encendimos en Dolores jamás podría ser apagada por las balas del imperio.`;
     }
-    return `Consagré mi existencia al mandato supremo de la libertad humana y el amparo de los oprimidos. Mi causa en Dolores no buscó honores mundanos ni ambición personal, sino devolver el pan, la justicia y la dignidad a los desposeídos de esta bendita tierra americana.`;
+    return `En mi curato de Dolores y al frente del ejército insurgente consagré cada acto al despertar de una patria soberana, aboliendo la esclavitud en Guadalajara y convocando al pueblo para sacudirse el yugo virreinal. Pregúntame sobre el Grito de Dolores, mis talleres comunitarios, la abolición de la esclavitud o mi juicio en Chihuahua.`;
   }
 
   // =========================================================================

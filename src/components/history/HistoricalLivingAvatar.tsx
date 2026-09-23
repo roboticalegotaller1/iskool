@@ -18,13 +18,16 @@ import {
   HelpCircle,
   Key,
   X,
-  Check
+  Check,
+  Loader2
 } from 'lucide-react';
+import { getSupportedRecordingMimeType } from '@/lib/audioEngine';
 import { 
   configureHistoricalUtterance, 
   getPersonaGender, 
   generateHistoricalSSML, 
-  getPersonaProfile 
+  getPersonaProfile,
+  calculateAgeAtDeathFromDates 
 } from '@/lib/historicalVoiceEngine';
 
 interface CharacterAnatomicalMouth {
@@ -195,6 +198,7 @@ export interface HistoricalLivingAvatarProps {
   initialGreeting?: string;
   isGeographicSite?: boolean;
   historicalAge?: number;
+  birthDeathDates?: string;
   variantIndex?: 0 | 1 | 2;
   voiceId?: string;
   voiceRate?: string;
@@ -221,6 +225,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
   initialGreeting,
   isGeographicSite = false,
   historicalAge,
+  birthDeathDates,
   variantIndex = 0,
   voiceId,
   voiceRate,
@@ -229,6 +234,10 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
   onQuestionAsked,
   className = ''
 }) => {
+  // Resolver edad histórica efectiva: si no viene explícita, se calcula de la edad al morir (fechas de nacimiento y muerte)
+  const computedAgeAtDeath = birthDeathDates ? calculateAgeAtDeathFromDates(birthDeathDates.split('-')[0], birthDeathDates.split('-')[1]) : undefined;
+  const effectiveAge = historicalAge ?? computedAgeAtDeath;
+
   // Estados de animación del avatar
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isBlinking, setIsBlinking] = useState(false);
@@ -253,6 +262,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [tokenFeedback, setTokenFeedback] = useState<{ cost: number; source: string } | null>({
     cost: 0,
@@ -304,6 +314,9 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
   const mouthCfg = getCharacterMouthConfig(characterName);
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioStreamRef = useRef<MediaStream | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const speechSynthRef = useRef<SpeechSynthesisUtterance | null>(null);
   const mouthIntervalRef = useRef<any>(null);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -327,6 +340,15 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
       }
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
+      }
+      if (recognitionRef.current) {
+        try { recognitionRef.current.abort(); } catch {}
+      }
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        try { mediaRecorderRef.current.stop(); } catch {}
+      }
+      if (audioStreamRef.current) {
+        audioStreamRef.current.getTracks().forEach(t => t.stop());
       }
       if (mouthIntervalRef.current) {
         clearInterval(mouthIntervalRef.current);
@@ -427,7 +449,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(cleanText);
-      const isConfiguredLatin = configureHistoricalUtterance(utterance, characterName, historicalAge);
+      const isConfiguredLatin = configureHistoricalUtterance(utterance, characterName, effectiveAge);
 
       if (isConfiguredLatin) {
         utterance.onstart = () => {
@@ -450,7 +472,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
 
     // PILAR 1: Si no hay voces latinas locales en el navegador (o solo existen voces de España),
     // se aplica el filtro de rechazo y se utiliza el fallback HTTP directo hacia el servidor.
-    const profile = getPersonaProfile(characterName, historicalAge, variantIndex);
+    const profile = getPersonaProfile(characterName, effectiveAge, variantIndex, birthDeathDates);
     const resolvedVoiceId = voiceId || profile.voiceId;
     fetch('/api/ai/tts', {
       method: 'POST',
@@ -458,7 +480,8 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
       body: JSON.stringify({
         text: cleanText,
         characterName,
-        historicalAge,
+        historicalAge: effectiveAge,
+        birthDeathDates,
         variantIndex,
         voice: resolvedVoiceId
       })
@@ -493,7 +516,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
         onPlaybackStart?.();
         stopLipSyncAnimation();
       });
-  }, [characterName, historicalAge, variantIndex, voiceId, startLipSyncAnimation, stopLipSyncAnimation]);
+  }, [characterName, effectiveAge, birthDeathDates, variantIndex, voiceId, startLipSyncAnimation, stopLipSyncAnimation]);
 
   // Reproducción de voz humana neural ultra-realista con sincronización de ondas sonoras
   const speakText = useCallback(async (text: string, onPlaybackStart?: () => void) => {
@@ -524,15 +547,16 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
 
     if (!cleanText) return;
 
-    const profile = getPersonaProfile(characterName, historicalAge, variantIndex);
+    const profile = getPersonaProfile(characterName, effectiveAge, variantIndex, birthDeathDates);
     const resolvedVoiceId = voiceId || profile.voiceId;
     const resolvedRate = voiceRate || profile.prosodyRate;
     const resolvedPitch = voicePitch || profile.prosodyPitch;
 
-    const ssmlPayload = generateHistoricalSSML(cleanText, characterName, historicalAge, variantIndex, {
+    const ssmlPayload = generateHistoricalSSML(cleanText, characterName, effectiveAge, variantIndex, {
       voiceId: resolvedVoiceId,
       voiceRate: resolvedRate,
-      voicePitch: resolvedPitch
+      voicePitch: resolvedPitch,
+      birthOrDeathDates: birthDeathDates
     });
 
     try {
@@ -542,7 +566,8 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
         body: JSON.stringify({
           ssml: ssmlPayload,
           characterName,
-          historicalAge,
+          historicalAge: effectiveAge,
+          birthDeathDates,
           variantIndex,
           text: cleanText,
           voice: resolvedVoiceId
@@ -761,7 +786,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
     }
 
     fallbackSpeechSynthesis(cleanText, onPlaybackStart);
-  }, [audioEnabled, characterName, historicalAge, variantIndex, startLipSyncAnimation, stopLipSyncAnimation, fallbackSpeechSynthesis]);
+  }, [audioEnabled, characterName, effectiveAge, birthDeathDates, variantIndex, voiceId, voiceRate, voicePitch, startLipSyncAnimation, stopLipSyncAnimation, fallbackSpeechSynthesis]);
 
   // Envío de pregunta al avatar
   const handleSendMessage = async (textToSend?: string) => {
@@ -856,54 +881,197 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
     }
   };
 
-  // Micrófono con Web Speech API
-  const toggleListening = () => {
+  // Finalizar y transcribir audio grabado como respaldo neuronal
+  const stopAndTranscribeAudio = async () => {
+    setIsListening(false);
+
+    // 1. Detener Web Speech API si estaba activo
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.onend = null;
+        recognitionRef.current.stop();
+      } catch {}
+      recognitionRef.current = null;
+    }
+
+    // 2. Detener MediaRecorder y recolectar Blob de audio
+    let recordedBlob: Blob | null = null;
+    const mr = mediaRecorderRef.current;
+    if (mr && mr.state !== 'inactive') {
+      try {
+        recordedBlob = await new Promise<Blob | null>((resolve) => {
+          mr.addEventListener('stop', () => {
+            if (audioChunksRef.current.length > 0) {
+              const supportedMime = getSupportedRecordingMimeType();
+              const finalMime = supportedMime || mr.mimeType || 'audio/webm';
+              resolve(new Blob(audioChunksRef.current, { type: finalMime }));
+            } else {
+              resolve(null);
+            }
+          }, { once: true });
+          mr.stop();
+        });
+      } catch {
+        if (audioChunksRef.current.length > 0) {
+          recordedBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        }
+      }
+    } else if (audioChunksRef.current.length > 0) {
+      recordedBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+    }
+
+    // 3. Liberar tracks del micrófono físico
+    if (audioStreamRef.current) {
+      audioStreamRef.current.getTracks().forEach(t => t.stop());
+      audioStreamRef.current = null;
+    }
+
+    // 4. Si tenemos audio grabado y aún no se envió la pregunta, procesar con Motor de IA (Transcripción Neuronal)
+    if (recordedBlob && recordedBlob.size > 500) {
+      try {
+        setIsTranscribing(true);
+        const formData = new FormData();
+        formData.append('audio', recordedBlob, 'student_voice.webm');
+        formData.append('language', 'es');
+
+        const res = await fetch('/api/ai/stt', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.success && data.transcript && data.transcript.trim()) {
+            const transcribed = data.transcript.trim();
+            setInputText(transcribed);
+            handleSendMessage(transcribed);
+          }
+        }
+      } catch (err) {
+        console.warn('Error en fallback de transcripción por IA:', err);
+      } finally {
+        setIsTranscribing(false);
+      }
+    }
+  };
+
+  // Micrófono robusto con Doble Motor: Web Speech API nativo + Fallback Neuronal por MediaRecorder
+  const toggleListening = async () => {
     if (typeof window === 'undefined') return;
 
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert('Tu navegador no soporta entrada de voz directa. Puedes escribir tu pregunta en el recuadro.');
-      return;
-    }
-
     if (isListening) {
-      recognitionRef.current?.stop();
-      setIsListening(false);
+      await stopAndTranscribeAudio();
       return;
     }
 
+    // Limpiar búfer previo
+    audioChunksRef.current = [];
+
+    // Solicitar permiso de micrófono explícito vía getUserMedia (crucial para activar hardware)
+    let stream: MediaStream | null = null;
     try {
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'es-MX';
-      recognition.continuous = false;
-      recognition.interimResults = false;
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+        });
+        audioStreamRef.current = stream;
+      }
+    } catch (permErr: any) {
+      console.warn('Permiso o acceso a micrófono físico:', permErr);
+      if (permErr?.name === 'NotAllowedError' || permErr?.name === 'PermissionDeniedError') {
+        alert('El acceso al micrófono fue bloqueado en tu navegador. Por favor permite los permisos de micrófono para hablar con el personaje.');
+        return;
+      }
+    }
 
-      recognition.onstart = () => {
+    // Iniciar MediaRecorder físico para captura garantizada
+    if (stream && typeof MediaRecorder !== 'undefined') {
+      try {
+        const supportedMime = getSupportedRecordingMimeType();
+        const options = supportedMime ? { mimeType: supportedMime } : undefined;
+        const mr = new MediaRecorder(stream, options);
+        mediaRecorderRef.current = mr;
+        mr.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) {
+            audioChunksRef.current.push(e.data);
+          }
+        };
+        mr.start(100);
+      } catch (recErr) {
+        console.warn('MediaRecorder error:', recErr);
+      }
+    }
+
+    // Intentar Web Speech API para transcripción instantánea en streaming
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    let webSpeechActive = false;
+
+    if (SpeechRecognition) {
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'es-MX';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = () => {
+          setIsListening(true);
+        };
+
+        recognition.onresult = (e: any) => {
+          const transcript = e.results?.[0]?.[0]?.transcript;
+          if (transcript && transcript.trim()) {
+            // Se obtuvo transcripción instantánea exitosa
+            setInputText(transcript);
+            // Detener MediaRecorder y tracks sin volver a transcribir
+            if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+              try { mediaRecorderRef.current.stop(); } catch {}
+            }
+            if (audioStreamRef.current) {
+              audioStreamRef.current.getTracks().forEach(t => t.stop());
+              audioStreamRef.current = null;
+            }
+            audioChunksRef.current = [];
+            setIsListening(false);
+            handleSendMessage(transcript);
+          }
+        };
+
+        recognition.onerror = async (e: any) => {
+          console.warn('Web Speech API aviso/error:', e.error);
+          // Si da no-speech o error de red de Google, recurrir al audio capturado con MediaRecorder
+          if (isListening || mediaRecorderRef.current) {
+            await stopAndTranscribeAudio();
+          } else {
+            setIsListening(false);
+          }
+        };
+
+        recognition.onend = () => {
+          if (isListening) {
+            stopAndTranscribeAudio();
+          }
+        };
+
+        recognitionRef.current = recognition;
+        recognition.start();
+        webSpeechActive = true;
+      } catch (srErr) {
+        console.warn('Fallo al iniciar Web Speech API, usando fallback:', srErr);
+      }
+    }
+
+    if (!webSpeechActive) {
+      if (stream) {
         setIsListening(true);
-      };
-
-      recognition.onresult = (e: any) => {
-        const transcript = e.results[0][0].transcript;
-        if (transcript) {
-          setInputText(transcript);
-          handleSendMessage(transcript);
-        }
-      };
-
-      recognition.onerror = (e: any) => {
-        console.warn('Reconocimiento de voz:', e.error);
-        setIsListening(false);
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      recognitionRef.current = recognition;
-      recognition.start();
-    } catch (e) {
-      console.error('Error iniciando micrófono:', e);
-      setIsListening(false);
+      } else {
+        alert('Tu navegador no permite la entrada de voz en este momento. Puedes escribir tu pregunta en el recuadro.');
+      }
     }
   };
 
@@ -1169,6 +1337,13 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
               <span>{characterName} está evocando sus memorias...</span>
             </div>
           )}
+
+          {isTranscribing && (
+            <div className="flex gap-2 items-center text-xs text-cyan-300 animate-pulse pl-2">
+              <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+              <span>Transcribiendo tu voz con el Motor de IA Pedagógica...</span>
+            </div>
+          )}
         </div>
 
         {/* Sugerencias Rápidas de Preguntas */}
@@ -1194,14 +1369,23 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
           <button
             type="button"
             onClick={toggleListening}
+            disabled={isTranscribing}
             className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
               isListening 
                 ? 'bg-rose-600 text-white border-rose-400 animate-pulse shadow-lg shadow-rose-500/30' 
+                : isTranscribing
+                ? 'bg-cyan-600/30 text-cyan-300 border-cyan-500/40 animate-pulse'
                 : 'bg-white/10 hover:bg-white/20 text-amber-300 border-amber-500/30'
             }`}
-            title={isListening ? 'Detener micrófono' : 'Hablar por micrófono'}
+            title={isListening ? 'Detener micrófono y enviar' : isTranscribing ? 'Transcribiendo audio...' : 'Hablar por micrófono'}
           >
-            {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            {isTranscribing ? (
+              <Loader2 className="w-4 h-4 animate-spin text-cyan-300" />
+            ) : isListening ? (
+              <MicOff className="w-4 h-4" />
+            ) : (
+              <Mic className="w-4 h-4" />
+            )}
           </button>
 
           <input
@@ -1219,10 +1403,11 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
             type="button"
             disabled={!inputText.trim() || isLoading}
             onClick={() => handleSendMessage()}
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-xs shadow-md shadow-amber-500/20 disabled:opacity-40 transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-xs shadow-md shadow-amber-500/20 disabled:opacity-40 transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+            title="Enviar pregunta"
           >
-            <span>Enviar</span>
-            <Send className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Enviar</span>
+            <Send className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
           </button>
         </div>
       </div>

@@ -63,6 +63,22 @@ export function normalizeQuestionText(q: string): string {
     .trim();
 }
 
+interface CachedHistoricalFigure {
+  data: HistoricalFigureBlockData;
+  mtimeMs: number;
+  filePath: string;
+}
+
+const historicalFigureMemoryCache = new Map<string, CachedHistoricalFigure>();
+
+export function invalidateHistoricalFigureCache(slug?: string): void {
+  if (slug) {
+    historicalFigureMemoryCache.delete(slug);
+  } else {
+    historicalFigureMemoryCache.clear();
+  }
+}
+
 /**
  * Busca un personaje o sitio histórico en la Bóveda Curricular (Búsqueda Prioritaria / Cache-First)
  */
@@ -146,8 +162,20 @@ export function findHistoricalFigureInVault(nameOrSlug: string): HistoricalFigur
   }
 
   try {
+    const stat = fs.statSync(targetPath);
+    const cached = historicalFigureMemoryCache.get(slug);
+    if (cached && cached.mtimeMs === stat.mtimeMs && cached.filePath === targetPath) {
+      return cached.data;
+    }
+
     const rawContent = fs.readFileSync(targetPath, 'utf8');
-    return parseHistoricalMarkdown(rawContent, slug);
+    const parsed = parseHistoricalMarkdown(rawContent, slug);
+    historicalFigureMemoryCache.set(slug, {
+      data: parsed,
+      mtimeMs: stat.mtimeMs,
+      filePath: targetPath
+    });
+    return parsed;
   } catch (err) {
     console.error(`Error leyendo nodo de Bóveda Curricular [${slug}]:`, err);
     return null;
@@ -386,6 +414,7 @@ export function saveHistoricalFigureToVault(data: HistoricalFigureBlockData): { 
       }
     }
 
+    invalidateHistoricalFigureCache(slug);
     return { success: true, localPath, desktopPath };
   } catch (err) {
     console.error(`Error guardando en Bóveda Curricular [${slug}]:`, err);
@@ -536,7 +565,12 @@ export function isCorruptOrGenericPersonaAnswer(answer: string): boolean {
     text.includes('En aquellos tiempos novohispanos cada pensamiento') ||
     text.includes('mi compromiso estuvo siempre enfocado en defender la justicia, la verdad') ||
     text.includes('En cada momento de mi trayectoria histórica actué con absoluta convicción cívica') ||
-    text.includes('la templanza cívica y la lealtad a los principios eran la brújula innegociable')
+    text.includes('la templanza cívica y la lealtad a los principios eran la brújula innegociable') ||
+    text.includes('Consagré mi existencia al mandato supremo de la libertad humana') ||
+    text.includes('Consagre mi existencia al mandato supremo') ||
+    text.includes('Mi causa en Dolores no buscó honores mundanos') ||
+    text.includes('Mi causa en Dolores no busco honores mundanos') ||
+    text.includes('devolver el pan, la justicia y la dignidad a los desposeídos')
   ) {
     return true;
   }
@@ -629,6 +663,7 @@ export interface HistoricalQuestionAnalysis {
     | 'CLOTHING'
     | 'FOOD'
     | 'DEATH_BURIAL'
+    | 'BIRTHPLACE'
     | 'PRISON_CONVENT'
     | 'TACONEO_ALERT'
     | 'IDENTITY'
@@ -691,6 +726,8 @@ export function analyzeHistoricalQuestion(question: string): HistoricalQuestionA
     targetEntity = 'WOUNDS_COMBAT';
   } else if (/(muert|moriste|muri[oó]|fallec|tumba|restos|panteon)/i.test(norm)) {
     targetEntity = 'DEATH_BURIAL';
+  } else if (/(donde naciste|donde naci[oó]|de donde eres|de donde era|de donde fue|lugar de nacimiento|ciudad natal|tierra natal|donde creciste|donde es originari|de que estado eres)/i.test(norm)) {
+    targetEntity = 'BIRTHPLACE';
   } else if (/(tacon|taconeo|zapato|tres golpes|golpeaste)/i.test(norm)) {
     targetEntity = 'TACONEO_ALERT';
   } else if (/(prisi|carcel|convento|santa clara|santa teresa|incomunicad)/i.test(norm)) {
@@ -774,6 +811,9 @@ export function analyzeHistoricalQuestion(question: string): HistoricalQuestionA
   } else if (targetEntity === 'WOUNDS_COMBAT') {
     specificIntent = 'WOUNDS_COMBAT_HURT';
     instructionForAI = 'Aclara directamente en la primera oración si saliste herida o no: no combatiste en las líneas de fuego con armas y no sufriste heridas de bala, pero tu padecimiento físico fue una grave afección pleuropulmonar por el encierro en los conventos de Santa Clara y Santa Teresa.';
+  } else if (targetEntity === 'BIRTHPLACE') {
+    specificIntent = 'BIRTHPLACE';
+    instructionForAI = 'El estudiante pregunta expresamente DÓNDE NACISTE o cuál es tu lugar de origen. Contesta de inmediato en la primera oración en primera persona indicando tu lugar exacto de nacimiento (ciudad, hacienda o poblado y estado) y fecha de nacimiento. Queda TERMINANTEMENTE PROHIBIDO dar discursos políticos, sermones morales o hablar de la causa en general.';
   } else if (targetEntity === 'DEATH_BURIAL') {
     if (interrogativeType === 'ASKING_LOCATION') {
       specificIntent = 'RESTING_PLACE';
@@ -852,7 +892,16 @@ export function isAnswerSemanticallyAligned(question: string, answer: string): b
     }
   }
 
-  // 6. Si la pregunta requería palabras clave obligatorias (como nombres concretos o fechas)
+  // 6. Si la pregunta es sobre lugar de nacimiento u origen (BIRTHPLACE):
+  if (analysis.specificIntent === 'BIRTHPLACE') {
+    const hasBirthTerms = /(naci|origen|originari|tierra natal|cuna|hacienda|rancho|ciudad|pueblo|penjamo|guanajuato|valladolid|morelia|durango|coyotada|guelatao|oaxaca|chihuahua|san miguel|guadalajara)/i.test(normAnswer);
+    if (!hasBirthTerms) {
+      console.warn(`[SemanticGuard] Rechazada respuesta a lugar de nacimiento que no menciona el lugar ni el verbo nacer.`);
+      return false;
+    }
+  }
+
+  // 7. Si la pregunta requería palabras clave obligatorias (como nombres concretos o fechas)
   if (analysis.requiredKeywords && analysis.requiredKeywords.length > 0) {
     const hasAnyRequired = analysis.requiredKeywords.some(kw => {
       const normKw = kw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
