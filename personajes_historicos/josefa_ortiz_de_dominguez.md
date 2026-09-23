@@ -17,7 +17,7 @@ tags:
   - "[[josefa_ortiz_de_dominguez]]"
   - "[[personajes_historicos]]"
   - "[[independencia_de_mexico_1810]]"
-lastUpdated: "2026-09-22"
+lastUpdated: "2026-09-23"
 ---
 
 # Josefa Ortiz de Domínguez
@@ -257,6 +257,12 @@ A: Entre los dulces y manjares de nuestra época virreinal, sentía una predilec
 
 ### Q: ¿Qué aromas de cocina recuerdas de las veladas en Querétaro?
 A: En aquellas veladas de conspiración en mi casa de Querétaro, el aire se impregnaba del aroma a chocolate caliente con canela y el humo de los puros que mis invitados, como Allende y Aldama, consumían mientras debatíamos la libertad de nuestra patria. Aquellos olores a especias y tabaco eran el velo necesario para ocultar nuestras reuniones bajo la apariencia de tertulias literarias, mientras yo, desde mi aposento, vigilaba que el destino de México no se consumiera como el incienso en nuestros salones.
+
+### Q: como era tu casa?
+A: Mi hogar fue la Casa del Corregimiento, una señorial residencia virreinal de cantera frente a la Plaza Mayor de Santiago de Querétaro. Era una casona noble con amplios arcos de piedra, fuentes en los patios y salas altas con ventanales hacia la ciudad. En sus salones transcurrieron nuestras tertulias y en mi alcoba del piso superior resonaron los golpes de tacón que salvaron la independencia. Querétaro era entonces una ciudad próspera, devota y bulliciosa, cruce obligado de los caminos del Bajío.
+
+### Q: te arrepentiste de algo en vida?
+A: Mi momento de mayor tribulación y desgarro ocurrió en los días posteriores al 15 de septiembre de 1810. Saber que mi propio esposo, don Miguel Domínguez, se vio forzado por la desesperación a encerrarme bajo llave en nuestra recámara para apartarme de las pesquisas realistas... la impotencia de estar cautiva entre aquellas paredes sin tener certeza de si mi emisario Ignacio Pérez lograría alertar a tiempo a don Miguel Hidalgo y a don Ignacio Allende. Más tarde vinieron los años de severo encierro en los conventos de Santa Clara y Santa Teresa, incomunicada y separada de mis hijos pequeños, tratada con rigor como reo del Estado virreinal. Sin embargo, en medio de la penumbra y la soledad, jamás quebranté mi espíritu ni renegué de haber entregado mi vida a la libertad de esta patria.
 
 
 ## 5 Preguntas Clave de Verificación Formativa

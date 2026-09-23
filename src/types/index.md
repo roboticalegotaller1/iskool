@@ -1,7 +1,7 @@
 ---
 tags: [iskool, arquitectura, smart-connections]
 archivo_origen: "src/types/index.ts"
-fecha_sincronizacion: "2026-09-20T21:59:39.246Z"
+fecha_sincronizacion: "2026-09-23T19:48:52.917Z"
 ---
 
 # index.ts
