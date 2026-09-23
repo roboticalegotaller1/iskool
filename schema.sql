@@ -270,3 +270,48 @@ insert into public.levels_grades (level_name, grade_name) values
   ('preparatoria', '1º Semestre'), ('preparatoria', '2º Semestre'), 
   ('preparatoria', '3º Semestre'), ('preparatoria', '4º Semestre'), 
   ('preparatoria', '5º Semestre'), ('preparatoria', '6º Semestre');
+
+/**
+ * @table submissions
+ * @description Registro de resolución de desafíos, evidencias pedagógicas y quizzes del alumno.
+ */
+create table if not exists public.submissions (
+  id uuid primary key default gen_random_uuid(),
+  student_id text not null,
+  quest_id text not null,
+  reflection text,
+  file_url text,
+  file_type text default 'document',
+  score integer default 100,
+  xp_reward integer default 0,
+  coins_reward integer default 0,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+create index if not exists idx_submissions_student_quest on public.submissions(student_id, quest_id);
+alter table public.submissions enable row level security;
+
+create policy "Acceso de lectura a entregas de desafíos" on public.submissions for select using (true);
+create policy "Inserción de entregas de desafíos" on public.submissions for insert with check (true);
+create policy "Actualización de entregas de desafíos" on public.submissions for update using (true);
+
+/**
+ * @table reported_broken_resources
+ * @description Reportes automáticos de recursos o enlaces caídos para curación inmediata del catálogo docente.
+ */
+create table if not exists public.reported_broken_resources (
+  id uuid primary key default gen_random_uuid(),
+  resource_url text not null,
+  resource_title text,
+  resource_type text,
+  reported_by text,
+  reason text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+create index if not exists idx_broken_resources_url on public.reported_broken_resources(resource_url);
+alter table public.reported_broken_resources enable row level security;
+
+create policy "Lectura de recursos rotos reportados" on public.reported_broken_resources for select using (true);
+create policy "Reporte de recursos caídos" on public.reported_broken_resources for insert with check (true);
+

@@ -252,17 +252,46 @@ export function normalizeLatinHistoricalPhonetics(text: string): string {
 }
 
 /**
- * Infiere automáticamente la etapa etaria (cohorte) del personaje
+ * Calcula con rigor la edad al momento de su muerte a partir de cadenas de fechas (Frontmatter: birthOrEstablishment - deathOrPresentState)
  */
-export function inferCharacterAgeCohort(characterName: string, historicalAge?: number): HistoricalAgeCohort {
+export function calculateAgeAtDeathFromDates(birthStr?: string, deathStr?: string): number | undefined {
+  if (!birthStr || !deathStr) return undefined;
+
+  // Extraer años de 4 dígitos (ej: 1753, 1811)
+  const birthYearMatch = birthStr.match(/\b(1[4-9]\d{2}|20\d{2})\b/);
+  const deathYearMatch = deathStr.match(/\b(1[4-9]\d{2}|20\d{2})\b/);
+
+  if (birthYearMatch && deathYearMatch) {
+    const bYear = parseInt(birthYearMatch[1], 10);
+    const dYear = parseInt(deathYearMatch[1], 10);
+    if (dYear >= bYear && (dYear - bYear) <= 120) {
+      return dYear - bYear;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Infiere automáticamente la etapa etaria (cohorte) del personaje en función de su edad al morir o edad histórica
+ */
+export function inferCharacterAgeCohort(characterName: string, historicalAge?: number, birthOrDeathDates?: string): HistoricalAgeCohort {
   const norm = characterName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const gender = getPersonaGender(characterName);
 
-  if (typeof historicalAge === 'number') {
-    if (historicalAge <= 12) return gender === 'female' ? 'child_female' : 'child_male';
-    if (historicalAge <= 20) return gender === 'female' ? 'teen_female' : 'teen_male';
-    if (historicalAge <= 35) return gender === 'female' ? 'young_adult_female' : 'young_adult_male';
-    if (historicalAge <= 55) return gender === 'female' ? 'adult_female' : 'adult_male';
+  // Si no se proporcionó un número pero sí las fechas en formato "birth - death"
+  let resolvedAge = historicalAge;
+  if (resolvedAge === undefined && birthOrDeathDates) {
+    const parts = birthOrDeathDates.split('-');
+    if (parts.length >= 2) {
+      resolvedAge = calculateAgeAtDeathFromDates(parts[0], parts[1]);
+    }
+  }
+
+  if (typeof resolvedAge === 'number') {
+    if (resolvedAge <= 12) return gender === 'female' ? 'child_female' : 'child_male';
+    if (resolvedAge <= 20) return gender === 'female' ? 'teen_female' : 'teen_male';
+    if (resolvedAge <= 35) return gender === 'female' ? 'young_adult_female' : 'young_adult_male';
+    if (resolvedAge <= 55) return gender === 'female' ? 'adult_female' : 'adult_male';
     return gender === 'female' ? 'elder_female' : 'elder_male';
   }
 
@@ -298,9 +327,10 @@ export function inferCharacterAgeCohort(characterName: string, historicalAge?: n
 export function resolveCharacterVoice(
   characterName: string, 
   historicalAge?: number, 
-  variantIndex: 0 | 1 | 2 = 0
+  variantIndex: 0 | 1 | 2 = 0,
+  birthOrDeathDates?: string
 ): VoiceMatrixOption {
-  const cohort = inferCharacterAgeCohort(characterName, historicalAge);
+  const cohort = inferCharacterAgeCohort(characterName, historicalAge, birthOrDeathDates);
   const cohortVoices = HISTORICAL_VOICE_MATRIX[cohort];
   const idx = Math.min(2, Math.max(0, variantIndex));
   return cohortVoices[idx];
@@ -325,15 +355,20 @@ export function getPersonaGender(characterName?: string): 'female' | 'male' {
 /**
  * Extrae el perfil histórico acústico contextual de un personaje
  */
-export function getPersonaProfile(characterName?: string, historicalAge?: number, variantIndex: 0 | 1 | 2 = 0): HistoricalPersonaProfile {
+export function getPersonaProfile(
+  characterName?: string, 
+  historicalAge?: number, 
+  variantIndex: 0 | 1 | 2 = 0,
+  birthOrDeathDates?: string
+): HistoricalPersonaProfile {
   const norm = (characterName || '')
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 
   const gender = getPersonaGender(characterName);
-  const cohort = inferCharacterAgeCohort(characterName || '', historicalAge);
-  const resolvedVoice = resolveCharacterVoice(characterName || '', historicalAge, variantIndex);
+  const cohort = inferCharacterAgeCohort(characterName || '', historicalAge, birthOrDeathDates);
+  const resolvedVoice = resolveCharacterVoice(characterName || '', historicalAge, variantIndex, birthOrDeathDates);
 
   // Época por defecto según personaje
   let era: HistoricalEra = 'independencia';
@@ -457,9 +492,9 @@ export function generateHistoricalSSML(
   characterName?: string, 
   historicalAge?: number, 
   variantIndex: 0 | 1 | 2 = 0,
-  overrides?: { voiceId?: string; voiceRate?: string; voicePitch?: string }
+  overrides?: { voiceId?: string; voiceRate?: string; voicePitch?: string; birthOrDeathDates?: string }
 ): string {
-  const profile = getPersonaProfile(characterName, historicalAge, variantIndex);
+  const profile = getPersonaProfile(characterName, historicalAge, variantIndex, overrides?.birthOrDeathDates);
 
   // 1. Limpieza de sintaxis de markdown y enlaces de bóveda
   let clean = text

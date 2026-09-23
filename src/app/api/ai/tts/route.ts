@@ -206,6 +206,7 @@ export async function POST(req: NextRequest) {
       pitch = 1.0, 
       characterName,
       historicalAge,
+      birthDeathDates,
       variantIndex = 0,
       role = 'character',
       narratorMode = 'wisdom_guide'
@@ -256,10 +257,10 @@ export async function POST(req: NextRequest) {
         preliminaryVoice = certifiedVoice;
       } else if (characterName) {
         // PILAR 2 y 3: Generación SSML oratorio con matriz de 30 voces y pausas respiratorias
-        const profile = getPersonaProfile(characterName, historicalAge, variantIndex);
+        const profile = getPersonaProfile(characterName, historicalAge, variantIndex, birthDeathDates);
         preliminaryVoice = preliminaryVoice || profile.voiceId;
         const certifiedVoice = resolveCertifiedLatinVoice(preliminaryVoice, profile.gender);
-        const rawHistoricalSSML = generateHistoricalSSML(cleanText, characterName, historicalAge, variantIndex);
+        const rawHistoricalSSML = generateHistoricalSSML(cleanText, characterName, historicalAge, variantIndex, { birthOrDeathDates: birthDeathDates });
         targetSSML = sanitizeSSMLForNeuralEngine(rawHistoricalSSML, certifiedVoice);
         preliminaryVoice = certifiedVoice;
       } else {

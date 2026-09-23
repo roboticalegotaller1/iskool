@@ -372,21 +372,20 @@ export default function QuestCardModal() {
           coins_reward: activeQuest.coins_reward,
           created_at: new Date().toISOString()
         };
-        const { error: subErr } = await supabase.from('submissions').insert(submissionData);
-        
-        if (subErr) {
-          await supabase.from('portfolio_items').insert({
-            student_id: activeStudentId,
-            subject_id: subjectId,
-            quest_id: activeQuest.id,
-            title: activeQuest.title,
-            description: activeQuest.description,
-            file_url: mockFile.url,
-            file_type: mockFile.type,
-            self_reflection: reflection,
-            status: 'submitted'
-          });
-        }
+
+        // Registrar en submissions para historial de actividad y en portfolio_items para visualización docente
+        await supabase.from('submissions').insert(submissionData);
+        await supabase.from('portfolio_items').insert({
+          student_id: activeStudentId,
+          subject_id: subjectId,
+          quest_id: activeQuest.id,
+          title: activeQuest.title,
+          description: activeQuest.description,
+          file_url: mockFile.url,
+          file_type: mockFile.type,
+          self_reflection: reflection,
+          status: 'submitted'
+        });
 
         const dbStudentId = mapStudentIdToUuid(activeStudentId);
         const { data, error } = await supabase.rpc('process_reward', {
