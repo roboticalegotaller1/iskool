@@ -816,9 +816,10 @@ export function PlanningTab({ currentTeacher, subjects, schedulesList, groupsLis
       effectiveSchoolId,
       activePlanning.levelId || selectedLevel || 'primaria-alta',
       activePlanning.subjectName || activePlanning.subjectId || selectedSubject || '',
-      query
+      query,
+      currentTeacher?.id
     );
-  }, [activePlanning, effectiveSchoolId, findBookCitation, selectedLevel, selectedSubject]);
+  }, [activePlanning, effectiveSchoolId, findBookCitation, selectedLevel, selectedSubject, currentTeacher?.id]);
 
   const handleEnrichPlanningWithBook = () => {
     if (!activePlanning || !matchingBookData) return;

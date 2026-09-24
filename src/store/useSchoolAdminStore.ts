@@ -147,13 +147,19 @@ export const getSchoolStudents = (studentsList: DetailedStudent[], schoolId: str
       !s.id.startsWith('std-tor') && 
       !s.id.startsWith('std-sec') && 
       !s.id.startsWith('std-prep') &&
+      !s.id.startsWith('std-indep-') &&
       !s.id.startsWith('c00a0eeb')
     );
   }
 
   // 2. Laboratorio Pedagógico & Test Cases (Contenedor de todos los casos de prueba, activos y muestras)
   if (schoolId === 'sch-test-case') {
-    return allStudents.filter(s => s.school_id !== 'sch-montessori').map(s => {
+    return allStudents.filter(s => 
+      s.school_id !== 'sch-montessori' &&
+      s.school_id !== 'sch-ibime' &&
+      s.school_id !== 'sch-profesores-independientes' &&
+      !s.id.startsWith('std-indep-')
+    ).map(s => {
       if (s.campus_name === 'Primaria Laboratorio Demo' || s.campus_name === 'Secundaria Laboratorio Demo' || s.campus_name === 'Preparatoria Laboratorio Demo') {
         return s;
       }
@@ -167,7 +173,15 @@ export const getSchoolStudents = (studentsList: DetailedStudent[], schoolId: str
     });
   }
 
-  // 3. Otros Colegios (Montessori u otros dados de alta)
+  // 3. Red de Profesores Independientes
+  if (schoolId === 'sch-profesores-independientes') {
+    return allStudents.filter(s => 
+      s.school_id === 'sch-profesores-independientes' || 
+      s.id.startsWith('std-indep-')
+    );
+  }
+
+  // 4. Otros Colegios (Montessori u otros dados de alta)
   const currentCampuses = schoolCampuses && schoolCampuses.length > 0 ? schoolCampuses : [];
   return allStudents.filter(s => {
     if (s.school_id) return s.school_id === schoolId;
@@ -187,6 +201,7 @@ export const getSchoolTeachers = (teachersList: UserProfile[], schoolId: string 
     return allTeachers.filter(t => 
       t.school_id === 'sch-jjrosseau' && 
       !t.id.startsWith('usr-teacher-') &&
+      !t.id.startsWith('usr-indep-') &&
       !t.first_name.toLowerCase().includes('demo') &&
       !t.last_name.toLowerCase().includes('demo')
     );
@@ -194,7 +209,21 @@ export const getSchoolTeachers = (teachersList: UserProfile[], schoolId: string 
 
   // 2. Laboratorio Pedagógico & Test Cases (Todos los docentes demo y de prueba)
   if (schoolId === 'sch-test-case') {
-    return allTeachers.filter(t => t.school_id !== 'sch-montessori');
+    return allTeachers.filter(t => 
+      t.school_id !== 'sch-montessori' &&
+      t.school_id !== 'sch-ibime' &&
+      t.school_id !== 'sch-profesores-independientes' &&
+      !t.id.startsWith('usr-indep-')
+    );
+  }
+
+  // 3. Red de Profesores Independientes
+  if (schoolId === 'sch-profesores-independientes') {
+    return allTeachers.filter(t => 
+      t.school_id === 'sch-profesores-independientes' ||
+      t.is_independent_teacher === true ||
+      t.id.startsWith('usr-indep-')
+    );
   }
 
   const currentCampuses = schoolCampuses && schoolCampuses.length > 0 ? schoolCampuses : [];
@@ -212,7 +241,11 @@ export const getSchoolGroups = (groupsList: Group[], schoolId: string | null, sc
   if (!schoolId) return allGroups;
 
   if (schoolId === 'sch-test-case') {
-    return allGroups.filter(g => g.school_id === 'sch-test-case' || g.id.includes('test') || (g.campus_name || '').toLowerCase().includes('demo') || (g.campus_name || '').toLowerCase().includes('laboratorio'));
+    return allGroups.filter(g => 
+      (g.school_id === 'sch-test-case' || g.id.includes('test') || (g.campus_name || '').toLowerCase().includes('demo') || (g.campus_name || '').toLowerCase().includes('laboratorio')) &&
+      g.school_id !== 'sch-profesores-independientes' &&
+      !g.id.startsWith('grp-indep-')
+    );
   }
 
   if (schoolId === 'sch-jjrosseau') {
@@ -220,8 +253,17 @@ export const getSchoolGroups = (groupsList: Group[], schoolId: string | null, sc
       if (g.school_id && g.school_id !== 'sch-jjrosseau' && g.school_id !== 'sch-jjr') return false;
       const isTest = g.id.includes('test') || (g.campus_name || '').toLowerCase().includes('demo') || (g.campus_name || '').toLowerCase().includes('laboratorio');
       const isOther = (g.campus_name || '').toLowerCase().includes('montessori');
-      return !isTest && !isOther;
+      const isIndep = g.id.startsWith('grp-indep-') || g.school_id === 'sch-profesores-independientes';
+      return !isTest && !isOther && !isIndep;
     });
+  }
+
+  // 3. Red de Profesores Independientes
+  if (schoolId === 'sch-profesores-independientes') {
+    return allGroups.filter(g => 
+      g.school_id === 'sch-profesores-independientes' || 
+      g.id.startsWith('grp-indep-')
+    );
   }
 
   const currentCampuses = schoolCampuses && schoolCampuses.length > 0 ? schoolCampuses : [];
@@ -467,6 +509,9 @@ export const getSchoolEmailDomain = (school: { name?: string; website?: string; 
   if (school.id === 'sch-test-case' || (school.name && school.name.toLowerCase().includes('laboratorio'))) {
     return 'laboratoriopedagogico.edu.mx';
   }
+  if (school.id === 'sch-profesores-independientes' || (school.name && school.name.toLowerCase().includes('independiente'))) {
+    return 'independientes.iskool.edu.mx';
+  }
 
   // 3. Normalizar nombre institucional a slug .edu.mx
   if (school.name) {
@@ -565,6 +610,7 @@ interface SchoolAdminStoreState {
   toggleUserBlock: (userId: string, role: 'teacher' | 'student', isBlocked: boolean) => void;
   changeUserPassword: (userId: string, role: 'teacher' | 'student', newPassword?: string) => string;
   incrementTeacherTokens: (teacherId: string, tokensUsed: number) => void;
+  updateIndependentTeacherQuota: (teacherId: string, quota: number) => void;
   
   // Campus Management
   createCampus: (campus: Omit<Campus, 'id' | 'created_at'>) => void;
@@ -1456,6 +1502,14 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
             institutionsList: updatedInstitutions
           };
         });
+      },
+
+      updateIndependentTeacherQuota: (teacherId, quota) => {
+        set((state) => ({
+          teachersList: (state.teachersList || []).map(t => 
+            t.id === teacherId ? { ...t, token_quota: quota } : t
+          )
+        }));
       },
 
       createCampus: (campusData) => {
@@ -2379,13 +2433,43 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
     }),
     {
       name: 'iskool_school_admin_store',
-      version: 2,
-      migrate: (persistedState: any) => {
-        if (persistedState && Array.isArray(persistedState.detailedStudents)) {
-          const existingIds = new Set(persistedState.detailedStudents.map((s: any) => s.id));
-          const deletedIds = new Set((persistedState.studentDeletionAuditLogs || []).map((l: any) => l.student_id));
-          const missing = DETAILED_STUDENTS_SEED.filter(s => !existingIds.has(s.id) && !deletedIds.has(s.id));
-          persistedState.detailedStudents = [...persistedState.detailedStudents, ...missing];
+      version: 3,
+      migrate: (persistedState: any, version: number) => {
+        if (persistedState) {
+          if (Array.isArray(persistedState.detailedStudents)) {
+            const existingIds = new Set(persistedState.detailedStudents.map((s: any) => s.id));
+            const deletedIds = new Set((persistedState.studentDeletionAuditLogs || []).map((l: any) => l.student_id));
+            const missing = DETAILED_STUDENTS_SEED.filter(s => !existingIds.has(s.id) && !deletedIds.has(s.id));
+            persistedState.detailedStudents = [...persistedState.detailedStudents, ...missing];
+          }
+          if (Array.isArray(persistedState.institutionsList)) {
+            const existingInstIds = new Set(persistedState.institutionsList.map((i: any) => i.id));
+            const missingInsts = INSTITUTIONS_SEED.filter(i => !existingInstIds.has(i.id));
+            if (missingInsts.length > 0) {
+              persistedState.institutionsList = [...persistedState.institutionsList, ...missingInsts];
+            }
+          }
+          if (Array.isArray(persistedState.campusesList)) {
+            const existingCampIds = new Set(persistedState.campusesList.map((c: any) => c.id));
+            const missingCampuses = CAMPUSES_SEED.filter(c => !existingCampIds.has(c.id));
+            if (missingCampuses.length > 0) {
+              persistedState.campusesList = [...persistedState.campusesList, ...missingCampuses];
+            }
+          }
+          if (Array.isArray(persistedState.groupsList)) {
+            const existingGroupIds = new Set(persistedState.groupsList.map((g: any) => g.id));
+            const missingGroups = GROUPS_SEED.filter(g => !existingGroupIds.has(g.id));
+            if (missingGroups.length > 0) {
+              persistedState.groupsList = [...persistedState.groupsList, ...missingGroups];
+            }
+          }
+          if (Array.isArray(persistedState.teachersList)) {
+            const existingTeacherIds = new Set(persistedState.teachersList.map((t: any) => t.id));
+            const missingTeachers = TEACHERS_LIST_SEED.filter(t => !existingTeacherIds.has(t.id));
+            if (missingTeachers.length > 0) {
+              persistedState.teachersList = [...persistedState.teachersList, ...missingTeachers];
+            }
+          }
         }
         return persistedState;
       },

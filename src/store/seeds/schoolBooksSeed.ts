@@ -381,5 +381,111 @@ export const INITIAL_SCHOOL_BOOKS_SEED: SchoolDigitalBook[] = [
         ]
       }
     ]
+  },
+  // =========================================================================
+  // 3. RED DE PROFESORES INDEPENDIENTES (sch-profesores-independientes)
+  // Libros aportados a la Bóveda Curricular con sincronización activa
+  // =========================================================================
+  {
+    id: 'book-indep-gab-fisica3',
+    schoolId: 'sch-profesores-independientes',
+    schoolName: 'Profesores Independientes',
+    titulo: 'Física Experimental & Dinámica de Fuerzas 3º',
+    autorEditorial: 'Prof. Gabriel Montes • Edición Docente Autónoma',
+    materia: 'Física',
+    nivelEducativo: 'secundaria',
+    faseNEM: 'Fase 6',
+    grado: '3º',
+    isbn: '978-607-999-2026',
+    cicloEscolar: '2025-2026',
+    totalPaginas: 180,
+    portadaColor: 'from-purple-600 via-indigo-700 to-purple-900',
+    archivoNombre: 'Fisica_Experimental_3Sec_Prof_Gabriel.pdf',
+    archivoTamanoMb: 12.4,
+    fechaCarga: '2026-03-02T11:00:00Z',
+    estadoMapeo: 'completo',
+    subidoPor: 'usr-indep-1',
+    syncedToVault: true,
+    palabrasClaveIndice: ['leyes de newton', 'inercia', 'fricción', 'gravedad', 'energía mecánica', 'trabajo y potencia', 'cinemática'],
+    capitulos: [
+      {
+        id: 'cap-indep-f3-1',
+        numero: 1,
+        titulo: 'Leyes de Newton y el Principio de Causalidad Mecánica',
+        rangoPaginas: '10-26',
+        paginaInicio: 10,
+        paginaFin: 26,
+        campoFormativo: 'Saberes y Pensamiento Científico',
+        resumenTematico: 'Estudio de las tres leyes de Isaac Newton mediante experimentos sencillos de laboratorio escolar. Análisis de fuerzas vectoriales concurrentes y diagramas de cuerpo libre.',
+        conceptosClave: ['Inercia', 'Fuerza neta', 'Masa inercial', 'Acción y reacción', 'Vector'],
+        preguntasDetonadoras: [
+          '¿Por qué sentimos que nos vamos hacia adelante cuando el metrobús frena bruscamente?',
+          '¿Cómo explica la tercera ley de Newton el despegue de un cohete espacial?'
+        ],
+        pdaRelacionados: [
+          'Fase 6 - Experimenta e interpreta las interacciones de la fuerza y el movimiento relacionados con las Leyes de Newton para explicar actividades cotidianas.'
+        ],
+        ejerciciosPropuestos: [
+          {
+            id: 'ex-indep-f3-1a',
+            numero: 1,
+            instruccion: 'Construye un carro impulsado por globo y mide la distancia recorrida para comprobar la 3ª Ley de Newton (Pág. 19).',
+            tipo: 'practica',
+            paginaReferencia: 19
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'book-indep-sof-historia1',
+    schoolId: 'sch-profesores-independientes',
+    schoolName: 'Profesores Independientes',
+    titulo: 'Historia Universal Crítica & Análisis de Fuentes Primarias 1º',
+    autorEditorial: 'Profa. Sofía Albarrán • Edición Docente Autónoma',
+    materia: 'Historia Universal',
+    nivelEducativo: 'secundaria',
+    faseNEM: 'Fase 6',
+    grado: '1º',
+    isbn: '978-607-888-2026',
+    cicloEscolar: '2025-2026',
+    totalPaginas: 195,
+    portadaColor: 'from-amber-600 via-rose-700 to-indigo-950',
+    archivoNombre: 'Historia_Universal_Critica_1Sec_Profa_Sofia.pdf',
+    archivoTamanoMb: 16.2,
+    fechaCarga: '2026-03-03T14:15:00Z',
+    estadoMapeo: 'completo',
+    subidoPor: 'usr-indep-2',
+    syncedToVault: true,
+    palabrasClaveIndice: ['revolución industrial', 'ilustración', 'derechos del hombre', 'imperialismo', 'fuentes primarias', 'crítica historiográfica'],
+    capitulos: [
+      {
+        id: 'cap-indep-h1-1',
+        numero: 1,
+        titulo: 'La Ilustración y la Crisis del Antiguo Régimen',
+        rangoPaginas: '14-32',
+        paginaInicio: 14,
+        paginaFin: 32,
+        campoFormativo: 'Ética, Naturaleza y Sociedades',
+        resumenTematico: 'Las ideas ilustradas de soberanía popular, división de poderes y derechos inalienables. Contraste entre monarquía absoluta y las primeras cartas de derechos.',
+        conceptosClave: ['Soberanía popular', 'Contrato social', 'División de poderes', 'Secularización', 'Razón crítica'],
+        preguntasDetonadoras: [
+          '¿Cómo cambiaron las ideas de Montesquieu y Rousseau nuestra noción moderna de democracia?',
+          '¿Por qué la imprenta y las tertulias ilustradas amenazaron el poder de las monarquías absolutistas?'
+        ],
+        pdaRelacionados: [
+          'Fase 6 - Identifica las causas de la crisis del Antiguo Régimen y la influencia de las ideas ilustradas en las revoluciones burguesas.'
+        ],
+        ejerciciosPropuestos: [
+          {
+            id: 'ex-indep-h1-1a',
+            numero: 1,
+            instruccion: 'Compara un fragmento del Espíritu de las Leyes con un artículo de la Constitución Mexicana actual (Pág. 27).',
+            tipo: 'investigacion',
+            paginaReferencia: 27
+          }
+        ]
+      }
+    ]
   }
 ];

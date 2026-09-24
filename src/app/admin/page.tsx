@@ -82,6 +82,7 @@ import { SchoolStatusSlider } from '@/components/admin/SchoolStatusSlider';
 import { useSchoolBooksStore } from '@/store/useSchoolBooksStore';
 import { RowActionMenu } from '@/components/ui';
 import { useDebounce } from '@/hooks/useDebounce';
+import { IndependentTeachersSuperUserStudio } from '@/components/admin/IndependentTeachersSuperUserStudio';
 
 type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll' | 'analytics' | 'deletions' | 'books_compendium';
 
@@ -204,6 +205,9 @@ export default function SuperUserAdminPage() {
   const [isDeletingSchool, setIsDeletingSchool] = useState(false);
   const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
   const [deletionFeedback, setDeletionFeedback] = useState<string | null>(null);
+
+  // Estudio de Monitoreo & Supervisión de Profesores Independientes
+  const [showIndependentTeachersStudio, setShowIndependentTeachersStudio] = useState(false);
 
   const handleConfirmDeleteSchool = async () => {
     if (!schoolToDelete) return;
@@ -1658,6 +1662,7 @@ export default function SuperUserAdminPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {institutionsList.map((inst) => {
                   const isTest = inst.isTestCase;
+                  const isIndependent = inst.isIndependentTeachersNetwork || inst.id === 'sch-profesores-independientes';
                   const isSuspended = inst.status === 'inactive';
                   const instCampuses = getSchoolCampuses(campusesList, inst.id);
                   const instStudents = getSchoolStudents(detailedStudents, inst.id, instCampuses);
@@ -1665,7 +1670,7 @@ export default function SuperUserAdminPage() {
                   const instStudentsCount = instStudents.length;
                   const instTeachersCount = instTeachers.length;
                   const instCampusesCount = instCampuses.length;
-                  const instTokens = inst.aiTokensConsumed || (isTest ? 48200 : (inst.id === 'sch-jjrosseau' ? 345350 : 0));
+                  const instTokens = inst.aiTokensConsumed || (isIndependent ? 124500 : isTest ? 48200 : (inst.id === 'sch-jjrosseau' ? 345350 : 0));
 
                   return (
                     <div
@@ -1673,13 +1678,15 @@ export default function SuperUserAdminPage() {
                       className={`rounded-3xl border transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-xs relative group ${
                         isSuspended
                           ? 'bg-rose-50/20 border-rose-300 hover:border-rose-400 hover:shadow-md'
+                          : isIndependent
+                          ? 'bg-gradient-to-b from-purple-50/70 via-indigo-50/30 to-white border-purple-300 hover:border-purple-500 hover:shadow-xl ring-1 ring-purple-400/40'
                           : isTest
                           ? 'bg-gradient-to-b from-purple-50/40 via-white to-white border-purple-200 hover:border-purple-400 hover:shadow-md'
                           : 'bg-white border-slate-200 hover:border-indigo-400 hover:shadow-md'
                       }`}
                     >
-                      {/* Banner superior de aviso si el colegio está suspendido */}
-                      {isSuspended && (
+                      {/* Banner superior de aviso si el colegio está suspendido o es red independiente */}
+                      {isSuspended ? (
                         <div className="bg-rose-600 text-white text-[11px] font-bold py-1.5 px-4 flex items-center justify-between shadow-xs">
                           <span className="flex items-center gap-1.5">
                             <Lock className="h-3.5 w-3.5" />
@@ -1689,7 +1696,17 @@ export default function SuperUserAdminPage() {
                             Datos Preservados
                           </span>
                         </div>
-                      )}
+                      ) : isIndependent ? (
+                        <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-purple-950 text-white text-[11px] font-bold py-1.5 px-4 flex items-center justify-between shadow-xs">
+                          <span className="flex items-center gap-1.5 text-purple-200">
+                            <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
+                            Red Docente Autónoma · Aislamiento Estricto
+                          </span>
+                          <span className="text-[10px] bg-purple-800/90 text-amber-300 font-black px-2 py-0.5 rounded-full border border-purple-600/50">
+                            Bóveda Curricular Activa
+                          </span>
+                        </div>
+                      ) : null}
 
                       {/* Top Header Card */}
                       <div className="p-6 space-y-4">
@@ -1706,11 +1723,13 @@ export default function SuperUserAdminPage() {
                               <div className={`h-16 w-16 rounded-2xl flex items-center justify-center shadow-sm ${
                                 isSuspended
                                   ? 'bg-gradient-to-br from-rose-600 to-rose-800 text-white'
+                                  : isIndependent
+                                  ? 'bg-gradient-to-br from-purple-700 via-indigo-600 to-amber-500 text-white shadow-md shadow-purple-600/30'
                                   : isTest 
                                   ? 'bg-gradient-to-br from-purple-600 to-amber-500 text-white'
                                   : 'bg-gradient-to-br from-indigo-600 to-blue-500 text-white'
                               }`}>
-                                {isSuspended ? <Lock className="h-8 w-8" /> : isTest ? <Bot className="h-8 w-8" /> : <Building2 className="h-8 w-8" />}
+                                {isSuspended ? <Lock className="h-8 w-8" /> : isIndependent ? <Sparkles className="h-8 w-8 text-amber-300" /> : isTest ? <Bot className="h-8 w-8" /> : <Building2 className="h-8 w-8" />}
                               </div>
                             )}
 
@@ -1746,10 +1765,22 @@ export default function SuperUserAdminPage() {
                         </div>
 
                         <div>
-                          <h4 className="text-lg font-black text-slate-900 tracking-tight group-hover:text-indigo-600 transition-colors">
-                            {inst.name}
-                          </h4>
-                          <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-lg font-black text-slate-900 tracking-tight group-hover:text-indigo-600 transition-colors">
+                              {inst.name}
+                            </h4>
+                          </div>
+                          {isIndependent && (
+                            <div className="flex items-center gap-1.5 mt-1">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200">
+                                ⭐ Creadores Curriculares
+                              </span>
+                              <span className="text-[10px] text-purple-700 font-semibold">
+                                Acceso Exclusivo Módulo Docente
+                              </span>
+                            </div>
+                          )}
+                          <p className="text-xs text-slate-500 mt-1 line-clamp-2">
                             {inst.tagline || 'Institución de formación integral y excelencia académica.'}
                           </p>
                         </div>
@@ -1758,7 +1789,7 @@ export default function SuperUserAdminPage() {
                         <div className="grid grid-cols-4 gap-2 pt-2 border-t border-slate-100 text-center">
                           <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
                             <span className="text-xs font-black text-slate-900 block">{instCampusesCount}</span>
-                            <span className="text-[9px] font-bold text-slate-500 uppercase">Planteles</span>
+                            <span className="text-[9px] font-bold text-slate-500 uppercase">{isIndependent ? 'Sede' : 'Planteles'}</span>
                           </div>
                           <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
                             <span className="text-xs font-black text-blue-600 block">{instStudentsCount}</span>
@@ -1792,52 +1823,90 @@ export default function SuperUserAdminPage() {
                       </div>
 
                       {/* Botones de Acción de la Tarjeta */}
-                      <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
-                        <button
-                          onClick={() => {
-                            selectSchool(inst.id);
-                            setOverviewMode('classic');
-                          }}
-                          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-black shadow-sm transition-all cursor-pointer ${
-                            isSuspended
-                              ? 'bg-rose-700 hover:bg-rose-600 text-white shadow-rose-700/20'
+                      {isIndependent ? (
+                        <div className="p-4 bg-purple-50/50 border-t border-purple-100 flex items-center gap-2">
+                          <button
+                            onClick={() => setShowIndependentTeachersStudio(true)}
+                            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black shadow-md shadow-purple-600/25 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-500 hover:to-indigo-500 text-white transition-all cursor-pointer"
+                            title="Monitoreo exhaustivo de tokens, libros y planeaciones de profesores independientes"
+                          >
+                            <Brain className="h-4 w-4 text-purple-200" />
+                            <span>Supervisión & Métricas</span>
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              selectSchool(inst.id);
+                              router.push('/teacher');
+                            }}
+                            className="px-3.5 py-2.5 rounded-xl border border-purple-300 hover:border-purple-400 bg-white hover:bg-purple-100/70 text-purple-900 text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer shadow-xs shrink-0"
+                            title="Acceder directamente al Módulo Docente Autónomo"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5 text-purple-600" />
+                            <span>Entrar al Aula</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              selectSchool(inst.id);
+                              setOverviewMode('executive');
+                            }}
+                            className="px-3 py-2.5 rounded-xl border border-slate-300 hover:border-indigo-400 bg-white hover:bg-indigo-50 text-slate-800 hover:text-indigo-700 text-xs font-black transition-all flex items-center gap-1 cursor-pointer shadow-xs shrink-0"
+                            title={`Abrir Visión Ejecutiva CEO de ${inst.name}`}
+                          >
+                            <TrendingUp className="h-3.5 w-3.5 text-amber-500" />
+                            <span>Visión CEO</span>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              selectSchool(inst.id);
+                              setOverviewMode('classic');
+                            }}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-black shadow-sm transition-all cursor-pointer ${
+                              isSuspended
+                                ? 'bg-rose-700 hover:bg-rose-600 text-white shadow-rose-700/20'
+                                : isTest
+                                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-purple-600/20'
+                                : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/20'
+                            }`}
+                          >
+                            {isSuspended
+                              ? '🔒 Supervisión'
                               : isTest
-                              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-purple-600/20'
-                              : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/20'
-                          }`}
-                        >
-                          {isSuspended
-                            ? '🔒 Supervisión'
-                            : isTest
-                            ? '🧪 Sandbox Operativo'
-                            : 'Panel Operativo'} <ChevronRight className="h-3.5 w-3.5" />
-                        </button>
+                              ? '🧪 Sandbox Operativo'
+                              : 'Panel Operativo'} <ChevronRight className="h-3.5 w-3.5" />
+                          </button>
 
-                        <button
-                          onClick={() => {
-                            selectSchool(inst.id);
-                            setOverviewMode('executive');
-                          }}
-                          className="px-3 py-2.5 rounded-xl border border-slate-300 hover:border-indigo-400 bg-white hover:bg-indigo-50 text-slate-800 hover:text-indigo-700 text-xs font-black transition-all flex items-center gap-1 cursor-pointer shadow-xs shrink-0"
-                          title={`Abrir Visión Ejecutiva CEO de ${inst.name}`}
-                        >
-                          <TrendingUp className="h-3.5 w-3.5 text-amber-500" />
-                          <span>Visión CEO</span>
-                        </button>
+                          <button
+                            onClick={() => {
+                              selectSchool(inst.id);
+                              setOverviewMode('executive');
+                            }}
+                            className="px-3 py-2.5 rounded-xl border border-slate-300 hover:border-indigo-400 bg-white hover:bg-indigo-50 text-slate-800 hover:text-indigo-700 text-xs font-black transition-all flex items-center gap-1 cursor-pointer shadow-xs shrink-0"
+                            title={`Abrir Visión Ejecutiva CEO de ${inst.name}`}
+                          >
+                            <TrendingUp className="h-3.5 w-3.5 text-amber-500" />
+                            <span>Visión CEO</span>
+                          </button>
 
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSchoolToDelete(inst);
-                            setDeleteConfirmationText('');
-                            setShowDeleteSchoolModal(true);
-                          }}
-                          className="p-2.5 rounded-xl border border-rose-200 hover:border-rose-400 bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 text-xs font-black transition-all flex items-center justify-center cursor-pointer shadow-xs shrink-0"
-                          title={`Eliminar completamente ${inst.name} del sistema`}
-                        >
-                          <Trash2 className="h-3.5 w-3.5 text-rose-500" />
-                        </button>
-                      </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSchoolToDelete(inst);
+                              setDeleteConfirmationText('');
+                              setShowDeleteSchoolModal(true);
+                            }}
+                            className="p-2.5 rounded-xl border border-rose-200 hover:border-rose-400 bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 text-xs font-black transition-all flex items-center justify-center cursor-pointer shadow-xs shrink-0"
+                            title={`Eliminar completamente ${inst.name} del sistema`}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-rose-500" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -7167,6 +7236,18 @@ export default function SuperUserAdminPage() {
           </div>
         </div>
       )}
+
+      {/* Modal de Supervisión & Métricas de Profesores Independientes */}
+      <IndependentTeachersSuperUserStudio
+        isOpen={showIndependentTeachersStudio}
+        onClose={() => setShowIndependentTeachersStudio(false)}
+        onImpersonateTeacher={(teacher) => {
+          selectSchool('sch-profesores-independientes');
+          setShowIndependentTeachersStudio(false);
+          router.push('/teacher');
+        }}
+        onTriggerToast={(msg) => setDeletionFeedback(msg)}
+      />
 
     </div>
   );

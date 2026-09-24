@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useStudentStore } from '@/store/useStudentStore';
 import { usePortfolioStore } from '@/store/usePortfolioStore';
 import { useGamificationStore } from '@/store/useGamificationStore';
@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { FormattedDate } from '@/components/FormattedDate';
 import dynamic from 'next/dynamic';
-import { DetailedStudent, AttendanceStatus, Attendance, ParentMessage, Quest, QuizQuestion, UserProfile } from '@/types';
+import { DetailedStudent, AttendanceStatus, Attendance, ParentMessage, Quest, QuizQuestion, UserProfile, Group } from '@/types';
 import { TeacherHubCards } from '@/components/TeacherHubCards';
 import { RowActionMenu } from '@/components/ui';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -66,6 +66,9 @@ const RosterImporterModal = dynamic(
   () => import('@/components/classroom/RosterImporterModal').then((mod) => mod.RosterImporterModal),
   { ssr: false }
 );
+
+import { IndependentTeacherGroupManagerModal } from '@/components/teacher/IndependentTeacherGroupManagerModal';
+import { useClassroomStore } from '@/store/useClassroomStore';
 
 // Catálogo de PDAs por asignatura oficial SEP (NEM 2024 y MCCEMS)
 const PDA_CATALOG: Record<string, string[]> = {
@@ -248,6 +251,26 @@ export default function TeacherDashboard() {
   const [isLiveClassModalOpen, setIsLiveClassModalOpen] = useState(false);
   const [evaluatingSubmissionId, setEvaluatingSubmissionId] = useState<string | null>(null);
   const [isRosterImporterOpen, setIsRosterImporterOpen] = useState(false);
+  const [isGroupManagerOpen, setIsGroupManagerOpen] = useState(false);
+
+  // Verificación de Docente Autónomo (Red de Profesores Independientes)
+  const isIndependentTeacher = Boolean(
+    currentTeacher?.is_independent_teacher || 
+    currentTeacher?.school_id === 'sch-profesores-independientes' ||
+    currentTeacher?.id?.startsWith('usr-indep-')
+  );
+
+  // Grupos disponibles para este profesor con estricto aislamiento
+  const availableTeacherGroups = useMemo(() => {
+    if (isIndependentTeacher) {
+      return groupsList.filter(g => 
+        g.teacher_id === currentTeacher?.id || 
+        (g.school_id === 'sch-profesores-independientes' && (!g.teacher_id || g.teacher_id === currentTeacher?.id))
+      );
+    }
+    const scheduled = groupsList.filter(g => schedulesList.some(s => s.groupId === g.id && s.teacherId === normalizedTeacherId));
+    return scheduled.length > 0 ? scheduled : groupsList;
+  }, [groupsList, schedulesList, isIndependentTeacher, currentTeacher?.id, normalizedTeacherId]);
 
   // Navegación principal del portal del profesor (Por defecto: 'hub' - Regla de los 3 Clics de Apple)
   const [currentMenuTab, setCurrentMenuTab] = useState<'hub' | 'classroom' | 'evaluation' | 'attendance' | 'tasks' | 'design' | 'planning' | 'canvas' | 'community'>('hub');
@@ -365,9 +388,21 @@ export default function TeacherDashboard() {
     }
   ]);
 
-  // Inicializar grupos y materias por defecto para Israel López
+  // Inicializar grupos y materias por defecto para Israel López o Docente Autónomo
   useEffect(() => {
     if (!currentTeacher) return;
+    if (isIndependentTeacher) {
+      if (availableTeacherGroups.length > 0 && !selectedAttendanceGroup) {
+        const firstGroup = availableTeacherGroups[0].id;
+        const firstSubject = subjects[0]?.id || 'sub-sci';
+        setSelectedAttendanceGroup(firstGroup);
+        setSelectedAttendanceSubject(firstSubject);
+        setSelectedTaskGroup(firstGroup);
+        setSelectedTaskSubject(firstSubject);
+        setSelectedDesignSubject(firstSubject);
+      }
+      return;
+    }
     const mySchedules = schedulesList.filter(s => s.teacherId === normalizedTeacherId);
     if (mySchedules.length > 0) {
       const firstGroup = mySchedules[0].groupId;
@@ -378,7 +413,7 @@ export default function TeacherDashboard() {
       setSelectedTaskSubject(firstSubject);
       setSelectedDesignSubject(firstSubject);
     }
-  }, [schedulesList, currentTeacher?.id]);
+  }, [schedulesList, currentTeacher?.id, isIndependentTeacher, availableTeacherGroups, selectedAttendanceGroup]);
 
   // Cargar asistencia guardada al cambiar grupo, materia o fecha
   useEffect(() => {
@@ -808,6 +843,60 @@ export default function TeacherDashboard() {
       <Header />
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
+        
+        {/* Banner Exclusivo y Barra de Autonomía para Profesores Independientes */}
+        {isIndependentTeacher && (
+          <div className="rounded-3xl p-5 bg-gradient-to-r from-purple-950 via-indigo-950 to-slate-950 text-white border border-purple-500/40 shadow-xl shadow-purple-950/20 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 animate-in fade-in duration-200">
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-500/30 text-purple-200 border border-purple-400/40 flex items-center gap-1">
+                  <Sparkles className="h-3 w-3 text-amber-300" /> Docente Autónomo ISkool
+                </span>
+                <span className="text-xs text-purple-300 font-bold">
+                  Especialidad: {currentTeacher?.specialty || 'Ciencias & Humanidades'}
+                </span>
+                <span className="text-[10px] px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">
+                  Aislamiento Multi-Tenant Activo
+                </span>
+              </div>
+              <h2 className="text-lg font-black text-white flex items-center gap-2">
+                Espacio de Trabajo Autónomo & Bóveda Curricular
+              </h2>
+              <p className="text-xs text-purple-200/90 max-w-2xl leading-relaxed">
+                Dispones de autonomía completa para gestionar tus propios grupos, listas de alumnos, calificaciones, planeaciones NEM y subir libros a la Bóveda Curricular.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 shrink-0 w-full lg:w-auto justify-end">
+              {/* Indicador de Cuota de Tokens IA */}
+              <div className="px-3.5 py-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 text-right">
+                <span className="text-[9px] font-bold text-purple-300 block uppercase tracking-wider">Cuota de Tokens IA</span>
+                <span className="text-sm font-black text-amber-300">
+                  {((currentTeacher?.ai_tokens_consumed || 62400) / 1000).toFixed(1)}k
+                  <span className="text-xs font-normal text-purple-200"> / {((currentTeacher?.token_quota || 250000) / 1000).toFixed(0)}k</span>
+                </span>
+              </div>
+
+              {/* Botón Administrador de Grupos y Alumnos */}
+              <button
+                onClick={() => setIsGroupManagerOpen(true)}
+                className="px-4 py-2.5 rounded-2xl bg-white hover:bg-purple-50 text-purple-950 font-black text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95"
+              >
+                <Users className="h-4 w-4 text-purple-700" />
+                <span>Mis Grupos & Alumnos</span>
+              </button>
+
+              {/* Botón Lanzar Ruleta de Participación */}
+              <button
+                onClick={() => setIsLiveClassModalOpen(true)}
+                className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-xs shadow-md shadow-amber-500/20 transition-all flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95"
+              >
+                <Sparkles className="h-4 w-4" />
+                <span>Ruleta del Aula</span>
+              </button>
+            </div>
+          </div>
+        )}
         
         {/* VISTA 1: HUB CENTRAL (DISEÑO MINIMALISTA DE ISKOOL - SISTEMA BENTO) */}
         {currentMenuTab === 'hub' && (
@@ -1737,12 +1826,9 @@ export default function TeacherDashboard() {
                   onChange={(e) => setSelectedAttendanceGroup(e.target.value)}
                   className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
                 >
-                  {groupsList
-                    .filter(g => schedulesList.some(s => s.groupId === g.id && s.teacherId === normalizedTeacherId))
-                    .map(g => (
-                      <option key={g.id} value={g.id}>{g.name} - {g.level_grade_id.startsWith('primaria') ? 'Primaria Alta' : g.level_grade_id.startsWith('secundaria') ? 'Secundaria' : 'Preparatoria'}</option>
-                    ))
-                  }
+                  {availableTeacherGroups.map((g: Group) => (
+                    <option key={g.id} value={g.id}>{g.name} - {g.level_grade_id.startsWith('primaria') ? 'Primaria Alta' : g.level_grade_id.startsWith('secundaria') ? 'Secundaria' : 'Preparatoria'}</option>
+                  ))}
                 </select>
               </div>
 
@@ -1993,12 +2079,9 @@ export default function TeacherDashboard() {
                   onChange={(e) => setSelectedTaskGroup(e.target.value)}
                   className="w-full text-xs p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-100 focus:outline-none focus:border-blue-500"
                 >
-                  {groupsList
-                    .filter(g => schedulesList.some(s => s.groupId === g.id && s.teacherId === normalizedTeacherId))
-                    .map(g => (
-                      <option key={g.id} value={g.id}>{g.name} - {g.level_grade_id.startsWith('primaria') ? 'Primaria Alta' : g.level_grade_id.startsWith('secundaria') ? 'Secundaria' : 'Preparatoria'}</option>
-                    ))
-                  }
+                  {availableTeacherGroups.map((g: Group) => (
+                    <option key={g.id} value={g.id}>{g.name} - {g.level_grade_id.startsWith('primaria') ? 'Primaria Alta' : g.level_grade_id.startsWith('secundaria') ? 'Secundaria' : 'Preparatoria'}</option>
+                  ))}
                 </select>
               </div>
 
@@ -3175,6 +3258,22 @@ export default function TeacherDashboard() {
           </div>
           <button onClick={() => setRealtimeToast(null)} className="p-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition-colors">✕</button>
         </div>
+      )}
+
+      {/* Modal de Creación y Administración Autónoma de Grupos y Alumnos */}
+      {isIndependentTeacher && currentTeacher && (
+        <IndependentTeacherGroupManagerModal
+          isOpen={isGroupManagerOpen}
+          onClose={() => setIsGroupManagerOpen(false)}
+          currentTeacher={currentTeacher}
+          onOpenRuleta={(groupId) => {
+            setSelectedAttendanceGroup(groupId);
+            useClassroomStore.getState().setSelectedGroupId(groupId);
+            setIsGroupManagerOpen(false);
+            setIsLiveClassModalOpen(true);
+          }}
+          onTriggerToast={(msg) => setRealtimeToast({ studentName: 'Sistema Autónomo', questTitle: msg })}
+        />
       )}
 
     </div>

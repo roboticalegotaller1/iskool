@@ -122,6 +122,10 @@ export interface UserProfile {
   campus_id?: string;
   campus_name?: string;
   ai_tokens_consumed?: number; // Contador de tokens consumidos del Asistente Pedagógico IA
+  token_quota?: number; // Cuota máxima asignada de tokens de IA pedagógica
+  is_independent_teacher?: boolean; // Docente de la red autónoma de Profesores Independientes
+  specialty?: string; // Especialidad académica (ej. "Matemáticas & Física Secundaria")
+  bio?: string;
   is_blocked?: boolean; // Estado de bloqueo/cancelación de cuenta
   temporary_password?: string; // Contraseña de acceso (6 caracteres alfanuméricos)
   assigned_subjects?: string[];
@@ -155,6 +159,7 @@ export interface Institution {
   cct: string;
   logoUrl?: string;
   isTestCase?: boolean;
+  isIndependentTeachersNetwork?: boolean; // Identifica la institución especial de Profesores Independientes
   status: 'active' | 'inactive' | 'trial';
   createdAt: string;
   address?: string;
@@ -242,6 +247,7 @@ export interface LevelGrade {
 export interface Group {
   id: string;
   school_id: string;
+  teacher_id?: string; // Docente propietario para aislamiento estricto en Profesores Independientes
   campus_id?: string;
   campus_name?: string; // "Primaria Jardines", "Primaria Torres", "Secundaria Torres"
   level_grade_id: string;
@@ -898,6 +904,8 @@ export interface DetailedStudent {
   
   // Académicos
   school_id?: string;
+  teacher_id?: string; // Docente propietario (aislamiento en Profesores Independientes)
+  gamification_enabled?: boolean; // false para alumnos de docentes independientes (solo ruleta de aula)
   academic_notes?: string;
   level: 'primaria' | 'secundaria' | 'preparatoria';
   grade: string;

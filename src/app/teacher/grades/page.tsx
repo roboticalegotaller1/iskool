@@ -222,11 +222,14 @@ export default function TeacherGrades() {
 
   // Auth Group Filtering - Directly using user.id mapping for seed schedules matching
   const teacherId = user?.id === 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a55' ? 'usr-teacher-1' : user?.id;
-  const teacherGroupIds = schoolSchedulesList
-    .filter(s => s.teacherId === teacherId)
-    .map(s => s.groupId);
+  const isIndependent = Boolean(user?.is_independent_teacher || user?.school_id === 'sch-profesores-independientes' || user?.id?.startsWith('usr-indep-'));
+  const teacherGroupIds = isIndependent
+    ? groupsList.filter(g => g.teacher_id === teacherId || (g.school_id === 'sch-profesores-independientes' && (!g.teacher_id || g.teacher_id === teacherId))).map(g => g.id)
+    : schoolSchedulesList.filter(s => s.teacherId === teacherId).map(s => s.groupId);
 
-  const myStudents = schoolDetailedStudents.filter(s => s.group_id && teacherGroupIds.includes(s.group_id));
+  const myStudents = isIndependent
+    ? schoolDetailedStudents.filter(s => s.teacher_id === teacherId || (s.group_id && teacherGroupIds.includes(s.group_id)))
+    : schoolDetailedStudents.filter(s => s.group_id && teacherGroupIds.includes(s.group_id));
 
   const sortedStudents = useMemo(() => {
     return [...myStudents].sort((a, b) => {

@@ -49,6 +49,26 @@ const DEMO_ACCOUNTS: DemoAccount[] = [
     defaultPass: "008805",
     category: "docentes"
   },
+  {
+    name: "Prof. Gabriel Montes",
+    role: "teacher",
+    grade: "Profesor Independiente (Física & Ciencias 3º)",
+    email: "gabriel.montes@independientes.iskool.edu.mx",
+    avatarColor: "bg-purple-600",
+    id: "usr-indep-1",
+    defaultPass: "008805",
+    category: "docentes"
+  },
+  {
+    name: "Profa. Sofía Albarrán",
+    role: "teacher",
+    grade: "Profesora Independiente (Historia 1º)",
+    email: "sofia.albarran@independientes.iskool.edu.mx",
+    avatarColor: "bg-indigo-600",
+    id: "usr-indep-2",
+    defaultPass: "008805",
+    category: "docentes"
+  },
   // Estudiantes
   {
     name: "Lucas Skywalker",

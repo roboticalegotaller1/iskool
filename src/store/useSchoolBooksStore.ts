@@ -21,7 +21,7 @@ interface SchoolBooksState {
   isProcessing: boolean;
 
   // Consultas con Aislamiento Estricto por Colegio
-  getBooksBySchool: (schoolId: string) => SchoolDigitalBook[];
+  getBooksBySchool: (schoolId: string, teacherId?: string) => SchoolDigitalBook[];
   getAllBooksForSuperUser: () => SchoolDigitalBook[];
   getBookById: (bookId: string) => SchoolDigitalBook | undefined;
   
@@ -30,7 +30,8 @@ interface SchoolBooksState {
     schoolId: string, 
     level: string, 
     subject: string, 
-    topicQuery: string
+    topicQuery: string,
+    teacherId?: string
   ) => { book: SchoolDigitalBook; chapter: BookChapter; citation: BookCitation } | null;
 
   // Acciones de Gestión de Libros
@@ -62,14 +63,24 @@ export const useSchoolBooksStore = create<SchoolBooksState>()(
       isProcessing: false,
 
       /**
-       * AISLAMIENTO ESTRICTO MULTI-COLEGIO:
-       * Garantiza que ningún colegio ajeno pueda ver los libros de otra institución.
+       * AISLAMIENTO ESTRICTO MULTI-COLEGIO Y POR DOCENTE AUTÓNOMO:
+       * Garantiza que ningún colegio ajeno pueda ver los libros de otra institución
+       * y que los profesores independientes tengan sus libros aislados entre sí.
        */
-      getBooksBySchool: (schoolId: string) => {
+      getBooksBySchool: (schoolId: string, teacherId?: string) => {
         const { books } = get();
         if (!schoolId) return [];
         // Mapeo seguro si viene sch-jjr
         const targetId = schoolId === 'sch-jjr' ? 'sch-jjrosseau' : schoolId;
+        if (targetId === 'sch-profesores-independientes') {
+          if (teacherId) {
+            return books.filter(b => 
+              b.schoolId === 'sch-profesores-independientes' &&
+              (b.subidoPor === teacherId || !b.subidoPor)
+            );
+          }
+          return books.filter(b => b.schoolId === 'sch-profesores-independientes');
+        }
         return books.filter(b => b.schoolId === targetId || (targetId === 'sch-jjrosseau' && b.schoolId === 'sch-jjr'));
       },
 
@@ -85,8 +96,8 @@ export const useSchoolBooksStore = create<SchoolBooksState>()(
         return get().books.find(b => b.id === bookId);
       },
 
-      findBookCitationForPlanning: (schoolId: string, level: string, subject: string, topicQuery: string) => {
-        const schoolBooks = get().getBooksBySchool(schoolId);
+      findBookCitationForPlanning: (schoolId: string, level: string, subject: string, topicQuery: string, teacherId?: string) => {
+        const schoolBooks = get().getBooksBySchool(schoolId, teacherId);
         if (schoolBooks.length === 0) return null;
         return findBestChapterForTopic(schoolBooks, subject, '', topicQuery);
       },
@@ -96,7 +107,8 @@ export const useSchoolBooksStore = create<SchoolBooksState>()(
           ...bookData,
           id: `book-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
           fechaCarga: new Date().toISOString(),
-          estadoMapeo: 'completo'
+          estadoMapeo: 'completo',
+          syncedToVault: true // Sincronizado a la Bóveda Curricular
         };
 
         set(state => ({
@@ -165,7 +177,31 @@ export const useSchoolBooksStore = create<SchoolBooksState>()(
     }),
     {
       name: 'iskool_school_digital_books_v1',
+      version: 2,
       storage: createJSONStorage(() => localStorage),
+      migrate: (persistedState: any) => {
+        if (persistedState && Array.isArray(persistedState.books)) {
+          const existingIds = new Set(persistedState.books.map((b: any) => b.id));
+          const missingBooks = INITIAL_SCHOOL_BOOKS_SEED.filter(b => !existingIds.has(b.id));
+          if (missingBooks.length > 0) {
+            persistedState.books = [...persistedState.books, ...missingBooks];
+          }
+        }
+        return persistedState;
+      },
+      onRehydrateStorage: () => (state) => {
+        if (state && Array.isArray(state.books)) {
+          const existingIds = new Set(state.books.map(b => b.id));
+          const missingBooks = INITIAL_SCHOOL_BOOKS_SEED.filter(b => !existingIds.has(b.id));
+          if (missingBooks.length > 0) {
+            setTimeout(() => {
+              useSchoolBooksStore.setState(prev => ({
+                books: [...prev.books, ...missingBooks.filter(m => !prev.books.some(b => b.id === m.id))]
+              }));
+            }, 50);
+          }
+        }
+      },
       partialize: (state) => ({
         books: state.books,
         compendiums: state.compendiums

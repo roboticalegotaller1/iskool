@@ -43,6 +43,7 @@ export interface SchoolDigitalBook {
   palabrasClaveIndice: string[];
   subidoPor?: string;
   estadoMapeo: 'completo' | 'procesando' | 'error';
+  syncedToVault?: boolean;
 }
 
 export interface BookCitation {

@@ -86,6 +86,7 @@ import {
 } from '@/services/executiveAnalyticsEngine';
 import { InstitutionalBrainStudio } from './InstitutionalBrainStudio';
 import { OperationalEcosystemControl } from './OperationalEcosystemControl';
+import { PhaseCurricularAuditModal } from './PhaseCurricularAuditModal';
 
 // ==========================================
 // ==========================================
@@ -561,6 +562,9 @@ export default function CEOExecutiveDashboard({
   const [collectionThreshold, setCollectionThreshold] = useState<number>(95);
   const [curriculumThreshold, setCurriculumThreshold] = useState<number>(90);
   const [retentionThreshold, setRetentionThreshold] = useState<number>(95);
+
+  // Modal de Auditoría Curricular por Fase NEM 2024
+  const [selectedPhaseForAudit, setSelectedPhaseForAudit] = useState<string | null>(null);
 
   // Cerebro Institucional y Búsqueda Semántica Local (0 Tokens)
   const [isBrainModalOpen, setIsBrainModalOpen] = useState<boolean>(false);
@@ -2587,9 +2591,19 @@ export default function CEOExecutiveDashboard({
 
               {/* COBERTURA POR FASES NEM 2024 */}
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-base font-black text-slate-900">Mapa de Cobertura Curricular SEP por Fases (NEM 2024)</h3>
-                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                      <span>Mapa de Cobertura Curricular SEP por Fases (NEM 2024)</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full hidden sm:inline-block">
+                        Interactivo · Clic para auditar
+                      </span>
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Haz clic en cualquier fase para auditar la fórmula de cálculo del porcentaje y consultar sus funciones pedagógicas.
+                    </p>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 self-start sm:self-auto">
                     Promedio Red: {metrics.avgCurriculum}%
                   </span>
                 </div>
@@ -2603,16 +2617,29 @@ export default function CEOExecutiveDashboard({
                     { fase: 'Fase 5', name: '5° y 6° Primaria', pct: 93, status: 'Óptimo' },
                     { fase: 'Fase 6', name: 'Secundaria', pct: 91, status: 'Alerta Preventiva' }
                   ].map((f, i) => (
-                    <div key={i} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
-                      <span className="text-xs font-black text-slate-900 block">{f.fase}</span>
-                      <span className="text-[11px] text-slate-500 block truncate">{f.name}</span>
-                      <div className="text-xl font-black text-indigo-600 font-mono">{f.pct}%</div>
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setSelectedPhaseForAudit(f.fase)}
+                      className="group p-4 bg-slate-50 hover:bg-white rounded-2xl border border-slate-200 hover:border-indigo-400 hover:shadow-md hover:-translate-y-0.5 transition-all text-center space-y-2 cursor-pointer relative overflow-hidden"
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-black text-slate-900 block group-hover:text-indigo-600 transition-colors">
+                          {f.fase}
+                        </span>
+                        <ChevronRight size={13} className="text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
+                      </div>
+                      <span className="text-[11px] text-slate-500 block truncate font-medium">{f.name}</span>
+                      <div className="text-xl font-black text-indigo-600 font-mono group-hover:scale-105 transition-transform">{f.pct}%</div>
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-block ${
                         f.pct >= 95 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                       }`}>
                         {f.status}
                       </span>
-                    </div>
+                      <span className="text-[9px] text-indigo-600 font-semibold block pt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        Auditar Desglose →
+                      </span>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -3873,6 +3900,7 @@ export default function CEOExecutiveDashboard({
                 isOpen={true}
                 onClose={() => {}}
                 holdingName={holding.name}
+                schoolId={schoolId || activeSchoolId || currentInstitution?.id}
                 initialQuery={ragQuery}
                 onNavigateTab={handleNavClick}
                 isEmbeddedView={true}
@@ -4169,8 +4197,27 @@ export default function CEOExecutiveDashboard({
           isOpen={isBrainModalOpen}
           onClose={() => setIsBrainModalOpen(false)}
           holdingName={holding.name}
+          schoolId={schoolId || activeSchoolId || currentInstitution?.id}
           initialQuery={ragQuery}
           onNavigateTab={handleNavClick}
+        />
+      )}
+
+      {/* MODAL EJECUTIVO DE AUDITORÍA CURRICULAR POR FASE NEM 2024 */}
+      {selectedPhaseForAudit && (
+        <PhaseCurricularAuditModal
+          isOpen={Boolean(selectedPhaseForAudit)}
+          onClose={() => setSelectedPhaseForAudit(null)}
+          selectedFaseKey={selectedPhaseForAudit}
+          onSelectFase={(faseKey) => setSelectedPhaseForAudit(faseKey)}
+          holdingName={holding.name}
+          schoolId={schoolId || activeSchoolId || currentInstitution?.id}
+          onOpenVault={(faseQuery) => {
+            setSelectedPhaseForAudit(null);
+            if (faseQuery) setRagQuery(faseQuery);
+            setIsBrainModalOpen(true);
+          }}
+          onTriggerToast={triggerToast}
         />
       )}
 
