@@ -38,7 +38,7 @@ export function TeacherNavbar() {
   const navLinks = [
     { href: '/teacher', label: 'Hub Docente', icon: BookOpen, exact: true },
     { href: '/teacher/studio', label: 'Estudio ISkool', icon: Palette, badge: 'IA' },
-    { href: '/teacher/idiomas', label: 'Lenguajes', icon: Languages, badge: 'Fonética' },
+    { href: '/teacher/idiomas', label: 'Centro de Idiomas', icon: Languages, badge: 'DELF / CENNI' },
     { href: '/teacher/community', label: 'Comunidad', icon: Globe2 },
     { href: '/teacher/grades', label: 'Boleta SEP', icon: Star }
   ];

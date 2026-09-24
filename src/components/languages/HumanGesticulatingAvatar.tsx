@@ -14,6 +14,7 @@ import {
   Award,
   BookOpen
 } from 'lucide-react';
+import { playUniversalIskoolVoice, stopAllIskoolAudio } from '@/lib/historicalVoiceEngine';
 
 interface Props {
   gender: AvatarGender;
@@ -40,7 +41,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
   voiceId,
   speechRate = 1.0,
   onSpeechRateChange,
-  isPlaying = false,
+  isPlaying: externalIsPlaying = false,
   isListening = false,
   avatarMood = 'idle',
   currentText = '',
@@ -50,6 +51,9 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
   audioElement,
   className = ''
 }) => {
+  const [internalPlaying, setInternalPlaying] = useState<boolean>(false);
+  const isPlaying = externalIsPlaying || internalPlaying;
+
   // Estados de animación facial
   const [mouthOpen, setMouthOpen] = useState<number>(0); // 0 a 1
   const [isBlinking, setIsBlinking] = useState<boolean>(false);
@@ -60,6 +64,37 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const audioControllerRef = useRef<any>(null);
+
+  const handlePlayVoiceSample = async () => {
+    if (isPlaying) {
+      stopAllIskoolAudio();
+      audioControllerRef.current?.stop();
+      setInternalPlaying(false);
+      return;
+    }
+    if (onRepeat) {
+      onRepeat();
+      return;
+    }
+    if (!currentText) return;
+    try {
+      setInternalPlaying(true);
+      audioControllerRef.current = await playUniversalIskoolVoice({
+        text: currentText,
+        characterName: name,
+        voiceId,
+        language,
+        gender,
+        rate: speechRate,
+        onStart: () => setInternalPlaying(true),
+        onEnd: () => setInternalPlaying(false),
+        onError: () => setInternalPlaying(false)
+      });
+    } catch {
+      setInternalPlaying(false);
+    }
+  };
 
   // 1. Temporizador de Parpadeo Natural Humano (cada 3.5 a 6 segundos)
   useEffect(() => {
@@ -299,7 +334,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
         </div>
 
         {/* Selector de Velocidad */}
-        <div className="flex items-center gap-1 overflow-x-auto py-0.5">
+        <div className="flex items-center gap-1 py-0.5">
           {SPEED_OPTIONS.map(opt => (
             <button
               key={opt.value}
@@ -317,18 +352,20 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
           ))}
         </div>
 
-        {/* Botón de Repetición Inmediata */}
-        {onRepeat && (
-          <button
-            type="button"
-            onClick={onRepeat}
-            disabled={isPlaying}
-            className="p-1.5 rounded-xl bg-indigo-600/80 hover:bg-indigo-500 disabled:opacity-40 text-white transition-all cursor-pointer shadow-xs shrink-0"
-            title="Repetir audio"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-          </button>
-        )}
+        {/* Botón de Reproducción / Repetición Inmediata con Pronunciación Nativa */}
+        <button
+          type="button"
+          onClick={handlePlayVoiceSample}
+          className={`p-1.5 rounded-xl text-white transition-all cursor-pointer shadow-xs shrink-0 flex items-center gap-1 ${
+            isPlaying 
+              ? 'bg-rose-600 hover:bg-rose-500 animate-pulse' 
+              : 'bg-indigo-600/80 hover:bg-indigo-500'
+          }`}
+          title={isPlaying ? "Detener locución" : "Escuchar pronunciación nativa"}
+        >
+          {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+          <span className="text-[10px] font-bold">{isPlaying ? 'Detener' : 'Escuchar'}</span>
+        </button>
       </div>
 
       {/* Globo de Diálogo / Subtítulo con Traducción Desplegable */}

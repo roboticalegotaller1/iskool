@@ -39,7 +39,10 @@ import {
   Languages,
   Mic,
   ExternalLink,
-  Landmark
+  Landmark,
+  GraduationCap,
+  Theater,
+  ClipboardCheck
 } from 'lucide-react';
 
 export interface BlockCategoryItem {
@@ -366,11 +369,11 @@ export const SCRATCH_CATEGORIES: BlockCategoryItem[] = [
   {
     id: 'languages',
     name: 'Lenguajes',
-    badge: '2 Bloques',
+    badge: '5 Bloques',
     icon: Languages,
     color: 'from-violet-600 via-indigo-600 to-purple-600',
-    description: 'Estudio de lenguajes e idiomas, avatares pedagógicos gesticulantes, fluidez fonética por micrófono y karaoke interactivo.',
-    example: 'Práctica conversacional guiada en inglés/francés y karaoke de pronunciación fonética palabra por palabra.',
+    description: 'Centro de Idiomas completo: avatares pedagógicos gesticulantes, karaoke fonético, tutor socrático IA, misiones de roleplay y rúbricas oficiales DELF/CENNI.',
+    example: 'Práctica conversacional guiada en inglés/francés, karaoke de fluidez y evaluación formativa por rúbricas.',
     blocks: [
       {
         type: 'languages_practice_portal',
@@ -393,6 +396,39 @@ export const SCRATCH_CATEGORIES: BlockCategoryItem[] = [
         icon: Mic,
         gradient: 'from-indigo-600 via-purple-600 to-pink-600',
         glowColor: 'shadow-indigo-500/30'
+      },
+      {
+        type: 'languages_socratic_tutor',
+        title: 'Tutor Socrático IA (DELF / Cambridge)',
+        category: 'Lenguajes',
+        badge: '🎓 Diálogo Socrático',
+        description: 'Tutor adaptativo 1 a 1 en inglés o francés con corrección de formulaciones y preguntas abiertas de profundización.',
+        example: 'Debate en francés sobre el clima ajustado automáticamente a nivel DELF B1 con retroalimentación.',
+        icon: GraduationCap,
+        gradient: 'from-purple-600 via-violet-600 to-indigo-700',
+        glowColor: 'shadow-purple-500/30'
+      },
+      {
+        type: 'languages_roleplay_mission',
+        title: 'Roleplay & Tarea Accional',
+        category: 'Lenguajes',
+        badge: '🎭 Misión Real',
+        description: 'Simulación comunicativa en situaciones reales (restaurante en París, aeropuerto, entrevista de empleo).',
+        example: 'Misión comunicativa: Ordenar cena en París sin romper el protocolo y usando fórmulas de cortesía.',
+        icon: Theater,
+        gradient: 'from-fuchsia-600 via-purple-600 to-violet-700',
+        glowColor: 'shadow-fuchsia-500/30'
+      },
+      {
+        type: 'languages_evaluation_rubric',
+        title: 'Evaluación Formativa CENNI / DELF',
+        category: 'Lenguajes',
+        badge: '📋 Rúbrica Oficial',
+        description: 'Rúbrica oficial multidimensional con ponderación de comprensión oral, producción oral, fonética y léxico.',
+        example: 'Baremo de certificación SEP CENNI nivel 12 y DELF B2 para calificar tareas del portafolio.',
+        icon: ClipboardCheck,
+        gradient: 'from-violet-700 via-indigo-700 to-cyan-600',
+        glowColor: 'shadow-violet-600/30'
       }
     ]
   },

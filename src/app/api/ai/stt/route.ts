@@ -124,6 +124,8 @@ export async function POST(req: NextRequest) {
 
     const tokens = cleanText
       .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9\s'’]/gi, ' ')
       .split(/\s+/)
       .filter(Boolean);

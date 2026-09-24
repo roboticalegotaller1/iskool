@@ -1,0 +1,16 @@
+#!/usr/bin/env node
+const { spawn } = require('child_process');
+const path = require('path');
+
+const args = process.argv.slice(2);
+const tsxCli = path.join(__dirname, '..', 'node_modules', 'tsx', 'dist', 'cli.mjs');
+const cliPath = path.join(__dirname, '..', 'scripts', 'knowledge_cli.ts');
+
+const child = spawn(process.execPath, [tsxCli, cliPath, ...args], {
+  stdio: 'inherit',
+  cwd: path.join(__dirname, '..')
+});
+
+child.on('exit', (code) => {
+  process.exit(code || 0);
+});

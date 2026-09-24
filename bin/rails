@@ -1,0 +1,327 @@
+#!/usr/bin/env node
+const { spawn } = require('child_process');
+const path = require('path');
+
+const args = process.argv.slice(2);
+const firstArg = args[0] || '';
+
+// Manejar consola interactiva: rails c / rails console
+if (firstArg === 'c' || firstArg === 'console') {
+  const tsxCli = path.join(__dirname, '..', 'node_modules', 'tsx', 'dist', 'cli.mjs');
+  const consoleScript = path.join(__dirname, '..', 'scripts', 'rails_console.ts');
+  const child = spawn(process.execPath, [tsxCli, consoleScript], {
+    stdio: 'inherit',
+    cwd: path.join(__dirname, '..')
+  });
+  child.on('exit', (code) => {
+    process.exit(code || 0);
+  });
+}
+// Manejar comandos de Generación Académica: academic:generate, academic:inspect, academic:list
+else if (firstArg.startsWith('academic:') || firstArg === 'generate:activity') {
+  const tsxCli = path.join(__dirname, '..', 'node_modules', 'tsx', 'dist', 'cli.mjs');
+  const cliPath = path.join(__dirname, '..', 'scripts', 'academic_generation_cli.ts');
+  let subCommand = 'default-run';
+  if (firstArg === 'academic:inspect' || args[1] === 'inspect') subCommand = 'inspect';
+  else if (firstArg === 'academic:list' || args[1] === 'list') subCommand = 'list';
+  else if (firstArg === 'academic:generate' || firstArg === 'generate:activity') subCommand = 'default-run';
+
+  const child = spawn(process.execPath, [tsxCli, cliPath, subCommand, ...args.slice(1)], {
+    stdio: 'inherit',
+    cwd: path.join(__dirname, '..')
+  });
+  child.on('exit', (code) => {
+    process.exit(code || 0);
+  });
+}
+// Manejar comandos de la Bóveda Curricular: knowledge:validate, knowledge:sync, knowledge:stats
+else if (firstArg.startsWith('knowledge:') || firstArg === 'knowledge') {
+  let subCommand = 'help';
+  let extraArgs = args.slice(1);
+  if (firstArg.startsWith('knowledge:grade_coverage[') || firstArg.startsWith('grade_coverage[')) {
+    subCommand = 'grade_coverage';
+    const match = firstArg.match(/\[([^\]]+)\]/);
+    if (match) extraArgs = [match[1], ...extraArgs];
+  } else if (firstArg === 'knowledge:grade_coverage' || args[1] === 'grade_coverage') {
+    subCommand = 'grade_coverage';
+  } else if (firstArg === 'knowledge:health' || args[1] === 'health') {
+    subCommand = 'health';
+  } else if (firstArg === 'knowledge:prereq' || args[1] === 'prereq') {
+    subCommand = 'prereq';
+  } else if (firstArg === 'knowledge:learning_path' || args[1] === 'learning_path') {
+    subCommand = 'learning_path';
+  } else if (firstArg === 'knowledge:validate' || args[1] === 'validate') subCommand = 'validate';
+  else if (firstArg === 'knowledge:sync' || args[1] === 'sync') subCommand = 'sync';
+  else if (firstArg === 'knowledge:stats' || args[1] === 'stats') subCommand = 'stats';
+  else if (firstArg === 'knowledge:coverage' || args[1] === 'coverage') subCommand = 'coverage';
+  else if (firstArg === 'knowledge:duplicates' || args[1] === 'duplicates') subCommand = 'duplicates';
+  else if (firstArg === 'knowledge:graph' || args[1] === 'graph') subCommand = 'graph';
+
+  const tsxCli = path.join(__dirname, '..', 'node_modules', 'tsx', 'dist', 'cli.mjs');
+  const cliPath = path.join(__dirname, '..', 'scripts', 'knowledge_cli.ts');
+  
+  const child = spawn(process.execPath, [tsxCli, cliPath, subCommand, ...extraArgs], {
+    stdio: 'inherit',
+    cwd: path.join(__dirname, '..')
+  });
+
+  child.on('exit', (code) => {
+    process.exit(code || 0);
+  });
+}
+// Manejar comandos de Planificación de Cursos: course:generate, course:timeline, course:alignment, course:coverage, course:balance, course:inspect, course:export
+else if (firstArg.startsWith('course:') || firstArg === 'course') {
+  let subCommand = 'help';
+  let targetId = args[1] || '';
+  
+  if (firstArg.includes('[')) {
+    const match = firstArg.match(/^course:([^\[]+)\[([^\]]+)\]/);
+    if (match) {
+      subCommand = match[1];
+      targetId = match[2];
+    }
+  } else if (firstArg.startsWith('course:')) {
+    subCommand = firstArg.replace('course:', '');
+  }
+
+  const tsxCli = path.join(__dirname, '..', 'node_modules', 'tsx', 'dist', 'cli.mjs');
+  const cliPath = path.join(__dirname, '..', 'scripts', 'course_cli.ts');
+  
+  const child = spawn(process.execPath, [tsxCli, cliPath, subCommand, targetId], {
+    stdio: 'inherit',
+    cwd: path.join(__dirname, '..')
+  });
+
+  child.on('exit', (code) => {
+    process.exit(code || 0);
+  });
+}
+// Manejar comandos de Aprendizaje Adaptativo: adaptive:profile, adaptive:gaps, adaptive:path, adaptive:next, adaptive:group, adaptive:pilot
+else if (firstArg.startsWith('adaptive:') || firstArg === 'adaptive') {
+  let subCommand = 'help';
+  let targetId = args[1] || '';
+  let extraParam = args[2] || '';
+  
+  if (firstArg.includes('[')) {
+    const match = firstArg.match(/^adaptive:([^\[]+)\[([^\]]+)\]/);
+    if (match) {
+      subCommand = match[1];
+      targetId = match[2];
+    }
+  } else if (firstArg.startsWith('adaptive:')) {
+    subCommand = firstArg.replace('adaptive:', '');
+  }
+
+  const tsxCli = path.join(__dirname, '..', 'node_modules', 'tsx', 'dist', 'cli.mjs');
+  const cliPath = path.join(__dirname, '..', 'scripts', 'adaptive_cli.ts');
+  
+  const child = spawn(process.execPath, [tsxCli, cliPath, subCommand, targetId, extraParam], {
+    stdio: 'inherit',
+    cwd: path.join(__dirname, '..')
+  });
+
+  child.on('exit', (code) => {
+    process.exit(code || 0);
+  });
+}
+// Manejar comandos de AI Tutor: tutor:start, tutor:inspect, tutor:summary, tutor:pilot
+else if (firstArg.startsWith('tutor:') || firstArg === 'tutor') {
+  let subCommand = 'help';
+  let targetId = args[1] || '';
+  let extraParam = args[2] || '';
+  
+  if (firstArg.includes('[')) {
+    const match = firstArg.match(/^tutor:([^\[]+)\[([^\]]+)\]/);
+    if (match) {
+      subCommand = match[1];
+      targetId = match[2];
+    }
+  } else if (firstArg.startsWith('tutor:')) {
+    subCommand = firstArg.replace('tutor:', '');
+  }
+
+  const tsxCli = path.join(__dirname, '..', 'node_modules', 'tsx', 'dist', 'cli.mjs');
+  const cliPath = path.join(__dirname, '..', 'scripts', 'tutor_cli.ts');
+  
+  const child = spawn(process.execPath, [tsxCli, cliPath, subCommand, targetId, extraParam], {
+    stdio: 'inherit',
+    cwd: path.join(__dirname, '..')
+  });
+
+  child.on('exit', (code) => {
+    process.exit(code || 0);
+  });
+}
+// Manejar comandos de Teacher Copilot: copilot:request, copilot:pilot, copilot:inspect
+else if (firstArg.startsWith('copilot:') || firstArg === 'copilot') {
+  let subCommand = 'request';
+  let targetId = args[1] || '';
+  let extraParam = args[2] || '';
+
+  if (firstArg === 'copilot:pilot' || args[1] === 'pilot') {
+    subCommand = 'pilot';
+  } else if (firstArg === 'copilot:inspect' || args[1] === 'inspect') {
+    subCommand = 'inspect';
+    targetId = args[2] || args[1] || '';
+  } else if (firstArg === 'copilot:request') {
+    subCommand = 'request';
+  } else {
+    subCommand = firstArg.replace('copilot:', '');
+  }
+
+  const tsxCli = path.join(__dirname, '..', 'node_modules', 'tsx', 'dist', 'cli.mjs');
+  const cliPath = path.join(__dirname, '..', 'scripts', 'copilot_cli.ts');
+  
+  const child = spawn(process.execPath, [tsxCli, cliPath, subCommand, targetId, extraParam], {
+    stdio: 'inherit',
+    cwd: path.join(__dirname, '..')
+  });
+
+  child.on('exit', (code) => {
+    process.exit(code || 0);
+  });
+}
+// Manejar comandos de Academic Analytics: analytics:health, analytics:summary, analytics:bottlenecks, analytics:pilot
+else if (firstArg.startsWith('analytics:') || firstArg === 'analytics') {
+  let subCommand = 'health';
+  let targetId = args[1] || '';
+  let extraParam = args[2] || '';
+
+  if (firstArg === 'analytics:pilot' || args[1] === 'pilot') {
+    subCommand = 'pilot';
+  } else if (firstArg === 'analytics:summary' || args[1] === 'summary') {
+    subCommand = 'summary';
+  } else if (firstArg === 'analytics:bottlenecks' || args[1] === 'bottlenecks') {
+    subCommand = 'bottlenecks';
+  } else if (firstArg === 'analytics:health' || args[1] === 'health') {
+    subCommand = 'health';
+  } else {
+    subCommand = firstArg.replace('analytics:', '');
+  }
+
+  const tsxCli = path.join(__dirname, '..', 'node_modules', 'tsx', 'dist', 'cli.mjs');
+  const cliPath = path.join(__dirname, '..', 'scripts', 'analytics_cli.ts');
+  
+  const child = spawn(process.execPath, [tsxCli, cliPath, subCommand, targetId, extraParam], {
+    stdio: 'inherit',
+    cwd: path.join(__dirname, '..')
+  });
+
+  child.on('exit', (code) => {
+    process.exit(code || 0);
+  });
+}
+// Manejar comandos de Leadership Dashboard y Coordinator Copilot (Fase 11)
+else if (firstArg.startsWith('leadership:') || firstArg.startsWith('coordinator:')) {
+  let subCommand = 'help';
+  let extraArgs = args.slice(1);
+
+  if (firstArg === 'leadership:dashboard' || args[1] === 'dashboard') {
+    subCommand = 'dashboard';
+  } else if (firstArg === 'leadership:pilot' || args[1] === 'pilot') {
+    const tsxCli = path.join(__dirname, '..', 'node_modules', 'tsx', 'dist', 'cli.mjs');
+    const pilotPath = path.join(__dirname, '..', 'scripts', 'test_fase11_leadership_pilot.ts');
+    const child = spawn(process.execPath, [tsxCli, pilotPath], {
+      stdio: 'inherit',
+      cwd: path.join(__dirname, '..')
+    });
+    child.on('exit', (code) => process.exit(code || 0));
+    return;
+  } else if (firstArg === 'coordinator:brief' || args[1] === 'brief') {
+    subCommand = 'brief';
+  } else if (firstArg === 'coordinator:ask' || args[1] === 'ask') {
+    subCommand = 'ask';
+  } else {
+    subCommand = firstArg.split(':')[1] || 'help';
+  }
+
+  const tsxCli = path.join(__dirname, '..', 'node_modules', 'tsx', 'dist', 'cli.mjs');
+  const cliPath = path.join(__dirname, '..', 'scripts', 'leadership_cli.ts');
+  
+  const child = spawn(process.execPath, [tsxCli, cliPath, subCommand, ...extraArgs], {
+    stdio: 'inherit',
+    cwd: path.join(__dirname, '..')
+  });
+
+  child.on('exit', (code) => {
+    process.exit(code || 0);
+  });
+}
+// Manejar comandos de Gobernanza, Costos y Producción (Fase 12)
+else if (
+  firstArg === 'iskool:health' ||
+  firstArg === 'ai:costs' ||
+  firstArg === 'curriculum:release' ||
+  firstArg.startsWith('governance:')
+) {
+  let subCommand = 'health';
+  let extraArgs = args.slice(1);
+
+  if (firstArg === 'iskool:health' || firstArg === 'health') {
+    subCommand = 'health';
+  } else if (firstArg === 'ai:costs') {
+    subCommand = 'costs';
+  } else if (firstArg === 'curriculum:release') {
+    subCommand = 'release';
+  } else if (firstArg === 'governance:pilot' || args[1] === 'pilot') {
+    const tsxCli = path.join(__dirname, '..', 'node_modules', 'tsx', 'dist', 'cli.mjs');
+    const pilotPath = path.join(__dirname, '..', 'scripts', 'test_fase12_governance_pilot.ts');
+    const child = spawn(process.execPath, [tsxCli, pilotPath], {
+      stdio: 'inherit',
+      cwd: path.join(__dirname, '..')
+    });
+    child.on('exit', (code) => process.exit(code || 0));
+    return;
+  } else {
+    subCommand = firstArg.split(':')[1] || 'help';
+  }
+
+  const tsxCli = path.join(__dirname, '..', 'node_modules', 'tsx', 'dist', 'cli.mjs');
+  const cliPath = path.join(__dirname, '..', 'scripts', 'governance_cli.ts');
+  
+  const child = spawn(process.execPath, [tsxCli, cliPath, subCommand, ...extraArgs], {
+    stdio: 'inherit',
+    cwd: path.join(__dirname, '..')
+  });
+
+  child.on('exit', (code) => {
+    process.exit(code || 0);
+  });
+} else {
+  console.log(`[iSchool CLI Shim] Comando "${firstArg}" recibido.`);
+  console.log(`Comandos disponibles:`);
+  console.log(`  bin/rails console                      # Iniciar consola interactiva con AcademicGeneration y KnowledgeVault`);
+  console.log(`  bin/rails academic:generate            # Ejecutar generación educativa canónica`);
+  console.log(`  bin/rails academic:list                # Listar generaciones y auditoría`);
+  console.log(`  bin/rails academic:inspect <id>        # Inspeccionar registro completo de generación`);
+  console.log(`  bin/rails knowledge:validate           # Validar integridad de la Bóveda Curricular y Grafo`);
+  console.log(`  bin/rails knowledge:sync               # Sincronizar Bóveda con almacenamiento e índices`);
+  console.log(`  bin/rails knowledge:stats              # Reportar estadísticas de cobertura curricular`);
+  console.log(`  bin/rails knowledge:coverage           # Matriz de Cobertura Grado x Dominio x CEFR`);
+  console.log(`  bin/rails knowledge:duplicates         # Auditoría de duplicados semánticos`);
+  console.log(`  bin/rails knowledge:graph [id]         # Topología del Grafo Académico y prerrequisitos`);
+  console.log(`  bin/rails course:generate              # Generar esqueleto de curso piloto (High School 1)`);
+  console.log(`  bin/rails course:timeline [id]         # Cronograma de exposición en currículo espiral`);
+  console.log(`  bin/rails course:alignment [id]        # Auditoría de alineación curricular taught vs assessed`);
+  console.log(`  bin/rails course:coverage [id]         # Cobertura del curso frente al Grade Map oficial`);
+  console.log(`  bin/rails course:balance [id]          # Balance pedagógico de habilidades macro y micro`);
+  console.log(`  bin/rails course:inspect [id]          # Inspección estructural de unidades, lecciones y slots`);
+  console.log(`  bin/rails course:export [id]           # Exportar mapa curricular en Markdown/Mermaid`);
+  console.log(`  bin/rails adaptive:profile <id>        # Consultar expediente y micro-competencias del alumno`);
+  console.log(`  bin/rails adaptive:gaps <id> [unit]    # Detectar y tipificar brechas curriculares`);
+  console.log(`  bin/rails adaptive:path <id> [skill]   # Calcular ruta de aprendizaje personalizada`);
+  console.log(`  bin/rails adaptive:next <id> [unit]    # Recomendar Próxima Mejor Acción y adaptación`);
+  console.log(`  bin/rails adaptive:group [unit]        # Agrupamiento pedagógico neutral para el aula`);
+  console.log(`  bin/rails adaptive:pilot               # Ejecutar piloto de certificación Fase 7`);
+  console.log(`  bin/rails tutor:start <id> [unit]      # Iniciar sesión de tutoría interactiva`);
+  console.log(`  bin/rails tutor:inspect <session_id>   # Inspeccionar estado académico de una sesión`);
+  console.log(`  bin/rails tutor:pilot                  # Ejecutar piloto de certificación Fase 8`);
+  console.log(`  bin/rails copilot:request "<solicitud>" # Petición en lenguaje natural al Teacher Copilot`);
+  console.log(`  bin/rails copilot:inspect <session_id> # Inspeccionar auditoría y artefactos borradores`);
+  console.log(`  bin/rails copilot:pilot                # Ejecutar piloto de certificación Fase 9`);
+  console.log(`  bin/rails analytics:health             # Auditoría de calidad e integridad de datos académicos`);
+  console.log(`  bin/rails analytics:summary            # Resumen ejecutivo para dirección/coordinación`);
+  console.log(`  bin/rails analytics:bottlenecks        # Detección de cuellos de botella en Bóveda`);
+  console.log(`  bin/rails analytics:pilot              # Ejecutar piloto de certificación Fase 10`);
+  process.exit(0);
+}

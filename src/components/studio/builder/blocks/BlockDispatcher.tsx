@@ -43,6 +43,9 @@ export const BlockDispatcher: React.FC<Props> = ({ block }) => {
       return <BossEnemyBlockView block={block} />;
     case 'languages_practice_portal':
     case 'languages_karaoke_block':
+    case 'languages_socratic_tutor':
+    case 'languages_roleplay_mission':
+    case 'languages_evaluation_rubric':
       return <LanguagesBlockView block={block} />;
     case 'logic_challenge_interactive':
     case 'boolean_circuit_builder':

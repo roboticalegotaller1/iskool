@@ -1,0 +1,184 @@
+{
+  "generation_id": "gen_1790219356761_2f232bd2",
+  "request": {
+    "grade": "primary_3",
+    "cefr": "A1",
+    "skill": "reading",
+    "topic": "daily_routines",
+    "language_function": "describing_daily_routines",
+    "activity_type": "guided_discussion",
+    "duration_minutes": 15
+  },
+  "knowledge_document_ids": [
+    "func_describing_daily_routines_a1",
+    "grade_map_primary_3",
+    "grade_map_primary_4",
+    "vocab_daily_routines_time_a1",
+    "grammar_a1_primary_present_simple_routines",
+    "grammar_have_got_possession_a1",
+    "grammar_modal_can_ability_a1",
+    "grammar_prepositions_place_basic_a1",
+    "grammar_present_continuous_now_a1",
+    "grammar_present_simple_habits_a1",
+    "rubric_reading_writing_young_learners_a1"
+  ],
+  "knowledge_versions": [
+    {
+      "document_id": "func_describing_daily_routines_a1",
+      "version": 1,
+      "checksum": "bc6df4ab8598f744cdfccbddd41ccb0c1cb374818bd1f39de61cb84bbfe591a1",
+      "title": "Describing Daily Routines and Daily Schedules (A1)",
+      "document_type": "language_function"
+    },
+    {
+      "document_id": "grade_map_primary_3",
+      "version": 2,
+      "checksum": "4b90613f5810cb67fb0f82f6c42bfa68ceac73ef45d3d2db9827473320bf9d79",
+      "title": "Primary 3rd Grade Profile - English (A1)",
+      "document_type": "grade_profile"
+    },
+    {
+      "document_id": "grade_map_primary_4",
+      "version": 2,
+      "checksum": "3536ae96d4df97c2f91fd56d87cfdc1cd7566e29169e4ceb31360c536b48ea77",
+      "title": "Primary 4th Grade Profile - English (A1 Mastery)",
+      "document_type": "grade_profile"
+    },
+    {
+      "document_id": "vocab_daily_routines_time_a1",
+      "version": 1,
+      "checksum": "5322cb167e922c489cd71b204cef4e29b803871b6ba9d744740b16ed1157c795",
+      "title": "Lexical Domain - Daily Routines, Clock Time and Days of the Week (A1)",
+      "document_type": "vocabulary_set"
+    },
+    {
+      "document_id": "grammar_a1_primary_present_simple_routines",
+      "version": 1,
+      "checksum": "a3a10b3190d295b4c1d3566231bcd5982f6176523fd2ddc9d4d8b68393ce8b10",
+      "title": "Present Simple for Daily Habits and School Routines",
+      "document_type": "grammar_rule"
+    },
+    {
+      "document_id": "grammar_have_got_possession_a1",
+      "version": 1,
+      "checksum": "859202aaec2cef989e8df64c007cff2df290682f4d46efe15d6e2d1b4c2938f9",
+      "title": "Possession with Have Got - Affirmative, Negative and Interrogative (A1)",
+      "document_type": "grammar_rule"
+    },
+    {
+      "document_id": "grammar_modal_can_ability_a1",
+      "version": 1,
+      "checksum": "4d4064b51c57c916b4b0e10b4dd985de41fe6bb82a86cf28eeaa3366945884b6",
+      "title": "Modal Verb Can for Physical Ability, Inability and Permission (A1)",
+      "document_type": "grammar_rule"
+    },
+    {
+      "document_id": "grammar_prepositions_place_basic_a1",
+      "version": 1,
+      "checksum": "90da6eb53aecd59ec7c23aea7e7ce25cb3237caec2c3fd3894834a2749a0c1bc",
+      "title": "Basic Prepositions of Place in, on, under, next to, behind (A1)",
+      "document_type": "grammar_rule"
+    },
+    {
+      "document_id": "grammar_present_continuous_now_a1",
+      "version": 1,
+      "checksum": "9c92ba207d6aa3e98a49105bf5c1375fa70357a5f8986a2ed41e6ef10db6dd39",
+      "title": "Present Continuous for Actions in Progress and Picture Description (A1)",
+      "document_type": "grammar_rule"
+    },
+    {
+      "document_id": "grammar_present_simple_habits_a1",
+      "version": 1,
+      "checksum": "929e97145f03b30643953658f69dfe60d47a2fbe0aeadcfb188c5cfe030aa966",
+      "title": "Present Simple for Habits, Routines and Universal Facts (A1)",
+      "document_type": "grammar_rule"
+    },
+    {
+      "document_id": "rubric_reading_writing_young_learners_a1",
+      "version": 1,
+      "checksum": "69d76e9fd6d872bf7ea09b082a6239e7e50f4d7cc495205d79e4470881239d21",
+      "title": "Institutional Assessment Rubric - Receptive and Productive Skills for Young Learners (A1 Movers)",
+      "document_type": "assessment_rubric"
+    }
+  ],
+  "prompt_version": "1.0.0",
+  "model": "models/gemini-3.5-flash",
+  "prompt_sent": "### SECTION 1: SYSTEM RULES ###\nYou are an educational content generation engine for iSchool.\nYou must generate educational content using the academic context supplied by iSchool.\nThe supplied Knowledge Vault context is authoritative for:\n- grade level\n- CEFR level\n- learning objectives\n- language functions\n- grammar expectations\n- vocabulary expectations\n- skill progression\n- assessment criteria\n\nMANDATORY BEHAVIORAL CONSTRAINTS:\n1. Do not increase or decrease the requested level without explicit instruction.\n2. Do not invent curriculum requirements that contradict the supplied context.\n3. Generate original, engaging, pedagogically sound educational content.\n4. Do not reproduce copyrighted textbook exercises or passages.\n5. Strictly adhere to the institutional white-label policy (never mention third-party commercial brands).\n6. Return the response using the requested structured JSON schema ONLY. No conversational preambles.\n\n### SECTION 2: ACADEMIC CONTEXT (AUTHORITATIVE KNOWLEDGE VAULT) ###\nBelow is the official curricular context extracted from the iSchool Knowledge Vault.\nYou MUST ground your activity entirely within these bounds:\n\n================================================================\nPEDAGOGICAL KNOWLEDGE VAULT - ACADEMIC CONTEXT (iSchool)\n================================================================\nGRADE: PRIMARY_3\nCEFR TARGET: A1 (Entry B1 -> Target B2)\nSKILL: READING\nSUBSKILLS: General interaction\n\n--- LEARNING OBJECTIVES & CAN-DO STATEMENTS ---\n\n--- LANGUAGE FUNCTIONS & TARGET REPERTOIRE ---\n[Describing Daily Routines and Daily Schedules (A1)]\n  Model Expressions:\n    - \"I wake up at seven o'clock every morning.\"\n    - \"I brush my teeth and wash my face.\"\n    - \"I take the bus to school at eight o'clock.\"\n    - \"After school, I do my homework and play with my friends.\"\n    - \"My brother goes to bed at nine o'clock.\"\n    - \"She eats dinner with her family.\"\n    - \"What time do you wake up? — At seven o'clock.\"\n    - \"When do you do your homework? — In the afternoon.\"\n  Pedagogical Guidance:\n\n--- GRAMMAR PROGRESSION & STRUCTURES ---\n• Focus: Present Simple for Daily Habits and School Routines\n• Focus: Possession with Have Got - Affirmative, Negative and Interrogative (A1)\n• Focus: Modal Verb Can for Physical Ability, Inability and Permission (A1)\n• Focus: Basic Prepositions of Place in, on, under, next to, behind (A1)\n• Focus: Present Continuous for Actions in Progress and Picture Description (A1)\n• Focus: Present Simple for Habits, Routines and Universal Facts (A1)\n  - **Nivel CEFR:** A1 (Acceso).\n  - **Descriptor Can-Do:** El estudiante puede describir con enunciados breves sus hábitos diarios habituales y horarios escolares usando la estructura afirmativa y negativa del presente simple con pronombres frecuentes (`I`, `you`, `we`, `they`, `he`, `she`).\n  - **Alineación NEM 2024:** Fase 4 (Lenguajes) - Narración de sucesos autobiográficos y cotidianos en lengua extranjera.\n  - **Invariabilidad:** El modal *can* no cambia con la persona (no añade *-s* en tercera persona).\n  - **Afirmativa:** *Sujeto + can + Verbo Base* (*\"She can dance\"*).\n  - **Negativa:** *Sujeto + cannot / can't + Verbo Base* (*\"I can't fly\"*).\n  - **Fórmula:** *Sujeto + am/is/are + Verbo con terminación -ing*.\n  - **Reglas Ortográficas de -ing:** *run $\\to$ running, make $\\to$ making, play $\\to$ playing*.\n\n--- VOCABULARY DOMAIN & COLLOCATIONS ---\nDomain: daily_routines\nRecommended Collocations & Expressions:\n\n--- RECOMMENDED ACTIVITY PATTERNS ---\n\n--- ASSESSMENT CRITERIA (CEFR ALIGNED) ---\nRubric: Institutional Assessment Rubric - Receptive and Productive Skills for Young Learners (A1 Movers)\n• Task Achievement\n• Fluency\n• Range\n• Accuracy\n\n--- PEDAGOGICAL CONSTRAINTS ---\n⚠️ PROHIBICIÓN ESTRICTA: No utilizar marcas comerciales externas en los reactivos ni en la interfaz.\n⚠️ ANDAMIAJE PEDAGÓGICO OBLIGATORIO: Ofrecer modelos de frases funcionales antes de exigir producción oral autónoma.\n⚠️ CALIBRACIÓN CEFR: El lenguaje y los distractores deben respetar el nivel objetivo B1 → B2 sin exceder la dificultad.\n\n--- AUTHORITATIVE SOURCE REFERENCES ---\n• [cambridge_young_learners_movers_handbook] Cambridge English A1 Movers Handbook for Teachers\n• [cefr_companion_volume_2020] Common European Framework of Reference for Languages - Companion Volume\n• [sep_nem_lenguajes_2024] Marco Curricular Común y Planes de Estudio de Lenguas Extranjeras (SEP NEM)\n• [iskool_curriculum_core] Sistema Curricular y Motor Pedagógico Institucional iSchool\n• [cambridge_young_learners_starters_handbook] Cambridge English Pre-A1 Starters Handbook for Teachers\n================================================================\n\n### SECTION 3: GENERATION REQUEST ###\nDesign an individualized, classroom-ready educational activity according to these exact specifications:\n- Grade: primary_3\n- CEFR Target: A1\n- Primary Skill: reading\n- Topic / Domain: daily_routines\n- Language Function: describing_daily_routines\n- Activity Pattern: guided_discussion\n- Total Duration: 15 minutes\n\nPEDAGOGICAL REQUIREMENTS FOR THIS ACTIVITY:\n1. The activity must actively train the student to use the expressions provided in the language function \"describing_daily_routines\".\n2. Target timing must match exactly 15 minutes distributed across warm-up, core task, and wrap-up phases.\n3. Include explicit scaffolding so students of the requested CEFR level feel supported before communicative production.\n\n### SECTION 4: OUTPUT SCHEMA ###\nYou must respond with a single valid JSON object strictly adhering to this structure:\n{\n  \"title\": \"Clear, engaging title for the activity\",\n  \"grade\": \"primary_3\",\n  \"cefr\": \"A1\",\n  \"skill\": \"reading\",\n  \"topic\": \"daily_routines\",\n  \"language_function\": \"describing_daily_routines\",\n  \"activity_type\": \"guided_discussion\",\n  \"duration_minutes\": 15,\n  \"learning_objective\": \"Explicit Can-Do statement grounded in the provided objectives\",\n  \"student_instructions\": \"Clear, age-appropriate step-by-step instructions for the student in English\",\n  \"teacher_instructions\": \"Pedagogical guidance, classroom setup, timing tips and monitoring notes for the teacher\",\n  \"language_support\": {\n    \"useful_phrases\": [\"Array of functional model phrases from the language function context\"],\n    \"grammar_support\": [\"Array of grammar structures to reinforce during the activity\"],\n    \"vocabulary_support\": [\"Array of topic-specific vocabulary and collocations to activate\"]\n  },\n  \"activity_steps\": [\n    {\n      \"phase\": \"warm_up | core_task | wrap_up\",\n      \"duration_minutes\": 5,\n      \"teacher_instructions\": \"What the teacher does during this phase\",\n      \"student_instructions\": \"What the students do during this phase\"\n    }\n  ],\n  \"assessment\": {\n    \"criteria\": [\"3 to 4 specific, observable evaluation criteria derived from the CEFR rubric context\"],\n    \"rubric_snapshot\": [\"Brief performance indicators for meeting expectations\"]\n  }\n}\n\nCRITICAL: Return ONLY raw valid JSON. Do not enclose in markdown ticks if not required, or if you do, use ```json ... ```.",
+  "raw_output": "{\n  \"title\": \"My Everyday Schedule\",\n  \"grade\": \"primary_3\",\n  \"cefr\": \"A1\",\n  \"skill\": \"reading\",\n  \"topic\": \"daily_routines\",\n  \"language_function\": \"describing_daily_routines\",\n  \"activity_type\": \"guided_discussion\",\n  \"duration_minutes\": 15,\n  \"learning_objective\": \"Students can read and comprehend short descriptive statements about daily habits and school routines using the Present Simple tense.\",\n  \"student_instructions\": \"Read the daily schedule cards carefully. Match the times to the correct routine activities, and then talk with your partner about what you do every day using the helper phrases.\",\n  \"teacher_instructions\": \"Distribute the reading cards to students. Ensure that learners rely on the provided model phrases for both silent reading comprehension and structured pair-sharing. Monitor pronunciation and correct Present Simple third-person endings gently.\",\n  \"language_support\": {\n    \"useful_phrases\": [\n      \"I wake up at seven o'clock every morning.\",\n      \"I brush my teeth and wash my face.\",\n      \"I take the bus to school at eight o'clock.\",\n      \"After school, I do my homework and play with my friends.\",\n      \"What time do you wake up? — At seven o'clock.\",\n      \"When do you do your homework? — In the afternoon.\"\n    ],\n    \"grammar_support\": [\n      \"Present Simple for Daily Habits (I wake up, you do, we play)\",\n      \"Present Simple third-person singular (-s endings: goes to bed, eats dinner)\"\n    ],\n    \"vocabulary_support\": [\n      \"wake up\",\n      \"brush teeth\",\n      \"wash face\",\n      \"take the bus\",\n      \"do homework\",\n      \"eat dinner\",\n      \"go to bed\"\n    ]\n  },\n  \"activity_steps\": [\n    {\n      \"phase\": \"warm_up\",\n      \"duration_minutes\": 3,\n      \"teacher_instructions\": \"Greet the students, write the time '7:00' on the board, and elicit morning routine words using gestures.\",\n      \"student_instructions\": \"Look at the teacher on the board, raise your hand, and share one thing you do in the morning in English.\"\n    },\n    {\n      \"phase\": \"core_task\",\n      \"duration_minutes\": 8,\n      \"teacher_instructions\": \"Hand out the reading text about a student's daily routine. Guide students to underline time markers (e.g., at seven o'clock, in the afternoon). Have students read aloud in pairs.\",\n      \"student_instructions\": \"Read the short text about daily routines silently. Then, take turns reading sentences to your partner and asking each other questions about your schedules.\"\n    },\n    {\n      \"phase\": \"wrap_up\",\n      \"duration_minutes\": 4,\n      \"teacher_instructions\": \"Call on two or three pairs to share what their partner does in the morning or afternoon. Provide positive reinforcement.\",\n      \"student_instructions\": \"Listen to your classmates and report one thing your partner told you about their daily routine using the target phrases.\"\n    }\n  ],\n  \"assessment\": {\n    \"criteria\": [\n      \"Task Achievement\",\n      \"Fluency\",\n      \"Range\",\n      \"Accuracy\"\n    ],\n    \"rubric_snapshot\": [\n      \"Accurately reads and comprehends A1 level statements about daily routines.\",\n      \"Uses Present Simple affirmative structures correctly with appropriate time expressions.\",\n      \"Interacts with peers using the provided model phrases with minimal hesitation.\"\n    ]\n  }\n}",
+  "generated_output": {
+    "title": "My Everyday Schedule",
+    "grade": "primary_3",
+    "cefr": "A1",
+    "skill": "reading",
+    "topic": "daily_routines",
+    "language_function": "describing_daily_routines",
+    "activity_type": "guided_discussion",
+    "duration_minutes": 15,
+    "learning_objective": "Students can read and comprehend short descriptive statements about daily habits and school routines using the Present Simple tense.",
+    "student_instructions": "Read the daily schedule cards carefully. Match the times to the correct routine activities, and then talk with your partner about what you do every day using the helper phrases.",
+    "teacher_instructions": "Distribute the reading cards to students. Ensure that learners rely on the provided model phrases for both silent reading comprehension and structured pair-sharing. Monitor pronunciation and correct Present Simple third-person endings gently.",
+    "language_support": {
+      "useful_phrases": [
+        "I wake up at seven o'clock every morning.",
+        "I brush my teeth and wash my face.",
+        "I take the bus to school at eight o'clock.",
+        "After school, I do my homework and play with my friends.",
+        "What time do you wake up? — At seven o'clock.",
+        "When do you do your homework? — In the afternoon."
+      ],
+      "grammar_support": [
+        "Present Simple for Daily Habits (I wake up, you do, we play)",
+        "Present Simple third-person singular (-s endings: goes to bed, eats dinner)"
+      ],
+      "vocabulary_support": [
+        "wake up",
+        "brush teeth",
+        "wash face",
+        "take the bus",
+        "do homework",
+        "eat dinner",
+        "go to bed"
+      ]
+    },
+    "activity_steps": [
+      {
+        "phase": "warm_up",
+        "duration_minutes": 3,
+        "teacher_instructions": "Greet the students, write the time '7:00' on the board, and elicit morning routine words using gestures.",
+        "student_instructions": "Look at the teacher on the board, raise your hand, and share one thing you do in the morning in English."
+      },
+      {
+        "phase": "core_task",
+        "duration_minutes": 8,
+        "teacher_instructions": "Hand out the reading text about a student's daily routine. Guide students to underline time markers (e.g., at seven o'clock, in the afternoon). Have students read aloud in pairs.",
+        "student_instructions": "Read the short text about daily routines silently. Then, take turns reading sentences to your partner and asking each other questions about your schedules."
+      },
+      {
+        "phase": "wrap_up",
+        "duration_minutes": 4,
+        "teacher_instructions": "Call on two or three pairs to share what their partner does in the morning or afternoon. Provide positive reinforcement.",
+        "student_instructions": "Listen to your classmates and report one thing your partner told you about their daily routine using the target phrases."
+      }
+    ],
+    "assessment": {
+      "criteria": [
+        "Task Achievement",
+        "Fluency",
+        "Range",
+        "Accuracy"
+      ],
+      "rubric_snapshot": [
+        "Accurately reads and comprehends A1 level statements about daily routines.",
+        "Uses Present Simple affirmative structures correctly with appropriate time expressions.",
+        "Interacts with peers using the provided model phrases with minimal hesitation."
+      ]
+    }
+  },
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "mismatches": []
+  },
+  "created_at": "2026-09-24T03:09:16.761Z"
+}

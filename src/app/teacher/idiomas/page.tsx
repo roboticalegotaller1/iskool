@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
-import { Header } from '@/components/Header';
+import React, { useState, useMemo, useRef } from 'react';
 import { 
   useLanguagesStore, 
   LanguageLesson, 
@@ -12,6 +11,15 @@ import {
 } from '@/store/useLanguagesStore';
 import { HumanGesticulatingAvatar } from '@/components/languages/HumanGesticulatingAvatar';
 import { LanguageKaraokePlayer } from '@/components/languages/LanguageKaraokePlayer';
+import { HardwareAudioTester } from '@/components/languages/HardwareAudioTester';
+import { LanguageAnalyticsCharts } from '@/components/languages/LanguageAnalyticsCharts';
+import { Curriculum12PhasesExplorer } from '@/components/languages/Curriculum12PhasesExplorer';
+import { 
+  MULTILINGUAL_HISTORICAL_FIGURES, 
+  MultilingualHistoricalFigure,
+  playUniversalIskoolVoice,
+  stopAllIskoolAudio
+} from '@/lib/historicalVoiceEngine';
 import { 
   Languages, 
   Plus, 
@@ -32,7 +40,17 @@ import {
   Users, 
   Clock, 
   Search,
-  CheckCheck
+  CheckCheck,
+  BarChart3,
+  Layers,
+  Activity,
+  Award,
+  Globe2,
+  Sliders,
+  Landmark,
+  ShieldCheck,
+  Play,
+  Pause
 } from 'lucide-react';
 
 export default function TeacherIdiomasPage() {
@@ -47,79 +65,211 @@ export default function TeacherIdiomasPage() {
     markReportAsReviewed 
   } = useLanguagesStore();
 
-  const [activeTab, setActiveTab] = useState<'editor' | 'reports'>('editor');
+  // Pestañas del Centro de Idiomas
+  const [activeTab, setActiveTab] = useState<'editor' | 'analytics' | 'curriculum' | 'hardware' | 'reports'>('editor');
   const [isPreviewMode, setIsPreviewMode] = useState<boolean>(false);
   const [selectedKaraokeIndex, setSelectedKaraokeIndex] = useState<number>(0);
   const [reportFilter, setReportFilter] = useState<'all' | 'unreviewed'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [useHistoricalFigure, setUseHistoricalFigure] = useState<boolean>(false);
+  const [selectedHistoricalId, setSelectedHistoricalId] = useState<string>('shakespeare');
+
+  // Estado de reproducción y prueba auditiva de la voz
+  const [isPlayingPreview, setIsPlayingPreview] = useState<boolean>(false);
+  const [activePlayingLineId, setActivePlayingLineId] = useState<string | null>(null);
+  const audioControllerRef = useRef<any>(null);
 
   const activeLesson = useMemo(() => {
     return lessons.find(l => l.id === activeLessonId) || lessons[0];
   }, [lessons, activeLessonId]);
 
-  // Voces disponibles según género e idioma
+  // Personajes históricos filtrados por el idioma de la lección
+  const availableHistoricalFigures = useMemo(() => {
+    return MULTILINGUAL_HISTORICAL_FIGURES.filter(fig => fig.language === activeLesson.language);
+  }, [activeLesson.language]);
+
+  // Voces disponibles según género e idioma con calibración fonética óptima
   const availableVoices = useMemo(() => {
     if (activeLesson.language === 'en') {
       return activeLesson.avatarGender === 'female'
         ? [
-            { id: 'en-US-JennyNeural', label: 'Claire (EE.UU.) · Femenina Suave' },
-            { id: 'en-GB-SoniaNeural', label: 'Sonia (Reino Unido) · Femenina Clásica' }
+            { id: 'en-US-JennyNeural', label: 'Claire (EE.UU.) · Femenina Suave & Pedagógica' },
+            { id: 'en-GB-SoniaNeural', label: 'Sonia / Ada Lovelace (Reino Unido) · Victoriana Clásica' },
+            { id: 'en-US-AvaMultilingualNeural', label: 'Ava (EE.UU.) · Expresiva Multilingüe' },
+            { id: 'en-US-EmmaMultilingualNeural', label: 'Emma (EE.UU.) · Fonética Clara' }
           ]
         : [
-            { id: 'en-US-GuyNeural', label: 'Arthur (EE.UU.) · Masculina Académica' },
-            { id: 'en-GB-RyanNeural', label: 'Ryan (Reino Unido) · Masculina Oxford' }
+            { id: 'en-US-GuyNeural', label: 'Arthur / Lincoln (EE.UU.) · Masculina Académica' },
+            { id: 'en-GB-RyanNeural', label: 'Shakespeare (Reino Unido) · Oxford Teatral' },
+            { id: 'en-US-AndrewMultilingualNeural', label: 'Andrew (EE.UU.) · Dinámico & Moderno' }
           ];
     } else {
       return activeLesson.avatarGender === 'female'
         ? [
-            { id: 'fr-FR-DeniseNeural', label: 'Sophie (Francia) · Parisina Femenina' },
-            { id: 'fr-CA-SylvieNeural', label: 'Sylvie (Canadá) · Femenina Suave' }
+            { id: 'fr-FR-VivienneMultilingualNeural', label: 'Mme. Sophie (Francia) · Parisina Expresiva & Pedagógica' },
+            { id: 'fr-FR-DeniseNeural', label: 'Marie Curie (Francia) · Académica Posada & Clara' },
+            { id: 'fr-FR-EloiseNeural', label: 'Jeanne d\'Arc (Francia) · Juvenil Heroica' },
+            { id: 'fr-CA-SylvieNeural', label: 'Sylvie (Canadá) · Québécoise Suave' }
           ]
         : [
-            { id: 'fr-FR-HenriNeural', label: 'Henri (Francia) · Profesor Masculino' },
-            { id: 'fr-CA-JeanNeural', label: 'Jean (Canadá) · Masculina Quebequense' }
+            { id: 'fr-FR-HenriNeural', label: 'Prof. Henri / Napoléon (Francia) · Profesor Masculino & Estadista' },
+            { id: 'fr-FR-RemyMultilingualNeural', label: 'Rémy (Francia) · Conversacional Moderno' },
+            { id: 'fr-CA-JeanNeural', label: 'Jean (Canadá) · Québécois Masculino' }
           ];
     }
   }, [activeLesson.language, activeLesson.avatarGender]);
 
   // Crear nueva lección rápida
   const handleCreateNewLesson = () => {
+    const isFr = activeLesson.language === 'fr';
     const id = addLesson({
-      title: 'Nueva Conversación Guiada',
-      topic: 'Comunicación Esencial',
-      language: 'en',
+      title: isFr ? 'Nouvelle Conversation Guidée' : 'New Guided Conversation',
+      topic: isFr ? 'Communication Quotidienne' : 'Essential Communication',
+      language: activeLesson.language,
       level: 'A1',
-      avatarGender: 'female',
-      avatarName: 'Claire',
-      avatarVoice: 'en-US-JennyNeural',
+      avatarGender: isFr ? 'male' : 'female',
+      avatarName: isFr ? 'Henri' : 'Claire',
+      avatarVoice: isFr ? 'fr-FR-HenriNeural' : 'en-US-JennyNeural',
       defaultSpeed: 0.85,
       dialogue: [
         {
           id: `d-${Date.now()}-1`,
           speaker: 'avatar',
-          text: 'Hello! How are you feeling today?',
-          translationEs: '¡Hola! ¿Cómo te sientes hoy?',
-          phoneticTip: 'Pronuncia la "H" suavemente aspirada'
+          text: isFr ? 'Bonjour la classe! Comment allez-vous aujourd\'hui?' : 'Hello students! How are you feeling today?',
+          translationEs: isFr ? '¡Buenos días clase! ¿Cómo están hoy?' : '¡Hola alumnos! ¿Cómo se sienten hoy?',
+          phoneticTip: isFr ? 'Prononcer les voyelles nasales clairement' : 'Pronounce the "H" with gentle aspiration'
         },
         {
           id: `d-${Date.now()}-2`,
           speaker: 'student',
-          text: 'I am excited to learn and practice my pronunciation!',
-          translationEs: '¡Estoy emocionado por aprender y practicar mi pronunciación!'
+          text: isFr ? 'Je suis très heureux d\'apprendre le français!' : 'I am excited to learn and practice my pronunciation!',
+          translationEs: isFr ? '¡Estoy muy feliz de aprender francés!' : '¡Estoy emocionado por aprender y practicar mi pronunciación!'
         }
       ],
       karaokePhrases: [
         {
           id: `k-${Date.now()}-1`,
-          targetText: 'I am excited to learn and practice my pronunciation',
-          translationEs: 'Estoy emocionado por aprender y practicar mi pronunciación',
+          targetText: isFr ? 'Je suis très heureux d\'apprendre le français' : 'I am excited to learn and practice my pronunciation',
+          translationEs: isFr ? 'Estoy muy feliz de aprender francés' : 'Estoy emocionado por aprender y practicar mi pronunciación',
           difficulty: 'beginner',
-          phoneticGuide: 'ai æm ɪkˈsaɪtɪd tuː lɜːrn ænd ˈpræktɪs maɪ prəˌnʌnsiˈeɪʃn'
+          phoneticGuide: isFr ? 'ʒə sɥi tʁɛ zœ.ʁø da.pʁɑ̃dʁ lə fʁɑ̃.sɛ' : 'ai æm ɪkˈsaɪtɪd tuː lɜːrn ænd ˈpræktɪs'
         }
       ]
     });
     setActiveLessonId(id);
     setIsPreviewMode(false);
+  };
+
+  // Cargar plantilla desde las 12 Fases curriculares
+  const handleLoadCurriculumTemplate = (template: {
+    title: string;
+    topic: string;
+    level: string;
+    language: 'en' | 'fr';
+    dialogue: any[];
+    karaokePhrases: any[];
+  }) => {
+    const isFr = template.language === 'fr';
+    const newLessonId = addLesson({
+      title: template.title,
+      topic: template.topic,
+      language: template.language,
+      level: (template.level as any) || 'B1',
+      avatarGender: isFr ? 'female' : 'male',
+      avatarName: isFr ? 'Sophie' : 'Arthur',
+      avatarVoice: isFr ? 'fr-FR-DeniseNeural' : 'en-US-GuyNeural',
+      defaultSpeed: 0.85,
+      dialogue: template.dialogue,
+      karaokePhrases: template.karaokePhrases
+    });
+    setActiveLessonId(newLessonId);
+    setActiveTab('editor');
+    setIsPreviewMode(false);
+  };
+
+  // Asignar personaje histórico seleccionado
+  const handleApplyHistoricalFigure = (figure: MultilingualHistoricalFigure) => {
+    updateLesson(activeLesson.id, {
+      avatarName: figure.name,
+      avatarVoice: figure.voiceId,
+      avatarGender: figure.gender,
+      defaultSpeed: figure.speechRate,
+      dialogue: [
+        {
+          id: `d-${Date.now()}-intro`,
+          speaker: 'avatar',
+          text: figure.canonicalIntro,
+          translationEs: 'Presentación en primera persona histórica obligatoria.',
+          phoneticTip: 'Dicción solemne y articulación nativa de época'
+        },
+        {
+          id: `d-${Date.now()}-q1`,
+          speaker: 'student',
+          text: figure.sampleQuestions[0] || 'Tell me about your historical legacy.',
+          translationEs: 'Pregunta del alumno al personaje.'
+        }
+      ],
+      karaokePhrases: [
+        {
+          id: `k-${Date.now()}-hist`,
+          targetText: figure.canonicalIntro.split('.')[0] + '.',
+          translationEs: 'Oración canónica en primera persona',
+          difficulty: 'intermediate'
+        }
+      ]
+    });
+  };
+
+  // Reproducción y auditoría de muestra fonética en tiempo real
+  const handlePlayAudioSample = async (textToPlay?: string, lineId?: string) => {
+    if (isPlayingPreview || activePlayingLineId) {
+      stopAllIskoolAudio();
+      audioControllerRef.current?.stop();
+      setIsPlayingPreview(false);
+      setActivePlayingLineId(null);
+      if (activePlayingLineId === lineId && lineId) return;
+    }
+
+    const defaultSample = activeLesson.language === 'fr'
+      ? (useHistoricalFigure
+          ? availableHistoricalFigures.find(f => f.name === activeLesson.avatarName)?.canonicalIntro || "Bonjour, je suis votre mentor de français. Pratiquons une prononciation claire et authentique."
+          : `Bonjour! Je suis ${activeLesson.avatarName}. Bienvenue dans notre atelier de français. Écoutez attentivement ma prononciation et répétez après moi.`)
+      : (useHistoricalFigure
+          ? availableHistoricalFigures.find(f => f.name === activeLesson.avatarName)?.canonicalIntro || "Hello, I am your English mentor. Let us practice clear and fluent speech together."
+          : `Hello! My name is ${activeLesson.avatarName}. Welcome to our language workshop. Listen carefully to my pronunciation and practice with me.`);
+
+    const sampleText = textToPlay || defaultSample;
+
+    if (lineId) {
+      setActivePlayingLineId(lineId);
+    } else {
+      setIsPlayingPreview(true);
+    }
+
+    try {
+      audioControllerRef.current = await playUniversalIskoolVoice({
+        text: sampleText,
+        voiceId: activeLesson.avatarVoice,
+        language: activeLesson.language,
+        gender: activeLesson.avatarGender,
+        rate: activeLesson.defaultSpeed,
+        onStart: () => {
+          if (lineId) setActivePlayingLineId(lineId);
+          else setIsPlayingPreview(true);
+        },
+        onEnd: () => {
+          setIsPlayingPreview(false);
+          setActivePlayingLineId(null);
+        },
+        onError: () => {
+          setIsPlayingPreview(false);
+          setActivePlayingLineId(null);
+        }
+      });
+    } catch {
+      setIsPlayingPreview(false);
+      setActivePlayingLineId(null);
+    }
   };
 
   // Añadir línea de diálogo
@@ -152,8 +302,10 @@ export default function TeacherIdiomasPage() {
   const handleAddKaraokePhrase = () => {
     const newPhrase: KaraokePhrase = {
       id: `k-${Date.now()}`,
-      targetText: 'Practice makes perfect in every language',
-      translationEs: 'La práctica hace al maestro en cada idioma',
+      targetText: activeLesson.language === 'fr' 
+        ? 'La pratique constante perfectionne la prononciation' 
+        : 'Practice makes perfect in every language',
+      translationEs: 'La práctica constante hace al maestro en cada idioma',
       difficulty: 'beginner'
     };
     updateLesson(activeLesson.id, {
@@ -183,7 +335,6 @@ export default function TeacherIdiomasPage() {
     const sumAcc = studentReports.reduce((acc, r) => acc + r.overallAccuracy, 0);
     const avgAccuracy = Math.round(sumAcc / total);
 
-    // Conteo de palabras con error más frecuentes
     const errorMap: Record<string, number> = {};
     studentReports.forEach(r => {
       r.mispronouncedWords.forEach(w => {
@@ -200,64 +351,153 @@ export default function TeacherIdiomasPage() {
   }, [studentReports]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-      <Header />
-
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col overflow-x-hidden">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6 overflow-x-hidden">
         
-        {/* ENCABEZADO DEL MÓDULO DE IDIOMAS */}
+        {/* =========================================================================
+            ENCABEZADO INSTITUCIONAL DEL CENTRO DE IDIOMAS (12 FASES · ESL & FLE)
+            ========================================================================= */}
         <div className="flex flex-wrap items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/30 shadow-2xl">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-teal-400">
-              <span className="px-2.5 py-0.5 rounded-md bg-teal-500/20 border border-teal-500/40 text-teal-300">
-                Módulo Académico de Idiomas
+          <div className="space-y-1.5">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-wider">
+              <span className="px-2.5 py-0.5 rounded-md bg-indigo-500/20 border border-indigo-500/40 text-indigo-300">
+                Centro de Idiomas Profesional ISkool
               </span>
-              <span>·</span>
-              <span className="text-cyan-300">Avatar Humano & Karaoke Fonético (0 Tokens)</span>
+              <span className="text-slate-500">·</span>
+              <span className="text-cyan-300 font-mono">12 Fases Curriculares Oficiales</span>
+              <span className="text-slate-500">·</span>
+              <span className="text-teal-300">SEP CENNI (1-20) & DELF/DALF</span>
             </div>
+            
             <h1 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-3">
-              <Languages className="w-8 h-8 text-cyan-400" />
-              <span>Estudio Docente de Idiomas & Fonética</span>
+              <Globe2 className="w-8 h-8 text-cyan-400" />
+              <span>Centro de Idiomas & Fonética Avanzada</span>
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-              Diseña conversaciones inmersivas con avatares gesticulantes en <strong>Inglés y Francés</strong>, entrena la pronunciación guiada tipo karaoke y recibe en tiempo real las palabras que cada alumno necesita reforzar.
+            
+            <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
+              Consola docente de gestión integral de lenguas extranjeras en <strong>Inglés (ESL) y Francés (FLE)</strong>. Integra avatares gesticulantes, personajes históricos en primera persona, karaoke fonético en tiempo real, radares de macro-habilidades y diagnóstico de audio.
             </p>
           </div>
 
-          {/* Selector de Pestañas Superiores */}
+          {/* Selector de Idioma Rápido */}
           <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-950/80 border border-indigo-700/50 shadow-inner">
             <button
               type="button"
-              onClick={() => setActiveTab('editor')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
-                activeTab === 'editor'
-                  ? 'bg-gradient-to-r from-cyan-600 to-teal-600 text-white shadow-md'
+              onClick={() => {
+                const newVoice = activeLesson.avatarGender === 'female' ? 'en-US-JennyNeural' : 'en-US-GuyNeural';
+                updateLesson(activeLesson.id, { 
+                  language: 'en',
+                  avatarVoice: newVoice,
+                  avatarName: activeLesson.avatarGender === 'female' ? 'Claire' : 'Arthur'
+                });
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeLesson.language === 'en'
+                  ? 'bg-cyan-600 text-white shadow-md'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              <Edit3 className="w-4 h-4" />
-              <span>Taller de Conversación</span>
+              <span>🇬🇧</span>
+              <span>Inglés</span>
             </button>
+
             <button
               type="button"
-              onClick={() => setActiveTab('reports')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer relative ${
-                activeTab === 'reports'
-                  ? 'bg-gradient-to-r from-cyan-600 to-teal-600 text-white shadow-md'
+              onClick={() => {
+                const newVoice = activeLesson.avatarGender === 'female' ? 'fr-FR-DeniseNeural' : 'fr-FR-HenriNeural';
+                updateLesson(activeLesson.id, { 
+                  language: 'fr',
+                  avatarVoice: newVoice,
+                  avatarName: activeLesson.avatarGender === 'female' ? 'Sophie' : 'Henri'
+                });
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
+                activeLesson.language === 'fr'
+                  ? 'bg-indigo-600 text-white shadow-md'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              <Users className="w-4 h-4" />
-              <span>Bitácora de Alumnos</span>
-              {studentReports.filter(r => !r.reviewedByTeacher).length > 0 && (
-                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping absolute -top-1 -right-1" />
-              )}
+              <span>🇫🇷</span>
+              <span>Francés</span>
             </button>
           </div>
         </div>
 
         {/* =========================================================================
-            PESTAÑA 1: TALLER DE CONVERSACIÓN & PREVISUALIZACIÓN INMEDIATA
+            BARRA DE NAVEGACIÓN POR PESTAÑAS (UTILIDAD & FUNCIONALIDAD DOCENTE)
+            ========================================================================= */}
+        <div className="flex flex-wrap items-center gap-2 pb-2 border-b border-slate-800">
+          <button
+            type="button"
+            onClick={() => setActiveTab('editor')}
+            className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+              activeTab === 'editor'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <Edit3 className="w-4 h-4" />
+            <span>Taller de Diálogo & Avatares</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('analytics')}
+            className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+              activeTab === 'analytics'
+                ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20'
+                : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <BarChart3 className="w-4 h-4" />
+            <span>Analítica Gráfica & Radar CEFR</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('curriculum')}
+            className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+              activeTab === 'curriculum'
+                ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
+                : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <Layers className="w-4 h-4" />
+            <span>Ecosistema de 12 Fases (40 Semanas)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('hardware')}
+            className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+              activeTab === 'hardware'
+                ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/20'
+                : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <Activity className="w-4 h-4" />
+            <span>Diagnóstico de Micrófono & Audio</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('reports')}
+            className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 relative ${
+              activeTab === 'reports'
+                ? 'bg-rose-600 text-white shadow-md shadow-rose-600/20'
+                : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            <span>Bitácora de Pronunciación</span>
+            {studentReports.filter(r => !r.reviewedByTeacher).length > 0 && (
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-400 animate-ping absolute -top-1 -right-1" />
+            )}
+          </button>
+        </div>
+
+        {/* =========================================================================
+            PESTAÑA 1: TALLER DE DIÁLOGO, AVATARES Y VOCES HISTÓRICAS
             ========================================================================= */}
         {activeTab === 'editor' && (
           <div className="space-y-6">
@@ -266,7 +506,7 @@ export default function TeacherIdiomasPage() {
             <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
               
               {/* Selector de Lección Activa */}
-              <div className="flex items-center gap-3 overflow-x-auto py-1">
+              <div className="flex flex-wrap items-center gap-2 py-1">
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider shrink-0">
                   Lección:
                 </span>
@@ -310,20 +550,20 @@ export default function TeacherIdiomasPage() {
                 }`}
               >
                 <Eye className="w-4 h-4" />
-                <span>{isPreviewMode ? '✏️ Volver a Edición' : '👁️ Vista Previa del Alumno'}</span>
+                <span>{isPreviewMode ? '✏️ Volver al Taller Docente' : '👁️ Demostración Alumno (Gamificada)'}</span>
               </button>
             </div>
 
-            {/* MODO VISTA PREVIA INTERACTIVA (EXACTAMENTE LO QUE VIVE EL ALUMNO) */}
+            {/* MODO VISTA PREVIA INTERACTIVA (GAMIFICACIÓN DEL ALUMNO) */}
             {isPreviewMode ? (
               <div className="p-6 rounded-3xl bg-slate-900 border-2 border-amber-500/50 shadow-2xl space-y-6 animate-fade-in">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                   <div className="flex items-center gap-2 text-amber-400 font-black text-sm">
                     <Sparkles className="w-4 h-4" />
-                    <span>Modo Vista Previa Alumno · Simulador de Fonética Activo</span>
+                    <span>Entorno Gamificado del Alumno · Avatar Parlante & Karaoke de Precisión</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-400">Frase a practicar:</span>
+                    <span className="text-xs text-slate-400">Frase activa:</span>
                     <select
                       value={selectedKaraokeIndex}
                       onChange={(e) => setSelectedKaraokeIndex(Number(e.target.value))}
@@ -347,142 +587,148 @@ export default function TeacherIdiomasPage() {
                     avatarName={activeLesson.avatarName}
                     lessonId={activeLesson.id}
                     lessonTitle={activeLesson.title}
-                    studentName="Profesor (Modo Demostración)"
+                    studentName="Docente (Modo Simulación)"
                   />
                 )}
               </div>
             ) : (
-              /* MODO EDITOR DOCENTE */
+              /* MODO EDITOR Y CONFIGURACIÓN DOCENTE */
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
-                {/* Lado Izquierdo: Configuración del Avatar & Voz */}
+                {/* Lado Izquierdo: Configuración del Mentor & Personajes Históricos */}
                 <div className="lg:col-span-4 p-5 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-5 shadow-xl">
                   <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                     <h3 className="text-sm font-black text-white flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-cyan-400" />
-                      <span>Configuración del Avatar</span>
+                      <span>Mentor & Voz Neural</span>
                     </h3>
                     <span className="text-[10px] font-bold text-slate-400 uppercase">
-                      Paso 1
+                      Parámetros
                     </span>
                   </div>
 
-                  {/* Selector de Idioma */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-300">Idioma Objetivo:</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newVoice = activeLesson.avatarGender === 'female' 
-                            ? 'en-US-JennyNeural' 
-                            : 'en-US-GuyNeural';
-                          updateLesson(activeLesson.id, { 
-                            language: 'en', 
-                            avatarVoice: newVoice,
-                            avatarName: activeLesson.avatarGender === 'female' ? 'Claire' : 'Arthur'
-                          });
-                        }}
-                        className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                          activeLesson.language === 'en'
-                            ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200 shadow-md'
-                            : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
-                        }`}
-                      >
-                        <span className="text-base">🇬🇧</span>
-                        <span>Inglés</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newVoice = activeLesson.avatarGender === 'female' 
-                            ? 'fr-FR-DeniseNeural' 
-                            : 'fr-FR-HenriNeural';
-                          updateLesson(activeLesson.id, { 
-                            language: 'fr', 
-                            avatarVoice: newVoice,
-                            avatarName: activeLesson.avatarGender === 'female' ? 'Sophie' : 'Henri'
-                          });
-                        }}
-                        className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                          activeLesson.language === 'fr'
-                            ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200 shadow-md'
-                            : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
-                        }`}
-                      >
-                        <span className="text-base">🇫🇷</span>
-                        <span>Francés</span>
-                      </button>
+                  {/* Selector Personaje Histórico vs Avatar Estándar */}
+                  <div className="p-3 rounded-2xl bg-indigo-950/40 border border-indigo-700/50 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
+                        <Landmark className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Personaje Histórico Vivo</span>
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={useHistoricalFigure}
+                        onChange={(e) => setUseHistoricalFigure(e.target.checked)}
+                        className="rounded accent-indigo-500 cursor-pointer w-4 h-4"
+                      />
                     </div>
+                    <p className="text-[10px] text-slate-400 leading-tight">
+                      Activa próceres en primera persona estricta (Shakespeare, Lincoln, Napoleón, Curie) con sus voces de época.
+                    </p>
                   </div>
 
-                  {/* Selector de Género del Avatar */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-300">Género del Avatar:</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newVoice = activeLesson.language === 'en' ? 'en-US-JennyNeural' : 'fr-FR-DeniseNeural';
-                          const newName = activeLesson.language === 'en' ? 'Claire' : 'Sophie';
-                          updateLesson(activeLesson.id, { 
-                            avatarGender: 'female', 
-                            avatarVoice: newVoice,
-                            avatarName: newName
-                          });
-                        }}
-                        className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                          activeLesson.avatarGender === 'female'
-                            ? 'bg-indigo-600/30 border-indigo-400 text-white shadow-md'
-                            : 'bg-slate-800 border-slate-700 text-slate-400'
-                        }`}
-                      >
-                        <span>👩‍🏫</span>
-                        <span>Mujer ({activeLesson.language === 'en' ? 'Claire' : 'Sophie'})</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newVoice = activeLesson.language === 'en' ? 'en-US-GuyNeural' : 'fr-FR-HenriNeural';
-                          const newName = activeLesson.language === 'en' ? 'Arthur' : 'Henri';
-                          updateLesson(activeLesson.id, { 
-                            avatarGender: 'male', 
-                            avatarVoice: newVoice,
-                            avatarName: newName
-                          });
-                        }}
-                        className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                          activeLesson.avatarGender === 'male'
-                            ? 'bg-indigo-600/30 border-indigo-400 text-white shadow-md'
-                            : 'bg-slate-800 border-slate-700 text-slate-400'
-                        }`}
-                      >
-                        <span>👨‍🏫</span>
-                        <span>Hombre ({activeLesson.language === 'en' ? 'Arthur' : 'Henri'})</span>
-                      </button>
+                  {useHistoricalFigure ? (
+                    /* LISTA DE PERSONAJES HISTÓRICOS DISPONIBLES */
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-300">Elegir Personaje Histórico ({activeLesson.language === 'fr' ? 'Francés' : 'Inglés'}):</label>
+                      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                        {availableHistoricalFigures.map(fig => (
+                          <div
+                            key={fig.id}
+                            onClick={() => {
+                              setSelectedHistoricalId(fig.id);
+                              handleApplyHistoricalFigure(fig);
+                            }}
+                            className={`p-2.5 rounded-xl border text-xs cursor-pointer transition-all flex items-center justify-between ${
+                              activeLesson.avatarName === fig.name
+                                ? 'bg-indigo-600/30 border-indigo-400 text-white font-bold'
+                                : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-base">{fig.avatarEmoji}</span>
+                              <div>
+                                <span className="block font-bold">{fig.name}</span>
+                                <span className="text-[10px] text-slate-400">{fig.era}</span>
+                              </div>
+                            </div>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">
+                              1ª Persona
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    /* SELECTORES DEL AVATAR ESTÁNDAR */
+                    <>
+                      {/* Género del Avatar */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-300">Género del Avatar:</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newVoice = activeLesson.language === 'en' ? 'en-US-JennyNeural' : 'fr-FR-VivienneMultilingualNeural';
+                              const newName = activeLesson.language === 'en' ? 'Claire' : 'Sophie';
+                              updateLesson(activeLesson.id, { 
+                                avatarGender: 'female', 
+                                avatarVoice: newVoice,
+                                avatarName: newName
+                              });
+                            }}
+                            className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                              activeLesson.avatarGender === 'female'
+                                ? 'bg-indigo-600/30 border-indigo-400 text-white shadow-md'
+                                : 'bg-slate-800 border-slate-700 text-slate-400'
+                            }`}
+                          >
+                            <span>👩‍🏫</span>
+                            <span>Mujer ({activeLesson.language === 'en' ? 'Claire' : 'Sophie'})</span>
+                          </button>
 
-                  {/* Selector de Voz Neural */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-300">Voz Humana de Estudio:</label>
-                    <select
-                      value={activeLesson.avatarVoice}
-                      onChange={(e) => updateLesson(activeLesson.id, { avatarVoice: e.target.value })}
-                      className="w-full p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-white"
-                    >
-                      {availableVoices.map(v => (
-                        <option key={v.id} value={v.id}>{v.label}</option>
-                      ))}
-                    </select>
-                  </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newVoice = activeLesson.language === 'en' ? 'en-US-GuyNeural' : 'fr-FR-HenriNeural';
+                              const newName = activeLesson.language === 'en' ? 'Arthur' : 'Henri';
+                              updateLesson(activeLesson.id, { 
+                                avatarGender: 'male', 
+                                avatarVoice: newVoice,
+                                avatarName: newName
+                              });
+                            }}
+                            className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                              activeLesson.avatarGender === 'male'
+                                ? 'bg-indigo-600/30 border-indigo-400 text-white shadow-md'
+                                : 'bg-slate-800 border-slate-700 text-slate-400'
+                            }`}
+                          >
+                            <span>👨‍🏫</span>
+                            <span>Hombre ({activeLesson.language === 'en' ? 'Arthur' : 'Henri'})</span>
+                          </button>
+                        </div>
+                      </div>
 
-                  {/* Velocidad Predeterminada para Rezagados */}
+                      {/* Selector de Voz Neural */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-slate-300">Voz Neural Calibrada:</label>
+                        <select
+                          value={activeLesson.avatarVoice}
+                          onChange={(e) => updateLesson(activeLesson.id, { avatarVoice: e.target.value })}
+                          className="w-full p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-white"
+                        >
+                          {availableVoices.map(v => (
+                            <option key={v.id} value={v.id}>{v.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Velocidad Predeterminada */}
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs font-bold">
-                      <span className="text-slate-300">Velocidad Base:</span>
+                      <span className="text-slate-300">Velocidad de Dicción:</span>
                       <span className="text-cyan-400 font-mono">{activeLesson.defaultSpeed}x</span>
                     </div>
                     <input
@@ -501,6 +747,32 @@ export default function TeacherIdiomasPage() {
                     </div>
                   </div>
 
+                  {/* Botón de Auditoría y Prueba de Pronunciación en Vivo */}
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={() => handlePlayAudioSample()}
+                      className={`w-full py-2.5 px-3 rounded-2xl text-xs font-black flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer ${
+                        isPlayingPreview
+                          ? 'bg-rose-600 hover:bg-rose-500 text-white animate-pulse'
+                          : 'bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white'
+                      }`}
+                      title="Escuchar locución de la voz seleccionada con dicción nativa calibrada"
+                    >
+                      {isPlayingPreview ? (
+                        <>
+                          <Pause className="w-4 h-4" />
+                          <span>Detener Muestra Fonética</span>
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 className="w-4 h-4 text-cyan-300" />
+                          <span>Escuchar Muestra ({activeLesson.language === 'fr' ? 'Prononciation Française' : 'English Accent'})</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
                   {/* Vista en Miniatura del Avatar Configurado */}
                   <div className="pt-2 flex justify-center">
                     <HumanGesticulatingAvatar
@@ -509,7 +781,9 @@ export default function TeacherIdiomasPage() {
                       language={activeLesson.language}
                       voiceId={activeLesson.avatarVoice}
                       speechRate={activeLesson.defaultSpeed}
-                      currentText="Listo para enseñar con la mejor fonética."
+                      isPlaying={isPlayingPreview}
+                      onRepeat={() => handlePlayAudioSample(activeLesson.dialogue[0]?.text)}
+                      currentText={activeLesson.dialogue[0]?.text || (activeLesson.language === 'fr' ? "Prêt pour la leçon de prononciation française." : "Ready for the English pronunciation lesson.")}
                       className="scale-90"
                     />
                   </div>
@@ -524,10 +798,10 @@ export default function TeacherIdiomasPage() {
                       <div>
                         <h3 className="text-sm font-black text-white flex items-center gap-2">
                           <MessageSquare className="w-4 h-4 text-cyan-400" />
-                          <span>Diálogo de la Conversación</span>
+                          <span>Guion de Diálogo Interactivo</span>
                         </h3>
                         <p className="text-[11px] text-slate-400">
-                          Redacta la interacción entre el avatar y el estudiante. El avatar pronunciará sus líneas con gesticulación real.
+                          Redacta la interacción entre el mentor ({activeLesson.avatarName}) y el estudiante. El avatar hablará con gesticulación real.
                         </p>
                       </div>
                       <button
@@ -553,18 +827,34 @@ export default function TeacherIdiomasPage() {
                                 onChange={(e) => handleUpdateDialogueLine(idx, { speaker: e.target.value as any })}
                                 className="px-2 py-1 rounded-lg bg-slate-800 text-xs font-bold text-white border border-slate-700"
                               >
-                                <option value="avatar">Avatar ({activeLesson.avatarName})</option>
-                                <option value="student">Alumno (Respuesta)</option>
+                                <option value="avatar">Mentor ({activeLesson.avatarName})</option>
+                                <option value="student">Alumno (Respuesta Oral)</option>
                               </select>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteDialogueLine(idx)}
-                              className="text-slate-500 hover:text-rose-400 p-1 cursor-pointer transition-colors"
-                              title="Eliminar línea"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handlePlayAudioSample(line.text, line.id)}
+                                disabled={!line.text.trim()}
+                                className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                                  activePlayingLineId === line.id
+                                    ? 'bg-rose-600 text-white animate-pulse'
+                                    : 'bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white'
+                                }`}
+                                title="Escuchar locución de esta línea con voz del avatar"
+                              >
+                                {activePlayingLineId === line.id ? <Pause className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-cyan-400" />}
+                                <span className="text-[10px] hidden sm:inline">{activePlayingLineId === line.id ? 'Detener' : 'Escuchar'}</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteDialogueLine(idx)}
+                                className="text-slate-500 hover:text-rose-400 p-1 cursor-pointer transition-colors"
+                                title="Eliminar línea"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
 
                           <div className="space-y-1.5">
@@ -597,7 +887,7 @@ export default function TeacherIdiomasPage() {
                           <span>Frases Guiadas para Karaoke de Pronunciación</span>
                         </h3>
                         <p className="text-[11px] text-slate-400">
-                          El alumno grabará estas oraciones. El sistema marcará las palabras en verde y rojo en tiempo real (0 Tokens).
+                          El alumno grabará estas oraciones con su micrófono. El sistema resaltará en verde las palabras correctas en tiempo real.
                         </p>
                       </div>
                       <button
@@ -617,16 +907,33 @@ export default function TeacherIdiomasPage() {
                             <span className="text-xs font-black text-teal-400">
                               Frase {idx + 1} ({phrase.difficulty})
                             </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const updated = activeLesson.karaokePhrases.filter((_, i) => i !== idx);
-                                updateLesson(activeLesson.id, { karaokePhrases: updated });
-                              }}
-                              className="text-slate-500 hover:text-rose-400 p-1 cursor-pointer transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handlePlayAudioSample(phrase.targetText, phrase.id)}
+                                disabled={!phrase.targetText.trim()}
+                                className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                                  activePlayingLineId === phrase.id
+                                    ? 'bg-rose-600 text-white animate-pulse'
+                                    : 'bg-slate-800 hover:bg-teal-600 text-slate-300 hover:text-white'
+                                }`}
+                                title="Escuchar pronunciación modelo"
+                              >
+                                {activePlayingLineId === phrase.id ? <Pause className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-teal-400" />}
+                                <span className="text-[10px] hidden sm:inline">{activePlayingLineId === phrase.id ? 'Detener' : 'Escuchar Modelo'}</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = activeLesson.karaokePhrases.filter((_, i) => i !== idx);
+                                  updateLesson(activeLesson.id, { karaokePhrases: updated });
+                                }}
+                                className="text-slate-500 hover:text-rose-400 p-1 cursor-pointer transition-colors"
+                                title="Eliminar frase"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
 
                           <input
@@ -666,7 +973,31 @@ export default function TeacherIdiomasPage() {
         )}
 
         {/* =========================================================================
-            PESTAÑA 2: BITÁCORA EN TIEMPO REAL & NOTAS DE ALUMNOS (DIAGNÓSTICO)
+            PESTAÑA 2: ANALÍTICA GRÁFICA & RADAR CEFR / SEP CENNI
+            ========================================================================= */}
+        {activeTab === 'analytics' && (
+          <LanguageAnalyticsCharts language={activeLesson.language} />
+        )}
+
+        {/* =========================================================================
+            PESTAÑA 3: ECOSISTEMA DE 12 FASES CURRICULARES & PLAN DE 40 SEMANAS
+            ========================================================================= */}
+        {activeTab === 'curriculum' && (
+          <Curriculum12PhasesExplorer 
+            language={activeLesson.language}
+            onSelectLessonTemplate={handleLoadCurriculumTemplate}
+          />
+        )}
+
+        {/* =========================================================================
+            PESTAÑA 4: DIAGNÓSTICO DE HARDWARE, MICRÓFONO & AUDIO
+            ========================================================================= */}
+        {activeTab === 'hardware' && (
+          <HardwareAudioTester language={activeLesson.language} />
+        )}
+
+        {/* =========================================================================
+            PESTAÑA 5: BITÁCORA EN TIEMPO REAL & NOTAS DE ALUMNOS (DIAGNÓSTICO)
             ========================================================================= */}
         {activeTab === 'reports' && (
           <div className="space-y-6">

@@ -1,0 +1,268 @@
+{
+  "generation_id": "gen_1790221567406_500e2fa5",
+  "request": {
+    "grade": "secondary_1",
+    "cefr": "A2",
+    "skill": "speaking",
+    "topic": "travel_and_culture",
+    "language_function": "making_suggestions",
+    "activity_type": "information_gap",
+    "duration_minutes": 15
+  },
+  "knowledge_document_ids": [
+    "func_making_suggestions",
+    "speaking_making_suggestions_plans_a2",
+    "grade_map_primary_6",
+    "grade_map_secondary_1",
+    "listening_main_info_conversations_a2",
+    "speaking_b1_b2_collaborative_discussion",
+    "vocab_travel_transport_holidays_a2",
+    "writing_informal_notes_messages_a2",
+    "grammar_comparatives_superlatives_regular_irregular_a2",
+    "grammar_first_conditional_real_possibility_a2",
+    "grammar_future_going_to_intentions_a2",
+    "grammar_future_will_predictions_offers_a2",
+    "grammar_gerunds_infinitives_verbs_a2",
+    "grammar_modals_permission_obligation_advice_a2",
+    "grammar_past_continuous_actions_a2",
+    "grammar_past_simple_regular_irregular_a2",
+    "grammar_present_perfect_experiences_intro_a2",
+    "grammar_quantifiers_countable_uncountable_a2",
+    "grammar_relative_clauses_defining_intro_a2",
+    "rubric_a2_flyers_key_holistic_performance"
+  ],
+  "knowledge_versions": [
+    {
+      "document_id": "func_making_suggestions",
+      "version": 2,
+      "checksum": "2276ad8edf369cbb14f0b3ddb6e2c4fc63c60fe01ad90262428f652c6a7a2a98",
+      "title": "Language Function: Making Suggestions and Proposing Actions",
+      "document_type": "language_function"
+    },
+    {
+      "document_id": "speaking_making_suggestions_plans_a2",
+      "version": 1,
+      "checksum": "13596a4b8cf058aa98590d450fec0bf221a5e9da9242b096b0f90e3b03b7ab54",
+      "title": "Making Suggestions and Arranging Shared Plans (A2)",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "grade_map_primary_6",
+      "version": 2,
+      "checksum": "0491422697187fca79c91d6f55db2eb71731bfe3d3fc8a90887fa1f0d85ce043",
+      "title": "Primary 6th Grade Profile - English (A2)",
+      "document_type": "grade_profile"
+    },
+    {
+      "document_id": "grade_map_secondary_1",
+      "version": 2,
+      "checksum": "83b448cc65cc09ecb473ba28a6afeecf3346bb18d2a440a6452336446fb6376a",
+      "title": "Secondary 1st Grade Profile - English (A2 Key)",
+      "document_type": "grade_profile"
+    },
+    {
+      "document_id": "listening_main_info_conversations_a2",
+      "version": 1,
+      "checksum": "d66026d68ea110b9ba2eb94c3f6f6d769ee93d1652bf97fc6272480609f506d2",
+      "title": "Identifying Main Information in Everyday Conversations (A2)",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "speaking_b1_b2_collaborative_discussion",
+      "version": 1,
+      "checksum": "c907a91bc715f802e38f87ff5e981db915689fa0129bf2c31991356a3892a142",
+      "title": "Collaborative Discussion, Decision Making and Turn-Taking",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "vocab_travel_transport_holidays_a2",
+      "version": 1,
+      "checksum": "98ef5672c633aaaf24065c83fbc4d214fa1de215de7792a6ff0fa0b5db8d0134",
+      "title": "Vocabulary - Travel, Transport, and Holiday Destinations (A2)",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "writing_informal_notes_messages_a2",
+      "version": 1,
+      "checksum": "548e542546ad1d0947d1a8eecc2f8ac0567783ce6f14cbcd38033e94c41fc6ef",
+      "title": "Writing Informal Notes, Invitations, and Messages (A2)",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "grammar_comparatives_superlatives_regular_irregular_a2",
+      "version": 1,
+      "checksum": "7217ddfe629e9c633cba39c7d75f25ce2fc4559ba0b6f92c71f518af4f73d438",
+      "title": "Comparatives and Superlatives - Regular Inflections and Irregular Adjectives (A2)",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "grammar_first_conditional_real_possibility_a2",
+      "version": 1,
+      "checksum": "7a3674dfc130aea0bfb3a70d182ff9edb7294b263e0e2ad823706efc05d9c05d",
+      "title": "First Conditional - Real Possibility and Future Consequences (A2)",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "grammar_future_going_to_intentions_a2",
+      "version": 1,
+      "checksum": "326505ae5b0e2aa57763956533d94375a81ea9fbf6e1ddd0167b6d47e1d88f9d",
+      "title": "Expressing Future Intentions and Evidence-Based Predictions with Be Going To (A2)",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "grammar_future_will_predictions_offers_a2",
+      "version": 1,
+      "checksum": "7163e2bc6ae95afcda31760ce0de16b27e9db11d47339b842fc149ce91a89bc5",
+      "title": "Future Simple with Will - Predictions, Spontaneous Decisions, and Offers (A2)",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "grammar_gerunds_infinitives_verbs_a2",
+      "version": 1,
+      "checksum": "b12382e393a0e8dc18a018b40b448508802f06bcdbbe7ccef3fe54332efd30ba",
+      "title": "Verb Patterns - Introduction to Gerunds (-ing) and To-Infinitives (A2)",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "grammar_modals_permission_obligation_advice_a2",
+      "version": 1,
+      "checksum": "3146d2a16443bd900c8fb1697c9d654521fca0cbc9984b661a09b726eee767f7",
+      "title": "Modal Verbs - Ability, Permission, Obligation, and Advice (Can, Could, Must, Have to, Should) (A2)",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "grammar_past_continuous_actions_a2",
+      "version": 1,
+      "checksum": "893ce361ac28aa48d1b2d65f89aa85b2633c83012cd4cbe3d7819205e1a855cb",
+      "title": "Past Continuous Tense - Actions in Progress and Interrupted Actions (A2)",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "grammar_past_simple_regular_irregular_a2",
+      "version": 1,
+      "checksum": "2bcd725ccad9d9d76453c1221f55fb5fcceb42cf6837294b945090c103e7b842",
+      "title": "Past Simple Tense - Regular Verbs (-ed) and High-Frequency Irregulars (A2)",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "grammar_present_perfect_experiences_intro_a2",
+      "version": 1,
+      "checksum": "707ccd4fdef1dbe0272013d811694201d9286aea661847fea6db16290d18e50d",
+      "title": "Present Perfect Tense Introduction - Life Experiences with Ever and Never (A2)",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "grammar_quantifiers_countable_uncountable_a2",
+      "version": 1,
+      "checksum": "ba1a6d55b9699a04112a7f3d50a5d26a8a692cd95c251155b04822051c92a8c4",
+      "title": "Countable and Uncountable Nouns with Quantifiers (Some, Any, Much, Many, A lot of, A few, A little) (A2)",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "grammar_relative_clauses_defining_intro_a2",
+      "version": 1,
+      "checksum": "21c18eb0a057cf24c81b900333c568b3a3c20c3a350d1b124e9bcc6a0ae500ba",
+      "title": "Defining Relative Clauses Introduction - Relative Pronouns Who, Which, That, Where (A2)",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "rubric_a2_flyers_key_holistic_performance",
+      "version": 1,
+      "checksum": "91c3569e37296a429fc2518ecbe7ace9800c059537389f4a7b9d264960df5413",
+      "title": "Institutional Assessment Rubric - A2 Flyers and Key Performance Standard",
+      "document_type": "assessment_rubric"
+    }
+  ],
+  "prompt_version": "1.0.0",
+  "model": "models/gemini-3.5-flash",
+  "prompt_sent": "### SECTION 1: SYSTEM RULES ###\nYou are an educational content generation engine for iSchool.\nYou must generate educational content using the academic context supplied by iSchool.\nThe supplied Knowledge Vault context is authoritative for:\n- grade level\n- CEFR level\n- learning objectives\n- language functions\n- grammar expectations\n- vocabulary expectations\n- skill progression\n- assessment criteria\n\nMANDATORY BEHAVIORAL CONSTRAINTS:\n1. Do not increase or decrease the requested level without explicit instruction.\n2. Do not invent curriculum requirements that contradict the supplied context.\n3. Generate original, engaging, pedagogically sound educational content.\n4. Do not reproduce copyrighted textbook exercises or passages.\n5. Strictly adhere to the institutional white-label policy (never mention third-party commercial brands).\n6. Return the response using the requested structured JSON schema ONLY. No conversational preambles.\n\n### SECTION 2: ACADEMIC CONTEXT (AUTHORITATIVE KNOWLEDGE VAULT) ###\nBelow is the official curricular context extracted from the iSchool Knowledge Vault.\nYou MUST ground your activity entirely within these bounds:\n\n================================================================\nPEDAGOGICAL KNOWLEDGE VAULT - ACADEMIC CONTEXT (iSchool)\n================================================================\nGRADE: SECONDARY_1\nCEFR TARGET: A2 (Entry B1 -> Target B2)\nSKILL: SPEAKING\nSUBSKILLS: interactive_communication, proposing_ideas\n\n--- LEARNING OBJECTIVES & CAN-DO STATEMENTS ---\n\n--- LANGUAGE FUNCTIONS & TARGET REPERTOIRE ---\n[Language Function: Making Suggestions and Proposing Actions]\n  Model Expressions:\n    - \"Shall we go to the cinema this afternoon?\"\n    - \"Why don't we have a picnic in the park on Saturday?\"\n    - \"Let's study English together after school.\"\n    - \"How about playing video games at my house?\"\n    - \"Why don't we organize a workshop on digital privacy for our classmates?\"\n    - \"How about creating an interactive infographic instead of a slide deck?\"\n    - \"We could start by collecting survey feedback before making our final choice.\"\n    - \"Perhaps it would be beneficial to pilot the initiative with a small test group first.\"\n    - \"I would suggest allocating distinct responsibilities before setting strict deadlines.\"\n    - \"One viable alternative might be to partner with local community organizations.\"\n  Pedagogical Guidance:\n\n--- GRAMMAR PROGRESSION & STRUCTURES ---\n• Focus: Comparatives and Superlatives - Regular Inflections and Irregular Adjectives (A2)\n• Focus: First Conditional - Real Possibility and Future Consequences (A2)\n• Focus: Expressing Future Intentions and Evidence-Based Predictions with Be Going To (A2)\n• Focus: Future Simple with Will - Predictions, Spontaneous Decisions, and Offers (A2)\n• Focus: Verb Patterns - Introduction to Gerunds (-ing) and To-Infinitives (A2)\n• Focus: Modal Verbs - Ability, Permission, Obligation, and Advice (Can, Could, Must, Have to, Should) (A2)\n• Focus: Past Continuous Tense - Actions in Progress and Interrupted Actions (A2)\n• Focus: Past Simple Tense - Regular Verbs (-ed) and High-Frequency Irregulars (A2)\n• Focus: Present Perfect Tense Introduction - Life Experiences with Ever and Never (A2)\n• Focus: Countable and Uncountable Nouns with Quantifiers (Some, Any, Much, Many, A lot of, A few, A little) (A2)\n• Focus: Defining Relative Clauses Introduction - Relative Pronouns Who, Which, That, Where (A2)\n  - **Nivel CEFR:** A2 (Plataforma).\n  - **Nivel CEFR:** A2 (Plataforma - Consolidación Secundaria Inicial).\n  - **Nivel CEFR:** A2 (Plataforma).\n  - **Nivel CEFR:** A2 (Plataforma).\n  - **Nivel CEFR:** A2 (Plataforma).\n  - **Nivel CEFR:** A2 (Plataforma).\n  - **Petición cortés y habilidad pasada:** *Could* (*\"Could I borrow your pencil?\"*).\n  - **Obligación estricta y prohibición:** *Must / Mustn't* (*\"You mustn't use phones during tests\"*).\n  - **Nivel CEFR:** A2 (Plataforma).\n  - **Nivel CEFR:** A2 (Plataforma).\n  - **Nivel CEFR:** A2 (Plataforma - Nivel Umbral Inicial).\n  - **Nivel CEFR:** A2 (Plataforma).\n  - **Some:** Afirmativas (*\"I have some apples / some water\"*).\n  - **Any:** Negativas y preguntas (*\"I don't have any money\"*, *\"Do you have any questions?\"*).\n  - **Nivel CEFR:** A2 (Plataforma).\n  - **Who / That:** Para personas (*\"A chef is someone who cooks in a restaurant\"*).\n  - **Which / That:** Para cosas y animales (*\"This is the mobile phone which has a great camera\"*).\n\n--- VOCABULARY DOMAIN & COLLOCATIONS ---\nDomain: travel_and_culture\nRecommended Collocations & Expressions:\n\n--- RECOMMENDED ACTIVITY PATTERNS ---\n\n--- ASSESSMENT CRITERIA (CEFR ALIGNED) ---\nRubric: Institutional Assessment Rubric - A2 Flyers and Key Performance Standard\n• Task Achievement\n• Fluency\n• Range\n• Accuracy\n\n--- PEDAGOGICAL CONSTRAINTS ---\n⚠️ PROHIBICIÓN ESTRICTA: No utilizar marcas comerciales externas en los reactivos ni en la interfaz.\n⚠️ ANDAMIAJE PEDAGÓGICO OBLIGATORIO: Ofrecer modelos de frases funcionales antes de exigir producción oral autónoma.\n⚠️ CALIBRACIÓN CEFR: El lenguaje y los distractores deben respetar el nivel objetivo B1 → B2 sin exceder la dificultad.\n\n--- AUTHORITATIVE SOURCE REFERENCES ---\n• [cambridge_young_learners_flyers_handbook] Cambridge English A2 Flyers Handbook for Teachers\n• [cambridge_english_a2_key_handbook] Cambridge English A2 Key (KET) Handbook for Teachers\n• [cefr_companion_volume_2020] Common European Framework of Reference for Languages - Companion Volume\n• [iskool_curriculum_core] Sistema Curricular y Motor Pedagógico Institucional iSchool\n• [sep_nem_lenguajes_2024] Marco Curricular Común y Planes de Estudio de Lenguas Extranjeras (SEP NEM)\n• [cambridge_english_b2_first_handbook] Cambridge English B2 First Handbook for Teachers\n================================================================\n\n### SECTION 3: GENERATION REQUEST ###\nDesign an individualized, classroom-ready educational activity according to these exact specifications:\n- Grade: secondary_1\n- CEFR Target: A2\n- Primary Skill: speaking\n- Topic / Domain: travel_and_culture\n- Language Function: making_suggestions\n- Activity Pattern: information_gap\n- Total Duration: 15 minutes\n\nPEDAGOGICAL REQUIREMENTS FOR THIS ACTIVITY:\n1. The activity must actively train the student to use the expressions provided in the language function \"making_suggestions\".\n2. Target timing must match exactly 15 minutes distributed across warm-up, core task, and wrap-up phases.\n3. Include explicit scaffolding so students of the requested CEFR level feel supported before communicative production.\n\n### SECTION 4: OUTPUT SCHEMA ###\nYou must respond with a single valid JSON object strictly adhering to this structure:\n{\n  \"title\": \"Clear, engaging title for the activity\",\n  \"grade\": \"secondary_1\",\n  \"cefr\": \"A2\",\n  \"skill\": \"speaking\",\n  \"topic\": \"travel_and_culture\",\n  \"language_function\": \"making_suggestions\",\n  \"activity_type\": \"information_gap\",\n  \"duration_minutes\": 15,\n  \"learning_objective\": \"Explicit Can-Do statement grounded in the provided objectives\",\n  \"student_instructions\": \"Clear, age-appropriate step-by-step instructions for the student in English\",\n  \"teacher_instructions\": \"Pedagogical guidance, classroom setup, timing tips and monitoring notes for the teacher\",\n  \"language_support\": {\n    \"useful_phrases\": [\"Array of functional model phrases from the language function context\"],\n    \"grammar_support\": [\"Array of grammar structures to reinforce during the activity\"],\n    \"vocabulary_support\": [\"Array of topic-specific vocabulary and collocations to activate\"]\n  },\n  \"activity_steps\": [\n    {\n      \"phase\": \"warm_up | core_task | wrap_up\",\n      \"duration_minutes\": 5,\n      \"teacher_instructions\": \"What the teacher does during this phase\",\n      \"student_instructions\": \"What the students do during this phase\"\n    }\n  ],\n  \"assessment\": {\n    \"criteria\": [\"3 to 4 specific, observable evaluation criteria derived from the CEFR rubric context\"],\n    \"rubric_snapshot\": [\"Brief performance indicators for meeting expectations\"]\n  }\n}\n\nCRITICAL: Return ONLY raw valid JSON. Do not enclose in markdown ticks if not required, or if you do, use ```json ... ```.",
+  "raw_output": "{\"title\":\"Weekend Excursion: Making Suggestions for a Class Trip\",\"grade\":\"secondary_1\",\"cefr\":\"A2\",\"skill\":\"speaking\",\"topic\":\"travel_and_culture\",\"language_function\":\"making_suggestions\",\"activity_type\":\"information_gap\",\"duration_minutes\":15,\"learning_objective\":\"Students can make, accept, and counter-propose travel suggestions using 'Shall we...?' and 'Why don't we...?' in a collaborative paired decision task.\",\"student_instructions\":\"In pairs, look at the travel options for a day trip. Suggest activities to your partner using 'Shall we...?' and 'Why don't we...?'. Agree on one destination and departure time.\",\"teacher_instructions\":\"Model the suggestion frames on the board. Monitor pairs for bare infinitive use. Select 3 pairs to present their final itinerary.\",\"language_support\":{\"target_structures\":[\"Shall we + base verb (e.g., Shall we take the train?)\",\"Why don't we + base verb (e.g., Why don't we visit the zoo?)\",\"Let's + base verb (e.g., Let's meet at 9:00 AM)\"],\"key_vocabulary\":[\"train\",\"station\",\"ticket\",\"platform\",\"suitcase\",\"backpack\",\"guidebook\",\"sightseeing\"],\"sentence_frames\":[\"Shall we go to...?\",\"Why don't we take the...?\",\"That sounds like a great idea!\",\"I'm not so sure. Why don't we... instead?\"],\"useful_phrases\":[\"Shall we...?\",\"Why don't we...?\",\"That sounds great!\",\"I would prefer to...\"]},\"activity_steps\":[{\"step_number\":1,\"phase\":\"Warm-up & Model\",\"duration_minutes\":3,\"teacher_action\":\"Display photos of 3 travel destinations. Model: 'Why don't we visit the museum?'. Elicit choral response.\",\"student_action\":\"Listen and repeat the target phrase with rising-falling intonation.\"},{\"step_number\":2,\"phase\":\"Collaborative Decision Task\",\"duration_minutes\":8,\"teacher_action\":\"Hand out paired trip cards. Monitor pair negotiation and prompt turn-taking.\",\"student_action\":\"Student A suggests a destination; Student B reacts and counter-proposes until an agreement is reached.\"},{\"step_number\":3,\"phase\":\"Reporting & Formative Wrap-up\",\"duration_minutes\":4,\"teacher_action\":\"Ask 3 pairs to state their decision: 'We decided to go to... because...'. Provide praise and target form feedback.\",\"student_action\":\"Report pair decision to the whole class in two connected sentences.\"}],\"assessment\":{\"evidence\":\"Paired oral decision demonstrating at least 2 suggestion formulas and 1 polite reaction.\",\"criteria\":[\"Uses bare infinitive after Shall we and Why don't we\",\"Maintains turn-taking without switching to Spanish\",\"Includes at least 3 travel vocabulary terms\"],\"success_criteria\":[\"Uses bare infinitive after Shall we and Why don't we\",\"Maintains turn-taking without switching to Spanish\",\"Includes at least 3 travel vocabulary terms\"],\"rubric_snapshot\":[\"A2 Flyers/Key Holistic Speaking Rubric - Interactive Communication & Language Accuracy\"]}}",
+  "generated_output": {
+    "title": "Weekend Excursion: Making Suggestions for a Class Trip",
+    "grade": "secondary_1",
+    "cefr": "A2",
+    "skill": "speaking",
+    "topic": "travel_and_culture",
+    "language_function": "making_suggestions",
+    "activity_type": "information_gap",
+    "duration_minutes": 15,
+    "learning_objective": "Students can make, accept, and counter-propose travel suggestions using 'Shall we...?' and 'Why don't we...?' in a collaborative paired decision task.",
+    "student_instructions": "In pairs, look at the travel options for a day trip. Suggest activities to your partner using 'Shall we...?' and 'Why don't we...?'. Agree on one destination and departure time.",
+    "teacher_instructions": "Model the suggestion frames on the board. Monitor pairs for bare infinitive use. Select 3 pairs to present their final itinerary.",
+    "language_support": {
+      "target_structures": [
+        "Shall we + base verb (e.g., Shall we take the train?)",
+        "Why don't we + base verb (e.g., Why don't we visit the zoo?)",
+        "Let's + base verb (e.g., Let's meet at 9:00 AM)"
+      ],
+      "key_vocabulary": [
+        "train",
+        "station",
+        "ticket",
+        "platform",
+        "suitcase",
+        "backpack",
+        "guidebook",
+        "sightseeing"
+      ],
+      "sentence_frames": [
+        "Shall we go to...?",
+        "Why don't we take the...?",
+        "That sounds like a great idea!",
+        "I'm not so sure. Why don't we... instead?"
+      ],
+      "useful_phrases": [
+        "Shall we...?",
+        "Why don't we...?",
+        "That sounds great!",
+        "I would prefer to..."
+      ]
+    },
+    "activity_steps": [
+      {
+        "step_number": 1,
+        "phase": "Warm-up & Model",
+        "duration_minutes": 3,
+        "teacher_action": "Display photos of 3 travel destinations. Model: 'Why don't we visit the museum?'. Elicit choral response.",
+        "student_action": "Listen and repeat the target phrase with rising-falling intonation."
+      },
+      {
+        "step_number": 2,
+        "phase": "Collaborative Decision Task",
+        "duration_minutes": 8,
+        "teacher_action": "Hand out paired trip cards. Monitor pair negotiation and prompt turn-taking.",
+        "student_action": "Student A suggests a destination; Student B reacts and counter-proposes until an agreement is reached."
+      },
+      {
+        "step_number": 3,
+        "phase": "Reporting & Formative Wrap-up",
+        "duration_minutes": 4,
+        "teacher_action": "Ask 3 pairs to state their decision: 'We decided to go to... because...'. Provide praise and target form feedback.",
+        "student_action": "Report pair decision to the whole class in two connected sentences."
+      }
+    ],
+    "assessment": {
+      "evidence": "Paired oral decision demonstrating at least 2 suggestion formulas and 1 polite reaction.",
+      "criteria": [
+        "Uses bare infinitive after Shall we and Why don't we",
+        "Maintains turn-taking without switching to Spanish",
+        "Includes at least 3 travel vocabulary terms"
+      ],
+      "success_criteria": [
+        "Uses bare infinitive after Shall we and Why don't we",
+        "Maintains turn-taking without switching to Spanish",
+        "Includes at least 3 travel vocabulary terms"
+      ],
+      "rubric_snapshot": [
+        "A2 Flyers/Key Holistic Speaking Rubric - Interactive Communication & Language Accuracy"
+      ]
+    }
+  },
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "mismatches": []
+  },
+  "created_at": "2026-09-24T03:46:07.406Z"
+}

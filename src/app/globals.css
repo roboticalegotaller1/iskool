@@ -516,5 +516,22 @@ body {
       scroll-behavior: auto !important;
     }
   }
+
+  /* Ergonomía táctil para Celulares y Tablets (WCAG 2.5.5 / Touch Target >= 44x44px) */
+  .touch-target-safe, .touch-manipulation {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+
+  @media (max-width: 640px) {
+    button, [role="button"], input, select {
+      min-height: 44px;
+      touch-action: manipulation;
+    }
+    input, select, textarea {
+      font-size: 16px !important; /* Previene el zoom forzado involuntario en navegadores móviles como iOS Safari */
+    }
+  }
 }
 

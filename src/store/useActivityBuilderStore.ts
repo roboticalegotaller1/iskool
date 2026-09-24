@@ -549,6 +549,65 @@ const createDefaultBlock = (type: StudioBlockType, index: number = 0): StudioBlo
         }
       } as any;
 
+    case 'languages_socratic_tutor':
+      return {
+        id,
+        type: 'languages_socratic_tutor',
+        title: 'Tutor Socrático IA (DELF / Cambridge)',
+        isCollapsed: false,
+        position,
+        data: {
+          language: 'en',
+          targetLevel: 'B1',
+          cenniTargetLevel: 11,
+          scenarioTitle: 'Exploración de Ecosistemas y Biodiversidad',
+          pedagogicalObjective: 'Desarrollo de fluidez argumentativa y vocabulario formal con retroalimentación en tiempo real',
+          starterPrompt: 'Hello! Today we are discussing sustainable development and biodiversity. What is one habit we should change?',
+          correctionStrictness: 'standard',
+          portalUrl: '/teacher/idiomas'
+        }
+      } as any;
+
+    case 'languages_roleplay_mission':
+      return {
+        id,
+        type: 'languages_roleplay_mission',
+        title: 'Roleplay & Misión Inmersiva en Idiomas',
+        isCollapsed: false,
+        position,
+        data: {
+          language: 'fr',
+          setting: 'cafe_paris',
+          roleStudent: 'Cliente solicitando menú típico francés',
+          rolePartner: 'Mesero parisino cordial con acento nativo',
+          missionGoal: 'Ordenar un almuerzo balanceado utilizando fórmulas de cortesía y preguntas sobre alergias alimentarias',
+          requiredExpressions: ['Je voudrais', 'S\'il vous plaît', 'Est-ce qu\'il y a du gluten?', 'L\'addition, s\'il vous plaît'],
+          portalUrl: '/teacher/idiomas'
+        }
+      } as any;
+
+    case 'languages_evaluation_rubric':
+      return {
+        id,
+        type: 'languages_evaluation_rubric',
+        title: 'Evaluación Formativa CENNI / DELF',
+        isCollapsed: false,
+        position,
+        data: {
+          language: 'en',
+          framework: 'CEFR',
+          targetLevel: 'B2',
+          passingScore: 70,
+          portalUrl: '/teacher/idiomas',
+          criteria: [
+            { dimension: 'oral_production', weightPercentage: 30, descriptor: 'Fluidez, articulación fonética y entonación sin pausas forzadas' },
+            { dimension: 'oral_comprehension', weightPercentage: 25, descriptor: 'Captación de ideas principales e intenciones comunicativas' },
+            { dimension: 'written_production', weightPercentage: 25, descriptor: 'Cohesión léxica, sintaxis variada y ortografía estandarizada' },
+            { dimension: 'phonetics', weightPercentage: 20, descriptor: 'Alineación de fonemas clave y reducción de acento de interferencia' }
+          ]
+        }
+      } as any;
+
     case 'historical_figure_block':
       return {
         id,

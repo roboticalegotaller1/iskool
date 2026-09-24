@@ -1,0 +1,169 @@
+{
+  "generation_id": "gen_1790219461445_6eac5064",
+  "request": {
+    "grade": "primary_4",
+    "cefr": "A1",
+    "skill": "writing",
+    "topic": "likes_and_dislikes",
+    "language_function": "expressing_likes_dislikes",
+    "activity_type": "opinion_paragraph",
+    "duration_minutes": 20
+  },
+  "knowledge_document_ids": [
+    "grade_map_primary_2",
+    "grade_map_primary_3",
+    "grade_map_primary_4",
+    "func_expressing_likes_dislikes_a1",
+    "grammar_a1_primary_present_simple_routines",
+    "grammar_modal_can_ability_a1",
+    "grammar_prepositions_place_basic_a1",
+    "grammar_present_continuous_now_a1",
+    "grammar_present_simple_habits_a1",
+    "rubric_reading_writing_young_learners_a1"
+  ],
+  "knowledge_versions": [
+    {
+      "document_id": "grade_map_primary_2",
+      "version": 2,
+      "checksum": "171150c4abe44db62cec028b84bb27e5ccceca056095a0687d4c1a1bc5cd5b5d",
+      "title": "Primary 2nd Grade Profile - English (Pre-A1 → A1)",
+      "document_type": "grade_profile"
+    },
+    {
+      "document_id": "grade_map_primary_3",
+      "version": 2,
+      "checksum": "4b90613f5810cb67fb0f82f6c42bfa68ceac73ef45d3d2db9827473320bf9d79",
+      "title": "Primary 3rd Grade Profile - English (A1)",
+      "document_type": "grade_profile"
+    },
+    {
+      "document_id": "grade_map_primary_4",
+      "version": 2,
+      "checksum": "3536ae96d4df97c2f91fd56d87cfdc1cd7566e29169e4ceb31360c536b48ea77",
+      "title": "Primary 4th Grade Profile - English (A1 Mastery)",
+      "document_type": "grade_profile"
+    },
+    {
+      "document_id": "func_expressing_likes_dislikes_a1",
+      "version": 1,
+      "checksum": "af55b528438853badf48e5d3ce6f19137d192a4aca79b6f64e79899ddeb523ce",
+      "title": "Expressing Likes, Dislikes and Personal Preferences (A1)",
+      "document_type": "language_function"
+    },
+    {
+      "document_id": "grammar_a1_primary_present_simple_routines",
+      "version": 1,
+      "checksum": "a3a10b3190d295b4c1d3566231bcd5982f6176523fd2ddc9d4d8b68393ce8b10",
+      "title": "Present Simple for Daily Habits and School Routines",
+      "document_type": "grammar_rule"
+    },
+    {
+      "document_id": "grammar_modal_can_ability_a1",
+      "version": 1,
+      "checksum": "4d4064b51c57c916b4b0e10b4dd985de41fe6bb82a86cf28eeaa3366945884b6",
+      "title": "Modal Verb Can for Physical Ability, Inability and Permission (A1)",
+      "document_type": "grammar_rule"
+    },
+    {
+      "document_id": "grammar_prepositions_place_basic_a1",
+      "version": 1,
+      "checksum": "90da6eb53aecd59ec7c23aea7e7ce25cb3237caec2c3fd3894834a2749a0c1bc",
+      "title": "Basic Prepositions of Place in, on, under, next to, behind (A1)",
+      "document_type": "grammar_rule"
+    },
+    {
+      "document_id": "grammar_present_continuous_now_a1",
+      "version": 1,
+      "checksum": "9c92ba207d6aa3e98a49105bf5c1375fa70357a5f8986a2ed41e6ef10db6dd39",
+      "title": "Present Continuous for Actions in Progress and Picture Description (A1)",
+      "document_type": "grammar_rule"
+    },
+    {
+      "document_id": "grammar_present_simple_habits_a1",
+      "version": 1,
+      "checksum": "929e97145f03b30643953658f69dfe60d47a2fbe0aeadcfb188c5cfe030aa966",
+      "title": "Present Simple for Habits, Routines and Universal Facts (A1)",
+      "document_type": "grammar_rule"
+    },
+    {
+      "document_id": "rubric_reading_writing_young_learners_a1",
+      "version": 1,
+      "checksum": "69d76e9fd6d872bf7ea09b082a6239e7e50f4d7cc495205d79e4470881239d21",
+      "title": "Institutional Assessment Rubric - Receptive and Productive Skills for Young Learners (A1 Movers)",
+      "document_type": "assessment_rubric"
+    }
+  ],
+  "prompt_version": "1.0.0",
+  "model": "models/gemini-3.5-flash",
+  "prompt_sent": "### SECTION 1: SYSTEM RULES ###\nYou are an educational content generation engine for iSchool.\nYou must generate educational content using the academic context supplied by iSchool.\nThe supplied Knowledge Vault context is authoritative for:\n- grade level\n- CEFR level\n- learning objectives\n- language functions\n- grammar expectations\n- vocabulary expectations\n- skill progression\n- assessment criteria\n\nMANDATORY BEHAVIORAL CONSTRAINTS:\n1. Do not increase or decrease the requested level without explicit instruction.\n2. Do not invent curriculum requirements that contradict the supplied context.\n3. Generate original, engaging, pedagogically sound educational content.\n4. Do not reproduce copyrighted textbook exercises or passages.\n5. Strictly adhere to the institutional white-label policy (never mention third-party commercial brands).\n6. Return the response using the requested structured JSON schema ONLY. No conversational preambles.\n\n### SECTION 2: ACADEMIC CONTEXT (AUTHORITATIVE KNOWLEDGE VAULT) ###\nBelow is the official curricular context extracted from the iSchool Knowledge Vault.\nYou MUST ground your activity entirely within these bounds:\n\n================================================================\nPEDAGOGICAL KNOWLEDGE VAULT - ACADEMIC CONTEXT (iSchool)\n================================================================\nGRADE: PRIMARY_4\nCEFR TARGET: A1 (Entry B1 -> Target B2)\nSKILL: WRITING\nSUBSKILLS: General interaction\n\n--- LEARNING OBJECTIVES & CAN-DO STATEMENTS ---\n\n--- LANGUAGE FUNCTIONS & TARGET REPERTOIRE ---\n[Expressing Likes, Dislikes and Personal Preferences (A1)]\n  Model Expressions:\n    - \"I like apples and bananas.\"\n    - \"I love swimming in summer.\"\n    - \"My favorite school subject is art.\"\n    - \"I don't like broccoli.\"\n    - \"He doesn't like cold weather.\"\n    - \"Do you like pizza? — Yes, I do! / No, I don't.\"\n    - \"What is your favorite animal? — I like dolphins.\"\n    - \"I like dogs, but I don't like cats.\"\n    - \"I like apples\"\n    - \"I like apple\"\n  Pedagogical Guidance:\n\n--- GRAMMAR PROGRESSION & STRUCTURES ---\n• Focus: Present Simple for Daily Habits and School Routines\n• Focus: Modal Verb Can for Physical Ability, Inability and Permission (A1)\n• Focus: Basic Prepositions of Place in, on, under, next to, behind (A1)\n• Focus: Present Continuous for Actions in Progress and Picture Description (A1)\n• Focus: Present Simple for Habits, Routines and Universal Facts (A1)\n  - **Nivel CEFR:** A1 (Acceso).\n  - **Descriptor Can-Do:** El estudiante puede describir con enunciados breves sus hábitos diarios habituales y horarios escolares usando la estructura afirmativa y negativa del presente simple con pronombres frecuentes (`I`, `you`, `we`, `they`, `he`, `she`).\n  - **Alineación NEM 2024:** Fase 4 (Lenguajes) - Narración de sucesos autobiográficos y cotidianos en lengua extranjera.\n  - **Invariabilidad:** El modal *can* no cambia con la persona (no añade *-s* en tercera persona).\n  - **Afirmativa:** *Sujeto + can + Verbo Base* (*\"She can dance\"*).\n  - **Negativa:** *Sujeto + cannot / can't + Verbo Base* (*\"I can't fly\"*).\n  - **Fórmula:** *Sujeto + am/is/are + Verbo con terminación -ing*.\n  - **Reglas Ortográficas de -ing:** *run $\\to$ running, make $\\to$ making, play $\\to$ playing*.\n\n--- VOCABULARY DOMAIN & COLLOCATIONS ---\nDomain: likes_and_dislikes\nRecommended Collocations & Expressions:\n\n--- RECOMMENDED ACTIVITY PATTERNS ---\n\n--- ASSESSMENT CRITERIA (CEFR ALIGNED) ---\nRubric: Institutional Assessment Rubric - Receptive and Productive Skills for Young Learners (A1 Movers)\n• Task Achievement\n• Fluency\n• Range\n• Accuracy\n\n--- PEDAGOGICAL CONSTRAINTS ---\n⚠️ PROHIBICIÓN ESTRICTA: No utilizar marcas comerciales externas en los reactivos ni en la interfaz.\n⚠️ ANDAMIAJE PEDAGÓGICO OBLIGATORIO: Ofrecer modelos de frases funcionales antes de exigir producción oral autónoma.\n⚠️ CALIBRACIÓN CEFR: El lenguaje y los distractores deben respetar el nivel objetivo B1 → B2 sin exceder la dificultad.\n\n--- AUTHORITATIVE SOURCE REFERENCES ---\n• [cefr_companion_volume_2020] Common European Framework of Reference for Languages - Companion Volume\n• [cambridge_young_learners_starters_handbook] Cambridge English Pre-A1 Starters Handbook for Teachers\n• [cambridge_young_learners_movers_handbook] Cambridge English A1 Movers Handbook for Teachers\n• [sep_nem_lenguajes_2024] Marco Curricular Común y Planes de Estudio de Lenguas Extranjeras (SEP NEM)\n• [iskool_curriculum_core] Sistema Curricular y Motor Pedagógico Institucional iSchool\n================================================================\n\n### SECTION 3: GENERATION REQUEST ###\nDesign an individualized, classroom-ready educational activity according to these exact specifications:\n- Grade: primary_4\n- CEFR Target: A1\n- Primary Skill: writing\n- Topic / Domain: likes_and_dislikes\n- Language Function: expressing_likes_dislikes\n- Activity Pattern: opinion_paragraph\n- Total Duration: 20 minutes\n\nPEDAGOGICAL REQUIREMENTS FOR THIS ACTIVITY:\n1. The activity must actively train the student to use the expressions provided in the language function \"expressing_likes_dislikes\".\n2. Target timing must match exactly 20 minutes distributed across warm-up, core task, and wrap-up phases.\n3. Include explicit scaffolding so students of the requested CEFR level feel supported before communicative production.\n\n### SECTION 4: OUTPUT SCHEMA ###\nYou must respond with a single valid JSON object strictly adhering to this structure:\n{\n  \"title\": \"Clear, engaging title for the activity\",\n  \"grade\": \"primary_4\",\n  \"cefr\": \"A1\",\n  \"skill\": \"writing\",\n  \"topic\": \"likes_and_dislikes\",\n  \"language_function\": \"expressing_likes_dislikes\",\n  \"activity_type\": \"opinion_paragraph\",\n  \"duration_minutes\": 20,\n  \"learning_objective\": \"Explicit Can-Do statement grounded in the provided objectives\",\n  \"student_instructions\": \"Clear, age-appropriate step-by-step instructions for the student in English\",\n  \"teacher_instructions\": \"Pedagogical guidance, classroom setup, timing tips and monitoring notes for the teacher\",\n  \"language_support\": {\n    \"useful_phrases\": [\"Array of functional model phrases from the language function context\"],\n    \"grammar_support\": [\"Array of grammar structures to reinforce during the activity\"],\n    \"vocabulary_support\": [\"Array of topic-specific vocabulary and collocations to activate\"]\n  },\n  \"activity_steps\": [\n    {\n      \"phase\": \"warm_up | core_task | wrap_up\",\n      \"duration_minutes\": 5,\n      \"teacher_instructions\": \"What the teacher does during this phase\",\n      \"student_instructions\": \"What the students do during this phase\"\n    }\n  ],\n  \"assessment\": {\n    \"criteria\": [\"3 to 4 specific, observable evaluation criteria derived from the CEFR rubric context\"],\n    \"rubric_snapshot\": [\"Brief performance indicators for meeting expectations\"]\n  }\n}\n\nCRITICAL: Return ONLY raw valid JSON. Do not enclose in markdown ticks if not required, or if you do, use ```json ... ```.",
+  "raw_output": "{\n  \"title\": \"My Favorite Things Paragraph\",\n  \"grade\": \"primary_4\",\n  \"cefr\": \"A1\",\n  \"skill\": \"writing\",\n  \"topic\": \"likes_and_dislikes\",\n  \"language_function\": \"expressing_likes_dislikes\",\n  \"activity_type\": \"opinion_paragraph\",\n  \"duration_minutes\": 20,\n  \"learning_objective\": \"The student can write a brief opinion paragraph describing personal likes and dislikes using simple affirmative and negative structures.\",\n  \"student_instructions\": \"Read the model sentences, think about three things you like and two things you don't like, and write a short paragraph about your favorite things using the phrases provided.\",\n  \"teacher_instructions\": \"Guide students through the model expressions. Ensure they use basic punctuation and correct affirmative/negative structures for Present Simple likes and dislikes. Monitor and support lower-proficiency learners.\",\n  \"language_support\": {\n    \"useful_phrases\": [\n      \"I like apples and bananas.\",\n      \"I love swimming in summer.\",\n      \"My favorite school subject is art.\",\n      \"I don't like broccoli.\",\n      \"I like dogs, but I don't like cats.\"\n    ],\n    \"grammar_support\": [\n      \"Present Simple affirmative (I like, I love, My favorite is...)\",\n      \"Present Simple negative (I don't like...)\",\n      \"Basic conjunctions (and, but)\"\n    ],\n    \"vocabulary_support\": [\n      \"food items (apples, bananas, pizza, broccoli)\",\n      \"school subjects (art, math, science, music)\",\n      \"animals and hobbies (dogs, cats, swimming)\"\n    ]\n  },\n  \"activity_steps\": [\n    {\n      \"phase\": \"warm_up\",\n      \"duration_minutes\": 5,\n      \"teacher_instructions\": \"Write 'I like' and 'I don't like' on the board. Elicit quick examples from the class orally using the provided model phrases.\",\n      \"student_instructions\": \"Look at the board and share one thing you like and one thing you don't like with your partner using 'I like...' or 'I don't like...'.\"\n    },\n    {\n      \"phase\": \"core_task\",\n      \"duration_minutes\": 10,\n      \"teacher_instructions\": \"Distribute writing templates or prompt students to write a 4-5 sentence paragraph. Circulate the room to provide spelling and grammar support.\",\n      \"student_instructions\": \"Write your opinion paragraph. Include what food, school subject, and animal you like, and mention something you don't like. Use 'and' and 'but'.\"\n    },\n    {\n      \"phase\": \"wrap_up\",\n      \"duration_minutes\": 5,\n      \"teacher_instructions\": \"Invite 2-3 volunteers to read their paragraphs aloud to the class. Praise correct usage of target phrases.\",\n      \"student_instructions\": \"Read your paragraph quietly to check your mistakes, then share one sentence with the class.\"\n    }\n  ],\n  \"assessment\": {\n    \"criteria\": [\n      \"Task Achievement: Successfully includes both likes and dislikes.\",\n      \"Fluency & Range: Uses target language patterns appropriately.\",\n      \"Accuracy: Correctly uses affirmative and negative Present Simple forms.\"\n    ],\n    \"rubric_snapshot\": [\n      \"Meets Expectations: Writes 4-5 sentences using correct 'I like / I don't like' structures with minimal errors.\"\n    ]\n  }\n}",
+  "generated_output": {
+    "title": "My Favorite Things Paragraph",
+    "grade": "primary_4",
+    "cefr": "A1",
+    "skill": "writing",
+    "topic": "likes_and_dislikes",
+    "language_function": "expressing_likes_dislikes",
+    "activity_type": "opinion_paragraph",
+    "duration_minutes": 20,
+    "learning_objective": "The student can write a brief opinion paragraph describing personal likes and dislikes using simple affirmative and negative structures.",
+    "student_instructions": "Read the model sentences, think about three things you like and two things you don't like, and write a short paragraph about your favorite things using the phrases provided.",
+    "teacher_instructions": "Guide students through the model expressions. Ensure they use basic punctuation and correct affirmative/negative structures for Present Simple likes and dislikes. Monitor and support lower-proficiency learners.",
+    "language_support": {
+      "useful_phrases": [
+        "I like apples and bananas.",
+        "I love swimming in summer.",
+        "My favorite school subject is art.",
+        "I don't like broccoli.",
+        "I like dogs, but I don't like cats."
+      ],
+      "grammar_support": [
+        "Present Simple affirmative (I like, I love, My favorite is...)",
+        "Present Simple negative (I don't like...)",
+        "Basic conjunctions (and, but)"
+      ],
+      "vocabulary_support": [
+        "food items (apples, bananas, pizza, broccoli)",
+        "school subjects (art, math, science, music)",
+        "animals and hobbies (dogs, cats, swimming)"
+      ]
+    },
+    "activity_steps": [
+      {
+        "phase": "warm_up",
+        "duration_minutes": 5,
+        "teacher_instructions": "Write 'I like' and 'I don't like' on the board. Elicit quick examples from the class orally using the provided model phrases.",
+        "student_instructions": "Look at the board and share one thing you like and one thing you don't like with your partner using 'I like...' or 'I don't like...'."
+      },
+      {
+        "phase": "core_task",
+        "duration_minutes": 10,
+        "teacher_instructions": "Distribute writing templates or prompt students to write a 4-5 sentence paragraph. Circulate the room to provide spelling and grammar support.",
+        "student_instructions": "Write your opinion paragraph. Include what food, school subject, and animal you like, and mention something you don't like. Use 'and' and 'but'."
+      },
+      {
+        "phase": "wrap_up",
+        "duration_minutes": 5,
+        "teacher_instructions": "Invite 2-3 volunteers to read their paragraphs aloud to the class. Praise correct usage of target phrases.",
+        "student_instructions": "Read your paragraph quietly to check your mistakes, then share one sentence with the class."
+      }
+    ],
+    "assessment": {
+      "criteria": [
+        "Task Achievement: Successfully includes both likes and dislikes.",
+        "Fluency & Range: Uses target language patterns appropriately.",
+        "Accuracy: Correctly uses affirmative and negative Present Simple forms."
+      ],
+      "rubric_snapshot": [
+        "Meets Expectations: Writes 4-5 sentences using correct 'I like / I don't like' structures with minimal errors."
+      ]
+    }
+  },
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "mismatches": []
+  },
+  "created_at": "2026-09-24T03:11:01.445Z"
+}

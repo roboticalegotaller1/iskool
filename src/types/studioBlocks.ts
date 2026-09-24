@@ -18,9 +18,12 @@ export type StudioBlockType =
   | 'turing_step_simulator'       // Autómatas finitos y cinta de máquina de Turing
   | 'constraint_scheduler'        // Satisfacción de restricciones (CSP), colas FIFO y balanceo
 
-  // Herramientas de Lenguajes, Idiomas & Fonética
+  // Herramientas de Lenguajes, Idiomas & Fonética (Centro de Idiomas)
   | 'languages_practice_portal'   // Portal y avatar interactivo de conversación en idiomas
   | 'languages_karaoke_block'     // Karaoke de fluidez fonética con reconocimiento y lectura
+  | 'languages_socratic_tutor'    // Tutor Socrático IA adaptativo (DELF / Cambridge / CENNI)
+  | 'languages_roleplay_mission'  // Misión accional y roleplay en situaciones reales
+  | 'languages_evaluation_rubric' // Evaluación formativa oral y escrita con rúbrica oficial
 
   // Herramientas de Historia, Humanidades & Segundo Cerebro
   | 'historical_figure_block'     // Personaje o Sitio Histórico Interactivo con Libro Mágico y Avatar Vivo
@@ -424,7 +427,59 @@ export interface LanguagesKaraokeBlock extends BaseStudioBlock {
 }
 
 /**
- * 25. Bloque de Personajes y Sitios Históricos (Segundo Cerebro Vault-First & Libro Mágico)
+ * 25. Bloque de Tutor Socrático IA (MCER A1-C1 / SEP CENNI)
+ */
+export interface LanguagesSocraticTutorBlock extends BaseStudioBlock {
+  type: 'languages_socratic_tutor';
+  data: {
+    language: 'en' | 'fr';
+    targetLevel: 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
+    cenniTargetLevel?: number;
+    scenarioTitle: string;
+    pedagogicalObjective: string;
+    starterPrompt: string;
+    correctionStrictness: 'lenient' | 'standard' | 'rigorous';
+    portalUrl: string;
+  };
+}
+
+/**
+ * 26. Bloque de Misión Accional & Roleplay en Situaciones Reales
+ */
+export interface LanguagesRoleplayMissionBlock extends BaseStudioBlock {
+  type: 'languages_roleplay_mission';
+  data: {
+    language: 'en' | 'fr';
+    setting: 'cafe_paris' | 'london_airport' | 'job_interview' | 'eco_summit' | 'museum_tour';
+    roleStudent: string;
+    rolePartner: string;
+    missionGoal: string;
+    requiredExpressions: string[];
+    portalUrl: string;
+  };
+}
+
+/**
+ * 27. Bloque de Evaluación Formativa Oral y Escrita (Rúbrica CENNI / DELF)
+ */
+export interface LanguagesEvaluationRubricBlock extends BaseStudioBlock {
+  type: 'languages_evaluation_rubric';
+  data: {
+    language: 'en' | 'fr';
+    framework: 'CEFR' | 'CENNI' | 'DELF_DALF' | 'CAMBRIDGE';
+    targetLevel: string;
+    criteria: Array<{
+      dimension: 'oral_comprehension' | 'oral_production' | 'reading_comprehension' | 'written_production' | 'phonetics';
+      weightPercentage: number;
+      descriptor: string;
+    }>;
+    passingScore: number;
+    portalUrl: string;
+  };
+}
+
+/**
+ * 28. Bloque de Personajes y Sitios Históricos (Segundo Cerebro Vault-First & Libro Mágico)
  */
 export type BookSpineStyle = 
   | 'codice_antiguo' 
@@ -514,6 +569,9 @@ export type StudioBlock =
   | ConstraintSchedulerBlock
   | LanguagesPracticeBlock
   | LanguagesKaraokeBlock
+  | LanguagesSocraticTutorBlock
+  | LanguagesRoleplayMissionBlock
+  | LanguagesEvaluationRubricBlock
   | HistoricalFigureBlock
   | YouTubeVideoBlock
   | ExternalEmbedBlock

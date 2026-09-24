@@ -19,7 +19,7 @@ export const dynamic = 'force-dynamic';
 // Bloqueo estricto anti-castellano: No se admiten voces de España en el sistema
 // =============================================================================
 export const NEURAL_VOICES = [
-  // Español Latinoamericano Nativo
+  // Español Latinoamericano Nativo (Certificado Anti-Castellano)
   { id: 'es-MX-DaliaNeural', label: 'Dalia (México) · Femenina', description: 'Mentora Principal · Tono Cálido, Dulce & Pedagógico', gender: 'female', lang: 'es' },
   { id: 'es-MX-JorgeNeural', label: 'Jorge (México) · Masculina', description: 'Profesor Mentor · Tono Maduro, Sereno & Explicativo', gender: 'male', lang: 'es' },
   { id: 'es-CO-SalomeNeural', label: 'Salomé (Colombia) · Femenina', description: 'Educación & Guiado · Acento Neutro Suave', gender: 'female', lang: 'es' },
@@ -31,17 +31,58 @@ export const NEURAL_VOICES = [
   { id: 'es-AR-ElenaNeural', label: 'Elena (Argentina) · Femenina', description: 'Literatura & Humanidades · Entonación Rioplatense', gender: 'female', lang: 'es' },
   { id: 'es-AR-TomasNeural', label: 'Tomás (Argentina) · Masculina', description: 'Pensamiento & Debate · Tono Analítico', gender: 'male', lang: 'es' },
 
-  // Idiomas adicionales para módulos bilingües de la plataforma
-  { id: 'en-US-JennyNeural', label: 'Claire (EE.UU.) · Femenina', description: 'Profesora Claire · Didáctica y Clara', gender: 'female', lang: 'en' },
-  { id: 'en-US-GuyNeural', label: 'Arthur (EE.UU.) · Masculina', description: 'Profesor Arthur · Académico y Preciso', gender: 'male', lang: 'en' },
-  { id: 'fr-FR-DeniseNeural', label: 'Mme. Sophie (Francia) · Femenina', description: 'Profesora Sophie · Francés Académico', gender: 'female', lang: 'fr' },
-  { id: 'fr-FR-HenriNeural', label: 'Prof. Henri (Francia) · Masculina', description: 'Profesor Henri · Fonética Clara', gender: 'male', lang: 'fr' }
+  // Francés (FLE - Français Langue Étrangère) · Voces Nativas Certificadas
+  { id: 'fr-FR-VivienneMultilingualNeural', label: 'Mme. Sophie (Francia) · Parisina Expresiva', description: 'Mentora Principal · Entonación Expresiva, Rítmica y Pedagógica', gender: 'female', lang: 'fr' },
+  { id: 'fr-FR-DeniseNeural', label: 'Marie Curie (Francia) · Académica Posada', description: 'Francés Académico · Articulación Impecable y Solemne', gender: 'female', lang: 'fr' },
+  { id: 'fr-FR-EloiseNeural', label: 'Jeanne d\'Arc (Francia) · Juvenil Heroica', description: 'Timbre Juvenil y Firme · Pronunciación Clara para Principiantes', gender: 'female', lang: 'fr' },
+  { id: 'fr-FR-HenriNeural', label: 'Prof. Henri / Napoléon (Francia) · Masculina Solemne', description: 'Profesor y Caudillo · Dicción Histórica, Grave y Clara', gender: 'male', lang: 'fr' },
+  { id: 'fr-FR-RemyMultilingualNeural', label: 'Rémy (Francia) · Conversacional Moderno', description: 'Francés Actual · Modulación Cálida y Natural', gender: 'male', lang: 'fr' },
+  { id: 'fr-CA-SylvieNeural', label: 'Sylvie (Canadá) · Québécoise Suave', description: 'Francés de América del Norte · Fonética Suave', gender: 'female', lang: 'fr' },
+  { id: 'fr-CA-JeanNeural', label: 'Jean (Canadá) · Québécois Masculino', description: 'Francés Canadiense · Articulación Precisa', gender: 'male', lang: 'fr' },
+
+  // Inglés (ESL - English as a Second Language) · Voces Nativas Certificadas
+  { id: 'en-US-JennyNeural', label: 'Claire (EE.UU.) · Femenina Didáctica', description: 'Profesora Claire · Timbre Suave, Cálido y Didáctico', gender: 'female', lang: 'en' },
+  { id: 'en-US-GuyNeural', label: 'Prof. Arthur / Lincoln (EE.UU.) · Académica', description: 'Profesor Arthur · Cadencia Estable y Académica', gender: 'male', lang: 'en' },
+  { id: 'en-GB-RyanNeural', label: 'Shakespeare (Reino Unido) · Oxford Clásico', description: 'Inglés Británico RP · Oratoria Teatral y Resonante', gender: 'male', lang: 'en' },
+  { id: 'en-GB-SoniaNeural', label: 'Ada Lovelace (Reino Unido) · Victoriana Científica', description: 'Inglés Británico · Articulación Lógica y Elegante', gender: 'female', lang: 'en' },
+  { id: 'en-US-AvaMultilingualNeural', label: 'Ava (EE.UU.) · Multilingüe Expresiva', description: 'Expresividad Moderna · Alta Claridad en Consonantes', gender: 'female', lang: 'en' },
+  { id: 'en-US-AndrewMultilingualNeural', label: 'Andrew (EE.UU.) · Multilingüe Dinámico', description: 'Voz Juvenil · Enfoque Comunicativo Ágil', gender: 'male', lang: 'en' }
 ];
 
 /**
- * Voces activas verificadas en el servicio Edge TTS
+ * Catálogos de Voces Activas Verificadas en Edge TTS por Región
  */
-const EDGE_TTS_ACTIVE_LATIN_VOICES = new Set([
+export const EDGE_TTS_ACTIVE_FRENCH_VOICES = new Set([
+  'fr-FR-VivienneMultilingualNeural',
+  'fr-FR-DeniseNeural',
+  'fr-FR-HenriNeural',
+  'fr-FR-RemyMultilingualNeural',
+  'fr-FR-EloiseNeural',
+  'fr-CA-SylvieNeural',
+  'fr-CA-AntoineNeural',
+  'fr-CA-JeanNeural',
+  'fr-CA-ThierryNeural',
+  'fr-BE-CharlineNeural',
+  'fr-BE-GerardNeural',
+  'fr-CH-ArianeNeural',
+  'fr-CH-FabriceNeural'
+]);
+
+export const EDGE_TTS_ACTIVE_ENGLISH_VOICES = new Set([
+  'en-US-JennyNeural',
+  'en-US-GuyNeural',
+  'en-US-AriaNeural',
+  'en-US-AvaMultilingualNeural',
+  'en-US-AndrewMultilingualNeural',
+  'en-US-BrianMultilingualNeural',
+  'en-US-EmmaMultilingualNeural',
+  'en-GB-RyanNeural',
+  'en-GB-SoniaNeural',
+  'en-GB-LibbyNeural',
+  'en-GB-ThomasNeural'
+]);
+
+export const EDGE_TTS_ACTIVE_LATIN_VOICES = new Set([
   'es-MX-DaliaNeural',
   'es-MX-JorgeNeural',
   'es-CO-GonzaloNeural',
@@ -69,56 +110,82 @@ const EDGE_TTS_ACTIVE_LATIN_VOICES = new Set([
 ]);
 
 /**
- * PILAR 1: Interceptor Anti-Castellano y Mapeador de Voces Latinas Certificadas.
- * Bloquea estrictamente cualquier voz 'es-ES' (España/Castizo) y traduce identificadores
- * de la matriz a las voces activas en el servicio con modulación equivalente.
+ * Resolvedor Multilingüe y Certificado de Voz Neural y Locale:
+ * - Detecta el idioma objetivo (Francés, Inglés o Español)
+ * - Garantiza que el Francés utilice voces 100% nativas de Francia/Canadá con locale 'fr-FR'/'fr-CA'
+ * - Aplica el Bloqueo Anti-Castellano estricto para Español
  */
-export function resolveCertifiedLatinVoice(voiceId?: string, fallbackGender: 'female' | 'male' = 'female'): string {
-  if (!voiceId) {
-    return fallbackGender === 'male' ? 'es-MX-JorgeNeural' : 'es-MX-DaliaNeural';
+export function resolveCertifiedPlatformVoice(
+  voiceId?: string, 
+  explicitLang?: string, 
+  fallbackGender: 'female' | 'male' = 'female'
+): { voice: string; lang: 'fr' | 'en' | 'es'; locale: string } {
+  const lower = (voiceId || '').toLowerCase();
+  const explicit = (explicitLang || '').toLowerCase();
+
+  // 1. DETECCIÓN Y RESOLUCIÓN PARA FRANCÉS (FLE)
+  if (lower.startsWith('fr-') || lower.includes('french') || explicit === 'fr' || explicit.startsWith('fr-')) {
+    if (voiceId && EDGE_TTS_ACTIVE_FRENCH_VOICES.has(voiceId)) {
+      const locale = voiceId.startsWith('fr-CA') ? 'fr-CA' : 'fr-FR';
+      return { voice: voiceId, lang: 'fr', locale };
+    }
+    // Fallback francés nativo por género
+    const defaultFrench = fallbackGender === 'male' ? 'fr-FR-HenriNeural' : 'fr-FR-VivienneMultilingualNeural';
+    return { voice: defaultFrench, lang: 'fr', locale: 'fr-FR' };
   }
 
-  const lower = voiceId.toLowerCase();
+  // 2. DETECCIÓN Y RESOLUCIÓN PARA INGLÉS (ESL)
+  if (lower.startsWith('en-') || lower.includes('english') || explicit === 'en' || explicit.startsWith('en-')) {
+    if (voiceId && EDGE_TTS_ACTIVE_ENGLISH_VOICES.has(voiceId)) {
+      const locale = voiceId.startsWith('en-GB') ? 'en-GB' : 'en-US';
+      return { voice: voiceId, lang: 'en', locale };
+    }
+    // Fallback inglés nativo por género
+    const defaultEnglish = fallbackGender === 'male' ? 'en-US-GuyNeural' : 'en-US-JennyNeural';
+    return { voice: defaultEnglish, lang: 'en', locale: 'en-US' };
+  }
 
-  // 1. BLOQUEO TERMINANTE ANTI-CASTELLANO: Cualquier intento con acento de España es interceptado
+  // 3. RESOLUCIÓN PARA ESPAÑOL (CON BLOQUEO ESTRICTO ANTI-CASTELLANO)
   if (lower.includes('es-es') || lower.includes('es_es') || lower.includes('spain') || lower.includes('castellano') || lower.includes('elvira') || lower.includes('alvaro') || lower.includes('ximena')) {
     console.warn(`[Anti-Castellano] Interceptada voz no autorizada '${voiceId}'. Reasignada a voz nativa mexicana.`);
-    return fallbackGender === 'male' ? 'es-MX-JorgeNeural' : 'es-MX-DaliaNeural';
+    const safeLatin = fallbackGender === 'male' ? 'es-MX-JorgeNeural' : 'es-MX-DaliaNeural';
+    return { voice: safeLatin, lang: 'es', locale: 'es-MX' };
   }
 
-  // 2. Si ya es una voz latina nativa directamente soportada en el pool Edge TTS, mantenerla
-  if (EDGE_TTS_ACTIVE_LATIN_VOICES.has(voiceId)) {
-    return voiceId;
+  if (voiceId && EDGE_TTS_ACTIVE_LATIN_VOICES.has(voiceId)) {
+    return { voice: voiceId, lang: 'es', locale: 'es-MX' };
   }
 
-  // 3. Mapeo de voces Azure exclusivas de la matriz hacia las mejores voces latinas activas
+  // Mapeo Azure -> Edge para voces latinas
   const AZURE_TO_EDGE_LATIN_MAP: Record<string, string> = {
-    // Cohortes infantiles y juveniles
-    'es-MX-PelayoNeural': 'es-CO-GonzaloNeural', // Joven/infantil ágil
-    'es-MX-MarinaNeural': 'es-CO-SalomeNeural',  // Niña vivaz/dulce
-    'es-MX-LarissaNeural': 'es-CO-SalomeNeural', // Niña dulce
-    'es-MX-CecilioNeural': 'es-PE-AlexNeural',   // Joven enérgico
-    'es-MX-NuriaNeural': 'es-PE-CamilaNeural',   // Joven brillante
-    // Adultos jóvenes
-    'es-MX-LibertoNeural': 'es-MX-JorgeNeural',  // Caudillo firme
-    'es-MX-YagoNeural': 'es-CO-GonzaloNeural',   // Adulto joven reflexivo
-    'es-MX-BeatrizNeural': 'es-MX-DaliaNeural',  // Adulta joven líder
-    'es-MX-CandelaNeural': 'es-MX-DaliaNeural',  // Heroica
-    // Adultos y estadistas
-    'es-MX-GerardoNeural': 'es-MX-JorgeNeural',  // Solemne institucional
-    'es-MX-RenataNeural': 'es-MX-DaliaNeural',   // Intelectual / líder
-    'es-MX-CarlotaNeural': 'es-MX-DaliaNeural',  // Matriarca solemne
-    // Tercera edad
-    'es-MX-CandidoNeural': 'es-MX-JorgeNeural',  // Anciano sabio
-    'es-MX-LucianoNeural': 'es-MX-JorgeNeural'   // Veterano
+    'es-MX-PelayoNeural': 'es-CO-GonzaloNeural',
+    'es-MX-MarinaNeural': 'es-CO-SalomeNeural',
+    'es-MX-LarissaNeural': 'es-CO-SalomeNeural',
+    'es-MX-CecilioNeural': 'es-PE-AlexNeural',
+    'es-MX-NuriaNeural': 'es-PE-CamilaNeural',
+    'es-MX-LibertoNeural': 'es-MX-JorgeNeural',
+    'es-MX-YagoNeural': 'es-CO-GonzaloNeural',
+    'es-MX-BeatrizNeural': 'es-MX-DaliaNeural',
+    'es-MX-CandelaNeural': 'es-MX-DaliaNeural',
+    'es-MX-GerardoNeural': 'es-MX-JorgeNeural',
+    'es-MX-RenataNeural': 'es-MX-DaliaNeural',
+    'es-MX-CarlotaNeural': 'es-MX-DaliaNeural',
+    'es-MX-CandidoNeural': 'es-MX-JorgeNeural',
+    'es-MX-LucianoNeural': 'es-MX-JorgeNeural'
   };
 
-  if (AZURE_TO_EDGE_LATIN_MAP[voiceId]) {
-    return AZURE_TO_EDGE_LATIN_MAP[voiceId];
+  if (voiceId && AZURE_TO_EDGE_LATIN_MAP[voiceId]) {
+    return { voice: AZURE_TO_EDGE_LATIN_MAP[voiceId], lang: 'es', locale: 'es-MX' };
   }
 
-  // Fallback por género latino
-  return fallbackGender === 'male' ? 'es-MX-JorgeNeural' : 'es-MX-DaliaNeural';
+  // Fallback por defecto en español
+  const defaultLatin = fallbackGender === 'male' ? 'es-MX-JorgeNeural' : 'es-MX-DaliaNeural';
+  return { voice: defaultLatin, lang: 'es', locale: 'es-MX' };
+}
+
+// Mantener compatibilidad hacia atrás
+export function resolveCertifiedLatinVoice(voiceId?: string, fallbackGender: 'female' | 'male' = 'female'): string {
+  return resolveCertifiedPlatformVoice(voiceId, 'es', fallbackGender).voice;
 }
 
 interface AudioCacheEntry {
@@ -159,11 +226,10 @@ function saveAudioToCache(hash: string, buffer: Buffer, contentType = 'audio/mpe
 
 /**
  * Normaliza y sanea el SSML para garantizar compatibilidad estricta con el motor neural,
- * convirtiendo pausas XML (<break>) en puntuación acústica elocuente y descartando
- * atributos no soportados que provocarían desconexión del socket.
- * Asegura además el tag raíz canónico con xml:lang="es-MX".
+ * respetando el xml:lang del idioma seleccionado (fr-FR, en-US o es-MX) para que el
+ * diccionario fonético aplique la pronunciación, ligaduras y nasales correctas.
  */
-function sanitizeSSMLForNeuralEngine(rawSSML: string, targetVoiceName: string): string {
+function sanitizeSSMLForNeuralEngine(rawSSML: string, targetVoiceName: string, locale: string = 'es-MX'): string {
   let sanitized = rawSSML
     // Convertir <break time="..."/> en pausas de puntuación acústica (...)
     .replace(/<break\s+[^>]*\/?>/gi, '... ')
@@ -176,15 +242,15 @@ function sanitizeSSMLForNeuralEngine(rawSSML: string, targetVoiceName: string): 
     .replace(/\s+contour="[^"]*"/gi, '')
     .trim();
 
-  // Asegurar que el tag raíz tenga xml:lang="es-MX"
+  // Asegurar que el tag raíz tenga el xml:lang adecuado al idioma
   if (sanitized.includes('<speak')) {
     sanitized = sanitized.replace(
       /<speak[^>]*>/i, 
-      '<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="es-MX">'
+      `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="${locale}">`
     );
   }
 
-  // Asegurar que la etiqueta <voice name="..."> use la voz latina certificada
+  // Asegurar que la etiqueta <voice name="..."> use la voz autorizada
   if (sanitized.includes('<voice')) {
     sanitized = sanitized.replace(
       /<voice\s+name="[^"]*"/i,
@@ -202,6 +268,7 @@ export async function POST(req: NextRequest) {
       ssml, 
       text, 
       voice, 
+      language,
       rate = 1.0, 
       pitch = 1.0, 
       characterName,
@@ -217,20 +284,28 @@ export async function POST(req: NextRequest) {
     let targetSSML = '';
     let rawNormalizedText = '';
 
+    // Detección de idioma y resolución de voz certificada
+    let explicitLang = language;
+    if (!explicitLang && preliminaryVoice) {
+      if (preliminaryVoice.startsWith('fr-')) explicitLang = 'fr';
+      else if (preliminaryVoice.startsWith('en-')) explicitLang = 'en';
+      else if (preliminaryVoice.startsWith('es-')) explicitLang = 'es';
+    }
+
     // 1. Procesamiento de carga útil: SSML directo o generación por texto/personaje/narrador
     if (ssml && typeof ssml === 'string' && ssml.trim()) {
-      // Extraer voz especificada en <voice name="..."> si existe
       const voiceMatch = /<voice\s+name="([^"]+)"/i.exec(ssml);
       if (voiceMatch && voiceMatch[1]) {
         preliminaryVoice = voiceMatch[1];
       }
-      preliminaryVoice = preliminaryVoice || (characterGender === 'male' ? 'es-MX-JorgeNeural' : 'es-MX-DaliaNeural');
-      const certifiedVoice = resolveCertifiedLatinVoice(preliminaryVoice, characterGender);
-      targetSSML = sanitizeSSMLForNeuralEngine(ssml.trim(), certifiedVoice);
-      preliminaryVoice = certifiedVoice;
-      rawNormalizedText = normalizeLatinHistoricalPhonetics(ssml.replace(/<[^>]+>/g, ' '));
+      const resolved = resolveCertifiedPlatformVoice(preliminaryVoice, explicitLang, characterGender);
+      targetSSML = sanitizeSSMLForNeuralEngine(ssml.trim(), resolved.voice, resolved.locale);
+      preliminaryVoice = resolved.voice;
+      rawNormalizedText = resolved.lang === 'es' 
+        ? normalizeLatinHistoricalPhonetics(ssml.replace(/<[^>]+>/g, ' '))
+        : ssml.replace(/<[^>]+>/g, ' ').trim();
     } else if (text && typeof text === 'string' && text.trim()) {
-      // Limpieza inicial de markdown
+      // Limpieza inicial de markdown preservando ortografía del idioma
       const cleanText = text
         .replace(/!\[.*?\]\(.*?\)/g, '')
         .replace(/\[\[(.*?)\]\]/g, '$1')
@@ -242,43 +317,57 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'No hay texto audible tras limpieza' }, { status: 400 });
       }
 
-      // Normalización léxica y fonética latina
-      rawNormalizedText = normalizeLatinHistoricalPhonetics(cleanText);
+      // Resolver voz y locale
+      const resolved = resolveCertifiedPlatformVoice(preliminaryVoice, explicitLang, characterGender);
+      preliminaryVoice = resolved.voice;
+      const targetLocale = resolved.locale;
+      const isFrench = resolved.lang === 'fr';
+      const isEnglish = resolved.lang === 'en';
 
-      if (role === 'narrator') {
-        // PILAR 4: Generación de SSML para Narradores Gamificados
+      if (resolved.lang === 'es') {
+        rawNormalizedText = normalizeLatinHistoricalPhonetics(cleanText);
+      } else {
+        // En francés e inglés NO alterar la ortografía ni apóstrofes
+        rawNormalizedText = cleanText;
+      }
+
+      if (role === 'narrator' && !isFrench && !isEnglish) {
+        // Narradores Gamificados en Español
         const validMode: NarratorMode = ['epic_chronist', 'wisdom_guide', 'time_chrononaut'].includes(narratorMode)
           ? narratorMode 
           : 'wisdom_guide';
         const rawNarratorSSML = generateNarratorSSML(cleanText, validMode);
         preliminaryVoice = preliminaryVoice || (validMode === 'wisdom_guide' ? 'es-MX-DaliaNeural' : 'es-MX-JorgeNeural');
-        const certifiedVoice = resolveCertifiedLatinVoice(preliminaryVoice, validMode === 'wisdom_guide' ? 'female' : 'male');
-        targetSSML = sanitizeSSMLForNeuralEngine(rawNarratorSSML, certifiedVoice);
-        preliminaryVoice = certifiedVoice;
-      } else if (characterName) {
-        // PILAR 2 y 3: Generación SSML oratorio con matriz de 30 voces y pausas respiratorias
+        const certified = resolveCertifiedPlatformVoice(preliminaryVoice, 'es', validMode === 'wisdom_guide' ? 'female' : 'male');
+        targetSSML = sanitizeSSMLForNeuralEngine(rawNarratorSSML, certified.voice, certified.locale);
+        preliminaryVoice = certified.voice;
+      } else if (characterName && !isFrench && !isEnglish) {
+        // Próceres Históricos Mexicanos
         const profile = getPersonaProfile(characterName, historicalAge, variantIndex, birthDeathDates);
         preliminaryVoice = preliminaryVoice || profile.voiceId;
-        const certifiedVoice = resolveCertifiedLatinVoice(preliminaryVoice, profile.gender);
+        const certified = resolveCertifiedPlatformVoice(preliminaryVoice, 'es', profile.gender);
         const rawHistoricalSSML = generateHistoricalSSML(cleanText, characterName, historicalAge, variantIndex, { birthOrDeathDates: birthDeathDates });
-        targetSSML = sanitizeSSMLForNeuralEngine(rawHistoricalSSML, certifiedVoice);
-        preliminaryVoice = certifiedVoice;
+        targetSSML = sanitizeSSMLForNeuralEngine(rawHistoricalSSML, certified.voice, certified.locale);
+        preliminaryVoice = certified.voice;
       } else {
-        // Locución genérica pedagógica
-        const certifiedVoice = resolveCertifiedLatinVoice(preliminaryVoice || 'es-MX-DaliaNeural', 'female');
-        preliminaryVoice = certifiedVoice;
-
+        // Francés, Inglés o Locución Pedagógica Directa
         const ratePercent = Math.round((rate - 1.0) * 100);
         const prosodyRate = ratePercent >= 0 ? `+${ratePercent}%` : `${ratePercent}%`;
         const pitchHz = Math.round((pitch - 1.0) * 100);
         const prosodyPitch = pitchHz >= 0 ? `+${pitchHz}Hz` : `${pitchHz}Hz`;
 
-        const breathEnhanced = injectLongClauseBreathing(rawNormalizedText);
+        // Para francés, escapar XML y mantener dicción nativa
+        const escapedText = cleanText
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&apos;');
 
-        targetSSML = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="es-MX">
-  <voice name="${certifiedVoice}">
+        targetSSML = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="${targetLocale}">
+  <voice name="${preliminaryVoice}">
     <prosody pitch="${prosodyPitch}" rate="${prosodyRate}">
-      ${breathEnhanced}
+      ${escapedText}
     </prosody>
   </voice>
 </speak>`;

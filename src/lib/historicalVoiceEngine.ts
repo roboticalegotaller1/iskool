@@ -346,7 +346,10 @@ export function getPersonaGender(characterName?: string): 'female' | 'male' {
     'josefa', 'corregidora', 'leona', 'vicario', 'juana', 'sor juana', 
     'gertrudis', 'bocanegra', 'mariana', 'rodriguez', 'carmen', 'serdan', 
     'frida', 'kahlo', 'malinche', 'malintzin', 'rosario', 'castellanos', 
-    'mujer', 'senora', 'dona', 'nina', 'madre', 'hermana'
+    'mujer', 'senora', 'dona', 'nina', 'madre', 'hermana',
+    // Próceres y mentoras de idiomas (francés e inglés)
+    'marie', 'curie', 'jeanne', 'darc', 'd\'arc', 'ada', 'lovelace',
+    'sophie', 'claire', 'sylvie', 'denise', 'eloise', 'vivienne', 'sonia'
   ];
   if (femaleKeywords.some(k => norm.includes(k))) return 'female';
   return 'male';
@@ -367,6 +370,35 @@ export function getPersonaProfile(
     .replace(/[\u0300-\u036f]/g, '');
 
   const gender = getPersonaGender(characterName);
+
+  // Verificación prioritaria en el Catálogo Multilingüe Internacional (Francés e Inglés)
+  const multiFig = MULTILINGUAL_HISTORICAL_FIGURES.find(f => {
+    const fNorm = f.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const idNorm = f.id.toLowerCase();
+    return norm.includes(fNorm) || fNorm.includes(norm) || norm.includes(idNorm);
+  });
+
+  if (multiFig) {
+    const rateDelta = Math.round((multiFig.speechRate - 1.0) * 100);
+    const pitchDelta = Math.round((multiFig.speechPitch - 1.0) * 100);
+    return {
+      name: multiFig.name,
+      gender: multiFig.gender,
+      era: 'moderna' as HistoricalEra,
+      cohort: multiFig.gender === 'female' ? 'adult_female' : 'adult_male',
+      voiceId: multiFig.voiceId,
+      expressStyle: 'calm',
+      styleDegree: 1.2,
+      prosodyRate: rateDelta >= 0 ? `+${rateDelta}%` : `${rateDelta}%`,
+      prosodyPitch: pitchDelta >= 0 ? `+${pitchDelta}Hz` : `${pitchDelta}Hz`,
+      pitchContour: '',
+      commaPauseMs: 200,
+      sentencePauseMs: 400,
+      solemnityLevel: 1.3,
+      description: `${multiFig.name} · ${multiFig.era} (${multiFig.country})`
+    };
+  }
+
   const cohort = inferCharacterAgeCohort(characterName || '', historicalAge, birthOrDeathDates);
   const resolvedVoice = resolveCharacterVoice(characterName || '', historicalAge, variantIndex, birthOrDeathDates);
 
@@ -739,6 +771,7 @@ export interface UniversalVoicePlayOptions {
   role?: 'character' | 'narrator' | 'pedagogical';
   narratorMode?: NarratorMode;
   voiceId?: string;
+  language?: 'es' | 'en' | 'fr';
   gender?: 'female' | 'male';
   rate?: number;
   pitch?: number;
@@ -781,10 +814,10 @@ export function stopAllIskoolAudio(): void {
 
 /**
  * Reproductor de voz universal de ISkool:
- * 1. Prioriza el motor neural en `/api/ai/tts` con prosodia oratoria, respiración natural y timbre latino.
+ * 1. Prioriza el motor neural en `/api/ai/tts` con prosodia oratoria, respiración natural y fonética nativa certificada.
  * 2. Utiliza caché en memoria para respuesta instantánea en clics repetidos.
  * 3. Si no hay conexión o falla la red, activa el fallback local con SpeechSynthesis aplicando
- *    el bloqueo estricto anti-castellano (excluyendo terminantemente voces es-ES).
+ *    el dialecto nativo (fr-FR para francés, en-US para inglés o es-MX con filtro anti-castellano para español).
  */
 export async function playUniversalIskoolVoice(options: UniversalVoicePlayOptions): Promise<UniversalAudioController> {
   const {
@@ -795,6 +828,7 @@ export async function playUniversalIskoolVoice(options: UniversalVoicePlayOption
     role = characterName ? 'character' : 'pedagogical',
     narratorMode = 'wisdom_guide',
     voiceId,
+    language,
     gender,
     rate = 1.0,
     pitch = 1.0,
@@ -835,7 +869,8 @@ export async function playUniversalIskoolVoice(options: UniversalVoicePlayOption
   }
 
   const effectiveGender = gender || (characterName ? getPersonaGender(characterName) : 'female');
-  const cacheKey = `${voiceId || characterName || role}::${narratorMode}::${rate}::${pitch}::${cleanText}`;
+  const effectiveLang: 'es' | 'en' | 'fr' = language || (voiceId?.startsWith('fr-') ? 'fr' : (voiceId?.startsWith('en-') ? 'en' : 'es'));
+  const cacheKey = `${voiceId || characterName || role}::${effectiveLang}::${narratorMode}::${rate}::${pitch}::${cleanText}`;
 
   // Intentar primero con el motor neural de alta fidelidad
   try {
@@ -853,6 +888,7 @@ export async function playUniversalIskoolVoice(options: UniversalVoicePlayOption
           role,
           narratorMode,
           voice: voiceId,
+          language: effectiveLang,
           rate,
           pitch
         })
@@ -920,7 +956,21 @@ export async function playUniversalIskoolVoice(options: UniversalVoicePlayOption
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(cleanText);
 
-      if (characterName) {
+      if (effectiveLang === 'fr') {
+        utterance.lang = 'fr-FR';
+        utterance.rate = rate * 0.95;
+        utterance.pitch = pitch;
+        const voices = window.speechSynthesis.getVoices();
+        const frenchVoice = voices.find(v => v.lang.startsWith('fr') && !v.name.toLowerCase().includes('desktop'));
+        if (frenchVoice) utterance.voice = frenchVoice;
+      } else if (effectiveLang === 'en') {
+        utterance.lang = 'en-US';
+        utterance.rate = rate * 0.95;
+        utterance.pitch = pitch;
+        const voices = window.speechSynthesis.getVoices();
+        const englishVoice = voices.find(v => v.lang.startsWith('en') && !v.name.toLowerCase().includes('desktop'));
+        if (englishVoice) utterance.voice = englishVoice;
+      } else if (characterName) {
         configureHistoricalUtterance(utterance, characterName, historicalAge);
       } else {
         const localVoice = selectHistoricalSpeechVoice(effectiveGender);
@@ -962,4 +1012,154 @@ export async function playUniversalIskoolVoice(options: UniversalVoicePlayOption
     }
   }
 }
+
+// =============================================================================
+// CATÁLOGO MULTILINGÜE DE PERSONAJES HISTÓRICOS PARA EL CENTRO DE IDIOMAS
+// (Canon Inviolable de Primera Persona Estricta y Voces Neurales Calibradas)
+// =============================================================================
+
+export interface MultilingualHistoricalFigure {
+  id: string;
+  name: string;
+  language: 'en' | 'fr';
+  gender: 'female' | 'male';
+  voiceId: string;
+  speechRate: number;
+  speechPitch: number;
+  era: string;
+  country: string;
+  avatarEmoji: string;
+  canonicalIntro: string;
+  pdaRelevance: string;
+  sampleQuestions: string[];
+}
+
+export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
+  {
+    id: 'shakespeare',
+    name: 'William Shakespeare',
+    language: 'en',
+    gender: 'male',
+    voiceId: 'en-GB-RyanNeural',
+    speechRate: 0.88,
+    speechPitch: 1.0,
+    era: 'Elizabethan Era (1564 - 1616)',
+    country: 'England',
+    avatarEmoji: '📜',
+    canonicalIntro: 'I am William Shakespeare. I was born in Stratford-upon-Avon, and upon the boards of the Globe Theatre in London, I crafted the tragedies of Hamlet and Macbeth.',
+    pdaRelevance: 'Fluidez auditiva poética, figuras retóricas y riqueza léxica renacentista en lengua inglesa.',
+    sampleQuestions: [
+      'Where did you write your famous sonnets?',
+      'How was daily life at the Globe Theatre in London?'
+    ]
+  },
+  {
+    id: 'ada_lovelace',
+    name: 'Ada Lovelace',
+    language: 'en',
+    gender: 'female',
+    voiceId: 'en-GB-SoniaNeural',
+    speechRate: 0.90,
+    speechPitch: 1.05,
+    era: 'Victorian Scientific Era (1815 - 1852)',
+    country: 'United Kingdom',
+    avatarEmoji: '⚙️',
+    canonicalIntro: 'I am Ada Lovelace. In 1843, I authored the very first computer algorithm for Charles Babbage\'s Analytical Engine, foreseeing that machines would manipulate symbols and compose music.',
+    pdaRelevance: 'Léxico científico de vanguardia, argumentación lógica y pensamiento computacional bilingüe.',
+    sampleQuestions: [
+      'How did you imagine the future of computing?',
+      'What inspired your collaboration with Charles Babbage?'
+    ]
+  },
+  {
+    id: 'abraham_lincoln',
+    name: 'Abraham Lincoln',
+    language: 'en',
+    gender: 'male',
+    voiceId: 'en-US-GuyNeural',
+    speechRate: 0.84,
+    speechPitch: 0.95,
+    era: 'American Civil War (1809 - 1865)',
+    country: 'United States',
+    avatarEmoji: '🏛️',
+    canonicalIntro: 'I am Abraham Lincoln, 16th President of the United States. In 1863, amidst our nation\'s trial at Gettysburg, I proclaimed that government of the people, by the people, for the people, shall not perish from the earth.',
+    pdaRelevance: 'Oratoria formal, estructuras de discurso cívico y argumentación republicana en inglés estadounidense.',
+    sampleQuestions: [
+      'What were your thoughts while delivering the Gettysburg Address?',
+      'How did you preserve the Union during the darkest days of the Civil War?'
+    ]
+  },
+  {
+    id: 'napoleon',
+    name: 'Napoléon Bonaparte',
+    language: 'fr',
+    gender: 'male',
+    voiceId: 'fr-FR-HenriNeural',
+    speechRate: 0.88,
+    speechPitch: 0.96,
+    era: 'Premier Empire Français (1769 - 1821)',
+    country: 'France',
+    avatarEmoji: '⚔️',
+    canonicalIntro: 'Je suis Napoléon Bonaparte, né à Ajaccio en Corse. J\'ai réorganisé l\'administration, promulgué le Code Civil et conduit les armées de la République avant de ceindre la couronne impériale.',
+    pdaRelevance: 'Conectores argumentativos solemnes, léxico institucional civil y retórica histórica francesa.',
+    sampleQuestions: [
+      'Comment avez-vous rédigé le Code Civil des Français?',
+      'Quelle était votre stratégie lors de la bataille d\'Austerlitz?'
+    ]
+  },
+  {
+    id: 'marie_curie',
+    name: 'Marie Curie',
+    language: 'fr',
+    gender: 'female',
+    voiceId: 'fr-FR-DeniseNeural',
+    speechRate: 0.90,
+    speechPitch: 1.02,
+    era: 'Révolution Scientifique (1867 - 1934)',
+    country: 'France / Pologne',
+    avatarEmoji: '🔬',
+    canonicalIntro: 'Je suis Marie Curie. Avec Pierre Curie, j\'ai isolé le polonium et le radium dans mon modeste hangar de la rue Lhomond à Paris, devenant la première lauréate de deux Prix Nobel.',
+    pdaRelevance: 'Vocabulario científico riguroso, enunciados descriptivos y argumentación empírica en lengua francesa.',
+    sampleQuestions: [
+      'Comment avez-vous réussi à isoler le radium?',
+      'Quel sentiment éprouviez-vous en recevant vos deux Prix Nobel?'
+    ]
+  },
+  {
+    id: 'victor_hugo',
+    name: 'Victor Hugo',
+    language: 'fr',
+    gender: 'male',
+    voiceId: 'fr-FR-HenriNeural',
+    speechRate: 0.86,
+    speechPitch: 0.98,
+    era: 'Romantisme & XIXe Siècle (1802 - 1885)',
+    country: 'France',
+    avatarEmoji: '📖',
+    canonicalIntro: 'Je suis Victor Hugo. J\'ai écrit Les Misérables et Notre-Dame de Paris pour donner une voix aux humbles et défendre la dignité humaine contre toute forme d\'oppression.',
+    pdaRelevance: 'Riqueza estilística, narrativa emotiva y estructuras sintácticas compuestas del francés literario.',
+    sampleQuestions: [
+      'Pourquoi avez-vous créé le personnage de Jean Valjean?',
+      'Que ressentiez-vous pendant vos années d\'exil à Guernesey?'
+    ]
+  },
+  {
+    id: 'jeanne_darc',
+    name: 'Jeanne d\'Arc',
+    language: 'fr',
+    gender: 'female',
+    voiceId: 'fr-FR-EloiseNeural',
+    speechRate: 0.92,
+    speechPitch: 1.08,
+    era: 'Guerre de Cent Ans (1412 - 1431)',
+    country: 'France',
+    avatarEmoji: '🛡️',
+    canonicalIntro: 'Je suis Jeanne d\'Arc, la Pucelle d\'Orléans. À dix-sept ans, guidée par ma foi et mes voix, j\'ai levé le siège d\'Orléans et conduit le dauphin Charles à son sacre à Reims.',
+    pdaRelevance: 'Léxico medieval heroico, oraciones afirmativas directas y entonación de convicción en francés.',
+    sampleQuestions: [
+      'Comment avez-vous convaincu le dauphin à Chinon?',
+      'Racontez-nous la libération d\'Orléans en mai 1429.'
+    ]
+  }
+];
 

@@ -1,0 +1,216 @@
+{
+  "generation_id": "gen_1790224071978_f0b8ca8b",
+  "request": {
+    "grade": "high_school_2",
+    "cefr": "B2",
+    "skill": "writing",
+    "topic": "environment_and_sustainability",
+    "language_function": "evaluating_arguments_and_critiquing",
+    "activity_type": "opinion_paragraph",
+    "duration_minutes": 45
+  },
+  "knowledge_document_ids": [
+    "discourse_contrast_addition_concession_connectors_b1",
+    "grammar_b1_b2_discourse_connectors",
+    "reading_c1_advanced_academic_critique",
+    "reading_b1_b2_inference_and_author_purpose",
+    "speaking_impromptu_discourse_persuasion_b2",
+    "writing_b2_high_school_argumentative_essay",
+    "writing_b1_b2_opinion_and_argument",
+    "writing_discursive_essays_evaluating_two_views_b2",
+    "writing_short_reviews_reports_intro_b1",
+    "grammar_advanced_passive_reporting_verbs_b2",
+    "grammar_cleft_sentences_focus_emphasis_b2",
+    "grammar_inversion_negative_adverbials_emphasis_b2",
+    "grammar_mixed_conditionals_unreal_past_present_b2",
+    "grammar_nominalization_academic_register_b2",
+    "rubric_writing_b1_b2"
+  ],
+  "knowledge_versions": [
+    {
+      "document_id": "discourse_contrast_addition_concession_connectors_b1",
+      "version": 1,
+      "checksum": "cf1822ff75dc9d18e73c43bf45f1f9bd4d5ccd5fbab0ac22e91613c9d564a466",
+      "title": "Discourse Markers: Addition, Contrast, Concession and Logical Sequence",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "grammar_b1_b2_discourse_connectors",
+      "version": 2,
+      "checksum": "df9639ec91a5ce92602a4be6b87ba35ce7828c88fcef1536380f417914846302",
+      "title": "Logical and Discourse Connectors: Contrast, Cause, Result and Concession",
+      "document_type": "grammar_rule"
+    },
+    {
+      "document_id": "reading_c1_advanced_academic_critique",
+      "version": 1,
+      "checksum": "ca87416f182c0c3f60def3de8a3a3c649c96f756eff1f64e0f6bafc52e03fae6",
+      "title": "Critical Analysis and Implicit Meaning in Scholarly Articles",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "reading_b1_b2_inference_and_author_purpose",
+      "version": 2,
+      "checksum": "60f563dd66b9895c43178748fc52d83e0a0b4089c69da634f173b90c0b9ab451",
+      "title": "Contextual Inference, Implicit Meaning and Author Purpose (B1/B2)",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "speaking_impromptu_discourse_persuasion_b2",
+      "version": 1,
+      "checksum": "73105184b1818270b1bd01547efe867b89671c6f67726efcf998f7c6c5051dbe",
+      "title": "Impromptu Public Speaking and Persuasive Rhetoric (B2)",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "writing_b2_high_school_argumentative_essay",
+      "version": 2,
+      "checksum": "1f24307d36fb0b5750f467333c65ee1a838b06641fb794832d20e5f7056a62c8",
+      "title": "Crafting Academic Argumentative Essays with Cohesive Discourse",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "writing_b1_b2_opinion_and_argument",
+      "version": 2,
+      "checksum": "0196d401f739d51f529200ce2ae4de7319579a66aceea2a3101c59709e3d95f3",
+      "title": "Developing Balanced Arguments and Opinion Essays",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "writing_discursive_essays_evaluating_two_views_b2",
+      "version": 1,
+      "checksum": "ce5b74e0a99cab1f733d78155e9c9cd10b98a975f6bec0bf58759e95f8682db8",
+      "title": "Writing Balanced Discursive Essays Evaluating Opposing Viewpoints (B2)",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "writing_short_reviews_reports_intro_b1",
+      "version": 1,
+      "checksum": "7b321bf2a1943842956eb2ed711ff82b78fcf21e9f8cf86f85810fcfc9403228",
+      "title": "Writing Short Cultural Reviews and Simple Factual Reports",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "grammar_advanced_passive_reporting_verbs_b2",
+      "version": 1,
+      "checksum": "47246beee63038c785aeb163fa3c9c61a78c0a631f4c7bb243de8d68465e5558",
+      "title": "Advanced Passive Structures with Impersonal and Reporting Verbs",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "grammar_cleft_sentences_focus_emphasis_b2",
+      "version": 1,
+      "checksum": "1ceb974e48e6eeaffa6e02c5f58ba5e09bdcf594e6dcc268e9e029e7c657b054",
+      "title": "Cleft Sentences (Wh- and It- Clefts) for Thematic Focus and Emphasis",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "grammar_inversion_negative_adverbials_emphasis_b2",
+      "version": 1,
+      "checksum": "7749e7a738de9710210832a2ae87a86e02b20efa473e83c9f3ce7035ab20c6c4",
+      "title": "Syntactic Inversion with Negative and Limiting Adverbials for Emphasis",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "grammar_mixed_conditionals_unreal_past_present_b2",
+      "version": 1,
+      "checksum": "b8adb563d2a456fcae2b0bdccd143f207a3956d33d8051563e7cc374124b792a",
+      "title": "Mixed Conditionals: Connecting Past Hypotheses with Present Consequences",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "grammar_nominalization_academic_register_b2",
+      "version": 1,
+      "checksum": "06676b2c0708a0423c73a8b454369e1f06be79ed3decb17dbca08dab49273e7f",
+      "title": "Nominalization and Grammatical Metaphor in Formal Academic Register",
+      "document_type": "skill_node"
+    },
+    {
+      "document_id": "rubric_writing_b1_b2",
+      "version": 1,
+      "checksum": "a675332edc9ec48e7038d6573fa576713088874d1ae8fe745dced7371f2b5f2f",
+      "title": "Institutional CEFR Assessment Rubric: Written Expression (B1-B2)",
+      "document_type": "assessment_rubric"
+    }
+  ],
+  "prompt_version": "1.0.0",
+  "model": "models/gemini-3.5-flash",
+  "prompt_sent": "### SECTION 1: SYSTEM RULES ###\nYou are an educational content generation engine for iSchool.\nYou must generate educational content using the academic context supplied by iSchool.\nThe supplied Knowledge Vault context is authoritative for:\n- grade level\n- CEFR level\n- learning objectives\n- language functions\n- grammar expectations\n- vocabulary expectations\n- skill progression\n- assessment criteria\n\nMANDATORY BEHAVIORAL CONSTRAINTS:\n1. Do not increase or decrease the requested level without explicit instruction.\n2. Do not invent curriculum requirements that contradict the supplied context.\n3. Generate original, engaging, pedagogically sound educational content.\n4. Do not reproduce copyrighted textbook exercises or passages.\n5. Strictly adhere to the institutional white-label policy (never mention third-party commercial brands).\n6. Return the response using the requested structured JSON schema ONLY. No conversational preambles.\n\n### SECTION 2: ACADEMIC CONTEXT (AUTHORITATIVE KNOWLEDGE VAULT) ###\nBelow is the official curricular context extracted from the iSchool Knowledge Vault.\nYou MUST ground your activity entirely within these bounds:\n\n================================================================\nPEDAGOGICAL KNOWLEDGE VAULT - ACADEMIC CONTEXT (iSchool)\n================================================================\nGRADE: HIGH_SCHOOL_2\nCEFR TARGET: B2 (Entry B1 -> Target B2)\nSKILL: WRITING\nSUBSKILLS: General interaction\n\n--- LEARNING OBJECTIVES & CAN-DO STATEMENTS ---\n\n--- LANGUAGE FUNCTIONS & TARGET REPERTOIRE ---\n\n--- GRAMMAR PROGRESSION & STRUCTURES ---\n• Focus: Advanced Passive Structures with Impersonal and Reporting Verbs\n• Focus: Cleft Sentences (Wh- and It- Clefts) for Thematic Focus and Emphasis\n• Focus: Syntactic Inversion with Negative and Limiting Adverbials for Emphasis\n• Focus: Mixed Conditionals: Connecting Past Hypotheses with Present Consequences\n• Focus: Nominalization and Grammatical Metaphor in Formal Academic Register\n  - **Nivel CEFR:** B2 (Vantage / Independiente Avanzado).\n  - **Competencia Epistémica:** Uso de estructuras de pasiva con verbos de reporte (*say, believe, claim, report, consider, estimate, presume, allege*) para transmitir opiniones generalizadas, descubrimientos científicos preliminares o alegaciones sin comprometer la responsabilidad directa del autor.\n  - **Nivel CEFR:** B2 (Vantage / Independiente Avanzado).\n  - **Competencia Pragmática y Sintáctica:** La escisión oracional (*clefting*) permite dividir una proposición simple en dos partes para dotar a un constituyente de prominencia informativa máxima (*foco temático*).\n  - **Fórmula:** *It + be (en tiempo correspondiente) + elemento enfatizado + that / who + resto de la oración*\n  - **Nivel CEFR:** B2 (Vantage / Independiente Avanzado).\n  - **Competencia Sintáctica:** Dominio de la inversión sujeto-auxiliar provocada por la frontalización de adverbios negativos o restrictivos, recurso fundamental de la prosa académica y la oratoria formal anglosajona.\n  - **Nivel CEFR:** B2 (Vantage / Independiente Avanzado).\n  - **Competencia Estructural:** Capacidad de romper la simetría temporal estándar de los condicionales clásicos (segundo y tercero) para vincular con exactitud causas pasadas no cumplidas con estados presentes reales, o premisas permanentes presentes con desenlaces históricos pasados.\n  - **Estructura:** *If + Past Perfect, Subject + would / could / might + Base Form (now)*\n  - **Nivel CEFR:** B2 (Vantage / Independiente Avanzado).\n  - **Competencia Estilística y Gramatical:** La nominalización (transformar procesos expresados por verbos o adjetivos en entidades sintácticas sustantivas) constituye el rasgo definitorio de la madurez discursiva académica en lengua inglesa (Halliday, *Grammatical Metaphor*). Permite empaquetar información previa en el tema oracional (*Given information*) y avanzar nuevos hallazgos en el rema (*New information*).\n\n--- VOCABULARY DOMAIN & COLLOCATIONS ---\nDomain: environment_and_sustainability\nRecommended Collocations & Expressions:\n\n--- RECOMMENDED ACTIVITY PATTERNS ---\n\n--- ASSESSMENT CRITERIA (CEFR ALIGNED) ---\nRubric: Institutional CEFR Assessment Rubric: Written Expression (B1-B2)\n• Task Achievement (Cumplimiento de la Tarea)\n• Organization (Estructura y Progresión Textual)\n• Cohesion (Cohesión y Conectores Discursivos)\n• Language Range (Amplitud Léxica y Sintáctica)\n• Accuracy (Precisión Gramatical y Ortográfica)\n• Register (Adecuación del Registro y Tono)\n\n--- PEDAGOGICAL CONSTRAINTS ---\n⚠️ PROHIBICIÓN ESTRICTA: No utilizar marcas comerciales externas en los reactivos ni en la interfaz.\n⚠️ ANDAMIAJE PEDAGÓGICO OBLIGATORIO: Ofrecer modelos de frases funcionales antes de exigir producción oral autónoma.\n⚠️ CALIBRACIÓN CEFR: El lenguaje y los distractores deben respetar el nivel objetivo B1 → B2 sin exceder la dificultad.\n\n--- AUTHORITATIVE SOURCE REFERENCES ---\n• [cefr_companion_volume_2020] Common European Framework of Reference for Languages - Companion Volume\n• [cambridge_english_b1_preliminary_handbook] Cambridge English B1 Preliminary Handbook for Teachers\n• [cambridge_english_b2_first_handbook] Cambridge English B2 First Handbook for Teachers\n• [iskool_curriculum_core] Sistema Curricular y Motor Pedagógico Institucional iSchool\n• [sep_nem_lenguajes_2024] Marco Curricular Común y Planes de Estudio de Lenguas Extranjeras (SEP NEM)\n================================================================\n\n### SECTION 3: GENERATION REQUEST ###\nDesign an individualized, classroom-ready educational activity according to these exact specifications:\n- Grade: high_school_2\n- CEFR Target: B2\n- Primary Skill: writing\n- Topic / Domain: environment_and_sustainability\n- Language Function: evaluating_arguments_and_critiquing\n- Activity Pattern: opinion_paragraph\n- Total Duration: 45 minutes\n\nPEDAGOGICAL REQUIREMENTS FOR THIS ACTIVITY:\n1. The activity must actively train the student to use the expressions provided in the language function \"evaluating_arguments_and_critiquing\".\n2. Target timing must match exactly 45 minutes distributed across warm-up, core task, and wrap-up phases.\n3. Include explicit scaffolding so students of the requested CEFR level feel supported before communicative production.\n\n### SECTION 4: OUTPUT SCHEMA ###\nYou must respond with a single valid JSON object strictly adhering to this structure:\n{\n  \"title\": \"Clear, engaging title for the activity\",\n  \"grade\": \"high_school_2\",\n  \"cefr\": \"B2\",\n  \"skill\": \"writing\",\n  \"topic\": \"environment_and_sustainability\",\n  \"language_function\": \"evaluating_arguments_and_critiquing\",\n  \"activity_type\": \"opinion_paragraph\",\n  \"duration_minutes\": 45,\n  \"learning_objective\": \"Explicit Can-Do statement grounded in the provided objectives\",\n  \"student_instructions\": \"Clear, age-appropriate step-by-step instructions for the student in English\",\n  \"teacher_instructions\": \"Pedagogical guidance, classroom setup, timing tips and monitoring notes for the teacher\",\n  \"language_support\": {\n    \"useful_phrases\": [\"Array of functional model phrases from the language function context\"],\n    \"grammar_support\": [\"Array of grammar structures to reinforce during the activity\"],\n    \"vocabulary_support\": [\"Array of topic-specific vocabulary and collocations to activate\"]\n  },\n  \"activity_steps\": [\n    {\n      \"phase\": \"warm_up | core_task | wrap_up\",\n      \"duration_minutes\": 5,\n      \"teacher_instructions\": \"What the teacher does during this phase\",\n      \"student_instructions\": \"What the students do during this phase\"\n    }\n  ],\n  \"assessment\": {\n    \"criteria\": [\"3 to 4 specific, observable evaluation criteria derived from the CEFR rubric context\"],\n    \"rubric_snapshot\": [\"Brief performance indicators for meeting expectations\"]\n  }\n}\n\nCRITICAL: Return ONLY raw valid JSON. Do not enclose in markdown ticks if not required, or if you do, use ```json ... ```.",
+  "raw_output": "{\"title\":\"Balancing Progress and Preservation: Discursive Evaluation of Climate Transition Mandates\",\"grade\":\"high_school_2\",\"cefr\":\"B2\",\"skill\":\"writing\",\"topic\":\"environment_and_sustainability\",\"language_function\":\"evaluating_arguments_and_critiquing\",\"activity_type\":\"opinion_paragraph\",\"duration_minutes\":45,\"learning_objective\":\"Students can compose a balanced 4-paragraph discursive essay evaluating market-based vs regulatory climate policies using formal concessive discourse markers and passive constructions.\",\"student_instructions\":\"Read the dual-perspective briefing on market incentives vs mandatory carbon caps. In groups of three, evaluate the economic and ecological merits of each approach using the literature matrix, then write an individual 200-word discursive essay balancing both positions before presenting your reasoned conclusion.\",\"teacher_instructions\":\"Project two contrasting policy briefs on electric transition mandates. Guide students to identify the central tension between market incentives and governmental regulation. Facilitate drafting using the four-paragraph discursive essay structure.\",\"materials_needed\":[\"Climate policy case briefing packet (Economic incentives vs mandatory emission caps)\",\"Discursive essay planning graphic organizer (Thesis, View A, View B, Synthesis)\",\"B2 Academic Hedging and Concessive Markers Reference Cheat-Sheet\"],\"language_support\":{\"useful_phrases\":[\"On the one hand, proponents argue that...\",\"Conversely, critics contend that...\",\"Notwithstanding the upfront capital requirements...\",\"While evidence suggests that market mechanisms encourage innovation, regulatory caps ensure immediate compliance.\"],\"grammar_support\":[\"Impersonal passive reporting: 'It is widely acknowledged that emission reductions necessitate structural shifts.'\",\"Concessive clauses with 'granted that' and 'notwithstanding'\",\"Nominalization for information density: 'the rapid deployment of renewable infrastructure'\"],\"vocabulary_support\":[\"regulatory compliance\",\"carbon abatement\",\"economic feasibility\",\"socioeconomic disparities\",\"ecological stewardship\"]},\"activity_steps\":[{\"phase\":\"warm_up\",\"duration_minutes\":10,\"teacher_instructions\":\"Project two contrasting policy briefs on electric transition mandates. Guide students to identify the central tension between market incentives and governmental regulation.\",\"student_instructions\":\"Annotate the contrasting claims in pairs and categorize arguments into economic feasibility vs environmental urgency.\"},{\"phase\":\"core_task\",\"duration_minutes\":25,\"teacher_instructions\":\"Facilitate drafting of a 200-word balanced discursive essay using the four-paragraph structure. Monitor for neutral presentation of both perspectives and appropriate hedging.\",\"student_instructions\":\"Draft the introduction, opposing viewpoint analyses, and synthesis conclusion using at least 3 formal concessive connectors and 2 nominalized structures.\"},{\"phase\":\"wrap_up\",\"duration_minutes\":10,\"teacher_instructions\":\"Lead peer review using the Cambridge B2 First Essay criteria. Focus on argument equilibrium and formal register.\",\"student_instructions\":\"Exchange drafts with peer and evaluate thesis clarity, balance between opposing views, and grammatical accuracy.\"}],\"assessment\":{\"criteria\":[\"Presents both perspectives with objective balance before articulating a reasoned personal synthesis\",\"Employs advanced concessive and contrastive discourse markers (notwithstanding, conversely, on the one hand) accurately\",\"Maintains formal academic register using passive constructions and nominalized noun phrases\",\"Adheres to target word limit (190-220 words) with clear 4-paragraph macro-organization\"],\"rubric_snapshot\":[\"Cambridge B2 First Institutional Writing Rubric - Communicative Achievement & Organization\"]}}",
+  "generated_output": {
+    "title": "Balancing Progress and Preservation: Discursive Evaluation of Climate Transition Mandates",
+    "grade": "high_school_2",
+    "cefr": "B2",
+    "skill": "writing",
+    "topic": "environment_and_sustainability",
+    "language_function": "evaluating_arguments_and_critiquing",
+    "activity_type": "opinion_paragraph",
+    "duration_minutes": 45,
+    "learning_objective": "Students can compose a balanced 4-paragraph discursive essay evaluating market-based vs regulatory climate policies using formal concessive discourse markers and passive constructions.",
+    "student_instructions": "Read the dual-perspective briefing on market incentives vs mandatory carbon caps. In groups of three, evaluate the economic and ecological merits of each approach using the literature matrix, then write an individual 200-word discursive essay balancing both positions before presenting your reasoned conclusion.",
+    "teacher_instructions": "Project two contrasting policy briefs on electric transition mandates. Guide students to identify the central tension between market incentives and governmental regulation. Facilitate drafting using the four-paragraph discursive essay structure.",
+    "materials_needed": [
+      "Climate policy case briefing packet (Economic incentives vs mandatory emission caps)",
+      "Discursive essay planning graphic organizer (Thesis, View A, View B, Synthesis)",
+      "B2 Academic Hedging and Concessive Markers Reference Cheat-Sheet"
+    ],
+    "language_support": {
+      "useful_phrases": [
+        "On the one hand, proponents argue that...",
+        "Conversely, critics contend that...",
+        "Notwithstanding the upfront capital requirements...",
+        "While evidence suggests that market mechanisms encourage innovation, regulatory caps ensure immediate compliance."
+      ],
+      "grammar_support": [
+        "Impersonal passive reporting: 'It is widely acknowledged that emission reductions necessitate structural shifts.'",
+        "Concessive clauses with 'granted that' and 'notwithstanding'",
+        "Nominalization for information density: 'the rapid deployment of renewable infrastructure'"
+      ],
+      "vocabulary_support": [
+        "regulatory compliance",
+        "carbon abatement",
+        "economic feasibility",
+        "socioeconomic disparities",
+        "ecological stewardship"
+      ]
+    },
+    "activity_steps": [
+      {
+        "phase": "warm_up",
+        "duration_minutes": 10,
+        "teacher_instructions": "Project two contrasting policy briefs on electric transition mandates. Guide students to identify the central tension between market incentives and governmental regulation.",
+        "student_instructions": "Annotate the contrasting claims in pairs and categorize arguments into economic feasibility vs environmental urgency."
+      },
+      {
+        "phase": "core_task",
+        "duration_minutes": 25,
+        "teacher_instructions": "Facilitate drafting of a 200-word balanced discursive essay using the four-paragraph structure. Monitor for neutral presentation of both perspectives and appropriate hedging.",
+        "student_instructions": "Draft the introduction, opposing viewpoint analyses, and synthesis conclusion using at least 3 formal concessive connectors and 2 nominalized structures."
+      },
+      {
+        "phase": "wrap_up",
+        "duration_minutes": 10,
+        "teacher_instructions": "Lead peer review using the Cambridge B2 First Essay criteria. Focus on argument equilibrium and formal register.",
+        "student_instructions": "Exchange drafts with peer and evaluate thesis clarity, balance between opposing views, and grammatical accuracy."
+      }
+    ],
+    "assessment": {
+      "criteria": [
+        "Presents both perspectives with objective balance before articulating a reasoned personal synthesis",
+        "Employs advanced concessive and contrastive discourse markers (notwithstanding, conversely, on the one hand) accurately",
+        "Maintains formal academic register using passive constructions and nominalized noun phrases",
+        "Adheres to target word limit (190-220 words) with clear 4-paragraph macro-organization"
+      ],
+      "rubric_snapshot": [
+        "Cambridge B2 First Institutional Writing Rubric - Communicative Achievement & Organization"
+      ]
+    }
+  },
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "mismatches": []
+  },
+  "created_at": "2026-09-24T04:27:51.978Z"
+}

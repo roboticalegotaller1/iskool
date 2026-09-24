@@ -400,6 +400,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
         body: JSON.stringify({
           text: textToSpeak,
           voice: avatarVoice,
+          language: language,
           rate: customRate
         })
       });
@@ -430,6 +431,9 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
         const utterance = new SpeechSynthesisUtterance(textToSpeak);
         utterance.lang = language === 'fr' ? 'fr-FR' : 'en-US';
         utterance.rate = customRate;
+        const voices = window.speechSynthesis.getVoices();
+        const matchVoice = voices.find(v => v.lang.startsWith(language === 'fr' ? 'fr' : 'en') && !v.name.toLowerCase().includes('desktop'));
+        if (matchVoice) utterance.voice = matchVoice;
         utterance.onend = () => {
           setIsPlayingModelVoice(false);
           setSlowWordToHear(null);
@@ -528,7 +532,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
       if (karaokeMode === 'mic') {
         let tokensToAlign = state.allCapturedTokens.length > 0 
           ? [...state.allCapturedTokens] 
-          : detectedSpeechText.toLowerCase().replace(/[^a-z0-9\s'’]/gi, ' ').split(/\s+/).filter(Boolean);
+          : detectedSpeechText.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s'’]/gi, ' ').split(/\s+/).filter(Boolean);
 
         // Si el reconocimiento por voz nativo del navegador no entregó tokens
         // pero sí tenemos el audio grabado con el micrófono físico:

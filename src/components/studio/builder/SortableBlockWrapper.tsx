@@ -42,7 +42,10 @@ import {
   BrainCircuit,
   Languages,
   Mic,
-  Landmark
+  Landmark,
+  GraduationCap,
+  Theater,
+  ClipboardCheck
 } from 'lucide-react';
 
 export interface Props {
@@ -236,6 +239,30 @@ export const BLOCK_META: Record<StudioBlockType, { label: string; icon: any; col
     badgeBg: 'bg-purple-100/90 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-200/60',
     glow: 'hover:border-purple-400 dark:hover:border-purple-700 hover:shadow-purple-500/10',
     color: 'from-indigo-600 via-purple-600 to-pink-600'
+  },
+  languages_socratic_tutor: {
+    label: 'Tutor Socrático IA (DELF / Cambridge)',
+    icon: GraduationCap,
+    colorScheme: 'border-violet-200/90 dark:border-violet-900/60 shadow-violet-500/5',
+    badgeBg: 'bg-violet-100/90 dark:bg-violet-950 text-violet-700 dark:text-violet-300 border-violet-200/60',
+    glow: 'hover:border-violet-400 dark:hover:border-violet-700 hover:shadow-violet-500/10',
+    color: 'from-purple-600 via-violet-600 to-indigo-700'
+  },
+  languages_roleplay_mission: {
+    label: 'Roleplay & Misión Inmersiva',
+    icon: Theater,
+    colorScheme: 'border-fuchsia-200/90 dark:border-fuchsia-900/60 shadow-fuchsia-500/5',
+    badgeBg: 'bg-fuchsia-100/90 dark:bg-fuchsia-950 text-fuchsia-700 dark:text-fuchsia-300 border-fuchsia-200/60',
+    glow: 'hover:border-fuchsia-400 dark:hover:border-fuchsia-700 hover:shadow-fuchsia-500/10',
+    color: 'from-fuchsia-600 via-purple-600 to-violet-700'
+  },
+  languages_evaluation_rubric: {
+    label: 'Evaluación Formativa CENNI / DELF',
+    icon: ClipboardCheck,
+    colorScheme: 'border-cyan-200/90 dark:border-cyan-900/60 shadow-cyan-500/5',
+    badgeBg: 'bg-cyan-100/90 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300 border-cyan-200/60',
+    glow: 'hover:border-cyan-400 dark:hover:border-cyan-700 hover:shadow-cyan-500/10',
+    color: 'from-violet-700 via-indigo-700 to-cyan-600'
   },
   historical_figure_block: {
     label: 'Personaje o Sitio Histórico 3D',

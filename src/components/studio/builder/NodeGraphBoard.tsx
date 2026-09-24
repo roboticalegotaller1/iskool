@@ -41,7 +41,10 @@ import {
   RotateCcw,
   Languages,
   Mic,
-  ExternalLink
+  ExternalLink,
+  GraduationCap,
+  Theater,
+  ClipboardCheck
 } from 'lucide-react';
 
 interface DraggingNodeState {
@@ -772,7 +775,94 @@ export const NodeGraphBoard: React.FC = () => {
                         }}
                         className="w-full py-1.5 px-2.5 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black text-[10px] flex items-center justify-center gap-1.5 shadow-sm hover:shadow transition-all cursor-pointer"
                       >
-                        <span>Acceder al Portal de Lenguajes</span>
+                        <span>Acceder al Centro de Idiomas</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* 20. Tutor Socrático IA */}
+                  {block.type === 'languages_socratic_tutor' && (
+                    <div className="p-2.5 rounded-xl bg-violet-50/80 dark:bg-violet-950/50 border border-violet-200/70 dark:border-violet-800/60 text-[11px] space-y-2">
+                      <div className="flex items-center justify-between font-bold text-violet-800 dark:text-violet-300">
+                        <span className="flex items-center gap-1.5">
+                          <GraduationCap className="w-3.5 h-3.5 text-violet-600" />
+                          <span>Tutor Socrático IA</span>
+                        </span>
+                        <span className="text-[9px] bg-violet-200/80 dark:bg-violet-900/70 text-violet-800 dark:text-violet-200 px-1.5 py-0.5 rounded-md font-black">
+                          {block.data.targetLevel || 'B1'} · {block.data.language === 'fr' ? '🇫🇷' : '🇬🇧'}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-600 dark:text-zinc-400 line-clamp-2 italic">
+                        &ldquo;{block.data.starterPrompt || 'Discussing sustainability...'}&rdquo;
+                      </p>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push('/teacher/idiomas');
+                        }}
+                        className="w-full py-1.5 px-2.5 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-black text-[10px] flex items-center justify-center gap-1.5 shadow-sm hover:shadow transition-all cursor-pointer"
+                      >
+                        <span>Gestionar en Centro de Idiomas</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* 21. Roleplay & Misión Inmersiva */}
+                  {block.type === 'languages_roleplay_mission' && (
+                    <div className="p-2.5 rounded-xl bg-fuchsia-50/80 dark:bg-fuchsia-950/50 border border-fuchsia-200/70 dark:border-fuchsia-800/60 text-[11px] space-y-2">
+                      <div className="flex items-center justify-between font-bold text-fuchsia-800 dark:text-fuchsia-300">
+                        <span className="flex items-center gap-1.5">
+                          <Theater className="w-3.5 h-3.5 text-fuchsia-600" />
+                          <span>Roleplay & Misión Real</span>
+                        </span>
+                        <span className="text-[9px] bg-fuchsia-200/80 dark:bg-fuchsia-900/70 text-fuchsia-800 dark:text-fuchsia-200 px-1.5 py-0.5 rounded-md font-black">
+                          {block.data.language === 'fr' ? '🇫🇷 FLE' : '🇬🇧 ESL'}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-600 dark:text-zinc-400 line-clamp-2 font-medium">
+                        🎭 {block.data.missionGoal || 'Misión comunicativa en contexto real'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push('/teacher/idiomas');
+                        }}
+                        className="w-full py-1.5 px-2.5 rounded-lg bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-700 hover:to-purple-700 text-white font-black text-[10px] flex items-center justify-center gap-1.5 shadow-sm hover:shadow transition-all cursor-pointer"
+                      >
+                        <span>Gestionar en Centro de Idiomas</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* 22. Rúbrica CENNI / DELF */}
+                  {block.type === 'languages_evaluation_rubric' && (
+                    <div className="p-2.5 rounded-xl bg-cyan-50/80 dark:bg-cyan-950/50 border border-cyan-200/70 dark:border-cyan-800/60 text-[11px] space-y-2">
+                      <div className="flex items-center justify-between font-bold text-cyan-800 dark:text-cyan-300">
+                        <span className="flex items-center gap-1.5">
+                          <ClipboardCheck className="w-3.5 h-3.5 text-cyan-600" />
+                          <span>Rúbrica CENNI / DELF</span>
+                        </span>
+                        <span className="text-[9px] bg-cyan-200/80 dark:bg-cyan-900/70 text-cyan-800 dark:text-cyan-200 px-1.5 py-0.5 rounded-md font-black">
+                          Mín. {block.data.passingScore || 70}%
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-600 dark:text-zinc-400 line-clamp-2 font-medium">
+                        📋 {block.data.framework || 'CEFR'} · Nivel {block.data.targetLevel || 'B2'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push('/teacher/idiomas');
+                        }}
+                        className="w-full py-1.5 px-2.5 rounded-lg bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white font-black text-[10px] flex items-center justify-center gap-1.5 shadow-sm hover:shadow transition-all cursor-pointer"
+                      >
+                        <span>Gestionar en Centro de Idiomas</span>
                         <ExternalLink className="w-3 h-3" />
                       </button>
                     </div>
