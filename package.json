@@ -13,7 +13,8 @@
     "knowledge:validate": "tsx scripts/knowledge_cli.ts validate",
     "knowledge:sync": "tsx scripts/knowledge_cli.ts sync",
     "knowledge:stats": "tsx scripts/knowledge_cli.ts stats",
-    "test:knowledge": "tsx scripts/test_knowledge_vault.ts"
+    "test:knowledge": "tsx scripts/test_knowledge_vault.ts",
+    "deploy:remotes": "git push origin main"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
