@@ -56,4 +56,19 @@ This version has breaking changes — APIs, conventions, and file structure may 
   - Se debe priorizar el formato moderno **WebP** (calidad 80% - 85%) o **JPEG balanceado**, con escalado proporcional inteligente (anchura/altura máxima adaptada al caso de uso, e.g. 512–1280px) manteniendo el tamaño objetivo típicamente por debajo de 300KB - 400KB por imagen.
 - **3. Ejecución Sistemática en el Pipeline de la Aplicación:**
   - Todo flujo de subida o creación de imagen en el frontend o backend debe invocar sistemáticamente la canalización de compresión (utilidad `src/utils/imageCompressor.ts` o equivalente) antes de formular la petición HTTP multipart, REST o Base64 hacia el servidor remoto.
-
+# REGLA NO NEGOCIABLE 4 (Despliegue Multi-Remoto Obligatorio para Producción y Servidores Cloud)
+- **1. Sincronización Tri-Remota Mandatoria:**
+  - Todo cambio, actualización o despliegue en la plataforma ISkool **DEBE** ser sincronizado y transmitido de manera estricta y obligatoria a los tres servidores remotos / repositorios institucionales configurados en el proyecto:
+    1. **`origin`** (`https://github.com/roboticalegotaller1/iskool-web-.git`): Repositorio principal institucional.
+    2. **`iskool`** (`https://github.com/roboticalegotaller1/iskool.git`): Repositorio central de respaldo institucional.
+    3. **`duran14`** (`https://github.com/duran14/ISkool.git`): Servidor remoto vinculado directamente al webhook de compilación y despliegue continuo de producción en la nube (AWS Amplify para `https://iskool.mx`).
+- **2. Causa Raíz y Prevención de Desfases:**
+  - El servidor en la nube de producción (`https://iskool.mx`) depende exclusivamente de los eventos de inserción (`push`) en la rama `main` del servidor remoto `duran14`. Si un cambio se envía únicamente a `origin` o a `iskool`, la nube nunca detonará el proceso de compilación (`amplify.yml`) y los cambios no se verán reflejados en producción.
+- **3. Protocolo Sistemático de Publicación en Cada Despliegue:**
+  - Tras cualquier hito, corrección o solicitud de actualización / subida de código, el agente y los desarrolladores deben ejecutar invariablemente el despliegue a los tres destinos:
+    ```bash
+    git push origin main
+    git push iskool main
+    git push duran14 main --force
+    ```
+  - Se debe validar la confirmación de entrega en `duran14` para garantizar que la compilación de producción en AWS Amplify inicie de inmediato.
