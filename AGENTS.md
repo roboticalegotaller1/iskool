@@ -46,3 +46,14 @@ This version has breaking changes — APIs, conventions, and file structure may 
   - Todo caso nuevo creado por un docente debe nutrirse de los hechos reales del nodo de la Bóveda Curricular (`birthDeathDates`, `detailedContext`, `moments`, `qaCache`).
   - Las preguntas y respuestas guardadas en la Bóveda Curricular deben ser depuradas y filtradas para que ninguna respuesta genérica o corrupta permanezca en caché.
   - Si se detecta una respuesta anterior no conforme con este canon, debe ser invalidada y regenerada de inmediato con rigor histórico pleno.
+
+# REGLA NO NEGOCIABLE 3 (Compresión Obligatoria de Imágenes para Carga Eficiente en Servidores Cloud)
+- **1. Compresión Mandatoria Previa a Todo Envío o Almacenamiento:**
+  - Toda imagen creada, generada, procesada o subida en la plataforma (avatares de alumnos, fotografías de perfil, capturas de pantalla, evidencias, credenciales o activos visuales) **DEBE COMPRIMIRSE OBLIGATORIAMENTE ANTES DE SER ENVIADA** a los servidores cloud / almacenamiento remoto (servidor AWS / S3 / API de carga).
+  - Queda estrictamente prohibido transmitir o almacenar imágenes sin procesar o en formatos pesados no optimizados (archivos PNG crudos de varios megabytes o cargas que superen los límites de carga del servidor).
+- **2. Preservación Estricta de Fidelidad e Integración Visual:**
+  - La compresión debe ser perceptualmente transparente y de alta fidelidad: sin pixelación, sin artefactos en texto, sin distorsión de relaciones de aspecto ni descalibración de color.
+  - Se debe priorizar el formato moderno **WebP** (calidad 80% - 85%) o **JPEG balanceado**, con escalado proporcional inteligente (anchura/altura máxima adaptada al caso de uso, e.g. 512–1280px) manteniendo el tamaño objetivo típicamente por debajo de 300KB - 400KB por imagen.
+- **3. Ejecución Sistemática en el Pipeline de la Aplicación:**
+  - Todo flujo de subida o creación de imagen en el frontend o backend debe invocar sistemáticamente la canalización de compresión (utilidad `src/utils/imageCompressor.ts` o equivalente) antes de formular la petición HTTP multipart, REST o Base64 hacia el servidor remoto.
+

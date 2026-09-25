@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { KaraokePhrase, LanguageCode, AvatarGender, useLanguagesStore } from '@/store/useLanguagesStore';
 import { HumanGesticulatingAvatar } from './HumanGesticulatingAvatar';
+import { playUniversalIskoolVoice, stopAllIskoolAudio, UniversalAudioController } from '@/lib/historicalVoiceEngine';
 import { 
   Mic, 
   MicOff, 
@@ -55,6 +56,8 @@ interface Props {
   avatarGender: AvatarGender;
   avatarVoice: string;
   avatarName: string;
+  avatarImage?: string;
+  historicalFigureId?: string;
   studentName?: string;
   lessonId: string;
   lessonTitle: string;
@@ -68,6 +71,8 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   avatarGender,
   avatarVoice,
   avatarName,
+  avatarImage,
+  historicalFigureId,
   studentName = 'Estudiante ISkool',
   lessonId,
   lessonTitle,
@@ -141,6 +146,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
 
   // Referencias para Audio & Procesamiento en Tiempo Real
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const modelAudioCtrlRef = useRef<UniversalAudioController | null>(null);
   const studentAudioPlayerRef = useRef<HTMLAudioElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -384,64 +390,37 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   // Reproducir voz del mentor con TTS Neural
   const playModelVoice = async (textToSpeak = phrase.targetText, customRate = speechRate) => {
     if (isPlayingModelVoice) {
+      modelAudioCtrlRef.current?.stop();
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
       }
+      stopAllIskoolAudio();
       setIsPlayingModelVoice(false);
+      setSlowWordToHear(null);
       return;
     }
 
     try {
       setIsPlayingModelVoice(true);
-      const res = await fetch('/api/ai/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: textToSpeak,
-          voice: avatarVoice,
-          language: language,
-          rate: customRate
-        })
-      });
-
-      if (!res.ok) throw new Error('Error en TTS');
-
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-
-      if (!audioRef.current) {
-        audioRef.current = new Audio();
-      }
-
-      audioRef.current.src = url;
-      audioRef.current.onended = () => {
-        setIsPlayingModelVoice(false);
-        setSlowWordToHear(null);
-      };
-      audioRef.current.onerror = () => {
-        setIsPlayingModelVoice(false);
-        setSlowWordToHear(null);
-      };
-
-      await audioRef.current.play();
-    } catch {
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(textToSpeak);
-        utterance.lang = language === 'fr' ? 'fr-FR' : 'en-US';
-        utterance.rate = customRate;
-        const voices = window.speechSynthesis.getVoices();
-        const matchVoice = voices.find(v => v.lang.startsWith(language === 'fr' ? 'fr' : 'en') && !v.name.toLowerCase().includes('desktop'));
-        if (matchVoice) utterance.voice = matchVoice;
-        utterance.onend = () => {
+      modelAudioCtrlRef.current = await playUniversalIskoolVoice({
+        text: textToSpeak,
+        voiceId: avatarVoice,
+        language: language,
+        rate: customRate,
+        onStart: () => setIsPlayingModelVoice(true),
+        onEnd: () => {
           setIsPlayingModelVoice(false);
           setSlowWordToHear(null);
-        };
-        window.speechSynthesis.speak(utterance);
-      } else {
-        setIsPlayingModelVoice(false);
-      }
+        },
+        onError: () => {
+          setIsPlayingModelVoice(false);
+          setSlowWordToHear(null);
+        }
+      });
+    } catch {
+      setIsPlayingModelVoice(false);
+      setSlowWordToHear(null);
     }
   };
 
@@ -1397,6 +1376,8 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
           name={avatarName}
           language={language}
           voiceId={avatarVoice}
+          avatarImage={avatarImage}
+          historicalFigureId={historicalFigureId}
           speechRate={speechRate}
           onSpeechRateChange={setSpeechRate}
           isPlaying={isPlayingModelVoice}

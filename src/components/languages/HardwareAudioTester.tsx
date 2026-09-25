@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
+import { playUniversalIskoolVoice, stopAllIskoolAudio } from '@/lib/historicalVoiceEngine';
 import { 
   Mic, 
   MicOff, 
@@ -236,27 +237,33 @@ export const HardwareAudioTester: React.FC<HardwareAudioTesterProps> = ({
     }
   };
 
-  // Reproducir muestra de voz sintética en el idioma objetivo
-  const playVoiceSample = () => {
-    if (!('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
+  // Reproducir muestra de voz neural en el idioma objetivo
+  const playVoiceSample = async () => {
+    stopAllIskoolAudio();
+    setIsPlayingVoiceSample(true);
 
     const text = language === 'fr' 
       ? 'Système audio vérifié. Vous êtes prêt pour votre session en français.' 
       : 'Audio system verified. You are ready for your English language session.';
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = language === 'fr' ? 'fr-FR' : 'en-US';
-    utterance.rate = 0.9;
+    const voiceId = language === 'fr' ? 'fr-FR-VivienneMultilingualNeural' : 'en-US-JennyNeural';
 
-    utterance.onstart = () => setIsPlayingVoiceSample(true);
-    utterance.onend = () => {
+    try {
+      await playUniversalIskoolVoice({
+        text,
+        voiceId,
+        language,
+        rate: 0.95,
+        onStart: () => setIsPlayingVoiceSample(true),
+        onEnd: () => {
+          setIsPlayingVoiceSample(false);
+          setSpeakerVerified(true);
+        },
+        onError: () => setIsPlayingVoiceSample(false)
+      });
+    } catch {
       setIsPlayingVoiceSample(false);
-      setSpeakerVerified(true);
-    };
-    utterance.onerror = () => setIsPlayingVoiceSample(false);
-
-    window.speechSynthesis.speak(utterance);
+    }
   };
 
   // Limpieza al desmontar

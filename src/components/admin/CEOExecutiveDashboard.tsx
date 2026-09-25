@@ -87,6 +87,8 @@ import {
 import { InstitutionalBrainStudio } from './InstitutionalBrainStudio';
 import { OperationalEcosystemControl } from './OperationalEcosystemControl';
 import { PhaseCurricularAuditModal } from './PhaseCurricularAuditModal';
+import ExecutiveAnalyticsStudio from './ExecutiveAnalyticsStudio';
+import ExecutiveBiCommandCenter from './ExecutiveBiCommandCenter';
 
 // ==========================================
 // ==========================================
@@ -592,7 +594,7 @@ export default function CEOExecutiveDashboard({
   } | null>(null);
 
   // Estado del generador de reportes analíticos instantáneos (0 Tokens)
-  const [activeReportQuery, setActiveReportQuery] = useState<string>('Balance Financiero y Cobranza Consolidada');
+  const [activeReportQuery, setActiveReportQuery] = useState<string>('Estudiantes con adeudo activo por nivel y monto pendiente');
   const [reportResult, setReportResult] = useState<AnalyticReportResult | null>(null);
   const [reportLatencyMs, setReportLatencyMs] = useState<number>(0.8);
 
@@ -1181,7 +1183,7 @@ export default function CEOExecutiveDashboard({
     { id: 'admisiones', label: 'Admisiones', icon: UserCheck, desc: 'Embudo & Conversión' },
     { id: 'finanzas', label: 'Finanzas', icon: DollarSign, desc: 'CFDI 4.0 IEDU SAT' },
     { id: 'operacion', label: 'Operación', icon: SlidersHorizontal, desc: 'Automatizaciones' },
-    { id: 'reportes', label: 'Reportes BI', icon: BarChart3, desc: 'Dataframes en Vivo' },
+    { id: 'reportes', label: 'Reportes BI', icon: BarChart3, desc: 'Estudio Analítico & BI' },
     { id: 'cerebro', label: `Cerebro ${holding.name}`, icon: Network, desc: 'Segundo Cerebro', highlight: true },
   ];
 
@@ -3793,101 +3795,18 @@ export default function CEOExecutiveDashboard({
           )}
 
           {/* ======================================================= */}
-          {/* MÓDULO 9: REPORTES BI (MOTOR DETERMINISTA 0 TOKENS)     */}
+          {/* MÓDULO 9: REPORTES BI (ESTUDIO ANALÍTICO FORENSE 0 TOKENS) */}
           {/* ======================================================= */}
           {activeTab === 'reportes' && (
-            <div className="space-y-6 animate-in fade-in duration-100">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <div className="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded inline-block">
-                    Business Intelligence Educativo (0 Tokens)
-                  </div>
-                  <h2 className="text-2xl font-black text-slate-900 tracking-tight mt-1">
-                    Consola Analítica & Dataframes en Tiempo Real
-                  </h2>
-                  <p className="text-xs text-slate-500">Cálculo determinista en memoria con latencia &lt;1ms y exportación a CSV.</p>
-                </div>
-                <button
-                  onClick={handleExportCSV}
-                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer active:scale-95"
-                >
-                  <Download size={14} />
-                  <span>Exportar Reporte Activo CSV</span>
-                </button>
-              </div>
-
-              {/* PRESETS DE REPORTES */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-                {[
-                  'Balance Financiero y Cobranza Consolidada',
-                  'Alumnos en Riesgo de Deserción y Asistencias',
-                  'Auditoría Curricular y Docentes Titulares',
-                  'Directorio de Bajas y Desincorporaciones'
-                ].map((q, i) => (
-                  <button
-                    key={i}
-                    onClick={() => runInstantReport(q)}
-                    className={`px-4 py-2.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 text-xs active:scale-98 ${
-                      activeReportQuery === q 
-                        ? 'bg-slate-900 text-white shadow-sm' 
-                        : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
-                    }`}
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
-
-              {/* RESULTADOS DEL REPORTE */}
-              {reportResult && (
-                <div className="p-6 bg-white rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <div>
-                      <h3 className="text-base font-black text-slate-900">{reportResult.reportTitle}</h3>
-                      <p className="text-xs text-slate-500 mt-0.5">{reportResult.explanation?.summary}</p>
-                    </div>
-                    <span className="text-xs font-mono text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200 font-bold">
-                      Calculado en {reportLatencyMs} ms • 0 Tokens
-                    </span>
-                  </div>
-
-                  {reportResult.kpis && reportResult.kpis.length > 0 && (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {reportResult.kpis.map(k => (
-                        <div key={k.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-center">
-                          <span className="text-[10px] text-slate-400 uppercase font-bold block">{k.label}</span>
-                          <span className="text-base font-black text-slate-900 mt-1 block font-mono">{k.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {reportResult.table?.rows && reportResult.table.rows.length > 0 && (
-                    <div className="overflow-x-auto border border-slate-200 rounded-xl">
-                      <table className="w-full text-left text-xs">
-                        <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold">
-                          <tr>
-                            {reportResult.table.columns?.slice(0, 5).map((col: any) => (
-                              <th key={col.key} className="p-3">{col.label}</th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 font-mono text-xs">
-                          {reportResult.table.rows.slice(0, 8).map((row: any, idx: number) => (
-                            <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                              {reportResult.table.columns?.slice(0, 5).map((col: any) => (
-                                <td key={col.key} className="p-3 text-slate-800">
-                                  {String(row[col.key] ?? '')}
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              )}
+            <div className="animate-in fade-in duration-100">
+              <ExecutiveBiCommandCenter
+                isEmbeddedView={true}
+                schoolId={schoolId || activeSchoolId || currentInstitution?.id || (selectedCampusId !== 'all' ? selectedCampusId : undefined)}
+                holdingName={holding.name}
+                initialQuery={activeReportQuery || 'Estudiantes con adeudo activo por nivel y monto pendiente'}
+                onBack={() => handleNavClick('overview')}
+                onNavigateTab={handleNavClick}
+              />
             </div>
           )}
 

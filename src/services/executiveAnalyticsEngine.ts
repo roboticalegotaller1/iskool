@@ -663,6 +663,26 @@ export const detectAnalyticDomain = (
     return { domain: 'STUDENT_DELETIONS_AUDIT' };
   }
 
+  // 0.5. Nóminas y Sueldos de Colaboradores (Prioridad Directiva)
+  // Permite resolver consultas directas como "ver detalle de la nómina y sueldos de colaboradores", "nómina", "sueldos", "dispersión"
+  const isPayrollIntent = 
+    normalized.includes('nomina') || 
+    normalized.includes('sueldo') || 
+    normalized.includes('sueldos') || 
+    normalized.includes('salario') || 
+    normalized.includes('salarios') || 
+    normalized.includes('colaborador') || 
+    normalized.includes('colaboradores') || 
+    normalized.includes('dispersion') ||
+    normalized.includes('dispersar') ||
+    (normalized.includes('empleado') && !normalized.includes('empleo'));
+
+  const isIngresosVsNomina = normalized.includes('ingreso') && (normalized.includes('nomina') || normalized.includes('egreso'));
+
+  if (isPayrollIntent && !isIngresosVsNomina) {
+    return { domain: 'STAFF_PAYROLL' };
+  }
+
   // 1. Comunicación familiar / Respuestas de los papás a notas académicas
   const isParentReplyIntent = 
     normalized.includes('respondido el papa') || 
@@ -789,16 +809,35 @@ export const detectAnalyticDomain = (
     return { domain: 'ATTENDANCE', targetStudentName: cleanTarget };
   }
 
-  // 6. Ver detalle / expediente directo o genérico
+  // 6. Ver detalle / expediente directo o genérico (exclusivo para expediente de alumno)
+  const mentionsOtherDomainEntity = 
+    normalized.includes('nomina') ||
+    normalized.includes('sueldo') ||
+    normalized.includes('salario') ||
+    normalized.includes('colaborador') ||
+    normalized.includes('ingreso') ||
+    normalized.includes('egreso') ||
+    normalized.includes('balance') ||
+    normalized.includes('profesor') ||
+    normalized.includes('docente') ||
+    normalized.includes('materia') ||
+    normalized.includes('asignatura') ||
+    normalized.includes('baja') ||
+    normalized.includes('adeud') ||
+    normalized.includes('deud') ||
+    normalized.includes('cobranz');
+
   if (
-    normalized.includes('ver a detalle') || 
-    normalized.includes('ver detalle') || 
-    normalized.includes('mostrar detalle') || 
-    normalized.includes('abrir detalle') || 
-    normalized.trim() === 'detalle' || 
-    normalized.trim() === 'expediente'
+    !mentionsOtherDomainEntity && (
+      normalized.includes('ver a detalle') || 
+      normalized.includes('ver detalle') || 
+      normalized.includes('mostrar detalle') || 
+      normalized.includes('abrir detalle') || 
+      normalized.trim() === 'detalle' || 
+      normalized.trim() === 'expediente'
+    )
   ) {
-    return { domain: 'STUDENT_LOOKUP', targetStudentName: '__CURRENT_OR_FIRST__' };
+    return { domain: 'STUDENT_LOOKUP', targetStudentName: criteria.target || '__CURRENT_OR_FIRST__' };
   }
 
   // 7. Extremos de edad (más joven / mayor)

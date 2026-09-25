@@ -27,7 +27,8 @@ import {
   getPersonaGender, 
   generateHistoricalSSML, 
   getPersonaProfile,
-  calculateAgeAtDeathFromDates 
+  calculateAgeAtDeathFromDates,
+  normalizeLatinHistoricalPhonetics
 } from '@/lib/historicalVoiceEngine';
 
 interface CharacterAnatomicalMouth {
@@ -446,9 +447,11 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
   const fallbackSpeechSynthesis = useCallback((cleanText: string, onPlaybackStart?: () => void) => {
     if (typeof window === 'undefined') return;
 
+    const normalizedText = normalizeLatinHistoricalPhonetics(cleanText);
+
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(cleanText);
+      const utterance = new SpeechSynthesisUtterance(normalizedText);
       const isConfiguredLatin = configureHistoricalUtterance(utterance, characterName, effectiveAge);
 
       if (isConfiguredLatin) {
@@ -478,7 +481,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        text: cleanText,
+        text: normalizedText,
         characterName,
         historicalAge: effectiveAge,
         birthDeathDates,

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { TimedReadingBlock, ComprehensionQuestion } from '@/types/studioBlocks';
-import { selectHistoricalSpeechVoice, stopAllIskoolAudio } from '@/lib/historicalVoiceEngine';
+import { selectHistoricalSpeechVoice, stopAllIskoolAudio, playUniversalIskoolVoice, UniversalAudioController } from '@/lib/historicalVoiceEngine';
 import { 
   BookOpen, 
   Clock, 
@@ -132,6 +132,7 @@ Al comprender que el calor representa la transferencia energética derivada de u
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
   const audioCacheRef = useRef<Map<string, string>>(new Map());
   const speechUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const audioControllerRef = useRef<UniversalAudioController | null>(null);
 
   // Sintetizador Web Audio nativo para efectos de libro antiguo y combate
   const playSfx = (type: 'page_flip' | 'seal' | 'hit' | 'correct' | 'wrong' | 'victory') => {
@@ -341,6 +342,10 @@ Al comprender que el calor representa la transferencia energética derivada de u
 
   // Detención completa y segura de cualquier audio activo
   const stopAllAudio = () => {
+    if (audioControllerRef.current) {
+      audioControllerRef.current.stop();
+      audioControllerRef.current = null;
+    }
     if (audioPlayerRef.current) {
       audioPlayerRef.current.pause();
       audioPlayerRef.current.currentTime = 0;
@@ -431,73 +436,31 @@ Al comprender que el calor representa la transferencia energética derivada de u
     if (!cleanText) return;
 
     setIsAudioLoading(true);
-    const cacheKey = `${selectedNeuralVoice}_${speechRate}_${cleanText}`;
 
     try {
-      let audioUrl = audioCacheRef.current.get(cacheKey);
-
-      if (!audioUrl) {
-        const response = await fetch('/api/ai/tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: cleanText,
-            voice: selectedNeuralVoice,
-            rate: speechRate,
-            role: 'narrator',
-            narratorMode: 'wisdom_guide'
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error(`TTS server responded with ${response.status}`);
+      audioControllerRef.current = await playUniversalIskoolVoice({
+        text: cleanText,
+        voiceId: selectedNeuralVoice,
+        rate: speechRate,
+        role: 'narrator',
+        narratorMode: 'wisdom_guide',
+        onStart: () => {
+          setIsAudioLoading(false);
+          setIsSpeaking(true);
+        },
+        onEnd: () => {
+          setIsSpeaking(false);
+          setIsAudioLoading(false);
+        },
+        onError: () => {
+          setIsSpeaking(false);
+          setIsAudioLoading(false);
         }
-
-        const blob = await response.blob();
-        audioUrl = URL.createObjectURL(blob);
-        audioCacheRef.current.set(cacheKey, audioUrl);
-      }
-
-      if (!audioPlayerRef.current) {
-        audioPlayerRef.current = new Audio();
-      }
-
-      const audio = audioPlayerRef.current;
-      audio.src = audioUrl;
-      audio.playbackRate = speechRate;
-
-      audio.onended = () => {
-        setIsSpeaking(false);
-      };
-      audio.onerror = () => {
-        setIsSpeaking(false);
-        setIsAudioLoading(false);
-      };
-
-      await audio.play();
-      setIsAudioLoading(false);
-      setIsSpeaking(true);
+      });
     } catch (err) {
-      console.warn('Fallback a síntesis local debido a:', err);
+      console.warn('Error iniciando locución en grimorio:', err);
       setIsAudioLoading(false);
-
-      // Fallback a SpeechSynthesis del navegador con bloqueo anti-castellano
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(cleanText);
-        const isMaleVoice = /jorge|gonzalo|alex|alonso|tomas|luis|emilio|juan|manuel/i.test(selectedNeuralVoice);
-        const certifiedVoice = selectHistoricalSpeechVoice(isMaleVoice ? 'male' : 'female');
-        if (certifiedVoice) {
-          utterance.voice = certifiedVoice;
-        }
-        utterance.lang = 'es-MX';
-        utterance.rate = 0.95 * speechRate;
-        utterance.onend = () => setIsSpeaking(false);
-        utterance.onerror = () => setIsSpeaking(false);
-        speechUtteranceRef.current = utterance;
-        window.speechSynthesis.speak(utterance);
-        setIsSpeaking(true);
-      }
+      setIsSpeaking(false);
     }
   };
 

@@ -151,12 +151,20 @@ export default function StudentIdiomasPage() {
                       </p>
 
                       <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-indigo-900/60 border border-indigo-700 flex items-center justify-center text-lg">
-                          {lesson.avatarGender === 'female' ? '👩‍🏫' : '👨‍🏫'}
-                        </div>
-                        <div className="text-xs">
-                          <span className="font-bold text-white block">Mentor: {lesson.avatarName}</span>
-                          <span className="text-[10px] text-slate-400">Gesticulación humana en vivo</span>
+                        {lesson.avatarImage ? (
+                          <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-amber-500/60 shrink-0 shadow-md">
+                            <img src={lesson.avatarImage} alt={lesson.avatarName} className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-10 h-10 rounded-xl bg-indigo-900/60 border border-indigo-700 flex items-center justify-center text-lg shrink-0">
+                            {lesson.avatarGender === 'female' ? '👩‍🏫' : '👨‍🏫'}
+                          </div>
+                        )}
+                        <div className="text-xs truncate">
+                          <span className="font-bold text-white block truncate">{lesson.avatarName}</span>
+                          <span className={`text-[10px] ${lesson.avatarImage ? 'text-amber-300 font-semibold' : 'text-slate-400'}`}>
+                            {lesson.avatarImage ? '🏛️ Personaje Histórico (1ª Persona)' : 'Gesticulación humana en vivo'}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -228,6 +236,8 @@ export default function StudentIdiomasPage() {
                 name={activeLesson.avatarName}
                 language={activeLesson.language}
                 voiceId={activeLesson.avatarVoice}
+                avatarImage={activeLesson.avatarImage}
+                historicalFigureId={activeLesson.historicalFigureId}
                 speechRate={activeLesson.defaultSpeed}
                 currentText={currentDialogueLine.text}
                 translationText={currentDialogueLine.translationEs}
@@ -312,6 +322,8 @@ export default function StudentIdiomasPage() {
               avatarGender={activeLesson.avatarGender}
               avatarVoice={activeLesson.avatarVoice}
               avatarName={activeLesson.avatarName}
+              avatarImage={activeLesson.avatarImage}
+              historicalFigureId={activeLesson.historicalFigureId}
               studentName="Alumno Activo"
               lessonId={activeLesson.id}
               lessonTitle={activeLesson.title}

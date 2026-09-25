@@ -41,7 +41,9 @@ import {
   AlertTriangle,
   ChevronDown,
   ArrowDown,
-  Trash2
+  Trash2,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useAuth } from '@/context/AuthContext';
@@ -69,6 +71,10 @@ import ExecutiveChartVisualizer, {
 interface ExecutiveAnalyticsStudioProps {
   onBack?: () => void;
   initialQuery?: string;
+  isEmbeddedView?: boolean;
+  schoolId?: string;
+  holdingName?: string;
+  onNavigateTab?: (tabId: string) => void;
 }
 
 /**
@@ -208,7 +214,14 @@ function renderPrintMarkdown(content?: string | null) {
   );
 }
 
-export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: ExecutiveAnalyticsStudioProps) {
+export default function ExecutiveAnalyticsStudio({ 
+  onBack, 
+  initialQuery,
+  isEmbeddedView = false,
+  schoolId,
+  holdingName,
+  onNavigateTab
+}: ExecutiveAnalyticsStudioProps) {
   const { user } = useAuth();
   const {
     institutionsList,
@@ -282,8 +295,22 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
 
   // Selección de colegio: para Super Usuario puede ser 'all' o un id específico; para Dueño queda bloqueado a su colegio
   const [selectedSchoolFilter, setSelectedSchoolFilter] = useState<string>(
-    isSuperUser ? (activeSchoolId || 'sch-test-case') : effectiveSchoolId
+    schoolId || (isSuperUser ? (activeSchoolId || 'sch-test-case') : effectiveSchoolId)
   );
+
+  const [isMaximized, setIsMaximized] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (schoolId) {
+      setSelectedSchoolFilter(schoolId);
+    }
+  }, [schoolId]);
+
+  useEffect(() => {
+    if (initialQuery) {
+      handleExecuteQuery(initialQuery);
+    }
+  }, [initialQuery]);
 
   const activeInstitution = useMemo(() => {
     return institutionsList.find(inst => inst.id === selectedSchoolFilter) || institutionsList[0];
@@ -1170,17 +1197,32 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
       `}</style>
 
       {/* 1. CONTENEDOR EN PANTALLA (INTERACTIVO, SPLIT-VIEW, MODO CLARO) - OCULTO AL IMPRIMIR */}
-      <div className="screen-only-studio flex flex-col h-screen w-full bg-slate-50 text-slate-900 font-sans overflow-hidden select-none print:hidden">
+      <div className={`screen-only-studio select-none print:hidden transition-all duration-200 ${
+        isMaximized
+          ? 'fixed inset-0 z-50 flex flex-col h-screen w-full bg-slate-50 text-slate-900 font-sans overflow-hidden shadow-2xl'
+          : isEmbeddedView
+          ? 'flex flex-col h-[820px] xl:h-[880px] w-full bg-slate-50 text-slate-900 font-sans rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden relative'
+          : 'flex flex-col h-screen w-full bg-slate-50 text-slate-900 font-sans overflow-hidden'
+      }`}>
         
         {/* 1. BARRA SUPERIOR EJECUTIVA */}
       <header className="h-14 shrink-0 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 flex items-center justify-between gap-3 z-30 shadow-xs">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
-            onClick={() => onBack ? onBack() : window.history.back()}
+            onClick={() => {
+              if (isMaximized) {
+                setIsMaximized(false);
+              } else if (onBack) {
+                onBack();
+              } else {
+                window.history.back();
+              }
+            }}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 text-xs font-semibold transition cursor-pointer shrink-0 border border-slate-200"
+            title={isMaximized ? "Restaurar vista" : (isEmbeddedView ? "Volver al resumen" : "Volver")}
           >
             <ArrowLeft className="h-4 w-4" />
-            <span className="hidden xs:inline">Volver</span>
+            <span className="hidden xs:inline">{isMaximized ? 'Restaurar' : (isEmbeddedView ? 'Volver al Resumen' : 'Volver')}</span>
           </button>
 
           {/* Toggle Asistente en Mobile */}
@@ -1255,6 +1297,17 @@ export default function ExecutiveAnalyticsStudio({ onBack, initialQuery }: Execu
           )}
 
           {/* Botones de acción del reporte */}
+          {isEmbeddedView && (
+            <button
+              onClick={() => setIsMaximized(!isMaximized)}
+              title={isMaximized ? "Restaurar a vista integrada del dashboard" : "Maximizar pantalla completa"}
+              className="p-1.5 sm:px-3 sm:py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 hover:text-slate-900 flex items-center gap-1.5 transition cursor-pointer shadow-xs active:scale-95"
+            >
+              {isMaximized ? <Minimize2 className="h-3.5 w-3.5 text-indigo-600" /> : <Maximize2 className="h-3.5 w-3.5 text-slate-500" />}
+              <span className="hidden sm:inline">{isMaximized ? 'Restaurar' : 'Maximizar'}</span>
+            </button>
+          )}
+
           <button
             onClick={handleExportCSV}
             title="Exportar datos a formato CSV/Excel" aria-label="Exportar datos a formato CSV/Excel"

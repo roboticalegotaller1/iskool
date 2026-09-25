@@ -4,6 +4,31 @@
  * Nivel 3: Bloqueo Anti-Castellano, Normalizador Léxico Latino, Matriz de 30 Voces por Cohorte Etaria y Narradores Gamificados.
  */
 
+import { normalizeMexicanSpanishText } from './audio/lexicalNormalizer';
+import { applyPhoneticSubstitutions } from './audio/phoneticDictionary';
+import {
+  getLanguagePipeline,
+  resolveTargetLocale,
+  getDefaultVoicesForLocale,
+  ILanguagePipeline,
+  SupportedLocale,
+  LanguageCode,
+  SSMLParams
+} from './audio';
+
+export {
+  getLanguagePipeline,
+  resolveTargetLocale,
+  getDefaultVoicesForLocale
+};
+export type {
+  ILanguagePipeline,
+  SupportedLocale,
+  LanguageCode,
+  SSMLParams
+};
+
+
 export type HistoricalEra = 'virreinal' | 'independencia' | 'revolucion' | 'reforma';
 export type OratoricalIntention = 'arenga' | 'philosophical' | 'rhetorical' | 'solemn_narrative';
 
@@ -153,103 +178,10 @@ export const NARRATOR_VOICE_PROFILES: Record<NarratorMode, NarratorVoiceProfile>
 // PILAR 2: NORMALIZADOR LÉXICO, FONÉTICO Y DE ENTONACIÓN HISTÓRICO-LATINA
 // =============================================================================
 export function normalizeLatinHistoricalPhonetics(text: string): string {
-  if (!text || typeof text !== 'string') return '';
-  let result = text;
-
-  // 1. Abreviaturas Históricas y Eclesiásticas
-  const abbreviations = [
-    { regex: /\bGral\./gi, replace: 'General' },
-    { regex: /\bCap\./gi, replace: 'Capitán' },
-    { regex: /\bCnel\./gi, replace: 'Coronel' },
-    { regex: /\bDn\./gi, replace: 'Don' },
-    { regex: /\bDña\./gi, replace: 'Doña' },
-    { regex: /\bLic\./gi, replace: 'Licenciado' },
-    { regex: /\bFray\b/gi, replace: 'Frai' },
-    { regex: /\bSta\./gi, replace: 'Santa' },
-    { regex: /\bSto\./gi, replace: 'Santo' },
-    { regex: /\ba\.\s*C\./gi, replace: 'antes de Cristo' },
-    { regex: /\bd\.\s*C\./gi, replace: 'después de Cristo' }
-  ];
-  for (const item of abbreviations) {
-    result = result.replace(item.regex, item.replace);
-  }
-
-  // 2. Números Romanos para Siglos
-  const centuries = [
-    { regex: /\bSiglo\s+XXI\b/gi, replace: 'Siglo veintiuno' },
-    { regex: /\bSiglo\s+XX\b/gi, replace: 'Siglo veinte' },
-    { regex: /\bSiglo\s+XIX\b/gi, replace: 'Siglo diecinueve' },
-    { regex: /\bSiglo\s+XVIII\b/gi, replace: 'Siglo dieciocho' },
-    { regex: /\bSiglo\s+XVII\b/gi, replace: 'Siglo diecisiete' },
-    { regex: /\bSiglo\s+XVI\b/gi, replace: 'Siglo dieciséis' },
-    { regex: /\bSiglo\s+XV\b/gi, replace: 'Siglo quince' },
-    { regex: /\bSiglo\s+XIV\b/gi, replace: 'Siglo catorce' },
-    { regex: /\bSiglo\s+XIII\b/gi, replace: 'Siglo trece' },
-    { regex: /\bSiglo\s+XII\b/gi, replace: 'Siglo doce' },
-    { regex: /\bSiglo\s+XI\b/gi, replace: 'Siglo once' },
-    { regex: /\bSiglo\s+X\b/gi, replace: 'Siglo diez' },
-    { regex: /\bSiglo\s+IX\b/gi, replace: 'Siglo noveno' },
-    { regex: /\bSiglo\s+VIII\b/gi, replace: 'Siglo octavo' },
-    { regex: /\bSiglo\s+VII\b/gi, replace: 'Siglo séptimo' },
-    { regex: /\bSiglo\s+VI\b/gi, replace: 'Siglo sexto' },
-    { regex: /\bSiglo\s+V\b/gi, replace: 'Siglo quinto' },
-    { regex: /\bSiglo\s+IV\b/gi, replace: 'Siglo cuarto' },
-    { regex: /\bSiglo\s+III\b/gi, replace: 'Siglo tercero' },
-    { regex: /\bSiglo\s+II\b/gi, replace: 'Siglo segundo' },
-    { regex: /\bSiglo\s+I\b/gi, replace: 'Siglo primero' }
-  ];
-  for (const c of centuries) {
-    result = result.replace(c.regex, c.replace);
-  }
-
-  // Nombres regnales y papales con ordinales en español
-  const regnalNames = [
-    { regex: /\b(Felipe|Carlos|Fernando|Luis|Alfonso|Enrique|Pedro|Sancho|Juan|Jaime)\s+I\b/gi, replace: '$1 primero' },
-    { regex: /\b(Felipe|Carlos|Fernando|Luis|Alfonso|Enrique|Pedro|Sancho|Juan|Jaime|Moctezuma)\s+II\b/gi, replace: '$1 segundo' },
-    { regex: /\b(Felipe|Carlos|Fernando|Luis|Alfonso|Enrique|Pedro|Sancho|Juan|Jaime|Inocencio)\s+III\b/gi, replace: '$1 tercero' },
-    { regex: /\b(Felipe|Carlos|Fernando|Luis|Alfonso|Enrique|Pedro|Sancho|Juan|Jaime)\s+IV\b/gi, replace: '$1 cuarto' },
-    { regex: /\b(Felipe|Carlos|Fernando|Luis|Alfonso|Enrique|Pedro|Sancho|Juan|Jaime)\s+V\b/gi, replace: '$1 quinto' },
-    { regex: /\b(Felipe|Carlos|Fernando|Luis|Alfonso|Enrique|Pedro|Sancho|Juan|Jaime|Alejandro)\s+VI\b/gi, replace: '$1 sexto' },
-    { regex: /\b(Felipe|Carlos|Fernando|Luis|Alfonso|Enrique|Pedro|Sancho|Juan|Jaime)\s+VII\b/gi, replace: '$1 séptimo' },
-    { regex: /\b(Felipe|Carlos|Fernando|Luis|Alfonso|Enrique|Pedro|Sancho|Juan|Jaime|Octavio)\s+VIII\b/gi, replace: '$1 octavo' },
-    { regex: /\b(Felipe|Carlos|Fernando|Luis|Alfonso|Enrique|Pedro|Sancho|Juan|Jaime|Pío)\s+IX\b/gi, replace: '$1 noveno' },
-    { regex: /\b(Felipe|Carlos|Fernando|Luis|Alfonso|Enrique|Pedro|Sancho|Juan|Jaime|León)\s+X\b/gi, replace: '$1 décimo' },
-    { regex: /\b(Luis|Benedicto|Pío|Inocencio|Gregorio)\s+XVI\b/gi, replace: '$1 dieciséis' }
-  ];
-  for (const r of regnalNames) {
-    result = result.replace(r.regex, r.replace);
-  }
-
-  // 3. Nahuatlismos y Nombres Prehispánicos (Acentuación Prosódica Fidedigna)
-  const nahuatlisms = [
-    { regex: /\bTenochtitlan\b/g, replace: 'Tenochtitlán' },
-    { regex: /\bCuauhtemoc\b/g, replace: 'Cuauhtémoc' },
-    { regex: /\bNezahualcoyotl\b/g, replace: 'Nezahualcóyotl' },
-    { regex: /\bIztaccihuatl\b/g, replace: 'Iztaccíhuatl' },
-    { regex: /\bXicotencatl\b/g, replace: 'Xicoténcatl' },
-    { regex: /\bPopocatepetl\b/g, replace: 'Popocatépetl' },
-    { regex: /\bCuitlahuac\b/g, replace: 'Cuitláhuac' },
-    { regex: /\bTeotihuacan\b/g, replace: 'Teotihuacán' },
-    { regex: /\bQuetzalcoatl\b/g, replace: 'Quetzalcóatl' },
-    { regex: /\bAcolhuacan\b/g, replace: 'Acolhuacán' },
-    { regex: /\bAnahuac\b/g, replace: 'Anáhuac' },
-    { regex: /\bCoyoacan\b/g, replace: 'Coyoacán' },
-    { regex: /\bMichoacan\b/g, replace: 'Michoacán' },
-    { regex: /\bYucatan\b/g, replace: 'Yucatán' },
-    { regex: /\bTlacaelel\b/g, replace: 'Tlacaélel' }
-  ];
-  for (const n of nahuatlisms) {
-    result = result.replace(n.regex, n.replace);
-  }
-
-  // 4. Puntuación Expresiva Latina (Inyección de ¿ e ¡ faltantes)
-  // Preguntas sin apertura
-  result = result.replace(/(^|[.?!\n;]\s*)([^.?!\n¿]+)(\?)/g, '$1¿$2$3');
-  // Exclamaciones sin apertura
-  result = result.replace(/(^|[.?!\n;]\s*)([^.?!¿¡\n]+)(!)/g, '$1¡$2$3');
-
-  return result;
+  const lexical = normalizeMexicanSpanishText(text);
+  return applyPhoneticSubstitutions(lexical, 'plain');
 }
+
 
 /**
  * Calcula con rigor la edad al momento de su muerte a partir de cadenas de fechas (Frontmatter: birthOrEstablishment - deathOrPresentState)
@@ -435,42 +367,93 @@ export function getPersonaProfile(
 }
 
 /**
- * Divide cláusulas continuas que excedan 14 palabras antes de un signo de puntuación fuerte,
- * insertando un evento acústico de respiración oratoria (...) para simular capacidad pulmonar humana.
+ * Analizador de sintagmas e inyección de micro-pausas exactas (sin elipsis ...)
+ * Preserva unidades de sentido (sintagma nominal, preposicional y verbal) y prohíbe
+ * pausas entre preposiciones/artículos y su sustantivo.
  */
-export function injectLongClauseBreathing(rawText: string): string {
-  const chunks = rawText.split(/([,;:.!?\n—]+)/);
-  const result: string[] = [];
+export function analyzeAndInjectSyntagmas(text: string): string {
+  if (!text) return '';
+  let result = text;
+
+  // 1. Puntos y aparte (párrafos): 450ms
+  result = result.replace(/([.!?])\s*\n\s*\n+/g, '$1<break time="450ms"/>\n\n');
+  result = result.replace(/\n\s*\n+/g, '.<break time="450ms"/>\n\n');
+
+  // 2. Puntos y seguido: 280ms
+  result = result.replace(/\.\s+(?=[A-ZÁÉÍÓÚÑ¿¡])/g, '.<break time="280ms"/> ');
+
+  // 3. Signos exclamativos e interrogativos de cierre: 280ms
+  result = result.replace(/([!?])\s+(?=[A-ZÁÉÍÓÚÑ¿¡])/g, '$1<break time="280ms"/> ');
+
+  // 4. Delimitadores de cláusula (comas: 120ms, punto y coma: 160ms, dos puntos: 160ms)
+  result = result.replace(/,(?!\d)\s*/g, ',<break time="120ms"/> ');
+  result = result.replace(/;\s*/g, ';<break time="160ms"/> ');
+  result = result.replace(/:\s+/g, ':<break time="160ms"/> ');
+  result = result.replace(/\s*—\s*/g, ' —<break time="120ms"/> ');
+
+  // 5. Cláusulas extensas (>14 palabras continuas sin descanso sintáctico)
+  const chunks = result.split(/(<break[^>]*\/>)/);
+  const reassembled: string[] = [];
 
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
-    if (i % 2 === 1) {
-      result.push(chunk);
+    if (chunk.startsWith('<break')) {
+      reassembled.push(chunk);
       continue;
     }
 
     const words = chunk.trim().split(/\s+/).filter(Boolean);
     if (words.length <= 14) {
-      result.push(chunk);
+      reassembled.push(chunk);
       continue;
     }
 
-    let splitIndex = Math.min(10, Math.floor(words.length / 2));
-    const breakPrepositions = ['de', 'que', 'en', 'y', 'para', 'con', 'por', 'a', 'como', 'donde'];
-    for (let w = 8; w <= Math.min(12, words.length - 2); w++) {
-      const wordLower = words[w].toLowerCase().replace(/[^a-záéíóúüñ]/g, '');
-      if (breakPrepositions.includes(wordLower)) {
-        splitIndex = w;
+    // Buscar punto de cesura sintáctica óptima (entre palabras 7 y 12)
+    let breakIndex = -1;
+    const clauseConnectors = ['que', 'porque', 'cuando', 'donde', 'como', 'aunque', 'para', 'con', 'por', 'y'];
+
+    for (let w = Math.min(12, words.length - 3); w >= 7; w--) {
+      const cleanWord = words[w].toLowerCase().replace(/[^a-záéíóúüñ]/g, '');
+      if (clauseConnectors.includes(cleanWord)) {
+        breakIndex = w;
         break;
       }
     }
 
-    const firstPart = words.slice(0, splitIndex).join(' ');
-    const secondPart = words.slice(splitIndex).join(' ');
-    result.push(`${firstPart}... ${secondPart}`);
+    if (breakIndex === -1) {
+      breakIndex = Math.floor(words.length / 2);
+    }
+
+    // Inyectar el break ANTES del conector (manteniendo intacto el sintagma)
+    const firstPart = words.slice(0, breakIndex).join(' ');
+    const secondPart = words.slice(breakIndex).join(' ');
+    reassembled.push(`${firstPart} <break time="120ms"/> ${secondPart}`);
   }
 
-  return result.join('');
+  result = reassembled.join('');
+
+  // 6. REGLA INVIOLABLE DE SINALEFA Y SINTAGMAS:
+  // Prohibir pausas entre preposición y artículo/determinante
+  const prepositions = '(?:de|en|a|con|por|para|hacia|contra|desde|hasta|entre|sobre|sin|tras)';
+  const determiners = '(?:el|la|los|las|un|una|unos|unas|este|esta|estos|estas|mi|tu|su|nuestro|nuestra)';
+  const prepArticleRegex = new RegExp(`\\b(${prepositions})\\s*<break[^>]*\\/>\\s*(${determiners})\\b`, 'gi');
+  result = result.replace(prepArticleRegex, '$1 $2');
+
+  // Prohibir pausas entre artículo y su sustantivo
+  const articleRegex = new RegExp(`\\b(${determiners})\\s*<break[^>]*\\/>\\s*([a-záéíóúüñ]+)`, 'gi');
+  result = result.replace(articleRegex, '$1 $2');
+
+  // Limpiar espacios duplicados
+  result = result.replace(/\s{2,}/g, ' ').trim();
+
+  return result;
+}
+
+/**
+ * Función heredada: delega al analizador de sintagmas erradicando la elipsis (...)
+ */
+export function injectLongClauseBreathing(rawText: string): string {
+  return analyzeAndInjectSyntagmas(rawText);
 }
 
 /**
@@ -504,86 +487,176 @@ export function detectOratoricalIntention(text: string): OratoricalIntention {
 
 /**
  * Escapa caracteres reservados para asegurar validez estricta XML en SSML
+ * preservando intactas las etiquetas SSML estructuradas (<sub...>, <break...>, <phoneme...>).
  */
-function escapeXml(unsafe: string): string {
-  return unsafe
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
+export function escapeXmlPreservingSSMLTags(input: string): string {
+  if (!input) return '';
+  const parts = input.split(/(<[^>]+>)/g);
+  return parts.map(part => {
+    if (part.startsWith('<') && part.endsWith('>')) {
+      // Verificar si es una etiqueta SSML permitida
+      if (/^<\/?(?:sub|break|phoneme|prosody|mstts:express-as|speak|voice)\b/i.test(part)) {
+        return part;
+      }
+    }
+    return part
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
+  }).join('');
 }
 
 /**
- * Pre-procesador de Prosodia y SSML Dinámico Latino (Zero-Token Cost).
- * Integra normalizador fonético latino, bloqueo anti-castellano explícito (xml:lang="es-MX"),
- * inyección de micro-respiraciones y modulación multi-estilo.
+ * Mapeo de intención oratoria a estilos expresivos (mstts:express-as) y prosodia calibrada
+ */
+export interface OratoricalExpressiveStyle {
+  style: string;
+  styleDegree: number;
+  rate: string;
+  pitch: string;
+}
+
+export function getOratoricalExpressiveStyle(
+  intention: OratoricalIntention,
+  gender: 'female' | 'male' = 'male',
+  role?: string
+): OratoricalExpressiveStyle {
+  if (role === 'time_chrononaut') {
+    return {
+      style: 'whispering',
+      styleDegree: 1.2,
+      rate: '-2%',
+      pitch: '-1Hz'
+    };
+  }
+  if (role === 'wisdom_guide') {
+    return {
+      style: 'cheerful',
+      styleDegree: 1.2,
+      rate: '+2%',
+      pitch: '+1Hz'
+    };
+  }
+  if (role === 'epic_chronist') {
+    return {
+      style: 'excited',
+      styleDegree: 1.4,
+      rate: '+4%',
+      pitch: '+2Hz'
+    };
+  }
+
+  switch (intention) {
+    case 'arenga':
+      return {
+        style: 'excited',
+        styleDegree: 1.4,
+        rate: gender === 'female' ? '+2%' : '+2%',
+        pitch: '+2Hz'
+      };
+    case 'philosophical':
+      return {
+        style: 'calm',
+        styleDegree: 1.2,
+        rate: '-4%',
+        pitch: gender === 'female' ? '-1Hz' : '-2Hz'
+      };
+    case 'rhetorical':
+      return {
+        style: 'calm',
+        styleDegree: 1.1,
+        rate: '-3%',
+        pitch: '+1Hz'
+      };
+    case 'solemn_narrative':
+    default:
+      return {
+        style: 'calm',
+        styleDegree: 1.2,
+        rate: '-4%',
+        pitch: '-1Hz'
+      };
+  }
+}
+
+// =============================================================================
+// CONSTRUCTOR SSML OPTIMIZADO FORENSE
+// =============================================================================
+
+export interface SSMLConfig {
+  voice: string;
+  text: string;
+  rate?: string;
+  pitch?: string;
+  style?: string;
+  styleDegree?: number;
+  locale?: string;
+  language?: 'es' | 'en' | 'fr';
+  intention?: OratoricalIntention;
+}
+
+/**
+ * Construye SSML optimizado de alta fidelidad:
+ * 1. Normalización léxica y temporal mexicana determinista (fechas y números).
+ * 2. Transcripción fonética prehispánica e histórica (<sub alias="...">).
+ * 3. Segmentación por sintagmas y micro-pausas exactas (sin elipsis ...).
+ * 4. Inyección expresiva dinámica (<mstts:express-as>).
+ * 5. Sanitización XML estricta.
+ */
+export function buildOptimizedSSML(config: SSMLConfig): string {
+  if (!config.text || typeof config.text !== 'string') return '';
+
+  const targetIndicator = config.locale || config.voice || config.language || 'es-MX';
+  const pipeline = getLanguagePipeline(targetIndicator);
+  const defaultVoices = pipeline.getDefaultVoices();
+  const targetVoice = config.voice || defaultVoices.female;
+
+  return pipeline.buildSSML({
+    voice: targetVoice,
+    text: config.text,
+    rate: config.rate,
+    pitch: config.pitch,
+    style: config.style,
+    styleDegree: config.styleDegree ?? 1.2,
+    locale: pipeline.locale,
+    language: pipeline.language,
+    intention: config.intention
+  });
+}
+
+/**
+ * Pre-procesador de Prosodia y SSML Dinámico Latino para Próceres Históricos
  */
 export function generateHistoricalSSML(
   text: string, 
   characterName?: string, 
   historicalAge?: number, 
   variantIndex: 0 | 1 | 2 = 0,
-  overrides?: { voiceId?: string; voiceRate?: string; voicePitch?: string; birthOrDeathDates?: string }
+  overrides?: { voiceId?: string; voiceRate?: string; voicePitch?: string; birthOrDeathDates?: string; style?: string; styleDegree?: number }
 ): string {
   const profile = getPersonaProfile(characterName, historicalAge, variantIndex, overrides?.birthOrDeathDates);
+  const intention = detectOratoricalIntention(text);
+  const expressive = getOratoricalExpressiveStyle(intention, profile.gender);
 
-  // 1. Limpieza de sintaxis de markdown y enlaces de bóveda
-  let clean = text
-    .replace(/!\[.*?\]\(.*?\)/g, '')
-    .replace(/\[\[(.*?)\]\]/g, '$1')
-    .replace(/[*_#`~>]/g, '')
-    .replace(/\r\n/g, '\n')
-    .trim();
-
-  if (!clean) return '';
-
-  // 2. Normalización fonética y léxica histórica latina (Abreviaturas, Siglos, Nahuatlismos, Signos ¿ e ¡)
-  clean = normalizeLatinHistoricalPhonetics(clean);
-
-  // 3. Inyección de micro-respiraciones en cláusulas extensas (>14 palabras)
-  clean = injectLongClauseBreathing(clean);
-
-  // 4. Detección de intención oratoria para modulación de prosodia
-  const intention = detectOratoricalIntention(clean);
-
-  let dynamicRate = overrides?.voiceRate || profile.prosodyRate;
-  let dynamicPitch = overrides?.voicePitch || profile.prosodyPitch;
-
-  if (!overrides?.voiceRate && !overrides?.voicePitch) {
-    if (intention === 'arenga') {
-      dynamicRate = profile.gender === 'female' ? '-2%' : '-3%';
-      dynamicPitch = profile.gender === 'female' ? '+1Hz' : '+1Hz';
-    } else if (intention === 'philosophical') {
-      dynamicRate = '-7%';
-      dynamicPitch = profile.gender === 'female' ? '-1Hz' : '-3Hz';
-    } else if (intention === 'rhetorical') {
-      dynamicRate = '-4%';
-      dynamicPitch = '+0Hz';
-    }
-  }
-
-  // 5. Inserción de micro-puntuación acústica para respiración oratoria humana
-  let processed = clean.replace(/\n\s*\n+/g, '...\n\n');
-  processed = processed.replace(/(\.{3}|…)/g, '...');
-  processed = processed.replace(/:\s+/g, ': ... ');
-  processed = processed.replace(/,\s+(pero|sin embargo|mas|por tanto|pues|así|porque)\b/gi, '... $1');
-
-  if (intention === 'philosophical') {
-    processed = processed.replace(/\b(patria|libertad|pueblo|muerte|justicia|soberanía)\b/gi, '$1...');
-  }
-
-  const escaped = escapeXml(processed);
   const voiceName = overrides?.voiceId || profile.voiceId;
+  const finalRate = overrides?.voiceRate || expressive.rate || profile.prosodyRate;
+  const finalPitch = overrides?.voicePitch || expressive.pitch || profile.prosodyPitch;
+  const finalStyle = overrides?.style || expressive.style;
+  const finalStyleDegree = overrides?.styleDegree || expressive.styleDegree;
 
-  // 6. SSML con bloqueo estricto anti-castellano: xml:lang fijado a "es-MX"
-  return `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="es-MX">
-  <voice name="${voiceName}">
-    <prosody rate="${dynamicRate}" pitch="${dynamicPitch}">
-      ${escaped}
-    </prosody>
-  </voice>
-</speak>`.trim();
+  return buildOptimizedSSML({
+    voice: voiceName,
+    text,
+    rate: finalRate,
+    pitch: finalPitch,
+    style: finalStyle,
+    styleDegree: finalStyleDegree,
+    locale: 'es-MX',
+    language: 'es',
+    intention
+  });
 }
 
 /**
@@ -591,21 +664,20 @@ export function generateHistoricalSSML(
  */
 export function generateNarratorSSML(text: string, mode: NarratorMode = 'wisdom_guide'): string {
   const profile = NARRATOR_VOICE_PROFILES[mode] || NARRATOR_VOICE_PROFILES.wisdom_guide;
-  let clean = normalizeLatinHistoricalPhonetics(text);
-  clean = injectLongClauseBreathing(clean);
+  const expressive = getOratoricalExpressiveStyle('solemn_narrative', 'female', mode);
 
-  let processed = clean.replace(/\n\s*\n+/g, '...\n\n');
-  processed = processed.replace(/(\.{3}|…)/g, '...');
-  const escaped = escapeXml(processed);
-
-  return `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="es-MX">
-  <voice name="${profile.voiceId}">
-    <prosody rate="${profile.prosodyRate}" pitch="${profile.prosodyPitch}">
-      ${escaped}
-    </prosody>
-  </voice>
-</speak>`.trim();
+  return buildOptimizedSSML({
+    voice: profile.voiceId,
+    text,
+    rate: profile.prosodyRate,
+    pitch: profile.prosodyPitch,
+    style: expressive.style,
+    styleDegree: expressive.styleDegree,
+    locale: 'es-MX',
+    language: 'es'
+  });
 }
+
 
 /**
  * Filtro estricto para descartar voces mecánicas locales de baja calidad (SAPI5, robótica legacy)
@@ -954,21 +1026,25 @@ export async function playUniversalIskoolVoice(options: UniversalVoicePlayOption
 
     try {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(cleanText);
+      const pipeline = getLanguagePipeline(voiceId || effectiveLang);
+      const speechText = pipeline.applyPhonetics(pipeline.normalizeText(cleanText), 'plain');
+      const utterance = new SpeechSynthesisUtterance(speechText);
 
-      if (effectiveLang === 'fr') {
-        utterance.lang = 'fr-FR';
+      if (pipeline.language === 'fr') {
+        utterance.lang = pipeline.locale;
         utterance.rate = rate * 0.95;
         utterance.pitch = pitch;
         const voices = window.speechSynthesis.getVoices();
-        const frenchVoice = voices.find(v => v.lang.startsWith('fr') && !v.name.toLowerCase().includes('desktop'));
+        const frenchVoice = voices.find(v => v.lang.toLowerCase().replace('_', '-').startsWith(pipeline.locale.toLowerCase()) && !v.name.toLowerCase().includes('desktop'))
+          || voices.find(v => v.lang.toLowerCase().startsWith('fr') && !v.name.toLowerCase().includes('desktop'));
         if (frenchVoice) utterance.voice = frenchVoice;
-      } else if (effectiveLang === 'en') {
-        utterance.lang = 'en-US';
+      } else if (pipeline.language === 'en') {
+        utterance.lang = pipeline.locale;
         utterance.rate = rate * 0.95;
         utterance.pitch = pitch;
         const voices = window.speechSynthesis.getVoices();
-        const englishVoice = voices.find(v => v.lang.startsWith('en') && !v.name.toLowerCase().includes('desktop'));
+        const englishVoice = voices.find(v => v.lang.toLowerCase().replace('_', '-').startsWith(pipeline.locale.toLowerCase()) && !v.name.toLowerCase().includes('desktop'))
+          || voices.find(v => v.lang.toLowerCase().startsWith('en') && !v.name.toLowerCase().includes('desktop'));
         if (englishVoice) utterance.voice = englishVoice;
       } else if (characterName) {
         configureHistoricalUtterance(utterance, characterName, historicalAge);
@@ -1018,6 +1094,215 @@ export async function playUniversalIskoolVoice(options: UniversalVoicePlayOption
 // (Canon Inviolable de Primera Persona Estricta y Voces Neurales Calibradas)
 // =============================================================================
 
+export interface CharacterAnatomicalMouth {
+  x1: number;         // Comisura izquierda en espacio 1024
+  y1: number;
+  cx: number;         // Centro anatómico
+  cy: number;
+  x2: number;         // Comisura derecha en espacio 1024
+  y2: number;
+  maxOpening: number; // Apertura vertical máxima en px
+  cavityDarkColor: string;
+  cavityMidColor: string;
+  cavityRimColor: string;
+  lowerLipRimColor: string;
+  teethColor: string;
+  mustacheCover?: boolean;
+}
+
+export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalMouth {
+  const norm = (idOrName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  
+  // 1. NAPOLÉON BONAPARTE (public/images/languages/historical/napoleon.jpg)
+  // Labios reales: centro y = 375, cx = 484, comisuras x1: 454, x2: 514
+  if (norm.includes('napoleon') || norm.includes('bonaparte')) {
+    return {
+      x1: 454,
+      y1: 375,
+      cx: 484,
+      cy: 375,
+      x2: 514,
+      y2: 375,
+      maxOpening: 9.5,
+      cavityDarkColor: '#120304',
+      cavityMidColor: '#28060a',
+      cavityRimColor: '#421015',
+      lowerLipRimColor: 'rgba(175, 95, 85, 0.92)',
+      teethColor: '#eee7db'
+    };
+  }
+
+  // 2. WILLIAM SHAKESPEARE (public/images/languages/historical/shakespeare.jpg)
+  // Labios reales bajo bigote: centro y = 472, cx = 460 (cabeza a 3/4), comisuras x1: 428, x2: 492
+  if (norm.includes('shakespeare')) {
+    return {
+      x1: 428,
+      y1: 472,
+      cx: 460,
+      cy: 472,
+      x2: 492,
+      y2: 472,
+      maxOpening: 10,
+      cavityDarkColor: '#0e0203',
+      cavityMidColor: '#240508',
+      cavityRimColor: '#400e12',
+      lowerLipRimColor: 'rgba(165, 80, 75, 0.92)',
+      teethColor: '#ece4d6',
+      mustacheCover: true
+    };
+  }
+
+  // 3. ABRAHAM LINCOLN (public/images/languages/historical/abraham_lincoln.jpg)
+  // Labios reales: centro y = 458, cx = 490, comisuras x1: 452, x2: 528
+  if (norm.includes('lincoln') || norm.includes('abraham')) {
+    return {
+      x1: 452,
+      y1: 458,
+      cx: 490,
+      cy: 458,
+      x2: 528,
+      y2: 458,
+      maxOpening: 10.5,
+      cavityDarkColor: '#0a0203',
+      cavityMidColor: '#220407',
+      cavityRimColor: '#3e0c12',
+      lowerLipRimColor: 'rgba(160, 85, 78, 0.90)',
+      teethColor: '#eae1d2'
+    };
+  }
+
+  // 4. ADA LOVELACE (public/images/languages/historical/ada_lovelace.jpg)
+  // Labios reales: centro y = 338, cx = 494, comisuras x1: 470, x2: 518
+  if (norm.includes('ada') || norm.includes('lovelace')) {
+    return {
+      x1: 470,
+      y1: 340,
+      cx: 494,
+      cy: 338,
+      x2: 518,
+      y2: 340,
+      maxOpening: 8.5,
+      cavityDarkColor: '#140305',
+      cavityMidColor: '#2d070c',
+      cavityRimColor: '#4a1218',
+      lowerLipRimColor: 'rgba(195, 90, 95, 0.92)',
+      teethColor: '#f5efe6'
+    };
+  }
+
+  // 5. MARIE CURIE (public/images/languages/historical/marie_curie.jpg)
+  // Labios reales: centro y = 440, cx = 490, comisuras x1: 456, x2: 524
+  if (norm.includes('curie') || norm.includes('marie')) {
+    return {
+      x1: 456,
+      y1: 440,
+      cx: 490,
+      cy: 440,
+      x2: 524,
+      y2: 440,
+      maxOpening: 9.5,
+      cavityDarkColor: '#100203',
+      cavityMidColor: '#260509',
+      cavityRimColor: '#441016',
+      lowerLipRimColor: 'rgba(168, 82, 80, 0.90)',
+      teethColor: '#eee5d8'
+    };
+  }
+
+  // 6. VICTOR HUGO (public/images/languages/historical/victor_hugo.jpg)
+  // Labios reales bajo bigote: centro y = 394, cx = 504, comisuras x1: 476, x2: 534
+  if (norm.includes('victor') || norm.includes('hugo')) {
+    return {
+      x1: 476,
+      y1: 394,
+      cx: 504,
+      cy: 394,
+      x2: 534,
+      y2: 394,
+      maxOpening: 9.5,
+      cavityDarkColor: '#0c0203',
+      cavityMidColor: '#240407',
+      cavityRimColor: '#400e12',
+      lowerLipRimColor: 'rgba(155, 78, 72, 0.90)',
+      teethColor: '#eae1d2',
+      mustacheCover: true
+    };
+  }
+
+  // 7. JEANNE D'ARC (public/images/languages/historical/jeanne_darc.jpg)
+  // Labios reales: centro y = 382, cx = 500, comisuras x1: 472, x2: 528
+  if (norm.includes('jeanne') || norm.includes('darc') || norm.includes('arc')) {
+    return {
+      x1: 472,
+      y1: 382,
+      cx: 500,
+      cy: 382,
+      x2: 528,
+      y2: 382,
+      maxOpening: 9.0,
+      cavityDarkColor: '#120305',
+      cavityMidColor: '#2a060b',
+      cavityRimColor: '#461117',
+      lowerLipRimColor: 'rgba(185, 90, 90, 0.92)',
+      teethColor: '#f2ebe0'
+    };
+  }
+
+  // MENTORES ESTÁNDAR
+  // Mentor Femenino: public/images/languages/mentor_female.jpg (y = 545, cx = 508, x1: 430, x2: 586)
+  if (norm.includes('female') || norm.includes('claire') || norm.includes('sophie') || norm.includes('elara') || norm.includes('fem')) {
+    return {
+      x1: 430,
+      y1: 538,
+      cx: 508,
+      cy: 545,
+      x2: 586,
+      y2: 538,
+      maxOpening: 12,
+      cavityDarkColor: '#0a0102',
+      cavityMidColor: '#240407',
+      cavityRimColor: '#450d13',
+      lowerLipRimColor: 'rgba(190, 85, 90, 0.92)',
+      teethColor: '#f4ede6'
+    };
+  }
+
+  // Mentor Masculino: public/images/languages/mentor_male.jpg (y = 502, cx = 500, x1: 440, x2: 560)
+  if (norm.includes('male') || norm.includes('arthur') || norm.includes('henri')) {
+    return {
+      x1: 440,
+      y1: 502,
+      cx: 500,
+      cy: 502,
+      x2: 560,
+      y2: 502,
+      maxOpening: 11,
+      cavityDarkColor: '#080102',
+      cavityMidColor: '#200306',
+      cavityRimColor: '#3e0c12',
+      lowerLipRimColor: 'rgba(165, 80, 75, 0.90)',
+      teethColor: '#ede4d6',
+      mustacheCover: true
+    };
+  }
+
+  // Fallback seguro centrado
+  return {
+    x1: 460,
+    y1: 440,
+    cx: 500,
+    cy: 440,
+    x2: 540,
+    y2: 440,
+    maxOpening: 10,
+    cavityDarkColor: '#0a0102',
+    cavityMidColor: '#240407',
+    cavityRimColor: '#450d13',
+    lowerLipRimColor: 'rgba(160, 60, 65, 0.88)',
+    teethColor: '#f0ece2'
+  };
+}
+
 export interface MultilingualHistoricalFigure {
   id: string;
   name: string;
@@ -1029,9 +1314,11 @@ export interface MultilingualHistoricalFigure {
   era: string;
   country: string;
   avatarEmoji: string;
+  avatarImage: string;
   canonicalIntro: string;
   pdaRelevance: string;
   sampleQuestions: string[];
+  mouthConfig?: CharacterAnatomicalMouth;
 }
 
 export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
@@ -1046,6 +1333,7 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     era: 'Elizabethan Era (1564 - 1616)',
     country: 'England',
     avatarEmoji: '📜',
+    avatarImage: '/images/languages/historical/shakespeare.jpg',
     canonicalIntro: 'I am William Shakespeare. I was born in Stratford-upon-Avon, and upon the boards of the Globe Theatre in London, I crafted the tragedies of Hamlet and Macbeth.',
     pdaRelevance: 'Fluidez auditiva poética, figuras retóricas y riqueza léxica renacentista en lengua inglesa.',
     sampleQuestions: [
@@ -1064,6 +1352,7 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     era: 'Victorian Scientific Era (1815 - 1852)',
     country: 'United Kingdom',
     avatarEmoji: '⚙️',
+    avatarImage: '/images/languages/historical/ada_lovelace.jpg',
     canonicalIntro: 'I am Ada Lovelace. In 1843, I authored the very first computer algorithm for Charles Babbage\'s Analytical Engine, foreseeing that machines would manipulate symbols and compose music.',
     pdaRelevance: 'Léxico científico de vanguardia, argumentación lógica y pensamiento computacional bilingüe.',
     sampleQuestions: [
@@ -1082,6 +1371,7 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     era: 'American Civil War (1809 - 1865)',
     country: 'United States',
     avatarEmoji: '🏛️',
+    avatarImage: '/images/languages/historical/abraham_lincoln.jpg',
     canonicalIntro: 'I am Abraham Lincoln, 16th President of the United States. In 1863, amidst our nation\'s trial at Gettysburg, I proclaimed that government of the people, by the people, for the people, shall not perish from the earth.',
     pdaRelevance: 'Oratoria formal, estructuras de discurso cívico y argumentación republicana en inglés estadounidense.',
     sampleQuestions: [
@@ -1100,6 +1390,7 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     era: 'Premier Empire Français (1769 - 1821)',
     country: 'France',
     avatarEmoji: '⚔️',
+    avatarImage: '/images/languages/historical/napoleon.jpg',
     canonicalIntro: 'Je suis Napoléon Bonaparte, né à Ajaccio en Corse. J\'ai réorganisé l\'administration, promulgué le Code Civil et conduit les armées de la République avant de ceindre la couronne impériale.',
     pdaRelevance: 'Conectores argumentativos solemnes, léxico institucional civil y retórica histórica francesa.',
     sampleQuestions: [
@@ -1118,6 +1409,7 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     era: 'Révolution Scientifique (1867 - 1934)',
     country: 'France / Pologne',
     avatarEmoji: '🔬',
+    avatarImage: '/images/languages/historical/marie_curie.jpg',
     canonicalIntro: 'Je suis Marie Curie. Avec Pierre Curie, j\'ai isolé le polonium et le radium dans mon modeste hangar de la rue Lhomond à Paris, devenant la première lauréate de deux Prix Nobel.',
     pdaRelevance: 'Vocabulario científico riguroso, enunciados descriptivos y argumentación empírica en lengua francesa.',
     sampleQuestions: [
@@ -1136,10 +1428,11 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     era: 'Romantisme & XIXe Siècle (1802 - 1885)',
     country: 'France',
     avatarEmoji: '📖',
+    avatarImage: '/images/languages/historical/victor_hugo.jpg',
     canonicalIntro: 'Je suis Victor Hugo. J\'ai écrit Les Misérables et Notre-Dame de Paris pour donner une voix aux humbles et défendre la dignité humaine contre toute forme d\'oppression.',
     pdaRelevance: 'Riqueza estilística, narrativa emotiva y estructuras sintácticas compuestas del francés literario.',
     sampleQuestions: [
-      'Pourquoi avez-vous créé le personnage de Jean Valjean?',
+      'Pourquoi avez-vous créé le personaje de Jean Valjean?',
       'Que ressentiez-vous pendant vos années d\'exil à Guernesey?'
     ]
   },
@@ -1154,6 +1447,7 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     era: 'Guerre de Cent Ans (1412 - 1431)',
     country: 'France',
     avatarEmoji: '🛡️',
+    avatarImage: '/images/languages/historical/jeanne_darc.jpg',
     canonicalIntro: 'Je suis Jeanne d\'Arc, la Pucelle d\'Orléans. À dix-sept ans, guidée par ma foi et mes voix, j\'ai levé le siège d\'Orléans et conduit le dauphin Charles à son sacre à Reims.',
     pdaRelevance: 'Léxico medieval heroico, oraciones afirmativas directas y entonación de convicción en francés.',
     sampleQuestions: [

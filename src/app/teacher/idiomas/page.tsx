@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   useLanguagesStore, 
   LanguageLesson, 
@@ -87,6 +87,22 @@ export default function TeacherIdiomasPage() {
   const availableHistoricalFigures = useMemo(() => {
     return MULTILINGUAL_HISTORICAL_FIGURES.filter(fig => fig.language === activeLesson.language);
   }, [activeLesson.language]);
+
+  // Sincronizar automáticamente si la lección activa es un personaje histórico
+  useEffect(() => {
+    const isHist = Boolean(
+      activeLesson.historicalFigureId ||
+      activeLesson.avatarImage?.includes('/historical/') ||
+      MULTILINGUAL_HISTORICAL_FIGURES.some(f => f.name === activeLesson.avatarName || f.id === activeLesson.historicalFigureId)
+    );
+    setUseHistoricalFigure(isHist);
+    if (isHist) {
+      const fig = MULTILINGUAL_HISTORICAL_FIGURES.find(f => f.name === activeLesson.avatarName || f.id === activeLesson.historicalFigureId);
+      if (fig) {
+        setSelectedHistoricalId(fig.id);
+      }
+    }
+  }, [activeLesson.id, activeLesson.avatarName, activeLesson.historicalFigureId, activeLesson.avatarImage]);
 
   // Voces disponibles según género e idioma con calibración fonética óptima
   const availableVoices = useMemo(() => {
@@ -193,6 +209,8 @@ export default function TeacherIdiomasPage() {
       avatarName: figure.name,
       avatarVoice: figure.voiceId,
       avatarGender: figure.gender,
+      avatarImage: figure.avatarImage,
+      historicalFigureId: figure.id,
       defaultSpeed: figure.speechRate,
       dialogue: [
         {
@@ -585,6 +603,8 @@ export default function TeacherIdiomasPage() {
                     avatarGender={activeLesson.avatarGender}
                     avatarVoice={activeLesson.avatarVoice}
                     avatarName={activeLesson.avatarName}
+                    avatarImage={activeLesson.avatarImage}
+                    historicalFigureId={activeLesson.historicalFigureId}
                     lessonId={activeLesson.id}
                     lessonTitle={activeLesson.title}
                     studentName="Docente (Modo Simulación)"
@@ -617,8 +637,28 @@ export default function TeacherIdiomasPage() {
                       <input
                         type="checkbox"
                         checked={useHistoricalFigure}
-                        onChange={(e) => setUseHistoricalFigure(e.target.checked)}
-                        className="rounded accent-indigo-500 cursor-pointer w-4 h-4"
+                        onChange={(e) => {
+                          const isChecked = e.target.checked;
+                          setUseHistoricalFigure(isChecked);
+                          if (isChecked) {
+                            const figToApply = availableHistoricalFigures.find(f => f.id === selectedHistoricalId) || availableHistoricalFigures[0];
+                            if (figToApply) {
+                              setSelectedHistoricalId(figToApply.id);
+                              handleApplyHistoricalFigure(figToApply);
+                            }
+                          } else {
+                            const defaultVoice = activeLesson.language === 'en' ? 'en-US-JennyNeural' : 'fr-FR-VivienneMultilingualNeural';
+                            const defaultName = activeLesson.language === 'en' ? 'Claire' : 'Sophie';
+                            updateLesson(activeLesson.id, {
+                              avatarName: defaultName,
+                              avatarVoice: defaultVoice,
+                              avatarGender: 'female',
+                              avatarImage: undefined,
+                              historicalFigureId: undefined
+                            });
+                          }
+                        }}
+                        className="rounded accent-amber-500 cursor-pointer w-4 h-4"
                       />
                     </div>
                     <p className="text-[10px] text-slate-400 leading-tight">
@@ -629,8 +669,11 @@ export default function TeacherIdiomasPage() {
                   {useHistoricalFigure ? (
                     /* LISTA DE PERSONAJES HISTÓRICOS DISPONIBLES */
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-slate-300">Elegir Personaje Histórico ({activeLesson.language === 'fr' ? 'Francés' : 'Inglés'}):</label>
-                      <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                      <label className="text-xs font-bold text-amber-300 flex items-center justify-between">
+                        <span>Elegir Personaje Histórico ({activeLesson.language === 'fr' ? 'Francés' : 'Inglés'}):</span>
+                        <span className="text-[10px] text-amber-400 font-mono font-bold">1ª Persona Estricta</span>
+                      </label>
+                      <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                         {availableHistoricalFigures.map(fig => (
                           <div
                             key={fig.id}
@@ -638,22 +681,33 @@ export default function TeacherIdiomasPage() {
                               setSelectedHistoricalId(fig.id);
                               handleApplyHistoricalFigure(fig);
                             }}
-                            className={`p-2.5 rounded-xl border text-xs cursor-pointer transition-all flex items-center justify-between ${
-                              activeLesson.avatarName === fig.name
-                                ? 'bg-indigo-600/30 border-indigo-400 text-white font-bold'
-                                : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                            className={`p-2.5 rounded-2xl border text-xs cursor-pointer transition-all flex items-center justify-between ${
+                              activeLesson.avatarName === fig.name || activeLesson.historicalFigureId === fig.id
+                                ? 'bg-amber-500/20 border-amber-400 text-white font-bold shadow-md shadow-amber-500/10'
+                                : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-amber-500/40 hover:bg-slate-900'
                             }`}
                           >
-                            <div className="flex items-center gap-2">
-                              <span className="text-base">{fig.avatarEmoji}</span>
+                            <div className="flex items-center gap-3">
+                              <div className="relative w-10 h-10 rounded-xl overflow-hidden border-2 border-amber-500/60 shrink-0 shadow-md">
+                                <img 
+                                  src={fig.avatarImage} 
+                                  alt={fig.name} 
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
                               <div>
-                                <span className="block font-bold">{fig.name}</span>
-                                <span className="text-[10px] text-slate-400">{fig.era}</span>
+                                <span className="block font-bold text-white text-xs">{fig.name}</span>
+                                <span className="text-[10px] text-amber-300/80">{fig.era}</span>
                               </div>
                             </div>
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">
-                              1ª Persona
-                            </span>
+                            <div className="flex flex-col items-end gap-1">
+                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-950/80 border border-amber-500/40 text-amber-300 font-mono font-bold">
+                                1ª Persona
+                              </span>
+                              <span className="text-[9px] text-slate-400">
+                                {fig.gender === 'female' ? '👩' : '👨'} {fig.country}
+                              </span>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -780,6 +834,8 @@ export default function TeacherIdiomasPage() {
                       name={activeLesson.avatarName}
                       language={activeLesson.language}
                       voiceId={activeLesson.avatarVoice}
+                      avatarImage={activeLesson.avatarImage}
+                      historicalFigureId={activeLesson.historicalFigureId || (useHistoricalFigure ? selectedHistoricalId : undefined)}
                       speechRate={activeLesson.defaultSpeed}
                       isPlaying={isPlayingPreview}
                       onRepeat={() => handlePlayAudioSample(activeLesson.dialogue[0]?.text)}

@@ -30,6 +30,8 @@ export interface LanguageLesson {
   avatarGender: AvatarGender;
   avatarVoice: string;
   avatarName: string;
+  avatarImage?: string;
+  historicalFigureId?: string;
   defaultSpeed: number; // ej. 0.85
   dialogue: DialogueLine[];
   karaokePhrases: KaraokePhrase[];
@@ -226,6 +228,96 @@ const INITIAL_LESSONS: LanguageLesson[] = [
     ],
     createdAt: '2026-09-20T11:00:00.000Z',
     updatedAt: '2026-09-20T11:00:00.000Z'
+  },
+  {
+    id: 'lesson-hist-shakespeare',
+    title: 'The Poetry of the Globe Theatre',
+    topic: 'Literatura Clásica & Retórica',
+    language: 'en',
+    level: 'B2',
+    avatarGender: 'male',
+    avatarName: 'William Shakespeare',
+    avatarVoice: 'en-GB-RyanNeural',
+    avatarImage: '/images/languages/historical/shakespeare.jpg',
+    historicalFigureId: 'shakespeare',
+    defaultSpeed: 0.88,
+    dialogue: [
+      {
+        id: 'shk-1',
+        speaker: 'avatar',
+        text: 'I am William Shakespeare. I was born in Stratford-upon-Avon, and upon the boards of the Globe Theatre in London, I crafted the tragedies of Hamlet and Macbeth.',
+        translationEs: 'Soy William Shakespeare. Nací en Stratford-upon-Avon, y sobre las tablas del Teatro Globe en Londres, forjé las tragedias de Hamlet y Macbeth.',
+        phoneticTip: 'Articula la métrica del verso con cadencia rítmica británica'
+      },
+      {
+        id: 'shk-2',
+        speaker: 'student',
+        text: 'Where did you write your immortal sonnets and magnificent plays?',
+        translationEs: '¿Dónde escribiste tus inmortales sonetos y magníficas obras?'
+      },
+      {
+        id: 'shk-3',
+        speaker: 'avatar',
+        text: 'All the world is a stage, and all the men and women merely players. They have their exits and their entrances.',
+        translationEs: 'El mundo entero es un escenario, y todos los hombres y mujeres meros actores. Tienen sus salidas y sus entradas.'
+      }
+    ],
+    karaokePhrases: [
+      {
+        id: 'shk-k-1',
+        targetText: 'All the world is a stage and all the men and women merely players',
+        translationEs: 'El mundo entero es un escenario y todos los hombres y mujeres meros actores',
+        difficulty: 'advanced',
+        phoneticGuide: 'ɔːl ðə wɜːrld ɪz ə steɪdʒ ænd ɔːl ðə men ænd ˈwɪmɪn ˈmɪərli ˈpleɪərz'
+      }
+    ],
+    createdAt: '2026-09-25T10:00:00.000Z',
+    updatedAt: '2026-09-25T10:00:00.000Z'
+  },
+  {
+    id: 'lesson-hist-napoleon',
+    title: 'L\'Épopée et le Code Civil des Français',
+    topic: 'Histoire & Éloquence Publique',
+    language: 'fr',
+    level: 'B2',
+    avatarGender: 'male',
+    avatarName: 'Napoléon Bonaparte',
+    avatarVoice: 'fr-FR-HenriNeural',
+    avatarImage: '/images/languages/historical/napoleon.jpg',
+    historicalFigureId: 'napoleon',
+    defaultSpeed: 0.88,
+    dialogue: [
+      {
+        id: 'nap-1',
+        speaker: 'avatar',
+        text: 'Je suis Napoléon Bonaparte, né à Ajaccio en Corse. J\'ai réorganisé l\'administration, promulgué le Code Civil et conduit les armées de la République.',
+        translationEs: 'Soy Napoleón Bonaparte, nacido en Ajaccio en Córcega. Reorganicé la administración, promulgué el Código Civil y conduje los ejércitos de la República.',
+        phoneticTip: 'Éloquence martiale et liaisons soignées: [napɔleɔ̃ bɔnapaʁt]'
+      },
+      {
+        id: 'nap-2',
+        speaker: 'student',
+        text: 'Comment avez-vous rédigé le Code Civil des Français?',
+        translationEs: '¿Cómo redactó usted el Código Civil de los Franceses?'
+      },
+      {
+        id: 'nap-3',
+        speaker: 'avatar',
+        text: 'Ma vraie gloire n\'est pas d\'avoir gagné quarante batailles. Ce que rien n\'effacera, ce qui vivra éternellement, c\'est mon Code Civil.',
+        translationEs: 'Mi verdadera gloria no es haber ganado cuarenta batallas. Lo que nada borrará, lo que vivirá eternamente, es mi Código Civil.'
+      }
+    ],
+    karaokePhrases: [
+      {
+        id: 'nap-k-1',
+        targetText: 'Ce que rien n\'effacera et ce qui vivra éternellement c\'est mon Code Civil',
+        translationEs: 'Lo que nada borrará y lo que vivirá eternamente es mi Código Civil',
+        difficulty: 'advanced',
+        phoneticGuide: 'sə kə ʁjɛ̃ nefasʁa e sə ki vivʁa etɛʁnɛləmɑ̃ sɛ mɔ̃ kɔd sivil'
+      }
+    ],
+    createdAt: '2026-09-25T10:05:00.000Z',
+    updatedAt: '2026-09-25T10:05:00.000Z'
   }
 ];
 

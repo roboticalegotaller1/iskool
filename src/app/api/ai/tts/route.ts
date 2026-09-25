@@ -4,12 +4,15 @@ import crypto from 'crypto';
 import { 
   generateHistoricalSSML, 
   generateNarratorSSML,
+  buildOptimizedSSML,
   getPersonaProfile, 
   getPersonaGender,
   normalizeLatinHistoricalPhonetics,
+  detectOratoricalIntention,
   injectLongClauseBreathing,
   NarratorMode
 } from '@/lib/historicalVoiceEngine';
+import { getLanguagePipeline } from '@/lib/audio';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -129,6 +132,11 @@ export function resolveCertifiedPlatformVoice(
       const locale = voiceId.startsWith('fr-CA') ? 'fr-CA' : 'fr-FR';
       return { voice: voiceId, lang: 'fr', locale };
     }
+    const isCanadian = lower.startsWith('fr-ca') || explicit === 'fr-ca';
+    if (isCanadian) {
+      const defaultCA = fallbackGender === 'male' ? 'fr-CA-AntoineNeural' : 'fr-CA-SylvieNeural';
+      return { voice: defaultCA, lang: 'fr', locale: 'fr-CA' };
+    }
     // Fallback francés nativo por género
     const defaultFrench = fallbackGender === 'male' ? 'fr-FR-HenriNeural' : 'fr-FR-VivienneMultilingualNeural';
     return { voice: defaultFrench, lang: 'fr', locale: 'fr-FR' };
@@ -139,6 +147,11 @@ export function resolveCertifiedPlatformVoice(
     if (voiceId && EDGE_TTS_ACTIVE_ENGLISH_VOICES.has(voiceId)) {
       const locale = voiceId.startsWith('en-GB') ? 'en-GB' : 'en-US';
       return { voice: voiceId, lang: 'en', locale };
+    }
+    const isBritish = lower.startsWith('en-gb') || explicit === 'en-gb';
+    if (isBritish) {
+      const defaultGB = fallbackGender === 'male' ? 'en-GB-RyanNeural' : 'en-GB-SoniaNeural';
+      return { voice: defaultGB, lang: 'en', locale: 'en-GB' };
     }
     // Fallback inglés nativo por género
     const defaultEnglish = fallbackGender === 'male' ? 'en-US-GuyNeural' : 'en-US-JennyNeural';
@@ -225,21 +238,41 @@ function saveAudioToCache(hash: string, buffer: Buffer, contentType = 'audio/mpe
 }
 
 /**
- * Normaliza y sanea el SSML para garantizar compatibilidad estricta con el motor neural,
- * respetando el xml:lang del idioma seleccionado (fr-FR, en-US o es-MX) para que el
- * diccionario fonético aplique la pronunciación, ligaduras y nasales correctas.
+ * Normaliza y sanea el SSML para garantizar compatibilidad estricta con el motor neural:
+ * 1. Despliega la transcripción fonética de <sub alias="..."> para articulación nativa mexicana.
+ * 2. Transforma micro-pausas <break time="..."> en articulación prosódica natural (sin puntos suspensivos ...).
+ * 3. Extrae el contenido de <mstts:express-as> y <emphasis> preservando la prosodia.
+ * 4. Limpia dobles signos de puntuación y asegura namespaces correctos.
  */
 function sanitizeSSMLForNeuralEngine(rawSSML: string, targetVoiceName: string, locale: string = 'es-MX'): string {
   let sanitized = rawSSML
-    // Convertir <break time="..."/> en pausas de puntuación acústica (...)
-    .replace(/<break\s+[^>]*\/?>/gi, '... ')
-    // Extraer contenido de <emphasis>
+    // 1. Desplegar transcripción fonética de <sub alias="..."> (pronunciación fonética real)
+    .replace(/<sub\s+alias="([^"]+)"[^>]*>[\s\S]*?<\/sub>/gi, '$1')
+    // 2. Desplegar contenido de <phoneme>
+    .replace(/<phoneme\s+[^>]*>([\s\S]*?)<\/phoneme>/gi, '$1')
+    // 3. Convertir <break time="..."/> en pausas prosódicas naturales SIN puntos suspensivos (...)
+    .replace(/<break\s+time="(\d+)ms"[^>]*\/?>/gi, (_match, msStr) => {
+      const ms = parseInt(msStr, 10);
+      if (ms <= 180) return ', ';
+      if (ms <= 350) return '. ';
+      return '.\n\n';
+    })
+    .replace(/<break\s+strength="(?:x-weak|weak)"[^>]*\/?>/gi, ', ')
+    .replace(/<break\s+strength="(?:medium|strong|x-strong)"[^>]*\/?>/gi, '. ')
+    .replace(/<break\s*\/?>/gi, ', ')
+    // 4. Extraer contenido de <mstts:express-as> y <emphasis>
+    .replace(/<mstts:express-as\s+[^>]*>([\s\S]*?)<\/mstts:express-as>/gi, '$1')
     .replace(/<emphasis\s+[^>]*>([\s\S]*?)<\/emphasis>/gi, '$1')
-    // Eliminar etiquetas de estilo expresivo si no están soportadas
-    .replace(/<mstts:express-as\s+[^>]*>/gi, '')
-    .replace(/<\/mstts:express-as>/gi, '')
-    // Eliminar atributo contour de <prosody>
-    .replace(/\s+contour="[^"]*"/gi, '')
+    // 5. Eliminar atributo contour de <prosody>
+    .replace(/\s+contour="[^"]*"/gi, '');
+
+  // 6. Limpieza acústica de dobles signos generados por yuxtaposición
+  sanitized = sanitized
+    .replace(/([,;:])\s*,\s*/g, '$1 ')
+    .replace(/\.\s*\.\s*/g, '. ')
+    .replace(/([,;:])\s*\.\s*/g, '. ')
+    .replace(/\.\s*,\s*/g, '. ')
+    .replace(/\s{2,}/g, ' ')
     .trim();
 
   // Asegurar que el tag raíz tenga el xml:lang adecuado al idioma
@@ -260,6 +293,7 @@ function sanitizeSSMLForNeuralEngine(rawSSML: string, targetVoiceName: string, l
 
   return sanitized;
 }
+
 
 export async function POST(req: NextRequest) {
   try {
@@ -321,17 +355,11 @@ export async function POST(req: NextRequest) {
       const resolved = resolveCertifiedPlatformVoice(preliminaryVoice, explicitLang, characterGender);
       preliminaryVoice = resolved.voice;
       const targetLocale = resolved.locale;
-      const isFrench = resolved.lang === 'fr';
-      const isEnglish = resolved.lang === 'en';
+      const pipeline = getLanguagePipeline(targetLocale || preliminaryVoice || resolved.lang);
 
-      if (resolved.lang === 'es') {
-        rawNormalizedText = normalizeLatinHistoricalPhonetics(cleanText);
-      } else {
-        // En francés e inglés NO alterar la ortografía ni apóstrofes
-        rawNormalizedText = cleanText;
-      }
+      rawNormalizedText = pipeline.applyPhonetics(pipeline.normalizeText(cleanText), 'plain');
 
-      if (role === 'narrator' && !isFrench && !isEnglish) {
+      if (role === 'narrator' && resolved.lang === 'es') {
         // Narradores Gamificados en Español
         const validMode: NarratorMode = ['epic_chronist', 'wisdom_guide', 'time_chrononaut'].includes(narratorMode)
           ? narratorMode 
@@ -341,7 +369,7 @@ export async function POST(req: NextRequest) {
         const certified = resolveCertifiedPlatformVoice(preliminaryVoice, 'es', validMode === 'wisdom_guide' ? 'female' : 'male');
         targetSSML = sanitizeSSMLForNeuralEngine(rawNarratorSSML, certified.voice, certified.locale);
         preliminaryVoice = certified.voice;
-      } else if (characterName && !isFrench && !isEnglish) {
+      } else if (characterName && resolved.lang === 'es') {
         // Próceres Históricos Mexicanos
         const profile = getPersonaProfile(characterName, historicalAge, variantIndex, birthDeathDates);
         preliminaryVoice = preliminaryVoice || profile.voiceId;
@@ -350,27 +378,22 @@ export async function POST(req: NextRequest) {
         targetSSML = sanitizeSSMLForNeuralEngine(rawHistoricalSSML, certified.voice, certified.locale);
         preliminaryVoice = certified.voice;
       } else {
-        // Francés, Inglés o Locución Pedagógica Directa
+        // Canalización Multilingüe Automatizada (en-US, en-GB, fr-FR, fr-CA o es-MX didáctico)
         const ratePercent = Math.round((rate - 1.0) * 100);
         const prosodyRate = ratePercent >= 0 ? `+${ratePercent}%` : `${ratePercent}%`;
         const pitchHz = Math.round((pitch - 1.0) * 100);
         const prosodyPitch = pitchHz >= 0 ? `+${pitchHz}Hz` : `${pitchHz}Hz`;
 
-        // Para francés, escapar XML y mantener dicción nativa
-        const escapedText = cleanText
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&apos;');
-
-        targetSSML = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="${targetLocale}">
-  <voice name="${preliminaryVoice}">
-    <prosody pitch="${prosodyPitch}" rate="${prosodyRate}">
-      ${escapedText}
-    </prosody>
-  </voice>
-</speak>`;
+        const directSSML = pipeline.buildSSML({
+          voice: preliminaryVoice,
+          text: cleanText,
+          rate: prosodyRate,
+          pitch: prosodyPitch,
+          locale: pipeline.locale,
+          language: pipeline.language,
+          intention: detectOratoricalIntention(cleanText)
+        });
+        targetSSML = sanitizeSSMLForNeuralEngine(directSSML, preliminaryVoice, pipeline.locale);
       }
     } else {
       return NextResponse.json({ error: 'Se requiere SSML o texto para síntesis' }, { status: 400 });
