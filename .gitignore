@@ -48,6 +48,10 @@ temp_frames/
 verify_frames_v3_1/
 high_tech_raw*.webm
 *v3.0.mp4
+/presentation_screenshots/
+/high_tech_renderer_v3.html
+/presentacion_ejecutiva_iskool.html
+/*.pdf
 
 # Knowledge vault workspace files
 .obsidian/

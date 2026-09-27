@@ -14,6 +14,8 @@
     "knowledge:sync": "tsx scripts/knowledge_cli.ts sync",
     "knowledge:stats": "tsx scripts/knowledge_cli.ts stats",
     "test:knowledge": "tsx scripts/test_knowledge_vault.ts",
+    "compress:assets": "node scripts/batch_image_compressor.js",
+    "guard:push": "node scripts/pre_push_guard.js",
     "deploy:remotes": "git push origin main"
   },
   "dependencies": {
