@@ -16,7 +16,7 @@
     "test:knowledge": "tsx scripts/test_knowledge_vault.ts",
     "compress:assets": "node scripts/batch_image_compressor.js",
     "guard:push": "node scripts/pre_push_guard.js",
-    "deploy:remotes": "git push origin main"
+    "deploy:remotes": "npm run guard:push && git push origin main && git push iskool main && git push duran14 main --force"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

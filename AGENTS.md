@@ -72,3 +72,14 @@ This version has breaking changes — APIs, conventions, and file structure may 
     git push duran14 main --force
     ```
   - Se debe validar la confirmación de entrega en `duran14` para garantizar que la compilación de producción en AWS Amplify inicie de inmediato.
+- **4. Guarda Pre-Push y Validación de Payload Obligatoria:**
+  - Todo envío debe validar de forma preventiva que ningún archivo individual supere 1.0 MB (e imágenes estrictamente < 400 KB según Regla 3) y que el volumen total acumulado a transmitir no rebase el umbral crítico de 150 MB.
+  - La guarda automática (`npm run guard:push` o `node scripts/pre_push_guard.js`) opera como pre-commit y pre-push hook bloqueando transacciones no conformes.
+- **5. Comando Estandarizado de Despliegue Institucional:**
+  - Se formaliza el comando único en `package.json`:
+    ```bash
+    npm run deploy:remotes
+    ```
+    El cual ejecuta en cadena la guarda de calidad y el envío secuencial a los tres servidores remotos sin desfases.
+- **6. Blindaje de Archivos Generados y Bóvedas Locales:**
+  - Archivos temporales de renderizado, capturas de pantalla de video/pitch (`presentation_screenshots/`), manuales o presentaciones generadas (`*.pdf`) y dependencias locales de la Bóveda Curricular (`.obsidian/`) deben permanecer estrictamente fuera del control de versiones mediante `.gitignore` para preservar el repositorio ligero y de despliegue ultrarrápido.
