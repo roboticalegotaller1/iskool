@@ -417,7 +417,7 @@ describe('🛡️ SEGURIDAD MULTI-TENANT: iSkool Core e IBIME', () => {
       const saJson = await saRes.json();
       expect(saJson).toMatchObject({ error: 'Not Found', code: 'NOT_FOUND', message: 'Resource not found' });
 
-      // 3. Petición RSC
+      // 3. Petición RSC de navegación de página (reescritura a /404 con Vary para no romper el cliente)
       const rscReq = new NextRequest('http://localhost:3000/ibime/student', {
         headers: {
           'rsc': '1',
@@ -427,8 +427,7 @@ describe('🛡️ SEGURIDAD MULTI-TENANT: iSkool Core e IBIME', () => {
       const rscRes = await middleware(rscReq);
       expect(rscRes.status).toBe(404);
       expect(rscRes.headers.get('cache-control')).toContain('no-store');
-      const rscJson = await rscRes.json();
-      expect(rscJson).toMatchObject({ error: 'Not Found', code: 'NOT_FOUND', message: 'Resource not found' });
+      expect(rscRes.headers.get('vary')).toContain('RSC');
     });
 
     it('debe sobreescribir deterministamente la cabecera forjada x-resolved-tenant en el handler downstream', async () => {

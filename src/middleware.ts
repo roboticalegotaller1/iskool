@@ -45,6 +45,7 @@ const IBIME_PROTECTED_PREFIXES = [
 
 function isPublicOrAuthPath(pathname: string): boolean {
   return (
+    pathname === '/' ||
     pathname === '/login' ||
     pathname.startsWith('/login/') ||
     pathname === '/ibime/login' ||
@@ -74,7 +75,8 @@ export async function middleware(request: NextRequest) {
   const isServerAction = request.headers.has('next-action');
   const isRsc = request.headers.get('rsc') === '1';
   const isApi = request.nextUrl.pathname.startsWith('/api/');
-  const isApiRequest = isApi || acceptHeader.includes('application/json') || isServerAction || isRsc;
+  const isJsonExpected = isApi || isServerAction || acceptHeader.includes('application/json');
+  const isApiRequest = isJsonExpected || isRsc;
 
   // 1. Determinar el Tenant Requerido según el recurso objetivo (Ruta o Subdominio)
   // NUNCA depender de headers arbitrarios del cliente (como X-Tenant-ID o x-resolved-tenant)
@@ -132,7 +134,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Helper para generar respuesta 404 JSON estructurada con cabeceras anti-caché
+  // Helper para generar respuesta 404 JSON estructurada con cabeceras anti-caché y Vary
   function createCrossTenantNotFoundResponse() {
     return NextResponse.json(
       { error: 'Not Found', code: 'NOT_FOUND', message: 'Resource not found' },
@@ -140,20 +142,29 @@ export async function middleware(request: NextRequest) {
         status: 404,
         headers: {
           'Content-Type': 'application/json',
-          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+          'Vary': 'Accept, Next-Action, RSC, Cookie, x-tenant-id'
         }
       }
     );
   }
 
+  // Helper para reescribir a /404 con cabeceras anti-caché y Vary (para navegaciones HTML y RSC de página)
+  function createCrossTenantRewrite404Response() {
+    const response = NextResponse.rewrite(new URL('/404', request.url), { status: 404 });
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    response.headers.set('Vary', 'Accept, Next-Action, RSC, Cookie, x-tenant-id');
+    return response;
+  }
+
   // Si la ruta solicitada pertenece a un tenant y la cookie válida corresponde al tenant contrario:
-  // - Para API / Server Actions / RSC: Retorna 404 JSON estructurado con cabeceras anti-caché
-  // - Para HTML: Reescribe a página /404 interna
+  // - Para API / Server Actions / Accept: application/json: Retorna 404 JSON estructurado
+  // - Para HTML y navegaciones RSC de página: Reescribe a página /404 interna sin romper el cliente
   if (opposingTenantCookiePresent) {
-    if (isApiRequest) {
+    if (isJsonExpected) {
       return createCrossTenantNotFoundResponse();
     }
-    return NextResponse.rewrite(new URL('/404', request.url), { status: 404 });
+    return createCrossTenantRewrite404Response();
   }
 
   if (!candidateToken) {
@@ -208,19 +219,19 @@ export async function middleware(request: NextRequest) {
   // respondemos con 404 NOT FOUND sin procesar llamadas descendentes
   if (targetTenantRequired === 'ibime' && userTenant !== 'ibime') {
     if (!isSuperUser) {
-      if (isApiRequest) {
+      if (isJsonExpected) {
         return createCrossTenantNotFoundResponse();
       }
-      return NextResponse.rewrite(new URL('/404', request.url), { status: 404 });
+      return createCrossTenantRewrite404Response();
     }
   }
 
   if (targetTenantRequired === 'iskool' && (isIskoolProtected || isIntegrationApi) && userTenant !== 'iskool') {
     if (!isSuperUser) {
-      if (isApiRequest) {
+      if (isJsonExpected) {
         return createCrossTenantNotFoundResponse();
       }
-      return NextResponse.rewrite(new URL('/404', request.url), { status: 404 });
+      return createCrossTenantRewrite404Response();
     }
   }
 
@@ -277,14 +288,13 @@ function applyDefensiveSecurityHeaders(response: NextResponse) {
 
 export const config = {
   matcher: [
-    '/admin/:path*',
-    '/teacher/:path*',
-    '/student/:path*',
-    '/director/:path*',
-    '/billing/:path*',
-    '/superadmin/:path*',
-    '/ibime/:path*',
-    '/api/v1/integration/:path*',
-    '/api/v1/ibime/:path*'
+    /*
+     * Coincidir con todas las rutas de la aplicación excluyendo explícitamente:
+     * - _next/static, _next/image, _next/data (archivos de compilación de Next.js)
+     * - /404, /not-found (páginas de error para prevenir bucles de rewrite infinitos)
+     * - favicon.ico, sitemap.xml, robots.txt
+     * - assets estáticos institucionales (brand/, .svg, .png, etc.)
+     */
+    '/((?!_next/static|_next/image|_next/data|_next/|favicon\\.ico|404|not-found|brand/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ]
 };

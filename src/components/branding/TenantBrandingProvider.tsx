@@ -79,6 +79,25 @@ export const TenantBrandingProvider: React.FC<TenantBrandingProviderProps> = ({
 
   const switchTenant = useCallback((targetTenant: TenantId) => {
     if (typeof window === 'undefined' || targetTenant === tenantId) return;
+
+    // 1. Persistencia síncrona en cookie institucional y localStorage
+    try {
+      if (typeof document !== 'undefined') {
+        document.cookie = `tenant-id=${targetTenant}; path=/; max-age=31536000; SameSite=Lax`;
+
+        // Si el usuario conmuta hacia 'iskool', limpiar cookies residuales de 'ibime'
+        if (targetTenant === 'iskool') {
+          document.cookie = 'ibime_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+        } else if (targetTenant === 'ibime') {
+          // Si conmuta hacia 'ibime', limpiar cookies residuales de 'iskool'
+          document.cookie = 'iskool_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+        }
+      }
+      localStorage.setItem('tenant-id', targetTenant);
+    } catch {
+      // Ignorar excepciones en entornos con storage restringido
+    }
+
     setTenantId(targetTenant);
     const targetPath = targetTenant === 'ibime' ? '/ibime' : '/';
     window.location.assign(targetPath);
