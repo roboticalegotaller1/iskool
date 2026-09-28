@@ -257,8 +257,8 @@ ${mathSynth.recommendationsForNextTeacher.map(r => `  • ${r}`).join('\n')}
 
   // Simulación de resolución de SHA en GitOps
   const originalFetch = global.fetch;
-  let shaVerifiedInPayload = false;
-  let skipCiVerifiedInPayload = false;
+  let shaVerifiedInPayload: boolean = false;
+  let skipCiVerifiedInPayload: boolean = false;
 
   try {
     process.env.REPO_ACCESS_TOKEN = 'test_token_mock_123';
@@ -297,8 +297,8 @@ ${mathSynth.recommendationsForNextTeacher.map(r => `  • ${r}`).join('\n')}
     });
 
     assert(mockGitResult.synced === true, 'Sincronización GitOps exitosa con mock de GitHub');
-    assert(shaVerifiedInPayload === true, 'Manejo de Actualización: SHA existente consultado e incluido en PUT (Previene HTTP 422)');
-    assert(skipCiVerifiedInPayload === true, 'Prevención de Bucles de Build: Commit incluye [skip ci] [amplify skip]');
+    assert(Boolean(shaVerifiedInPayload), 'Manejo de Actualización: SHA existente consultado e incluido en PUT (Previene HTTP 422)');
+    assert(Boolean(skipCiVerifiedInPayload), 'Prevención de Bucles de Build: Commit incluye [skip ci] [amplify skip]');
   } finally {
     global.fetch = originalFetch;
     delete process.env.REPO_ACCESS_TOKEN;
@@ -411,8 +411,8 @@ ${mathSynth.recommendationsForNextTeacher.map(r => `  • ${r}`).join('\n')}
 
   // Reconciliación simulada de la memoria huérfana en GitHub
   const originalFetchReconcile = global.fetch;
-  let reconcilePutCalled = false;
-  let skipCiInReconcileCommit = false;
+  let reconcilePutCalled: boolean = false;
+  let skipCiInReconcileCommit: boolean = false;
 
   try {
     process.env.REPO_ACCESS_TOKEN = 'test_reconcile_token';
@@ -462,8 +462,8 @@ ${mathSynth.recommendationsForNextTeacher.map(r => `  • ${r}`).join('\n')}
     assert(
       reconcileResult.success === true &&
       reconcileResult.reconciledCount === 1 &&
-      reconcilePutCalled === true &&
-      skipCiInReconcileCommit === true,
+      Boolean(reconcilePutCalled) &&
+      Boolean(skipCiInReconcileCommit),
       'Reconciliación exitosa de memoria huérfana en GitHub'
     );
   } finally {

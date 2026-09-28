@@ -544,7 +544,7 @@ export class InstitutionalMemoryService {
       } else {
         try {
           const gitResult = await this.syncToCentralRepository({
-            relativeRepoPath,
+            relativeRepoPath: repoRelativePath,
             fileContent,
             commitMessage
           });

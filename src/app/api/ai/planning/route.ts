@@ -67,6 +67,9 @@ export async function POST(request: NextRequest) {
       subject,
       topic: promptText || targetPda || ''
     });
+    const memorySynthesis = relatedMemories.length > 0
+      ? InstitutionalMemoryService.synthesizePriorCycleLearnings(relatedMemories, promptText || targetPda || '')
+      : null;
     const institutionalMemoryPromptBlock = relatedMemories.length > 0
       ? `\n${InstitutionalMemoryService.formatMemoriesForPrompt(relatedMemories, 1200)}\n`
       : '';
