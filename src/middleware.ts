@@ -43,6 +43,22 @@ const IBIME_PROTECTED_PREFIXES = [
   '/ibime/coordinacion'
 ];
 
+function isPublicOrAuthPath(pathname: string): boolean {
+  return (
+    pathname === '/login' ||
+    pathname.startsWith('/login/') ||
+    pathname === '/ibime/login' ||
+    pathname.startsWith('/ibime/login/') ||
+    pathname.startsWith('/auth') ||
+    pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/brand') ||
+    pathname.startsWith('/favicon') ||
+    pathname === '/404' ||
+    pathname === '/not-found'
+  );
+}
+
 export async function middleware(request: NextRequest) {
   // 0. Sanitización Perimetral Zero-Trust: Eliminar cualquier cabecera x-resolved-tenant spoofed del cliente entrante
   try {
@@ -54,6 +70,8 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const host = (request.headers.get('x-forwarded-host') || request.headers.get('host') || '').toLowerCase();
+  const acceptHeader = (request.headers.get('accept') || '').toLowerCase();
+  const isApiRequest = pathname.startsWith('/api/') || acceptHeader.includes('application/json');
 
   // 1. Determinar el Tenant Requerido según el recurso objetivo (Ruta o Subdominio)
   // NUNCA depender de headers arbitrarios del cliente (como X-Tenant-ID o x-resolved-tenant)
@@ -66,8 +84,9 @@ export async function middleware(request: NextRequest) {
   const isIntegrationApi = pathname.startsWith('/api/v1/integration');
   const isProtected = isIskoolProtected || isIbimeProtected || isIntegrationApi;
 
-  // Si la ruta es pública, permitir paso directo inyectando el tenant resuelto sanitizado
-  if (!isProtected) {
+  // Si la ruta es pública o de autenticación, permitir paso directo inyectando el tenant resuelto sanitizado
+  // NUNCA abortar con 404 en /login o /ibime/login ante presencia de cookies del tenant contrario
+  if (isPublicOrAuthPath(pathname) || !isProtected) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.delete('x-resolved-tenant');
     requestHeaders.delete('x-resolved-tenant-id');
@@ -110,17 +129,18 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Si la ruta solicitada pertenece a un tenant y la cookie válida corresponde al tenant contrario,
-  // retorna inmediatamente HTTP 404 Not Found para evitar enumeración entre instituciones
+  // Si la ruta solicitada pertenece a un tenant y la cookie válida corresponde al tenant contrario:
+  // - Para API: Retorna 404 JSON { error: 'Not Found', code: 'NOT_FOUND' }
+  // - Para HTML: Reescribe a página /404 interna
   if (opposingTenantCookiePresent) {
-    if (pathname.startsWith('/api/')) {
+    if (isApiRequest) {
       return NextResponse.json({ error: 'Not Found', code: 'NOT_FOUND' }, { status: 404 });
     }
-    return NextResponse.rewrite(new URL('/not-found', request.url), { status: 404 });
+    return NextResponse.rewrite(new URL('/404', request.url), { status: 404 });
   }
 
   if (!candidateToken) {
-    if (pathname.startsWith('/api/')) {
+    if (isApiRequest) {
       return NextResponse.json(
         {
           error: 'Autenticación requerida. No se detectó una sesión válida para este recurso.',
@@ -130,7 +150,7 @@ export async function middleware(request: NextRequest) {
       );
     }
 
-    const loginUrl = new URL('/login', request.url);
+    const loginUrl = new URL(targetTenantRequired === 'ibime' ? '/ibime/login' : '/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     loginUrl.searchParams.set('tenant', targetTenantRequired);
     return NextResponse.redirect(loginUrl);
@@ -149,7 +169,7 @@ export async function middleware(request: NextRequest) {
       userRole = fallbackVerified.role;
       userTenant = (fallbackVerified.tenant_id as TenantId) || 'iskool';
     } else {
-      if (pathname.startsWith('/api/')) {
+      if (isApiRequest) {
         return NextResponse.json(
           {
             error: 'Firma criptográfica de sesión inválida o token expirado.',
@@ -158,7 +178,7 @@ export async function middleware(request: NextRequest) {
           { status: 401 }
         );
       }
-      const loginUrl = new URL('/login', request.url);
+      const loginUrl = new URL(targetTenantRequired === 'ibime' ? '/ibime/login' : '/login', request.url);
       loginUrl.searchParams.set('error', 'invalid_session');
       return NextResponse.redirect(loginUrl);
     }
@@ -171,19 +191,19 @@ export async function middleware(request: NextRequest) {
   // respondemos con 404 NOT FOUND sin procesar llamadas descendentes
   if (targetTenantRequired === 'ibime' && userTenant !== 'ibime') {
     if (!isSuperUser) {
-      if (pathname.startsWith('/api/')) {
+      if (isApiRequest) {
         return NextResponse.json({ error: 'Not Found', code: 'NOT_FOUND' }, { status: 404 });
       }
-      return NextResponse.rewrite(new URL('/not-found', request.url), { status: 404 });
+      return NextResponse.rewrite(new URL('/404', request.url), { status: 404 });
     }
   }
 
   if (targetTenantRequired === 'iskool' && (isIskoolProtected || isIntegrationApi) && userTenant !== 'iskool') {
     if (!isSuperUser) {
-      if (pathname.startsWith('/api/')) {
+      if (isApiRequest) {
         return NextResponse.json({ error: 'Not Found', code: 'NOT_FOUND' }, { status: 404 });
       }
-      return NextResponse.rewrite(new URL('/not-found', request.url), { status: 404 });
+      return NextResponse.rewrite(new URL('/404', request.url), { status: 404 });
     }
   }
 

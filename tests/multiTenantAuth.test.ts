@@ -358,5 +358,75 @@ describe('🛡️ SEGURIDAD MULTI-TENANT: iSkool Core e IBIME', () => {
       const json = await res.json();
       expect(json.code).toBe('NOT_FOUND');
     });
+
+    it('debe permitir ver la página de login /ibime/login (HTTP 200) ante una petición HTML con cookie iskool_session', async () => {
+      const iskoolToken = await signMultiTenantToken({
+        id: 'usr-student-iskool',
+        email: 'estudiante@iskool.edu.mx',
+        tenant_id: 'iskool',
+        role: 'student'
+      });
+
+      // Petición HTML de navegación a /ibime/login con cookie del tenant contrario
+      const req = new NextRequest('http://localhost:3000/ibime/login', {
+        headers: {
+          accept: 'text/html,application/xhtml+xml',
+          cookie: `iskool_session=${iskoolToken}`
+        }
+      });
+
+      const res = await middleware(req);
+      // En rutas públicas y de autenticación nunca se aborta con 404; se permite el renderizado del login (HTTP 200)
+      expect(res.status).toBe(200);
+      expect(res.headers.get('x-resolved-tenant')).toBe('ibime');
+      expect(res.headers.get('x-resolved-tenant-id')).toBe('ibime');
+    });
+
+    it('debe retornar HTTP 404 JSON ante petición API a /api/v1/ibime/grades con cookie iskool_session', async () => {
+      const iskoolToken = await signMultiTenantToken({
+        id: 'usr-student-iskool',
+        email: 'estudiante@iskool.edu.mx',
+        tenant_id: 'iskool',
+        role: 'student'
+      });
+
+      // Petición API a endpoint privado de IBIME con sesión de iSkool
+      const req = new NextRequest('http://localhost:3000/api/v1/ibime/grades', {
+        headers: {
+          accept: 'application/json',
+          cookie: `iskool_session=${iskoolToken}`
+        }
+      });
+
+      const res = await middleware(req);
+      expect(res.status).toBe(404);
+      const json = await res.json();
+      expect(json).toEqual({ error: 'Not Found', code: 'NOT_FOUND' });
+    });
+
+    it('debe sobreescribir deterministamente la cabecera forjada x-resolved-tenant en el handler downstream', async () => {
+      const teacherToken = await signMultiTenantToken({
+        id: 'usr-prof-iskool-1',
+        email: 'profesor@iskool.edu.mx',
+        tenant_id: 'iskool',
+        role: 'teacher'
+      });
+
+      // Cliente malicioso intenta forjar x-resolved-tenant: ibime al consultar un recurso legítimo de iSkool
+      const req = new NextRequest('http://localhost:3000/teacher', {
+        headers: {
+          'x-resolved-tenant': 'ibime',
+          'x-resolved-tenant-id': 'ibime',
+          cookie: `iskool_session=${teacherToken}`
+        }
+      });
+
+      const res = await middleware(req);
+      expect(res.status).toBe(200);
+
+      // La cabecera perimetral inyectada debe ser estrictamente 'iskool', sobreescribiendo el valor forjado
+      expect(res.headers.get('x-resolved-tenant')).toBe('iskool');
+      expect(res.headers.get('x-resolved-tenant-id')).toBe('iskool');
+    });
   });
 });

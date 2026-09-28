@@ -91,45 +91,80 @@ export function runHermeticBoundaryAudit(): { passed: boolean; violations: Bound
       });
     }
 
+    // Función auxiliar para resolver el módulo importado mediante alias, rutas relativas y ts.resolveModuleName
+    function resolveModulePath(specifier: string, containingFile: string): string {
+      // 1. Alias @/* mapeado a src/*
+      if (specifier.startsWith('@/')) {
+        return path.resolve(ROOT_DIR, 'src', specifier.substring(2)).replace(/\\/g, '/');
+      }
+      // 2. Ruta absoluta interna src/*
+      if (specifier.startsWith('src/')) {
+        return path.resolve(ROOT_DIR, specifier).replace(/\\/g, '/');
+      }
+      // 3. Ruta relativa (ej: ../../store/*)
+      if (specifier.startsWith('.')) {
+        return path.resolve(path.dirname(containingFile), specifier).replace(/\\/g, '/');
+      }
+
+      // 4. Resolución canónica de TypeScript para paths configurados
+      try {
+        const compilerOptions: ts.CompilerOptions = {
+          baseUrl: ROOT_DIR,
+          paths: { '@/*': ['src/*'] },
+          moduleResolution: ts.ModuleResolutionKind.NodeJs
+        };
+        const resolved = ts.resolveModuleName(specifier, containingFile, compilerOptions, ts.sys);
+        if (resolved?.resolvedModule?.resolvedFileName) {
+          return resolved.resolvedModule.resolvedFileName.replace(/\\/g, '/');
+        }
+      } catch {
+        // Fallback silencioso
+      }
+
+      return specifier;
+    }
+
     // Validación de especificadores de módulo (static, dynamic, re-export)
     function validateModuleSpecifier(specifier: string, node: ts.Node, isDynamic = false) {
-      // 1. Aislamiento de IBIME: Prohibición de acoplarse a stores privados de iSkool
+      const resolvedTarget = resolveModulePath(specifier, filePath);
+      const relativeTarget = path.relative(ROOT_DIR, resolvedTarget).replace(/\\/g, '/');
+
+      // 1. Aislamiento de IBIME: Prohibición estricta de acoplarse a stores privados de iSkool
+      // Detecta importaciones tanto por alias (@/store/*), rutas relativas (../../store/*) o absolutas (src/store/*)
       if (isIbimeContext) {
-        if (
+        const isPrivateStore =
+          relativeTarget.startsWith('src/store/') ||
+          specifier.startsWith('@/store/') ||
+          specifier.startsWith('src/store/') ||
           specifier.includes('store/useSchoolAdminStore') ||
           specifier.includes('store/useTeacherStore') ||
           specifier.includes('store/useStudentStore') ||
-          specifier.includes('lib/iskoolCore')
-        ) {
+          specifier.includes('lib/iskoolCore');
+
+        // Los módulos de IBIME no deben consumir directamente stores privados internos
+        if (isPrivateStore) {
           const ruleName = isDynamic ? 'DYNAMIC_IMPORT_HERMETIC_VIOLATION' : 'HERMETIC_BOUNDARY_VIOLATION';
           report(
             node,
             ruleName,
-            `Módulos de IBIME no deben acoplarse directamente a namespaces o stores privados (${specifier}). Deben consumir contratos canónicos en @/lib/curriculum o @/lib/auth.`
+            `Módulos de IBIME no deben acoplarse directamente a stores o namespaces privados (${specifier} -> ${relativeTarget}). Deben consumir contratos canónicos en @/lib/curriculum o @/lib/auth.`
           );
         }
-      }
 
-      // 2. Control de Rutas Relativas que escapen del Bounded Context (ej. ../../)
-      if (specifier.startsWith('.')) {
-        const targetResolved = path.resolve(path.dirname(filePath), specifier).replace(/\\/g, '/');
-        const relativeTarget = path.relative(ROOT_DIR, targetResolved).replace(/\\/g, '/');
-
-        if (isIbimeContext) {
-          // Si un módulo de IBIME escapa hacia carpetas de stores privados o app interna de iSkool con ruta relativa
-          if (
-            relativeTarget.startsWith('src/store') ||
-            relativeTarget.startsWith('src/app/teacher') ||
-            relativeTarget.startsWith('src/app/admin') ||
-            relativeTarget.startsWith('src/lib/iskoolCore')
-          ) {
-            const ruleName = isDynamic ? 'DYNAMIC_IMPORT_HERMETIC_VIOLATION' : 'RELATIVE_BOUNDED_CONTEXT_ESCAPE';
-            report(
-              node,
-              ruleName,
-              `Ruta relativa '${specifier}' escapa del bounded context de IBIME hacia módulos privados (${relativeTarget}). Utilice contratos canónicos @/lib/* en su lugar.`
-            );
-          }
+        // 2. Control de Rutas Relativas que escapen del Bounded Context de IBIME
+        if (
+          relativeTarget.startsWith('src/app/teacher') ||
+          relativeTarget.startsWith('src/app/admin') ||
+          relativeTarget.startsWith('src/app/student') ||
+          relativeTarget.startsWith('src/app/director') ||
+          relativeTarget.startsWith('src/lib/iskoolCore')
+        ) {
+          const ruleName = isDynamic ? 'DYNAMIC_IMPORT_HERMETIC_VIOLATION' : 'RELATIVE_BOUNDED_CONTEXT_ESCAPE';
+          report(
+            node,
+            ruleName,
+            `Ruta '${specifier}' escapa del bounded context de IBIME hacia módulos privados de iSkool (${relativeTarget}). Utilice contratos canónicos @/lib/* en su lugar.`
+          );
         }
       }
     }
@@ -192,7 +227,7 @@ export function runHermeticBoundaryAudit(): { passed: boolean; violations: Bound
         const varName = node.name.text;
         const lowerVarName = varName.toLowerCase();
 
-        // 1. Prohibición de marcas comerciales en nombres de variables
+        // 1. Prohibición de marcas comerciales en nombres de variables (Regla 1)
         for (const brand of PROHIBITED_COMMERCIAL_BRANDS) {
           const normalizedBrand = brand.replace(/\s+/g, '');
           if (lowerVarName.includes(normalizedBrand)) {
@@ -205,12 +240,25 @@ export function runHermeticBoundaryAudit(): { passed: boolean; violations: Bound
         }
 
         // 2. Prohibición de marcas de iSkool dentro del contexto aislado de IBIME
+        // Excluir interfaces y contratos de federación legítimos para no generar falsos positivos en variables de mapeo tipadas
         if (isIbimeContext && lowerVarName.includes('iskool')) {
-          report(
-            node,
-            'CROSS_TENANT_IDENTIFIER_LEAK',
-            `Identificador de variable '${varName}' en contexto aislado de IBIME contiene la marca 'iSkool'. Debe utilizarse nomenclatura neutral o institucional.`
-          );
+          const typeNode = node.type;
+          const typeText = typeNode ? typeNode.getText(sourceFile) : '';
+          const isFederationContractType = /Federat|Contract|Tenant|Curriculum|Mapping|Adapter|Session|Auth/i.test(typeText);
+          const isLegitimateFederationVariable =
+            isFederationContractType ||
+            /^(iskool(core)?(plan|plans|id|token|metadata|session|response|data|tenant|mapping)?|isiskool|targettenant|originatingtenant)$/i.test(varName) ||
+            relativePath.includes('curriculumFederation') ||
+            relativePath.includes('multiTenantSession') ||
+            relativePath.includes('types.ts');
+
+          if (!isLegitimateFederationVariable) {
+            report(
+              node,
+              'CROSS_TENANT_IDENTIFIER_LEAK',
+              `Identificador de variable '${varName}' en contexto aislado de IBIME contiene la marca 'iSkool'. Debe utilizarse nomenclatura neutral o institucional.`
+            );
+          }
         }
       }
 

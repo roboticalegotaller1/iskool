@@ -75,48 +75,13 @@ export const TenantBrandingProvider: React.FC<TenantBrandingProviderProps> = ({
       document.head.appendChild(faviconLink);
     }
     faviconLink.href = tokens.faviconUrl;
-
   }, [tenantId, tokens, setWhiteLabelConfig]);
 
-  // Blindaje Anti-FOUC y Aislamiento en Transición de Rutas:
-  // Detectar si el tenant activo en memoria difiere del atributo data-tenant en document.documentElement.
-  // Si se detecta un cambio cruzado durante la navegación cliente, fuerza una recarga total limpia.
-  useEffect(() => {
-    if (typeof window === 'undefined' || typeof document === 'undefined') return;
-
-    const checkDomTenantDiscrepancy = () => {
-      const domTenant = document.documentElement.getAttribute('data-tenant') as TenantId | null;
-      if (domTenant && domTenant !== tenantId) {
-        const targetPortal = tenantId === 'ibime' ? '/ibime/portal' : '/teacher';
-        if (typeof window.location?.replace === 'function') {
-          window.location.replace(targetPortal);
-        }
-      }
-    };
-
-    const observer = new MutationObserver(() => {
-      checkDomTenantDiscrepancy();
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-tenant']
-    });
-
-    window.addEventListener('popstate', checkDomTenantDiscrepancy);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('popstate', checkDomTenantDiscrepancy);
-    };
-  }, [tenantId]);
-
-  const switchTenant = useCallback((newTenant: TenantId) => {
-    if (newTenant === tenantId) return;
-    setTenantId(newTenant);
-    if (typeof window !== 'undefined' && typeof window.location?.replace === 'function') {
-      const targetPortal = newTenant === 'ibime' ? '/ibime/portal' : '/teacher';
-      window.location.replace(targetPortal);
+  const switchTenant = useCallback((targetTenant: TenantId) => {
+    if (targetTenant === tenantId) return;
+    setTenantId(targetTenant);
+    if (typeof window !== 'undefined') {
+      window.location.assign('/' + targetTenant);
     }
   }, [tenantId]);
 

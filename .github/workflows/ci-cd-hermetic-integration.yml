@@ -87,9 +87,12 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
-      - name: 🌐 Instalar Navegador Chromium para Playwright
+      - name: 🌐 Garantizar Librerías Nativas del Sistema Operativo para Chromium
+        run: npx playwright install-deps chromium
+
+      - name: 🌐 Instalar Binarios de Chromium para Playwright
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       - name: 🚀 Ejecutar Suite E2E Real de Navegador
         run: npm run test:e2e
@@ -143,21 +146,38 @@ jobs:
             git fetch iskool main
             git fetch duran14 main
 
-            # 2. Guarda de calidad preventiva
+            # 2. Verificación estricta de paridad de linaje (HEAD debe ser ancestro directo)
+            echo "Verificando paridad de linaje: commits remotos deben ser ancestros directos de HEAD..."
+            for remote in origin iskool duran14; do
+              REMOTE_COMMIT=$(git rev-parse $remote/main)
+              if ! git merge-base --is-ancestor $REMOTE_COMMIT HEAD; then
+                echo "❌ ALARMA CRÍTICA: El commit en $remote/main ($REMOTE_COMMIT) no es ancestro directo de HEAD."
+                echo "   Existe un desfase o concurrencia no integrada. Despliegue abortado para prevenir divergencias."
+                exit 1
+              fi
+              echo "✅ Paridad de linaje verificada en $remote/main."
+            done
+
+            # 3. Guarda de calidad preventiva
             npm run guard:push
 
-            # 3. Envío atómico con --force-with-lease para proteger contra sobreescrituras concurrentes
-            echo "Ejecutando push atómico a origin..."
-            git push origin main --force-with-lease
+            # 4. Envío atómico estándar y verificado sin force-with-lease indiscriminado
+            echo "Ejecutando push verificado a origin..."
+            git push origin main
 
-            echo "Ejecutando push atómico a iskool..."
-            git push iskool main --force-with-lease
+            echo "Ejecutando push verificado a iskool..."
+            git push iskool main
 
-            echo "Ejecutando push atómico a duran14 (AWS Amplify)..."
-            git push duran14 main --force-with-lease
+            echo "Ejecutando push verificado a duran14 (AWS Amplify)..."
+            git push duran14 main
           else
             echo "DEPLOY_PAT no configurado. Validando guarda y sincronizando repositorio principal..."
             git fetch origin main
+            ORIGIN_COMMIT=$(git rev-parse origin/main)
+            if ! git merge-base --is-ancestor $ORIGIN_COMMIT HEAD; then
+              echo "❌ ALARMA CRÍTICA: origin/main no es ancestro directo de HEAD. Despliegue abortado."
+              exit 1
+            fi
             npm run guard:push
-            git push origin main --force-with-lease
+            git push origin main
           fi
