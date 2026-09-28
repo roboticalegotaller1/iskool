@@ -189,4 +189,16 @@ export interface SaveMemoryResult {
   commitMessage?: string;
 }
 
+export interface ReconcileResult {
+  success: boolean;
+  totalManifestEntries: number;
+  gitBlobsFound: number;
+  missingCount: number;
+  reconciledCount: number;
+  failedCount: number;
+  reconciledFiles: string[];
+  errors: string[];
+  durationMs: number;
+}
+
 

@@ -5,10 +5,17 @@
  */
 
 import { InstitutionalMemoryService } from '../src/lib/institutionalMemory/memoryService';
+import {
+  InstitutionalMemoryReconcileService,
+  identifyMissingGitMemories,
+  reconcileGitOpsMemories
+} from '../src/lib/institutionalMemory/reconcileService';
 import { PedagogicalPiiGuard, PedagogicalPrivacyViolationError } from '../src/lib/institutionalMemory/piiGuard';
 import { KnowledgeVaultValidator } from '../src/lib/knowledgeVault/validator';
 import { KnowledgeVaultParser } from '../src/lib/knowledgeVault/parser';
 import { timingSafeTokenCheck } from '../src/app/api/vault/memory/route';
+import { timingSafeTokenCheck as reconcileTokenCheck } from '../src/app/api/vault/reconcile/route';
+import type { MemoryManifestEntry } from '../src/lib/institutionalMemory/types';
 import fs from 'fs';
 import path from 'path';
 
@@ -360,6 +367,205 @@ ${mathSynth.recommendationsForNextTeacher.map(r => `  • ${r}`).join('\n')}
     global.fetch = originalFetch;
     delete process.env.REPO_ACCESS_TOKEN;
   }
+
+  // 14. Fase 6: Reconciliador GitOps (identifyMissingGitMemories y reconcileGitOpsMemories)
+  console.log(`\n🔎 Validando Reconciliador GitOps (FASE 6)...`);
+  const mockManifest: MemoryManifestEntry[] = [
+    {
+      id: 'memoria-fracciones-4b',
+      fileName: 'Memoria_2024-2025_G4_matematicas_fracciones_equivalentes_4B.md',
+      filePath: 'planeaciones/Memorias_Institucionales/2024-2025/Memoria_2024-2025_G4_matematicas_fracciones_equivalentes_4B.md',
+      ciclo: '2024-2025',
+      grado: '4',
+      asignatura: 'matematicas',
+      tema: 'fracciones',
+      fecha: '2025-06-20T10:00:00.000Z',
+      palabras_clave: ['matematicas', 'fracciones']
+    },
+    {
+      id: 'memoria-ciencias-4c',
+      fileName: 'Memoria_2025-2026_G4_ciencias_estados_de_la_materia_4C.md',
+      filePath: 'planeaciones/Memorias_Institucionales/2025-2026/Memoria_2025-2026_G4_ciencias_estados_de_la_materia_4C.md',
+      ciclo: '2025-2026',
+      grado: '4',
+      asignatura: 'ciencias',
+      tema: 'estados_de_la_materia',
+      fecha: '2026-02-15T12:00:00.000Z',
+      palabras_clave: ['ciencias', 'materia']
+    }
+  ];
+
+  // Simular árbol del Repositorio Central donde únicamente existe la primera memoria
+  const mockGitBlobs = [
+    {
+      path: 'planeaciones/Memorias_Institucionales/2024-2025/Memoria_2024-2025_G4_matematicas_fracciones_equivalentes_4B.md',
+      sha: 'blob_sha_11111'
+    }
+  ];
+
+  const detectedMissing = identifyMissingGitMemories(mockManifest, mockGitBlobs);
+  assert(
+    detectedMissing.length === 1 && detectedMissing[0].id === 'memoria-ciencias-4c',
+    'Detección de memoria ausente en Git mediante ReconcileService'
+  );
+
+  // Reconciliación simulada de la memoria huérfana en GitHub
+  const originalFetchReconcile = global.fetch;
+  let reconcilePutCalled = false;
+  let skipCiInReconcileCommit = false;
+
+  try {
+    process.env.REPO_ACCESS_TOKEN = 'test_reconcile_token';
+    global.fetch = (async (url: string | URL | Request, init?: RequestInit): Promise<Response> => {
+      const urlStr = String(url);
+      const method = init?.method || 'GET';
+
+      if (method === 'GET' && urlStr.includes('/git/trees/')) {
+        return new Response(JSON.stringify({
+          tree: [
+            {
+              path: 'planeaciones/Memorias_Institucionales/2024-2025/Memoria_2024-2025_G4_matematicas_fracciones_equivalentes_4B.md',
+              type: 'blob',
+              sha: 'blob_sha_11111'
+            }
+          ]
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+
+      if (method === 'GET' && urlStr.includes('/contents/')) {
+        return new Response(JSON.stringify({ message: 'Not Found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      if (method === 'PUT' && urlStr.includes('/contents/')) {
+        reconcilePutCalled = true;
+        const body = JSON.parse(String(init?.body || '{}'));
+        if (body.message && body.message.includes('[skip ci]') && body.message.includes('[amplify skip]')) {
+          skipCiInReconcileCommit = true;
+        }
+        return new Response(JSON.stringify({
+          commit: { sha: 'commit_reconciled_sha_777888' }
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+
+      return new Response('{}', { status: 200 });
+    }) as typeof fetch;
+
+    const reconcileResult = await InstitutionalMemoryReconcileService.reconcileGitOpsMemories({
+      delayMs: 0,
+      manifestEntriesOverride: mockManifest,
+      gitBlobsOverride: mockGitBlobs
+    });
+
+    assert(
+      reconcileResult.success === true &&
+      reconcileResult.reconciledCount === 1 &&
+      reconcilePutCalled === true &&
+      skipCiInReconcileCommit === true,
+      'Reconciliación exitosa de memoria huérfana en GitHub'
+    );
+  } finally {
+    global.fetch = originalFetchReconcile;
+    delete process.env.REPO_ACCESS_TOKEN;
+  }
+
+  // Validación de seguridad para /api/vault/reconcile
+  const validSyncSecret = 'iSkool_Vault_Sync_Secret_Key_Secure_2026';
+  const authValid = reconcileTokenCheck(validSyncSecret, validSyncSecret);
+  const authInvalid = reconcileTokenCheck('invalid_attack_token_123', validSyncSecret);
+  const authEmpty = reconcileTokenCheck('', validSyncSecret);
+
+  assert(
+    authValid === true && authInvalid === false && authEmpty === false,
+    'Rechazo de reconciliación no autorizada (Token Inválido)'
+  );
+
+  // 15. Fase 7: Manifest Atomic Locking y resolución de colisiones concurrentes
+  console.log(`\n⚡ Validando Fase 7: Manifest Atomic Locking y resolución de colisiones...`);
+  const divergentManifestAlpha: MemoryManifestEntry[] = [
+    {
+      id: 'memoria-1',
+      fileName: 'Memoria_1.md',
+      filePath: 'planeaciones/Memorias_Institucionales/2024-2025/Memoria_1.md',
+      ciclo: '2024-2025',
+      grado: '4',
+      asignatura: 'matematicas',
+      tema: 'fracciones',
+      fecha: '2024-10-01T10:00:00.000Z',
+      palabras_clave: ['fracciones']
+    },
+    {
+      id: 'memoria-shared',
+      fileName: 'Memoria_Shared.md',
+      filePath: 'planeaciones/Memorias_Institucionales/2025-2026/Memoria_Shared.md',
+      ciclo: '2025-2026',
+      grado: '4',
+      asignatura: 'ciencias',
+      tema: 'ecosistemas_v1',
+      fecha: '2025-10-15T08:00:00.000Z',
+      palabras_clave: ['ecosistemas']
+    }
+  ];
+
+  const divergentManifestBeta: MemoryManifestEntry[] = [
+    {
+      id: 'memoria-2',
+      fileName: 'Memoria_2.md',
+      filePath: 'planeaciones/Memorias_Institucionales/2025-2026/Memoria_2.md',
+      ciclo: '2025-2026',
+      grado: '5',
+      asignatura: 'historia',
+      tema: 'revolucion',
+      fecha: '2026-01-20T11:00:00.000Z',
+      palabras_clave: ['historia']
+    },
+    {
+      id: 'memoria-shared',
+      fileName: 'Memoria_Shared.md',
+      filePath: 'planeaciones/Memorias_Institucionales/2025-2026/Memoria_Shared.md',
+      ciclo: '2025-2026',
+      grado: '4',
+      asignatura: 'ciencias',
+      tema: 'ecosistemas_v2_actualizado',
+      fecha: '2025-10-15T09:30:00.000Z',
+      palabras_clave: ['ecosistemas', 'actualizado']
+    }
+  ];
+
+  const resolvedManifest = InstitutionalMemoryService.mergeAndSortManifestEntries(
+    divergentManifestAlpha,
+    divergentManifestBeta
+  );
+
+  const sharedEntry = resolvedManifest.find(e => e.id === 'memoria-shared');
+  const hasMemoria1 = resolvedManifest.some(e => e.id === 'memoria-1');
+  const hasMemoria2 = resolvedManifest.some(e => e.id === 'memoria-2');
+
+  assert(
+    resolvedManifest.length === 3 &&
+    hasMemoria1 &&
+    hasMemoria2 &&
+    sharedEntry?.tema === 'ecosistemas_v2_actualizado',
+    'Resolución atómica de colisión en manifest.json con versión divergente'
+  );
+
+  const isChronologicallySorted = resolvedManifest.every((entry, idx) => {
+    if (idx === 0) return true;
+    const prev = resolvedManifest[idx - 1];
+    const cicloDiff = prev.ciclo.localeCompare(entry.ciclo);
+    if (cicloDiff > 0) return true;
+    if (cicloDiff === 0) {
+      return prev.fecha.localeCompare(entry.fecha) >= 0;
+    }
+    return false;
+  });
+
+  assert(
+    isChronologicallySorted && resolvedManifest[0].ciclo === '2025-2026',
+    'Ordenamiento cronológico estricto y deduplicación atómica en manifest.json'
+  );
 
   console.log(`\n================================================================`);
   console.log(`🏁 RESULTADOS: ${passedTests}/${totalTests} pruebas superadas con éxito`);

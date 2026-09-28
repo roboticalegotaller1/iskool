@@ -7,6 +7,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { KnowledgeVaultParser } from '../knowledgeVault/parser';
 import {
   InstitutionalMemoryFrontmatterSchema,
@@ -230,56 +231,154 @@ export class InstitutionalMemoryService {
   }
 
   /**
-   * Actualiza o inserta de forma atómica una entrada en el manifest.json central de Supabase Storage.
+   * Fusiona y ordena atómicamente una lista de entradas de manifest con una nueva entrada o conjunto divergente de entradas.
+   * - Deduplica por 'id' y por 'filePath' preservando la versión más reciente/completa.
+   * - Ordena cronológicamente:
+   *   1. Ciclo escolar descendente (ej. '2025-2026' antes de '2024-2025').
+   *   2. Fecha ISO descendente.
    */
-  static async updateManifestInCloudStorage(entry: MemoryManifestEntry): Promise<void> {
-    if (!supabase || !supabase.storage) return;
+  static mergeAndSortManifestEntries(
+    existing: MemoryManifestEntry[],
+    newEntries: MemoryManifestEntry | MemoryManifestEntry[]
+  ): MemoryManifestEntry[] {
+    const listToAdd = Array.isArray(newEntries) ? newEntries : [newEntries];
+    const map = new Map<string, MemoryManifestEntry>();
+
+    // 1. Incorporar entradas existentes
+    for (const item of existing) {
+      if (item && item.id) {
+        map.set(item.id, item);
+      }
+    }
+
+    // 2. Incorporar / sobreescribir con nuevas entradas (resolución atómica)
+    for (const item of listToAdd) {
+      if (!item || !item.id) continue;
+
+      // Si ya existe otra entrada con el mismo filePath pero diferente id, remover la obsoleta
+      if (item.filePath) {
+        for (const [key, existingItem] of map.entries()) {
+          if (existingItem.filePath === item.filePath && key !== item.id) {
+            map.delete(key);
+          }
+        }
+      }
+
+      map.set(item.id, item);
+    }
+
+    // 3. Ordenamiento cronológico estricto
+    return Array.from(map.values()).sort((a, b) => {
+      // 1. Comparación por ciclo escolar descendente
+      const cicloA = (a.ciclo || '').trim();
+      const cicloB = (b.ciclo || '').trim();
+      const cicloDiff = cicloB.localeCompare(cicloA);
+      if (cicloDiff !== 0) return cicloDiff;
+
+      // 2. Comparación por fecha ISO descendente
+      const fechaA = (a.fecha || '').trim();
+      const fechaB = (b.fecha || '').trim();
+      return fechaB.localeCompare(fechaA);
+    });
+  }
+
+  /**
+   * Descarga fresca de manifest.json directamente desde Almacenamiento en la Nube (Supabase Storage),
+   * sin consultar ni actualizar la caché volátil en memoria.
+   * Calcula un hash criptográfico SHA-256 de la versión leída para control de concurrencia optimista (ETag / Locking).
+   */
+  static async fetchFreshManifestFromCloudStorage(): Promise<{ entries: MemoryManifestEntry[]; versionHash: string }> {
+    if (!supabase || !supabase.storage) return { entries: [], versionHash: '' };
     const bucketName = process.env.INSTITUTIONAL_MEMORY_BUCKET || 'institutional-memory';
 
     try {
-      let currentEntries: MemoryManifestEntry[] = [];
-      const cached = await this.fetchManifestFromCloudStorage();
-      if (cached && Array.isArray(cached)) {
-        currentEntries = [...cached];
+      const { data, error } = await supabase.storage.from(bucketName).download('manifest.json');
+      if (!error && data) {
+        const text = await data.text();
+        const versionHash = crypto.createHash('sha256').update(text, 'utf8').digest('hex');
+        const parsed = JSON.parse(text);
+        if (Array.isArray(parsed)) {
+          return { entries: parsed as MemoryManifestEntry[], versionHash };
+        }
       }
-
-      const idx = currentEntries.findIndex(e => e.id === entry.id || e.filePath === entry.filePath);
-      if (idx >= 0) {
-        currentEntries[idx] = entry;
-      } else {
-        currentEntries.push(entry);
-      }
-
-      await this.uploadFullManifest(bucketName, currentEntries);
-    } catch (err) {
-      console.warn('[InstitutionalMemoryService] Advertencia al actualizar manifest.json:', err);
+    } catch {
+      // Ignorar si el archivo no existe aún
     }
+
+    return { entries: [], versionHash: '' };
+  }
+
+  /**
+   * Actualiza de forma atómica y concurrente el manifest.json central en Almacenamiento en la Nube (Fase 7).
+   * Implementa lectura fresca inmediata (bypasseando manifestCache) y un ciclo de reintentos
+   * con retroceso exponencial ante colisiones o versiones divergentes en storage.
+   */
+  static async updateManifestInCloudStorage(
+    entry: MemoryManifestEntry,
+    options?: { maxRetries?: number }
+  ): Promise<{ success: boolean; entriesCount: number; retries: number; error?: string }> {
+    if (!supabase || !supabase.storage) {
+      return { success: false, entriesCount: 0, retries: 0, error: 'Storage no configurado' };
+    }
+    const bucketName = process.env.INSTITUTIONAL_MEMORY_BUCKET || 'institutional-memory';
+    const maxRetries = options?.maxRetries ?? 3;
+    let lastError = '';
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        // 1. Lectura fresca inmediata (bypasseando manifestCache)
+        const { entries: freshEntries, versionHash: initialHash } = await this.fetchFreshManifestFromCloudStorage();
+
+        // 2. Fusión atómica y ordenamiento cronológico
+        const mergedEntries = this.mergeAndSortManifestEntries(freshEntries, entry);
+
+        // 3. Verificación de colisión / versionado antes de la escritura
+        if (attempt > 1) {
+          const { versionHash: checkHash } = await this.fetchFreshManifestFromCloudStorage();
+          if (initialHash && checkHash && initialHash !== checkHash) {
+            // Colisión concurrente detectada: aplicar retroceso exponencial
+            const backoff = Math.pow(2, attempt) * 150 + Math.random() * 100;
+            console.warn(`[Manifest:Collision] Colisión de versión detectada en manifest.json (intento ${attempt}). Reintentando en ${Math.round(backoff)}ms...`);
+            await new Promise(resolve => setTimeout(resolve, backoff));
+            continue;
+          }
+        }
+
+        // 4. Subida atómica consolidada
+        await this.uploadFullManifest(bucketName, mergedEntries);
+
+        return {
+          success: true,
+          entriesCount: mergedEntries.length,
+          retries: attempt - 1
+        };
+      } catch (err: any) {
+        lastError = err?.message || 'Error desconocido al actualizar manifest.json';
+        if (attempt < maxRetries) {
+          const backoff = Math.pow(2, attempt) * 150 + Math.random() * 100;
+          await new Promise(resolve => setTimeout(resolve, backoff));
+          continue;
+        }
+      }
+    }
+
+    console.warn(`[InstitutionalMemoryService] Advertencia al actualizar manifest.json tras ${maxRetries} intentos:`, lastError);
+    return { success: false, entriesCount: 0, retries: maxRetries, error: lastError };
   }
 
   /**
    * Descarga el manifest.json desde Supabase Storage con soporte de caché volátil en memoria (TTL 60s).
    */
   static async fetchManifestFromCloudStorage(): Promise<MemoryManifestEntry[] | null> {
-    if (!supabase || !supabase.storage) return null;
-    const bucketName = process.env.INSTITUTIONAL_MEMORY_BUCKET || 'institutional-memory';
-
     const now = Date.now();
     if (manifestCache && (now - manifestCache.timestamp < MANIFEST_TTL_MS)) {
       return manifestCache.data;
     }
 
-    try {
-      const { data, error } = await supabase.storage.from(bucketName).download('manifest.json');
-      if (!error && data) {
-        const text = await data.text();
-        const entries = JSON.parse(text) as MemoryManifestEntry[];
-        if (Array.isArray(entries)) {
-          manifestCache = { data: entries, timestamp: now };
-          return entries;
-        }
-      }
-    } catch {
-      // Ignorar fallo si el archivo manifest.json aún no existe
+    const { entries } = await this.fetchFreshManifestFromCloudStorage();
+    if (entries && entries.length > 0) {
+      manifestCache = { data: entries, timestamp: now };
+      return entries;
     }
 
     return null;
@@ -287,11 +386,13 @@ export class InstitutionalMemoryService {
 
   /**
    * Carga masiva o autogeneración de manifest.json consolidado en Supabase Storage.
+   * Aplica ordenamiento cronológico y deduplicación atómica garantizada.
    */
   static async uploadFullManifest(bucketName: string, entries: MemoryManifestEntry[]): Promise<void> {
     if (!supabase || !supabase.storage) return;
     try {
-      const manifestJson = JSON.stringify(entries, null, 2);
+      const orderedEntries = this.mergeAndSortManifestEntries(entries, []);
+      const manifestJson = JSON.stringify(orderedEntries, null, 2);
       const blob = Buffer.from(manifestJson, 'utf8');
       await supabase.storage
         .from(bucketName)
@@ -301,13 +402,14 @@ export class InstitutionalMemoryService {
         });
 
       manifestCache = {
-        data: entries,
+        data: orderedEntries,
         timestamp: Date.now()
       };
     } catch (err) {
       console.warn('[InstitutionalMemoryService] Advertencia al subir manifest.json consolidado:', err);
     }
   }
+
 
   /**
    * Guarda de forma atómica una nueva Memoria Institucional en la Bóveda Curricular.
