@@ -14,6 +14,8 @@
     "knowledge:sync": "tsx scripts/knowledge_cli.ts sync",
     "knowledge:stats": "tsx scripts/knowledge_cli.ts stats",
     "test:knowledge": "tsx scripts/test_knowledge_vault.ts",
+    "test:vitest": "vitest run",
+    "test:insights": "vitest run tests/pedagogicalInsights.test.tsx",
     "compress:assets": "node scripts/batch_image_compressor.js",
     "guard:push": "node scripts/pre_push_guard.js",
     "deploy:remotes": "npm run guard:push && git push origin main && git push iskool main && git push duran14 main --force"
@@ -40,15 +42,19 @@
   "devDependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "jsdom": "^30.1.1",
     "puppeteer": "^25.5.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^1.6.1"
   }
 }

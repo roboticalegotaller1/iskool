@@ -7,6 +7,7 @@ import { AssignToClassModal } from '@/components/AssignToClassModal';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from '@/context/AuthContext';
 import { detectCurriculumPdasForTopic } from '@/lib/curriculumEngine';
+import { InstitutionalMemoryAdvisor } from '../InstitutionalMemoryAdvisor';
 import { 
   Play, 
   Share2, 
@@ -638,6 +639,21 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
           📦 Biblioteca de Bloques
         </button>
       </div>
+
+      {/* Asesor Proactivo de Memoria Institucional (Fase 9 Closed-Loop RAG) */}
+      <InstitutionalMemoryAdvisor
+        topic={metadata.title}
+        gradeLevel={metadata.faseNem}
+        subjectId={metadata.subjectId || metadata.subject}
+        onApplyRecommendation={(rec) => {
+          updateMetadata({
+            description: metadata.description
+              ? `${metadata.description}\n\n[Recomendación Bóveda]: ${rec}`
+              : `[Recomendación Bóveda]: ${rec}`
+          });
+          showToast('💡 Intervención de la Bóveda incorporada a la planeación.');
+        }}
+      />
 
       {/* Contenido Principal: Panel de Agrupaciones (Izquierda) + Tablero de Trabajo (Central) */}
       <div className="flex flex-col lg:flex-row items-start gap-6 relative">

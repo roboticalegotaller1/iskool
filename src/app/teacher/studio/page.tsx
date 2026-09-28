@@ -11,6 +11,7 @@ const ActivityBuilderLayout = dynamic(
   () => import('@/components/studio/builder/ActivityBuilderLayout').then((mod) => mod.ActivityBuilderLayout),
   { ssr: false, loading: () => <Loader message="Iniciando Estudio Docente..." /> }
 );
+import { InstitutionalMemoryAdvisor } from '@/components/studio/InstitutionalMemoryAdvisor';
 import { 
   Sparkles, 
   ArrowLeft, 
@@ -289,6 +290,18 @@ function TeacherStudioContent() {
                   <span>{isGeneratingAi ? 'Generando Proyecto...' : 'Generar Proyecto Gamificado'}</span>
                 </button>
               </div>
+            </div>
+
+            {/* Inyección Proactiva de Memoria Institucional (Fase 9 Closed-Loop RAG) */}
+            <div className="pt-1 text-left">
+              <InstitutionalMemoryAdvisor
+                topic={aiTopic}
+                gradeLevel={faseNem}
+                subjectId="Saberes y Pensamiento Científico"
+                onApplyRecommendation={(rec) => {
+                  setAiTopic(prev => prev ? `${prev} (Considerando: ${rec})` : rec);
+                }}
+              />
             </div>
 
             {/* Progreso en vivo si está generando */}
