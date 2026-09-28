@@ -53,7 +53,13 @@ export async function POST(request: NextRequest) {
                          subject === 'ciencias' ? 'Ciencias / Física y Química (Saberes y Pensamiento Científico)' : 'Lenguajes (Español y Comunicación)';
 
     // Inyectar memoria institucional de ciclos anteriores (Evitar amnesia escolar)
+    let inferredGrade: number | undefined = undefined;
+    if (level === 'primaria-baja') inferredGrade = 2;
+    else if (level === 'primaria-media') inferredGrade = 4;
+    else if (level === 'primaria-alta') inferredGrade = 6;
+
     const relatedMemories = InstitutionalMemoryService.queryMemories({
+      grade: inferredGrade,
       subject,
       topic: promptText || targetPda || ''
     });
@@ -62,14 +68,13 @@ export async function POST(request: NextRequest) {
       : null;
 
     const institutionalMemoryPromptBlock = memorySynthesis && memorySynthesis.totalMemoriesFound > 0
-      ? `\n🧠 MEMORIA INSTITUCIONAL ACUMULADA EN LA ESCUELA (Ciclos ${memorySynthesis.cyclesCovered.join(', ')}):
-- Muestra histórica evaluada: ${memorySynthesis.totalStudentsEvaluated} alumnos (Dominio histórico promedio: ${(memorySynthesis.averageMasteryRate * 100).toFixed(0)}%).
-- Puntos de fricción recurrentes a prevenir en este grupo: ${memorySynthesis.recurrentFrictionPoints.map(f => f.friction).join(', ')}.
-- Intervenciones y adaptaciones exitosas de docentes anteriores:
-${memorySynthesis.provenInterventions.map(i => `  • ${i.intervention}`).join('\n')}
+      ? `\n[MEMORIA INSTITUCIONAL DEL COLEGIO]:
+- Fricciones históricas detectadas en este tema: ${memorySynthesis.recurrentFrictionPoints.map(f => f.friction).join(', ') || 'Ninguna registrada'}
+- Intervenciones y adaptaciones probadas con éxito por otros docentes:
+${memorySynthesis.provenInterventions.map(i => `  • ${i.intervention}`).join('\n') || '  • Aplicación de secuencias graduadas con material concreto.'}
 - Recomendaciones pedagógicas acumuladas:
-${memorySynthesis.recommendationsForNextTeacher.map(r => `  • ${r}`).join('\n')}
-INSTRUCCIÓN: Integra explícitamente estas adaptaciones pedagógicas probadas en las actividades de desarrollo de las sesiones para asegurar la continuidad institucional.\n`
+${memorySynthesis.recommendationsForNextTeacher.map(r => `  • ${r}`).join('\n') || '  • Evaluación formativa continua.'}
+- Instrucción pedagógica: Integra explícitamente estas intervenciones en el diseño de las actividades (Desarrollo y Cierre) para prevenir los bloqueos conceptuales históricos.\n`
       : '';
 
     const systemPrompt = `Eres un Asesor Pedagógico y Diseñador Curricular Nacional de la SEP, experto en la Nueva Escuela Mexicana (NEM 2024).

@@ -135,7 +135,11 @@ export async function POST(request: NextRequest) {
         success: true,
         message: 'Memoria institucional persistida exitosamente en la Bóveda Curricular',
         documentId: saveResult.documentId,
-        filePath: saveResult.filePath
+        filePath: saveResult.filePath,
+        remoteGitSynced: saveResult.remoteGitSynced || false,
+        remoteGitCommit: saveResult.remoteGitCommit,
+        storageSynced: saveResult.storageSynced || false,
+        syncWarning: saveResult.syncWarning
       },
       { status: 201 }
     );

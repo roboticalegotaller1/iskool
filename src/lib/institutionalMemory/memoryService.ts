@@ -14,9 +14,12 @@ import {
   InstitutionalMemoryFrontmatter,
   InstitutionalMemoryFrontmatterSchema,
   InstitutionalMemorySections,
-  InstitutionalMemorySynthesis
+  InstitutionalMemorySynthesis,
+  SaveMemoryResult
 } from './types';
 import { PedagogicalPiiGuard } from './piiGuard';
+import { supabase } from '../supabaseClient';
+
 
 function cleanString(str: string): string {
   return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
@@ -80,14 +83,109 @@ export class InstitutionalMemoryService {
   }
 
   /**
+   * Sincronización GitOps con el Repositorio Central (Servidor Remoto).
+   * En producción (AWS Amplify / Lambda), persiste la memoria directamente en la rama principal
+   * del Repositorio Central para eliminar la volatilidad de entornos serverless.
+   */
+  static async syncToCentralRepository(params: {
+    relativeRepoPath: string;
+    fileContent: string;
+    commitMessage?: string;
+  }): Promise<{ synced: boolean; commitSha?: string; error?: string }> {
+    const token = process.env.REPO_ACCESS_TOKEN || process.env.GITHUB_TOKEN || process.env.CENTRAL_REPO_TOKEN;
+    if (!token) {
+      return { synced: false, error: 'Token de sincronización institucional no configurado' };
+    }
+
+    const repo = process.env.CENTRAL_REPO || process.env.GITHUB_REPOSITORY || 'roboticalegotaller1/iskool-web-';
+    const branch = process.env.CENTRAL_REPO_BRANCH || 'main';
+    const sanitizedPath = params.relativeRepoPath.replace(/\\/g, '/');
+    const apiUrl = `https://api.github.com/repos/${repo}/contents/${sanitizedPath}`;
+
+    try {
+      // 1. Verificar si el archivo ya existe para obtener su SHA de actualización
+      let currentSha: string | undefined = undefined;
+      const checkRes = await fetch(`${apiUrl}?ref=${branch}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'iSkool-Institutional-Brain/1.0'
+        }
+      });
+
+      if (checkRes.ok) {
+        const checkData = await checkRes.json() as { sha?: string };
+        currentSha = checkData.sha;
+      }
+
+      // 2. Transmitir commit a la rama principal del Repositorio Central
+      const commitRes = await fetch(apiUrl, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+          'User-Agent': 'iSkool-Institutional-Brain/1.0'
+        },
+        body: JSON.stringify({
+          message: params.commitMessage || `feat(memoria): registrar memoria pedagógica ${sanitizedPath}`,
+          content: Buffer.from(params.fileContent, 'utf8').toString('base64'),
+          branch,
+          ...(currentSha ? { sha: currentSha } : {})
+        })
+      });
+
+      if (!commitRes.ok) {
+        const errorText = await commitRes.text();
+        return { synced: false, error: `Error HTTP ${commitRes.status}: ${errorText}` };
+      }
+
+      const commitData = await commitRes.json() as { commit?: { sha?: string } };
+      return { synced: true, commitSha: commitData.commit?.sha };
+    } catch (err: any) {
+      return { synced: false, error: err.message || 'Fallo de conexión con el Servidor Remoto' };
+    }
+  }
+
+  /**
+   * Respaldo en Almacenamiento Institucional en la Nube (Supabase Storage / Bucket).
+   * Proporciona redundancia unificada si la sincronización directa requiere respaldo inmediato.
+   */
+  static async syncToCloudStorage(
+    storagePath: string,
+    fileContent: string
+  ): Promise<{ synced: boolean; error?: string }> {
+    try {
+      if (!supabase || !supabase.storage) {
+        return { synced: false, error: 'Cliente de almacenamiento en la nube no inicializado' };
+      }
+      const bucketName = process.env.INSTITUTIONAL_MEMORY_BUCKET || 'institutional-memory';
+      const cleanPath = storagePath.replace(/\\/g, '/');
+      const blob = Buffer.from(fileContent, 'utf8');
+
+      const { error } = await supabase.storage
+        .from(bucketName)
+        .upload(cleanPath, blob, {
+          contentType: 'text/markdown; charset=utf-8',
+          upsert: true
+        });
+
+      if (error) {
+        return { synced: false, error: error.message };
+      }
+      return { synced: true };
+    } catch (err: any) {
+      return { synced: false, error: err.message };
+    }
+  }
+
+  /**
    * Guarda de forma atómica una nueva Memoria Institucional en la Bóveda Curricular.
    * Ejecuta estrictamente el escaneo de Cero PII antes de escribir en disco.
+   * En producción (AWS Amplify / Lambda), sincroniza con el Repositorio Central y Almacenamiento en la Nube.
    */
-  static async saveMemory(input: CreateInstitutionalMemoryInput): Promise<{
-    success: boolean;
-    filePath: string;
-    documentId: string;
-  }> {
+  static async saveMemory(input: CreateInstitutionalMemoryInput): Promise<SaveMemoryResult> {
     // 1. BLINDAJE DE PRIVACIDAD: Cero PII en la Bóveda Curricular
     PedagogicalPiiGuard.assertZeroPii(input, 'InstitutionalMemory.saveMemory');
 
@@ -143,17 +241,68 @@ export class InstitutionalMemoryService {
     // 5. Construcción del archivo completo con Frontmatter YAML nativo
     const fileContent = this.serializeMemoryFile(frontmatterToValidate, input);
 
-    // 6. Escritura atómica en disco
+    // 6. Escritura atómica en disco (o /tmp en entornos serverless de solo lectura)
     fs.writeFileSync(fullPath, fileContent, 'utf8');
 
     const documentId = `memoria-${input.academic_cycle}-${input.grade}-${safeSubject}-${safeTopic}-${safeCohort}`.toLowerCase();
 
+    // 7. Sincronización Remota GitOps & Cloud Storage (Producción / AWS Amplify)
+    let remoteGitSynced = false;
+    let remoteGitCommit: string | undefined = undefined;
+    let storageSynced = false;
+    let syncWarning: string | undefined = undefined;
+
+    const isProductionOrCloud = Boolean(
+      process.env.NODE_ENV === 'production' ||
+      process.env.AWS_LAMBDA_FUNCTION_NAME ||
+      process.env.LAMBDA_TASK_ROOT ||
+      process.env.VERCEL ||
+      process.env.FORCE_REMOTE_PERSISTENCE === 'true'
+    );
+
+    const hasGitToken = Boolean(
+      process.env.REPO_ACCESS_TOKEN ||
+      process.env.GITHUB_TOKEN ||
+      process.env.CENTRAL_REPO_TOKEN
+    );
+
+    if (isProductionOrCloud || hasGitToken) {
+      const repoRelativePath = `planeaciones/Memorias_Institucionales/${sanitizeSafeFilename(input.academic_cycle)}/${filename}`;
+      
+      try {
+        const gitResult = await this.syncToCentralRepository({
+          relativeRepoPath: repoRelativePath,
+          fileContent,
+          commitMessage: `feat(memoria): registrar memoria pedagógica ${input.academic_cycle} ${input.subject} (${input.topic})`
+        });
+        remoteGitSynced = gitResult.synced;
+        remoteGitCommit = gitResult.commitSha;
+        if (!gitResult.synced && gitResult.error) {
+          syncWarning = `GitOps: ${gitResult.error}`;
+        }
+      } catch (err: any) {
+        syncWarning = `GitOps Error: ${err.message}`;
+      }
+
+      try {
+        const storageResult = await this.syncToCloudStorage(repoRelativePath, fileContent);
+        storageSynced = storageResult.synced;
+      } catch (err: any) {
+        // Fallback silencioso para no interrumpir el flujo del docente
+      }
+    }
+
     return {
       success: true,
       filePath: fullPath,
-      documentId
+      documentId,
+      remoteGitSynced,
+      remoteGitCommit,
+      storageSynced,
+      syncWarning
     };
   }
+
 
   /**
    * Serializa la memoria a Markdown con YAML frontmatter compatible con Obsidian y Dataview.

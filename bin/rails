@@ -293,7 +293,20 @@ else if (firstArg.startsWith('memory:') || firstArg === 'memory') {
   let subCommand = 'list';
   let extraArgs = args.slice(1);
 
-  if (firstArg === 'memory:inspect' || args[1] === 'inspect') {
+  if (firstArg.startsWith('memory:emit_batch') || args[1] === 'emit_batch') {
+    const tsxCli = path.join(__dirname, '..', 'node_modules', 'tsx', 'dist', 'cli.mjs');
+    const emitterPath = path.join(__dirname, '..', 'scripts', 'institutional_memory_emitter.ts');
+    const emitterArgs = firstArg.startsWith('memory:emit_batch') ? [firstArg.replace('memory:emit_batch', '') || args[1] || ''] : args.slice(2);
+
+    const child = spawn(process.execPath, [tsxCli, emitterPath, ...emitterArgs], {
+      stdio: 'inherit',
+      cwd: path.join(__dirname, '..')
+    });
+    child.on('exit', (code) => {
+      process.exit(code || 0);
+    });
+    return;
+  } else if (firstArg === 'memory:inspect' || args[1] === 'inspect') {
     subCommand = 'inspect';
     extraArgs = args.slice(firstArg === 'memory:inspect' ? 1 : 2);
   } else if (firstArg === 'memory:synthesis' || args[1] === 'synthesis') {
@@ -352,5 +365,9 @@ else if (firstArg.startsWith('memory:') || firstArg === 'memory') {
   console.log(`  bin/rails analytics:summary            # Resumen ejecutivo para dirección/coordinación`);
   console.log(`  bin/rails analytics:bottlenecks        # Detección de cuellos de botella en Bóveda`);
   console.log(`  bin/rails analytics:pilot              # Ejecutar piloto de certificación Fase 10`);
+  console.log(`  bin/rails memory:list                  # Listar memorias acumuladas en la Bóveda`);
+  console.log(`  bin/rails memory:inspect <id>          # Inspeccionar detalle de una memoria institucional`);
+  console.log(`  bin/rails memory:synthesis [g] [s] [t] # Síntesis de aprendizaje acumulado multi-ciclo`);
+  console.log(`  bin/rails memory:emit_batch[g,s,t,c]   # Emular exportación de lote desde Rails hacia Bóveda`);
   process.exit(0);
 }

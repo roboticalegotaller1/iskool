@@ -160,3 +160,14 @@ export interface InstitutionalMemorySynthesis {
     wikiLink: string;
   }[];
 }
+
+export interface SaveMemoryResult {
+  success: boolean;
+  filePath: string;
+  documentId: string;
+  remoteGitSynced?: boolean;
+  remoteGitCommit?: string;
+  storageSynced?: boolean;
+  syncWarning?: string;
+}
+

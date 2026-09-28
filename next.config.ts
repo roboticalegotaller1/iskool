@@ -22,7 +22,6 @@ const nextConfig: NextConfig = {
   },
   // Habilitar compresión HTTP gzip / brotli para respuestas estáticas y dinámicas
   compress: true,
-  // Optimización de importaciones de paquetes masivos para acelerar carga y reducir bundle
   experimental: {
     optimizePackageImports: [
       "lucide-react",

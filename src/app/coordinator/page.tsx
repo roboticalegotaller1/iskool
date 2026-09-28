@@ -21,11 +21,12 @@ import {
   Users, UserPlus, Calendar, Plus, Trash2, Search, Filter, 
   BookOpen, Calculator, Activity, Clock, ShieldAlert, MapPin, 
   Phone, Mail, CheckCircle2, ChevronRight, User, AlertCircle, Sparkles, X, Heart, Globe, Building2, Upload, RefreshCw, Edit3,
-  Landmark, Lock
+  Landmark, Lock, Brain
 } from 'lucide-react';
 import { DetailedStudent, ClassSchedule, Group, SchoolSettings, UserProfile, ROLE_HIERARCHY_LEVEL, UserRole } from '@/types';
 import { getStudentAvatarUrl } from '@/utils/studentAvatar';
 import { SchoolBooksManagerSection } from '@/components/books/SchoolBooksManagerSection';
+import { InstitutionalMemoryOverview } from '@/components/coordinator/InstitutionalMemoryOverview';
 import { useComingSoon } from '@/components/ui/ComingSoonModal';
 
 export default function CoordinatorDashboard() {
@@ -159,7 +160,7 @@ export default function CoordinatorDashboard() {
   const subjects = subjectsList;
 
   // Gestión de Pestañas
-  const [activeTab, setActiveTab] = useState<'students' | 'groups' | 'schedules' | 'settings' | 'books'>('students');
+  const [activeTab, setActiveTab] = useState<'students' | 'groups' | 'schedules' | 'settings' | 'books' | 'memory'>('students');
 
   // --- ESTADOS DE GESTIÓN Y EDICIÓN DE ALUMNOS ---
   const [isEditStudentModalOpen, setIsEditStudentModalOpen] = useState(false);
@@ -762,6 +763,18 @@ export default function CoordinatorDashboard() {
             >
               <BookOpen className="w-3.5 h-3.5 text-purple-600" />
               <span>Libros de Texto & Bóveda</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('memory')}
+              style={activeTab === 'memory' ? { color: 'var(--brand-primary)' } : undefined}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                activeTab === 'memory'
+                  ? 'bg-white dark:bg-zinc-800 shadow-sm text-indigo-600 dark:text-indigo-400'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400'
+              }`}
+            >
+              <Brain className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+              <span>Memoria Institucional</span>
             </button>
             {currentGovernance.allowCoordinatorBilling ? (
               <Link
@@ -1957,6 +1970,13 @@ export default function CoordinatorDashboard() {
               schoolName={schoolInfo.name} 
               userRole={user?.role} 
             />
+          </div>
+        )}
+
+        {/* --- PESTAÑA 6: MEMORIA INSTITUCIONAL & SEGUNDO CEREBRO --- */}
+        {activeTab === 'memory' && (
+          <div className="animate-fade-in">
+            <InstitutionalMemoryOverview />
           </div>
         )}
 

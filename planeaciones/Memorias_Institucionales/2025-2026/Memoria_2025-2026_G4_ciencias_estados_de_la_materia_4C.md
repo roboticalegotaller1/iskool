@@ -20,7 +20,7 @@ metrics:
 provenance:
   rails_activity_id: 9940
   rails_assessment_batch_id: 12040
-  captured_at: "2026-09-28T01:08:38.145Z"
+  captured_at: "2026-09-28T01:26:03.139Z"
   ingestion_agent: "iSkool-Memory-Worker/1.0"
 tags:
   - memoria_institucional
@@ -72,4 +72,4 @@ Registro generado automáticamente por el Motor de Telemetría Pedagógica Asín
 - **Muestra Evaluada:** 26 estudiantes (datos anónimos agregados, Cero PII)
 - **Tasa de Dominio Lograda:** 88.0%
 - **Agente de Ingestión:** `iSkool-Memory-Worker/1.0`
-- **Fecha de Captura:** `2026-09-28T01:08:38.145Z`
+- **Fecha de Captura:** `2026-09-28T01:26:03.139Z`

@@ -30,9 +30,10 @@ export class PedagogicalPiiGuard {
 
   // Matrículas o IDs de estudiantes individuales en contextos evaluativos
   private static STUDENT_PII_PATTERNS = [
-    /\b(?:alumno|alumna|estudiante|niño|niña)\s*:\s*[A-ZÁÉÍÓÚÑa-záéíóúñ]{3,}\s+[A-ZÁÉÍÓÚÑa-záéíóúñ]{3,}/gi,
+    /"(?:student_name|nombre_estudiante|nombre_alumno|matricula|student_id|curp)"\s*:\s*"?[^",}]+/gi,
+    /\b(?:alumno|alumna|estudiante|niño|niña|student_name)\s*:\s*[A-ZÁÉÍÓÚÑa-záéíóúñ]{3,}\s+[A-ZÁÉÍÓÚÑa-záéíóúñ]{3,}/gi,
     /\bmatricula\s*:\s*\d{6,}/gi,
-    /\bcurp\s*:\s*[A-Za-z0-9]{18}\b/gi,
+    /\bcurp\s*:\s*[A-Za-z0-9]{16,18}\b/gi,
     /\b(?:calificación|calif|nota)\s+individual\s*:\s*\d+/gi
   ];
 
