@@ -12,6 +12,7 @@ import {
   sanitizeSpanishPedagogicalGrammar
 } from '@/lib/curriculumEngine';
 import { renderSanitizedMarkdown, invalidateVaultCache } from '@/lib/vaultMarkdownEngine';
+import { InstitutionalMemoryService } from '@/lib/institutionalMemory';
 import { exec } from 'child_process';
 import util from 'util';
 
@@ -426,10 +427,21 @@ export async function GET(request: NextRequest) {
       const filteredPreguntas = preguntas.filter(p => !isGenericOrMismatchedPregunta(p));
       const finalPreguntas = filteredPreguntas.length >= 3 ? filteredPreguntas.map(p => sanitizeSpanishPedagogicalGrammar(p)) : detonatingQuestions;
 
+      // Consulta y síntesis de Memoria Institucional de ciclos escolares anteriores (Evitar amnesia escolar)
+      const relatedMemories = InstitutionalMemoryService.queryMemories({
+        grade: gradeParam,
+        subject: subjectParam || subjectName,
+        topic: cleanTopic
+      });
+      const institutionalMemorySynthesis = relatedMemories.length > 0
+        ? InstitutionalMemoryService.synthesizePriorCycleLearnings(relatedMemories, cleanTopic)
+        : null;
+
       const responsePayload = {
         found: true,
         source: 'vault',
         filename: bestMatchNode.filename,
+        institutionalMemory: institutionalMemorySynthesis,
         planning: {
           id: 'plan-vault-' + Date.now(),
           title: sanitizeSpanishPedagogicalGrammar(title),
@@ -450,6 +462,7 @@ export async function GET(request: NextRequest) {
           materiales: matMatch ? sanitizeSpanishPedagogicalGrammar(matMatch[1].trim()) : `MATERIALES POR SESIÓN Y RECURSOS DIDÁCTICOS:\n• Libros de Texto Gratuitos de la SEP asignados con páginas específicas.\n• Materiales manipulables (fichas, regletas, instrumentos de medición, papel bond, colores).\n• Entregables parciales acumulables en la bitácora escolar.\n\nEVIDENCIA ENTREGABLE DEL PROYECTO:\n• ${proyectoIntegrador.productoFinal}`,
           createdAt,
           isFromVault: true,
+          institutionalMemory: institutionalMemorySynthesis,
           renderedHtml: renderSanitizedMarkdown(rawContent)
         }
       };

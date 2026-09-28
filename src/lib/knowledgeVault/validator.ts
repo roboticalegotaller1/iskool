@@ -12,6 +12,7 @@ import {
   KnowledgeVaultValidationReport,
   ValidationErrorItem
 } from './types';
+import { InstitutionalMemoryFrontmatterSchema } from '../institutionalMemory';
 
 export class KnowledgeVaultValidator {
   /**
@@ -34,6 +35,31 @@ export class KnowledgeVaultValidator {
       fm.type === 'source_spec' ||
       fm.type === 'source_framework' ||
       fm.type === 'framework_source';
+
+    const isInstitutionalMemory =
+      fm.type === 'institutional_memory' ||
+      doc.relativePath.includes('Memorias_Institucionales') ||
+      doc.relativePath.includes('institutional_memory');
+
+    // Validación especializada para notas de Memoria Institucional
+    if (isInstitutionalMemory) {
+      const parsedResult = InstitutionalMemoryFrontmatterSchema.safeParse(fm);
+      if (!parsedResult.success) {
+        for (const issue of parsedResult.error.issues) {
+          errors.push({
+            field: issue.path.join('.'),
+            message: issue.message
+          });
+        }
+      }
+      return {
+        valid: errors.length === 0,
+        filePath: doc.filePath,
+        documentId: doc.documentId || String(fm.topic || 'memoria_institucional'),
+        errors,
+        warnings
+      };
+    }
 
     // 1. Verificación de presencia de Frontmatter
     if (fm._has_frontmatter === false) {

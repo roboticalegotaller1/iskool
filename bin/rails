@@ -287,6 +287,35 @@ else if (
   child.on('exit', (code) => {
     process.exit(code || 0);
   });
+}
+// Manejar comandos de Memoria Institucional (Institutional Brain)
+else if (firstArg.startsWith('memory:') || firstArg === 'memory') {
+  let subCommand = 'list';
+  let extraArgs = args.slice(1);
+
+  if (firstArg === 'memory:inspect' || args[1] === 'inspect') {
+    subCommand = 'inspect';
+    extraArgs = args.slice(firstArg === 'memory:inspect' ? 1 : 2);
+  } else if (firstArg === 'memory:synthesis' || args[1] === 'synthesis') {
+    subCommand = 'synthesis';
+    extraArgs = args.slice(firstArg === 'memory:synthesis' ? 1 : 2);
+  } else if (firstArg === 'memory:list' || args[1] === 'list') {
+    subCommand = 'list';
+  } else {
+    subCommand = firstArg.split(':')[1] || 'help';
+  }
+
+  const tsxCli = path.join(__dirname, '..', 'node_modules', 'tsx', 'dist', 'cli.mjs');
+  const cliPath = path.join(__dirname, '..', 'scripts', 'institutional_memory_cli.ts');
+  
+  const child = spawn(process.execPath, [tsxCli, cliPath, subCommand, ...extraArgs], {
+    stdio: 'inherit',
+    cwd: path.join(__dirname, '..')
+  });
+
+  child.on('exit', (code) => {
+    process.exit(code || 0);
+  });
 } else {
   console.log(`[iSchool CLI Shim] Comando "${firstArg}" recibido.`);
   console.log(`Comandos disponibles:`);

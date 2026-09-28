@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { validateApiAuth } from '@/lib/authValidator';
 import { isEnglishSubject, getCambridgeSpecification } from '@/lib/curriculumEngine';
+import { InstitutionalMemoryService } from '@/lib/institutionalMemory';
 
 const PlanningRequestSchema = z.object({
   promptText: z.string().max(2000).optional().default(''),
@@ -51,8 +52,30 @@ export async function POST(request: NextRequest) {
                          subject === 'matematicas' ? 'Matemáticas (Saberes y Pensamiento Científico)' :
                          subject === 'ciencias' ? 'Ciencias / Física y Química (Saberes y Pensamiento Científico)' : 'Lenguajes (Español y Comunicación)';
 
+    // Inyectar memoria institucional de ciclos anteriores (Evitar amnesia escolar)
+    const relatedMemories = InstitutionalMemoryService.queryMemories({
+      subject,
+      topic: promptText || targetPda || ''
+    });
+    const memorySynthesis = relatedMemories.length > 0
+      ? InstitutionalMemoryService.synthesizePriorCycleLearnings(relatedMemories, promptText || 'General')
+      : null;
+
+    const institutionalMemoryPromptBlock = memorySynthesis && memorySynthesis.totalMemoriesFound > 0
+      ? `\n🧠 MEMORIA INSTITUCIONAL ACUMULADA EN LA ESCUELA (Ciclos ${memorySynthesis.cyclesCovered.join(', ')}):
+- Muestra histórica evaluada: ${memorySynthesis.totalStudentsEvaluated} alumnos (Dominio histórico promedio: ${(memorySynthesis.averageMasteryRate * 100).toFixed(0)}%).
+- Puntos de fricción recurrentes a prevenir en este grupo: ${memorySynthesis.recurrentFrictionPoints.map(f => f.friction).join(', ')}.
+- Intervenciones y adaptaciones exitosas de docentes anteriores:
+${memorySynthesis.provenInterventions.map(i => `  • ${i.intervention}`).join('\n')}
+- Recomendaciones pedagógicas acumuladas:
+${memorySynthesis.recommendationsForNextTeacher.map(r => `  • ${r}`).join('\n')}
+INSTRUCCIÓN: Integra explícitamente estas adaptaciones pedagógicas probadas en las actividades de desarrollo de las sesiones para asegurar la continuidad institucional.\n`
+      : '';
+
     const systemPrompt = `Eres un Asesor Pedagógico y Diseñador Curricular Nacional de la SEP, experto en la Nueva Escuela Mexicana (NEM 2024).
 Debes generar una planeación didáctica RIGUROSA, CONCRETA, ALTAMENTE PRÁCTICA Y 100% APLICABLE en el aula para un profesor.
+
+${institutionalMemoryPromptBlock}
 
 ${isEnglish ? `🇬🇧 DIRECTRICES EXCLUSIVAS PARA DOCENTES DE INGLÉS (LENGUA EXTRANJERA - CAMBRIDGE CEFR):
 1. NIVEL EDUCATIVO CALIBRADO: Estricta alineación con el nivel Cambridge: ${cambridgeSpec.levelCode} (${cambridgeSpec.cefrLevel}) correspondiente a ${levelLabel}.
@@ -156,7 +179,11 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
 
     return NextResponse.json({
       success: true,
-      planning: parsedPlanning
+      institutionalMemory: memorySynthesis,
+      planning: {
+        ...parsedPlanning,
+        institutionalMemory: memorySynthesis
+      }
     });
 
   } catch (error: any) {
