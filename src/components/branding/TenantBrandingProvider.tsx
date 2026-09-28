@@ -5,8 +5,7 @@ import { TenantId } from '@/lib/auth/multiTenantSession';
 import {
   TenantThemeTokens,
   getTokensForTenant,
-  ISKOOL_THEME_TOKENS,
-  IBIME_THEME_TOKENS
+  ISKOOL_THEME_TOKENS
 } from '@/lib/branding/tenantThemeTokens';
 import { useWhiteLabelStore, applyWhiteLabelCssVariables } from '@/store/useWhiteLabelStore';
 
@@ -26,6 +25,11 @@ export interface TenantBrandingProviderProps {
   initialTenant?: TenantId;
 }
 
+/**
+ * Proveedor de Marca Blanca Institucional.
+ * Resuelve el branding exclusivamente a partir del estado de SSR provisto por el servidor ('initialTenant').
+ * Cero lectura de 'document.cookie' en el cliente para garantizar coherencia y evitar hidratación inconsistente o FOUC.
+ */
 export const TenantBrandingProvider: React.FC<TenantBrandingProviderProps> = ({
   children,
   initialTenant = 'iskool'
@@ -33,38 +37,30 @@ export const TenantBrandingProvider: React.FC<TenantBrandingProviderProps> = ({
   const [tenantId, setTenantId] = useState<TenantId>(initialTenant);
   const setWhiteLabelConfig = useWhiteLabelStore(state => state.setWhiteLabelConfig);
 
-  // Detección en cliente durante montaje: si la cookie o el subdominio es de IBIME
+  // Sincronizar si cambia initialTenant desde SSR
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const hostname = window.location.hostname.toLowerCase();
-    const hasIbimeSubdomain = hostname.startsWith('ibime.') || hostname.includes('ibime');
-    const hasIbimeCookie = document.cookie.includes('ibime_session=');
-    const isIbimePath = window.location.pathname.startsWith('/ibime');
-
-    if (hasIbimeSubdomain || hasIbimeCookie || isIbimePath) {
-      setTenantId('ibime');
+    if (initialTenant && initialTenant !== tenantId) {
+      setTenantId(initialTenant);
     }
-  }, []);
+  }, [initialTenant]);
 
   const tokens = useMemo(() => getTokensForTenant(tenantId), [tenantId]);
 
-  // Aplicación reactiva de estilos y metadatos en documentElement
+  // Aplicación reactiva en el DOM sin tocar document.cookie
   useEffect(() => {
     if (typeof document === 'undefined') return;
 
     const root = document.documentElement;
     root.setAttribute('data-tenant', tenantId);
 
-    // 1. Inyección de variables CSS calculadas
+    // 1. Inyección de variables CSS
     applyWhiteLabelCssVariables(tokens.primaryColorHex);
 
-    // Inyección de variables específicas de marca
     Object.entries(tokens.cssVariables).forEach(([key, val]) => {
       root.style.setProperty(key, val);
     });
 
-    // 2. Sincronización con el store global de marca blanca existente
+    // 2. Sincronización con el store global de marca blanca
     setWhiteLabelConfig({
       schoolName: tokens.schoolName,
       logoUrl: tokens.logoUrl,
@@ -101,7 +97,6 @@ export const TenantBrandingProvider: React.FC<TenantBrandingProviderProps> = ({
 export function useTenantBranding(): TenantBrandingContextType {
   const context = useContext(TenantBrandingContext);
   if (!context) {
-    // Fallback seguro si se usa fuera del provider
     return {
       tenantId: 'iskool',
       tokens: ISKOOL_THEME_TOKENS,

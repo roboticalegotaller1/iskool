@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabaseClient';
 import { NextRequest } from 'next/server';
 import { verifySessionToken } from '@/lib/sessionToken';
+import { verifyMultiTenantToken } from '@/lib/auth/multiTenantSession';
 
 export interface AuthValidationResult {
   authenticated: boolean;
@@ -35,7 +36,8 @@ export async function validateApiAuth(
       : (iskoolSessionCookie || ibimeSessionCookie);
 
     if (sessionCookie) {
-      const verifiedPayload = await verifySessionToken(sessionCookie);
+      const verifiedMt = await verifyMultiTenantToken(sessionCookie);
+      const verifiedPayload = verifiedMt || await verifySessionToken(sessionCookie);
       if (verifiedPayload) {
         // Verificación de aislamiento hermético cross-tenant
         const userTenant = verifiedPayload.tenant_id || 'iskool';
@@ -70,8 +72,9 @@ export async function validateApiAuth(
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7).trim();
       if (token && token !== 'undefined' && token !== 'null') {
-        // A. Intentar verificar con HMAC token propio
-        const verifiedPayload = await verifySessionToken(token);
+        // A. Intentar verificar con HMAC token multi-tenant o de sesión
+        const verifiedMt = await verifyMultiTenantToken(token);
+        const verifiedPayload = verifiedMt || await verifySessionToken(token);
         if (verifiedPayload) {
           const userTenant = verifiedPayload.tenant_id || 'iskool';
           if (options?.expectedTenant && userTenant !== options.expectedTenant) {

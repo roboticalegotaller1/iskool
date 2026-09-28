@@ -1,28 +1,42 @@
 import { test, expect } from '@playwright/test';
+import { signMultiTenantToken } from '@/lib/auth/multiTenantSession';
 
 /**
  * ============================================================================
  * SUITE DE PRUEBAS E2E (PLAYWRIGHT) - AISLAMIENTO HERMÉTICO iSkool e IBIME
  * ============================================================================
  * 
- * Escenarios Críticos Verificados:
- * 1. Login y experiencia visual de usuario IBIME (Branding esmeralda y Apple Rule).
- * 2. Detección y bloqueo perimetral de intrusión cruzada (Cross-Tenant Intrusion).
- * 3. Creación soberana de planeación en namespace IBIME sin alterar el catálogo maestro.
+ * Verificación Real de Navegador Chromium:
+ * a) Inyección real de cookie HttpOnly 'ibime_session' con JWT válido firmado criptográficamente.
+ * b) Navegación a portal institucional y aserción de atributo data-tenant="ibime" en el elemento raíz <html>.
+ * c) Validación de computedStyle en el badge institucional verificando el color '#047857' (rgb(4, 120, 87))
+ *    y confirmación estricta de ausencia total de clases o textos de marca iSkool.
+ * d) Intento de intrusión cruzada (cross-tenant) respondiendo con HTTP 404 Not Found.
  */
 
 test.describe('🛡️ E2E: Integración Hermética Multi-Tenant (iSkool Core & IBIME)', () => {
   const BASE_URL = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3000';
 
   // --------------------------------------------------------------------------
-  // ESCENARIO 1: Login de usuario IBIME y Verificación de Identidad Gráfica
+  // ESCENARIO 1: Login real con Cookie HttpOnly y Validación Estricta de Branding
   // --------------------------------------------------------------------------
-  test('E2E-01: Usuario IBIME visualiza estrictamente la identidad gráfica y recursos de IBIME', async ({ page, context }) => {
-    // 1. Inyectar Cookie Segura de Sesión para docente de IBIME
+  test('E2E-01: Usuario IBIME visualiza estrictamente la identidad gráfica y recursos de IBIME sin rastro de iSkool', async ({ page, context }) => {
+    // a) Generar un JWT real firmado con HMAC-SHA256 para el docente de IBIME
+    const validIbimeToken = await signMultiTenantToken({
+      id: 'usr-ibime-doc-e2e',
+      email: 'profesor.bicultural@ibime.edu.mx',
+      tenant_id: 'ibime',
+      role: 'teacher',
+      school_id: 'school-ibime-campus-sur',
+      first_name: 'Gabriela',
+      last_name: 'Morales'
+    });
+
+    // Inyectar Cookie HttpOnly 'ibime_session' en el contexto del navegador Chromium
     await context.addCookies([
       {
         name: 'ibime_session',
-        value: 'ibime_mock_jwt_session_token_teacher_authorized',
+        value: validIbimeToken,
         domain: 'localhost',
         path: '/',
         httpOnly: true,
@@ -30,58 +44,89 @@ test.describe('🛡️ E2E: Integración Hermética Multi-Tenant (iSkool Core & 
       }
     ]);
 
-    // 2. Navegar al Hub del Docente de IBIME
+    // b) Navegar al portal de IBIME y verificar respuesta exitosa
     const response = await page.goto(`${BASE_URL}/ibime/portal`);
     expect(response?.status()).toBeLessThan(400);
 
-    // 3. Verificar inyección en el DOM de la marca oficial de IBIME
-    const htmlElement = page.locator('html');
-    await expect(htmlElement).toHaveAttribute('data-tenant', 'ibime');
+    // b) Aserción en el elemento raíz: data-tenant="ibime"
+    const rootElement = page.locator('html');
+    await expect(rootElement).toHaveAttribute('data-tenant', 'ibime');
 
-    // 4. Verificar que se renderizan las insignias institucionales de IBIME
-    const badge = page.locator('text=IBIME Bicultural Hub');
+    // c) Validación de computedStyle en el badge institucional
+    const badge = page.locator('[data-testid="institutional-badge"]');
     await expect(badge).toBeVisible();
+    await expect(badge).toHaveText('IBIME Bicultural Hub');
 
-    // 5. Verificar la acción Hero bajo la Regla de los 3 Clics de Apple
-    const studioHero = page.locator('text=Estudio Bicultural');
-    await expect(studioHero).toBeVisible();
+    // Extraer y evaluar computedStyle en el navegador
+    const badgeComputedColor = await badge.evaluate((el) => {
+      const computed = window.getComputedStyle(el);
+      return computed.color;
+    });
 
-    // 6. Verificar que NO se expone la marca ni el badge de iSkool
-    const iskoolBadge = page.locator('text=iSkool Studio IA');
-    await expect(iskoolBadge).not.toBeVisible();
+    // rgb(4, 120, 87) corresponde exactamente a #047857 (Verde Esmeralda Institucional IBIME)
+    const isEmeraldColor =
+      badgeComputedColor === 'rgb(4, 120, 87)' ||
+      badgeComputedColor.toLowerCase() === '#047857';
+    expect(isEmeraldColor).toBe(true);
+
+    // c) Ausencia total de clases o textos de iSkool
+    const badgeText = await badge.innerText();
+    expect(badgeText).not.toContain('iSkool');
+    expect(badgeText).not.toContain('iskool');
+
+    const pageContent = await page.content();
+    expect(pageContent).not.toContain('iSkool Studio IA');
+    expect(pageContent).not.toContain('Hub Docente • Experiencia y Gestión Pedagógica iSkool');
+    expect(pageContent).not.toContain('iSkool Ecosistema');
+
+    // Verificar presencia de elementos institucionales propios de IBIME
+    const teacherHeading = page.locator('text=Centro de Gestión Docente y Coordinación Bicultural IBIME');
+    await expect(teacherHeading).toBeVisible();
   });
 
   // --------------------------------------------------------------------------
-  // ESCENARIO 2: Intento de Acceso Cruzado no Autorizado (Cross-Tenant Denial)
+  // ESCENARIO 2: Bloqueo Anti-Enumeración Zero-Trust (HTTP 404 en Cross-Tenant)
   // --------------------------------------------------------------------------
-  test('E2E-02: Intento de usuario IBIME para leer recursos internos de iSkool recibe HTTP 403 Forbidden', async ({ request }) => {
-    // 1. Simular petición API con token de sesión de IBIME apuntando a endpoints de iSkool
-    const crossTenantResponse = await request.get(`${BASE_URL}/api/v1/integration/students`, {
+  test('E2E-02: Sesión de IBIME intentando consultar recursos de iSkool recibe HTTP 404 Not Found', async ({ request }) => {
+    const validIbimeToken = await signMultiTenantToken({
+      id: 'usr-ibime-cross-intruder',
+      email: 'intruder@ibime.edu.mx',
+      tenant_id: 'ibime',
+      role: 'teacher',
+      school_id: 'school-ibime-campus-sur'
+    });
+
+    // Simular petición con sesión de IBIME hacia API interna protegida de iSkool
+    const crossResponse = await request.get(`${BASE_URL}/api/v1/integration/students`, {
       headers: {
-        'Cookie': 'ibime_session=ibime_mock_jwt_session_token_teacher_authorized',
-        'X-Tenant-ID': 'iskool' // Intento de lectura cruzada no autorizada
+        'Cookie': `ibime_session=${validIbimeToken}`
       }
     });
 
-    // 2. El middleware perimetral o validador de API debe rechazar con 403 Forbidden
-    expect([401, 403]).toContain(crossTenantResponse.status());
-
-    const body = await crossTenantResponse.json().catch(() => ({}));
-    if (crossTenantResponse.status() === 403) {
-      expect(body.code).toBe('CROSS_TENANT_VIOLATION');
-    }
+    // El middleware debe responder con 404 Not Found para evitar enumeración entre instituciones
+    expect(crossResponse.status()).toBe(404);
+    const body = await crossResponse.json().catch(() => ({}));
+    expect(body.code).toBe('NOT_FOUND');
   });
 
   // --------------------------------------------------------------------------
-  // ESCENARIO 3: Creación de Planeación en IBIME sin Alterar Catálogo Maestro
+  // ESCENARIO 3: Planeaciones con Overlay Pattern Soberano
   // --------------------------------------------------------------------------
-  test('E2E-03: Planeación creada en IBIME se almacena en su namespace y preserva el catálogo de iSkool', async ({ request }) => {
-    // 1. Registrar planeación adaptada para IBIME
+  test('E2E-03: Planeación IBIME se almacena con namespace aislado y preserva el catálogo canónico', async ({ request }) => {
+    const validIbimeToken = await signMultiTenantToken({
+      id: 'usr-ibime-curriculum-planner',
+      email: 'academics@ibime.edu.mx',
+      tenant_id: 'ibime',
+      role: 'teacher',
+      school_id: 'school-ibime-campus-sur'
+    });
+
+    // Crear o extender planeación bicultural
     const createResponse = await request.post(`${BASE_URL}/api/v1/curriculum/plans`, {
       headers: {
         'Content-Type': 'application/json',
-        'X-Tenant-ID': 'ibime',
-        'Authorization': 'Bearer ibime_mock_jwt_session_token_teacher_authorized'
+        'Cookie': `ibime_session=${validIbimeToken}`,
+        'Authorization': `Bearer ${validIbimeToken}`
       },
       data: {
         parent_plan_id: 'plan-nem-f4-g4-cie-001',
@@ -123,25 +168,36 @@ test.describe('🛡️ E2E: Integración Hermética Multi-Tenant (iSkool Core & 
       }
     });
 
-    // Si no está corriendo el backend HTTP con credenciales mockeables, validar estructura de la ruta
-    expect([201, 401, 403]).toContain(createResponse.status());
+    // Validar respuesta del endpoint de planeaciones (201 Created o 200 OK)
+    expect([200, 201]).toContain(createResponse.status());
+    const createdData = await createResponse.json();
+    expect(createdData.success).toBe(true);
+    expect(createdData.plan.tenant_id).toBe('ibime');
+    expect(createdData.plan.content_hash_sha256).toBeDefined();
 
-    // 2. Verificar que al consultar el catálogo central de iSkool el plan original sigue intacto
+    // Consultar el catálogo maestro desde la perspectiva de iSkool Core
+    const iskoolToken = await signMultiTenantToken({
+      id: 'usr-iskool-teacher-verifier',
+      email: 'maestro@iskool.edu.mx',
+      tenant_id: 'iskool',
+      role: 'teacher',
+      school_id: 'school-iskool-public'
+    });
+
     const centralCheck = await request.get(`${BASE_URL}/api/v1/curriculum/plans?subject=ciencias&grade=4`, {
       headers: {
-        'X-Tenant-ID': 'iskool'
+        'Cookie': `iskool_session=${iskoolToken}`
       }
     });
 
-    if (centralCheck.ok()) {
-      const centralJson = await centralCheck.json();
-      const plans = centralJson.plans || [];
-      const originalWaterPlan = plans.find((p: any) => p.id === 'plan-nem-f4-g4-cie-001');
+    expect(centralCheck.ok()).toBe(true);
+    const centralJson = await centralCheck.json();
+    const plans = centralJson.plans || [];
+    const canonicalPlan = plans.find((p: any) => p.id === 'plan-nem-f4-g4-cie-001');
 
-      if (originalWaterPlan) {
-        expect(originalWaterPlan.title).not.toContain('Bicultural');
-        expect(originalWaterPlan.tenant_id).toBe('iskool');
-      }
+    if (canonicalPlan) {
+      expect(canonicalPlan.title).not.toContain('Bicultural');
+      expect(canonicalPlan.tenant_id).toBe('iskool');
     }
   });
 });

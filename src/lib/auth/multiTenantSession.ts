@@ -295,7 +295,7 @@ export async function verifyMultiTenantToken(
       return null;
     }
 
-    const payload: MultiTenantSessionPayload = parsed.data;
+    const payload = parsed.data as unknown as MultiTenantSessionPayload;
 
     // Verificar vigencia temporal
     const now = Math.floor(Date.now() / 1000);

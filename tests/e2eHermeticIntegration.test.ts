@@ -77,15 +77,13 @@ describe('🛡️ E2E INTEGRATION TEST: Aislamiento Hermético de iSkool e IBIME
 
       const res = await middleware(req);
 
-      // Debe bloquear con 403 Forbidden por violación cross-tenant
-      expect(res.status).toBe(403);
+      // Debe responder con 404 Not Found para evitar enumeración de recursos privados entre tenants
+      expect(res.status).toBe(404);
       const json = await res.json();
-      expect(json.code).toBe('CROSS_TENANT_VIOLATION');
-      expect(json.userTenant).toBe('ibime');
-      expect(json.targetTenant).toBe('iskool');
+      expect(json.code).toBe('NOT_FOUND');
     });
 
-    it('debe rechazar acceso de un token de iSkool que intente consultar APIs de IBIME', async () => {
+    it('debe responder con 404 Not Found a un token de iSkool que intente consultar APIs de IBIME', async () => {
       const iskoolToken = await signMultiTenantToken({
         id: 'usr-student-iskool',
         email: 'alumno@iskool.edu.mx',
@@ -100,11 +98,9 @@ describe('🛡️ E2E INTEGRATION TEST: Aislamiento Hermético de iSkool e IBIME
       });
 
       const res = await middleware(req);
-      expect(res.status).toBe(403);
+      expect(res.status).toBe(404);
       const json = await res.json();
-      expect(json.code).toBe('CROSS_TENANT_VIOLATION');
-      expect(json.userTenant).toBe('iskool');
-      expect(json.targetTenant).toBe('ibime');
+      expect(json.code).toBe('NOT_FOUND');
     });
   });
 

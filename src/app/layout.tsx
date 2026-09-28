@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeSync } from "@/components/ThemeSync";
@@ -7,6 +8,7 @@ import { GlobalHelpFab } from "@/components/help/GlobalHelpFab";
 import { ComingSoonProvider } from "@/components/ui/ComingSoonModal";
 import { TenantBrandingProvider } from "@/components/branding/TenantBrandingProvider";
 import { generateServerTenantCss } from "@/lib/branding/tenantThemeTokens";
+import { TenantId } from "@/lib/auth/multiTenantSession";
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -38,44 +40,31 @@ export const viewport: Viewport = {
   ]
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const serverCss = generateServerTenantCss('iskool');
+  const headersList = await headers();
+  const resolvedTenant = (headersList.get('x-resolved-tenant') as TenantId) || 'iskool';
+  const serverCss = generateServerTenantCss(resolvedTenant);
 
   return (
     <html
       lang="es"
       className={`h-full light antialiased ${plusJakarta.variable} ${jetbrainsMono.variable}`}
-      data-tenant="iskool"
+      data-tenant={resolvedTenant}
       suppressHydrationWarning
     >
       <head>
         {/* Inyección SSR de tokens CSS para eliminación total de parpadeo (Zero-FOUC) */}
         <style id="server-tenant-tokens" dangerouslySetInnerHTML={{ __html: serverCss }} />
-        {/* Script síncrono previo a renderizado del DOM */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var h = window.location.hostname.toLowerCase();
-                  var c = document.cookie;
-                  var p = window.location.pathname.toLowerCase();
-                  var isIbime = h.indexOf('ibime') !== -1 || c.indexOf('ibime_session=') !== -1 || p.indexOf('/ibime') === 0;
-                  if (isIbime) {
-                    document.documentElement.setAttribute('data-tenant', 'ibime');
-                  }
-                } catch(e) {}
-              })();
-            `
-          }}
-        />
       </head>
-      <body className="min-h-full w-full max-w-full overflow-x-hidden flex flex-col bg-slate-50 text-slate-900 font-sans">
-        <TenantBrandingProvider>
+      <body
+        className="min-h-full w-full max-w-full overflow-x-hidden flex flex-col bg-slate-50 text-slate-900 font-sans"
+        data-tenant={resolvedTenant}
+      >
+        <TenantBrandingProvider initialTenant={resolvedTenant}>
           <ThemeSync />
           <AuthProvider>
             <ComingSoonProvider>

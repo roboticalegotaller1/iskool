@@ -79,8 +79,8 @@ export const IBIME_THEME_TOKENS: TenantThemeTokens = {
     '--brand-primary-hover': '#065f46',
     '--brand-primary-light': '#ecfdf5',
     '--brand-hero-gradient': 'linear-gradient(135deg, #047857 0%, #0f766e 50%, #065f46 100%)',
-    '--brand-badge-bg': '#fef3c7',
-    '--brand-badge-text': '#92400e'
+    '--brand-badge-bg': '#ecfdf5',
+    '--brand-badge-text': '#047857'
   }
 };
 

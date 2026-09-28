@@ -11,12 +11,8 @@ import { CreateOrExtendPlanInput, UserAuditContext } from '@/lib/curriculum/type
 
 export async function GET(req: NextRequest) {
   try {
-    const host = req.headers.get('x-forwarded-host') || req.headers.get('host');
-    const headerTenantId = req.headers.get('x-tenant-id');
-    const expectedTenant = resolveTenantFromHostOrHeader({ host, headerTenantId });
-
-    // Autenticación Zero-Trust
-    const authResult = await validateApiAuth(req, { expectedTenant });
+    // Autenticación Zero-Trust: validar credenciales criptográficas directamente desde el token
+    const authResult = await validateApiAuth(req);
     if (!authResult.authenticated || !authResult.user) {
       return NextResponse.json(
         { error: authResult.error || 'Autenticación requerida para consultar planeaciones curriculares.' },
@@ -24,7 +20,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const tenantId = (authResult.user.tenant_id || expectedTenant) as TenantId;
+    // Extraer tenant estrictamente del token verificado (Zero-Trust)
+    const tenantId = (authResult.user.tenant_id || 'iskool') as TenantId;
     const searchParams = req.nextUrl.searchParams;
 
     const filter = {
@@ -54,11 +51,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const host = req.headers.get('x-forwarded-host') || req.headers.get('host');
-    const headerTenantId = req.headers.get('x-tenant-id');
-    const expectedTenant = resolveTenantFromHostOrHeader({ host, headerTenantId });
-
-    const authResult = await validateApiAuth(req, { expectedTenant });
+    const authResult = await validateApiAuth(req);
     if (!authResult.authenticated || !authResult.user) {
       return NextResponse.json(
         { error: authResult.error || 'Autenticación requerida para registrar planeaciones.' },
@@ -88,7 +81,7 @@ export async function POST(req: NextRequest) {
       name: `${authResult.user.first_name || ''} ${authResult.user.last_name || ''}`.trim() || 'Docente Titular',
       email: authResult.user.email || 'docente@institucion.mx',
       role: authResult.user.role || 'teacher',
-      tenant_id: (authResult.user.tenant_id || expectedTenant) as TenantId
+      tenant_id: (authResult.user.tenant_id || 'iskool') as TenantId
     };
 
     const savedPlan = await CurriculumFederationService.saveOrExtendPlan(body, userContext);

@@ -34,7 +34,8 @@ describe('🎨 MOTOR DE WHITE-LABEL Y DISEÑO ATÓMICO: iSkool e IBIME', () => {
       expect(tokens.schoolName).toBe('Instituto Bicultural IBIME');
       expect(tokens.badgeText).toBe('IBIME Bicultural Hub');
       expect(tokens.cssVariables['--color-primary']).toBe('#047857');
-      expect(tokens.cssVariables['--brand-badge-bg']).toBe('#fef3c7');
+      expect(tokens.cssVariables['--brand-badge-bg']).toBe('#ecfdf5');
+      expect(tokens.cssVariables['--brand-badge-text']).toBe('#047857');
     });
 
     it('debe generar CSS SSR anti-FOUC con selectores [data-tenant] diferenciados', () => {

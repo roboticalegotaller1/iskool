@@ -1,4 +1,7 @@
-const SESSION_SECRET = process.env.SESSION_SECRET || process.env.SUPABASE_JWT_SECRET || 'iskool_zerotrust_hmac_secret_2026_institutional_secure';
+const SESSION_SECRET =
+  process.env.SESSION_SECRET ||
+  process.env.SUPABASE_JWT_SECRET ||
+  'iskool_zerotrust_hmac_secret_2026_institutional_secure_master';
 
 export interface SecureSessionPayload {
   id: string;

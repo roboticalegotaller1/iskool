@@ -10,8 +10,8 @@ grado: "5"
 fase: "5"
 marco_curricular: "NEM 2024"
 pda_code: "PDA-MAT-F5-5TO-012"
-signature_sha256: "a81cac2e2561dba7a68e02cb4e6e0baabdb936cc6a457c517b40b938b4220a80"
-created_at: "2026-09-28T16:34:40.823Z"
+signature_sha256: "d83d576356fb91c19b3aebe18ecfb1ef2a96986841584775caec7bc00d39033f"
+created_at: "2026-09-28T18:58:33.752Z"
 ---
 
 # 📚 Fracciones Equivalentes y Representación en la Recta Numérica

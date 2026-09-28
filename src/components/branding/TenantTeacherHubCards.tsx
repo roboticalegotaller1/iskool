@@ -31,6 +31,7 @@ export const TenantTeacherHubCards: React.FC<TenantTeacherHubCardsProps> = ({
         <div>
           <div className="flex items-center gap-2 mb-2">
             <span
+              data-testid="institutional-badge"
               className="inline-flex items-center px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wider"
               style={{
                 backgroundColor: tokens.cssVariables['--brand-badge-bg'] || '#ede9fe',

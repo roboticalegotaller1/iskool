@@ -292,7 +292,7 @@ describe('🛡️ SEGURIDAD MULTI-TENANT: iSkool Core e IBIME', () => {
   });
 
   describe('5. Simulación de Middleware Perimetral', () => {
-    it('debe bloquear peticiones a endpoints API de IBIME cuando se utiliza un token de iSkool', async () => {
+    it('debe responder con 404 Not Found a peticiones API de IBIME cuando se utiliza un token de iSkool', async () => {
       const iskoolToken = await signMultiTenantToken({
         id: 'usr-student-iskool',
         email: 'estudiante@iskool.edu.mx',
@@ -308,15 +308,13 @@ describe('🛡️ SEGURIDAD MULTI-TENANT: iSkool Core e IBIME', () => {
       });
 
       const res = await middleware(req);
-      expect(res.status).toBe(403);
+      expect(res.status).toBe(404);
 
       const json = await res.json();
-      expect(json.code).toBe('CROSS_TENANT_VIOLATION');
-      expect(json.userTenant).toBe('iskool');
-      expect(json.targetTenant).toBe('ibime');
+      expect(json.code).toBe('NOT_FOUND');
     });
 
-    it('debe bloquear peticiones UI a rutas protegidas de iSkool cuando se utiliza un token de IBIME', async () => {
+    it('debe responder con 404 Not Found a peticiones UI a rutas protegidas de iSkool cuando se utiliza un token de IBIME', async () => {
       const ibimeToken = await signMultiTenantToken({
         id: 'usr-student-ibime',
         email: 'estudiante@ibime.edu.mx',
@@ -332,10 +330,8 @@ describe('🛡️ SEGURIDAD MULTI-TENANT: iSkool Core e IBIME', () => {
       });
 
       const res = await middleware(req);
-      // Debe redirigir con error cross-tenant
-      expect(res.status).toBe(307);
-      const redirectLocation = res.headers.get('location');
-      expect(redirectLocation).toContain('cross_tenant_denied');
+      // Debe responder con 404 rewrite para evitar enumeración cross-tenant
+      expect(res.status).toBe(404);
     });
   });
 });

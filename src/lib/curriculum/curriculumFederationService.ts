@@ -100,7 +100,9 @@ export class CurriculumFederationService {
           signature_sha256: '9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b'
         },
         vault_node_ref: 'planeaciones/Primaria_Fase_4/4to_Grado/Ciencias_Naturales/Planeacion_F4-CIE-4TO-V00035_Ciclo_del_agua_cambios_de_estado_y_.md',
-        is_custom_overlay: false
+        is_custom_overlay: false,
+        namespace: 'iskool_canonical_catalog',
+        content_hash_sha256: '9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b'
       },
       {
         id: 'plan-nem-f5-g5-mat-002',
@@ -149,7 +151,9 @@ export class CurriculumFederationService {
           signature_sha256: '1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b'
         },
         vault_node_ref: 'planeaciones/Primaria_Fase_5/5to_Grado/Matematicas/Fracciones_Equivalentes.md',
-        is_custom_overlay: false
+        is_custom_overlay: false,
+        namespace: 'iskool_canonical_catalog',
+        content_hash_sha256: '1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b'
       }
     ];
 
@@ -164,11 +168,15 @@ export class CurriculumFederationService {
 
   /**
    * Consulta el catálogo central (iSkool Core) en modo sólo lectura.
+   * Aplica un filtro determinista por namespace 'iskool_canonical_catalog'
+   * garantizando que el catálogo maestro permanezca 100% canónico y sin mutaciones.
    */
   public static async getCentralCatalog(filter?: CurriculumCatalogFilter): Promise<CurriculumPlan[]> {
     this.initialize();
     const centralMap = this.plansByTenant.get('iskool')!;
-    let plans = Array.from(centralMap.values());
+    let plans = Array.from(centralMap.values()).filter(
+      p => p.tenant_id === 'iskool' && (!p.namespace || p.namespace === 'iskool_canonical_catalog')
+    );
     return this.applyFilter(plans, filter);
   }
 
@@ -290,9 +298,23 @@ export class CurriculumFederationService {
 
     const nowIso = new Date().toISOString();
 
-    // 3. Generación de Checksum Criptográfico de Auditoría Docente (SHA-256)
-    const auditPayload = `${planId}|${tenantId}|${userContext.user_id}|${userContext.email}|${input.curriculum_standard.pda_description}|${nowIso}`;
-    const signature = crypto.createHash('sha256').update(auditPayload).digest('hex');
+    // 3. Generación de Checksum Criptográfico SHA-256 de Contenido e Inmutabilidad
+    const contentPayload = JSON.stringify({
+      title: input.title,
+      subject: input.subject_code,
+      phase: input.phase,
+      grade: input.grade,
+      standard: input.curriculum_standard,
+      intent: input.didactic_intent,
+      sessions: input.sessions,
+      rubric: input.evaluation_rubric,
+      bicultural: input.bicultural_adaptations || null
+    });
+    const contentSha256 = crypto.createHash('sha256').update(contentPayload).digest('hex');
+
+    const targetNamespace = tenantId === 'ibime'
+      ? 'ibime_curriculum_overlays'
+      : 'iskool_canonical_catalog';
 
     const auditTrail = {
       author_id: userContext.user_id,
@@ -303,7 +325,7 @@ export class CurriculumFederationService {
       tenant_id: tenantId,
       created_at: nowIso,
       updated_at: nowIso,
-      signature_sha256: signature
+      signature_sha256: contentSha256
     };
 
     // 4. Determinar la referencia en la Bóveda Curricular
@@ -315,6 +337,8 @@ export class CurriculumFederationService {
     const completePlan: CurriculumPlan = {
       id: planId,
       tenant_id: tenantId,
+      namespace: targetNamespace,
+      content_hash_sha256: contentSha256,
       parent_plan_id: input.parent_plan_id,
       title: input.title,
       subject_code: input.subject_code,
@@ -330,7 +354,7 @@ export class CurriculumFederationService {
       is_custom_overlay: isOverlay
     };
 
-    // 5. Persistir en el Namespace Propio del Tenant
+    // 5. Persistir en el Namespace Propio del Tenant (ibime_curriculum_overlays o iskool_canonical_catalog)
     const tenantMap = this.plansByTenant.get(tenantId)!;
     tenantMap.set(planId, completePlan);
 

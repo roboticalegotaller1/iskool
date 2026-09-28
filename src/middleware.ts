@@ -1,18 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySessionToken } from '@/lib/sessionToken';
 import {
-  resolveTenantFromHostOrHeader,
   verifyMultiTenantToken,
   TenantId
 } from '@/lib/auth/multiTenantSession';
 
 /**
- * Middleware Perimetral Zero-Trust y Multi-Tenant de Next.js.
- * Garantiza Aislamiento Hermético entre iSkool Core e IBIME:
- * 1. Resuelve el contexto de Tenant a partir del subdominio (Host/X-Forwarded-Host), Header (x-tenant-id) o ruta.
- * 2. Bloquea perimetralmente accesos cruzados (Cross-Tenant Leakage) entre usuarios de iSkool e IBIME.
- * 3. Valida Cookies HttpOnly particionadas ('iskool_session', 'ibime_session') o tokens Bearer firmados.
- * 4. Aplica Control de Acceso Basado en Roles (RBAC) e inyecta cabeceras defensivas.
+ * ============================================================================
+ * MIDDLEWARE PERIMETRAL ZERO-TRUST CON AISLAMIENTO HERMÉTICO iSkool & IBIME
+ * ============================================================================
+ * 
+ * Principios de Seguridad Aplicados:
+ * 1. Cero Confianza en Headers de Cliente: Se elimina cualquier decisión de seguridad
+ *    basada en 'X-Tenant-ID' enviado por el cliente para evitar Header Spoofing.
+ * 2. Validación Criptográfica Exclusiva: La identidad y el tenant del usuario se extraen
+ *    estrictamente del JWT firmado en cookies HttpOnly ('ibime_session' o 'iskool_session').
+ * 3. Prevención de Enumeración Cross-Tenant (HTTP 404): Si un usuario de un tenant intenta
+ *    acceder a recursos de otro tenant, se responde con HTTP 404 Not Found (en lugar de 403)
+ *    para evitar que un atacante determine la existencia de endpoints o rutas privadas.
+ * 4. Inyección de Header Interno Confiable: Inyecta 'x-resolved-tenant' para Server Components.
  */
 
 // Rutas protegidas de iSkool Core
@@ -39,30 +45,28 @@ const IBIME_PROTECTED_PREFIXES = [
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const host = request.headers.get('x-forwarded-host') || request.headers.get('host');
-  const headerTenantId = request.headers.get('x-tenant-id');
+  const host = (request.headers.get('x-forwarded-host') || request.headers.get('host') || '').toLowerCase();
 
-  // 1. Resolución determinista del Tenant esperado
-  const resolvedTenant: TenantId = resolveTenantFromHostOrHeader({
-    host,
-    headerTenantId,
-    pathname
-  });
+  // 1. Determinar el Tenant Requerido según el recurso objetivo (Ruta o Subdominio)
+  // NUNCA depender de headers arbitrarios del cliente (como X-Tenant-ID)
+  const isIbimePath = pathname.startsWith('/ibime') || pathname.startsWith('/api/v1/ibime');
+  const isIbimeHost = host.startsWith('ibime.') || host.includes('ibime');
+  const targetTenantRequired: TenantId = (isIbimePath || isIbimeHost) ? 'ibime' : 'iskool';
 
   const isIskoolProtected = ISKOOL_PROTECTED_PREFIXES.some(prefix => pathname.startsWith(prefix));
   const isIbimeProtected = IBIME_PROTECTED_PREFIXES.some(prefix => pathname.startsWith(prefix)) || pathname.startsWith('/api/v1/ibime');
   const isIntegrationApi = pathname.startsWith('/api/v1/integration');
   const isProtected = isIskoolProtected || isIbimeProtected || isIntegrationApi;
 
-  // Si la ruta es pública y no está en un subdominio restringido, permitir paso directo con cabeceras de seguridad
+  // Si la ruta es pública, permitir paso directo inyectando el tenant resuelto
   if (!isProtected) {
     const response = NextResponse.next();
-    response.headers.set('X-Resolved-Tenant-ID', resolvedTenant);
+    response.headers.set('x-resolved-tenant', targetTenantRequired);
     applyDefensiveSecurityHeaders(response);
     return response;
   }
 
-  // 2. Extracción de Credenciales de Sesión (Cookies Particionadas o Header Bearer)
+  // 2. Extracción de Credenciales Criptográficas Exclusivas
   const iskoolCookie = request.cookies.get('iskool_session')?.value;
   const ibimeCookie = request.cookies.get('ibime_session')?.value;
   const authHeader = request.headers.get('Authorization') || request.headers.get('authorization');
@@ -70,46 +74,41 @@ export async function middleware(request: NextRequest) {
     ? authHeader.substring(7).trim()
     : null;
 
-  // Seleccionar token prioritario según el tenant esperado
-  const candidateToken = resolvedTenant === 'ibime'
+  // Seleccionar token candidato
+  const candidateToken = targetTenantRequired === 'ibime'
     ? (ibimeCookie || bearerToken || iskoolCookie)
     : (iskoolCookie || bearerToken || ibimeCookie);
 
   if (!candidateToken) {
-    // Redirección o rechazo por falta de credenciales
     if (pathname.startsWith('/api/')) {
       return NextResponse.json(
         {
           error: 'Autenticación requerida. No se detectó una sesión válida para este recurso.',
-          code: 'UNAUTHENTICATED',
-          tenant: resolvedTenant
+          code: 'UNAUTHENTICATED'
         },
         { status: 401 }
       );
     }
 
-    const loginUrl = new URL(resolvedTenant === 'ibime' ? '/ibime/login' : '/login', request.url);
+    const loginUrl = new URL(targetTenantRequired === 'ibime' ? '/login' : '/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
-    loginUrl.searchParams.set('tenant', resolvedTenant);
+    loginUrl.searchParams.set('tenant', targetTenantRequired);
     return NextResponse.redirect(loginUrl);
   }
 
-  // 3. Verificación Criptográfica de la Carga Útil del Token
-  // Intentar primero verificación formal con el esquema Multi-Tenant estricto
-  let multiTenantUser = await verifyMultiTenantToken(candidateToken);
-  let userRole = multiTenantUser?.role || '';
-  let userTenant: TenantId = multiTenantUser?.tenant_id || 'iskool';
-  let userId = multiTenantUser?.id || '';
+  // 3. Verificación Criptográfica Estricta de la Carga Útil
+  let verifiedUser = await verifyMultiTenantToken(candidateToken);
+  let userRole = verifiedUser?.role || '';
+  let userTenant: TenantId = verifiedUser?.tenant_id || 'iskool';
+  let userId = verifiedUser?.id || '';
 
-  // Fallback con el verificador universal de sesión existente
-  if (!multiTenantUser) {
+  if (!verifiedUser) {
     const fallbackVerified = await verifySessionToken(candidateToken);
     if (fallbackVerified) {
       userId = fallbackVerified.id;
       userRole = fallbackVerified.role;
       userTenant = (fallbackVerified.tenant_id as TenantId) || 'iskool';
     } else {
-      // Token inválido o firma HMAC manipulada
       if (pathname.startsWith('/api/')) {
         return NextResponse.json(
           {
@@ -119,7 +118,7 @@ export async function middleware(request: NextRequest) {
           { status: 401 }
         );
       }
-      const loginUrl = new URL(resolvedTenant === 'ibime' ? '/ibime/login' : '/login', request.url);
+      const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('error', 'invalid_session');
       return NextResponse.redirect(loginUrl);
     }
@@ -127,51 +126,41 @@ export async function middleware(request: NextRequest) {
 
   const isSuperUser = userRole === 'superadmin' || userRole === 'admin';
 
-  // 4. BARRERA DE SEGURIDAD CROSS-TENANT (AISLAMIENTO HERMÉTICO)
-  // Caso A: El recurso pertenece a IBIME pero el usuario pertenece a iSkool
-  if (resolvedTenant === 'ibime' && userTenant !== 'ibime') {
+  // 4. BARRERA DE SEGURIDAD ZERO-TRUST (ANTI-ENUMERACIÓN HTTP 404 NOT FOUND)
+  // Si el usuario autenticado pertenece a un tenant distinto al recurso solicitado
+  // respondemos con 404 NOT FOUND para evitar la enumeración de recursos privados
+  if (targetTenantRequired === 'ibime' && userTenant !== 'ibime') {
     if (!isSuperUser) {
       if (pathname.startsWith('/api/')) {
         return NextResponse.json(
           {
-            error: 'Acceso denegado: Violación de frontera multi-tenant. Tu sesión de iSkool no tiene permisos para acceder a recursos de IBIME.',
-            code: 'CROSS_TENANT_VIOLATION',
-            userTenant,
-            targetTenant: resolvedTenant
+            error: 'Recurso no encontrado.',
+            code: 'NOT_FOUND'
           },
-          { status: 403 }
+          { status: 404 }
         );
       }
-      const redirectUrl = new URL('/login', request.url);
-      redirectUrl.searchParams.set('error', 'cross_tenant_denied');
-      redirectUrl.searchParams.set('tenant', 'ibime');
-      return NextResponse.redirect(redirectUrl);
+      return NextResponse.rewrite(new URL('/not-found', request.url), { status: 404 });
     }
   }
 
-  // Caso B: El recurso pertenece a iSkool pero el usuario pertenece a IBIME
-  if (resolvedTenant === 'iskool' && (isIskoolProtected || isIntegrationApi) && userTenant !== 'iskool') {
+  if (targetTenantRequired === 'iskool' && (isIskoolProtected || isIntegrationApi) && userTenant !== 'iskool') {
     if (!isSuperUser) {
       if (pathname.startsWith('/api/')) {
         return NextResponse.json(
           {
-            error: 'Acceso denegado: Violación de frontera multi-tenant. Tu sesión de IBIME no tiene permisos para acceder a recursos de iSkool Core.',
-            code: 'CROSS_TENANT_VIOLATION',
-            userTenant,
-            targetTenant: resolvedTenant
+            error: 'Recurso no encontrado.',
+            code: 'NOT_FOUND'
           },
-          { status: 403 }
+          { status: 404 }
         );
       }
-      const redirectUrl = new URL('/ibime/portal', request.url);
-      redirectUrl.searchParams.set('error', 'cross_tenant_denied');
-      return NextResponse.redirect(redirectUrl);
+      return NextResponse.rewrite(new URL('/not-found', request.url), { status: 404 });
     }
   }
 
-  // 5. Control de Acceso Basado en Roles (RBAC) Perimetral
+  // 5. Control de Acceso Basado en Roles (RBAC)
   if (userRole === 'student') {
-    // Bloquear acceso de alumnos a paneles administrativos o docentes en ambos contextos
     if (
       pathname.startsWith('/admin') ||
       pathname.startsWith('/teacher') ||
@@ -190,9 +179,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(fallbackUrl, request.url));
   }
 
-  // 6. Configurar Petición Downstream con Cabeceras de Identidad Inyectadas
+  // 6. Inyección de Headers Confiables hacia Server Components
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-resolved-tenant-id', resolvedTenant);
+  requestHeaders.set('x-resolved-tenant', targetTenantRequired);
+  requestHeaders.set('x-resolved-tenant-id', targetTenantRequired);
   requestHeaders.set('x-user-id', userId);
   requestHeaders.set('x-user-role', userRole);
   requestHeaders.set('x-user-tenant', userTenant);
@@ -204,7 +194,8 @@ export async function middleware(request: NextRequest) {
   });
 
   // Cabecera de respuesta para trazabilidad perimetral
-  response.headers.set('X-Resolved-Tenant-ID', resolvedTenant);
+  response.headers.set('x-resolved-tenant', targetTenantRequired);
+  response.headers.set('x-resolved-tenant-id', targetTenantRequired);
   applyDefensiveSecurityHeaders(response);
 
   return response;
@@ -219,10 +210,6 @@ function applyDefensiveSecurityHeaders(response: NextResponse) {
 
 export const config = {
   matcher: [
-    /*
-     * Aplica a rutas protegidas de iSkool, IBIME y pasarelas de integración,
-     * excluyendo archivos estáticos (_next, imágenes, favicon, fuentes).
-     */
     '/admin/:path*',
     '/teacher/:path*',
     '/student/:path*',

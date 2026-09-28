@@ -55,6 +55,8 @@ export interface CurriculumAuditTrail {
 export interface CurriculumPlan {
   id: string;
   tenant_id: TenantId;
+  namespace?: 'ibime_curriculum_overlays' | 'iskool_canonical_catalog' | string;
+  content_hash_sha256?: string;
   parent_plan_id?: string;
   title: string;
   subject_code: string;
