@@ -5,6 +5,8 @@ import { ThemeSync } from "@/components/ThemeSync";
 import { AuthProvider } from "@/context/AuthContext";
 import { GlobalHelpFab } from "@/components/help/GlobalHelpFab";
 import { ComingSoonProvider } from "@/components/ui/ComingSoonModal";
+import { TenantBrandingProvider } from "@/components/branding/TenantBrandingProvider";
+import { generateServerTenantCss } from "@/lib/branding/tenantThemeTokens";
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -41,20 +43,47 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const serverCss = generateServerTenantCss('iskool');
+
   return (
     <html
       lang="es"
       className={`h-full light antialiased ${plusJakarta.variable} ${jetbrainsMono.variable}`}
+      data-tenant="iskool"
       suppressHydrationWarning
     >
+      <head>
+        {/* Inyección SSR de tokens CSS para eliminación total de parpadeo (Zero-FOUC) */}
+        <style id="server-tenant-tokens" dangerouslySetInnerHTML={{ __html: serverCss }} />
+        {/* Script síncrono previo a renderizado del DOM */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var h = window.location.hostname.toLowerCase();
+                  var c = document.cookie;
+                  var p = window.location.pathname.toLowerCase();
+                  var isIbime = h.indexOf('ibime') !== -1 || c.indexOf('ibime_session=') !== -1 || p.indexOf('/ibime') === 0;
+                  if (isIbime) {
+                    document.documentElement.setAttribute('data-tenant', 'ibime');
+                  }
+                } catch(e) {}
+              })();
+            `
+          }}
+        />
+      </head>
       <body className="min-h-full w-full max-w-full overflow-x-hidden flex flex-col bg-slate-50 text-slate-900 font-sans">
-        <ThemeSync />
-        <AuthProvider>
-          <ComingSoonProvider>
-            {children}
-            <GlobalHelpFab />
-          </ComingSoonProvider>
-        </AuthProvider>
+        <TenantBrandingProvider>
+          <ThemeSync />
+          <AuthProvider>
+            <ComingSoonProvider>
+              {children}
+              <GlobalHelpFab />
+            </ComingSoonProvider>
+          </AuthProvider>
+        </TenantBrandingProvider>
       </body>
     </html>
   );

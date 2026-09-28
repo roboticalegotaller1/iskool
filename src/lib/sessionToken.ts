@@ -5,6 +5,8 @@ export interface SecureSessionPayload {
   email?: string;
   role: string;
   school_id?: string;
+  tenant_id?: 'iskool' | 'ibime';
+  institution_metadata?: Record<string, any>;
   first_name?: string;
   last_name?: string;
   iat: number;
@@ -53,12 +55,15 @@ export async function signSessionToken(data: {
   email?: string;
   role: string;
   school_id?: string;
+  tenant_id?: 'iskool' | 'ibime';
+  institution_metadata?: Record<string, any>;
   first_name?: string;
   last_name?: string;
 }, expiresInSeconds: number = 7 * 24 * 3600): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   const payload: SecureSessionPayload = {
     ...data,
+    tenant_id: data.tenant_id || 'iskool',
     iat: now,
     exp: now + expiresInSeconds
   };

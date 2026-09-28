@@ -9,6 +9,8 @@ export interface AuthValidationResult {
     email?: string;
     role?: string;
     school_id?: string;
+    tenant_id?: 'iskool' | 'ibime';
+    institution_metadata?: Record<string, any>;
     first_name?: string;
     last_name?: string;
   };
@@ -16,17 +18,37 @@ export interface AuthValidationResult {
 }
 
 /**
- * Validador perimetral de seguridad Zero-Trust para endpoints de API de ISkool.
- * Verifica tokens criptográficos Bearer, Cookies HttpOnly seguras ('iskool_session'),
- * y bloquea de manera estricta ataques de Header Spoofing (inyección de x-user-id no firmado).
+ * Validador perimetral de seguridad Zero-Trust para endpoints de API de ISkool e IBIME.
+ * Verifica tokens criptográficos Bearer, Cookies HttpOnly seguras ('iskool_session', 'ibime_session'),
+ * y bloquea de manera estricta ataques de Header Spoofing y fugas cross-tenant.
  */
-export async function validateApiAuth(request: NextRequest): Promise<AuthValidationResult> {
+export async function validateApiAuth(
+  request: NextRequest,
+  options?: { expectedTenant?: 'iskool' | 'ibime'; allowSuperAdminBypass?: boolean }
+): Promise<AuthValidationResult> {
   try {
-    // 1. Verificación de Cookie HttpOnly Segura ('iskool_session')
+    // 1. Verificación de Cookies HttpOnly Seguras ('iskool_session' o 'ibime_session')
     const iskoolSessionCookie = request.cookies.get('iskool_session')?.value;
-    if (iskoolSessionCookie) {
-      const verifiedPayload = await verifySessionToken(iskoolSessionCookie);
+    const ibimeSessionCookie = request.cookies.get('ibime_session')?.value;
+    const sessionCookie = (options?.expectedTenant === 'ibime')
+      ? (ibimeSessionCookie || iskoolSessionCookie)
+      : (iskoolSessionCookie || ibimeSessionCookie);
+
+    if (sessionCookie) {
+      const verifiedPayload = await verifySessionToken(sessionCookie);
       if (verifiedPayload) {
+        // Verificación de aislamiento hermético cross-tenant
+        const userTenant = verifiedPayload.tenant_id || 'iskool';
+        if (options?.expectedTenant && userTenant !== options.expectedTenant) {
+          const isSuperUser = verifiedPayload.role === 'superadmin' || verifiedPayload.role === 'admin';
+          if (!options.allowSuperAdminBypass || !isSuperUser) {
+            return {
+              authenticated: false,
+              error: `Acceso denegado: El token pertenece a '${userTenant}' y no tiene autorización en '${options.expectedTenant}'.`
+            };
+          }
+        }
+
         return {
           authenticated: true,
           user: {
@@ -34,6 +56,8 @@ export async function validateApiAuth(request: NextRequest): Promise<AuthValidat
             email: verifiedPayload.email,
             role: verifiedPayload.role,
             school_id: verifiedPayload.school_id,
+            tenant_id: userTenant,
+            institution_metadata: verifiedPayload.institution_metadata,
             first_name: verifiedPayload.first_name,
             last_name: verifiedPayload.last_name
           }
@@ -49,6 +73,17 @@ export async function validateApiAuth(request: NextRequest): Promise<AuthValidat
         // A. Intentar verificar con HMAC token propio
         const verifiedPayload = await verifySessionToken(token);
         if (verifiedPayload) {
+          const userTenant = verifiedPayload.tenant_id || 'iskool';
+          if (options?.expectedTenant && userTenant !== options.expectedTenant) {
+            const isSuperUser = verifiedPayload.role === 'superadmin' || verifiedPayload.role === 'admin';
+            if (!options.allowSuperAdminBypass || !isSuperUser) {
+              return {
+                authenticated: false,
+                error: `Acceso denegado: El token pertenece a '${userTenant}' y no tiene autorización en '${options.expectedTenant}'.`
+              };
+            }
+          }
+
           return {
             authenticated: true,
             user: {
@@ -56,6 +91,8 @@ export async function validateApiAuth(request: NextRequest): Promise<AuthValidat
               email: verifiedPayload.email,
               role: verifiedPayload.role,
               school_id: verifiedPayload.school_id,
+              tenant_id: userTenant,
+              institution_metadata: verifiedPayload.institution_metadata,
               first_name: verifiedPayload.first_name,
               last_name: verifiedPayload.last_name
             }

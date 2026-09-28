@@ -1,0 +1,115 @@
+name: CI/CD Pipeline - Integración Hermética Multi-Tenant (iSkool & IBIME)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ===========================================================================
+  # FASE 1: GUARDAS DE CALIDAD, SEGURIDAD Y ANÁLISIS ESTÁTICO DE FRONTERAS
+  # ===========================================================================
+  quality-and-security-gates:
+    name: 🛡️ Guardas de Calidad, Seguridad y Análisis Estático
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 📥 Checkout del Repositorio Central
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ⚙️ Configurar Entorno Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Instalar Dependencias
+        run: npm ci
+
+      - name: 🔍 Guarda de Tamaño de Carga y Límites Cloud (Reglas 3 y 4)
+        run: npm run guard:push
+
+      - name: 🧱 Análisis Estático de Fronteras Herméticas (AST Boundary Linter)
+        run: npm run lint:boundaries
+
+      - name: 📐 Verificación de Tipos TypeScript (Strict Mode)
+        run: npx tsc --noEmit
+
+      - name: 🧪 Ejecución de Suites de Pruebas Unitarias y de Integración
+        run: |
+          npx vitest run tests/multiTenantAuth.test.ts \
+                         tests/curriculumFederation.test.ts \
+                         tests/whiteLabelTheming.test.tsx \
+                         tests/e2eHermeticIntegration.test.ts
+
+  # ===========================================================================
+  # FASE 2: VERIFICACIÓN E2E PERIMETRAL EN PLAYWRIGHT
+  # ===========================================================================
+  e2e-browser-verification:
+    name: 🎭 Pruebas E2E de Aislamiento Hermético (Playwright)
+    runs-on: ubuntu-latest
+    needs: quality-and-security-gates
+    timeout-minutes: 20
+
+    steps:
+      - name: 📥 Checkout del Repositorio Central
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Instalar Dependencias
+        run: npm ci
+
+      - name: 🧪 Ejecutar Suite E2E Hermética
+        run: |
+          npm run test:hermetic
+
+  # ===========================================================================
+  # FASE 3: COMPILACIÓN Y DESPLIEGUE A PRODUCCIÓN MULTI-REMOTO (REGLA 4)
+  # ===========================================================================
+  production-deployment-audit:
+    name: 🚀 Auditoría de Despliegue Multi-Remoto (AWS Amplify & ISkool)
+    runs-on: ubuntu-latest
+    needs: [quality-and-security-gates, e2e-browser-verification]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    timeout-minutes: 10
+
+    steps:
+      - name: 📥 Checkout del Repositorio Central
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ⚙️ Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Instalar Dependencias
+        run: npm ci
+
+      - name: 🏗️ Validación de Compilación de Producción (Next.js Build)
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          NODE_OPTIONS: "--max-old-space-size=8192"
+
+      - name: 🛡️ Verificación de Integridad de la Bóveda Curricular
+        run: |
+          npm run test:e2e

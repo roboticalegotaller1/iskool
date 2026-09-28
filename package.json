@@ -18,6 +18,8 @@
     "test:vitest": "vitest run",
     "test:insights": "vitest run tests/pedagogicalInsights.test.tsx",
     "test:e2e": "vitest run __tests__/vault-lifecycle.e2e.test.ts",
+    "test:hermetic": "vitest run tests/e2eHermeticIntegration.test.ts",
+    "lint:boundaries": "tsx scripts/verify_hermetic_boundaries.ts",
     "compress:assets": "node scripts/batch_image_compressor.js",
     "guard:push": "node scripts/pre_push_guard.js",
     "deploy:remotes": "npm run guard:push && git push origin main && git push iskool main && git push duran14 main --force"
