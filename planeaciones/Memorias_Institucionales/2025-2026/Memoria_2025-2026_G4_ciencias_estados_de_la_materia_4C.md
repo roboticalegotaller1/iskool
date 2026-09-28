@@ -13,14 +13,14 @@ author_display_name: "Prof. Laura Gomez"
 adaptation_of: null
 group_cohort: "4C"
 metrics:
-  students_evaluated_count: 26
-  mastery_rate: 0.88
+  students_evaluated_count: 29
+  mastery_rate: 0.93
   comprehension_friction_points:
     - "sublimacion_proceso_fisico"
 provenance:
   rails_activity_id: 9940
   rails_assessment_batch_id: 12040
-  captured_at: "2026-09-28T01:26:03.139Z"
+  captured_at: "2026-09-28T01:50:45.072Z"
   ingestion_agent: "iSkool-Memory-Worker/1.0"
 tags:
   - memoria_institucional
@@ -36,7 +36,7 @@ tags:
 ---
 
 ## 📍 Contexto Pedagógico y Diagnóstico Inicial
-Evaluación formativa tras experimento de laboratorio con hielo seco y vapor.
+Actualización posterior a segunda ronda de laboratorio con condensación.
 
 - **Institución:** IBIME (Campus Central)
 - **Ciclo Escolar:** 2025-2026
@@ -69,7 +69,7 @@ Registro generado automáticamente por el Motor de Telemetría Pedagógica Asín
 
 - **Rails Activity ID:** `9940`
 - **Rails Assessment Batch ID:** `12040`
-- **Muestra Evaluada:** 26 estudiantes (datos anónimos agregados, Cero PII)
-- **Tasa de Dominio Lograda:** 88.0%
+- **Muestra Evaluada:** 29 estudiantes (datos anónimos agregados, Cero PII)
+- **Tasa de Dominio Lograda:** 93.0%
 - **Agente de Ingestión:** `iSkool-Memory-Worker/1.0`
-- **Fecha de Captura:** `2026-09-28T01:26:03.139Z`
+- **Fecha de Captura:** `2026-09-28T01:50:45.072Z`

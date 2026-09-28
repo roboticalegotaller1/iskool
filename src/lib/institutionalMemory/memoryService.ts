@@ -94,7 +94,8 @@ export class InstitutionalMemoryService {
   }): Promise<{ synced: boolean; commitSha?: string; error?: string }> {
     const token = process.env.REPO_ACCESS_TOKEN || process.env.GITHUB_TOKEN || process.env.CENTRAL_REPO_TOKEN;
     if (!token) {
-      return { synced: false, error: 'Token de sincronización institucional no configurado' };
+      console.warn('[Memoria Institucional GitOps] Advertencia: Token de sincronización con el Repositorio Central no configurado (REPO_ACCESS_TOKEN / GITHUB_TOKEN). Conmutando a Almacenamiento en la Nube (Cloud Storage) como persistencia primaria.');
+      return { synced: false, error: 'Token de sincronización institucional no configurado; conmutado a Cloud Storage' };
     }
 
     const repo = process.env.CENTRAL_REPO || process.env.GITHUB_REPOSITORY || 'roboticalegotaller1/iskool-web-';
@@ -102,8 +103,14 @@ export class InstitutionalMemoryService {
     const sanitizedPath = params.relativeRepoPath.replace(/\\/g, '/');
     const apiUrl = `https://api.github.com/repos/${repo}/contents/${sanitizedPath}`;
 
+    // Prevención de Bucles de Build en AWS Amplify: commit message con [skip ci] [amplify skip]
+    let commitMessage = params.commitMessage || `persistencia de memoria institucional ${sanitizedPath}`;
+    if (!commitMessage.includes('[skip ci]')) {
+      commitMessage = `[skip ci] [amplify skip]: ${commitMessage}`;
+    }
+
     try {
-      // 1. Verificar si el archivo ya existe para obtener su SHA de actualización
+      // 1. Manejo de Actualización (SHA): Verificar si el archivo ya existe para obtener su SHA (Previene HTTP 422)
       let currentSha: string | undefined = undefined;
       const checkRes = await fetch(`${apiUrl}?ref=${branch}`, {
         method: 'GET',
@@ -119,7 +126,7 @@ export class InstitutionalMemoryService {
         currentSha = checkData.sha;
       }
 
-      // 2. Transmitir commit a la rama principal del Repositorio Central
+      // 2. Transmitir commit a la rama principal del Repositorio Central con SHA si existe
       const commitRes = await fetch(apiUrl, {
         method: 'PUT',
         headers: {
@@ -129,7 +136,7 @@ export class InstitutionalMemoryService {
           'User-Agent': 'iSkool-Institutional-Brain/1.0'
         },
         body: JSON.stringify({
-          message: params.commitMessage || `feat(memoria): registrar memoria pedagógica ${sanitizedPath}`,
+          message: commitMessage,
           content: Buffer.from(params.fileContent, 'utf8').toString('base64'),
           branch,
           ...(currentSha ? { sha: currentSha } : {})
@@ -273,7 +280,7 @@ export class InstitutionalMemoryService {
         const gitResult = await this.syncToCentralRepository({
           relativeRepoPath: repoRelativePath,
           fileContent,
-          commitMessage: `feat(memoria): registrar memoria pedagógica ${input.academic_cycle} ${input.subject} (${input.topic})`
+          commitMessage: `[skip ci] [amplify skip]: persistencia de memoria institucional ${input.academic_cycle}/${filename}`
         });
         remoteGitSynced = gitResult.synced;
         remoteGitCommit = gitResult.commitSha;
@@ -489,6 +496,142 @@ ${input.sections.procedenciaTrazabilidad || 'Registro generado automáticamente 
     cycle?: string;
   }): InstitutionalMemoryDocument[] {
     const all = this.loadAllMemories();
+    const cleanSub = query.subject ? cleanString(query.subject) : null;
+    const cleanTop = query.topic ? cleanString(query.topic) : null;
+    const gradeStr = query.grade !== undefined ? String(query.grade) : null;
+
+    return all.filter(doc => {
+      const fm = doc.frontmatter;
+      if (query.cycle && fm.academic_cycle !== query.cycle) return false;
+      if (gradeStr && String(fm.grade) !== gradeStr && !String(fm.grade).includes(gradeStr)) return false;
+
+      if (cleanSub) {
+        const docSub = cleanString(fm.subject);
+        if (!docSub.includes(cleanSub) && !cleanSub.includes(docSub)) return false;
+      }
+
+      if (cleanTop) {
+        const docTop = cleanString(fm.topic);
+        const words = cleanTop.split(/\s+/).filter(w => w.length > 2);
+        const matchesAnyWord = words.some(w => docTop.includes(w));
+        if (!docTop.includes(cleanTop) && !matchesAnyWord) return false;
+      }
+
+      return true;
+    });
+  }
+
+  /**
+   * Carga de memorias desde el almacenamiento unificado en la nube (Supabase Storage).
+   * Resuelve la inconsistencia en entornos multi-lambda donde /tmp es efímero y no compartido.
+   */
+  static async loadMemoriesFromCloudStorage(): Promise<InstitutionalMemoryDocument[]> {
+    if (!supabase || !supabase.storage) return [];
+    const bucketName = process.env.INSTITUTIONAL_MEMORY_BUCKET || 'institutional-memory';
+
+    try {
+      const { data: rootItems, error: listErr } = await supabase.storage.from(bucketName).list('', {
+        limit: 100
+      });
+      if (listErr || !rootItems) return [];
+
+      const documents: InstitutionalMemoryDocument[] = [];
+
+      for (const item of rootItems) {
+        if (!item.id && item.name) {
+          // Es subdirectorio de ciclo escolar (ej. 2025-2026)
+          const { data: subFiles } = await supabase.storage.from(bucketName).list(item.name, {
+            limit: 100
+          });
+          if (subFiles) {
+            for (const file of subFiles) {
+              if (file.name.endsWith('.md')) {
+                const doc = await this.downloadAndParseStorageFile(bucketName, `${item.name}/${file.name}`);
+                if (doc) documents.push(doc);
+              }
+            }
+          }
+        } else if (item.name.endsWith('.md')) {
+          const doc = await this.downloadAndParseStorageFile(bucketName, item.name);
+          if (doc) documents.push(doc);
+        }
+      }
+
+      return documents;
+    } catch (err) {
+      console.warn('[InstitutionalMemoryService] Advertencia al consultar Cloud Storage multi-lambda:', err);
+      return [];
+    }
+  }
+
+  private static async downloadAndParseStorageFile(bucket: string, storagePath: string): Promise<InstitutionalMemoryDocument | null> {
+    try {
+      const { data, error } = await supabase.storage.from(bucket).download(storagePath);
+      if (error || !data) return null;
+
+      const rawContent = await data.text();
+      const parsed = KnowledgeVaultParser.parse(rawContent, storagePath);
+      const fm = parsed.frontmatter as unknown as InstitutionalMemoryFrontmatter;
+
+      if (fm && fm.type === 'institutional_memory') {
+        const sections = this.extractSectionsFromMarkdown(parsed.markdownBody);
+        const id = path.basename(storagePath, '.md').toLowerCase();
+        return {
+          id,
+          filePath: `storage://${bucket}/${storagePath}`,
+          relativePath: storagePath,
+          frontmatter: fm,
+          sections,
+          rawContent,
+          wikiLinks: parsed.wikiLinks || [],
+          createdAt: fm.provenance?.captured_at || new Date().toISOString()
+        };
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  }
+
+  /**
+   * Consulta asíncrona de memorias con consistencia Multi-Lambda.
+   * Si se ejecuta en producción (AWS Amplify / Lambda), además del filesystem local empaquetado,
+   * consulta el bucket unificado de Supabase Storage para servir la memoria más reciente.
+   */
+  static async queryMemoriesAsync(query: {
+    grade?: number | string;
+    subject?: string;
+    topic?: string;
+    phase_nem?: string;
+    cycle?: string;
+  }): Promise<InstitutionalMemoryDocument[]> {
+    const localDocs = this.loadAllMemories();
+    const docMap = new Map<string, InstitutionalMemoryDocument>();
+    for (const doc of localDocs) {
+      docMap.set(doc.id, doc);
+    }
+
+    const isProductionOrCloud = Boolean(
+      process.env.NODE_ENV === 'production' ||
+      process.env.AWS_LAMBDA_FUNCTION_NAME ||
+      process.env.LAMBDA_TASK_ROOT ||
+      process.env.VERCEL
+    );
+
+    if (isProductionOrCloud) {
+      try {
+        const cloudDocs = await this.loadMemoriesFromCloudStorage();
+        for (const doc of cloudDocs) {
+          if (!docMap.has(doc.id)) {
+            docMap.set(doc.id, doc);
+          }
+        }
+      } catch (err) {
+        console.warn('[InstitutionalMemoryService] Fallback resiliente a memorias locales:', err);
+      }
+    }
+
+    const all = Array.from(docMap.values());
     const cleanSub = query.subject ? cleanString(query.subject) : null;
     const cleanTop = query.topic ? cleanString(query.topic) : null;
     const gradeStr = query.grade !== undefined ? String(query.grade) : null;

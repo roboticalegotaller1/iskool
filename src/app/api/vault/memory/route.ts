@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { z } from 'zod';
 import { validateApiAuth } from '@/lib/authValidator';
 import {
@@ -7,6 +8,29 @@ import {
   PedagogicalPrivacyViolationError,
   CreateInstitutionalMemoryInput
 } from '@/lib/institutionalMemory';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+/**
+ * Comparación segura de tiempo constante para prevenir ataques de temporización (timing attacks).
+ * Valida la cabecera Authorization: Bearer <RAILS_INGESTION_SECRET> con crypto.timingSafeEqual.
+ */
+export function timingSafeTokenCheck(provided: string, expected: string): boolean {
+  if (!provided || !expected || typeof provided !== 'string' || typeof expected !== 'string') {
+    return false;
+  }
+  const bufProvided = Buffer.from(provided);
+  const bufExpected = Buffer.from(expected);
+
+  if (bufProvided.length !== bufExpected.length) {
+    // Si las longitudes difieren, ejecutamos timingSafeEqual sobre buffers idénticos para tiempo constante
+    crypto.timingSafeEqual(bufProvided, bufProvided);
+    return false;
+  }
+
+  return crypto.timingSafeEqual(bufProvided, bufExpected);
+}
 
 // Esquema de entrada para la Ingestión Segura desde Rails / Webhooks
 const MemoryIngestionRequestSchema = z.object({
@@ -55,10 +79,13 @@ async function validateIngestionSecurity(request: NextRequest): Promise<{ author
 
   const configuredSecret = process.env.RAILS_INGESTION_SECRET || process.env.INTERNAL_API_SECRET || process.env.CRON_SECRET;
 
-  // 1. Verificación por Secreto de Ingestión entre Servidores (Rails -> Next.js)
+  // 1. Verificación por Secreto de Ingestión entre Servidores (Rails -> Next.js) con crypto.timingSafeEqual
   if (configuredSecret) {
     const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.substring(7).trim() : '';
-    if (bearerToken === configuredSecret || ingestionKeyHeader === configuredSecret) {
+    if (
+      (bearerToken && timingSafeTokenCheck(bearerToken, configuredSecret)) ||
+      (ingestionKeyHeader && timingSafeTokenCheck(ingestionKeyHeader, configuredSecret))
+    ) {
       return { authorized: true };
     }
   }
@@ -75,7 +102,7 @@ async function validateIngestionSecurity(request: NextRequest): Promise<{ author
     return { authorized: true };
   }
 
-  return { authorized: false, reason: 'No autorizado. Se requiere token de ingestión válido o sesión activa.' };
+  return { authorized: false, reason: 'No autorizado' };
 }
 
 /**
@@ -87,7 +114,7 @@ export async function POST(request: NextRequest) {
     // 1. Control de acceso
     const security = await validateIngestionSecurity(request);
     if (!security.authorized) {
-      return NextResponse.json({ error: security.reason }, { status: 401 });
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
     // 2. Extracción y parsing del body
@@ -165,7 +192,7 @@ export async function GET(request: NextRequest) {
     const cycle = searchParams.get('cycle') || undefined;
     const wantSynthesis = searchParams.get('synthesis') === 'true' || searchParams.get('synthesis') === '1';
 
-    const memories = InstitutionalMemoryService.queryMemories({
+    const memories = await InstitutionalMemoryService.queryMemoriesAsync({
       grade,
       subject,
       topic,

@@ -428,7 +428,7 @@ export async function GET(request: NextRequest) {
       const finalPreguntas = filteredPreguntas.length >= 3 ? filteredPreguntas.map(p => sanitizeSpanishPedagogicalGrammar(p)) : detonatingQuestions;
 
       // Consulta y síntesis de Memoria Institucional de ciclos escolares anteriores (Evitar amnesia escolar)
-      const relatedMemories = InstitutionalMemoryService.queryMemories({
+      const relatedMemories = await InstitutionalMemoryService.queryMemoriesAsync({
         grade: gradeParam,
         subject: subjectParam || subjectName,
         topic: cleanTopic

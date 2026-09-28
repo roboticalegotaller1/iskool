@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     else if (level === 'primaria-media') inferredGrade = 4;
     else if (level === 'primaria-alta') inferredGrade = 6;
 
-    const relatedMemories = InstitutionalMemoryService.queryMemories({
+    const relatedMemories = await InstitutionalMemoryService.queryMemoriesAsync({
       grade: inferredGrade,
       subject,
       topic: promptText || targetPda || ''

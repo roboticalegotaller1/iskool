@@ -23,7 +23,8 @@ import {
   ChevronUp,
   FileText,
   Copy,
-  Check
+  Check,
+  RefreshCw
 } from 'lucide-react';
 
 interface MemoryItem {
@@ -56,31 +57,68 @@ interface MemoryItem {
 export function InstitutionalMemoryOverview() {
   const [memories, setMemories] = useState<MemoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date());
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCycle, setSelectedCycle] = useState<string>('all');
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadMemories() {
-      try {
-        setLoading(true);
-        const res = await fetch('/api/vault/memory');
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data.memories)) {
-            setMemories(data.memories);
-          }
+  // Carga reactiva de memorias (SWR / No-Store para sincronización multi-instancia en tiempo real)
+  const loadMemories = React.useCallback(async (silent: boolean = false) => {
+    try {
+      if (!silent) setLoading(true);
+      else setIsRefreshing(true);
+
+      const timestamp = Date.now();
+      const res = await fetch(`/api/vault/memory?_t=${timestamp}`, {
+        method: 'GET',
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
         }
-      } catch (err) {
-        console.error('Error cargando memorias institucionales:', err);
-      } finally {
-        setLoading(false);
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.memories)) {
+          setMemories(data.memories);
+          setLastSyncTime(new Date());
+        }
       }
+    } catch (err) {
+      console.error('Error sincronizando memorias institucionales:', err);
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
     }
-    loadMemories();
   }, []);
+
+  useEffect(() => {
+    loadMemories();
+
+    // Revalidación periódica cada 30 segundos (SWR polling)
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        loadMemories(true);
+      }
+    }, 30000);
+
+    // Revalidación al volver a enfocar la ventana
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadMemories(true);
+      }
+    };
+    window.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [loadMemories]);
 
   // Extraer ciclos únicos y asignaturas únicas
   const availableCycles = useMemo(() => {
@@ -199,6 +237,15 @@ export function InstitutionalMemoryOverview() {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => loadMemories(true)}
+            disabled={isRefreshing || loading}
+            title={`Última sincronización: ${lastSyncTime.toLocaleTimeString()}`}
+            className="text-xs px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-medium border border-indigo-200 dark:border-indigo-900/50 flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-indigo-600' : ''}`} />
+            <span>{isRefreshing ? 'Sincronizando...' : 'Actualizar'}</span>
+          </button>
           <span className="text-xs px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-medium border border-emerald-200 dark:border-emerald-900/50 flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5" />
             Bóveda Curricular Sincronizada

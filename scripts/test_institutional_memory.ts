@@ -8,6 +8,7 @@ import { InstitutionalMemoryService } from '../src/lib/institutionalMemory/memor
 import { PedagogicalPiiGuard, PedagogicalPrivacyViolationError } from '../src/lib/institutionalMemory/piiGuard';
 import { KnowledgeVaultValidator } from '../src/lib/knowledgeVault/validator';
 import { KnowledgeVaultParser } from '../src/lib/knowledgeVault/parser';
+import { timingSafeTokenCheck } from '../src/app/api/vault/memory/route';
 import fs from 'fs';
 import path from 'path';
 
@@ -221,6 +222,91 @@ ${mathSynth.recommendationsForNextTeacher.map(r => `  • ${r}`).join('\n')}
   assert(generatedPromptBlock.includes('- Intervenciones y adaptaciones probadas con éxito por otros docentes:'), 'Bloque de adaptaciones probadas inyectado');
   assert(generatedPromptBlock.includes('conversion_impropia_mixta') || generatedPromptBlock.includes('numerador'), 'Fricción histórica específica inyectada en el prompt');
 
+  // 10. Prueba de Actualización de Memoria Existente y Verificación de SHA
+  console.log(`\n🔄 Validando actualización de memoria existente y protocolo SHA GitOps...`);
+  const updateMemoryInput = {
+    ...newMemoryInput,
+    metrics: {
+      students_evaluated_count: 29,
+      mastery_rate: 0.93,
+      comprehension_friction_points: ["sublimacion_proceso_fisico"]
+    },
+    sections: {
+      ...newMemoryInput.sections,
+      contextoDiagnostico: "Actualización posterior a segunda ronda de laboratorio con condensación."
+    }
+  };
+  const updateRes = await InstitutionalMemoryService.saveMemory(updateMemoryInput);
+  assert(updateRes.success, 'Actualización exitosa de memoria institucional existente');
+  
+  const updatedDoc = InstitutionalMemoryService.queryMemories({
+    grade: 4,
+    subject: 'ciencias',
+    topic: 'estados_de_la_materia'
+  });
+  const updatedFm = updatedDoc[0]?.frontmatter;
+  assert(updatedFm?.metrics.students_evaluated_count === 29, `Muestra actualizada en memoria existente (29 estudiantes)`);
+  assert(updatedFm?.metrics.mastery_rate === 0.93, `Tasa de dominio actualizada en memoria existente (93%)`);
+
+  // Simulación de resolución de SHA en GitOps
+  const originalFetch = global.fetch;
+  let shaVerifiedInPayload = false;
+  let skipCiVerifiedInPayload = false;
+
+  try {
+    process.env.REPO_ACCESS_TOKEN = 'test_token_mock_123';
+    global.fetch = (async (url: string | URL | Request, init?: RequestInit): Promise<Response> => {
+      const urlStr = String(url);
+      const method = init?.method || 'GET';
+
+      if (method === 'GET') {
+        // Simula respuesta de GitHub indicando que el archivo existe con un SHA específico
+        return new Response(JSON.stringify({ sha: 'mock_existing_sha_987654321' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      if (method === 'PUT') {
+        const body = JSON.parse(String(init?.body || '{}'));
+        if (body.sha === 'mock_existing_sha_987654321') {
+          shaVerifiedInPayload = true;
+        }
+        if (body.message && body.message.includes('[skip ci]') && body.message.includes('[amplify skip]')) {
+          skipCiVerifiedInPayload = true;
+        }
+        return new Response(JSON.stringify({ commit: { sha: 'mock_commit_sha_abcdef' } }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
+      return new Response('{}', { status: 200 });
+    }) as typeof fetch;
+
+    const mockGitResult = await InstitutionalMemoryService.syncToCentralRepository({
+      relativeRepoPath: 'planeaciones/Memorias_Institucionales/2025-2026/Memoria_Test.md',
+      fileContent: '# Test with SHA check'
+    });
+
+    assert(mockGitResult.synced === true, 'Sincronización GitOps exitosa con mock de GitHub');
+    assert(shaVerifiedInPayload === true, 'Manejo de Actualización: SHA existente consultado e incluido en PUT (Previene HTTP 422)');
+    assert(skipCiVerifiedInPayload === true, 'Prevención de Bucles de Build: Commit incluye [skip ci] [amplify skip]');
+  } finally {
+    global.fetch = originalFetch;
+    delete process.env.REPO_ACCESS_TOKEN;
+  }
+
+  // 11. Prueba de Seguridad con Tiempo Constante (crypto.timingSafeEqual)
+  console.log(`\n🛡️ Validando comparación de tokens en tiempo constante (crypto.timingSafeEqual)...`);
+  const secret = 'iSkool_Pedagogical_Ingestion_Secret_Key_9988';
+  
+  assert(timingSafeTokenCheck(secret, secret) === true, 'Token coincidente verificado con éxito');
+  assert(timingSafeTokenCheck('wrong_token_1234', secret) === false, 'Token divergente de distinta longitud rechazado con tiempo constante');
+  assert(timingSafeTokenCheck('iSkool_Pedagogical_Ingestion_Secret_Key_9989', secret) === false, 'Token divergente de idéntica longitud rechazado');
+  assert(timingSafeTokenCheck('', secret) === false, 'Token vacío rechazado de forma segura');
+  assert(timingSafeTokenCheck(secret, '') === false, 'Secreto de servidor vacío rechazado de forma segura');
+
   console.log(`\n================================================================`);
   console.log(`🏁 RESULTADOS: ${passedTests}/${totalTests} pruebas superadas con éxito`);
   console.log(`================================================================\n`);
@@ -234,4 +320,5 @@ runTests().catch(err => {
   console.error("Error fatal en pruebas:", err);
   process.exitCode = 1;
 });
+
 
