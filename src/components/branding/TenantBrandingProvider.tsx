@@ -81,7 +81,8 @@ export const TenantBrandingProvider: React.FC<TenantBrandingProviderProps> = ({
     if (targetTenant === tenantId) return;
     setTenantId(targetTenant);
     if (typeof window !== 'undefined') {
-      window.location.assign('/' + targetTenant);
+      const targetPath = targetTenant === 'ibime' ? '/ibime' : '/';
+      window.location.assign(targetPath);
     }
   }, [tenantId]);
 

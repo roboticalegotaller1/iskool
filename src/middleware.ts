@@ -71,7 +71,13 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const host = (request.headers.get('x-forwarded-host') || request.headers.get('host') || '').toLowerCase();
   const acceptHeader = (request.headers.get('accept') || '').toLowerCase();
-  const isApiRequest = pathname.startsWith('/api/') || acceptHeader.includes('application/json');
+  const isServerAction = request.headers.has('next-action');
+  const isRscRequest = request.headers.get('rsc') === '1';
+  const isApiRequest =
+    pathname.startsWith('/api/') ||
+    acceptHeader.includes('application/json') ||
+    isServerAction ||
+    isRscRequest;
 
   // 1. Determinar el Tenant Requerido según el recurso objetivo (Ruta o Subdominio)
   // NUNCA depender de headers arbitrarios del cliente (como X-Tenant-ID o x-resolved-tenant)
