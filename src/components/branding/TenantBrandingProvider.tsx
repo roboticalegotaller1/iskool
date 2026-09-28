@@ -78,12 +78,10 @@ export const TenantBrandingProvider: React.FC<TenantBrandingProviderProps> = ({
   }, [tenantId, tokens, setWhiteLabelConfig]);
 
   const switchTenant = useCallback((targetTenant: TenantId) => {
-    if (targetTenant === tenantId) return;
+    if (typeof window === 'undefined' || targetTenant === tenantId) return;
     setTenantId(targetTenant);
-    if (typeof window !== 'undefined') {
-      const targetPath = targetTenant === 'ibime' ? '/ibime' : '/';
-      window.location.assign(targetPath);
-    }
+    const targetPath = targetTenant === 'ibime' ? '/ibime' : '/';
+    window.location.assign(targetPath);
   }, [tenantId]);
 
   const contextValue = useMemo<TenantBrandingContextType>(() => ({

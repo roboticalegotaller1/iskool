@@ -72,12 +72,9 @@ export async function middleware(request: NextRequest) {
   const host = (request.headers.get('x-forwarded-host') || request.headers.get('host') || '').toLowerCase();
   const acceptHeader = (request.headers.get('accept') || '').toLowerCase();
   const isServerAction = request.headers.has('next-action');
-  const isRscRequest = request.headers.get('rsc') === '1';
-  const isApiRequest =
-    pathname.startsWith('/api/') ||
-    acceptHeader.includes('application/json') ||
-    isServerAction ||
-    isRscRequest;
+  const isRsc = request.headers.get('rsc') === '1';
+  const isApi = request.nextUrl.pathname.startsWith('/api/');
+  const isApiRequest = isApi || acceptHeader.includes('application/json') || isServerAction || isRsc;
 
   // 1. Determinar el Tenant Requerido según el recurso objetivo (Ruta o Subdominio)
   // NUNCA depender de headers arbitrarios del cliente (como X-Tenant-ID o x-resolved-tenant)
@@ -135,12 +132,26 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Helper para generar respuesta 404 JSON estructurada con cabeceras anti-caché
+  function createCrossTenantNotFoundResponse() {
+    return NextResponse.json(
+      { error: 'Not Found', code: 'NOT_FOUND', message: 'Resource not found' },
+      {
+        status: 404,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
+        }
+      }
+    );
+  }
+
   // Si la ruta solicitada pertenece a un tenant y la cookie válida corresponde al tenant contrario:
-  // - Para API: Retorna 404 JSON { error: 'Not Found', code: 'NOT_FOUND' }
+  // - Para API / Server Actions / RSC: Retorna 404 JSON estructurado con cabeceras anti-caché
   // - Para HTML: Reescribe a página /404 interna
   if (opposingTenantCookiePresent) {
     if (isApiRequest) {
-      return NextResponse.json({ error: 'Not Found', code: 'NOT_FOUND' }, { status: 404 });
+      return createCrossTenantNotFoundResponse();
     }
     return NextResponse.rewrite(new URL('/404', request.url), { status: 404 });
   }
@@ -198,7 +209,7 @@ export async function middleware(request: NextRequest) {
   if (targetTenantRequired === 'ibime' && userTenant !== 'ibime') {
     if (!isSuperUser) {
       if (isApiRequest) {
-        return NextResponse.json({ error: 'Not Found', code: 'NOT_FOUND' }, { status: 404 });
+        return createCrossTenantNotFoundResponse();
       }
       return NextResponse.rewrite(new URL('/404', request.url), { status: 404 });
     }
@@ -207,7 +218,7 @@ export async function middleware(request: NextRequest) {
   if (targetTenantRequired === 'iskool' && (isIskoolProtected || isIntegrationApi) && userTenant !== 'iskool') {
     if (!isSuperUser) {
       if (isApiRequest) {
-        return NextResponse.json({ error: 'Not Found', code: 'NOT_FOUND' }, { status: 404 });
+        return createCrossTenantNotFoundResponse();
       }
       return NextResponse.rewrite(new URL('/404', request.url), { status: 404 });
     }

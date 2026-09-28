@@ -50,6 +50,31 @@ describe('🎨 MOTOR DE WHITE-LABEL Y DISEÑO ATÓMICO: iSkool e IBIME', () => {
   });
 
   describe('2. Componente TenantBrandingProvider (Contexto React)', () => {
+    let assignMock: ReturnType<typeof vi.fn>;
+    const originalLocation = window.location;
+
+    beforeEach(() => {
+      assignMock = vi.fn();
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        writable: true,
+        value: {
+          ...originalLocation,
+          assign: assignMock,
+          replace: vi.fn(),
+          reload: vi.fn()
+        }
+      });
+    });
+
+    afterEach(() => {
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        writable: true,
+        value: originalLocation
+      });
+    });
+
     const TestConsumer = () => {
       const { tenantId, tokens, isIbime, switchTenant } = useTenantBranding();
       return (
@@ -78,6 +103,7 @@ describe('🎨 MOTOR DE WHITE-LABEL Y DISEÑO ATÓMICO: iSkool e IBIME', () => {
       // Conmutar a IBIME
       fireEvent.click(screen.getByTestId('switch-btn'));
 
+      expect(assignMock).toHaveBeenCalledWith('/ibime');
       expect(screen.getByTestId('tenant-id').textContent).toBe('ibime');
       expect(screen.getByTestId('tenant-name').textContent).toBe('Instituto Bicultural IBIME');
       expect(screen.getByTestId('is-ibime').textContent).toBe('true');

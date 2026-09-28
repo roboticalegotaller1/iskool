@@ -382,7 +382,7 @@ describe('🛡️ SEGURIDAD MULTI-TENANT: iSkool Core e IBIME', () => {
       expect(res.headers.get('x-resolved-tenant-id')).toBe('ibime');
     });
 
-    it('debe retornar HTTP 404 JSON ante petición API a /api/v1/ibime/grades con cookie iskool_session', async () => {
+    it('debe retornar HTTP 404 JSON estructurado con cabeceras anti-caché ante peticiones API, Server Action (next-action) o RSC (rsc: 1) con sesión cruzada', async () => {
       const iskoolToken = await signMultiTenantToken({
         id: 'usr-student-iskool',
         email: 'estudiante@iskool.edu.mx',
@@ -390,18 +390,45 @@ describe('🛡️ SEGURIDAD MULTI-TENANT: iSkool Core e IBIME', () => {
         role: 'student'
       });
 
-      // Petición API a endpoint privado de IBIME con sesión de iSkool
-      const req = new NextRequest('http://localhost:3000/api/v1/ibime/grades', {
+      // 1. Petición API a endpoint privado de IBIME con sesión de iSkool
+      const apiReq = new NextRequest('http://localhost:3000/api/v1/ibime/grades', {
         headers: {
           accept: 'application/json',
           cookie: `iskool_session=${iskoolToken}`
         }
       });
+      const apiRes = await middleware(apiReq);
+      expect(apiRes.status).toBe(404);
+      expect(apiRes.headers.get('content-type')).toContain('application/json');
+      expect(apiRes.headers.get('cache-control')).toContain('no-store');
+      const apiJson = await apiRes.json();
+      expect(apiJson).toMatchObject({ error: 'Not Found', code: 'NOT_FOUND', message: 'Resource not found' });
 
-      const res = await middleware(req);
-      expect(res.status).toBe(404);
-      const json = await res.json();
-      expect(json).toEqual({ error: 'Not Found', code: 'NOT_FOUND' });
+      // 2. Petición Server Action
+      const serverActionReq = new NextRequest('http://localhost:3000/ibime/student', {
+        headers: {
+          'next-action': 'action-id-abc',
+          cookie: `iskool_session=${iskoolToken}`
+        }
+      });
+      const saRes = await middleware(serverActionReq);
+      expect(saRes.status).toBe(404);
+      expect(saRes.headers.get('cache-control')).toContain('no-store');
+      const saJson = await saRes.json();
+      expect(saJson).toMatchObject({ error: 'Not Found', code: 'NOT_FOUND', message: 'Resource not found' });
+
+      // 3. Petición RSC
+      const rscReq = new NextRequest('http://localhost:3000/ibime/student', {
+        headers: {
+          'rsc': '1',
+          cookie: `iskool_session=${iskoolToken}`
+        }
+      });
+      const rscRes = await middleware(rscReq);
+      expect(rscRes.status).toBe(404);
+      expect(rscRes.headers.get('cache-control')).toContain('no-store');
+      const rscJson = await rscRes.json();
+      expect(rscJson).toMatchObject({ error: 'Not Found', code: 'NOT_FOUND', message: 'Resource not found' });
     });
 
     it('debe sobreescribir deterministamente la cabecera forjada x-resolved-tenant en el handler downstream', async () => {
@@ -427,39 +454,6 @@ describe('🛡️ SEGURIDAD MULTI-TENANT: iSkool Core e IBIME', () => {
       // La cabecera perimetral inyectada debe ser estrictamente 'iskool', sobreescribiendo el valor forjado
       expect(res.headers.get('x-resolved-tenant')).toBe('iskool');
       expect(res.headers.get('x-resolved-tenant-id')).toBe('iskool');
-    });
-
-    it('debe retornar HTTP 404 JSON estructurado en peticiones Server Action (next-action) o RSC (rsc: 1) con sesión cruzada', async () => {
-      const iskoolToken = await signMultiTenantToken({
-        id: 'usr-student-iskool',
-        email: 'estudiante@iskool.edu.mx',
-        tenant_id: 'iskool',
-        role: 'student'
-      });
-
-      // 1. Petición Server Action
-      const serverActionReq = new NextRequest('http://localhost:3000/ibime/student', {
-        headers: {
-          'next-action': 'action-id-abc',
-          cookie: `iskool_session=${iskoolToken}`
-        }
-      });
-      const saRes = await middleware(serverActionReq);
-      expect(saRes.status).toBe(404);
-      const saJson = await saRes.json();
-      expect(saJson).toEqual({ error: 'Not Found', code: 'NOT_FOUND' });
-
-      // 2. Petición RSC
-      const rscReq = new NextRequest('http://localhost:3000/ibime/student', {
-        headers: {
-          'rsc': '1',
-          cookie: `iskool_session=${iskoolToken}`
-        }
-      });
-      const rscRes = await middleware(rscReq);
-      expect(rscRes.status).toBe(404);
-      const rscJson = await rscRes.json();
-      expect(rscJson).toEqual({ error: 'Not Found', code: 'NOT_FOUND' });
     });
   });
 });
