@@ -34,6 +34,7 @@ function validateReconcileSecurity(request: NextRequest): { authorized: boolean;
   const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.substring(7).trim() : '';
 
   const configuredSecret =
+    process.env.VAULT_RECONCILE_SECRET ||
     process.env.VAULT_SYNC_TOKEN ||
     process.env.RAILS_INGESTION_SECRET ||
     process.env.INTERNAL_API_SECRET ||
@@ -51,7 +52,7 @@ function validateReconcileSecurity(request: NextRequest): { authorized: boolean;
 
   // En entorno local de desarrollo sin secreto configurado
   if (process.env.NODE_ENV !== 'production') {
-    console.warn('[Reconciliador GitOps]: Sin VAULT_SYNC_TOKEN configurado; admitiendo petición en modo desarrollo local.');
+    console.warn('[Reconciliador GitOps]: Sin VAULT_RECONCILE_SECRET o VAULT_SYNC_TOKEN configurado; admitiendo petición en modo desarrollo local.');
     return { authorized: true };
   }
 
@@ -67,7 +68,14 @@ export async function POST(request: NextRequest) {
     const security = validateReconcileSecurity(request);
     if (!security.authorized) {
       return NextResponse.json(
-        { error: 'No autorizado', reason: security.reason || 'Token de sincronización inválido o ausente' },
+        {
+          success: false,
+          reconciledCount: 0,
+          orphans: [],
+          durationMs: 0,
+          error: 'No autorizado',
+          reason: security.reason || 'Token de sincronización inválido o ausente'
+        },
         { status: 401 }
       );
     }
@@ -86,9 +94,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: result.success,
+        reconciledCount: result.reconciledCount,
+        orphans: result.orphans || [],
+        durationMs: result.durationMs,
         message: result.success
           ? 'Reconciliación GitOps de Memoria Institucional completada con éxito'
-          : 'Reconciliación GitOps completada con incidencias',
+          : 'Reconciliación GitOps completada con incidencias o memorias huérfanas no vinculadas',
         telemetry: result
       },
       { status: result.success ? 200 : 207 }
@@ -96,7 +107,13 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Error en POST /api/vault/reconcile:', error);
     return NextResponse.json(
-      { error: error?.message || 'Error interno al reconciliar memorias institucionales' },
+      {
+        success: false,
+        reconciledCount: 0,
+        orphans: [],
+        durationMs: 0,
+        error: error?.message || 'Error interno al reconciliar memorias institucionales'
+      },
       { status: 500 }
     );
   }

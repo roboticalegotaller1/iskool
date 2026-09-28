@@ -99,6 +99,7 @@ export class InstitutionalMemoryReconcileService {
         reconciledCount: 0,
         failedCount: 0,
         reconciledFiles: [],
+        orphans: [],
         errors,
         durationMs: Date.now() - startTime
       };
@@ -121,6 +122,7 @@ export class InstitutionalMemoryReconcileService {
           reconciledCount: 0,
           failedCount: 0,
           reconciledFiles: [],
+          orphans: [],
           errors,
           durationMs: Date.now() - startTime
         };
@@ -226,15 +228,33 @@ export class InstitutionalMemoryReconcileService {
       }
     }
 
+    // Identificar memorias huérfanas que no lograron vincularse tras los intentos
+    const reconciledSet = new Set(reconciledFiles);
+    const unresolvedPaths = missingMemories
+      .map(m => m.filePath)
+      .filter(p => !reconciledSet.has(p));
+    const orphanCount = unresolvedPaths.length;
+
+    if (orphanCount > 0 || errors.length > 0) {
+      console.error('[Reconciliador GitOps: Alerta de Fallo de Vinculación]', JSON.stringify({
+        event: 'vault_gitops_reconcile_failure',
+        timestamp: new Date().toISOString(),
+        orphan_count: orphanCount,
+        unresolved_paths: unresolvedPaths,
+        errors
+      }, null, 2));
+    }
+
     // 5. Emisión de logs estructurados con telemetría
     const result: ReconcileResult = {
-      success: errors.length === 0 && failedCount === 0,
+      success: errors.length === 0 && failedCount === 0 && orphanCount === 0,
       totalManifestEntries: manifestEntries.length,
       gitBlobsFound: gitBlobs.length,
       missingCount: missingMemories.length,
       reconciledCount,
       failedCount,
       reconciledFiles,
+      orphans: unresolvedPaths,
       errors,
       durationMs: Date.now() - startTime
     };
@@ -242,6 +262,7 @@ export class InstitutionalMemoryReconcileService {
     console.log('[Reconciliador GitOps Telemetría]', JSON.stringify({
       event: 'vault_gitops_reconcile',
       timestamp: new Date().toISOString(),
+      orphan_count: orphanCount,
       ...result
     }, null, 2));
 

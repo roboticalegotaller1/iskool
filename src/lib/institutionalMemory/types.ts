@@ -197,8 +197,10 @@ export interface ReconcileResult {
   reconciledCount: number;
   failedCount: number;
   reconciledFiles: string[];
+  orphans: string[];
   errors: string[];
   durationMs: number;
 }
+
 
 

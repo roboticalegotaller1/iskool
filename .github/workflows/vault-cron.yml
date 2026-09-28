@@ -1,0 +1,91 @@
+name: Vault GitOps Scheduled Reconciler
+
+on:
+  schedule:
+    # Ejecución desatendida todas las noches a las 04:00 UTC
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reconcile:
+    name: Reconciliar Bóveda Curricular Desatendida
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ejecutar Reconciliador GitOps en Endpoint de Producción
+        id: run_reconcile
+        env:
+          RECONCILE_SECRET: ${{ secrets.VAULT_RECONCILE_SECRET }}
+          BASE_URL: ${{ vars.VAULT_BASE_URL || 'https://iskool.mx' }}
+        run: |
+          set -e
+          echo "Iniciando reconciliación programada de la Bóveda Curricular en $BASE_URL/api/vault/reconcile..."
+
+          # Llamada curl con captura de código HTTP y cuerpo de respuesta sin exponer credenciales
+          HTTP_RESPONSE=$(curl -s -S -w "\n%{http_code}" \
+            -X POST "$BASE_URL/api/vault/reconcile" \
+            -H "Authorization: Bearer $RECONCILE_SECRET" \
+            -H "x-vault-sync-token: $RECONCILE_SECRET" \
+            -H "Content-Type: application/json" \
+            -d '{"branch":"main"}')
+
+          # Separar cuerpo y código HTTP
+          HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed '$d')
+          HTTP_CODE=$(echo "$HTTP_RESPONSE" | tail -n1)
+
+          echo "Código HTTP recibido: $HTTP_CODE"
+          echo "Respuesta del Reconciliador:"
+          echo "$HTTP_BODY"
+
+          # Exportar código y almacenar cuerpo para el reporte de alerta si falla
+          echo "http_code=$HTTP_CODE" >> "$GITHUB_OUTPUT"
+          echo "$HTTP_BODY" > /tmp/reconcile_response.json
+
+          # 1. Validar que el código HTTP sea estrictamente 200
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "::error::Reconciliación fallida. Código HTTP inesperado: $HTTP_CODE"
+            exit 1
+          fi
+
+          # 2. Validar que el campo success sea true
+          SUCCESS_FLAG=$(echo "$HTTP_BODY" | grep -o '"success":\s*true' || true)
+          if [ -z "$SUCCESS_FLAG" ]; then
+            echo "::error::El payload devuelto no contiene success: true o reporta incidencias de memorias huérfanas."
+            exit 1
+          fi
+
+          echo "Reconciliación GitOps completada exitosamente sin memorias huérfanas pendientes."
+
+      - name: Canal de Notificación / Webhook de Alerta en Caso de Fallo
+        if: failure()
+        env:
+          WEBHOOK_URL: ${{ secrets.VAULT_ALERT_WEBHOOK_URL }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "Advertencia: VAULT_ALERT_WEBHOOK_URL no configurado. Omitiendo notificación externa."
+            exit 0
+          fi
+
+          TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          HTTP_CODE="${{ steps.run_reconcile.outputs.http_code || 'Error Desconocido' }}"
+
+          RESPONSE_PREVIEW="Sin respuesta registrada"
+          if [ -f /tmp/reconcile_response.json ]; then
+            RESPONSE_PREVIEW=$(head -c 400 /tmp/reconcile_response.json | tr '\n' ' ' | sed 's/"/\\"/g')
+          fi
+
+          echo "Emitiendo alerta de falla de reconciliación hacia el webhook configurado..."
+
+          ALERT_PAYLOAD=$(cat <<EOF
+          {
+            "content": "🚨 **[Alerta Bóveda Curricular iSkool]**: Fallo en Reconciliación GitOps Desatendida\n- **Repositorio:** \`${{ github.repository }}\`\n- **Commit SHA:** \`${{ github.sha }}\`\n- **Timestamp:** \`$TIMESTAMP\`\n- **Código HTTP:** \`$HTTP_CODE\`\n- **Resumen:** \`$RESPONSE_PREVIEW\`",
+            "text": "🚨 [Alerta Bóveda Curricular iSkool]: Fallo en Reconciliación GitOps Desatendida\n- Repositorio: ${{ github.repository }}\n- Commit SHA: ${{ github.sha }}\n- Timestamp: $TIMESTAMP\n- Código HTTP: $HTTP_CODE\n- Resumen: $RESPONSE_PREVIEW"
+          }
+          EOF
+          )
+
+          curl -s -S -X POST "$WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "$ALERT_PAYLOAD" || echo "Fallo al enviar notificación de alerta."
