@@ -161,6 +161,21 @@ export interface InstitutionalMemorySynthesis {
   }[];
 }
 
+export interface MemoryManifestEntry {
+  id: string;
+  fileName: string;
+  filePath: string;
+  ciclo: string;
+  grado: string;
+  asignatura: string;
+  tema: string;
+  fecha: string;
+  sha?: string;
+  resumen_didactico?: string;
+  adecuaciones_clave?: string[];
+  palabras_clave: string[];
+}
+
 export interface SaveMemoryResult {
   success: boolean;
   filePath: string;
@@ -169,5 +184,9 @@ export interface SaveMemoryResult {
   remoteGitCommit?: string;
   storageSynced?: boolean;
   syncWarning?: string;
+  repoRelativePath?: string;
+  fileContent?: string;
+  commitMessage?: string;
 }
+
 

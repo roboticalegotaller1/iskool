@@ -99,11 +99,10 @@ export function InstitutionalMemoryOverview() {
   useEffect(() => {
     loadMemories();
 
-    // Revalidación periódica cada 30 segundos (SWR polling)
+    // Revalidación periódica cada 30 segundos (SWR polling inteligente)
     const interval = setInterval(() => {
-      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
-        loadMemories(true);
-      }
+      if (typeof document !== 'undefined' && document.hidden) return;
+      loadMemories(true);
     }, 30000);
 
     // Revalidación al volver a enfocar la ventana

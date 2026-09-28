@@ -3,6 +3,10 @@ import fs from 'fs';
 import path from 'path';
 import { z } from 'zod';
 import { validateApiAuth } from '@/lib/authValidator';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const runtime = 'nodejs';
 import { 
   generateChronometerSessions,
   getArticulatedPdas, 

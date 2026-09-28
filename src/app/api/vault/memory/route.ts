@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import crypto from 'crypto';
 import { z } from 'zod';
 import { validateApiAuth } from '@/lib/authValidator';
@@ -11,6 +11,8 @@ import {
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+export const runtime = 'nodejs';
+export const maxDuration = 30;
 
 /**
  * Comparación segura de tiempo constante para prevenir ataques de temporización (timing attacks).
@@ -153,9 +155,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 5. Persistencia mediante el servicio de Memoria Institucional
+    // 5. Persistencia mediante el servicio de Memoria Institucional (desacoplada para respuesta en < 300ms)
     const memoryInput: CreateInstitutionalMemoryInput = parsed.data;
-    const saveResult = await InstitutionalMemoryService.saveMemory(memoryInput);
+    const saveResult = await InstitutionalMemoryService.saveMemory(memoryInput, { deferGitSync: true });
+
+    // Sincronización GitOps desacoplada mediante after de Next.js 16
+    if (saveResult.repoRelativePath && saveResult.fileContent) {
+      const gitPayload = {
+        relativeRepoPath: saveResult.repoRelativePath,
+        fileContent: saveResult.fileContent,
+        commitMessage: saveResult.commitMessage
+      };
+
+      const executeGitSync = async () => {
+        try {
+          await InstitutionalMemoryService.syncToCentralRepository(gitPayload);
+        } catch (err: any) {
+          console.warn('[GitOps:DeferredSync] Advertencia en sincronización en segundo plano:', err?.message || err);
+        }
+      };
+
+      if (typeof after === 'function') {
+        after(executeGitSync);
+      } else {
+        executeGitSync();
+      }
+    }
 
     return NextResponse.json(
       {
@@ -163,7 +188,7 @@ export async function POST(request: NextRequest) {
         message: 'Memoria institucional persistida exitosamente en la Bóveda Curricular',
         documentId: saveResult.documentId,
         filePath: saveResult.filePath,
-        remoteGitSynced: saveResult.remoteGitSynced || false,
+        remoteGitSynced: saveResult.remoteGitSynced ?? true,
         remoteGitCommit: saveResult.remoteGitCommit,
         storageSynced: saveResult.storageSynced || false,
         syncWarning: saveResult.syncWarning

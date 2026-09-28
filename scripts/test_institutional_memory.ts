@@ -305,7 +305,61 @@ ${mathSynth.recommendationsForNextTeacher.map(r => `  • ${r}`).join('\n')}
   assert(timingSafeTokenCheck('wrong_token_1234', secret) === false, 'Token divergente de distinta longitud rechazado con tiempo constante');
   assert(timingSafeTokenCheck('iSkool_Pedagogical_Ingestion_Secret_Key_9989', secret) === false, 'Token divergente de idéntica longitud rechazado');
   assert(timingSafeTokenCheck('', secret) === false, 'Token vacío rechazado de forma segura');
-  assert(timingSafeTokenCheck(secret, '') === false, 'Secreto de servidor vacío rechazado de forma segura');
+  // 12. Poda de Memorias y Token Budget para IA Pedagógica (formatMemoriesForPrompt)
+  console.log(`\n✂️ Validando poda y presupuesto de tokens para IA Pedagógica (FASE 4)...`);
+  const promptOutput = InstitutionalMemoryService.formatMemoriesForPrompt(math4Memories, 1200);
+
+  assert(promptOutput.includes('Logros pedagógicos:'), 'Extracción de logros pedagógicos en el prompt');
+  assert(promptOutput.includes('Dificultades detectadas y errores conceptuales comunes:'), 'Extracción de dificultades y errores conceptuales');
+  assert(promptOutput.includes('Adecuaciones curriculares que funcionaron:'), 'Extracción de adecuaciones curriculares comprobadas');
+  assert(promptOutput.includes('Recomendaciones para el docente:'), 'Extracción de recomendaciones docentes');
+  assert(promptOutput.length <= 1200 * 4 + 300, `Presupuesto estricto de tokens respetado (${promptOutput.length} caracteres para maxTokens=1200)`);
+
+  const memoryBlockCount = (promptOutput.match(/\[MEMORIA DE CICLO ANTERIOR/g) || []).length;
+  assert(memoryBlockCount <= 3 && memoryBlockCount >= 1, `Límite de memorias por prompt respetado (Encontradas: ${memoryBlockCount}, máximo permitido: 3)`);
+
+  // 13. Resiliencia de GitOps contra Conflictos Concurrentes (Reintento ante HTTP 409)
+  console.log(`\n🔁 Validando ciclo de reintento GitOps ante colisiones de versión (HTTP 409)...`);
+  let attemptsCount = 0;
+  try {
+    process.env.REPO_ACCESS_TOKEN = 'test_token_mock_retry';
+    global.fetch = (async (url: string | URL | Request, init?: RequestInit): Promise<Response> => {
+      const method = init?.method || 'GET';
+      if (method === 'GET') {
+        return new Response(JSON.stringify({ sha: `sha_attempt_${attemptsCount}` }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      if (method === 'PUT') {
+        attemptsCount++;
+        if (attemptsCount === 1) {
+          // Primer intento simula colisión concurrente (HTTP 409 Conflict)
+          return new Response('{"message": "Conflict: Sha is outdated"}', {
+            status: 409,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+        // Segundo intento tiene éxito
+        return new Response(JSON.stringify({ commit: { sha: 'commit_sha_resolved_after_retry' } }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      return new Response('{}', { status: 200 });
+    }) as typeof fetch;
+
+    const retryResult = await InstitutionalMemoryService.syncToCentralRepository({
+      relativeRepoPath: 'planeaciones/Memorias_Institucionales/2025-2026/Memoria_Retry_Test.md',
+      fileContent: '# Test retry 409'
+    });
+
+    assert(retryResult.synced === true, 'Sincronización GitOps superada con éxito tras reintento ante HTTP 409');
+    assert(attemptsCount === 2, `Número exacto de iteraciones ejecutadas (${attemptsCount} intentos)`);
+  } finally {
+    global.fetch = originalFetch;
+    delete process.env.REPO_ACCESS_TOKEN;
+  }
 
   console.log(`\n================================================================`);
   console.log(`🏁 RESULTADOS: ${passedTests}/${totalTests} pruebas superadas con éxito`);

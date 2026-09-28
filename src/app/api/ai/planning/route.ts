@@ -4,6 +4,10 @@ import { validateApiAuth } from '@/lib/authValidator';
 import { isEnglishSubject, getCambridgeSpecification } from '@/lib/curriculumEngine';
 import { InstitutionalMemoryService } from '@/lib/institutionalMemory';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const runtime = 'nodejs';
+
 const PlanningRequestSchema = z.object({
   promptText: z.string().max(2000).optional().default(''),
   level: z.string().max(100).optional().default('primaria-baja'),
@@ -63,18 +67,8 @@ export async function POST(request: NextRequest) {
       subject,
       topic: promptText || targetPda || ''
     });
-    const memorySynthesis = relatedMemories.length > 0
-      ? InstitutionalMemoryService.synthesizePriorCycleLearnings(relatedMemories, promptText || 'General')
-      : null;
-
-    const institutionalMemoryPromptBlock = memorySynthesis && memorySynthesis.totalMemoriesFound > 0
-      ? `\n[MEMORIA INSTITUCIONAL DEL COLEGIO]:
-- Fricciones históricas detectadas en este tema: ${memorySynthesis.recurrentFrictionPoints.map(f => f.friction).join(', ') || 'Ninguna registrada'}
-- Intervenciones y adaptaciones probadas con éxito por otros docentes:
-${memorySynthesis.provenInterventions.map(i => `  • ${i.intervention}`).join('\n') || '  • Aplicación de secuencias graduadas con material concreto.'}
-- Recomendaciones pedagógicas acumuladas:
-${memorySynthesis.recommendationsForNextTeacher.map(r => `  • ${r}`).join('\n') || '  • Evaluación formativa continua.'}
-- Instrucción pedagógica: Integra explícitamente estas intervenciones en el diseño de las actividades (Desarrollo y Cierre) para prevenir los bloqueos conceptuales históricos.\n`
+    const institutionalMemoryPromptBlock = relatedMemories.length > 0
+      ? `\n${InstitutionalMemoryService.formatMemoriesForPrompt(relatedMemories, 1200)}\n`
       : '';
 
     const systemPrompt = `Eres un Asesor Pedagógico y Diseñador Curricular Nacional de la SEP, experto en la Nueva Escuela Mexicana (NEM 2024).
