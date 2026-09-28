@@ -70,14 +70,21 @@ export const TenantTeacherHubCards: React.FC<TenantTeacherHubCardsProps> = ({
       </div>
 
       {/* 2. Las 3 Tarjetas Visuales Masivas (Regla de los 3 Clics de Apple) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
         {/* Tarjeta 1: Mis Clases y Evaluación Formativa */}
         <div
           onClick={onNavigateToClasses}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onNavigateToClasses();
+            }
+          }}
           role="button"
           tabIndex={0}
-          className="group relative bg-white/95 rounded-3xl p-8 border border-slate-200/80 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer flex flex-col justify-between overflow-hidden"
+          aria-label="Mis Clases y Evaluación Formativa"
+          className="group relative bg-white/95 rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm hover:shadow-xl hover:scale-[1.02] focus:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 cursor-pointer flex flex-col justify-between overflow-hidden min-h-[220px]"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
           <div>
@@ -101,9 +108,16 @@ export const TenantTeacherHubCards: React.FC<TenantTeacherHubCardsProps> = ({
         {/* Tarjeta 2: HERO ACTION - Crear Actividad / Estudio Pedagógico IA */}
         <div
           onClick={onNavigateToStudio}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onNavigateToStudio();
+            }
+          }}
           role="button"
           tabIndex={0}
-          className="group relative rounded-3xl p-8 text-white shadow-lg hover:shadow-2xl hover:scale-[1.03] transition-all duration-300 cursor-pointer flex flex-col justify-between overflow-hidden ring-4 ring-offset-2 ring-slate-100"
+          aria-label={isIbime ? 'Estudio Bicultural' : 'Crear Actividad con IA'}
+          className="group relative rounded-3xl p-6 sm:p-8 text-white shadow-lg hover:shadow-2xl hover:scale-[1.03] focus:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-white transition-all duration-300 cursor-pointer flex flex-col justify-between overflow-hidden ring-4 ring-offset-2 ring-slate-100 md:col-span-2 lg:col-span-1 min-h-[220px]"
           style={{ background: tokens.cssVariables['--brand-hero-gradient'] }}
         >
           {/* Destello de fondo */}
@@ -140,9 +154,16 @@ export const TenantTeacherHubCards: React.FC<TenantTeacherHubCardsProps> = ({
         {/* Tarjeta 3: Comunidad y Bóveda Compartida */}
         <div
           onClick={onNavigateToCommunity}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onNavigateToCommunity();
+            }
+          }}
           role="button"
           tabIndex={0}
-          className="group relative bg-white/95 rounded-3xl p-8 border border-slate-200/80 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer flex flex-col justify-between overflow-hidden"
+          aria-label="Comunidad Docente y Bóveda de Conocimiento"
+          className="group relative bg-white/95 rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm hover:shadow-xl hover:scale-[1.02] focus:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all duration-300 cursor-pointer flex flex-col justify-between overflow-hidden min-h-[220px]"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform" />
           <div>

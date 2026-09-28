@@ -283,7 +283,7 @@ async function runMultilingualSuite() {
       const bytes = arrayBuf.byteLength;
 
       assert(
-        contentType?.includes('audio/mpeg') && bytes > 5000,
+        Boolean(contentType?.includes('audio/mpeg') && bytes > 5000),
         `Síntesis ${tc.lang} (${tc.voice}) completada: ${bytes} bytes MP3`,
         `Bytes: ${bytes}, Content-Type: ${contentType}`
       );

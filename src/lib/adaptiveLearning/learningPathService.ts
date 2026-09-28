@@ -137,7 +137,7 @@ export class AdaptiveLearningPathService {
         cefr: node?.cefr[0] || targetCefr,
         current_state: state,
         is_prerequisite_bridge: isBridge,
-        learning_goal: node?.learning_outcomes[0] || 'Desarrollar fluidez y precisión comunicativa.',
+        learning_goal: node?.learning_outcomes?.[0] || 'Desarrollar fluidez y precisión comunicativa.',
         rationale: isBridge
           ? `Puente formativo previo necesario para cimentar la competencia en ${targetCefr}.`
           : `Consolidar el objetivo directo del curso hacia la maestría autónoma.`

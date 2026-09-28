@@ -113,15 +113,18 @@ export class TeacherCopilotContextBuilder {
     const knowledge_nodes: ResolvedTeacherContext['knowledge_nodes'] = [];
 
     for (const targetId of targetLesson.knowledge_targets) {
-      const doc = allVaultDocs.find(d => d.id === targetId || d.frontmatter.title?.toLowerCase().includes(targetId.toLowerCase()));
+      const doc = allVaultDocs.find(d => (d.id || d.documentId) === targetId || d.frontmatter.title?.toLowerCase().includes(targetId.toLowerCase()));
       if (doc) {
+        const cefrVal = Array.isArray(doc.frontmatter.cefr) ? String(doc.frontmatter.cefr[0] || 'B1') : String(doc.frontmatter.cefr || 'B1');
+        const skillVal = Array.isArray(doc.frontmatter.skills) ? String(doc.frontmatter.skills[0] || 'speaking') : String((doc.frontmatter as any).skill || 'speaking');
+        const docId = doc.id || doc.documentId || targetId;
         knowledge_nodes.push({
-          id: doc.id,
-          title: doc.frontmatter.title || doc.id,
-          cefr: doc.frontmatter.cefr || 'B1',
-          skill: doc.frontmatter.skill || 'speaking',
-          prerequisites: doc.frontmatter.prerequisites || ['grammar_present_simple_a1'],
-          common_errors: doc.frontmatter.common_errors || ['omitting causal connectors', 'third person -s omission']
+          id: docId,
+          title: doc.frontmatter.title || docId,
+          cefr: cefrVal,
+          skill: skillVal,
+          prerequisites: Array.isArray(doc.frontmatter.prerequisites) ? doc.frontmatter.prerequisites.map(String) : ['grammar_present_simple_a1'],
+          common_errors: Array.isArray((doc.frontmatter as any).common_errors) ? (doc.frontmatter as any).common_errors.map(String) : ['omitting causal connectors', 'third person -s omission']
         });
       } else {
         // Fallback a descriptor canónico de Bóveda

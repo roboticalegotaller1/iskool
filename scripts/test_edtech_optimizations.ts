@@ -57,7 +57,7 @@ async function runEdTechOptimizationsTest() {
     { groupId: 'group_hs1_a', schoolId: 'sch-jjrosseau' }
   );
   assert(
-    teacherWorkspace.release_info.release_tag === 'release_1.0_english_2026' &&
+    teacherWorkspace.release_info?.release_tag === 'release_1.0_english_2026' &&
     teacherWorkspace.copilot_session !== null &&
     Array.isArray(teacherWorkspace.draft_artifacts),
     'IskoolCore.getTeacherWorkspace(): Integra release curricular oficial, analítica de grupo y sesión Copilot.'

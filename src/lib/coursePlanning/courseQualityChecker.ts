@@ -12,6 +12,28 @@ import { KnowledgeVaultPrerequisiteService } from '../knowledgeVault/prerequisit
 
 export class CourseQualityChecker {
   /**
+   * Ejecuta compuertas de calidad sobre un plan de curso completo o parcial.
+   */
+  static checkQualityGates(coursePlan: any, grade?: string): CourseQualityReport {
+    if (!coursePlan) {
+      return {
+        passed: false,
+        total_checks: 0,
+        error_count: 0,
+        warning_count: 0,
+        checks: []
+      };
+    }
+    const course = coursePlan.course || { id: 'course_plan', grade: grade || 'high_school_1', title: 'Course Plan' };
+    return this.verify(
+      course as CourseEntity,
+      coursePlan.units || [],
+      coursePlan.lessons || [],
+      coursePlan.assessments || []
+    );
+  }
+
+  /**
    * Ejecuta las 10 verificaciones de calidad curricular obligatorias.
    */
   static verify(

@@ -40,6 +40,7 @@ export interface SafetyCheckResult {
   requires_teacher_escalation: boolean;
   action_taken: 'allow' | 'sanitize' | 'block_and_escalate';
   rationale?: string;
+  reason?: string;
 }
 
 export interface GoldenEvaluationCase {

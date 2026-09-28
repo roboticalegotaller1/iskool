@@ -36,6 +36,7 @@ export interface AcademicGraphNode {
   assessed_by: string[];
   grade_progression?: Record<string, { role: string; notes?: string }>;
   learning_outcomes?: string[];
+  language_functions?: string[];
   filePath: string;
 }
 
@@ -70,6 +71,7 @@ export class AcademicGraph {
         assessed_by: Array.isArray(fm.assessed_by) ? fm.assessed_by.map(String) : [],
         grade_progression: fm.grade_progression as AcademicGraphNode['grade_progression'],
         learning_outcomes: Array.isArray(fm.learning_outcomes) ? fm.learning_outcomes.map(String) : [],
+        language_functions: Array.isArray((fm as any).language_functions) ? (fm as any).language_functions.map(String) : undefined,
         filePath: doc.filePath
       };
 

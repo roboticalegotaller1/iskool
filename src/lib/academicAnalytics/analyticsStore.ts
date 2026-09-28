@@ -55,6 +55,10 @@ export class AcademicAnalyticsStore {
     return list;
   }
 
+  static async getSnapshot(id: string): Promise<AcademicAnalyticsSnapshotEntity | null> {
+    return this.snapshots.get(id) || null;
+  }
+
   // --- ALERTAS ACADÉMICAS ---
   static async saveAlert(alert: AcademicAlertEntity): Promise<AcademicAlertEntity> {
     this.alerts.set(alert.id, { ...alert, updated_at: new Date().toISOString() });

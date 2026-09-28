@@ -32,7 +32,7 @@ export class AcademicAnalyticsTrendService {
         return {
           scope_id: scopeId,
           metric_name: metricName,
-          timeWindow,
+          time_window: timeWindow,
           baseline_value: simulatedBaseline,
           current_value: currentValue,
           delta_percent: delta,
@@ -47,7 +47,7 @@ export class AcademicAnalyticsTrendService {
       return {
         scope_id: scopeId,
         metric_name: metricName,
-        timeWindow,
+        time_window: timeWindow,
         baseline_value: null,
         current_value: currentValue,
         delta_percent: null,
@@ -76,7 +76,7 @@ export class AcademicAnalyticsTrendService {
     return {
       scope_id: scopeId,
       metric_name: metricName,
-      timeWindow,
+      time_window: timeWindow,
       baseline_value: baselineValue,
       current_value: currentValue,
       delta_percent: delta,

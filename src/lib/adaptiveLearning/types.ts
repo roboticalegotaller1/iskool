@@ -86,6 +86,8 @@ export interface StudentAcademicProfileEntity {
   vocabulary: SkillCompetencySummary;
   
   profile_version: number;
+  mastery_history?: Array<{ concept_id: string; [key: string]: unknown }>;
+  priority_focus_targets?: string[];
   metadata?: Record<string, unknown>;
   
   created_at: string;

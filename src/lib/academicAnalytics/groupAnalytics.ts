@@ -105,10 +105,10 @@ export class AcademicAnalyticsGroupAnalytics {
     const rates: KnowledgeMasteryRate[] = [];
 
     for (const nodeId of targetedNodeIds) {
-      const doc = allDocs.find(d => d.id === nodeId);
+      const doc = allDocs.find(d => (d.id || d.documentId) === nodeId);
       const title = doc?.frontmatter.title || nodeId.replace(/_/g, ' ');
-      const cefr = doc?.frontmatter.cefr || 'B1';
-      const skill = doc?.frontmatter.skill || 'speaking';
+      const cefr = (Array.isArray(doc?.frontmatter.cefr) ? doc?.frontmatter.cefr[0] : (doc?.frontmatter as any)?.cefr) || 'B1';
+      const skill = (Array.isArray(doc?.frontmatter.skills) ? doc?.frontmatter.skills[0] : (doc?.frontmatter as any)?.skill) || 'speaking';
 
       const rate = AcademicAnalyticsMetricService.calculateKnowledgeMasteryRate(
         nodeId,

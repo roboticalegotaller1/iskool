@@ -29,6 +29,7 @@ import { AcademicAnalyticsHealthService } from '../academicAnalytics/healthServi
 import { AcademicAnalyticsStore } from '../academicAnalytics/analyticsStore';
 import { AdaptiveLearningStore } from '../adaptiveLearning/adaptiveStore';
 import { TimeWindow } from '../academicAnalytics/types';
+import { StudentCompetencyEntity, LearningEvidenceEntity } from '../adaptiveLearning/types';
 
 export class LeadershipDashboardService {
   /**
@@ -52,8 +53,8 @@ export class LeadershipDashboardService {
 
     // 2. Cargar perfiles y evidencias de la base analítica
     const allProfiles = await AdaptiveLearningStore.getAllProfiles();
-    const allEvidences = Array.from(await (AcademicAnalyticsQueryService as any).getAllEvidences(allProfiles));
-    const allCompetencies = Array.from(await (AcademicAnalyticsQueryService as any).getAllCompetencies(allProfiles));
+    const allEvidences = Array.from(await (AcademicAnalyticsQueryService as any).getAllEvidences(allProfiles)) as LearningEvidenceEntity[];
+    const allCompetencies = Array.from(await (AcademicAnalyticsQueryService as any).getAllCompetencies(allProfiles)) as StudentCompetencyEntity[];
 
     const totalStudents = allProfiles.length || 75;
     const totalGroups = 3;

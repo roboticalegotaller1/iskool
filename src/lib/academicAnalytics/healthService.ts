@@ -40,7 +40,7 @@ export class AcademicAnalyticsHealthService {
 
     // Referencias a Bóveda inexistentes
     const allVaultDocs = KnowledgeVaultLoader.loadAll();
-    const vaultIds = new Set(allVaultDocs.map(d => d.id));
+    const vaultIds = new Set(allVaultDocs.map(d => d.id || d.documentId));
     const invalidReferences = new Set<string>();
 
     for (const c of competenciesList) {

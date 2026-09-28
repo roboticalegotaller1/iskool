@@ -99,6 +99,7 @@ export interface TutorSessionEntity {
   course_id?: string;
   unit_id?: string;
   lesson_id?: string;
+  lesson_title?: string;
   
   session_type: TutorSessionType;
   status: TutorSessionStatus;

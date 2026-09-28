@@ -32,7 +32,8 @@ export class LeadershipScopeService {
     }
 
     // 2. Aislamiento estricto multi-colegio
-    if (user.schoolId !== targetScope.school_id) {
+    const userSchoolId = user.schoolId || (user as any).school_id;
+    if (userSchoolId !== targetScope.school_id) {
       return {
         authorized: false,
         reason: 'Violación de Aislamiento: No está autorizado a consultar información de otro colegio.'

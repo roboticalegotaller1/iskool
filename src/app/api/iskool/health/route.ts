@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const report = await IskoolCore.Health.runFullCheck();
     return NextResponse.json(report, {
-      status: report.overall_status === 'FAILED' ? 503 : 200
+      status: report.overall_status === 'NOT_READY' ? 503 : 200
     });
   } catch (err: any) {
     return NextResponse.json(

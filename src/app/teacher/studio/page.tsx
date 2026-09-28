@@ -134,41 +134,41 @@ function TeacherStudioContent() {
       <main className={`flex-1 w-full ${isEmbedded ? 'max-w-none px-2 py-2 sm:px-4 sm:py-3 space-y-3' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6'} relative z-10`}>
         {/* Navegación y Selector de Modo */}
         {!isEmbedded && (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
             <button
               type="button"
               onClick={() => router.push('/teacher')}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-800/90 border border-slate-700/80 text-slate-200 font-bold text-xs hover:bg-slate-750 hover:border-teal-500/50 hover:text-white transition-all shadow-sm group w-fit cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-2xl bg-slate-800/90 border border-slate-700/80 text-slate-200 font-bold text-xs hover:bg-slate-750 hover:border-teal-500/50 hover:text-white transition-all shadow-sm group w-fit cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4 text-teal-400 group-hover:-translate-x-1 transition-transform" />
               <span>Volver al Hub Docente</span>
             </button>
 
             {/* Switch de Vistas */}
-            <div className="flex items-center gap-1.5 bg-slate-850 p-1 rounded-2xl border border-slate-750 self-start sm:self-auto shadow-inner">
+            <div className="flex items-center gap-1.5 bg-slate-850 p-1.5 rounded-2xl border border-slate-750 self-stretch sm:self-auto shadow-inner justify-between sm:justify-start">
               <button
                 type="button"
                 onClick={() => setActiveTab('builder')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`flex-1 sm:flex-initial px-4 py-2 min-h-[40px] rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   activeTab === 'builder'
                     ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 shadow-sm shadow-emerald-950/40 font-black'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                <Layers className="w-3.5 h-3.5 text-emerald-400" />
+                <Layers className="w-4 h-4 text-emerald-400" />
                 <span>Lienzo de Bloques</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setActiveTab('ai_assistant')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`flex-1 sm:flex-initial px-4 py-2 min-h-[40px] rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                   activeTab === 'ai_assistant'
                     ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 shadow-sm shadow-emerald-950/40 font-black'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                <Wand2 className="w-3.5 h-3.5 text-amber-400" />
+                <Wand2 className="w-4 h-4 text-amber-400" />
                 <span>Generar con IA</span>
               </button>
             </div>

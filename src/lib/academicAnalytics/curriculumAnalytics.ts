@@ -30,17 +30,17 @@ export class AcademicAnalyticsCurriculumAnalytics {
         if (!dependentCountMap.has(p)) {
           dependentCountMap.set(p, []);
         }
-        dependentCountMap.get(p)!.push(doc.id);
+        dependentCountMap.get(p)!.push(doc.id || doc.documentId);
       }
     }
 
     // Evaluar cada nodo de Bóveda con baja maestría y alto impacto downstream
     for (const [nodeId, dependents] of dependentCountMap.entries()) {
       if (dependents.length >= 2) {
-        const doc = allDocs.find(d => d.id === nodeId);
+        const doc = allDocs.find(d => (d.id || d.documentId) === nodeId);
         const title = doc?.frontmatter.title || nodeId.replace(/_/g, ' ');
-        const skill = doc?.frontmatter.skill || 'speaking';
-        const cefr = doc?.frontmatter.cefr || 'B1';
+        const skill = (Array.isArray(doc?.frontmatter.skills) ? doc?.frontmatter.skills[0] : (doc?.frontmatter as any)?.skill) || 'speaking';
+        const cefr = (Array.isArray(doc?.frontmatter.cefr) ? doc?.frontmatter.cefr[0] : (doc?.frontmatter as any)?.cefr) || 'B1';
 
         const rate = AcademicAnalyticsMetricService.calculateKnowledgeMasteryRate(
           nodeId,
@@ -116,7 +116,7 @@ export class AcademicAnalyticsCurriculumAnalytics {
     diagnostic_synthesis: string;
   } {
     const allDocs = KnowledgeVaultLoader.loadAll();
-    const doc = allDocs.find(d => d.id === targetKnowledgeId);
+    const doc = allDocs.find(d => (d.id || d.documentId) === targetKnowledgeId);
     const prereqs = doc?.frontmatter.prerequisites || ['func_asking_clarification', 'func_giving_reasons'];
 
     const targetRate = AcademicAnalyticsMetricService.calculateKnowledgeMasteryRate(
@@ -128,7 +128,7 @@ export class AcademicAnalyticsCurriculumAnalytics {
     );
 
     const prereqStatus = prereqs.map(pId => {
-      const pDoc = allDocs.find(d => d.id === pId);
+      const pDoc = allDocs.find(d => (d.id || d.documentId) === pId);
       const pTitle = pDoc?.frontmatter.title || pId.replace(/_/g, ' ');
       const pRate = AcademicAnalyticsMetricService.calculateKnowledgeMasteryRate(
         pId,

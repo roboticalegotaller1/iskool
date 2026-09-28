@@ -413,6 +413,7 @@ async function runFase10Pilot() {
         student_id: sId,
         evidence_type: 'quiz',
         skill: k % 2 === 0 ? 'reading' : 'speaking',
+        knowledge_targets: ['target_hs1_reading_01'],
         difficulty: 0.6,
         score: 70 + (i % 25),
         attempts_count: 1,

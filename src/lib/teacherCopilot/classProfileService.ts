@@ -83,7 +83,7 @@ export class TeacherCopilotClassProfileService {
       return {
         student_alias: studentAlias,
         target_outcome: 'Express and support opinions with reasons',
-        status: matchedProfile.speaking?.status || 'needs_support',
+        status: matchedProfile.speaking?.status === 'progressing' ? 'developing' : (matchedProfile.speaking?.status || 'needs_support'),
         reasons,
         demonstrated_strengths: strengths.length > 0 ? strengths : ['Present Simple sentence formation', 'Basic opinion starters'],
         active_gaps: gaps.length > 0 ? gaps : [{ unit_id: 'func_giving_reasons', title: 'Giving Reasons with Connectors', gap_type: 'practice_gap' }],

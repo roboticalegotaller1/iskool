@@ -82,4 +82,18 @@ export class TenantSecurityEnforcer {
 
     return { allowed: true };
   }
+
+  /**
+   * Asegura el acceso de un usuario a un estudiante con aserción explícita.
+   */
+  static assertStudentAccess(
+    user: { school_id?: string; schoolId?: string; user_id?: string; userId?: string; role?: string },
+    targetStudentId: string,
+    targetSchoolId?: string
+  ): void {
+    const schoolId = user.school_id || user.schoolId || '';
+    if (targetSchoolId && schoolId !== targetSchoolId) {
+      throw new Error(`Violación de Seguridad Multi-Tenant: El usuario de la escuela "${schoolId}" no tiene acceso a "${targetSchoolId}".`);
+    }
+  }
 }

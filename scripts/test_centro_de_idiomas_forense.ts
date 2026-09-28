@@ -97,7 +97,7 @@ async function runForensicTestSuite() {
   assert(suite3, 'Presencia de nodos curriculares en francés (FLE)', frenchNodes.length >= 36, `Nodos FLE: ${frenchNodes.length}`);
 
   const cycleReport = graph.detectCycles();
-  assert(suite3, 'Grafo Curricular sin ciclos circulares', !cycleReport.has_cycle, '0 ciclos topológicos');
+  assert(suite3, 'Grafo Curricular sin ciclos circulares', cycleReport.length === 0, '0 ciclos topológicos');
 
   // ---------------------------------------------------------------------------
   // 4. MATRIZ DE CERTIFICACIÓN SEP CENNI Y DELF / CAMBRIDGE

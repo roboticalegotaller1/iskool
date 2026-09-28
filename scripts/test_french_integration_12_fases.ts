@@ -174,10 +174,12 @@ async function runFrenchCertification() {
   // FASE 11: LEADERSHIP DASHBOARD & COORDINATOR COPILOT (LENGUAS)
   // ---------------------------------------------------------------------------
   console.log('\n--- FASE 11: Leadership Dashboard y Coordinación de Lenguas Extranjeras ---');
-  const coordinatorCockpit = await IskoolCore.getCoordinatorCockpit('coord_langues_extranjeras', {
+  const coordinatorCockpit = await IskoolCore.getCoordinatorCockpit('sch_ecole_voltaire', 'high_school_1', {
     schoolId: 'sch_ecole_voltaire',
-    grade: 'high_school_1'
-  });
+    userId: 'coord_langues_extranjeras',
+    role: 'coordinator',
+    assignedGrades: ['high_school_1']
+  } as any);
   assert(coordinatorCockpit.daily_brief !== undefined, 'Daily Brief ejecutivo entregado con señales del departamento de francés', 'Fase 11');
 
   // ---------------------------------------------------------------------------

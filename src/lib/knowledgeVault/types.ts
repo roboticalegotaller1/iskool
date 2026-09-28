@@ -118,6 +118,7 @@ export interface KnowledgeFrontmatter {
 }
 
 export interface ParsedKnowledgeDocument {
+  id?: string;
   documentId: string;
   filePath: string;
   relativePath: string;

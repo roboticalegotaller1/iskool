@@ -227,7 +227,7 @@ export class AIGatewayCache {
     this.statsCounters.writes++;
 
     if (supabase) {
-      supabase.from('ai_response_cache').upsert({
+      Promise.resolve(supabase.from('ai_response_cache').upsert({
         cache_key: key,
         feature: options?.feature || 'general_academic',
         school_id: options?.schoolId || null,
@@ -237,7 +237,7 @@ export class AIGatewayCache {
         tokens_saved: data.tokens_saved,
         cached_at: nowIso,
         updated_at: nowIso
-      }).then(() => {}).catch(() => {});
+      })).then(() => {}).catch(() => {});
     }
   }
 
