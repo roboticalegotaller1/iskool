@@ -118,6 +118,50 @@ async function runTests() {
   }
   assert(legitPassed, 'Admisión de telemetría pedagógica agregada y anónima');
 
+  // 6. Prueba de Ruta de Ingestión Programática (Rails -> Next.js)
+  console.log(`\n📡 Probando flujo de ingestión programática de Memoria Institucional...`);
+  const newMemoryInput = {
+    institution_id: "IBIME",
+    campus: "Campus Central",
+    academic_cycle: "2025-2026",
+    phase_nem: "fase_4",
+    grade: 4,
+    subject: "ciencias",
+    topic: "estados_de_la_materia",
+    created_by_teacher_ref: "teacher_test_99",
+    author_display_name: "Prof. Laura Gomez",
+    group_cohort: "4C",
+    metrics: {
+      students_evaluated_count: 26,
+      mastery_rate: 0.88,
+      comprehension_friction_points: ["sublimacion_proceso_fisico"]
+    },
+    provenance: {
+      rails_activity_id: 9940,
+      rails_assessment_batch_id: 12040,
+      ingestion_agent: "iSkool-Memory-Worker/1.0"
+    },
+    sections: {
+      contextoDiagnostico: "Evaluación formativa tras experimento de laboratorio con hielo seco y vapor.",
+      friccionesErrores: ["Confusión entre evaporación y ebullición", "Concepto de sublimación sin pasar por líquido"],
+      adaptacionesExitosas: ["Uso de modelo molecular con esferas de plastilina para representar espaciado de partículas"],
+      recomendacionesProximoCiclo: ["Iniciar con el experimento de la jeringa y presión antes de fórmulas de temperatura"]
+    }
+  };
+
+  const saveRes = await InstitutionalMemoryService.saveMemory(newMemoryInput);
+  assert(saveRes.success && Boolean(saveRes.filePath), 'Guardado atómico de nueva memoria vía InstitutionalMemoryService');
+
+  const queryCiencias = InstitutionalMemoryService.queryMemories({
+    grade: 4,
+    subject: 'ciencias',
+    topic: 'estados_de_la_materia'
+  });
+  assert(queryCiencias.length >= 1, `Consulta de memoria recién ingerida (Encontradas: ${queryCiencias.length})`);
+
+  const synthCiencias = InstitutionalMemoryService.synthesizePriorCycleLearnings(queryCiencias, 'estados_de_la_materia');
+  assert(synthCiencias.totalStudentsEvaluated === 26 && synthCiencias.averageMasteryRate === 0.88, 'Síntesis correcta de memoria recién ingerida');
+
   console.log(`\n================================================================`);
   console.log(`🏁 RESULTADOS: ${passedTests}/${totalTests} pruebas superadas con éxito`);
   console.log(`================================================================\n`);

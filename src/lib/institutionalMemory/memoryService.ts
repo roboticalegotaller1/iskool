@@ -31,7 +31,12 @@ export class InstitutionalMemoryService {
   /**
    * Obtiene la ruta física del directorio de Memorias Institucionales dentro de la Bóveda Curricular.
    */
-  static getBaseMemoryDirectory(): string {
+  /**
+   * Obtiene la ruta física del directorio de Memorias Institucionales dentro de la Bóveda Curricular.
+   * Si detecta entorno serverless con sistema de archivos de solo lectura, conmuta de forma segura
+   * hacia el directorio temporal /tmp para evitar errores EROFS.
+   */
+  static getBaseMemoryDirectory(forWrite: boolean = false): string {
     const envPath = process.env.CURRICULAR_VAULT_PATH || process.env.VAULT_PATH;
     let basePlannings = path.join(process.cwd(), 'planeaciones');
     if (envPath && fs.existsSync(envPath)) {
@@ -39,8 +44,37 @@ export class InstitutionalMemoryService {
       basePlannings = fs.existsSync(sub) ? sub : envPath;
     }
     const memoryDir = path.join(basePlannings, 'Memorias_Institucionales');
+
+    if (forWrite) {
+      const isServerless = Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT || process.env.VERCEL);
+      let isWritable = !isServerless;
+      if (isWritable) {
+        try {
+          if (!fs.existsSync(memoryDir)) {
+            fs.mkdirSync(memoryDir, { recursive: true });
+          }
+          fs.accessSync(memoryDir, fs.constants.W_OK);
+        } catch {
+          isWritable = false;
+        }
+      }
+
+      if (!isWritable) {
+        const tempBase = process.env.TMPDIR || '/tmp';
+        const tempMemoryDir = path.join(tempBase, 'iskool', 'planeaciones', 'Memorias_Institucionales');
+        if (!fs.existsSync(tempMemoryDir)) {
+          fs.mkdirSync(tempMemoryDir, { recursive: true });
+        }
+        return tempMemoryDir;
+      }
+    }
+
     if (!fs.existsSync(memoryDir)) {
-      fs.mkdirSync(memoryDir, { recursive: true });
+      try {
+        fs.mkdirSync(memoryDir, { recursive: true });
+      } catch {
+        // En solo lectura, continuar si ya existe o no se puede crear
+      }
     }
     return memoryDir;
   }
@@ -92,7 +126,7 @@ export class InstitutionalMemoryService {
     InstitutionalMemoryFrontmatterSchema.parse(frontmatterToValidate);
 
     // 3. Directorio por ciclo escolar
-    const baseDir = this.getBaseMemoryDirectory();
+    const baseDir = this.getBaseMemoryDirectory(true);
     const cycleDir = path.join(baseDir, sanitizeSafeFilename(input.academic_cycle));
     if (!fs.existsSync(cycleDir)) {
       fs.mkdirSync(cycleDir, { recursive: true });
@@ -243,43 +277,56 @@ ${input.sections.procedenciaTrazabilidad || 'Registro generado automáticamente 
 
   /**
    * Carga y parsea recursivamente todas las Memorias Institucionales de la Bóveda Curricular.
+   * En entornos serverless, escanea tanto el bundle estático como el directorio temporal /tmp.
    */
   static loadAllMemories(): InstitutionalMemoryDocument[] {
-    const memoryDir = this.getBaseMemoryDirectory();
-    if (!fs.existsSync(memoryDir)) return [];
+    const primaryDir = this.getBaseMemoryDirectory(false);
+    const tempBase = process.env.TMPDIR || '/tmp';
+    const tempMemoryDir = path.join(tempBase, 'iskool', 'planeaciones', 'Memorias_Institucionales');
 
-    const documents: InstitutionalMemoryDocument[] = [];
-    const files = this.scanMarkdownFilesRecursively(memoryDir);
+    const searchDirs = [primaryDir];
+    if (fs.existsSync(tempMemoryDir) && tempMemoryDir !== primaryDir) {
+      searchDirs.push(tempMemoryDir);
+    }
 
-    for (const filePath of files) {
-      try {
-        const rawContent = fs.readFileSync(filePath, 'utf8');
-        const parsed = KnowledgeVaultParser.parse(rawContent, filePath);
-        const fm = parsed.frontmatter as unknown as InstitutionalMemoryFrontmatter;
+    const documentsMap = new Map<string, InstitutionalMemoryDocument>();
 
-        if (fm && fm.type === 'institutional_memory') {
-          const wikiLinks = parsed.wikiLinks || [];
-          const sections = this.extractSectionsFromMarkdown(parsed.markdownBody);
-          const relativePath = path.relative(memoryDir, filePath);
-          const id = path.basename(filePath, '.md').toLowerCase();
+    for (const dir of searchDirs) {
+      if (!fs.existsSync(dir)) continue;
+      const files = this.scanMarkdownFilesRecursively(dir);
 
-          documents.push({
-            id,
-            filePath,
-            relativePath,
-            frontmatter: fm,
-            sections,
-            rawContent,
-            wikiLinks,
-            createdAt: fm.provenance?.captured_at || new Date().toISOString()
-          });
+      for (const filePath of files) {
+        try {
+          const rawContent = fs.readFileSync(filePath, 'utf8');
+          const parsed = KnowledgeVaultParser.parse(rawContent, filePath);
+          const fm = parsed.frontmatter as unknown as InstitutionalMemoryFrontmatter;
+
+          if (fm && fm.type === 'institutional_memory') {
+            const wikiLinks = parsed.wikiLinks || [];
+            const sections = this.extractSectionsFromMarkdown(parsed.markdownBody);
+            const relativePath = path.relative(dir, filePath);
+            const id = path.basename(filePath, '.md').toLowerCase();
+
+            if (!documentsMap.has(id)) {
+              documentsMap.set(id, {
+                id,
+                filePath,
+                relativePath,
+                frontmatter: fm,
+                sections,
+                rawContent,
+                wikiLinks,
+                createdAt: fm.provenance?.captured_at || new Date().toISOString()
+              });
+            }
+          }
+        } catch (err) {
+          console.warn(`[InstitutionalMemoryService] Advertencia al procesar "${filePath}":`, err);
         }
-      } catch (err) {
-        console.warn(`[InstitutionalMemoryService] Advertencia al procesar "${filePath}":`, err);
       }
     }
 
-    return documents;
+    return Array.from(documentsMap.values());
   }
 
   /**

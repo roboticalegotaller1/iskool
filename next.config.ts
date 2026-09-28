@@ -4,9 +4,15 @@ const nextConfig: NextConfig = {
   // Turbopack config (Next.js 16 default bundler)
   turbopack: {},
   productionBrowserSourceMaps: false,
+  outputFileTracingIncludes: {
+    '/api/**/*': [
+      './planeaciones/**/*',
+      './knowledge/**/*',
+      './.index/**/*'
+    ],
+  },
   outputFileTracingExcludes: {
     '*': [
-      './planeaciones/**/*',
       './*.pdf',
       './*.mp4',
       './*.wav',

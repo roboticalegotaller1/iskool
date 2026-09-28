@@ -35,6 +35,7 @@ import {
   isEnglishSubject
 } from '@/lib/curriculumEngine';
 import { PedagogicalSuggestionsSection } from '@/components/teacher/PedagogicalSuggestionsSection';
+import { InstitutionalMemoryBanner } from '@/components/teacher/InstitutionalMemoryBanner';
 import { useSchoolBooksStore } from '@/store/useSchoolBooksStore';
 import { SmartBookNotebookModal } from '@/components/books/SmartBookNotebookModal';
 import { SchoolDigitalBook } from '@/types/schoolBooks';
@@ -859,6 +860,23 @@ export function PlanningTab({ currentTeacher, subjects, schedulesList, groupsLis
 
     alert(`✨ ¡Planeación enriquecida exitosamente!\nSe integraron las referencias del libro "${book.titulo}", Capítulo ${chapter.numero} (Páginas ${chapter.rangoPaginas}) en las actividades y entregables de cada sesión.`);
   };
+
+  // Carga asíncrona no bloqueante de Memoria Institucional Acumulativa para la planeación activa
+  useEffect(() => {
+    if (activePlanning && !activePlanning.institutionalMemory && (activePlanning.title || activePlanning.topic)) {
+      const q = activePlanning.title || activePlanning.topic;
+      const sub = activePlanning.subjectName || activePlanning.subjectId || selectedSubject || '';
+      const grd = activePlanning.levelId || selectedLevel || '';
+      fetch(`/api/vault/memory?q=${encodeURIComponent(q)}&subject=${encodeURIComponent(sub)}&grade=${encodeURIComponent(grd)}&synthesis=true`)
+        .then(res => res.json())
+        .then(data => {
+          if (data?.found && data.synthesis) {
+            setActivePlanning((prev: any) => prev ? { ...prev, institutionalMemory: data.synthesis } : prev);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [activePlanning?.id, activePlanning?.title]);
 
   // Inicializar Asignatura según las disponibles para el maestro si aún no hay una seleccionada
   useEffect(() => {
@@ -2130,6 +2148,9 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                   {activePlanning.title}
                 </h1>
               </div>
+
+              {/* Banner de Memoria Institucional Acumulativa (Segunda Memoria • Cero Amnesia) */}
+              <InstitutionalMemoryBanner memory={activePlanning.institutionalMemory} />
 
               {/* Banner Oficial Cambridge English Qualifications & Marco Común Europeo (CEFR) */}
               {(activePlanning.cambridgeLevel || isEnglishSubject(activePlanning.subjectName, activePlanning.title)) && (() => {
