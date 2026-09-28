@@ -333,5 +333,30 @@ describe('🛡️ SEGURIDAD MULTI-TENANT: iSkool Core e IBIME', () => {
       // Debe responder con 404 rewrite para evitar enumeración cross-tenant
       expect(res.status).toBe(404);
     });
+
+    it('debe descartar el encabezado forjado x-resolved-tenant y responder 404 ante un token no autorizado de iSkool', async () => {
+      const iskoolToken = await signMultiTenantToken({
+        id: 'usr-attacker-spoof',
+        email: 'attacker@iskool.edu.mx',
+        tenant_id: 'iskool',
+        role: 'student'
+      });
+
+      // Simular petición con inyección/spoofing deliberado del encabezado interno x-resolved-tenant: ibime
+      const req = new NextRequest('http://localhost:3000/api/v1/ibime/kardex', {
+        headers: {
+          'x-resolved-tenant': 'ibime',
+          'x-resolved-tenant-id': 'ibime',
+          cookie: `iskool_session=${iskoolToken}`
+        }
+      });
+
+      const res = await middleware(req);
+
+      // El middleware debe descartar la cabecera forjada y responder HTTP 404 Not Found
+      expect(res.status).toBe(404);
+      const json = await res.json();
+      expect(json.code).toBe('NOT_FOUND');
+    });
   });
 });

@@ -6,10 +6,11 @@
  * 
  * Verificación Integral con TypeScript AST:
  * a) Static imports ('ImportDeclaration')
- * b) Dynamic imports ('CallExpression' con 'import()')
+ * b) Dynamic imports ('CallExpression' con 'import()') auditando namespaces privados
  * c) Re-exports ('ExportDeclaration')
  * d) Rutas relativas que escapen de los bounded contexts (ej. '../../')
- * e) Regla case-insensitive para detectar menciones de marcas cruzadas en literales JSX/TSX
+ * e) Literales JSX/TSX, TemplateExpression y NoSubstitutionTemplateLiteral (Case-Insensitive)
+ * f) Nombres de variables y constantes en VariableDeclaration para marcas prohibidas y cruzadas
  */
 
 import fs from 'fs';
@@ -26,7 +27,7 @@ interface BoundaryViolation {
 const ROOT_DIR = process.cwd();
 const SRC_DIR = path.join(ROOT_DIR, 'src');
 
-// Marcas comerciales prohibidas en vistas de usuario (Regla No Negociable 1)
+// Marcas comerciales prohibidas en vistas y código (Regla No Negociable 1)
 const PROHIBITED_COMMERCIAL_BRANDS = [
   'canvas lms',
   'google classroom',
@@ -60,7 +61,7 @@ function scanDirectory(dir: string, fileList: string[] = []): string[] {
 }
 
 export function runHermeticBoundaryAudit(): { passed: boolean; violations: BoundaryViolation[] } {
-  console.log('🔍 Iniciando Auditoría AST de Fronteras Herméticas y Bounded Contexts...\n');
+  console.log('🔍 Iniciando Auditoría AST Exhaustiva de Fronteras Herméticas y Bounded Contexts...\n');
 
   const files = scanDirectory(SRC_DIR);
   const violations: BoundaryViolation[] = [];
@@ -78,7 +79,6 @@ export function runHermeticBoundaryAudit(): { passed: boolean; violations: Bound
     );
 
     const isIbimeContext = relativePath.includes('ibime');
-    const isIskoolPrivateStore = relativePath.startsWith('src/store/');
 
     // Función auxiliar para registrar violaciones con número de línea exacto
     function report(node: ts.Node, rule: string, message: string) {
@@ -92,18 +92,20 @@ export function runHermeticBoundaryAudit(): { passed: boolean; violations: Bound
     }
 
     // Validación de especificadores de módulo (static, dynamic, re-export)
-    function validateModuleSpecifier(specifier: string, node: ts.Node) {
-      // 1. Aislamiento de IBIME: Prohibición de importar stores privados de iSkool
+    function validateModuleSpecifier(specifier: string, node: ts.Node, isDynamic = false) {
+      // 1. Aislamiento de IBIME: Prohibición de acoplarse a stores privados de iSkool
       if (isIbimeContext) {
         if (
           specifier.includes('store/useSchoolAdminStore') ||
           specifier.includes('store/useTeacherStore') ||
-          specifier.includes('store/useStudentStore')
+          specifier.includes('store/useStudentStore') ||
+          specifier.includes('lib/iskoolCore')
         ) {
+          const ruleName = isDynamic ? 'DYNAMIC_IMPORT_HERMETIC_VIOLATION' : 'HERMETIC_BOUNDARY_VIOLATION';
           report(
             node,
-            'HERMETIC_BOUNDARY_VIOLATION',
-            `Módulos de IBIME no deben acoplarse directamente a stores privados (${specifier}). Deben consumir contratos canónicos en @/lib/curriculum o @/lib/auth.`
+            ruleName,
+            `Módulos de IBIME no deben acoplarse directamente a namespaces o stores privados (${specifier}). Deben consumir contratos canónicos en @/lib/curriculum o @/lib/auth.`
           );
         }
       }
@@ -118,11 +120,13 @@ export function runHermeticBoundaryAudit(): { passed: boolean; violations: Bound
           if (
             relativeTarget.startsWith('src/store') ||
             relativeTarget.startsWith('src/app/teacher') ||
-            relativeTarget.startsWith('src/app/admin')
+            relativeTarget.startsWith('src/app/admin') ||
+            relativeTarget.startsWith('src/lib/iskoolCore')
           ) {
+            const ruleName = isDynamic ? 'DYNAMIC_IMPORT_HERMETIC_VIOLATION' : 'RELATIVE_BOUNDED_CONTEXT_ESCAPE';
             report(
               node,
-              'RELATIVE_BOUNDED_CONTEXT_ESCAPE',
+              ruleName,
               `Ruta relativa '${specifier}' escapa del bounded context de IBIME hacia módulos privados (${relativeTarget}). Utilice contratos canónicos @/lib/* en su lugar.`
             );
           }
@@ -130,12 +134,39 @@ export function runHermeticBoundaryAudit(): { passed: boolean; violations: Bound
       }
     }
 
-    // Recorrido del AST de TypeScript
+    // Validación de texto contra marcas comerciales y marcas cruzadas (Case-Insensitive)
+    function checkBrandInText(text: string, node: ts.Node, contextDescription = 'literal visual') {
+      if (!text || text.trim().length <= 2) return;
+      const lower = text.toLowerCase();
+
+      for (const brand of PROHIBITED_COMMERCIAL_BRANDS) {
+        if (lower.includes(brand)) {
+          report(
+            node,
+            'WHITE_LABEL_BRAND_VIOLATION',
+            `Se detectó la marca comercial prohibida '${brand}' en ${contextDescription}: "${text.trim()}". Utilice terminología pedagógica oficial.`
+          );
+        }
+      }
+
+      // Detección de fuga de marca institucional en contexto de IBIME
+      if (isIbimeContext && relativePath.includes('/app/ibime/')) {
+        if (lower.includes('iskool studio') || lower.includes('iskool ecosistema')) {
+          report(
+            node,
+            'CROSS_TENANT_BRAND_LEAK',
+            `Fuga de marca iSkool detectada en vista de IBIME (${contextDescription}): "${text.trim()}". Las vistas de IBIME deben proyectar exclusivamente su identidad institucional.`
+          );
+        }
+      }
+    }
+
+    // Recorrido exhaustivo del AST de TypeScript
     function visit(node: ts.Node) {
       // a) Static imports: ImportDeclaration
       if (ts.isImportDeclaration(node)) {
         if (node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
-          validateModuleSpecifier(node.moduleSpecifier.text, node);
+          validateModuleSpecifier(node.moduleSpecifier.text, node, false);
         }
       }
 
@@ -143,8 +174,8 @@ export function runHermeticBoundaryAudit(): { passed: boolean; violations: Bound
       if (ts.isCallExpression(node)) {
         if (node.expression.kind === ts.SyntaxKind.ImportKeyword) {
           const firstArg = node.arguments[0];
-          if (firstArg && ts.isStringLiteral(firstArg)) {
-            validateModuleSpecifier(firstArg.text, node);
+          if (firstArg && (ts.isStringLiteral(firstArg) || ts.isNoSubstitutionTemplateLiteral(firstArg))) {
+            validateModuleSpecifier(firstArg.text, node, true);
           }
         }
       }
@@ -152,50 +183,62 @@ export function runHermeticBoundaryAudit(): { passed: boolean; violations: Bound
       // c) Re-exports: ExportDeclaration
       if (ts.isExportDeclaration(node)) {
         if (node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
-          validateModuleSpecifier(node.moduleSpecifier.text, node);
+          validateModuleSpecifier(node.moduleSpecifier.text, node, false);
         }
       }
 
-      // d) Detección de Marcas Comerciales y Marcas Cruzadas en Literales JSX/TSX (Case-Insensitive)
-      if (filePath.endsWith('.tsx') && (relativePath.includes('/components/') || relativePath.includes('/app/'))) {
-        let textToCheck: string | null = null;
+      // d) Nombres de variables y constantes en VariableDeclaration
+      if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name)) {
+        const varName = node.name.text;
+        const lowerVarName = varName.toLowerCase();
 
+        // 1. Prohibición de marcas comerciales en nombres de variables
+        for (const brand of PROHIBITED_COMMERCIAL_BRANDS) {
+          const normalizedBrand = brand.replace(/\s+/g, '');
+          if (lowerVarName.includes(normalizedBrand)) {
+            report(
+              node,
+              'WHITE_LABEL_VARIABLE_VIOLATION',
+              `Identificador de variable '${varName}' contiene el nombre de marca comercial prohibida '${brand}'. Utilice nomenclatura pedagógica oficial.`
+            );
+          }
+        }
+
+        // 2. Prohibición de marcas de iSkool dentro del contexto aislado de IBIME
+        if (isIbimeContext && lowerVarName.includes('iskool')) {
+          report(
+            node,
+            'CROSS_TENANT_IDENTIFIER_LEAK',
+            `Identificador de variable '${varName}' en contexto aislado de IBIME contiene la marca 'iSkool'. Debe utilizarse nomenclatura neutral o institucional.`
+          );
+        }
+      }
+
+      // e) Literales JSX/TSX
+      if (filePath.endsWith('.tsx') && (relativePath.includes('/components/') || relativePath.includes('/app/'))) {
         if (ts.isJsxText(node)) {
-          textToCheck = node.getText(sourceFile).trim();
+          checkBrandInText(node.getText(sourceFile), node, 'texto JSX');
         } else if (ts.isStringLiteral(node) && node.parent) {
-          // Literales directos dentro de atributos JSX o expresiones JSX
           if (
             ts.isJsxAttribute(node.parent) ||
             ts.isJsxExpression(node.parent) ||
             ts.isJsxElement(node.parent)
           ) {
-            textToCheck = node.text.trim();
+            checkBrandInText(node.text, node, 'atributo/expresión JSX');
           }
         }
+      }
 
-        if (textToCheck && textToCheck.length > 2) {
-          const lowerText = textToCheck.toLowerCase();
-
-          // Verificar marcas comerciales externas prohibidas
-          for (const brand of PROHIBITED_COMMERCIAL_BRANDS) {
-            if (lowerText.includes(brand)) {
-              report(
-                node,
-                'WHITE_LABEL_BRAND_VIOLATION',
-                `Se detectó la marca comercial prohibida '${brand}' en literal visual: "${textToCheck}". Utilice terminología pedagógica oficial.`
-              );
-            }
-          }
-
-          // Verificar fuga de marca cruzada en interfaces exclusivas de IBIME
-          if (isIbimeContext && relativePath.includes('/app/ibime/')) {
-            if (lowerText.includes('iskool studio') || lowerText.includes('iskool ecosistema')) {
-              report(
-                node,
-                'CROSS_TENANT_BRAND_LEAK',
-                `Fuga de marca detectada en vista de IBIME: "${textToCheck}". Las vistas de IBIME deben proyectar exclusivamente su identidad institucional.`
-              );
-            }
+      // f) Template Expressions y NoSubstitutionTemplateLiteral
+      if (ts.isNoSubstitutionTemplateLiteral(node)) {
+        checkBrandInText(node.text, node, 'plantilla literal (template literal)');
+      } else if (ts.isTemplateExpression(node)) {
+        if (node.head && node.head.text) {
+          checkBrandInText(node.head.text, node, 'encabezado de plantilla (template expression head)');
+        }
+        for (const span of node.templateSpans) {
+          if (span.literal && span.literal.text) {
+            checkBrandInText(span.literal.text, span, 'segmento de plantilla (template span)');
           }
         }
       }
@@ -237,10 +280,11 @@ if (require.main === module || process.argv[1]?.includes('verify_hermetic_bounda
   const result = runHermeticBoundaryAudit();
 
   if (result.passed) {
-    console.log('✅ AUDITORÍA AST DE FRONTERAS HERMÉTICAS SUPERADA.');
-    console.log('   - Static imports, Dynamic import(), Re-exports analizados.');
+    console.log('✅ AUDITORÍA AST EXHAUSTIVA DE FRONTERAS HERMÉTICAS SUPERADA.');
+    console.log('   - Static imports, Dynamic import(), Re-exports auditados.');
+    console.log('   - TemplateExpression y NoSubstitutionTemplateLiteral verificados.');
+    console.log('   - VariableDeclarations validados contra marcas prohibidas y cruzadas.');
     console.log('   - 0 rutas relativas escapando de bounded contexts.');
-    console.log('   - 0 marcas comerciales o cruzadas en literales visuales.');
     console.log('   - Contratos canónicos verificados.\n');
     process.exit(0);
   } else {

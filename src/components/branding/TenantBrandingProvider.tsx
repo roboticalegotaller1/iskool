@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import { TenantId } from '@/lib/auth/multiTenantSession';
 import {
   TenantThemeTokens,
@@ -78,14 +78,56 @@ export const TenantBrandingProvider: React.FC<TenantBrandingProviderProps> = ({
 
   }, [tenantId, tokens, setWhiteLabelConfig]);
 
+  // Blindaje Anti-FOUC y Aislamiento en Transición de Rutas:
+  // Detectar si el tenant activo en memoria difiere del atributo data-tenant en document.documentElement.
+  // Si se detecta un cambio cruzado durante la navegación cliente, fuerza una recarga total limpia.
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
+    const checkDomTenantDiscrepancy = () => {
+      const domTenant = document.documentElement.getAttribute('data-tenant') as TenantId | null;
+      if (domTenant && domTenant !== tenantId) {
+        const targetPortal = tenantId === 'ibime' ? '/ibime/portal' : '/teacher';
+        if (typeof window.location?.replace === 'function') {
+          window.location.replace(targetPortal);
+        }
+      }
+    };
+
+    const observer = new MutationObserver(() => {
+      checkDomTenantDiscrepancy();
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-tenant']
+    });
+
+    window.addEventListener('popstate', checkDomTenantDiscrepancy);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('popstate', checkDomTenantDiscrepancy);
+    };
+  }, [tenantId]);
+
+  const switchTenant = useCallback((newTenant: TenantId) => {
+    if (newTenant === tenantId) return;
+    setTenantId(newTenant);
+    if (typeof window !== 'undefined' && typeof window.location?.replace === 'function') {
+      const targetPortal = newTenant === 'ibime' ? '/ibime/portal' : '/teacher';
+      window.location.replace(targetPortal);
+    }
+  }, [tenantId]);
+
   const contextValue = useMemo<TenantBrandingContextType>(() => ({
     tenantId,
     tokens,
     isIbime: tenantId === 'ibime',
     isIskool: tenantId === 'iskool',
-    switchTenant: (newTenant: TenantId) => setTenantId(newTenant),
+    switchTenant,
     applyTheme: () => applyWhiteLabelCssVariables(tokens.primaryColorHex)
-  }), [tenantId, tokens]);
+  }), [tenantId, tokens, switchTenant]);
 
   return (
     <TenantBrandingContext.Provider value={contextValue}>

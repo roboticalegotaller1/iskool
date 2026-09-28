@@ -80,7 +80,15 @@ jobs:
           NEXT_TELEMETRY_DISABLED: 1
           NODE_OPTIONS: "--max-old-space-size=8192"
 
+      - name: 💾 Restaurar Caché de Binarios de Playwright
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
       - name: 🌐 Instalar Navegador Chromium para Playwright
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
 
       - name: 🚀 Ejecutar Suite E2E Real de Navegador
@@ -129,10 +137,27 @@ jobs:
             git remote add duran14 "https://x-access-token:${{ secrets.DEPLOY_PAT }}@github.com/duran14/ISkool.git" || \
             git remote set-url duran14 "https://x-access-token:${{ secrets.DEPLOY_PAT }}@github.com/duran14/ISkool.git"
 
-            echo "Ejecutando despliegue institucional sincronizado a los 3 repositorios remotos..."
-            npm run deploy:remotes
+            # 1. Verificación pre-push con git fetch en los 3 remotos
+            echo "Realizando git fetch preventivo en los 3 remotos para certificar alineación..."
+            git fetch origin main
+            git fetch iskool main
+            git fetch duran14 main
+
+            # 2. Guarda de calidad preventiva
+            npm run guard:push
+
+            # 3. Envío atómico con --force-with-lease para proteger contra sobreescrituras concurrentes
+            echo "Ejecutando push atómico a origin..."
+            git push origin main --force-with-lease
+
+            echo "Ejecutando push atómico a iskool..."
+            git push iskool main --force-with-lease
+
+            echo "Ejecutando push atómico a duran14 (AWS Amplify)..."
+            git push duran14 main --force-with-lease
           else
             echo "DEPLOY_PAT no configurado. Validando guarda y sincronizando repositorio principal..."
+            git fetch origin main
             npm run guard:push
-            git push origin main
+            git push origin main --force-with-lease
           fi

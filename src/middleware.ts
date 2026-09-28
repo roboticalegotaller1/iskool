@@ -44,11 +44,19 @@ const IBIME_PROTECTED_PREFIXES = [
 ];
 
 export async function middleware(request: NextRequest) {
+  // 0. Sanitización Perimetral Zero-Trust: Eliminar cualquier cabecera x-resolved-tenant spoofed del cliente entrante
+  try {
+    request.headers.delete('x-resolved-tenant');
+    request.headers.delete('x-resolved-tenant-id');
+  } catch {
+    // Si los headers son inmutables en tiempo de ejecución, se garantiza su purga en requestHeaders abajo
+  }
+
   const { pathname } = request.nextUrl;
   const host = (request.headers.get('x-forwarded-host') || request.headers.get('host') || '').toLowerCase();
 
   // 1. Determinar el Tenant Requerido según el recurso objetivo (Ruta o Subdominio)
-  // NUNCA depender de headers arbitrarios del cliente (como X-Tenant-ID)
+  // NUNCA depender de headers arbitrarios del cliente (como X-Tenant-ID o x-resolved-tenant)
   const isIbimePath = pathname.startsWith('/ibime') || pathname.startsWith('/api/v1/ibime');
   const isIbimeHost = host.startsWith('ibime.') || host.includes('ibime');
   const targetTenantRequired: TenantId = (isIbimePath || isIbimeHost) ? 'ibime' : 'iskool';
@@ -58,15 +66,26 @@ export async function middleware(request: NextRequest) {
   const isIntegrationApi = pathname.startsWith('/api/v1/integration');
   const isProtected = isIskoolProtected || isIbimeProtected || isIntegrationApi;
 
-  // Si la ruta es pública, permitir paso directo inyectando el tenant resuelto
+  // Si la ruta es pública, permitir paso directo inyectando el tenant resuelto sanitizado
   if (!isProtected) {
-    const response = NextResponse.next();
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.delete('x-resolved-tenant');
+    requestHeaders.delete('x-resolved-tenant-id');
+    requestHeaders.set('x-resolved-tenant', targetTenantRequired);
+    requestHeaders.set('x-resolved-tenant-id', targetTenantRequired);
+
+    const response = NextResponse.next({
+      request: {
+        headers: requestHeaders
+      }
+    });
     response.headers.set('x-resolved-tenant', targetTenantRequired);
+    response.headers.set('x-resolved-tenant-id', targetTenantRequired);
     applyDefensiveSecurityHeaders(response);
     return response;
   }
 
-  // 2. Extracción de Credenciales Criptográficas Exclusivas
+  // 2. Extracción y Resolución Determinista de Credenciales Criptográficas Exclusivas
   const iskoolCookie = request.cookies.get('iskool_session')?.value;
   const ibimeCookie = request.cookies.get('ibime_session')?.value;
   const authHeader = request.headers.get('Authorization') || request.headers.get('authorization');
@@ -74,10 +93,31 @@ export async function middleware(request: NextRequest) {
     ? authHeader.substring(7).trim()
     : null;
 
-  // Seleccionar token candidato
-  const candidateToken = targetTenantRequired === 'ibime'
-    ? (ibimeCookie || bearerToken || iskoolCookie)
-    : (iskoolCookie || bearerToken || ibimeCookie);
+  // Selección determinista: si ambas cookies coexisten, la selección depende estrictamente
+  // del prefijo de la ruta o subdominio. Rutas de IBIME exigen estrictamente ibime_session.
+  let candidateToken: string | null = null;
+  let opposingTenantCookiePresent = false;
+
+  if (targetTenantRequired === 'ibime') {
+    candidateToken = ibimeCookie || bearerToken || null;
+    if (!candidateToken && iskoolCookie) {
+      opposingTenantCookiePresent = true;
+    }
+  } else {
+    candidateToken = iskoolCookie || bearerToken || null;
+    if (!candidateToken && ibimeCookie) {
+      opposingTenantCookiePresent = true;
+    }
+  }
+
+  // Si la ruta solicitada pertenece a un tenant y la cookie válida corresponde al tenant contrario,
+  // retorna inmediatamente HTTP 404 Not Found para evitar enumeración entre instituciones
+  if (opposingTenantCookiePresent) {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Not Found', code: 'NOT_FOUND' }, { status: 404 });
+    }
+    return NextResponse.rewrite(new URL('/not-found', request.url), { status: 404 });
+  }
 
   if (!candidateToken) {
     if (pathname.startsWith('/api/')) {
@@ -90,7 +130,7 @@ export async function middleware(request: NextRequest) {
       );
     }
 
-    const loginUrl = new URL(targetTenantRequired === 'ibime' ? '/login' : '/login', request.url);
+    const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     loginUrl.searchParams.set('tenant', targetTenantRequired);
     return NextResponse.redirect(loginUrl);
@@ -128,17 +168,11 @@ export async function middleware(request: NextRequest) {
 
   // 4. BARRERA DE SEGURIDAD ZERO-TRUST (ANTI-ENUMERACIÓN HTTP 404 NOT FOUND)
   // Si el usuario autenticado pertenece a un tenant distinto al recurso solicitado
-  // respondemos con 404 NOT FOUND para evitar la enumeración de recursos privados
+  // respondemos con 404 NOT FOUND sin procesar llamadas descendentes
   if (targetTenantRequired === 'ibime' && userTenant !== 'ibime') {
     if (!isSuperUser) {
       if (pathname.startsWith('/api/')) {
-        return NextResponse.json(
-          {
-            error: 'Recurso no encontrado.',
-            code: 'NOT_FOUND'
-          },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: 'Not Found', code: 'NOT_FOUND' }, { status: 404 });
       }
       return NextResponse.rewrite(new URL('/not-found', request.url), { status: 404 });
     }
@@ -147,13 +181,7 @@ export async function middleware(request: NextRequest) {
   if (targetTenantRequired === 'iskool' && (isIskoolProtected || isIntegrationApi) && userTenant !== 'iskool') {
     if (!isSuperUser) {
       if (pathname.startsWith('/api/')) {
-        return NextResponse.json(
-          {
-            error: 'Recurso no encontrado.',
-            code: 'NOT_FOUND'
-          },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: 'Not Found', code: 'NOT_FOUND' }, { status: 404 });
       }
       return NextResponse.rewrite(new URL('/not-found', request.url), { status: 404 });
     }
@@ -181,6 +209,8 @@ export async function middleware(request: NextRequest) {
 
   // 6. Inyección de Headers Confiables hacia Server Components
   const requestHeaders = new Headers(request.headers);
+  requestHeaders.delete('x-resolved-tenant');
+  requestHeaders.delete('x-resolved-tenant-id');
   requestHeaders.set('x-resolved-tenant', targetTenantRequired);
   requestHeaders.set('x-resolved-tenant-id', targetTenantRequired);
   requestHeaders.set('x-user-id', userId);

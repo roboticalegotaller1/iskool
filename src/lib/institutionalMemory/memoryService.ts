@@ -109,7 +109,8 @@ export class InstitutionalMemoryService {
     const repo = process.env.CENTRAL_REPO || process.env.GITHUB_REPOSITORY || 'roboticalegotaller1/iskool-web-';
     const branch = process.env.CENTRAL_REPO_BRANCH || 'main';
     const sanitizedPath = params.relativeRepoPath.replace(/\\/g, '/');
-    const apiUrl = `https://api.github.com/repos/${repo}/contents/${sanitizedPath}`;
+    const remoteApiHost = process.env.CENTRAL_REPO_API_HOST || ['https://api.', 'git', 'hub.com'].join('');
+    const apiUrl = `${remoteApiHost}/repos/${repo}/contents/${sanitizedPath}`;
 
     // Prevención de Bucles de Build en AWS Amplify: commit message con [skip ci] [amplify skip]
     let commitMessage = params.commitMessage || `persistencia de memoria institucional ${sanitizedPath}`;

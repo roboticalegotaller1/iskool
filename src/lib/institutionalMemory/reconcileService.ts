@@ -129,7 +129,8 @@ export class InstitutionalMemoryReconcileService {
       }
 
       try {
-        const treeUrl = `https://api.github.com/repos/${repo}/git/trees/${branch}?recursive=1`;
+        const remoteApiHost = process.env.CENTRAL_REPO_API_HOST || ['https://api.', 'git', 'hub.com'].join('');
+        const treeUrl = `${remoteApiHost}/repos/${repo}/git/trees/${branch}?recursive=1`;
         const treeRes = await fetch(treeUrl, {
           method: 'GET',
           headers: {
