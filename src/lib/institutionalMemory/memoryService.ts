@@ -29,11 +29,11 @@ let manifestCache: { data: MemoryManifestEntry[]; timestamp: number } | null = n
 const MANIFEST_TTL_MS = 60 * 1000;
 
 
-function cleanString(str: string): string {
+export function cleanString(str: string): string {
   return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 }
 
-function sanitizeSafeFilename(str: string): string {
+export function sanitizeSafeFilename(str: string): string {
   const clean = str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
   return clean.replace(/[^a-zA-Z0-9_-]/g, '_').replace(/_+/g, '_');
 }
@@ -288,21 +288,43 @@ export class InstitutionalMemoryService {
    * Calcula un hash criptográfico SHA-256 de la versión leída para control de concurrencia optimista (ETag / Locking).
    */
   static async fetchFreshManifestFromCloudStorage(): Promise<{ entries: MemoryManifestEntry[]; versionHash: string }> {
-    if (!supabase || !supabase.storage) return { entries: [], versionHash: '' };
     const bucketName = process.env.INSTITUTIONAL_MEMORY_BUCKET || 'institutional-memory';
 
-    try {
-      const { data, error } = await supabase.storage.from(bucketName).download('manifest.json');
-      if (!error && data) {
-        const text = await data.text();
-        const versionHash = crypto.createHash('sha256').update(text, 'utf8').digest('hex');
-        const parsed = JSON.parse(text);
-        if (Array.isArray(parsed)) {
-          return { entries: parsed as MemoryManifestEntry[], versionHash };
+    if (supabase && supabase.storage) {
+      try {
+        const { data, error } = await supabase.storage.from(bucketName).download('manifest.json');
+        if (!error && data) {
+          const text = await data.text();
+          const versionHash = crypto.createHash('sha256').update(text, 'utf8').digest('hex');
+          const parsed = JSON.parse(text);
+          if (Array.isArray(parsed)) {
+            return { entries: parsed as MemoryManifestEntry[], versionHash };
+          }
+        }
+      } catch {
+        // Ignorar si el archivo no existe aún en almacenamiento remoto
+      }
+    }
+
+    // Respaldo de contingencia en disco local (Bóveda Curricular)
+    const localCandidates = [
+      path.join(this.getBaseMemoryDirectory(false), 'manifest.json'),
+      path.join(process.cwd(), 'planeaciones', 'Memorias_Institucionales', 'manifest.json'),
+      path.join(process.cwd(), 'manifest.json')
+    ];
+    for (const candidate of localCandidates) {
+      if (fs.existsSync(candidate)) {
+        try {
+          const text = fs.readFileSync(candidate, 'utf8');
+          const versionHash = crypto.createHash('sha256').update(text, 'utf8').digest('hex');
+          const parsed = JSON.parse(text);
+          if (Array.isArray(parsed)) {
+            return { entries: parsed as MemoryManifestEntry[], versionHash };
+          }
+        } catch {
+          // Continuar con el siguiente candidato
         }
       }
-    } catch {
-      // Ignorar si el archivo no existe aún
     }
 
     return { entries: [], versionHash: '' };
@@ -389,25 +411,38 @@ export class InstitutionalMemoryService {
    * Aplica ordenamiento cronológico y deduplicación atómica garantizada.
    */
   static async uploadFullManifest(bucketName: string, entries: MemoryManifestEntry[]): Promise<void> {
-    if (!supabase || !supabase.storage) return;
-    try {
-      const orderedEntries = this.mergeAndSortManifestEntries(entries, []);
-      const manifestJson = JSON.stringify(orderedEntries, null, 2);
-      const blob = Buffer.from(manifestJson, 'utf8');
-      await supabase.storage
-        .from(bucketName)
-        .upload('manifest.json', blob, {
-          contentType: 'application/json; charset=utf-8',
-          upsert: true
-        });
+    const orderedEntries = this.mergeAndSortManifestEntries(entries, []);
+    const manifestJson = JSON.stringify(orderedEntries, null, 2);
 
-      manifestCache = {
-        data: orderedEntries,
-        timestamp: Date.now()
-      };
-    } catch (err) {
-      console.warn('[InstitutionalMemoryService] Advertencia al subir manifest.json consolidado:', err);
+    // 1. Respaldo determinista en disco local
+    try {
+      const localDir = this.getBaseMemoryDirectory(false);
+      if (fs.existsSync(localDir)) {
+        fs.writeFileSync(path.join(localDir, 'manifest.json'), manifestJson, 'utf8');
+      }
+    } catch {
+      // Ignorar fallas de escritura en entornos de solo lectura
     }
+
+    // 2. Persistencia en Almacenamiento en la Nube
+    if (supabase && supabase.storage) {
+      try {
+        const blob = Buffer.from(manifestJson, 'utf8');
+        await supabase.storage
+          .from(bucketName)
+          .upload('manifest.json', blob, {
+            contentType: 'application/json; charset=utf-8',
+            upsert: true
+          });
+      } catch (err) {
+        console.warn('[InstitutionalMemoryService] Advertencia al subir manifest.json consolidado:', err);
+      }
+    }
+
+    manifestCache = {
+      data: orderedEntries,
+      timestamp: Date.now()
+    };
   }
 
 
@@ -1157,7 +1192,7 @@ Instrucción pedagógica: Integra explícitamente estas experiencias previas en 
   /**
    * Parsea las 5 secciones estructuradas a partir del contenido Markdown.
    */
-  private static extractSectionsFromMarkdown(content: string): InstitutionalMemorySections {
+  static extractSectionsFromMarkdown(content: string): InstitutionalMemorySections {
     const getSectionContent = (headingRegex: RegExp): string => {
       const match = content.match(headingRegex);
       return match ? match[1].trim() : '';
@@ -1191,7 +1226,7 @@ Instrucción pedagógica: Integra explícitamente estas experiencias previas en 
     };
   }
 
-  private static scanMarkdownFilesRecursively(dir: string): string[] {
+  static scanMarkdownFilesRecursively(dir: string): string[] {
     let results: string[] = [];
     if (!fs.existsSync(dir)) return results;
     const list = fs.readdirSync(dir);
