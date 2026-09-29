@@ -398,6 +398,10 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
         document.cookie = 'tenant-id=ibime; path=/; max-age=31536000; SameSite=Lax';
         localStorage.setItem('tenant-id', 'ibime');
         document.documentElement.setAttribute('data-tenant', 'ibime');
+        // Si hay una sesión activa de un usuario ajeno a IBIME (ej. superadmin ISkool), cerrarla inmediatamente
+        if (user && user.school_id !== 'sch-ibime') {
+          logout();
+        }
       } else if (isPublicMode || isFullDemoMode) {
         // En modo general se asegura tenant iSkool
         const currentCookie = document.cookie;
@@ -408,7 +412,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
         }
       }
     }
-  }, [isIbimeMode, isPublicMode, isFullDemoMode]);
+  }, [isIbimeMode, isPublicMode, isFullDemoMode, user, logout]);
 
   // Listener para capturar el evento SIGNED_IN de Supabase Auth
   React.useEffect(() => {
@@ -485,6 +489,24 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
   }, []);
 
   const routeUserByRole = async (userProfile: any) => {
+    // 0. Si es modo IBIME o el usuario pertenece a IBIME, ENRUTAR SIEMPRE Y EXCLUSIVAMENTE AL SISTEMA IBIME
+    const isIbimeUser = isIbimeMode || userProfile?.school_id === 'sch-ibime' || (userProfile?.email && userProfile.email.toLowerCase().includes('ibime'));
+
+    if (isIbimeUser) {
+      if (typeof window !== 'undefined') {
+        document.cookie = 'tenant-id=ibime; path=/; max-age=31536000; SameSite=Lax';
+        localStorage.setItem('tenant-id', 'ibime');
+        document.documentElement.setAttribute('data-tenant', 'ibime');
+      }
+      router.push('/ibime/portal');
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          window.location.href = '/ibime/portal';
+        }
+      }, 300);
+      return;
+    }
+
     // 1. Si hay un parámetro de redirección en la URL (ej: /teacher/idiomas), priorizarlo de inmediato
     if (typeof window !== 'undefined') {
       const searchParams = new URLSearchParams(window.location.search);
@@ -525,7 +547,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
         targetPath = '/coordinator';
         break;
       case 'teacher':
-        targetPath = isIbimeMode ? '/ibime/portal' : '/teacher';
+        targetPath = '/teacher';
         break;
       case 'parent':
         targetPath = '/parent';
@@ -778,8 +800,8 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
             </p>
           </div>
 
-          {/* Banner de Inspección / Sesión Activa */}
-          {user && (
+          {/* Banner de Inspección / Sesión Activa (PROHIBIDO EN MODO IBIME) */}
+          {!isIbimeMode && user && (
             <div className="bg-indigo-50/90 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 p-4 rounded-2xl text-xs flex flex-col gap-3 shadow-xs animate-fade-in">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0">

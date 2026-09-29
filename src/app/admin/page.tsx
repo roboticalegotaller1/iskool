@@ -152,6 +152,8 @@ export default function SuperUserAdminPage() {
     if (!authLoading) {
       if (!user) {
         router.push('/login');
+      } else if (user.school_id === 'sch-ibime' || (user.email && user.email.toLowerCase().includes('ibime'))) {
+        router.replace('/ibime/portal');
       } else if (user.role === 'student') {
         router.push('/student');
       } else if (user.role === 'teacher') {
