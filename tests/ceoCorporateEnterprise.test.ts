@@ -177,4 +177,42 @@ describe('🏢 SUITE: Sector Corporativo B2B & Cuentas CEO en ISkool', () => {
       expect(corporateOnes.length).toBeGreaterThanOrEqual(3);
     });
   });
+
+  describe('4. Vocabulario Corporativo Estricto (Sin términos escolares en Tarjeta CEO ni Sistema CEO)', () => {
+    it('debe tener candidatos corporativos iniciales con puestos y sedes de empresa sin grados escolares', async () => {
+      const { INITIAL_CORPORATE_CANDIDATES } = await import('@/components/admin/CEOExecutiveDashboard');
+      expect(INITIAL_CORPORATE_CANDIDATES.length).toBeGreaterThanOrEqual(3);
+
+      const schoolRegex = /primaria|secundaria|kínder|kinder|preparatoria|colegio|alumno|docente|profesor|aula/i;
+
+      INITIAL_CORPORATE_CANDIDATES.forEach(cand => {
+        expect(cand.grade).not.toMatch(schoolRegex);
+        expect(cand.notes).not.toMatch(schoolRegex);
+      });
+    });
+
+    it('la Tarjeta CEO en src/app/admin/page.tsx debe usar términos ejecutivos de empresa', async () => {
+      const fs = await import('fs');
+      const adminCode = fs.readFileSync('src/app/admin/page.tsx', 'utf-8');
+
+      // Buscar el bloque de la Tarjeta CEO
+      const ceoCardStartIndex = adminCode.indexOf('TARJETA SECTOR CORPORATIVO / CEO');
+      expect(ceoCardStartIndex).toBeGreaterThan(-1);
+
+      const ceoCardEndIndex = adminCode.indexOf('TARJETA DE ALTA RÁPIDA (+)', ceoCardStartIndex);
+      expect(ceoCardEndIndex).toBeGreaterThan(ceoCardStartIndex);
+
+      const ceoCardBlock = adminCode.substring(ceoCardStartIndex, ceoCardEndIndex);
+
+      // Debe contener términos corporativos de CEO
+      expect(ceoCardBlock).toContain('Colaboradores');
+      expect(ceoCardBlock).toContain('Instructores');
+      expect(ceoCardBlock).toContain('Empresas');
+      expect(ceoCardBlock).toContain('Entorno Corporativo');
+      expect(ceoCardBlock).toContain('Sector Empresarial B2B');
+
+      // No debe contener términos de escuela en el bloque de la Tarjeta CEO
+      expect(ceoCardBlock).not.toMatch(/alumnos|docentes|profesores|aulas|colegios|colegiaturas/i);
+    });
+  });
 });

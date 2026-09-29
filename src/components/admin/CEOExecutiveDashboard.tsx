@@ -67,7 +67,7 @@ import {
   ClipboardList,
   Menu
 } from 'lucide-react';
-import { CampusData, OrganizationHolding, DetailedStudent, Campus, FamilyBillingRecord, Institution } from '@/types';
+import { CampusData, OrganizationHolding, DetailedStudent, Campus, FamilyBillingRecord, Institution, isCorporateInstitution } from '@/types';
 import { 
   useSchoolAdminStore, 
   getSchoolCampuses, 
@@ -161,9 +161,9 @@ export const DEFAULT_IBIME_HOLDING: OrganizationHolding = {
 };
 
 /**
- * Generador dinámico de Holding para cualquier colegio dentro de ISkool.
- * Permite que cada institución (IBIME, Rosseau, Sandbox, Montessori o colegios nuevos)
- * cuente con su propia suite ejecutiva completa (Visión CEO, Colegios, Académico, Finanzas, Bóveda, Operación).
+ * Generador dinámico de Holding para cualquier institución o empresa dentro de ISkool.
+ * Permite que cada organización (IBIME, Rosseau, Sandbox, Montessori o empresas B2B)
+ * cuente con su propia suite ejecutiva completa (Visión CEO, Empresas & Plantas, Competencias, Finanzas, Bóveda, Operación).
  */
 export function buildHoldingForInstitution(
   institution?: Institution | null,
@@ -178,6 +178,8 @@ export function buildHoldingForInstitution(
     return DEFAULT_IBIME_HOLDING;
   }
 
+  const isCorp = isCorporateInstitution(institution) || institution.id?.startsWith('emp-') || institution.id === 'sec-empresas-ceo';
+
   const allCampuses = campusesList || [];
   const schoolCampuses = getSchoolCampuses(allCampuses, institution.id);
   const schoolStudents = getSchoolStudents(detailedStudents || [], institution.id, schoolCampuses);
@@ -187,13 +189,13 @@ export function buildHoldingForInstitution(
     ? schoolCampuses.map((c, idx) => {
         const campStudents = (detailedStudents || []).filter(s => s.campus_id === c.id);
         const campTeachers = (teachersList || []).filter(t => t.campus_id === c.id);
-        const stCount = campStudents.length || Math.max(12, Math.floor(schoolStudents.length / schoolCampuses.length)) || 350;
-        const tcCount = campTeachers.length || Math.max(2, Math.floor(schoolTeachers.length / schoolCampuses.length)) || 24;
+        const stCount = campStudents.length || Math.max(12, Math.floor(schoolStudents.length / schoolCampuses.length)) || (isCorp ? 180 : 350);
+        const tcCount = campTeachers.length || Math.max(2, Math.floor(schoolTeachers.length / schoolCampuses.length)) || (isCorp ? 12 : 24);
 
         return {
           id: c.id,
           name: c.name,
-          location: c.address || `${c.name} · Sede Oficial`,
+          location: c.address || `${c.name} · ${isCorp ? 'Planta / Sede Corporativa' : 'Sede Oficial'}`,
           students: stCount,
           teachers: tcCount,
           collectionRate: Math.max(88, 95 - (idx % 3)),
@@ -207,10 +209,10 @@ export function buildHoldingForInstitution(
     : [
         {
           id: `${institution.id}-matriz`,
-          name: `${institution.name} · Plantel Central`,
-          location: institution.address || 'Sede Central',
-          students: schoolStudents.length || 450,
-          teachers: schoolTeachers.length || 28,
+          name: isCorp ? `${institution.name} · Sede Central & Corporativo` : `${institution.name} · Plantel Central`,
+          location: institution.address || (isCorp ? 'Sede Corporativa Central' : 'Sede Central'),
+          students: schoolStudents.length || (isCorp ? 280 : 450),
+          teachers: schoolTeachers.length || (isCorp ? 16 : 28),
           collectionRate: 95,
           admissionsInProgress: 16,
           academicHealth: 96,
@@ -223,8 +225,10 @@ export function buildHoldingForInstitution(
   return {
     id: `org-${institution.id}-holding`,
     name: institution.name,
-    slug: institution.id.replace('sch-', ''),
-    tagline: institution.tagline || 'Institución de formación integral y excelencia académica.',
+    slug: institution.id.replace('sch-', '').replace('emp-', ''),
+    tagline: institution.tagline || (isCorp
+      ? 'Consorcio corporativo de alta dirección, formación de talento y competencias laborales.'
+      : 'Institución de formación integral y excelencia académica.'),
     currency: 'MXN',
     targetCollectionRate: 95,
     targetCurriculumCoverage: 90,
@@ -469,6 +473,84 @@ export const INITIAL_PROSPECTS_DATA: ProspectFamily[] = [
   }
 ];
 
+export const INITIAL_CORPORATE_CANDIDATES: ProspectFamily[] = [
+  {
+    id: 'prospect-corp-1',
+    studentName: 'Ing. Fernando Reyes Aguilar',
+    grade: 'Especialista en Automatización & PLC',
+    tutorName: 'Lic. Mariana Valdés (Atracción de Talento)',
+    phone: '55 4192 8841',
+    email: 'fernando.reyes@talento-corp.mx',
+    campusId: 'cdmx',
+    campusName: 'Planta Industrial Norte (CDMX)',
+    stage: 4,
+    stageName: '4. Oferta Laboral Emitida',
+    channel: 'Recomendación Familiar',
+    registeredDate: 'Hace 3 días',
+    notes: 'Propuesta económica enviada para puesto de Especialista en PLC & Robótica Industrial. Aceptación preliminar recibida.'
+  },
+  {
+    id: 'prospect-corp-2',
+    studentName: 'Lic. Claudia Albarrán Soto',
+    grade: 'Supervisor de Seguridad & SST (Norma 035)',
+    tutorName: 'Ing. Carlos Mendoza (Operaciones)',
+    phone: '55 8320 1194',
+    email: 'claudia.albarran@talento-corp.mx',
+    campusId: 'satelite',
+    campusName: 'Sede Tecnológica Santa Fe',
+    stage: 3,
+    stageName: '3. Evaluación Técnica & Psicométrica',
+    channel: 'Canales Digitales & Web',
+    registeredDate: 'Hace 5 días',
+    notes: 'Evaluación técnica completada con 96% de aprobación en protocolos STPS y matrices de riesgo industrial.'
+  },
+  {
+    id: 'prospect-corp-3',
+    studentName: 'Ing. Roberto Garza Morales',
+    grade: 'Líder Técnico de Calidad ISO 9001',
+    tutorName: 'Lic. Brenda Juárez (Capital Humano)',
+    phone: '55 3190 2481',
+    email: 'roberto.garza@calidad-ind.mx',
+    campusId: 'interlomas',
+    campusName: 'Centro Corporativo Reforma',
+    stage: 5,
+    stageName: '5. Contratación Confirmada',
+    channel: 'Recomendación Familiar',
+    registeredDate: 'Hace 1 semana',
+    notes: 'Contratación firmada al 100%. Alta patronal en IMSS y expediente 360 corporativo activo.'
+  },
+  {
+    id: 'prospect-corp-4',
+    studentName: 'Téc. Carlos Montes Estrada',
+    grade: 'Técnico Especialista de Mantenimiento',
+    tutorName: 'Ing. Ernesto Ramos (Planta Bajío)',
+    phone: '55 9012 3456',
+    email: 'carlos.montes@mantenimiento.mx',
+    campusId: 'queretaro',
+    campusName: 'Planta Logística Bajío (Querétaro)',
+    stage: 2,
+    stageName: '2. Entrevista Inicial',
+    channel: 'Convenios Corporativos',
+    registeredDate: 'Hace 2 días',
+    notes: 'Entrevista técnica completada con Director de Mantenimiento. Pasa a prueba práctica en líneas de ensamblaje.'
+  },
+  {
+    id: 'prospect-corp-5',
+    studentName: 'Ing. Andrea Ruiz Velázquez',
+    grade: 'Analista de Procesos B2B & Supply Chain',
+    tutorName: 'Lic. Samuel Ortiz (Reclutamiento)',
+    phone: '55 3901 1284',
+    email: 'andrea.ruiz@supply-corp.mx',
+    campusId: 'sanluis',
+    campusName: 'Planta Manufactura Toluca',
+    stage: 1,
+    stageName: '1. Candidato en Base de Datos',
+    channel: 'Canales Digitales & Web',
+    registeredDate: 'Ayer',
+    notes: 'CV recibido por portal de empleo institucional. Perfil calificado para optimización de inventarios y logística B2B.'
+  }
+];
+
 interface CEOExecutiveDashboardProps {
   holding?: OrganizationHolding;
   schoolId?: string;
@@ -517,6 +599,17 @@ export default function CEOExecutiveDashboard({
       || institutionsList.find(i => holding.slug && i.id.includes(holding.slug))
       || institutionsList[0];
   }, [institutionsList, schoolId, activeSchoolId, holding]);
+
+  // Detección de Modo Corporativo B2B (Empresas / CEO)
+  const isCorporate = useMemo(() => {
+    return isCorporateInstitution(currentInstitution) ||
+           currentInstitution?.id?.startsWith('emp-') ||
+           currentInstitution?.id === 'sec-empresas-ceo' ||
+           holding?.id?.includes('emp-') ||
+           holding?.id?.includes('sec-empresas-ceo') ||
+           schoolId?.startsWith('emp-') ||
+           schoolId === 'sec-empresas-ceo';
+  }, [currentInstitution, holding, schoolId]);
 
   // ------------------------------------------
   // Estados de Control de Vista y Filtros
@@ -639,7 +732,17 @@ export default function CEOExecutiveDashboard({
   // -----------------------------------------------------------
   // GESTIÓN DEL PIPELINE DE ADMISIONES & CAPTACIÓN (0 TOKENS)
   // -----------------------------------------------------------
-  const [prospectsList, setProspectsList] = useState<ProspectFamily[]>(INITIAL_PROSPECTS_DATA);
+  const [prospectsList, setProspectsList] = useState<ProspectFamily[]>(() => 
+    isCorporate ? INITIAL_CORPORATE_CANDIDATES : INITIAL_PROSPECTS_DATA
+  );
+
+  useEffect(() => {
+    if (isCorporate) {
+      setProspectsList(prev => prev === INITIAL_PROSPECTS_DATA ? INITIAL_CORPORATE_CANDIDATES : prev);
+      setActiveReportQuery(prev => prev.includes('Estudiantes') ? 'Colaboradores y áreas operativas con asignación de recursos y estatus' : prev);
+    }
+  }, [isCorporate]);
+
   const [isAdmissionsPipelineOpen, setIsAdmissionsPipelineOpen] = useState<boolean>(false);
   const [isAddProspectModalOpen, setIsAddProspectModalOpen] = useState<boolean>(false);
   const [prospectSearchTerm, setProspectSearchTerm] = useState<string>('');
@@ -647,19 +750,25 @@ export default function CEOExecutiveDashboard({
   const [prospectFilterCampus, setProspectFilterCampus] = useState<string>('all');
   const [newProspectForm, setNewProspectForm] = useState({
     studentName: '',
-    grade: 'Primaria 1°',
+    grade: isCorporate ? 'Especialista en Automatización & PLC' : 'Primaria 1°',
     campusId: 'cdmx',
     tutorName: '',
     phone: '',
     email: '',
-    channel: 'Recomendación Familiar' as const,
+    channel: 'Recomendación Familiar' as ProspectFamily['channel'],
     initialStage: 1 as 1 | 2 | 3 | 4 | 5,
     notes: ''
   });
 
-  // Avanzar aspirante a la siguiente etapa del pipeline
+  // Avanzar aspirante / candidato a la siguiente etapa del pipeline
   const handleAdvanceProspectStage = useCallback((prospectId: string) => {
-    const stageNames: Record<number, string> = {
+    const stageNames: Record<number, string> = isCorporate ? {
+      1: '1. Candidato en Base de Datos',
+      2: '2. Entrevista Inicial',
+      3: '3. Evaluación Técnica & Psicométrica',
+      4: '4. Oferta Laboral Emitida',
+      5: '5. Contratación Confirmada'
+    } : {
       1: '1. Prospecto Registrado en CRM',
       2: '2. Tour y Visita de Campus',
       3: '3. Examen Diagnóstico Psicopedagógico',
@@ -670,50 +779,57 @@ export default function CEOExecutiveDashboard({
     setProspectsList(prev => prev.map(p => {
       if (p.id === prospectId && p.stage < 5) {
         const nextStage = (p.stage + 1) as 1 | 2 | 3 | 4 | 5;
-        triggerToast(`✓ Aspirante ${p.studentName} avanzado a: ${stageNames[nextStage]}`);
+        triggerToast(`✓ ${isCorporate ? 'Candidato' : 'Aspirante'} ${p.studentName} avanzado a: ${stageNames[nextStage]}`);
         return { ...p, stage: nextStage, stageName: stageNames[nextStage] };
       }
       return p;
     }));
-  }, [triggerToast]);
+  }, [triggerToast, isCorporate]);
 
-  // Alta de nuevo aspirante
+  // Alta de nuevo aspirante / candidato
   const handleCreateProspect = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProspectForm.studentName.trim() || !newProspectForm.tutorName.trim()) {
-      triggerToast('⚠️ Por favor completa el nombre del alumno y del tutor.');
+      triggerToast(isCorporate ? '⚠️ Por favor completa el nombre del candidato y del evaluador/contacto.' : '⚠️ Por favor completa el nombre del alumno y del tutor.');
       return;
     }
     const campusObj = holding.campuses.find(c => c.id === newProspectForm.campusId);
-    const stageNames: Record<number, string> = {
+    const stageNames: Record<number, string> = isCorporate ? {
+      1: '1. Candidato en Base de Datos',
+      2: '2. Entrevista Inicial',
+      3: '3. Evaluación Técnica & Psicométrica',
+      4: '4. Oferta Laboral Emitida',
+      5: '5. Contratación Confirmada'
+    } : {
       1: '1. Prospecto Registrado en CRM',
       2: '2. Tour y Visita de Campus',
       3: '3. Examen Diagnóstico Psicopedagógico',
       4: '4. Carta de Asignación Emitida',
       5: '5. Inscripción y Reserva Pagada'
     };
+    const defaultCampus = holding.campuses[0]?.name || (isCorporate ? 'Planta Industrial Norte (CDMX)' : 'Campus Montes (Sede Matriz & CCH)');
     const newEntry: ProspectFamily = {
       id: `prospect-manual-${Date.now()}`,
       studentName: newProspectForm.studentName,
       grade: newProspectForm.grade,
       tutorName: newProspectForm.tutorName,
       phone: newProspectForm.phone || '55 0000 0000',
-      email: newProspectForm.email || 'contacto@familia.mx',
+      email: newProspectForm.email || (isCorporate ? 'talento@empresa.mx' : 'contacto@familia.mx'),
       campusId: newProspectForm.campusId,
-      campusName: campusObj?.name || 'Campus Montes (Sede Matriz & CCH)',
+      campusName: campusObj?.name || defaultCampus,
       stage: newProspectForm.initialStage,
       stageName: stageNames[newProspectForm.initialStage],
       channel: newProspectForm.channel,
       registeredDate: 'Hoy',
-      notes: newProspectForm.notes || 'Registro manual desde Suite de Dirección General'
+      notes: newProspectForm.notes || (isCorporate ? 'Registro manual desde Consola de Atracción de Talento B2B' : 'Registro manual desde Suite de Dirección General')
     };
 
     setProspectsList(prev => [newEntry, ...prev]);
     setIsAddProspectModalOpen(false);
     setNewProspectForm({
       studentName: '',
-      grade: 'Primaria 1°',
-      campusId: 'montes',
+      grade: isCorporate ? 'Especialista en Automatización & PLC' : 'Primaria 1°',
+      campusId: holding.campuses[0]?.id || 'cdmx',
       tutorName: '',
       phone: '',
       email: '',
@@ -721,7 +837,7 @@ export default function CEOExecutiveDashboard({
       initialStage: 1,
       notes: ''
     });
-    triggerToast(`✓ Aspirante ${newEntry.studentName} agregado con éxito al Pipeline de ${newEntry.campusName}.`);
+    triggerToast(`✓ ${isCorporate ? 'Candidato' : 'Aspirante'} ${newEntry.studentName} agregado con éxito al Pipeline de ${newEntry.campusName}.`);
   };
 
   // Cálculo del Embudo de Conversión reactivo por sede y aspirantes
@@ -811,9 +927,9 @@ export default function CEOExecutiveDashboard({
         borderColor: 'border-emerald-200',
         bgColor: 'bg-emerald-50/50',
         textColor: 'text-emerald-700',
-        note: 'Matrícula activa formal SEP, timbrado CFDI 4.0 IEDU y alta en padrón',
-        dept: 'Caja, Tesorería & Control Escolar',
-        systemLocation: 'Módulo de Cobranza SPEI + Padrón de Alumnos Activos',
+        note: isCorporate ? 'Colaborador activo formal, asignación corporativa y alta en nómina' : 'Matrícula activa formal SEP, timbrado CFDI 4.0 IEDU y alta en padrón',
+        dept: isCorporate ? 'Recursos Humanos, Tesorería & Nóminas' : 'Caja, Tesorería & Control Escolar',
+        systemLocation: isCorporate ? 'Módulo de Facturación B2B + Padrón de Colaboradores Activos' : 'Módulo de Cobranza SPEI + Padrón de Alumnos Activos',
         stageNum: 5
       },
     ];
@@ -966,11 +1082,11 @@ export default function CEOExecutiveDashboard({
       qLower.includes(c.name.toLowerCase().split(' ')[1] || '---') || 
       qLower.includes(c.location.toLowerCase().split(' ')[0] || '---')
     );
-    const isCobranzaQuery = qTokens.some(t => ['cobranza', 'saldo', 'adeudo', 'finanzas', 'cfdi', 'sat', 'iedu', 'colegiatura', 'dinero', 'pago', 'factura'].includes(t));
-    const isCurriculumQuery = qTokens.some(t => ['nem', 'planeacion', 'planeaciones', 'curricular', 'cobertura', 'sep', 'pda', 'fases', 'rubricas', 'academico'].includes(t));
-    const isStudentQuery = qTokens.some(t => ['alumno', 'alumnos', 'estudiante', 'estudiantes', 'matricula', 'retencion', 'desercion', 'baja', 'bajas', 'inscripcion'].includes(t));
-    const isTeacherQuery = qTokens.some(t => ['docente', 'docentes', 'maestro', 'maestros', 'profesor', 'profesores', 'plantilla', 'rotacion'].includes(t));
-    const isEmergencyQuery = qTokens.some(t => ['emergencia', 'medica', 'alergia', 'sismo', 'evacuacion', 'salud', 'terremoto', 'choque', 'shock', 'enfermeria'].includes(t));
+    const isCobranzaQuery = qTokens.some(t => ['cobranza', 'saldo', 'adeudo', 'finanzas', 'cfdi', 'sat', 'iedu', 'colegiatura', 'dinero', 'pago', 'factura', 'b2b'].includes(t));
+    const isCurriculumQuery = qTokens.some(t => ['nem', 'planeacion', 'planeaciones', 'curricular', 'cobertura', 'sep', 'pda', 'fases', 'rubricas', 'academico', 'competencia', 'competencias', 'capacitacion', 'stps', 'iso'].includes(t));
+    const isStudentQuery = qTokens.some(t => ['alumno', 'alumnos', 'estudiante', 'estudiantes', 'colaborador', 'colaboradores', 'talento', 'empleado', 'empleados', 'matricula', 'plantilla', 'retencion', 'desercion', 'baja', 'bajas', 'inscripcion', 'onboarding'].includes(t));
+    const isTeacherQuery = qTokens.some(t => ['docente', 'docentes', 'maestro', 'maestros', 'profesor', 'profesores', 'instructor', 'instructores', 'capacitador', 'capacitadores', 'facilitador', 'plantilla', 'rotacion'].includes(t));
+    const isEmergencyQuery = qTokens.some(t => ['emergencia', 'medica', 'alergia', 'sismo', 'evacuacion', 'salud', 'terremoto', 'choque', 'shock', 'enfermeria', 'seguridad', 'stps', 'iso'].includes(t));
 
     let finalTitle = '';
     let finalText = '';
@@ -982,12 +1098,14 @@ export default function CEOExecutiveDashboard({
 
     if (isCampusSpecific) {
       finalTitle = `Dictamen Operativo: ${isCampusSpecific.name}`;
-      finalSource = `Bóveda Curricular & Telemetría Sede • [${isCampusSpecific.location}]`;
-      finalText = `La sede ${isCampusSpecific.name} registra una matrícula activa de ${isCampusSpecific.students.toLocaleString()} alumnos y una plantilla de ${isCampusSpecific.teachers} docentes (Ratio 1:${(isCampusSpecific.students / isCampusSpecific.teachers).toFixed(1)}). Su cobranza actual se sitúa en ${isCampusSpecific.collectionRate}% (Meta Corporativa: ${collectionThreshold}%). La cobertura curricular oficial de la SEP bajo el marco NEM 2024 alcanza el ${isCampusSpecific.curriculumCoverage || 93}%, con una retención escolar del ${isCampusSpecific.retentionRate || 95}%. ${isCampusSpecific.focalIssues > 0 ? `Cuenta con ${isCampusSpecific.focalIssues} foco(s) de atención prioritario(s).` : 'Operación en rango óptimo sin desviaciones críticas.'}`;
+      finalSource = isCorporate ? `Bóveda Corporativa & Telemetría Sede • [${isCampusSpecific.location}]` : `Bóveda Curricular & Telemetría Sede • [${isCampusSpecific.location}]`;
+      finalText = isCorporate
+        ? `La planta/sede ${isCampusSpecific.name} registra una plantilla activa de ${isCampusSpecific.students.toLocaleString()} colaboradores y un cuerpo de ${isCampusSpecific.teachers} instructores técnicos (Ratio 1:${(isCampusSpecific.students / (isCampusSpecific.teachers || 1)).toFixed(1)}). Su cobranza y cumplimiento presupuestal se sitúa en ${isCampusSpecific.collectionRate}% (Meta Corporativa: ${collectionThreshold}%). La cobertura de competencias laborales alcanza el ${isCampusSpecific.curriculumCoverage || 93}%, con una retención de talento del ${isCampusSpecific.retentionRate || 95}%. ${isCampusSpecific.focalIssues > 0 ? `Cuenta con ${isCampusSpecific.focalIssues} foco(s) de atención prioritario(s).` : 'Operación en rango óptimo sin desviaciones críticas.'}`
+        : `La sede ${isCampusSpecific.name} registra una matrícula activa de ${isCampusSpecific.students.toLocaleString()} alumnos y una plantilla de ${isCampusSpecific.teachers} docentes (Ratio 1:${(isCampusSpecific.students / isCampusSpecific.teachers).toFixed(1)}). Su cobranza actual se sitúa en ${isCampusSpecific.collectionRate}% (Meta Corporativa: ${collectionThreshold}%). La cobertura curricular oficial de la SEP bajo el marco NEM 2024 alcanza el ${isCampusSpecific.curriculumCoverage || 93}%, con una retención escolar del ${isCampusSpecific.retentionRate || 95}%. ${isCampusSpecific.focalIssues > 0 ? `Cuenta con ${isCampusSpecific.focalIssues} foco(s) de atención prioritario(s).` : 'Operación en rango óptimo sin desviaciones críticas.'}`;
       finalKpis = [
-        { label: 'Alumnos', value: isCampusSpecific.students.toLocaleString() },
-        { label: 'Cobranza', value: `${isCampusSpecific.collectionRate}%` },
-        { label: 'Cobertura SEP', value: `${isCampusSpecific.curriculumCoverage || 93}%` },
+        { label: isCorporate ? 'Colaboradores' : 'Alumnos', value: isCampusSpecific.students.toLocaleString() },
+        { label: isCorporate ? 'Cobranza B2B' : 'Cobranza', value: `${isCampusSpecific.collectionRate}%` },
+        { label: isCorporate ? 'Competencias' : 'Cobertura SEP', value: `${isCampusSpecific.curriculumCoverage || 93}%` },
         { label: 'Focos Activos', value: `${isCampusSpecific.focalIssues}` }
       ];
       finalActionType = 'campus';
@@ -995,9 +1113,11 @@ export default function CEOExecutiveDashboard({
     } else if (isCobranzaQuery) {
       const bestCampus = [...holding.campuses].sort((a, b) => b.collectionRate - a.collectionRate)[0];
       const lowestCampus = [...holding.campuses].sort((a, b) => a.collectionRate - b.collectionRate)[0];
-      finalTitle = `Balance Financiero y Recaudación Consolidada`;
-      finalSource = `Tesorería Central & Ledger SAT CFDI 4.0 IEDU`;
-      finalText = `La cobranza consolidada del holding ${holding.name} se sitúa en un promedio del ${metrics.avgCollection}% frente a la meta del ${collectionThreshold}%. La sede con mejor desempeño es ${bestCampus.name} (${bestCampus.collectionRate}%), mientras que ${lowestCampus.name} (${lowestCampus.collectionRate}%) se mantiene bajo monitoreo preventivo. Todos los comprobantes se emiten bajo CFDI 4.0 con complemento de deducción IEDU conciliado automáticamente al registrar el pago en ledger bancario.`;
+      finalTitle = isCorporate ? `Balance Financiero y Facturación B2B Consolidada` : `Balance Financiero y Recaudación Consolidada`;
+      finalSource = isCorporate ? `Tesorería Corporativa & Facturación SAT CFDI 4.0 B2B` : `Tesorería Central & Ledger SAT CFDI 4.0 IEDU`;
+      finalText = isCorporate
+        ? `La cobranza consolidada del holding empresarial ${holding.name} se sitúa en un promedio del ${metrics.avgCollection}% frente a la meta del ${collectionThreshold}%. La planta con mejor desempeño es ${bestCampus.name} (${bestCampus.collectionRate}%), mientras que ${lowestCampus.name} (${lowestCampus.collectionRate}%) se mantiene bajo monitoreo preventivo. Todos los comprobantes se emiten bajo CFDI 4.0 conciliados en ledger bancario.`
+        : `La cobranza consolidada del holding ${holding.name} se sitúa en un promedio del ${metrics.avgCollection}% frente a la meta del ${collectionThreshold}%. La sede con mejor desempeño es ${bestCampus.name} (${bestCampus.collectionRate}%), mientras que ${lowestCampus.name} (${lowestCampus.collectionRate}%) se mantiene bajo monitoreo preventivo. Todos los comprobantes se emiten bajo CFDI 4.0 con complemento de deducción IEDU conciliado automáticamente al registrar el pago en ledger bancario.`;
       finalKpis = [
         { label: 'Cobranza Media', value: `${metrics.avgCollection}%` },
         { label: 'Líder en Cobro', value: `${bestCampus.collectionRate}%` },
@@ -1007,53 +1127,81 @@ export default function CEOExecutiveDashboard({
       finalActionType = 'cobranza';
       finalActionLabel = 'Gestionar Foco de Cobranza';
     } else if (isCurriculumQuery) {
-      finalTitle = `Matriz de Cobertura Curricular y Planeaciones NEM 2024`;
-      finalSource = `Bóveda Curricular Central & SEP Proyectos Comunitarios`;
-      finalText = `La cobertura curricular consolidada en la Red alcanza el ${metrics.avgCurriculum}%. Se utilizan planeaciones de aula cronometradas (Inicio, Desarrollo, Cierre) estructuradas bajo la Nueva Escuela Mexicana (NEM 2024) con Procesos de Desarrollo de Aprendizaje (PDA) oficiales, rúbricas analíticas formativas y verificación directa en la Bóveda Curricular. Se mantiene supervisión preventiva en las evaluaciones formativas de Fase 6 en Secundaria.`;
-      finalKpis = [
+      finalTitle = isCorporate ? `Matriz de Competencias Laborales y Capacitación Técnica` : `Matriz de Cobertura Curricular y Planeaciones NEM 2024`;
+      finalSource = isCorporate ? `Bóveda de Procesos & Certificaciones Técnicas STPS / ISO` : `Bóveda Curricular Central & SEP Proyectos Comunitarios`;
+      finalText = isCorporate
+        ? `La cobertura de competencias laborales consolidada en el consorcio alcanza el ${metrics.avgCurriculum}%. Se utilizan programas de capacitación cronometrados estructurados bajo estándares industriales y normativas de seguridad, con acreditaciones modulares y verificación directa en la Bóveda de Procesos.`
+        : `La cobertura curricular consolidada en la Red alcanza el ${metrics.avgCurriculum}%. Se utilizan planeaciones de aula cronometradas (Inicio, Desarrollo, Cierre) estructuradas bajo la Nueva Escuela Mexicana (NEM 2024) con Procesos de Desarrollo de Aprendizaje (PDA) oficiales, rúbricas analíticas formativas y verificación directa en la Bóveda Curricular. Se mantiene supervisión preventiva en las evaluaciones formativas de Fase 6 en Secundaria.`;
+      finalKpis = isCorporate ? [
+        { label: 'Cobertura B2B', value: `${metrics.avgCurriculum}%` },
+        { label: 'Capacitación', value: 'Normas ISO / STPS' },
+        { label: 'Estructura', value: 'Módulos Técnicos' },
+        { label: 'Bóveda Conocimiento', value: '100% Indexada' }
+      ] : [
         { label: 'Cobertura Red', value: `${metrics.avgCurriculum}%` },
         { label: 'Planeaciones NEM', value: 'PDA Oficial SEP' },
         { label: 'Estructura Aula', value: 'Inicio-Des-Cierre' },
         { label: 'Bóveda Conocimiento', value: '100% Indexada' }
       ];
       finalActionType = 'academico';
-      finalActionLabel = 'Supervisar Planeaciones NEM';
+      finalActionLabel = isCorporate ? 'Supervisar Competencias Técnicas' : 'Supervisar Planeaciones NEM';
     } else if (isStudentQuery) {
-      finalTitle = `Diagnóstico de Matrícula, Retención y Expediente 360`;
-      finalSource = `Registro Escolar Consolidado & Comités de Dirección`;
-      finalText = `La matrícula total auditada en la Red es de ${metrics.totalStudents.toLocaleString()} alumnos activos en ${metrics.totalCampuses} planteles. El índice de retención anual se posiciona en ${metrics.avgRetention}%. Existen ${metrics.totalAdmissions} prospectos en proceso de inscripción con diagnóstico completado. Ante solicitudes de baja, se aplica la ruta diagnóstica con acceso al fondo corporativo de becas de contingencia (15% al 35%) para mitigar la deserción escolar.`;
-      finalKpis = [
+      finalTitle = isCorporate ? `Diagnóstico de Capital Humano, Retención de Talento y Expediente 360` : `Diagnóstico de Matrícula, Retención y Expediente 360`;
+      finalSource = isCorporate ? `Dirección de Capital Humano & Comités de Operaciones` : `Registro Escolar Consolidado & Comités de Dirección`;
+      finalText = isCorporate
+        ? `La plantilla total auditada en el Consorcio es de ${metrics.totalStudents.toLocaleString()} colaboradores activos en ${metrics.totalCampuses} empresas y sedes. El índice de retención de talento anual se posiciona en ${metrics.avgRetention}%. Existen ${metrics.totalAdmissions} candidatos en proceso de onboarding y atracción de talento con perfil completado.`
+        : `La matrícula total auditada en la Red es de ${metrics.totalStudents.toLocaleString()} alumnos activos en ${metrics.totalCampuses} planteles. El índice de retención anual se posiciona en ${metrics.avgRetention}%. Existen ${metrics.totalAdmissions} prospectos en proceso de inscripción con diagnóstico completado. Ante solicitudes de baja, se aplica la ruta diagnóstica con acceso al fondo corporativo de becas de contingencia (15% al 35%) para mitigar la deserción escolar.`;
+      finalKpis = isCorporate ? [
+        { label: 'Colaboradores Totales', value: metrics.totalStudents.toLocaleString() },
+        { label: 'Retención de Talento', value: `${metrics.avgRetention}%` },
+        { label: 'Pipeline Onboarding', value: `${metrics.totalAdmissions}` },
+        { label: 'Plan de Carrera', value: '100% Activo' }
+      ] : [
         { label: 'Alumnos Totales', value: metrics.totalStudents.toLocaleString() },
         { label: 'Tasa Retención', value: `${metrics.avgRetention}%` },
         { label: 'Admisiones Pipeline', value: `${metrics.totalAdmissions}` },
         { label: 'Beca Contingencia', value: '15% - 35%' }
       ];
       finalActionType = 'alumnos';
-      finalActionLabel = 'Ver Desglose de Alumnos';
+      finalActionLabel = isCorporate ? 'Ver Desglose de Colaboradores' : 'Ver Desglose de Alumnos';
     } else if (isTeacherQuery) {
-      finalTitle = `Plantilla Docente y Asignaciones Titulares`;
-      finalSource = `Coordinación Académica & Bóveda de Talento Humano`;
-      finalText = `El cuerpo docente de ${holding.name} cuenta con ${metrics.totalTeachers.toLocaleString()} maestros titulares y especialistas activos en ${metrics.totalCampuses} sedes. La ratio media es de 1 docente por cada ${(metrics.totalStudents / metrics.totalTeachers).toFixed(1)} educandos. Se identificó una rotación preventiva de 3 bajas docentes en el último mes con protocolos de reemplazo en menos de 48 horas habilitados en la Bóveda de Talento.`;
-      finalKpis = [
+      finalTitle = isCorporate ? `Cuerpo de Instructores, Facilitadores y Asignaciones Técnicas` : `Plantilla Docente y Asignaciones Titulares`;
+      finalSource = isCorporate ? `Dirección de Capacitación & Bóveda de Talento Técnico` : `Coordinación Académica & Bóveda de Talento Humano`;
+      finalText = isCorporate
+        ? `El cuerpo de instructores de ${holding.name} cuenta con ${metrics.totalTeachers.toLocaleString()} especialistas y facilitadores activos en ${metrics.totalCampuses} sedes y plantas industriales. La ratio media es de 1 instructor por cada ${(metrics.totalStudents / (metrics.totalTeachers || 1)).toFixed(1)} colaboradores. Se mantiene programa de relevo generacional y certificación técnica continua.`
+        : `El cuerpo docente de ${holding.name} cuenta con ${metrics.totalTeachers.toLocaleString()} maestros titulares y especialistas activos en ${metrics.totalCampuses} sedes. La ratio media es de 1 docente por cada ${(metrics.totalStudents / metrics.totalTeachers).toFixed(1)} educandos. Se identificó una rotación preventiva de 3 bajas docentes en el último mes con protocolos de reemplazo en menos de 48 horas habilitados en la Bóveda de Talento.`;
+      finalKpis = isCorporate ? [
+        { label: 'Instructores Activos', value: metrics.totalTeachers.toLocaleString() },
+        { label: 'Ratio Colaborador/Instructor', value: `1:${(metrics.totalStudents / (metrics.totalTeachers || 1)).toFixed(1)}` },
+        { label: 'Certificaciones', value: 'Normas ISO / STPS' },
+        { label: 'Tiempo Cobertura', value: '< 48 hrs' }
+      ] : [
         { label: 'Docentes Activos', value: metrics.totalTeachers.toLocaleString() },
         { label: 'Ratio Alumno/Docente', value: `1:${(metrics.totalStudents / metrics.totalTeachers).toFixed(1)}` },
         { label: 'Bajas Recientes', value: '3 en reemplazo' },
         { label: 'Tiempo Reemplazo', value: '< 48 hrs' }
       ];
       finalActionType = 'docentes';
-      finalActionLabel = 'Abrir Cartera Docente';
+      finalActionLabel = isCorporate ? 'Abrir Cartera de Instructores' : 'Abrir Cartera Docente';
     } else if (isEmergencyQuery) {
-      finalTitle = `Protocolos de Emergencia Médica y Protección Civil Escolar`;
-      finalSource = `Normativa Médica Oficial & Protección Civil Grupo`;
-      finalText = `El protocolo de emergencia médica estandarizado exige verificar de inmediato el Expediente 360 del alumno en pantalla, aplicar estabilización primaria por personal de enfermería y emitir la notificación push a los tutores legales en < 3 minutos. Ante alertas sísmicas o evacuación, el desalojo ordenado a zonas seguras se cronometra en < 90 segundos con pase de lista biométrico digital inmutable.`;
-      finalKpis = [
+      finalTitle = isCorporate ? `Protocolos de Seguridad Industrial, Salud Ocupacional y Protección Civil` : `Protocolos de Emergencia Médica y Protección Civil Escolar`;
+      finalSource = isCorporate ? `Normativa Industrial STPS, ISO 45001 & Protección Civil` : `Normativa Médica Oficial & Protección Civil Grupo`;
+      finalText = isCorporate
+        ? `El protocolo de seguridad y salud en el trabajo exige verificar de inmediato el Expediente 360 del colaborador en pantalla, aplicar estabilización médica primaria por servicio médico ocupacional y notificar a supervisores de planta en < 3 minutos. Ante alertas de siniestro o evacuación industrial, el desalojo ordenado a puntos de reunión se cronometra en < 90 segundos con pase de lista biométrico digital.`
+        : `El protocolo de emergencia médica estandarizado exige verificar de inmediato el Expediente 360 del alumno en pantalla, aplicar estabilización primaria por personal de enfermería y emitir la notificación push a los tutores legales en < 3 minutos. Ante alertas sísmicas o evacuación, el desalojo ordenado a zonas seguras se cronometra en < 90 segundos con pase de lista biométrico digital inmutable.`;
+      finalKpis = isCorporate ? [
+        { label: 'Alerta a Supervisores', value: '< 3 minutos' },
+        { label: 'Evacuación Planta', value: '< 90 segundos' },
+        { label: 'Expediente 360', value: 'Salud Ocupacional' },
+        { label: 'Folio Incidencia', value: 'Inmutable' }
+      ] : [
         { label: 'Alerta a Padres', value: '< 3 minutos' },
         { label: 'Evacuación Sismo', value: '< 90 segundos' },
         { label: 'Expediente 360', value: 'Alergias y Póliza' },
         { label: 'Folio Bitácora', value: 'Inmutable' }
       ];
       finalActionType = 'emergencia';
-      finalActionLabel = 'Ver Expediente de Seguridad';
+      finalActionLabel = isCorporate ? 'Ver Protocolo de Seguridad' : 'Ver Expediente de Seguridad';
     } else {
       let bestScore = -1;
       let bestMatch = INSTITUTIONAL_KNOWLEDGE_BASE[0];
@@ -1141,7 +1289,9 @@ export default function CEOExecutiveDashboard({
   // Exportar reporte CSV
   const handleExportCSV = () => {
     const rows = [
-      ['Plantel / Campus', 'Ubicación', 'Alumnos', 'Docentes', 'Cobranza (%)', 'Cobertura Curricular (%)', 'Retención (%)', 'Focos de Atención'],
+      isCorporate 
+        ? ['Empresa / Planta', 'Ubicación', 'Colaboradores', 'Instructores', 'Cobranza B2B (%)', 'Competencias (%)', 'Retención Talento (%)', 'Focos de Atención']
+        : ['Plantel / Campus', 'Ubicación', 'Alumnos', 'Docentes', 'Cobranza (%)', 'Cobertura Curricular (%)', 'Retención (%)', 'Focos de Atención'],
       ...holding.campuses.map(c => [
         `"${c.name}"`,
         `"${c.location}"`,
@@ -1175,13 +1325,13 @@ export default function CEOExecutiveDashboard({
   };
 
   const navMenuItems = [
-    { id: 'inicio', label: 'Inicio', icon: Building2, desc: 'Consolidado Holding' },
+    { id: 'inicio', label: 'Inicio', icon: Building2, desc: isCorporate ? 'Consolidado Consorcio' : 'Consolidado Holding' },
     { id: 'vision', label: 'Visión Ejecutiva', icon: TrendingUp, desc: 'EBITDA & Simulador' },
-    { id: 'colegios', label: 'Colegios', icon: School, desc: 'Benchmark 5 Sedes' },
-    { id: 'personas', label: 'Personas', icon: Users, desc: 'Talento & Alumno 360' },
-    { id: 'academico', label: 'Académico (NEM)', icon: GraduationCap, desc: 'SEP Fases & XP' },
-    { id: 'admisiones', label: 'Admisiones', icon: UserCheck, desc: 'Embudo & Conversión' },
-    { id: 'finanzas', label: 'Finanzas', icon: DollarSign, desc: 'CFDI 4.0 IEDU SAT' },
+    { id: 'colegios', label: isCorporate ? 'Empresas & Plantas' : 'Colegios', icon: School, desc: isCorporate ? 'Benchmark Empresas' : 'Benchmark 5 Sedes' },
+    { id: 'personas', label: isCorporate ? 'Capital Humano' : 'Personas', icon: Users, desc: isCorporate ? 'Colaboradores 360' : 'Talento & Alumno 360' },
+    { id: 'academico', label: isCorporate ? 'Competencias Técnicas' : 'Académico (NEM)', icon: GraduationCap, desc: isCorporate ? 'Horas & Certificaciones' : 'SEP Fases & XP' },
+    { id: 'admisiones', label: isCorporate ? 'Reclutamiento & Onboarding' : 'Admisiones', icon: UserCheck, desc: isCorporate ? 'Pipeline de Talento' : 'Embudo & Conversión' },
+    { id: 'finanzas', label: 'Finanzas', icon: DollarSign, desc: isCorporate ? 'CFDI 4.0 Facturación B2B' : 'CFDI 4.0 IEDU SAT' },
     { id: 'operacion', label: 'Operación', icon: SlidersHorizontal, desc: 'Automatizaciones' },
     { id: 'reportes', label: 'Reportes BI', icon: BarChart3, desc: 'Estudio Analítico & BI' },
     { id: 'cerebro', label: `Cerebro ${holding.name}`, icon: Network, desc: 'Segundo Cerebro', highlight: true },
@@ -1242,11 +1392,11 @@ export default function CEOExecutiveDashboard({
             <button
               onClick={onBackToDirectory}
               className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 transition-colors cursor-pointer active:scale-98"
-              title="Volver al Directorio Institucional de Colegios"
+              title={isCorporate ? "Volver al Directorio Institucional de Empresas" : "Volver al Directorio Institucional de Colegios"}
             >
               <div className="flex items-center gap-1.5">
                 <ChevronLeft size={14} className="text-indigo-600" />
-                <span>Directorio Colegios</span>
+                <span>{isCorporate ? 'Directorio Empresas' : 'Directorio Colegios'}</span>
               </div>
               <span className="text-[9px] font-black bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded">Super</span>
             </button>
@@ -1360,7 +1510,7 @@ export default function CEOExecutiveDashboard({
                 >
                   <div className="flex items-center gap-1.5">
                     <ChevronLeft size={14} className="text-indigo-600" />
-                    <span>Directorio de Colegios</span>
+                    <span>{isCorporate ? 'Directorio de Empresas' : 'Directorio de Colegios'}</span>
                   </div>
                   <span className="text-[9px] font-black bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded">Super</span>
                 </button>
@@ -1443,10 +1593,10 @@ export default function CEOExecutiveDashboard({
               <button
                 onClick={onBackToDirectory}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-lg border border-indigo-200 shadow-xs transition-all cursor-pointer active:scale-95"
-                title="Volver a la consola global de colegios ISkool"
+                title={isCorporate ? "Volver a la consola global de empresas ISkool" : "Volver a la consola global de colegios ISkool"}
               >
                 <ChevronLeft size={14} className="text-indigo-600" />
-                <span className="hidden sm:inline">Directorio Colegios</span>
+                <span className="hidden sm:inline">{isCorporate ? 'Directorio Empresas' : 'Directorio Colegios'}</span>
               </button>
             )}
 
@@ -1454,7 +1604,7 @@ export default function CEOExecutiveDashboard({
             <button 
               onClick={() => setIsSearchOpen(true)}
               className="flex items-center gap-1.5 text-xs bg-slate-50 hover:bg-slate-100 text-slate-600 p-2 sm:px-3 sm:py-1.5 rounded-lg border border-slate-200 transition-colors cursor-pointer active:scale-95"
-              title="Buscar en la red escolar (⌘K)"
+              title={isCorporate ? "Buscar en el consorcio empresarial (⌘K)" : "Buscar en la red escolar (⌘K)"}
             >
               <Search size={14} />
               <span className="hidden md:inline">Buscar...</span>
@@ -1515,7 +1665,7 @@ export default function CEOExecutiveDashboard({
                   setAutonomousCycle(c => c + 1);
                   const now = new Date();
                   setLastEvaluationTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-                  triggerToast(`Pulso ejecutado: ${metrics.totalCampuses} sedes auditadas a 0 tokens (${metrics.totalStudents.toLocaleString()} alumnos evaluados)`);
+                  triggerToast(`Pulso ejecutado: ${metrics.totalCampuses} ${isCorporate ? 'plantas y sedes' : 'sedes'} auditadas a 0 tokens (${metrics.totalStudents.toLocaleString()} ${isCorporate ? 'colaboradores' : 'alumnos'} evaluados)`);
                 }}
                 className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-700 active:scale-95"
               >
@@ -1628,20 +1778,22 @@ export default function CEOExecutiveDashboard({
 
               {/* 5 TARJETAS DE KPIS */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                {/* KPI 1: Alumnos */}
+                {/* KPI 1: Alumnos / Colaboradores */}
                 <div 
                   onClick={() => setActiveKPIDrawer({
                     metricKey: 'students',
-                    title: 'Desglose de Alumnos por Sede',
-                    description: 'Matrícula activa auditada ante la Secretaría de Educación Pública y expediente 360.',
+                    title: isCorporate ? 'Desglose de Colaboradores por Sede' : 'Desglose de Alumnos por Sede',
+                    description: isCorporate 
+                      ? 'Plantilla laboral auditada, certificaciones de talento y expediente 360.'
+                      : 'Matrícula activa auditada ante la Secretaría de Educación Pública y expediente 360.',
                     targetValue: `${metrics.totalStudents.toLocaleString()}`,
-                    unit: 'Alumnos matriculados'
+                    unit: isCorporate ? 'Colaboradores activos' : 'Alumnos matriculados'
                   })}
                   className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-teal-300 transition-all cursor-pointer group active:scale-98"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <GraduationCap size={20} />
+                      {isCorporate ? <Users size={20} /> : <GraduationCap size={20} />}
                     </div>
                     <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
                       {metrics.deltas.students}
@@ -1650,27 +1802,29 @@ export default function CEOExecutiveDashboard({
                   <div className="text-2xl font-black text-slate-900 tracking-tight">
                     {metrics.totalStudents.toLocaleString()}
                   </div>
-                  <div className="text-xs font-medium text-slate-500 mt-0.5">Alumnos</div>
+                  <div className="text-xs font-medium text-slate-500 mt-0.5">{isCorporate ? 'Colaboradores' : 'Alumnos'}</div>
                   <div className="text-[11px] text-slate-400 mt-2 flex items-center justify-between">
                     <span>vs. periodo anterior</span>
                     <span className="text-teal-600 font-bold group-hover:underline">Ver detalle →</span>
                   </div>
                 </div>
 
-                {/* KPI 2: Docentes */}
+                {/* KPI 2: Docentes / Instructores */}
                 <div 
                   onClick={() => setActiveKPIDrawer({
                     metricKey: 'teachers',
-                    title: 'Cuerpo Docente y Asignaciones',
-                    description: 'Plantilla de maestros titulares y adjuntos con ratio de 1:14.4.',
+                    title: isCorporate ? 'Cuerpo de Instructores & Líderes Técnicos' : 'Cuerpo Docente y Asignaciones',
+                    description: isCorporate
+                      ? 'Plantilla de instructores especializados y facilitadores técnicos.'
+                      : 'Plantilla de maestros titulares y adjuntos con ratio de 1:14.4.',
                     targetValue: `${metrics.totalTeachers.toLocaleString()}`,
-                    unit: 'Docentes activos'
+                    unit: isCorporate ? 'Instructores activos' : 'Docentes activos'
                   })}
                   className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-300 transition-all cursor-pointer group active:scale-98"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <Users size={20} />
+                      <Briefcase size={20} />
                     </div>
                     <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
                       {metrics.deltas.teachers}
@@ -1679,21 +1833,23 @@ export default function CEOExecutiveDashboard({
                   <div className="text-2xl font-black text-slate-900 tracking-tight">
                     {metrics.totalTeachers.toLocaleString()}
                   </div>
-                  <div className="text-xs font-medium text-slate-500 mt-0.5">Docentes</div>
+                  <div className="text-xs font-medium text-slate-500 mt-0.5">{isCorporate ? 'Instructores' : 'Docentes'}</div>
                   <div className="text-[11px] text-slate-400 mt-2 flex items-center justify-between">
                     <span>vs. periodo anterior</span>
                     <span className="text-blue-600 font-bold group-hover:underline">Ver detalle →</span>
                   </div>
                 </div>
 
-                {/* KPI 3: Colegios */}
+                {/* KPI 3: Colegios / Empresas */}
                 <div 
                   onClick={() => setActiveKPIDrawer({
                     metricKey: 'campuses',
-                    title: 'Sedes y Planteles Operativos',
-                    description: 'Red escolar con cobertura multirregional y sincronización de estándares de calidad.',
+                    title: isCorporate ? 'Empresas y Plantas Operativas' : 'Sedes y Planteles Operativos',
+                    description: isCorporate
+                      ? 'Consorcio empresarial con cobertura multirregional y control de plantas.'
+                      : 'Red escolar con cobertura multirregional y sincronización de estándares de calidad.',
                     targetValue: `${metrics.totalCampuses}`,
-                    unit: 'Colegios activos'
+                    unit: isCorporate ? 'Empresas activas' : 'Colegios activos'
                   })}
                   className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer group active:scale-98"
                 >
@@ -1708,21 +1864,23 @@ export default function CEOExecutiveDashboard({
                   <div className="text-2xl font-black text-slate-900 tracking-tight">
                     {metrics.totalCampuses}
                   </div>
-                  <div className="text-xs font-medium text-slate-500 mt-0.5">Colegios</div>
+                  <div className="text-xs font-medium text-slate-500 mt-0.5">{isCorporate ? 'Empresas' : 'Colegios'}</div>
                   <div className="text-[11px] text-slate-400 mt-2 flex items-center justify-between">
                     <span>3 regiones clave</span>
                     <span className="text-indigo-600 font-bold group-hover:underline">Ver detalle →</span>
                   </div>
                 </div>
 
-                {/* KPI 4: Admisiones */}
+                {/* KPI 4: Admisiones / Reclutamiento */}
                 <div 
                   onClick={() => setActiveKPIDrawer({
                     metricKey: 'admissions',
-                    title: 'Pipeline de Admisiones y Matrícula',
-                    description: 'Prospectos con diagnóstico psicopedagógico completado y entrevistas agendadas.',
+                    title: isCorporate ? 'Pipeline de Reclutamiento & Onboarding' : 'Pipeline de Admisiones y Matrícula',
+                    description: isCorporate
+                      ? 'Candidatos en proceso de selección, inducción corporativa y contratación.'
+                      : 'Prospectos con diagnóstico psicopedagógico completado y entrevistas agendadas.',
                     targetValue: `${metrics.totalAdmissions}`,
-                    unit: 'Prospectos en proceso'
+                    unit: isCorporate ? 'Candidatos en pipeline' : 'Prospectos en proceso'
                   })}
                   className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-purple-300 transition-all cursor-pointer group active:scale-98"
                 >
@@ -1737,7 +1895,7 @@ export default function CEOExecutiveDashboard({
                   <div className="text-2xl font-black text-slate-900 tracking-tight">
                     {metrics.totalAdmissions}
                   </div>
-                  <div className="text-xs font-medium text-slate-500 mt-0.5">Admisiones en proceso</div>
+                  <div className="text-xs font-medium text-slate-500 mt-0.5">{isCorporate ? 'Candidatos en pipeline' : 'Admisiones en proceso'}</div>
                   <div className="text-[11px] text-slate-400 mt-2 flex items-center justify-between">
                     <span>vs. mismo periodo</span>
                     <span className="text-purple-600 font-bold group-hover:underline">Ver detalle →</span>
@@ -1748,10 +1906,10 @@ export default function CEOExecutiveDashboard({
                 <div 
                   onClick={() => setActiveKPIDrawer({
                     metricKey: 'collection',
-                    title: 'Cobranza Consolidada y Eficiencia Financiera',
-                    description: 'Porcentaje de recuperación de colegiaturas frente al umbral objetivo institucional.',
+                    title: isCorporate ? 'Recuperación de Facturación B2B & Liquidez' : 'Cobranza Consolidada y Eficiencia Financiera',
+                    description: isCorporate ? 'Porcentaje de recuperación de facturación B2B frente al umbral objetivo.' : 'Porcentaje de recuperación de colegiaturas frente al umbral objetivo institucional.',
                     targetValue: `${metrics.avgCollection}%`,
-                    unit: 'Cobranza global'
+                    unit: isCorporate ? 'Facturación B2B' : 'Cobranza global'
                   })}
                   className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-amber-300 transition-all cursor-pointer group active:scale-98"
                 >
@@ -1879,9 +2037,11 @@ export default function CEOExecutiveDashboard({
                       <div 
                         onClick={() => setActiveFocalModal({
                           isOpen: true,
-                          title: 'Alerta Temprana de Rotación Docente',
-                          description: 'Se han procesado 2 bajas de docentes titulares de reemplazo temporal en Campus Coacalco y Campus San Cristóbal. Bóveda de reemplazo activada.',
-                          campusAffected: ['Campus Coacalco', 'Campus San Cristóbal'],
+                          title: isCorporate ? 'Alerta Temprana de Rotación de Instructores' : 'Alerta Temprana de Rotación Docente',
+                          description: isCorporate
+                            ? 'Se han procesado bajas de instructores técnicos de reemplazo temporal. Cartera de talento activada.'
+                            : 'Se han procesado 2 bajas de docentes titulares de reemplazo temporal en Campus Coacalco y Campus San Cristóbal. Bóveda de reemplazo activada.',
+                          campusAffected: isCorporate ? ['Planta San Luis', 'Sede Corporativa'] : ['Campus Coacalco', 'Campus San Cristóbal'],
                           actionType: 'docentes'
                         })}
                         className="p-3.5 rounded-xl border border-slate-100 hover:border-purple-300 hover:bg-purple-50/30 transition-all cursor-pointer flex items-center justify-between group active:scale-98"
@@ -1892,10 +2052,10 @@ export default function CEOExecutiveDashboard({
                           </div>
                           <div>
                             <div className="text-sm font-semibold text-slate-800 group-hover:text-purple-700 transition-colors">
-                              Rotación docente
+                              {isCorporate ? 'Rotación de instructores' : 'Rotación docente'}
                             </div>
                             <div className="text-xs text-slate-500 mt-0.5">
-                              3 bajas registradas en el último mes
+                              {isCorporate ? 'Bajas técnicas en proceso de reemplazo' : '3 bajas registradas en el último mes'}
                             </div>
                           </div>
                         </div>
@@ -1915,13 +2075,13 @@ export default function CEOExecutiveDashboard({
                   </div>
                 </div>
 
-                {/* Avance por Colegio (4 cols) */}
+                {/* Avance por Colegio / Empresa (4 cols) */}
                 <div className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-5">
                       <div>
-                        <h2 className="font-bold text-slate-900 text-base">Avance por colegio</h2>
-                        <span className="text-[11px] text-slate-400">Eficiencia Ponderada Holding</span>
+                        <h2 className="font-bold text-slate-900 text-base">{isCorporate ? 'Desempeño por empresa y planta' : 'Avance por colegio'}</h2>
+                        <span className="text-[11px] text-slate-400">{isCorporate ? 'Eficiencia Ponderada Consorcio' : 'Eficiencia Ponderada Holding'}</span>
                       </div>
                       <button 
                         onClick={() => setIsComparativeMatrixOpen(prev => !prev)}
@@ -1969,7 +2129,7 @@ export default function CEOExecutiveDashboard({
                           <thead>
                             <tr className="border-b border-slate-200 text-slate-400 font-semibold">
                               <th className="pb-2">Sede</th>
-                              <th className="pb-2 text-right">Alumnos</th>
+                              <th className="pb-2 text-right">{isCorporate ? 'Colaboradores' : 'Alumnos'}</th>
                               <th className="pb-2 text-right">Cobranza</th>
                               <th className="pb-2 text-right">Cobertura</th>
                             </tr>
@@ -2086,7 +2246,7 @@ export default function CEOExecutiveDashboard({
                         <span>{metrics.totalCampuses}/{metrics.totalCampuses} SEDES</span>
                       </div>
                       <div className="grid grid-cols-3 gap-2 my-auto text-center text-[11px] font-semibold">
-                        {['Alumnos', holding.name.split(' ')[0], 'Procesos', 'Personas', 'Sedes', 'SOPs'].map((node, idx) => (
+                        {[(isCorporate ? 'Colaboradores' : 'Alumnos'), holding.name.split(' ')[0], 'Procesos', 'Personas', (isCorporate ? 'Plantas' : 'Sedes'), 'SOPs'].map((node, idx) => (
                           <div 
                             key={idx}
                             onClick={() => {
@@ -2109,13 +2269,15 @@ export default function CEOExecutiveDashboard({
                   <div className="w-full lg:w-2/3 space-y-3">
                     <div className="flex items-center gap-2 text-indigo-400 text-xs font-bold uppercase tracking-wider">
                       <Network size={16} />
-                      <span>Cerebro Institucional {holding.name}</span>
+                      <span>{isCorporate ? `Bóveda Corporativa ${holding.name}` : `Cerebro Institucional ${holding.name}`}</span>
                     </div>
                     <h3 className="text-2xl font-black text-white tracking-tight">
-                      Todo el conocimiento de nuestra red, conectado y siempre vivo.
+                      {isCorporate ? 'Todo el conocimiento corporativo y operativo, conectado y siempre vivo.' : 'Todo el conocimiento de nuestra red, conectado y siempre vivo.'}
                     </h3>
                     <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
-                      Documentos, procesos, experiencias pedagógicas y aprendizajes de todos nuestros colegios, en un solo lugar. Propiedad intelectual exclusiva de {holding.name}.
+                      {isCorporate 
+                        ? `Documentos, normativas ISO, matrices de capacitación y procesos operativos de todas nuestras plantas y empresas, en un solo lugar. Propiedad intelectual exclusiva de ${holding.name}.`
+                        : `Documentos, procesos, experiencias pedagógicas y aprendizajes de todos nuestros colegios, en un solo lugar. Propiedad intelectual exclusiva de ${holding.name}.`}
                     </p>
                     <div className="pt-2 flex flex-wrap items-center gap-4">
                       <button
@@ -2176,7 +2338,7 @@ export default function CEOExecutiveDashboard({
                   <span className="text-xs text-slate-500 mt-1 block">Caja disponible para reinversión</span>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase">Valoración por Alumno Activo</span>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase">{isCorporate ? 'Inversión por Colaborador Activo' : 'Valoración por Alumno Activo'}</span>
                   <div className="text-2xl font-black text-emerald-600 mt-1 font-mono">$19,220 MXN / ciclo</div>
                   <span className="text-xs text-slate-500 mt-1 block">Ticket promedio consolidado</span>
                 </div>
@@ -2213,10 +2375,10 @@ export default function CEOExecutiveDashboard({
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {/* Slider 1: Incremento de Colegiatura */}
+                  {/* Slider 1: Incremento de Colegiatura / Arancel */}
                   <div className="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/80 space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-slate-300">Ajuste de Colegiatura:</span>
+                      <span className="text-xs font-bold text-slate-300">{isCorporate ? 'Ajuste de Arancel B2B:' : 'Ajuste de Colegiatura:'}</span>
                       <span className="text-sm font-black text-indigo-400 font-mono">+{simTuitionIncrease}%</span>
                     </div>
                     <input 
@@ -2261,10 +2423,10 @@ export default function CEOExecutiveDashboard({
                     </div>
                   </div>
 
-                  {/* Slider 3: Retención de Matrícula */}
+                  {/* Slider 3: Retención de Talento / Matrícula */}
                   <div className="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/80 space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-slate-300">Meta de Retención Alumnos:</span>
+                      <span className="text-xs font-bold text-slate-300">{isCorporate ? 'Meta de Retención de Talento:' : 'Meta de Retención Alumnos:'}</span>
                       <span className="text-sm font-black text-teal-400 font-mono">{simRetentionBoost}%</span>
                     </div>
                     <input 
@@ -2280,7 +2442,7 @@ export default function CEOExecutiveDashboard({
                       <span>99% (Excelencia)</span>
                     </div>
                     <div className="pt-2 border-t border-slate-700/60 text-[11px] text-slate-300 flex justify-between">
-                      <span>Alumnos adicionales:</span>
+                      <span>{isCorporate ? 'Colaboradores retenidos:' : 'Alumnos adicionales:'}</span>
                       <strong className="text-teal-400 font-mono">+${(simResults.retentionGain / 1000000).toFixed(2)}M MXN</strong>
                     </div>
                   </div>
@@ -2406,37 +2568,54 @@ export default function CEOExecutiveDashboard({
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded inline-block">
-                    Red Escolar Multisede
+                    {isCorporate ? 'Consorcio Empresarial B2B' : 'Red Escolar Multisede'}
                   </div>
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight mt-1">
-                    Control Integral de Planteles & Benchmarking
+                    {isCorporate ? 'Control Integral de Empresas, Plantas & Benchmarking' : 'Control Integral de Planteles & Benchmarking'}
                   </h2>
-                  <p className="text-xs text-slate-500">Métricas comparativas de eficiencia, ocupación de cupos y directores de sede.</p>
+                  <p className="text-xs text-slate-500">
+                    {isCorporate 
+                      ? 'Métricas comparativas de eficiencia, capacidad operativa instalada y directores de planta.'
+                      : 'Métricas comparativas de eficiencia, ocupación de cupos y directores de sede.'}
+                  </p>
                 </div>
                 <button
                   onClick={handleExportCSV}
                   className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer active:scale-95"
                 >
                   <Download size={14} />
-                  <span>Descargar Matriz Multisede CSV</span>
+                  <span>{isCorporate ? 'Descargar Matriz de Empresas CSV' : 'Descargar Matriz Multisede CSV'}</span>
                 </button>
               </div>
 
-              {/* GRID DE LAS 5 SEDES */}
+              {/* GRID DE LAS SEDES / PLANTAS */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {[
+                {(isCorporate ? holding.campuses.map((c, i) => ({
+                  id: c.id,
+                  name: c.name,
+                  loc: c.location,
+                  dir: `Director de Planta #${i+1}`,
+                  rvoe: `RFC: ISK-CORP-${1000 + i}`,
+                  cap: Math.round(c.students * 1.2),
+                  stu: c.students,
+                  tea: c.teachers,
+                  col: c.collectionRate,
+                  cov: c.curriculumCoverage || 95,
+                  ret: c.retentionRate || 96,
+                  status: i === 0 ? 'Sede Central' : 'Planta Operativa'
+                })) : [
                   { id: 'montes', name: 'Campus Montes (Sede Matriz & CCH)', loc: 'Jardines de Morelos, Ecatepec', dir: 'Lic. Roberto González', rvoe: '15PPR3322G / UNAM 7998', cap: 1800, stu: 1620, tea: 84, col: 95, cov: 96, ret: 97, status: 'Sede Matriz' },
                   { id: 'lagos', name: 'Campus Lagos (Fundador 2004)', loc: 'Jardines de Morelos Secc. Lagos', dir: 'Mtra. Patricia Salmerón', rvoe: '15PJN2222K / 15PPR3657T', cap: 800, stu: 710, tea: 38, col: 96, cov: 95, ret: 96, status: 'Líder en Cobranza' },
                   { id: 'sancristobal', name: 'Campus San Cristóbal', loc: 'Ecatepec Centro (Insurgentes)', dir: 'Dr. Andrés Morales', rvoe: '15PPR4012S / 15PES1240K', cap: 950, stu: 830, tea: 46, col: 93, cov: 94, ret: 95, status: 'Óptimo' },
                   { id: 'coacalco', name: 'Campus Coacalco (Metropolitano)', loc: 'Guadalupe Victoria, Ecatepec-Coacalco', dir: 'Dra. Carmen Del Valle', rvoe: '15PPR5110Z / 15PES1405M', cap: 700, stu: 580, tea: 32, col: 91, cov: 93, ret: 94, status: 'Seguimiento' }
-                ].map((c) => {
+                ]).map((c) => {
                   const occRate = ((c.stu / c.cap) * 100).toFixed(1);
                   return (
                     <div key={c.id} className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all space-y-4">
                       <div className="flex justify-between items-start">
                         <div>
                           <h3 className="font-bold text-slate-900 text-base">{c.name}</h3>
-                          <span className="text-xs text-slate-400">{c.loc} • RVOE: {c.rvoe}</span>
+                          <span className="text-xs text-slate-400">{c.loc} • {c.rvoe}</span>
                         </div>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                           c.col >= 95 ? 'bg-emerald-100 text-emerald-800' : c.col >= 90 ? 'bg-indigo-100 text-indigo-800' : 'bg-rose-100 text-rose-800'
@@ -2446,13 +2625,13 @@ export default function CEOExecutiveDashboard({
                       </div>
 
                       <div className="text-xs text-slate-500">
-                        Director de Plantel: <strong className="text-slate-800 font-semibold">{c.dir}</strong>
+                        {isCorporate ? 'Director de Operaciones / Planta:' : 'Director de Plantel:'} <strong className="text-slate-800 font-semibold">{c.dir}</strong>
                       </div>
 
                       {/* Barra de Ocupación */}
                       <div className="space-y-1">
                         <div className="flex justify-between text-xs">
-                          <span className="text-slate-500">Ocupación de Aulas:</span>
+                          <span className="text-slate-500">{isCorporate ? 'Capacidad Operativa Instalada:' : 'Ocupación de Aulas:'}</span>
                           <strong className="text-slate-800 font-mono">{c.stu} / {c.cap} ({occRate}%)</strong>
                         </div>
                         <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -2463,15 +2642,15 @@ export default function CEOExecutiveDashboard({
                       {/* Métricas clave */}
                       <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 text-center">
                         <div className="p-2 bg-slate-50 rounded-xl">
-                          <span className="text-[10px] text-slate-400 block font-bold">COBRANZA</span>
+                          <span className="text-[10px] text-slate-400 block font-bold">{isCorporate ? 'COBRANZA B2B' : 'COBRANZA'}</span>
                           <span className="text-sm font-black text-slate-900 font-mono">{c.col}%</span>
                         </div>
                         <div className="p-2 bg-slate-50 rounded-xl">
-                          <span className="text-[10px] text-slate-400 block font-bold">SEP NEM</span>
+                          <span className="text-[10px] text-slate-400 block font-bold">{isCorporate ? 'COMPETENCIAS' : 'SEP NEM'}</span>
                           <span className="text-sm font-black text-indigo-600 font-mono">{c.cov}%</span>
                         </div>
                         <div className="p-2 bg-slate-50 rounded-xl">
-                          <span className="text-[10px] text-slate-400 block font-bold">RETENCIÓN</span>
+                          <span className="text-[10px] text-slate-400 block font-bold">{isCorporate ? 'RETENCIÓN TALENTO' : 'RETENCIÓN'}</span>
                           <span className="text-sm font-black text-emerald-600 font-mono">{c.ret}%</span>
                         </div>
                       </div>
@@ -2501,38 +2680,42 @@ export default function CEOExecutiveDashboard({
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded inline-block">
-                    Comunidad Escolar & Capital Humano
+                    {isCorporate ? 'Capital Humano & Fuerza Laboral' : 'Comunidad Escolar & Capital Humano'}
                   </div>
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight mt-1">
-                    Cuerpo Docente & Expediente 360 del Alumno
+                    {isCorporate ? 'Líderes de Formación & Expediente 360 del Colaborador' : 'Cuerpo Docente & Expediente 360 del Alumno'}
                   </h2>
-                  <p className="text-xs text-slate-500">Gestión de talento, titularidades de aula y auditoría holística de estudiantes.</p>
+                  <p className="text-xs text-slate-500">
+                    {isCorporate 
+                      ? 'Gestión de talento, asignaciones técnicas y auditoría integral de colaboradores.'
+                      : 'Gestión de talento, titularidades de aula y auditoría holística de estudiantes.'}
+                  </p>
                 </div>
                 <button
                   onClick={() => setIsSearchOpen(true)}
                   className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer active:scale-95"
                 >
                   <Search size={14} />
-                  <span>Buscar Alumno en Expediente 360</span>
+                  <span>{isCorporate ? 'Buscar Colaborador en Expediente 360' : 'Buscar Alumno en Expediente 360'}</span>
                 </button>
               </div>
 
               {/* TARJETAS DE PERSONAS */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase">Total de Alumnos en Red</span>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase">{isCorporate ? 'Total de Colaboradores en Red' : 'Total de Alumnos en Red'}</span>
                   <div className="text-2xl font-black text-slate-900 mt-1 font-mono">{metrics.totalStudents.toLocaleString()}</div>
                   <span className="text-xs text-emerald-600 font-semibold mt-1 block">100% con Expediente 360</span>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase">Cuerpo Docente</span>
-                  <div className="text-2xl font-black text-indigo-600 mt-1 font-mono">{metrics.totalTeachers} maestros</div>
-                  <span className="text-xs text-slate-500 mt-1 block">Ratio 1:13.9 alumno/docente</span>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase">{isCorporate ? 'Cuerpo de Instructores' : 'Cuerpo Docente'}</span>
+                  <div className="text-2xl font-black text-indigo-600 mt-1 font-mono">{metrics.totalTeachers} {isCorporate ? 'instructores' : 'maestros'}</div>
+                  <span className="text-xs text-slate-500 mt-1 block">{isCorporate ? `Ratio 1:${(metrics.totalStudents / (metrics.totalTeachers || 1)).toFixed(1)} colaborador/instructor` : 'Ratio 1:13.9 alumno/docente'}</span>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase">Titularidades Cubiertas</span>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase">{isCorporate ? 'Cursos Técnicos Cubiertos' : 'Titularidades Cubiertas'}</span>
                   <div className="text-2xl font-black text-emerald-600 mt-1 font-mono">98.5%</div>
-                  <span className="text-xs text-slate-500 mt-1 block">Plan de contingencia activo</span>
+                  <span className="text-xs text-slate-500 mt-1 block">{isCorporate ? 'Plan de cobertura técnica activo' : 'Plan de contingencia activo'}</span>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
                   <span className="text-[11px] font-bold text-slate-400 uppercase">Nómina Mensual Plantilla</span>
@@ -2541,21 +2724,29 @@ export default function CEOExecutiveDashboard({
                 </div>
               </div>
 
-              {/* DISTRIBUCIÓN POR NIVEL ESCOLAR */}
+              {/* DISTRIBUCIÓN POR NIVEL O ÁREA */}
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-                <h3 className="text-base font-black text-slate-900">Distribución de Matrícula por Nivel Escolar</h3>
+                <h3 className="text-base font-black text-slate-900">
+                  {isCorporate ? 'Distribución de Colaboradores por Área Operativa' : 'Distribución de Matrícula por Nivel Escolar'}
+                </h3>
                 <div className="space-y-3 text-xs">
-                  {[
+                  {(isCorporate ? [
+                    { level: 'Operaciones & Manufactura', count: Math.round(metrics.totalStudents * 0.45), pct: 45.0, color: 'bg-indigo-600' },
+                    { level: 'Ingeniería & Calidad', count: Math.round(metrics.totalStudents * 0.24), pct: 24.0, color: 'bg-blue-500' },
+                    { level: 'Logística & Cadena de Suministro', count: Math.round(metrics.totalStudents * 0.15), pct: 15.0, color: 'bg-emerald-500' },
+                    { level: 'Tecnología e Innovación', count: Math.round(metrics.totalStudents * 0.10), pct: 10.0, color: 'bg-purple-600' },
+                    { level: 'Administración & Finanzas B2B', count: Math.round(metrics.totalStudents * 0.06), pct: 6.0, color: 'bg-amber-500' }
+                  ] : [
                     { level: 'Maternal y Guardería', count: 420, pct: 5.4, color: 'bg-teal-500' },
                     { level: 'Preescolar (Fase 2)', count: 1120, pct: 14.5, color: 'bg-emerald-500' },
                     { level: 'Primaria Inferior y Superior (Fases 3, 4 y 5)', count: 3450, pct: 44.6, color: 'bg-indigo-600' },
                     { level: 'Secundaria Oficial SEP (Fase 6)', count: 1890, pct: 24.5, color: 'bg-purple-600' },
                     { level: 'Bachillerato y Preparatoria', count: 846, pct: 11.0, color: 'bg-amber-500' }
-                  ].map((lvl, i) => (
+                  ]).map((lvl, i) => (
                     <div key={i} className="space-y-1">
                       <div className="flex justify-between font-semibold">
                         <span className="text-slate-800">{lvl.level}</span>
-                        <span className="font-mono text-slate-600">{lvl.count.toLocaleString()} alumnos ({lvl.pct}%)</span>
+                        <span className="font-mono text-slate-600">{lvl.count.toLocaleString()} {isCorporate ? 'colaboradores' : 'alumnos'} ({lvl.pct}%)</span>
                       </div>
                       <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
                         <div className={`h-full ${lvl.color} rounded-full`} style={{ width: `${lvl.pct}%` }} />
@@ -2575,34 +2766,40 @@ export default function CEOExecutiveDashboard({
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded inline-block">
-                    Diferenciador Pedagógico Exclusivo iSkool
+                    {isCorporate ? 'Matriz de Competencias Laborales B2B' : 'Diferenciador Pedagógico Exclusivo iSkool'}
                   </div>
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight mt-1">
-                    Auditoría Curricular NEM 2024 & Maestría Gamificada
+                    {isCorporate ? 'Matriz de Competencias Laborales & Certificaciones Técnicas' : 'Auditoría Curricular NEM 2024 & Maestría Gamificada'}
                   </h2>
-                  <p className="text-xs text-slate-500">Alineación a Fases SEP, planeaciones cronometradas de aula y métricas de XP estudiantil.</p>
+                  <p className="text-xs text-slate-500">
+                    {isCorporate 
+                      ? 'Alineación a estándares técnicos, planes de formación y métricas de desempeño del colaborador.' 
+                      : 'Alineación a Fases SEP, planeaciones cronometradas de aula y métricas de XP estudiantil.'}
+                  </p>
                 </div>
                 <button
                   onClick={() => setIsBrainModalOpen(true)}
                   className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer active:scale-95"
                 >
                   <Network size={14} />
-                  <span>Consultar Bóveda Curricular</span>
+                  <span>{isCorporate ? 'Consultar Bóveda Corporativa' : 'Consultar Bóveda Curricular'}</span>
                 </button>
               </div>
 
-              {/* COBERTURA POR FASES NEM 2024 */}
+              {/* COBERTURA POR FASES NEM 2024 / NIVELES DE COMPETENCIA TÉCNICA */}
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
                     <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-                      <span>Mapa de Cobertura Curricular SEP por Fases (NEM 2024)</span>
+                      <span>{isCorporate ? 'Mapa de Niveles de Competencia Técnica & Habilidades Laborales' : 'Mapa de Cobertura Curricular SEP por Fases (NEM 2024)'}</span>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full hidden sm:inline-block">
                         Interactivo · Clic para auditar
                       </span>
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Haz clic en cualquier fase para auditar la fórmula de cálculo del porcentaje y consultar sus funciones pedagógicas.
+                      {isCorporate 
+                        ? 'Auditoría de cumplimiento de estándares operativos, certificaciones y competencias por puesto.' 
+                        : 'Haz clic en cualquier fase para auditar la fórmula de cálculo del porcentaje y consultar sus funciones pedagógicas.'}
                     </p>
                   </div>
                   <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 self-start sm:self-auto">
@@ -2611,14 +2808,21 @@ export default function CEOExecutiveDashboard({
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3 text-center text-xs">
-                  {[
+                  {(isCorporate ? [
+                    { fase: 'Nivel 1', name: 'Onboarding & Inducción', pct: 98, status: 'Excelente' },
+                    { fase: 'Nivel 2', name: 'Operación Básica & SST', pct: 96, status: 'Excelente' },
+                    { fase: 'Nivel 3', name: 'Especialización Técnica', pct: 95, status: 'Óptimo' },
+                    { fase: 'Nivel 4', name: 'Calidad & Procesos', pct: 94, status: 'Óptimo' },
+                    { fase: 'Nivel 5', name: 'Liderazgo & Supervisión', pct: 93, status: 'Óptimo' },
+                    { fase: 'Nivel 6', name: 'Innovación & Dirección', pct: 91, status: 'Alerta Preventiva' }
+                  ] : [
                     { fase: 'Fase 1', name: 'Inicial', pct: 98, status: 'Excelente' },
                     { fase: 'Fase 2', name: 'Preescolar', pct: 96, status: 'Excelente' },
                     { fase: 'Fase 3', name: '1° y 2° Primaria', pct: 95, status: 'Óptimo' },
                     { fase: 'Fase 4', name: '3° y 4° Primaria', pct: 94, status: 'Óptimo' },
                     { fase: 'Fase 5', name: '5° y 6° Primaria', pct: 93, status: 'Óptimo' },
                     { fase: 'Fase 6', name: 'Secundaria', pct: 91, status: 'Alerta Preventiva' }
-                  ].map((f, i) => (
+                  ]).map((f, i) => (
                     <button
                       key={i}
                       type="button"
@@ -2646,69 +2850,95 @@ export default function CEOExecutiveDashboard({
                 </div>
               </div>
 
-              {/* DIFERENCIADOR DE GAMIFICACIÓN ISKOOL */}
+              {/* DIFERENCIADOR DE GAMIFICACIÓN / CAPACITACIÓN B2B */}
               <div className="bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 p-6 rounded-3xl text-white shadow-lg border border-purple-500/30 space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-purple-600/40 text-purple-300 flex items-center justify-center border border-purple-500/40">
                     <Gamepad2 size={22} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-black text-white">Métricas de Gamificación & Engagement Estudiantil</h3>
-                    <p className="text-xs text-purple-200">El factor que triplica la retención de alumnos y la satisfacción de padres de familia.</p>
+                    <h3 className="text-lg font-black text-white">
+                      {isCorporate ? 'Métricas de Capacitación & Acreditación de Habilidades' : 'Métricas de Gamificación & Engagement Estudiantil'}
+                    </h3>
+                    <p className="text-xs text-purple-200">
+                      {isCorporate 
+                        ? 'El factor que incrementa la productividad laboral y el apego al plan de carrera.' 
+                        : 'El factor que triplica la retención de alumnos y la satisfacción de padres de familia.'}
+                    </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                   <div className="p-4 bg-slate-900/60 rounded-2xl border border-purple-500/30">
-                    <span className="text-[10px] text-purple-300 font-bold uppercase block">XP Total Otorgado</span>
-                    <div className="text-2xl font-black text-white font-mono mt-1">1,480,250 XP</div>
-                    <span className="text-[11px] text-purple-300 mt-1 block">Por logros pedagógicos</span>
+                    <span className="text-[10px] text-purple-300 font-bold uppercase block">
+                      {isCorporate ? 'Horas de Capacitación' : 'XP Total Otorgado'}
+                    </span>
+                    <div className="text-2xl font-black text-white font-mono mt-1">
+                      {isCorporate ? '14,850 hrs' : '1,480,250 XP'}
+                    </div>
+                    <span className="text-[11px] text-purple-300 mt-1 block">
+                      {isCorporate ? 'Cursos y talleres completados' : 'Por logros pedagógicos'}
+                    </span>
                   </div>
                   <div className="p-4 bg-slate-900/60 rounded-2xl border border-purple-500/30">
-                    <span className="text-[10px] text-purple-300 font-bold uppercase block">Misiones Completadas</span>
+                    <span className="text-[10px] text-purple-300 font-bold uppercase block">
+                      {isCorporate ? 'Módulos Acreditados' : 'Misiones Completadas'}
+                    </span>
                     <div className="text-2xl font-black text-amber-400 font-mono mt-1">14,820</div>
-                    <span className="text-[11px] text-purple-300 mt-1 block">En aula y Lienzo Digital</span>
+                    <span className="text-[11px] text-purple-300 mt-1 block">
+                      {isCorporate ? 'En planta y plataforma técnica' : 'En aula y Lienzo Digital'}
+                    </span>
                   </div>
                   <div className="p-4 bg-slate-900/60 rounded-2xl border border-purple-500/30">
-                    <span className="text-[10px] text-purple-300 font-bold uppercase block">Alumnos Rango Élite</span>
+                    <span className="text-[10px] text-purple-300 font-bold uppercase block">
+                      {isCorporate ? 'Personal Altamente Calificado' : 'Alumnos Rango Élite'}
+                    </span>
                     <div className="text-2xl font-black text-emerald-400 font-mono mt-1">18.4%</div>
-                    <span className="text-[11px] text-purple-300 mt-1 block">Nivel Leyenda / Maestro</span>
+                    <span className="text-[11px] text-purple-300 mt-1 block">
+                      {isCorporate ? 'Especialistas Senior / Maestría Técnica' : 'Nivel Leyenda / Maestro'}
+                    </span>
                   </div>
                   <div className="p-4 bg-slate-900/60 rounded-2xl border border-purple-500/30">
-                    <span className="text-[10px] text-purple-300 font-bold uppercase block">Lienzos Digitales</span>
+                    <span className="text-[10px] text-purple-300 font-bold uppercase block">
+                      {isCorporate ? 'Simuladores & Prácticas' : 'Lienzos Digitales'}
+                    </span>
                     <div className="text-2xl font-black text-cyan-400 font-mono mt-1">8,450</div>
-                    <span className="text-[11px] text-purple-300 mt-1 block">Actividades interactivas</span>
+                    <span className="text-[11px] text-purple-300 mt-1 block">
+                      {isCorporate ? 'Evaluaciones prácticas ejecutadas' : 'Actividades interactivas'}
+                    </span>
                   </div>
                 </div>
 
-                {/* DISTRIBUCIÓN DE RANGOS ESTUDIANTILES */}
+                {/* DISTRIBUCIÓN DE RANGOS / ESCALAFÓN DE COMPETENCIAS */}
                 <div className="pt-3 border-t border-purple-800/40">
-                  <div className="text-xs font-bold text-purple-200 mb-2">Escalafón de Maestría y Progresión por Rango:</div>
+                  <div className="text-xs font-bold text-purple-200 mb-2">
+                    {isCorporate ? 'Escalafón de Habilidades Técnicas y Progresión Laboral:' : 'Escalafón de Maestría y Progresión por Rango:'}
+                  </div>
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-[11px]">
                     <div className="p-2 rounded-xl bg-purple-900/40 border border-purple-500/20">
-                      <span className="font-bold text-purple-300 block">Novato (0-500 XP)</span>
+                      <span className="font-bold text-purple-300 block">{isCorporate ? 'Operativo Base' : 'Novato (0-500 XP)'}</span>
                       <span className="font-mono text-white font-black text-sm">6.6%</span>
-                      <span className="text-[9px] text-slate-400 block">Inducción</span>
+                      <span className="text-[9px] text-slate-400 block">{isCorporate ? 'Inducción' : 'Inducción'}</span>
                     </div>
                     <div className="p-2 rounded-xl bg-purple-900/40 border border-purple-500/20">
-                      <span className="font-bold text-blue-300 block">Aprendiz (501-2K)</span>
+                      <span className="font-bold text-blue-300 block">{isCorporate ? 'Técnico Junior' : 'Aprendiz (501-2K)'}</span>
                       <span className="font-mono text-white font-black text-sm">19.8%</span>
-                      <span className="text-[9px] text-slate-400 block">En desarrollo</span>
+                      <span className="text-[9px] text-slate-400 block">{isCorporate ? 'En desarrollo' : 'En desarrollo'}</span>
                     </div>
                     <div className="p-2 rounded-xl bg-purple-900/40 border border-purple-500/20">
-                      <span className="font-bold text-teal-300 block">Maestro (2K-5K)</span>
+                      <span className="font-bold text-teal-300 block">{isCorporate ? 'Técnico Especialista' : 'Maestro (2K-5K)'}</span>
                       <span className="font-mono text-white font-black text-sm">31.0%</span>
-                      <span className="text-[9px] text-slate-400 block">Autonomía</span>
+                      <span className="text-[9px] text-slate-400 block">{isCorporate ? 'Autonomía' : 'Autonomía'}</span>
                     </div>
                     <div className="p-2 rounded-xl bg-purple-900/40 border border-purple-500/20">
-                      <span className="font-bold text-amber-300 block">Élite (5K-10K)</span>
+                      <span className="font-bold text-amber-300 block">{isCorporate ? 'Líder Técnico' : 'Élite (5K-10K)'}</span>
                       <span className="font-mono text-white font-black text-sm">24.2%</span>
-                      <span className="text-[9px] text-slate-400 block">Alto impacto</span>
+                      <span className="text-[9px] text-slate-400 block">{isCorporate ? 'Alto impacto' : 'Alto impacto'}</span>
                     </div>
                     <div className="p-2 rounded-xl bg-purple-900/40 border border-purple-500/20">
-                      <span className="font-bold text-emerald-300 block">Leyenda (&gt;10K)</span>
+                      <span className="font-bold text-emerald-300 block">{isCorporate ? 'Master Trainer / Senior' : 'Leyenda (>10K)'}</span>
                       <span className="font-mono text-white font-black text-sm">18.4%</span>
-                      <span className="text-[9px] text-slate-400 block">Excelencia</span>
+                      <span className="text-[9px] text-slate-400 block">{isCorporate ? 'Excelencia' : 'Excelencia'}</span>
                     </div>
                   </div>
                 </div>
@@ -2723,17 +2953,21 @@ export default function CEOExecutiveDashboard({
                       <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200/60">
                         Visualización C-Suite Multidimensional
                       </span>
-                      <span className="text-xs text-slate-400 font-semibold">• SEP NEM 2024</span>
+                      <span className="text-xs text-slate-400 font-semibold">• {isCorporate ? 'Estándares STPS / ISO' : 'SEP NEM 2024'}</span>
                     </div>
                     <h3 className="text-lg font-black text-slate-900 tracking-tight mt-1">
-                      Cobertura y Equilibrio por los 4 Campos Formativos Oficiales
+                      {isCorporate ? 'Cobertura y Balance por los 4 Ejes de Competencia Laboral' : 'Cobertura y Equilibrio por los 4 Campos Formativos Oficiales'}
                     </h3>
-                    <p className="text-xs text-slate-500">Supervisión en tiempo real de proyectos comunitarios, horas cronometradas de aula y avance por sede.</p>
+                    <p className="text-xs text-slate-500">
+                      {isCorporate 
+                        ? 'Supervisión en tiempo real de planes de formación técnica, horas hombre de capacitación y avance por planta.' 
+                        : 'Supervisión en tiempo real de proyectos comunitarios, horas cronometradas de aula y avance por sede.'}
+                    </p>
                   </div>
 
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs">
-                      <span className="text-[11px] font-bold text-slate-500 pl-2">Sede:</span>
+                      <span className="text-[11px] font-bold text-slate-500 pl-2">{isCorporate ? 'Planta:' : 'Sede:'}</span>
                       <select
                         value={curriculumRadarCampus}
                         onChange={(e) => {
@@ -2742,16 +2976,16 @@ export default function CEOExecutiveDashboard({
                         }}
                         className="bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800 px-2.5 py-1 focus:outline-none cursor-pointer shadow-2xs"
                       >
-                        <option value="consolidado">Consolidado Red (5 Sedes)</option>
-                        <option value="montes">Campus Montes (Sede Matriz & CCH)</option>
-                        <option value="lagos">Campus Lagos (Fundador 2004)</option>
-                        <option value="sancristobal">Campus San Cristóbal</option>
-                        <option value="coacalco">Campus Coacalco</option>
+                        <option value="consolidado">{isCorporate ? 'Consolidado Red (5 Plantas/Empresas)' : 'Consolidado Red (5 Sedes)'}</option>
+                        <option value="montes">{isCorporate ? 'Planta Sede Central' : 'Campus Montes (Sede Matriz & CCH)'}</option>
+                        <option value="lagos">{isCorporate ? 'Planta Bajío (Operaciones)' : 'Campus Lagos (Fundador 2004)'}</option>
+                        <option value="sancristobal">{isCorporate ? 'Planta Monterrey (Norte)' : 'Campus San Cristóbal'}</option>
+                        <option value="coacalco">{isCorporate ? 'Sede Corporativa CDMX' : 'Campus Coacalco'}</option>
                       </select>
                     </div>
 
                     <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-xl border border-indigo-200 shrink-0">
-                      480 Proyectos Auditados
+                      {isCorporate ? '480 Módulos Auditados' : '480 Proyectos Auditados'}
                     </span>
                   </div>
                 </div>
@@ -2759,12 +2993,12 @@ export default function CEOExecutiveDashboard({
                 {/* COMPUTO DINÁMICO DE RADAR METRICS SEGÚN SEDE */}
                 {(() => {
                   const radarValues = {
-                    consolidado: { lenguajes: 96.2, saberes: 94.8, etica: 93.5, humano: 95.1, target: 90, name: 'Consolidado Red IBIME' },
-                    montes: { lenguajes: 97.5, saberes: 96.2, etica: 95.0, humano: 96.0, target: 90, name: 'Campus Montes' },
-                    lagos: { lenguajes: 96.8, saberes: 95.5, etica: 94.2, humano: 95.5, target: 90, name: 'Campus Lagos' },
-                    sancristobal: { lenguajes: 94.5, saberes: 93.8, etica: 92.5, humano: 94.0, target: 90, name: 'Campus San Cristóbal' },
-                    coacalco: { lenguajes: 93.8, saberes: 92.6, etica: 91.5, humano: 93.2, target: 90, name: 'Campus Coacalco' },
-                  }[curriculumRadarCampus] || { lenguajes: 96.2, saberes: 94.8, etica: 93.5, humano: 95.1, target: 90, name: 'Consolidado Red IBIME' };
+                    consolidado: { lenguajes: 96.2, saberes: 94.8, etica: 93.5, humano: 95.1, target: 90, name: isCorporate ? 'Consolidado Corporativo B2B' : 'Consolidado Red IBIME' },
+                    montes: { lenguajes: 97.5, saberes: 96.2, etica: 95.0, humano: 96.0, target: 90, name: isCorporate ? 'Planta Sede Central' : 'Campus Montes' },
+                    lagos: { lenguajes: 96.8, saberes: 95.5, etica: 94.2, humano: 95.5, target: 90, name: isCorporate ? 'Planta Bajío' : 'Campus Lagos' },
+                    sancristobal: { lenguajes: 94.5, saberes: 93.8, etica: 92.5, humano: 94.0, target: 90, name: isCorporate ? 'Planta Monterrey' : 'Campus San Cristóbal' },
+                    coacalco: { lenguajes: 93.8, saberes: 92.6, etica: 91.5, humano: 93.2, target: 90, name: isCorporate ? 'Sede Corporativa CDMX' : 'Campus Coacalco' },
+                  }[curriculumRadarCampus] || { lenguajes: 96.2, saberes: 94.8, etica: 93.5, humano: 95.1, target: 90, name: isCorporate ? 'Consolidado Corporativo B2B' : 'Consolidado Red IBIME' };
 
                   // Geometría del Radar SVG (cx=160, cy=160, R=110)
                   const rcx = 160;
@@ -2789,23 +3023,27 @@ export default function CEOExecutiveDashboard({
                       {/* ========================================================= */}
                       <div className="lg:col-span-4 space-y-5">
                         
-                        {/* CARD 1: LENGUAJES (Emerald / Cyan) */}
+                        {/* CARD 1: LENGUAJES / COMUNICACIÓN (Emerald / Cyan) */}
                         <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all space-y-4">
                           <div className="flex justify-between items-start">
                             <div>
                               <div className="flex items-center gap-1.5">
                                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                                <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">Lenguajes</h4>
+                                <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">
+                                  {isCorporate ? 'Comunicación & Liderazgo' : 'Lenguajes'}
+                                </h4>
                               </div>
                               <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md mt-1 inline-block">
-                                Emerald / Bilingüe
+                                {isCorporate ? 'Habilidades Blandas & Idiomas' : 'Emerald / Bilingüe'}
                               </span>
                             </div>
                             <div className="text-right">
                               <span className="text-xs font-mono font-bold text-slate-800 bg-slate-100 px-2 py-1 rounded-lg">
-                                45 mins/aula
+                                {isCorporate ? '45 hrs/mes' : '45 mins/aula'}
                               </span>
-                              <span className="text-[10px] text-slate-400 block mt-0.5 font-bold">142 Proyectos</span>
+                              <span className="text-[10px] text-slate-400 block mt-0.5 font-bold">
+                                {isCorporate ? '142 Módulos' : '142 Proyectos'}
+                              </span>
                             </div>
                           </div>
 
@@ -2850,7 +3088,9 @@ export default function CEOExecutiveDashboard({
                           {/* Subdisciplinas Breakdown */}
                           <div className="space-y-2 pt-2 border-t border-slate-100 text-xs">
                             <div className="flex justify-between items-center text-[11px]">
-                              <span className="text-slate-600 font-medium">Español & Literatura</span>
+                              <span className="text-slate-600 font-medium">
+                                {isCorporate ? 'Comunicación Corporativa & Negociación' : 'Español & Literatura'}
+                              </span>
                               <span className="font-mono font-bold text-slate-800">97.4%</span>
                             </div>
                             <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -2858,7 +3098,9 @@ export default function CEOExecutiveDashboard({
                             </div>
 
                             <div className="flex justify-between items-center text-[11px]">
-                              <span className="text-slate-600 font-medium">Inglés Bilingüe (Cambridge)</span>
+                              <span className="text-slate-600 font-medium">
+                                {isCorporate ? 'Inglés de Negocios & Técnico' : 'Inglés Bilingüe (Cambridge)'}
+                              </span>
                               <span className="font-mono font-bold text-slate-800">95.1%</span>
                             </div>
                             <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -2866,7 +3108,9 @@ export default function CEOExecutiveDashboard({
                             </div>
 
                             <div className="flex justify-between items-center text-[11px]">
-                              <span className="text-slate-600 font-medium">Expresión Artística & Cultura</span>
+                              <span className="text-slate-600 font-medium">
+                                {isCorporate ? 'Cultura Organizacional & Marca' : 'Expresión Artística & Cultura'}
+                              </span>
                               <span className="font-mono font-bold text-slate-800">96.2%</span>
                             </div>
                             <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -2888,23 +3132,27 @@ export default function CEOExecutiveDashboard({
                           </div>
                         </div>
 
-                        {/* CARD 2: ÉTICA, NATURALEZA Y SOCIEDADES (Amethyst / Purple) */}
+                        {/* CARD 2: ÉTICA / NORMATIVA & SEGURIDAD (Amethyst / Purple) */}
                         <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all space-y-4">
                           <div className="flex justify-between items-start">
                             <div>
                               <div className="flex items-center gap-1.5">
                                 <span className="w-2.5 h-2.5 rounded-full bg-purple-500 animate-pulse" />
-                                <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">Ética y Sociedades</h4>
+                                <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">
+                                  {isCorporate ? 'Normativa & Seguridad Industrial' : 'Ética y Sociedades'}
+                                </h4>
                               </div>
                               <span className="text-[11px] text-purple-700 font-semibold bg-purple-50 px-2 py-0.5 rounded-md mt-1 inline-block">
-                                Amethyst / Historia & Cívica
+                                {isCorporate ? 'Compliance, STPS & ISO' : 'Amethyst / Historia & Cívica'}
                               </span>
                             </div>
                             <div className="text-right">
                               <span className="text-xs font-mono font-bold text-slate-800 bg-slate-100 px-2 py-1 rounded-lg">
-                                40 mins/aula
+                                {isCorporate ? '40 hrs/mes' : '40 mins/aula'}
                               </span>
-                              <span className="text-[10px] text-slate-400 block mt-0.5 font-bold">114 Proyectos</span>
+                              <span className="text-[10px] text-slate-400 block mt-0.5 font-bold">
+                                {isCorporate ? '114 Módulos' : '114 Proyectos'}
+                              </span>
                             </div>
                           </div>
 
@@ -2946,7 +3194,9 @@ export default function CEOExecutiveDashboard({
                           {/* Subdisciplinas Breakdown */}
                           <div className="space-y-2 pt-2 border-t border-slate-100 text-xs">
                             <div className="flex justify-between items-center text-[11px]">
-                              <span className="text-slate-600 font-medium">Conciencia Histórica de México</span>
+                              <span className="text-slate-600 font-medium">
+                                {isCorporate ? 'Seguridad e Higiene Industrial STPS' : 'Conciencia Histórica de México'}
+                              </span>
                               <span className="font-mono font-bold text-slate-800">94.2%</span>
                             </div>
                             <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -2954,7 +3204,9 @@ export default function CEOExecutiveDashboard({
                             </div>
 
                             <div className="flex justify-between items-center text-[11px]">
-                              <span className="text-slate-600 font-medium">Sustentabilidad Ecológica</span>
+                              <span className="text-slate-600 font-medium">
+                                {isCorporate ? 'Sustentabilidad Ambiental & ESG' : 'Sustentabilidad Ecológica'}
+                              </span>
                               <span className="font-mono font-bold text-slate-800">92.1%</span>
                             </div>
                             <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -2962,7 +3214,9 @@ export default function CEOExecutiveDashboard({
                             </div>
 
                             <div className="flex justify-between items-center text-[11px]">
-                              <span className="text-slate-600 font-medium">Ética & Responsabilidad Social</span>
+                              <span className="text-slate-600 font-medium">
+                                {isCorporate ? 'Código de Ética & Anticorrupción' : 'Ética & Responsabilidad Social'}
+                              </span>
                               <span className="font-mono font-bold text-slate-800">94.1%</span>
                             </div>
                             <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -2992,13 +3246,13 @@ export default function CEOExecutiveDashboard({
                       <div className="lg:col-span-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col justify-between space-y-4">
                         <div className="text-center space-y-1">
                           <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-                            Balance Curricular Holístico
+                            {isCorporate ? 'Balance de Competencias' : 'Balance Curricular Holístico'}
                           </span>
                           <h4 className="text-base font-black text-slate-900 tracking-tight">
-                            Radar de Cobertura Integral
+                            {isCorporate ? 'Radar de Competencias Laborales' : 'Radar de Cobertura Integral'}
                           </h4>
                           <p className="text-xs text-slate-400">
-                            {radarValues.name} • Modelo Analítico SEP NEM 2024
+                            {isCorporate ? `${radarValues.name} • Matriz de Competencias B2B` : `${radarValues.name} • Modelo Analítico SEP NEM 2024`}
                           </p>
                         </div>
 
@@ -3059,16 +3313,16 @@ export default function CEOExecutiveDashboard({
 
                             {/* Etiquetas perimetrales con porcentajes */}
                             <text x={rcx} y="22" textAnchor="middle" className="text-[11px] font-black fill-emerald-800">
-                              LENGUAJES ({radarValues.lenguajes}%)
+                              {isCorporate ? 'COMUNICACIÓN' : 'LENGUAJES'} ({radarValues.lenguajes}%)
                             </text>
                             <text x="290" y="164" textAnchor="start" className="text-[10px] font-black fill-blue-800">
-                              SABERES ({radarValues.saberes}%)
+                              {isCorporate ? 'TÉCNICA & DIGITAL' : 'SABERES'} ({radarValues.saberes}%)
                             </text>
                             <text x={rcx} y="304" textAnchor="middle" className="text-[10px] font-black fill-purple-800">
-                              ÉTICA ({radarValues.etica}%)
+                              {isCorporate ? 'NORMATIVA' : 'ÉTICA'} ({radarValues.etica}%)
                             </text>
                             <text x="30" y="164" textAnchor="end" className="text-[10px] font-black fill-amber-800">
-                              HUMANO ({radarValues.humano}%)
+                              {isCorporate ? 'CAPITAL HUMANO' : 'HUMANO'} ({radarValues.humano}%)
                             </text>
                           </svg>
                         </div>
@@ -3080,7 +3334,9 @@ export default function CEOExecutiveDashboard({
                             <span className="font-mono text-indigo-700 text-sm font-black">{avgBalance}%</span>
                           </div>
                           <span className="text-[11px] text-slate-400 block">
-                            Equilibrio curricular homogéneo sin concavidades de riesgo pedagógico.
+                            {isCorporate 
+                              ? 'Equilibrio formativo homogéneo sin brechas de competencia laboral.' 
+                              : 'Equilibrio curricular homogéneo sin concavidades de riesgo pedagógico.'}
                           </span>
                         </div>
                       </div>
@@ -3090,23 +3346,27 @@ export default function CEOExecutiveDashboard({
                       {/* ========================================================= */}
                       <div className="lg:col-span-4 space-y-5">
                         
-                        {/* CARD 3: SABERES Y PENSAMIENTO CIENTÍFICO (Sapphire / Sky) */}
+                        {/* CARD 3: SABERES / COMPETENCIA TÉCNICA (Sapphire / Sky) */}
                         <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all space-y-4">
                           <div className="flex justify-between items-start">
                             <div>
                               <div className="flex items-center gap-1.5">
                                 <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
-                                <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">Saberes y Ciencias</h4>
+                                <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">
+                                  {isCorporate ? 'Competencia Técnica & Digital' : 'Saberes y Ciencias'}
+                                </h4>
                               </div>
                               <span className="text-[11px] text-blue-700 font-semibold bg-blue-50 px-2 py-0.5 rounded-md mt-1 inline-block">
-                                Sapphire / Matemáticas & STEAM
+                                {isCorporate ? 'Operación, TI & Automatización' : 'Sapphire / Matemáticas & STEAM'}
                               </span>
                             </div>
                             <div className="text-right">
                               <span className="text-xs font-mono font-bold text-slate-800 bg-slate-100 px-2 py-1 rounded-lg">
-                                52 mins/aula
+                                {isCorporate ? '52 hrs/mes' : '52 mins/aula'}
                               </span>
-                              <span className="text-[10px] text-slate-400 block mt-0.5 font-bold">138 Proyectos</span>
+                              <span className="text-[10px] text-slate-400 block mt-0.5 font-bold">
+                                {isCorporate ? '138 Módulos' : '138 Proyectos'}
+                              </span>
                             </div>
                           </div>
 
@@ -3148,7 +3408,9 @@ export default function CEOExecutiveDashboard({
                           {/* Subdisciplinas Breakdown */}
                           <div className="space-y-2 pt-2 border-t border-slate-100 text-xs">
                             <div className="flex justify-between items-center text-[11px]">
-                              <span className="text-slate-600 font-medium">Pensamiento Lógico-Matemático</span>
+                              <span className="text-slate-600 font-medium">
+                                {isCorporate ? 'Operaciones Industriales & Mantenimiento' : 'Pensamiento Lógico-Matemático'}
+                              </span>
                               <span className="font-mono font-bold text-slate-800">96.0%</span>
                             </div>
                             <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -3156,7 +3418,9 @@ export default function CEOExecutiveDashboard({
                             </div>
 
                             <div className="flex justify-between items-center text-[11px]">
-                              <span className="text-slate-600 font-medium">Indagación Científica & Biología</span>
+                              <span className="text-slate-600 font-medium">
+                                {isCorporate ? 'Control de Calidad & Métodos de Medición' : 'Indagación Científica & Biología'}
+                              </span>
                               <span className="font-mono font-bold text-slate-800">93.4%</span>
                             </div>
                             <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -3164,7 +3428,9 @@ export default function CEOExecutiveDashboard({
                             </div>
 
                             <div className="flex justify-between items-center text-[11px]">
-                              <span className="text-slate-600 font-medium">Robótica, IA & Alfabetización Digital</span>
+                              <span className="text-slate-600 font-medium">
+                                {isCorporate ? 'Herramientas Digitales & Automatización' : 'Robótica, IA & Alfabetización Digital'}
+                              </span>
                               <span className="font-mono font-bold text-slate-800">95.2%</span>
                             </div>
                             <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -3186,23 +3452,27 @@ export default function CEOExecutiveDashboard({
                           </div>
                         </div>
 
-                        {/* CARD 4: DE LO HUMANO Y LO COMUNITARIO (Amber / Orange) */}
+                        {/* CARD 4: DE LO HUMANO / DESARROLLO & BIENESTAR (Amber / Orange) */}
                         <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all space-y-4">
                           <div className="flex justify-between items-start">
                             <div>
                               <div className="flex items-center gap-1.5">
                                 <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
-                                <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">De lo Humano</h4>
+                                <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">
+                                  {isCorporate ? 'Desarrollo Humano & Clima Laboral' : 'De lo Humano'}
+                                </h4>
                               </div>
                               <span className="text-[11px] text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 rounded-md mt-1 inline-block">
-                                Amber / Socioemocional & Deporte
+                                {isCorporate ? 'Bienestar & Trabajo en Equipo' : 'Amber / Socioemocional & Deporte'}
                               </span>
                             </div>
                             <div className="text-right">
                               <span className="text-xs font-mono font-bold text-slate-800 bg-slate-100 px-2 py-1 rounded-lg">
-                                44 mins/aula
+                                {isCorporate ? '44 hrs/mes' : '44 mins/aula'}
                               </span>
-                              <span className="text-[10px] text-slate-400 block mt-0.5 font-bold">126 Proyectos</span>
+                              <span className="text-[10px] text-slate-400 block mt-0.5 font-bold">
+                                {isCorporate ? '126 Módulos' : '126 Proyectos'}
+                              </span>
                             </div>
                           </div>
 
@@ -3244,7 +3514,9 @@ export default function CEOExecutiveDashboard({
                           {/* Subdisciplinas Breakdown */}
                           <div className="space-y-2 pt-2 border-t border-slate-100 text-xs">
                             <div className="flex justify-between items-center text-[11px]">
-                              <span className="text-slate-600 font-medium">Autonomía & Salud Emocional</span>
+                              <span className="text-slate-600 font-medium">
+                                {isCorporate ? 'Salud Ocupacional & Ergonomía' : 'Autonomía & Salud Emocional'}
+                              </span>
                               <span className="font-mono font-bold text-slate-800">96.4%</span>
                             </div>
                             <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -3252,7 +3524,9 @@ export default function CEOExecutiveDashboard({
                             </div>
 
                             <div className="flex justify-between items-center text-[11px]">
-                              <span className="text-slate-600 font-medium">Convivencia & Cultura de Paz</span>
+                              <span className="text-slate-600 font-medium">
+                                {isCorporate ? 'Clima Organizacional & Resiliencia' : 'Convivencia & Cultura de Paz'}
+                              </span>
                               <span className="font-mono font-bold text-slate-800">94.5%</span>
                             </div>
                             <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -3260,7 +3534,9 @@ export default function CEOExecutiveDashboard({
                             </div>
 
                             <div className="flex justify-between items-center text-[11px]">
-                              <span className="text-slate-600 font-medium">Desarrollo Motriz & Educación Física</span>
+                              <span className="text-slate-600 font-medium">
+                                {isCorporate ? 'Liderazgo Efectivo & Gestión de Equipos' : 'Desarrollo Motriz & Educación Física'}
+                              </span>
                               <span className="font-mono font-bold text-slate-800">94.8%</span>
                             </div>
                             <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -3300,20 +3576,22 @@ export default function CEOExecutiveDashboard({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold uppercase tracking-wider text-purple-700 bg-purple-50 px-2.5 py-1 rounded-md">
-                      Crecimiento & Matrícula Nueva
+                      {isCorporate ? 'Atracción & Headhunting' : 'Crecimiento & Matrícula Nueva'}
                     </span>
                     <span className="text-xs font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md">
-                      Ciclo 2026-2027
+                      {isCorporate ? 'Ejercicio 2026-2027' : 'Ciclo 2026-2027'}
                     </span>
                     <span className="text-[11px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                       0 Tokens
                     </span>
                   </div>
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight mt-1.5">
-                    Embudo de Admisiones & Pipeline de Captación
+                    {isCorporate ? 'Pipeline de Atracción de Talento & Onboarding' : 'Embudo de Admisiones & Pipeline de Captación'}
                   </h2>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Monitoreo en tiempo real del ciclo de ventas escolares consolidado para {selectedCampusName}.
+                    {isCorporate 
+                      ? `Monitoreo en tiempo real del ciclo de reclutamiento y contratación consolidado para ${selectedCampusName}.`
+                      : `Monitoreo en tiempo real del ciclo de ventas escolares consolidado para ${selectedCampusName}.`}
                   </p>
                 </div>
 
@@ -3323,7 +3601,7 @@ export default function CEOExecutiveDashboard({
                     className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer shadow-sm transition-all active:scale-95"
                   >
                     <UserPlus size={16} />
-                    + Registrar Aspirante al Pipeline
+                    + {isCorporate ? 'Registrar Candidato al Pipeline' : 'Registrar Aspirante al Pipeline'}
                   </button>
 
                   <button
@@ -3335,7 +3613,7 @@ export default function CEOExecutiveDashboard({
                     className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer shadow-sm transition-all active:scale-95"
                   >
                     <ClipboardList size={16} />
-                    Directorio del Pipeline ({prospectsList.length} Familias)
+                    {isCorporate ? `Directorio de Candidatos (${prospectsList.length})` : `Directorio del Pipeline (${prospectsList.length} Familias)`}
                   </button>
 
                   <button
@@ -3343,14 +3621,14 @@ export default function CEOExecutiveDashboard({
                       if (onSwitchToOperational) {
                         onSwitchToOperational();
                       } else {
-                        triggerToast("Redirigiendo a Vista Operativa de Control Escolar...");
+                        triggerToast(isCorporate ? "Redirigiendo a Consola de Gestión de Personal..." : "Redirigiendo a Vista Operativa de Control Escolar...");
                       }
                     }}
                     className="px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl border border-slate-300 flex items-center gap-2 cursor-pointer transition-all active:scale-95"
-                    title="Saltar a la gestión operativa de alumnos y grupos en Control Escolar"
+                    title={isCorporate ? "Saltar a la gestión operativa de colaboradores y áreas en Consola Corporativa" : "Saltar a la gestión operativa de alumnos y grupos en Control Escolar"}
                   >
-                    <School size={16} className="text-indigo-600" />
-                    Control Escolar Operativo
+                    {isCorporate ? <Building2 size={16} className="text-indigo-600" /> : <School size={16} className="text-indigo-600" />}
+                    {isCorporate ? "Consola Operativa Corporativa" : "Control Escolar Operativo"}
                     <ArrowUpRight size={14} className="text-slate-400" />
                   </button>
                 </div>
@@ -3362,13 +3640,15 @@ export default function CEOExecutiveDashboard({
                   <div>
                     <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                       <Layers size={12} />
-                      Flujo Operativo Institucional
+                      {isCorporate ? 'Flujo de Atracción y Talento' : 'Flujo Operativo Institucional'}
                     </div>
                     <h3 className="text-base font-black text-white mt-1">
-                      ¿Dónde se llena esta información y quién es responsable de reportarla?
+                      {isCorporate ? '¿Dónde se registra esta información y qué área es responsable?' : '¿Dónde se llena esta información y quién es responsable de reportarla?'}
                     </h3>
                     <p className="text-xs text-slate-300 mt-0.5">
-                      El embudo no se captura manualmente de manera aislada: es el resultado sincronizado de 5 departamentos escolares:
+                      {isCorporate 
+                        ? 'El embudo no se captura manualmente: es el resultado de 5 departamentos corporativos:'
+                        : 'El embudo no se captura manualmente de manera aislada: es el resultado sincronizado de 5 departamentos escolares:'}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -3383,20 +3663,28 @@ export default function CEOExecutiveDashboard({
                   <div className="p-3.5 bg-slate-900/80 rounded-2xl border border-purple-500/30 flex flex-col justify-between space-y-2">
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-purple-300 uppercase">Fase 1 · Lead</span>
+                        <span className="text-[10px] font-black text-purple-300 uppercase">
+                          {isCorporate ? 'Fase 1 · Vacante' : 'Fase 1 · Lead'}
+                        </span>
                         <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
                       </div>
-                      <h4 className="text-xs font-bold text-white mt-1">Captación & CRM</h4>
+                      <h4 className="text-xs font-bold text-white mt-1">
+                        {isCorporate ? 'Atracción & Headhunting' : 'Captación & CRM'}
+                      </h4>
                       <p className="text-[11px] text-slate-300 mt-1 leading-snug">
-                        Registro del aspirante, canal de origen y datos de contacto del tutor.
+                        {isCorporate 
+                          ? 'Postulación de candidato, canal de origen y datos de contacto profesional.'
+                          : 'Registro del aspirante, canal de origen y datos de contacto del tutor.'}
                       </p>
                     </div>
                     <div className="pt-2 border-t border-purple-500/20 space-y-1">
                       <div className="text-[10px] text-purple-300 font-semibold">¿Quién reporta?</div>
-                      <div className="text-[11px] text-white font-medium">Admisiones & Marketing</div>
+                      <div className="text-[11px] text-white font-medium">
+                        {isCorporate ? 'Reclutamiento & Talento' : 'Admisiones & Marketing'}
+                      </div>
                       <div className="text-[10px] text-slate-400 font-semibold mt-1">¿Dónde se llena?</div>
                       <div className="text-[10px] text-slate-300 bg-purple-950/60 p-1.5 rounded border border-purple-800/40">
-                        Landing Web, Ferias o botón "+ Registrar Aspirante"
+                        {isCorporate ? 'Portal de Empleo, LinkedIn o botón "+ Registrar Candidato"' : 'Landing Web, Ferias o botón "+ Registrar Aspirante"'}
                       </div>
                     </div>
                   </div>
@@ -3405,20 +3693,28 @@ export default function CEOExecutiveDashboard({
                   <div className="p-3.5 bg-slate-900/80 rounded-2xl border border-indigo-500/30 flex flex-col justify-between space-y-2">
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-indigo-300 uppercase">Fase 2 · Visita</span>
+                        <span className="text-[10px] font-black text-indigo-300 uppercase">
+                          {isCorporate ? 'Fase 2 · Entrevista' : 'Fase 2 · Visita'}
+                        </span>
                         <span className="w-2 h-2 rounded-full bg-indigo-400" />
                       </div>
-                      <h4 className="text-xs font-bold text-white mt-1">Tours de Campus</h4>
+                      <h4 className="text-xs font-bold text-white mt-1">
+                        {isCorporate ? 'Entrevista Inicial' : 'Tours de Campus'}
+                      </h4>
                       <p className="text-[11px] text-slate-300 mt-1 leading-snug">
-                        Asistencia y recorrido presencial de aulas STEAM, laboratorios y canchas.
+                        {isCorporate 
+                          ? 'Filtro inicial, revisión de perfil y visita a instalaciones operativas.'
+                          : 'Asistencia y recorrido presencial de aulas STEAM, laboratorios y canchas.'}
                       </p>
                     </div>
                     <div className="pt-2 border-t border-indigo-500/20 space-y-1">
                       <div className="text-[10px] text-indigo-300 font-semibold">¿Quién reporta?</div>
-                      <div className="text-[11px] text-white font-medium">Dirección de Campus & RRPP</div>
+                      <div className="text-[11px] text-white font-medium">
+                        {isCorporate ? 'Capital Humano & Operaciones' : 'Dirección de Campus & RRPP'}
+                      </div>
                       <div className="text-[10px] text-slate-400 font-semibold mt-1">¿Dónde se llena?</div>
                       <div className="text-[10px] text-slate-300 bg-indigo-950/60 p-1.5 rounded border border-indigo-800/40">
-                        Agenda de Visitas / Directorio de Pipeline
+                        {isCorporate ? 'Agenda de Entrevistas / Directorio de Talento' : 'Agenda de Visitas / Directorio de Pipeline'}
                       </div>
                     </div>
                   </div>
@@ -3427,20 +3723,28 @@ export default function CEOExecutiveDashboard({
                   <div className="p-3.5 bg-slate-900/80 rounded-2xl border border-blue-500/30 flex flex-col justify-between space-y-2">
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-blue-300 uppercase">Fase 3 · Evaluación</span>
+                        <span className="text-[10px] font-black text-blue-300 uppercase">
+                          {isCorporate ? 'Fase 3 · Evaluación' : 'Fase 3 · Evaluación'}
+                        </span>
                         <span className="w-2 h-2 rounded-full bg-blue-400" />
                       </div>
-                      <h4 className="text-xs font-bold text-white mt-1">Diagnóstico</h4>
+                      <h4 className="text-xs font-bold text-white mt-1">
+                        {isCorporate ? 'Pruebas Técnicas' : 'Diagnóstico'}
+                      </h4>
                       <p className="text-[11px] text-slate-300 mt-1 leading-snug">
-                        Evaluación cognitiva, socioemocional y entrevista familiar de admisión.
+                        {isCorporate 
+                          ? 'Evaluación técnica por puesto, psicometría y verificación de referencias.'
+                          : 'Evaluación cognitiva, socioemocional y entrevista familiar de admisión.'}
                       </p>
                     </div>
                     <div className="pt-2 border-t border-blue-500/20 space-y-1">
                       <div className="text-[10px] text-blue-300 font-semibold">¿Quién reporta?</div>
-                      <div className="text-[11px] text-white font-medium">Gabinete Psicopedagógico</div>
+                      <div className="text-[11px] text-white font-medium">
+                        {isCorporate ? 'Líderes de Área / Especialistas' : 'Gabinete Psicopedagógico'}
+                      </div>
                       <div className="text-[10px] text-slate-400 font-semibold mt-1">¿Dónde se llena?</div>
                       <div className="text-[10px] text-slate-300 bg-blue-950/60 p-1.5 rounded border border-blue-800/40">
-                        Expediente Diagnóstico Psicopedagógico
+                        {isCorporate ? 'Expediente de Evaluación Técnica y Psicométrica' : 'Expediente Diagnóstico Psicopedagógico'}
                       </div>
                     </div>
                   </div>
@@ -3449,20 +3753,28 @@ export default function CEOExecutiveDashboard({
                   <div className="p-3.5 bg-slate-900/80 rounded-2xl border border-teal-500/30 flex flex-col justify-between space-y-2">
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-teal-300 uppercase">Fase 4 · Reserva</span>
+                        <span className="text-[10px] font-black text-teal-300 uppercase">
+                          {isCorporate ? 'Fase 4 · Oferta' : 'Fase 4 · Reserva'}
+                        </span>
                         <span className="w-2 h-2 rounded-full bg-teal-400" />
                       </div>
-                      <h4 className="text-xs font-bold text-white mt-1">Carta de Asignación</h4>
+                      <h4 className="text-xs font-bold text-white mt-1">
+                        {isCorporate ? 'Propuesta Económica' : 'Carta de Asignación'}
+                      </h4>
                       <p className="text-[11px] text-slate-300 mt-1 leading-snug">
-                        Reserva formal de cupo en grado y grupo escolar con vigencia estipulada.
+                        {isCorporate 
+                          ? 'Carta oferta formal con sueldo, prestaciones y fecha de ingreso.'
+                          : 'Reserva formal de cupo en grado y grupo escolar con vigencia estipulada.'}
                       </p>
                     </div>
                     <div className="pt-2 border-t border-teal-500/20 space-y-1">
                       <div className="text-[10px] text-teal-300 font-semibold">¿Quién reporta?</div>
-                      <div className="text-[11px] text-white font-medium">Dirección Académica</div>
+                      <div className="text-[11px] text-white font-medium">
+                        {isCorporate ? 'Dirección de Operaciones / Finanzas' : 'Dirección Académica'}
+                      </div>
                       <div className="text-[10px] text-slate-400 font-semibold mt-1">¿Dónde se llena?</div>
                       <div className="text-[10px] text-slate-300 bg-teal-950/60 p-1.5 rounded border border-teal-800/40">
-                        Comité Directivo de Asignación Escolar
+                        {isCorporate ? 'Comité Directivo de Contratación' : 'Comité Directivo de Asignación Escolar'}
                       </div>
                     </div>
                   </div>
@@ -3471,20 +3783,28 @@ export default function CEOExecutiveDashboard({
                   <div className="p-3.5 bg-slate-900/80 rounded-2xl border border-emerald-500/30 flex flex-col justify-between space-y-2">
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-emerald-300 uppercase">Fase 5 · Matrícula</span>
+                        <span className="text-[10px] font-black text-emerald-300 uppercase">
+                          {isCorporate ? 'Fase 5 · Contratado' : 'Fase 5 · Matrícula'}
+                        </span>
                         <span className="w-2 h-2 rounded-full bg-emerald-400" />
                       </div>
-                      <h4 className="text-xs font-bold text-white mt-1">Inscripción Pagada</h4>
+                      <h4 className="text-xs font-bold text-white mt-1">
+                        {isCorporate ? 'Alta & Onboarding' : 'Inscripción Pagada'}
+                      </h4>
                       <p className="text-[11px] text-slate-300 mt-1 leading-snug">
-                        Conciliación de pago, CFDI 4.0 IEDU SAT y alta en matrícula SEP.
+                        {isCorporate 
+                          ? 'Firma de contrato, alta IMSS/SAT, entrega de equipo y onboarding.'
+                          : 'Conciliación de pago, CFDI 4.0 IEDU SAT y alta en matrícula SEP.'}
                       </p>
                     </div>
                     <div className="pt-2 border-t border-emerald-500/20 space-y-1">
                       <div className="text-[10px] text-emerald-300 font-semibold">¿Quién reporta?</div>
-                      <div className="text-[11px] text-white font-medium">Caja, Tesorería & Control Escolar</div>
+                      <div className="text-[11px] text-white font-medium">
+                        {isCorporate ? 'Recursos Humanos & Nóminas' : 'Caja, Tesorería & Control Escolar'}
+                      </div>
                       <div className="text-[10px] text-slate-400 font-semibold mt-1">¿Dónde se llena?</div>
                       <div className="text-[10px] text-slate-300 bg-emerald-950/60 p-1.5 rounded border border-emerald-800/40">
-                        Módulo Cobranza SPEI + Padrón de Alumnos
+                        {isCorporate ? 'Módulo de Facturación B2B + Padrón de Colaboradores Activos' : 'Módulo Cobranza SPEI + Padrón de Alumnos'}
                       </div>
                     </div>
                   </div>
@@ -3495,13 +3815,17 @@ export default function CEOExecutiveDashboard({
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-base font-black text-slate-900">Embudo Gráfico de Conversión (Funnel en Vivo)</h3>
+                    <h3 className="text-base font-black text-slate-900">
+                      {isCorporate ? 'Embudo de Reclutamiento & Conversión (Pipeline en Vivo)' : 'Embudo Gráfico de Conversión (Funnel en Vivo)'}
+                    </h3>
                     <p className="text-xs text-slate-500">
-                      Haz clic en cualquier fase para inspeccionar las familias aspirantes en esa etapa.
+                      {isCorporate 
+                        ? 'Haz clic en cualquier fase para inspeccionar los candidatos en esa etapa.'
+                        : 'Haz clic en cualquier fase para inspeccionar las familias aspirantes en esa etapa.'}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-400">Sede filtrada:</span>
+                    <span className="text-xs font-bold text-slate-400">{isCorporate ? 'Planta filtrada:' : 'Sede filtrada:'}</span>
                     <span className="text-xs font-black text-slate-800 bg-slate-100 px-2.5 py-1 rounded-lg">
                       {selectedCampusName}
                     </span>
@@ -3527,7 +3851,7 @@ export default function CEOExecutiveDashboard({
 
                         <div className="flex items-center gap-3">
                           <div className="text-right font-mono">
-                            <span className="text-base font-black text-slate-900">{s.count} familias</span>
+                            <span className="text-base font-black text-slate-900">{s.count} {isCorporate ? 'candidatos' : 'familias'}</span>
                             <span className="text-xs text-slate-500 block">({s.pct}% conversión)</span>
                           </div>
                           <button
@@ -3564,22 +3888,34 @@ export default function CEOExecutiveDashboard({
                 </div>
               </div>
 
-              {/* CANALES DE CAPTACIÓN */}
+              {/* CANALES DE CAPTACIÓN / ATRACCIÓN */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 text-center shadow-xs">
-                  <span className="text-xs font-bold text-slate-400 block uppercase">Recomendación Familiar</span>
+                  <span className="text-xs font-bold text-slate-400 block uppercase">
+                    {isCorporate ? 'Recomendación Interna' : 'Recomendación Familiar'}
+                  </span>
                   <div className="text-2xl font-black text-slate-900 mt-1 font-mono">52%</div>
-                  <span className="text-xs text-slate-500 mt-1 block">Boca a boca de padres actuales</span>
+                  <span className="text-xs text-slate-500 mt-1 block">
+                    {isCorporate ? 'Programa de referidos por colaboradores' : 'Boca a boca de padres actuales'}
+                  </span>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 text-center shadow-xs">
-                  <span className="text-xs font-bold text-slate-400 block uppercase">Canales Digitales & Web</span>
+                  <span className="text-xs font-bold text-slate-400 block uppercase">
+                    {isCorporate ? 'Bolsas de Empleo & Redes' : 'Canales Digitales & Web'}
+                  </span>
                   <div className="text-2xl font-black text-indigo-600 mt-1 font-mono">34%</div>
-                  <span className="text-xs text-slate-500 mt-1 block">Campañas de captación digital</span>
+                  <span className="text-xs text-slate-500 mt-1 block">
+                    {isCorporate ? 'LinkedIn, plataformas y portal de vacantes' : 'Campañas de captación digital'}
+                  </span>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 text-center shadow-xs">
-                  <span className="text-xs font-bold text-slate-400 block uppercase">Convenios Corporativos</span>
+                  <span className="text-xs font-bold text-slate-400 block uppercase">
+                    {isCorporate ? 'Convenios con Universidades' : 'Convenios Corporativos'}
+                  </span>
                   <div className="text-2xl font-black text-emerald-600 mt-1 font-mono">14%</div>
-                  <span className="text-xs text-slate-500 mt-1 block">Alianzas con empresas locales</span>
+                  <span className="text-xs text-slate-500 mt-1 block">
+                    {isCorporate ? 'Alianzas y semilleros técnicos' : 'Alianzas con empresas locales'}
+                  </span>
                 </div>
               </div>
 
@@ -3587,40 +3923,66 @@ export default function CEOExecutiveDashboard({
               <div className="bg-gradient-to-r from-slate-900 via-purple-950 to-slate-900 p-6 rounded-3xl text-white border border-purple-500/30 space-y-4 shadow-lg">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-purple-800/50 pb-3">
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-purple-300">Eficiencia Comercial & Captación Escolar</span>
-                    <h3 className="text-base font-black text-white mt-0.5">Velocidad del Pipeline: 9.5 Días Promedio de Conversión</h3>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-purple-300">
+                      {isCorporate ? 'Eficiencia de Contratación & Atracción de Talento' : 'Eficiencia Comercial & Captación Escolar'}
+                    </span>
+                    <h3 className="text-base font-black text-white mt-0.5">
+                      {isCorporate 
+                        ? 'Velocidad de Reclutamiento: 9.5 Días Promedio de Contratación' 
+                        : 'Velocidad del Pipeline: 9.5 Días Promedio de Conversión'}
+                    </h3>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs text-purple-300 block">Valor Pipeline 2026-2027:</span>
+                    <span className="text-xs text-purple-300 block">
+                      {isCorporate ? 'Inversión en Nuevas Posiciones:' : 'Valor Pipeline 2026-2027:'}
+                    </span>
                     <span className="text-2xl font-black text-emerald-400 font-mono">$4,180,000 MXN</span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
                   <div className="p-3 bg-slate-900/70 rounded-xl border border-purple-500/20">
-                    <span className="text-[10px] text-purple-300 block">Contacto Inicial</span>
+                    <span className="text-[10px] text-purple-300 block">
+                      {isCorporate ? 'Contacto / Filtro CV' : 'Contacto Inicial'}
+                    </span>
                     <span className="text-lg font-black text-white font-mono mt-0.5">&lt; 24 hrs</span>
                     <span className="text-[10px] text-emerald-400 block">98% efectividad</span>
                   </div>
                   <div className="p-3 bg-slate-900/70 rounded-xl border border-purple-500/20">
-                    <span className="text-[10px] text-purple-300 block">Tour a Diagnóstico</span>
+                    <span className="text-[10px] text-purple-300 block">
+                      {isCorporate ? 'Entrevista a Prueba' : 'Tour a Diagnóstico'}
+                    </span>
                     <span className="text-lg font-black text-white font-mono mt-0.5">2.1 días</span>
-                    <span className="text-[10px] text-slate-400 block">Psicopedagógico</span>
+                    <span className="text-[10px] text-slate-400 block">
+                      {isCorporate ? 'Técnica / Psicométrica' : 'Psicopedagógico'}
+                    </span>
                   </div>
                   <div className="p-3 bg-slate-900/70 rounded-xl border border-purple-500/20">
-                    <span className="text-[10px] text-purple-300 block">Dictamen a Asignación</span>
+                    <span className="text-[10px] text-purple-300 block">
+                      {isCorporate ? 'Dictamen a Oferta' : 'Dictamen a Asignación'}
+                    </span>
                     <span className="text-lg font-black text-white font-mono mt-0.5">1.4 días</span>
-                    <span className="text-[10px] text-indigo-300 block">Comité directivo</span>
+                    <span className="text-[10px] text-indigo-300 block">
+                      {isCorporate ? 'Comité de contratación' : 'Comité directivo'}
+                    </span>
                   </div>
                   <div className="p-3 bg-slate-900/70 rounded-xl border border-purple-500/20">
-                    <span className="text-[10px] text-purple-300 block">Cierre y Pago</span>
+                    <span className="text-[10px] text-purple-300 block">
+                      {isCorporate ? 'Cierre y Contrato' : 'Cierre y Pago'}
+                    </span>
                     <span className="text-lg font-black text-emerald-400 font-mono mt-0.5">2.8 días</span>
-                    <span className="text-[10px] text-slate-400 block">SPEI instantáneo</span>
+                    <span className="text-[10px] text-slate-400 block">
+                      {isCorporate ? 'Alta inmediata' : 'SPEI instantáneo'}
+                    </span>
                   </div>
                 </div>
 
                 <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                  <span className="text-purple-200">El ciclo promedio del mercado mexicano es de 22 días. iSkool reduce los tiempos en más del <strong>56%</strong>.</span>
+                  <span className="text-purple-200">
+                    {isCorporate 
+                      ? 'El ciclo promedio de contratación técnica en la industria es de 25 días. Reducimos los tiempos en más del 60%.'
+                      : 'El ciclo promedio del mercado mexicano es de 22 días. iSkool reduce los tiempos en más del 56%.'}
+                  </span>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => {
@@ -3631,14 +3993,14 @@ export default function CEOExecutiveDashboard({
                       className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap active:scale-95 flex items-center gap-1.5"
                     >
                       <ClipboardList size={14} />
-                      Ver Directorio de Aspirantes
+                      {isCorporate ? 'Ver Directorio de Candidatos' : 'Ver Directorio de Aspirantes'}
                     </button>
                     <button
                       onClick={() => setIsAddProspectModalOpen(true)}
                       className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-purple-200 hover:text-white font-bold rounded-xl border border-purple-400/30 transition-all cursor-pointer whitespace-nowrap active:scale-95 flex items-center gap-1.5"
                     >
                       <UserPlus size={14} />
-                      + Registrar Aspirante
+                      + {isCorporate ? 'Registrar Candidato' : 'Registrar Aspirante'}
                     </button>
                   </div>
                 </div>
@@ -3657,9 +4019,13 @@ export default function CEOExecutiveDashboard({
                     Tesorería & Fiscal SAT
                   </div>
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight mt-1">
-                    Control de Cobranza & Facturación CFDI 4.0 con Complemento IEDU
+                    {isCorporate ? 'Control de Cobranza & Facturación B2B' : 'Control de Cobranza & Facturación CFDI 4.0 con Complemento IEDU'}
                   </h2>
-                  <p className="text-xs text-slate-500">Antigüedad de saldos, deducción de colegiaturas para padres y ledger fiscal inmutable.</p>
+                  <p className="text-xs text-slate-500">
+                    {isCorporate 
+                      ? 'Antigüedad de saldos corporativos, facturación CFDI 4.0 B2B y ledger fiscal inmutable.'
+                      : 'Antigüedad de saldos, deducción de colegiaturas para padres y ledger fiscal inmutable.'}
+                  </p>
                 </div>
                 <button
                   onClick={handleExportCSV}
@@ -3675,7 +4041,7 @@ export default function CEOExecutiveDashboard({
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
                   <span className="text-[11px] font-bold text-slate-400 uppercase">Facturación Mensual Total</span>
                   <div className="text-2xl font-black text-slate-900 mt-1 font-mono">$18,420,000 MXN</div>
-                  <span className="text-xs text-slate-500 mt-1 block">5 Sedes consolidadas</span>
+                  <span className="text-xs text-slate-500 mt-1 block">{isCorporate ? '5 Plantas / Empresas consolidadas' : '5 Sedes consolidadas'}</span>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
                   <span className="text-[11px] font-bold text-slate-400 uppercase">Cobranza Efectiva Recuperada</span>
@@ -3695,7 +4061,9 @@ export default function CEOExecutiveDashboard({
 
               {/* ANTIGÜEDAD DE SALDOS (AGING BUCKETS) */}
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-                <h3 className="text-base font-black text-slate-900">Antigüedad de Saldos de Colegiaturas (Aging Buckets)</h3>
+                <h3 className="text-base font-black text-slate-900">
+                  {isCorporate ? 'Antigüedad de Saldos Corporativos B2B (Aging Buckets)' : 'Antigüedad de Saldos de Colegiaturas (Aging Buckets)'}
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
                   <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
                     <span className="font-bold text-emerald-800 block">Al Corriente (0 días)</span>
@@ -3720,44 +4088,49 @@ export default function CEOExecutiveDashboard({
                 </div>
               </div>
 
-              {/* DIFERENCIADOR FISCAL SAT IEDU */}
+              {/* DIFERENCIADOR FISCAL SAT IEDU / SERVICIOS CORPORATIVOS */}
               <div className="bg-slate-900 p-6 rounded-2xl text-white shadow-md border border-slate-800 space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-amber-500/30 text-amber-400 flex items-center justify-center">
                     <Receipt size={20} />
                   </div>
                   <div>
-                    <h3 className="text-base font-black text-white">Diferenciador Fiscal: CFDI 4.0 con Complemento IEDU SAT</h3>
-                    <p className="text-xs text-slate-300">Timbrado automatizado con deducción personal de colegiaturas para padres de familia según decreto oficial.</p>
+                    <h3 className="text-base font-black text-white">
+                      {isCorporate ? 'Diferenciador Fiscal: CFDI 4.0 para Servicios Corporativos & Capacitación Deducible' : 'Diferenciador Fiscal: CFDI 4.0 con Complemento IEDU SAT'}
+                    </h3>
+                    <p className="text-xs text-slate-300">
+                      {isCorporate 
+                        ? 'Timbrado automatizado B2B con deducibilidad fiscal al 100% como gasto de operación y capacitación empresarial.'
+                        : 'Timbrado automatizado con deducción personal de colegiaturas para padres de familia según decreto oficial.'}
+                    </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs">
-                  <div className="p-3 bg-slate-800/80 rounded-xl border border-slate-700">
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Preescolar</span>
-                    <div className="text-base font-black text-amber-400 font-mono mt-0.5">$14,200 / año</div>
-                    <span className="text-[10px] text-slate-400 block">Límite deducible SAT</span>
-                  </div>
-                  <div className="p-3 bg-slate-800/80 rounded-xl border border-slate-700">
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Primaria</span>
-                    <div className="text-base font-black text-amber-400 font-mono mt-0.5">$12,900 / año</div>
-                    <span className="text-[10px] text-slate-400 block">Límite deducible SAT</span>
-                  </div>
-                  <div className="p-3 bg-slate-800/80 rounded-xl border border-slate-700">
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Secundaria</span>
-                    <div className="text-base font-black text-amber-400 font-mono mt-0.5">$19,900 / año</div>
-                    <span className="text-[10px] text-slate-400 block">Límite deducible SAT</span>
-                  </div>
-                  <div className="p-3 bg-slate-800/80 rounded-xl border border-slate-700">
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Bachillerato</span>
-                    <div className="text-base font-black text-amber-400 font-mono mt-0.5">$24,500 / año</div>
-                    <span className="text-[10px] text-slate-400 block">Límite deducible SAT</span>
-                  </div>
+                  {(isCorporate ? [
+                    { label: 'Capacitación Técnica', value: '100% Deducible', sub: 'Gasto operativo LISR' },
+                    { label: 'Consultoría B2B', value: '100% Deducible', sub: 'Acreditamiento de IVA' },
+                    { label: 'Licenciamiento TI', value: '100% Deducible', sub: 'Deducción autorizada' },
+                    { label: 'Seguridad & SST', value: '100% Deducible', sub: 'Certificación STPS / ISO' }
+                  ] : [
+                    { label: 'Preescolar', value: '$14,200 / año', sub: 'Límite deducible SAT' },
+                    { label: 'Primaria', value: '$12,900 / año', sub: 'Límite deducible SAT' },
+                    { label: 'Secundaria', value: '$19,900 / año', sub: 'Límite deducible SAT' },
+                    { label: 'Bachillerato', value: '$24,500 / año', sub: 'Límite deducible SAT' }
+                  ]).map((item, idx) => (
+                    <div key={idx} className="p-3 bg-slate-800/80 rounded-xl border border-slate-700">
+                      <span className="text-[10px] text-slate-400 uppercase font-bold block">{item.label}</span>
+                      <div className="text-base font-black text-amber-400 font-mono mt-0.5">{item.value}</div>
+                      <span className="text-[10px] text-slate-400 block">{item.sub}</span>
+                    </div>
+                  ))}
                 </div>
 
                 <div className="pt-3 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                   <div className="text-slate-300">
-                    Ahorro estimado en ISR para las familias de nuestra red: <strong className="text-amber-400 font-mono">+$8,420,000 MXN anuales</strong> deducibles.
+                    {isCorporate 
+                      ? <>Deducibilidad acumulada para clientes de la red corporativa: <strong className="text-amber-400 font-mono">+$14,800,000 MXN anuales</strong> en beneficios fiscales.</>
+                      : <>Ahorro estimado en ISR para las familias de nuestra red: <strong className="text-amber-400 font-mono">+$8,420,000 MXN anuales</strong> deducibles.</>}
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -3767,10 +4140,10 @@ export default function CEOExecutiveDashboard({
                       Conciliar Depósitos Bancarios
                     </button>
                     <button
-                      onClick={() => triggerToast("✓ Recordatorios preventivos emitidos a 48 tutores con saldo próximo a vencer.")}
+                      onClick={() => triggerToast(isCorporate ? "✓ Recordatorios preventivos emitidos a cuentas corporativas con saldo próximo a vencer." : "✓ Recordatorios preventivos emitidos a 48 tutores con saldo próximo a vencer.")}
                       className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl font-bold transition-all cursor-pointer active:scale-95"
                     >
-                      Emitir Recordatorios SPEI
+                      {isCorporate ? 'Emitir Recordatorios B2B' : 'Emitir Recordatorios SPEI'}
                     </button>
                   </div>
                 </div>
@@ -3876,11 +4249,11 @@ export default function CEOExecutiveDashboard({
               <div className="p-6 space-y-3 overflow-y-auto max-h-[calc(100vh-280px)]">
                 {holding.campuses.map(campus => {
                   let valueDisplay = '';
-                  if (activeKPIDrawer.metricKey === 'students') valueDisplay = `${campus.students.toLocaleString()} alumnos`;
-                  else if (activeKPIDrawer.metricKey === 'teachers') valueDisplay = `${campus.teachers} docentes`;
+                  if (activeKPIDrawer.metricKey === 'students') valueDisplay = `${campus.students.toLocaleString()} ${isCorporate ? 'colaboradores' : 'alumnos'}`;
+                  else if (activeKPIDrawer.metricKey === 'teachers') valueDisplay = `${campus.teachers} ${isCorporate ? 'instructores' : 'docentes'}`;
                   else if (activeKPIDrawer.metricKey === 'campuses') valueDisplay = `${campus.location} • Activo`;
-                  else if (activeKPIDrawer.metricKey === 'admissions') valueDisplay = `${campus.admissionsInProgress} en proceso`;
-                  else if (activeKPIDrawer.metricKey === 'collection') valueDisplay = `${campus.collectionRate}% recaudado`;
+                  else if (activeKPIDrawer.metricKey === 'admissions') valueDisplay = `${campus.admissionsInProgress} ${isCorporate ? 'en pipeline' : 'en proceso'}`;
+                  else if (activeKPIDrawer.metricKey === 'collection') valueDisplay = `${campus.collectionRate}% ${isCorporate ? 'cobrado' : 'recaudado'}`;
 
                   return (
                     <div 
@@ -3935,7 +4308,7 @@ export default function CEOExecutiveDashboard({
             <p className="text-sm text-slate-600 mt-2 leading-relaxed">{activeFocalModal.description}</p>
 
             <div className="mt-4 p-3.5 bg-slate-50 rounded-xl border border-slate-100">
-              <span className="text-xs font-bold text-slate-500 block mb-2">Sedes involucradas:</span>
+              <span className="text-xs font-bold text-slate-500 block mb-2">{isCorporate ? 'Plantas/Empresas involucradas:' : 'Sedes involucradas:'}</span>
               <div className="flex flex-wrap gap-1.5">
                 {activeFocalModal.campusAffected.map((c, i) => (
                   <span key={i} className="text-xs font-semibold bg-white border border-slate-200 px-2.5 py-1 rounded-md text-slate-700">
@@ -3954,7 +4327,7 @@ export default function CEOExecutiveDashboard({
                 className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs py-3 px-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-95"
               >
                 <Send size={15} />
-                <span>Instruir a Directores de Sede</span>
+                <span>{isCorporate ? 'Instruir a Directores de Planta' : 'Instruir a Directores de Sede'}</span>
               </button>
               
               <button
@@ -3988,12 +4361,17 @@ export default function CEOExecutiveDashboard({
             </div>
 
             <div className="space-y-3">
-              {[
+              {(isCorporate ? [
+                { title: 'Desviación en Meta de Facturación B2B', sedes: ['Planta Monterrey (91%)', 'Planta Bajío (93%)'], desc: 'Facturación en seguimiento respecto al umbral corporativo de 95%. Se sugiere activar conciliación bancaria y recordatorio preventivo.', type: 'cobranza' as const },
+                { title: 'Renovación de Contratos Anuales', sedes: ['Planta Bajío', 'Sede Central'], desc: 'Lanzamiento de campaña formal de renovación de acuerdos corporativos.', type: 'reinscripcion' as const },
+                { title: 'Auditoría de Competencias Laborales & SST', sedes: ['Planta Monterrey', 'Planta Bajío'], desc: 'Dispersión detectada en evaluaciones de certificación técnica en Nivel 4.', type: 'academico' as const },
+                { title: 'Rotación de Instructores Técnicos', sedes: ['Planta Bajío (1)', 'Planta Norte (1)'], desc: 'Bajas técnicas registradas por reemplazo. Cartera de reemplazo activa en Bóveda Corporativa.', type: 'docentes' as const },
+              ] : [
                 { title: 'Desviación en Meta de Cobranza', sedes: ['Campus Coacalco (91%)', 'Campus San Cristóbal (93%)'], desc: 'Cobranza en seguimiento respecto al umbral institucional de 95%. Se sugiere activar conciliación SPEI y recordatorio preventivo.', type: 'cobranza' as const },
                 { title: 'Campaña de Reinscripciones', sedes: ['Campus San Cristóbal', 'Campus Coacalco'], desc: 'Lanzamiento de campaña formal de reserva de plaza para el ciclo 2026-2027.', type: 'reinscripcion' as const },
                 { title: 'Auditoría Curricular NEM 2024 / CCH', sedes: ['Campus San Cristóbal', 'Campus Coacalco'], desc: 'Dispersión detectada en evaluaciones formativas de Fase 6 en Secundaria.', type: 'academico' as const },
                 { title: 'Rotación Docente Preventiva', sedes: ['Campus Coacalco (1)', 'Campus San Cristóbal (1)'], desc: 'Bajas docentes registradas por reemplazo. Cartera de reemplazo activa en Bóveda Curricular.', type: 'docentes' as const },
-              ].map((f, i) => (
+              ]).map((f, i) => (
                 <div key={i} className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
                   <div className="flex justify-between items-start">
                     <span className="font-bold text-slate-800 text-sm">{f.title}</span>
@@ -4066,7 +4444,7 @@ export default function CEOExecutiveDashboard({
 
               <div>
                 <div className="flex justify-between font-bold text-slate-700 mb-1">
-                  <span>Meta de Cobertura Curricular SEP NEM</span>
+                  <span>{isCorporate ? 'Meta de Cumplimiento de Competencias' : 'Meta de Cobertura Curricular SEP NEM'}</span>
                   <span className="font-mono text-emerald-600">{curriculumThreshold}%</span>
                 </div>
                 <input 
@@ -4081,7 +4459,7 @@ export default function CEOExecutiveDashboard({
 
               <div>
                 <div className="flex justify-between font-bold text-slate-700 mb-1">
-                  <span>Meta de Retención Escolar Anual</span>
+                  <span>{isCorporate ? 'Meta de Retención de Talento' : 'Meta de Retención Escolar Anual'}</span>
                   <span className="font-mono text-teal-600">{retentionThreshold}%</span>
                 </div>
                 <input 
@@ -4195,14 +4573,21 @@ export default function CEOExecutiveDashboard({
             </div>
 
             <div className="space-y-2.5 text-xs">
-              {[
+              {(isCorporate ? [
+                { title: 'Auditoría de Competencias Laborales & SST Completada', campus: 'Planta Industrial Norte', time: 'Hoy 11:30 hrs', cat: 'Operativo', user: 'Supervisión de Calidad ISO' },
+                { title: 'Candidato Técnico Registrado en Pipeline de Selección', campus: 'Sede Tecnológica Santa Fe', time: 'Hoy 09:15 hrs', cat: 'Talento', user: 'Atracción de Talento Santa Fe' },
+                { title: 'Reglamento de Seguridad Industrial STPS y Compliance 2026', campus: 'Corporativo Central', time: 'Ayer 18:00 hrs', cat: 'Legal & SST', user: 'Dirección Jurídica' },
+                { title: 'Conciliación Bancaria y Facturación B2B CFDI 4.0 (142 Folios)', campus: 'Tesorería Corporativa', time: 'Ayer 16:20 hrs', cat: 'Finanzas', user: 'Tesorería Central' },
+                { title: 'Simulacro de Seguridad Industrial & Evacuación Operativa', campus: 'Planta Logística Bajío', time: 'Hace 2 días', cat: 'Seguridad', user: 'Brigada de Protección Industrial' },
+                { title: 'Campaña de Retención de Talento & Renovación de Contratos B2B', campus: 'Planta Manufactura Toluca', time: 'Hace 3 días', cat: 'Talento', user: 'Dirección de Capital Humano' }
+              ] : [
                 { title: 'Auditoría Curricular Bimestral Completada', campus: 'Campus Montes', time: 'Hoy 11:30 hrs', cat: 'Académico', user: 'Coordinación Secundaria CCH' },
                 { title: 'Prospecto Nuevo Registrado en CRM', campus: 'Campus San Cristóbal', time: 'Hoy 09:15 hrs', cat: 'Admisiones', user: 'Admisiones San Cristóbal' },
                 { title: 'Reglamento de Convivencia Actualizado SEP 2026', campus: 'Normativa General IBIME', time: 'Ayer 18:00 hrs', cat: 'Operativo', user: 'Dirección Jurídica' },
                 { title: 'Conciliación Bancaria y Timbrado CFDI 4.0 (142 Folios)', campus: 'Tesorería Central IBIME', time: 'Ayer 16:20 hrs', cat: 'Financiero', user: 'Tesorería Central' },
                 { title: 'Simulacro de Evacuación y Pase de Lista Digital', campus: 'Campus Lagos', time: 'Hace 2 días', cat: 'Operativo', user: 'Protección Civil Ecatepec' },
                 { title: 'Campaña de Reinscripciones Despachada (640 tutores)', campus: 'Campus Coacalco', time: 'Hace 3 días', cat: 'Admisiones', user: 'Dirección de Admisiones' }
-              ].map((log, i) => (
+              ]).map((log, i) => (
                 <div key={i} className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
                   <div>
                     <div className="font-bold text-slate-800">{log.title}</div>
@@ -4243,7 +4628,7 @@ export default function CEOExecutiveDashboard({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Escribe el nombre de un alumno, maestro, sede o proceso..."
+                placeholder={isCorporate ? "Escribe el nombre de un colaborador, instructor, sede o proceso corporativo..." : "Escribe el nombre de un alumno, maestro, sede o proceso..."}
                 className="flex-1 bg-transparent border-none text-sm text-slate-900 focus:outline-none placeholder-slate-400"
               />
               <button onClick={() => setIsSearchOpen(false)} className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
@@ -4277,7 +4662,9 @@ export default function CEOExecutiveDashboard({
                 </div>
               ) : (
                 <div className="p-6 text-center text-xs text-slate-400">
-                  Busca entre más de 6,800 alumnos, 480 docentes, 5 planteles y protocolos institucionales.
+                  {isCorporate 
+                    ? "Busca entre más de 6,800 colaboradores, 480 instructores, 5 plantas/empresas y procesos corporativos." 
+                    : "Busca entre más de 6,800 alumnos, 480 docentes, 5 planteles y protocolos institucionales."}
                 </div>
               )}
             </div>
@@ -4304,13 +4691,15 @@ export default function CEOExecutiveDashboard({
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-white flex items-center gap-2">
-                    Directorio de Aspirantes en Pipeline
+                    {isCorporate ? 'Directorio de Candidatos en Pipeline de Selección' : 'Directorio de Aspirantes en Pipeline'}
                     <span className="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-normal">
-                      Ciclo 2026-2027
+                      {isCorporate ? 'Ejercicio 2026' : 'Ciclo 2026-2027'}
                     </span>
                   </h3>
                   <p className="text-xs text-slate-400">
-                    Seguimiento detallado de familias aspirantes, etapas de conversión y avance de estatus.
+                    {isCorporate
+                      ? 'Seguimiento detallado de candidatos, etapas de selección técnica y avance de contratación.'
+                      : 'Seguimiento detallado de familias aspirantes, etapas de conversión y avance de estatus.'}
                   </p>
                 </div>
               </div>
@@ -4321,7 +4710,7 @@ export default function CEOExecutiveDashboard({
                   className="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
                 >
                   <UserPlus size={14} />
-                  + Registrar Aspirante
+                  + {isCorporate ? 'Registrar Candidato' : 'Registrar Aspirante'}
                 </button>
                 <button
                   onClick={() => setIsAdmissionsPipelineOpen(false)}
@@ -4340,19 +4729,19 @@ export default function CEOExecutiveDashboard({
                   type="text"
                   value={prospectSearchTerm}
                   onChange={(e) => setProspectSearchTerm(e.target.value)}
-                  placeholder="Buscar aspirante, tutor o teléfono..."
+                  placeholder={isCorporate ? "Buscar candidato, contacto o teléfono..." : "Buscar aspirante, tutor o teléfono..."}
                   className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-purple-500"
                 />
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <span className="font-bold text-slate-500 text-[11px]">Sede:</span>
+                <span className="font-bold text-slate-500 text-[11px]">{isCorporate ? 'Planta / Sede:' : 'Sede:'}</span>
                 <select
                   value={prospectFilterCampus}
                   onChange={(e) => setProspectFilterCampus(e.target.value)}
                   className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-purple-500"
                 >
-                  <option value="all">Todas las Sedes</option>
+                  <option value="all">{isCorporate ? 'Todas las Plantas / Sedes' : 'Todas las Sedes'}</option>
                   {holding.campuses.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
@@ -4365,16 +4754,16 @@ export default function CEOExecutiveDashboard({
                   className="px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-purple-500"
                 >
                   <option value="all">Todas las Etapas</option>
-                  <option value="1">1. Prospecto en CRM</option>
-                  <option value="2">2. Tour y Visita</option>
-                  <option value="3">3. Examen Diagnóstico</option>
-                  <option value="4">4. Carta de Asignación</option>
-                  <option value="5">5. Inscripción Pagada</option>
+                  <option value="1">{isCorporate ? '1. Candidato en Base' : '1. Prospecto en CRM'}</option>
+                  <option value="2">{isCorporate ? '2. Entrevista Inicial' : '2. Tour y Visita'}</option>
+                  <option value="3">{isCorporate ? '3. Evaluación Técnica' : '3. Examen Diagnóstico'}</option>
+                  <option value="4">{isCorporate ? '4. Oferta Laboral' : '4. Carta de Asignación'}</option>
+                  <option value="5">{isCorporate ? '5. Contratación Confirmada' : '5. Inscripción Pagada'}</option>
                 </select>
               </div>
             </div>
 
-            {/* Listado de Familias */}
+            {/* Listado de Familias / Candidatos */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
               {prospectsList
                 .filter(p => {
@@ -4387,7 +4776,13 @@ export default function CEOExecutiveDashboard({
                   return matchSearch && matchCampus && matchStage;
                 })
                 .map((prospect) => {
-                  const stageStyles = {
+                  const stageStyles = isCorporate ? {
+                    1: { bg: 'bg-purple-50 text-purple-700 border-purple-200', dot: 'bg-purple-600', nextText: 'Agendar Entrevista Inicial →' },
+                    2: { bg: 'bg-indigo-50 text-indigo-700 border-indigo-200', dot: 'bg-indigo-600', nextText: 'Asignar Evaluación Técnica →' },
+                    3: { bg: 'bg-blue-50 text-blue-700 border-blue-200', dot: 'bg-blue-600', nextText: 'Emitir Oferta Laboral →' },
+                    4: { bg: 'bg-teal-50 text-teal-700 border-teal-200', dot: 'bg-teal-600', nextText: 'Confirmar Contratación →' },
+                    5: { bg: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-600', nextText: '✓ Contratado' },
+                  }[prospect.stage] : {
                     1: { bg: 'bg-purple-50 text-purple-700 border-purple-200', dot: 'bg-purple-600', nextText: 'Agendar Tour de Campus →' },
                     2: { bg: 'bg-indigo-50 text-indigo-700 border-indigo-200', dot: 'bg-indigo-600', nextText: 'Asignar Examen Diagnóstico →' },
                     3: { bg: 'bg-blue-50 text-blue-700 border-blue-200', dot: 'bg-blue-600', nextText: 'Emitir Carta de Asignación →' },
@@ -4419,7 +4814,7 @@ export default function CEOExecutiveDashboard({
                           </span>
                           <span className="flex items-center gap-1">
                             <Users size={13} className="text-slate-400" />
-                            Tutor: <strong className="text-slate-700">{prospect.tutorName}</strong>
+                            {isCorporate ? 'Contacto / Evaluador:' : 'Tutor:'} <strong className="text-slate-700">{prospect.tutorName}</strong>
                           </span>
                           <span className="flex items-center gap-1">
                             <Phone size={13} className="text-slate-400" />
@@ -4444,7 +4839,7 @@ export default function CEOExecutiveDashboard({
                               key={step}
                               className={`w-3 h-3 rounded-full transition-all ${
                                 step <= prospect.stage 
-                                  ? 'bg-purple-600 scale-100' 
+                                   ? 'bg-purple-600 scale-100' 
                                   : 'bg-slate-200 scale-90'
                               }`}
                             />
@@ -4461,7 +4856,7 @@ export default function CEOExecutiveDashboard({
                         ) : (
                           <span className="px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-800 font-black text-xs border border-emerald-200 flex items-center gap-1">
                             <CheckCircle2 size={14} />
-                            Inscrito (Expediente 360)
+                            {isCorporate ? 'Contratado (Expediente 360)' : 'Inscrito (Expediente 360)'}
                           </span>
                         )}
                       </div>
@@ -4473,7 +4868,10 @@ export default function CEOExecutiveDashboard({
             {/* Footer */}
             <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
               <span>
-                Mostrando aspirantes en seguimiento escolar activo • Todas las transiciones operan a <strong>0 Tokens</strong>.
+                {isCorporate
+                  ? 'Mostrando candidatos en seguimiento de contratación activo • Todas las transiciones operan a'
+                  : 'Mostrando aspirantes en seguimiento escolar activo • Todas las transiciones operan a'}{' '}
+                <strong>0 Tokens</strong>.
               </span>
               <button
                 onClick={() => setIsAdmissionsPipelineOpen(false)}
@@ -4487,7 +4885,7 @@ export default function CEOExecutiveDashboard({
       )}
 
       {/* ======================================================= */}
-      {/* MODAL 2: + REGISTRAR ASPIRANTE AL PIPELINE              */}
+      {/* MODAL 2: + REGISTRAR ASPIRANTE / CANDIDATO AL PIPELINE  */}
       {/* ======================================================= */}
       {isAddProspectModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
@@ -4498,8 +4896,12 @@ export default function CEOExecutiveDashboard({
                   <UserPlus size={20} />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-white">Registrar Aspirante al Pipeline de Admisiones</h3>
-                  <p className="text-xs text-slate-400">Alta directa en CRM y embudo de captación escolar.</p>
+                  <h3 className="text-base font-black text-white">
+                    {isCorporate ? 'Registrar Candidato al Pipeline de Selección' : 'Registrar Aspirante al Pipeline de Admisiones'}
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    {isCorporate ? 'Alta directa en CRM de atracción de talento y capital humano.' : 'Alta directa en CRM y embudo de captación escolar.'}
+                  </p>
                 </div>
               </div>
               <button
@@ -4513,44 +4915,64 @@ export default function CEOExecutiveDashboard({
             <form onSubmit={handleCreateProspect} className="p-6 space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Nombre Completo del Aspirante *</label>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    {isCorporate ? 'Nombre Completo del Candidato *' : 'Nombre Completo del Aspirante *'}
+                  </label>
                   <input
                     type="text"
                     required
                     value={newProspectForm.studentName}
                     onChange={(e) => setNewProspectForm({ ...newProspectForm, studentName: e.target.value })}
-                    placeholder="ej. Santiago Morales Reyes"
+                    placeholder={isCorporate ? "ej. Lic. Roberto Alarcón Soto" : "ej. Santiago Morales Reyes"}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-purple-500 focus:bg-white"
                   />
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Grado / Nivel Solicitado *</label>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    {isCorporate ? 'Puesto / Especialidad Solicitada *' : 'Grado / Nivel Solicitado *'}
+                  </label>
                   <select
                     value={newProspectForm.grade}
                     onChange={(e) => setNewProspectForm({ ...newProspectForm, grade: e.target.value })}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-purple-500 focus:bg-white"
                   >
-                    <option value="Kínder 1">Kínder 1</option>
-                    <option value="Kínder 2">Kínder 2</option>
-                    <option value="Kínder 3">Kínder 3</option>
-                    <option value="Primaria 1°">Primaria 1°</option>
-                    <option value="Primaria 2°">Primaria 2°</option>
-                    <option value="Primaria 3°">Primaria 3°</option>
-                    <option value="Primaria 4°">Primaria 4°</option>
-                    <option value="Primaria 5°">Primaria 5°</option>
-                    <option value="Primaria 6°">Primaria 6°</option>
-                    <option value="Secundaria 1°">Secundaria 1°</option>
-                    <option value="Secundaria 2°">Secundaria 2°</option>
-                    <option value="Secundaria 3°">Secundaria 3°</option>
-                    <option value="Preparatoria 1°">Preparatoria 1°</option>
-                    <option value="Preparatoria 2°">Preparatoria 2°</option>
-                    <option value="Preparatoria 3°">Preparatoria 3°</option>
+                    {isCorporate ? (
+                      <>
+                        <option value="Operador Técnico de Planta">Operador Técnico de Planta</option>
+                        <option value="Supervisor de Seguridad & SST">Supervisor de Seguridad & SST</option>
+                        <option value="Especialista de Calidad ISO">Especialista de Calidad ISO</option>
+                        <option value="Líder de Línea de Producción">Líder de Línea de Producción</option>
+                        <option value="Ingeniero de Mantenimiento">Ingeniero de Mantenimiento</option>
+                        <option value="Analista de Procesos B2B">Analista de Procesos B2B</option>
+                        <option value="Instructor Técnico de Capacitación">Instructor Técnico de Capacitación</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="Kínder 1">Kínder 1</option>
+                        <option value="Kínder 2">Kínder 2</option>
+                        <option value="Kínder 3">Kínder 3</option>
+                        <option value="Primaria 1°">Primaria 1°</option>
+                        <option value="Primaria 2°">Primaria 2°</option>
+                        <option value="Primaria 3°">Primaria 3°</option>
+                        <option value="Primaria 4°">Primaria 4°</option>
+                        <option value="Primaria 5°">Primaria 5°</option>
+                        <option value="Primaria 6°">Primaria 6°</option>
+                        <option value="Secundaria 1°">Secundaria 1°</option>
+                        <option value="Secundaria 2°">Secundaria 2°</option>
+                        <option value="Secundaria 3°">Secundaria 3°</option>
+                        <option value="Preparatoria 1°">Preparatoria 1°</option>
+                        <option value="Preparatoria 2°">Preparatoria 2°</option>
+                        <option value="Preparatoria 3°">Preparatoria 3°</option>
+                      </>
+                    )}
                   </select>
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Plantel / Campus Escolar *</label>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    {isCorporate ? 'Planta / Sede Operativa *' : 'Plantel / Campus Escolar *'}
+                  </label>
                   <select
                     value={newProspectForm.campusId}
                     onChange={(e) => setNewProspectForm({ ...newProspectForm, campusId: e.target.value })}
@@ -4563,13 +4985,15 @@ export default function CEOExecutiveDashboard({
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Nombre del Padre, Madre o Tutor *</label>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    {isCorporate ? 'Contacto de Referencia o Evaluador *' : 'Nombre del Padre, Madre o Tutor *'}
+                  </label>
                   <input
                     type="text"
                     required
                     value={newProspectForm.tutorName}
                     onChange={(e) => setNewProspectForm({ ...newProspectForm, tutorName: e.target.value })}
-                    placeholder="ej. Ing. Carlos Morales"
+                    placeholder={isCorporate ? "ej. Lic. Mariana Valdés (RH)" : "ej. Ing. Carlos Morales"}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-purple-500 focus:bg-white"
                   />
                 </div>
@@ -4586,40 +5010,67 @@ export default function CEOExecutiveDashboard({
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Canal de Captación</label>
+                  <label className="font-bold text-slate-700 block mb-1">
+                    {isCorporate ? 'Canal de Atracción' : 'Canal de Captación'}
+                  </label>
                   <select
                     value={newProspectForm.channel}
                     onChange={(e) => setNewProspectForm({ ...newProspectForm, channel: e.target.value as any })}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-purple-500 focus:bg-white"
                   >
-                    <option value="Recomendación Familiar">Recomendación Familiar (Boca a boca)</option>
-                    <option value="Canales Digitales & Web">Canales Digitales & Web / Redes</option>
-                    <option value="Convenios Corporativos">Convenios Corporativos / Empresas</option>
-                    <option value="Feria Escolar">Feria Escolar / Expos Educativas</option>
+                    {isCorporate ? (
+                      <>
+                        <option value="Recomendación Interna">Recomendación Interna (Talento Referido)</option>
+                        <option value="Bolsas de Empleo & Redes">Bolsas de Empleo & Redes Profesionales</option>
+                        <option value="Convenios con Universidades">Convenios con Universidades & Centros Técnicos</option>
+                        <option value="Headhunting Directo">Headhunting Directo & Ferias Industriales</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="Recomendación Familiar">Recomendación Familiar (Boca a boca)</option>
+                        <option value="Canales Digitales & Web">Canales Digitales & Web / Redes</option>
+                        <option value="Convenios Corporativos">Convenios Corporativos / Empresas</option>
+                        <option value="Feria Escolar">Feria Escolar / Expos Educativas</option>
+                      </>
+                    )}
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Etapa Inicial del Aspirante</label>
+                <label className="font-bold text-slate-700 block mb-1">
+                  {isCorporate ? 'Etapa Inicial del Candidato' : 'Etapa Inicial del Aspirante'}
+                </label>
                 <select
                   value={newProspectForm.initialStage}
                   onChange={(e) => setNewProspectForm({ ...newProspectForm, initialStage: Number(e.target.value) as any })}
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-purple-500 focus:bg-white"
                 >
-                  <option value="1">1. Prospecto Registrado en CRM (Primer contacto)</option>
-                  <option value="2">2. Tour y Visita de Campus Agendada</option>
-                  <option value="3">3. Examen Diagnóstico Psicopedagógico</option>
+                  {isCorporate ? (
+                    <>
+                      <option value="1">1. Candidato en Base de Datos (Revisión de CV)</option>
+                      <option value="2">2. Entrevista Inicial Agendada</option>
+                      <option value="3">3. Evaluación Técnica & Psicométrica</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="1">1. Prospecto Registrado en CRM (Primer contacto)</option>
+                      <option value="2">2. Tour y Visita de Campus Agendada</option>
+                      <option value="3">3. Examen Diagnóstico Psicopedagógico</option>
+                    </>
+                  )}
                 </select>
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Notas u Observaciones del Caso</label>
+                <label className="font-bold text-slate-700 block mb-1">
+                  {isCorporate ? 'Notas u Observaciones de la Postulación' : 'Notas u Observaciones del Caso'}
+                </label>
                 <textarea
                   rows={2}
                   value={newProspectForm.notes}
                   onChange={(e) => setNewProspectForm({ ...newProspectForm, notes: e.target.value })}
-                  placeholder="ej. Familia interesada en programa de robótica y bilingüe. Tienen un hermano en 4° de primaria."
+                  placeholder={isCorporate ? "ej. Candidato con certificación en PLC y normas ISO. Disponible para turno matutino." : "ej. Familia interesada en programa de robótica y bilingüe. Tienen un hermano en 4° de primaria."}
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-purple-500 focus:bg-white"
                 />
               </div>
@@ -4637,7 +5088,7 @@ export default function CEOExecutiveDashboard({
                   className="px-5 py-2 bg-purple-600 hover:bg-purple-500 text-white font-black rounded-xl shadow-xs cursor-pointer transition-all active:scale-95 flex items-center gap-1.5"
                 >
                   <UserPlus size={15} />
-                  Guardar Aspirante en Pipeline
+                  {isCorporate ? 'Guardar Candidato en Pipeline' : 'Guardar Aspirante en Pipeline'}
                 </button>
               </div>
             </form>
@@ -4652,8 +5103,8 @@ export default function CEOExecutiveDashboard({
         {[
           { id: 'inicio', label: 'Inicio', icon: Building2 },
           { id: 'vision', label: 'Visión', icon: TrendingUp },
-          { id: 'academico', label: 'NEM', icon: GraduationCap },
-          { id: 'admisiones', label: 'Admisiones', icon: UserCheck },
+          { id: 'academico', label: isCorporate ? 'Competencias' : 'NEM', icon: isCorporate ? Award : GraduationCap },
+          { id: 'admisiones', label: isCorporate ? 'Talento' : 'Admisiones', icon: UserCheck },
           { id: 'finanzas', label: 'Finanzas', icon: DollarSign },
         ].map((tab) => {
           const Icon = tab.icon;

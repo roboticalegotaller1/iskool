@@ -2031,11 +2031,11 @@ export default function SuperUserAdminPage() {
                       </div>
                       <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
                         <span className="text-xs font-black text-blue-600 block">{totalCorporateEmployees}</span>
-                        <span className="text-[9px] font-bold text-slate-500 uppercase">Empleados</span>
+                        <span className="text-[9px] font-bold text-slate-500 uppercase">Colaboradores</span>
                       </div>
                       <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
                         <span className="text-xs font-black text-emerald-600 block">{totalCorporateTrainers}</span>
-                        <span className="text-[9px] font-bold text-slate-500 uppercase">Docentes</span>
+                        <span className="text-[9px] font-bold text-slate-500 uppercase">Instructores</span>
                       </div>
                       <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
                         <span className="text-xs font-black text-purple-600 block">{(totalCorporateTokens / 1000).toFixed(0)}k</span>
@@ -2080,7 +2080,7 @@ export default function SuperUserAdminPage() {
                       title="Seleccionar y acceder a una empresa como CEO"
                     >
                       <ExternalLink className="h-3.5 w-3.5 text-indigo-600" />
-                      <span>Entrar al Aula</span>
+                      <span>Entorno Corporativo</span>
                     </button>
 
                     <button
