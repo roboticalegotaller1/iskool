@@ -27,7 +27,7 @@ export default function AdminLayout({
         </div>
       }
     >
-      <RoleGuard allowedRoles={['admin', 'superadmin', 'owner']}>
+      <RoleGuard allowedRoles={['admin', 'superadmin', 'owner', 'ceo']}>
         {children}
       </RoleGuard>
     </Suspense>

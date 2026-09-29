@@ -43,6 +43,7 @@ export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
           case 'director':
             router.push('/director');
             break;
+          case 'ceo':
           case 'owner':
           case 'superadmin':
           case 'admin':

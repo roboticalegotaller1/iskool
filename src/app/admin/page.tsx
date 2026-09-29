@@ -57,7 +57,8 @@ import {
   AlertCircle,
   TrendingUp,
   CreditCard,
-  ArrowUpRight
+  ArrowUpRight,
+  Briefcase
 } from 'lucide-react';
 import { 
   useSchoolAdminStore, 
@@ -74,7 +75,7 @@ import {
   getSchoolBillingRecords,
   getSchoolDeletionAuditLogs
 } from '@/store/useSchoolAdminStore';
-import { DetailedStudent, Subject, GroupAnnualPlan, SyllabusTopic, Campus, Group, canManageTargetRole, StaffPayrollRecord, isPlatformSuperUser, StudentDeletionAuditLog, UserRole, Institution } from '@/types';
+import { DetailedStudent, Subject, GroupAnnualPlan, SyllabusTopic, Campus, Group, canManageTargetRole, StaffPayrollRecord, isPlatformSuperUser, StudentDeletionAuditLog, UserRole, Institution, isCorporateInstitution } from '@/types';
 import ExecutiveAnalyticsStudio from '@/components/admin/ExecutiveAnalyticsStudio';
 import CEOExecutiveDashboard, { DEFAULT_IBIME_HOLDING, buildHoldingForInstitution } from '@/components/admin/CEOExecutiveDashboard';
 import { SuperUserCompendiumStudio } from '@/components/books/SuperUserCompendiumStudio';
@@ -83,6 +84,7 @@ import { useSchoolBooksStore } from '@/store/useSchoolBooksStore';
 import { RowActionMenu } from '@/components/ui';
 import { useDebounce } from '@/hooks/useDebounce';
 import { IndependentTeachersSuperUserStudio } from '@/components/admin/IndependentTeachersSuperUserStudio';
+import { CorporateEnterprisesSuperUserStudio } from '@/components/admin/CorporateEnterprisesSuperUserStudio';
 
 type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll' | 'analytics' | 'deletions' | 'books_compendium';
 
@@ -154,13 +156,13 @@ export default function SuperUserAdminPage() {
         router.push('/student');
       } else if (user.role === 'teacher') {
         router.push('/teacher');
-      } else if (!isSuperUser && user.role !== 'owner') {
+      } else if (!isSuperUser && user.role !== 'owner' && user.role !== 'ceo') {
         router.push('/login');
       }
     }
   }, [user, authLoading, router, isSuperUser]);
 
-  // Sincronización y candado para dueños de colegio: nunca pueden operar fuera de su school_id
+  // Sincronización y candado para dueños de colegio y CEOs: nunca pueden operar fuera de su school_id
   useEffect(() => {
     if (!authLoading && user && !isSuperUser && user.school_id) {
       if (activeSchoolId !== user.school_id) {
@@ -173,6 +175,34 @@ export default function SuperUserAdminPage() {
   const [overviewMode, setOverviewMode] = useState<'executive' | 'classic'>('executive');
   const [selectedCampus, setSelectedCampus] = useState<string>('all');
   const [selectedLimitsSchoolId, setSelectedLimitsSchoolId] = useState<string>('sch-jjrosseau');
+
+  // Estados y Métricas del Sector Corporativo B2B (CEO)
+  const [showCorporateStudio, setShowCorporateStudio] = useState(false);
+  const [isCorporateSectorSuspended, setIsCorporateSectorSuspended] = useState(false);
+
+  const corporateEnterprises = useMemo(() => {
+    return (institutionsList || []).filter(inst =>
+      inst.is_corporate_enterprise === true ||
+      inst.institution_type === 'corporate' ||
+      inst.id.startsWith('emp-')
+    );
+  }, [institutionsList]);
+
+  const totalCorporateEmployees = useMemo(() => {
+    return detailedStudents.filter(s =>
+      corporateEnterprises.some(e => e.id === s.school_id)
+    ).length;
+  }, [detailedStudents, corporateEnterprises]);
+
+  const totalCorporateTrainers = useMemo(() => {
+    return teachersList.filter(t =>
+      corporateEnterprises.some(e => e.id === t.school_id)
+    ).length;
+  }, [teachersList, corporateEnterprises]);
+
+  const totalCorporateTokens = useMemo(() => {
+    return corporateEnterprises.reduce((acc, e) => acc + (e.aiTokensConsumed || 125000), 0);
+  }, [corporateEnterprises]);
   
   const tabsNavRef = useRef<HTMLDivElement | null>(null);
   const scrollTabs = (direction: 'left' | 'right') => {
@@ -484,6 +514,11 @@ export default function SuperUserAdminPage() {
   const currentSchool = useMemo(() => {
     return (institutionsList || []).find(i => i.id === effectiveSchoolId) || null;
   }, [institutionsList, effectiveSchoolId]);
+
+  // Modo Corporativo B2B (Empresas / CEO)
+  const isCorporate = useMemo(() => {
+    return user?.role === 'ceo' || isCorporateInstitution(currentSchool);
+  }, [user, currentSchool]);
 
   // Holding Dinámico para la Institución Activa (Aplica a CUALQUIER colegio: IBIME, Rosseau, Sandbox, Montessori, o nuevos)
   const currentSchoolHolding = useMemo(() => {
@@ -1660,7 +1695,7 @@ export default function SuperUserAdminPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {institutionsList.map((inst) => {
+                {institutionsList.filter(inst => !inst.is_corporate_enterprise).map((inst) => {
                   const isTest = inst.isTestCase;
                   const isIndependent = inst.isIndependentTeachersNetwork || inst.id === 'sch-profesores-independientes';
                   const isSuspended = inst.status === 'inactive';
@@ -1911,6 +1946,160 @@ export default function SuperUserAdminPage() {
                   );
                 })}
 
+                {/* TARJETA SECTOR CORPORATIVO / CEO */}
+                <div
+                  onClick={() => setShowCorporateStudio(true)}
+                  className="rounded-3xl border transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-xs relative group bg-gradient-to-b from-indigo-50/70 via-blue-50/30 to-white border-indigo-300 hover:border-indigo-500 hover:shadow-xl ring-1 ring-indigo-400/40 cursor-pointer"
+                >
+                  {/* Banner superior corporativo */}
+                  <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white text-[11px] font-bold py-1.5 px-4 flex items-center justify-between shadow-xs">
+                    <span className="flex items-center gap-1.5 text-indigo-200">
+                      <Briefcase className="h-3.5 w-3.5 text-indigo-400" />
+                      Sector Empresarial B2B · Formación Corporativa
+                    </span>
+                    <span className="text-[10px] bg-indigo-900/90 text-emerald-300 font-black px-2 py-0.5 rounded-full border border-indigo-700/50 flex items-center gap-1">
+                      <ShieldCheck size={11} /> Suite CEO Activa
+                    </span>
+                  </div>
+
+                  {/* Header Card */}
+                  <div className="p-6 space-y-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="relative group/logo shrink-0">
+                        <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-600 via-blue-600 to-indigo-800 flex items-center justify-center text-white shadow-md shadow-indigo-600/30">
+                          <Building2 className="h-8 w-8 text-white" />
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowCorporateStudio(true);
+                          }}
+                          title="Gestionar Identidad & Logotipos de Empresas"
+                          className="absolute -bottom-1.5 -right-1.5 p-1.5 rounded-xl bg-white text-slate-600 hover:text-slate-900 border border-slate-200 shadow-sm cursor-pointer transition-transform hover:scale-110"
+                        >
+                          <ImageIcon className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+
+                      <div className="flex flex-col items-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+                        <SchoolStatusSlider
+                          schoolId="sec-empresas-ceo"
+                          schoolName="Sector Empresarial CEO"
+                          status={isCorporateSectorSuspended ? 'inactive' : 'active'}
+                          onToggle={(newStatus) => {
+                            const isSusp = newStatus === 'inactive';
+                            setIsCorporateSectorSuspended(isSusp);
+                            corporateEnterprises.forEach(e => {
+                              if ((isSusp && e.status !== 'inactive') || (!isSusp && e.status === 'inactive')) {
+                                toggleSchoolSuspension(e.id);
+                              }
+                            });
+                          }}
+                        />
+                        <span className="font-mono text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-200">
+                          RFC: ISK-CORP-2026-B2B
+                        </span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-lg font-black text-slate-900 tracking-tight group-hover:text-indigo-600 transition-colors">
+                          CEO · Empresas Corporativas
+                        </h4>
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-100 text-indigo-800 border border-indigo-200">
+                          ⭐ PLATAFORMA B2B EMPRESAS
+                        </span>
+                        <span className="text-[10px] text-indigo-700 font-semibold">
+                          Acceso Exclusivo Administración & Métricas
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                        Suite ejecutiva de talento para empresas e industrias: capacitación especializada, control de competencias laborales, nóminas de empleados y analítica sin gamificación.
+                      </p>
+                    </div>
+
+                    {/* Indicadores clave */}
+                    <div className="grid grid-cols-4 gap-2 pt-2 border-t border-slate-100 text-center">
+                      <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                        <span className="text-xs font-black text-slate-900 block">{corporateEnterprises.length}</span>
+                        <span className="text-[9px] font-bold text-slate-500 uppercase">Empresas</span>
+                      </div>
+                      <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                        <span className="text-xs font-black text-blue-600 block">{totalCorporateEmployees}</span>
+                        <span className="text-[9px] font-bold text-slate-500 uppercase">Empleados</span>
+                      </div>
+                      <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                        <span className="text-xs font-black text-emerald-600 block">{totalCorporateTrainers}</span>
+                        <span className="text-[9px] font-bold text-slate-500 uppercase">Docentes</span>
+                      </div>
+                      <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                        <span className="text-xs font-black text-purple-600 block">{(totalCorporateTokens / 1000).toFixed(0)}k</span>
+                        <span className="text-[9px] font-bold text-slate-500 uppercase">Tokens IA</span>
+                      </div>
+                    </div>
+
+                    {/* Datos de ubicación y holdings */}
+                    <div className="text-[11px] text-slate-500 space-y-1 pt-1">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <MapPin className="h-3 w-3 text-slate-400 shrink-0" />
+                        <span className="truncate">Sedes en San Luis Potosí, Monterrey, Guadalajara, CDMX</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 truncate">
+                        <Users className="h-3 w-3 text-slate-400 shrink-0" />
+                        <span className="truncate">BMW Group México, Vanguardia Retail, Innovasoft Tech</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Botones de Acción de la Tarjeta CEO */}
+                  <div className="p-4 bg-indigo-50/50 border-t border-indigo-100 flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowCorporateStudio(true);
+                      }}
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black shadow-md shadow-indigo-600/25 bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 hover:from-indigo-500 hover:to-blue-500 text-white transition-all cursor-pointer"
+                      title="Consola de gestión de empresas corporativas y holding B2B"
+                    >
+                      <Briefcase className="h-4 w-4 text-indigo-200" />
+                      <span>Supervisión & Métricas</span>
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowCorporateStudio(true);
+                      }}
+                      className="px-3.5 py-2.5 rounded-xl border border-indigo-300 hover:border-indigo-400 bg-white hover:bg-indigo-100/70 text-indigo-900 text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer shadow-xs shrink-0"
+                      title="Seleccionar y acceder a una empresa como CEO"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5 text-indigo-600" />
+                      <span>Entrar al Aula</span>
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (corporateEnterprises.length > 0) {
+                          selectSchool(corporateEnterprises[0].id);
+                          setOverviewMode('executive');
+                        } else {
+                          setShowCorporateStudio(true);
+                        }
+                      }}
+                      className="px-3 py-2.5 rounded-xl border border-slate-300 hover:border-indigo-400 bg-white hover:bg-indigo-50 text-slate-800 hover:text-indigo-700 text-xs font-black transition-all flex items-center gap-1 cursor-pointer shadow-xs shrink-0"
+                      title="Abrir Visión Ejecutiva CEO de Empresas"
+                    >
+                      <TrendingUp className="h-3.5 w-3.5 text-amber-500" />
+                      <span>Visión CEO</span>
+                    </button>
+                  </div>
+                </div>
+
                 {/* TARJETA DE ALTA RÁPIDA (+) */}
                 <div
                   onClick={() => setShowAddSchoolModal(true)}
@@ -2125,7 +2314,7 @@ export default function SuperUserAdminPage() {
                 }`}
               >
                 <BarChart3 className="h-4 w-4" />
-                <span>Panel General</span>
+                <span>{isCorporate ? 'Tablero Ejecutivo B2B' : 'Panel General'}</span>
               </button>
 
               <button
@@ -2137,7 +2326,7 @@ export default function SuperUserAdminPage() {
                 }`}
               >
                 <ShieldCheck className={`h-4 w-4 ${activeTab === 'staff' ? 'text-white' : 'text-purple-600'}`} />
-                <span>Personal</span>
+                <span>{isCorporate ? 'Colaboradores Clave' : 'Personal'}</span>
                 <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${activeTab === 'staff' ? 'bg-indigo-700 text-white' : 'bg-slate-200/80 text-slate-700'}`}>
                   {schoolStaff.length}
                 </span>
@@ -2152,7 +2341,7 @@ export default function SuperUserAdminPage() {
                 }`}
               >
                 <Building2 className="h-4 w-4" />
-                <span>Planteles & Grupos</span>
+                <span>{isCorporate ? 'Plantas & Sedes' : 'Planteles & Grupos'}</span>
               </button>
 
               <button
@@ -2164,7 +2353,7 @@ export default function SuperUserAdminPage() {
                 }`}
               >
                 <Users className="h-4 w-4" />
-                <span>{isSuperUser ? `Profesores & Tokens IA (${schoolTeachers.length})` : `Plantilla Docente (${schoolTeachers.length})`}</span>
+                <span>{isCorporate ? `Instructores (${schoolTeachers.length})` : (isSuperUser ? `Profesores & Tokens IA (${schoolTeachers.length})` : `Plantilla Docente (${schoolTeachers.length})`)}</span>
               </button>
 
               <button
@@ -2176,7 +2365,7 @@ export default function SuperUserAdminPage() {
                 }`}
               >
                 <GraduationCap className="h-4 w-4" />
-                <span>Alumnos</span>
+                <span>{isCorporate ? 'Colaboradores' : 'Alumnos'}</span>
                 <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${activeTab === 'students' ? 'bg-indigo-700 text-white' : 'bg-slate-200/80 text-slate-700'}`}>
                   {schoolStudents.length}
                 </span>
@@ -2191,7 +2380,7 @@ export default function SuperUserAdminPage() {
                 }`}
               >
                 <BookOpen className="h-4 w-4" />
-                <span>Materias</span>
+                <span>{isCorporate ? 'Programas Técnicos' : 'Materias'}</span>
                 <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${activeTab === 'subjects' ? 'bg-indigo-700 text-white' : 'bg-slate-200/80 text-slate-700'}`}>
                   {schoolSubjects.length}
                 </span>
@@ -2206,7 +2395,7 @@ export default function SuperUserAdminPage() {
                 }`}
               >
                 <ShieldCheck className="h-4 w-4" />
-                <span>Institución & Seguridad</span>
+                <span>{isCorporate ? 'Datos de Empresa & Marca' : 'Institución & Seguridad'}</span>
               </button>
 
               <button
@@ -2218,7 +2407,7 @@ export default function SuperUserAdminPage() {
                 }`}
               >
                 <DollarSign className={`h-4 w-4 ${activeTab === 'payroll' ? 'text-white' : 'text-emerald-600'}`} />
-                <span>Finanzas</span>
+                <span>{isCorporate ? 'Nómina de Empleados' : 'Finanzas'}</span>
                 <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${activeTab === 'payroll' ? 'bg-indigo-700 text-white' : 'bg-slate-200/80 text-slate-700'}`}>
                   {schoolPayroll.length}
                 </span>
@@ -2737,7 +2926,7 @@ export default function SuperUserAdminPage() {
                     type="text"
                     value={studentSearch}
                     onChange={(e) => setStudentSearch(e.target.value)}
-                    placeholder="Buscar por nombre, CURP o correo..."
+                    placeholder={isCorporate ? "Buscar por colaborador, RFC, puesto o correo..." : "Buscar por nombre, CURP o correo..."}
                     className="w-full bg-slate-950 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-200 outline-none focus:border-indigo-500 transition-all"
                   />
                 </div>
@@ -2747,16 +2936,28 @@ export default function SuperUserAdminPage() {
                   onChange={(e) => setStudentGradeFilter(e.target.value)}
                   className="bg-slate-950 border border-white/10 text-slate-300 px-3 py-2 rounded-xl text-xs font-bold outline-none focus:border-indigo-500"
                 >
-                  <option value="all">Grado: Todos</option>
-                  <option value="1º">1º de Primaria</option>
-                  <option value="2º">2º de Primaria</option>
-                  <option value="3º">3º de Primaria</option>
-                  <option value="4º">4º de Primaria</option>
-                  <option value="5º">5º de Primaria</option>
-                  <option value="6º">6º de Primaria</option>
-                  <option value="1º Sec">1º de Secundaria</option>
-                  <option value="2º Sec">2º de Secundaria</option>
-                  <option value="3º Sec">3º de Secundaria</option>
+                  {isCorporate ? (
+                    <>
+                      <option value="all">Área / Especialidad: Todas</option>
+                      <option value="Operaciones">Operaciones & Planta</option>
+                      <option value="Ingeniería">Ingeniería & Calidad</option>
+                      <option value="Comercial">Comercial & Ventas</option>
+                      <option value="Tecnología">Tecnología, Cloud & AI</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="all">Grado: Todos</option>
+                      <option value="1º">1º de Primaria</option>
+                      <option value="2º">2º de Primaria</option>
+                      <option value="3º">3º de Primaria</option>
+                      <option value="4º">4º de Primaria</option>
+                      <option value="5º">5º de Primaria</option>
+                      <option value="6º">6º de Primaria</option>
+                      <option value="1º Sec">1º de Secundaria</option>
+                      <option value="2º Sec">2º de Secundaria</option>
+                      <option value="3º Sec">3º de Secundaria</option>
+                    </>
+                  )}
                 </select>
 
                 <select aria-label="Seleccionar opción"
@@ -2775,13 +2976,13 @@ export default function SuperUserAdminPage() {
                   onClick={() => setShowAddStudentModal(true)}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold border border-white/10 transition-all cursor-pointer"
                 >
-                  <Plus className="h-4 w-4" /> Alta Individual
+                  <Plus className="h-4 w-4" /> {isCorporate ? 'Alta de Colaborador' : 'Alta Individual'}
                 </button>
                 <button
                   onClick={() => setShowBulkUploadModal(true)}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shadow-lg transition-all cursor-pointer hover:scale-102"
                 >
-                  <UploadCloud className="h-4 w-4" /> Carga Rápida (Excel)
+                  <UploadCloud className="h-4 w-4" /> {isCorporate ? 'Importar Colaboradores (Excel)' : 'Carga Rápida (Excel)'}
                 </button>
               </div>
             </div>
@@ -2792,11 +2993,11 @@ export default function SuperUserAdminPage() {
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-950 text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b border-white/10">
                     <tr>
-                      <th className="p-4">Estudiante</th>
-                      <th className="p-4">CURP / Matrícula</th>
-                      <th className="p-4">Plantel</th>
-                      <th className="p-4">Grado & Grupo</th>
-                      <th className="p-4 text-center">Contraseña (6 Dígitos)</th>
+                      <th className="p-4">{isCorporate ? 'Colaborador / Puesto' : 'Estudiante'}</th>
+                      <th className="p-4">{isCorporate ? 'RFC / ID Empleado' : 'CURP / Matrícula'}</th>
+                      <th className="p-4">{isCorporate ? 'Planta / Sede' : 'Plantel'}</th>
+                      <th className="p-4">{isCorporate ? 'Departamento / Área' : 'Grado & Grupo'}</th>
+                      <th className="p-4 text-center">{isCorporate ? 'Competencia & Horas' : 'Contraseña (6 Dígitos)'}</th>
                       <th className="p-4 text-center">Estado</th>
                       <th className="p-4 text-right">Acciones</th>
                     </tr>
@@ -2815,7 +3016,13 @@ export default function SuperUserAdminPage() {
                             <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
                               <Mail className="h-3 w-3 text-slate-500" /> {student.email}
                             </div>
-                            {student.scholarship_percentage && student.scholarship_percentage > 0 ? (
+                            {isCorporate ? (
+                              <div className="mt-1 flex flex-wrap gap-1">
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-300 bg-indigo-500/20 px-2 py-0.5 rounded-md border border-indigo-500/30">
+                                  <span>{student.job_title || 'Colaborador Especialista'}</span>
+                                </span>
+                              </div>
+                            ) : student.scholarship_percentage && student.scholarship_percentage > 0 ? (
                               <div className="mt-1">
                                 <span className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-md border border-purple-500/30">
                                   <span>Beca {student.scholarship_percentage}% ({student.scholarship_type || 'Académica'})</span>
@@ -2824,28 +3031,50 @@ export default function SuperUserAdminPage() {
                             ) : null}
                           </td>
                           <td className="p-4 font-mono text-slate-300">
-                            <div>{student.curp || 'SIN-CURP'}</div>
+                            <div>{student.curp || student.enrollment_id || student.id}</div>
                             <div className="text-[10px] text-slate-500">{student.enrollment_id || student.id}</div>
                           </td>
                           <td className="p-4 font-semibold text-slate-300">
-                            {student.campus_name || 'Primaria Jardines'}
+                            {student.campus_name || (isCorporate ? 'Planta Matriz' : 'Primaria Jardines')}
                           </td>
                           <td className="p-4">
-                            <span className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs font-bold text-white">
-                              {student.grade} - {student.group_id?.toUpperCase() || '1ºA'}
-                            </span>
+                            {isCorporate ? (
+                              <span className="px-2.5 py-1 rounded-lg bg-indigo-950/80 border border-indigo-800 text-xs font-bold text-indigo-300">
+                                {student.department || 'Operaciones & Ensamble'}
+                              </span>
+                            ) : (
+                              <span className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs font-bold text-white">
+                                {student.grade} - {student.group_id?.toUpperCase() || '1ºA'}
+                              </span>
+                            )}
                           </td>
                           <td className="p-4 text-center font-mono">
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 border border-white/10 text-xs font-bold text-amber-400">
-                              <span>{tempPass}</span>
-                              <button
-                                onClick={() => copyToClipboard(tempPass, student.id)}
-                                title="Copiar contraseña"
-                                className="text-slate-400 hover:text-white transition-colors cursor-pointer"
-                              >
-                                {copiedId === student.id ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
-                              </button>
-                            </div>
+                            {isCorporate ? (
+                              <div className="flex flex-col items-center">
+                                <span className="font-mono text-emerald-400 font-bold text-xs">
+                                  {student.competency_score || 96.5}% competencia
+                                </span>
+                                <span className="text-[10px] text-slate-400">
+                                  {student.training_hours || 85} hrs certificadas
+                                </span>
+                                {student.certifications && student.certifications.length > 0 && (
+                                  <span className="text-[9px] text-indigo-300 bg-indigo-950/90 border border-indigo-800/80 px-1.5 py-0.2 rounded mt-0.5 max-w-[150px] truncate" title={student.certifications.join(', ')}>
+                                    {student.certifications[0]}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 border border-white/10 text-xs font-bold text-amber-400">
+                                <span>{tempPass}</span>
+                                <button
+                                  onClick={() => copyToClipboard(tempPass, student.id)}
+                                  title="Copiar contraseña"
+                                  className="text-slate-400 hover:text-white transition-colors cursor-pointer"
+                                >
+                                  {copiedId === student.id ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+                                </button>
+                              </div>
+                            )}
                           </td>
                           <td className="p-4 text-center">
                             {isBlocked ? (
@@ -4164,13 +4393,15 @@ export default function SuperUserAdminPage() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h2 className="text-xl font-black text-white tracking-tight">Finanzas & Nóminas del Personal</h2>
+                      <h2 className="text-xl font-black text-white tracking-tight">{isCorporate ? 'Finanzas & Nómina de Empleados' : 'Finanzas & Nóminas del Personal'}</h2>
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                        Presidencia Corporativa
+                        {isCorporate ? 'Sector Corporativo B2B' : 'Presidencia Corporativa'}
                       </span>
                     </div>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Control institucional de percepciones, bonos por desempeño, retenciones y dispersión de nómina por SPEI.
+                      {isCorporate
+                        ? 'Control institucional de percepciones, bonos de desempeño operativo, retenciones y dispersión de nómina por SPEI para colaboradores de la empresa.'
+                        : 'Control institucional de percepciones, bonos por desempeño, retenciones y dispersión de nómina por SPEI.'}
                     </p>
                   </div>
                 </div>
@@ -4230,7 +4461,7 @@ export default function SuperUserAdminPage() {
 
               <div className="p-5 rounded-2xl bg-slate-900/90 border border-white/10 shadow-lg flex flex-col justify-between hover:border-blue-500/40 transition-all">
                 <div className="flex items-center justify-between text-slate-400">
-                  <span className="text-xs font-bold uppercase tracking-wider">Ingresos por Colegiaturas</span>
+                  <span className="text-xs font-bold uppercase tracking-wider">{isCorporate ? 'Presupuesto B2B Asignado' : 'Ingresos por Colegiaturas'}</span>
                   <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400">
                     <TrendingUp className="h-5 w-5" />
                   </div>
@@ -4240,7 +4471,7 @@ export default function SuperUserAdminPage() {
                     ${payrollMetrics.totalTuitionIncome.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                   </span>
                   <p className="text-[11px] text-slate-400 mt-1">
-                    Recaudación cobrada en cuenta institucional
+                    {isCorporate ? 'Presupuesto institucional de talento y certificación' : 'Recaudación cobrada en cuenta institucional'}
                   </p>
                   <p className="text-[10px] text-slate-500 mt-0.5">
                     Pendiente cobrar: ${payrollMetrics.pendingTuitionIncome.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
@@ -4260,30 +4491,30 @@ export default function SuperUserAdminPage() {
                     ${payrollMetrics.netOperatingMargin.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
                   </span>
                   <p className="text-[11px] text-slate-400 mt-1">
-                    Colegiaturas menos costo total de nómina
+                    {isCorporate ? 'Ingresos presupuestales menos nómina de empleados' : 'Colegiaturas menos costo total de nómina'}
                   </p>
                   <span className="text-[10px] text-emerald-500/90 font-semibold block mt-0.5">
-                    {payrollMetrics.netOperatingMargin >= 0 ? '✓ Utilidad operativa positiva' : '⚠ Revisar metas de cobranza'}
+                    {payrollMetrics.netOperatingMargin >= 0 ? '✓ Utilidad operativa positiva' : '⚠ Revisar metas presupuestales'}
                   </span>
                 </div>
               </div>
 
               <div className="p-5 rounded-2xl bg-slate-900/90 border border-white/10 shadow-lg flex flex-col justify-between hover:border-amber-500/40 transition-all">
                 <div className="flex items-center justify-between text-slate-400">
-                  <span className="text-xs font-bold uppercase tracking-wider">Plantilla en Nómina</span>
+                  <span className="text-xs font-bold uppercase tracking-wider">{isCorporate ? 'Plantilla de Empleados' : 'Plantilla en Nómina'}</span>
                   <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
                     <Users className="h-5 w-5" />
                   </div>
                 </div>
                 <div className="mt-3">
                   <span className="text-2xl font-black text-white">
-                    {payrollMetrics.totalEmployees} colaboradores
+                    {payrollMetrics.totalEmployees} {isCorporate ? 'empleados' : 'colaboradores'}
                   </span>
                   <p className="text-[11px] text-slate-400 mt-1">
                     Sueldo promedio: <strong className="text-slate-200 font-mono">${payrollMetrics.avgSalary.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</strong>
                   </p>
                   <p className="text-[10px] text-purple-400 mt-0.5">
-                    {schoolPayroll.filter(p => p.bonuses > 0).length} colaboradores con bonos pedagógicos
+                    {schoolPayroll.filter(p => p.bonuses > 0).length} {isCorporate ? 'empleados con bonos de productividad' : 'colaboradores con bonos pedagógicos'}
                   </p>
                 </div>
               </div>
@@ -4298,7 +4529,7 @@ export default function SuperUserAdminPage() {
                     type="text"
                     value={payrollSearchTerm}
                     onChange={(e) => setPayrollSearchTerm(e.target.value)}
-                    placeholder="Buscar por colaborador, RFC o cargo..."
+                    placeholder={isCorporate ? "Buscar por empleado, RFC o cargo..." : "Buscar por colaborador, RFC o cargo..."}
                     className="w-full bg-slate-950 border border-white/10 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-emerald-500 transition-all"
                   />
                   {payrollSearchTerm && (
@@ -4318,9 +4549,9 @@ export default function SuperUserAdminPage() {
                   className="bg-slate-950 border border-white/10 rounded-xl px-3 py-2 text-xs font-bold text-slate-200 outline-none focus:border-emerald-500 transition-all cursor-pointer"
                 >
                   <option value="all">🏢 Todos los Departamentos</option>
-                  <option value="directivos">🎓 Directores y Coordinadores</option>
-                  <option value="docentes">👨‍🏫 Cuerpo Docente</option>
-                  <option value="cobranza">💼 Cobranza y Finanzas</option>
+                  <option value="directivos">{isCorporate ? '💼 Directores y Gerentes' : '🎓 Directores y Coordinadores'}</option>
+                  <option value="docentes">{isCorporate ? '👔 Empleados & Técnicos' : '👨‍🏫 Cuerpo Docente'}</option>
+                  <option value="cobranza">{isCorporate ? '📊 Finanzas & Tesorería' : '💼 Cobranza y Finanzas'}</option>
                 </select>
 
                 {/* Filtro por Estatus */}
@@ -7245,6 +7476,17 @@ export default function SuperUserAdminPage() {
           selectSchool('sch-profesores-independientes');
           setShowIndependentTeachersStudio(false);
           router.push('/teacher');
+        }}
+        onTriggerToast={(msg) => setDeletionFeedback(msg)}
+      />
+
+      {/* Modal de Supervisión & Empresas Corporativas (CEO B2B) */}
+      <CorporateEnterprisesSuperUserStudio
+        isOpen={showCorporateStudio}
+        onClose={() => setShowCorporateStudio(false)}
+        onSelectEnterprise={(enterpriseId) => {
+          selectSchool(enterpriseId);
+          setOverviewMode('executive');
         }}
         onTriggerToast={(msg) => setDeletionFeedback(msg)}
       />

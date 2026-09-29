@@ -168,6 +168,17 @@ const GENERAL_DEMO_ACCOUNTS: DemoAccount[] = [
     defaultPass: "DUE2026",
     category: "gestion"
   },
+  // CEO Corporativo B2B
+  {
+    name: "Dr. Maximilian Weber (CEO)",
+    role: "ceo",
+    grade: "CEO & Director General (BMW Group México)",
+    email: "ceo@bmw-corp.mx",
+    avatarColor: "bg-blue-700",
+    id: "usr-ceo-bmw",
+    defaultPass: "BMW2026!",
+    category: "gestion"
+  },
   // Directivos de ISkool (Super Usuarios Globales de Plataforma)
   {
     name: "Dirección General ISkool",
@@ -498,6 +509,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
 
     let targetPath = '/student';
     switch (role) {
+      case 'ceo':
       case 'owner':
       case 'admin':
       case 'superadmin':

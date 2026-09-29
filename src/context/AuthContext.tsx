@@ -343,6 +343,69 @@ export const getDemoUser = (email: string): UserProfile => {
     };
   }
 
+  // ==========================================
+  // RESOLUTORES OFICIALES SECTOR CORPORATIVO / CEO (B2B)
+  // ==========================================
+  if (
+    emailLower === 'ceo@bmw-corp.mx' ||
+    emailLower === 'usr-ceo-bmw' ||
+    emailLower === 'ceo.bmw'
+  ) {
+    return {
+      id: 'usr-ceo-bmw',
+      school_id: 'emp-bmw',
+      campus_id: 'cmp-bmw-slp',
+      campus_name: 'Planta San Luis Potosí (EV Hub)',
+      first_name: 'Hans',
+      last_name: 'Weber Schmidt (CEO & VP Manufacturing)',
+      role: 'ceo',
+      email: 'ceo@bmw-corp.mx',
+      temporary_password: 'CEO2026',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
+    emailLower === 'ceo@vanguardia-retail.mx' ||
+    emailLower === 'usr-ceo-ventas' ||
+    emailLower === 'ceo.ventas'
+  ) {
+    return {
+      id: 'usr-ceo-ventas',
+      school_id: 'emp-ventas',
+      campus_id: 'cmp-ventas-mty',
+      campus_name: 'CEDIS Monterrey & Oficinas Corporativas',
+      first_name: 'Rodrigo',
+      last_name: 'Morales Vega (CEO Retail)',
+      role: 'ceo',
+      email: 'ceo@vanguardia-retail.mx',
+      temporary_password: 'CEO2026',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
+    emailLower === 'ceo@innovasoft-tech.com' ||
+    emailLower === 'usr-ceo-tech' ||
+    emailLower === 'ceo.tech'
+  ) {
+    return {
+      id: 'usr-ceo-tech',
+      school_id: 'emp-tech',
+      campus_id: 'cmp-tech-gdl',
+      campus_name: 'Innovation Tech Hub Guadalajara',
+      first_name: 'Sebastian',
+      last_name: 'Cruz Beltrán (CEO & Founder)',
+      role: 'ceo',
+      email: 'ceo@innovasoft-tech.com',
+      temporary_password: 'CEO2026',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
   // 4. Director Demo (Coincidencia exacta)
   if (
     emailLower === 'director' ||

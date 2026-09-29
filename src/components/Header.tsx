@@ -118,6 +118,12 @@ export const Header: React.FC = () => {
         { href: '/coordinator/billing', label: 'Finanzas & Nómina', icon: '💵' },
       ];
     }
+    if (user?.role === 'ceo') {
+      return [
+        { href: '/admin', label: 'Gestión Corporativa', icon: '🏢' },
+        { href: '/admin/whitelabel', label: 'Identidad & Marca', icon: '🎨' },
+      ];
+    }
     if (currentRole === 'student') {
       return [
         { href: '/student', label: 'Misiones', icon: '🗺️' },
@@ -172,7 +178,7 @@ export const Header: React.FC = () => {
 
   // Destino del enlace institucional: Super Usuario y Dueño van a /admin, los demás a su portal específico
   const getHomeHref = () => {
-    if (isSuperUser || user?.role === 'owner') return '/admin';
+    if (isSuperUser || user?.role === 'owner' || user?.role === 'ceo') return '/admin';
     if (user?.role === 'director' || currentRole === 'director') return '/director';
     if (user?.role === 'student' || currentRole === 'student') return '/student';
     if (user?.role === 'teacher' || currentRole === 'teacher') return '/teacher';

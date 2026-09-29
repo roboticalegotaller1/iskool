@@ -3,12 +3,13 @@
  * @description Define los roles de usuario autorizados en el sistema escolar.
  * @stateImpact Determina los permisos en el frontend, accesibilidad de rutas y control RLS.
  */
-export type UserRole = 'owner' | 'superadmin' | 'admin' | 'director' | 'coordinator' | 'billing' | 'teacher' | 'student' | 'parent' | 'tutor';
+export type UserRole = 'owner' | 'ceo' | 'superadmin' | 'admin' | 'director' | 'coordinator' | 'billing' | 'teacher' | 'student' | 'parent' | 'tutor';
 
 export const ROLE_HIERARCHY_LEVEL: Record<UserRole, number> = {
   superadmin: 1, // Directivos de ISkool (Super Usuario Global de Plataforma)
   admin: 1,      // Directivos de ISkool (Super Usuario Global de Plataforma)
   owner: 2,      // Dueño de Escuela / Presidencia (Restringido exclusivamente a su school_id)
+  ceo: 2,        // CEO Corporativo / Director General de Empresa (Restringido a sección Administrador de su empresa)
   director: 3,   // Director General de Plantel
   coordinator: 4,
   billing: 4,
@@ -160,6 +161,19 @@ export interface Institution {
   logoUrl?: string;
   isTestCase?: boolean;
   isIndependentTeachersNetwork?: boolean; // Identifica la institución especial de Profesores Independientes
+  institution_type?: 'school' | 'corporate'; // Segmentación Institucional B2B
+  is_corporate_enterprise?: boolean; // Identifica empresas del sector corporativo / CEO
+  corporate_industry?: 'automotive' | 'retail' | 'technology' | 'healthcare' | 'finance' | 'manufacturing' | 'other';
+  tax_id?: string; // RFC o ID fiscal de la empresa
+  ceo_name?: string; // Nombre del Director General / CEO
+  employee_count?: number; // Total de colaboradores corporativos
+  courses_count?: number; // Total de cursos o programas de capacitación técnica
+  departments_count?: number; // Departamentos o cuadrillas
+  branding?: {
+    primaryColor?: string;
+    accentColor?: string;
+    logoUrl?: string;
+  };
   status: 'active' | 'inactive' | 'trial';
   createdAt: string;
   address?: string;
@@ -189,6 +203,11 @@ export interface Institution {
     ipNotice: string;
   };
 }
+
+export const isCorporateInstitution = (inst?: Institution | null): boolean => {
+  if (!inst) return false;
+  return inst.is_corporate_enterprise === true || inst.institution_type === 'corporate';
+};
 
 /**
  * @interface AcademicYear
@@ -924,6 +943,13 @@ export interface DetailedStudent {
   behavior_reports?: { id?: string; date: string; description: string; reporter: string; parent_reply?: string; replied_at?: string }[];
   teacher_notes?: { id?: string; date: string; note: string; teacher_name: string; parent_reply?: string; replied_at?: string }[];
   average_grade?: number; // Promedio general de calificaciones (escala 0-10)
+
+  // Metadatos para Colaboradores en Capacitación (Sector Corporativo B2B / CEO)
+  job_title?: string; // Puesto de trabajo corporativo
+  department?: string; // Departamento o área
+  training_hours?: number; // Horas de capacitación acumuladas
+  competency_score?: number; // Puntaje de desempeño / competencia (0-100)
+  certifications?: string[]; // Certificaciones oficiales vigentes
   academic_standing?: 'excelente' | 'notable' | 'suficiente' | 'regular' | 'en_riesgo';
   subject_grades?: { subject_name: string; grade: number }[];
   deleted_at?: string;
