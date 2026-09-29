@@ -26,11 +26,12 @@ import {
   ChevronRight,
   School,
   X,
-  Play
+  Play,
+  Briefcase
 } from 'lucide-react';
 
 // ============================================================================
-// TIPOS DE ROLES Y EVENTOS OPERATIVOS DEL ECOSISTEMA ESCOLAR
+// TIPOS DE ROLES Y EVENTOS OPERATIVOS DEL ECOSISTEMA ESCOLAR / EMPRESARIAL
 // ============================================================================
 export type ActorRole = 'docente' | 'administrativo' | 'padre' | 'alumno';
 
@@ -89,12 +90,13 @@ export interface OperationalEcosystemControlProps {
   totalTeachers?: number;
   collectionRate?: number;
   curriculumCoverage?: number;
+  isCorporate?: boolean;
   onTriggerToast?: (message: string) => void;
   onNavigateTab?: (tab: string) => void;
 }
 
 // ============================================================================
-// DATOS MAESTROS DE TRAZABILIDAD Y ROLES DE ALIMENTACIÓN
+// DATOS MAESTROS DE TRAZABILIDAD Y ROLES DE ALIMENTACIÓN (COLEGIOS REGULARES)
 // ============================================================================
 export const ECOSYSTEM_ROLES: EcosystemRoleTelemetry[] = [
   {
@@ -215,6 +217,128 @@ export const ECOSYSTEM_ROLES: EcosystemRoleTelemetry[] = [
   }
 ];
 
+// ============================================================================
+// DATOS MAESTROS DE TRAZABILIDAD CORPORATIVA B2B (EMPRESAS & CEO)
+// ============================================================================
+export const CORPORATE_ECOSYSTEM_ROLES: EcosystemRoleTelemetry[] = [
+  {
+    id: 'docente',
+    name: 'Cuentas de Instructores & Master Trainers',
+    portalName: 'Portal de Capacitación Técnica & Certificaciones',
+    avatarIcon: Briefcase,
+    colorTheme: {
+      bg: 'bg-emerald-500/10',
+      border: 'border-emerald-500/30',
+      text: 'text-emerald-400',
+      badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+      glow: 'rgba(16, 185, 129, 0.4)',
+      accent: 'text-emerald-500'
+    },
+    connectedCount: '4 Instructores',
+    connectedLabel: '100% de capacitadores técnicos en planta',
+    todayActions: '48 sesiones técnicas & certificaciones',
+    lastActionTime: 'Hace 3 min',
+    description: 'Los instructores técnicos y master trainers imparten certificaciones en líneas de ensamble, evalúan matrices de habilidades ISO/IATF y validan horas de adiestramiento técnico.',
+    feedsDataInto: [
+      'Matriz de Competencias Laborales & Certificaciones ISO',
+      'Bitácora de Horas Técnicas & Capacitación en Planta',
+      'Bóveda Central de Conocimiento Operativo'
+    ],
+    sampleRecentActions: [
+      'Capacitación en Mantenimiento Robótico KUKA completada',
+      'Certificación de Alto Voltaje validada en Bóveda Central',
+      'Evaluación de competencias STPS aplicada a colaboradores'
+    ]
+  },
+  {
+    id: 'administrativo',
+    name: 'Cuentas de Operaciones Financieras & Tesorería',
+    portalName: 'Módulo de Facturación B2B, Presupuestos & Nómina',
+    avatarIcon: Building2,
+    colorTheme: {
+      bg: 'bg-cyan-500/10',
+      border: 'border-cyan-500/30',
+      text: 'text-cyan-400',
+      badge: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+      glow: 'rgba(6, 182, 212, 0.4)',
+      accent: 'text-cyan-500'
+    },
+    connectedCount: '2 Plantas / 18 Líderes Financieros',
+    connectedLabel: 'Tesorería Central & Cajas Corporativas activas',
+    todayActions: '124 folios conciliados & timbrados',
+    lastActionTime: 'Hace 1 min',
+    description: 'El personal de finanzas concilia órdenes de compra B2B, dispersa nóminas de colaboradores, emite CFDI 4.0 empresarial y concilia la cobranza comercial con validación SAT.',
+    feedsDataInto: [
+      'Módulo Finanzas (Tasa de Cobranza B2B en Vivo)',
+      'Cubo de Aging & Cartera Comercial a 30/60/90 días',
+      'Timbrado Fiscal SAT CFDI 4.0 Empresarial'
+    ],
+    sampleRecentActions: [
+      'Factura B2B CFDI 4.0 emitida por lote de ensamble ($185,000 MXN)',
+      'Conciliación bancaria SPEI aplicada a Planta San Luis Potosí',
+      'Presupuesto trimestral de capacitación técnica autorizado'
+    ]
+  },
+  {
+    id: 'padre',
+    name: 'Cuentas de Candidatos & Atracción de Talento',
+    portalName: 'Portal de Atracción de Talento & Onboarding',
+    avatarIcon: HeartHandshake,
+    colorTheme: {
+      bg: 'bg-violet-500/10',
+      border: 'border-violet-500/30',
+      text: 'text-violet-400',
+      badge: 'bg-violet-500/20 text-violet-300 border-violet-500/40',
+      glow: 'rgba(139, 92, 246, 0.4)',
+      accent: 'text-violet-500'
+    },
+    connectedCount: '19 Candidatos en Pipeline',
+    connectedLabel: '92% avance en proceso de selección ATS',
+    todayActions: '34 pruebas psicométricas & entrevistas',
+    lastActionTime: 'Hace 2 min',
+    description: 'Los candidatos en proceso de selección completan evaluaciones técnicas y psicométricas, cargan su documentación laboral y firman cartas oferta para integrarse a las plantas.',
+    feedsDataInto: [
+      'Pipeline de Atracción de Talento & Ofertas Laborales',
+      'Expediente Laboral 360 & Examen de Salud Ocupacional (STPS)',
+      'Registro Inmutable de Inducción & Onboarding'
+    ],
+    sampleRecentActions: [
+      'Evaluación técnica de Especialista en PLC aprobada con 96%',
+      'Documentación de IMSS y RFC cargada para contratación',
+      'Carta oferta formal firmada digitalmente para Planta Bajío'
+    ]
+  },
+  {
+    id: 'alumno',
+    name: 'Cuentas de Colaboradores & Personal Operativo',
+    portalName: 'Portal del Colaborador & Simuladores Operativos',
+    avatarIcon: Users,
+    colorTheme: {
+      bg: 'bg-pink-500/10',
+      border: 'border-pink-500/30',
+      text: 'text-pink-400',
+      badge: 'bg-pink-500/20 text-pink-300 border-pink-500/40',
+      glow: 'rgba(236, 72, 153, 0.4)',
+      accent: 'text-pink-500'
+    },
+    connectedCount: '15 Colaboradores',
+    connectedLabel: 'En plantas activas de la empresa',
+    todayActions: '820 simulaciones & turnos registrados',
+    lastActionTime: 'Hace 30 seg',
+    description: 'Los colaboradores registran su acceso a planta mediante credencial digital, completan simuladores operativos, acumulan horas de adiestramiento técnico y consultan sus recibos de nómina.',
+    feedsDataInto: [
+      'Índice de Retención & Evaluación de Desempeño',
+      'Registro Biométrico de Asistencia en Planta / Línea',
+      'Horas de Capacitación Técnica & Certificaciones Industriales'
+    ],
+    sampleRecentActions: [
+      'Registro de acceso a Planta SLP con credencial digital (Turno: 06:45)',
+      'Simulador de Ensamble Robótico KUKA completado con 100% de precisión',
+      'Constancia de curso de Seguridad Industrial descargada'
+    ]
+  }
+];
+
 export const INITIAL_AUTOMATIONS: OperationalAutomationFlow[] = [
   {
     key: 'cobranza-preventiva',
@@ -283,6 +407,74 @@ export const INITIAL_AUTOMATIONS: OperationalAutomationFlow[] = [
   }
 ];
 
+export const CORPORATE_AUTOMATIONS: OperationalAutomationFlow[] = [
+  {
+    key: 'cobranza-preventiva',
+    name: 'Conciliación y cobranza B2B 5 días antes de vencimiento',
+    originRole: 'administrativo',
+    originEvent: 'Cierre de ciclo de facturación comercial en ledger corporativo',
+    impactsKPI: 'Tasa de Cobranza B2B (+4.2%) & Reducción de Cartera Vencida',
+    destinationChannel: 'Notificación Electrónica SAT + Portal B2B',
+    frequency: 'Automatizado por ciclo fiscal',
+    description: 'Cruza las órdenes de compra empresariales con los estados de cuenta y envía automáticamente el requerimiento fiscal con liga bancaria SPEI directa.',
+    executedToday: 42,
+    successRate: 99.8,
+    avgLatencyMs: 0.7
+  },
+  {
+    key: 'inasistencias-padres',
+    name: 'Notificación de inasistencia en turno y relevo de cuadrilla',
+    originRole: 'docente',
+    originEvent: 'Supervisor registra falta o incidencia de seguridad al inicio de turno',
+    impactsKPI: 'Seguridad Industrial & Continuidad de Línea de Producción',
+    destinationChannel: 'Notificación Push prioritaria a Gerencia de Planta',
+    frequency: 'Instantáneo (<1s) tras apertura de turno',
+    description: 'Al concluir el pase de lista de turno en planta, el sistema alerta a la gerencia de operaciones para reasignar cuadrillas en línea de ensamble.',
+    executedToday: 18,
+    successRate: 100,
+    avgLatencyMs: 0.4
+  },
+  {
+    key: 'timbrado-cfdi',
+    name: 'Timbrado masivo CFDI 4.0 B2B con validación SAT',
+    originRole: 'administrativo',
+    originEvent: 'Finanzas confirma recepción de pago comercial vía SPEI',
+    impactsKPI: 'Cumplimiento Fiscal SAT CFDI 4.0 B2B al 100% sin retraso',
+    destinationChannel: 'Bóveda Fiscal + Correo Corporativo con XML y PDF sellado',
+    frequency: '100% automatizado con PAC autorizado a 0 tokens',
+    description: 'Emite el comprobante fiscal en Anexo 20 del SAT, inyectando el RFC de la empresa cliente, orden de compra y desglose de servicios corporativos.',
+    executedToday: 64,
+    successRate: 100,
+    avgLatencyMs: 0.9
+  },
+  {
+    key: 'auditoria-nem',
+    name: 'Auditoría nocturna de avance en matriz de competencias ISO',
+    originRole: 'docente',
+    originEvent: 'Instructores persisten evaluaciones en la Bóveda Central',
+    impactsKPI: 'Cumplimiento de Estándares ISO 9001 / IATF 16949 (Meta 95%+)',
+    destinationChannel: 'Reporte BI Ejecutivo para el CEO y Directores de Planta',
+    frequency: 'Diario a las 23:00 hrs a 0 tokens en memoria',
+    description: 'Evalúa que cada módulo técnico impartido cumpla con horas acreditadas, rúbricas de seguridad industrial y dictamen inmutable.',
+    executedToday: 142,
+    successRate: 99.2,
+    avgLatencyMs: 1.1
+  },
+  {
+    key: 'alerta-desercion',
+    name: 'Alerta predictiva de retención de talento y prevención de rotación',
+    originRole: 'alumno',
+    originEvent: 'Algoritmo detecta baja participación en cursos y horas extra acumuladas',
+    impactsKPI: 'Retención de Talento Estratégico (Meta 95%+) y Planes de Carrera',
+    destinationChannel: 'Comité de Capital Humano & Dirección de Operaciones',
+    frequency: 'Monitoreo en tiempo real continuo',
+    description: 'Dispara una alerta temprana para que Recursos Humanos active un plan de retención y revisión de compensaciones antes de una baja laboral.',
+    executedToday: 4,
+    successRate: 100,
+    avgLatencyMs: 0.6
+  }
+];
+
 export const INITIAL_LIVE_EVENTS: LiveEcosystemEvent[] = [
   {
     id: 'evt-1',
@@ -341,6 +533,64 @@ export const INITIAL_LIVE_EVENTS: LiveEcosystemEvent[] = [
   }
 ];
 
+export const CORPORATE_LIVE_EVENTS: LiveEcosystemEvent[] = [
+  {
+    id: 'evt-1',
+    role: 'docente',
+    actorName: 'Ing. Guillermo Schmidt (Master Trainer)',
+    campusName: 'Planta San Luis Potosí',
+    actionText: 'Concluyó certificación en Ensamble Robótico KUKA (12 colaboradores certificados)',
+    automationTriggered: 'Actualización de Matriz ISO',
+    impactMetric: 'Competencia Planta: 98.4%',
+    timestamp: '16:20:14',
+    status: 'completado'
+  },
+  {
+    id: 'evt-2',
+    role: 'padre',
+    actorName: 'Lic. Mariana Valdés (Atracción de Talento)',
+    campusName: 'Planta San Luis Potosí',
+    actionText: 'Validó prueba técnica y psicométrica para Candidato a Especialista en PLC',
+    automationTriggered: 'Emisión de Carta Oferta Laboral',
+    impactMetric: 'Pipeline ATS: 19 Activos',
+    timestamp: '16:18:42',
+    status: 'completado'
+  },
+  {
+    id: 'evt-3',
+    role: 'administrativo',
+    actorName: 'Lic. Roberto Solís (Finanzas B2B)',
+    campusName: 'Centro Corporativo Reforma',
+    actionText: 'Concilió factura B2B Serie A ($185,000 MXN) con validación SAT a 0 tokens',
+    automationTriggered: 'Conciliación en Ledger B2B',
+    impactMetric: 'Cobranza B2B: 95.8%',
+    timestamp: '16:15:08',
+    status: 'completado'
+  },
+  {
+    id: 'evt-4',
+    role: 'alumno',
+    actorName: 'Carlos Mendoza (Colaborador Técnico)',
+    campusName: 'Planta San Luis Potosí',
+    actionText: 'Completó simulador operativo de Arquitectura de Alto Voltaje (Precisión: 100%)',
+    automationTriggered: 'Bitácora de Horas Técnicas',
+    impactMetric: 'Horas Acreditadas: +4.5 hrs',
+    timestamp: '16:12:30',
+    status: 'completado'
+  },
+  {
+    id: 'evt-5',
+    role: 'docente',
+    actorName: 'Dra. Erika Von Humboldt (Alto Voltaje)',
+    campusName: 'Planta San Luis Potosí',
+    actionText: 'Sincronizó manual de seguridad NOM-035 con bitácora inmutable en Bóveda Central',
+    automationTriggered: 'Auditoría de Normas STPS',
+    impactMetric: 'Conformidad STPS: 100%',
+    timestamp: '16:08:19',
+    status: 'completado'
+  }
+];
+
 export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlProps> = ({
   holdingName = 'Instituto Bilingüe IBIME',
   campusCount = 4,
@@ -348,6 +598,7 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
   totalTeachers = 142,
   collectionRate = 94.2,
   curriculumCoverage = 94.2,
+  isCorporate = false,
   onTriggerToast,
   onNavigateTab
 }) => {
@@ -360,7 +611,34 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
     'alerta-desercion': true
   });
 
-  const [liveEvents, setLiveEvents] = useState<LiveEcosystemEvent[]>(INITIAL_LIVE_EVENTS);
+  const currentRoles = useMemo(() => {
+    if (!isCorporate) return ECOSYSTEM_ROLES;
+    return CORPORATE_ECOSYSTEM_ROLES.map(r => {
+      if (r.id === 'docente' && totalTeachers) {
+        return { ...r, connectedCount: `${totalTeachers} Instructores` };
+      }
+      if (r.id === 'alumno' && totalStudents) {
+        return { ...r, connectedCount: `${totalStudents} Colaboradores` };
+      }
+      if (r.id === 'administrativo' && campusCount) {
+        return { ...r, connectedCount: `${campusCount} Plantas / 18 Líderes Financieros` };
+      }
+      return r;
+    });
+  }, [isCorporate, totalTeachers, totalStudents, campusCount]);
+
+  const currentAutomations = useMemo(() => {
+    return isCorporate ? CORPORATE_AUTOMATIONS : INITIAL_AUTOMATIONS;
+  }, [isCorporate]);
+
+  const [liveEvents, setLiveEvents] = useState<LiveEcosystemEvent[]>(
+    isCorporate ? CORPORATE_LIVE_EVENTS : INITIAL_LIVE_EVENTS
+  );
+
+  useEffect(() => {
+    setLiveEvents(isCorporate ? CORPORATE_LIVE_EVENTS : INITIAL_LIVE_EVENTS);
+  }, [isCorporate]);
+
   const [activeSimulationKey, setActiveSimulationKey] = useState<string | null>(null);
   const [isAuditingConnections, setIsAuditingConnections] = useState<boolean>(false);
   const [connectionHealthScore, setConnectionHealthScore] = useState<number>(100);
@@ -380,29 +658,49 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
     let newAction = 'Acción simulada en tiempo real';
     let newImpact = 'Impacto directo en KPIs de red';
 
-    if (flow.originRole === 'docente') {
-      newActor = 'Mtra. Elena Rivas (Docente)';
-      newAction = `Pase de lista matutino registrado en 5° Primaria (${flow.name})`;
-      newImpact = 'Asistencia: 97.2% (+0.2%)';
-    } else if (flow.originRole === 'padre') {
-      newActor = 'Padre de Familia Ing. Gómez';
-      newAction = `Pago en línea de $7,900 MXN conciliado por SPEI bancario`;
-      newImpact = 'Cobranza: 94.4% (+0.2%)';
-    } else if (flow.originRole === 'administrativo') {
-      newActor = 'Lic. Patricia Vega (Caja Central)';
-      newAction = `Timbrado masivo CFDI 4.0 completado con PAC autorizado`;
-      newImpact = 'CFDI: 100% SAT';
+    if (isCorporate) {
+      if (flow.originRole === 'docente') {
+        newActor = 'Ing. Guillermo Schmidt (Instructor Técnico)';
+        newAction = `Certificación técnica registrada en Planta (${flow.name})`;
+        newImpact = 'Matriz ISO: 98.6% (+0.2%)';
+      } else if (flow.originRole === 'padre') {
+        newActor = 'Lic. Mariana Valdés (Atracción de Talento)';
+        newAction = `Evaluación psicométrica completada para candidato en pipeline`;
+        newImpact = 'Pipeline ATS: Activo';
+      } else if (flow.originRole === 'administrativo') {
+        newActor = 'Lic. Roberto Solís (Finanzas Corporativas)';
+        newAction = `Conciliación de factura B2B CFDI 4.0 con timbrado PAC SAT`;
+        newImpact = 'Cobranza B2B: 95.8% (+0.2%)';
+      } else {
+        newActor = 'Carlos Mendoza (Colaborador Técnico)';
+        newAction = `Ingreso a planta registrado con credencial digital e inspección de EPP`;
+        newImpact = 'Acceso & EPP Verificado';
+      }
     } else {
-      newActor = 'Santiago Navarro (Alumno)';
-      newAction = `Registro de ingreso por torniquete escolar con credencial digital`;
-      newImpact = 'Acceso Verificado';
+      if (flow.originRole === 'docente') {
+        newActor = 'Mtra. Elena Rivas (Docente)';
+        newAction = `Pase de lista matutino registrado en 5° Primaria (${flow.name})`;
+        newImpact = 'Asistencia: 97.2% (+0.2%)';
+      } else if (flow.originRole === 'padre') {
+        newActor = 'Padre de Familia Ing. Gómez';
+        newAction = `Pago en línea de $7,900 MXN conciliado por SPEI bancario`;
+        newImpact = 'Cobranza: 94.4% (+0.2%)';
+      } else if (flow.originRole === 'administrativo') {
+        newActor = 'Lic. Patricia Vega (Caja Central)';
+        newAction = `Timbrado masivo CFDI 4.0 completado con PAC autorizado`;
+        newImpact = 'CFDI: 100% SAT';
+      } else {
+        newActor = 'Santiago Navarro (Alumno)';
+        newAction = `Registro de ingreso por torniquete escolar con credencial digital`;
+        newImpact = 'Acceso Verificado';
+      }
     }
 
     const newEvent: LiveEcosystemEvent = {
       id: `sim-${Date.now()}`,
       role: flow.originRole,
       actorName: newActor,
-      campusName: 'Campus Montes (Sede Matriz)',
+      campusName: isCorporate ? 'Planta San Luis Potosí' : 'Campus Montes (Sede Matriz)',
       actionText: newAction,
       automationTriggered: flow.name,
       impactMetric: newImpact,
@@ -426,7 +724,11 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
       setIsAuditingConnections(false);
       setConnectionHealthScore(100);
       if (onTriggerToast) {
-        onTriggerToast(`Auditoría completa de integridad: Las 4 cuentas (Docentes, Administrativos, Padres, Alumnos) están 100% interconectadas al dashboard.`);
+        onTriggerToast(
+          isCorporate
+            ? `Auditoría completa de integridad: Las 4 cuentas (Instructores, Finanzas, Candidatos, Colaboradores) están 100% interconectadas al dashboard del CEO.`
+            : `Auditoría completa de integridad: Las 4 cuentas (Docentes, Administrativos, Padres, Alumnos) están 100% interconectadas al dashboard.`
+        );
       }
     }, 700);
   };
@@ -452,7 +754,15 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
             Centro de Automatizaciones & Ecosistema de Cuentas en Vivo
           </h2>
           <p className="text-xs text-indigo-200/80 max-w-3xl leading-relaxed">
-            Cada métrica, informe y dictamen del Dashboard Ejecutivo del CEO se alimenta <strong>directa y transparentemente</strong> de las cuentas operativas cotidianas de <strong>Docentes, Administrativos, Alumnos y Padres de Familia</strong> en las {campusCount} sedes de {holdingName}.
+            {isCorporate ? (
+              <>
+                Cada métrica, informe y dictamen del Dashboard Ejecutivo del CEO se alimenta <strong>directa y transparentemente</strong> de las cuentas operativas cotidianas de <strong>Instructores, Finanzas, Candidatos y Colaboradores</strong> en las {campusCount} plantas de {holdingName}.
+              </>
+            ) : (
+              <>
+                Cada métrica, informe y dictamen del Dashboard Ejecutivo del CEO se alimenta <strong>directa y transparentemente</strong> de las cuentas operativas cotidianas de <strong>Docentes, Administrativos, Alumnos y Padres de Familia</strong> en las {campusCount} sedes de {holdingName}.
+              </>
+            )}
           </p>
         </div>
 
@@ -486,7 +796,7 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          {ECOSYSTEM_ROLES.map((role) => {
+          {currentRoles.map((role) => {
             const Icon = role.avatarIcon;
             return (
               <div 
@@ -548,19 +858,21 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
               <span>Flujos Automatizados Activos de ISkool</span>
             </h3>
             <p className="text-xs text-slate-500">
-              Desencadenados en tiempo real al registrarse acciones de docentes, tesorería, padres o alumnos.
+              {isCorporate 
+                ? 'Desencadenados en tiempo real al registrarse acciones de instructores, finanzas, candidatos o colaboradores.'
+                : 'Desencadenados en tiempo real al registrarse acciones de docentes, tesorería, padres o alumnos.'}
             </p>
           </div>
           <span className="text-xs text-slate-400 font-mono">
-            {INITIAL_AUTOMATIONS.length} Flujos en Ejecución Continua
+            {currentAutomations.length} Flujos en Ejecución Continua
           </span>
         </div>
 
         <div className="space-y-3">
-          {INITIAL_AUTOMATIONS.map((flow) => {
+          {currentAutomations.map((flow) => {
             const isActive = automationStates[flow.key] ?? true;
             const isSimulating = activeSimulationKey === flow.key;
-            const roleInfo = ECOSYSTEM_ROLES.find(r => r.id === flow.originRole);
+            const roleInfo = currentRoles.find(r => r.id === flow.originRole);
 
             return (
               <div 
@@ -573,7 +885,15 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
                     <h4 className="font-bold text-slate-900 text-sm">{flow.name}</h4>
                     {roleInfo && (
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${roleInfo.colorTheme.badge}`}>
-                        Disparado por {roleInfo.id === 'docente' ? 'Docentes' : roleInfo.id === 'administrativo' ? 'Tesorería & Administración' : roleInfo.id === 'padre' ? 'Padres de Familia' : 'Alumnos'}
+                        Disparado por {isCorporate ? (
+                          roleInfo.id === 'docente' ? 'Instructores Técnicos' :
+                          roleInfo.id === 'administrativo' ? 'Finanzas & Tesorería' :
+                          roleInfo.id === 'padre' ? 'Atracción de Talento' : 'Colaboradores Operativos'
+                        ) : (
+                          roleInfo.id === 'docente' ? 'Docentes' :
+                          roleInfo.id === 'administrativo' ? 'Tesorería & Administración' :
+                          roleInfo.id === 'padre' ? 'Padres de Familia' : 'Alumnos'
+                        )}
                       </span>
                     )}
                     <span className="text-[10px] bg-slate-100 text-slate-600 font-mono px-2 py-0.5 rounded border border-slate-200">
@@ -648,7 +968,9 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
               <span>Bitácora de Eventos Operativos en Tiempo Real</span>
             </h3>
             <p className="text-xs text-slate-500">
-              Flujo de transacciones y registros generados por las cuentas de la red escolar que alimentan este panel.
+              {isCorporate 
+                ? 'Flujo de transacciones y registros generados por las cuentas de la empresa que alimentan este panel.'
+                : 'Flujo de transacciones y registros generados por las cuentas de la red escolar que alimentan este panel.'}
             </p>
           </div>
 
@@ -668,7 +990,7 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
                 selectedRoleFilter === 'docente' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Docentes
+              {isCorporate ? 'Instructores' : 'Docentes'}
             </button>
             <button
               onClick={() => setSelectedRoleFilter('administrativo')}
@@ -676,7 +998,7 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
                 selectedRoleFilter === 'administrativo' ? 'bg-cyan-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Tesorería
+              {isCorporate ? 'Finanzas B2B' : 'Tesorería'}
             </button>
             <button
               onClick={() => setSelectedRoleFilter('padre')}
@@ -684,7 +1006,7 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
                 selectedRoleFilter === 'padre' ? 'bg-violet-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Padres
+              {isCorporate ? 'Candidatos ATS' : 'Padres'}
             </button>
             <button
               onClick={() => setSelectedRoleFilter('alumno')}
@@ -692,7 +1014,7 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
                 selectedRoleFilter === 'alumno' ? 'bg-pink-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Alumnos
+              {isCorporate ? 'Colaboradores' : 'Alumnos'}
             </button>
           </div>
         </div>
@@ -700,7 +1022,7 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
         {/* Lista de Eventos Vivos */}
         <div className="divide-y divide-slate-100">
           {filteredEvents.map((evt) => {
-            const roleInfo = ECOSYSTEM_ROLES.find(r => r.id === evt.role);
+            const roleInfo = currentRoles.find(r => r.id === evt.role);
             return (
               <div key={evt.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/80 px-2 rounded-xl transition-colors">
                 <div className="flex items-start gap-3">
@@ -712,7 +1034,9 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
                       <span className="text-xs font-bold text-slate-900">{evt.actorName}</span>
                       <span className="text-[10px] text-slate-500 font-medium">({evt.campusName})</span>
                       <span className={`text-[10px] font-bold px-2 py-0.2 rounded-full border ${roleInfo?.colorTheme.badge || 'bg-slate-100 text-slate-700'}`}>
-                        {evt.role.toUpperCase()}
+                        {isCorporate 
+                          ? (evt.role === 'docente' ? 'INSTRUCTOR' : evt.role === 'administrativo' ? 'FINANZAS' : evt.role === 'padre' ? 'CANDIDATO' : 'COLABORADOR')
+                          : evt.role.toUpperCase()}
                       </span>
                     </div>
                     <p className="text-xs text-slate-600 mt-0.5">{evt.actionText}</p>

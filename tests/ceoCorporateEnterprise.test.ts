@@ -309,6 +309,57 @@ describe('🏢 SUITE: Sector Corporativo B2B & Cuentas CEO en ISkool', () => {
       // Debe condicionar los chips de consulta rápida
       expect(studioCode).toContain("'Matriz de Competencias Laborales & Certificaciones ISO'");
     });
+
+    it('el componente OperationalEcosystemControl debe desplegar los 4 cuadrantes corporativos de nivel CEO sin términos escolares', async () => {
+      const { CORPORATE_ECOSYSTEM_ROLES, CORPORATE_AUTOMATIONS, CORPORATE_LIVE_EVENTS } = await import('@/components/admin/OperationalEcosystemControl');
+      
+      expect(CORPORATE_ECOSYSTEM_ROLES.length).toBe(4);
+      expect(CORPORATE_AUTOMATIONS.length).toBeGreaterThanOrEqual(4);
+      expect(CORPORATE_LIVE_EVENTS.length).toBeGreaterThanOrEqual(4);
+
+      // Verificación de los 4 cuadrantes empresariales basados en la visión CEO
+      const roleNames = CORPORATE_ECOSYSTEM_ROLES.map(r => r.name);
+      expect(roleNames).toContain('Cuentas de Instructores & Master Trainers');
+      expect(roleNames).toContain('Cuentas de Operaciones Financieras & Tesorería');
+      expect(roleNames).toContain('Cuentas de Candidatos & Atracción de Talento');
+      expect(roleNames).toContain('Cuentas de Colaboradores & Personal Operativo');
+
+      // Regex de términos prohibidos para el ecosistema corporativo
+      const schoolRegex = /docente\w*|profesor\w*|padre\w*|tutor\w*|alumno\w*|estudiante\w*|aula\w*|pedag\w*|colegio\w*|colegiatura\w*|pda|sep 2024/i;
+
+      CORPORATE_ECOSYSTEM_ROLES.forEach(role => {
+        expect(role.name).not.toMatch(schoolRegex);
+        expect(role.portalName).not.toMatch(schoolRegex);
+        expect(role.description).not.toMatch(schoolRegex);
+        role.feedsDataInto.forEach(feed => {
+          expect(feed).not.toMatch(schoolRegex);
+        });
+      });
+
+      CORPORATE_AUTOMATIONS.forEach(auto => {
+        expect(auto.name).not.toMatch(schoolRegex);
+        expect(auto.description).not.toMatch(schoolRegex);
+        expect(auto.impactsKPI).not.toMatch(schoolRegex);
+      });
+
+      CORPORATE_LIVE_EVENTS.forEach(evt => {
+        expect(evt.actionText).not.toMatch(schoolRegex);
+        expect(evt.automationTriggered).not.toMatch(schoolRegex);
+      });
+    });
+
+    it('CEOExecutiveDashboard debe rotular el consorcio empresarial y enlazar isCorporate en Operaciones', async () => {
+      const fs = await import('fs');
+      const ceoCode = fs.readFileSync('src/components/admin/CEOExecutiveDashboard.tsx', 'utf-8');
+
+      // Debe condicionar la etiqueta del holding
+      expect(ceoCode).toContain("isCorporate ? 'Consorcio Empresarial' : 'Holding Educativo'");
+
+      // Debe pasar isCorporate al componente de operaciones
+      expect(ceoCode).toContain("<OperationalEcosystemControl");
+      expect(ceoCode).toContain("isCorporate={isCorporate}");
+    });
   });
 });
+
 

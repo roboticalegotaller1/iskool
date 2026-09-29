@@ -178,7 +178,10 @@ export function buildHoldingForInstitution(
     return DEFAULT_IBIME_HOLDING;
   }
 
-  const isCorp = isCorporateInstitution(institution) || institution.id?.startsWith('emp-') || institution.id === 'sec-empresas-ceo';
+  const isCorp = isCorporateInstitution(institution) ||
+                 institution.id?.startsWith('emp-') ||
+                 institution.id === 'sec-empresas-ceo' ||
+                 (typeof institution.name === 'string' && /bmw|empresa|corporativ|retail|innovasoft/i.test(institution.name));
 
   const allCampuses = campusesList || [];
   const schoolCampuses = getSchoolCampuses(allCampuses, institution.id);
@@ -671,6 +674,7 @@ export default function CEOExecutiveDashboard({
            currentInstitution?.id === 'sec-empresas-ceo' ||
            holding?.id?.includes('emp-') ||
            holding?.id?.includes('sec-empresas-ceo') ||
+           (typeof holding?.name === 'string' && /bmw|empresa|corporativ|retail|innovasoft/i.test(holding.name)) ||
            schoolId?.startsWith('emp-') ||
            schoolId === 'sec-empresas-ceo';
   }, [currentInstitution, holding, schoolId]);
@@ -1626,7 +1630,7 @@ export default function CEOExecutiveDashboard({
                 {holding.name}
               </h1>
               <span className="hidden md:inline-block text-[10px] bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded-full border border-indigo-200 shrink-0">
-                Holding Educativo
+                {isCorporate ? 'Consorcio Empresarial' : 'Holding Educativo'}
               </span>
             </div>
 
@@ -1636,11 +1640,11 @@ export default function CEOExecutiveDashboard({
                 value={selectedCampusId}
                 onChange={(e) => {
                   setSelectedCampusId(e.target.value);
-                  triggerToast(e.target.value === 'all' ? 'Mostrando datos consolidados' : `Filtrando a: ${holding.campuses.find(c => c.id === e.target.value)?.name}`);
+                  triggerToast(e.target.value === 'all' ? (isCorporate ? 'Mostrando datos consolidados de plantas' : 'Mostrando datos consolidados') : `Filtrando a: ${holding.campuses.find(c => c.id === e.target.value)?.name}`);
                 }}
                 className="appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-800 text-[11px] sm:text-xs font-semibold rounded-lg pl-2 sm:pl-3 pr-6 sm:pr-7 py-1 sm:py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-900 cursor-pointer transition-colors max-w-[130px] sm:max-w-[190px] truncate"
               >
-                <option value="all">Consolidado ({holding.campuses.length} Sedes)</option>
+                <option value="all">{isCorporate ? `Consolidado (${holding.campuses.length} Plantas)` : `Consolidado (${holding.campuses.length} Sedes)`}</option>
                 {holding.campuses.map(campus => (
                   <option key={campus.id} value={campus.id}>
                     {campus.name}
@@ -4229,6 +4233,7 @@ export default function CEOExecutiveDashboard({
               totalTeachers={metrics.totalTeachers}
               collectionRate={metrics.avgCollection}
               curriculumCoverage={metrics.avgCurriculum}
+              isCorporate={isCorporate}
               onTriggerToast={triggerToast}
               onNavigateTab={handleNavClick}
             />

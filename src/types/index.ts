@@ -206,7 +206,10 @@ export interface Institution {
 
 export const isCorporateInstitution = (inst?: Institution | null): boolean => {
   if (!inst) return false;
-  return inst.is_corporate_enterprise === true || inst.institution_type === 'corporate' || (typeof inst.id === 'string' && inst.id.startsWith('emp-'));
+  return inst.is_corporate_enterprise === true ||
+         inst.institution_type === 'corporate' ||
+         (typeof inst.id === 'string' && (inst.id.startsWith('emp-') || inst.id === 'sec-empresas-ceo')) ||
+         (typeof inst.name === 'string' && /bmw|empresa|corporativ|retail|innovasoft/i.test(inst.name));
 };
 
 /**
