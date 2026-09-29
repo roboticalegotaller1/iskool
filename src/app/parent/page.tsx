@@ -42,7 +42,7 @@ export default function ParentDashboard() {
   const markMessageAsRead = useSchoolAdminStore(state => state.markMessageAsRead);
   const replyToParentMessage = useSchoolAdminStore(state => state.replyToParentMessage);
   
-  const currentParent = PARENT_SEED;
+  const currentParent = user || PARENT_SEED;
 
   const [parentComment, setParentComment] = useState<Record<string, string>>({});
   const [currentTab, setCurrentTab] = useState<'achievements' | 'messages'>('achievements');
@@ -54,6 +54,9 @@ export default function ParentDashboard() {
         router.push('/login');
       } else if (user.role === 'student') {
         router.push('/student');
+      } else if (user.id === 'usr-parent-ibime-01' || user.email?.includes('morales') || user.email?.includes('ibime')) {
+        // Enlazar al estudiante de IBIME correspondiente (Iker Santiago Morales Peña)
+        useStudentStore.getState().switchStudent('std-ibime-montes-01');
       }
     }
   }, [user, loading, router]);

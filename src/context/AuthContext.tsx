@@ -74,6 +74,275 @@ export const getDemoUser = (email: string): UserProfile => {
     // fallback si store no está montado
   }
 
+  // ==========================================
+  // RESOLUTORES OFICIALES INSTITUTO BILINGÜE IBIME
+  // ==========================================
+  if (
+    emailLower === 'directora.general@ibime.edu.mx' ||
+    emailLower === 'directora@ibime.edu.mx' ||
+    emailLower === 'usr-dir-ibime-montes'
+  ) {
+    return {
+      id: 'usr-dir-ibime-montes',
+      school_id: 'sch-ibime',
+      campus_id: 'cmp-ibime-montes',
+      campus_name: 'Campus Montes (Sede Matriz & CCH)',
+      first_name: 'Patricia',
+      last_name: 'Sandoval Morales (Dirección General)',
+      role: 'director',
+      email: 'directora.general@ibime.edu.mx',
+      temporary_password: 'DIR2026',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
+    emailLower === 'directora.lagos@ibime.edu.mx' ||
+    emailLower === 'usr-dir-ibime-lagos'
+  ) {
+    return {
+      id: 'usr-dir-ibime-lagos',
+      school_id: 'sch-ibime',
+      campus_id: 'cmp-ibime-lagos',
+      campus_name: 'Campus Lagos (Fundador 2004)',
+      first_name: 'Carmen',
+      last_name: 'Delgado Ríos (Dirección Lagos)',
+      role: 'director',
+      email: 'directora.lagos@ibime.edu.mx',
+      temporary_password: 'DIR2026',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
+    emailLower === 'coordinacion.academica@ibime.edu.mx' ||
+    emailLower === 'coordinacion@ibime.edu.mx' ||
+    emailLower === 'usr-coord-ibime'
+  ) {
+    return {
+      id: 'usr-coord-ibime',
+      school_id: 'sch-ibime',
+      campus_id: 'cmp-ibime-montes',
+      campus_name: 'Coordinación Académica & Enlace CCH',
+      first_name: 'Marco Antonio',
+      last_name: 'Ruiz Peralta (Coordinación)',
+      role: 'coordinator',
+      email: 'coordinacion.academica@ibime.edu.mx',
+      temporary_password: 'CRD2026',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
+    emailLower === 'finanzas@ibime.edu.mx' ||
+    emailLower === 'cobranza@ibime.edu.mx' ||
+    emailLower === 'usr-billing-ibime'
+  ) {
+    return {
+      id: 'usr-billing-ibime',
+      school_id: 'sch-ibime',
+      campus_id: 'cmp-ibime-montes',
+      campus_name: 'Tesorería & Facturación CFDI 4.0',
+      first_name: 'Mariana',
+      last_name: 'Rivas Corona (Cobranza)',
+      role: 'billing',
+      email: 'finanzas@ibime.edu.mx',
+      temporary_password: 'COB2026',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
+    emailLower === 'dueno@ibime.edu.mx' ||
+    emailLower === 'usr-owner-ibime'
+  ) {
+    return {
+      id: 'usr-owner-ibime',
+      school_id: 'sch-ibime',
+      campus_id: 'cmp-ibime-montes',
+      campus_name: 'Dirección Corporativa IBIME',
+      first_name: 'Don Guillermo',
+      last_name: 'Valdés Montes (Consejo Directivo)',
+      role: 'owner',
+      email: 'dueno@ibime.edu.mx',
+      temporary_password: 'DUE2026',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
+    emailLower === 'alejandro.mendoza@ibime.edu.mx' ||
+    emailLower === 'profesor.mendoza@ibime.edu.mx' ||
+    emailLower === 'usr-teacher-ibime-1'
+  ) {
+    return {
+      id: 'usr-teacher-ibime-1',
+      school_id: 'sch-ibime',
+      campus_id: 'cmp-ibime-montes',
+      campus_name: 'Campus Montes (Sede Matriz & CCH)',
+      first_name: 'Alejandro',
+      last_name: 'Mendoza Peña (Docente CCH & STEAM)',
+      role: 'teacher',
+      email: 'alejandro.mendoza@ibime.edu.mx',
+      temporary_password: 'IBI2026',
+      assigned_subjects: ['Biología I-IV (Programa CCH UNAM)', 'Taller de Robótica STEAM & Mecatrónica IBIME'],
+      assigned_groups: ['1º Semestre CCH UNAM Montes', '5ºA Primaria Bilingüe Montes'],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
+    emailLower === 'elizabeth.hernandez@ibime.edu.mx' ||
+    emailLower === 'profesora.hernandez@ibime.edu.mx' ||
+    emailLower === 'usr-teacher-ibime-2'
+  ) {
+    return {
+      id: 'usr-teacher-ibime-2',
+      school_id: 'sch-ibime',
+      campus_id: 'cmp-ibime-lagos',
+      campus_name: 'Campus Lagos (Fundador 2004)',
+      first_name: 'Elizabeth',
+      last_name: 'Hernández Ramos (Cambridge English)',
+      role: 'teacher',
+      email: 'elizabeth.hernandez@ibime.edu.mx',
+      temporary_password: 'IBI2026',
+      assigned_subjects: ['Cambridge English (Starters / Movers / Flyers)', 'Formación Humana, Liderazgo & Retórica IBIME'],
+      assigned_groups: ['3ºA Primaria Lagos', 'Kínder 3 Bilingüe Lagos'],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
+    emailLower === 'fernando.morales@ibime.edu.mx' ||
+    emailLower === 'usr-teacher-ibime-3'
+  ) {
+    return {
+      id: 'usr-teacher-ibime-3',
+      school_id: 'sch-ibime',
+      campus_id: 'cmp-ibime-sancristobal',
+      campus_name: 'Campus San Cristóbal (Ecatepec Centro)',
+      first_name: 'Fernando',
+      last_name: 'Morales Vaca (Matemáticas & Física)',
+      role: 'teacher',
+      email: 'fernando.morales@ibime.edu.mx',
+      temporary_password: 'IBI2026',
+      assigned_subjects: ['Matemáticas y Razonamiento Lógico', 'Física y Métodos Experimentales'],
+      assigned_groups: ['2ºA Secundaria San Cristóbal', '3ºA Secundaria San Cristóbal'],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
+    emailLower === 'sofia.cordero@ibime.edu.mx' ||
+    emailLower === 'usr-teacher-ibime-4'
+  ) {
+    return {
+      id: 'usr-teacher-ibime-4',
+      school_id: 'sch-ibime',
+      campus_id: 'cmp-ibime-coacalco',
+      campus_name: 'Campus Coacalco (Metropolitano)',
+      first_name: 'Sofía',
+      last_name: 'Cordero Solís (Cálculo & STEAM)',
+      role: 'teacher',
+      email: 'sofia.cordero@ibime.edu.mx',
+      temporary_password: 'IBI2026',
+      assigned_subjects: ['Taller de Robótica STEAM & Mecatrónica IBIME', 'Matemáticas y Cálculo CCH UNAM'],
+      assigned_groups: ['4º Semestre CCH UNAM Coacalco', '1ºA Secundaria Coacalco'],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
+    emailLower === 'iker.morales@ibime.edu.mx' ||
+    emailLower === 'std-ibime-montes-01'
+  ) {
+    return {
+      id: 'std-ibime-montes-01',
+      school_id: 'sch-ibime',
+      first_name: 'Iker Santiago',
+      last_name: 'Morales Peña',
+      role: 'student',
+      email: 'iker.morales@ibime.edu.mx',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
+    emailLower === 'ximena.castillo@ibime.edu.mx' ||
+    emailLower === 'std-ibime-lagos-01'
+  ) {
+    return {
+      id: 'std-ibime-lagos-01',
+      school_id: 'sch-ibime',
+      first_name: 'Ximena Valentina',
+      last_name: 'Castillo Ruiz',
+      role: 'student',
+      email: 'ximena.castillo@ibime.edu.mx',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
+    emailLower === 'mateo.navas@ibime.edu.mx' ||
+    emailLower === 'std-ibime-san-01'
+  ) {
+    return {
+      id: 'std-ibime-san-01',
+      school_id: 'sch-ibime',
+      first_name: 'Mateo Emiliano',
+      last_name: 'Navas Mendoza',
+      role: 'student',
+      email: 'mateo.navas@ibime.edu.mx',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
+    emailLower === 'regina.albarran@ibime.edu.mx' ||
+    emailLower === 'std-ibime-coac-01'
+  ) {
+    return {
+      id: 'std-ibime-coac-01',
+      school_id: 'sch-ibime',
+      first_name: 'Regina Sofía',
+      last_name: 'Albarrán Cruz',
+      role: 'student',
+      email: 'regina.albarran@ibime.edu.mx',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
+    emailLower === 'familia.morales@ibime.edu.mx' ||
+    emailLower === 'tutor.ibime@ejemplo.com' ||
+    emailLower === 'usr-parent-ibime-01'
+  ) {
+    return {
+      id: 'usr-parent-ibime-01',
+      first_name: 'Familia Morales',
+      last_name: 'Peña (Tutor IBIME)',
+      role: 'parent',
+      email: 'familia.morales@ibime.edu.mx',
+      school_id: 'sch-ibime',
+      temporary_password: 'ISkoolPassword2026!',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
   // 4. Director Demo (Coincidencia exacta)
   if (
     emailLower === 'director' ||

@@ -11,7 +11,7 @@ fase: "4"
 marco_curricular: "BICULTURAL_IBIME"
 pda_code: ""
 signature_sha256: "5de6d136ab43d35e37f5e7fc3054c7caa74f8c34059043e1dd076ec37325cf3c"
-created_at: "2026-09-28T21:03:01.335Z"
+created_at: "2026-09-29T12:37:30.235Z"
 ---
 
 # 📚 Water Engineering and Filtration (E2E IBIME Bicultural)

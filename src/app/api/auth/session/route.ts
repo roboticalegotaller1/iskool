@@ -53,13 +53,16 @@ export async function POST(req: NextRequest) {
     }
 
     const { id, email, role, school_id, first_name, last_name } = parsed.data;
+    const isIbimeUser = school_id === 'sch-ibime' || (email && email.toLowerCase().includes('ibime'));
+    const resolvedTenant = isIbimeUser ? 'ibime' : 'iskool';
 
     // Generar token seguro firmado criptográficamente
     const sessionToken = await signSessionToken({
       id,
       email: email || undefined,
       role,
-      school_id: school_id || undefined,
+      school_id: school_id || (isIbimeUser ? 'sch-ibime' : undefined),
+      tenant_id: resolvedTenant,
       first_name,
       last_name
     });
@@ -67,18 +70,30 @@ export async function POST(req: NextRequest) {
     const isProduction = process.env.NODE_ENV === 'production';
     const response = NextResponse.json({
       success: true,
-      user: { id, email, role, school_id, first_name, last_name }
+      user: { id, email, role, school_id: school_id || (isIbimeUser ? 'sch-ibime' : undefined), first_name, last_name, tenant_id: resolvedTenant }
     });
 
-    // Inyectar Cookie Segura: HttpOnly, Secure (en prod o HTTPS), SameSite=Strict
+    // Inyectar Cookie Segura correspondiente al tenant: HttpOnly, Secure, SameSite=Lax
+    const cookieName = resolvedTenant === 'ibime' ? 'ibime_session' : 'iskool_session';
     response.cookies.set({
-      name: 'iskool_session',
+      name: cookieName,
       value: sessionToken,
       httpOnly: true,
       secure: isProduction || req.url.startsWith('https://'),
-      sameSite: 'strict',
+      sameSite: 'lax',
       path: '/',
       maxAge: 7 * 24 * 3600 // 7 días de validez
+    });
+
+    // Establecer la cookie institucional de tenant
+    response.cookies.set({
+      name: 'tenant-id',
+      value: resolvedTenant,
+      httpOnly: false,
+      secure: isProduction || req.url.startsWith('https://'),
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 3600
     });
 
     return response;
@@ -93,13 +108,23 @@ export async function POST(req: NextRequest) {
 export async function DELETE() {
   const response = NextResponse.json({ success: true, message: 'Sesión finalizada exitosamente.' });
 
-  // Invalida y elimina inmediatamente la cookie HttpOnly
+  // Invalida y elimina inmediatamente las cookies de sesión y tenant
   response.cookies.set({
     name: 'iskool_session',
     value: '',
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0
+  });
+
+  response.cookies.set({
+    name: 'ibime_session',
+    value: '',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
     path: '/',
     maxAge: 0
   });

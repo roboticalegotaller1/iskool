@@ -958,6 +958,13 @@ export const STUDENTS_LIST_SEED: UserProfile[] = [
   { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d08', first_name: 'Camila', last_name: 'Jiménez Lara', role: 'student', email: 'camila.jiménez7@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
   { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d09', first_name: 'Diego', last_name: 'Vargas Ríos', role: 'student', email: 'diego.vargas8@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
   { id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d10', first_name: 'Isabella', last_name: 'Montes Delgado', role: 'student', email: 'isabella.montes9@iskool.edu.mx', created_at: '2026-07-08T11:50:26.932Z', updated_at: '2026-07-08T11:50:26.932Z' },
+  // Estudiantes Oficiales del Instituto Bilingüe IBIME
+  { id: 'std-ibime-montes-01', first_name: 'Iker Santiago', last_name: 'Morales Peña', role: 'student', email: 'iker.morales@ibime.edu.mx', school_id: 'sch-ibime', created_at: '2026-01-10T08:00:00.000Z', updated_at: '2026-01-10T08:00:00.000Z' },
+  { id: 'std-ibime-lagos-01', first_name: 'Ximena Valentina', last_name: 'Castillo Ruiz', role: 'student', email: 'ximena.castillo@ibime.edu.mx', school_id: 'sch-ibime', created_at: '2026-01-10T08:00:00.000Z', updated_at: '2026-01-10T08:00:00.000Z' },
+  { id: 'std-ibime-san-01', first_name: 'Mateo Emiliano', last_name: 'Navas Mendoza', role: 'student', email: 'mateo.navas@ibime.edu.mx', school_id: 'sch-ibime', created_at: '2026-01-10T08:00:00.000Z', updated_at: '2026-01-10T08:00:00.000Z' },
+  { id: 'std-ibime-coac-01', first_name: 'Regina Sofía', last_name: 'Albarrán Cruz', role: 'student', email: 'regina.albarran@ibime.edu.mx', school_id: 'sch-ibime', created_at: '2026-01-10T08:00:00.000Z', updated_at: '2026-01-10T08:00:00.000Z' },
+  { id: 'std-ibime-coac-02', first_name: 'Leonardo Daniel', last_name: 'Varela Fuentes', role: 'student', email: 'leonardo.varela@ibime.edu.mx', school_id: 'sch-ibime', created_at: '2026-01-10T08:00:00.000Z', updated_at: '2026-01-10T08:00:00.000Z' },
+  { id: 'std-ibime-montes-02', first_name: 'Camila Sophia', last_name: 'Herrera Cruz', role: 'student', email: 'camila.herrera@ibime.edu.mx', school_id: 'sch-ibime', created_at: '2026-01-10T08:00:00.000Z', updated_at: '2026-01-10T08:00:00.000Z' }
 ];
 
 export const GROUPS_SEED: Group[] = [
@@ -3321,6 +3328,17 @@ export const PARENT_SEED: UserProfile = {
   updated_at: new Date().toISOString()
 };
 
+export const PARENT_IBIME_SEED: UserProfile = {
+  id: 'usr-parent-ibime-01',
+  school_id: 'sch-ibime',
+  first_name: 'Fernando',
+  last_name: 'Morales Soto (Tutor)',
+  role: 'parent',
+  email: 'familia.morales@ibime.edu.mx',
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString()
+};
+
 // Estadísticas de los 4 Estudiantes
 export const STATS_MAP_SEED: Record<string, StudentStats> = {
   'std-pb': {
@@ -3463,6 +3481,29 @@ export const STATS_MAP_SEED: Record<string, StudentStats> = {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d10', xp: 460, level: 3, coins: 165, current_streak: 6, max_streak: 6, updated_at: '2026-07-08T11:50:26.932Z',
     funding_credits: 1900
   },
+  // Estadísticas y Radar 360 de Alumnos Oficiales IBIME
+  'std-ibime-montes-01': {
+    student_id: 'std-ibime-montes-01', xp: 1450, level: 5, coins: 380, current_streak: 8, max_streak: 15, updated_at: '2026-07-08T11:50:26.932Z',
+    rpg_class: 'guerrero', attribute_strength: 18, attribute_intelligence: 20, attribute_defense: 16, skill_points: 3
+  },
+  'std-ibime-lagos-01': {
+    student_id: 'std-ibime-lagos-01', xp: 920, level: 3, coins: 210, current_streak: 5, max_streak: 10, updated_at: '2026-07-08T11:50:26.932Z'
+  },
+  'std-ibime-san-01': {
+    student_id: 'std-ibime-san-01', xp: 2180, level: 7, coins: 580, current_streak: 12, max_streak: 22, updated_at: '2026-07-08T11:50:26.932Z',
+    rpg_class: 'explorador', attribute_strength: 22, attribute_intelligence: 24, attribute_defense: 20, skill_points: 4
+  },
+  'std-ibime-coac-01': {
+    student_id: 'std-ibime-coac-01', xp: 3100, level: 9, coins: 840, current_streak: 14, max_streak: 30, updated_at: '2026-07-08T11:50:26.932Z',
+    funding_credits: 2500
+  },
+  'std-ibime-coac-02': {
+    student_id: 'std-ibime-coac-02', xp: 880, level: 3, coins: 190, current_streak: 4, max_streak: 8, updated_at: '2026-07-08T11:50:26.932Z',
+    rpg_class: 'mago', attribute_strength: 14, attribute_intelligence: 16, attribute_defense: 12, skill_points: 1
+  },
+  'std-ibime-montes-02': {
+    student_id: 'std-ibime-montes-02', xp: 450, level: 2, coins: 95, current_streak: 3, max_streak: 6, updated_at: '2026-07-08T11:50:26.932Z'
+  }
 };
 
 export const AVATAR_MAP_SEED: Record<string, StudentAvatar> = {
@@ -3632,6 +3673,25 @@ export const AVATAR_MAP_SEED: Record<string, StudentAvatar> = {
     student_id: 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380d10', avatar_name: 'IsabellaAvatar', hair_style: 'spiky', hair_color: '#4B5563', eyes_style: 'sparkle', outfit_style: 'space_suit', outfit_color: '#10B981', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"],
     updated_at: '2026-07-08T11:50:26.932Z'
   },
+  // Avatares Personalizados y Mascotas de Alumnos IBIME
+  'std-ibime-montes-01': {
+    student_id: 'std-ibime-montes-01', avatar_name: 'IkerAvatar', hair_style: 'spiky', hair_color: '#1F2937', eyes_style: 'sparkle', outfit_style: 'explorer', outfit_color: '#059669', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"], pet_type: 'dragon', pet_name: 'Ignis', pet_hunger: 80, pet_happiness: 95, pet_outfit: 'none', updated_at: '2026-01-10T08:00:00.000Z'
+  },
+  'std-ibime-lagos-01': {
+    student_id: 'std-ibime-lagos-01', avatar_name: 'XimenaAvatar', hair_style: 'classic', hair_color: '#4B5563', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#3B82F6', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest"], pet_type: 'lobo', pet_name: 'Aura', pet_hunger: 75, pet_happiness: 90, pet_outfit: 'none', updated_at: '2026-01-10T08:00:00.000Z'
+  },
+  'std-ibime-san-01': {
+    student_id: 'std-ibime-san-01', avatar_name: 'MateoAvatar', hair_style: 'spiky', hair_color: '#FBBF24', eyes_style: 'sparkle', outfit_style: 'explorer', outfit_color: '#D97706', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle"], pet_type: 'venado', pet_name: 'Zephyr', pet_hunger: 85, pet_happiness: 92, pet_outfit: 'none', updated_at: '2026-01-10T08:00:00.000Z'
+  },
+  'std-ibime-coac-01': {
+    student_id: 'std-ibime-coac-01', avatar_name: 'ReginaAvatar', hair_style: 'classic', hair_color: '#1F2937', eyes_style: 'sparkle', outfit_style: 'space_suit', outfit_color: '#4F46E5', background_style: 'nebula', unlocked_items: ["classic","happy","explorer","forest","spiky","sparkle","space_suit","nebula"], updated_at: '2026-01-10T08:00:00.000Z'
+  },
+  'std-ibime-coac-02': {
+    student_id: 'std-ibime-coac-02', avatar_name: 'LeonardoAvatar', hair_style: 'spiky', hair_color: '#4B5563', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#2563EB', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest"], updated_at: '2026-01-10T08:00:00.000Z'
+  },
+  'std-ibime-montes-02': {
+    student_id: 'std-ibime-montes-02', avatar_name: 'CamilaAvatar', hair_style: 'classic', hair_color: '#FBBF24', eyes_style: 'happy', outfit_style: 'explorer', outfit_color: '#EC4899', background_style: 'forest', unlocked_items: ["classic","happy","explorer","forest"], updated_at: '2026-01-10T08:00:00.000Z'
+  }
 };
 
 export const PORTFOLIO_SEED: PortfolioItem[] = [
@@ -3704,6 +3764,71 @@ export const PORTFOLIO_SEED: PortfolioItem[] = [
       updated_at: new Date().toISOString()
     },
     subject: SUBJECTS_SEED[0],
+    feedbacks: []
+  },
+  // Entregables Oficiales de Portafolio IBIME (Proyectos STEAM & Cambridge)
+  {
+    id: 'port-ibime-01',
+    student_id: 'std-ibime-montes-01',
+    subject_id: 'sub-sci',
+    title: 'Brazo Robótico Hidráulico con Material Reciclado (STEAM IBIME)',
+    description: 'Prototipo accionado por jeringas para demostrar el Principio de Pascal y conservación de energía mecánica.',
+    file_url: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80&w=400',
+    file_type: 'image',
+    status: 'approved',
+    self_reflection: 'Calibré la presión hidráulica de los émbolos usando mangueras de acuario. Levantó objetos de hasta 250 gramos.',
+    peer_review_score: 9.8,
+    peer_review_comments: 'Excelente construcción y explicación de la ley física en la bitácora escolar.',
+    created_at: new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString(),
+    updated_at: new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString(),
+    student_profile: {
+      id: 'std-ibime-montes-01',
+      first_name: 'Iker Santiago',
+      last_name: 'Morales Peña',
+      role: 'student' as any,
+      email: 'iker.morales@ibime.edu.mx',
+      school_id: 'sch-ibime',
+      created_at: '2026-01-10T08:00:00.000Z',
+      updated_at: '2026-01-10T08:00:00.000Z'
+    },
+    subject: SUBJECTS_SEED[1],
+    feedbacks: [
+      {
+        id: 'fb-ibime-1',
+        portfolio_item_id: 'port-ibime-01',
+        author_id: 'usr-teacher-ibime-1',
+        author_role: 'teacher',
+        feedback_text: '¡Extraordinario prototipo Iker! Cumple cabalmente con la rúbrica STEAM de Campus Montes.',
+        reactions: { teacher: ['🏆', '⭐'] },
+        created_at: new Date(Date.now() - 30 * 60 * 60 * 1000).toISOString()
+      }
+    ]
+  },
+  {
+    id: 'port-ibime-02',
+    student_id: 'std-ibime-coac-01',
+    subject_id: 'sub-sci',
+    title: 'Reporte Experimental CCH UNAM: Cultivo Hidropónico Automatizado',
+    description: 'Investigación experimental sobre absorción de nutrientes NPK en lechuga hidropónica con microcontroladores.',
+    file_url: 'https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?auto=format&fit=crop&q=80&w=400',
+    file_type: 'image',
+    status: 'approved',
+    self_reflection: 'Comprobé que el control automatizado del pH redujo el consumo hídrico en un 38% respecto al suelo tradicional.',
+    peer_review_score: 9.6,
+    peer_review_comments: 'Rigor metodológico de nivel universitario propedéutico.',
+    created_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+    updated_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+    student_profile: {
+      id: 'std-ibime-coac-01',
+      first_name: 'Regina Sofía',
+      last_name: 'Albarrán Cruz',
+      role: 'student' as any,
+      email: 'regina.albarran@ibime.edu.mx',
+      school_id: 'sch-ibime',
+      created_at: '2026-01-10T08:00:00.000Z',
+      updated_at: '2026-01-10T08:00:00.000Z'
+    },
+    subject: SUBJECTS_SEED[1],
     feedbacks: []
   }
 ];
@@ -3904,6 +4029,67 @@ export const PARENT_MESSAGES_SEED: ParentMessage[] = [
     sent_at: '2026-06-03T09:00:00.000Z',
     is_read: true
     // parent_reply no presente: PENDIENTE DE RESPUESTA
+  },
+  // Comunicaciones y Circulares Oficiales del Instituto Bilingüe IBIME
+  {
+    id: 'msg-ibime-01',
+    school_id: 'sch-ibime',
+    parent_id: 'usr-parent-ibime-01',
+    student_id: 'std-ibime-montes-01',
+    student_name: 'Iker Santiago Morales Peña',
+    teacher_id: 'usr-dir-ibime-montes',
+    teacher_name: 'Lic. Patricia Sandoval Morales',
+    subject_id: 'sub-dir-ibime',
+    subject_name: 'Dirección General de Plantel',
+    message: 'Estimada Familia Morales Peña: Nos complace informarles que Iker ha sido seleccionado como candidato para la Certificación Cambridge Starters y el Torneo Regional de Robótica STEAM IBIME 2026. Agradecemos su constante acompañamiento.',
+    sent_at: '2026-06-10T09:00:00.000Z',
+    is_read: true,
+    parent_reply: 'Muchas gracias Directora Patricia. En casa estamos muy comprometidos con la formación de Iker y listos para apoyarlo en el torneo.',
+    replied_at: '2026-06-10T14:20:00.000Z'
+  },
+  {
+    id: 'msg-ibime-02',
+    school_id: 'sch-ibime',
+    parent_id: 'usr-parent-ibime-01',
+    student_id: 'std-ibime-montes-01',
+    student_name: 'Iker Santiago Morales Peña',
+    teacher_id: 'usr-teacher-ibime-1',
+    teacher_name: 'Prof. Alejandro Mendoza Peña',
+    subject_id: 'sub-sci',
+    subject_name: 'Robótica STEAM & Ciencias',
+    message: 'Aviso a tutores de 5ºA: La próxima semana iniciamos las prácticas de neumática y circuitos lógicos. Los alumnos pueden consultar las guías en el Lienzo Digital.',
+    sent_at: '2026-06-12T11:30:00.000Z',
+    is_read: true
+  },
+  {
+    id: 'msg-ibime-03',
+    school_id: 'sch-ibime',
+    parent_id: 'usr-parent-ibime-ximena',
+    student_id: 'std-ibime-lagos-01',
+    student_name: 'Ximena Valentina Castillo Ruiz',
+    teacher_id: 'usr-teacher-ibime-2',
+    teacher_name: 'Profa. Elizabeth Hernández Ramos',
+    subject_id: 'sub-eng',
+    subject_name: 'Cambridge English & Liderazgo',
+    message: 'Circular Campus Lagos: Felicitamos a Ximena por su destacado progreso en fluidez verbal y vocabulario durante el taller bicultural.',
+    sent_at: '2026-06-08T10:15:00.000Z',
+    is_read: true,
+    parent_reply: 'Gracias profesora Elizabeth, vemos una gran motivación en Ximena practicando sus diálogos en casa.',
+    replied_at: '2026-06-08T18:00:00.000Z'
+  },
+  {
+    id: 'msg-ibime-04',
+    school_id: 'sch-ibime',
+    parent_id: 'usr-parent-ibime-regina',
+    student_id: 'std-ibime-coac-01',
+    student_name: 'Regina Sofía Albarrán Cruz',
+    teacher_id: 'usr-billing-ibime',
+    teacher_name: 'C.P. Mariana Rivas Corona',
+    subject_id: 'sub-fin-ibime',
+    subject_name: 'Tesorería & Facturación',
+    message: 'Estado de Cuenta Escolar: Su factura CFDI 4.0 correspondiente al ciclo escolar se encuentra disponible en su portal tutor con sello digital verificado.',
+    sent_at: '2026-06-01T08:00:00.000Z',
+    is_read: true
   }
 ];
 

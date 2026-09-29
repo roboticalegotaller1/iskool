@@ -50,6 +50,10 @@ function isPublicOrAuthPath(pathname: string): boolean {
     pathname.startsWith('/login/') ||
     pathname === '/ibime/login' ||
     pathname.startsWith('/ibime/login/') ||
+    pathname === '/Lcxad5iH8kGm3ZC' ||
+    pathname.startsWith('/Lcxad5iH8kGm3ZC/') ||
+    pathname === '/02DJoUJSkwYQZjn' ||
+    pathname.startsWith('/02DJoUJSkwYQZjn/') ||
     pathname.startsWith('/auth') ||
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/_next') ||
@@ -80,7 +84,7 @@ export async function middleware(request: NextRequest) {
 
   // 1. Determinar el Tenant Requerido según el recurso objetivo (Ruta o Subdominio)
   // NUNCA depender de headers arbitrarios del cliente (como X-Tenant-ID o x-resolved-tenant)
-  const isIbimePath = pathname.startsWith('/ibime') || pathname.startsWith('/api/v1/ibime');
+  const isIbimePath = pathname.startsWith('/ibime') || pathname.startsWith('/api/v1/ibime') || pathname === '/02DJoUJSkwYQZjn' || pathname.startsWith('/02DJoUJSkwYQZjn/');
   const isIbimeHost = host.startsWith('ibime.') || host.includes('ibime');
   const targetTenantRequired: TenantId = (isIbimePath || isIbimeHost) ? 'ibime' : 'iskool';
 
