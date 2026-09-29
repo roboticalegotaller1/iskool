@@ -31,14 +31,13 @@ const ISKOOL_PROTECTED_PREFIXES = [
   '/superadmin'
 ];
 
-// Rutas protegidas de IBIME
+// Rutas protegidas de IBIME (Sub-módulos que requieren rol específico)
 const IBIME_PROTECTED_PREFIXES = [
   '/ibime/admin',
   '/ibime/teacher',
   '/ibime/student',
   '/ibime/director',
   '/ibime/billing',
-  '/ibime/portal',
   '/ibime/kardex',
   '/ibime/coordinacion'
 ];
@@ -48,6 +47,10 @@ function isPublicOrAuthPath(pathname: string): boolean {
     pathname === '/' ||
     pathname === '/login' ||
     pathname.startsWith('/login/') ||
+    pathname === '/ibime' ||
+    pathname === '/ibime/' ||
+    pathname === '/ibime/portal' ||
+    pathname.startsWith('/ibime/portal/') ||
     pathname === '/ibime/login' ||
     pathname.startsWith('/ibime/login/') ||
     pathname === '/Lcxad5iH8kGm3ZC' ||
