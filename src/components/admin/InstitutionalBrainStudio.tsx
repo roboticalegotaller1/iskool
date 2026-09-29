@@ -45,8 +45,10 @@ import {
   BrainNode,
   BrainEdge,
   CLUSTER_CONFIG_MAP,
+  getClusterConfig,
   buildSchoolInstitutionalGraph
 } from '@/services/institutionalGraphEngine';
+import { isCorporateInstitution } from '@/types';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 
 // ============================================================================
@@ -112,6 +114,11 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
     billingRecords,
     holdingName
   ]);
+
+  // Contexto Corporativo B2B (Industrias / Empresas vs Colegios)
+  const isCorporate = useMemo(() => {
+    return isCorporateInstitution(institution) || (typeof effectiveSchoolId === 'string' && effectiveSchoolId.startsWith('emp-'));
+  }, [institution, effectiveSchoolId]);
 
   // Estados de vista e interacción
   const [viewMode, setViewMode] = useState<'split' | 'graph' | 'assistant'>('split');
@@ -364,12 +371,12 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
       if (nTitle.includes(qLower) || qLower.includes(nTitle)) score += 30;
 
       // Ponderaciones temáticas
-      if ((qLower.includes('planeacion') || qLower.includes('nem') || qLower.includes('pda')) && node.cluster === 'pedagogico') score += 25;
-      if ((qLower.includes('cfdi') || qLower.includes('sat') || qLower.includes('factura') || qLower.includes('iedu') || qLower.includes('aging')) && node.cluster === 'fiscal') score += 25;
-      if ((qLower.includes('alergia') || qLower.includes('sismo') || qLower.includes('salud') || qLower.includes('expediente')) && node.cluster === 'medico') score += 25;
-      if ((qLower.includes('sede') || qLower.includes('plantel') || qLower.includes('campus')) && node.cluster === 'gobernanza') score += 25;
-      if ((qLower.includes('mision') || qLower.includes('lienzo') || qLower.includes('xp') || qLower.includes('juego')) && node.cluster === 'gamificacion') score += 25;
-      if ((qLower.includes('profesor') || qLower.includes('docente') || qLower.includes('maestro')) && node.cluster === 'docente') score += 25;
+      if ((qLower.includes('planeacion') || qLower.includes('nem') || qLower.includes('pda') || qLower.includes('competencia') || qLower.includes('capacitacion') || qLower.includes('stps') || qLower.includes('iso')) && node.cluster === 'pedagogico') score += 25;
+      if ((qLower.includes('cfdi') || qLower.includes('sat') || qLower.includes('factura') || qLower.includes('iedu') || qLower.includes('aging') || qLower.includes('b2b')) && node.cluster === 'fiscal') score += 25;
+      if ((qLower.includes('alergia') || qLower.includes('sismo') || qLower.includes('salud') || qLower.includes('expediente') || qLower.includes('sst') || qLower.includes('seguridad')) && node.cluster === 'medico') score += 25;
+      if ((qLower.includes('sede') || qLower.includes('plantel') || qLower.includes('campus') || qLower.includes('planta') || qLower.includes('unidad')) && node.cluster === 'gobernanza') score += 25;
+      if ((qLower.includes('mision') || qLower.includes('lienzo') || qLower.includes('xp') || qLower.includes('juego') || qLower.includes('simulador') || qLower.includes('kaizen')) && node.cluster === 'gamificacion') score += 25;
+      if ((qLower.includes('profesor') || qLower.includes('docente') || qLower.includes('maestro') || qLower.includes('instructor') || qLower.includes('capacitador')) && node.cluster === 'docente') score += 25;
 
       node.keywords.forEach(kw => {
         if (qLower.includes(kw)) score += 5;
@@ -445,13 +452,15 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
     setIsOptimizingWithAI(true);
     setTimeout(() => {
       const nowStr = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      const enhancedText = `**Directiva Optimizada por Inteligencia Artificial Pedagógica (SEP 2024):**\n\n${node.summary}\n\n1. **Fase de Detección e Inicio (0-30s):** Notificación auditada en pantalla y activación de responsables.\n2. **Fase de Ejecución y Contención (< 90s):** Aplicación de lineamientos estandarizados con bitácora inmutable.\n3. **Cierre Reflexivo & Comunicación (< 3m):** Respaldo criptográfico en la Bóveda Central y comunicación a tutores legales.\n\n*Conformidad:* Auditoría pedagógica certificada a 0 Tokens.`;
+      const enhancedText = isCorporate
+        ? `**Directiva Optimizada por Motor de Inteligencia Artificial Corporativa:**\n\n${node.summary}\n\n1. **Fase de Detección e Inicio (0-30s):** Notificación auditada en pantalla y activación de líderes de área.\n2. **Fase de Ejecución y Contención (< 90s):** Aplicación de lineamientos estandarizados con bitácora inmutable.\n3. **Cierre Reflexivo & Comunicación (< 3m):** Respaldo criptográfico en la Bóveda Central y registro en el expediente del colaborador.\n\n*Conformidad:* Auditoría operativa certificada a 0 Tokens.`
+        : `**Directiva Optimizada por Inteligencia Artificial Pedagógica (SEP 2024):**\n\n${node.summary}\n\n1. **Fase de Detección e Inicio (0-30s):** Notificación auditada en pantalla y activación de responsables.\n2. **Fase de Ejecución y Contención (< 90s):** Aplicación de lineamientos estandarizados con bitácora inmutable.\n3. **Cierre Reflexivo & Comunicación (< 3m):** Respaldo criptográfico en la Bóveda Central y comunicación a tutores legales.\n\n*Conformidad:* Auditoría pedagógica certificada a 0 Tokens.`;
       
       const updatedNodes = nodes.map(n => {
         if (n.id === node.id) {
           return {
             ...n,
-            summary: `${n.summary} (Optimizado con lineamientos SEP 2024)`,
+            summary: isCorporate ? `${n.summary} (Optimizado con lineamientos de competencias industriales)` : `${n.summary} (Optimizado con lineamientos SEP 2024)`,
             customDictamenText: enhancedText,
             isOptimized: true,
             optimizedAt: nowStr,
@@ -767,7 +776,7 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
         const isSelected = node.id === selectedNodeId;
         const isHovered = node.id === hoveredNodeId;
         const isConnected = activeEdges.has(node.id);
-        const cfg = CLUSTER_CONFIG_MAP[node.cluster] || CLUSTER_CONFIG_MAP.core;
+        const cfg = getClusterConfig(node.cluster, isCorporate);
 
         ctx.save();
         ctx.translate(node.x, node.y);
@@ -1177,7 +1186,7 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
                 {(Object.keys(CLUSTER_CONFIG_MAP) as NodeCluster[])
                   .filter(c => c !== 'core')
                   .map(cluster => {
-                    const cfg = CLUSTER_CONFIG_MAP[cluster];
+                    const cfg = getClusterConfig(cluster, isCorporate);
                     const isActive = filterCluster === cluster;
                     return (
                       <button
@@ -1296,8 +1305,8 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
                 <div className="absolute bottom-3 left-3 right-3 sm:right-auto sm:max-w-md bg-slate-900/95 backdrop-blur-xl p-4 rounded-2xl border border-indigo-500/30 shadow-2xl z-10 pointer-events-auto animate-in fade-in slide-in-from-bottom-2 duration-150">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${CLUSTER_CONFIG_MAP[selectedNode.cluster]?.badge || CLUSTER_CONFIG_MAP.core.badge}`}>
-                        {CLUSTER_CONFIG_MAP[selectedNode.cluster]?.label || 'Núcleo Central'}
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getClusterConfig(selectedNode.cluster, isCorporate).badge || getClusterConfig('core', isCorporate).badge}`}>
+                        {getClusterConfig(selectedNode.cluster, isCorporate).label || 'Núcleo Central'}
                       </span>
                       <h4 className="text-xs sm:text-sm font-bold text-white mt-1">
                         {selectedNode.title}
@@ -1377,7 +1386,7 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                    Terminal Pedagógica Directiva
+                    {isCorporate ? 'Terminal Ejecutiva Directiva' : 'Terminal Pedagógica Directiva'}
                   </h3>
                   <p className="text-[11px] text-indigo-300">
                     Motor de IA • Consultas Inmediatas a 0 Tokens
@@ -1513,14 +1522,21 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
                   Consultas Frecuentes Directivas:
                 </span>
                 <div className="flex flex-wrap gap-1.5 text-xs">
-                  {[
+                  {(isCorporate ? [
+                    'Matriz de Competencias Laborales & Certificaciones ISO',
+                    'Manual de Facturación B2B & Cobranza SAT CFDI 4.0',
+                    'Expediente 360 & Protocolo de Seguridad Industrial SST',
+                    'Protocolo de Evacuación de Naves Industriales',
+                    'Pipeline de Atracción de Talento & Onboarding',
+                    'Simuladores Operativos & Práctica Técnica'
+                  ] : [
                     'Matriz de Cobertura Curricular y Planeaciones NEM 2024',
                     'Manual de Facturación SAT CFDI 4.0',
                     'Expediente 360 & Alertas Médicas',
                     'Protocolo de Sismo y Evacuación',
                     'Pipeline de Conversión Familiar',
                     'Lienzo Digital de Actividades'
-                  ].map((chip, idx) => (
+                  ]).map((chip, idx) => (
                     <button
                       key={idx}
                       onClick={() => {
@@ -1554,7 +1570,7 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
                   type="text"
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
-                  placeholder="Consulta al Asistente Pedagógico IA (ej. ¿Cómo opera el CFDI 4.0?)"
+                  placeholder={isCorporate ? "Consulta al Asistente Corporativo IA (ej. ¿Cómo opera la certificación de competencias?)" : "Consulta al Asistente Pedagógico IA (ej. ¿Cómo opera el CFDI 4.0?)"}
                   className="w-full bg-slate-900 border border-slate-700 focus:border-indigo-400 rounded-2xl py-3 pl-10 pr-36 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-inner select-text"
                 />
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
@@ -1585,7 +1601,7 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
                 </div>
               </form>
               <div className="flex items-center justify-between text-[10px] text-slate-500 mt-2 px-1">
-                <span>Motor de Inteligencia Artificial Pedagógica • {institution.name}</span>
+                <span>{isCorporate ? 'Motor de Inteligencia Artificial Corporativa' : 'Motor de Inteligencia Artificial Pedagógica'} • {institution.name}</span>
                 <span className="font-mono text-emerald-400">Consumo: 0 Tokens</span>
               </div>
             </div>
@@ -1664,17 +1680,17 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
                     onChange={(e) => setProtocolForm(prev => ({ ...prev, cluster: e.target.value as NodeCluster }))}
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-white focus:border-indigo-400 focus:outline-none cursor-pointer"
                   >
-                    <option value="pedagogico">Pedagógico & NEM 2024</option>
-                    <option value="gobernanza">Gobernanza & Sedes</option>
-                    <option value="fiscal">Tesorería & Fiscal SAT</option>
-                    <option value="medico">Salud & Urgencias</option>
-                    <option value="crm">Admisiones & Matrícula</option>
-                    <option value="docente">Red Docente & Claustro</option>
-                    <option value="gamificacion">Gamificación & Lienzo</option>
+                    <option value="pedagogico">{isCorporate ? 'Competencias & Capacitación Técnica' : 'Pedagógico & NEM 2024'}</option>
+                    <option value="gobernanza">{isCorporate ? 'Gobernanza & Plantas Operativas' : 'Gobernanza & Sedes'}</option>
+                    <option value="fiscal">{isCorporate ? 'Tesorería & Facturación B2B SAT' : 'Tesorería & Fiscal SAT'}</option>
+                    <option value="medico">{isCorporate ? 'Seguridad Industrial & SST' : 'Salud & Urgencias'}</option>
+                    <option value="crm">{isCorporate ? 'Atracción de Talento & Onboarding' : 'Admisiones & Matrícula'}</option>
+                    <option value="docente">{isCorporate ? 'Cuerpo de Instructores & Líderes Técnicos' : 'Red Docente & Claustro'}</option>
+                    <option value="gamificacion">{isCorporate ? 'Simuladores & Gamificación Operativa' : 'Gamificación & Lienzo'}</option>
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-slate-300">Ruta Canónica Bóveda Curricular</label>
+                  <label className="text-[11px] font-bold text-slate-300">{isCorporate ? 'Ruta Canónica Bóveda de Conocimiento' : 'Ruta Canónica Bóveda Curricular'}</label>
                   <input
                     type="text"
                     value={protocolForm.bovedaPath}

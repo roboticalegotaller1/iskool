@@ -2149,7 +2149,7 @@ export default function SuperUserAdminPage() {
                   onClick={() => selectSchool(null)}
                   className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 border border-slate-200 transition-all cursor-pointer hover:scale-102 shrink-0"
                 >
-                  <ChevronLeft className="h-4 w-4 text-indigo-600" /> <span className="hidden sm:inline">Directorio de Colegios</span>
+                  <ChevronLeft className="h-4 w-4 text-indigo-600" /> <span className="hidden sm:inline">{isCorporate ? 'Directorio de Empresas' : 'Directorio de Colegios'}</span>
                 </button>
               )}
 
@@ -2613,7 +2613,7 @@ export default function SuperUserAdminPage() {
 
               <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col justify-between hover:border-indigo-400 transition-all">
                 <div className="flex items-center justify-between text-slate-500">
-                  <span className="text-xs font-bold uppercase tracking-wider">Planteles Activos</span>
+                  <span className="text-xs font-bold uppercase tracking-wider">{isCorporate ? 'Plantas / Sedes Activas' : 'Planteles Activos'}</span>
                   <div className="p-2 rounded-xl bg-amber-50 text-amber-600">
                     <Building2 className="h-5 w-5" />
                   </div>
@@ -2621,7 +2621,7 @@ export default function SuperUserAdminPage() {
                 <div className="mt-3">
                   <span className="text-3xl font-black text-slate-900">{schoolCampuses.length}</span>
                   <p className="text-[11px] text-slate-500 mt-1 truncate">
-                    {schoolCampuses.map(c => c.name).join(' · ') || 'Planteles Institucionales'}
+                    {schoolCampuses.map(c => c.name).join(' · ') || (isCorporate ? 'Sedes Corporativas' : 'Planteles Institucionales')}
                   </p>
                 </div>
               </div>
@@ -2638,10 +2638,12 @@ export default function SuperUserAdminPage() {
                     <span className="text-xs text-slate-500">· Periodo Quincenal Vigente</span>
                   </div>
                   <h3 className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-                    Finanzas & Nómina del Personal Escolar
+                    {isCorporate ? 'Finanzas & Nómina de la Empresa' : 'Finanzas & Nómina del Personal Escolar'}
                   </h3>
                   <p className="text-xs text-slate-600 max-w-2xl">
-                    Supervisión corporativa de recaudación por colegiaturas versus costos de nómina para directivos, coordinadores, docentes y cobranza.
+                    {isCorporate 
+                      ? 'Supervisión corporativa de presupuesto asignado versus costos de nómina para directores, coordinadores y colaboradores.'
+                      : 'Supervisión corporativa de recaudación por colegiaturas versus costos de nómina para directivos, coordinadores, docentes y cobranza.'}
                   </p>
                 </div>
 
@@ -2697,7 +2699,7 @@ export default function SuperUserAdminPage() {
 
             {/* Campus Breakdown Cards */}
             <div className="space-y-3">
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">Planteles de la Unidad Pedagógica</h3>
+              <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">{isCorporate ? 'Sedes y Plantas de la Organización' : 'Planteles de la Unidad Pedagógica'}</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {schoolCampuses.map(campus => {
                   const campusStudents = schoolStudents.filter(s => s.campus_id === campus.id || s.campus_name?.toLowerCase() === campus.name.toLowerCase());
@@ -4964,7 +4966,7 @@ export default function SuperUserAdminPage() {
             {/* Descripción del Taller */}
             {selectedWorkshopDetail.description && (
               <div className="p-3.5 rounded-xl bg-slate-950 border border-white/10 text-xs text-slate-300 leading-relaxed">
-                <strong className="text-amber-400 block mb-0.5">Objetivos y Enfoque Pedagógico:</strong>
+                <strong className="text-amber-400 block mb-0.5">{isCorporate ? 'Objetivos y Enfoque Técnico:' : 'Objetivos y Enfoque Pedagógico:'}</strong>
                 {selectedWorkshopDetail.description}
               </div>
             )}
@@ -5833,12 +5835,14 @@ export default function SuperUserAdminPage() {
 
               {/* Descripción */}
               <div>
-                <label className="text-slate-300 font-bold block mb-1">Objetivos Pedagógicos y Descripción</label>
-                <textarea aria-label="Describe las competencias que desarrollarán los alumnos en este taller..."
+                <label className="text-slate-300 font-bold block mb-1">
+                  {isCorporate ? 'Objetivos Técnicos y Descripción' : 'Objetivos Pedagógicos y Descripción'}
+                </label>
+                <textarea aria-label={isCorporate ? "Describe las competencias que desarrollarán los colaboradores en este programa..." : "Describe las competencias que desarrollarán los alumnos en este taller..."}
                   rows={2}
                   value={newWorkshopForm.description}
                   onChange={(e) => setNewWorkshopForm({ ...newWorkshopForm, description: e.target.value })}
-                  placeholder="Describe las competencias que desarrollarán los alumnos en este taller..."
+                  placeholder={isCorporate ? "Describe las competencias que desarrollarán los colaboradores en este programa..." : "Describe las competencias que desarrollarán los alumnos en este taller..."}
                   className="w-full bg-slate-950 border border-white/10 rounded-xl p-2.5 text-xs text-white outline-none focus:border-amber-500"
                 />
               </div>
@@ -7034,7 +7038,7 @@ export default function SuperUserAdminPage() {
                   </div>
                   {selectedPayrollRecordForStub.bonuses > 0 && (
                     <div className="flex items-center justify-between text-emerald-300 print:text-emerald-700">
-                      <span>038 - Bonos Pedagógicos / Desempeño</span>
+                      <span>{isCorporate ? '038 - Bonos de Productividad / Desempeño' : '038 - Bonos Pedagógicos / Desempeño'}</span>
                       <span className="font-mono">+${selectedPayrollRecordForStub.bonuses.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
                     </div>
                   )}
@@ -7094,7 +7098,7 @@ export default function SuperUserAdminPage() {
 
               {selectedPayrollRecordForStub.notes && (
                 <div className="text-right sm:max-w-xs">
-                  <span className="text-[10px] font-bold text-purple-300 print:text-purple-800 block">Observaciones Pedagógicas:</span>
+                  <span className="text-[10px] font-bold text-purple-300 print:text-purple-800 block">{isCorporate ? 'Observaciones de Desempeño:' : 'Observaciones Pedagógicas:'}</span>
                   <span className="text-[11px] text-slate-300 print:text-black italic">{selectedPayrollRecordForStub.notes}</span>
                 </div>
               )}
@@ -7175,7 +7179,7 @@ export default function SuperUserAdminPage() {
 
               <div>
                 <label className="text-slate-300 font-bold block mb-1">
-                  Bonos Pedagógicos / Desempeño ($ MXN)
+                  {isCorporate ? 'Bonos de Productividad / Desempeño ($ MXN)' : 'Bonos Pedagógicos / Desempeño ($ MXN)'}
                 </label>
                 <input aria-label="Cantidad numérica"
                   type="number"

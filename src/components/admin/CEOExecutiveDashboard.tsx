@@ -301,6 +301,70 @@ const INSTITUTIONAL_KNOWLEDGE_BASE = [
   }
 ];
 
+// Base de conocimiento corporativa para empresas B2B y sector industrial (BMW, Retail, Tech)
+export const CORPORATE_KNOWLEDGE_BASE = [
+  {
+    id: 'corp-kb-1',
+    topic: 'Protocolo de Seguridad Industrial, EPP y Salud Ocupacional (STPS NOM-030 / NOM-035)',
+    category: 'Seguridad Industrial & SST',
+    sede: 'Planta de Manufactura & Complejos Industriales',
+    reads: '1,740 consultas',
+    keywords: ['seguridad', 'industrial', 'salud', 'ocupacional', 'sst', 'stps', 'nom035', 'loto', 'planta', 'epp', 'bmw', 'linea', 'ensamble', 'evacuacion'],
+    summary: 'Protocolo estandarizado de actuación en líneas operativas, procedimientos de bloqueo/etiquetado (LOTO), uso obligatorio de EPP y atención médica inmediata en planta.',
+    answer: 'El protocolo corporativo de seguridad industrial y salud en el trabajo establece la verificación inmediata del expediente de salud ocupacional del colaborador, garantizando el cumplimiento de normas STPS (NOM-030 y NOM-035), protocolos de bloqueo de energía LOTO en maquinaria y atención en módulo médico de planta en < 3 minutos con bitácora inmutable.'
+  },
+  {
+    id: 'corp-kb-2',
+    topic: 'Matriz de Competencias Laborales y Certificaciones Técnicas (ISO 9001 / IATF 16949)',
+    category: 'Competencias Técnicas & Certificaciones',
+    sede: 'Centro de Entrenamiento Técnico & Planta SLP',
+    reads: '2,310 consultas',
+    keywords: ['competencias', 'certificaciones', 'tecnicas', 'iso', 'iatf', 'capacitacion', 'entrenamiento', 'habilidades', 'operativas', 'onboarding', 'linea', 'mejora', 'continua'],
+    summary: 'Módulos de capacitación técnica especializada, certificación de habilidades operativas en línea y planes de desarrollo profesional continuo a 0 tokens.',
+    answer: 'La cobertura en certificación de competencias laborales en el holding corporativo alcanza el 96.8%. Se articulan matrices de habilidades técnicas alineadas a estándares internacionales automotrices e industriales (ISO 9001, IATF 16949 y metodologías Lean Manufacturing) con evaluación continua y registro en la Bóveda Central de Conocimiento.'
+  },
+  {
+    id: 'corp-kb-3',
+    topic: 'Manual de Facturación B2B, Órdenes de Compra y Timbrado SAT CFDI 4.0',
+    category: 'Finanzas B2B & Cumplimiento Fiscal SAT',
+    sede: 'Dirección de Finanzas & Tesorería Holding',
+    reads: '1,280 consultas',
+    keywords: ['facturacion', 'b2b', 'cobranza', 'cfdi', 'sat', 'timbrado', 'fiscal', 'empresarial', 'orden', 'compra', 'pac', 'deduccion'],
+    summary: 'Procedimiento de emisión automatizada de comprobantes fiscales empresariales, validación de complementos de pago B2B y conciliación bancaria.',
+    answer: 'La facturación corporativa opera bajo el esquema CFDI 4.0 con timbrado PAC instantáneo a 0 tokens. Las cuentas por cobrar y órdenes de compra corporativas son conciliadas automáticamente en el libro mayor financiero con validación de RFC empresarial y cumplimiento fiscal estricto.'
+  },
+  {
+    id: 'corp-kb-4',
+    topic: 'Protocolo de Evacuación de Naves Industriales y Brigadas de Emergencia',
+    category: 'Protección Civil & Seguridad en Planta',
+    sede: 'Dirección de Seguridad Patrimonial & Planta',
+    reads: '1,490 consultas',
+    keywords: ['evacuacion', 'nave', 'industrial', 'proteccion', 'civil', 'simulacro', 'brigada', 'emergencia', 'seguridad', 'punto', 'reunion'],
+    summary: 'Directrices de evacuación inmediata ante siniestros o contingencias en plantas de manufactura y centros corporativos con conteo biométrico de colaboradores en < 90 segundos.',
+    answer: 'Ante cualquier contingencia en plantas o edificios corporativos: 1) Paro preventivo de maquinaria y líneas operativas. 2) Evacuación guiada por brigadistas hacia puntos de reunión designados. 3) Pase de lista y verificación biométrica de colaboradores activos en la app. 4) Activación de protocolos de coordinación con servicios de emergencia locales.'
+  },
+  {
+    id: 'corp-kb-5',
+    topic: 'Protocolo de Atracción de Talento, Evaluación Técnica e Inducción Corporativa',
+    category: 'Capital Humano & Reclutamiento',
+    sede: 'Gerencia de Recursos Humanos & Talento',
+    reads: '1,050 consultas',
+    keywords: ['reclutamiento', 'onboarding', 'talento', 'candidatos', 'evaluacion', 'tecnica', 'induccion', 'contratacion', 'capital', 'humano'],
+    summary: 'Ruta de incorporación de nuevos colaboradores: Evaluación técnica y psicométrica laboral, entrevistas con directores de área y programa de inducción.',
+    answer: 'El ciclo de incorporación corporativa consta de 4 etapas: Registro de candidatos en el ATS corporativo, evaluación técnica y psicométrica laboral, entrevistas con directores de área y formalización de oferta con expediente digital de colaborador.'
+  },
+  {
+    id: 'corp-kb-6',
+    topic: 'Código de Ética Profesional, Compliance y Normativa Laboral',
+    category: 'Jurídico Corporativo & Compliance',
+    sede: 'Comité de Ética y Cumplimiento',
+    reads: '890 consultas',
+    keywords: ['etica', 'cumplimiento', 'compliance', 'reglamento', 'interior', 'trabajo', 'derechos', 'comite', 'clima', 'laboral'],
+    summary: 'Lineamientos de conducta profesional, mediación laboral, resguardo de información confidencial y canal de denuncias corporativo.',
+    answer: 'Política de estricto apego al código de conducta y transparencia en todas las unidades de negocio. El comité corporativo asegura el cumplimiento del Reglamento Interior de Trabajo, resolución pacífica de controversias y protección integral al colaborador.'
+  }
+];
+
 // ==========================================
 // ESTRUCTURA DEL PIPELINE DE ADMISIONES
 // ==========================================
@@ -646,7 +710,7 @@ export default function CEOExecutiveDashboard({
     title: string;
     description: string;
     campusAffected: string[];
-    actionType: 'cobranza' | 'reinscripcion' | 'academico' | 'docentes';
+    actionType: 'cobranza' | 'reinscripcion' | 'academico' | 'docentes' | 'retencion';
   } | null>(null);
 
   // Modal para ver TODOS los Focos de Atención
@@ -720,9 +784,9 @@ export default function CEOExecutiveDashboard({
   }, []);
 
   const selectedCampusName = useMemo(() => {
-    if (selectedCampusId === 'all') return 'Consolidado (5 Sedes)';
-    return holding.campuses.find(c => c.id === selectedCampusId)?.name || 'Plantel Seleccionado';
-  }, [selectedCampusId, holding.campuses]);
+    if (selectedCampusId === 'all') return isCorporate ? 'Consolidado Corporativo' : 'Consolidado (5 Sedes)';
+    return holding.campuses.find(c => c.id === selectedCampusId)?.name || (isCorporate ? 'Sede Seleccionada' : 'Plantel Seleccionado');
+  }, [selectedCampusId, holding.campuses, isCorporate]);
 
   // Motor Autónomo Watchdog (Monitoreo Continuo sin Intervención)
   const [autonomousCycle, setAutonomousCycle] = useState<number>(1);
@@ -868,59 +932,59 @@ export default function CEOExecutiveDashboard({
 
     return [
       { 
-        stage: '1. Prospectos Registrados en CRM', 
+        stage: isCorporate ? '1. Candidatos Registrados en ATS' : '1. Prospectos Registrados en CRM', 
         count: c1, 
         pct: 100, 
         color: 'bg-purple-600', 
         borderColor: 'border-purple-200',
         bgColor: 'bg-purple-50/50',
         textColor: 'text-purple-700',
-        note: 'Interés inicial en web, redes sociales y ferias escolares',
-        dept: 'Admisiones & Marketing Institucional',
-        systemLocation: 'Formulario Web / Landing Page o Botón "+ Registrar Aspirante"',
+        note: isCorporate ? 'Interés inicial en portal de talento, convocatorias corporativas y bolsas de trabajo' : 'Interés inicial en web, redes sociales y ferias escolares',
+        dept: isCorporate ? 'Atracción de Talento & Marca Empleadora' : 'Admisiones & Marketing Institucional',
+        systemLocation: isCorporate ? 'Portal de Reclutamiento / Convocatoria B2B o Botón "+ Registrar Candidato"' : 'Formulario Web / Landing Page o Botón "+ Registrar Aspirante"',
         stageNum: 1
       },
       { 
-        stage: '2. Tours y Visitas de Campus', 
+        stage: isCorporate ? '2. Entrevistas Iniciales y Evaluación Técnica' : '2. Tours y Visitas de Campus', 
         count: c2, 
         pct: Number(((c2 / (c1 || 1)) * 100).toFixed(1)), 
         color: 'bg-indigo-600', 
         borderColor: 'border-indigo-200',
         bgColor: 'bg-indigo-50/50',
         textColor: 'text-indigo-700',
-        note: 'Recorridos presenciales de instalaciones y plática informativa directiva',
-        dept: 'Dirección de Plantel & Relaciones Públicas',
-        systemLocation: 'Agenda de Visitas Guiadas / Directorio del Pipeline',
+        note: isCorporate ? 'Sesiones de evaluación de competencias, perfil cultural y entrevista con líderes técnicos' : 'Recorridos presenciales de instalaciones y plática informativa directiva',
+        dept: isCorporate ? 'Gerencia de Capital Humano & Líderes de Área' : 'Dirección de Plantel & Relaciones Públicas',
+        systemLocation: isCorporate ? 'Agenda de Evaluaciones Técnicas / Pipeline de Talento' : 'Agenda de Visitas Guiadas / Directorio del Pipeline',
         stageNum: 2
       },
       { 
-        stage: '3. Examen Diagnóstico Psicopedagógico', 
+        stage: isCorporate ? '3. Evaluación de Competencias Técnicas y Psicométricas' : '3. Examen Diagnóstico Psicopedagógico', 
         count: c3, 
         pct: Number(((c3 / (c1 || 1)) * 100).toFixed(1)), 
         color: 'bg-blue-600', 
         borderColor: 'border-blue-200',
         bgColor: 'bg-blue-50/50',
         textColor: 'text-blue-700',
-        note: 'Evaluación de habilidades cognitivas, socioemocionales y entrevista familiar',
-        dept: 'Gabinete Psicopedagógico & Orientación',
-        systemLocation: 'Módulo de Psicopedagogía / Expediente de Ingreso',
+        note: isCorporate ? 'Evaluación de habilidades operativas, certificaciones técnicas y perfil psicométrico laboral' : 'Evaluación de habilidades cognitivas, socioemocionales y entrevista familiar',
+        dept: isCorporate ? 'Evaluación Técnica & Salud Ocupacional' : 'Gabinete Psicopedagógico & Orientación',
+        systemLocation: isCorporate ? 'Módulo de Competencias Técnicas / Expediente de Selección' : 'Módulo de Psicopedagogía / Expediente de Ingreso',
         stageNum: 3
       },
       { 
-        stage: '4. Carta de Asignación Emitida', 
+        stage: isCorporate ? '4. Oferta Económica y Carta de Asignación Emitida' : '4. Carta de Asignación Emitida', 
         count: c4, 
         pct: Number(((c4 / (c1 || 1)) * 100).toFixed(1)), 
         color: 'bg-teal-600', 
         borderColor: 'border-teal-200',
         bgColor: 'bg-teal-50/50',
         textColor: 'text-teal-700',
-        note: 'Cupo formal apartado en grado y grupo escolar con vigencia de pago (5 días)',
-        dept: 'Dirección Académica & Comité de Admisiones',
-        systemLocation: 'Comité de Asignación de Matrícula',
+        note: isCorporate ? 'Propuesta formal de contratación y asignación a unidad con vigencia de firma (5 días)' : 'Cupo formal apartado en grado y grupo escolar con vigencia de pago (5 días)',
+        dept: isCorporate ? 'Comité de Talento & Dirección de Operaciones' : 'Dirección Académica & Comité de Admisiones',
+        systemLocation: isCorporate ? 'Comité de Asignación de Plazas Laborales' : 'Comité de Asignación de Matrícula',
         stageNum: 4
       },
       { 
-        stage: '5. Inscripción y Reserva Pagada', 
+        stage: isCorporate ? '5. Contratación e Incorporación Formal' : '5. Inscripción y Reserva Pagada', 
         count: c5, 
         pct: Number(((c5 / (c1 || 1)) * 100).toFixed(1)), 
         color: 'bg-emerald-600', 
@@ -933,7 +997,7 @@ export default function CEOExecutiveDashboard({
         stageNum: 5
       },
     ];
-  }, [selectedCampusId, prospectsList]);
+  }, [selectedCampusId, prospectsList, isCorporate]);
 
   // -----------------------------------------------------------
   // DIFERENCIADOR ÉLITE: SIMULADOR DE ESCENARIOS "WHAT-IF"
@@ -1203,10 +1267,11 @@ export default function CEOExecutiveDashboard({
       finalActionType = 'emergencia';
       finalActionLabel = isCorporate ? 'Ver Protocolo de Seguridad' : 'Ver Expediente de Seguridad';
     } else {
+      const targetKB = isCorporate ? CORPORATE_KNOWLEDGE_BASE : INSTITUTIONAL_KNOWLEDGE_BASE;
       let bestScore = -1;
-      let bestMatch = INSTITUTIONAL_KNOWLEDGE_BASE[0];
+      let bestMatch = targetKB[0];
 
-      INSTITUTIONAL_KNOWLEDGE_BASE.forEach(doc => {
+      targetKB.forEach(doc => {
         let score = 0;
         const combined = `${doc.topic} ${doc.category} ${doc.summary} ${doc.keywords.join(' ')}`
           .toLowerCase()
@@ -1232,10 +1297,10 @@ export default function CEOExecutiveDashboard({
         { label: 'Bóveda Central', value: 'Indexado' },
         { label: 'Consultas Red', value: bestMatch.reads },
         { label: 'Normativa', value: bestMatch.category },
-        { label: 'Vigencia', value: 'Ciclo 2026-2027' }
+        { label: 'Vigencia', value: isCorporate ? 'Ejercicio 2026-2027' : 'Ciclo 2026-2027' }
       ];
-      finalActionType = 'academico';
-      finalActionLabel = 'Supervisar Procedimiento';
+      finalActionType = isCorporate ? 'operativo' : 'academico';
+      finalActionLabel = isCorporate ? 'Supervisar Operación' : 'Supervisar Procedimiento';
     }
 
     const t1 = performance.now();
@@ -1694,7 +1759,7 @@ export default function CEOExecutiveDashboard({
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  <span className="font-semibold text-slate-700">Licenciatario:</span> {currentInstitution?.name || holding.name} ({holding.campuses.length} Planteles) • <span className="font-semibold text-slate-700">Software Propietario:</span> {currentInstitution?.licensing?.licensor || 'ISkool Technologies Inc.'} • <span className="text-indigo-600 font-medium">Asientos: {metrics.totalStudents.toLocaleString()} en uso de {(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200)).toLocaleString()} contratados ({Math.min(100, Math.round(((metrics.totalStudents) / (currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200))) * 1000) / 10)}% ocupación)</span>
+                  <span className="font-semibold text-slate-700">Licenciatario:</span> {currentInstitution?.name || holding.name} ({holding.campuses.length} {isCorporate ? 'Sedes / Plantas' : 'Planteles'}) • <span className="font-semibold text-slate-700">Software Propietario:</span> {currentInstitution?.licensing?.licensor || 'ISkool Technologies Inc.'} • <span className="text-indigo-600 font-medium">Asientos: {metrics.totalStudents.toLocaleString()} en uso de {(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200)).toLocaleString()} contratados ({Math.min(100, Math.round(((metrics.totalStudents) / (currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200))) * 1000) / 10)}% ocupación)</span>
                 </p>
               </div>
             </div>
@@ -1702,7 +1767,7 @@ export default function CEOExecutiveDashboard({
             <div className="flex items-center gap-2 self-end md:self-auto shrink-0">
               <div className="text-right hidden sm:block">
                 <div className="text-[11px] font-bold text-slate-700">Vigencia Anual: 2026-2027</div>
-                <div className="text-[10px] text-emerald-600 font-semibold">● Timbrado CFDI/IEDU 0 Tokens Activo</div>
+                <div className="text-[10px] text-emerald-600 font-semibold">{isCorporate ? '● Facturación CFDI 4.0 B2B Activa' : '● Timbrado CFDI/IEDU 0 Tokens Activo'}</div>
               </div>
               <button
                 onClick={() => triggerToast(`✓ Contrato de Licencia SaaS verificado: ${(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200)).toLocaleString()} asientos autorizados para ${currentInstitution?.name || holding.name}`)}
@@ -1972,10 +2037,10 @@ export default function CEOExecutiveDashboard({
                           </div>
                           <div>
                             <div className="text-sm font-semibold text-slate-800 group-hover:text-rose-700 transition-colors">
-                              Cobranza
+                              {isCorporate ? 'Cobranza B2B' : 'Cobranza'}
                             </div>
                             <div className="text-xs text-slate-500 mt-0.5">
-                              2 planteles en seguimiento (91% y 93%)
+                              {isCorporate ? '2 sedes en seguimiento (91% y 93%)' : '2 planteles en seguimiento (91% y 93%)'}
                             </div>
                           </div>
                         </div>
@@ -1985,10 +2050,12 @@ export default function CEOExecutiveDashboard({
                       <div 
                         onClick={() => setActiveFocalModal({
                           isOpen: true,
-                          title: 'Campaña de Reinscripciones Pendiente',
-                          description: 'Se requiere activar el recordatorio vía portal y WhatsApp institucional en Campus San Cristóbal y Campus Coacalco.',
-                          campusAffected: ['Campus San Cristóbal', 'Campus Coacalco'],
-                          actionType: 'reinscripcion'
+                          title: isCorporate ? 'Campaña de Retención de Talento Pendiente' : 'Campaña de Reinscripciones Pendiente',
+                          description: isCorporate 
+                            ? 'Se requiere activar el seguimiento de evaluación y certificaciones técnicas en las sedes operativas.'
+                            : 'Se requiere activar el recordatorio vía portal y WhatsApp institucional en Campus San Cristóbal y Campus Coacalco.',
+                          campusAffected: isCorporate ? ['Planta Industrial Norte', 'Sede Tecnológica Santa Fe'] : ['Campus San Cristóbal', 'Campus Coacalco'],
+                          actionType: isCorporate ? 'retencion' : 'reinscripcion'
                         })}
                         className="p-3.5 rounded-xl border border-slate-100 hover:border-amber-300 hover:bg-amber-50/30 transition-all cursor-pointer flex items-center justify-between group active:scale-98"
                       >
@@ -1998,10 +2065,10 @@ export default function CEOExecutiveDashboard({
                           </div>
                           <div>
                             <div className="text-sm font-semibold text-slate-800 group-hover:text-amber-700 transition-colors">
-                              Reinscripciones
+                              {isCorporate ? 'Retención & Desempeño' : 'Reinscripciones'}
                             </div>
                             <div className="text-xs text-slate-500 mt-0.5">
-                              Iniciar campaña formal en 2 planteles
+                              {isCorporate ? 'Iniciar evaluación formal en 2 plantas' : 'Iniciar campaña formal en 2 planteles'}
                             </div>
                           </div>
                         </div>
@@ -2547,7 +2614,7 @@ export default function CEOExecutiveDashboard({
 
                   <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
                     <div className="flex justify-between font-bold text-slate-800">
-                      <span>Meta 3: Expansión de Planteles</span>
+                      <span>{isCorporate ? 'Meta 3: Expansión de Plantas & Sedes' : 'Meta 3: Expansión de Planteles'}</span>
                       <span className="font-mono text-amber-600">5 / 7 sedes</span>
                     </div>
                     <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
@@ -2663,7 +2730,7 @@ export default function CEOExecutiveDashboard({
                         }}
                         className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
                       >
-                        Enfocar Consola en este Plantel
+                        {isCorporate ? 'Enfocar Consola en esta Planta' : 'Enfocar Consola en este Plantel'}
                       </button>
                     </div>
                   );

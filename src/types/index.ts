@@ -206,7 +206,7 @@ export interface Institution {
 
 export const isCorporateInstitution = (inst?: Institution | null): boolean => {
   if (!inst) return false;
-  return inst.is_corporate_enterprise === true || inst.institution_type === 'corporate';
+  return inst.is_corporate_enterprise === true || inst.institution_type === 'corporate' || (typeof inst.id === 'string' && inst.id.startsWith('emp-'));
 };
 
 /**

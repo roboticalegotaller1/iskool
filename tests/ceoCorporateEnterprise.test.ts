@@ -215,4 +215,100 @@ describe('🏢 SUITE: Sector Corporativo B2B & Cuentas CEO en ISkool', () => {
       expect(ceoCardBlock).not.toMatch(/alumnos|docentes|profesores|aulas|colegios|colegiaturas/i);
     });
   });
+
+  describe('5. Cero vocabulario pedagógico ni escolar en Módulo BMW y Módulos CEO', () => {
+    it('debe generar el Grafo Neuronal para BMW (emp-bmw) con CERO menciones de pedagógica, colegio o SEP', async () => {
+      const { buildSchoolInstitutionalGraph, getClusterConfig } = await import('@/services/institutionalGraphEngine');
+      
+      const { nodes, edges } = buildSchoolInstitutionalGraph('emp-bmw');
+      expect(nodes.length).toBeGreaterThan(0);
+      expect(edges.length).toBeGreaterThan(0);
+
+      // Palabras prohibidas para empresas corporativas
+      const forbiddenRegex = /pedag\w*|colegio\w*|aula\w*|pda|sep 2024|alumn\w*|docent\w*/i;
+
+      nodes.forEach(node => {
+        expect(node.title).not.toMatch(forbiddenRegex);
+        expect(node.subtitle).not.toMatch(forbiddenRegex);
+        if (node.summary) {
+          expect(node.summary).not.toMatch(forbiddenRegex);
+        }
+        if (node.customDictamenText) {
+          expect(node.customDictamenText).not.toMatch(forbiddenRegex);
+        }
+      });
+
+      // El clúster "pedagogico" debe adaptarse dinámicamente a Competencias & Capacitación Técnica
+      const clusterConfig = getClusterConfig('pedagogico', true);
+      expect(clusterConfig.label).not.toMatch(/pedag/i);
+      expect(clusterConfig.label).toContain('Competencias');
+      expect(clusterConfig.description).not.toMatch(/sep|nem|pedag/i);
+
+      // El clúster "medico" debe adaptarse a Seguridad Industrial & SST
+      const sstConfig = getClusterConfig('medico', true);
+      expect(sstConfig.label).toContain('Seguridad Industrial & SST');
+
+      // El clúster "crm" debe adaptarse a Atracción de Talento & Onboarding
+      const crmConfig = getClusterConfig('crm', true);
+      expect(crmConfig.label).toContain('Atracción de Talento');
+
+      // El clúster "docente" debe adaptarse a Instructores & Líderes Técnicos
+      const instructorConfig = getClusterConfig('docente', true);
+      expect(instructorConfig.label).toContain('Instructores');
+    });
+
+    it('debe mantener intacto el vocabulario pedagógico y NEM oficial para colegios regulares (sch-ibime)', async () => {
+      const { buildSchoolInstitutionalGraph, getClusterConfig } = await import('@/services/institutionalGraphEngine');
+      
+      const { nodes } = buildSchoolInstitutionalGraph('sch-ibime');
+      expect(nodes.length).toBeGreaterThan(0);
+
+      // Los colegios regulares SÍ deben contener sus nodos pedagógicos y curriculares
+      const hasPedagogicalNodes = nodes.some(n => 
+        n.title.toLowerCase().includes('pedagógic') || 
+        n.title.toLowerCase().includes('nem') ||
+        n.title.toLowerCase().includes('fase')
+      );
+      expect(hasPedagogicalNodes).toBe(true);
+
+      // Para un colegio regular, el cluster pedagogico debe mantener su título oficial SEP
+      const regularCluster = getClusterConfig('pedagogico', false);
+      expect(regularCluster.label).toContain('Pedagógico');
+    });
+
+    it('la Base de Conocimiento Corporativa de CEOExecutiveDashboard debe contener CERO términos pedagógicos o escolares', async () => {
+      const { CORPORATE_KNOWLEDGE_BASE } = await import('@/components/admin/CEOExecutiveDashboard');
+      expect(CORPORATE_KNOWLEDGE_BASE.length).toBeGreaterThanOrEqual(4);
+
+      const forbiddenRegex = /pedag\w*|colegio\w*|colegiatura\w*|aula\w*|pda/i;
+
+      CORPORATE_KNOWLEDGE_BASE.forEach(entry => {
+        expect(entry.topic).not.toMatch(forbiddenRegex);
+        expect(entry.category).not.toMatch(forbiddenRegex);
+        expect(entry.summary).not.toMatch(forbiddenRegex);
+        expect(entry.answer).not.toMatch(forbiddenRegex);
+        entry.keywords.forEach(kw => {
+          expect(kw).not.toMatch(forbiddenRegex);
+        });
+      });
+    });
+
+    it('el componente InstitutionalBrainStudio debe ofrecer consultas ejecutivas corporativas cuando isCorporate es true', async () => {
+      const fs = await import('fs');
+      const studioCode = fs.readFileSync('src/components/admin/InstitutionalBrainStudio.tsx', 'utf-8');
+
+      // Debe condicionar la terminal directiva
+      expect(studioCode).toContain("isCorporate ? 'Terminal Ejecutiva Directiva' : 'Terminal Pedagógica Directiva'");
+      
+      // Debe condicionar el placeholder
+      expect(studioCode).toContain("isCorporate ? \"Consulta al Asistente Corporativo IA");
+
+      // Debe condicionar el footer
+      expect(studioCode).toContain("isCorporate ? 'Motor de Inteligencia Artificial Corporativa' : 'Motor de Inteligencia Artificial Pedagógica'");
+
+      // Debe condicionar los chips de consulta rápida
+      expect(studioCode).toContain("'Matriz de Competencias Laborales & Certificaciones ISO'");
+    });
+  });
 });
+
