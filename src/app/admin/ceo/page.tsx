@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useMemo, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import CEOExecutiveDashboard, { buildHoldingForInstitution, DEFAULT_IBIME_HOLDING } from '@/components/admin/CEOExecutiveDashboard';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useAuth } from '@/context/AuthContext';
 import { isPlatformSuperUser } from '@/types';
 
-export default function CEOExecutiveDashboardPage() {
+function CEOExecutiveDashboardContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const querySchoolId = searchParams?.get('schoolId') || searchParams?.get('id');
   const { user } = useAuth();
   const { 
     institutionsList, 
@@ -20,17 +22,18 @@ export default function CEOExecutiveDashboardPage() {
   } = useSchoolAdminStore();
 
   const isSuperUser = isPlatformSuperUser(user);
+  const effectiveId = querySchoolId || activeSchoolId;
 
-  // Determinar la institución actual: por activeSchoolId, o la del usuario, o la primera de la lista
+  // Determinar la institución actual: por parámetro de URL, activeSchoolId, o usuario
   const currentInstitution = useMemo(() => {
-    if (activeSchoolId) {
-      return institutionsList.find(inst => inst.id === activeSchoolId) || null;
+    if (effectiveId) {
+      return institutionsList.find(inst => inst.id === effectiveId) || null;
     }
     if (user?.school_id) {
       return institutionsList.find(inst => inst.id === user.school_id) || null;
     }
     return institutionsList[0] || null;
-  }, [activeSchoolId, user?.school_id, institutionsList]);
+  }, [effectiveId, user?.school_id, institutionsList]);
 
   // Construir holding adaptado a la institución seleccionada
   const dynamicHolding = useMemo(() => {
@@ -51,6 +54,14 @@ export default function CEOExecutiveDashboardPage() {
         router.push('/admin');
       } : undefined}
     />
+  );
+}
+
+export default function CEOExecutiveDashboardPage() {
+  return (
+    <Suspense fallback={<div className="h-screen w-full flex items-center justify-center bg-slate-900 text-white font-bold">Cargando Consola CEO...</div>}>
+      <CEOExecutiveDashboardContent />
+    </Suspense>
   );
 }
 

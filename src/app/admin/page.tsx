@@ -1419,7 +1419,7 @@ export default function SuperUserAdminPage() {
     );
   }
 
-  const isSuperOrOwner = user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'owner');
+  const isSuperOrOwner = user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'owner' || user.role === 'ceo');
 
   if (!isSuperOrOwner) {
     const getRedirectInfo = () => {

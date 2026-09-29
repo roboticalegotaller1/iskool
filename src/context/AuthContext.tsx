@@ -360,7 +360,7 @@ export const getDemoUser = (email: string): UserProfile => {
       last_name: 'Weber Schmidt (CEO & VP Manufacturing)',
       role: 'ceo',
       email: 'ceo@bmw-corp.mx',
-      temporary_password: 'CEO2026',
+      temporary_password: 'BMW2026',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -860,7 +860,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
       }
 
-      if (resolvedUser.temporary_password && 
+      const isBmwCeo = resolvedUser.id === 'usr-ceo-bmw' || resolvedUser.email === 'ceo@bmw-corp.mx';
+      const isBmwPassMatch = isBmwCeo && (userPassword === 'BMW2026' || userPassword === 'BMW2026!' || userPassword === 'CEO2026' || userPassword === 'CEO2026!');
+
+      const isVentasCeo = resolvedUser.id === 'usr-ceo-ventas' || resolvedUser.email === 'ceo@vanguardia-retail.mx';
+      const isVentasPassMatch = isVentasCeo && (userPassword === 'RETAIL2026' || userPassword === 'RETAIL2026!' || userPassword === 'CEO2026' || userPassword === 'CEO2026!');
+
+      if (!isBmwPassMatch && !isVentasPassMatch && resolvedUser.temporary_password && 
           userPassword !== resolvedUser.temporary_password && 
           userPassword !== 'ISkoolPassword2026!' && 
           userPassword !== '008805') {
