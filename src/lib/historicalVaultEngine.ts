@@ -592,18 +592,26 @@ export function isCorruptOrGenericPersonaAnswer(answer: string): boolean {
     return true;
   }
 
-  // Anacronismos y farándula
-  if (
-    text.includes('exterminador') ||
-    text.includes('El vestido de novia') ||
-    text.includes('película animada') ||
-    text.includes('película') ||
-    text.includes('Héroes verdaderos') ||
-    text.includes('Trayectoria') ||
-    text.includes('Alicia de Roc') ||
-    /\(19\d\d\)|\(20\d\d\)/.test(text)
-  ) {
-    return true;
+  // Anacronismos y farándula (excepto declinaciones legítimas de cortesía histórica)
+  const isLegitAnachronismDecline = text.includes('obra y muerte') || 
+                                   text.includes('fuera de mi tiempo') || 
+                                   text.includes('fuera de nuestro tiempo') ||
+                                   text.includes('vida terrenal jamás tuve acceso') ||
+                                   text.includes('vida terrenal jamas tuve acceso');
+
+  if (!isLegitAnachronismDecline) {
+    if (
+      text.includes('exterminador') ||
+      text.includes('El vestido de novia') ||
+      text.includes('película animada') ||
+      text.includes('película') ||
+      text.includes('Héroes verdaderos') ||
+      text.includes('Trayectoria') ||
+      text.includes('Alicia de Roc') ||
+      /\((19\d\d|20\d\d)\)/.test(text)
+    ) {
+      return true;
+    }
   }
 
   // Habla en 3ª persona sobre sí mismo
@@ -655,6 +663,7 @@ export function matchesHistoricalTheme(q1: string, q2: string): boolean {
 export interface HistoricalQuestionAnalysis {
   normalizedQuestion: string;
   isNegated: boolean;
+  isAnachronismOrOutOfTime?: boolean;
   interrogativeType: 
     | 'ASKING_NAMES'        // ¿cómo se llamaba(n)?, ¿quiénes eran?, ¿cuáles eran los nombres?
     | 'ASKING_COUNT'        // ¿cuántos?, ¿qué cantidad?
@@ -684,6 +693,7 @@ export interface HistoricalQuestionAnalysis {
     | 'PRISON_CONVENT'
     | 'TACONEO_ALERT'
     | 'IDENTITY'
+    | 'ANACHRONISM_OUT_OF_TIME'
     | 'GENERAL';
   specificIntent: string;
   requiredKeywords?: string[];
@@ -691,11 +701,93 @@ export interface HistoricalQuestionAnalysis {
 }
 
 /**
+ * Detector de Anacronismos, Tecnologías Modernas, Plataformas Digitales y Sucesos Posteriores
+ */
+export function isAnachronismOrModernConcept(normQ: string, birthOrDeathDates?: string): boolean {
+  // 1. Tecnologías modernas, dispositivos electrónicos, hardware y vehículos modernos
+  const modernTechRegex = /\b(celular|celulares|smartphone|smartphones|telefono movil|telefonos moviles|computadora|computadoras|computador|computadores|laptop|laptops|ipad|ipads|tablet|tablets|pantalla plana|pantallas|televisor|televisores|televisi[oó]n|\btv\b|videojuego|videojuegos|consola|consolas|playstation|xbox|nintendo|robot|robots|dron|drones|avion|aviones|aeroplano|aeroplanos|helicoptero|helicopteros|cohete espacial|cohete|cohetes|nave espacial|naves espaciales|astronave|satelite|satelites|automovil|automoviles|carro moderno|carros modernos|coche moderno|coches modernos|tesla|uber|didi)\b/i;
+
+  // 2. Internet, redes sociales, plataformas, software y ecosistema digital
+  const digitalEcosystemRegex = /\b(internet|wifi|wi-fi|bluetooth|red social|redes sociales|pagina web|paginas web|sitio web|sitios web|software|aplicacion|aplicaciones|aplicacion movil|\bapp\b|\bapps\b|inteligencia artificial|\bia\b|chatgpt|openai|facebook|tiktok|instagram|twitter|\bx\b|whatsapp|telegram|google|youtube|netflix|spotify|streaming|podcast|podcasts|influencer|influencers|streamer|streamers|youtuber|youtubers|tiktoker|tiktokers|bitcoin|criptomoneda|criptomonedas|banco digital|link|links|enlace web|correo electronico|email|e-mail|hacker|hackers|meme|memes)\b/i;
+
+  // 3. Consultas directas sobre interacción con tecnología contemporánea
+  const modernActionRegex = /(tienes celular|usas celular|tienes telefono|usas whatsapp|tienes internet|usas internet|redes sociales|en que pagina|cual es tu app|tienes instagram|tienes tiktok|tienes facebook|juegas videojuegos|conoces netflix|que opinas de la inteligencia artificial|conoces chatgpt|tienes correo|mandas emails|navegas por internet)/i;
+
+  if (modernTechRegex.test(normQ) || digitalEcosystemRegex.test(normQ) || modernActionRegex.test(normQ)) {
+    return true;
+  }
+
+  // 4. Mención de años contemporáneos posteriores a la muerte del personaje
+  const yearMatches = normQ.match(/\b(18\d{2}|19\d{2}|20\d{2})\b/g);
+  if (yearMatches && yearMatches.length > 0 && birthOrDeathDates) {
+    const deathYearMatch = birthOrDeathDates.match(/\b(1[4-9]\d{2}|20\d{2})\b/g);
+    if (deathYearMatch && deathYearMatch.length >= 2) {
+      const deathYear = parseInt(deathYearMatch[deathYearMatch.length - 1], 10);
+      for (const ym of yearMatches) {
+        const queryYear = parseInt(ym, 10);
+        if (queryYear > deathYear) {
+          return true;
+        }
+      }
+    }
+  }
+
+  // 5. Acontecimientos mundiales o nacionales posteriores a personajes de épocas anteriores
+  if (/(segunda guerra mundial|primera guerra mundial|guerra fria|llegada a la luna|viaje a la luna|bomba atomica|pandemia de covid|tlcan|onu)/i.test(normQ)) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Generador Canónico de Declinación Cortés en Primera Persona ante Anacronismos
+ * Cumple estrictamente la regla pedagógica:
+ * - Permanece en el papel en primera persona
+ * - Argumenta que en su vida terrenal no tenía acceso a esa tecnología, suceso, práctica o concepto
+ * - Declina cortésmente y gentilmente comenta que solo dispone de información de su vida, obra y muerte.
+ */
+export function generateCanonicalAnachronismResponse(
+  characterName: string, 
+  figureNode?: Partial<HistoricalFigureBlockData> | null
+): string {
+  const norm = (characterName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  if (norm.includes('josefa') || norm.includes('corregidora')) {
+    return 'En mi época y durante los años que viví en este suelo patrio (1768 - 1829), jamás tuvimos noticia ni acceso a semejante tecnología, suceso o práctica fuera de nuestro tiempo. En mi vida terrenal jamás tuve acceso a tales invenciones ajenas a mi siglo; con toda cortesía y verdad te comento que únicamente dispongo de información, vivencias y memoria sobre los hechos de mi vida, la causa insurgente de nuestra patria, mis obras y mi muerte.';
+  }
+
+  if (norm.includes('villa') || norm.includes('doroteo') || norm.includes('centauro')) {
+    return 'En mis tiempos y durante los años que cabalgué en esta tierra (1878 - 1923), jamás tuvimos noticia ni acceso a semejante tecnología, suceso o práctica fuera de nuestra época. Con todo respeto y cortesía, te aclaro que en mi vida no tuve trato con tales cosas ajenas a mi tiempo, pues únicamente dispongo de información y testimonio sobre los hechos de mi vida, la Revolución, mis batallas, mi obra y mi muerte.';
+  }
+
+  if (norm.includes('hidalgo')) {
+    return 'En los días en que anduve por este mundo (1753 - 1811), no existía ni teníamos noticia alguna de tal tecnología o suceso ajeno a nuestro tiempo. En mi vida terrenal jamás tuve acceso a semejantes invenciones; con toda cortesía te expreso que solo dispongo de testimonio sobre los hechos de mi vida, el llamado a la libertad, mis obras y mi muerte.';
+  }
+
+  const datesText = figureNode?.birthDeathDates ? ` (${figureNode.birthDeathDates})` : '';
+  return `En mi época y durante los años que caminé en este mundo${datesText}, jamás tuve acceso ni conocimiento de tal tecnología, suceso o práctica fuera de mi tiempo. Con el debido respeto y cortesía, te comento que únicamente dispongo de información, memoria y testimonio sobre los hechos de mi vida, mi causa, mi obra y mi muerte.`;
+}
+
+/**
  * Analizador Sintáctico y Semántico de Preguntas Históricas
  * Descompone el tipo de interrogación, polaridad (negación/aversión) y la entidad objetivo.
  */
-export function analyzeHistoricalQuestion(question: string): HistoricalQuestionAnalysis {
+export function analyzeHistoricalQuestion(question: string, birthDeathDates?: string): HistoricalQuestionAnalysis {
   const norm = normalizeQuestionText(question);
+
+  // Verificación prioritaria de Anacronismo / Tecnologías fuera de época
+  if (isAnachronismOrModernConcept(norm, birthDeathDates)) {
+    return {
+      normalizedQuestion: norm,
+      isNegated: false,
+      isAnachronismOrOutOfTime: true,
+      interrogativeType: 'GENERAL',
+      targetEntity: 'ANACHRONISM_OUT_OF_TIME',
+      specificIntent: 'ANACHRONISM_OUT_OF_TIME',
+      instructionForAI: '⚠️ ANACRONISMO / CONCEPTO FUERA DE ÉPOCA: El estudiante pregunta sobre una tecnología, aplicación, página web, internet, suceso o práctica que no existía en tu vida terrenal. Permanece estrictamente en tu papel en primera persona, declina cortésmente argumentando que en tu vida no tenías acceso ni conocimiento a esa tecnología, suceso o práctica ajena a tu tiempo, y coméntale con gentileza que solo dispones de información sobre los hechos de tu vida, obra y muerte.'
+    };
+  }
 
   // Detección profunda de polaridad negativa, aversión o rechazo
   const isNegated = /(no te gust|no le gust|no te agrad|no le agrad|no comias|no comia|no querias|no queria|te desagrad|le desagrad|desagrad|disgust|odiab|detestab|rechazab|aborrec|repudi|asco|asquito|mal sabor|que te chocaba|que te fastidiaba|en contra de|repugnan)/i.test(norm);
@@ -863,6 +955,11 @@ export function isAnswerSemanticallyAligned(question: string, answer: string): b
   if (!answer || isCorruptOrGenericPersonaAnswer(answer)) return false;
   const analysis = analyzeHistoricalQuestion(question);
   const normAnswer = answer.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  // 0. Guardián de Anacronismos / Tecnologías fuera de época
+  if (analysis.specificIntent === 'ANACHRONISM_OUT_OF_TIME') {
+    return /(no existia|fuera de mi tiempo|fuera de nuestro tiempo|vida terrenal|obra y muerte|solo dispongo|unicamente dispongo|no tenia acceso|no tuvimos acceso|ajena|ajeno)/i.test(normAnswer);
+  }
 
   // 1. Guardián de Identidad Cruzada: Si la pregunta indaga sobre enemigos, traidores, cónyuge, hijos o terceros,
   // la respuesta JAMÁS puede ser una auto-presentación biográfica ("Soy [Nombre]...").

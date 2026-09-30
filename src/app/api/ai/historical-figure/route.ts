@@ -7,6 +7,7 @@ import {
   normalizeHistoricalSlug,
   normalizeQuestionText,
   analyzeHistoricalQuestion,
+  generateCanonicalAnachronismResponse,
   isAnswerSemanticallyAligned 
 } from '@/lib/historicalVaultEngine';
 import { 
@@ -191,7 +192,20 @@ export async function POST(req: NextRequest) {
 ${momentsToInclude.map(m => `- ${m.title} (${m.yearOrPeriod}): ${m.description}`).join('\n')}`;
       }
 
-      const questionAnalysis = analyzeHistoricalQuestion(question);
+      const questionAnalysis = analyzeHistoricalQuestion(question, figureNode?.birthDeathDates);
+
+      // SALVAGUARDA CANÓNICA INVIOLABLE ANTE ANACRONISMOS, TECNOLOGÍAS MODERNAS Y CONCEPTOS FUERA DE ÉPOCA
+      if (questionAnalysis.isAnachronismOrOutOfTime || questionAnalysis.specificIntent === 'ANACHRONISM_OUT_OF_TIME') {
+        const politeDecline = generateCanonicalAnachronismResponse(characterName, figureNode);
+        appendQaToVaultNode(nodeSlug, question, politeDecline);
+        return NextResponse.json({
+          success: true,
+          answer: politeDecline,
+          cached: false,
+          tokenCost: 0,
+          message: 'Declinación cortés en primera persona por anacronismo o tecnología fuera de época'
+        });
+      }
 
       const isJosefaFigure = characterName.toLowerCase().includes('josefa') || characterName.toLowerCase().includes('corregidora');
       const voiceMatronPrompt = isJosefaFigure 
@@ -213,7 +227,8 @@ ${questionAnalysis.isNegated ? '⚠️ REGLA CRÍTICA DE POLARIDAD: La pregunta 
 2. FIDELIDAD HISTÓRICA EXACTA: Aporta datos verídicos contrastados (lugares precisos, fechas, nombres de acompañantes, causas y objetos reales).
 3. PROHIBICIÓN ABSOLUTA DE EVASIVAS Y SERMONES: Queda terminantemente prohibido emitir discursos morales abstractos de relleno o evasivas.
 4. VOZ EN PRIMERA PERSONA ESTRICTA: Habla siempre en primera persona ("Fui...", "Nací...", "Mi causa...", "Mi encierro...", "Repudiaba...", "Me desagradaba..."). Prohibido usar fórmulas como "Como [Nombre]..." o hablar en tercera persona.
-5. CONCISIÓN Y ECONOMÍA DE TOKENS: Responde en 2 a 3 oraciones precisas y contundentes (máximo 80-90 palabras).${factsGrounding}`;
+5. CONCISIÓN Y ECONOMÍA DE TOKENS: Responde en 2 a 3 oraciones precisas y contundentes (máximo 80-90 palabras).
+6. DECLINACIÓN CORTÉS ANTE ANACRONISMOS: Si el estudiante pregunta sobre cualquier evento, tecnología moderna, app, página web, internet, suceso o práctica con la que no hayas interactuado o que sea ajena a tu tiempo de vida, declina cortésmente la respuesta permaneciendo en tu papel en estricta primera persona, argumentando que en tu vida no tenías acceso a esa tecnología, suceso, práctica o cosa fuera de tu tiempo, y coméntale gentilmente que solo dispones de información de tu vida, obra y muerte.${factsGrounding}`;
 
       let answer = '';
       let liveTokensUsed = 0;
@@ -1352,6 +1367,11 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
   const cleanQ = question.toLowerCase();
   const normQ = cleanQ.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const intent = classifyHistoricalIntent(normQ);
+
+  // Declinación cortés canónica ante cualquier anacronismo o tecnología moderna
+  if (intent === 'ANACHRONISM_OUT_OF_TIME') {
+    return generateCanonicalAnachronismResponse(name);
+  }
 
   const isJosefa = name.toLowerCase().includes('josefa') || name.toLowerCase().includes('corregidora');
   const isHidalgo = name.toLowerCase().includes('hidalgo');

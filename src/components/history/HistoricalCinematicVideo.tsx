@@ -64,7 +64,6 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
   const [isAudioMuted, setIsAudioMuted] = useState(false);
 
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
   const audioCtrlRef = useRef<UniversalAudioController | null>(null);
 
   // Reiniciar cápsula activa si cambia el personaje
@@ -183,46 +182,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
   const activeCapsule = capsules[currentCapsuleIndex] || capsules[0];
   const embedUrl = getYouTubeEmbedUrl(activeCapsule.youtubeUrl || videoUrl);
 
-  // Reproductor de sonido ambiental cinematográfico sutil
-  const playDramaticChord = () => {
-    if (isAudioMuted || typeof window === 'undefined') return;
-    try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      
-      const ctx = new AudioCtx();
-      audioContextRef.current = ctx;
-      
-      const osc1 = ctx.createOscillator();
-      const osc2 = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(110, ctx.currentTime); // A2 profundo
-      osc1.frequency.exponentialRampToValueAtTime(146.83, ctx.currentTime + 4); // D3
-
-      osc2.type = 'triangle';
-      osc2.frequency.setValueAtTime(220, ctx.currentTime);
-      osc2.frequency.exponentialRampToValueAtTime(293.66, ctx.currentTime + 4);
-
-      gain.gain.setValueAtTime(0.01, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 1.5);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + activeCapsule.duration);
-
-      osc1.connect(gain);
-      osc2.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc1.start();
-      osc2.start();
-      osc1.stop(ctx.currentTime + activeCapsule.duration);
-      osc2.stop(ctx.currentTime + activeCapsule.duration);
-    } catch (e) {
-      console.warn('Audio Context no permitido:', e);
-    }
-  };
-
-  // Manejo de la locución en primera/tercera persona con motor neural latino
+  // Manejo de la locución en primera/tercera persona con motor neural latino y dicción perfecta
   const speakNarrator = () => {
     if (isAudioMuted || typeof window === 'undefined') return;
     audioCtrlRef.current?.stop();
@@ -245,7 +205,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
   const handleStartPlay = () => {
     setIsPlaying(true);
     setProgress(0);
-    playDramaticChord();
+    // Eliminado el acorde sintetizado para una experiencia acústica limpia y pura con la voz del narrador
     speakNarrator();
 
     if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);

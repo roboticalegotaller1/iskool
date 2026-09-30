@@ -28,6 +28,8 @@ export interface HistoricalTimelineComicProps {
   avatarImageUrl?: string;
   onSelectMomentOnMap?: (moment: HistoricalFigureMoment) => void;
   className?: string;
+  activeMomentIndex?: number;
+  onMomentChange?: (index: number) => void;
 }
 
 export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = ({
@@ -35,9 +37,19 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
   characterName,
   avatarImageUrl,
   onSelectMomentOnMap,
-  className = ''
+  className = '',
+  activeMomentIndex: controlledMomentIndex,
+  onMomentChange
 }) => {
-  const [activeMomentIndex, setActiveMomentIndex] = useState<number>(0);
+  const [internalMomentIndex, setInternalMomentIndex] = useState<number>(0);
+  const activeMomentIndex = controlledMomentIndex !== undefined ? controlledMomentIndex : internalMomentIndex;
+
+  const setActiveMomentIndex = (valOrFn: number | ((prev: number) => number)) => {
+    const nextIdx = typeof valOrFn === 'function' ? valOrFn(activeMomentIndex) : valOrFn;
+    setInternalMomentIndex(nextIdx);
+    onMomentChange?.(nextIdx);
+  };
+
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
   const audioCtrlRef = React.useRef<UniversalAudioController | null>(null);
 

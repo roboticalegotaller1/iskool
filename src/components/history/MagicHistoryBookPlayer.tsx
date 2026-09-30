@@ -131,6 +131,7 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
   const [isProjectorMode, setIsProjectorMode] = useState(isProjectorModeInitially);
   const [assignedToHeroPath, setAssignedToHeroPath] = useState(false);
   const [sharedToCommunity, setSharedToCommunity] = useState(false);
+  const [comicMomentIndex, setComicMomentIndex] = useState(0);
 
   // Estados de Preguntas Clave
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
@@ -188,16 +189,44 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
   };
 
   const handleNextPage = () => {
+    // Si estamos en la página del Timelapse / Cómic (Página 2 de 6, índice 1), pasar a la siguiente card
+    if (currentPage === 1) {
+      const totalMoments = (data.moments && data.moments.length > 0) ? data.moments.length : 4;
+      if (comicMomentIndex < totalMoments - 1) {
+        playPageTurnSound();
+        setComicMomentIndex(prev => prev + 1);
+        return;
+      }
+    }
+
     if (currentPage < totalPages - 1) {
       playPageTurnSound();
-      setCurrentPage(prev => prev + 1);
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      if (nextPage === 1) {
+        setComicMomentIndex(0);
+      }
     }
   };
 
   const handlePrevPage = () => {
+    // Si estamos en la página del Timelapse / Cómic (Página 2 de 6, índice 1), retroceder de card
+    if (currentPage === 1) {
+      if (comicMomentIndex > 0) {
+        playPageTurnSound();
+        setComicMomentIndex(prev => prev - 1);
+        return;
+      }
+    }
+
     if (currentPage > 0) {
       playPageTurnSound();
-      setCurrentPage(prev => prev - 1);
+      const prevPage = currentPage - 1;
+      setCurrentPage(prevPage);
+      if (prevPage === 1) {
+        const totalMoments = (data.moments && data.moments.length > 0) ? data.moments.length : 4;
+        setComicMomentIndex(totalMoments - 1);
+      }
     }
   };
 
@@ -380,8 +409,13 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
               <div className="w-full p-3 bg-gradient-to-r from-amber-950/80 via-slate-900 to-amber-950/80 border-b border-amber-500/30 flex flex-wrap items-center justify-between gap-2 text-white">
                 <div className="flex items-center gap-2">
                   <Bookmark className="w-4 h-4 text-amber-400" />
-                  <span className="text-xs font-black uppercase text-amber-200">
-                    Página {currentPage + 1} de {totalPages}: {pageTitles[currentPage]}
+                  <span className="text-xs font-black uppercase text-amber-200 flex items-center gap-2">
+                    <span>Página {currentPage + 1} de {totalPages}: {pageTitles[currentPage]}</span>
+                    {currentPage === 1 && (
+                      <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold">
+                        Momento {comicMomentIndex + 1} de {(data.moments?.length || 4)}
+                      </span>
+                    )}
                   </span>
                 </div>
 
@@ -500,6 +534,8 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                         moments={data.moments || []} 
                         characterName={data.characterName}
                         avatarImageUrl={data.avatarImageUrl}
+                        activeMomentIndex={comicMomentIndex}
+                        onMomentChange={setComicMomentIndex}
                         onSelectMomentOnMap={() => setCurrentPage(2)}
                       />
                     </motion.div>

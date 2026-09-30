@@ -41,7 +41,8 @@ import {
   ListOrdered,
   KeyRound,
   Swords,
-  Trophy
+  Trophy,
+  AlertTriangle
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { StudioBlock } from '@/types/studioBlocks';
@@ -50,6 +51,7 @@ import {
   MEXICAN_INDEPENDENCE_METADATA 
 } from '@/data/mexicanIndependenceStudioFlow';
 import { generateGamifiedProject } from '@/services/pedagogicalProjectEngine';
+import { detectDuplicateAdjacentNodes, DuplicateNodesConflict } from './duplicateValidation';
 
 // Catálogo Oficial de Ejes Articuladores NEM
 const EJES_ARTICULADORES_CATALOG = [
@@ -112,9 +114,12 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
     setZoomLevel,
     loadPresetBlocks,
     serializeToActivityJSON,
+    setSelectedBlockId,
+    setIsNodeConfigDrawerOpen
   } = useActivityBuilderStore();
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [duplicateConflicts, setDuplicateConflicts] = useState<DuplicateNodesConflict[] | null>(null);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isTemplatesModalOpen, setIsTemplatesModalOpen] = useState(false);
@@ -130,6 +135,22 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Validación de calidad pedagógica antes de probar
+  const handleTestActivity = () => {
+    if (blocks.length === 0) {
+      showToast('Añade al menos un bloque didáctico al lienzo antes de probar.');
+      return;
+    }
+
+    const conflicts = detectDuplicateAdjacentNodes(blocks, connections);
+    if (conflicts.length > 0) {
+      setDuplicateConflicts(conflicts);
+      return;
+    }
+
+    setIsPreviewOpen(true);
   };
 
   // Generador Maestro con IA directamente en el Lienzo
@@ -584,7 +605,7 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
           {/* Probar Juego */}
           <button
             type="button"
-            onClick={() => setIsPreviewOpen(true)}
+            onClick={handleTestActivity}
             className="px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-semibold text-xs border border-indigo-200/80 dark:border-indigo-800/80 flex items-center gap-1.5 transition-all cursor-pointer"
           >
             <Play className="w-3.5 h-3.5 fill-indigo-600 text-indigo-600 dark:fill-indigo-400 dark:text-indigo-400" />
@@ -696,6 +717,74 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
                 metadata={metadata}
                 onClose={() => setIsPreviewOpen(false)}
               />
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Modal de Bloqueo por Nodos Duplicados Contiguos */}
+      {duplicateConflicts && duplicateConflicts.length > 0 && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[10000] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-fade-in">
+          <div className="relative w-full max-w-lg bg-white dark:bg-zinc-900 rounded-3xl border-2 border-rose-500/50 shadow-2xl overflow-hidden animate-scale-in p-6 sm:p-7 space-y-5">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                  Control de Calidad Pedagógica
+                </span>
+                <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                  Nodos Duplicados Detectados
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-zinc-400 leading-relaxed">
+                  No se permite probar la actividad mientras dos nodos contiguos contengan exactamente la misma información. Atiende el problema modificando el contenido o eliminando la duplicidad.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+              {duplicateConflicts.map((conf, idx) => (
+                <div 
+                  key={idx} 
+                  className="p-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700/80 space-y-2 text-xs"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-bold text-slate-800 dark:text-zinc-200 line-clamp-1">
+                      {conf.nodeA.title} ↔ {conf.nodeB.title}
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-mono font-bold shrink-0">
+                      {conf.relationship === 'connected' ? 'Conectados' : 'Consecutivos'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-zinc-400">
+                    {conf.reason}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedBlockId(conf.nodeB.id);
+                      setIsNodeConfigDrawerOpen(true);
+                      setDuplicateConflicts(null);
+                      showToast(`Seleccionado nodo duplicado "${conf.nodeB.title}" para resolver.`);
+                    }}
+                    className="w-full py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                  >
+                    <span>Atender este Problema en el Lienzo</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setDuplicateConflicts(null)}
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-750 text-slate-700 dark:text-zinc-300 font-bold text-xs transition-colors cursor-pointer"
+              >
+                Cerrar y Volver al Lienzo
+              </button>
             </div>
           </div>
         </div>,
