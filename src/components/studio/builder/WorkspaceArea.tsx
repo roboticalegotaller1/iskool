@@ -88,27 +88,29 @@ export const WorkspaceArea: React.FC = () => {
           <button
             type="button"
             onClick={() => setViewMode('graph')}
-            className={`px-3 py-1.5 rounded-xl font-black flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-black flex items-center gap-1.5 transition-all cursor-pointer ${
               viewMode === 'graph'
                 ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/25'
                 : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Workflow className="w-3.5 h-3.5" />
-            <span>Constructor de Flujo (Nodos)</span>
+            <span className="hidden sm:inline">Constructor de Flujo (Nodos)</span>
+            <span className="sm:hidden">Nodos</span>
           </button>
 
           <button
             type="button"
             onClick={() => setViewMode('list')}
-            className={`px-3 py-1.5 rounded-xl font-black flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-black flex items-center gap-1.5 transition-all cursor-pointer ${
               viewMode === 'list'
                 ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/25'
                 : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <ListOrdered className="w-3.5 h-3.5" />
-            <span>Vista de Lista</span>
+            <span className="hidden sm:inline">Vista de Lista</span>
+            <span className="sm:hidden">Lista</span>
           </button>
         </div>
 

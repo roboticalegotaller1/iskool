@@ -150,7 +150,7 @@ export const SanctuaryRoomView: React.FC<SanctuaryRoomViewProps> = ({
 
   return (
     <div 
-      className={`relative w-full h-[400px] sm:h-[480px] lg:h-[540px] rounded-3xl overflow-hidden shadow-2xl border border-zinc-800 select-none bg-gradient-to-b ${houseConfig.bgGradient} transition-colors duration-700`}
+      className={`relative w-full h-[320px] xs:h-[380px] sm:h-[460px] lg:h-[520px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-zinc-800 select-none bg-gradient-to-b ${houseConfig.bgGradient} transition-colors duration-700`}
       style={{ perspective: '1000px' }}
     >
       {/* ========================================================= */}

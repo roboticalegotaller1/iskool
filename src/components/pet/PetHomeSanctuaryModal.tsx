@@ -130,7 +130,7 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-2 sm:p-4 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-6xl max-h-[96vh] bg-zinc-950 border border-amber-500/40 rounded-3xl shadow-[0_0_60px_rgba(245,158,11,0.2)] flex flex-col overflow-hidden">
+      <div className="relative w-full max-w-6xl max-h-[96dvh] sm:max-h-[94vh] bg-zinc-950 border border-amber-500/40 rounded-2xl sm:rounded-3xl shadow-[0_0_60px_rgba(245,158,11,0.2)] flex flex-col overflow-hidden pb-safe">
         
         {/* ========================================================= */}
         {/* BARRA SUPERIOR: SELECTOR DE 5 CASAS Y SALDO               */}

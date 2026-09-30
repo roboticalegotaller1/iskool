@@ -416,7 +416,7 @@ export default function SagaMap({ missions, activeLevel, activeGrade }: SagaMapP
       `}} />
 
       {/* Main Saga Map Panel */}
-      <div className={`relative w-full rounded-[32px] overflow-hidden shadow-2xl border border-zinc-800 ${theme.containerBg} p-6 min-h-[580px]`}>
+      <div className={`relative w-full rounded-2xl sm:rounded-[32px] overflow-hidden shadow-2xl border border-zinc-800 ${theme.containerBg} p-3 sm:p-5 lg:p-6 min-h-[480px] sm:min-h-[580px]`}>
         
         {/* Continuous background grid pattern */}
         <div 

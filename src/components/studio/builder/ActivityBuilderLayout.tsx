@@ -689,8 +689,8 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
       {/* Modal de Previsualización en Vivo */}
       {isPreviewOpen && typeof document !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-sm flex items-start justify-center p-3 sm:p-4 pt-6 sm:pt-10 overflow-y-auto animate-fade-in">
-          <div className="relative w-full max-w-4xl bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden my-auto sm:my-2 animate-scale-in">
-            <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 dark:border-zinc-800 bg-slate-50/90 dark:bg-zinc-850/90">
+          <div className="relative w-full max-w-4xl bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden my-auto sm:my-2 animate-scale-in">
+            <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-slate-100 dark:border-zinc-800 bg-slate-50/90 dark:bg-zinc-850/90">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
                   SIMULADOR EN VIVO
@@ -709,7 +709,7 @@ export const ActivityBuilderLayout: React.FC<ActivityBuilderLayoutProps> = ({ is
               </button>
             </div>
 
-            <div className="p-4 sm:p-6 max-h-[85vh] overflow-y-auto">
+            <div className="p-3 sm:p-6 max-h-[88dvh] sm:max-h-[85vh] overflow-y-auto pb-safe">
               <StudioFlowPlayer
                 blocks={blocks}
                 connections={connections}

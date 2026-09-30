@@ -266,7 +266,7 @@ export const NodeGraphBoard: React.FC = () => {
       {/* Contenedor con Barras de Desplazamiento Laterales e Inferiores (Responsive en Móvil, Tablet y PC) */}
       <div 
         ref={scrollContainerRef}
-        className="w-full h-[66vh] min-h-[480px] max-h-[850px] overflow-auto scroll-smooth select-none focus:outline-none touch-pan-x touch-pan-y"
+        className="w-full h-[55vh] sm:h-[66vh] min-h-[360px] sm:min-h-[480px] max-h-[850px] overflow-auto scroll-smooth select-none focus:outline-none touch-pan-x touch-pan-y overscroll-contain smooth-touch-scroll"
         style={{
           backgroundImage: `radial-gradient(circle, rgba(148, 163, 184, 0.25) 1.2px, transparent 1.2px)`,
           backgroundSize: '24px 24px',
