@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Building2,
   Users,
@@ -635,6 +636,8 @@ export default function CEOExecutiveDashboard({
   onSwitchToOperational,
   onBackToDirectory
 }: CEOExecutiveDashboardProps) {
+  const router = useRouter();
+
   // ------------------------------------------
   // Conexión al Almacén Central de Datos (Live Store)
   // ------------------------------------------
@@ -753,6 +756,9 @@ export default function CEOExecutiveDashboard({
     title: string;
     subtitle: string;
   } | null>(null);
+
+  // Modal de Acceso a Portales Académicos por Colegio
+  const [isAcademicPortalModalOpen, setIsAcademicPortalModalOpen] = useState<boolean>(false);
 
   // Estado del generador de reportes analíticos instantáneos (0 Tokens)
   const [activeReportQuery, setActiveReportQuery] = useState<string>('Estudiantes con adeudo activo por nivel y monto pendiente');
@@ -1393,6 +1399,34 @@ export default function CEOExecutiveDashboard({
     if (onNavigateTab) onNavigateTab(tabId);
   };
 
+  // Navegación a Portales Académicos por Colegio
+  const handleEnterCampusAcademicPortal = (campusId?: string, campusName?: string) => {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        if (campusId) {
+          localStorage.setItem('active_campus_id', campusId);
+          if (campusName) localStorage.setItem('active_campus_name', campusName);
+        }
+        localStorage.setItem('active_school_id', schoolId || 'sch-ibime');
+        localStorage.setItem('tenant-id', holding.slug || 'ibime');
+      }
+    } catch (e) {
+      console.error('Error setting campus context:', e);
+    }
+    
+    setIsAcademicPortalModalOpen(false);
+    const targetUrl = campusId && campusId !== 'all'
+      ? `/teacher?school_id=${encodeURIComponent(schoolId || 'sch-ibime')}&campus=${encodeURIComponent(campusId)}`
+      : `/teacher?school_id=${encodeURIComponent(schoolId || 'sch-ibime')}`;
+    router.push(targetUrl);
+  };
+
+  const handleAuditCampusCurriculum = (campusId: string) => {
+    setCurriculumRadarCampus(campusId);
+    setActiveTab('academico');
+    setIsAcademicPortalModalOpen(false);
+  };
+
   const navMenuItems = [
     { id: 'inicio', label: 'Inicio', icon: Building2, desc: isCorporate ? 'Consolidado Consorcio' : 'Consolidado Holding' },
     { id: 'vision', label: 'Visión Ejecutiva', icon: TrendingUp, desc: 'EBITDA & Simulador' },
@@ -1452,6 +1486,21 @@ export default function CEOExecutiveDashboard({
                 </button>
               );
             })}
+
+            {/* Botón de Acceso a Portales Académicos por Colegio */}
+            {!isCorporate && holding.campuses && holding.campuses.length > 0 && (
+              <div className="pt-2 px-0.5">
+                <button
+                  type="button"
+                  onClick={() => setIsAcademicPortalModalOpen(true)}
+                  className="w-full flex items-center justify-between px-4 py-2.5 rounded-2xl bg-[#5448f7] hover:bg-[#4639ed] text-white font-extrabold text-sm shadow-md shadow-indigo-600/30 hover:shadow-indigo-600/50 hover:scale-[1.02] active:scale-98 transition-all cursor-pointer border border-indigo-400/40 group"
+                  title="Acceder a los portales académicos de cada uno de los colegios"
+                >
+                  <span className="font-extrabold tracking-tight">Portal Académico</span>
+                  <ChevronRight size={18} className="text-white group-hover:translate-x-0.5 transition-transform" />
+                </button>
+              </div>
+            )}
           </nav>
         </div>
 
@@ -1564,6 +1613,24 @@ export default function CEOExecutiveDashboard({
                     </button>
                   );
                 })}
+
+                {/* Botón de Acceso a Portales Académicos por Colegio (Móvil) */}
+                {!isCorporate && holding.campuses && holding.campuses.length > 0 && (
+                  <div className="pt-2 px-0.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        setIsAcademicPortalModalOpen(true);
+                      }}
+                      className="w-full flex items-center justify-between px-4 py-2.5 rounded-2xl bg-[#5448f7] hover:bg-[#4639ed] text-white font-extrabold text-sm shadow-md shadow-indigo-600/30 hover:shadow-indigo-600/50 hover:scale-[1.02] active:scale-98 transition-all cursor-pointer border border-indigo-400/40 group"
+                      title="Acceder a los portales académicos de cada uno de los colegios"
+                    >
+                      <span className="font-extrabold tracking-tight">Portal Académico</span>
+                      <ChevronRight size={18} className="text-white group-hover:translate-x-0.5 transition-transform" />
+                    </button>
+                  </div>
+                )}
               </nav>
             </div>
 
@@ -5164,6 +5231,151 @@ export default function CEOExecutiveDashboard({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL DE ACCESO A PORTALES ACADÉMICOS POR COLEGIO         */}
+      {/* ========================================================= */}
+      {isAcademicPortalModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] shadow-2xl border border-slate-200 overflow-hidden flex flex-col animate-in zoom-in-95 duration-150">
+            {/* Header Modal */}
+            <div className="p-6 bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/20 shadow-inner">
+                  <GraduationCap size={26} className="text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-black tracking-tight text-white">Portales Académicos por Colegio</h3>
+                    <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#5448f7] text-white border border-indigo-300/30">
+                      {holding.campuses?.length || 0} Planteles
+                    </span>
+                  </div>
+                  <p className="text-xs text-indigo-200 mt-0.5 font-medium">
+                    Acceso directo al hub de planeaciones NEM, grupos de clase y expedientes docentes para cada plantel de {holding.name}.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAcademicPortalModalOpen(false)}
+                className="p-2 text-indigo-200 hover:text-white rounded-xl hover:bg-white/10 transition-colors cursor-pointer"
+                aria-label="Cerrar modal"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Contenido / Lista de Colegios */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-160px)] space-y-5 bg-slate-50/50">
+              {/* Acceso Global Central */}
+              <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#5448f7] text-white flex items-center justify-center font-black shadow-sm">
+                    <School size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-extrabold text-slate-900">Hub Académico Central (Red Consolidada)</h4>
+                    <p className="text-xs text-slate-500">
+                      Visualizar el concentrado general docente y planeaciones de toda la institución ({holding.name}).
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleEnterCampusAcademicPortal('all', 'Todos los Planteles')}
+                  className="px-4 py-2.5 rounded-xl bg-[#5448f7] hover:bg-[#4639ed] text-white font-extrabold text-xs shadow-md shadow-indigo-600/20 hover:scale-[1.02] active:scale-98 transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                >
+                  <span>Ingresar al Hub Central</span>
+                  <ChevronRight size={15} />
+                </button>
+              </div>
+
+              {/* Grid de Colegios / Planteles */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(holding.campuses || []).map((campus) => (
+                  <div
+                    key={campus.id}
+                    className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:shadow-md hover:border-indigo-300 transition-all flex flex-col justify-between space-y-4 group"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <h4 className="font-extrabold text-slate-900 text-base group-hover:text-indigo-900 transition-colors">
+                            {campus.name}
+                          </h4>
+                          {campus.location && (
+                            <p className="text-xs text-slate-500 flex items-center gap-1 mt-1">
+                              <MapPin size={12} className="text-slate-400 shrink-0" />
+                              <span className="truncate">{campus.location}</span>
+                            </p>
+                          )}
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 shrink-0">
+                          {campus.curriculumCoverage ? `${campus.curriculumCoverage}% NEM` : 'Activo'}
+                        </span>
+                      </div>
+
+                      {/* Métricas del Colegio */}
+                      <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-slate-100 text-center">
+                        <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                          <span className="block text-[10px] font-semibold text-slate-500">Alumnos</span>
+                          <span className="text-xs font-black text-slate-900">{campus.students.toLocaleString()}</span>
+                        </div>
+                        <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                          <span className="block text-[10px] font-semibold text-slate-500">Docentes</span>
+                          <span className="text-xs font-black text-slate-900">{campus.teachers}</span>
+                        </div>
+                        <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                          <span className="block text-[10px] font-semibold text-slate-500">Salud Acad.</span>
+                          <span className="text-xs font-black text-emerald-600">{campus.academicHealth || 95}%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Acciones */}
+                    <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleEnterCampusAcademicPortal(campus.id, campus.name)}
+                        className="w-full flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-[#5448f7] hover:bg-[#4639ed] text-white font-extrabold text-xs shadow-xs hover:shadow-indigo-500/25 transition-all cursor-pointer"
+                        title={`Ingresar al Portal Académico de ${campus.name}`}
+                      >
+                        <span>Portal Académico</span>
+                        <ChevronRight size={14} />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleAuditCampusCurriculum(campus.id)}
+                        className="w-full sm:w-auto px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer border border-slate-200"
+                        title={`Auditar avance de cobertura curricular NEM en ${campus.name}`}
+                      >
+                        Auditar NEM
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer Modal */}
+            <div className="p-4 bg-white border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+              <span className="flex items-center gap-1.5">
+                <BookOpen size={14} className="text-indigo-600" />
+                <span>NEM 2024 · Bóveda Curricular Institucional · Plan de Estudios Oficial</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsAcademicPortalModalOpen(false)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}
