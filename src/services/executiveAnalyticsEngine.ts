@@ -40,6 +40,7 @@ import {
   useSchoolAdminStore
 } from '@/store/useSchoolAdminStore';
 import { DETAILED_STUDENTS_SEED, SUBJECTS_SEED, PARENT_MESSAGES_SEED, TEACHERS_LIST_SEED } from '@/store/seeds';
+import { CAMPUS_BENCHMARK_SEED, CampusBenchmarkRecord } from '@/store/seeds/executiveBiSeeds';
 
 export type AnalyticDomain = 
   | 'DEBTS_BILLING'
@@ -456,6 +457,19 @@ export interface ExpedienteSearchCriteria {
 }
 
 /**
+ * Validador estricto de límite de palabra (Word Boundary Token Matcher)
+ * Previene colisiones por subcadenas (ej. que "gana" active falsamente el nombre "ana", o "diana" active "ana")
+ */
+export const containsWordBoundary = (text: string, target: string): boolean => {
+  if (!text || !target) return false;
+  const cleanTarget = target.trim().toLowerCase();
+  if (!cleanTarget) return false;
+  const escaped = cleanTarget.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(^|[^a-z0-9áéíóúñ])${escaped}([^a-z0-9áéíóúñ]|$)`, 'i');
+  return regex.test(text.toLowerCase());
+};
+
+/**
  * Extractor inteligente de foco analítico y término de búsqueda en expedientes
  */
 export const extractExpedienteSearchCriteria = (query: string, availableStudents?: DetailedStudent[]): ExpedienteSearchCriteria => {
@@ -506,7 +520,9 @@ export const extractExpedienteSearchCriteria = (query: string, availableStudents
     'mateo ortiz', 'mateo benjamin', 'mateo',
     'israel lopez', 'israel'
   ];
-  const matchedKnownName = KNOWN_STUDENT_NAMES.find(kn => norm.includes(kn));
+  // Ordenar por longitud descendente para que nombres completos tengan prioridad
+  const sortedKnownNames = [...KNOWN_STUDENT_NAMES].sort((a, b) => b.length - a.length);
+  const matchedKnownName = sortedKnownNames.find(kn => containsWordBoundary(norm, kn));
   const hasKnownName = !!matchedKnownName;
 
   if (isYoungest && !hasKnownName) {
@@ -601,7 +617,13 @@ export const extractExpedienteSearchCriteria = (query: string, availableStudents
     'deudor', 'deudores', 'deuda', 'deudas', 'adeudo', 'adeudos', 'mes', 'meses', 'dime', 'cobro', 'cobros',
     'saber', 'conocer', 'consultar', 'consulta', 'necesito', 'quiero', 'decirme', 'favor', 'porfa', 'ayuda',
     'se', 'le', 'me', 'nos', 'les', 'su', 'sus', 'mi', 'mis', 'tu', 'tus',
-    'senor', 'senora', 'don', 'dona', 'sr', 'sra', 'colegio', 'escuela', 'instituto', 'institucion', 'plantel'
+    'senor', 'senora', 'don', 'dona', 'sr', 'sra', 'colegio', 'colegios', 'escuela', 'escuelas', 'instituto', 'institucion', 'instituciones',
+    'plantel', 'planteles', 'campus', 'sede', 'sedes', 'holding', 'grupo', 'grupos', 'sucursal', 'sucursales',
+    'gana', 'ganan', 'ganar', 'ganancia', 'ganancias', 'dinero', 'ingreso', 'ingresos', 'egreso', 'egresos',
+    'recauda', 'recaudan', 'recaudacion', 'factura', 'facturan', 'facturacion', 'facturar',
+    'presupuesto', 'presupuestos', 'costo', 'costos', 'precio', 'precios', 'arancel', 'aranceles',
+    'ebitda', 'utilidad', 'utilidades', 'margen', 'margenes', 'rendimiento', 'rentable', 'rentables', 'rentabilidad', 'redituable', 'redituables',
+    'mas', 'menos', 'mayor', 'menor', 'mayores', 'menores', 'mejor', 'mejores', 'peor', 'peores', 'top', 'ranking', 'primer', 'primero', 'ultimo', 'ultimos'
   ]);
 
   const words = norm
@@ -661,6 +683,57 @@ export const detectAnalyticDomain = (
 
   if (isDeletionAuditIntent) {
     return { domain: 'STUDENT_DELETIONS_AUDIT' };
+  }
+
+  // 0.2. Comparativa de Rentabilidad, Ingresos y Facturación por Plantel / Campus (Prioridad Directiva)
+  // Atiende directamente: "¿cuál plantel gana más dinero?", "plantel más rentable", "plantel con más ingresos", "qué sede factura más", "ranking de planteles"
+  const mentionsCampus = 
+    normalized.includes('plantel') || 
+    normalized.includes('planteles') || 
+    normalized.includes('campus') || 
+    normalized.includes('sede') || 
+    normalized.includes('sedes') || 
+    normalized.includes('colegio') || 
+    normalized.includes('colegios') || 
+    normalized.includes('escuela') ||
+    normalized.includes('escuelas') ||
+    normalized.includes('holding') ||
+    normalized.includes('sucursal');
+
+  const mentionsEarningsOrFinancialComparison = 
+    normalized.includes('gana mas') || 
+    normalized.includes('gana mas dinero') || 
+    normalized.includes('ganan mas') || 
+    normalized.includes('genera mas') || 
+    normalized.includes('generan mas') || 
+    normalized.includes('deja mas') || 
+    normalized.includes('dejan mas') || 
+    normalized.includes('mas dinero') || 
+    normalized.includes('menos dinero') || 
+    normalized.includes('mas ingreso') || 
+    normalized.includes('mas ingresos') || 
+    normalized.includes('mayor ingreso') || 
+    normalized.includes('mayores ingresos') || 
+    normalized.includes('mas facturacion') || 
+    normalized.includes('mayor facturacion') || 
+    normalized.includes('factura mas') || 
+    normalized.includes('facturan mas') || 
+    normalized.includes('mas rentable') || 
+    normalized.includes('mas rentables') || 
+    normalized.includes('mas redituable') || 
+    normalized.includes('mas redituables') || 
+    normalized.includes('mayor rentabilidad') || 
+    normalized.includes('mejor margen') || 
+    normalized.includes('mejor ebitda') || 
+    normalized.includes('mayor ebitda') || 
+    normalized.includes('utilidad') || 
+    normalized.includes('utilidades') || 
+    normalized.includes('ranking de planteles') || 
+    normalized.includes('ranking de ingresos') ||
+    (mentionsCampus && (normalized.includes('gana') || normalized.includes('ganan')) && (normalized.includes('dinero') || normalized.includes('mas')));
+
+  if (mentionsCampus && mentionsEarningsOrFinancialComparison) {
+    return { domain: 'CAMPUSES_GROUPS' };
   }
 
   // 0.5. Nóminas y Sueldos de Colaboradores (Prioridad Directiva)
@@ -3030,6 +3103,12 @@ export const executeAnalyticQuery = (
           anyFieldMatchesAllWords || 
           (searchTarget.length > 2 && fn.split(' ').some(part => part.startsWith(searchTarget)));
 
+        const matchesTutorOrParent = (targetField: string) => {
+          if (!targetField) return false;
+          if (searchTarget.length >= 4) return targetField.includes(searchTarget);
+          return containsWordBoundary(targetField, searchTarget);
+        };
+
         if (matchesStudentName) {
           matchedItems.push({
             info: item,
@@ -3054,8 +3133,8 @@ export const executeAnalyticQuery = (
             fieldLabel: 'Matrícula',
             fieldValue: s.enrollment_id || ''
           });
-        } else if (tutor.includes(searchTarget) || father.includes(searchTarget) || mother.includes(searchTarget) || emName.includes(searchTarget)) {
-          const pName = tutor.includes(searchTarget) ? s.tutor_name : (father.includes(searchTarget) ? s.father_name : (mother.includes(searchTarget) ? s.mother_name : s.emergency_contact_name));
+        } else if (matchesTutorOrParent(tutor) || matchesTutorOrParent(father) || matchesTutorOrParent(mother) || matchesTutorOrParent(emName)) {
+          const pName = matchesTutorOrParent(tutor) ? s.tutor_name : (matchesTutorOrParent(father) ? s.father_name : (matchesTutorOrParent(mother) ? s.mother_name : s.emergency_contact_name));
           matchedItems.push({
             info: item,
             matchScore: 85,
@@ -4870,6 +4949,325 @@ export const executeAnalyticQuery = (
         'Comparativa entre meses de ingresos vs nómina',
         'Estudiantes con adeudo activo en el colegio',
         'Resumen de control total institucional'
+      ]
+    };
+  }
+
+  // ==========================================================================
+  // CASO 12: PLANTELES, GRUPOS Y BENCHMARK DE RENTABILIDAD / INGRESOS POR SEDE
+  // ==========================================================================
+  if (domain === 'CAMPUSES_GROUPS') {
+    const qNorm = rawQuery.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const isFinancialOrEarningsQuery = 
+      qNorm.includes('gana') || 
+      qNorm.includes('ganan') || 
+      qNorm.includes('dinero') || 
+      qNorm.includes('ingreso') || 
+      qNorm.includes('rentab') || 
+      qNorm.includes('redituab') || 
+      qNorm.includes('factur') || 
+      qNorm.includes('ebitda') || 
+      qNorm.includes('utilidad') || 
+      qNorm.includes('utilidades') ||
+      qNorm.includes('recauda');
+
+    // 1. Datos del Benchmark Corporativo Oficial de Sedes (CAMPUS_BENCHMARK_SEED)
+    const benchmarkCampuses = [...CAMPUS_BENCHMARK_SEED].sort((a, b) => b.monthlyRevenue - a.monthlyRevenue);
+    const topBenchmarkCampus = benchmarkCampuses[0];
+    const totalHoldingRevenue = benchmarkCampuses.reduce((acc, c) => acc + c.monthlyRevenue, 0);
+    const totalHoldingStudents = benchmarkCampuses.reduce((acc, c) => acc + c.currentEnrollment, 0);
+    const totalHoldingCapacity = benchmarkCampuses.reduce((acc, c) => acc + c.capacityTotal, 0);
+    const avgHoldingOccupancy = totalHoldingCapacity > 0 ? (totalHoldingStudents / totalHoldingCapacity) * 100 : 88.5;
+
+    // 2. Análisis Financiero y Operativo de las Sedes en el Ámbito Activo (scopedCampuses)
+    interface LocalCampusMetrics {
+      campus: Campus;
+      studentsCount: number;
+      groupsCount: number;
+      collectedRevenue: number;
+      pendingDebt: number;
+      estimatedMonthlyRevenue: number;
+      occupancyPct: number;
+    }
+
+    const localMetrics: LocalCampusMetrics[] = scopedCampuses.map(c => {
+      const cStudents = scopedStudents.filter(s => 
+        s.campus_name === c.name || 
+        s.campus_id === c.id || 
+        (s.level && c.level && s.level.toLowerCase() === c.level.toLowerCase())
+      );
+      const cGroups = scopedGroups.filter(g => g.campus_id === c.id || g.campus_name === c.name);
+      const cBilling = scopedBilling.filter(b => 
+        b.level?.toLowerCase() === c.level?.toLowerCase() || 
+        cStudents.some(s => s.id === b.studentId || b.studentName.toLowerCase().includes(s.first_name.toLowerCase()))
+      );
+      const collected = cBilling.filter(b => b.status === 'paid').reduce((sum, b) => sum + Number(b.amount), 0);
+      const pending = cBilling.filter(b => b.status !== 'paid').reduce((sum, b) => sum + Number(b.amount), 0);
+      
+      // Arancel base por nivel si no hay recibos asentados
+      const baseTuition = c.level === 'preparatoria' ? 4500 : (c.level === 'secundaria' ? 3800 : 3200);
+      const estimatedMonthly = (collected + pending) > 0 ? (collected + pending) : (cStudents.length * baseTuition);
+      const capacity = c.grades?.length ? c.grades.length * 35 : 180;
+      const occupancyPct = capacity > 0 ? Math.min(100, (cStudents.length / capacity) * 100) : 0;
+
+      return {
+        campus: c,
+        studentsCount: cStudents.length,
+        groupsCount: cGroups.length,
+        collectedRevenue: collected,
+        pendingDebt: pending,
+        estimatedMonthlyRevenue: estimatedMonthly,
+        occupancyPct
+      };
+    }).sort((a, b) => b.estimatedMonthlyRevenue - a.estimatedMonthlyRevenue);
+
+    const topLocalCampus = localMetrics[0];
+
+    // ========================================================================
+    // ESCENARIO A: CONSULTA DE INGRESOS, RENTABILIDAD Y FACTURACIÓN POR PLANTEL
+    // ========================================================================
+    if (isFinancialOrEarningsQuery) {
+      const netMonthlyIncomeTop = topBenchmarkCampus.monthlyRevenue * (topBenchmarkCampus.ebitdaMarginPct / 100);
+
+      const directAnswer = 
+        `El plantel que **gana más dinero y genera mayor rentabilidad** dentro del sistema institucional es el **${topBenchmarkCampus.campusName}**:\n\n` +
+        `• 🥇 **Plantel Líder**: **${topBenchmarkCampus.campusName}**\n` +
+        `  - **Facturación Mensual**: **${formatMXN(topBenchmarkCampus.monthlyRevenue)} MXN** (representa el **${formatPercent((topBenchmarkCampus.monthlyRevenue / totalHoldingRevenue) * 100)}** de los ingresos totales del consorcio).\n` +
+        `  - **Margen Operativo EBITDA**: **${topBenchmarkCampus.ebitdaMarginPct}%** (generando una utilidad operativa estimada de **${formatMXN(netMonthlyIncomeTop)} MXN/mes**).\n` +
+        `  - **Matrícula y Capacidad**: **${topBenchmarkCampus.currentEnrollment.toLocaleString('es-MX')} alumnos activos** con un **${topBenchmarkCampus.occupancyRate}% de ocupación** (${topBenchmarkCampus.capacityTotal.toLocaleString('es-MX')} cupos totales).\n\n` +
+        `• 📊 **Ranking Comparativo de Sedes Oficiales**:\n` +
+        benchmarkCampuses.map((c, idx) => 
+          `  ${idx + 1}. **${c.shortName}**: ${formatMXN(c.monthlyRevenue)}/mes | Margen EBITDA: ${c.ebitdaMarginPct}% | ${c.currentEnrollment} alumnos (${c.occupancyRate}% ocupación)`
+        ).join('\n') + `\n\n` +
+        `• 🏫 **Diagnóstico en la Unidad Activa (${schoolName})**:\n` +
+        (topLocalCampus 
+          ? `  - La sede con mayor recaudación dentro de ${schoolName} es **${topLocalCampus.campus.name}**, con un flujo estimado de **${formatMXN(topLocalCampus.estimatedMonthlyRevenue)} MXN** y ${topLocalCampus.studentsCount} alumnos matriculados.`
+          : `  - Unidad operando bajo gobernanza y control centralizado.`);
+
+      const summaryText = `Análisis forense de rentabilidad por plantel. **${topBenchmarkCampus.campusName}** se posiciona como el plantel con mayor volumen de recaudación (${formatMXN(topBenchmarkCampus.monthlyRevenue)}/mes) y mejor eficiencia de EBITDA (${topBenchmarkCampus.ebitdaMarginPct}%). El consorcio factura ${formatMXN(totalHoldingRevenue)} mensuales consolidados.`;
+
+      const kpis: AnalyticKPICard[] = [
+        {
+          id: 'kpi-top-campus-revenue',
+          label: 'Plantel con Más Ingresos',
+          value: topBenchmarkCampus.shortName,
+          subtext: `${formatMXN(topBenchmarkCampus.monthlyRevenue)} / mes`,
+          color: 'emerald',
+          trend: { direction: 'up', value: `#1 en Facturación (${formatPercent((topBenchmarkCampus.monthlyRevenue / totalHoldingRevenue) * 100)})` }
+        },
+        {
+          id: 'kpi-top-campus-ebitda',
+          label: 'Margen EBITDA Líder',
+          value: `${topBenchmarkCampus.ebitdaMarginPct}%`,
+          subtext: `${formatMXN(netMonthlyIncomeTop)} utilidad mensual`,
+          color: 'indigo'
+        },
+        {
+          id: 'kpi-total-holding-income',
+          label: 'Facturación del Consorcio',
+          value: formatMXN(totalHoldingRevenue),
+          subtext: `${benchmarkCampuses.length} planteles consolidados`,
+          color: 'cyan'
+        },
+        {
+          id: 'kpi-total-holding-enrollment',
+          label: 'Matrícula Total',
+          value: `${totalHoldingStudents.toLocaleString('es-MX')} Alumnos`,
+          subtext: `${formatPercent(avgHoldingOccupancy)} ocupación promedio`,
+          color: 'purple'
+        }
+      ];
+
+      const chartConfig: AnalyticChartConfig = {
+        type: 'column',
+        availableTypes: ['column', 'bar', 'donut'],
+        title: 'Ranking Comparativo: Facturación Mensual por Plantel',
+        subtitle: 'Monto total facturado por colegiaturas e inscripciones (MXN)',
+        labels: benchmarkCampuses.map(c => c.shortName),
+        datasets: [
+          {
+            name: 'Facturación Mensual (MXN)',
+            data: benchmarkCampuses.map(c => c.monthlyRevenue),
+            color: '#06b6d4'
+          }
+        ],
+        unit: 'currency'
+      };
+
+      const tableColumns: AnalyticTableColumn[] = [
+        { key: 'ranking', label: 'Ranking', align: 'center' },
+        { key: 'campusName', label: 'Plantel / Sede Oficial' },
+        { key: 'monthlyRevenue', label: 'Facturación Mensual', align: 'right', isCurrency: true },
+        { key: 'ebitdaMargin', label: 'Margen EBITDA', align: 'center' },
+        { key: 'enrollment', label: 'Alumnos Activos', align: 'center' },
+        { key: 'occupancy', label: 'Ocupación', align: 'center' },
+        { key: 'status', label: 'Diagnóstico Financiero', align: 'center', isBadge: true }
+      ];
+
+      const tableRows = benchmarkCampuses.map((c, idx) => ({
+        ranking: `#${idx + 1}`,
+        campusName: c.campusName,
+        monthlyRevenue: c.monthlyRevenue,
+        ebitdaMargin: `${c.ebitdaMarginPct}%`,
+        enrollment: `${c.currentEnrollment} Alumnos`,
+        occupancy: `${c.occupancyRate}%`,
+        status: idx === 0 ? 'Líder en Ingresos' : (c.ebitdaMarginPct >= 28 ? 'Alto Rendimiento' : 'Rendimiento Sólido')
+      }));
+
+      return {
+        domain,
+        queryReceived: rawQuery,
+        reportTitle: `Benchmark Financiero y Rentabilidad: ¿Cuál Plantel Gana Más Dinero?`,
+        schoolName,
+        schoolId: effectiveSchoolId || 'global',
+        isConsolidated,
+        generatedAt: timestamp,
+        tokenCost: 0,
+        directAnswer,
+        explanation: {
+          summary: summaryText,
+          fieldsIncluded: [
+            'Facturación mensual recurrente por colegiaturas y servicios',
+            'Margen operativo bruto y EBITDA porcentual',
+            'Matrícula activa y tasa de ocupación por infraestructura',
+            'Utilidad neta proyectada por unidad pedagógica'
+          ],
+          filtersApplied: [
+            `Consulta ejecutiva: "${rawQuery}"`,
+            'Benchmark consolidado de sedes del consorcio',
+            `Contexto institucional: ${schoolName}`
+          ],
+          visualizationDescription: 'Se desplegó el ranking financiero comparativo de ingresos mensuales y márgenes EBITDA por plantel.',
+          followUpPrompt: '¿Deseas analizar la nómina de algún plantel específico o consultar el flujo de cobranza?'
+        },
+        kpis,
+        chart: chartConfig,
+        table: {
+          columns: tableColumns,
+          rows: tableRows,
+          totalRows: tableRows.length
+        },
+        suggestedQueries: [
+          'Ver detalle de la nómina y sueldos de colaboradores',
+          'Comparativa entre meses de ingresos vs nómina',
+          'Estudiantes con adeudo activo en el colegio',
+          'Capacidad y matrícula en cada plantel'
+        ]
+      };
+    }
+
+    // ========================================================================
+    // ESCENARIO B: CONSULTA OPERATIVA GENERAL DE PLANTELES Y GRUPOS
+    // ========================================================================
+    const totalLocalStudents = localMetrics.reduce((acc, m) => acc + m.studentsCount, 0);
+    const totalLocalGroups = localMetrics.reduce((acc, m) => acc + m.groupsCount, 0);
+
+    const directAnswer = 
+      `Infraestructura y Planteles de **${schoolName}**:\n\n` +
+      `Se tienen registrados **${scopedCampuses.length} planteles oficiales**, albergando **${totalLocalGroups} grupos activos** y **${totalLocalStudents} estudiantes** matriculados:\n\n` +
+      localMetrics.map((m, idx) => 
+        `• **${m.campus.name}** (${m.campus.level.toUpperCase()}):\n` +
+        `  - Matrícula: **${m.studentsCount} alumnos** en **${m.groupsCount} grupos**.\n` +
+        `  - Grados: ${m.campus.grades?.join(', ') || 'Grados activos'}.\n` +
+        `  - Dirección: ${m.campus.address || 'Domicilio oficial'} (Tel: ${m.campus.phone || 'S/N'}).`
+      ).join('\n');
+
+    return {
+      domain,
+      queryReceived: rawQuery,
+      reportTitle: `Directorio de Planteles y Distribución de Grupos: ${schoolName}`,
+      schoolName,
+      schoolId: effectiveSchoolId || 'global',
+      isConsolidated,
+      generatedAt: timestamp,
+      tokenCost: 0,
+      directAnswer,
+      explanation: {
+        summary: `Distribución de infraestructura escolar en "${schoolName}". Se registran ${scopedCampuses.length} planteles y ${totalLocalGroups} grupos pedagógicos.`,
+        fieldsIncluded: [
+          'Nivel educativo y grados impartidos',
+          'Población estudiantil por plantel',
+          'Grupos escolares formados',
+          'Ubicación y datos de contacto'
+        ],
+        filtersApplied: [
+          `Institución activa: "${schoolName}"`,
+          'Catálogo de sedes autorizadas'
+        ],
+        visualizationDescription: 'Se presenta la distribución de estudiantes y grupos por plantel.',
+        followUpPrompt: '¿Deseas consultar los alumnos matriculados en algún plantel o el horario de grupos?'
+      },
+      kpis: [
+        {
+          id: 'kpi-cg-total-campuses',
+          label: 'Planteles Activos',
+          value: `${scopedCampuses.length}`,
+          subtext: 'Unidades educativas',
+          color: 'cyan'
+        },
+        {
+          id: 'kpi-cg-total-groups',
+          label: 'Grupos Escolares',
+          value: `${totalLocalGroups}`,
+          subtext: 'Aulas activas',
+          color: 'indigo'
+        },
+        {
+          id: 'kpi-cg-total-students',
+          label: 'Matrícula Atendida',
+          value: `${totalLocalStudents} Alumnos`,
+          subtext: 'En los planteles del colegio',
+          color: 'emerald'
+        },
+        {
+          id: 'kpi-cg-top-campus',
+          label: 'Mayor Población',
+          value: topLocalCampus?.campus?.name || 'Plantel Principal',
+          subtext: `${topLocalCampus?.studentsCount || 0} alumnos`,
+          color: 'purple'
+        }
+      ],
+      chart: {
+        type: 'column',
+        availableTypes: ['column', 'bar', 'donut'],
+        title: 'Distribución de Estudiantes por Plantel',
+        subtitle: 'Alumnos activos matriculados en cada unidad',
+        labels: localMetrics.map(m => m.campus.name),
+        datasets: [
+          {
+            name: 'Alumnos Matriculados',
+            data: localMetrics.map(m => m.studentsCount),
+            color: '#6366f1'
+          }
+        ],
+        unit: 'count'
+      },
+      table: {
+        columns: [
+          { key: 'name', label: 'Plantel' },
+          { key: 'level', label: 'Nivel Educativo', align: 'center' },
+          { key: 'grades', label: 'Grados Impartidos' },
+          { key: 'students', label: 'Alumnos', align: 'center' },
+          { key: 'groups', label: 'Grupos', align: 'center' },
+          { key: 'phone', label: 'Teléfono' },
+          { key: 'address', label: 'Dirección' }
+        ],
+        rows: localMetrics.map(m => ({
+          name: m.campus.name,
+          level: m.campus.level.toUpperCase(),
+          grades: m.campus.grades?.join(', ') || 'Grados activos',
+          students: `${m.studentsCount} Alumnos`,
+          groups: `${m.groupsCount} Grupos`,
+          phone: m.campus.phone || 'S/N',
+          address: m.campus.address || 'Domicilio oficial'
+        })),
+        totalRows: localMetrics.length
+      },
+      suggestedQueries: [
+        '¿Cuál plantel gana más dinero?',
+        'Ver todos los alumnos matriculados',
+        'Directorio de profesores por plantel',
+        'Estudiantes con adeudo activo'
       ]
     };
   }
