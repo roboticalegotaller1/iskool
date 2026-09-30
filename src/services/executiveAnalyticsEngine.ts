@@ -481,11 +481,33 @@ export const detectQueryPolarity = (query: string): QueryPolarity => {
   if (!query) return 'neutral';
   const norm = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 
+  // 1. REGLA SEMÁNTICA ADVERSA:
+  // Frases compuestas donde un cuantificador ("más", "mayor", "máximo") califica un término adverso, déficit o merma
+  // ("más pérdidas", "más déficit", "más deudas", "más faltas", "más reprobados", "pierde más").
+  // En estos casos, la intención analítica es inequívocamente evaluar el extremo adverso / peor desempeño ('min').
+  const adverseTerms = [
+    'perdida', 'perdidas', 'pierde', 'pierden', 'deficit', 'merma', 'mermas',
+    'deuda', 'deudas', 'adeudo', 'adeudos', 'morosidad', 'morosos', 'cartera vencida',
+    'falta', 'faltas', 'inasistencia', 'inasistencias', 'ausencia', 'ausencias',
+    'reprobado', 'reprobados', 'baja', 'bajas', 'desercion', 'quiebra'
+  ];
+
+  const hasAdverseTerm = adverseTerms.some(term => {
+    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(^|[^a-z0-9áéíóúñ])${escaped}([^a-z0-9áéíóúñ]|$)`, 'i');
+    return regex.test(norm);
+  });
+
+  if (hasAdverseTerm) {
+    // Si la consulta pregunta por pérdidas, déficit, mermas o adeudos (ej. "qué colegio tiene más pérdidas"), la polaridad siempre es 'min'
+    return 'min';
+  }
+
   const minTokens = [
     'menos', 'menor', 'menores', 'minimo', 'minima', 'minimos', 'minimas',
     'mas bajo', 'mas baja', 'mas bajos', 'mas bajas', 'el mas bajo', 'la mas baja',
     'peor', 'peores', 'bajo', 'bajos', 'baja', 'bajas', 'debajo',
-    'ultimo', 'ultimos', 'ultima', 'ultimas', 'fondo', 'reprobado', 'reprobados',
+    'ultimo', 'ultimos', 'ultima', 'ultimas', 'fondo',
     'caida', 'decremento', 'reduccion'
   ];
 
@@ -1072,7 +1094,64 @@ export const detectAnalyticDomain = (
     normalized.includes('mayor') || 
     normalized.includes('menor') || 
     normalized.includes('mas') || 
-    normalized.includes('menos');
+    normalized.includes('menos') ||
+    normalized.includes('perdida') ||
+    normalized.includes('perdidas') ||
+    normalized.includes('pierde') ||
+    normalized.includes('pierden') ||
+    normalized.includes('deficit') ||
+    normalized.includes('merma') ||
+    normalized.includes('mermas') ||
+    normalized.includes('gasto') ||
+    normalized.includes('gastos') ||
+    normalized.includes('costo') ||
+    normalized.includes('costos') ||
+    normalized.includes('quiebra');
+
+  // 0.3. Consultas Directivas de Pérdidas, Déficit o Vulnerabilidad Institucional y Sedes
+  // Atiende directamente: "qué colegio tiene más pérdidas", "cuál tiene más pérdidas", "cuál tiene más déficit", "quién pierde más", "dónde hay más pérdidas", "pérdidas por plantel", "quién tiene más pérdidas", "déficit", etc.
+  const isLossOrDeficitIntent = 
+    normalized.includes('perdida') || 
+    normalized.includes('perdidas') || 
+    normalized.includes('pierde') || 
+    normalized.includes('pierden') || 
+    normalized.includes('deficit') || 
+    normalized.includes('merma') || 
+    normalized.includes('mermas') || 
+    normalized.includes('quiebra') ||
+    (normalized.includes('peor') && (normalized.includes('rentab') || normalized.includes('finan') || normalized.includes('dinero') || normalized.includes('utilidad') || normalized.includes('ingreso') || normalized.includes('margen') || normalized.includes('ebitda')));
+
+  if (isLossOrDeficitIntent) {
+    return { domain: 'CAMPUSES_GROUPS' };
+  }
+
+  // 0.35. Comparativas Interrogativas Directivas entre Sedes ("cuál gana más", "cuál gana menos", "quién factura más", "cuál es más rentable")
+  const isComparativeInterrogative = 
+    normalized.startsWith('cual') || 
+    normalized.startsWith('cuales') || 
+    normalized.startsWith('quien') || 
+    normalized.startsWith('quienes') || 
+    normalized.startsWith('que ') ||
+    normalized.includes('cual ') ||
+    normalized.includes('quien ') ||
+    normalized.includes('donde ');
+
+  const isFinancialBenchmarkIntent = 
+    (normalized.includes('gana') && (normalized.includes('mas') || normalized.includes('menos') || normalized.includes('dinero') || normalized.includes('mejor') || normalized.includes('peor'))) ||
+    (normalized.includes('factura') && (normalized.includes('mas') || normalized.includes('menos') || normalized.includes('mayor') || normalized.includes('menor'))) ||
+    (normalized.includes('rentab') && (normalized.includes('mas') || normalized.includes('menos') || normalized.includes('mayor') || normalized.includes('menor'))) ||
+    (normalized.includes('ingreso') && (normalized.includes('mas') || normalized.includes('menos') || normalized.includes('mayor') || normalized.includes('menor')));
+
+  const mentionsMonth = 
+    normalized.includes('mes') || 
+    normalized.includes('meses') || 
+    normalized.includes('mensual') || 
+    normalized.includes('historico') ||
+    SPANISH_MONTH_NAMES.some(m => normalized.includes(m.toLowerCase()));
+
+  if (isComparativeInterrogative && isFinancialBenchmarkIntent && !mentionsMonth) {
+    return { domain: 'CAMPUSES_GROUPS' };
+  }
 
   if (mentionsCampus && mentionsCampusMetricOrComparison) {
     return { domain: 'CAMPUSES_GROUPS' };
@@ -1441,8 +1520,15 @@ export const detectAnalyticDomain = (
     return { domain: 'CAMPUSES_GROUPS' };
   }
 
-  // 12. Término de búsqueda específico remanente en expedientes
-  if (criteria.target.length >= 3) {
+  // 12. Término de búsqueda específico remanente en expedientes (con blindaje contra términos financieros o de déficit)
+  const financialOrOperationalKeywords = [
+    'perdida', 'perdidas', 'pierde', 'pierden', 'deficit', 'merma', 'mermas', 'quiebra',
+    'ingreso', 'ingresos', 'egreso', 'egresos', 'factura', 'facturacion', 'nomina', 'sueldo',
+    'balance', 'ebitda', 'utilidad', 'utilidades', 'rentable', 'rentabilidad', 'colegiatura'
+  ];
+  const isFinancialKeyword = financialOrOperationalKeywords.some(kw => normalized.includes(kw));
+
+  if (criteria.target.length >= 3 && !isFinancialKeyword) {
     return { domain: 'STUDENT_LOOKUP', targetStudentName: criteria.target };
   }
 
@@ -6975,6 +7061,212 @@ export const executeAnalyticQuery = (
           '¿Cuál es la nómina de mis 2 planteles con más alumnos?',
           '¿Cuál es la matrícula de mi mayor plantel?',
           '¿Cuál fue la facturación de mi colegio más grande?',
+          '¿Cuál es la facturación de mis colegios?'
+        ]
+      };
+    }
+
+    // ========================================================================
+    // CASO DIRECTIVO 6.8: AUDITORÍA DE PÉRDIDAS, DÉFICIT Y VULNERABILIDAD POR PLANTEL
+    // Atiende con máxima precisión: "¿qué colegio tiene más pérdidas?", "¿cuál plantel tiene más pérdidas?", "¿qué sede pierde más dinero?", "¿cuál tiene más déficit?"
+    // ========================================================================
+    const isLossesOrDeficitQuery = 
+      qNorm.includes('perdida') || 
+      qNorm.includes('perdidas') || 
+      qNorm.includes('pierde') || 
+      qNorm.includes('pierden') || 
+      qNorm.includes('deficit') || 
+      qNorm.includes('merma') || 
+      qNorm.includes('mermas') || 
+      qNorm.includes('quiebra') ||
+      (qNorm.includes('peor') && (qNorm.includes('rentab') || qNorm.includes('finan') || qNorm.includes('dinero') || qNorm.includes('utilidad') || qNorm.includes('ingreso') || qNorm.includes('margen') || qNorm.includes('ebitda'))) ||
+      ((qNorm.includes('mas') || qNorm.includes('mayor') || qNorm.includes('mayores') || qNorm.includes('altas') || qNorm.includes('alto')) && (qNorm.includes('perdida') || qNorm.includes('perdidas') || qNorm.includes('deficit') || qNorm.includes('merma')));
+
+    if (isLossesOrDeficitQuery) {
+      // Ordenamiento determinista por nivel de pérdida, déficit y vulnerabilidad:
+      // 1. Planteles con utilidad negativa (pérdida neta real)
+      // 2. Mayor cartera vencida pendiente de cobro en scopedBilling
+      // 3. Menor margen EBITDA porcentual
+      // 4. Menor utilidad neta mensual
+      // 5. Menor facturación mensual
+      const rankedCampusesByLoss = [...activeCampusMetrics].sort((a, b) => {
+        if (a.netIncomeMonthly < 0 || b.netIncomeMonthly < 0) {
+          return a.netIncomeMonthly - b.netIncomeMonthly;
+        }
+        const aDebt = scopedBilling.filter(rec => rec.status !== 'paid' && (rec.level?.toLowerCase() === a.level?.toLowerCase() || ((rec as any).campusName && (rec as any).campusName.toLowerCase().includes(a.shortName.toLowerCase())))).reduce((sum, r) => sum + Number(r.amount || 0), 0);
+        const bDebt = scopedBilling.filter(rec => rec.status !== 'paid' && (rec.level?.toLowerCase() === b.level?.toLowerCase() || ((rec as any).campusName && (rec as any).campusName.toLowerCase().includes(b.shortName.toLowerCase())))).reduce((sum, r) => sum + Number(r.amount || 0), 0);
+        if (aDebt !== bDebt && (aDebt > 0 || bDebt > 0)) {
+          return bDebt - aDebt;
+        }
+        if (a.ebitdaMarginPct !== b.ebitdaMarginPct) {
+          return a.ebitdaMarginPct - b.ebitdaMarginPct;
+        }
+        if (a.netIncomeMonthly !== b.netIncomeMonthly) {
+          return a.netIncomeMonthly - b.netIncomeMonthly;
+        }
+        return a.monthlyRevenue - b.monthlyRevenue;
+      });
+
+      const worstCampus = rankedCampusesByLoss[0] || activeCampusMetrics[0];
+      const worstCampusDebt = scopedBilling.filter(rec => rec.status !== 'paid' && (rec.level?.toLowerCase() === worstCampus.level?.toLowerCase() || ((rec as any).campusName && (rec as any).campusName.toLowerCase().includes(worstCampus.shortName.toLowerCase())))).reduce((sum, r) => sum + Number(r.amount || 0), 0);
+      const shareOfTotal = totalSchoolRevenue > 0 
+        ? formatPercent((worstCampus.monthlyRevenue / totalSchoolRevenue) * 100) 
+        : '0.0%';
+
+      const hasStrictLoss = worstCampus.netIncomeMonthly < 0;
+      let reportTitle = '';
+      let directAnswer = '';
+      let summaryText = '';
+
+      if (hasStrictLoss) {
+        reportTitle = `Auditoría Forense de Pérdidas: Plantel con Mayor Déficit (${worstCampus.shortName})`;
+        directAnswer = 
+          `El plantel que registra **mayores pérdidas operativas** dentro de **${schoolName}** es **${worstCampus.campusName}**, con un déficit mensual de **${formatMXN(Math.abs(worstCampus.netIncomeMonthly))} MXN/mes**:\n\n` +
+          `• 🚨 **Plantel en Situación de Pérdida**: **${worstCampus.campusName}**\n` +
+          `  - **Déficit Mensual Neto**: **-${formatMXN(Math.abs(worstCampus.netIncomeMonthly))} MXN/mes** (sus costos de nómina y operación superan los ingresos facturados).\n` +
+          `  - **Facturación Mensual**: **${formatMXN(worstCampus.monthlyRevenue)} MXN** (representa el **${shareOfTotal}** de los ingresos de la institución).\n` +
+          `  - **Gasto en Nómina y Operación**: **${formatMXN(worstCampus.monthlyPayroll)} MXN/mes** asignados a su plantilla.\n` +
+          `  - **Margen Operativo EBITDA**: **${worstCampus.ebitdaMarginPct}%**.\n` +
+          `  - **Matrícula y Capacidad**: **${worstCampus.studentsCount.toLocaleString('es-MX')} alumnos activos** con un **${worstCampus.occupancyRate}% de ocupación** (${worstCampus.capacityTotal.toLocaleString('es-MX')} cupos totales instalados).\n` +
+          (worstCampusDebt > 0 ? `  - **Cartera Vencida Acumulada**: **${formatMXN(worstCampusDebt)} MXN** no cobrados que agravan la pérdida de flujo.\n\n` : `\n`) +
+          `• 📊 **Ranking Comparativo de Pérdidas y Rendimiento por Plantel**:\n` +
+          rankedCampusesByLoss.map((c, idx) => 
+            `  ${idx + 1}. **${c.shortName}**: ${c.netIncomeMonthly < 0 ? `Déficit: -${formatMXN(Math.abs(c.netIncomeMonthly))}/mes` : `Utilidad: +${formatMXN(c.netIncomeMonthly)}/mes`} | Facturación: ${formatMXN(c.monthlyRevenue)}/mes | Margen EBITDA: ${c.ebitdaMarginPct}% | ${c.studentsCount.toLocaleString('es-MX')} alumnos`
+          ).join('\n') + `\n\n` +
+          `• 🎯 **Plan de Mitigación y Acción Inmediata**:\n` +
+          `  - Se recomienda auditar los costos fijos de **${worstCampus.shortName}** y acelerar la captación para ocupar sus ${Math.max(0, worstCampus.capacityTotal - worstCampus.studentsCount)} cupos disponibles.`;
+
+        summaryText = `Auditoría de pérdidas operativas en "${schoolName}". El plantel **${worstCampus.campusName}** presenta el mayor déficit mensual (-${formatMXN(Math.abs(worstCampus.netIncomeMonthly))}/mes) con un margen EBITDA de ${worstCampus.ebitdaMarginPct}%.`;
+      } else {
+        reportTitle = `Auditoría de Pérdidas y Vulnerabilidad Financiera: Análisis por Plantel (${schoolName})`;
+        directAnswer = 
+          `En el balance operativo actual de **${schoolName}**, **ningún plantel opera con pérdida neta negativa** (todos mantienen margen de utilidad positivo). Sin embargo, el plantel con **mayor rezago financiero, menor margen de ganancia y mayor vulnerabilidad operativa (mayor riesgo de pérdidas)** es **${worstCampus.campusName}**:\n\n` +
+          `• 📉 **Plantel con Mayor Vulnerabilidad / Menor Margen**: **${worstCampus.campusName}**\n` +
+          `  - **Facturación Mensual**: **${formatMXN(worstCampus.monthlyRevenue)} MXN** (representa el **${shareOfTotal}** de los ingresos totales de la institución).\n` +
+          `  - **Margen Operativo EBITDA**: Apenas **${worstCampus.ebitdaMarginPct}%** (generando una utilidad de solo **${formatMXN(worstCampus.netIncomeMonthly)} MXN/mes**).\n` +
+          `  - **Costos Fijos en Nómina**: **${formatMXN(worstCampus.monthlyPayroll)} MXN/mes** (absorben el **${((worstCampus.monthlyPayroll / (worstCampus.monthlyRevenue || 1)) * 100).toFixed(1)}%** de sus ingresos).\n` +
+          `  - **Matrícula y Capacidad**: **${worstCampus.studentsCount.toLocaleString('es-MX')} alumnos activos** con un **${worstCampus.occupancyRate}% de ocupación** (${worstCampus.capacityTotal.toLocaleString('es-MX')} cupos totales).\n` +
+          (worstCampusDebt > 0 ? `  - **Cartera Vencida / Merma de Flujo**: **${formatMXN(worstCampusDebt)} MXN** pendientes de cobro que representan merma directa de ingresos.\n\n` : `\n`) +
+          `• 📊 **Ranking Comparativo de Planteles por Vulnerabilidad y Rentabilidad (De Mayor Riesgo a Mayor Ganancia)**:\n` +
+          rankedCampusesByLoss.map((c, idx) => 
+            `  ${idx + 1}. **${c.shortName}**: ${idx === 0 ? '⚠️ Mayor Vulnerabilidad' : 'Sede Estable'} | Facturación: ${formatMXN(c.monthlyRevenue)}/mes | Margen EBITDA: ${c.ebitdaMarginPct}% | Utilidad: ${formatMXN(c.netIncomeMonthly)}/mes | ${c.studentsCount.toLocaleString('es-MX')} alumnos`
+          ).join('\n') + `\n\n` +
+          `• 🎯 **Diagnóstico Estratégico para Prevenir Pérdidas**:\n` +
+          `  - Aunque **${worstCampus.shortName}** no está en quiebra, su bajo margen operativo de ${worstCampus.ebitdaMarginPct}% lo hace el plantel más vulnerable ante fluctuaciones de gastos o deserción escolar. Se recomienda captar alumnos para sus ${Math.max(0, worstCampus.capacityTotal - worstCampus.studentsCount)} cupos disponibles.`;
+
+        summaryText = `Auditoría de pérdidas y vulnerabilidad financiera en "${schoolName}". Ningún plantel opera con balance negativo; el plantel con mayor riesgo financiero y menor margen es **${worstCampus.campusName}** con facturación de ${formatMXN(worstCampus.monthlyRevenue)}/mes y margen EBITDA de ${worstCampus.ebitdaMarginPct}%.`;
+      }
+
+      const kpis: AnalyticKPICard[] = [
+        {
+          id: 'kpi-loss-campus-name',
+          label: hasStrictLoss ? 'Plantel con Más Pérdidas' : 'Plantel Mayor Vulnerabilidad',
+          value: worstCampus.shortName,
+          subtext: hasStrictLoss ? `Déficit: -${formatMXN(Math.abs(worstCampus.netIncomeMonthly))}/mes` : `${formatMXN(worstCampus.netIncomeMonthly)} utilidad mensual`,
+          color: 'rose',
+          trend: { direction: 'down', value: hasStrictLoss ? '#1 en Pérdidas' : '#1 en Mayor Riesgo' }
+        },
+        {
+          id: 'kpi-loss-ebitda-margin',
+          label: 'Margen EBITDA Mínimo',
+          value: `${worstCampus.ebitdaMarginPct}%`,
+          subtext: `Eficiencia operativa más baja`,
+          color: 'amber'
+        },
+        {
+          id: 'kpi-loss-uncollected-debt',
+          label: 'Cartera en Riesgo / Merma',
+          value: formatMXN(worstCampusDebt),
+          subtext: 'Adeudos pendientes por cobrar',
+          color: 'purple'
+        },
+        {
+          id: 'kpi-loss-capacity-gap',
+          label: 'Cupos Disponibles a Llenar',
+          value: `${Math.max(0, worstCampus.capacityTotal - worstCampus.studentsCount)} Cupos`,
+          subtext: `${worstCampus.occupancyRate}% ocupación actual`,
+          color: 'cyan'
+        }
+      ];
+
+      const chartConfig: AnalyticChartConfig = {
+        type: 'column',
+        availableTypes: ['column', 'bar', 'donut'],
+        title: 'Ranking de Desempeño Operativo: Margen y Vulnerabilidad por Plantel',
+        subtitle: 'Planteles ordenados por vulnerabilidad financiera y nivel de ingresos (MXN)',
+        labels: rankedCampusesByLoss.map(c => c.shortName),
+        datasets: [
+          {
+            name: 'Facturación Mensual (MXN)',
+            data: rankedCampusesByLoss.map(c => c.monthlyRevenue),
+            color: '#f43f5e'
+          }
+        ],
+        unit: 'currency',
+        highlightIndex: 0
+      };
+
+      const tableColumns: AnalyticTableColumn[] = [
+        { key: 'ranking', label: 'Ranking', align: 'center' },
+        { key: 'campusName', label: 'Plantel / Sede Oficial' },
+        { key: 'monthlyRevenue', label: 'Facturación Mensual', align: 'right', isCurrency: true },
+        { key: 'monthlyPayroll', label: 'Nómina / Costos', align: 'right', isCurrency: true },
+        { key: 'netIncome', label: 'Resultado Operativo', align: 'right', isCurrency: true },
+        { key: 'ebitdaMargin', label: 'Margen EBITDA', align: 'center' },
+        { key: 'enrollment', label: 'Alumnos', align: 'center' },
+        { key: 'status', label: 'Diagnóstico Financiero', align: 'center', isBadge: true }
+      ];
+
+      const tableRows = rankedCampusesByLoss.map((c, idx) => ({
+        ranking: `#${idx + 1}`,
+        campusName: c.campusName,
+        monthlyRevenue: c.monthlyRevenue,
+        monthlyPayroll: c.monthlyPayroll,
+        netIncome: c.netIncomeMonthly,
+        ebitdaMargin: `${c.ebitdaMarginPct}%`,
+        enrollment: `${c.studentsCount.toLocaleString('es-MX')} Alumnos`,
+        status: idx === 0 
+          ? (c.netIncomeMonthly < 0 ? 'Mayor Pérdida Operativa (#1)' : 'Mayor Vulnerabilidad / Menor Margen (#1)')
+          : (c.netIncomeMonthly < 0 ? 'Déficit Operativo' : 'Operación Estable')
+      }));
+
+      return {
+        domain,
+        queryReceived: rawQuery,
+        reportTitle,
+        schoolName,
+        schoolId: effectiveSchoolId || 'global',
+        isConsolidated,
+        generatedAt: timestamp,
+        tokenCost: 0,
+        directAnswer,
+        explanation: {
+          summary: summaryText,
+          fieldsIncluded: [
+            'Facturación mensual recurrente por colegiaturas',
+            'Gasto mensual asignado a nómina y operación',
+            'Resultado operativo neto (utilidad o déficit)',
+            'Margen EBITDA y porcentaje de ocupación instalada',
+            'Cartera vencida y merma por cobros pendientes'
+          ],
+          filtersApplied: [
+            `Consulta ejecutiva: "${rawQuery}"`,
+            'Auditoría focalizada en pérdidas, déficit y menor rentabilidad'
+          ],
+          visualizationDescription: 'Se despliega el ranking de planteles priorizado por vulnerabilidad financiera, margen operativo y riesgo de déficit.',
+          followUpPrompt: '¿Deseas auditar la cartera vencida de este plantel o revisar su estructura de nómina?'
+        },
+        kpis,
+        chart: chartConfig,
+        table: {
+          columns: tableColumns,
+          rows: tableRows,
+          totalRows: tableRows.length
+        },
+        suggestedQueries: [
+          '¿Cuál es la cartera vencida de mis colegios?',
+          '¿Cuál plantel gana más dinero?',
+          '¿Cuál es la nómina de mis planteles?',
           '¿Cuál es la facturación de mis colegios?'
         ]
       };
