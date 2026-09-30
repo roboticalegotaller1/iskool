@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { marked } from 'marked';
 import DOMPurify from 'isomorphic-dompurify';
+import { normalizeLatinHistoricalPhonetics } from '@/lib/historicalVoiceEngine';
 
 // ----------------------------------------------------------------------------
 // TIPOS DE ESTADO Y TELEMETRÍA
@@ -136,7 +137,8 @@ export const ExecutiveOracleDashboard: React.FC = () => {
 
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    const normalizedText = normalizeLatinHistoricalPhonetics(text);
+    const utterance = new SpeechSynthesisUtterance(normalizedText);
     utterance.lang = 'es-MX';
     utterance.rate = 1.05; // Cadencia ejecutiva rápida
     utterance.pitch = 0.98;

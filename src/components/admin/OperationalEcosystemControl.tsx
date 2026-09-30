@@ -27,8 +27,19 @@ import {
   School,
   X,
   Play,
-  Briefcase
+  Briefcase,
+  Search,
+  Download,
+  ExternalLink,
+  Eye,
+  Copy,
+  AlertTriangle,
+  UserCheck
 } from 'lucide-react';
+import { 
+  getTraceabilityRecordsForFlow, 
+  FlowExecutionTraceRecord 
+} from '@/store/seeds/operationalAutomationSeeds';
 
 // ============================================================================
 // TIPOS DE ROLES Y EVENTOS OPERATIVOS DEL ECOSISTEMA ESCOLAR / EMPRESARIAL
@@ -611,6 +622,96 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
     'alerta-desercion': true
   });
 
+  // ==========================================================================
+  // ESTADOS Y HANDLERS DE TRAZABILIDAD Y AUDITORÍA FORENSE DE FLUJOS EN VIVO
+  // ==========================================================================
+  const [selectedTraceFlow, setSelectedTraceFlow] = useState<OperationalAutomationFlow | null>(null);
+  const [traceSearchQuery, setTraceSearchQuery] = useState<string>('');
+  const [traceCampusFilter, setTraceCampusFilter] = useState<string>('all');
+  const [traceStatusFilter, setTraceStatusFilter] = useState<string>('all');
+  const [selectedDossierRecord, setSelectedDossierRecord] = useState<FlowExecutionTraceRecord | null>(null);
+  const [copiedHashId, setCopiedHashId] = useState<string | null>(null);
+
+  // Registros de trazabilidad forense del flujo seleccionado
+  const currentFlowRecords = useMemo(() => {
+    if (!selectedTraceFlow) return [];
+    return getTraceabilityRecordsForFlow(selectedTraceFlow.key);
+  }, [selectedTraceFlow]);
+
+  // Registros filtrados por búsqueda, plantel y estado de resolución
+  const filteredTraceRecords = useMemo(() => {
+    return currentFlowRecords.filter(rec => {
+      const q = traceSearchQuery.toLowerCase().trim();
+      const matchesSearch = !q || 
+        rec.subjectName.toLowerCase().includes(q) ||
+        rec.subjectId.toLowerCase().includes(q) ||
+        rec.triggerCause.toLowerCase().includes(q) ||
+        (rec.guardianName && rec.guardianName.toLowerCase().includes(q)) ||
+        rec.levelGradeGroup.toLowerCase().includes(q);
+
+      const matchesCampus = traceCampusFilter === 'all' || rec.campusId === traceCampusFilter;
+      const matchesStatus = traceStatusFilter === 'all' || rec.status === traceStatusFilter;
+
+      return matchesSearch && matchesCampus && matchesStatus;
+    });
+  }, [currentFlowRecords, traceSearchQuery, traceCampusFilter, traceStatusFilter]);
+
+  const handleOpenTraceabilityModal = (flow: OperationalAutomationFlow) => {
+    setSelectedTraceFlow(flow);
+    setTraceSearchQuery('');
+    setTraceCampusFilter('all');
+    setTraceStatusFilter('all');
+    setSelectedDossierRecord(null);
+  };
+
+  const handleCopyHash = (hash: string, id: string) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(hash);
+      setCopiedHashId(id);
+      setTimeout(() => setCopiedHashId(null), 2500);
+      if (onTriggerToast) {
+        onTriggerToast(`Hash inmutable copiado al portapapeles: ${hash.substring(0, 16)}...`);
+      }
+    }
+  };
+
+  const handleExportTraceCSV = () => {
+    if (!selectedTraceFlow || filteredTraceRecords.length === 0) return;
+    const headers = ['ID', 'Hora', 'Sujeto', 'Tipo', 'Identificador', 'Plantel', 'Grado/Grupo', 'Tutor', 'Causa Detonadora', 'Impacto KPI', 'Canal', 'Estado', 'Riesgo', 'Monto MXN', 'Hash Ledger'];
+    const rows = filteredTraceRecords.map(r => [
+      `"${r.id}"`,
+      `"${r.timestamp}"`,
+      `"${r.subjectName}"`,
+      `"${r.subjectType}"`,
+      `"${r.subjectId}"`,
+      `"${r.campusName}"`,
+      `"${r.levelGradeGroup}"`,
+      `"${r.guardianName || 'N/A'}"`,
+      `"${r.triggerCause.replace(/"/g, '""')}"`,
+      `"${r.kpiImpact.replace(/"/g, '""')}"`,
+      `"${r.channelDelivered}"`,
+      `"${r.statusLabel}"`,
+      `"${r.riskScore || 0}%"`,
+      `"${r.financialAmount || 0}"`,
+      `"${r.immutableLedgerHash}"`
+    ]);
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `trazabilidad_${selectedTraceFlow.key}_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    if (onTriggerToast) {
+      onTriggerToast(`Exportación CSV generada: ${filteredTraceRecords.length} registros auditados.`);
+    }
+  };
+
   const currentRoles = useMemo(() => {
     if (!isCorporate) return ECOSYSTEM_ROLES;
     return CORPORATE_ECOSYSTEM_ROLES.map(r => {
@@ -896,9 +997,18 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
                         )}
                       </span>
                     )}
-                    <span className="text-[10px] bg-slate-100 text-slate-600 font-mono px-2 py-0.5 rounded border border-slate-200">
-                      {flow.executedToday} ejecuciones hoy
-                    </span>
+                    <button
+                      onClick={() => handleOpenTraceabilityModal(flow)}
+                      className="group flex items-center gap-1.5 text-[11px] bg-indigo-50 hover:bg-indigo-600 text-indigo-700 hover:text-white font-mono px-2.5 py-1 rounded-lg border border-indigo-200 hover:border-indigo-600 cursor-pointer transition-all shadow-xs active:scale-95"
+                      title={`Auditar trazabilidad forense: ver a quiénes y por qué se ejecutó hoy (${flow.executedToday} casos)`}
+                    >
+                      <Activity size={12} className="text-indigo-600 group-hover:text-white animate-pulse" />
+                      <span className="font-bold">{flow.executedToday} ejecuciones hoy</span>
+                      <span className="text-[9px] underline opacity-80 group-hover:opacity-100 flex items-center gap-0.5">
+                        <Eye size={10} />
+                        Ver quiénes
+                      </span>
+                    </button>
                   </div>
 
                   <p className="text-xs text-slate-600 leading-relaxed max-w-3xl">
@@ -924,12 +1034,21 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
                 {/* Botones de Acción y Estado */}
                 <div className="flex items-center gap-2.5 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100">
                   <button
+                    onClick={() => handleOpenTraceabilityModal(flow)}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 hover:border-indigo-300 transition-all cursor-pointer active:scale-95 shadow-xs"
+                    title={`Auditar a quiénes y por qué se ejecutó hoy (${flow.executedToday} casos)`}
+                  >
+                    <ShieldCheck size={13} className="text-indigo-600" />
+                    <span>Ver Trazabilidad ({flow.executedToday})</span>
+                  </button>
+
+                  <button
                     onClick={() => handleSimulateFlow(flow)}
                     disabled={isSimulating || !isActive}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 transition-all cursor-pointer active:scale-95 disabled:opacity-50"
                     title="Simular ejecución del flujo en vivo"
                   >
-                    <Play size={13} className={isSimulating ? 'animate-spin' : 'text-indigo-600'} />
+                    <Play size={13} className={isSimulating ? 'animate-spin' : 'text-slate-600'} />
                     <span>{isSimulating ? 'Probando...' : 'Probar Flujo'}</span>
                   </button>
 
@@ -1055,6 +1174,428 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
           })}
         </div>
       </div>
+
+      {/* ==================================================================== */}
+      {/* 5. MODAL DE AUDITORÍA FORENSE Y TRAZABILIDAD DE EJECUCIONES EN VIVO   */}
+      {/* ==================================================================== */}
+      {selectedTraceFlow && (
+        <div 
+          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-200"
+          onClick={() => setSelectedTraceFlow(null)}
+        >
+          <div 
+            className="relative w-full max-w-5xl bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col max-h-[92vh] overflow-hidden animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Cabecera del Modal de Trazabilidad */}
+            <div className="p-6 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex items-start justify-between gap-4 border-b border-indigo-900/50">
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                    <Zap size={18} />
+                  </div>
+                  <span className="text-xs font-mono tracking-widest text-indigo-300 uppercase font-bold">
+                    Auditoría de Trazabilidad Forense en Vivo
+                  </span>
+                  <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full font-mono font-bold">
+                    0 Tokens • Inmutable
+                  </span>
+                </div>
+                <h2 className="text-xl font-black text-white tracking-tight">
+                  {selectedTraceFlow.name}
+                </h2>
+                <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                  {selectedTraceFlow.description}
+                </p>
+              </div>
+              
+              <button
+                onClick={() => setSelectedTraceFlow(null)}
+                className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer"
+                title="Cerrar ventana"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Barra de Telemetría Resumida */}
+            <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-slate-100 bg-slate-50/90 border-b border-slate-200 p-4 gap-2">
+              <div className="px-3 py-1">
+                <div className="text-[10px] uppercase font-bold text-slate-400 font-mono">Ejecuciones Hoy</div>
+                <div className="text-lg font-black text-slate-900 flex items-baseline gap-1.5">
+                  <span>{selectedTraceFlow.executedToday}</span>
+                  <span className="text-xs font-semibold text-indigo-600">casos auditados</span>
+                </div>
+                <div className="text-[10px] text-slate-500 truncate">Detonador: {selectedTraceFlow.originEvent}</div>
+              </div>
+
+              <div className="px-3 py-1">
+                <div className="text-[10px] uppercase font-bold text-slate-400 font-mono">Confiabilidad Operativa</div>
+                <div className="text-lg font-black text-emerald-600 flex items-baseline gap-1.5">
+                  <span>{selectedTraceFlow.successRate}%</span>
+                  <span className="text-xs font-semibold text-emerald-500">sin fallas</span>
+                </div>
+                <div className="text-[10px] text-slate-500">Validado en ledger en vivo</div>
+              </div>
+
+              <div className="px-3 py-1">
+                <div className="text-[10px] uppercase font-bold text-slate-400 font-mono">Latencia Media</div>
+                <div className="text-lg font-black text-indigo-600 flex items-baseline gap-1.5">
+                  <span>{selectedTraceFlow.avgLatencyMs} ms</span>
+                  <span className="text-xs font-semibold text-slate-500">ultrarrápido</span>
+                </div>
+                <div className="text-[10px] text-slate-500">Motor determinista local</div>
+              </div>
+
+              <div className="px-3 py-1">
+                <div className="text-[10px] uppercase font-bold text-slate-400 font-mono">Canal Despachado</div>
+                <div className="text-xs font-bold text-slate-800 line-clamp-1 mt-1">
+                  {selectedTraceFlow.destinationChannel}
+                </div>
+                <div className="text-[10px] text-emerald-600 font-semibold">{selectedTraceFlow.impactsKPI}</div>
+              </div>
+            </div>
+
+            {/* Controles de Búsqueda, Filtrado y Exportación */}
+            <div className="p-4 bg-white border-b border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-2 w-full sm:w-auto flex-1">
+                <div className="relative flex-1 max-w-md">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={traceSearchQuery}
+                    onChange={(e) => setTraceSearchQuery(e.target.value)}
+                    placeholder="Buscar por nombre, matrícula, tutor o causa..."
+                    className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:outline-none transition-all"
+                  />
+                  {traceSearchQuery && (
+                    <button 
+                      onClick={() => setTraceSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Filtro por Plantel */}
+                <select
+                  value={traceCampusFilter}
+                  onChange={(e) => setTraceCampusFilter(e.target.value)}
+                  className="text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 cursor-pointer focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="all">Todos los planteles ({currentFlowRecords.length})</option>
+                  <option value="montes">Campus Montes</option>
+                  <option value="coacalco">Campus Coacalco</option>
+                  <option value="central">Campus Central</option>
+                  <option value="torres">Campus Torres</option>
+                </select>
+
+                {/* Filtro por Estado */}
+                <select
+                  value={traceStatusFilter}
+                  onChange={(e) => setTraceStatusFilter(e.target.value)}
+                  className="text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 cursor-pointer focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="all">Todos los estados</option>
+                  <option value="active">En Intervención Activa</option>
+                  <option value="in_review">En Seguimiento</option>
+                  <option value="resolved">Resuelto / Convenio</option>
+                  <option value="dispatched">Notificación Entregada</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+                <button
+                  onClick={handleExportTraceCSV}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all cursor-pointer active:scale-95"
+                  title="Descargar registro de auditoría en formato CSV"
+                >
+                  <Download size={13} className="text-slate-600" />
+                  <span>Exportar CSV ({filteredTraceRecords.length})</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Contenedor con Scroll de los Registros de Trazabilidad */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-slate-50/50">
+              {filteredTraceRecords.length === 0 ? (
+                <div className="p-12 text-center bg-white rounded-2xl border border-slate-200 space-y-2">
+                  <AlertCircle size={28} className="mx-auto text-slate-400" />
+                  <p className="text-sm font-bold text-slate-700">No se encontraron registros de auditoría</p>
+                  <p className="text-xs text-slate-500">Prueba ajustando los filtros de búsqueda o plantel.</p>
+                </div>
+              ) : (
+                filteredTraceRecords.map((rec) => {
+                  const isCopied = copiedHashId === rec.id;
+                  return (
+                    <div
+                      key={rec.id}
+                      className="p-5 bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:border-indigo-300 hover:shadow-md transition-all space-y-4"
+                    >
+                      {/* Cabecera del Caso */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-slate-100">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-xs">
+                            {rec.subjectName.charAt(0)}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-black text-slate-900 text-sm">{rec.subjectName}</h3>
+                              <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                                {rec.subjectId}
+                              </span>
+                              <span className="text-[10px] font-semibold text-slate-500">
+                                {rec.campusName} · {rec.levelGradeGroup}
+                              </span>
+                            </div>
+                            {rec.guardianName && (
+                              <p className="text-[11px] text-slate-500 mt-0.5">
+                                <strong className="text-slate-600 font-sans">Tutor Legal:</strong> {rec.guardianName}
+                                {rec.guardianPhone && <span className="ml-2 font-mono text-slate-400">({rec.guardianPhone})</span>}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 font-mono">
+                          <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
+                            <Clock size={12} />
+                            {rec.timestamp}
+                          </span>
+                          <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${
+                            rec.status === 'active' ? 'bg-red-50 text-red-700 border-red-200' :
+                            rec.status === 'in_review' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                            rec.status === 'resolved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                            'bg-blue-50 text-blue-700 border-blue-200'
+                          }`}>
+                            {rec.statusLabel}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Causa Detonadora Exacta */}
+                      <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200/80 flex items-start gap-3 text-xs">
+                        <AlertCircle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                        <div className="space-y-1 flex-1">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <span className="font-bold text-amber-900 font-sans">Causa Detonadora Registrada:</span>
+                            {rec.riskScore && (
+                              <span className={`text-[10px] font-bold font-mono px-2 py-0.5 rounded ${
+                                rec.riskScore >= 90 ? 'bg-red-600 text-white' :
+                                rec.riskScore >= 75 ? 'bg-amber-600 text-white' :
+                                'bg-emerald-600 text-white'
+                              }`}>
+                                Nivel de Riesgo: {rec.riskScore}% ({rec.riskScore >= 90 ? 'Crítico' : rec.riskScore >= 75 ? 'Alto' : 'Moderado'})
+                              </span>
+                            )}
+                            {rec.financialAmount && (
+                              <span className="text-[10px] font-bold font-mono bg-white text-slate-700 px-2 py-0.5 rounded border border-amber-300">
+                                Saldo Involucrado: ${rec.financialAmount.toLocaleString('es-MX')} MXN
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-amber-800 leading-relaxed font-medium">
+                            {rec.triggerCause}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Trazabilidad de Acciones Ejecutadas por el Flujo */}
+                      <div className="space-y-2">
+                        <div className="text-[11px] font-bold text-slate-700 flex items-center gap-1.5 uppercase tracking-wide">
+                          <ShieldCheck size={13} className="text-indigo-600" />
+                          <span>Trazabilidad & Acciones Automáticas Ejecutadas</span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {rec.actionsTaken.map((act, actIdx) => (
+                            <div 
+                              key={actIdx}
+                              className="flex items-start gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-700 leading-relaxed"
+                            >
+                              <CheckCircle2 size={13} className="text-emerald-600 shrink-0 mt-0.5" />
+                              <span>{act}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Resumen del Expediente 360 si existe */}
+                      {rec.expedienteSummary && (
+                        <div className="p-3 rounded-xl bg-indigo-50/60 border border-indigo-100 text-xs text-indigo-900 leading-relaxed">
+                          <strong className="text-indigo-950 font-bold block mb-0.5">Dictamen de Coordinación Psicopedagógica:</strong>
+                          {rec.expedienteSummary}
+                        </div>
+                      )}
+
+                      {/* Pie de Trazabilidad e Inmutabilidad */}
+                      <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-2 font-mono text-[11px] text-slate-400">
+                          <span className="font-sans text-slate-500 font-semibold">Ledger Hash:</span>
+                          <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono truncate max-w-[200px] sm:max-w-xs">
+                            {rec.immutableLedgerHash}
+                          </span>
+                          <button
+                            onClick={() => handleCopyHash(rec.immutableLedgerHash, rec.id)}
+                            className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-sans font-bold cursor-pointer transition-all active:scale-95"
+                            title="Copiar hash de auditoría inmutable"
+                          >
+                            {isCopied ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
+                            <span>{isCopied ? '¡Copiado!' : 'Copiar Hash'}</span>
+                          </button>
+                        </div>
+
+                        <button
+                          onClick={() => setSelectedDossierRecord(rec)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-all cursor-pointer active:scale-95 self-end sm:self-auto"
+                        >
+                          <UserCheck size={13} />
+                          <span>Ver Expediente 360</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Pie del Modal */}
+            <div className="p-4 bg-white border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+              <span className="font-mono">
+                Auditando {filteredTraceRecords.length} de {currentFlowRecords.length} eventos registrados hoy
+              </span>
+              <button
+                onClick={() => setSelectedTraceFlow(null)}
+                className="px-4 py-2 rounded-xl font-bold bg-slate-900 text-white hover:bg-slate-800 transition-all cursor-pointer"
+              >
+                Cerrar Auditoría
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* 6. MODAL DETALLADO DE EXPEDIENTE 360 & INTERVENCIÓN PREVENTIVA        */}
+      {/* ==================================================================== */}
+      {selectedDossierRecord && (
+        <div 
+          className="fixed inset-0 z-60 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-200"
+          onClick={() => setSelectedDossierRecord(null)}
+        >
+          <div 
+            className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header del Expediente */}
+            <div className="p-6 bg-gradient-to-r from-indigo-900 to-indigo-950 text-white flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white font-black text-lg">
+                  {selectedDossierRecord.subjectName.charAt(0)}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono font-bold bg-indigo-500/30 text-indigo-200 px-2 py-0.5 rounded border border-indigo-400/40">
+                      {selectedDossierRecord.subjectId}
+                    </span>
+                    <span className="text-xs text-indigo-300 font-semibold">
+                      {selectedDossierRecord.campusName}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-black text-white">{selectedDossierRecord.subjectName}</h3>
+                  <p className="text-xs text-indigo-200">{selectedDossierRecord.levelGradeGroup}</p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setSelectedDossierRecord(null)}
+                className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer transition-all"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Contenido del Expediente */}
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+              {/* Resumen Clínico/Psicopedagógico */}
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
+                <div className="flex items-center justify-between font-bold text-slate-800">
+                  <span>Diagnóstico del Expediente 360</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono ${
+                    (selectedDossierRecord.riskScore || 0) >= 80 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                  }`}>
+                    Riesgo: {selectedDossierRecord.riskScore || 0}%
+                  </span>
+                </div>
+                <p className="text-slate-600 leading-relaxed">
+                  {selectedDossierRecord.expedienteSummary || 'Cruce automatizado de 3 inasistencias en el período con colegiatura corriente en mora. Se activó protocolo de retención preventiva.'}
+                </p>
+              </div>
+
+              {/* Detalle de Tutor y Contacto */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3 rounded-xl border border-slate-200 bg-white space-y-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase font-mono">Tutor Principal</span>
+                  <div className="font-bold text-slate-900">{selectedDossierRecord.guardianName || 'Tutor Registrado'}</div>
+                  <div className="text-slate-500 font-mono text-[11px]">{selectedDossierRecord.guardianPhone || 'Teléfono en expediente'}</div>
+                </div>
+
+                <div className="p-3 rounded-xl border border-slate-200 bg-white space-y-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase font-mono">Saldo en Riesgo</span>
+                  <div className="font-bold text-slate-900 font-mono">
+                    ${(selectedDossierRecord.financialAmount || 0).toLocaleString('es-MX')} MXN
+                  </div>
+                  <div className="text-emerald-600 text-[11px] font-semibold">Elegible para Beca Rescate</div>
+                </div>
+              </div>
+
+              {/* Acciones de Mitigación Inmediata */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                  Medidas de Retención Aplicadas
+                </h4>
+                <div className="space-y-1.5 text-xs text-slate-700">
+                  {selectedDossierRecord.actionsTaken.map((act, i) => (
+                    <div key={i} className="flex items-start gap-2 p-2 rounded-lg bg-emerald-50/60 border border-emerald-100">
+                      <CheckCheck size={14} className="text-emerald-600 shrink-0 mt-0.5" />
+                      <span>{act}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Hash Inmutable */}
+              <div className="p-3 rounded-xl bg-slate-100 text-[11px] font-mono text-slate-500 flex items-center justify-between gap-2">
+                <span className="truncate">Hash: {selectedDossierRecord.immutableLedgerHash}</span>
+                <button
+                  onClick={() => handleCopyHash(selectedDossierRecord.immutableLedgerHash, selectedDossierRecord.id)}
+                  className="text-indigo-600 hover:text-indigo-800 font-bold shrink-0 font-sans"
+                >
+                  {copiedHashId === selectedDossierRecord.id ? '¡Copiado!' : 'Copiar'}
+                </button>
+              </div>
+            </div>
+
+            {/* Footer del Expediente */}
+            <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3">
+              <span className="text-xs text-slate-500 font-mono">
+                Actualizado en tiempo real por ISkool
+              </span>
+              <button
+                onClick={() => {
+                  setSelectedDossierRecord(null);
+                  if (onTriggerToast) {
+                    onTriggerToast(`Acuerdo de seguimiento registrado para ${selectedDossierRecord.subjectName}`);
+                  }
+                }}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer transition-all"
+              >
+                Cerrar Expediente
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

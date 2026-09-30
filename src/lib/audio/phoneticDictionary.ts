@@ -161,6 +161,18 @@ export const MEXICAN_HISTORICAL_PHONETIC_MAP: Record<string, PhoneticEntry> = {
     alias: 'Benito Juárez',
     ipa: 'beˈnito ˈxwaɾes',
     description: 'Benemérito de las Américas'
+  },
+  pais: {
+    term: 'país',
+    alias: 'pa-ís',
+    ipa: 'pa.ˈis',
+    description: 'Modulación fonética natural del hiato acentual en la vocal cerrada tónica (pa-ís)'
+  },
+  paises: {
+    term: 'países',
+    alias: 'pa-íses',
+    ipa: 'pa.ˈi.ses',
+    description: 'Modulación fonética natural del plural con hiato acentual silábico (pa-íses)'
   }
 };
 
@@ -213,19 +225,28 @@ export function applyPhoneticSubstitutions(
     { regex: /\bHidalgo\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.hidalgo },
     { regex: /\bAllende\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.allende },
     { regex: /\bMorelos\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.morelos },
-    { regex: /\bIturbide\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.iturbide }
+    { regex: /\bIturbide\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.iturbide },
+    // Modulación fonética prioritaria para el hiato acentual en "país" / "países"
+    { regex: /\bpa[ií]ses\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.paises },
+    { regex: /\bpa[ií]s\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.pais }
   ];
 
   for (const { regex, entry } of patterns) {
     result = result.replace(regex, (match) => {
+      // Preservar mayúscula inicial si el término original la tenía
+      const isCapitalized = /^[A-ZÁÉÍÓÚ]/.test(match);
+      const effectiveAlias = isCapitalized 
+        ? entry.alias.charAt(0).toUpperCase() + entry.alias.slice(1) 
+        : entry.alias;
+
       // Si la palabra ya está dentro de una etiqueta <sub...> o <phoneme...>, no re-envolver
       if (format === 'sub') {
-        return `<sub alias="${entry.alias}">${match}</sub>`;
+        return `<sub alias="${effectiveAlias}">${match}</sub>`;
       }
       if (format === 'phoneme' && entry.ipa) {
         return `<phoneme alphabet="ipa" ph="${entry.ipa}">${match}</phoneme>`;
       }
-      return entry.alias;
+      return effectiveAlias;
     });
   }
 

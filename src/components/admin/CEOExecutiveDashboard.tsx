@@ -1403,7 +1403,7 @@ export default function CEOExecutiveDashboard({
     { id: 'finanzas', label: 'Finanzas', icon: DollarSign, desc: isCorporate ? 'CFDI 4.0 Facturación B2B' : 'CFDI 4.0 IEDU SAT' },
     { id: 'operacion', label: 'Operación', icon: SlidersHorizontal, desc: 'Automatizaciones' },
     { id: 'reportes', label: 'Reportes BI', icon: BarChart3, desc: 'Estudio Analítico & BI' },
-    { id: 'cerebro', label: `Cerebro ${holding.name}`, icon: Network, desc: 'Segundo Cerebro', highlight: true },
+    { id: 'cerebro', label: `Cerebro ${holding.name}`, icon: Network, desc: 'Cerebro Institucional', highlight: true },
   ];
 
   return (
@@ -1795,7 +1795,7 @@ export default function CEOExecutiveDashboard({
                 { label: 'Alineación Oficial SEP NEM 2024', tab: 'academico', color: 'bg-emerald-600/40 text-emerald-200 border-emerald-400/40 hover:bg-emerald-600/60' },
                 { label: 'Gamificación & Lienzo Digital', tab: 'academico', color: 'bg-purple-600/40 text-purple-200 border-purple-400/40 hover:bg-purple-600/60' },
                 { label: 'CFDI 4.0 Complemento IEDU SAT', tab: 'finanzas', color: 'bg-amber-600/40 text-amber-200 border-amber-400/40 hover:bg-amber-600/60' },
-                { label: 'Segundo Cerebro Institucional', tab: 'cerebro', color: 'bg-cyan-600/40 text-cyan-200 border-cyan-400/40 hover:bg-cyan-600/60' },
+                { label: 'Cerebro Institucional', tab: 'cerebro', color: 'bg-cyan-600/40 text-cyan-200 border-cyan-400/40 hover:bg-cyan-600/60' },
               ].map((diff, i) => (
                 <button
                   key={i}

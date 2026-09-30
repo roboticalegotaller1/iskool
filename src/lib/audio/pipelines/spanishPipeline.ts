@@ -69,7 +69,9 @@ export class SpanishPipeline implements ILanguagePipeline {
       'hacia la', 'hacia el', 'hacia los', 'hacia las',
       'sobre la', 'sobre el', 'sobre los', 'sobre las',
       'tras la', 'tras el', 'tras los', 'tras las',
-      'un gran', 'una gran', 'unos grandes', 'unas grandes'
+      'un gran', 'una gran', 'unos grandes', 'unas grandes',
+      'el país', 'del país', 'al país', 'este país', 'nuestro país', 'un país',
+      'los países', 'estos países', 'nuestros países', 'en el país'
     ];
 
     for (const unit of protectedUnits) {

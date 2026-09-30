@@ -297,5 +297,11 @@ export function normalizeMexicanSpanishText(text: string): string {
   // Asegura que las exclamaciones lleven signo de apertura
   result = result.replace(/(^|[.?!\n;]\s*)([^.?!¿¡\n]+)(!)/g, '$1¡$2$3');
 
+  // 10. Corrección ortoépica de hiato acentual en "país" / "países" para articulación natural
+  result = result.replace(/\bPais\b/g, 'País');
+  result = result.replace(/\bpais\b/g, 'país');
+  result = result.replace(/\bPaises\b/g, 'Países');
+  result = result.replace(/\bpaises\b/g, 'países');
+
   return result;
 }
