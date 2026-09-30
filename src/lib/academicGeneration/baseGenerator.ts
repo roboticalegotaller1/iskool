@@ -138,9 +138,10 @@ export abstract class BaseAcademicGenerator<TOutput> {
     // Lista de modelos ordenada por preferencia con tolerancia a picos temporales (503 / 429)
     const candidateModels = [
       modelName,
-      'models/gemini-3.5-flash-lite',
-      'models/gemini-flash-lite-latest',
-      'models/gemini-flash-latest'
+      'models/gemini-3.1-flash-lite',
+      'models/gemini-3.5-flash',
+      'models/gemini-flash-latest',
+      'models/gemini-3.8-flash'
     ].filter((m, i, arr) => arr.indexOf(m) === i);
 
     let lastError: Error | null = null;

@@ -17,7 +17,7 @@ tags:
   - "[[josefa_ortiz_de_dominguez]]"
   - "[[personajes_historicos]]"
   - "[[independencia_de_mexico_1810]]"
-lastUpdated: "2026-09-23"
+lastUpdated: "2026-09-30"
 ---
 
 # Josefa Ortiz de Domínguez
@@ -263,6 +263,12 @@ A: Mi hogar fue la Casa del Corregimiento, una señorial residencia virreinal de
 
 ### Q: te arrepentiste de algo en vida?
 A: Mi momento de mayor tribulación y desgarro ocurrió en los días posteriores al 15 de septiembre de 1810. Saber que mi propio esposo, don Miguel Domínguez, se vio forzado por la desesperación a encerrarme bajo llave en nuestra recámara para apartarme de las pesquisas realistas... la impotencia de estar cautiva entre aquellas paredes sin tener certeza de si mi emisario Ignacio Pérez lograría alertar a tiempo a don Miguel Hidalgo y a don Ignacio Allende. Más tarde vinieron los años de severo encierro en los conventos de Santa Clara y Santa Teresa, incomunicada y separada de mis hijos pequeños, tratada con rigor como reo del Estado virreinal. Sin embargo, en medio de la penumbra y la soledad, jamás quebranté mi espíritu ni renegué de haber entregado mi vida a la libertad de esta patria.
+
+### Q: ¿Qué sentiste en el corazón cuando supiste que la conspiración fue descubierta?
+A: Sentí una urgencia inquebrantable y un valor absoluto al comprender, la noche del 13 de septiembre de 1810, que nuestra causa corría peligro inminente de ser sofocada por la traición. Encerrada en mi aposento por mi propio esposo para protegerme, mi corazón no conoció el miedo, sino la determinación de alertar a Ignacio Pérez mediante mis tres golpes en el suelo para que la libertad de nuestra patria no pereciera en la oscuridad.
+
+### Q: ¿Por qué decidiste alertar a los insurgentes?
+A: Aquel 15 de septiembre de 1810, el tiempo corría implacable. Estando encerrada en mi habitación alta de la Casa del Corregimiento y con la guardia virreinal aprestándose a capturar a los conspiradores, recordé que en la planta baja tenía su morada el alcaide Ignacio Pérez. Con resolución suprema, di tres golpes secos con los tacones de mis zapatillas contra el entarimado del piso. Don Ignacio, fiel a nuestro pacto, subió al zaguán y a través del ojo de la cerradura le entregué la orden apremiante: cabalgar sin descanso hacia San Miguel y Dolores para prevenir a Allende e Hidalgo. Aquellos golpes de tacón fueron, en verdad, el primer aldabonazo de la independencia patria.
 
 
 ## 5 Preguntas Clave de Verificación Formativa

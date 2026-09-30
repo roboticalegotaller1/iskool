@@ -132,7 +132,23 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
   ]
 }`;
 
-    const effectiveApiKey = process.env.MOTOR_IA_API_KEY || process.env.AI_API_KEY || userApiKey;
+    let effectiveApiKey = process.env.MOTOR_IA_API_KEY || process.env.AI_API_KEY || userApiKey;
+    if (!effectiveApiKey) {
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const envLocalPath = path.join(process.cwd(), '.env.local');
+        if (fs.existsSync(envLocalPath)) {
+          const content = fs.readFileSync(envLocalPath, 'utf8');
+          const match = content.match(/MOTOR_IA_API_KEY=([^\r\n]+)/) ||
+                        content.match(/AI_API_KEY=([^\r\n]+)/) ||
+                        content.match(/GEMINI_API_KEY=([^\r\n]+)/);
+          if (match) effectiveApiKey = match[1].trim();
+        }
+      } catch {
+        // Fallback silencioso
+      }
+    }
 
     if (!effectiveApiKey) {
       return NextResponse.json(
@@ -157,20 +173,34 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
       text: `${systemPrompt}\n\nGenera la planeación didáctica completa en español con ${count} sesiones exactas.`
     });
 
-    const defaultEndpoint = Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMi41LWZsYXNoOmdlbmVyYXRlQ29udGVudA==', 'base64').toString('ascii');
-    const endpointBase = process.env.AI_INFERENCE_ENDPOINT || defaultEndpoint;
-    const endpoint = `${endpointBase}?key=${effectiveApiKey}`;
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: requestParts }]
-      })
-    });
+    const fallbackEndpoints = [
+      Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMy4xLWZsYXNoLWxpdGU6Z2VuZXJhdGVDb250ZW50', 'base64').toString('ascii'),
+      Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMy41LWZsYXNoOmdlbmVyYXRlQ29udGVudA==', 'base64').toString('ascii'),
+      Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktZmxhc2gtbGF0ZXN0OmdlbmVyYXRlQ29udGVudA==', 'base64').toString('ascii'),
+      Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMy44LWZsYXNoOmdlbmVyYXRlQ29udGVudA==', 'base64').toString('ascii')
+    ];
+    const candidateEndpoints = process.env.AI_INFERENCE_ENDPOINT ? [process.env.AI_INFERENCE_ENDPOINT, ...fallbackEndpoints] : fallbackEndpoints;
 
-    if (!response.ok) {
-      const errText = await response.text().catch(() => '');
-      console.warn('Fallo en endpoint de IA Pedagógica:', errText);
+    let response: Response | null = null;
+    for (const ep of candidateEndpoints) {
+      try {
+        const res = await fetch(`${ep}?key=${effectiveApiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: requestParts }]
+          })
+        });
+        if (res.ok) {
+          response = res;
+          break;
+        }
+      } catch (e) {
+        console.warn('Fallo intento en endpoint de IA Pedagógica:', e);
+      }
+    }
+
+    if (!response || !response.ok) {
       return NextResponse.json({ error: 'Error del motor de IA', useFallback: true }, { status: 502 });
     }
 

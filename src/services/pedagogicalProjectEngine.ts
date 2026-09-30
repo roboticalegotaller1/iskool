@@ -128,19 +128,35 @@ Devuelve EXCLUSIVAMENTE un JSON válido con esta estructura:
   ]
 }`;
 
+  const fallbackEndpoints = [
+    Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMy4xLWZsYXNoLWxpdGU6Z2VuZXJhdGVDb250ZW50', 'base64').toString('ascii'),
+    Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMy41LWZsYXNoOmdlbmVyYXRlQ29udGVudA==', 'base64').toString('ascii'),
+    Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktZmxhc2gtbGF0ZXN0OmdlbmVyYXRlQ29udGVudA==', 'base64').toString('ascii'),
+    Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMy44LWZsYXNoOmdlbmVyYXRlQ29udGVudA==', 'base64').toString('ascii')
+  ];
   const endpointBase = typeof process !== 'undefined' ? process.env.AI_INFERENCE_ENDPOINT : undefined;
-  const defaultEndpoint = Buffer.from('aHR0cHM6Ly9nZW5lcmF0aXZlbGFuZ3VhZ2UuZ29vZ2xlYXBpcy5jb20vdjFiZXRhL21vZGVscy9nZW1pbmktMi41LWZsYXNoOmdlbmVyYXRlQ29udGVudA==', 'base64').toString('ascii');
-  const targetEndpoint = `${endpointBase || defaultEndpoint}?key=${apiKey}`;
+  const candidateEndpoints = endpointBase ? [endpointBase, ...fallbackEndpoints] : fallbackEndpoints;
 
-  const res = await fetch(targetEndpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }]
-    })
-  });
+  let res: Response | null = null;
+  for (const targetEndpoint of candidateEndpoints) {
+    try {
+      const response = await fetch(`${targetEndpoint}?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }]
+        })
+      });
+      if (response.ok) {
+        res = response;
+        break;
+      }
+    } catch {
+      // Intentar con el siguiente endpoint de respaldo
+    }
+  }
 
-  if (!res.ok) return null;
+  if (!res || !res.ok) return null;
 
   const data = await res.json();
   let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';

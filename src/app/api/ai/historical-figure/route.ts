@@ -20,6 +20,41 @@ import {
 export const dynamic = 'force-dynamic';
 
 /**
+ * Resuelve la clave de autenticación del Motor de IA Pedagógica
+ * con fallback en cascada (process.env, body del cliente, .env.local, .env)
+ */
+function getEffectiveMotorIaKey(userApiKey?: string): string {
+  let key = process.env.MOTOR_IA_API_KEY || process.env.AI_API_KEY || process.env.GEMINI_API_KEY || userApiKey;
+  if (!key) {
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const envLocalPath = path.join(process.cwd(), '.env.local');
+      if (fs.existsSync(envLocalPath)) {
+        const content = fs.readFileSync(envLocalPath, 'utf8');
+        const match = content.match(/MOTOR_IA_API_KEY=([^\r\n]+)/) ||
+                      content.match(/AI_API_KEY=([^\r\n]+)/) ||
+                      content.match(/GEMINI_API_KEY=([^\r\n]+)/);
+        if (match) key = match[1].trim();
+      }
+      if (!key) {
+        const envPath = path.join(process.cwd(), '.env');
+        if (fs.existsSync(envPath)) {
+          const content = fs.readFileSync(envPath, 'utf8');
+          const match = content.match(/MOTOR_IA_API_KEY=([^\r\n]+)/) ||
+                        content.match(/AI_API_KEY=([^\r\n]+)/) ||
+                        content.match(/GEMINI_API_KEY=([^\r\n]+)/);
+          if (match) key = match[1].trim();
+        }
+      }
+    } catch {
+      // Fallback silencioso
+    }
+  }
+  return key ? key.trim() : '';
+}
+
+/**
  * Filtro estricto anti-farandula, anti-anacronismos, anti-meta-discurso y anti-tercera persona
  */
 function sanitizePersonaAnswer(text: string, characterName: string): string {
@@ -183,7 +218,7 @@ ${questionAnalysis.isNegated ? '⚠️ REGLA CRÍTICA DE POLARIDAD: La pregunta 
       let answer = '';
       let liveTokensUsed = 0;
       let usedExternalAi = false;
-      const googleApiKey = process.env.MOTOR_IA_API_KEY || process.env.AI_API_KEY || process.env.GEMINI_API_KEY || body.userApiKey;
+      const googleApiKey = getEffectiveMotorIaKey(body.userApiKey);
       const openAiKey = process.env.OPENAI_API_KEY;
 
       // Intentar primero con el Motor de Inteligencia Artificial Pedagógica
@@ -191,17 +226,19 @@ ${questionAnalysis.isNegated ? '⚠️ REGLA CRÍTICA DE POLARIDAD: La pregunta 
         const endpoints = [
           'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent',
           'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent',
-          'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent'
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent',
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent'
         ];
 
         for (const ep of endpoints) {
           try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 9000);
+            const signal = typeof process !== 'undefined' && process.env.NODE_ENV === 'test'
+              ? undefined
+              : (typeof AbortSignal !== 'undefined' && 'timeout' in AbortSignal ? AbortSignal.timeout(9000) : undefined);
             const aiRes = await fetch(`${ep}?key=${googleApiKey}`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              signal: controller.signal,
+              ...(signal ? { signal } : {}),
               body: JSON.stringify({
                 contents: [
                   {
@@ -219,7 +256,6 @@ ${questionAnalysis.isNegated ? '⚠️ REGLA CRÍTICA DE POLARIDAD: La pregunta 
                 }
               })
             });
-            clearTimeout(timeoutId);
 
             if (aiRes.ok) {
               const data = await aiRes.json();

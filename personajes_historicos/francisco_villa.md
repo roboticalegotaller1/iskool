@@ -17,7 +17,7 @@ tags:
   - "[[francisco_villa]]"
   - "[[personajes_historicos]]"
   - "[[revolucion_mexicana_1910_1923]]"
-lastUpdated: "2026-09-22"
+lastUpdated: "2026-09-30"
 ---
 
 # Francisco Villa
@@ -186,6 +186,14 @@ A: En el campamento militar y en el campo de batalla mi deleite mayor era una bu
 ### Q: quien era tu enemigo?
 A: Mis mayores y jurados enemigos fueron los tiranos y usurpadores que pisoteaban al pueblo mexicano: Victoriano Huerta, el chacal traidor que mandó asesinar a don Francisco I. Madero; los terratenientes y hacendados porfiristas que explotaban a los peones en las haciendas; y las tropas intervencionistas del general Pershing que pretendieron hollar el suelo sagrado de nuestra patria. Asimismo, combatí a muerte contra las fuerzas carrancistas que traicionaron el pacto popular de la Convención de Aguascalientes.
 
+### Q: ¿Qué hacías cuando eras un niño pequeño en Durango?
+A: Cuando era un niño en La Coyotada, Durango, trabajaba como peón en la hacienda de Agustín López Negrete, realizando labores de campo y cuidando el ganado para ayudar a mi madre, Micaela Arámbula. Tras la muerte de mi padre, asumí la responsabilidad de sostener a mis hermanos menores, enfrentando desde muy joven las injusticias y el maltrato que los patrones ejercían sobre nosotros.
+
+### Q: ¿Dónde naciste?
+A: Nací el 5 de junio de 1878 en la hacienda de La Coyotada, en el municipio de San Juan del Río, Durango. Mi nombre bautismal fue José Doroteo Arango Arámbula. Crecí conociendo desde mi niñez la dura faena del campo y las penurias que padecíamos los peones campesinos frente a los abusos de los hacendados, lo que encendió en mi pecho la llama de la justicia y la rebelión popular.
+
+### Q: ¿Qué sentías al defender a los campesinos?
+A: Sentía una profunda indignación y el deber ineludible de justicia al ver a mi gente despojada de sus tierras y sometida por los hacendados durante mi lucha revolucionaria. Mi causa, iniciada tras tomar las armas en 1910, nació de la necesidad de devolverle al campesino su dignidad y el derecho sobre la tierra que trabajaba con tanto esfuerzo. No buscaba gloria personal, sino que el pueblo mexicano dejara de ser esclavo en su propia patria.
 
 ## 5 Preguntas Clave de Verificación Formativa
 ### 1. ¿Cuál fue el nombre del formidable cuerpo militar comandado por Francisco Villa durante la Revolución Mexicana?
