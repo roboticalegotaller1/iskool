@@ -173,6 +173,30 @@ export const MEXICAN_HISTORICAL_PHONETIC_MAP: Record<string, PhoneticEntry> = {
     alias: 'pa-íses',
     ipa: 'pa.ˈi.ses',
     description: 'Modulación fonética natural del plural con hiato acentual silábico (pa-íses)'
+  },
+  patria: {
+    term: 'patria',
+    alias: 'pátria',
+    ipa: 'ˈpa.tɾja',
+    description: 'Modulación fonética natural con acento prosódico primario en primera sílaba [ˈpa] y diptongo átono fluido [tɾja] para erradicar hiatos robóticos'
+  },
+  patrias: {
+    term: 'patrias',
+    alias: 'pátrias',
+    ipa: 'ˈpa.tɾjas',
+    description: 'Modulación fonética natural plural de patria [ˈpa.tɾjas]'
+  },
+  patrio: {
+    term: 'patrio',
+    alias: 'pátrio',
+    ipa: 'ˈpa.tɾjo',
+    description: 'Modulación fonética natural masculina de patrio [ˈpa.tɾjo]'
+  },
+  patrios: {
+    term: 'patrios',
+    alias: 'pátrios',
+    ipa: 'ˈpa.tɾjos',
+    description: 'Modulación fonética natural masculina plural de patrios [ˈpa.tɾjos]'
   }
 };
 
@@ -228,7 +252,12 @@ export function applyPhoneticSubstitutions(
     { regex: /\bIturbide\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.iturbide },
     // Modulación fonética prioritaria para el hiato acentual en "país" / "países"
     { regex: /\bpa[ií]ses\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.paises },
-    { regex: /\bpa[ií]s\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.pais }
+    { regex: /\bpa[ií]s\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.pais },
+    // Modulación fonética de alta fidelidad humana para "patria" / "patrias" / "patrio" / "patrios"
+    { regex: /\bpatrias\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.patrias },
+    { regex: /\bpatria\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.patria },
+    { regex: /\bpatrios\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.patrios },
+    { regex: /\bpatrio\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.patrio }
   ];
 
   for (const { regex, entry } of patterns) {

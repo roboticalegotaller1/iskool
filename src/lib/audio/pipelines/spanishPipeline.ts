@@ -71,13 +71,19 @@ export class SpanishPipeline implements ILanguagePipeline {
       'tras la', 'tras el', 'tras los', 'tras las',
       'un gran', 'una gran', 'unos grandes', 'unas grandes',
       'el país', 'del país', 'al país', 'este país', 'nuestro país', 'un país',
-      'los países', 'estos países', 'nuestros países', 'en el país'
+      'los países', 'estos países', 'nuestros países', 'en el país',
+      // Blindaje acústico prioritario para "patria" y derivados
+      'la patria', 'de la patria', 'a la patria', 'por la patria',
+      'nuestra patria', 'esta patria', 'mi patria', 'su patria',
+      'las patrias', 'nuestras patrias', 'el suelo patrio', 'suelo patrio',
+      'la pátria', 'de la pátria', 'a la pátria', 'por la pátria',
+      'nuestra pátria', 'esta pátria', 'mi pátria', 'su pátria'
     ];
 
     for (const unit of protectedUnits) {
       const parts = unit.split(' ');
       if (parts.length === 2) {
-        const breakRegex = new RegExp(`\\b${parts[0]}\\s*<break[^>]*>\\s*${parts[1]}\\b`, 'gi');
+        const breakRegex = new RegExp(`\\b${parts[0]}\\s*<break[^>]*>\\s*(?:<sub[^>]*>)?${parts[1]}\\b`, 'gi');
         clean = clean.replace(breakRegex, `${parts[0]} ${parts[1]}`);
       }
     }
