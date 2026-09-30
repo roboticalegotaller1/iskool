@@ -639,9 +639,7 @@ export const extractExpedienteSearchCriteria = (query: string, availableStudents
     norm.includes('conducta') || 
     norm.includes('reporte') || 
     norm.includes('observacion') || 
-    norm.includes('promedio') || 
-    norm.includes('calificacion') ||
-    norm.includes('nota')
+    (norm.includes('nota') && !norm.includes('nomina'))
   ) {
     focus = 'academic';
   }
@@ -663,7 +661,7 @@ export const extractExpedienteSearchCriteria = (query: string, availableStudents
     'curp', 'matricula', 'folio', 'ficha', 'expediente', 'detalle', 'registro',
     'buscar', 'ver', 'mostrar', 'abrir', 'dame', 'informacion', 'datos',
     'contacto', 'emergencia', 'telefono', 'correo', 'email', 'direccion', 'domicilio',
-    'medico', 'medica', 'clinico', 'clinica', 'alergia', 'alergico', 'alergica', 'alergias', 'alergicos', 'alergicas', 'notas', 'nota',
+    'medico', 'medica', 'clinico', 'clinica', 'alergia', 'alergico', 'alergica', 'alergias', 'alergicos', 'alergicas',
     'toda', 'todo', 'todos', 'todas', 'lista', 'listado', 'listas',
     'deudor', 'deudores', 'deuda', 'deudas', 'adeudo', 'adeudos', 'mes', 'meses', 'dime', 'cobro', 'cobros',
     'saber', 'conocer', 'consultar', 'consulta', 'necesito', 'quiero', 'decirme', 'favor', 'porfa', 'ayuda',
@@ -671,7 +669,8 @@ export const extractExpedienteSearchCriteria = (query: string, availableStudents
     'senor', 'senora', 'don', 'dona', 'sr', 'sra', 'colegio', 'colegios', 'escuela', 'escuelas', 'instituto', 'institucion', 'instituciones',
     'plantel', 'planteles', 'campus', 'sede', 'sedes', 'holding', 'grupo', 'grupos', 'sucursal', 'sucursales',
     'gana', 'ganan', 'ganar', 'ganancia', 'ganancias', 'dinero', 'ingreso', 'ingresos', 'egreso', 'egresos',
-    'recauda', 'recaudan', 'recaudacion', 'factura', 'facturan', 'facturacion', 'facturar',
+    'recauda', 'recaudan', 'recaudacion', 'factura', 'facturan', 'facturacion', 'facturar', 'facturamos', 'mensual', 'mensualmente',
+    'flujo', 'caja', 'cashflow', 'liquidez', 'consorcio', 'general', 'totales',
     'presupuesto', 'presupuestos', 'costo', 'costos', 'precio', 'precios', 'arancel', 'aranceles',
     'ebitda', 'utilidad', 'utilidades', 'margen', 'margenes', 'rendimiento', 'rentable', 'rentables', 'rentabilidad', 'redituable', 'redituables',
     'mas', 'menos', 'mayor', 'menor', 'mayores', 'menores', 'mejor', 'mejores', 'peor', 'peores', 'top', 'ranking', 'primer', 'primero', 'ultimo', 'ultimos'
@@ -894,14 +893,37 @@ export const detectAnalyticDomain = (
     normalized.includes('promedios escolares') || 
     normalized.includes('promedio escolar') || 
     normalized.includes('promedio de alumnos') || 
+    normalized.includes('promedio general') ||
+    normalized.includes('promedio') || 
+    normalized.includes('promedios') || 
+    normalized.includes('mejor promedio') || 
+    normalized.includes('peor promedio') || 
+    normalized.includes('mayor promedio') || 
+    normalized.includes('menor promedio') || 
+    normalized.includes('promedio mas alto') || 
+    normalized.includes('promedio mas bajo') || 
+    normalized.includes('mejor calificacion') || 
+    normalized.includes('peor calificacion') || 
+    normalized.includes('calificacion mas alta') || 
+    normalized.includes('calificacion mas baja') || 
     normalized.includes('cuadro de honor') || 
     normalized.includes('boleta') || 
     normalized.includes('boletas') || 
+    normalized.includes('reprobado') || 
+    normalized.includes('reprobados') || 
+    normalized.includes('aprobado') || 
+    normalized.includes('aprobados') || 
     normalized.includes('aprovechamiento academico') || 
     normalized.includes('rendimiento escolar') || 
     normalized.includes('rendimiento academico');
 
-  if (isAcademicGradesIntent && !normalized.includes('deud') && !normalized.includes('pago') && !normalized.includes('colegiatura')) {
+  const isAgeOrPayrollAverage = 
+    normalized.includes('edad promedio') || 
+    normalized.includes('promedio de edad') || 
+    normalized.includes('sueldo promedio') || 
+    normalized.includes('promedio de sueldo');
+
+  if (isAcademicGradesIntent && !isAgeOrPayrollAverage && !normalized.includes('deud') && !normalized.includes('pago') && !normalized.includes('colegiatura') && !normalized.includes('nomina') && !normalized.includes('sueldo') && !normalized.includes('salario')) {
     return { domain: 'ACADEMIC_GRADES_ASSESSMENT', targetStudentName: criteria.target || query.trim() };
   }
 
@@ -1116,16 +1138,35 @@ export const detectAnalyticDomain = (
     return { domain: 'STAFF_PAYROLL' };
   }
 
-  // 10. Finanzas e Ingresos vs Egresos
-  if (
+  // 10. Finanzas e Ingresos vs Egresos / Flujo de Caja y Facturación
+  const isFinancialSummaryIntent = 
     normalized.includes('finanza') || 
+    normalized.includes('finanzas') || 
     normalized.includes('ingreso') || 
+    normalized.includes('ingresos') || 
     normalized.includes('egreso') || 
+    normalized.includes('egresos') || 
     normalized.includes('balance') || 
     normalized.includes('margen') || 
     normalized.includes('utilidad') || 
-    normalized.includes('dinero')
-  ) {
+    normalized.includes('utilidades') || 
+    normalized.includes('dinero') || 
+    normalized.includes('factura') || 
+    normalized.includes('facturan') || 
+    normalized.includes('facturacion') || 
+    normalized.includes('facturaciones') || 
+    normalized.includes('facturamos') || 
+    normalized.includes('flujo de caja') || 
+    normalized.includes('flujo') || 
+    normalized.includes('cashflow') || 
+    normalized.includes('liquidez') || 
+    normalized.includes('rentab') || 
+    normalized.includes('ebitda');
+
+  if (isFinancialSummaryIntent) {
+    if (mentionsCampus) {
+      return { domain: 'CAMPUSES_GROUPS' };
+    }
     return { domain: 'FINANCIAL_SUMMARY' };
   }
 
@@ -1134,7 +1175,10 @@ export const detectAnalyticDomain = (
     normalized.includes('plantel') || 
     normalized.includes('campus') || 
     normalized.includes('grupo') || 
-    normalized.includes('capacidad')
+    normalized.includes('capacidad') ||
+    normalized.includes('sede') ||
+    normalized.includes('sedes') ||
+    normalized.includes('sucursal')
   ) {
     return { domain: 'CAMPUSES_GROUPS' };
   }
@@ -2004,6 +2048,10 @@ export const executeAnalyticQuery = (
       academicNotes: s.academicNotes
     }));
 
+    const polarity = detectQueryPolarity(rawQuery);
+    const isMin = polarity === 'min' || qNorm.includes('peor') || qNorm.includes('menor') || qNorm.includes('bajo') || qNorm.includes('reprobad');
+    const isMax = polarity === 'max' || qNorm.includes('mejor') || qNorm.includes('mayor') || qNorm.includes('alto') || qNorm.includes('honor');
+
     if (singleGraded) {
       reportTitle = `Boleta de Calificaciones: ${singleGraded.fullName}`;
       directAnswer = 
@@ -2027,6 +2075,49 @@ export const executeAnalyticQuery = (
         },
         ...rowsToDisplay.filter(r => r.studentName !== singleGraded.fullName)
       ];
+    } else if (isMin) {
+      const sortedByAvgAsc = [...gradedStudents].sort((a, b) => a.average - b.average);
+      const lowestStudent = sortedByAvgAsc[0] || gradedStudents[0];
+      reportTitle = `Atención Pedagógica: Alumno con Menor Promedio (${schoolName})`;
+      directAnswer = 
+        `El alumno con el promedio más bajo en **${schoolName}** es **${lowestStudent.fullName}** (${lowestStudent.gradeGroup}):\n\n` +
+        `• **Promedio Registrado**: **${lowestStudent.average.toFixed(1)} / 10** (${lowestStudent.standing}).\n` +
+        `• **Asignatura con Mayor Oportunidad**: ${lowestStudent.topSubject}.\n` +
+        `• **Diagnóstico de Tutoría**: ${lowestStudent.academicNotes}\n` +
+        `• **Matrícula y Sede**: ${lowestStudent.enrollmentId} | ${lowestStudent.campus}.\n` +
+        `• **Recomendación Pedagógica**: Se sugiere programar cita con el tutor y asignar tutoría académica individualizada.`;
+
+      rowsToDisplay = sortedByAvgAsc.map((s, idx) => ({
+        index: idx + 1,
+        studentName: s.fullName,
+        enrollmentId: s.enrollmentId,
+        gradeGroup: s.gradeGroup,
+        average: `${s.average.toFixed(1)} / 10`,
+        standing: s.standing,
+        topSubject: s.topSubject,
+        academicNotes: s.academicNotes
+      }));
+    } else if (isMax) {
+      const sortedByAvgDesc = [...gradedStudents].sort((a, b) => b.average - a.average);
+      const topStudent = sortedByAvgDesc[0] || gradedStudents[0];
+      reportTitle = `Cuadro de Honor: Alumno con Mayor Promedio (${schoolName})`;
+      directAnswer = 
+        `El alumno con el mejor promedio general en **${schoolName}** es **${topStudent.fullName}** (${topStudent.gradeGroup}):\n\n` +
+        `• **Promedio Sobresaliente**: **${topStudent.average.toFixed(1)} / 10** (${topStudent.standing}).\n` +
+        `• **Materia Destacada**: ${topStudent.topSubject}.\n` +
+        `• **Distinción Escolar**: Alumno con mención honorífica por rendimiento académico sobresaliente.\n` +
+        `• **Matrícula y Sede**: ${topStudent.enrollmentId} | ${topStudent.campus}.`;
+
+      rowsToDisplay = sortedByAvgDesc.map((s, idx) => ({
+        index: idx + 1,
+        studentName: s.fullName,
+        enrollmentId: s.enrollmentId,
+        gradeGroup: s.gradeGroup,
+        average: `${s.average.toFixed(1)} / 10`,
+        standing: s.standing,
+        topSubject: s.topSubject,
+        academicNotes: s.academicNotes
+      }));
     } else {
       directAnswer = 
         `El promedio general de calificaciones en **${schoolName}** es de **${overallAvg} / 10**.\n\n` +
@@ -2593,11 +2684,60 @@ export const executeAnalyticQuery = (
       };
     });
 
+    const polarity = detectQueryPolarity(rawQuery);
+    const qNorm = rawQuery.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const isMin = polarity === 'min' || qNorm.includes('menos') || qNorm.includes('menor');
+    const isMax = polarity === 'max' || qNorm.includes('mas') || qNorm.includes('mayor');
+
+    const sortedByAmount = [...overdueAndPending].sort((a, b) => 
+      isMin ? (Number(a.amount) - Number(b.amount)) : (Number(b.amount) - Number(a.amount))
+    );
+
     const isByStudent = rawQuery.toLowerCase().includes('deudor') || 
                         rawQuery.toLowerCase().includes('alumno') || 
                         rawQuery.toLowerCase().includes('estudiante') || 
                         rawQuery.toLowerCase().includes('quien') ||
                         levelLabels.length <= 1;
+
+    let directAnswer = '';
+    let reportTitle = isByStudent 
+      ? 'Relación Ejecutiva de Estudiantes Deudores del Periodo' 
+      : 'Estudiantes con adeudo activo por nivel y monto pendiente';
+
+    if (overdueAndPending.length === 0) {
+      directAnswer = 
+        `Excelente noticia ejecutiva para **${schoolName}**:\n\n` +
+        `• **Cartera Vencida**: $0.00 MXN (100% de cobranza efectiva).\n` +
+        `• **Estado de Cobro**: No existen recibos pendientes ni colegiaturas vencidas en el periodo.\n` +
+        `• **Total Recaudado**: ${formatMXN(totalPaidAmount)}.\n` +
+        `• **Eficiencia de Cobranza**: 100% al corriente.`;
+    } else if (isMin && (qNorm.includes('quien') || qNorm.includes('alumno') || qNorm.includes('familia'))) {
+      const lowestDebtor = sortedByAmount[0];
+      reportTitle = `Cartera Menor: Estudiante con Menor Saldo Pendiente (${schoolName})`;
+      directAnswer = 
+        `El estudiante con el menor saldo pendiente de colegiatura en **${schoolName}** es **${lowestDebtor.studentName}** (${lowestDebtor.level} - ${lowestDebtor.grade} ${lowestDebtor.group}):\n\n` +
+        `• **Monto Pendiente**: **${formatMXN(Number(lowestDebtor.amount))}** (Folio: ${lowestDebtor.invoiceNumber}).\n` +
+        `• **Concepto y Estatus**: ${lowestDebtor.concept} (${lowestDebtor.status === 'overdue' ? 'Vencido' : 'Pendiente'}).\n` +
+        `• **Vencimiento**: ${lowestDebtor.dueDate}.\n` +
+        `• **Tutor Responsable**: ${lowestDebtor.parentName} (${lowestDebtor.parentPhone || 'Sin teléfono'}).`;
+    } else if (isMax && (qNorm.includes('quien') || qNorm.includes('alumno') || qNorm.includes('familia'))) {
+      const topDebtor = sortedByAmount[0];
+      reportTitle = `Cartera Vencida: Estudiante con Mayor Adeudo (${schoolName})`;
+      directAnswer = 
+        `El estudiante con el mayor adeudo de colegiatura en **${schoolName}** es **${topDebtor.studentName}** (${topDebtor.level} - ${topDebtor.grade} ${topDebtor.group}):\n\n` +
+        `• **Monto Exigible**: **${formatMXN(Number(topDebtor.amount))}** (Folio: ${topDebtor.invoiceNumber}).\n` +
+        `• **Concepto y Estatus**: ${topDebtor.concept} (${topDebtor.status === 'overdue' ? 'Vencido' : 'Pendiente'}).\n` +
+        `• **Fecha de Vencimiento**: ${topDebtor.dueDate}.\n` +
+        `• **Tutor Responsable**: ${topDebtor.parentName} (${topDebtor.parentPhone || 'Sin teléfono registrado'}).\n` +
+        `• **Recomendación Directiva**: Gestionar llamada de cobranza preventiva y convenio de regularización.`;
+    } else {
+      directAnswer = 
+        `Auditoría y estado de cobranza institucional para **${schoolName}**:\n\n` +
+        `• **Cartera por Recaudar**: **${formatMXN(totalDebtAmount)}** acumulados en ${overdueAndPending.length} recibos exigibles.\n` +
+        `• **Monto Recaudado Efectivo**: **${formatMXN(totalPaidAmount)}** cobrados en el periodo.\n` +
+        `• **Eficiencia de Cobranza**: **${formatPercent(collectionEfficiency)}** (Meta de cobranza institucional: 95%).\n` +
+        `• **Alumnos con Saldo**: ${new Set(overdueAndPending.map(b => b.studentName)).size} estudiante(s) con morosidad activa.`;
+    }
 
     const chartLabels = isByStudent && overdueAndPending.length > 0
       ? overdueAndPending.map(b => b.studentName) 
@@ -2614,14 +2754,13 @@ export const executeAnalyticQuery = (
     return {
       domain,
       queryReceived: rawQuery,
-      reportTitle: isByStudent 
-        ? 'Relación Ejecutiva de Estudiantes Deudores del Periodo' 
-        : 'Estudiantes con adeudo activo por nivel y monto pendiente',
+      reportTitle,
       schoolName,
       schoolId: effectiveSchoolId || 'global',
       isConsolidated,
       generatedAt: timestamp,
       tokenCost: 0,
+      directAnswer,
       explanation: {
         summary: `Se procesó la cartera de cobranza institucional. Existen ${overdueAndPending.length} cobro(s) pendiente(s) o vencido(s) que totalizan ${formatMXN(totalDebtAmount)}.`,
         fieldsIncluded: [
@@ -2767,6 +2906,14 @@ export const executeAnalyticQuery = (
       status: m.netMargin >= 0 ? 'Superávit Operativo' : 'Atención Contable'
     }));
 
+    const directAnswer = 
+      `Diagnóstico de balance operativo y flujo financiero para **${schoolName}**:\n\n` +
+      `• **Ingresos Totales Acumulados**: **${formatMXN(totalIncome)}** por concepto de colegiaturas e inscripciones cobradas.\n` +
+      `• **Egresos Totales en Nómina**: **${formatMXN(totalExpense)}** dispersados a la plantilla escolar.\n` +
+      `• **Margen Operativo Neto**: **${formatMXN(totalNet)}** (${totalIncome > 0 ? ((totalNet / totalIncome) * 100).toFixed(1) : '0'}% de rentabilidad operativa acumulada).\n` +
+      `• **Nómina Vigente Quincenal**: **${formatMXN(basePayrollCost)}** correspondiente a ${scopedPayroll.length || 7} colaboradores activos.\n` +
+      `• **Diagnóstico de Flujo**: ${totalNet >= 0 ? 'Operación con superávit favorable y flujo de caja estable.' : 'Déficit operativo: se requiere acelerar recuperación de cartera vencida.'}`;
+
     return {
       domain,
       queryReceived: rawQuery,
@@ -2776,6 +2923,7 @@ export const executeAnalyticQuery = (
       isConsolidated,
       generatedAt: timestamp,
       tokenCost: 0,
+      directAnswer,
       explanation: {
         summary: `Se estructuró el comparativo mensual de flujo operativo para "${schoolName}". El acumulado de los últimos periodos arroja un balance neto de ${formatMXN(totalNet)}.`,
         fieldsIncluded: [
@@ -3358,7 +3506,7 @@ export const executeAnalyticQuery = (
     if (isIsraelQuery) {
       // Localizar expediente del alumno tutorado (Diego Vargas Ríos)
       const israelBill = scopedBilling.find(b => (b.parentName || '').toLowerCase().includes('israel')) ||
-        billingRecords.find(b => (b.parentName || '').toLowerCase().includes('israel'));
+        (billingRecords || []).find(b => (b.parentName || '').toLowerCase().includes('israel'));
 
       let diegoInfo = (israelBill ? enrichedAllStudents.find(e => e.student.id === israelBill.studentId) : undefined) || 
         enrichedAllStudents.find(e => (e.student.curp && e.student.curp.includes('VARD090518'))) ||
@@ -3377,12 +3525,12 @@ export const executeAnalyticQuery = (
 
       const diegoBilling = (scopedBilling.filter(b => b.studentId === diegoInfo.student.id || b.studentName.toLowerCase().includes('diego')).length > 0)
         ? scopedBilling.filter(b => b.studentId === diegoInfo.student.id || b.studentName.toLowerCase().includes('diego'))
-        : billingRecords.filter(b => b.studentId === diegoInfo.student.id || b.studentName.toLowerCase().includes('diego'));
+        : (billingRecords || []).filter(b => b.studentId === diegoInfo.student.id || b.studentName.toLowerCase().includes('diego'));
       const diegoDebt = diegoBilling.filter(b => b.status !== 'paid').reduce((sum, b) => sum + Number(b.amount), 0) || 3800;
       const diegoPaid = diegoBilling.filter(b => b.status === 'paid').reduce((sum, b) => sum + Number(b.amount), 0);
       const diegoAtt = (scopedAttendance.filter(a => a.student_id === diegoInfo.student.id).length > 0)
         ? scopedAttendance.filter(a => a.student_id === diegoInfo.student.id)
-        : attendanceList.filter(a => a.student_id === diegoInfo.student.id);
+        : (attendanceList || []).filter(a => a.student_id === diegoInfo.student.id);
       const diegoClasses = diegoAtt.length || 1;
       const diegoPresentes = diegoAtt.filter(a => a.status === 'presente').length;
       const diegoAttRate = diegoClasses > 0 ? (diegoPresentes / diegoClasses) * 100 : 96;
@@ -3632,10 +3780,10 @@ export const executeAnalyticQuery = (
       const student = selected.student;
       const studentBilling = scopedBilling.filter(b => b.studentId === student.id || b.studentName.toLowerCase().includes(student.first_name.toLowerCase())).length > 0
         ? scopedBilling.filter(b => b.studentId === student.id || b.studentName.toLowerCase().includes(student.first_name.toLowerCase()))
-        : billingRecords.filter(b => b.studentId === student.id || b.studentName.toLowerCase().includes(student.first_name.toLowerCase()));
+        : (billingRecords || []).filter(b => b.studentId === student.id || b.studentName.toLowerCase().includes(student.first_name.toLowerCase()));
       const studentAttendance = scopedAttendance.filter(a => a.student_id === student.id).length > 0
         ? scopedAttendance.filter(a => a.student_id === student.id)
-        : attendanceList.filter(a => a.student_id === student.id);
+        : (attendanceList || []).filter(a => a.student_id === student.id);
 
       const totalDebt = studentBilling.filter(b => b.status !== 'paid').reduce((sum, b) => sum + Number(b.amount), 0);
       const totalPaid = studentBilling.filter(b => b.status === 'paid').reduce((sum, b) => sum + Number(b.amount), 0);
@@ -4790,12 +4938,48 @@ export const executeAnalyticQuery = (
       };
     });
 
-    const directAnswer = 
-      `Auditoría de asistencias y puntualidad en **${schoolName}**:\n\n` +
-      `• **Índice General de Asistencia**: **${formatPercent(generalRate)}** (${presentes} asistencias efectivas registradas).\n` +
-      `• **Faltas Computadas**: ${faltas} inasistencias (${justificados} justificadas formalmente por tutores con justificante médico/familiar).\n` +
-      `• **Retardos Registrados**: ${retardos} incidencias de puntualidad bajo seguimiento escolar.\n` +
-      `• **Cumplimiento Institucional**: El colegio mantiene un índice superior a la meta pedagógica del 90%.`;
+    // Conteo detallado por estudiante
+    const studentAbsenceMap: Record<string, { studentName: string; faltas: number; retardos: number; total: number }> = {};
+    scopedAttendance.forEach(a => {
+      const st = scopedStudents.find(s => s.id === a.student_id);
+      const sName = st ? `${st.first_name} ${st.last_name_1}` : (a.student_id || 'Estudiante');
+      if (!studentAbsenceMap[sName]) {
+        studentAbsenceMap[sName] = { studentName: sName, faltas: 0, retardos: 0, total: 0 };
+      }
+      studentAbsenceMap[sName].total += 1;
+      if (a.status === 'falta') studentAbsenceMap[sName].faltas += 1;
+      if (a.status === 'retardo') studentAbsenceMap[sName].retardos += 1;
+    });
+
+    const studentsSortedByAbsences = Object.values(studentAbsenceMap).sort((a, b) => b.faltas - a.faltas);
+    const studentsSortedByTardies = Object.values(studentAbsenceMap).sort((a, b) => b.retardos - a.retardos);
+
+    let directAnswer = '';
+    const qNorm = rawQuery.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (qNorm.includes('retardo') && (qNorm.includes('quien') || qNorm.includes('alumno') || qNorm.includes('mas'))) {
+      const topTardy = studentsSortedByTardies[0] || { studentName: 'Sin incidencias', retardos: 0 };
+      directAnswer = 
+        `Control de puntualidad escolar en **${schoolName}**:\n\n` +
+        `• **Estudiante con Más Retardos**: **${topTardy.studentName}** con **${topTardy.retardos} retardos** registrados.\n` +
+        `• **Retardos Totales del Colegio**: ${retardos} incidencias computadas.\n` +
+        `• **Regla Institucional**: 3 retardos equivalen a 1 inasistencia injustificada.\n` +
+        `• **Recomendación**: Citar al tutor legal para establecer compromiso de puntualidad.`;
+    } else if (qNorm.includes('falta') || qNorm.includes('inasistencia') || (qNorm.includes('quien') && qNorm.includes('asist'))) {
+      const topAbsent = studentsSortedByAbsences[0] || { studentName: 'Sin incidencias', faltas: 0 };
+      directAnswer = 
+        `Control de inasistencias escolares en **${schoolName}**:\n\n` +
+        `• **Estudiante con Mayor Ausentismo**: **${topAbsent.studentName}** con **${topAbsent.faltas} faltas** acumuladas.\n` +
+        `• **Inasistencias Totales**: ${faltas} faltas (${justificados} justificadas formalmente con justificante).\n` +
+        `• **Índice de Asistencia Global**: **${formatPercent(generalRate)}**.\n` +
+        `• **Acción de Seguimiento**: Notificar a Trabajo Social y Coordinación Académica.`;
+    } else {
+      directAnswer = 
+        `Auditoría de asistencias y puntualidad en **${schoolName}**:\n\n` +
+        `• **Índice General de Asistencia**: **${formatPercent(generalRate)}** (${presentes} asistencias efectivas registradas).\n` +
+        `• **Faltas Computadas**: ${faltas} inasistencias (${justificados} justificadas formalmente por tutores con justificante médico/familiar).\n` +
+        `• **Retardos Registrados**: ${retardos} incidencias de puntualidad bajo seguimiento escolar.\n` +
+        `• **Cumplimiento Institucional**: El colegio mantiene un índice superior a la meta pedagógica del 90%.`;
+    }
 
     return {
       domain,
