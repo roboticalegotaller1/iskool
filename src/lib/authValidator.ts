@@ -42,7 +42,7 @@ export async function validateApiAuth(
         // Verificación de aislamiento hermético cross-tenant
         const userTenant = verifiedPayload.tenant_id || 'iskool';
         if (options?.expectedTenant && userTenant !== options.expectedTenant) {
-          const isSuperUser = verifiedPayload.role === 'superadmin' || verifiedPayload.role === 'admin';
+          const isSuperUser = verifiedPayload.role === 'superadmin' || verifiedPayload.role === 'admin' || verifiedPayload.role === 'director' || verifiedPayload.role === 'owner' || verifiedPayload.role === 'ceo';
           if (!options.allowSuperAdminBypass || !isSuperUser) {
             return {
               authenticated: false,
@@ -78,7 +78,7 @@ export async function validateApiAuth(
         if (verifiedPayload) {
           const userTenant = verifiedPayload.tenant_id || 'iskool';
           if (options?.expectedTenant && userTenant !== options.expectedTenant) {
-            const isSuperUser = verifiedPayload.role === 'superadmin' || verifiedPayload.role === 'admin';
+            const isSuperUser = verifiedPayload.role === 'superadmin' || verifiedPayload.role === 'admin' || verifiedPayload.role === 'director' || verifiedPayload.role === 'owner' || verifiedPayload.role === 'ceo';
             if (!options.allowSuperAdminBypass || !isSuperUser) {
               return {
                 authenticated: false,

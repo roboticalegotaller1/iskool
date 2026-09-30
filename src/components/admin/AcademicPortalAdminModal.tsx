@@ -915,7 +915,7 @@ export function AcademicPortalAdminModal({
                       type="button"
                       onClick={() => {
                         onClose();
-                        router.push(`/teacher?school_id=${encodeURIComponent(schoolId)}&teacher_id=${tea.id}`);
+                        router.push(`/teacher?school_id=${encodeURIComponent(schoolId)}&teacher_id=${tea.id}&role=admin`);
                       }}
                       className="px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs transition-colors flex items-center gap-1 cursor-pointer"
                     >

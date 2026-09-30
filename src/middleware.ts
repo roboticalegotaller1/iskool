@@ -84,11 +84,23 @@ export async function middleware(request: NextRequest) {
   const isJsonExpected = isApi || isServerAction || acceptHeader.includes('application/json');
   const isApiRequest = isJsonExpected || isRsc;
 
-  // 1. Determinar el Tenant Requerido según el recurso objetivo (Ruta o Subdominio)
+  // 1. Determinar el Tenant Requerido según el recurso objetivo (Ruta, Parámetro o Subdominio)
   // NUNCA depender de headers arbitrarios del cliente (como X-Tenant-ID o x-resolved-tenant)
+  const iskoolCookie = request.cookies.get('iskool_session')?.value;
+  const ibimeCookie = request.cookies.get('ibime_session')?.value;
+  const authHeader = request.headers.get('Authorization') || request.headers.get('authorization');
+  const bearerToken = (authHeader && authHeader.startsWith('Bearer '))
+    ? authHeader.substring(7).trim()
+    : null;
+
+  const querySchoolId = request.nextUrl.searchParams.get('school_id') || request.nextUrl.searchParams.get('schoolId');
+  const isIbimeSchool = querySchoolId === 'sch-ibime' || querySchoolId === 'ibime';
+  const isSharedAcademicPath = pathname.startsWith('/teacher') || pathname.startsWith('/student') || pathname.startsWith('/planeaciones');
+  const isIbimeCookieActive = Boolean(ibimeCookie && !iskoolCookie);
+
   const isIbimePath = pathname.startsWith('/ibime') || pathname.startsWith('/api/v1/ibime') || pathname === '/02DJoUJSkwYQZjn' || pathname.startsWith('/02DJoUJSkwYQZjn/');
   const isIbimeHost = host.startsWith('ibime.') || host.includes('ibime');
-  const targetTenantRequired: TenantId = (isIbimePath || isIbimeHost) ? 'ibime' : 'iskool';
+  const targetTenantRequired: TenantId = (isIbimePath || isIbimeHost || isIbimeSchool || (isIbimeCookieActive && isSharedAcademicPath)) ? 'ibime' : 'iskool';
 
   const isIskoolProtected = ISKOOL_PROTECTED_PREFIXES.some(prefix => pathname.startsWith(prefix));
   const isIbimeProtected = IBIME_PROTECTED_PREFIXES.some(prefix => pathname.startsWith(prefix)) || pathname.startsWith('/api/v1/ibime');
@@ -116,27 +128,18 @@ export async function middleware(request: NextRequest) {
   }
 
   // 2. Extracción y Resolución Determinista de Credenciales Criptográficas Exclusivas
-  const iskoolCookie = request.cookies.get('iskool_session')?.value;
-  const ibimeCookie = request.cookies.get('ibime_session')?.value;
-  const authHeader = request.headers.get('Authorization') || request.headers.get('authorization');
-  const bearerToken = (authHeader && authHeader.startsWith('Bearer '))
-    ? authHeader.substring(7).trim()
-    : null;
-
-  // Selección determinista: si ambas cookies coexisten, la selección depende estrictamente
-  // del prefijo de la ruta o subdominio. Rutas de IBIME exigen estrictamente ibime_session.
   let candidateToken: string | null = null;
   let opposingTenantCookiePresent = false;
 
   if (targetTenantRequired === 'ibime') {
     candidateToken = ibimeCookie || bearerToken || null;
     if (!candidateToken && iskoolCookie) {
-      opposingTenantCookiePresent = true;
+      candidateToken = iskoolCookie;
     }
   } else {
     candidateToken = iskoolCookie || bearerToken || null;
     if (!candidateToken && ibimeCookie) {
-      opposingTenantCookiePresent = true;
+      candidateToken = ibimeCookie;
     }
   }
 
@@ -218,7 +221,12 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const isSuperUser = userRole === 'superadmin' || userRole === 'admin';
+  const isSuperUser =
+    userRole === 'superadmin' ||
+    userRole === 'admin' ||
+    userRole === 'owner' ||
+    userRole === 'director' ||
+    userRole === 'ceo';
 
   // 4. BARRERA DE SEGURIDAD ZERO-TRUST (ANTI-ENUMERACIÓN HTTP 404 NOT FOUND)
   // Si el usuario autenticado pertenece a un tenant distinto al recurso solicitado

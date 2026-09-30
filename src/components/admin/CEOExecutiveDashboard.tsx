@@ -1417,8 +1417,8 @@ export default function CEOExecutiveDashboard({
     
     setIsAcademicPortalModalOpen(false);
     const targetUrl = campusId && campusId !== 'all'
-      ? `/teacher?school_id=${encodeURIComponent(schoolId || 'sch-ibime')}&campus=${encodeURIComponent(campusId)}`
-      : `/teacher?school_id=${encodeURIComponent(schoolId || 'sch-ibime')}`;
+      ? `/teacher?school_id=${encodeURIComponent(schoolId || 'sch-ibime')}&campus=${encodeURIComponent(campusId)}&role=admin`
+      : `/teacher?school_id=${encodeURIComponent(schoolId || 'sch-ibime')}&role=admin`;
     router.push(targetUrl);
   };
 

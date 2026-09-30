@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useStudentStore } from '@/store/useStudentStore';
 import { usePortfolioStore } from '@/store/usePortfolioStore';
 import { useGamificationStore } from '@/store/useGamificationStore';
@@ -180,16 +180,27 @@ const RUBRIC_CRITERIA = [
 ];
 
 import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { useTeacherSocialLoopStream } from '@/hooks/useTeacherSocialLoopStream';
 
-export default function TeacherDashboard() {
+function TeacherDashboardContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const querySchoolId = searchParams?.get('school_id') || searchParams?.get('schoolId') || '';
+  const queryRole = searchParams?.get('role') || '';
+  const queryTeacherId = searchParams?.get('teacher_id') || searchParams?.get('impersonate') || '';
+
+  const isAdminSupervisor = Boolean(
+    queryRole === 'admin' ||
+    (user && ['admin', 'superadmin', 'director', 'owner', 'ceo', 'coordinator'].includes(user.role))
+  );
 
   const currentTeacher = user as UserProfile;
-  const normalizedTeacherId = currentTeacher?.id === 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a55' ? 'usr-teacher-1' : currentTeacher?.id;
+  const effectiveTeacherId = queryTeacherId || currentTeacher?.id;
+  const normalizedTeacherId = effectiveTeacherId === 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a55' ? 'usr-teacher-1' : effectiveTeacherId;
   const subjects = SUBJECTS_SEED;
 
   const portfolioItems = usePortfolioStore(state => state.portfolioItems);
@@ -262,6 +273,12 @@ export default function TeacherDashboard() {
 
   // Grupos disponibles para este profesor con estricto aislamiento
   const availableTeacherGroups = useMemo(() => {
+    if (isAdminSupervisor) {
+      const schoolGroups = querySchoolId 
+        ? groupsList.filter(g => g.school_id === querySchoolId || !g.school_id)
+        : groupsList;
+      return schoolGroups.length > 0 ? schoolGroups : groupsList;
+    }
     if (isIndependentTeacher) {
       return groupsList.filter(g => 
         g.teacher_id === currentTeacher?.id || 
@@ -270,7 +287,7 @@ export default function TeacherDashboard() {
     }
     const scheduled = groupsList.filter(g => schedulesList.some(s => s.groupId === g.id && s.teacherId === normalizedTeacherId));
     return scheduled.length > 0 ? scheduled : groupsList;
-  }, [groupsList, schedulesList, isIndependentTeacher, currentTeacher?.id, normalizedTeacherId]);
+  }, [groupsList, schedulesList, isIndependentTeacher, currentTeacher?.id, normalizedTeacherId, isAdminSupervisor, querySchoolId]);
 
   // Navegación principal del portal del profesor (Por defecto: 'hub' - Regla de los 3 Clics de Apple)
   const [currentMenuTab, setCurrentMenuTab] = useState<'hub' | 'classroom' | 'evaluation' | 'attendance' | 'tasks' | 'design' | 'planning' | 'canvas' | 'community'>('hub');
@@ -412,8 +429,16 @@ export default function TeacherDashboard() {
       setSelectedTaskGroup(firstGroup);
       setSelectedTaskSubject(firstSubject);
       setSelectedDesignSubject(firstSubject);
+    } else if (availableTeacherGroups.length > 0 && !selectedAttendanceGroup) {
+      const firstGroup = availableTeacherGroups[0].id;
+      const firstSubject = subjects[0]?.id || 'sub-sci';
+      setSelectedAttendanceGroup(firstGroup);
+      setSelectedAttendanceSubject(firstSubject);
+      setSelectedTaskGroup(firstGroup);
+      setSelectedTaskSubject(firstSubject);
+      setSelectedDesignSubject(firstSubject);
     }
-  }, [schedulesList, currentTeacher?.id, isIndependentTeacher, availableTeacherGroups, selectedAttendanceGroup]);
+  }, [schedulesList, currentTeacher?.id, isIndependentTeacher, availableTeacherGroups, selectedAttendanceGroup, subjects, normalizedTeacherId]);
 
   // Cargar asistencia guardada al cambiar grupo, materia o fecha
   useEffect(() => {
@@ -636,21 +661,21 @@ export default function TeacherDashboard() {
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        router.push('/login');
+        router.push(querySchoolId === 'sch-ibime' ? '/ibime/login' : '/login');
       } else if (user.role === 'student') {
-        router.push('/student');
+        router.push(user.school_id === 'sch-ibime' ? '/ibime/portal' : '/student');
       }
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, querySchoolId]);
 
   useEffect(() => {
-    if (user && user.role === 'teacher') {
+    if (user && (user.role === 'teacher' || isAdminSupervisor)) {
       const activeGroup = currentMenuTab === 'attendance' ? selectedAttendanceGroup : selectedTaskGroup;
       const groupToFetch = activeGroup || selectedAttendanceGroup || 'grp-pa-a';
       fetchPortfolioItems();
       fetchStats(groupToFetch);
     }
-  }, [user, currentMenuTab, selectedAttendanceGroup, selectedTaskGroup, fetchPortfolioItems, fetchStats]);
+  }, [user, isAdminSupervisor, currentMenuTab, selectedAttendanceGroup, selectedTaskGroup, fetchPortfolioItems, fetchStats]);
 
   if (loading || !user) {
     return (
@@ -663,7 +688,10 @@ export default function TeacherDashboard() {
     );
   }
 
-  const isTeacherOrStaff = user && ['teacher', 'coordinator', 'director', 'admin', 'superadmin', 'owner'].includes(user.role);
+  const isTeacherOrStaff = Boolean(
+    isAdminSupervisor ||
+    (user && ['teacher', 'coordinator', 'director', 'admin', 'superadmin', 'owner', 'ceo'].includes(user.role))
+  );
 
   if (!isTeacherOrStaff) {
     const getRedirectInfo = () => {
@@ -843,6 +871,44 @@ export default function TeacherDashboard() {
       <Header />
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
+        
+        {/* Banner de Supervisión y Auditoría Directiva (CEO / Administrador de Colegio) */}
+        {isAdminSupervisor && (
+          <div className="rounded-3xl p-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white border border-indigo-500/40 shadow-xl shadow-indigo-950/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-in fade-in duration-200">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 text-2xl shadow-inner shrink-0">
+                👑
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                    Modo Supervisión & Auditoría
+                  </span>
+                  <span className="text-xs text-indigo-300 font-medium">
+                    {querySchoolId === 'sch-ibime' ? 'Instituto Bilingüe IBIME' : (querySchoolId || 'Supervisión Institucional')}
+                  </span>
+                </div>
+                <h3 className="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-2">
+                  <span>Portal Académico: Vista del Profesor</span>
+                </h3>
+                <p className="text-xs text-slate-300 font-medium">
+                  Sesión activa de <strong className="text-white">{user?.first_name} {user?.last_name || ''}</strong> ({user?.email || 'Administrador Institucional'}) con permisos completos de auditoría, planeación y revisión de clases.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 self-stretch sm:self-auto shrink-0 flex-wrap">
+              <button
+                type="button"
+                onClick={() => router.push(querySchoolId === 'sch-ibime' ? '/ibime/portal?view=ceo' : '/admin/ceo')}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white border border-white/20 font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <ArrowLeft size={14} />
+                <span>Volver a Visión Ejecutiva CEO</span>
+              </button>
+            </div>
+          </div>
+        )}
         
         {/* Banner Exclusivo y Barra de Autonomía para Profesores Independientes */}
         {isIndependentTeacher && (
@@ -3277,5 +3343,22 @@ export default function TeacherDashboard() {
       )}
 
     </div>
+  );
+}
+
+export default function TeacherDashboard() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-white">
+          <div className="flex items-center gap-3">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-indigo-500" />
+            <span className="text-sm font-medium text-zinc-300">Cargando Portal Docente...</span>
+          </div>
+        </div>
+      }
+    >
+      <TeacherDashboardContent />
+    </Suspense>
   );
 }
