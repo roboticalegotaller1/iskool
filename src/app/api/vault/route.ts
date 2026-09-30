@@ -17,10 +17,6 @@ import {
 } from '@/lib/curriculumEngine';
 import { renderSanitizedMarkdown, invalidateVaultCache } from '@/lib/vaultMarkdownEngine';
 import { InstitutionalMemoryService } from '@/lib/institutionalMemory';
-import { exec } from 'child_process';
-import util from 'util';
-
-const execPromise = util.promisify(exec);
 
 /**
  * Obtiene el directorio raíz canónico de las planeaciones pedagógicas.
@@ -36,16 +32,6 @@ function getVaultPlanningsDir(): string {
 
   // Ruta estándar en el proyecto local ISkool
   const localProjectPlannings = path.join(/*turbopackIgnore: true*/ process.cwd(), 'planeaciones');
-  if (fs.existsSync(localProjectPlannings)) {
-    return localProjectPlannings;
-  }
-
-  // Ruta de bóveda central de conocimiento en escritorio
-  const desktopVault = path.join(/*turbopackIgnore: true*/ 'C:\\Users\\kami-\\Desktop\\2025-2026\\iskool\\obsidean\\brain\\iskool', 'planeaciones');
-  if (fs.existsSync(desktopVault)) {
-    return desktopVault;
-  }
-
   return localProjectPlannings;
 }
 
@@ -610,30 +596,9 @@ ${planning.materiales || ''}
       console.warn("Aviso de guardado en disco:", writeErr?.message);
     }
 
-    // Sincronización Automática con Repositorio Central
-    let gitSyncStatus = 'skipped';
-    let gitMessage = '';
-    const isIsrael = (planning.teacherName || '').toLowerCase().includes('israel') || Boolean(planning.isSuperUser);
-
-    if (planning.syncGit || isIsrael) {
-      try {
-        const safeCommitTitle = planning.title.replace(/["`$]/g, '').trim();
-        const commitMsg = `feat(planeacion): ${safeCommitTitle} - ${planning.teacherName || 'Prof. Israel López Ángeles'} (IA NEM)`;
-        
-        await execPromise(`git -C "${planningsDir}" add -A`);
-        await execPromise(`git -C "${planningsDir}" commit -m "${commitMsg}"`).catch((e) => {
-          console.log('Git commit notice:', e.message);
-        });
-        await execPromise(`git -C "${planningsDir}" push origin main`);
-        gitSyncStatus = 'synced_and_pushed';
-        gitMessage = 'Sincronizado y publicado en Repositorio Central (Bóveda Curricular)';
-        console.log(`🚀 [Auto-Push]: Planeación "${planning.title}" sincronizada y enviada al repositorio central.`);
-      } catch (gitErr: any) {
-        gitSyncStatus = 'local_only';
-        gitMessage = `Guardado localmente. Sincronización remota: ${gitErr?.message || 'Pendiente de sincronizar'}`;
-        console.warn('Aviso de sincronización remota:', gitErr?.message || gitErr);
-      }
-    }
+    // Sincronización y persistencia en Bóveda Curricular Institucional
+    const gitSyncStatus = 'persisted_locally';
+    const gitMessage = 'Persistido en Bóveda Curricular Institucional';
 
     return NextResponse.json({
       success: true,

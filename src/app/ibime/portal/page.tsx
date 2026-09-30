@@ -42,22 +42,9 @@ import { DetailedStudent, Subject, Campus, UserProfile } from '@/types';
 
 type IbimeTab = 'sedes' | 'alumnos' | 'docentes' | 'boveda' | 'finanzas';
 
-const DEFAULT_IBIME_DIRECTOR: UserProfile = {
-  id: 'usr-dir-ibime-montes',
-  school_id: 'sch-ibime',
-  campus_id: 'cmp-ibime-montes',
-  campus_name: 'Campus Montes (Sede Matriz & CCH)',
-  first_name: 'Patricia',
-  last_name: 'Sandoval Morales (Dirección General)',
-  role: 'director',
-  email: 'directora.general@ibime.edu.mx',
-  created_at: '2026-01-01T08:00:00.000Z',
-  updated_at: new Date().toISOString()
-};
-
 export default function IbimePortalPage() {
   const router = useRouter();
-  const { user, login, logout, loading: authLoading } = useAuth();
+  const { user, logout, loading: authLoading } = useAuth();
 
   // Forzar síncronamente los atributos del DOM para el tenant IBIME
   useEffect(() => {
@@ -68,15 +55,23 @@ export default function IbimePortalPage() {
     }
   }, []);
 
-  // Control de Acceso y Resiliencia Institucional:
-  // Si se accede a /ibime/portal sin sesión o con usuario ajeno,
-  // autenticar de forma transparente al usuario directivo por defecto
-  // para permitir la visualización y auditoría continua sin expulsiones.
+  // Validación de Control de Acceso Zero-Trust:
+  // Requiere sesión activa y pertenencia a IBIME con rol directivo o administrativo.
   useEffect(() => {
-    if (!authLoading && (!user || (user.school_id !== 'sch-ibime' && !user.email?.toLowerCase().includes('ibime')))) {
-      login('directora.general@ibime.edu.mx', 'DIR2026').catch(() => null);
+    if (!authLoading) {
+      if (!user) {
+        router.push('/ibime/login');
+        return;
+      }
+      const isIbimeStaff = user.school_id === 'sch-ibime' || 
+                           user.email?.toLowerCase().includes('ibime') ||
+                           user.role === 'admin' || 
+                           user.role === 'superadmin';
+      if (!isIbimeStaff) {
+        router.push('/login?error=unauthorized_ibime');
+      }
     }
-  }, [user, authLoading, login]);
+  }, [user, authLoading, router]);
 
   // Filtros de navegación directiva
   const [activeTab, setActiveTab] = useState<IbimeTab>('sedes');
@@ -133,10 +128,47 @@ export default function IbimePortalPage() {
     }
   };
 
-  // Nombre y cargo institucional del usuario activo (con fallback seguro resiliente)
-  const isIbimeUser = user && (user.school_id === 'sch-ibime' || user.email?.toLowerCase().includes('ibime'));
-  const activeUser = isIbimeUser ? user : DEFAULT_IBIME_DIRECTOR;
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+        <div className="flex items-center gap-3">
+          <Clock className="w-6 h-6 animate-spin text-emerald-400" />
+          <span>Verificando credenciales perimetrales IBIME...</span>
+        </div>
+      </div>
+    );
+  }
 
+  const isIbimeStaff = Boolean(
+    user && (
+      user.school_id === 'sch-ibime' || 
+      user.email?.toLowerCase().includes('ibime') ||
+      user.role === 'admin' || 
+      user.role === 'superadmin'
+    )
+  );
+
+  if (!user || !isIbimeStaff) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-white text-center">
+        <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 mb-4">
+          <Lock className="w-8 h-8" />
+        </div>
+        <h1 className="text-2xl font-bold mb-2">403 - Acceso Denegado</h1>
+        <p className="text-slate-400 max-w-md mb-6">
+          Se requiere una sesión activa con rol directivo o administrativo perteneciente a la organización Instituto Bilingüe IBIME para acceder a este portal.
+        </p>
+        <button
+          onClick={() => router.push('/ibime/login')}
+          className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition cursor-pointer"
+        >
+          Iniciar Sesión Institucional
+        </button>
+      </div>
+    );
+  }
+
+  const activeUser = user;
   const userName = `${activeUser.first_name || ''} ${activeUser.last_name || ''}`.trim() || 'Directivo IBIME';
   const userCampus = activeUser.campus_name || 'Dirección General (Campus Montes Sede Matriz & CCH)';
   const isDirector = activeUser.role === 'director' || activeUser.role === 'admin' || activeUser.role === 'superadmin' || activeUser.role === 'owner';

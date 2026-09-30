@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
 import { DEFAULT_ARTIFACTS_SEED } from '@/store/seeds';
+import { validateApiAuth } from '@/lib/authValidator';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,6 +31,14 @@ const mapStudentIdToUuid = (id: string): string => {
  */
 export async function POST(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req);
+    if (!auth.authenticated || !auth.user) {
+      return NextResponse.json(
+        { error: 'No autorizado. Se requiere sesión activa.', code: 'UNAUTHORIZED' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { studentId, artifactId } = body;
 
@@ -37,6 +46,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'Parámetros obligatorios: studentId y artifactId' },
         { status: 400 }
+      );
+    }
+
+    const dbStudentId = mapStudentIdToUuid(studentId);
+    if (auth.user.role === 'student' && auth.user.id !== studentId && auth.user.id !== dbStudentId) {
+      return NextResponse.json(
+        { error: 'No autorizado para comprar a nombre de otro estudiante.', code: 'FORBIDDEN' },
+        { status: 403 }
       );
     }
 

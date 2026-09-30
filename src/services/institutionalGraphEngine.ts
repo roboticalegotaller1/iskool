@@ -1111,9 +1111,9 @@ export function buildSchoolInstitutionalGraph(
     { title: 'Control Estadístico de Calidad y Metrología 3D', standard: 'Estándar IATF 16949 • Tolerancias Geométricas GD&T', level: 'Nivel 5' },
     { title: 'Mantenimiento Predictivo y Análisis de Vibraciones', standard: 'Norma ISO 13373 • Detección Temprana en Motores', level: 'Nivel 5' },
     { title: 'Seguridad Industrial STPS y Bloqueo LOTO', standard: 'Norma NOM-004-STPS • Desenergización de Celdas', level: 'Nivel 6' },
-    { title: 'Pintura Electroestática y Recubrimientos Automotrices', standard: 'Especificación BMW GS 90011 • Adherencia y Brillo', level: 'Nivel 6' },
+    { title: 'Pintura Electroestática y Recubrimientos Automotrices', standard: 'Especificación Nexus GS 90011 • Adherencia y Brillo', level: 'Nivel 6' },
     { title: 'Logística Just-in-Time y Cadena de Suministro B2B', standard: 'Metodología Kanban Lean • Abastecimiento a Línea', level: 'Nivel 6' },
-    { title: 'Sistemas de Propulsión Híbrida y Motores Síncronos', standard: 'Arquitectura BMW eDrive • Eficiencia Energética', level: 'Nivel 6' },
+    { title: 'Sistemas de Propulsión Híbrida y Motores Síncronos', standard: 'Arquitectura Nexus eDrive • Eficiencia Energética', level: 'Nivel 6' },
     { title: 'Diagnóstico Electrónico por Bus CAN y Ethernet', standard: 'Protocolo OBD-II / UDS • Telemetría Vehicular', level: 'Nivel 6' },
     { title: 'Ergonomía Operativa y Prevención de Fatiga', standard: 'Norma NOM-036-STPS • Manejo de Cargas en Planta', level: 'Nivel 4' },
     { title: 'Gestión Ambiental y Cero Residuos en Planta', standard: 'Certificación ISO 14001 • Economía Circular Industrial', level: 'Nivel 5' }

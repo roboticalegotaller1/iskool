@@ -25,11 +25,11 @@ describe('🏢 SUITE: Sector Corporativo B2B & Cuentas CEO en ISkool', () => {
 
       const bmw = INSTITUTIONS_SEED.find(inst => inst.id === 'emp-bmw');
       expect(bmw).toBeDefined();
-      expect(bmw?.name).toContain('BMW Group');
+      expect(bmw?.name).toContain('Nexus Motors');
       expect(bmw?.institution_type).toBe('corporate');
       expect(bmw?.corporate_industry).toBe('automotive');
       expect(bmw?.ceo_name).toContain('Dirk Dreher');
-      expect(bmw?.tax_id).toBe('BGM940315BMW');
+      expect(bmw?.tax_id).toBe('NMM940315NMM');
       expect(isCorporateInstitution(bmw)).toBe(true);
 
       const retail = INSTITUTIONS_SEED.find(inst => inst.id === 'emp-ventas');
@@ -105,7 +105,7 @@ describe('🏢 SUITE: Sector Corporativo B2B & Cuentas CEO en ISkool', () => {
 
       const bmwCeo = ceos.find(u => u.school_id === 'emp-bmw');
       expect(bmwCeo).toBeDefined();
-      expect(bmwCeo?.email).toBe('ceo@bmw-corp.mx');
+      expect(bmwCeo?.email).toBe('ceo@nexus-motors.mx');
       expect(bmwCeo?.role).toBe('ceo');
 
       const retailCeo = ceos.find(u => u.school_id === 'emp-ventas');

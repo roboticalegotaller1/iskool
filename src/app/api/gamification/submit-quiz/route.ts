@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
 import { MISSIONS_SEED } from '@/store/seeds';
 import { broadcastTeacherMilestone } from '@/lib/teacherMilestoneBroadcaster';
+import { validateApiAuth } from '@/lib/authValidator';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +16,14 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req);
+    if (!auth.authenticated || !auth.user) {
+      return NextResponse.json(
+        { error: 'No autorizado. Se requiere sesión activa para enviar evaluaciones.' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { questId, studentId, answers } = body;
 
@@ -22,6 +31,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'Faltan parámetros requeridos: questId y studentId' },
         { status: 400 }
+      );
+    }
+
+    if (auth.user.role === 'student' && auth.user.id !== studentId) {
+      return NextResponse.json(
+        { error: 'No autorizado: No puedes enviar cuestionarios para otro alumno.' },
+        { status: 403 }
       );
     }
 

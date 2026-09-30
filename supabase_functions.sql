@@ -145,6 +145,14 @@ declare
   v_badge_earned_desc text := null;
   v_badge_earned_icon text := null;
 begin
+  -- Validación de identidad Zero-Trust:
+  if auth.uid() is not null and auth.uid() != p_student_id and not (
+    exists (select 1 from public.profiles where id = auth.uid() and role in ('admin', 'superadmin', 'director', 'coordinator', 'teacher'))
+  ) then
+    raise exception 'No autorizado para entregar evaluaciones o retos en nombre de otro estudiante'
+      using errcode = '42501';
+  end if;
+
   -- 1. Fetch Quest configuration
   select q.xp_reward, q.coins_reward, m.subject_id
   into v_xp_reward, v_coins_reward, v_subject_id
@@ -642,6 +650,25 @@ declare
   v_xp_for_next_level integer;
   v_updated_row public.student_stats%rowtype;
 begin
+  -- Validación de seguridad Zero-Trust:
+  -- La asignación de recompensas (XP/Monedas) sólo puede ser ejecutada por personal docente o administrativo.
+  -- El propio estudiante sólo puede modificar atributos permitidos si auth.uid() = p_student_id.
+  if auth.uid() is not null then
+    if (p_xp_change > 0 or p_coins_change > 0) and not (
+      exists (select 1 from public.profiles where id = auth.uid() and role in ('admin', 'superadmin', 'director', 'coordinator', 'teacher'))
+    ) then
+      raise exception 'No autorizado: Solo el personal docente o administrativo puede otorgar XP o monedas'
+        using errcode = '42501';
+    end if;
+
+    if auth.uid() != p_student_id and not (
+      exists (select 1 from public.profiles where id = auth.uid() and role in ('admin', 'superadmin', 'director', 'coordinator', 'teacher'))
+    ) then
+      raise exception 'No autorizado para modificar las estadísticas del estudiante %', p_student_id
+        using errcode = '42501';
+    end if;
+  end if;
+
   -- Fetch current stats
   select xp, level, coins, skill_points, pet_energy, pet_happiness, pet_stage
   into v_current_xp, v_level, v_current_coins, v_skill_points, v_pet_energy, v_pet_happiness, v_pet_stage

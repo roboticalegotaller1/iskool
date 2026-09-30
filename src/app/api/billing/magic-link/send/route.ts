@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { magicLinkService } from '@/lib/magicLinkService';
 import { formatWhatsAppPaymentNotification, formatEmailPaymentNotification } from '@/lib/notificationFormatter';
+import { validateApiAuth } from '@/lib/authValidator';
 
 /**
  * Generador y Despachador de Recordatorios de Cobro con Magic Links
@@ -8,6 +9,22 @@ import { formatWhatsAppPaymentNotification, formatEmailPaymentNotification } fro
  */
 export async function POST(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req);
+    if (!auth.authenticated || !auth.user) {
+      return NextResponse.json({
+        success: false,
+        error: 'No autorizado. Se requiere sesión activa para emitir enlaces de cobro.'
+      }, { status: 401 });
+    }
+
+    const allowedRoles = ['admin', 'superadmin', 'director', 'coordinator', 'billing', 'owner', 'ceo'];
+    if (!auth.user.role || !allowedRoles.includes(auth.user.role)) {
+      return NextResponse.json({
+        success: false,
+        error: 'Prohibido: Rol no autorizado para generar enlaces de pago.'
+      }, { status: 403 });
+    }
+
     const body = await req.json();
     const { 
       invoiceId, 

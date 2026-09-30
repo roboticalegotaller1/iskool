@@ -13,7 +13,7 @@ import {
  * Cumple estrictamente con la Marca Blanca Institucional.
  */
 export function getHistoricalVaultDirs(): { localDir: string; desktopDir: string | null } {
-  const localDir = path.join(process.cwd(), 'personajes_historicos');
+  const localDir = path.resolve(process.cwd(), 'personajes_historicos');
   if (!fs.existsSync(localDir)) {
     try {
       fs.mkdirSync(localDir, { recursive: true });
@@ -22,20 +22,23 @@ export function getHistoricalVaultDirs(): { localDir: string; desktopDir: string
     }
   }
 
-  const desktopVaultRoot = 'C:\\Users\\kami-\\Desktop\\2025-2026\\iskool\\obsidean\\brain\\iskool';
+  const envVaultRoot = process.env.CURRICULAR_VAULT_PATH || process.env.VAULT_PATH;
   let desktopDir: string | null = null;
-  if (fs.existsSync(desktopVaultRoot)) {
-    desktopDir = path.join(desktopVaultRoot, 'personajes_historicos');
-    if (!fs.existsSync(desktopDir)) {
-      try {
-        fs.mkdirSync(desktopDir, { recursive: true });
-      } catch {
-        // Ignorar si falla
-      }
+  if (envVaultRoot && fs.existsSync(envVaultRoot)) {
+    const candidate = path.resolve(envVaultRoot, 'personajes_historicos');
+    if (fs.existsSync(candidate)) {
+      desktopDir = candidate;
     }
   }
 
   return { localDir, desktopDir };
+}
+
+export const HISTORICAL_SLUG_WHITELIST = /^[a-z0-9-_]+$/i;
+
+export function isSafeHistoricalSlug(slug: string): boolean {
+  if (!slug || typeof slug !== 'string') return false;
+  return HISTORICAL_SLUG_WHITELIST.test(slug) && !slug.includes('..') && !path.isAbsolute(slug);
 }
 
 /**
@@ -395,22 +398,36 @@ export function parseHistoricalMarkdown(rawContent: string, slug: string): Histo
  * Guarda en el proyecto local y en el Segundo Cerebro de escritorio si existe.
  */
 export function saveHistoricalFigureToVault(data: HistoricalFigureBlockData): { success: boolean; localPath: string; desktopPath?: string } {
-  const slug = data.vaultNodeSlug || normalizeHistoricalSlug(data.characterName);
+  const rawSlug = data.vaultNodeSlug || normalizeHistoricalSlug(data.characterName);
+  const slug = normalizeHistoricalSlug(rawSlug);
+  if (!isSafeHistoricalSlug(slug)) {
+    throw new Error('Slug inválido o potencial intento de Path Traversal');
+  }
+
   const { localDir, desktopDir } = getHistoricalVaultDirs();
+  const allowedBase = path.resolve(localDir);
+  const localPath = path.resolve(localDir, `${slug}.md`);
+
+  if (!localPath.startsWith(allowedBase)) {
+    throw new Error('Intento de Path Traversal bloqueado por el perímetro de seguridad.');
+  }
 
   const markdownContent = serializeHistoricalToMarkdown(data, slug);
-  const localPath = path.join(localDir, `${slug}.md`);
 
   try {
     fs.writeFileSync(localPath, markdownContent, 'utf8');
 
     let desktopPath: string | undefined = undefined;
     if (desktopDir && fs.existsSync(desktopDir)) {
-      desktopPath = path.join(desktopDir, `${slug}.md`);
-      try {
-        fs.writeFileSync(desktopPath, markdownContent, 'utf8');
-      } catch (dErr) {
-        console.warn('No se pudo duplicar al Segundo Cerebro de escritorio:', dErr);
+      const allowedDesktopBase = path.resolve(desktopDir);
+      const dPath = path.resolve(desktopDir, `${slug}.md`);
+      if (dPath.startsWith(allowedDesktopBase)) {
+        desktopPath = dPath;
+        try {
+          fs.writeFileSync(desktopPath, markdownContent, 'utf8');
+        } catch (dErr) {
+          console.warn('No se pudo duplicar al almacenamiento secundario:', dErr);
+        }
       }
     }
 

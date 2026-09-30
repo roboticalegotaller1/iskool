@@ -7,10 +7,16 @@
 
 import { TenantId, MultiTenantRole } from './multiTenantSession';
 
-const OAUTH_SECRET =
-  process.env.OAUTH_SECRET ||
-  process.env.SESSION_SECRET ||
-  'iskool_oauth_ticket_secret_key_2026_pkce_verified';
+function getOAuthSecret(): string {
+  const secret = process.env.OAUTH_SECRET || process.env.SESSION_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('FATAL SECURITY ERROR: process.env.SESSION_SECRET or OAUTH_SECRET must be configured in production environment.');
+    }
+    return 'dev-test-only-oauth-secret-not-for-production';
+  }
+  return secret;
+}
 
 export interface OAuthTicketPayload {
   clientId: string;
@@ -99,7 +105,7 @@ export async function createAuthorizationCodeTicket(data: {
 
   const enc = new TextEncoder();
   const payloadEncoded = toBase64Url(enc.encode(JSON.stringify(payload)));
-  const key = await getCryptoKey(OAUTH_SECRET);
+  const key = await getCryptoKey(getOAuthSecret());
   const signatureBytes = await globalThis.crypto.subtle.sign(
     'HMAC',
     key,
@@ -139,7 +145,7 @@ export async function verifyAndConsumeAuthorizationCode(params: {
   const [payloadEncoded, signature] = parts;
   const enc = new TextEncoder();
   const dec = new TextDecoder();
-  const key = await getCryptoKey(OAUTH_SECRET);
+  const key = await getCryptoKey(getOAuthSecret());
   const signatureBytes = fromBase64Url(signature);
 
   const isValidSignature = await globalThis.crypto.subtle.verify(

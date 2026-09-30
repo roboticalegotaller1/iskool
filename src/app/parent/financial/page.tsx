@@ -74,14 +74,14 @@ export default function ParentFinancialStatementPage() {
 
   // Formulario Fiscal SAT (CFDI 4.0 & Complemento IEDU)
   const [taxData, setTaxData] = useState({
-    rfc: 'LOAI840512AB3',
-    taxName: 'ISRAEL LOPEZ ANGELES',
-    taxRegime: '605', // Sueldos y Salarios
+    rfc: 'XAXX010101000',
+    taxName: 'PÚBLICO EN GENERAL',
+    taxRegime: '616', // Sin obligaciones fiscales
     postalCode: '06700',
-    cfdiUse: 'D10', // Colegiaturas
-    studentCurp: 'LOMA080912HDFZNS01',
+    cfdiUse: 'S01', // Sin efectos fiscales
+    studentCurp: 'AAAA000101HDFZNS01',
     educationLevel: 'Secundaria',
-    billingEmail: 'israel.lopez@ejemplo.com',
+    billingEmail: 'facturacion@colegio.edu.mx',
     autoInvoiceOnPayment: true
   });
 

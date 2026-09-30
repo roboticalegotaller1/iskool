@@ -48,8 +48,6 @@ export default function PartyStatus() {
     }
   }, [actions]);
 
-  if (!partyId) return null;
-
   // Calculate damage per student ID
   const damageMap = useMemo(() => {
     return actions.reduce((acc, action) => {
@@ -57,6 +55,8 @@ export default function PartyStatus() {
       return acc;
     }, {} as Record<string, number>);
   }, [actions]);
+
+  if (!partyId) return null;
 
   return (
     <div className="rounded-3xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/90 p-5 shadow-lg shadow-zinc-500/5 flex flex-col gap-5">

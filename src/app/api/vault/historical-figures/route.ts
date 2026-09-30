@@ -3,9 +3,11 @@ import {
   findHistoricalFigureInVault, 
   saveHistoricalFigureToVault, 
   listAllHistoricalFiguresInVault,
-  normalizeHistoricalSlug 
+  normalizeHistoricalSlug,
+  isSafeHistoricalSlug
 } from '@/lib/historicalVaultEngine';
 import { HistoricalFigureBlockData } from '@/types/studioBlocks';
+import { validateApiAuth } from '@/lib/authValidator';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,6 +38,14 @@ export async function GET(req: NextRequest) {
       }, { status: 400 });
     }
 
+    const normalizedSlug = normalizeHistoricalSlug(nameOrSlug);
+    if (!isSafeHistoricalSlug(normalizedSlug)) {
+      return NextResponse.json({
+        success: false,
+        error: 'Identificador de nodo no válido o caracteres prohibidos.'
+      }, { status: 400 });
+    }
+
     const figure = findHistoricalFigureInVault(nameOrSlug);
     if (figure) {
       return NextResponse.json({
@@ -51,7 +61,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       success: true,
       found: false,
-      slug: normalizeHistoricalSlug(nameOrSlug),
+      slug: normalizedSlug,
       message: 'El nodo aún no existe en la Bóveda Curricular. Se procederá a generar pedagógicamente.'
     });
   } catch (error: any) {
@@ -68,6 +78,14 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req);
+    if (!auth.authenticated || !auth.user) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'No autorizado. Se requiere sesión activa para persistir en la Bóveda.' 
+      }, { status: 401 });
+    }
+
     const body = await req.json();
     const figure = body.figure as HistoricalFigureBlockData;
 
@@ -76,6 +94,16 @@ export async function POST(req: NextRequest) {
         success: false, 
         error: 'Objeto de personaje histórico inválido' 
       }, { status: 400 });
+    }
+
+    if (figure.vaultNodeSlug) {
+      const normalized = normalizeHistoricalSlug(figure.vaultNodeSlug);
+      if (!isSafeHistoricalSlug(normalized)) {
+        return NextResponse.json({
+          success: false,
+          error: 'Slug de nodo no seguro o no permitido.'
+        }, { status: 400 });
+      }
     }
 
     const result = saveHistoricalFigureToVault(figure);

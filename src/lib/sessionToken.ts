@@ -1,7 +1,13 @@
-const SESSION_SECRET =
-  process.env.SESSION_SECRET ||
-  process.env.SUPABASE_JWT_SECRET ||
-  'iskool_zerotrust_hmac_secret_2026_institutional_secure_master';
+function getSessionSecret(): string {
+  const secret = process.env.SESSION_SECRET || process.env.SUPABASE_JWT_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('FATAL SECURITY ERROR: process.env.SESSION_SECRET must be configured in production environment.');
+    }
+    return 'dev-test-only-session-secret-not-for-production';
+  }
+  return secret;
+}
 
 export interface SecureSessionPayload {
   id: string;
@@ -73,7 +79,7 @@ export async function signSessionToken(data: {
 
   const enc = new TextEncoder();
   const payloadEncoded = toBase64Url(enc.encode(JSON.stringify(payload)));
-  const key = await getCryptoKey(SESSION_SECRET);
+  const key = await getCryptoKey(getSessionSecret());
   const signatureBytes = await globalThis.crypto.subtle.sign('HMAC', key, enc.encode(payloadEncoded));
   const signature = toBase64Url(new Uint8Array(signatureBytes));
 
@@ -95,7 +101,7 @@ export async function verifySessionToken(token: string): Promise<SecureSessionPa
   try {
     const enc = new TextEncoder();
     const dec = new TextDecoder();
-    const key = await getCryptoKey(SESSION_SECRET);
+    const key = await getCryptoKey(getSessionSecret());
     const signatureBytes = fromBase64Url(signature);
 
     const isValid = await globalThis.crypto.subtle.verify(

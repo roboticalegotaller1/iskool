@@ -15,6 +15,8 @@
     "knowledge:stats": "tsx scripts/knowledge_cli.ts stats",
     "vault:rebuild": "tsx scripts/rebuild-vault-manifest.ts",
     "test:knowledge": "tsx scripts/test_knowledge_vault.ts",
+    "test": "vitest run",
+    "type-check": "tsc --noEmit",
     "test:vitest": "vitest run",
     "test:unit": "vitest run tests/multiTenantAuth.test.ts tests/curriculumFederation.test.ts tests/whiteLabelTheming.test.tsx",
     "test:insights": "vitest run tests/pedagogicalInsights.test.tsx",
@@ -23,8 +25,7 @@
     "test:e2e": "playwright test tests/e2e/ibime-hermetic-isolation.spec.ts",
     "lint:boundaries": "tsx scripts/verify_hermetic_boundaries.ts",
     "compress:assets": "node scripts/batch_image_compressor.js",
-    "guard:push": "node scripts/pre_push_guard.js",
-    "deploy:remotes": "npm run guard:push && git push origin main && git push iskool main && git push duran14 main --force"
+    "guard:push": "node scripts/pre_push_guard.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -38,7 +39,7 @@
     "lucide-react": "^1.17.0",
     "marked": "^18.0.13",
     "msedge-tts": "^2.0.7",
-    "next": "16.2.9",
+    "next": "^16.3.7",
     "pixi.js": "^8.19.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -57,7 +58,7 @@
     "@types/react-dom": "^19",
     "cross-env": "^10.1.0",
     "eslint": "^9",
-    "eslint-config-next": "16.2.9",
+    "eslint-config-next": "^16.3.7",
     "jsdom": "^30.1.1",
     "puppeteer": "^25.5.0",
     "tailwindcss": "^4",

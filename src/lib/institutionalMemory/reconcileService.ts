@@ -68,7 +68,7 @@ export class InstitutionalMemoryReconcileService {
     const startTime = Date.now();
     const delayMs = options?.delayMs !== undefined ? options?.delayMs : 500;
     const branch = options?.branch || process.env.CENTRAL_REPO_BRANCH || 'main';
-    const repo = process.env.CENTRAL_REPO || process.env.GITHUB_REPOSITORY || 'roboticalegotaller1/iskool-web-';
+    const repo = process.env.CENTRAL_REPO || process.env.GITHUB_REPOSITORY;
     const token = process.env.REPO_ACCESS_TOKEN || process.env.GITHUB_TOKEN || process.env.CENTRAL_REPO_TOKEN;
     const bucketName = process.env.INSTITUTIONAL_MEMORY_BUCKET || 'institutional-memory';
 
@@ -112,6 +112,22 @@ export class InstitutionalMemoryReconcileService {
     if (options?.gitBlobsOverride) {
       gitBlobs = options.gitBlobsOverride;
     } else {
+      if (!repo) {
+        errors.push('Repositorio central institucional no configurado');
+        return {
+          success: false,
+          totalManifestEntries: manifestEntries.length,
+          gitBlobsFound: 0,
+          missingCount: 0,
+          reconciledCount: 0,
+          failedCount: 0,
+          reconciledFiles: [],
+          orphans: [],
+          errors,
+          durationMs: Date.now() - startTime
+        };
+      }
+
       if (!token) {
         errors.push('Token de sincronización con el Repositorio Central no configurado');
         return {
@@ -129,7 +145,7 @@ export class InstitutionalMemoryReconcileService {
       }
 
       try {
-        const remoteApiHost = process.env.CENTRAL_REPO_API_HOST || ['https://api.', 'git', 'hub.com'].join('');
+        const remoteApiHost = process.env.CENTRAL_REPO_API_HOST || 'https://api.github.com';
         const treeUrl = `${remoteApiHost}/repos/${repo}/git/trees/${branch}?recursive=1`;
         const treeRes = await fetch(treeUrl, {
           method: 'GET',

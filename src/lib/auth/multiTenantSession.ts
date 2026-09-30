@@ -156,10 +156,16 @@ export const MultiTenantPayloadSchema = z.object({
 // CRIPTOGRAFÍA WEB CON HMAC-SHA256 (EDGE / NODE COMPATIBLE)
 // ============================================================================
 
-const SESSION_SECRET =
-  process.env.SESSION_SECRET ||
-  process.env.SUPABASE_JWT_SECRET ||
-  'iskool_zerotrust_hmac_secret_2026_institutional_secure_master';
+function getSessionSecret(): string {
+  const secret = process.env.SESSION_SECRET || process.env.SUPABASE_JWT_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('FATAL SECURITY ERROR: process.env.SESSION_SECRET must be configured in production environment.');
+    }
+    return 'dev-test-only-session-secret-not-for-production';
+  }
+  return secret;
+}
 
 function toBase64Url(bytes: Uint8Array): string {
   let bin = '';
@@ -246,7 +252,7 @@ export async function signMultiTenantToken(
 
   const enc = new TextEncoder();
   const payloadEncoded = toBase64Url(enc.encode(JSON.stringify(payload)));
-  const key = await getCryptoKey(SESSION_SECRET);
+  const key = await getCryptoKey(getSessionSecret());
   const signatureBytes = await globalThis.crypto.subtle.sign(
     'HMAC',
     key,
@@ -274,7 +280,7 @@ export async function verifyMultiTenantToken(
   try {
     const enc = new TextEncoder();
     const dec = new TextDecoder();
-    const key = await getCryptoKey(SESSION_SECRET);
+    const key = await getCryptoKey(getSessionSecret());
     const signatureBytes = fromBase64Url(signature);
 
     const isValid = await globalThis.crypto.subtle.verify(

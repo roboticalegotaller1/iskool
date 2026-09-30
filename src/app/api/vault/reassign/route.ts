@@ -21,15 +21,6 @@ function getVaultPlanningsDir(): string {
   }
 
   const localProjectPlannings = path.join(process.cwd(), 'planeaciones');
-  if (fs.existsSync(localProjectPlannings)) {
-    return localProjectPlannings;
-  }
-
-  const desktopVault = path.join('C:\\Users\\kami-\\Desktop\\2025-2026\\iskool\\obsidean\\brain\\iskool', 'planeaciones');
-  if (fs.existsSync(desktopVault)) {
-    return desktopVault;
-  }
-
   return localProjectPlannings;
 }
 

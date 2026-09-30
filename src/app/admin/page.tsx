@@ -2051,7 +2051,7 @@ export default function SuperUserAdminPage() {
                       </div>
                       <div className="flex items-center gap-1.5 truncate">
                         <Users className="h-3 w-3 text-slate-400 shrink-0" />
-                        <span className="truncate">BMW Group México, Vanguardia Retail, Innovasoft Tech</span>
+                        <span className="truncate">Nexus Motors México, Vanguardia Retail, Innovasoft Tech</span>
                       </div>
                     </div>
                   </div>

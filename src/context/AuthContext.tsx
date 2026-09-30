@@ -91,7 +91,6 @@ export const getDemoUser = (email: string): UserProfile => {
       last_name: 'Sandoval Morales (Dirección General)',
       role: 'director',
       email: 'directora.general@ibime.edu.mx',
-      temporary_password: 'DIR2026',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -110,7 +109,6 @@ export const getDemoUser = (email: string): UserProfile => {
       last_name: 'Delgado Ríos (Dirección Lagos)',
       role: 'director',
       email: 'directora.lagos@ibime.edu.mx',
-      temporary_password: 'DIR2026',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -130,7 +128,6 @@ export const getDemoUser = (email: string): UserProfile => {
       last_name: 'Ruiz Peralta (Coordinación)',
       role: 'coordinator',
       email: 'coordinacion.academica@ibime.edu.mx',
-      temporary_password: 'CRD2026',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -150,7 +147,6 @@ export const getDemoUser = (email: string): UserProfile => {
       last_name: 'Rivas Corona (Cobranza)',
       role: 'billing',
       email: 'finanzas@ibime.edu.mx',
-      temporary_password: 'COB2026',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -169,7 +165,6 @@ export const getDemoUser = (email: string): UserProfile => {
       last_name: 'Valdés Montes (Consejo Directivo)',
       role: 'owner',
       email: 'dueno@ibime.edu.mx',
-      temporary_password: 'DUE2026',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -189,7 +184,6 @@ export const getDemoUser = (email: string): UserProfile => {
       last_name: 'Mendoza Peña (Docente CCH & STEAM)',
       role: 'teacher',
       email: 'alejandro.mendoza@ibime.edu.mx',
-      temporary_password: 'IBI2026',
       assigned_subjects: ['Biología I-IV (Programa CCH UNAM)', 'Taller de Robótica STEAM & Mecatrónica IBIME'],
       assigned_groups: ['1º Semestre CCH UNAM Montes', '5ºA Primaria Bilingüe Montes'],
       created_at: new Date().toISOString(),
@@ -211,7 +205,6 @@ export const getDemoUser = (email: string): UserProfile => {
       last_name: 'Hernández Ramos (Cambridge English)',
       role: 'teacher',
       email: 'elizabeth.hernandez@ibime.edu.mx',
-      temporary_password: 'IBI2026',
       assigned_subjects: ['Cambridge English (Starters / Movers / Flyers)', 'Formación Humana, Liderazgo & Retórica IBIME'],
       assigned_groups: ['3ºA Primaria Lagos', 'Kínder 3 Bilingüe Lagos'],
       created_at: new Date().toISOString(),
@@ -232,7 +225,6 @@ export const getDemoUser = (email: string): UserProfile => {
       last_name: 'Morales Vaca (Matemáticas & Física)',
       role: 'teacher',
       email: 'fernando.morales@ibime.edu.mx',
-      temporary_password: 'IBI2026',
       assigned_subjects: ['Matemáticas y Razonamiento Lógico', 'Física y Métodos Experimentales'],
       assigned_groups: ['2ºA Secundaria San Cristóbal', '3ºA Secundaria San Cristóbal'],
       created_at: new Date().toISOString(),
@@ -253,7 +245,6 @@ export const getDemoUser = (email: string): UserProfile => {
       last_name: 'Cordero Solís (Cálculo & STEAM)',
       role: 'teacher',
       email: 'sofia.cordero@ibime.edu.mx',
-      temporary_password: 'IBI2026',
       assigned_subjects: ['Taller de Robótica STEAM & Mecatrónica IBIME', 'Matemáticas y Cálculo CCH UNAM'],
       assigned_groups: ['4º Semestre CCH UNAM Coacalco', '1ºA Secundaria Coacalco'],
       created_at: new Date().toISOString(),
@@ -337,7 +328,6 @@ export const getDemoUser = (email: string): UserProfile => {
       role: 'parent',
       email: 'familia.morales@ibime.edu.mx',
       school_id: 'sch-ibime',
-      temporary_password: 'ISkoolPassword2026!',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -360,7 +350,6 @@ export const getDemoUser = (email: string): UserProfile => {
       last_name: 'Weber Schmidt (CEO & VP Manufacturing)',
       role: 'ceo',
       email: 'ceo@bmw-corp.mx',
-      temporary_password: 'BMW2026',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -380,7 +369,6 @@ export const getDemoUser = (email: string): UserProfile => {
       last_name: 'Morales Vega (CEO Retail)',
       role: 'ceo',
       email: 'ceo@vanguardia-retail.mx',
-      temporary_password: 'CEO2026',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -400,7 +388,6 @@ export const getDemoUser = (email: string): UserProfile => {
       last_name: 'Cruz Beltrán (CEO & Founder)',
       role: 'ceo',
       email: 'ceo@innovasoft-tech.com',
-      temporary_password: 'CEO2026',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -420,7 +407,6 @@ export const getDemoUser = (email: string): UserProfile => {
       last_name: 'Garza Hernández (Dirección)',
       role: 'director',
       email: 'director@iskool.edu.mx',
-      temporary_password: 'DIR2026',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -439,7 +425,6 @@ export const getDemoUser = (email: string): UserProfile => {
       last_name: 'Suárez Pérez (Cobranza)',
       role: 'billing',
       email: 'cobranza@iskool.edu.mx',
-      temporary_password: 'COB2026',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -459,7 +444,6 @@ export const getDemoUser = (email: string): UserProfile => {
       last_name: 'Vargas Robles (Dueño de Plantel UP)',
       role: 'owner',
       email: 'dueno@jjrosseau.edu.mx',
-      temporary_password: 'DUE2026',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -535,7 +519,6 @@ export const getDemoUser = (email: string): UserProfile => {
       school_id: liveTeacher.school_id || 'sch-test-case',
       campus_id: liveTeacher.campus_id || 'cmp-test-pri',
       campus_name: liveTeacher.campus_name || 'Primaria Laboratorio Demo',
-      temporary_password: '008805',
       assigned_subjects: liveTeacher.assigned_subjects || ['Matemáticas', 'Robótica'],
       assigned_groups: liveTeacher.assigned_groups || ['1ºA Primaria Demo', '4ºA Primaria Demo']
     };
@@ -550,7 +533,6 @@ export const getDemoUser = (email: string): UserProfile => {
       role: 'parent',
       email: 'israel.lopez@ejemplo.com',
       school_id: 'sch-test-case',
-      temporary_password: 'ISkoolPassword2026!',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -795,14 +777,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   const login = async (email: string, userPassword?: string): Promise<{ success: boolean; user?: UserProfile; error?: string }> => {
+    // 1. Validación de entrada formal (Zero-Trust: rechazo inmediato de credenciales vacías)
+    if (!email || !email.trim() || !userPassword || !userPassword.trim()) {
+      return {
+        success: false,
+        error: 'Credenciales inválidas. Por favor ingrese correo y contraseña.'
+      };
+    }
+
     setLoading(true);
-    const resolvedUser = getDemoUser(email);
+    const cleanEmail = email.trim().toLowerCase();
+    const resolvedUser = getDemoUser(cleanEmail);
     
     if (resolvedUser.is_blocked) {
       setLoading(false);
       return { 
         success: false, 
-        error: '⛔ Esta cuenta ha sido bloqueada o cancelada por la Dirección Escolar en el Portal de Super Usuario.' 
+        error: '⛔ Esta cuenta ha sido inhabilitada por la Dirección Escolar.' 
       };
     }
 
@@ -817,11 +808,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let userSchoolId = resolvedUser.school_id;
       if (!userSchoolId) {
         const adminStore = useSchoolAdminStore.getState();
-        const std = (adminStore.detailedStudents || []).find(s => s.id === resolvedUser.id || s.email?.toLowerCase() === email.toLowerCase());
+        const std = (adminStore.detailedStudents || []).find(s => s.id === resolvedUser.id || s.email?.toLowerCase() === cleanEmail);
         if (std) userSchoolId = std.school_id;
-        const tch = (adminStore.teachersList || []).find(t => t.id === resolvedUser.id || t.email?.toLowerCase() === email.toLowerCase());
+        const tch = (adminStore.teachersList || []).find(t => t.id === resolvedUser.id || t.email?.toLowerCase() === cleanEmail);
         if (tch) userSchoolId = tch.school_id;
-        const stf = (adminStore.staffUsers || []).find(s => s.id === resolvedUser.id || s.email?.toLowerCase() === email.toLowerCase());
+        const stf = (adminStore.staffUsers || []).find(s => s.id === resolvedUser.id || s.email?.toLowerCase() === cleanEmail);
         if (stf) userSchoolId = stf.school_id;
       }
 
@@ -835,80 +826,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(false);
         return {
           success: false,
-          error: 'cuenta inhabilitada favor de ponerse en contacto con el administrador del colegio'
+          error: 'Cuenta inhabilitada. Favor de ponerse en contacto con el administrador del colegio.'
         };
       }
     }
-
-    if (userPassword && userPassword.trim().length > 0) {
-      const isTeacherSeed = resolvedUser.role === 'teacher' && (resolvedUser.id === 'usr-teacher-1' || resolvedUser.email === TEACHER_SEED.email);
-      const isSuperUser = resolvedUser.role === 'admin' || resolvedUser.role === 'superadmin' || resolvedUser.id.startsWith('usr-superadmin') || resolvedUser.id === 'usr-admin-1';
-      
-      if (isSuperUser && userPassword !== '008805' && userPassword !== 'ISkoolPassword2026!') {
-        setLoading(false);
-        return {
-          success: false,
-          error: 'Contraseña incorrecta para Super Usuario ISkool. Introduce la clave asignada (008805).'
-        };
-      }
-
-      if (isTeacherSeed && userPassword !== '008805' && userPassword !== 'ISkoolPassword2026!') {
-        setLoading(false);
-        return {
-          success: false,
-          error: 'Contraseña incorrecta. Introduce la clave asignada (008805).'
-        };
-      }
-
-      const isBmwCeo = resolvedUser.id === 'usr-ceo-bmw' || resolvedUser.email === 'ceo@bmw-corp.mx';
-      const isBmwPassMatch = isBmwCeo && (userPassword === 'BMW2026' || userPassword === 'BMW2026!' || userPassword === 'CEO2026' || userPassword === 'CEO2026!');
-
-      const isVentasCeo = resolvedUser.id === 'usr-ceo-ventas' || resolvedUser.email === 'ceo@vanguardia-retail.mx';
-      const isVentasPassMatch = isVentasCeo && (userPassword === 'RETAIL2026' || userPassword === 'RETAIL2026!' || userPassword === 'CEO2026' || userPassword === 'CEO2026!');
-
-      if (!isBmwPassMatch && !isVentasPassMatch && resolvedUser.temporary_password && 
-          userPassword !== resolvedUser.temporary_password && 
-          userPassword !== 'ISkoolPassword2026!' && 
-          userPassword !== '008805') {
-        setLoading(false);
-        return {
-          success: false,
-          error: `Contraseña incorrecta para ${resolvedUser.first_name}. Introduce tu clave asignada (${resolvedUser.temporary_password}).`
-        };
-      }
-    }
-
-    const password = userPassword || 'ISkoolPassword2026!';
 
     try {
-      // 1. Intentar autenticación remota con límite estricto de 1.2s para no bloquear al usuario
-      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 1200));
-      const signInPromise = supabase.auth.signInWithPassword({ email, password }).catch(() => null);
-      const signInResult: any = await Promise.race([signInPromise, timeoutPromise]);
-      
-      let userObj: any = null;
-      let sessionObj: any = null;
+      // 2. Autenticación criptográfica exclusiva con Supabase Auth (Sin bypasses ni contraseñas maestras)
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password: userPassword
+      });
 
-      if (signInResult && !signInResult.error && signInResult.data?.user) {
-        userObj = signInResult.data.user;
-        sessionObj = signInResult.data.session;
-      } else {
-        // Modo libre inmediato: Si falla o da timeout, entrar de forma fluida con el perfil resuelto
-        userObj = {
-          id: resolvedUser.id,
-          email: resolvedUser.email,
-          created_at: resolvedUser.created_at,
-          user_metadata: {
-            first_name: resolvedUser.first_name,
-            last_name: resolvedUser.last_name,
-            role: resolvedUser.role
-          }
-        };
-        sessionObj = {
-          access_token: 'mock-token-free-access-session',
-          user: userObj
+      if (error || !data.user || !data.session) {
+        setLoading(false);
+        return {
+          success: false,
+          error: 'Credenciales incorrectas o error en el inicio de sesión.'
         };
       }
+
+      const userObj = data.user;
+      const sessionObj = data.session;
 
       let finalUser: UserProfile = {
         id: userObj.id,
@@ -921,67 +860,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updated_at: new Date().toISOString()
       };
 
-      if (finalUser.id === 'usr-teacher-1' || finalUser.id === 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a55' || (finalUser.email && finalUser.email.toLowerCase().includes('israel.lopez') && finalUser.role === 'teacher')) {
-        const liveTeacher = (useSchoolAdminStore.getState().teachersList || []).find(t => t.id === 'usr-teacher-1') || TEACHER_SEED;
-        finalUser = {
-          ...finalUser,
-          ...liveTeacher,
-          school_id: liveTeacher.school_id || 'sch-test-case',
-          campus_id: liveTeacher.campus_id || 'cmp-test-pri',
-          campus_name: liveTeacher.campus_name || 'Primaria Laboratorio Demo',
-          email: 'israel.lopez@sandbox.iskool.edu.mx'
-        };
-      }
-
       setSession(sessionObj);
       setUser(finalUser);
       
-      // Sincronización en Cookie HttpOnly perimetral (Zero-Trust) con timeout de 800ms
+      // Sincronización en Cookie HttpOnly perimetral (Zero-Trust)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('iskool_session_user');
         localStorage.removeItem('auth_current_user');
-        const sessionPost = fetch('/api/auth/session', {
+        await fetch('/api/auth/session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(finalUser)
         }).catch(() => null);
-        const fetchTimeout = new Promise((resolve) => setTimeout(resolve, 800));
-        await Promise.race([sessionPost, fetchTimeout]);
       }
       useSchoolAdminStore.getState().syncUserSchool(finalUser);
 
       setLoading(false);
       return { success: true, user: finalUser };
     } catch (err: any) {
-      console.warn("Acceso libre activado de contingencia:", err);
-      setUser(resolvedUser);
-      
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('iskool_session_user');
-        localStorage.removeItem('auth_current_user');
-        const sessionPost = fetch('/api/auth/session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(resolvedUser)
-        }).catch(() => null);
-        const fetchTimeout = new Promise((resolve) => setTimeout(resolve, 800));
-        await Promise.race([sessionPost, fetchTimeout]);
-      }
-      useSchoolAdminStore.getState().syncUserSchool(resolvedUser);
-      setSession({
-        access_token: 'mock-token-free-access-contingency',
-        user: {
-          id: resolvedUser.id,
-          email: resolvedUser.email,
-          user_metadata: {
-            first_name: resolvedUser.first_name,
-            last_name: resolvedUser.last_name,
-            role: resolvedUser.role
-          }
-        }
-      });
       setLoading(false);
-      return { success: true, user: resolvedUser };
+      return {
+        success: false,
+        error: 'Error en el servicio de autenticación. Intente más tarde.'
+      };
     }
   };
 

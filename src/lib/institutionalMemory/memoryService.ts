@@ -106,10 +106,14 @@ export class InstitutionalMemoryService {
       return { synced: false, error: 'Token de sincronización institucional no configurado; conmutado a Cloud Storage' };
     }
 
-    const repo = process.env.CENTRAL_REPO || process.env.GITHUB_REPOSITORY || 'roboticalegotaller1/iskool-web-';
+    const repo = process.env.CENTRAL_REPO || process.env.GITHUB_REPOSITORY;
+    if (!repo) {
+      console.warn('[Memoria Institucional GitOps] Repositorio central institucional no configurado. Persistiendo exclusivamente en almacenamiento oficial.');
+      return { synced: false, error: 'Repositorio central institucional no configurado; conmutado a Cloud Storage oficial' };
+    }
     const branch = process.env.CENTRAL_REPO_BRANCH || 'main';
     const sanitizedPath = params.relativeRepoPath.replace(/\\/g, '/');
-    const remoteApiHost = process.env.CENTRAL_REPO_API_HOST || ['https://api.', 'git', 'hub.com'].join('');
+    const remoteApiHost = process.env.CENTRAL_REPO_API_HOST || 'https://api.github.com';
     const apiUrl = `${remoteApiHost}/repos/${repo}/contents/${sanitizedPath}`;
 
     // Prevención de Bucles de Build en AWS Amplify: commit message con [skip ci] [amplify skip]

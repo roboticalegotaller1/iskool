@@ -576,28 +576,20 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
     setIsSubmitting(true);
     
     try {
-      const loginPromise = login(email.trim(), password);
-      const timeoutPromise = new Promise<{ success: boolean; user?: any; error?: string }>((resolve) =>
-        setTimeout(() => {
-          const fallback = getDemoUser(email.trim());
-          resolve({ success: true, user: fallback });
-        }, 1800)
-      );
-
-      const result = await Promise.race([loginPromise, timeoutPromise]);
+      const result = await login(email.trim(), password);
       if (result.success && result.user) {
         await routeUserByRole(result.user);
       } else {
         setErrorMsg(
           result.error || 
-          'No se pudo autenticar la cuenta. Comprueba que tus datos sean correctos o contacta al administrador de tu plantel.'
+          'Credenciales incorrectas o error en el inicio de sesión.'
         );
         setIsSubmitting(false);
       }
     } catch (err: any) {
       setErrorMsg(
         err.message || 
-        'Hubo un problema temporal de comunicación. Por favor verifica tu conexión y vuelve a intentar.'
+        'Hubo un problema de comunicación con el servicio de autenticación.'
       );
       setIsSubmitting(false);
     }
@@ -611,15 +603,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
     setIsSubmitting(true);
 
     try {
-      const loginPromise = login(demo.email, pass);
-      const timeoutPromise = new Promise<{ success: boolean; user?: any; error?: string }>((resolve) =>
-        setTimeout(() => {
-          const fallback = getDemoUser(demo.email);
-          resolve({ success: true, user: fallback });
-        }, 1800)
-      );
-
-      const result = await Promise.race([loginPromise, timeoutPromise]);
+      const result = await login(demo.email, pass);
       if (result.success && result.user) {
         await routeUserByRole(result.user);
       } else {

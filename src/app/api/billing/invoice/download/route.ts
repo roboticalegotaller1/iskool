@@ -6,12 +6,12 @@ export async function GET(req: NextRequest) {
   const receiptId = req.nextUrl.searchParams.get('receipt_id') || 'REC-2026-08102';
   const format = req.nextUrl.searchParams.get('format') || 'xml'; // 'xml' | 'pdf'
   const uuid = req.nextUrl.searchParams.get('uuid') || '4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D';
-  const rfcReceptor = req.nextUrl.searchParams.get('rfc') || 'LOAI840512AB3';
-  const taxName = req.nextUrl.searchParams.get('tax_name') || 'ISRAEL LOPEZ ANGELES';
+  const rfcReceptor = req.nextUrl.searchParams.get('rfc') || 'XAXX010101000';
+  const taxName = req.nextUrl.searchParams.get('tax_name') || 'PÚBLICO EN GENERAL';
   const amount = Number(req.nextUrl.searchParams.get('amount')) || 3450.00;
   const concept = req.nextUrl.searchParams.get('concept') || 'Colegiatura Mensual Septiembre 2026';
-  const studentName = req.nextUrl.searchParams.get('student') || 'Mateo López Mendoza';
-  const curp = req.nextUrl.searchParams.get('curp') || 'LOMA080912HDFZNS01';
+  const studentName = req.nextUrl.searchParams.get('student') || 'Mateo González Mendoza';
+  const curp = req.nextUrl.searchParams.get('curp') || 'AAAA000101HDFZNS01';
   const level = req.nextUrl.searchParams.get('level') || 'Secundaria';
   const rvoe = req.nextUrl.searchParams.get('rvoe') || 'SEP-RVOE-2024-SEC-098';
 

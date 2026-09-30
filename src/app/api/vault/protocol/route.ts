@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { validateApiAuth } from '@/lib/authValidator';
 
 /**
  * Endpoint de Sincronización y Persistencia de Protocolos y Directivas Institucionales
@@ -9,6 +10,16 @@ import path from 'path';
  */
 export async function POST(request: NextRequest) {
   try {
+    const auth = await validateApiAuth(request);
+    if (!auth.authenticated || !auth.user) {
+      return NextResponse.json({ success: false, error: 'No autorizado. Se requiere sesión activa.' }, { status: 401 });
+    }
+
+    const allowedRoles = ['admin', 'superadmin', 'director', 'coordinator', 'owner', 'ceo'];
+    if (!auth.user.role || !allowedRoles.includes(auth.user.role)) {
+      return NextResponse.json({ success: false, error: 'Prohibido: Rol no autorizado para editar protocolos directivos.' }, { status: 403 });
+    }
+
     const body = await request.json();
     const {
       id,
@@ -27,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Directorio de protocolos en la Bóveda Curricular
-    const protocolsDir = path.join(process.cwd(), 'planeaciones', 'Protocolos_Institucionales');
+    const protocolsDir = path.resolve(process.cwd(), 'planeaciones', 'Protocolos_Institucionales');
     if (!fs.existsSync(protocolsDir)) {
       fs.mkdirSync(protocolsDir, { recursive: true });
     }
@@ -39,7 +50,11 @@ export async function POST(request: NextRequest) {
       .replace(/[^a-zA-Z0-9_-]/g, '_')
       .replace(/_+/g, '_');
 
-    const filePath = path.join(protocolsDir, `${safeFilename}.md`);
+    const filePath = path.resolve(protocolsDir, `${safeFilename}.md`);
+    if (!filePath.startsWith(protocolsDir)) {
+      return NextResponse.json({ success: false, error: 'Ruta de archivo no permitida' }, { status: 400 });
+    }
+
     const dateStr = new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' });
 
     const kpisYaml = Array.isArray(kpis) && kpis.length > 0
@@ -93,6 +108,16 @@ ${content.trim() || summary.trim()}
 
 export async function DELETE(request: NextRequest) {
   try {
+    const auth = await validateApiAuth(request);
+    if (!auth.authenticated || !auth.user) {
+      return NextResponse.json({ success: false, error: 'No autorizado. Se requiere sesión activa.' }, { status: 401 });
+    }
+
+    const allowedRoles = ['admin', 'superadmin', 'director', 'coordinator', 'owner', 'ceo'];
+    if (!auth.user.role || !allowedRoles.includes(auth.user.role)) {
+      return NextResponse.json({ success: false, error: 'Prohibido: Rol no autorizado para eliminar protocolos.' }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const title = searchParams.get('title');
     if (!title) {
@@ -106,7 +131,13 @@ export async function DELETE(request: NextRequest) {
       .replace(/[^a-zA-Z0-9_-]/g, '_')
       .replace(/_+/g, '_');
 
-    const filePath = path.join(process.cwd(), 'planeaciones', 'Protocolos_Institucionales', `${safeFilename}.md`);
+    const protocolsDir = path.resolve(process.cwd(), 'planeaciones', 'Protocolos_Institucionales');
+    const filePath = path.resolve(protocolsDir, `${safeFilename}.md`);
+
+    if (!filePath.startsWith(protocolsDir)) {
+      return NextResponse.json({ success: false, error: 'Ruta no permitida' }, { status: 400 });
+    }
+
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
