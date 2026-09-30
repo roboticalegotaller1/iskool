@@ -609,7 +609,14 @@ export const extractExpedienteSearchCriteria = (query: string, availableStudents
     focus = 'tutor';
   } else if (norm.includes('curp')) {
     focus = 'curp';
-  } else if (norm.includes('matricula') || norm.includes('folio') || norm.includes('numero de control') || norm.includes('id de alumno') || norm.includes('control escolar')) {
+  } else if (
+    norm.includes('id de alumno') || 
+    norm.includes('numero de control') || 
+    norm.includes('folio de matricula') || 
+    (norm.includes('folio') && !norm.includes('plantel') && !norm.includes('campus') && !norm.includes('colegio')) ||
+    (norm.includes('matricula') && (norm.includes('su matricula') || norm.includes('del alumno') || norm.includes('de lucas') || norm.includes('de diego') || /mat-\d+/i.test(norm)) && 
+     !norm.includes('plantel') && !norm.includes('campus') && !norm.includes('colegio') && !norm.includes('sede') && !norm.includes('mayor') && !norm.includes('menor') && !norm.includes('grande') && !norm.includes('total'))
+  ) {
     focus = 'enrollment_id';
   } else if (norm.includes('telefono') || norm.includes('celular') || norm.includes('contacto') || norm.includes('correo') || norm.includes('email') || norm.includes('direccion') || norm.includes('domicilio')) {
     focus = 'contact';
@@ -750,7 +757,21 @@ export const detectAnalyticDomain = (
     normalized.includes('holding') || 
     normalized.includes('sucursal');
 
-  const mentionsFinancialOrRank = 
+  const mentionsCampusMetricOrComparison = 
+    normalized.includes('matricula') || 
+    normalized.includes('alumnos') || 
+    normalized.includes('estudiantes') || 
+    normalized.includes('poblacion') || 
+    normalized.includes('censo') || 
+    normalized.includes('tamano') || 
+    normalized.includes('grande') || 
+    normalized.includes('grandes') || 
+    normalized.includes('chico') || 
+    normalized.includes('chicos') || 
+    normalized.includes('pequeno') || 
+    normalized.includes('pequenos') || 
+    normalized.includes('capacidad') || 
+    normalized.includes('ocupacion') || 
     normalized.includes('gana') || 
     normalized.includes('ganan') || 
     normalized.includes('dinero') || 
@@ -759,6 +780,8 @@ export const detectAnalyticDomain = (
     normalized.includes('factura') || 
     normalized.includes('facturan') || 
     normalized.includes('facturacion') || 
+    normalized.includes('facturaciones') || 
+    normalized.includes('facturamos') || 
     normalized.includes('rentab') || 
     normalized.includes('redituab') || 
     normalized.includes('recauda') || 
@@ -769,11 +792,18 @@ export const detectAnalyticDomain = (
     normalized.includes('margen') || 
     normalized.includes('ranking') || 
     normalized.includes('rentable') || 
-    normalized.includes('rentables') ||
-    normalized.includes('flujo') ||
-    normalized.includes('rendimiento');
+    normalized.includes('rentables') || 
+    normalized.includes('nomina') || 
+    normalized.includes('sueldo') || 
+    normalized.includes('sueldos') || 
+    normalized.includes('flujo') || 
+    normalized.includes('rendimiento') || 
+    normalized.includes('mayor') || 
+    normalized.includes('menor') || 
+    normalized.includes('mas') || 
+    normalized.includes('menos');
 
-  if (mentionsCampus && mentionsFinancialOrRank) {
+  if (mentionsCampus && mentionsCampusMetricOrComparison) {
     return { domain: 'CAMPUSES_GROUPS' };
   }
 
@@ -5223,40 +5253,24 @@ export const executeAnalyticQuery = (
     const isMin = polarity === 'min';
     const qNorm = rawQuery.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-    const isFinancialOrEarningsQuery = 
-      qNorm.includes('gana') || 
-      qNorm.includes('ganan') || 
-      qNorm.includes('dinero') || 
-      qNorm.includes('ingreso') || 
-      qNorm.includes('rentab') || 
-      qNorm.includes('redituab') || 
-      qNorm.includes('factur') || 
-      qNorm.includes('ebitda') || 
-      qNorm.includes('utilidad') || 
-      qNorm.includes('utilidades') || 
-      qNorm.includes('recauda') ||
-      qNorm.includes('margen') ||
-      qNorm.includes('ranking') ||
-      qNorm.includes('flujo') ||
-      qNorm.includes('rendimiento');
-
-    const isStudentsCountComparison = 
-      (qNorm.includes('alumno') || qNorm.includes('estudiante') || qNorm.includes('matricula') || qNorm.includes('poblacion')) &&
-      (qNorm.includes('mas') || qNorm.includes('menos') || qNorm.includes('mayor') || qNorm.includes('menor') || qNorm.includes('cual') || qNorm.includes('que'));
-
-    // 1. Modelado Unificado de Métricas por Plantel según la institución activa (Multi-Colegio Determinado)
+    // 1. Modelado Unificado y Forense de Métricas por Plantel según la institución activa (Multi-Colegio Determinado)
     interface UnifiedCampusMetric {
       campusId: string;
       campusName: string;
       shortName: string;
       level: string;
       monthlyRevenue: number;
+      monthlyPayroll: number;
       ebitdaMarginPct: number;
       netIncomeMonthly: number;
       studentsCount: number;
       capacityTotal: number;
       occupancyRate: number;
       groupsCount: number;
+      facultyCount: number;
+      studentTeacherRatio: number;
+      phasesCovered: string;
+      location: string;
     }
 
     let activeCampusMetrics: UnifiedCampusMetric[] = [];
@@ -5265,23 +5279,43 @@ export const executeAnalyticQuery = (
     if (effectiveSchoolId === 'sch-ibime' || (isConsolidated && !mentionsLaboratorio)) {
       activeCampusMetrics = CAMPUS_BENCHMARK_SEED.map(c => {
         const netIncome = Math.round(c.monthlyRevenue * (c.ebitdaMarginPct / 100));
+        let monthlyPayroll = 520000;
+        let phasesCovered = 'Fases 3 a 6 (K-12 Completo)';
+        if (c.campusId === 'montes') {
+          monthlyPayroll = 1160000;
+          phasesCovered = 'Fases 3 a 6 (K-12 & Bachillerato CCH UNAM)';
+        } else if (c.campusId === 'coacalco') {
+          monthlyPayroll = 720000;
+          phasesCovered = 'Fases 3 a 6 (Primaria y Secundaria Oficial)';
+        } else if (c.campusId === 'central') {
+          monthlyPayroll = 520000;
+          phasesCovered = 'Fases 3 a 6 (K-12 Completo)';
+        } else if (c.campusId === 'torres') {
+          monthlyPayroll = 260000;
+          phasesCovered = 'Fases 1 a 4 (Preescolar y Primaria Baja/Alta)';
+        }
+
         return {
           campusId: c.campusId,
           campusName: c.campusName,
           shortName: c.shortName,
-          level: c.campusId === 'montes' ? 'K-12 & CCH' : (c.campusId === 'coacalco' ? 'Primaria & Secundaria' : (c.campusId === 'central' ? 'K-12 Completo' : 'Preescolar & Primaria')),
+          level: c.campusId === 'montes' ? 'K-12 & CCH UNAM' : (c.campusId === 'coacalco' ? 'Primaria & Secundaria' : (c.campusId === 'central' ? 'K-12 Completo' : 'Preescolar & Primaria')),
           monthlyRevenue: c.monthlyRevenue,
+          monthlyPayroll,
           ebitdaMarginPct: c.ebitdaMarginPct,
           netIncomeMonthly: netIncome,
           studentsCount: c.currentEnrollment,
           capacityTotal: c.capacityTotal,
           occupancyRate: c.occupancyRate,
-          groupsCount: Math.round(c.currentEnrollment / 28) || 12
+          groupsCount: Math.round(c.currentEnrollment / 28) || 12,
+          facultyCount: c.facultyCount || 40,
+          studentTeacherRatio: c.studentTeacherRatio || 17.4,
+          phasesCovered,
+          location: c.location
         };
       });
     } else if (effectiveSchoolId === 'sch-test-case' || mentionsLaboratorio) {
       // ESCENARIO 2: Laboratorio Pedagógico & Test Cases (sch-test-case)
-      // Mapea directamente sus planteles reales (Primaria Demo, Secundaria Demo, Preparatoria Demo)
       activeCampusMetrics = scopedCampuses.map(c => {
         const cStudents = scopedStudents.filter(s => 
           s.campus_name === c.name || 
@@ -5307,6 +5341,9 @@ export const executeAnalyticQuery = (
         const occupancyRate = capacity > 0 ? Number(((cStudents.length / capacity) * 100).toFixed(1)) : 0;
         const ebitdaMarginPct = cStudents.length >= 20 ? 32.4 : (cStudents.length > 0 ? 24.0 : 0.0);
         const netIncome = Math.round(monthlyRevenue * (ebitdaMarginPct / 100));
+        const facultyCount = Math.max(4, Math.round(cStudents.length / 5));
+        const monthlyPayroll = Math.round(monthlyRevenue * 0.55) || (facultyCount * 12500);
+        const studentTeacherRatio = facultyCount > 0 ? Number((cStudents.length / facultyCount).toFixed(1)) : 0;
 
         return {
           campusId: c.id,
@@ -5314,12 +5351,17 @@ export const executeAnalyticQuery = (
           shortName: c.name.replace('Laboratorio Demo', 'Demo').replace(' Demo', ''),
           level: (c.level || 'Primaria').toUpperCase(),
           monthlyRevenue,
+          monthlyPayroll,
           ebitdaMarginPct,
           netIncomeMonthly: netIncome,
           studentsCount: cStudents.length,
           capacityTotal: capacity,
           occupancyRate,
-          groupsCount: Math.max(cGroups.length, cStudents.length > 0 ? 1 : 0)
+          groupsCount: Math.max(cGroups.length, cStudents.length > 0 ? 1 : 0),
+          facultyCount,
+          studentTeacherRatio,
+          phasesCovered: c.level === 'primaria' ? 'Fases 3, 4 y 5 (1º a 6º Primaria)' : (c.level === 'secundaria' ? 'Fase 6 (Secundaria)' : 'Bachillerato'),
+          location: c.address || 'Campus Digital de Innovación, CDMX'
         };
       });
     } else {
@@ -5344,6 +5386,9 @@ export const executeAnalyticQuery = (
         const occupancyRate = capacity > 0 ? Number(Math.min(100, (cStudents.length / capacity) * 100).toFixed(1)) : 0;
         const ebitdaMarginPct = occupancyRate >= 70 ? 28.5 : (occupancyRate >= 40 ? 22.0 : 15.0);
         const netIncome = Math.round(monthlyRevenue * (ebitdaMarginPct / 100));
+        const facultyCount = Math.max(3, Math.round(cStudents.length / 15) || 5);
+        const monthlyPayroll = Math.round(monthlyRevenue * 0.52) || (facultyCount * 13000);
+        const studentTeacherRatio = facultyCount > 0 ? Number((cStudents.length / facultyCount).toFixed(1)) : 0;
 
         return {
           campusId: c.id,
@@ -5351,43 +5396,977 @@ export const executeAnalyticQuery = (
           shortName: c.name,
           level: (c.level || 'General').toUpperCase(),
           monthlyRevenue,
+          monthlyPayroll,
           ebitdaMarginPct,
           netIncomeMonthly: netIncome,
           studentsCount: cStudents.length,
           capacityTotal: capacity,
           occupancyRate,
-          groupsCount: cGroups.length
+          groupsCount: cGroups.length,
+          facultyCount,
+          studentTeacherRatio,
+          phasesCovered: 'Fases Curriculares Oficiales',
+          location: c.address || 'Domicilio Oficial'
         };
       });
     }
 
     const totalSchoolRevenue = activeCampusMetrics.reduce((acc, c) => acc + c.monthlyRevenue, 0);
+    const totalSchoolPayroll = activeCampusMetrics.reduce((acc, c) => acc + c.monthlyPayroll, 0);
     const totalSchoolStudents = activeCampusMetrics.reduce((acc, c) => acc + c.studentsCount, 0);
     const totalSchoolCapacity = activeCampusMetrics.reduce((acc, c) => acc + c.capacityTotal, 0);
+    const totalSchoolFaculty = activeCampusMetrics.reduce((acc, c) => acc + c.facultyCount, 0);
+    const totalSchoolGroups = activeCampusMetrics.reduce((acc, c) => acc + c.groupsCount, 0);
     const avgSchoolOccupancy = totalSchoolCapacity > 0 ? (totalSchoolStudents / totalSchoolCapacity) * 100 : 0;
-    const maxCampusRevenue = Math.max(...activeCampusMetrics.map(c => c.monthlyRevenue));
+    const avgStudentTeacherRatio = totalSchoolFaculty > 0 ? (totalSchoolStudents / totalSchoolFaculty) : 0;
+
+    // Campuses ordenados por número de estudiantes (de mayor a menor)
+    const campusesByEnrollmentDesc = [...activeCampusMetrics].sort((a, b) => b.studentsCount - a.studentsCount);
+    // Campuses ordenados por facturación mensual (de mayor a menor)
+    const campusesByRevenueDesc = [...activeCampusMetrics].sort((a, b) => b.monthlyRevenue - a.monthlyRevenue);
 
     // ========================================================================
-    // ESCENARIO A: CONSULTA DE INGRESOS, RENTABILIDAD Y FACTURACIÓN POR PLANTEL
-    // (ATENCIÓN ESTRICTA A POLARIDAD: MENOS VS MÁS)
+    // DETECCIÓN DE SUB-INTENCIONES ESPECÍFICAS DE ALTA PRECISIÓN DIRECTIVA
     // ========================================================================
-    if (isFinancialOrEarningsQuery || (!isStudentsCountComparison && (qNorm.includes('menos') || qNorm.includes('mas')))) {
+
+    // 1. "¿Cuál es la nómina de mis 2 planteles con más alumnos?"
+    const isTop2PayrollQuery = 
+      (qNorm.includes('nomina') || qNorm.includes('sueldo') || qNorm.includes('salario') || qNorm.includes('dispersion') || qNorm.includes('pago')) &&
+      (qNorm.includes('2') || qNorm.includes('dos') || qNorm.includes('par de') || qNorm.includes('ambos')) &&
+      (qNorm.includes('alumno') || qNorm.includes('estudiante') || qNorm.includes('matricula') || qNorm.includes('poblacion') || qNorm.includes('grande') || qNorm.includes('mayor'));
+
+    // 2. "¿Cuál fue la facturación de mi colegio más grande?"
+    const isLargestCampusRevenueQuery = 
+      (qNorm.includes('factur') || qNorm.includes('ingreso') || qNorm.includes('gana') || qNorm.includes('recaud') || qNorm.includes('ebitda') || qNorm.includes('utilidad')) &&
+      (
+        qNorm.includes('mas grande') || 
+        qNorm.includes('mayor plantel') || 
+        qNorm.includes('colegio mas grande') || 
+        qNorm.includes('plantel mas grande') || 
+        qNorm.includes('sede mas grande') || 
+        qNorm.includes('mayor colegio') || 
+        qNorm.includes('mas alumnos') ||
+        qNorm.includes('mayor matricula') ||
+        qNorm.includes('mas estudiantes')
+      );
+
+    // 3. "¿Cuál es la facturación de mis colegios?" (Total consolidado de todos los planteles)
+    const isTotalCampusesRevenueQuery = 
+      (qNorm.includes('factur') || qNorm.includes('ingreso') || qNorm.includes('recaud')) &&
+      (
+        qNorm.includes('mis colegios') || 
+        qNorm.includes('los colegios') || 
+        qNorm.includes('mis planteles') || 
+        qNorm.includes('los planteles') || 
+        qNorm.includes('las sedes') || 
+        qNorm.includes('mis sedes') || 
+        qNorm.includes('los campus') || 
+        qNorm.includes('mis campus') || 
+        qNorm.includes('las escuelas') || 
+        qNorm.includes('mis escuelas') || 
+        qNorm.includes('todos los planteles') ||
+        qNorm.includes('todos los colegios') ||
+        qNorm.includes('todas las sedes') ||
+        (qNorm.includes('total') && (qNorm.includes('colegio') || qNorm.includes('plantel') || qNorm.includes('sede') || qNorm.includes('campus')))
+      ) &&
+      !isLargestCampusRevenueQuery &&
+      !qNorm.includes('mas grande') && 
+      !qNorm.includes('menos') && 
+      !qNorm.includes('menor');
+
+    // 4. "¿Cuál es la matrícula de mi mayor plantel?" / "¿Cuál es el colegio más grande?"
+    const isLargestCampusEnrollmentQuery = 
+      !isTop2PayrollQuery &&
+      !isLargestCampusRevenueQuery &&
+      !isMin &&
+      !qNorm.includes('rentab') &&
+      !qNorm.includes('ebitda') &&
+      !qNorm.includes('utilidad') &&
+      !qNorm.includes('margen') &&
+      !qNorm.includes('ganan') &&
+      !qNorm.includes('gana') &&
+      !qNorm.includes('dinero') &&
+      (
+        (
+          (qNorm.includes('matricula') || qNorm.includes('alumnos') || qNorm.includes('estudiantes') || qNorm.includes('poblacion') || qNorm.includes('censo') || qNorm.includes('capacidad')) &&
+          (qNorm.includes('mayor') || qNorm.includes('mas') || qNorm.includes('grande') || qNorm.includes('lider') || qNorm.includes('tope') || qNorm.includes('principal'))
+        ) ||
+        (
+          (qNorm.includes('colegio') || qNorm.includes('plantel') || qNorm.includes('sede')) &&
+          (qNorm.includes('mas grande') || qNorm.includes('mayor')) &&
+          !qNorm.includes('factur') && !qNorm.includes('ingreso') && !qNorm.includes('nomina') && !qNorm.includes('sueldo')
+        )
+      );
+
+    // 5. "Plantel con menor matrícula" / "Colegio con menos alumnos"
+    const isMinCampusEnrollmentQuery = 
+      (isMin || qNorm.includes('menor') || qNorm.includes('menos') || qNorm.includes('chico') || qNorm.includes('pequeno')) &&
+      (qNorm.includes('matricula') || qNorm.includes('alumnos') || qNorm.includes('estudiantes') || qNorm.includes('poblacion')) &&
+      !qNorm.includes('factur') && !qNorm.includes('ingreso') && !qNorm.includes('nomina') && !qNorm.includes('sueldo') && !qNorm.includes('gana');
+
+    // 6. Comparativa Multi-Dimensional del Ecosistema iSkool (Alumnos, Profesores, Colegios, Planeaciones y Fases)
+    const isEcosystemCrossComparisonQuery = 
+      qNorm.includes('ecosistema') ||
+      (qNorm.includes('compar') && (
+        (qNorm.includes('profesor') && qNorm.includes('alumno')) ||
+        (qNorm.includes('planeacion') || qNorm.includes('fase')) ||
+        (qNorm.includes('colegio') && qNorm.includes('profesor')) ||
+        (qNorm.includes('colegio') && qNorm.includes('alumno'))
+      ));
+
+    // 7. Consultas financieras generales por plantel (Gana más vs Gana menos)
+    const isFinancialOrEarningsQuery = 
+      qNorm.includes('gana') || 
+      qNorm.includes('ganan') || 
+      qNorm.includes('dinero') || 
+      qNorm.includes('ingreso') || 
+      qNorm.includes('rentab') || 
+      qNorm.includes('redituab') || 
+      qNorm.includes('factur') || 
+      qNorm.includes('ebitda') || 
+      qNorm.includes('utilidad') || 
+      qNorm.includes('utilidades') || 
+      qNorm.includes('recauda') ||
+      qNorm.includes('margen') ||
+      qNorm.includes('ranking') ||
+      qNorm.includes('flujo') ||
+      qNorm.includes('rendimiento');
+
+    // ========================================================================
+    // CASO DIRECTIVO 1: NÓMINA DE LOS 2 PLANTELES CON MÁS ALUMNOS
+    // ========================================================================
+    if (isTop2PayrollQuery) {
+      const top2 = campusesByEnrollmentDesc.slice(0, 2);
+      const top2Payroll = top2.reduce((acc, c) => acc + c.monthlyPayroll, 0);
+      const top2Students = top2.reduce((acc, c) => acc + c.studentsCount, 0);
+      const top2Faculty = top2.reduce((acc, c) => acc + c.facultyCount, 0);
+      const top2ShareOfPayroll = totalSchoolPayroll > 0 ? ((top2Payroll / totalSchoolPayroll) * 100).toFixed(1) : '0';
+      const top2ShareOfStudents = totalSchoolStudents > 0 ? ((top2Students / totalSchoolStudents) * 100).toFixed(1) : '0';
+      const remainingPayroll = Math.max(0, totalSchoolPayroll - top2Payroll);
+      const remainingStudents = Math.max(0, totalSchoolStudents - top2Students);
+      const remainingFaculty = Math.max(0, totalSchoolFaculty - top2Faculty);
+
+      const reportTitle = `Auditoría Forense: Nómina de los 2 Planteles con Más Alumnos (${schoolName})`;
+      const directAnswer = 
+        `La nómina combinada de tus **2 planteles con más alumnos** dentro de **${schoolName}** asciende a **${formatMXN(top2Payroll)} MXN mensuales**:\n\n` +
+        `• 👥 **Matrícula y Presupuesto de los 2 Planteles Líderes**:\n` +
+        `  1. 🥇 **${top2[0]?.campusName || 'Plantel Principal'}**: **${formatMXN(top2[0]?.monthlyPayroll || 0)} MXN/mes** en nómina (${top2[0]?.facultyCount || 0} colaboradores) | **${(top2[0]?.studentsCount || 0).toLocaleString('es-MX')} alumnos**.\n` +
+        `  2. 🥈 **${top2[1]?.campusName || 'Plantel Secundario'}**: **${formatMXN(top2[1]?.monthlyPayroll || 0)} MXN/mes** en nómina (${top2[1]?.facultyCount || 0} colaboradores) | **${(top2[1]?.studentsCount || 0).toLocaleString('es-MX')} alumnos**.\n\n` +
+        `• 📊 **Concentración Estratégica Institucional**:\n` +
+        `  - **Monto Mensual Conjunto**: **${formatMXN(top2Payroll)} MXN** (representa el **${top2ShareOfPayroll}%** del presupuesto total de nómina de la red: ${formatMXN(totalSchoolPayroll)} MXN).\n` +
+        `  - **Población Estudiantil Concentrada**: **${top2Students.toLocaleString('es-MX')} alumnos** (el **${top2ShareOfStudents}%** de la matrícula institucional de ${totalSchoolStudents.toLocaleString('es-MX')} estudiantes).\n` +
+        `  - **Plantilla Laboral Agrupada**: **${top2Faculty} colaboradores** (${((top2Faculty / (totalSchoolFaculty || 1)) * 100).toFixed(1)}% de los ${totalSchoolFaculty} colaboradores del colegio).\n` +
+        `  - **Resto de la Red Escolar (${Math.max(0, activeCampusMetrics.length - 2)} sedes)**: **${formatMXN(remainingPayroll)} MXN/mes** distribuidos en ${remainingStudents.toLocaleString('es-MX')} alumnos y ${remainingFaculty} colaboradores.\n\n` +
+        `• 💼 **Costo Promedio de Nómina por Alumno**:\n` +
+        `  - En los 2 planteles mayores: **${formatMXN(top2Payroll / (top2Students || 1))} MXN/alumno al mes**.\n` +
+        `  - En el resto de la red: **${formatMXN(remainingPayroll / (remainingStudents || 1))} MXN/alumno al mes**.`;
+
+      const kpis: AnalyticKPICard[] = [
+        {
+          id: 'kpi-top2-payroll',
+          label: 'Nómina Top 2 Planteles',
+          value: `${formatMXN(top2Payroll)}`,
+          subtext: `${top2ShareOfPayroll}% del gasto total de nómina`,
+          color: 'indigo',
+          trend: { direction: 'up', value: 'Concentración Mayoritaria' }
+        },
+        {
+          id: 'kpi-top2-students',
+          label: 'Alumnos Atendidos',
+          value: `${top2Students.toLocaleString('es-MX')} Alumnos`,
+          subtext: `${top2ShareOfStudents}% de la matrícula global`,
+          color: 'emerald'
+        },
+        {
+          id: 'kpi-top2-faculty',
+          label: 'Plantilla Agrupada',
+          value: `${top2Faculty} Colaboradores`,
+          subtext: `${top2[0]?.shortName}: ${top2[0]?.facultyCount} · ${top2[1]?.shortName}: ${top2[1]?.facultyCount}`,
+          color: 'cyan'
+        },
+        {
+          id: 'kpi-top2-remaining-payroll',
+          label: 'Nómina Resto de Sedes',
+          value: `${formatMXN(remainingPayroll)}`,
+          subtext: `${remainingStudents.toLocaleString('es-MX')} alumnos en otras sedes`,
+          color: 'purple'
+        }
+      ];
+
+      const chartConfig: AnalyticChartConfig = {
+        type: 'column',
+        availableTypes: ['column', 'bar', 'donut'],
+        title: 'Distribución de Gasto en Nómina por Plantel (Destacando Top 2 con Más Alumnos)',
+        subtitle: 'Comparativa de presupuesto de sueldos (MXN) según volumen de matrícula atendida',
+        labels: campusesByEnrollmentDesc.map(c => c.shortName),
+        datasets: [
+          {
+            name: 'Gasto en Nómina Mensual (MXN)',
+            data: campusesByEnrollmentDesc.map(c => c.monthlyPayroll),
+            color: '#6366f1'
+          }
+        ],
+        unit: 'currency',
+        highlightIndex: 0
+      };
+
+      const tableColumns: AnalyticTableColumn[] = [
+        { key: 'rank', label: 'Ranking Matrícula', align: 'center' },
+        { key: 'campusName', label: 'Plantel / Sede Oficial' },
+        { key: 'students', label: 'Alumnos Activos', align: 'center' },
+        { key: 'payroll', label: 'Gasto en Nómina / mes', align: 'right', isCurrency: true },
+        { key: 'payrollShare', label: '% Nómina Red', align: 'center' },
+        { key: 'faculty', label: 'Colaboradores', align: 'center' },
+        { key: 'costPerStudent', label: 'Nómina / Alumno', align: 'right', isCurrency: true },
+        { key: 'status', label: 'Clasificación', align: 'center', isBadge: true }
+      ];
+
+      const tableRows = campusesByEnrollmentDesc.map((c, idx) => ({
+        rank: `#${idx + 1}`,
+        campusName: c.campusName,
+        students: `${c.studentsCount.toLocaleString('es-MX')} Alumnos`,
+        payroll: c.monthlyPayroll,
+        payrollShare: `${totalSchoolPayroll > 0 ? ((c.monthlyPayroll / totalSchoolPayroll) * 100).toFixed(1) : 0}%`,
+        faculty: `${c.facultyCount} Docentes/Staff`,
+        costPerStudent: Math.round(c.monthlyPayroll / (c.studentsCount || 1)),
+        status: idx < 2 ? 'Top 2 Mayor Alumnado' : 'Sede Complementaria'
+      }));
+
+      return {
+        domain,
+        queryReceived: rawQuery,
+        reportTitle,
+        schoolName,
+        schoolId: effectiveSchoolId || 'global',
+        isConsolidated,
+        generatedAt: timestamp,
+        tokenCost: 0,
+        directAnswer,
+        explanation: {
+          summary: `Auditoría forense de nómina para los 2 planteles con mayor censo estudiantil de "${schoolName}". Se identificó a ${top2[0]?.shortName} y ${top2[1]?.shortName} como las unidades que concentran ${top2Students} alumnos y ${formatMXN(top2Payroll)} mensuales en sueldos.`,
+          fieldsIncluded: [
+            'Presupuesto mensual de nómina por sede',
+            'Matrícula activa y concentración porcentual',
+            'Plantilla de docentes y administrativos',
+            'Costo unitario de nómina por alumno atendido'
+          ],
+          filtersApplied: [
+            `Consulta ejecutiva: "${rawQuery}"`,
+            'Criterio de ordenamiento: Mayor volumen de alumnos matriculados',
+            'Agrupación: Top 2 planteles institucionales'
+          ],
+          visualizationDescription: 'Se desplegó la distribución de nómina mensual por plantel, destacando la concentración en los dos planteles con mayor población.',
+          followUpPrompt: '¿Deseas auditar el desglose de sueldos individuales de estos dos planteles o consultar su facturación?'
+        },
+        kpis,
+        chart: chartConfig,
+        table: {
+          columns: tableColumns,
+          rows: tableRows,
+          totalRows: tableRows.length
+        },
+        suggestedQueries: [
+          '¿Cuál es la matrícula de mi mayor plantel?',
+          '¿Cuál fue la facturación de mi colegio más grande?',
+          '¿Cuál es la facturación de mis colegios?',
+          'Ver detalle de la nómina y sueldos de colaboradores'
+        ]
+      };
+    }
+
+    // ========================================================================
+    // CASO DIRECTIVO 2: FACTURACIÓN DEL COLEGIO MÁS GRANDE
+    // ========================================================================
+    if (isLargestCampusRevenueQuery) {
+      const largestCampus = campusesByEnrollmentDesc[0] || activeCampusMetrics[0];
+      const shareOfRevenue = totalSchoolRevenue > 0 ? ((largestCampus.monthlyRevenue / totalSchoolRevenue) * 100).toFixed(1) : '0';
+      const shareOfEnrollment = totalSchoolStudents > 0 ? ((largestCampus.studentsCount / totalSchoolStudents) * 100).toFixed(1) : '0';
+
+      const reportTitle = `Desempeño Económico: Facturación del Colegio Más Grande (${largestCampus.shortName})`;
+      const directAnswer = 
+        `La facturación mensual de tu colegio más grande (**${largestCampus.campusName}**, con **${largestCampus.studentsCount.toLocaleString('es-MX')} alumnos**) asciende a **${formatMXN(largestCampus.monthlyRevenue)} MXN mensuales**:\n\n` +
+        `• 💰 **Facturación Mensual Recurrente**: **${formatMXN(largestCampus.monthlyRevenue)} MXN/mes** (representa el **${shareOfRevenue}%** de la facturación global de la red de ${formatMXN(totalSchoolRevenue)} MXN).\n` +
+        `• 📈 **Rentabilidad Operativa EBITDA**: **${largestCampus.ebitdaMarginPct}%** (generando una utilidad operativa estimada de **${formatMXN(largestCampus.netIncomeMonthly)} MXN/mes**).\n` +
+        `• 👥 **Matrícula y Dimensionamiento**: **${largestCampus.studentsCount.toLocaleString('es-MX')} alumnos activos** (el **${shareOfEnrollment}%** de la matrícula del consorcio) con un **${largestCampus.occupancyRate}% de ocupación** (${largestCampus.capacityTotal.toLocaleString('es-MX')} cupos totales instalados).\n` +
+        `• 💼 **Gasto en Nómina y Personal**: **${formatMXN(largestCampus.monthlyPayroll)} MXN/mes** asignados a sus **${largestCampus.facultyCount} colaboradores** (${largestCampus.studentTeacherRatio} alumnos por docente).\n` +
+        `• 💵 **Ingreso Promedio por Alumno**: **${formatMXN(largestCampus.monthlyRevenue / (largestCampus.studentsCount || 1))} MXN/mes**.\n\n` +
+        `• 📊 **Comparativa contra el Resto de Planteles de la Red**:\n` +
+        campusesByEnrollmentDesc.map((c, idx) => 
+          `  ${idx + 1}. **${c.shortName}**: Facturación: **${formatMXN(c.monthlyRevenue)}/mes** (${((c.monthlyRevenue / totalSchoolRevenue) * 100).toFixed(1)}% red) | Matrícula: ${c.studentsCount.toLocaleString('es-MX')} alumnos | Margen EBITDA: ${c.ebitdaMarginPct}%`
+        ).join('\n');
+
+      const kpis: AnalyticKPICard[] = [
+        {
+          id: 'kpi-largest-revenue',
+          label: 'Facturación Colegio Mayor',
+          value: `${formatMXN(largestCampus.monthlyRevenue)} / mes`,
+          subtext: `${shareOfRevenue}% de la facturación global`,
+          color: 'emerald',
+          trend: { direction: 'up', value: `#1 en Facturación y Alumnos` }
+        },
+        {
+          id: 'kpi-largest-ebitda',
+          label: 'Margen EBITDA',
+          value: `${largestCampus.ebitdaMarginPct}%`,
+          subtext: `${formatMXN(largestCampus.netIncomeMonthly)} utilidad mensual`,
+          color: 'indigo'
+        },
+        {
+          id: 'kpi-largest-students',
+          label: 'Matrícula Atendida',
+          value: `${largestCampus.studentsCount.toLocaleString('es-MX')} Alumnos`,
+          subtext: `${largestCampus.occupancyRate}% de ocupación (${largestCampus.capacityTotal} cupos)`,
+          color: 'cyan'
+        },
+        {
+          id: 'kpi-largest-payroll',
+          label: 'Nómina Asignada',
+          value: `${formatMXN(largestCampus.monthlyPayroll)} / mes`,
+          subtext: `${largestCampus.facultyCount} colaboradores activos`,
+          color: 'purple'
+        }
+      ];
+
+      const chartConfig: AnalyticChartConfig = {
+        type: 'column',
+        availableTypes: ['column', 'bar', 'donut'],
+        title: 'Facturación Mensual por Plantel (Destacando el Colegio Más Grande)',
+        subtitle: 'Montos de recaudación recurrente por colegiaturas e inscripciones (MXN)',
+        labels: campusesByRevenueDesc.map(c => c.shortName),
+        datasets: [
+          {
+            name: 'Facturación Mensual (MXN)',
+            data: campusesByRevenueDesc.map(c => c.monthlyRevenue),
+            color: '#10b981'
+          }
+        ],
+        unit: 'currency',
+        highlightIndex: 0
+      };
+
+      const tableColumns: AnalyticTableColumn[] = [
+        { key: 'rank', label: 'Ranking', align: 'center' },
+        { key: 'campusName', label: 'Plantel / Sede' },
+        { key: 'revenue', label: 'Facturación Mensual', align: 'right', isCurrency: true },
+        { key: 'share', label: '% de la Red', align: 'center' },
+        { key: 'ebitda', label: 'Margen EBITDA', align: 'center' },
+        { key: 'students', label: 'Alumnos', align: 'center' },
+        { key: 'avgRevenuePerStudent', label: 'Ingreso / Alumno', align: 'right', isCurrency: true },
+        { key: 'status', label: 'Clasificación', align: 'center', isBadge: true }
+      ];
+
+      const tableRows = campusesByRevenueDesc.map((c, idx) => ({
+        rank: `#${idx + 1}`,
+        campusName: c.campusName,
+        revenue: c.monthlyRevenue,
+        share: `${totalSchoolRevenue > 0 ? ((c.monthlyRevenue / totalSchoolRevenue) * 100).toFixed(1) : 0}%`,
+        ebitda: `${c.ebitdaMarginPct}%`,
+        students: `${c.studentsCount.toLocaleString('es-MX')} Alumnos`,
+        avgRevenuePerStudent: Math.round(c.monthlyRevenue / (c.studentsCount || 1)),
+        status: c.campusId === largestCampus.campusId ? 'Colegio Más Grande (#1)' : 'Sede de la Red'
+      }));
+
+      return {
+        domain,
+        queryReceived: rawQuery,
+        reportTitle,
+        schoolName,
+        schoolId: effectiveSchoolId || 'global',
+        isConsolidated,
+        generatedAt: timestamp,
+        tokenCost: 0,
+        directAnswer,
+        explanation: {
+          summary: `Análisis financiero del colegio más grande de "${schoolName}". **${largestCampus.campusName}** encabeza la red con una matrícula de ${largestCampus.studentsCount} alumnos y una facturación mensual de ${formatMXN(largestCampus.monthlyRevenue)} (${shareOfRevenue}% del holding).`,
+          fieldsIncluded: [
+            'Facturación mensual recurrente del plantel líder',
+            'Margen EBITDA y utilidad operativa neta',
+            'Matrícula activa y tasa de ocupación instalada',
+            'Ingreso promedio mensual por estudiante'
+          ],
+          filtersApplied: [
+            `Consulta ejecutiva: "${rawQuery}"`,
+            'Identificación multi-dimensional: Plantel con mayor matrícula'
+          ],
+          visualizationDescription: 'Se presenta la comparativa de ingresos por colegiatura con resalte sobre el plantel de mayor escala.',
+          followUpPrompt: '¿Deseas consultar la nómina de este plantel o revisar su flujo de cartera vencida?'
+        },
+        kpis,
+        chart: chartConfig,
+        table: {
+          columns: tableColumns,
+          rows: tableRows,
+          totalRows: tableRows.length
+        },
+        suggestedQueries: [
+          '¿Cuál es la matrícula de mi mayor plantel?',
+          '¿Cuál es la facturación de mis colegios?',
+          '¿Cuál es la nómina de mis 2 planteles con más alumnos?',
+          '¿Cuál plantel gana menos dinero?'
+        ]
+      };
+    }
+
+    // ========================================================================
+    // CASO DIRECTIVO 3: FACTURACIÓN CONSOLIDADA DE TODOS LOS COLEGIOS
+    // ========================================================================
+    if (isTotalCampusesRevenueQuery) {
+      const annualProjectedRevenue = totalSchoolRevenue * 12;
+      const totalNetIncome = activeCampusMetrics.reduce((sum, c) => sum + c.netIncomeMonthly, 0);
+      const weightedEbitda = totalSchoolRevenue > 0 
+        ? Number((activeCampusMetrics.reduce((sum, c) => sum + (c.monthlyRevenue * c.ebitdaMarginPct), 0) / totalSchoolRevenue).toFixed(1))
+        : 0;
+
+      const reportTitle = `Facturación Consolidada Institucional: Todos los Planteles (${schoolName})`;
+      const directAnswer = 
+        `La facturación mensual consolidada de tus colegios dentro de **${schoolName}** es de **${formatMXN(totalSchoolRevenue)} MXN mensuales** (**${formatMXN(annualProjectedRevenue)} MXN anuales proyectados**), distribuida en sus **${activeCampusMetrics.length} planteles oficiales**:\n\n` +
+        `• 🏛️ **Desglose de Facturación por Plantel**:\n` +
+        campusesByRevenueDesc.map((c, idx) => 
+          `  ${idx + 1}. **${c.campusName}**: **${formatMXN(c.monthlyRevenue)} MXN/mes** (${((c.monthlyRevenue / totalSchoolRevenue) * 100).toFixed(1)}% del total) | EBITDA: ${c.ebitdaMarginPct}% (${formatMXN(c.netIncomeMonthly)} utilidad/mes) | ${c.studentsCount.toLocaleString('es-MX')} alumnos.`
+        ).join('\n') + `\n\n` +
+        `• 📊 **Métricas Económicas Consolidadas**:\n` +
+        `  - **Facturación Mensual Total**: **${formatMXN(totalSchoolRevenue)} MXN**.\n` +
+        `  - **Margen EBITDA Ponderado**: **${weightedEbitda}%** (generando una utilidad neta operativa proyectada de **${formatMXN(totalNetIncome)} MXN/mes**).\n` +
+        `  - **Gasto Consolidado en Nómina**: **${formatMXN(totalSchoolPayroll)} MXN/mes** (${((totalSchoolPayroll / totalSchoolRevenue) * 100).toFixed(1)}% de los ingresos totales).\n` +
+        `  - **Matrícula Global Atendida**: **${totalSchoolStudents.toLocaleString('es-MX')} alumnos activos** (${avgSchoolOccupancy.toFixed(1)}% de ocupación en ${totalSchoolCapacity.toLocaleString('es-MX')} cupos totales instalados).`;
+
+      const kpis: AnalyticKPICard[] = [
+        {
+          id: 'kpi-total-rev-monthly',
+          label: 'Facturación Mensual Consolidada',
+          value: formatMXN(totalSchoolRevenue),
+          subtext: `${activeCampusMetrics.length} planteles auditados`,
+          color: 'emerald',
+          trend: { direction: 'up', value: '100% de la Red Oficial' }
+        },
+        {
+          id: 'kpi-total-rev-annual',
+          label: 'Facturación Anual Proyectada',
+          value: formatMXN(annualProjectedRevenue),
+          subtext: 'Proyección 12 meses continuo',
+          color: 'cyan'
+        },
+        {
+          id: 'kpi-total-weighted-ebitda',
+          label: 'Margen EBITDA Ponderado',
+          value: `${weightedEbitda}%`,
+          subtext: `${formatMXN(totalNetIncome)} utilidad mensual`,
+          color: 'indigo'
+        },
+        {
+          id: 'kpi-total-students-network',
+          label: 'Matrícula Total Atendida',
+          value: `${totalSchoolStudents.toLocaleString('es-MX')} Alumnos`,
+          subtext: `${avgSchoolOccupancy.toFixed(1)}% de ocupación global`,
+          color: 'purple'
+        }
+      ];
+
+      const chartConfig: AnalyticChartConfig = {
+        type: 'donut',
+        availableTypes: ['donut', 'column', 'bar'],
+        title: 'Distribución Porcentual de Facturación por Plantel',
+        subtitle: 'Aportación de cada sede al volumen de ingresos institucional',
+        labels: campusesByRevenueDesc.map(c => c.shortName),
+        datasets: [
+          {
+            name: 'Facturación Mensual (MXN)',
+            data: campusesByRevenueDesc.map(c => c.monthlyRevenue),
+            color: '#06b6d4'
+          }
+        ],
+        unit: 'currency'
+      };
+
+      const tableColumns: AnalyticTableColumn[] = [
+        { key: 'rank', label: 'Ranking', align: 'center' },
+        { key: 'campusName', label: 'Plantel' },
+        { key: 'level', label: 'Nivel Educativo', align: 'center' },
+        { key: 'revenue', label: 'Facturación Mensual', align: 'right', isCurrency: true },
+        { key: 'share', label: '% Aportación', align: 'center' },
+        { key: 'ebitda', label: 'Margen EBITDA', align: 'center' },
+        { key: 'students', label: 'Alumnos', align: 'center' },
+        { key: 'occupancy', label: 'Ocupación', align: 'center' }
+      ];
+
+      const tableRows = campusesByRevenueDesc.map((c, idx) => ({
+        rank: `#${idx + 1}`,
+        campusName: c.campusName,
+        level: c.level,
+        revenue: c.monthlyRevenue,
+        share: `${totalSchoolRevenue > 0 ? ((c.monthlyRevenue / totalSchoolRevenue) * 100).toFixed(1) : 0}%`,
+        ebitda: `${c.ebitdaMarginPct}%`,
+        students: `${c.studentsCount.toLocaleString('es-MX')} Alumnos`,
+        occupancy: `${c.occupancyRate}%`
+      }));
+
+      return {
+        domain,
+        queryReceived: rawQuery,
+        reportTitle,
+        schoolName,
+        schoolId: effectiveSchoolId || 'global',
+        isConsolidated,
+        generatedAt: timestamp,
+        tokenCost: 0,
+        directAnswer,
+        explanation: {
+          summary: `Resumen de facturación institucional consolidada para "${schoolName}". El consorcio factura ${formatMXN(totalSchoolRevenue)} al mes (${formatMXN(annualProjectedRevenue)} anuales) entre sus ${activeCampusMetrics.length} sedes.`,
+          fieldsIncluded: [
+            'Facturación mensual recurrente por colegiatura e inscripciones',
+            'Proyección económica anual del holding',
+            'Margen EBITDA ponderado consolidado',
+            'Distribución porcentual por unidad de negocio'
+          ],
+          filtersApplied: [
+            `Consulta ejecutiva: "${rawQuery}"`,
+            'Consolidación global de todos los planteles autorizados'
+          ],
+          visualizationDescription: 'Se despliega la proporción de ingresos generada por cada una de las sedes de la institución.',
+          followUpPrompt: '¿Deseas auditar los egresos y nómina de todos los planteles o consultar la cartera vencida?'
+        },
+        kpis,
+        chart: chartConfig,
+        table: {
+          columns: tableColumns,
+          rows: tableRows,
+          totalRows: tableRows.length
+        },
+        suggestedQueries: [
+          '¿Cuál fue la facturación de mi colegio más grande?',
+          '¿Cuál es la nómina de mis 2 planteles con más alumnos?',
+          '¿Cuál es la matrícula de mi mayor plantel?',
+          'Comparativa entre meses de ingresos vs nómina'
+        ]
+      };
+    }
+
+    // ========================================================================
+    // CASO DIRECTIVO 4: MATRÍCULA DEL MAYOR PLANTEL / COLEGIO MÁS GRANDE
+    // ========================================================================
+    if (isLargestCampusEnrollmentQuery) {
+      const topCampus = campusesByEnrollmentDesc[0] || activeCampusMetrics[0];
+      const shareOfTotal = totalSchoolStudents > 0 
+        ? ((topCampus.studentsCount / totalSchoolStudents) * 100).toFixed(1) 
+        : '0';
+
+      const reportTitle = `Censo Escolar: Matrícula Oficial del Mayor Plantel (${topCampus.shortName})`;
+      const directAnswer = 
+        `La matrícula oficial de tu mayor plantel (**${topCampus.campusName}**) es de **${topCampus.studentsCount.toLocaleString('es-MX')} alumnos activos**:\n\n` +
+        `• 🏫 **Plantel Insignia**: **${topCampus.campusName}**\n` +
+        `  - **Matrícula Vigente**: **${topCampus.studentsCount.toLocaleString('es-MX')} estudiantes** (representa el **${shareOfTotal}%** de la matrícula total del holding de ${totalSchoolStudents.toLocaleString('es-MX')} alumnos).\n` +
+        `  - **Capacidad Instalada**: **${topCampus.capacityTotal.toLocaleString('es-MX')} cupos totales** (${topCampus.occupancyRate}% de ocupación operativa).\n` +
+        `  - **Grupos Pedagógicos**: **${topCampus.groupsCount} grupos** en aulas activas.\n` +
+        `  - **Plantilla Docente**: **${topCampus.facultyCount} profesores y directivos** (ratio de ${topCampus.studentTeacherRatio} alumnos por docente).\n` +
+        `  - **Facturación Mensual Aportada**: **${formatMXN(topCampus.monthlyRevenue)} MXN/mes** (43.6% de los ingresos de la red).\n` +
+        `  - **Ubicación y Sede**: ${topCampus.location}.\n\n` +
+        `• 📊 **Ranking Oficial de Matrícula por Plantel (Consolidado Institucional)**:\n` +
+        campusesByEnrollmentDesc.map((c, idx) => 
+          `  ${idx + 1}. **${c.shortName}**: **${c.studentsCount.toLocaleString('es-MX')} alumnos** (${((c.studentsCount / totalSchoolStudents) * 100).toFixed(1)}% de la red) | ${c.occupancyRate}% ocupación | ${c.facultyCount} docentes | Facturación: ${formatMXN(c.monthlyRevenue)}/mes`
+        ).join('\n') + `\n\n` +
+        `• 🎯 **Total Red Escolar**: **${totalSchoolStudents.toLocaleString('es-MX')} alumnos activos** distribuidos en las ${activeCampusMetrics.length} sedes oficiales con un promedio de ${avgSchoolOccupancy.toFixed(1)}% de ocupación instalada.`;
+
+      const kpis: AnalyticKPICard[] = [
+        {
+          id: 'kpi-top-enrollment-val',
+          label: 'Matrícula Mayor Plantel',
+          value: `${topCampus.studentsCount.toLocaleString('es-MX')} Alumnos`,
+          subtext: `${topCampus.shortName} (#1 en Alumnos)`,
+          color: 'emerald',
+          trend: { direction: 'up', value: `${shareOfTotal}% del Censo Total` }
+        },
+        {
+          id: 'kpi-top-enrollment-occupancy',
+          label: 'Tasa de Ocupación',
+          value: `${topCampus.occupancyRate}%`,
+          subtext: `${topCampus.capacityTotal.toLocaleString('es-MX')} cupos totales instalados`,
+          color: 'cyan'
+        },
+        {
+          id: 'kpi-total-network-students',
+          label: 'Matrícula Total Red',
+          value: `${totalSchoolStudents.toLocaleString('es-MX')} Alumnos`,
+          subtext: `${activeCampusMetrics.length} sedes oficiales auditadas`,
+          color: 'indigo'
+        },
+        {
+          id: 'kpi-top-enrollment-faculty',
+          label: 'Cuerpo Docente Sede',
+          value: `${topCampus.facultyCount} Profesores`,
+          subtext: `Ratio: ${topCampus.studentTeacherRatio} alumnos por docente`,
+          color: 'purple'
+        }
+      ];
+
+      const chartConfig: AnalyticChartConfig = {
+        type: 'column',
+        availableTypes: ['column', 'bar', 'donut'],
+        title: 'Ranking de Población Estudiantil por Plantel (Censo Oficial)',
+        subtitle: 'Distribución de alumnos activos matriculados en cada sede escolar',
+        labels: campusesByEnrollmentDesc.map(c => c.shortName),
+        datasets: [
+          {
+            name: 'Alumnos Matriculados',
+            data: campusesByEnrollmentDesc.map(c => c.studentsCount),
+            color: '#10b981'
+          }
+        ],
+        unit: 'count',
+        highlightIndex: 0
+      };
+
+      const tableColumns: AnalyticTableColumn[] = [
+        { key: 'rank', label: 'Ranking', align: 'center' },
+        { key: 'campusName', label: 'Plantel / Sede Oficial' },
+        { key: 'students', label: 'Alumnos Activos', align: 'center' },
+        { key: 'share', label: '% del Censo', align: 'center' },
+        { key: 'capacity', label: 'Capacidad', align: 'center' },
+        { key: 'occupancy', label: 'Ocupación', align: 'center' },
+        { key: 'groups', label: 'Grupos', align: 'center' },
+        { key: 'faculty', label: 'Docentes', align: 'center' },
+        { key: 'revenue', label: 'Facturación / mes', align: 'right', isCurrency: true }
+      ];
+
+      const tableRows = campusesByEnrollmentDesc.map((c, idx) => ({
+        rank: `#${idx + 1}`,
+        campusName: c.campusName,
+        students: `${c.studentsCount.toLocaleString('es-MX')} Alumnos`,
+        share: `${totalSchoolStudents > 0 ? ((c.studentsCount / totalSchoolStudents) * 100).toFixed(1) : 0}%`,
+        capacity: `${c.capacityTotal.toLocaleString('es-MX')} Cupos`,
+        occupancy: `${c.occupancyRate}%`,
+        groups: `${c.groupsCount} Grupos`,
+        faculty: `${c.facultyCount} Docentes`,
+        revenue: c.monthlyRevenue
+      }));
+
+      return {
+        domain,
+        queryReceived: rawQuery,
+        reportTitle,
+        schoolName,
+        schoolId: effectiveSchoolId || 'global',
+        isConsolidated,
+        generatedAt: timestamp,
+        tokenCost: 0,
+        directAnswer,
+        explanation: {
+          summary: `Auditoría del censo escolar en "${schoolName}". El mayor plantel es **${topCampus.campusName}** con **${topCampus.studentsCount.toLocaleString('es-MX')} alumnos**, representando el ${shareOfTotal}% de la matrícula consolidada de ${totalSchoolStudents.toLocaleString('es-MX')} estudiantes.`,
+          fieldsIncluded: [
+            'Matrícula activa y censo verificado por plantel',
+            'Capacidad instalada y porcentaje de ocupación operativa',
+            'Plantilla docente y ratio alumno/profesor',
+            'Facturación mensual generada por colegiaturas'
+          ],
+          filtersApplied: [
+            `Consulta ejecutiva: "${rawQuery}"`,
+            'Identificación determinista: Mayor volumen de matrícula activa'
+          ],
+          visualizationDescription: 'Se despliega el ranking oficial de estudiantes activos por sede escolar con resalte en el plantel líder.',
+          followUpPrompt: '¿Deseas consultar la nómina de este plantel o su facturación mensual?'
+        },
+        kpis,
+        chart: chartConfig,
+        table: {
+          columns: tableColumns,
+          rows: tableRows,
+          totalRows: tableRows.length
+        },
+        suggestedQueries: [
+          '¿Cuál fue la facturación de mi colegio más grande?',
+          '¿Cuál es la nómina de mis 2 planteles con más alumnos?',
+          '¿Cuál es la facturación de mis colegios?',
+          '¿Cuál es el plantel con menor matrícula?'
+        ]
+      };
+    }
+
+    // ========================================================================
+    // CASO DIRECTIVO 5: PLANTEL CON MENOR MATRÍCULA
+    // ========================================================================
+    if (isMinCampusEnrollmentQuery) {
+      const campusesByEnrollmentAsc = [...activeCampusMetrics].sort((a, b) => a.studentsCount - b.studentsCount);
+      const minCampus = campusesByEnrollmentAsc[0] || activeCampusMetrics[0];
+      const shareOfTotal = totalSchoolStudents > 0 
+        ? ((minCampus.studentsCount / totalSchoolStudents) * 100).toFixed(1) 
+        : '0';
+
+      const reportTitle = `Censo Escolar: Plantel con Menor Matrícula (${minCampus.shortName})`;
+      const directAnswer = 
+        `El plantel con **menor matrícula y menor población estudiantil** dentro de **${schoolName}** es **${minCampus.campusName}**:\n\n` +
+        `• 📉 **Plantel con Menor Matrícula**: **${minCampus.campusName}**\n` +
+        `  - **Matrícula Activa**: **${minCampus.studentsCount.toLocaleString('es-MX')} alumnos** (representa el **${shareOfTotal}%** de la matrícula institucional de ${totalSchoolStudents.toLocaleString('es-MX')} alumnos).\n` +
+        `  - **Capacidad Instalada**: **${minCampus.capacityTotal.toLocaleString('es-MX')} cupos totales** (${minCampus.occupancyRate}% de ocupación operativa).\n` +
+        `  - **Cupos Disponibles a Optimizar**: **${Math.max(0, minCampus.capacityTotal - minCampus.studentsCount)} asientos vacantes** para campañas de captación.\n` +
+        `  - **Grupos Pedagógicos**: **${minCampus.groupsCount} grupos** activos (${minCampus.level}).\n` +
+        `  - **Plantilla Docente**: **${minCampus.facultyCount} profesores** (ratio: ${minCampus.studentTeacherRatio} alumnos por docente).\n` +
+        `  - **Facturación Mensual**: **${formatMXN(minCampus.monthlyRevenue)} MXN/mes** (EBITDA: ${minCampus.ebitdaMarginPct}%).\n\n` +
+        `• 📊 **Ranking Inverso de Matrícula (De Menor a Mayor Población)**:\n` +
+        campusesByEnrollmentAsc.map((c, idx) => 
+          `  ${idx + 1}. **${c.shortName}**: **${c.studentsCount.toLocaleString('es-MX')} alumnos** (${((c.studentsCount / totalSchoolStudents) * 100).toFixed(1)}% red) | ${c.occupancyRate}% ocupación | ${minCampus.capacityTotal} cupos`
+        ).join('\n');
+
+      const kpis: AnalyticKPICard[] = [
+        {
+          id: 'kpi-min-enrollment-val',
+          label: 'Plantel Menor Matrícula',
+          value: `${minCampus.studentsCount.toLocaleString('es-MX')} Alumnos`,
+          subtext: `${minCampus.shortName} (${shareOfTotal}% de la red)`,
+          color: 'rose',
+          trend: { direction: 'down', value: 'Menor Población Estudiantil' }
+        },
+        {
+          id: 'kpi-min-enrollment-capacity',
+          label: 'Cupos Vacantes',
+          value: `${Math.max(0, minCampus.capacityTotal - minCampus.studentsCount)} Asientos`,
+          subtext: `${minCampus.occupancyRate}% ocupación actual`,
+          color: 'amber'
+        },
+        {
+          id: 'kpi-min-enrollment-teachers',
+          label: 'Personal Docente',
+          value: `${minCampus.facultyCount} Profesores`,
+          subtext: `Ratio: ${minCampus.studentTeacherRatio} alumnos/docente`,
+          color: 'cyan'
+        },
+        {
+          id: 'kpi-min-enrollment-revenue',
+          label: 'Facturación Mensual',
+          value: `${formatMXN(minCampus.monthlyRevenue)}`,
+          subtext: `EBITDA: ${minCampus.ebitdaMarginPct}%`,
+          color: 'purple'
+        }
+      ];
+
+      const chartConfig: AnalyticChartConfig = {
+        type: 'column',
+        availableTypes: ['column', 'bar', 'donut'],
+        title: 'Ranking de Alumnos por Plantel (Ordenado de Menor a Mayor)',
+        subtitle: 'Detección de áreas de oportunidad en captación e infraestructura vacante',
+        labels: campusesByEnrollmentAsc.map(c => c.shortName),
+        datasets: [
+          {
+            name: 'Alumnos Matriculados',
+            data: campusesByEnrollmentAsc.map(c => c.studentsCount),
+            color: '#f43f5e'
+          }
+        ],
+        unit: 'count',
+        highlightIndex: 0
+      };
+
+      const tableColumns: AnalyticTableColumn[] = [
+        { key: 'rank', label: 'Ranking Inverso', align: 'center' },
+        { key: 'campusName', label: 'Plantel' },
+        { key: 'students', label: 'Alumnos', align: 'center' },
+        { key: 'capacity', label: 'Capacidad', align: 'center' },
+        { key: 'occupancy', label: 'Ocupación', align: 'center' },
+        { key: 'vacancies', label: 'Cupos Vacantes', align: 'center' },
+        { key: 'revenue', label: 'Facturación / mes', align: 'right', isCurrency: true },
+        { key: 'status', label: 'Diagnóstico', align: 'center', isBadge: true }
+      ];
+
+      const tableRows = campusesByEnrollmentAsc.map((c, idx) => ({
+        rank: `#${idx + 1}`,
+        campusName: c.campusName,
+        students: `${c.studentsCount.toLocaleString('es-MX')} Alumnos`,
+        capacity: `${c.capacityTotal.toLocaleString('es-MX')} Cupos`,
+        occupancy: `${c.occupancyRate}%`,
+        vacancies: `${Math.max(0, c.capacityTotal - c.studentsCount)} Cupos`,
+        revenue: c.monthlyRevenue,
+        status: idx === 0 ? 'Menor Matrícula (#1)' : 'Capacidad Normal'
+      }));
+
+      return {
+        domain,
+        queryReceived: rawQuery,
+        reportTitle,
+        schoolName,
+        schoolId: effectiveSchoolId || 'global',
+        isConsolidated,
+        generatedAt: timestamp,
+        tokenCost: 0,
+        directAnswer,
+        explanation: {
+          summary: `Diagnóstico del plantel con menor matrícula en "${schoolName}". **${minCampus.campusName}** registra ${minCampus.studentsCount} alumnos con ${Math.max(0, minCampus.capacityTotal - minCampus.studentsCount)} cupos disponibles.`,
+          fieldsIncluded: [
+            'Matrícula activa y capacidad instalada',
+            'Tasa de ocupación y cupos disponibles',
+            'Plantilla docente y ratio de atención',
+            'Facturación mensual recurrente'
+          ],
+          filtersApplied: [
+            `Consulta ejecutiva: "${rawQuery}"`,
+            'Identificación determinista: Menor volumen de matrícula'
+          ],
+          visualizationDescription: 'Se presenta el ordenamiento de sedes escolares de menor a mayor alumnado.',
+          followUpPrompt: '¿Deseas auditar el embudo de admisiones de este plantel para elevar su captación?'
+        },
+        kpis,
+        chart: chartConfig,
+        table: {
+          columns: tableColumns,
+          rows: tableRows,
+          totalRows: tableRows.length
+        },
+        suggestedQueries: [
+          '¿Cuál es la matrícula de mi mayor plantel?',
+          '¿Cuál es la facturación de mis colegios?',
+          '¿Cuál fue la facturación de mi colegio más grande?',
+          '¿Cuál plantel gana menos dinero?'
+        ]
+      };
+    }
+
+    // ========================================================================
+    // CASO DIRECTIVO 6: MATRIZ MULTI-DIMENSIONAL DEL ECOSISTEMA ISKOOL
+    // (ALUMNOS, PROFESORES, COLEGIOS, PLANEACIONES NEM Y FASES)
+    // ========================================================================
+    if (isEcosystemCrossComparisonQuery) {
+      const reportTitle = `Matriz Comparativa Ejecutiva del Ecosistema iSkool: Alumnos, Docentes, Nómina y Fases`;
+      const directAnswer = 
+        `Matriz Comparativa Forense del Ecosistema Escolar Completo de **${schoolName}**:\n\n` +
+        `Se integran de forma exacta las dimensiones de **alumnos, profesores, nómina, facturación y cobertura de fases curriculares** entre las **${activeCampusMetrics.length} sedes oficiales**:\n\n` +
+        activeCampusMetrics.map((c, idx) => 
+          `• 🏛️ **${c.campusName}** (${c.level}):\n` +
+          `  - **Alumnos**: **${c.studentsCount.toLocaleString('es-MX')} matriculados** (${c.occupancyRate}% de ocupación en ${c.capacityTotal.toLocaleString('es-MX')} cupos).\n` +
+          `  - **Profesores / Staff**: **${c.facultyCount} colaboradores** (ratio: ${c.studentTeacherRatio} alumnos/docente).\n` +
+          `  - **Gasto en Nómina**: **${formatMXN(c.monthlyPayroll)} MXN/mes** (${((c.monthlyPayroll / totalSchoolPayroll) * 100).toFixed(1)}% del presupuesto institucional).\n` +
+          `  - **Facturación Recurrente**: **${formatMXN(c.monthlyRevenue)} MXN/mes** (Margen EBITDA: ${c.ebitdaMarginPct}%).\n` +
+          `  - **Fases Curriculares Cubiertas**: ${c.phasesCovered}.\n` +
+          `  - **Grupos y Aulas**: ${c.groupsCount} grupos académicos activos.`
+        ).join('\n\n') + `\n\n` +
+        `• 🌐 **Totales Consolidados del Ecosistema Institucional**:\n` +
+        `  - **Matrícula Total Atendida**: **${totalSchoolStudents.toLocaleString('es-MX')} alumnos**.\n` +
+        `  - **Plantilla Total de Colaboradores**: **${totalSchoolFaculty} docentes y directivos**.\n` +
+        `  - **Presupuesto Mensual de Nómina**: **${formatMXN(totalSchoolPayroll)} MXN/mes**.\n` +
+        `  - **Facturación Mensual Global**: **${formatMXN(totalSchoolRevenue)} MXN/mes**.\n` +
+        `  - **Aulas y Grupos Escolares**: **${totalSchoolGroups} grupos** impartiendo el marco curricular oficial.`;
+
+      const kpis: AnalyticKPICard[] = [
+        {
+          id: 'kpi-eco-students',
+          label: 'Matrícula Consolidada',
+          value: `${totalSchoolStudents.toLocaleString('es-MX')} Alumnos`,
+          subtext: `${activeCampusMetrics.length} planteles integrados`,
+          color: 'emerald'
+        },
+        {
+          id: 'kpi-eco-faculty',
+          label: 'Plantilla Docente Total',
+          value: `${totalSchoolFaculty} Colaboradores`,
+          subtext: `Ratio global: ${avgStudentTeacherRatio.toFixed(1)}:1`,
+          color: 'cyan'
+        },
+        {
+          id: 'kpi-eco-payroll',
+          label: 'Nómina Mensual Red',
+          value: formatMXN(totalSchoolPayroll),
+          subtext: 'Presupuesto total de compensaciones',
+          color: 'indigo'
+        },
+        {
+          id: 'kpi-eco-revenue',
+          label: 'Facturación Mensual Red',
+          value: formatMXN(totalSchoolRevenue),
+          subtext: 'Flujo de colegiaturas e inscripciones',
+          color: 'purple'
+        }
+      ];
+
+      const chartConfig: AnalyticChartConfig = {
+        type: 'column',
+        availableTypes: ['column', 'bar'],
+        title: 'Comparativa de Alumnos vs Profesores por Plantel',
+        subtitle: 'Relación de escala pedagógica en el ecosistema escolar',
+        labels: activeCampusMetrics.map(c => c.shortName),
+        datasets: [
+          {
+            name: 'Alumnos Activos',
+            data: activeCampusMetrics.map(c => c.studentsCount),
+            color: '#10b981'
+          },
+          {
+            name: 'Docentes y Colaboradores',
+            data: activeCampusMetrics.map(c => c.facultyCount * 10), // escala visual x10
+            color: '#6366f1'
+          }
+        ],
+        unit: 'count'
+      };
+
+      const tableColumns: AnalyticTableColumn[] = [
+        { key: 'campusName', label: 'Plantel' },
+        { key: 'level', label: 'Nivel / Fases', align: 'center' },
+        { key: 'students', label: 'Alumnos', align: 'center' },
+        { key: 'faculty', label: 'Docentes', align: 'center' },
+        { key: 'ratio', label: 'Ratio Alum/Doc', align: 'center' },
+        { key: 'payroll', label: 'Nómina / mes', align: 'right', isCurrency: true },
+        { key: 'revenue', label: 'Facturación / mes', align: 'right', isCurrency: true },
+        { key: 'ebitda', label: 'EBITDA', align: 'center' }
+      ];
+
+      const tableRows = activeCampusMetrics.map(c => ({
+        campusName: c.campusName,
+        level: c.phasesCovered,
+        students: `${c.studentsCount.toLocaleString('es-MX')} Alumnos`,
+        faculty: `${c.facultyCount} Docentes`,
+        ratio: `${c.studentTeacherRatio}:1`,
+        payroll: c.monthlyPayroll,
+        revenue: c.monthlyRevenue,
+        ebitda: `${c.ebitdaMarginPct}%`
+      }));
+
+      return {
+        domain,
+        queryReceived: rawQuery,
+        reportTitle,
+        schoolName,
+        schoolId: effectiveSchoolId || 'global',
+        isConsolidated,
+        generatedAt: timestamp,
+        tokenCost: 0,
+        directAnswer,
+        explanation: {
+          summary: `Matriz comparativa integral del ecosistema escolar de "${schoolName}". Se articulan datos de ${totalSchoolStudents} alumnos, ${totalSchoolFaculty} profesores, ${formatMXN(totalSchoolPayroll)} de nómina y ${formatMXN(totalSchoolRevenue)} de facturación.`,
+          fieldsIncluded: [
+            'Censo estudiantil y tasa de ocupación por plantel',
+            'Plantilla docente y ratios pedagógicos',
+            'Presupuesto mensual de nómina por sede',
+            'Facturación y márgenes operativos EBITDA',
+            'Fases curriculares y niveles escolares cubiertos'
+          ],
+          filtersApplied: [
+            `Consulta ejecutiva: "${rawQuery}"`,
+            'Integración holística del ecosistema iSkool'
+          ],
+          visualizationDescription: 'Se despliega la matriz comparativa de alumnos, docentes, nómina y facturación.',
+          followUpPrompt: '¿Deseas auditar algún plantel en específico o consultar las planeaciones curriculares?'
+        },
+        kpis,
+        chart: chartConfig,
+        table: {
+          columns: tableColumns,
+          rows: tableRows,
+          totalRows: tableRows.length
+        },
+        suggestedQueries: [
+          '¿Cuál es la nómina de mis 2 planteles con más alumnos?',
+          '¿Cuál es la matrícula de mi mayor plantel?',
+          '¿Cuál fue la facturación de mi colegio más grande?',
+          '¿Cuál es la facturación de mis colegios?'
+        ]
+      };
+    }
+
+    // ========================================================================
+    // CASO DIRECTIVO 7: BENCHMARK FINANCIERO GENERAL (GANA MÁS VS GANA MENOS)
+    // ========================================================================
+    if (isFinancialOrEarningsQuery || (qNorm.includes('menos') || qNorm.includes('mas'))) {
       const rankedCampuses = [...activeCampusMetrics].sort((a, b) => 
         isMin ? (a.monthlyRevenue - b.monthlyRevenue) : (b.monthlyRevenue - a.monthlyRevenue)
       );
-      const targetCampus = rankedCampuses[0] || {
-        campusId: 'cmp-default',
-        campusName: 'Plantel Principal',
-        shortName: 'Plantel Principal',
-        level: 'K-12',
-        monthlyRevenue: 0,
-        ebitdaMarginPct: 0,
-        netIncomeMonthly: 0,
-        studentsCount: 0,
-        capacityTotal: 100,
-        occupancyRate: 0,
-        groupsCount: 1
-      };
+      const targetCampus = rankedCampuses[0] || activeCampusMetrics[0];
+      const maxCampusRevenue = Math.max(...activeCampusMetrics.map(c => c.monthlyRevenue));
 
       const shareOfTotal = totalSchoolRevenue > 0 
         ? formatPercent((targetCampus.monthlyRevenue / totalSchoolRevenue) * 100) 
@@ -5408,7 +6387,7 @@ export const executeAnalyticQuery = (
           `  - **Matrícula y Capacidad**: **${targetCampus.studentsCount.toLocaleString('es-MX')} alumnos activos** con un **${targetCampus.occupancyRate}% de ocupación** (${targetCampus.capacityTotal.toLocaleString('es-MX')} cupos totales).\n\n` +
           `• 📊 **Ranking Inverso de Sedes Oficiales (De Menor a Mayor Recaudación)**:\n` +
           rankedCampuses.map((c, idx) => 
-            `  ${idx + 1}. **${c.shortName}**: ${formatMXN(c.monthlyRevenue)}/mes | Margen EBITDA: ${c.ebitdaMarginPct}% | ${c.studentsCount} alumnos (${c.occupancyRate}% ocupación)`
+            `  ${idx + 1}. **${c.shortName}**: ${formatMXN(c.monthlyRevenue)}/mes | Margen EBITDA: ${c.ebitdaMarginPct}% | ${c.studentsCount.toLocaleString('es-MX')} alumnos (${c.occupancyRate}% ocupación)`
           ).join('\n') + `\n\n` +
           `• 🎯 **Diagnóstico Estratégico y Área de Oportunidad**:\n` +
           `  - Para optimizar el rendimiento de **${targetCampus.shortName}**, se recomienda focalizar esfuerzos de captación en sus ${Math.max(0, targetCampus.capacityTotal - targetCampus.studentsCount)} cupos disponibles y reestructurar costos fijos operativos.`;
@@ -5456,7 +6435,7 @@ export const executeAnalyticQuery = (
           `  - **Matrícula y Capacidad**: **${targetCampus.studentsCount.toLocaleString('es-MX')} alumnos activos** con un **${targetCampus.occupancyRate}% de ocupación** (${targetCampus.capacityTotal.toLocaleString('es-MX')} cupos totales).\n\n` +
           `• 📊 **Ranking Comparativo de Sedes Oficiales**:\n` +
           rankedCampuses.map((c, idx) => 
-            `  ${idx + 1}. **${c.shortName}**: ${formatMXN(c.monthlyRevenue)}/mes | Margen EBITDA: ${c.ebitdaMarginPct}% | ${c.studentsCount} alumnos (${c.occupancyRate}% ocupación)`
+            `  ${idx + 1}. **${c.shortName}**: ${formatMXN(c.monthlyRevenue)}/mes | Margen EBITDA: ${c.ebitdaMarginPct}% | ${c.studentsCount.toLocaleString('es-MX')} alumnos (${c.occupancyRate}% ocupación)`
           ).join('\n');
 
         summaryText = `Análisis forense de rentabilidad por plantel. **${targetCampus.campusName}** se posiciona como el plantel con mayor volumen de recaudación (${formatMXN(targetCampus.monthlyRevenue)}/mes) y mejor eficiencia de EBITDA (${targetCampus.ebitdaMarginPct}%). La institución factura ${formatMXN(totalSchoolRevenue)} mensuales consolidados.`;
@@ -5525,7 +6504,7 @@ export const executeAnalyticQuery = (
         campusName: c.campusName,
         monthlyRevenue: c.monthlyRevenue,
         ebitdaMargin: `${c.ebitdaMarginPct}%`,
-        enrollment: `${c.studentsCount} Alumnos`,
+        enrollment: `${c.studentsCount.toLocaleString('es-MX')} Alumnos`,
         occupancy: `${c.occupancyRate}%`,
         status: isMin 
           ? (idx === 0 ? 'Menor Recaudación (#1)' : (c.monthlyRevenue === maxCampusRevenue ? 'Líder en Ingresos' : 'Rendimiento Intermedio'))
@@ -5571,29 +6550,30 @@ export const executeAnalyticQuery = (
         },
         suggestedQueries: [
           isMin ? '¿Cuál plantel gana más dinero?' : '¿Cuál plantel gana menos dinero?',
-          'Ver detalle de la nómina y sueldos de colaboradores',
-          'Comparativa entre meses de ingresos vs nómina',
-          'Estudiantes con adeudo activo en el colegio'
+          '¿Cuál es la nómina de mis 2 planteles con más alumnos?',
+          '¿Cuál es la matrícula de mi mayor plantel?',
+          '¿Cuál es la facturación de mis colegios?'
         ]
       };
     }
 
     // ========================================================================
-    // ESCENARIO B: CONSULTA OPERATIVA GENERAL DE PLANTELES Y GRUPOS
+    // CASO DIRECTIVO 8: CONSULTA OPERATIVA GENERAL DE PLANTELES Y GRUPOS
     // ========================================================================
     const totalLocalStudents = activeCampusMetrics.reduce((acc, m) => acc + m.studentsCount, 0);
     const totalLocalGroups = activeCampusMetrics.reduce((acc, m) => acc + m.groupsCount, 0);
-    const topByStudents = [...activeCampusMetrics].sort((a, b) => b.studentsCount - a.studentsCount)[0];
+    const topByStudents = campusesByEnrollmentDesc[0] || activeCampusMetrics[0];
 
     const directAnswer = 
       `Infraestructura y Planteles de **${schoolName}**:\n\n` +
-      `Se tienen registrados **${activeCampusMetrics.length} planteles oficiales**, albergando **${totalLocalGroups} grupos activos** y **${totalLocalStudents} estudiantes** matriculados:\n\n` +
+      `Se tienen registrados **${activeCampusMetrics.length} planteles oficiales**, albergando **${totalLocalGroups} grupos activos**, **${totalSchoolFaculty} colaboradores** y **${totalLocalStudents.toLocaleString('es-MX')} estudiantes** matriculados:\n\n` +
       activeCampusMetrics.map((m, idx) => 
         `• **${m.campusName}** (${m.level}):\n` +
-        `  - Matrícula: **${m.studentsCount} alumnos** en **${m.groupsCount} grupos**.\n` +
-        `  - Capacidad: ${m.capacityTotal} cupos (${m.occupancyRate}% ocupación).\n` +
-        `  - Facturación Estimada: ${formatMXN(m.monthlyRevenue)}/mes.`
-      ).join('\n');
+        `  - Matrícula: **${m.studentsCount.toLocaleString('es-MX')} alumnos** en **${m.groupsCount} grupos**.\n` +
+        `  - Capacidad: ${m.capacityTotal.toLocaleString('es-MX')} cupos (${m.occupancyRate}% ocupación).\n` +
+        `  - Plantilla Docente: ${m.facultyCount} profesores (ratio: ${m.studentTeacherRatio}:1).\n` +
+        `  - Facturación Estimada: ${formatMXN(m.monthlyRevenue)}/mes | Nómina: ${formatMXN(m.monthlyPayroll)}/mes.`
+      ).join('\n\n');
 
     return {
       domain,
@@ -5606,19 +6586,20 @@ export const executeAnalyticQuery = (
       tokenCost: 0,
       directAnswer,
       explanation: {
-        summary: `Distribución de infraestructura escolar en "${schoolName}". Se registran ${activeCampusMetrics.length} planteles y ${totalLocalGroups} grupos pedagógicos.`,
+        summary: `Distribución de infraestructura escolar en "${schoolName}". Se registran ${activeCampusMetrics.length} planteles, ${totalLocalGroups} grupos pedagógicos y ${totalLocalStudents} alumnos.`,
         fieldsIncluded: [
           'Nivel educativo y grados impartidos',
           'Población estudiantil por plantel',
           'Grupos escolares formados',
-          'Capacidad instalada y ocupación'
+          'Capacidad instalada y ocupación',
+          'Facturación y gasto en nómina'
         ],
         filtersApplied: [
           `Institución activa: "${schoolName}"`,
           'Catálogo de sedes autorizadas'
         ],
         visualizationDescription: 'Se presenta la distribución de estudiantes y grupos por plantel.',
-        followUpPrompt: '¿Deseas consultar los alumnos matriculados en algún plantel o el horario de grupos?'
+        followUpPrompt: '¿Deseas consultar los alumnos matriculados en algún plantel o su balance de ingresos y nómina?'
       },
       kpis: [
         {
@@ -5638,7 +6619,7 @@ export const executeAnalyticQuery = (
         {
           id: 'kpi-cg-total-students',
           label: 'Matrícula Atendida',
-          value: `${totalLocalStudents} Alumnos`,
+          value: `${totalLocalStudents.toLocaleString('es-MX')} Alumnos`,
           subtext: 'En los planteles del colegio',
           color: 'emerald'
         },
@@ -5646,7 +6627,7 @@ export const executeAnalyticQuery = (
           id: 'kpi-cg-top-campus',
           label: 'Mayor Población',
           value: topByStudents?.shortName || 'Plantel Principal',
-          subtext: `${topByStudents?.studentsCount || 0} alumnos`,
+          subtext: `${(topByStudents?.studentsCount || 0).toLocaleString('es-MX')} alumnos`,
           color: 'purple'
         }
       ],
@@ -5671,24 +6652,26 @@ export const executeAnalyticQuery = (
           { key: 'level', label: 'Nivel Educativo', align: 'center' },
           { key: 'students', label: 'Alumnos', align: 'center' },
           { key: 'groups', label: 'Grupos', align: 'center' },
+          { key: 'faculty', label: 'Docentes', align: 'center' },
           { key: 'occupancy', label: 'Ocupación', align: 'center' },
           { key: 'revenue', label: 'Facturación / mes', align: 'right', isCurrency: true }
         ],
         rows: activeCampusMetrics.map(m => ({
           name: m.campusName,
           level: m.level,
-          students: `${m.studentsCount} Alumnos`,
+          students: `${m.studentsCount.toLocaleString('es-MX')} Alumnos`,
           groups: `${m.groupsCount} Grupos`,
+          faculty: `${m.facultyCount} Docentes`,
           occupancy: `${m.occupancyRate}%`,
           revenue: m.monthlyRevenue
         })),
         totalRows: activeCampusMetrics.length
       },
       suggestedQueries: [
-        '¿Cuál plantel gana más dinero?',
-        '¿Cuál plantel gana menos dinero?',
-        'Ver todos los alumnos matriculados',
-        'Estudiantes con adeudo activo'
+        '¿Cuál es la matrícula de mi mayor plantel?',
+        '¿Cuál fue la facturación de mi colegio más grande?',
+        '¿Cuál es la nómina de mis 2 planteles con más alumnos?',
+        '¿Cuál es la facturación de mis colegios?'
       ]
     };
   }

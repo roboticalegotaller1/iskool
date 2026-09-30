@@ -107,7 +107,17 @@ const queriesToTest = [
   { q: 'que materias se imparten en el colegio', expected: ['CURRICULUM_SUBJECTS'] },
   { q: 'que talleres extracurriculares hay', expected: ['CURRICULUM_SUBJECTS'] },
   { q: 'han contestado los papas los recados', expected: ['PARENT_COMMUNICATION_REPLIES'] },
-  { q: 'cumpleaños de este mes', expected: ['BIRTHDAYS_CALENDAR'] }
+  { q: 'cumpleaños de este mes', expected: ['BIRTHDAYS_CALENDAR'] },
+
+  // 9. Consultas Críticas de Matrícula, Facturación, Nómina y Comparativa Multi-Plantel
+  { q: 'cual es la matricula de mi mayor plantel', expected: ['CAMPUSES_GROUPS'], expectedContent: '1,620' },
+  { q: 'cuales la matricula de mi mayor plantel', expected: ['CAMPUSES_GROUPS'], expectedContent: '1,620' },
+  { q: 'cual es el colegio mas grande', expected: ['CAMPUSES_GROUPS'], expectedContent: '1,620' },
+  { q: 'plantel con menor matricula', expected: ['CAMPUSES_GROUPS'], expectedContent: '420' },
+  { q: 'cual es la facturacion de mis colegios', expected: ['CAMPUSES_GROUPS'], expectedContent: '$5,000,000' },
+  { q: 'cual fue la facturacion de mi colegio mas grande', expected: ['CAMPUSES_GROUPS'], expectedContent: '$2,180,000' },
+  { q: 'cual es la nomina de mis 2 planteles con mas alumnos', expected: ['CAMPUSES_GROUPS'], expectedContent: '$1,880,000' },
+  { q: 'comparativa entre alumnos, profesores, colegios y fases', expected: ['CAMPUSES_GROUPS'], expectedContent: 'Ecosistema' }
 ];
 
 console.log('--- INICIO DE PRUEBAS FORENSES CEO ---');
@@ -116,13 +126,18 @@ let failed = 0;
 
 for (const t of queriesToTest) {
   const res = executeAnalyticQuery(t.q, sourcesIbime);
-  const ok = t.expected.includes(res.domain);
-  if (ok) {
+  const domainOk = t.expected.includes(res.domain);
+  const contentOk = !t.expectedContent || 
+    (res.directAnswer && res.directAnswer.includes(t.expectedContent)) || 
+    res.reportTitle.includes(t.expectedContent) ||
+    res.kpis.some(k => k.value.includes(t.expectedContent) || (k.subtext && k.subtext.includes(t.expectedContent)));
+  
+  if (domainOk && contentOk) {
     passed++;
     console.log(`[OK] "${t.q}" -> Domain: ${res.domain} | Title: ${res.reportTitle}`);
   } else {
     failed++;
-    console.error(`[FAIL] "${t.q}" -> Obtenido: ${res.domain} | Esperado: ${t.expected.join(' o ')} | Title: ${res.reportTitle}`);
+    console.error(`[FAIL] "${t.q}" -> Obtenido: ${res.domain} | Esperado: ${t.expected.join(' o ')} | ContentOk: ${contentOk} (buscando '${t.expectedContent}') | Title: ${res.reportTitle}`);
   }
 }
 
