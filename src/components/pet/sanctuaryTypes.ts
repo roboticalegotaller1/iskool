@@ -554,3 +554,51 @@ export const SANCTUARY_SLOTS: SanctuarySlotConfig[] = [
   { id: 31, zone: 'wall', label: 'Bandera del Gremio Izquierda', xPercent: 2, yPercent: 36, zIndex: 3, allowedCategories: ['wall'], slotScale: 0.85 },
   { id: 32, zone: 'wall', label: 'Bandera del Gremio Derecha', xPercent: 96, yPercent: 36, zIndex: 3, allowedCategories: ['wall'], slotScale: 0.85 }
 ];
+
+/**
+ * Determina de forma inteligente la ranura óptima para colocar un objeto en el hábitat
+ * garantizando colocación en 1 clic sin fricción (especialmente camas en Slot 1).
+ */
+export function getDefaultSlotForCategory(category: FurnitureCategory, placedItems: Record<number, string> = {}): number {
+  if (category === 'bed') {
+    if (!placedItems[1]) return 1;
+    if (!placedItems[5]) return 5;
+    if (!placedItems[2]) return 2;
+    return 1;
+  }
+  if (category === 'food') {
+    if (!placedItems[13]) return 13;
+    if (!placedItems[14]) return 14;
+    if (!placedItems[15]) return 15;
+    return 13;
+  }
+  if (category === 'toy') {
+    if (!placedItems[7]) return 7;
+    if (!placedItems[8]) return 8;
+    if (!placedItems[9]) return 9;
+    if (!placedItems[12]) return 12;
+    return 7;
+  }
+  if (category === 'lighting') {
+    if (!placedItems[4]) return 4;
+    if (!placedItems[18]) return 18;
+    if (!placedItems[23]) return 23;
+    if (!placedItems[24]) return 24;
+    return 4;
+  }
+  if (category === 'decor') {
+    if (!placedItems[10]) return 10;
+    if (!placedItems[19]) return 19;
+    if (!placedItems[21]) return 21;
+    if (!placedItems[25]) return 25;
+    return 19;
+  }
+  if (category === 'wall') {
+    if (!placedItems[26]) return 26;
+    if (!placedItems[27]) return 27;
+    if (!placedItems[28]) return 28;
+    if (!placedItems[30]) return 30;
+    return 26;
+  }
+  return 1;
+}

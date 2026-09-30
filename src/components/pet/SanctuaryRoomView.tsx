@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { 
-  Plus, X, Heart, Sparkles, Move, Moon, Utensils, Gamepad2, Info
+  Plus, X, Heart, Sparkles, Move, Moon, Utensils, Gamepad2, Info, Bed
 } from 'lucide-react';
 import { 
   HouseThemeId, 
@@ -378,6 +378,18 @@ export const SanctuaryRoomView: React.FC<SanctuaryRoomViewProps> = ({
                   <Plus className="w-5 h-5 group-hover:scale-125 transition-transform" />
                   <span className="text-[7.5px] font-black uppercase tracking-tighter truncate px-1 text-center text-amber-200">
                     {slot.label}
+                  </span>
+                </button>
+              ) : slot.id === 1 ? (
+                <button
+                  type="button"
+                  onClick={() => onSlotClick(1)}
+                  className="w-full h-full rounded-2xl border-2 border-dashed border-indigo-400/50 hover:border-indigo-300 bg-indigo-950/30 hover:bg-indigo-950/60 flex flex-col items-center justify-center text-indigo-300 transition-all cursor-pointer shadow-md group animate-pulse"
+                  title="Haz clic para colocar la cama de tu compañero"
+                >
+                  <Bed className="w-5 h-5 text-indigo-400 group-hover:scale-125 transition-transform" />
+                  <span className="text-[7.5px] font-black uppercase tracking-tighter truncate px-1 text-center text-indigo-200">
+                    + Colocar Cama
                   </span>
                 </button>
               ) : null

@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { marked } from 'marked';
 import DOMPurify from 'isomorphic-dompurify';
+import { useIsSuperUser } from '@/hooks/useIsSuperUser';
 import { normalizeLatinHistoricalPhonetics } from '@/lib/historicalVoiceEngine';
 
 // ----------------------------------------------------------------------------
@@ -63,6 +64,7 @@ const PRESET_EXECUTIVE_QUERIES = [
 ];
 
 export const ExecutiveOracleDashboard: React.FC = () => {
+  const isSuperUser = useIsSuperUser();
   // 1. Estado reactivo del puesto de mando
   const [queryInput, setQueryInput] = useState('');
   const [processState, setProcessState] = useState<OracleProcessState>('idle');
@@ -283,7 +285,11 @@ export const ExecutiveOracleDashboard: React.FC = () => {
           {telemetry.origin === 'CACHE_HIT' && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-950/70 border border-emerald-500/40 text-emerald-400 text-xs font-semibold shadow-inner">
               <Zap className="w-3.5 h-3.5 fill-emerald-400" />
-              <span>0 Tokens · Caché Semántico en Tiempo Real</span>
+              <span>
+                {isSuperUser 
+                  ? `${telemetry.tokensConsumed || 0} Tokens · Caché Semántico en Tiempo Real` 
+                  : 'Bóveda Curricular · Caché Semántico en Tiempo Real'}
+              </span>
               {telemetry.similarity && (
                 <span className="ml-1 opacity-75">({(telemetry.similarity * 100).toFixed(1)}%)</span>
               )}

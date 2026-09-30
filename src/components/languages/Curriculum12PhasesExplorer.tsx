@@ -96,7 +96,7 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
       name: 'Fase 8: Tutor Conversacional Socrático',
       tag: 'Diálogo Pedagógico',
       desc: 'Tutor 1 a 1 que orienta mediante preguntas detonadoras, detecta interferencias fonéticas y no da respuestas masticadas.',
-      metric: '0 Tokens (Voz Local)'
+      metric: 'Procesamiento de Voz Local'
     },
     {
       id: 9,

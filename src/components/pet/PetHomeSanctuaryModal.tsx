@@ -10,7 +10,8 @@ import {
   SANCTUARY_HOUSES, 
   SANCTUARY_SLOTS, 
   ALL_SANCTUARY_ITEMS,
-  FurnitureItem 
+  FurnitureItem,
+  getDefaultSlotForCategory
 } from './sanctuaryTypes';
 import { SanctuaryRoomView } from './SanctuaryRoomView';
 import { SanctuaryShopModal } from './SanctuaryShopModal';
@@ -53,6 +54,7 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
   // Estados de control de la UI
   const [isDecoratingMode, setIsDecoratingMode] = useState(false);
   const [isShopModalOpen, setIsShopModalOpen] = useState(false);
+  const [isInventoryDrawerOpen, setIsInventoryDrawerOpen] = useState(false);
   const [selectedSlotForPlacement, setSelectedSlotForPlacement] = useState<number | null>(null);
 
   if (!isOpen) return null;
@@ -103,6 +105,12 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
   // Retirar objeto de una ranura
   const handleRemoveItem = (slotId: number) => {
     removeSanctuaryItem(activeStudentId, slotId);
+  };
+
+  // Colocación rápida e intuitiva en 1 clic
+  const handleQuickPlaceFromInventory = (item: FurnitureItem, targetSlotId?: number) => {
+    const slotId = targetSlotId ?? getDefaultSlotForCategory(item.category, placedItems);
+    placeSanctuaryItem(activeStudentId, slotId, item.id);
   };
 
   const selectedSlotConfig = selectedSlotForPlacement !== null 
@@ -267,6 +275,23 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
                     <span className="hidden sm:inline">Modo Decorar (32 Ranuras)</span>
                   </>
                 )}
+              </span>
+            </button>
+
+            {/* Botón de Inventario Rápido (Mis Muebles y Camas) */}
+            <button
+              onClick={() => setIsInventoryDrawerOpen(prev => !prev)}
+              className={`px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer shadow-md ${
+                isInventoryDrawerOpen
+                  ? 'bg-emerald-500 text-slate-950 shadow-emerald-500/30'
+                  : 'bg-zinc-800 hover:bg-zinc-700 text-emerald-300 border border-emerald-500/40'
+              }`}
+              title="Colocar o cambiar camas y objetos con 1 clic"
+            >
+              <Bed className="w-3.5 h-3.5 text-emerald-400" />
+              <span>
+                <span className="sm:hidden">Muebles ({inventory.length})</span>
+                <span className="hidden sm:inline">Mis Muebles ({inventory.length})</span>
               </span>
             </button>
 
@@ -436,13 +461,104 @@ export const PetHomeSanctuaryModal: React.FC<PetHomeSanctuaryModalProps> = ({
           </div>
         )}
 
+        {/* DRAWER / PANEL INFERIOR DE INVENTARIO Y COLOCACIÓN RÁPIDA DE CAMAS Y MUEBLES */}
+        {isInventoryDrawerOpen && (
+          <div className="border-t border-amber-500/30 bg-zinc-950/95 backdrop-blur-md p-3 sm:p-4 animate-in slide-in-from-bottom-4 shrink-0 max-h-64 overflow-y-auto custom-scrollbar">
+            <div className="flex items-center justify-between pb-2 mb-2 border-b border-zinc-800">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                <h3 className="text-xs sm:text-sm font-black text-white">
+                  Mis Muebles y Camas ({inventory.length})
+                </h3>
+                <span className="text-[10px] text-zinc-400 hidden sm:inline">
+                  Coloca camas u objetos en tu hogar con un solo clic.
+                </span>
+              </div>
+              <button
+                onClick={() => setIsInventoryDrawerOpen(false)}
+                className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-800 transition-colors cursor-pointer"
+                aria-label="Cerrar inventario"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {inventory.length === 0 ? (
+              <div className="p-4 text-center text-xs text-zinc-400">
+                Aún no tienes objetos. Adquiere tu primera cama o juguete en la{' '}
+                <button
+                  onClick={() => setIsShopModalOpen(true)}
+                  className="text-amber-400 font-bold underline cursor-pointer hover:text-amber-300"
+                >
+                  Tienda del Santuario
+                </button>.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                {inventory.map((itemId) => {
+                  const item = ALL_SANCTUARY_ITEMS.find(i => i.id === itemId);
+                  if (!item) return null;
+                  const placedEntry = Object.entries(placedItems).find(([_, id]) => id === item.id);
+                  const isPlaced = placedEntry !== undefined;
+                  const currentSlotId = placedEntry ? Number(placedEntry[0]) : null;
+
+                  return (
+                    <div
+                      key={item.id}
+                      className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all ${
+                        isPlaced 
+                          ? 'bg-emerald-950/50 border-emerald-500/40 shadow-xs' 
+                          : 'bg-zinc-900/80 border-zinc-800 hover:border-amber-500/40'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-10 h-10 flex items-center justify-center shrink-0 bg-zinc-950 rounded-xl p-1 border border-zinc-800">
+                          <SanctuaryFurnitureSvg itemId={item.id} />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs font-black text-white truncate">{item.name}</div>
+                          <div className="text-[10px] text-amber-300 font-medium">
+                            {item.category === 'bed' ? `+${item.energyBonus}⚡ Energía` : item.category}
+                          </div>
+                        </div>
+                      </div>
+
+                      {isPlaced ? (
+                        <button
+                          type="button"
+                          onClick={() => currentSlotId !== null && handleRemoveItem(currentSlotId)}
+                          className="px-2.5 py-1 text-[10px] font-bold rounded-xl bg-zinc-800 hover:bg-rose-950 text-zinc-400 hover:text-rose-300 border border-zinc-700 shrink-0 cursor-pointer transition-colors"
+                          title="Retirar de la habitación"
+                        >
+                          Quitar
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleQuickPlaceFromInventory(item)}
+                          className="px-3 py-1.5 text-xs font-black rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 text-slate-950 shrink-0 cursor-pointer shadow-sm active:scale-95 animate-pulse transition-all"
+                        >
+                          {item.category === 'bed' ? 'Colocar Cama' : 'Colocar'}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Modal de Tienda */}
         <SanctuaryShopModal
           isOpen={isShopModalOpen}
           onClose={() => setIsShopModalOpen(false)}
           userCoins={stats.coins || 0}
           inventory={inventory}
+          placedItems={placedItems}
           onPurchaseItem={handlePurchaseItem}
+          onPlaceItem={handleQuickPlaceFromInventory}
+          onRemoveItem={handleRemoveItem}
         />
 
       </div>

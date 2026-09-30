@@ -4,6 +4,7 @@ import React, { useState, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useIsSuperUser } from '@/hooks/useIsSuperUser';
 import { GUIDE_ROLE_DATA, RoleGuideData, RoleFeature, GuideStep } from '@/data/guideRoleContent';
 import { SIMULATORS_DIRECTORY, SimulatorItem } from '@/data/simulatorsDirectory';
 import { 
@@ -148,6 +149,7 @@ const STUDIO_BLOCKS = [
 function GuideContent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
+  const isSuperUser = useIsSuperUser();
 
   // 1. Determinar si el usuario tiene privilegios de Dirección / Coordinación / Superadmin
   const isDirectorOrAdmin = Boolean(
@@ -501,7 +503,7 @@ function GuideContent() {
                   </span>
                 </div>
                 <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
-                  Guía Oficial de Bóveda Curricular, Libros SEP (0 Tokens) y Estudio Didáctico
+                  Guía Oficial de Bóveda Curricular, Libros SEP y Estudio Didáctico
                 </h2>
                 <p className="text-xs text-slate-600 dark:text-zinc-400 mt-0.5">
                   Colegio Anglo Mexicano • Tu perfil visualiza exclusivamente las guías y herramientas asignadas a tu portal docente.
@@ -704,11 +706,11 @@ function GuideContent() {
         <div className="relative">
           <div className="relative flex items-center">
             <Search className="w-5 h-5 absolute left-4 text-purple-500 dark:text-purple-400" />
-            <input aria-label="Buscar en el Centro de Ayuda (ej. mascotas, santuario, avatar, libros SEP, tokens, suspensión, 17 bloques)..."
+            <input aria-label="Buscar en el Centro de Ayuda (ej. mascotas, santuario, avatar, libros SEP, planeaciones, suspensión, 17 bloques)..."
               type="text"
               value={guideSearchQuery}
               onChange={(e) => setGuideSearchQuery(e.target.value)}
-              placeholder="Buscar en el Centro de Ayuda (ej. mascotas, santuario, avatar, libros SEP, tokens, suspensión, 17 bloques)..."
+              placeholder="Buscar en el Centro de Ayuda (ej. mascotas, santuario, avatar, libros SEP, planeaciones, suspensión, 17 bloques)..."
               className="w-full pl-12 pr-10 py-3.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-xs sm:text-sm text-slate-900 dark:text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder:text-slate-400"
             />
             {guideSearchQuery && (
@@ -786,7 +788,7 @@ function GuideContent() {
                   📚 Bóveda Curricular & Videoteca
                 </a>
                 <a href="#libros-sep" className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/30 transition-colors">
-                  📖 Libros SEP (0 Tokens)
+                  📖 Libros SEP Institucionales
                 </a>
                 <a href="#bloques-studio" className="px-3 py-1.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 border border-purple-400/30 transition-colors">
                   🛠️ 17 Bloques del Estudio
@@ -799,7 +801,7 @@ function GuideContent() {
             {activeRole === 'admin' && (
               <>
                 <a href="#super-usuario" className="px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-400/30 transition-colors">
-                  ⚡ Auditoría de Tokens
+                  {isSuperUser ? '⚡ Auditoría de Tokens' : '⚡ Auditoría de Rendimiento IA'}
                 </a>
                 <a href="#suspension-preservacion" className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/30 transition-colors">
                   🔒 Suspensión & Preservación
@@ -1173,13 +1175,13 @@ function GuideContent() {
                 <div>
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 text-xs font-black uppercase">
                     <BookOpen className="w-3.5 h-3.5" />
-                    <span>Contenido Oficial de la SEP • 0 Tokens</span>
+                    <span>Contenido Oficial de la SEP • Bóveda Curricular</span>
                   </div>
                   <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-1">
                     Libros Digitales SEP & Cuaderno Inteligente
                   </h3>
                   <p className="text-xs text-slate-600 dark:text-zinc-400 max-w-2xl">
-                    Aprovecha los libros de texto gratuitos de Primaria y Secundaria de Conaliteg con indexación directa a 0 tokens y fundamentación de preguntas con citas exactas de página.
+                    Aprovecha los libros de texto gratuitos de Primaria y Secundaria de Conaliteg con indexación directa en Bóveda Curricular y fundamentación de preguntas con citas exactas de página.
                   </p>
                 </div>
 
@@ -1204,7 +1206,7 @@ function GuideContent() {
 
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-850 border border-slate-200 dark:border-zinc-800 space-y-2">
                   <span className="text-xs font-black uppercase text-cyan-600 dark:text-cyan-400">
-                    ⚡ Mapeo a Coste Cero (0 Tokens)
+                    ⚡ Mapeo Directo en Bóveda Curricular
                   </span>
                   <p className="text-xs text-slate-600 dark:text-zinc-400 leading-relaxed">
                     La extracción estructural directa permite a los docentes vincular lecturas y problemas oficiales a sus planeaciones sin consumir la cuota de IA del plantel.
@@ -1288,7 +1290,7 @@ function GuideContent() {
                     <span>Portal de Super Usuario • Auditoría en Vivo</span>
                   </div>
                   <h3 className="text-xl sm:text-3xl font-black text-white mt-2">
-                    Métricas de Consumo de Tokens & Eficiencia de IA
+                    {isSuperUser ? 'Métricas de Consumo de Tokens & Eficiencia de IA' : 'Métricas de Capacidad & Eficiencia de IA'}
                   </h3>
                   <p className="text-xs sm:text-sm text-cyan-200 max-w-2xl mt-1 leading-relaxed">
                     Monitoreo en tiempo real del uso del Motor de IA Pedagógica, costo acumulado por plantel, llamadas a la API y el impacto del ahorro generado por la Bóveda Curricular.
@@ -1307,15 +1309,21 @@ function GuideContent() {
               {/* Tarjetas de Métricas Simuladas en Tiempo Real */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
-                  <span className="text-[10px] font-black uppercase text-cyan-300">Total Tokens Consumidos</span>
-                  <div className="text-xl font-black text-white">412,850</div>
+                  <span className="text-[10px] font-black uppercase text-cyan-300">
+                    {isSuperUser ? 'Total Tokens Consumidos' : 'Capacidad Pedagógica IA'}
+                  </span>
+                  <div className="text-xl font-black text-white">
+                    {isSuperUser ? '412,850 tokens' : 'Óptima (Alta Disp.)'}
+                  </div>
                   <span className="text-[10px] text-emerald-400 font-bold">● Dentro de cuota institucional</span>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">
                   <span className="text-[10px] font-black uppercase text-emerald-300">Ahorro Vault-First</span>
                   <div className="text-xl font-black text-emerald-400">88.4%</div>
-                  <span className="text-[10px] text-slate-300">Resuelto en &lt;5ms sin tokens</span>
+                  <span className="text-[10px] text-slate-300">
+                    {isSuperUser ? 'Resuelto en <5ms sin tokens' : 'Resuelto en <5ms desde Bóveda'}
+                  </span>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-1">

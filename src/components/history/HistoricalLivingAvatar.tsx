@@ -21,6 +21,7 @@ import {
   Check,
   Loader2
 } from 'lucide-react';
+import { useIsSuperUser } from '@/hooks/useIsSuperUser';
 import { getSupportedRecordingMimeType } from '@/lib/audioEngine';
 import { 
   configureHistoricalUtterance, 
@@ -260,15 +261,13 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
+  const isSuperUser = useIsSuperUser();
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(true);
-  const [tokenFeedback, setTokenFeedback] = useState<{ cost: number; source: string } | null>({
-    cost: 0,
-    source: 'Bóveda Curricular (0 Tokens)'
-  });
+  const [tokenFeedback, setTokenFeedback] = useState<{ cost: number; source: string } | null>(null);
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState('');
   const [hasApiKey, setHasApiKey] = useState(false);
@@ -838,7 +837,9 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
 
         setTokenFeedback({
           cost: data.tokenCost || 0,
-          source: data.cached ? 'Bóveda Curricular (0 Tokens)' : 'Motor de IA Pedagógica'
+          source: data.cached 
+            ? (isSuperUser ? 'Bóveda Curricular (0 Tokens)' : 'Bóveda Curricular') 
+            : (isSuperUser ? `Motor IA (${data.tokenCost || 0} tokens)` : 'Motor de IA Pedagógica')
         });
 
         if (onQuestionAsked) {
@@ -1279,10 +1280,14 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
                   ? 'bg-emerald-950/70 text-emerald-300 border-emerald-500/40 hover:bg-emerald-900/80 shadow-sm'
                   : 'bg-amber-950/60 text-amber-300/80 border-amber-500/30 hover:bg-amber-900/60'
               }`}
-              title="Configurar clave para generación con tokens de Inteligencia Artificial"
+              title={isSuperUser ? "Configurar clave para generación con tokens de Inteligencia Artificial" : "Configurar Motor de Inteligencia Artificial"}
             >
               <Key className="w-2.5 h-2.5" />
-              <span>{hasApiKey ? 'Tokens IA Activos' : 'Configurar Clave IA'}</span>
+              <span>
+                {hasApiKey 
+                  ? (isSuperUser ? `Tokens IA (${tokenFeedback?.cost || 0})` : 'Motor IA Activo') 
+                  : (isSuperUser ? 'Tokens IA' : 'Motor IA')}
+              </span>
             </button>
             <span className="text-[10px] text-amber-400/80 bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-500/20">
               Responde en 1ª Persona
@@ -1316,11 +1321,11 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
                     <span>{msg.timestamp}</span>
                     {msg.isCached ? (
                       <span className="text-emerald-400 font-mono font-bold flex items-center gap-0.5">
-                        <Database className="w-2.5 h-2.5" /> 0 Tokens (Bóveda)
+                        <Database className="w-2.5 h-2.5" /> {isSuperUser ? '0 Tokens (Bóveda)' : 'Bóveda Curricular'}
                       </span>
                     ) : (
                       <span className="text-amber-300 font-mono font-bold flex items-center gap-0.5">
-                        <Sparkles className="w-2.5 h-2.5" /> Tokens IA (Guardado en Bóveda)
+                        <Sparkles className="w-2.5 h-2.5" /> {isSuperUser ? `${tokenFeedback?.cost || 120} Tokens IA (Guardado en Bóveda)` : 'Motor de IA Pedagógica'}
                       </span>
                     )}
                   </div>
@@ -1428,7 +1433,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
               <div className="flex items-center justify-between border-b border-amber-500/20 pb-3">
                 <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
                   <Key className="w-4 h-4 text-amber-400" />
-                  <span>Tokens e Inteligencia Artificial</span>
+                  <span>{isSuperUser ? 'Tokens e Inteligencia Artificial' : 'Motor de Inteligencia Artificial Pedagógica'}</span>
                 </div>
                 <button
                   type="button"
@@ -1440,8 +1445,17 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
               </div>
 
               <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
-                Las preguntas que ya existen en la <strong className="text-amber-300">Bóveda Curricular</strong> se responden al instante con <span className="text-emerald-400 font-bold">0 Tokens</span>.
-                Para preguntas inéditas en tiempo real, puedes vincular tu clave del <strong className="text-amber-300">Motor de IA Pedagógica</strong> (se almacena de forma segura solo en tu sesión).
+                {isSuperUser ? (
+                  <>
+                    Las preguntas que ya existen en la <strong className="text-amber-300">Bóveda Curricular</strong> se responden al instante con <span className="text-emerald-400 font-bold">0 Tokens</span>.
+                    Para preguntas inéditas en tiempo real, puedes vincular tu clave del <strong className="text-amber-300">Motor de IA Pedagógica</strong> (se contabilizan tokens exactos de entrada y salida).
+                  </>
+                ) : (
+                  <>
+                    Las preguntas que ya existen en la <strong className="text-amber-300">Bóveda Curricular</strong> se responden al instante desde la memoria pedagógica central.
+                    Para preguntas inéditas en tiempo real, puedes vincular tu clave del <strong className="text-amber-300">Motor de IA Pedagógica</strong> (se almacena de forma segura solo en tu sesión).
+                  </>
+                )}
               </p>
 
               <div className="space-y-1.5">

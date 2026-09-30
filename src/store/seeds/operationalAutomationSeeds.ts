@@ -285,7 +285,7 @@ export const CFDI_STAMPING_TRACE_SEEDS: FlowExecutionTraceRecord[] = Array.from(
     actionsTaken: [
       'Generación de XML Anexo 20 con clave de producto educativo 86121500',
       'Inyección de complemento IEDU (CURP, Nivel Educativo, Clave RVOE del plantel)',
-      'Sellado digital con PAC autorizado a 0 tokens y timbrado exitoso',
+      'Sellado digital con PAC autorizado y timbrado exitoso de alta disponibilidad',
       'Depósito automático en Bóveda Fiscal y envío de XML/PDF al correo del tutor'
     ],
     channelDelivered: 'Bóveda Fiscal Inmutable + Correo Electrónico con XML y PDF sellado',

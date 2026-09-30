@@ -25,6 +25,7 @@ import { DetailedStudent, AttendanceStatus, Attendance, ParentMessage, Quest, Qu
 import { TeacherHubCards } from '@/components/TeacherHubCards';
 import { RowActionMenu } from '@/components/ui';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useIsSuperUser } from '@/hooks/useIsSuperUser';
 
 // Carga diferida de pestañas y modales pesados bajo demanda
 const PlanningTab = dynamic(
@@ -199,6 +200,7 @@ function TeacherDashboardContent() {
   );
 
   const currentTeacher = user as UserProfile;
+  const isSuperUser = useIsSuperUser();
   const effectiveTeacherId = queryTeacherId || currentTeacher?.id;
   const normalizedTeacherId = effectiveTeacherId === 'c00a0eeb-9c0b-4ef8-bb6d-6bb9bd380a55' ? 'usr-teacher-1' : effectiveTeacherId;
   const subjects = SUBJECTS_SEED;
@@ -934,14 +936,23 @@ function TeacherDashboardContent() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3 shrink-0 w-full lg:w-auto justify-end">
-              {/* Indicador de Cuota de Tokens IA */}
-              <div className="px-3.5 py-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 text-right">
-                <span className="text-[9px] font-bold text-purple-300 block uppercase tracking-wider">Cuota de Tokens IA</span>
-                <span className="text-sm font-black text-amber-300">
-                  {((currentTeacher?.ai_tokens_consumed || 62400) / 1000).toFixed(1)}k
-                  <span className="text-xs font-normal text-purple-200"> / {((currentTeacher?.token_quota || 250000) / 1000).toFixed(0)}k</span>
-                </span>
-              </div>
+              {/* Indicador de Capacidad / Tokens IA (Exclusivo Super Usuario) */}
+              {isSuperUser ? (
+                <div className="px-3.5 py-2 rounded-2xl bg-purple-950/80 backdrop-blur-md border border-purple-500/40 text-right shadow-sm" title="Monitoreo Exclusivo de Super Usuario">
+                  <span className="text-[9px] font-black text-purple-300 block uppercase tracking-wider">Tokens IA Consumidos</span>
+                  <span className="text-sm font-black text-amber-300 font-mono">
+                    {(currentTeacher?.ai_tokens_consumed || 62400).toLocaleString()}
+                    <span className="text-xs font-normal text-purple-200"> / {(currentTeacher?.token_quota || 250000).toLocaleString()} tokens</span>
+                  </span>
+                </div>
+              ) : (
+                <div className="px-3.5 py-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/10 text-right">
+                  <span className="text-[9px] font-bold text-purple-300 block uppercase tracking-wider">Capacidad Pedagógica IA</span>
+                  <span className="text-sm font-black text-white">
+                    Óptima <span className="text-xs font-normal text-purple-200">• Alta Disponibilidad</span>
+                  </span>
+                </div>
+              )}
 
               {/* Botón Administrador de Grupos y Alumnos */}
               <button

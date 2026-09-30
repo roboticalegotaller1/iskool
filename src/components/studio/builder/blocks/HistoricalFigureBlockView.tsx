@@ -10,6 +10,7 @@ import {
   HistoricalKeyLocation 
 } from '@/types/studioBlocks';
 import { useActivityBuilderStore } from '@/store/useActivityBuilderStore';
+import { useIsSuperUser } from '@/hooks/useIsSuperUser';
 import { 
   Landmark, 
   Sparkles, 
@@ -36,13 +37,16 @@ interface Props {
 export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
   const { updateBlockData } = useActivityBuilderStore();
   const data = block.data;
+  const isSuperUser = useIsSuperUser();
 
   const [inputName, setInputName] = useState(data.characterName || 'Josefa Ortiz de Domínguez');
   const [isSite, setIsSite] = useState(Boolean(data.isGeographicSite));
   const [selectedSpine, setSelectedSpine] = useState<BookSpineStyle>(data.bookSpineStyle || 'diario_republicano');
   const [isSearchingVault, setIsSearchingVault] = useState(false);
   const [feedbackStatus, setFeedbackStatus] = useState<{ type: 'vault' | 'ai' | 'error'; message: string } | null>(
-    data.isFromVault ? { type: 'vault', message: 'Nodo sincronizado desde la Bóveda Curricular (0 Tokens)' } : null
+    data.isFromVault 
+      ? { type: 'vault', message: isSuperUser ? 'Nodo sincronizado desde la Bóveda Curricular (0 Tokens)' : 'Nodo sincronizado desde la Bóveda Curricular' } 
+      : null
   );
   const [showBookPreviewModal, setShowBookPreviewModal] = useState(false);
   const [projectorMode, setProjectorMode] = useState(false);
@@ -85,7 +89,9 @@ export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
         });
         setFeedbackStatus({
           type: 'vault',
-          message: '¡Encontrado en Bóveda Curricular! Recuperado sin consumo de tokens (0 Tokens).'
+          message: isSuperUser 
+            ? '¡Encontrado en Bóveda Curricular! Recuperado sin consumo de tokens (0 Tokens).' 
+            : '¡Encontrado en Bóveda Curricular! Recuperado desde la memoria pedagógica.'
         });
         setIsSearchingVault(false);
         return;
@@ -121,7 +127,9 @@ export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
         });
         setFeedbackStatus({
           type: 'ai',
-          message: '¡Generado con éxito! Persistido en Bóveda Curricular para futuros usos con 0 tokens.'
+          message: isSuperUser 
+            ? '¡Generado con éxito! Persistido en Bóveda Curricular para futuros usos con 0 tokens.' 
+            : '¡Generado con éxito! Persistido en la Bóveda Curricular para consultas instantáneas.'
         });
       } else {
         setFeedbackStatus({

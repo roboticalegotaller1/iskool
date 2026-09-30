@@ -38,10 +38,10 @@ export const GUIDE_ROLE_DATA: Record<string, RoleGuideData> = {
     roleTitle: 'Guía Integral del Profesor, Bóveda Curricular & Taller Gamificado',
     roleSubtitle: 'Colegio Anglo Mexicano • 703 Nodos NEM 2024, Libros Digitales SEP y Estudio Didáctico',
     roleBadge: 'Rol: Docente / Titular de Academia',
-    heroDescription: 'Diseña planeaciones didácticas oficiales con la Bóveda Curricular de 703 nodos NEM 2024 y transforma tus clases en aventuras interactivas. Con ISkool puedes consultar planeaciones al instante (<5ms), aprovechar el mapeo curricular a 0 tokens de los Libros de Texto Digitales de la SEP, generar proyectos con el Asistente Pedagógico IA, construir actividades con 17 bloques interactivos en el Lienzo Digital, integrar videoteca certificada (YouTube 200 OK), incrustar 50 simuladores científicos y evaluar el dominio formativo de tus alumnos en tiempo real.',
+    heroDescription: 'Diseña planeaciones didácticas oficiales con la Bóveda Curricular de 703 nodos NEM 2024 y transforma tus clases en aventuras interactivas. Con ISkool puedes consultar planeaciones al instante (<5ms), aprovechar el mapeo curricular directo en Bóveda Curricular de los Libros de Texto Digitales de la SEP, generar proyectos con el Asistente Pedagógico IA, construir actividades con 17 bloques interactivos en el Lienzo Digital, integrar videoteca certificada (YouTube 200 OK), incrustar 50 simuladores científicos y evaluar el dominio formativo de tus alumnos en tiempo real.',
     keyBenefits: [
       '📚 Bóveda Curricular con 703 Planeaciones Oficiales NEM 2024 listas para usar con respuesta en menos de 5 ms.',
-      '📖 Libros de Texto Digitales de la SEP & Cuaderno Inteligente: Mapeo curricular a 0 tokens con citas de páginas oficiales de Conaliteg.',
+      '📖 Libros de Texto Digitales de la SEP & Cuaderno Inteligente: Mapeo curricular directo en Bóveda Curricular con citas de páginas oficiales de Conaliteg.',
       '🧠 Arquitectura Vault-First: Entrega instantánea de nodos preexistentes con respaldo de IA Pedagógica exclusiva ante ausencias.',
       '🎨 Estudio de Actividades con 17 Bloques Gamificados (Drag & Drop, Escape Rooms, Crucigramas, Ruletas, Duelos Boss RPG y Laboratorios).',
       '🎥 Videoteca Pedagógica Certificada (YouTube oEmbed 200 OK) para Inglés (Pre-A1 a B2), Matemáticas, Ciencias, Historia y Español.',
@@ -69,14 +69,14 @@ export const GUIDE_ROLE_DATA: Record<string, RoleGuideData> = {
       {
         stepNumber: 2,
         title: 'Paso 2: Explotar Libros de Texto SEP & Cuaderno Inteligente',
-        subtitle: 'Mapeo Curricular a 0 Tokens & Citas Conaliteg',
-        description: 'Integra los libros de texto gratuitos de la SEP directamente en tus lecciones. El subsistema extrae conceptos, lecturas y problemas de los libros oficiales de Primaria y Secundaria a costo cero de tokens. A través del Cuaderno Inteligente, puedes fundamentar reactivos y brindar explicaciones a los alumnos con el número de página exacto del libro oficial.',
+        subtitle: 'Mapeo Curricular Directo & Citas Conaliteg',
+        description: 'Integra los libros de texto gratuitos de la SEP directamente en tus lecciones. El subsistema extrae conceptos, lecturas y problemas de los libros oficiales de Primaria y Secundaria mediante indexación estructural directa. A través del Cuaderno Inteligente, puedes fundamentar reactivos y brindar explicaciones a los alumnos con el número de página exacto del libro oficial.',
         iconName: 'BookOpen',
-        badgeText: 'Libros SEP & 0 Tokens',
+        badgeText: 'Libros SEP & Bóveda Curricular',
         colorClass: 'from-emerald-500 to-teal-600',
         highlights: [
           'Acceso inmediato a los libros de texto de Primaria y Secundaria organizados por grado.',
-          'Extracción instantánea de contenidos y ejercicios sin consumo de tokens de IA.',
+          'Extracción instantánea de contenidos y ejercicios indexados en la Bóveda Curricular.',
           'Cuaderno Inteligente con respuestas fundamentadas en citas oficiales de página.',
           'Aislamiento estricto por plantel para preservar los compendios y proyectos del colegio.'
         ]
@@ -134,7 +134,7 @@ export const GUIDE_ROLE_DATA: Record<string, RoleGuideData> = {
         category: 'Planeación Oficial',
         description: '703 planeaciones didácticas oficiales con búsqueda en <5ms, arquitectura Vault-First y respaldo con IA Pedagógica.',
         icon: 'Database',
-        benefit: 'Alineación instantánea a la NEM sin duplicar esfuerzos ni consumir tokens innecesarios.',
+        benefit: 'Alineación instantánea a la NEM sin duplicar esfuerzos gracias al almacenamiento curricular.',
         actionUrl: '/teacher',
         actionLabel: 'Abrir Planificador NEM'
       },
@@ -142,7 +142,7 @@ export const GUIDE_ROLE_DATA: Record<string, RoleGuideData> = {
         id: 'libros-sep-cuaderno',
         title: 'Libros SEP & Cuaderno Inteligente',
         category: 'Contenido Oficial',
-        description: 'Catálogo de libros de texto Conaliteg con mapeo a 0 tokens y motor de preguntas fundamentadas con citas exactas de página.',
+        description: 'Catálogo de libros de texto Conaliteg con mapeo curricular indexado y motor de preguntas fundamentadas con citas exactas de página.',
         icon: 'BookOpen',
         benefit: 'Enriquece tus clases con la bibliografía de la SEP sin coste de procesamiento.',
         actionUrl: '/teacher',
@@ -209,8 +209,8 @@ export const GUIDE_ROLE_DATA: Record<string, RoleGuideData> = {
         a: 'La política Vault-First establece que siempre que se solicita una planeación, el sistema consulta prioritariamente la Bóveda Curricular para reutilizar nodos oficiales preexistentes. Solo en caso de no encontrarse una planeación para el tema o PDA solicitado, entra en acción el Motor de IA Pedagógica para generarla. Una vez generada, se guarda automáticamente en la Bóveda y se sincroniza con el Repositorio Central para que esté disponible de por vida.'
       },
       {
-        q: '¿Cómo funciona el subsistema de Libros de Texto SEP y el Cuaderno Inteligente a 0 tokens?',
-        a: 'El sistema indexa localmente los libros de texto gratuitos oficiales de Conaliteg para Primaria y Secundaria. La extracción de lecturas, conceptos y ejercicios opera mediante indexación estructural directa, lo que permite aprovechar los contenidos curriculares a 0 tokens de IA. Además, el Cuaderno Inteligente fundamenta las respuestas y orientaciones citando el número de página y tomo exacto.'
+        q: '¿Cómo funciona el subsistema de Libros de Texto SEP y el Cuaderno Inteligente con Bóveda Curricular?',
+        a: 'El sistema indexa localmente los libros de texto gratuitos oficiales de Conaliteg para Primaria y Secundaria. La extracción de lecturas, conceptos y ejercicios opera mediante indexación estructural directa, lo que permite aprovechar los contenidos curriculares de forma instantánea y sin demoras. Además, el Cuaderno Inteligente fundamenta las respuestas y orientaciones citando el número de página y tomo exacto.'
       },
       {
         q: '¿Cuáles son los 17 bloques disponibles en el Estudio de Actividades (Lienzo Digital)?',

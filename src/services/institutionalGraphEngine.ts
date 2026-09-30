@@ -385,12 +385,12 @@ export function buildSchoolInstitutionalGraph(
       { label: 'Unidades B2B', value: `${schoolCampuses.length || 1} Sedes` },
       { label: 'Colaboradores', value: `${schoolStudents.length || targetInstitution.studentsCount || 1420}` },
       { label: 'Cobranza B2B', value: '96.4%' },
-      { label: 'Consumo IA', value: '0 Tokens' }
+      { label: 'Consumo IA', value: 'Autónomo Local' }
     ] : [
       { label: 'Planteles', value: `${schoolCampuses.length || 1} Sedes` },
       { label: 'Matrícula', value: `${schoolStudents.length || targetInstitution.studentsCount || 1420}` },
       { label: 'Cobranza', value: '94.6%' },
-      { label: 'Consumo IA', value: '0 Tokens' }
+      { label: 'Consumo IA', value: 'Autónomo Local' }
     ],
     wikilinks: [
       `hub-pedagogico-${actualSchoolId}`,
@@ -760,15 +760,15 @@ export function buildSchoolInstitutionalGraph(
       reads: 1650,
       bovedaPath: `boveda://${actualSchoolId}/finanzas/${m.id}.md`,
       summary: isCorporate
-        ? `Normativa y automatización para ${m.title} en ${schoolName}. Emisión garantizada a 0 tokens y enlace directo con clientes empresariales.`
-        : `Normativa y automatización para ${m.title} en el ${schoolName}. Emisión garantizada a 0 tokens y enlace directo con tutores legales.`,
+        ? `Normativa y automatización para ${m.title} en ${schoolName}. Emisión garantizada en alta velocidad y enlace directo con clientes empresariales.`
+        : `Normativa y automatización para ${m.title} en el ${schoolName}. Emisión garantizada en alta velocidad y enlace directo con tutores legales.`,
       keywords: isCorporate
         ? ['sat', 'cfdi', 'b2b', 'factura', 'spei', 'mora', 'aging', 'cobranza']
         : ['sat', 'cfdi', 'iedu', 'factura', 'spei', 'mora', 'aging', 'cobranza'],
       kpis: [
         { label: 'Estatus', value: 'Vigente SAT' },
         { label: 'Latencia', value: '< 200 ms' },
-        { label: 'Tokens', value: '0 Consumidos' }
+        { label: 'Procesamiento', value: 'Autónomo' }
       ],
       wikilinks: [fiscHubId, coreId],
       actionLabel: 'Auditar SAT',
@@ -1164,11 +1164,11 @@ export function buildSchoolInstitutionalGraph(
       kpis: isCorporate ? [
         { label: 'Estructura', value: '3 Fases' },
         { label: 'Estándar', value: 'Oficial ISO/STPS' },
-        { label: 'Tokens', value: '0 Tokens' }
+        { label: 'Bóveda Curricular', value: 'Disponible' }
       ] : [
         { label: 'Estructura', value: '3 Momentos' },
         { label: 'PDA SEP', value: 'Oficial' },
-        { label: 'Tokens', value: '0 Tokens' }
+        { label: 'Bóveda Curricular', value: 'Disponible' }
       ],
       wikilinks: [pedHubId],
       actionLabel: isCorporate ? 'Abrir Módulo de Competencia' : 'Abrir Planeación en Aula',
@@ -1269,8 +1269,8 @@ export function buildSchoolInstitutionalGraph(
       reads: 720 + idx * 30,
       bovedaPath: `boveda://${actualSchoolId}/finanzas/${ff.title.toLowerCase().replace(/\s+/g, '-')}.md`,
       summary: isCorporate
-        ? `Registro en ledger financiero corporativo de ${schoolName}. Conciliación B2B digital y validación PAC automatizada a 0 tokens.`
-        : `Registro en ledger financiero escolar del ${schoolName}. Conciliación digital y validación PAC automatizada a 0 tokens.`,
+        ? `Registro en ledger financiero corporativo de ${schoolName}. Conciliación B2B digital y validación PAC automatizada.`
+        : `Registro en ledger financiero escolar del ${schoolName}. Conciliación digital y validación PAC automatizada.`,
       keywords: isCorporate
         ? ['cfdi', 'factura', 'spei', 'b2b', 'comprobante']
         : ['cfdi', 'factura', 'spei', 'deduccion', 'iedu'],

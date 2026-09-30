@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StudioBlock, ActivityBuilderMetadata, FlowConnection } from '@/types/studioBlocks';
+import { useStudentStore } from '@/store/useStudentStore';
 import { LogicMathInteractivePlayer } from './LogicMathInteractivePlayer';
 import { GrimorioTimedReadingPlayer } from './GrimorioTimedReadingPlayer';
 import { MagicHistoryBookPlayer } from '@/components/history/MagicHistoryBookPlayer';
@@ -335,7 +336,13 @@ export const StudioFlowPlayer: React.FC<Props> = ({
         // No tiene conexión saliente: es un nodo final del juego
         setIsFinished(true);
         playSound('victory');
-        if (onComplete) onComplete(totalXp);
+        const activeStudent = useStudentStore.getState().activeStudentId;
+        const grantedXp = Math.max(metadata.xpReward || 50, totalXp);
+        const grantedCoins = Math.max(metadata.coinsReward || 20, coins);
+        if (activeStudent) {
+          useStudentStore.getState().addXpAndCoins(activeStudent, grantedXp, grantedCoins);
+        }
+        if (onComplete) onComplete(100);
         return;
       }
     }
@@ -348,7 +355,13 @@ export const StudioFlowPlayer: React.FC<Props> = ({
     } else {
       setIsFinished(true);
       playSound('victory');
-      if (onComplete) onComplete(totalXp);
+      const activeStudent = useStudentStore.getState().activeStudentId;
+      const grantedXp = Math.max(metadata.xpReward || 50, totalXp);
+      const grantedCoins = Math.max(metadata.coinsReward || 20, coins);
+      if (activeStudent) {
+        useStudentStore.getState().addXpAndCoins(activeStudent, grantedXp, grantedCoins);
+      }
+      if (onComplete) onComplete(100);
     }
   };
 

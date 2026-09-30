@@ -1397,8 +1397,21 @@ export const useStudentStore = create<StudentStoreState>()(
     const activeId = normalizeStudentId(studentId);
     const dbStudentId = mapStudentIdToUuid(activeId);
     const { allStats } = get();
-    const studentStats = allStats[activeId] || allStats[studentId];
-    if (!studentStats) return;
+    const studentStats = allStats[activeId] || allStats[studentId] || {
+      student_id: activeId,
+      xp: 0,
+      level: 1,
+      coins: 0,
+      current_streak: 1,
+      max_streak: 1,
+      skill_points: 0,
+      pet_energy: 100,
+      pet_happiness: 80,
+      friendship_exp: 100,
+      pet_stage: 'egg' as const,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
 
     let currentXP = (studentStats.xp || 0) + xpEarned;
     const currentCoins = (studentStats.coins || 0) + coinsEarned;
@@ -1473,8 +1486,24 @@ export const useStudentStore = create<StudentStoreState>()(
     const activeId = normalizeStudentId(studentId);
     const dbStudentId = mapStudentIdToUuid(activeId);
     const { allStats } = get();
-    const studentStats = allStats[activeId] || allStats[studentId];
-    if (!studentStats) return;
+    const studentStats = allStats[activeId] || allStats[studentId] || {
+      student_id: activeId,
+      xp: 0,
+      level: 1,
+      coins: 0,
+      current_streak: 1,
+      max_streak: 1,
+      skill_points: 0,
+      attribute_strength: 10,
+      attribute_intelligence: 10,
+      attribute_defense: 10,
+      pet_energy: 100,
+      pet_happiness: 80,
+      friendship_exp: 100,
+      pet_stage: 'egg' as const,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
 
     let currentXP = (studentStats.xp || 0) + xpEarned;
     const currentCoins = (studentStats.coins || 0) + coinsEarned;

@@ -2378,7 +2378,7 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                             {matchingBookData.book.schoolName}
                           </span>
                           <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                            0 Tokens • Mapeo Exhaustivo
+                            Bóveda Curricular • Mapeo Exhaustivo
                           </span>
                         </div>
                         <h4 className="text-base font-black text-zinc-900 dark:text-white leading-tight mt-0.5">

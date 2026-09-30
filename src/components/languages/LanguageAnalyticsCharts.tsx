@@ -104,7 +104,7 @@ export const LanguageAnalyticsCharts: React.FC<LanguageAnalyticsChartsProps> = (
           <span className="text-[10px] uppercase font-bold text-slate-400">Precisión Fonética Grupal</span>
           <div className="flex items-center justify-between">
             <span className="text-2xl font-black text-teal-300 font-mono">79.4%</span>
-            <span className="text-xs text-slate-400 font-bold">0 Tokens IA</span>
+            <span className="text-xs text-slate-400 font-bold">Modo Offline Local</span>
           </div>
           <p className="text-[11px] text-slate-400">Evaluado en tiempo real por el karaoke</p>
         </div>

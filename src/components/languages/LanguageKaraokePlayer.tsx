@@ -1407,7 +1407,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
           <div className="space-y-0.5">
             <span className="text-[10px] font-black uppercase tracking-widest text-cyan-400 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-              Reto de Pronunciación · Sistema Autónomo (0 Tokens)
+              Reto de Pronunciación · Motor de Voz Autónomo Local
             </span>
             <h3 className="text-lg font-black text-white">
               Karaoke de Fluidez Fonética

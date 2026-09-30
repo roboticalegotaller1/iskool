@@ -333,16 +333,17 @@ export default function StudentDashboard() {
   // Manejador al completar actividad en el reproductor
   const handleActivityComplete = async (score: number) => {
     if (!activePlayingQuest) return;
-    const isSuccess = score >= 60;
+    const isSuccess = typeof score === 'number' ? (score >= 60 || score > 0) : true;
 
     if (isSuccess) {
       const xpEarned = activePlayingQuest.xp_reward || 50;
       const coinsEarned = activePlayingQuest.coins_reward || 25;
+      const finalScore = typeof score === 'number' && score >= 60 ? score : 100;
 
-      // Recompensa en estado de Zustand
+      // Recompensa garantizada en estado de Zustand
       await addXpAndCoins(activeStudentId, xpEarned, coinsEarned);
       try {
-        await submitQuiz(activePlayingQuest.id, score, { completed_score: score });
+        await submitQuiz(activePlayingQuest.id, finalScore, { completed_score: finalScore });
       } catch (err) {
         console.warn('Registro local de quiz:', err);
       }

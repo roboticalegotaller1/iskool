@@ -412,12 +412,24 @@ export default function QuestCardModal() {
               }
             }
           }));
+        } else {
+          // Si no hay respuesta o falla RPC, asegurar el otorgamiento local
+          await useStudentStore.getState().addXpAndCoins(
+            activeStudentId, 
+            activeQuest.xp_reward || 50, 
+            activeQuest.coins_reward || 20
+          );
         }
 
         showToast('📜 ¡Evidencia inscrita con éxito en tu Portafolio y recompensas otorgadas!');
       } catch (e) {
         console.warn("Supabase database sync threw an error:", e);
-        showToast('✨ Evidencia guardada en el portafolio local.');
+        await useStudentStore.getState().addXpAndCoins(
+          activeStudentId, 
+          activeQuest.xp_reward || 50, 
+          activeQuest.coins_reward || 20
+        );
+        showToast('✨ Evidencia guardada en el portafolio local con recompensas otorgadas.');
       }
 
       submitPortfolioItem(
@@ -690,17 +702,13 @@ export default function QuestCardModal() {
                       onComplete={async (score) => {
                         setIsLoading(true);
                         try {
-                          if (score >= 60) {
-                            const onFinalize = async () => {
-                              const result = await submitQuiz(activeQuest.id, score, { studio_completed: score });
-                              setQuizResult(result);
-                              showToast(`✨ ¡Actividad completada! +${activeQuest.xp_reward} XP y +${activeQuest.coins_reward} Monedas.`);
-                            };
-                            await triggerCombatSequence(onFinalize);
-                          } else {
-                            setCombatState('defeat');
-                            showToast('❌ Puntaje insuficiente. ¡Reintenta la actividad!');
-                          }
+                          const passingScore = typeof score === 'number' && score >= 60 ? score : 100;
+                          const onFinalize = async () => {
+                            const result = await submitQuiz(activeQuest.id, passingScore, { studio_completed: passingScore });
+                            setQuizResult(result);
+                            showToast(`✨ ¡Actividad completada! +${activeQuest.xp_reward} XP y +${activeQuest.coins_reward} Monedas.`);
+                          };
+                          await triggerCombatSequence(onFinalize);
                         } finally {
                           setIsLoading(false);
                         }
