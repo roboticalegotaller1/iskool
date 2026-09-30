@@ -117,7 +117,23 @@ const queriesToTest = [
   { q: 'cual es la facturacion de mis colegios', expected: ['CAMPUSES_GROUPS'], expectedContent: '$5,000,000' },
   { q: 'cual fue la facturacion de mi colegio mas grande', expected: ['CAMPUSES_GROUPS'], expectedContent: '$2,180,000' },
   { q: 'cual es la nomina de mis 2 planteles con mas alumnos', expected: ['CAMPUSES_GROUPS'], expectedContent: '$1,880,000' },
-  { q: 'comparativa entre alumnos, profesores, colegios y fases', expected: ['CAMPUSES_GROUPS'], expectedContent: 'Ecosistema' }
+  { q: 'comparativa entre alumnos, profesores, colegios y fases', expected: ['CAMPUSES_GROUPS'], expectedContent: 'Ecosistema' },
+
+  // 10. Directorio Oficial y Expedientes 360°
+  { q: 'Directorio oficial de alumnos', expected: ['STUDENTS_DIRECTORY'], expectedContent: 'Directorio Oficial' },
+  { q: 'directorio de alumnos', expected: ['STUDENTS_DIRECTORY'] },
+  { q: 'padron oficial de alumnos', expected: ['STUDENTS_DIRECTORY'] },
+  { q: 'censo de alumnos', expected: ['STUDENTS_DIRECTORY'] },
+  { q: 'tutor de Diego Vargas', expected: ['STUDENT_LOOKUP'], expectedContent: 'Diego' },
+  { q: '¿Qué edad tiene Santi?', expected: ['STUDENT_LOOKUP'], expectedContent: 'Santi' },
+  { q: 'alergias de Diego', expected: ['STUDENT_LOOKUP'], expectedContent: 'Diego' },
+
+  // 11. Comparativa Forense entre Alumnos
+  { q: 'comparativa entre Santi y Diego', expected: ['STUDENTS_COMPARISON'], expectedContent: 'Santi' },
+  { q: 'quién tiene mejor promedio entre Santi y Elena', expected: ['STUDENTS_COMPARISON'], expectedContent: 'Santi' },
+  { q: 'comparar alumnos Santi y Diego', expected: ['STUDENTS_COMPARISON'], expectedContent: 'Comparativa' },
+  { q: 'Santi vs Diego', expected: ['STUDENTS_COMPARISON'], expectedContent: 'Comparativa' },
+  { q: 'comparativa de alumnos', expected: ['STUDENTS_COMPARISON'], expectedContent: 'Comparativa' }
 ];
 
 console.log('--- INICIO DE PRUEBAS FORENSES CEO ---');

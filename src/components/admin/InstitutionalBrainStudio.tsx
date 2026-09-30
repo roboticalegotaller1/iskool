@@ -491,8 +491,8 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
           || nodes.find(n => n.cluster === 'fiscal' || n.id.includes('fiscal'));
       } else if (analyticResult.domain === 'DEBTS_BILLING' || analyticResult.domain === 'FINANCIAL_SUMMARY') {
         targetNode = nodes.find(n => n.cluster === 'fiscal' || n.id.includes('fiscal'));
-      } else if (analyticResult.domain === 'STUDENT_LOOKUP' || analyticResult.domain === 'STUDENTS_DIRECTORY' || analyticResult.domain === 'STUDENT_DELETIONS_AUDIT') {
-        targetNode = nodes.find(n => n.cluster === 'medico' || n.cluster === 'crm');
+      } else if (analyticResult.domain === 'STUDENT_LOOKUP' || analyticResult.domain === 'STUDENTS_DIRECTORY' || analyticResult.domain === 'STUDENT_DELETIONS_AUDIT' || analyticResult.domain === 'STUDENTS_COMPARISON') {
+        targetNode = nodes.find(n => n.cluster === 'medico' || n.cluster === 'crm' || n.cluster === 'pedagogico');
       } else if (analyticResult.domain === 'CURRICULUM_SUBJECTS' || analyticResult.domain === 'ACADEMIC_GRADES_ASSESSMENT') {
         targetNode = nodes.find(n => n.cluster === 'pedagogico' || n.id.includes('pedagogico'));
       }
