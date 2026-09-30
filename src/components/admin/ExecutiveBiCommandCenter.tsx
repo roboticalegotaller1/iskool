@@ -48,6 +48,7 @@ import {
 } from '@/store/seeds/executiveBiSeeds';
 import { formatMXN } from '@/services/executiveAnalyticsEngine';
 import ExecutiveAnalyticsStudio from './ExecutiveAnalyticsStudio';
+import ExecutiveOracleDashboard from '@/components/oracle/ExecutiveOracleDashboard';
 
 interface ExecutiveBiCommandCenterProps {
   isEmbeddedView?: boolean;
@@ -970,7 +971,11 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
         {/* VISTA E: ASISTENTE CONVERSACIONAL INTEGRADO CON IA PEDAGÓGICA         */}
         {/* --------------------------------------------------------------------- */}
         {activeMainView === 'assistant' && (
-          <div className="w-full">
+          <div className="w-full space-y-6">
+            {/* Puesto de Mando y Oráculo de Voz Ejecutivo con Telemetría */}
+            <ExecutiveOracleDashboard />
+
+            {/* Estudio Analítico Forense Detallado */}
             <ExecutiveAnalyticsStudio
               isEmbeddedView={true}
               schoolId={schoolId}
