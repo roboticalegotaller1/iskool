@@ -117,7 +117,17 @@ const GENERAL_DEMO_ACCOUNTS: DemoAccount[] = [
     id: "std-prep",
     category: "estudiantes"
   },
-  // Gestión y Comunidad
+  {
+    name: "Familia López Mendoza",
+    role: "parent",
+    grade: "Tutor / Padre de Familia",
+    email: "israel.lopez@ejemplo.com",
+    avatarColor: "bg-amber-600",
+    id: "usr-parent-001",
+    defaultPass: "ISkoolPassword2026!",
+    category: "estudiantes"
+  },
+  // Gestión Institucional
   {
     name: "Lic. Roberto Garza",
     role: "director",
@@ -149,16 +159,6 @@ const GENERAL_DEMO_ACCOUNTS: DemoAccount[] = [
     category: "gestion"
   },
   {
-    name: "Familia López Mendoza",
-    role: "parent",
-    grade: "Tutor / Padre de Familia",
-    email: "israel.lopez@ejemplo.com",
-    avatarColor: "bg-amber-600",
-    id: "usr-parent-001",
-    defaultPass: "ISkoolPassword2026!",
-    category: "gestion"
-  },
-  {
     name: "Don Alejandro Vargas",
     role: "owner",
     grade: "Dueño de Colegio (UP Juan Jacobo Rosseau - Aislado)",
@@ -177,37 +177,6 @@ const GENERAL_DEMO_ACCOUNTS: DemoAccount[] = [
     avatarColor: "bg-blue-700",
     id: "usr-ceo-bmw",
     defaultPass: "BMW2026!",
-    category: "gestion"
-  },
-  // Directivos de ISkool (Super Usuarios Globales de Plataforma)
-  {
-    name: "Dirección General ISkool",
-    role: "admin",
-    grade: "Directivo ISkool (Super Usuario Global)",
-    email: "admin@iskool.edu.mx",
-    avatarColor: "bg-slate-800",
-    id: "usr-superadmin-1",
-    defaultPass: "008805",
-    category: "gestion"
-  },
-  {
-    name: "Dirección de Tecnología ISkool",
-    role: "admin",
-    grade: "Directivo ISkool (Super Usuario Infraestructura)",
-    email: "tecnologia@iskool.edu.mx",
-    avatarColor: "bg-cyan-700",
-    id: "usr-superadmin-2",
-    defaultPass: "008805",
-    category: "gestion"
-  },
-  {
-    name: "Dirección Pedagógica ISkool",
-    role: "admin",
-    grade: "Directivo ISkool (Super Usuario Curricular)",
-    email: "pedagogia@iskool.edu.mx",
-    avatarColor: "bg-emerald-700",
-    id: "usr-superadmin-3",
-    defaultPass: "008805",
     category: "gestion"
   }
 ];
@@ -365,7 +334,7 @@ const IBIME_DEMO_ACCOUNTS: DemoAccount[] = [
     avatarColor: "bg-teal-700",
     id: "usr-parent-ibime-01",
     defaultPass: "ISkoolPassword2026!",
-    category: "gestion",
+    category: "estudiantes",
     campusName: "Campus Montes"
   }
 ];
@@ -489,22 +458,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
   }, []);
 
   const routeUserByRole = async (userProfile: any) => {
-    // 0. Si es modo IBIME o el usuario pertenece a IBIME, ENRUTAR SIEMPRE Y EXCLUSIVAMENTE AL SISTEMA IBIME
-    const isIbimeUser = isIbimeMode || userProfile?.school_id === 'sch-ibime' || (userProfile?.email && userProfile.email.toLowerCase().includes('ibime'));
-
-    if (isIbimeUser) {
-      if (typeof window !== 'undefined') {
-        document.cookie = 'tenant-id=ibime; path=/; max-age=31536000; SameSite=Lax';
-        localStorage.setItem('tenant-id', 'ibime');
-        document.documentElement.setAttribute('data-tenant', 'ibime');
-        window.location.href = '/ibime/portal';
-      } else {
-        router.push('/ibime/portal');
-      }
-      return;
-    }
-
-    // 1. Si hay un parámetro de redirección en la URL (ej: /teacher/idiomas), priorizarlo de inmediato
+    // 0. Si hay un parámetro de redirección explícito en la URL (ej: /teacher/idiomas), priorizarlo
     if (typeof window !== 'undefined') {
       const searchParams = new URLSearchParams(window.location.search);
       const redirectParam = searchParams.get('redirect');
@@ -514,7 +468,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
           if (typeof window !== 'undefined') {
             window.location.href = redirectParam;
           }
-        }, 500);
+        }, 300);
         return;
       }
     }
@@ -526,29 +480,46 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
       await switchStudent(studentId);
     }
 
+    const isIbimeUser = isIbimeMode || userProfile?.school_id === 'sch-ibime' || (userProfile?.email && userProfile.email.toLowerCase().includes('ibime'));
+
     let targetPath = '/student';
-    if (isIbimeMode || userProfile?.school_id === 'sch-ibime' || (userProfile?.email && userProfile.email.toLowerCase().includes('ibime'))) {
+
+    if (isIbimeUser) {
+      if (typeof window !== 'undefined') {
+        document.cookie = 'tenant-id=ibime; path=/; max-age=31536000; SameSite=Lax';
+        localStorage.setItem('tenant-id', 'ibime');
+        document.documentElement.setAttribute('data-tenant', 'ibime');
+      }
+
       switch (role) {
         case 'director':
-        case 'coordinator':
-        case 'billing':
         case 'owner':
-          targetPath = '/ibime/portal';
-          break;
-        case 'teacher':
-          targetPath = '/teacher';
+        case 'ceo':
+          targetPath = '/ibime/portal?view=ceo';
           break;
         case 'parent':
+          await switchStudent('std-ibime-montes-01');
           targetPath = '/parent';
+          break;
+        case 'coordinator':
+          targetPath = '/ibime/portal?tab=sedes';
+          break;
+        case 'billing':
+          targetPath = '/ibime/portal?tab=finanzas';
+          break;
+        case 'teacher':
+          targetPath = '/ibime/portal?tab=docentes';
           break;
         case 'student':
         default:
-          targetPath = '/student';
+          targetPath = '/ibime/portal?tab=alumnos';
           break;
       }
     } else {
       switch (role) {
         case 'ceo':
+          targetPath = '/admin/ceo';
+          break;
         case 'owner':
         case 'admin':
         case 'superadmin':
@@ -567,6 +538,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
           targetPath = '/teacher';
           break;
         case 'parent':
+          await switchStudent('std-pa');
           targetPath = '/parent';
           break;
         case 'student':
@@ -581,7 +553,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
       if (typeof window !== 'undefined') {
         window.location.href = targetPath;
       }
-    }, 500);
+    }, 400);
   };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -1038,7 +1010,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
                           : 'hover:text-zinc-900 dark:hover:text-white'
                       }`}
                     >
-                      {isIbimeMode ? 'Directiva' : 'Gestión'}
+                      Gestión
                     </button>
                     <button
                       type="button"

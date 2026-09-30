@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import CEOExecutiveDashboard, { DEFAULT_IBIME_HOLDING } from '@/components/admin/CEOExecutiveDashboard';
 import { 
   IbimeCatalogService,
   IBIME_CAMPUSES,
@@ -42,9 +43,16 @@ import { DetailedStudent, Subject, Campus, UserProfile } from '@/types';
 
 type IbimeTab = 'sedes' | 'alumnos' | 'docentes' | 'boveda' | 'finanzas';
 
-export default function IbimePortalPage() {
+function IbimePortalContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const viewParam = searchParams?.get('view');
+  const tabParam = searchParams?.get('tab') as IbimeTab | null;
+
   const { user, logout, loading: authLoading } = useAuth();
+
+  // Estado para alternar entre Visión Ejecutiva CEO y Tablero Operativo Clásico
+  const [viewMode, setViewMode] = useState<'ceo' | 'operational'>('operational');
 
   // Forzar síncronamente los atributos del DOM para el tenant IBIME
   useEffect(() => {
@@ -79,6 +87,27 @@ export default function IbimePortalPage() {
   const [studentSearch, setStudentSearch] = useState<string>('');
   const [selectedLevelFilter, setSelectedLevelFilter] = useState<string>('all');
   const [selectedStudentDetail, setSelectedStudentDetail] = useState<DetailedStudent | null>(null);
+
+  // Inicialización de la vista y tab según query params o rol oficial
+  useEffect(() => {
+    if (tabParam && ['sedes', 'alumnos', 'docentes', 'boveda', 'finanzas'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
+
+  useEffect(() => {
+    if (viewParam === 'ceo') {
+      setViewMode('ceo');
+    } else if (viewParam === 'operational') {
+      setViewMode('operational');
+    } else if (user) {
+      const isDirectorOrOwner = user.role === 'director' || user.role === 'owner' || user.role === 'ceo' || user.role === 'admin' || user.role === 'superadmin';
+      // Por mandato directivo: Los directores y dueños de IBIME acceden directamente a Visión CEO
+      if (isDirectorOrOwner) {
+        setViewMode('ceo');
+      }
+    }
+  }, [viewParam, user]);
 
   // 1. Sedes Oficiales de IBIME (4 Planteles)
   const ibimeCampuses = useMemo(() => {
@@ -176,6 +205,74 @@ export default function IbimePortalPage() {
   const isCoordinator = activeUser.role === 'coordinator';
   const isBilling = activeUser.role === 'billing';
 
+  // Si está activo el modo Visión Ejecutiva CEO, renderizar el dashboard CEO integral de IBIME
+  if (viewMode === 'ceo') {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 flex flex-col">
+        {/* HEADER INSTITUCIONAL SOBERANO IBIME - VISIÓN EJECUTIVA CEO */}
+        <header className="sticky top-0 z-50 w-full bg-[#047857] text-white shadow-md border-b border-emerald-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-white text-[#047857] flex items-center justify-center font-black text-xl shadow-md border border-emerald-300 shrink-0">
+                IB
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg sm:text-xl font-extrabold tracking-tight text-white block">
+                    Instituto Bilingüe IBIME
+                  </span>
+                  <span 
+                    data-testid="institutional-badge" 
+                    style={{ color: '#047857' }}
+                    className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-[#047857] border border-emerald-300 shadow-xs"
+                  >
+                    IBIME Bicultural Hub
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-400 text-amber-950 border border-amber-300 shadow-xs font-bold">
+                    Visión Ejecutiva CEO
+                  </span>
+                </div>
+                <span className="text-[11px] text-emerald-100 font-medium hidden md:block">
+                  Red Bilingüe & Bachillerato CCH UNAM (4 Sedes: Montes, Lagos, San Cristóbal, Coacalco)
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setViewMode('operational')}
+                className="py-2 px-3.5 rounded-xl bg-white text-[#047857] hover:bg-emerald-50 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-emerald-200 active:scale-98"
+                title="Conmutar al Tablero Operativo Clásico"
+              >
+                <Layers className="w-4 h-4 text-emerald-700" />
+                <span className="hidden sm:inline">Tablero Operativo</span>
+              </button>
+
+              <button
+                onClick={handleLogout}
+                className="py-2 px-3.5 rounded-xl bg-emerald-900/90 hover:bg-rose-700 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer border border-emerald-700 hover:border-rose-600 shadow-xs"
+                title="Cerrar sesión institucional y volver al portal"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Cerrar Sesión</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* CONTENIDO PRINCIPAL DE VISIÓN EJECUTIVA CEO */}
+        <main className="flex-1 flex flex-col">
+          <CEOExecutiveDashboard
+            holding={DEFAULT_IBIME_HOLDING}
+            schoolId="sch-ibime"
+            isSuperUser={false}
+            onSwitchToOperational={() => setViewMode('operational')}
+          />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 flex flex-col">
       
@@ -227,6 +324,18 @@ export default function IbimePortalPage() {
             <div className="w-9 h-9 rounded-xl bg-emerald-800 border border-emerald-600 flex items-center justify-center font-bold text-sm text-white shadow-xs">
               {userName[0] || 'I'}
             </div>
+
+            {/* Acceso directo a Visión CEO para Directores y Dueños */}
+            {(isDirector || activeUser.role === 'owner') && (
+              <button
+                onClick={() => setViewMode('ceo')}
+                className="py-1.5 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-extrabold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-amber-300"
+                title="Abrir Visión Ejecutiva CEO"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-900" />
+                <span className="hidden sm:inline">Visión CEO</span>
+              </button>
+            )}
 
             <button
               onClick={handleLogout}
@@ -335,6 +444,28 @@ export default function IbimePortalPage() {
           3. CONTENIDO PRINCIPAL: NAVEGACIÓN Y VISTAS SOBERANAS
           ========================================================================= */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+
+        {/* Banner de Conmutación a Visión Ejecutiva CEO */}
+        {(isDirector || activeUser.role === 'owner') && (
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md border border-indigo-900/50">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-indigo-600/30 text-indigo-400 border border-indigo-500/40 flex items-center justify-center font-bold text-xs">
+                CEO
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white">Tablero Operativo Clásico Activo</h4>
+                <p className="text-[11px] text-indigo-200">Supervisando sedes, alumnos, docentes y nóminas. Puedes conmutar en cualquier momento a la Visión Ejecutiva CEO para Directores y Dueños.</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setViewMode('ceo')}
+              className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer flex items-center gap-1.5 shrink-0"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
+              <span>Activar Visión Ejecutiva CEO</span>
+            </button>
+          </div>
+        )}
 
         {/* Pestañas de Navegación del Sistema IBIME (Estilo Apple/iOS) */}
         <div className="flex items-center gap-1.5 p-1.5 bg-slate-200/80 dark:bg-slate-900 rounded-2xl overflow-x-auto border border-slate-300/80 dark:border-slate-800 shadow-xs">
@@ -957,5 +1088,20 @@ export default function IbimePortalPage() {
       )}
 
     </div>
+  );
+}
+
+export default function IbimePortalPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+        <div className="flex items-center gap-3">
+          <Clock className="w-6 h-6 animate-spin text-emerald-400" />
+          <span>Cargando portal institucional IBIME...</span>
+        </div>
+      </div>
+    }>
+      <IbimePortalContent />
+    </Suspense>
   );
 }
