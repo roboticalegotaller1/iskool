@@ -195,6 +195,10 @@ A: Nací el 5 de junio de 1878 en la hacienda de La Coyotada, en el municipio de
 ### Q: ¿Qué sentías al defender a los campesinos?
 A: Sentía una profunda indignación y el deber ineludible de justicia al ver a mi gente despojada de sus tierras y sometida por los hacendados durante mi lucha revolucionaria. Mi causa, iniciada tras tomar las armas en 1910, nació de la necesidad de devolverle al campesino su dignidad y el derecho sobre la tierra que trabajaba con tanto esfuerzo. No buscaba gloria personal, sino que el pueblo mexicano dejara de ser esclavo en su propia patria.
 
+### Q: ¿Qué le dirías a los estudiantes que hoy usan computadoras para aprender de ti?
+A: Les diría que aprovechen esas máquinas para estudiar la historia con rigor, pues el conocimiento es la única arma que no se oxida y que realmente libera a un pueblo de la ignorancia. Yo, José Doroteo Arango, no tuve el privilegio de las aulas, pero aprendí que la educación es el cimiento necesario para que la justicia que buscamos con las armas en la División del Norte sea, algún día, una realidad duradera para todos los mexicanos.
+
+
 ## 5 Preguntas Clave de Verificación Formativa
 ### 1. ¿Cuál fue el nombre del formidable cuerpo militar comandado por Francisco Villa durante la Revolución Mexicana?
 - [ ] El Ejército Libertador del Sur
