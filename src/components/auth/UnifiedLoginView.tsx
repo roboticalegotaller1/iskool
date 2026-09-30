@@ -397,9 +397,9 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
       if (isIbimeMode) {
         document.cookie = 'tenant-id=ibime; path=/; max-age=31536000; SameSite=Lax';
         localStorage.setItem('tenant-id', 'ibime');
-        document.documentElement.setAttribute('data-tenant', 'ibime');
         // Si hay una sesión activa de un usuario ajeno a IBIME (ej. superadmin ISkool), cerrarla inmediatamente
-        if (user && user.school_id !== 'sch-ibime') {
+        const isCurrentIbime = user?.school_id === 'sch-ibime' || (user?.email && user.email.toLowerCase().includes('ibime'));
+        if (user && !isCurrentIbime) {
           logout();
         }
       } else if (isPublicMode || isFullDemoMode) {
@@ -497,13 +497,10 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
         document.cookie = 'tenant-id=ibime; path=/; max-age=31536000; SameSite=Lax';
         localStorage.setItem('tenant-id', 'ibime');
         document.documentElement.setAttribute('data-tenant', 'ibime');
+        window.location.href = '/ibime/portal';
+      } else {
+        router.push('/ibime/portal');
       }
-      router.push('/ibime/portal');
-      setTimeout(() => {
-        if (typeof window !== 'undefined') {
-          window.location.href = '/ibime/portal';
-        }
-      }, 300);
       return;
     }
 
@@ -530,32 +527,53 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
     }
 
     let targetPath = '/student';
-    switch (role) {
-      case 'ceo':
-      case 'owner':
-      case 'admin':
-      case 'superadmin':
-        targetPath = '/admin';
-        break;
-      case 'director':
-        targetPath = '/director';
-        break;
-      case 'billing':
-        targetPath = '/coordinator/billing';
-        break;
-      case 'coordinator':
-        targetPath = '/coordinator';
-        break;
-      case 'teacher':
-        targetPath = '/teacher';
-        break;
-      case 'parent':
-        targetPath = '/parent';
-        break;
-      case 'student':
-      default:
-        targetPath = '/student';
-        break;
+    if (isIbimeMode || userProfile?.school_id === 'sch-ibime' || (userProfile?.email && userProfile.email.toLowerCase().includes('ibime'))) {
+      switch (role) {
+        case 'director':
+        case 'coordinator':
+        case 'billing':
+        case 'owner':
+          targetPath = '/ibime/portal';
+          break;
+        case 'teacher':
+          targetPath = '/teacher';
+          break;
+        case 'parent':
+          targetPath = '/parent';
+          break;
+        case 'student':
+        default:
+          targetPath = '/student';
+          break;
+      }
+    } else {
+      switch (role) {
+        case 'ceo':
+        case 'owner':
+        case 'admin':
+        case 'superadmin':
+          targetPath = '/admin';
+          break;
+        case 'director':
+          targetPath = '/director';
+          break;
+        case 'billing':
+          targetPath = '/coordinator/billing';
+          break;
+        case 'coordinator':
+          targetPath = '/coordinator';
+          break;
+        case 'teacher':
+          targetPath = '/teacher';
+          break;
+        case 'parent':
+          targetPath = '/parent';
+          break;
+        case 'student':
+        default:
+          targetPath = '/student';
+          break;
+      }
     }
 
     router.push(targetPath);

@@ -11,7 +11,7 @@ fase: "4"
 marco_curricular: "BICULTURAL_IBIME"
 pda_code: "PDA-CIE-F4-4TO-035"
 signature_sha256: "26ce80fb54f8614ee7614fcd5b3928126fcbd862be48e9c60e4beff2cb033c25"
-created_at: "2026-09-30T01:14:44.884Z"
+created_at: "2026-09-30T02:57:35.775Z"
 ---
 
 # 📚 Water Filtration and Eco-Engineering (Adaptación Bicultural IBIME)
