@@ -48,8 +48,92 @@ import {
   getClusterConfig,
   buildSchoolInstitutionalGraph
 } from '@/services/institutionalGraphEngine';
-import { isCorporateInstitution } from '@/types';
+import { isCorporateInstitution, isPlatformSuperUser } from '@/types';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
+import { useAuth } from '@/context/AuthContext';
+import {
+  executeAnalyticQuery,
+  AnalyticReportResult,
+  EngineDataSources
+} from '@/services/executiveAnalyticsEngine';
+
+/**
+ * Renderizador de formato enriquecido de alta fidelidad para la Terminal Pedagógica Directiva (Dark Theme)
+ */
+function renderTerminalMarkdown(content?: string | null) {
+  if (!content) return null;
+  const lines = content.split('\n');
+
+  return (
+    <div className="space-y-2 leading-relaxed text-slate-100">
+      {lines.map((line, lineIdx) => {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          return <div key={lineIdx} className="h-1" />;
+        }
+
+        const isBullet = trimmed.startsWith('•') || trimmed.startsWith('- ') || trimmed.startsWith('* ');
+        const isNumbered = /^\d+\.\s+/.test(trimmed);
+        const cleanText = isBullet ? trimmed.replace(/^[•\-*]\s*/, '') : (isNumbered ? trimmed.replace(/^\d+\.\s+/, '') : trimmed);
+        const numberPrefix = isNumbered ? trimmed.match(/^\d+\.\s+/)?.[0] : null;
+
+        // Parse **bold** and *italic*
+        const parts: React.ReactNode[] = [];
+        const regex = /(\*\*([^*]+)\*\*|\*([^*]+)\*)/g;
+        let lastIndex = 0;
+        let match: RegExpExecArray | null;
+
+        while ((match = regex.exec(cleanText)) !== null) {
+          if (match.index > lastIndex) {
+            parts.push(cleanText.substring(lastIndex, match.index));
+          }
+          if (match[2]) {
+            parts.push(
+              <strong key={`${lineIdx}-${match.index}`} className="font-bold text-cyan-300">
+                {match[2]}
+              </strong>
+            );
+          } else if (match[3]) {
+            parts.push(
+              <em key={`${lineIdx}-${match.index}`} className="italic text-indigo-300">
+                {match[3]}
+              </em>
+            );
+          }
+          lastIndex = regex.lastIndex;
+        }
+
+        if (lastIndex < cleanText.length) {
+          parts.push(cleanText.substring(lastIndex));
+        }
+
+        if (isBullet) {
+          return (
+            <div key={lineIdx} className="flex items-start gap-2 pl-1.5 text-slate-200">
+              <span className="text-cyan-400 font-bold select-none leading-normal shrink-0">•</span>
+              <div className="flex-1 leading-snug">{parts}</div>
+            </div>
+          );
+        }
+
+        if (isNumbered && numberPrefix) {
+          return (
+            <div key={lineIdx} className="flex items-start gap-2 pl-1.5 text-slate-200">
+              <span className="text-amber-400 font-bold font-mono text-[11px] select-none leading-normal shrink-0">{numberPrefix}</span>
+              <div className="flex-1 leading-snug">{parts}</div>
+            </div>
+          );
+        }
+
+        return (
+          <p key={lineIdx} className="leading-snug text-slate-200">
+            {parts}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
 
 // ============================================================================
 // PROPS DEL COMPONENTE ESTUDIO DEL CEREBRO INSTITUCIONAL
@@ -73,6 +157,9 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
   onNavigateTab,
   isEmbeddedView = false
 }) => {
+  const { user } = useAuth();
+  const isSuperUser = useMemo(() => isPlatformSuperUser(user), [user]);
+
   // Conexión reactiva al almacén del colegio para aislamiento multi-tenant estricto
   const {
     institutionsList,
@@ -82,6 +169,11 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
     groupsList,
     subjectsList,
     billingRecords,
+    attendanceList,
+    staffPayroll,
+    parentMessages,
+    schedulesList,
+    studentDeletionAuditLogs,
     activeSchoolId
   } = useSchoolAdminStore();
 
@@ -157,7 +249,11 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
     actionType?: string;
     isOptimized?: boolean;
     timestamp: string;
+    table?: any;
+    chart?: any;
+    domain?: string;
   } | null>(null);
+  const [isTableExpanded, setIsTableExpanded] = useState<boolean>(false);
 
   const [copiedNotification, setCopiedNotification] = useState<boolean>(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
@@ -348,80 +444,145 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
 
   // ============================================================================
   // EJECUTOR DE CONSULTA EN INTELIGENCIA ARTIFICIAL PEDAGÓGICA (0 TOKENS)
+  // Homologado con el motor determinista de Reportes BI (ExecutiveAnalyticsEngine)
   // ============================================================================
-  const executeQuery = useCallback((queryText: string) => {
+  const executeQuery = useCallback((queryText: string, specificTargetNode?: BrainNode) => {
     const clean = (queryText || '').trim();
     if (!clean) return;
 
     setIsGenerating(true);
     const t0 = performance.now();
+
+    // Fuentes para ejecución analítica forense en tiempo real a 0 Tokens
+    const sources: EngineDataSources = {
+      schoolId: effectiveSchoolId,
+      isSuperUser,
+      institutionsList,
+      detailedStudents,
+      campusesList,
+      groupsList,
+      teachersList,
+      attendanceList,
+      billingRecords,
+      staffPayroll,
+      subjectsList,
+      parentMessages,
+      schedulesList,
+      studentDeletionAuditLogs
+    };
+
+    const analyticResult = executeAnalyticQuery(clean, sources);
+    const elapsed = Math.max(0.4, Math.round((performance.now() - t0) * 10) / 10);
+
     const qLower = clean.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const qWords = qLower.split(/\s+/).filter(w => w.length > 2);
 
-    let bestScore = -1;
-    let bestNode = nodes[0] || baseNodes[0];
+    // Localizar el nodo de la constelación / cerebro más afín
+    let targetNode: BrainNode | undefined = specificTargetNode;
 
-    nodes.forEach(node => {
-      let score = 0;
-      const nid = node.id.toLowerCase();
-      const nTitle = node.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const nSub = node.subtitle.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-      if (qLower.includes(nid)) score += 35;
-      if (nTitle.includes(qLower) || qLower.includes(nTitle)) score += 30;
-
-      // Ponderaciones temáticas
-      if ((qLower.includes('planeacion') || qLower.includes('nem') || qLower.includes('pda') || qLower.includes('competencia') || qLower.includes('capacitacion') || qLower.includes('stps') || qLower.includes('iso')) && node.cluster === 'pedagogico') score += 25;
-      if ((qLower.includes('cfdi') || qLower.includes('sat') || qLower.includes('factura') || qLower.includes('iedu') || qLower.includes('aging') || qLower.includes('b2b')) && node.cluster === 'fiscal') score += 25;
-      if ((qLower.includes('alergia') || qLower.includes('sismo') || qLower.includes('salud') || qLower.includes('expediente') || qLower.includes('sst') || qLower.includes('seguridad')) && node.cluster === 'medico') score += 25;
-      if ((qLower.includes('sede') || qLower.includes('plantel') || qLower.includes('campus') || qLower.includes('planta') || qLower.includes('unidad')) && node.cluster === 'gobernanza') score += 25;
-      if ((qLower.includes('mision') || qLower.includes('lienzo') || qLower.includes('xp') || qLower.includes('juego') || qLower.includes('simulador') || qLower.includes('kaizen')) && node.cluster === 'gamificacion') score += 25;
-      if ((qLower.includes('profesor') || qLower.includes('docente') || qLower.includes('maestro') || qLower.includes('instructor') || qLower.includes('capacitador')) && node.cluster === 'docente') score += 25;
-
-      node.keywords.forEach(kw => {
-        if (qLower.includes(kw)) score += 5;
-        qWords.forEach(w => {
-          if (kw.includes(w)) score += 2;
-        });
-      });
-
-      if (score > bestScore) {
-        bestScore = score;
-        bestNode = node;
+    if (!targetNode) {
+      // 1. Coincidencia por campus o sedes
+      if (analyticResult.domain === 'CAMPUSES_GROUPS' || qLower.includes('campus') || qLower.includes('plantel') || qLower.includes('sede')) {
+        targetNode = nodes.find(n => 
+          (n.entityType === 'campus' || n.cluster === 'gobernanza') && 
+          (qLower.includes(n.title.toLowerCase()) || analyticResult.reportTitle.toLowerCase().includes(n.title.toLowerCase()))
+        ) || nodes.find(n => n.id.includes('gobernanza') || n.cluster === 'gobernanza');
+      } else if (analyticResult.domain === 'STAFF_PAYROLL' || analyticResult.domain === 'FACULTY_DIRECTORY') {
+        targetNode = nodes.find(n => n.cluster === 'docente' || n.id.includes('docente'))
+          || nodes.find(n => n.cluster === 'fiscal' || n.id.includes('fiscal'));
+      } else if (analyticResult.domain === 'DEBTS_BILLING' || analyticResult.domain === 'FINANCIAL_SUMMARY') {
+        targetNode = nodes.find(n => n.cluster === 'fiscal' || n.id.includes('fiscal'));
+      } else if (analyticResult.domain === 'STUDENT_LOOKUP' || analyticResult.domain === 'STUDENTS_DIRECTORY' || analyticResult.domain === 'STUDENT_DELETIONS_AUDIT') {
+        targetNode = nodes.find(n => n.cluster === 'medico' || n.cluster === 'crm');
+      } else if (analyticResult.domain === 'CURRICULUM_SUBJECTS' || analyticResult.domain === 'ACADEMIC_GRADES_ASSESSMENT') {
+        targetNode = nodes.find(n => n.cluster === 'pedagogico' || n.id.includes('pedagogico'));
       }
-    });
 
-    const elapsed = Math.max(0.6, Math.round((performance.now() - t0) * 10) / 10);
-    const finalText = bestNode.customDictamenText || bestNode.summary;
+      // 2. Coincidencia por títulos o palabras clave en el grafo
+      if (!targetNode) {
+        let maxScore = -1;
+        nodes.forEach(node => {
+          let score = 0;
+          const nTitle = node.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+          if (qLower.includes(nTitle) || nTitle.includes(qLower)) score += 30;
+          node.keywords.forEach(kw => {
+            if (qLower.includes(kw)) score += 5;
+          });
+          if (score > maxScore) {
+            maxScore = score;
+            targetNode = node;
+          }
+        });
+      }
+
+      if (!targetNode) {
+        targetNode = nodes[0] || baseNodes[0];
+      }
+    }
+
+    const matchedNode = targetNode || nodes[0] || baseNodes[0];
+
+    // Texto exacto entregado por el motor determinista de Reportes BI
+    const finalText = analyticResult.directAnswer || analyticResult.explanation?.summary || matchedNode.customDictamenText || matchedNode.summary;
+
+    const formattedKpis = analyticResult.kpis && analyticResult.kpis.length > 0
+      ? analyticResult.kpis.map(k => ({ label: k.label, value: k.value }))
+      : (matchedNode.kpis || [
+          { label: 'Estatus', value: 'Vigente' },
+          { label: 'Bóveda', value: 'Indexada' },
+          { label: 'Consumo', value: '0 Tokens' }
+        ]);
 
     setActiveDictamen({
-      title: bestNode.title,
+      title: analyticResult.reportTitle || matchedNode.title,
       text: finalText,
-      source: bestNode.title,
-      bovedaPath: bestNode.bovedaPath,
+      source: `${matchedNode.title} • Motor Analítico Forense`,
+      bovedaPath: matchedNode.bovedaPath || `boveda://${effectiveSchoolId}/analisis-ejecutivo.md`,
       latencyMs: elapsed,
-      confidence: bestScore > 0 ? Math.min(99, 85 + bestScore * 2) : 92,
-      kpis: bestNode.kpis || [
-        { label: 'Estatus', value: 'Vigente' },
-        { label: 'Bóveda', value: 'Indexada' },
-        { label: 'Consumo', value: '0 Tokens' }
-      ],
-      wikilinks: bestNode.wikilinks,
-      actionLabel: bestNode.actionLabel,
-      actionType: bestNode.actionType,
-      isOptimized: Boolean(bestNode.isOptimized),
-      timestamp: bestNode.updatedAt || bestNode.optimizedAt || new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      confidence: 99,
+      kpis: formattedKpis,
+      wikilinks: matchedNode.wikilinks || [],
+      actionLabel: 'Ver en Reportes BI',
+      actionType: 'reportes',
+      isOptimized: true,
+      timestamp: new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      table: analyticResult.table,
+      chart: analyticResult.chart,
+      domain: analyticResult.domain
     });
 
-    setSelectedNodeId(bestNode.id);
-    centerOnNode(bestNode, 1.35);
+    setSelectedNodeId(matchedNode.id);
+    centerOnNode(matchedNode, 1.35);
     setFilterCluster('all');
     setIsGenerating(false);
+
+    // Sincronizar consulta con Reportes BI para navegación cruzada inmediata
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('iskool_active_bi_query', clean);
+      window.dispatchEvent(new CustomEvent('iskool_bi_execute_query', { detail: clean }));
+    }
 
     setTimeout(() => {
       chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, 150);
-  }, [nodes, baseNodes, centerOnNode]);
+  }, [
+    effectiveSchoolId,
+    isSuperUser,
+    institutionsList,
+    detailedStudents,
+    campusesList,
+    groupsList,
+    teachersList,
+    attendanceList,
+    billingRecords,
+    staffPayroll,
+    subjectsList,
+    parentMessages,
+    schedulesList,
+    studentDeletionAuditLogs,
+    nodes,
+    baseNodes,
+    centerOnNode
+  ]);
 
   // Selección de nodo desde la UI
   const handleSelectNode = (nodeId: string) => {
@@ -430,9 +591,18 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
     if (node) {
       centerOnNode(node, 1.35);
       setChatInput(node.title);
-      executeQuery(node.title);
+      executeQuery(node.title, node);
     }
   };
+
+  // Ejecución reactiva de initialQuery si se proporciona desde el exterior
+  useEffect(() => {
+    if (initialQuery && initialQuery.trim() && initialQuery !== lastInitialQueryRef.current) {
+      lastInitialQueryRef.current = initialQuery;
+      setChatInput(initialQuery);
+      executeQuery(initialQuery);
+    }
+  }, [initialQuery, executeQuery]);
 
   // Controles de zoom manual
   const handleZoomIn = () => setZoom(z => Math.min(2.8, z * 1.25));
@@ -1422,8 +1592,8 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
                     </div>
                   </div>
 
-                  <div className="text-xs text-indigo-100 whitespace-pre-wrap leading-relaxed">
-                    {activeDictamen.text}
+                  <div className="text-xs text-indigo-100 leading-relaxed select-text">
+                    {renderTerminalMarkdown(activeDictamen.text)}
                   </div>
 
                   {activeDictamen.kpis && activeDictamen.kpis.length > 0 && (
@@ -1438,6 +1608,50 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
                           </span>
                         </div>
                       ))}
+                    </div>
+                  )}
+
+                  {/* Vista previa de datos tabulares del motor si existen */}
+                  {activeDictamen.table && activeDictamen.table.rows && activeDictamen.table.rows.length > 0 && (
+                    <div className="pt-2 border-t border-indigo-900/60 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-cyan-300 flex items-center gap-1.5">
+                          <Activity size={13} className="text-cyan-400" />
+                          <span>Datos Tabulares ({activeDictamen.table.totalRows || activeDictamen.table.rows.length} registros auditados)</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setIsTableExpanded(!isTableExpanded)}
+                          className="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer font-semibold"
+                        >
+                          {isTableExpanded ? 'Ocultar Detalle' : 'Ver Detalle'}
+                        </button>
+                      </div>
+
+                      {isTableExpanded && (
+                        <div className="overflow-x-auto rounded-xl border border-indigo-900/60 bg-slate-950/90 p-1.5 max-h-48 scrollbar-thin">
+                          <table className="w-full text-[10px] text-left">
+                            <thead className="bg-indigo-950/80 text-indigo-300 uppercase font-mono border-b border-indigo-900/40">
+                              <tr>
+                                {activeDictamen.table.columns.slice(0, 4).map((col: any) => (
+                                  <th key={col.key} className="p-1.5 whitespace-nowrap">{col.label}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-indigo-950/50">
+                              {activeDictamen.table.rows.slice(0, 8).map((row: any, rIdx: number) => (
+                                <tr key={rIdx} className="hover:bg-indigo-900/20">
+                                  {activeDictamen.table.columns.slice(0, 4).map((col: any) => (
+                                    <td key={col.key} className="p-1.5 whitespace-nowrap text-slate-300 font-mono">
+                                      {String(row[col.key] ?? '')}
+                                    </td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -1493,11 +1707,19 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
                       {activeDictamen.actionLabel && onNavigateTab && (
                         <button
                           onClick={() => {
-                            if (activeDictamen.actionType === 'cobranza') onNavigateTab('finanzas');
-                            else if (activeDictamen.actionType === 'academico') onNavigateTab('academico');
-                            else if (activeDictamen.actionType === 'admisiones') onNavigateTab('admisiones');
-                            else if (activeDictamen.actionType === 'personas') onNavigateTab('personas');
-                            else onNavigateTab('colegios');
+                            if (activeDictamen.actionType === 'reportes' || activeDictamen.actionType === 'reportes-bi') {
+                              onNavigateTab('reportes');
+                            } else if (activeDictamen.actionType === 'cobranza') {
+                              onNavigateTab('finanzas');
+                            } else if (activeDictamen.actionType === 'academico') {
+                              onNavigateTab('academico');
+                            } else if (activeDictamen.actionType === 'admisiones') {
+                              onNavigateTab('admisiones');
+                            } else if (activeDictamen.actionType === 'personas') {
+                              onNavigateTab('personas');
+                            } else {
+                              onNavigateTab('reportes');
+                            }
                             if (!isEmbeddedView) onClose();
                           }}
                           className="text-xs bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer shadow-md"

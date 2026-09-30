@@ -364,7 +364,16 @@ export default function ExecutiveAnalyticsStudio({
   const recognitionRef = useRef<any>(null);
   const chatBottomRef = useRef<HTMLDivElement | null>(null);
   const expedientesSectionRef = useRef<HTMLDivElement | null>(null);
-  const lastQueryRef = useRef<string>(initialQuery || 'Estudiantes con adeudo activo por nivel y monto pendiente');
+  const initialEffectiveQuery = useMemo(() => {
+    if (initialQuery && initialQuery.trim()) return initialQuery.trim();
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('iskool_active_bi_query');
+      if (saved && saved.trim()) return saved.trim();
+    }
+    return 'Estudiantes con adeudo activo por nivel y monto pendiente';
+  }, [initialQuery]);
+
+  const lastQueryRef = useRef<string>(initialEffectiveQuery);
   const isFirstMount = useRef(true);
 
   // Sincronización multi-pestaña y eventos en tiempo real (Cross-Tab & Local Event Realtime Sync)
@@ -377,12 +386,19 @@ export default function ExecutiveAnalyticsStudio({
     const handleCustomStoreSync = () => {
       (useSchoolAdminStore as any).persist?.rehydrate();
     };
+    const handleRemoteQuery = (e: any) => {
+      if (e.detail && typeof e.detail === 'string' && e.detail.trim()) {
+        handleExecuteQuery(e.detail.trim());
+      }
+    };
 
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('iskool_store_updated', handleCustomStoreSync);
+    window.addEventListener('iskool_bi_execute_query', handleRemoteQuery);
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('iskool_store_updated', handleCustomStoreSync);
+      window.removeEventListener('iskool_bi_execute_query', handleRemoteQuery);
     };
   }, []);
 
