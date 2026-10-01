@@ -146,22 +146,47 @@ const FR_PHONETIC_VARIANTS: Record<string, string[]> = {
   'plait': ['plait', 'ple', 'plei', 'plet', 'play', 'plaît'],
   'merci': ['merci', 'melsi', 'mesi', 'mercy'],
   'beaucoup': ['beaucoup', 'bocu', 'boku', 'baucoup', 'bocoup'],
-  'un': ['un', 'an', 'en', 'on', 'uhn', 'in'],
+  'un': ['un', 'an', 'en', 'on', 'uhn', 'in', '1'],
   'une': ['une', 'un', 'iun'],
   'cafe': ['cafe', 'kafe', 'caffe', 'kfe', 'coffee'],
-  'au': ['au', 'o', 'oh'],
+  'au': ['au', 'o', 'oh', 'aux'],
   'lait': ['lait', 'le', 'lay', 'let'],
-  'cest': ['cest', "c'est", 'se', 'say', 'ce'],
+  'cest': ['cest', "c'est", 'se', 'say', 'ce', 'sait', 's'],
   'veritable': ['veritable', 'véritable'],
   'plaisir': ['plaisir', 'plesir', 'plezir'],
-  'de': ['de', 'duh', 'du'],
+  'de': ['de', 'duh', 'du', 'des', 'd'],
   'decouvrir': ['decouvrir', 'découvrir'],
   'les': ['les', 'le', 'lay'],
   'merveilleux': ['merveilleux', 'merveyeu'],
   'musees': ['musees', 'musées', 'muze'],
   'paris': ['paris', 'pari'],
-  'je': ['je', 'zhe', 'j'],
-  'voudrais': ['voudrais', 'voudre', 'voudrai', 'vudre', 'voudray']
+  'je': ['je', 'zhe', 'j', 'ge'],
+  'suis': ['suis', 'sui', 'suih', 'swi', 'suey', 'si'],
+  'voudrais': ['voudrais', 'voudre', 'voudrai', 'vudre', 'voudray'],
+  // Variantes fonéticas exhaustivas para la lección de Napoleón Bonaparte y oratoria histórica
+  'napoleon': ['napoleon', 'napoléon', 'napoleone', 'napolion', 'napolio'],
+  'bonaparte': ['bonaparte', 'bonapart', 'bonapartes', 'bonapard'],
+  'ne': ['ne', 'né', 'nee', 'née', 'nay', 'nez', 'net', 'nes', 'neh'],
+  'a': ['a', 'à', 'ah', 'ha', 'at', 'as'],
+  'ajaccio': ['ajaccio', 'ayaccio', 'ajacio', 'ayacio', 'axacio', 'agaccio', 'a ajaccio', 'ajacc'],
+  'en': ['en', 'an', 'on', 'ahn', 'un', 'hen'],
+  'corse': ['corse', 'cors', 'corsica', 'kors', 'korse'],
+  'jai': ['jai', "j'ai", 'je', 'ai', 'jay', 'zhai'],
+  'reorganise': ['reorganise', 'réorganisé', 'reorganisé', 'reorganisee', 'réorganisée'],
+  'ladministration': ['ladministration', "l'administration", 'administration', 'ladministrasion'],
+  'promulgue': ['promulgue', 'promulgué', 'promulguer', 'promulge'],
+  'le': ['le', 'l', 'luh', 'les'],
+  'code': ['code', 'cod', 'kodd', 'kode'],
+  'civil': ['civil', 'sivil', 'civile', 'seevil'],
+  'et': ['et', 'e', 'eh', 'est', 'ed'],
+  'conduit': ['conduit', 'condui', 'kondwi', 'conduite'],
+  'armees': ['armees', 'armées', 'armee', 'armée', 'armay'],
+  'la': ['la', 'lah', 'l'],
+  'republique': ['republique', 'république', 'republic', 'republike'],
+  'avant': ['avant', 'avan', 'avans'],
+  'ceindre': ['ceindre', 'sindre', 'ceindra', 'saindre'],
+  'couronne': ['couronne', 'kuron', 'kurone', 'couron'],
+  'imperiale': ['imperiale', 'impériale', 'imperial', 'impérial']
 };
 
 /**
@@ -228,7 +253,7 @@ export function expandContractions(tokens: string[], lang: 'en' | 'fr' = 'en'): 
     if (!clean) continue;
     const cleanNoPunct = clean.replace(/['’]/g, '');
     const expanded = CONTRACTIONS_MAP[clean] || CONTRACTIONS_MAP[cleanNoPunct];
-    if (expanded && lang === 'en') {
+    if (expanded) {
       result.push(...expanded);
     } else {
       result.push(clean);
@@ -329,7 +354,7 @@ export function alignSpokenTokensToTarget(
     }
   }
 
-  // Pasada 2: Recuperación fonética para palabras omitidas en orden usando tokens no consumidos
+  // Pasada 2: Recuperación fonética para palabras omitidas usando tokens no consumidos (1 token o compuesto de 2 tokens)
   for (let targetIdx = 0; targetIdx < targetWords.length; targetIdx++) {
     if (matchedTargetIndices.has(targetIdx)) continue;
     const expected = targetWords[targetIdx];
@@ -343,6 +368,38 @@ export function alignSpokenTokensToTarget(
         detailedMatches[targetIdx].isMatched = true;
         detailedMatches[targetIdx].matchedToken = currentToken;
         break;
+      }
+      // Compuesto en Pasada 2
+      if (k + 1 < expandedSpoken.length && !usedSpokenIndices.has(k + 1)) {
+        const compound = currentToken + expandedSpoken[k + 1];
+        if (isPhoneticallyEquivalent(compound, expected, lang)) {
+          matchedTargetIndices.add(targetIdx);
+          usedSpokenIndices.add(k);
+          usedSpokenIndices.add(k + 1);
+          detailedMatches[targetIdx].isMatched = true;
+          detailedMatches[targetIdx].matchedToken = compound;
+          break;
+        }
+      }
+    }
+  }
+
+  // Pasada 3: Si un token no consumido comienza con la palabra esperada (ej: "né à" -> "néa", o "à Ajaccio" -> "aajaccio")
+  for (let targetIdx = 0; targetIdx < targetWords.length; targetIdx++) {
+    if (matchedTargetIndices.has(targetIdx)) continue;
+    const expected = normalizePhoneticText(targetWords[targetIdx]);
+    if (!expected) continue;
+
+    for (let k = 0; k < expandedSpoken.length; k++) {
+      const currentToken = normalizePhoneticText(expandedSpoken[k]);
+      if (currentToken.length > expected.length) {
+        if (currentToken.startsWith(expected) || currentToken.endsWith(expected) || currentToken.includes(expected)) {
+          // Si el token hablado contiene la palabra fonética (liaison / enlace francés habitual)
+          matchedTargetIndices.add(targetIdx);
+          detailedMatches[targetIdx].isMatched = true;
+          detailedMatches[targetIdx].matchedToken = currentToken;
+          break;
+        }
       }
     }
   }

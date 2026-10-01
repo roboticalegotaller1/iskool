@@ -245,7 +245,9 @@ export default function TeacherIdiomasPage() {
       audioControllerRef.current?.stop();
       setIsPlayingPreview(false);
       setActivePlayingLineId(null);
-      if (activePlayingLineId === lineId && lineId) return;
+      // Si el usuario presionó el botón de detener la muestra activa, salir de inmediato
+      if (!lineId && isPlayingPreview) return;
+      if (lineId && activePlayingLineId === lineId) return;
     }
 
     const defaultSample = activeLesson.language === 'fr'
@@ -837,8 +839,15 @@ export default function TeacherIdiomasPage() {
                       avatarImage={activeLesson.avatarImage}
                       historicalFigureId={activeLesson.historicalFigureId || (useHistoricalFigure ? selectedHistoricalId : undefined)}
                       speechRate={activeLesson.defaultSpeed}
+                      onSpeechRateChange={(rate) => updateLesson(activeLesson.id, { defaultSpeed: rate })}
                       isPlaying={isPlayingPreview}
                       onRepeat={() => handlePlayAudioSample(activeLesson.dialogue[0]?.text)}
+                      onStop={() => {
+                        stopAllIskoolAudio();
+                        audioControllerRef.current?.stop();
+                        setIsPlayingPreview(false);
+                        setActivePlayingLineId(null);
+                      }}
                       currentText={activeLesson.dialogue[0]?.text || (activeLesson.language === 'fr' ? "Prêt pour la leçon de prononciation française." : "Ready for the English pronunciation lesson.")}
                       className="scale-90"
                     />

@@ -41,6 +41,7 @@ interface Props {
   translationText?: string;
   phoneticTip?: string;
   onRepeat?: () => void;
+  onStop?: () => void;
   audioElement?: HTMLAudioElement | null;
   className?: string;
   avatarImage?: string;
@@ -55,7 +56,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
   name,
   language,
   voiceId,
-  speechRate = 1.0,
+  speechRate: externalSpeechRate = 1.0,
   onSpeechRateChange,
   isPlaying: externalIsPlaying = false,
   isListening = false,
@@ -64,6 +65,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
   translationText = '',
   phoneticTip = '',
   onRepeat,
+  onStop,
   audioElement,
   className = '',
   avatarImage,
@@ -71,7 +73,9 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
   historicalEra
 }) => {
   const [internalPlaying, setInternalPlaying] = useState<boolean>(false);
+  const [internalSpeechRate, setInternalSpeechRate] = useState<number>(externalSpeechRate);
   const isPlaying = externalIsPlaying || internalPlaying;
+  const speechRate = externalSpeechRate ?? internalSpeechRate;
 
   // Estados de articulación anatómica labial
   const [mouthOpenRatio, setMouthOpenRatio] = useState<number>(0); // 0 a 1
@@ -136,6 +140,9 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
       stopAllIskoolAudio();
       audioControllerRef.current?.stop();
       setInternalPlaying(false);
+      if (onStop) {
+        onStop();
+      }
       return;
     }
     if (onRepeat) {
@@ -635,7 +642,12 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
             <button
               key={opt.value}
               type="button"
-              onClick={() => onSpeechRateChange && onSpeechRateChange(opt.value)}
+              onClick={() => {
+                setInternalSpeechRate(opt.value);
+                if (onSpeechRateChange) {
+                  onSpeechRateChange(opt.value);
+                }
+              }}
               className={`px-2 py-1 rounded-lg font-mono font-bold text-[10px] transition-all cursor-pointer ${
                 Math.abs(speechRate - opt.value) < 0.05
                   ? (isHistorical ? 'bg-amber-500 text-slate-950 shadow-md font-black scale-105' : 'bg-cyan-500 text-slate-950 shadow-md font-black scale-105')

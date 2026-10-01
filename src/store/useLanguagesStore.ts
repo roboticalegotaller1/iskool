@@ -309,6 +309,13 @@ const INITIAL_LESSONS: LanguageLesson[] = [
     ],
     karaokePhrases: [
       {
+        id: 'nap-k-0',
+        targetText: 'Je suis Napoléon Bonaparte, né à Ajaccio en Corse.',
+        translationEs: 'Soy Napoleón Bonaparte, nacido en Ajaccio en Córcega.',
+        difficulty: 'intermediate',
+        phoneticGuide: 'ʒə sɥi napɔleɔ̃ bɔnapaʁt ne a aʒaksjo ɑ̃ kɔʁs'
+      },
+      {
         id: 'nap-k-1',
         targetText: 'Ce que rien n\'effacera et ce qui vivra éternellement c\'est mon Code Civil',
         translationEs: 'Lo que nada borrará y lo que vivirá eternamente es mi Código Civil',
