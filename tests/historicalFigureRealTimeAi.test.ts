@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { POST } from '@/app/api/ai/historical-figure/route';
 import { NextRequest } from 'next/server';
 
-describe('🏛️ PERSONAJES HISTÓRICOS Y MOTOR DE IA EN TIEMPO REAL', { timeout: 20000 }, () => {
+describe('🏛️ PERSONAJES HISTÓRICOS Y MOTOR DE IA EN TIEMPO REAL', { timeout: 45000 }, () => {
 
   it('debe responder a una pregunta en primera persona estricta sin meta-discursos', async () => {
     const req = new NextRequest('http://localhost:3000/api/ai/historical-figure', {

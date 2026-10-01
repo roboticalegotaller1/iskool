@@ -773,7 +773,11 @@ export function generateCanonicalAnachronismResponse(
  * Analizador Sintáctico y Semántico de Preguntas Históricas
  * Descompone el tipo de interrogación, polaridad (negación/aversión) y la entidad objetivo.
  */
-export function analyzeHistoricalQuestion(question: string, birthDeathDates?: string): HistoricalQuestionAnalysis {
+export function analyzeHistoricalQuestion(
+  question: string, 
+  birthDeathDates?: string, 
+  characterName?: string
+): HistoricalQuestionAnalysis {
   const norm = normalizeQuestionText(question);
 
   // Verificación prioritaria de Anacronismo / Tecnologías fuera de época
@@ -862,77 +866,121 @@ export function analyzeHistoricalQuestion(question: string, birthDeathDates?: st
 
   if (targetEntity === 'ENEMIES_RIVALS') {
     specificIntent = 'ENEMIES_RIVALS';
-    instructionForAI = 'El estudiante pregunta quién era tu enemigo, adversario o contra quién luchabas. Responde directamente en primera persona indicando con nombres y hechos históricos reales quiénes fueron tus mayores opresores y adversarios (los virreyes Francisco Xavier Venegas y Félix María Calleja, los jueces de la Real Audiencia y los delatores que vendieron la conspiración como Joaquín Arias). Queda TERMINANTEMENTE PROHIBIDO hablar de tu propia biografía o presentarte como si fueras tu propio enemigo.';
+    instructionForAI = 'El estudiante pregunta quién era tu enemigo, adversario o contra quién luchabas. Responde directamente en primera persona indicando con nombres y hechos históricos reales quiénes fueron tus mayores opresores y adversarios. Queda TERMINANTEMENTE PROHIBIDO hablar de tu propia biografía o presentarte como si fueras tu propio enemigo.';
   } else if (targetEntity === 'TRAITORS_BETRAYAL') {
     specificIntent = 'TRAITORS_BETRAYAL';
-    instructionForAI = 'El estudiante pregunta quién te traicionó o delató la conspiración. Menciona en la primera oración con nombres exactos a los delatores: el capitán Joaquín Arias, Francisco Buera y Rafael Arriaga, explicando cómo vendieron la conjura a inicios de septiembre de 1810.';
+    instructionForAI = 'El estudiante pregunta quién te traicionó o delató. Menciona en la primera oración con nombres exactos a los delatores.';
   } else if (targetEntity === 'FRIENDS_ALLIES') {
     specificIntent = 'FRIENDS_ALLIES';
-    instructionForAI = 'El estudiante pregunta quiénes eran tus amigos o aliados de mayor confianza. Menciona con afecto y respeto patriótico a don Miguel Hidalgo, Ignacio Allende, Juan Aldama, el alcaide Ignacio Pérez y heroínas como Leona Vicario.';
+    instructionForAI = 'El estudiante pregunta quiénes eran tus amigos o aliados de mayor confianza. Menciona con afecto y respeto patriótico a tus aliados.';
   } else if (targetEntity === 'IDENTITY') {
     specificIntent = 'WHO_AM_I';
-    instructionForAI = 'Preséntate con dignidad en primera persona indicando tu nombre, lugar de origen y tu papel histórico en la independencia.';
+    instructionForAI = 'Preséntate con dignidad en primera persona indicando tu nombre, lugar de origen y tu papel histórico.';
   } else if (targetEntity === 'CHILDREN') {
     if (interrogativeType === 'ASKING_NAMES') {
       specificIntent = 'CHILDREN_NAMES';
-      requiredKeywords = ['Mariano', 'Miguel', 'Dolores', 'Micaela', 'Juana', 'Josefa', 'Magdalena', 'Manuela', 'Ignacio', 'Camilo'];
-      instructionForAI = 'El estudiante pide expresamente los NOMBRES de tus hijos. Menciona en la primera oración sus nombres reales (Mariano, Miguel, Dolores, Micaela, Juana, Josefa, Magdalena, Manuela, Ignacio, Camilo) y aclara que con don Miguel tuviste catorce hijos. Queda terminantemente prohibido evadir dar los nombres o hablar en abstracto.';
+      if (!characterName || /josefa/i.test(characterName)) {
+        requiredKeywords = ['Mariano', 'Miguel', 'Dolores', 'Micaela', 'Juana', 'Josefa', 'Magdalena', 'Manuela', 'Ignacio', 'Camilo'];
+      } else if (/villa/i.test(characterName)) {
+        requiredKeywords = ['Agustín', 'Octavio', 'Francisco', 'Hipólito', 'hijo', 'hijos'];
+      } else if (/hidalgo/i.test(characterName)) {
+        requiredKeywords = ['Agustina', 'Mariano', 'Lino', 'hijo', 'hijos'];
+      }
+      instructionForAI = 'El estudiante pide expresamente los NOMBRES de tus hijos. Menciona sus nombres con rigor histórico.';
     } else if (interrogativeType === 'ASKING_COUNT') {
       specificIntent = 'CHILDREN_COUNT';
-      requiredKeywords = ['catorce', '14'];
-      instructionForAI = 'El estudiante pregunta cuántos hijos tuviste. Contesta de inmediato que tuviste catorce hijos con don Miguel Domínguez (además de criar a dos de su primer matrimonio).';
+      if (!characterName || /josefa/i.test(characterName)) {
+        requiredKeywords = ['catorce', '14'];
+      }
+      instructionForAI = 'El estudiante pregunta cuántos hijos tuviste. Contesta de inmediato con la cifra real.';
     } else if (norm.includes('prision') || norm.includes('carcel') || norm.includes('convento') || norm.includes('quedo') || norm.includes('cuido')) {
       specificIntent = 'CHILDREN_CARE_PRISON';
-      instructionForAI = 'Explica directamente quién cuidó de tus hijos mientras estuviste recluida en los conventos de Santa Clara y Santa Teresa.';
+      instructionForAI = 'Explica directamente quién cuidó de tus hijos mientras estuviste recluida.';
     } else {
       specificIntent = 'CHILDREN_GENERAL';
     }
   } else if (targetEntity === 'SPOUSE') {
     if (interrogativeType === 'ASKING_NAMES') {
       specificIntent = 'SPOUSE_NAME';
-      requiredKeywords = ['Miguel Domínguez', 'Miguel Dominguez'];
-      instructionForAI = 'Indica directamente el nombre de tu esposo: don Miguel Domínguez Trujillo, Corregidor de Querétaro.';
+      if (!characterName || /josefa/i.test(characterName)) {
+        requiredKeywords = ['Miguel Domínguez', 'Miguel Dominguez'];
+      } else if (/villa/i.test(characterName)) {
+        requiredKeywords = ['Luz Corral', 'Austreberta', 'esposa'];
+      } else if (/hidalgo/i.test(characterName)) {
+        requiredKeywords = ['sacerdote', 'voto', 'celibato', 'consagrado', 'matrimonio'];
+      } else if (/queretaro/i.test(characterName)) {
+        requiredKeywords = ['ciudad', 'urbe', 'suelo', 'fundacion'];
+      }
+      instructionForAI = 'Indica el nombre de tu cónyuge o tu condición respecto al matrimonio.';
     } else if (interrogativeType === 'ASKING_DATE_TIME') {
       specificIntent = 'MARRIAGE_DATE';
-      requiredKeywords = ['1791'];
-      instructionForAI = 'Indica el año de tu matrimonio (1791 en la Ciudad de México).';
+      if (!characterName || /josefa/i.test(characterName)) {
+        requiredKeywords = ['1791'];
+      }
+      instructionForAI = 'Indica el año de tu matrimonio.';
     }
   } else if (targetEntity === 'PARENTS') {
     if (interrogativeType === 'ASKING_NAMES') {
       specificIntent = 'PARENTS_NAMES';
-      requiredKeywords = ['Juan José Ortiz', 'María Manuela Girón', 'Juan Jose', 'Manuela Giron'];
-      instructionForAI = 'Indica los nombres de tus padres: don Juan José Ortiz y doña María Manuela Girón.';
+      if (!characterName || /josefa/i.test(characterName)) {
+        requiredKeywords = ['Juan José Ortiz', 'María Manuela Girón', 'Juan Jose', 'Manuela Giron'];
+      } else if (/villa/i.test(characterName)) {
+        requiredKeywords = ['Agustín Arango', 'Micaela Arámbula', 'Agustin Arango', 'Micaela Arambula', 'padres', 'padre', 'madre'];
+      } else if (/hidalgo/i.test(characterName)) {
+        requiredKeywords = ['Cristóbal Hidalgo', 'Ana María Gallaga', 'Cristobal Hidalgo', 'Ana Maria Gallaga', 'padres', 'padre', 'madre'];
+      } else if (/queretaro/i.test(characterName)) {
+        requiredKeywords = ['fundacion', 'suelo', 'ciudad', 'urbe', 'Conin', 'Tapia', '1531'];
+      } else {
+        requiredKeywords = ['padre', 'madre', 'progenitor', 'familia'];
+      }
+      instructionForAI = 'Indica los nombres de tus padres y progenitores.';
     }
   } else if (targetEntity === 'SISTER') {
     if (interrogativeType === 'ASKING_NAMES') {
       specificIntent = 'SISTER_NAME';
-      requiredKeywords = ['María Sotero', 'Maria Sotero'];
-      instructionForAI = 'Indica el nombre de tu hermana mayor: María Sotero Ortiz.';
+      if (!characterName || /josefa/i.test(characterName)) {
+        requiredKeywords = ['María Sotero', 'Maria Sotero'];
+      }
+      instructionForAI = 'Indica el nombre de tu hermana mayor.';
     }
   } else if (targetEntity === 'FOOD') {
     if (isNegated) {
       specificIntent = 'FOOD_DISLIKES';
-      instructionForAI = 'El estudiante pregunta qué comida NO le gustaba, le causaba aversión o repudiaba al personaje histórico. Contesta de inmediato en primera persona señalando los excesos culinarios virreinales que repudiaba (los pesados banquetes peninsulares rebosantes de manteca rancia, carnes grasosas y bacalao seco importado servidos con insolencia mientras el pueblo pasaba hambre) y los alimentos descompuestos o agrios (atoles agrios, frijoles desabridos, pan duro y mohoso) que sufrió durante su encierro en los conventos de Santa Clara y Santa Teresa. Queda TERMINANTEMENTE PROHIBIDO responder con platillos favoritos como mole, manchamanteles o chocolate.';
+      instructionForAI = 'El estudiante pregunta qué comida NO le gustaba, le causaba aversión o repudiaba al personaje histórico. Contesta de inmediato en primera persona señalando los excesos culinarios o alimentos desabridos que repudiaba.';
     } else {
       specificIntent = 'FOOD_FAVORITES';
-      instructionForAI = 'El estudiante pregunta cuál era tu comida o platillo favorito. Menciona con afecto los manjares novohispanos como el mole de olla, el manchamanteles y el chocolate de metate batido con molinillo.';
+      instructionForAI = 'El estudiante pregunta cuál era tu comida o platillo favorito.';
     }
   } else if (targetEntity === 'WOUNDS_COMBAT') {
     specificIntent = 'WOUNDS_COMBAT_HURT';
-    instructionForAI = 'Aclara directamente en la primera oración si saliste herida o no: no combatiste en las líneas de fuego con armas y no sufriste heridas de bala, pero tu padecimiento físico fue una grave afección pleuropulmonar por el encierro en los conventos de Santa Clara y Santa Teresa.';
+    instructionForAI = 'Aclara directamente en la primera oración si sufriste heridas en combate o tu condición de salud.';
   } else if (targetEntity === 'BIRTHPLACE') {
     specificIntent = 'BIRTHPLACE';
-    instructionForAI = 'El estudiante pregunta expresamente DÓNDE NACISTE o cuál es tu lugar de origen. Contesta de inmediato en la primera oración en primera persona indicando tu lugar exacto de nacimiento (ciudad, hacienda o poblado y estado) y fecha de nacimiento. Queda TERMINANTEMENTE PROHIBIDO dar discursos políticos, sermones morales o hablar de la causa en general.';
+    instructionForAI = 'El estudiante pregunta expresamente DÓNDE NACISTE o cuál es tu lugar de origen. Contesta de inmediato en la primera oración en primera persona indicando tu lugar exacto de nacimiento (ciudad, hacienda o poblado y estado) y fecha de nacimiento. Queda TERMINANTEMENTE PROHIBIDO dar discursos políticos o hablar en abstracto.';
   } else if (targetEntity === 'DEATH_BURIAL') {
     if (interrogativeType === 'ASKING_LOCATION') {
       specificIntent = 'RESTING_PLACE';
-      requiredKeywords = ['Panteón de los Queretanos Ilustres', 'Queretanos Ilustres', 'Santa Teresa'];
+      if (!characterName || /josefa/i.test(characterName)) {
+        requiredKeywords = ['Panteón de los Queretanos Ilustres', 'Queretanos Ilustres', 'Santa Teresa'];
+      } else if (/villa/i.test(characterName)) {
+        requiredKeywords = ['Parral', 'Dolores', 'Monumento a la Revolución', 'Monumento a la Revolucion'];
+      } else if (/hidalgo/i.test(characterName)) {
+        requiredKeywords = ['Ángel de la Independencia', 'Angel de la Independencia', 'Catedral', 'San Francisco', 'Chihuahua', 'Alhóndiga', 'Alhondiga'];
+      } else if (/queretaro/i.test(characterName)) {
+        requiredKeywords = ['permanezco', 'ciudad', 'viva', 'urbe', 'monumento', 'patrimonio'];
+      }
     } else if (interrogativeType === 'ASKING_AGE') {
       specificIntent = 'DEATH_AGE';
-      requiredKeywords = ['60 años', '60 anos', 'sesenta'];
+      if (!characterName || /josefa/i.test(characterName)) {
+        requiredKeywords = ['60 años', '60 anos', 'sesenta'];
+      } else if (/villa/i.test(characterName)) {
+        requiredKeywords = ['45 años', '45 anos', 'cuarenta y cinco'];
+      } else if (/hidalgo/i.test(characterName)) {
+        requiredKeywords = ['58 años', '58 anos', 'cincuenta y ocho'];
+      }
     } else {
       specificIntent = 'DEATH_CAUSE';
-      instructionForAI = 'Indica cómo y cuándo moriste: falleciste el 2 de marzo de 1829 a los 60 años en la Ciudad de México por una afección pulmonar.';
+      instructionForAI = 'Indica cómo y cuándo moriste con precisión histórica.';
     }
   }
 
@@ -951,9 +999,9 @@ export function analyzeHistoricalQuestion(question: string, birthDeathDates?: st
  * Validador estricto de concordancia semántica entre la pregunta y la respuesta.
  * Evita que respuestas genéricas o no pertinentes se entreguen o se almacenen en caché.
  */
-export function isAnswerSemanticallyAligned(question: string, answer: string): boolean {
+export function isAnswerSemanticallyAligned(question: string, answer: string, characterName?: string): boolean {
   if (!answer || isCorruptOrGenericPersonaAnswer(answer)) return false;
-  const analysis = analyzeHistoricalQuestion(question);
+  const analysis = analyzeHistoricalQuestion(question, undefined, characterName);
   const normAnswer = answer.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
   // 0. Guardián de Anacronismos / Tecnologías fuera de época
@@ -1008,7 +1056,7 @@ export function isAnswerSemanticallyAligned(question: string, answer: string): b
 
   // 6. Si la pregunta es sobre lugar de nacimiento u origen (BIRTHPLACE):
   if (analysis.specificIntent === 'BIRTHPLACE') {
-    const hasBirthTerms = /(naci|origen|originari|tierra natal|cuna|hacienda|rancho|ciudad|pueblo|penjamo|guanajuato|valladolid|morelia|durango|coyotada|guelatao|oaxaca|chihuahua|san miguel|guadalajara)/i.test(normAnswer);
+    const hasBirthTerms = /(naci|origen|originari|tierra natal|cuna|hacienda|rancho|ciudad|pueblo|penjamo|guanajuato|valladolid|morelia|durango|coyotada|guelatao|oaxaca|chihuahua|san miguel|guadalajara|mexico|queretaro|distrito federal)/i.test(normAnswer);
     if (!hasBirthTerms) {
       console.warn(`[SemanticGuard] Rechazada respuesta a lugar de nacimiento que no menciona el lugar ni el verbo nacer.`);
       return false;
@@ -1048,7 +1096,7 @@ export function searchQaInVaultNode(slug: string, question: string): { found: bo
   for (const item of figure.qaCache) {
     const normItem = normalizeQuestionText(item.question);
     if (normItem === normTarget) {
-      if (isAnswerSemanticallyAligned(question, item.answer)) {
+      if (isAnswerSemanticallyAligned(question, item.answer, figure.characterName)) {
         return { found: true, answer: item.answer.trim() };
       } else {
         console.warn(`[Bóveda Curricular] Entrada en caché para "${item.question}" no concuerda semánticamente con la pregunta. Descartada para re-inferencia.`);
@@ -1070,7 +1118,7 @@ export function appendQaToVaultNode(slug: string, question: string, answer: stri
   if (!figure.qaCache) figure.qaCache = [];
   
   const cleanAnswer = answer.trim();
-  if (!cleanAnswer || !isAnswerSemanticallyAligned(question, cleanAnswer)) return;
+  if (!cleanAnswer || !isAnswerSemanticallyAligned(question, cleanAnswer, figure.characterName)) return;
 
   const normTarget = normalizeQuestionText(question);
   const existingIdx = figure.qaCache.findIndex(i => normalizeQuestionText(i.question) === normTarget);

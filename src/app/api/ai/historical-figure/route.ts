@@ -289,7 +289,7 @@ ${questionAnalysis.isNegated ? '⚠️ REGLA CRÍTICA DE POLARIDAD: La pregunta 
 
               if (candidate && candidate.length > 20) {
                 const cleaned = sanitizePersonaAnswer(candidate, characterName);
-                if (cleaned && isAnswerSemanticallyAligned(question, cleaned)) {
+                if (cleaned && isAnswerSemanticallyAligned(question, cleaned, characterName)) {
                   answer = cleaned;
                   liveTokensUsed = data.usageMetadata?.totalTokenCount || 120;
                   usedExternalAi = true;
@@ -327,7 +327,7 @@ ${questionAnalysis.isNegated ? '⚠️ REGLA CRÍTICA DE POLARIDAD: La pregunta 
             const data = await aiRes.json();
             const rawChoice = data.choices?.[0]?.message?.content || '';
             const cleaned = sanitizePersonaAnswer(rawChoice, characterName);
-            if (cleaned && isAnswerSemanticallyAligned(question, cleaned)) {
+            if (cleaned && isAnswerSemanticallyAligned(question, cleaned, characterName)) {
               answer = cleaned;
               liveTokensUsed = data.usage?.total_tokens || 120;
               usedExternalAi = true;

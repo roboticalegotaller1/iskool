@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Mic, 
@@ -280,6 +280,60 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
       setApiKeyInput(stored);
     }
   }, []);
+
+  // Sugerencias Rápidas de Preguntas dinámicas adaptadas al personaje o sitio histórico
+  const suggestedQuestions = useMemo(() => {
+    const norm = (characterName || slug || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (norm.includes('villa') || norm.includes('doroteo') || norm.includes('centauro')) {
+      return [
+        '¿Cuál fue tu momento más difícil?',
+        '¿Qué falló tácticamente en Celaya frente a Obregón?',
+        '¿Cómo organizaste a "Los Dorados de Villa"?',
+        '¿Qué te motivó a luchar por la patria?',
+        '¿Qué mensaje le das a los jóvenes de hoy?',
+        'te gustaba el chocolate',
+        'cuentanos de tu niñez'
+      ];
+    }
+    if (norm.includes('josefa') || norm.includes('corregidora')) {
+      return [
+        '¿Qué cruzó por tu mente al golpear el piso con el tacón?',
+        '¿Cómo mantuviste la correspondencia secreta desde Querétaro?',
+        '¿Por qué rechazaste ser dama de honor de la emperatriz?',
+        '¿Qué te motivó a luchar por la patria?',
+        '¿Qué mensaje le das a los jóvenes de hoy?',
+        'te gustaba el chocolate',
+        'quienes eran tus padres'
+      ];
+    }
+    if (norm.includes('hidalgo')) {
+      return [
+        '¿Por qué motivo te apodaron "El Zorro"?',
+        '¿Cuáles fueron tus palabras en el atrio de Dolores?',
+        '¿Qué oficios enseñabas en tus talleres comunitarios?',
+        '¿Qué te motivó a luchar por la patria?',
+        '¿Qué mensaje le das a los jóvenes de hoy?',
+        'te gustaba el chocolate',
+        'cuentanos de tu niñez'
+      ];
+    }
+    if (norm.includes('queretaro')) {
+      return [
+        '¿Cómo fue la legendaria fundación de 1531?',
+        '¿Quién fue el noble otomí Fernando de Tapia (Conín)?',
+        '¿Cómo se construyó tu monumental Acueducto?',
+        '¿Cómo se configuró el Sitio militar de 1867?',
+        '¿Qué mensaje le das a los jóvenes de hoy?',
+        'te gustaba el chocolate'
+      ];
+    }
+    return [
+      '¿Cuál fue tu momento más difícil?',
+      '¿Qué te motivó a luchar por la patria?',
+      '¿Qué mensaje le das a los jóvenes de hoy?',
+      'te gustaba el chocolate'
+    ];
+  }, [characterName, slug]);
 
   // Sincronizar mensaje inicial y reiniciar hilo cuando cambia el personaje seleccionado
   useEffect(() => {
@@ -1356,16 +1410,12 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
 
         {/* Sugerencias Rápidas de Preguntas */}
         <div className="py-2 flex gap-1.5 overflow-x-auto no-scrollbar">
-          {[
-            '¿Cuál fue tu momento más difícil?',
-            '¿Qué te motivó a luchar por la patria?',
-            '¿Qué mensaje le das a los jóvenes de hoy?'
-          ].map((sug, sIdx) => (
+          {suggestedQuestions.map((sug, sIdx) => (
             <button
               key={sIdx}
               type="button"
               onClick={() => handleSendMessage(sug)}
-              className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0 transition-all cursor-pointer"
+              className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0 transition-all cursor-pointer whitespace-nowrap"
             >
               {sug}
             </button>
