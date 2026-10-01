@@ -76,6 +76,7 @@ import {
 } from './StrategicDimensionModal';
 import { ExecutiveManagerialBriefingCard } from './ExecutiveManagerialBriefingCard';
 import { ExecutiveBoardReportDocument } from './ExecutiveBoardReportDocument';
+import { useDeviceViewport } from '@/hooks/useDeviceViewport';
 
 interface ExecutiveAnalyticsStudioProps {
   onBack?: () => void;
@@ -232,6 +233,7 @@ export default function ExecutiveAnalyticsStudio({
   onNavigateTab
 }: ExecutiveAnalyticsStudioProps) {
   const { user } = useAuth();
+  const viewport = useDeviceViewport();
   const {
     institutionsList,
     activeSchoolId,
@@ -1351,13 +1353,19 @@ export default function ExecutiveAnalyticsStudio({
       `}</style>
 
       {/* 1. CONTENEDOR EN PANTALLA (INTERACTIVO, SPLIT-VIEW, MODO CLARO) - OCULTO AL IMPRIMIR */}
-      <div className={`screen-only-studio select-none print:hidden no-print transition-all duration-200 ${
-        isMaximized
-          ? 'fixed inset-0 z-50 flex flex-col h-screen w-full bg-slate-50 text-slate-900 font-sans overflow-hidden shadow-2xl'
-          : isEmbeddedView
-          ? 'flex flex-col h-[820px] xl:h-[880px] w-full bg-slate-50 text-slate-900 font-sans rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden relative'
-          : 'flex flex-col h-screen w-full bg-slate-50 text-slate-900 font-sans overflow-hidden'
-      }`}>
+      <div 
+        className={`screen-only-studio select-none print:hidden no-print transition-all duration-200 ${
+          isMaximized
+            ? 'fixed inset-0 z-50 flex flex-col h-screen w-full bg-slate-50 text-slate-900 font-sans overflow-hidden shadow-2xl'
+            : isEmbeddedView
+            ? 'flex flex-col w-full bg-slate-50 text-slate-900 font-sans rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden relative dynamic-bi-height'
+            : 'flex flex-col h-screen w-full bg-slate-50 text-slate-900 font-sans overflow-hidden'
+        }`}
+        style={isEmbeddedView && !isMaximized ? {
+          height: `min(calc(100dvh - 6rem), ${viewport.availableContentHeight}px)`,
+          minHeight: '520px'
+        } : undefined}
+      >
         
         {/* 1. BARRA SUPERIOR EJECUTIVA */}
       <header className="h-14 shrink-0 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 flex items-center justify-between gap-3 z-30 shadow-xs">
@@ -1505,7 +1513,7 @@ export default function ExecutiveAnalyticsStudio({
         <aside 
           className={`shrink-0 bg-white border-r border-slate-200 flex flex-col transition-all duration-300 z-30 ${
             isSidebarOpen 
-              ? 'absolute md:relative inset-y-0 left-0 w-full sm:w-[380px] md:w-[410px] shadow-2xl md:shadow-none' 
+              ? 'absolute md:relative inset-y-0 left-0 w-full sm:w-[330px] md:w-[360px] lg:w-[390px] xl:w-[415px] shadow-2xl md:shadow-none' 
               : 'w-0 border-r-0 overflow-hidden'
           }`}
         >
@@ -1723,7 +1731,11 @@ export default function ExecutiveAnalyticsStudio({
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           title={isSidebarOpen ? "Ocultar panel conversacional" : "Mostrar panel conversacional"}
           className="hidden md:flex absolute top-3 z-30 items-center justify-center h-7 w-7 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 shadow-md transition cursor-pointer"
-          style={{ left: isSidebarOpen ? 'calc(410px - 14px)' : '8px' }}
+          style={{ 
+            left: isSidebarOpen 
+              ? (viewport.isCompactLaptop ? 'calc(330px - 14px)' : viewport.isLaptop ? 'calc(360px - 14px)' : 'calc(410px - 14px)') 
+              : '8px' 
+          }}
         >
           {isSidebarOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </button>
@@ -1786,7 +1798,7 @@ export default function ExecutiveAnalyticsStudio({
           </div>
 
           {/* CONTENIDO DEL REPORTE */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className={`flex-1 overflow-y-auto ${viewport.classes.containerPadding} ${viewport.classes.sectionSpacing} custom-scrollbar`}>
             
             {/* Si no hay reporte cargado: Estado vacío idéntico al de la Imagen 2 */}
             {!currentReport ? (
@@ -1935,7 +1947,7 @@ export default function ExecutiveAnalyticsStudio({
                 ) : null}
 
                 {/* 1. TARJETAS KPI EJECUTIVAS */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 ${viewport.classes.gridGap}`}>
                   {currentReport.kpis.map((kpi) => {
                     const isCountKpi = kpi.label.toLowerCase().includes('alumno') || kpi.label.toLowerCase().includes('estudiante') || kpi.id.includes('count');
 
@@ -1950,7 +1962,7 @@ export default function ExecutiveAnalyticsStudio({
                             }, 50);
                           }
                         }}
-                        className={`bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-between shadow-xs relative overflow-hidden ${
+                        className={`bg-white border border-slate-200 rounded-2xl ${viewport.classes.kpiCardPadding} flex flex-col justify-between shadow-xs relative overflow-hidden ${
                           isCountKpi ? 'cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/30 transition group' : ''
                         }`}
                       >
@@ -1966,7 +1978,7 @@ export default function ExecutiveAnalyticsStudio({
                           )}
                         </div>
                         
-                        <div className="text-2xl font-black text-slate-900 tracking-tight mb-1">
+                        <div className={`${viewport.classes.kpiValueText} font-black text-slate-900 tracking-tight mb-1`}>
                           {kpi.value}
                         </div>
 
@@ -2041,10 +2053,13 @@ export default function ExecutiveAnalyticsStudio({
                         </div>
                       </div>
 
-                      <div className="overflow-x-auto">
+                      <div 
+                        className="overflow-x-auto overflow-y-auto custom-scrollbar"
+                        style={{ maxHeight: `${viewport.tableMaxHeight}px` }}
+                      >
                         <table className="w-full text-left text-xs border-collapse">
-                          <thead>
-                            <tr className="bg-slate-100/80 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
+                          <thead className="sticky top-0 z-10 bg-slate-100/95 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[11px] shadow-xs backdrop-blur-sm">
+                            <tr>
                               {activeTableColumns.map((col) => (
                                 <th 
                                   key={col.key} 
@@ -2257,10 +2272,13 @@ export default function ExecutiveAnalyticsStudio({
                       </div>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    <div 
+                      className="overflow-x-auto overflow-y-auto custom-scrollbar"
+                      style={{ maxHeight: `min(${viewport.tableMaxHeight + 160}px, 68vh)` }}
+                    >
                       <table className="w-full text-left text-xs border-collapse">
-                        <thead>
-                          <tr className="bg-slate-100/80 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
+                        <thead className="sticky top-0 z-10 bg-slate-100/95 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[11px] shadow-xs backdrop-blur-sm">
+                          <tr>
                             {activeTableColumns.map((col) => (
                               <th 
                                 key={col.key} 

@@ -60,6 +60,7 @@ import {
   AnalyticReportResult,
   EngineDataSources
 } from '@/services/executiveAnalyticsEngine';
+import { useDeviceViewport } from '@/hooks/useDeviceViewport';
 
 /**
  * Renderizador de formato enriquecido de alta fidelidad para la Terminal Pedagógica Directiva (Dark Theme)
@@ -162,6 +163,7 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
   isEmbeddedView = false
 }) => {
   const { user } = useAuth();
+  const viewport = useDeviceViewport();
   const isSuperUser = useMemo(() => isPlatformSuperUser(user), [user]);
 
   // Conexión reactiva al almacén del colegio para aislamiento multi-tenant estricto
@@ -1337,7 +1339,7 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
   // RENDERIZADO DEL ESTUDIO INSTITUCIONAL
   // ============================================================================
   const studioContent = (
-    <div className={`flex flex-col h-full bg-slate-950 text-white ${isEmbeddedView ? 'rounded-3xl border border-indigo-500/30 shadow-2xl overflow-hidden' : ''}`}>
+    <div className="flex flex-col h-full bg-slate-950 text-white overflow-hidden">
       {/* 1. BARRA DE ENCABEZADO HOLOGRÁFICA */}
       <header className="px-5 py-3.5 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md flex flex-wrap items-center justify-between gap-3 shrink-0 z-20">
         <div className="flex items-center gap-3">
@@ -2095,7 +2097,13 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
 
   if (isEmbeddedView) {
     return (
-      <div className="w-full h-[85vh] rounded-3xl overflow-hidden border border-indigo-500/30 shadow-2xl">
+      <div 
+        className="w-full rounded-3xl overflow-hidden border border-indigo-500/30 shadow-2xl dynamic-bi-height"
+        style={{ 
+          height: `min(calc(100dvh - 5.5rem), ${viewport.availableContentHeight}px)`, 
+          minHeight: '520px' 
+        }}
+      >
         {studioContent}
       </div>
     );
@@ -2103,7 +2111,7 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 animate-in fade-in zoom-in duration-150">
-      <div className="w-full max-w-7xl h-[92vh] rounded-3xl overflow-hidden shadow-[0_0_80px_rgba(99,102,241,0.25)] border border-indigo-500/40">
+      <div className="w-full max-w-7xl h-[94dvh] rounded-3xl overflow-hidden shadow-[0_0_80px_rgba(99,102,241,0.25)] border border-indigo-500/40">
         {studioContent}
       </div>
     </div>

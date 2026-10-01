@@ -199,6 +199,39 @@ body {
 }
 
 /* =========================================================================
+   SISTEMA DE DIMENSIONES DINÁMICAS RESPONSIVAS PARA PC Y LAPTOPS
+   Lee las medidas reales del dispositivo evitando medidas fijas rígidas
+   ========================================================================= */
+:root {
+  --dev-viewport-w: 100vw;
+  --dev-viewport-h: 100vh;
+  --dev-content-h: calc(100dvh - 7rem);
+  --dev-chart-h: 260px;
+  --dev-table-max-h: 380px;
+}
+
+@utility dynamic-bi-height {
+  height: var(--dev-content-h, calc(100dvh - 7rem));
+  min-height: min(540px, 88dvh);
+}
+
+@utility dynamic-chart-height {
+  height: var(--dev-chart-h, 260px);
+}
+
+@utility dynamic-table-max-height {
+  max-height: var(--dev-table-max-h, 380px);
+}
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* =========================================================================
    SISTEMA DE EFECTOS CROMÁTICOS GAMIFICADOS POR ÁREA (PSICOLOGÍA DEL COLOR)
    ========================================================================= */
 

@@ -1780,101 +1780,106 @@ export default function CEOExecutiveDashboard({
         {/* ========================================================= */}
         {/* CUERPO PRINCIPAL MODULAR CON TRANSICIÓN INSTANTÁNEA       */}
         {/* ========================================================= */}
-        <main className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-8 pb-24 lg:pb-8 space-y-4 sm:space-y-6 print:h-auto print:overflow-visible print:p-0 print:m-0 print:space-y-0 print:block">
+        <main className={`flex-1 overflow-y-auto ${activeTab === 'reportes' || activeTab === 'cerebro' ? 'p-2 sm:p-3 md:p-4 pb-4 space-y-2' : 'p-3 sm:p-5 lg:p-8 pb-24 lg:pb-8 space-y-4 sm:space-y-6'} print:h-auto print:overflow-visible print:p-0 print:m-0 print:space-y-0 print:block`}>
           
-          {/* BARRA DE MONITOREO AUTÓNOMO EN VIVO (0 TOKENS) */}
-          <div className="bg-slate-900 text-white p-3 sm:px-5 sm:py-2.5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs border border-slate-800 text-xs print:hidden no-print">
-            <div className="flex items-center gap-3">
-              <div className="relative flex h-3 w-3 shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-              </div>
-              <div>
-                <span className="font-bold text-white">Motor Autónomo de Análisis en Vivo</span>
-                <span className="text-slate-400 ml-1.5 font-mono text-[11px] block sm:inline">
-                  • 0 Tokens • Evaluación #{autonomousCycle} ({lastEvaluationTime}) • {metrics.totalCampuses} Sedes Auditadas
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 self-end sm:self-auto">
-              <button
-                onClick={() => {
-                  setAutonomousCycle(c => c + 1);
-                  const now = new Date();
-                  setLastEvaluationTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-                  triggerToast(`Pulso ejecutado: ${metrics.totalCampuses} ${isCorporate ? 'plantas y sedes' : 'sedes'} auditadas a 0 tokens (${metrics.totalStudents.toLocaleString()} ${isCorporate ? 'colaboradores' : 'alumnos'} evaluados)`);
-                }}
-                className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-700 active:scale-95"
-              >
-                <RefreshCw size={12} />
-                <span>Forzar Pulso Analítico</span>
-              </button>
-            </div>
-          </div>
-
-          {/* TARJETA DE LICENCIA SAAS EMPRESARIAL ISKOOL • TENANT ESCOLAR */}
-          <div className="bg-white p-4 rounded-2xl border border-indigo-100 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 print:hidden no-print">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-900 to-indigo-950 text-amber-400 flex items-center justify-center shrink-0 shadow-xs">
-                <Building2 size={20} />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-sm font-bold text-slate-900">
-                    {currentInstitution?.licensing?.licensee || currentInstitution?.name || holding.name}
-                  </h3>
-                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                    {currentInstitution?.licensing?.planName || 'Licencia SaaS Enterprise Activa'}
-                  </span>
-                  <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
-                    ID: {currentInstitution?.licensing?.licenseKey || `ISK-LIC-2026-${(holding.slug || 'ENT').toUpperCase()}-${holding.campuses.length}CAMPUS`}
-                  </span>
+          {/* BARRA DE MONITOREO, LICENCIA Y DIFERENCIADORES (SOLO EN PESTAÑAS OPERATIVAS / GENERALES) */}
+          {activeTab !== 'reportes' && activeTab !== 'cerebro' && (
+            <>
+              {/* BARRA DE MONITOREO AUTÓNOMO EN VIVO (0 TOKENS) */}
+              <div className="bg-slate-900 text-white p-3 sm:px-5 sm:py-2.5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs border border-slate-800 text-xs print:hidden no-print">
+                <div className="flex items-center gap-3">
+                  <div className="relative flex h-3 w-3 shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                  </div>
+                  <div>
+                    <span className="font-bold text-white">Motor Autónomo de Análisis en Vivo</span>
+                    <span className="text-slate-400 ml-1.5 font-mono text-[11px] block sm:inline">
+                      • 0 Tokens • Evaluación #{autonomousCycle} ({lastEvaluationTime}) • {metrics.totalCampuses} Sedes Auditadas
+                    </span>
+                  </div>
                 </div>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  <span className="font-semibold text-slate-700">Licenciatario:</span> {currentInstitution?.name || holding.name} ({holding.campuses.length} {isCorporate ? 'Sedes / Plantas' : 'Planteles'}) • <span className="font-semibold text-slate-700">Software Propietario:</span> {currentInstitution?.licensing?.licensor || 'ISkool Technologies Inc.'} • <span className="text-indigo-600 font-medium">Asientos: {metrics.totalStudents.toLocaleString()} en uso de {(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200)).toLocaleString()} contratados ({Math.min(100, Math.round(((metrics.totalStudents) / (currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200))) * 1000) / 10)}% ocupación)</span>
-                </p>
+                <div className="flex items-center gap-2 self-end sm:self-auto">
+                  <button
+                    onClick={() => {
+                      setAutonomousCycle(c => c + 1);
+                      const now = new Date();
+                      setLastEvaluationTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+                      triggerToast(`Pulso ejecutado: ${metrics.totalCampuses} ${isCorporate ? 'plantas y sedes' : 'sedes'} auditadas a 0 tokens (${metrics.totalStudents.toLocaleString()} ${isCorporate ? 'colaboradores' : 'alumnos'} evaluados)`);
+                    }}
+                    className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-700 active:scale-95"
+                  >
+                    <RefreshCw size={12} />
+                    <span>Forzar Pulso Analítico</span>
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-center gap-2 self-end md:self-auto shrink-0">
-              <div className="text-right hidden sm:block">
-                <div className="text-[11px] font-bold text-slate-700">Vigencia Anual: 2026-2027</div>
-                <div className="text-[10px] text-emerald-600 font-semibold">{isCorporate ? '● Facturación CFDI 4.0 B2B Activa' : '● Timbrado CFDI/IEDU 0 Tokens Activo'}</div>
+              {/* TARJETA DE LICENCIA SAAS EMPRESARIAL ISKOOL • TENANT ESCOLAR */}
+              <div className="bg-white p-4 rounded-2xl border border-indigo-100 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 print:hidden no-print">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-900 to-indigo-950 text-amber-400 flex items-center justify-center shrink-0 shadow-xs">
+                    <Building2 size={20} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-sm font-bold text-slate-900">
+                        {currentInstitution?.licensing?.licensee || currentInstitution?.name || holding.name}
+                      </h3>
+                      <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        {currentInstitution?.licensing?.planName || 'Licencia SaaS Enterprise Activa'}
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
+                        ID: {currentInstitution?.licensing?.licenseKey || `ISK-LIC-2026-${(holding.slug || 'ENT').toUpperCase()}-${holding.campuses.length}CAMPUS`}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      <span className="font-semibold text-slate-700">Licenciatario:</span> {currentInstitution?.name || holding.name} ({holding.campuses.length} {isCorporate ? 'Sedes / Plantas' : 'Planteles'}) • <span className="font-semibold text-slate-700">Software Propietario:</span> {currentInstitution?.licensing?.licensor || 'ISkool Technologies Inc.'} • <span className="text-indigo-600 font-medium">Asientos: {metrics.totalStudents.toLocaleString()} en uso de {(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200)).toLocaleString()} contratados ({Math.min(100, Math.round(((metrics.totalStudents) / (currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200))) * 1000) / 10)}% ocupación)</span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-end md:self-auto shrink-0">
+                  <div className="text-right hidden sm:block">
+                    <div className="text-[11px] font-bold text-slate-700">Vigencia Anual: 2026-2027</div>
+                    <div className="text-[10px] text-emerald-600 font-semibold">{isCorporate ? '● Facturación CFDI 4.0 B2B Activa' : '● Timbrado CFDI/IEDU 0 Tokens Activo'}</div>
+                  </div>
+                  <button
+                    onClick={() => triggerToast(`✓ Contrato de Licencia SaaS verificado: ${(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200)).toLocaleString()} asientos autorizados para ${currentInstitution?.name || holding.name}`)}
+                    className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
+                  >
+                    <FileCheck2 size={14} />
+                    <span>Auditoría de Licencia</span>
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={() => triggerToast(`✓ Contrato de Licencia SaaS verificado: ${(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200)).toLocaleString()} asientos autorizados para ${currentInstitution?.name || holding.name}`)}
-                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
-              >
-                <FileCheck2 size={14} />
-                <span>Auditoría de Licencia</span>
-              </button>
-            </div>
-          </div>
 
-          {/* BARRA DE DIFERENCIADORES ESTRATÉGICOS ISKOOL */}
-          <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-3.5 rounded-2xl border border-indigo-500/30 flex flex-wrap items-center justify-between gap-3 text-xs text-white print:hidden no-print">
-            <div className="flex items-center gap-2">
-              <Sparkles size={16} className="text-amber-400" />
-              <span className="font-extrabold tracking-wide uppercase text-[11px] text-amber-300">Diferenciadores Clave iSkool Élite:</span>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              {[
-                { label: 'Simulador "What-If" EBITDA', tab: 'vision', color: 'bg-indigo-600/40 text-indigo-200 border-indigo-400/40 hover:bg-indigo-600/60' },
-                { label: 'Alineación Oficial SEP NEM 2024', tab: 'academico', color: 'bg-emerald-600/40 text-emerald-200 border-emerald-400/40 hover:bg-emerald-600/60' },
-                { label: 'Gamificación & Lienzo Digital', tab: 'academico', color: 'bg-purple-600/40 text-purple-200 border-purple-400/40 hover:bg-purple-600/60' },
-                { label: 'CFDI 4.0 Complemento IEDU SAT', tab: 'finanzas', color: 'bg-amber-600/40 text-amber-200 border-amber-400/40 hover:bg-amber-600/60' },
-                { label: 'Cerebro Institucional', tab: 'cerebro', color: 'bg-cyan-600/40 text-cyan-200 border-cyan-400/40 hover:bg-cyan-600/60' },
-              ].map((diff, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleNavClick(diff.tab)}
-                  className={`px-3 py-1.5 rounded-xl border font-bold hover:scale-103 transition-all cursor-pointer text-xs ${diff.color}`}
-                >
-                  {diff.label}
-                </button>
-              ))}
-            </div>
-          </div>
+              {/* BARRA DE DIFERENCIADORES ESTRATÉGICOS ISKOOL */}
+              <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-3.5 rounded-2xl border border-indigo-500/30 flex flex-wrap items-center justify-between gap-3 text-xs text-white print:hidden no-print">
+                <div className="flex items-center gap-2">
+                  <Sparkles size={16} className="text-amber-400" />
+                  <span className="font-extrabold tracking-wide uppercase text-[11px] text-amber-300">Diferenciadores Clave iSkool Élite:</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {[
+                    { label: 'Simulador "What-If" EBITDA', tab: 'vision', color: 'bg-indigo-600/40 text-indigo-200 border-indigo-400/40 hover:bg-indigo-600/60' },
+                    { label: 'Alineación Oficial SEP NEM 2024', tab: 'academico', color: 'bg-emerald-600/40 text-emerald-200 border-emerald-400/40 hover:bg-emerald-600/60' },
+                    { label: 'Gamificación & Lienzo Digital', tab: 'academico', color: 'bg-purple-600/40 text-purple-200 border-purple-400/40 hover:bg-purple-600/60' },
+                    { label: 'CFDI 4.0 Complemento IEDU SAT', tab: 'finanzas', color: 'bg-amber-600/40 text-amber-200 border-amber-400/40 hover:bg-amber-600/60' },
+                    { label: 'Cerebro Institucional', tab: 'cerebro', color: 'bg-cyan-600/40 text-cyan-200 border-cyan-400/40 hover:bg-cyan-600/60' },
+                  ].map((diff, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleNavClick(diff.tab)}
+                      className={`px-3 py-1.5 rounded-xl border font-bold hover:scale-103 transition-all cursor-pointer text-xs ${diff.color}`}
+                    >
+                      {diff.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
 
           {/* ======================================================= */}
           {/* MÓDULO 1: INICIO (CONSOLIDADO MAESTRO)                  */}

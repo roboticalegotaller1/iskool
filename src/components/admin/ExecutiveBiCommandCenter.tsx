@@ -50,6 +50,7 @@ import { formatMXN, AnalyticReportResult, AnalyticTableColumn } from '@/services
 import ExecutiveAnalyticsStudio from './ExecutiveAnalyticsStudio';
 import ExecutiveOracleDashboard from '@/components/oracle/ExecutiveOracleDashboard';
 import { ExecutiveBoardReportDocument } from './ExecutiveBoardReportDocument';
+import { useDeviceViewport } from '@/hooks/useDeviceViewport';
 
 interface ExecutiveBiCommandCenterProps {
   isEmbeddedView?: boolean;
@@ -81,6 +82,9 @@ export default function ExecutiveBiCommandCenter({
   onBack,
   onNavigateTab
 }: ExecutiveBiCommandCenterProps) {
+  // Inteligencia de pantalla y viewport en tiempo real (Laptop vs PC)
+  const viewport = useDeviceViewport();
+
   // Estados de control de vista
   const [activeMainView, setActiveMainView] = useState<BiMainView>('matrix');
   const [selectedCampusFilter, setSelectedCampusFilter] = useState<string>('all');
@@ -752,11 +756,13 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
   }, [activeMainView, horizonData, displayedDebtors, selectedCampusObj, holdingName, schoolId]);
 
   return (
-    <div className={`select-none transition-all duration-200 print:!overflow-visible print:!bg-white print:!h-auto print:!min-h-0 print:!max-h-none print:!border-none print:!shadow-none print:!p-0 print:!m-0 print:!block ${
+    <div 
+      style={!isMaximized && isEmbeddedView ? { minHeight: `${Math.min(viewport.availableContentHeight, 820)}px` } : undefined}
+      className={`select-none transition-all duration-200 print:!overflow-visible print:!bg-white print:!h-auto print:!min-h-0 print:!max-h-none print:!border-none print:!shadow-none print:!p-0 print:!m-0 print:!block ${
       isMaximized 
         ? 'fixed inset-0 z-50 flex flex-col h-screen w-full bg-[#0d131f] text-slate-100 font-sans overflow-hidden shadow-2xl'
         : isEmbeddedView 
-        ? 'flex flex-col min-h-[850px] w-full bg-[#0d131f] text-slate-100 font-sans rounded-2xl border border-slate-800 shadow-xl overflow-hidden relative'
+        ? 'flex flex-col w-full dynamic-bi-height bg-[#0d131f] text-slate-100 font-sans rounded-2xl border border-slate-800 shadow-xl overflow-hidden relative'
         : 'flex flex-col min-h-screen w-full bg-[#0d131f] text-slate-100 font-sans overflow-hidden'
     }`}>
       {/* 1. CONTENEDOR EN PANTALLA (MODO SALA DE JUNTAS / DARK MODE) - OCULTO AL IMPRIMIR */}
@@ -765,7 +771,7 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
       {/* ========================================================================= */}
       {/* 1. TOP HEADER EJECUTIVO & CONTROLES DE NIVEL C-SUITE                     */}
       {/* ========================================================================= */}
-      <header className="h-16 shrink-0 bg-[#111827]/95 border-b border-slate-800 px-4 sm:px-6 flex items-center justify-between gap-3 backdrop-blur-md z-30">
+      <header className="h-16 shrink-0 bg-[#111827]/95 border-b border-slate-800 px-4 sm:px-6 flex items-center justify-between gap-3 backdrop-blur-md z-30 overflow-x-auto no-scrollbar">
         
         {/* Identidad de la Suite Directiva */}
         <div className="flex items-center gap-3 min-w-0">
@@ -872,7 +878,7 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
       {/* ========================================================================= */}
       {/* 2. SUB-BARRA DE PESTAÑAS DE NAVEGACIÓN ANALÍTICA                         */}
       {/* ========================================================================= */}
-      <div className="h-12 shrink-0 bg-[#0f172a] border-b border-slate-800 px-4 sm:px-6 flex items-center justify-between gap-4 overflow-x-auto text-xs font-bold">
+      <div className="h-12 shrink-0 bg-[#0f172a] border-b border-slate-800 px-4 sm:px-6 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar text-xs font-bold">
         <div className="flex items-center gap-1 sm:gap-2">
           {[
             { id: 'matrix', label: 'Matriz Cuádruple Ejecutiva', icon: Layers },
@@ -926,12 +932,12 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
       {/* ========================================================================= */}
       {/* 3. RIBBON SUPERIOR DE KPIS DIRECTIVOS ESTRATÉGICOS (DINÁMICO POR HORIZONTE) */}
       {/* ========================================================================= */}
-      <div className="p-4 sm:p-6 pb-2 shrink-0">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className={`${viewport.classes.containerPadding} pb-2 shrink-0`}>
+        <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 ${viewport.classes.gridGap}`}>
           
           {/* KPI 1: Margen EBITDA */}
-          <div className="p-4 rounded-2xl bg-[#131b2e] border border-slate-800 shadow-lg relative overflow-hidden flex flex-col justify-between transition-all duration-300 hover:border-slate-700">
-            <div className="flex items-center justify-between mb-2">
+          <div className={`${viewport.classes.kpiCardPadding} rounded-2xl bg-[#131b2e] border border-slate-800 shadow-lg relative overflow-hidden flex flex-col justify-between transition-all duration-300 hover:border-slate-700`}>
+            <div className="flex items-center justify-between mb-1.5">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
                 Margen EBITDA {selectedCampusObj ? `· ${selectedCampusObj.shortName}` : 'Holding'}
               </span>
@@ -941,18 +947,18 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
               </span>
             </div>
             <div className="flex items-baseline justify-between gap-2">
-              <div className="text-2xl sm:text-3xl font-black text-white tracking-tight font-mono">
+              <div className={`${viewport.classes.kpiValueText} font-black text-white tracking-tight font-mono`}>
                 +{horizonData.ebitdaMarginPct.toFixed(1)}%
               </div>
               <div className="text-right">
-                <span className="text-[10px] text-slate-400 block">{horizonData.ebitdaDeltaText}</span>
+                <span className={`${viewport.classes.kpiSubtext} text-slate-400 block`}>{horizonData.ebitdaDeltaText}</span>
                 <span className="text-xs font-bold text-emerald-400 font-mono">
                   EBITDA: {formatMXN(horizonData.ebitdaValue)}
                 </span>
               </div>
             </div>
             {/* Barra mini Sparkline */}
-            <div className="w-full bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+            <div className="w-full bg-slate-800 h-1.5 rounded-full mt-2.5 overflow-hidden">
               <div 
                 className="bg-gradient-to-r from-emerald-500 to-cyan-400 h-full rounded-full transition-all duration-500" 
                 style={{ width: `${Math.min(100, Math.max(10, horizonData.ebitdaBarPct))}%` }} 
@@ -961,8 +967,8 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
           </div>
 
           {/* KPI 2: Facturación Total Consolidada */}
-          <div className="p-4 rounded-2xl bg-[#131b2e] border border-slate-800 shadow-lg relative overflow-hidden flex flex-col justify-between transition-all duration-300 hover:border-slate-700">
-            <div className="flex items-center justify-between mb-2">
+          <div className={`${viewport.classes.kpiCardPadding} rounded-2xl bg-[#131b2e] border border-slate-800 shadow-lg relative overflow-hidden flex flex-col justify-between transition-all duration-300 hover:border-slate-700`}>
+            <div className="flex items-center justify-between mb-1.5">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 truncate max-w-[200px]">
                 {horizonData.revenueTitle}
               </span>
@@ -971,15 +977,15 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
               </span>
             </div>
             <div className="flex items-baseline justify-between gap-2">
-              <div className="text-2xl sm:text-3xl font-black text-white tracking-tight font-mono">
+              <div className={`${viewport.classes.kpiValueText} font-black text-white tracking-tight font-mono`}>
                 {formatMXN(horizonData.totalRevenue)}
               </div>
               <div className="text-right">
-                <span className="text-[10px] text-slate-400 block">{horizonData.revenueConceptSubtitle}</span>
+                <span className={`${viewport.classes.kpiSubtext} text-slate-400 block`}>{horizonData.revenueConceptSubtitle}</span>
                 <span className="text-xs font-bold text-cyan-400 font-mono">{horizonData.revenueDeltaText}</span>
               </div>
             </div>
-            <div className="w-full bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+            <div className="w-full bg-slate-800 h-1.5 rounded-full mt-2.5 overflow-hidden">
               <div 
                 className="bg-gradient-to-r from-cyan-500 to-blue-500 h-full rounded-full transition-all duration-500" 
                 style={{ width: `${Math.min(100, horizonData.revenueBarPct)}%` }} 
@@ -988,23 +994,23 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
           </div>
 
           {/* KPI 3: Eficiencia de Cobranza */}
-          <div className="p-4 rounded-2xl bg-[#131b2e] border border-slate-800 shadow-lg relative overflow-hidden flex flex-col justify-between transition-all duration-300 hover:border-slate-700">
-            <div className="flex items-center justify-between mb-2">
+          <div className={`${viewport.classes.kpiCardPadding} rounded-2xl bg-[#131b2e] border border-slate-800 shadow-lg relative overflow-hidden flex flex-col justify-between transition-all duration-300 hover:border-slate-700`}>
+            <div className="flex items-center justify-between mb-1.5">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Eficiencia de Cobranza</span>
               <span className="text-[11px] font-bold text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded-md border border-amber-800/40 font-mono">
                 Meta: {horizonData.collectionTargetPct}%
               </span>
             </div>
             <div className="flex items-baseline justify-between gap-2">
-              <div className="text-2xl sm:text-3xl font-black text-white tracking-tight font-mono">
+              <div className={`${viewport.classes.kpiValueText} font-black text-white tracking-tight font-mono`}>
                 {horizonData.collectionEfficiencyPct.toFixed(1)}%
               </div>
               <div className="text-right">
-                <span className="text-[10px] text-slate-400 block">{formatMXN(horizonData.collectionCollected)} recaudados</span>
+                <span className={`${viewport.classes.kpiSubtext} text-slate-400 block`}>{formatMXN(horizonData.collectionCollected)} recaudados</span>
                 <span className="text-xs font-bold text-amber-400 font-mono">{formatMXN(horizonData.collectionOverdue)} en mora</span>
               </div>
             </div>
-            <div className="w-full bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+            <div className="w-full bg-slate-800 h-1.5 rounded-full mt-2.5 overflow-hidden">
               <div 
                 className="bg-gradient-to-r from-amber-500 to-emerald-400 h-full rounded-full transition-all duration-500" 
                 style={{ width: `${Math.min(100, horizonData.collectionBarPct)}%` }} 
@@ -1013,8 +1019,8 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
           </div>
 
           {/* KPI 4: Capacidad & Ocupación de Planteles */}
-          <div className="p-4 rounded-2xl bg-[#131b2e] border border-slate-800 shadow-lg relative overflow-hidden flex flex-col justify-between transition-all duration-300 hover:border-slate-700">
-            <div className="flex items-center justify-between mb-2">
+          <div className={`${viewport.classes.kpiCardPadding} rounded-2xl bg-[#131b2e] border border-slate-800 shadow-lg relative overflow-hidden flex flex-col justify-between transition-all duration-300 hover:border-slate-700`}>
+            <div className="flex items-center justify-between mb-1.5">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 truncate max-w-[200px]">
                 {selectedCampusObj ? `Capacidad ${selectedCampusObj.shortName}` : 'Capacidad Total de Campus'}
               </span>
@@ -1023,15 +1029,15 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
               </span>
             </div>
             <div className="flex items-baseline justify-between gap-2">
-              <div className="text-2xl sm:text-3xl font-black text-white tracking-tight font-mono">
+              <div className={`${viewport.classes.kpiValueText} font-black text-white tracking-tight font-mono`}>
                 {horizonData.enrolledStudents.toLocaleString('es-MX')} <span className="text-sm font-semibold text-slate-400">/ {horizonData.capacitySeats.toLocaleString('es-MX')}</span>
               </div>
               <div className="text-right">
-                <span className="text-[10px] text-slate-400 block">{horizonData.capacitySubtitle}</span>
+                <span className={`${viewport.classes.kpiSubtext} text-slate-400 block`}>{horizonData.capacitySubtitle}</span>
                 <span className="text-xs font-bold text-purple-400 font-mono">{horizonData.ratioStudentTeacher}</span>
               </div>
             </div>
-            <div className="w-full bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+            <div className="w-full bg-slate-800 h-1.5 rounded-full mt-2.5 overflow-hidden">
               <div 
                 className="bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full transition-all duration-500" 
                 style={{ width: `${Math.min(100, horizonData.capacityBarPct)}%` }} 
@@ -1045,7 +1051,7 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
       {/* ========================================================================= */}
       {/* 4. CUERPO MODULAR DINÁMICO SEGÚN LA PESTAÑA SELECCIONADA                  */}
       {/* ========================================================================= */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+      <div className={`flex-1 overflow-y-auto ${viewport.classes.containerPadding} ${viewport.classes.sectionSpacing}`}>
 
         {/* --------------------------------------------------------------------- */}
         {/* VISTA A: MATRIZ CUÁDRUPLE EJECUTIVA (IDÉNTICA A LA MAQUETA VISUAL)     */}
@@ -1054,10 +1060,10 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
           <div className="space-y-6 animate-in fade-in duration-150">
             
             {/* FILA SUPERIOR: Panel 1 (Cashflow) + Panel 2 (Benchmark 4 Planteles) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className={`grid grid-cols-1 lg:grid-cols-12 ${viewport.classes.gridGap}`}>
               
               {/* PANEL 1: Financial Cashflow & Forecast (7 Columnas LG) */}
-              <div className="lg:col-span-7 bg-[#111827] border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+              <div className="lg:col-span-7 bg-[#111827] border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col justify-between">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
                   <div>
                     <h3 className="text-sm font-black text-white tracking-wide flex items-center gap-2">
@@ -1086,8 +1092,8 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
                   </div>
                 </div>
 
-                {/* Gráfica SVG Dinámica de Curvas de Cashflow */}
-                <div className="relative w-full h-64 sm:h-72">
+                {/* Gráfica SVG Dinámica de Curvas de Cashflow Responsiva */}
+                <div className="relative w-full" style={{ height: `${viewport.chartHeight}px` }}>
                   <svg viewBox="0 0 800 280" className="w-full h-full overflow-visible">
                     <defs>
                       <linearGradient id="tuitionGrad" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -1309,7 +1315,7 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
             </div>
 
             {/* FILA INFERIOR: Panel 3 (Aging de Cartera) + Panel 4 (Embudo de Admisiones) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className={`grid grid-cols-1 lg:grid-cols-12 ${viewport.classes.gridGap}`}>
               
               {/* PANEL 3: Matriz de Aging de Cartera & Riesgo Crediticio (6 Columnas LG) */}
               <div className="lg:col-span-6 bg-[#111827] border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
@@ -1506,11 +1512,14 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
               </button>
             </div>
 
-            <div className="overflow-x-auto border border-slate-800 rounded-xl">
+            <div 
+              className="overflow-x-auto overflow-y-auto border border-slate-800 rounded-xl custom-scrollbar"
+              style={{ maxHeight: `${viewport.tableMaxHeight}px` }}
+            >
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-900 text-slate-300 font-black border-b border-slate-800 uppercase tracking-wider text-[10px]">
+                <thead className="sticky top-0 z-10 bg-slate-900 text-slate-300 font-black border-b border-slate-800 uppercase tracking-wider text-[10px] shadow-md backdrop-blur-sm">
                   <tr>
-                    <th className="p-3">Periodo</th>
+                    <th className={viewport.classes.tableCellPadding}>Periodo</th>
                     <th className="p-3 text-right">Colegiaturas</th>
                     <th className="p-3 text-right">Inscripciones</th>
                     <th className="p-3 text-right">Talleres/Otros</th>
@@ -1655,11 +1664,14 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
               </div>
             </div>
 
-            <div className="overflow-x-auto border border-slate-800 rounded-xl">
+            <div 
+              className="overflow-x-auto overflow-y-auto border border-slate-800 rounded-xl custom-scrollbar"
+              style={{ maxHeight: `${viewport.tableMaxHeight}px` }}
+            >
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-900 text-slate-300 font-black border-b border-slate-800 uppercase tracking-wider text-[10px]">
+                <thead className="sticky top-0 z-10 bg-slate-900 text-slate-300 font-black border-b border-slate-800 uppercase tracking-wider text-[10px] shadow-md backdrop-blur-sm">
                   <tr>
-                    <th className="p-3">Alumno</th>
+                    <th className={viewport.classes.tableCellPadding}>Alumno</th>
                     <th className="p-3">Plantel & Nivel</th>
                     <th className="p-3">Concepto</th>
                     <th className="p-3 text-right">Adeudo</th>
