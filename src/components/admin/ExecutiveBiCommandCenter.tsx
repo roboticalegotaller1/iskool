@@ -46,9 +46,10 @@ import {
   CampusBenchmarkRecord,
   MonthlyCashflowRecord
 } from '@/store/seeds/executiveBiSeeds';
-import { formatMXN } from '@/services/executiveAnalyticsEngine';
+import { formatMXN, AnalyticReportResult, AnalyticTableColumn } from '@/services/executiveAnalyticsEngine';
 import ExecutiveAnalyticsStudio from './ExecutiveAnalyticsStudio';
 import ExecutiveOracleDashboard from '@/components/oracle/ExecutiveOracleDashboard';
+import { ExecutiveBoardReportDocument } from './ExecutiveBoardReportDocument';
 
 interface ExecutiveBiCommandCenterProps {
   isEmbeddedView?: boolean;
@@ -621,14 +622,145 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
     document.body.removeChild(link);
   };
 
+  // Reporte Ejecutivo Integral para Consejos de Administración (Impresión y Exportación a PDF de Alta Fidelidad)
+  const biBoardReport = useMemo<AnalyticReportResult>(() => {
+    const isAgingView = activeMainView === 'aging';
+    const isCashflowView = activeMainView === 'cashflow';
+    const isCampusesView = activeMainView === 'campuses';
+
+    let tableCols: AnalyticTableColumn[] = [];
+    let tableRows: any[] = [];
+
+    if (isCashflowView) {
+      tableCols = [
+        { key: 'month', label: 'Periodo', align: 'left' },
+        { key: 'tuitionRevenues', label: 'Colegiaturas', align: 'right', isCurrency: true },
+        { key: 'enrollmentRevenues', label: 'Inscripciones', align: 'right', isCurrency: true },
+        { key: 'extracurricularRevenues', label: 'Talleres/Otros', align: 'right', isCurrency: true },
+        { key: 'totalRevenues', label: 'Total Ingresos', align: 'right', isCurrency: true },
+        { key: 'teacherPayroll', label: 'Nómina Docente', align: 'right', isCurrency: true },
+        { key: 'adminPayroll', label: 'Nómina Admin', align: 'right', isCurrency: true },
+        { key: 'facilityLeasing', label: 'Arrendamiento', align: 'right', isCurrency: true },
+        { key: 'totalExpenses', label: 'Total Egresos', align: 'right', isCurrency: true },
+        { key: 'ebitda', label: 'EBITDA Operativo', align: 'right', isCurrency: true },
+        { key: 'ebitdaMargin', label: 'Margen %', align: 'center', isBadge: true }
+      ];
+      tableRows = horizonData.cashflowTableRows.map(r => ({
+        ...r,
+        ebitdaMargin: `${r.ebitdaMargin.toFixed(1)}%`
+      }));
+    } else if (isCampusesView) {
+      tableCols = [
+        { key: 'campusName', label: 'Plantel Educativo', align: 'left' },
+        { key: 'location', label: 'Ubicación', align: 'left' },
+        { key: 'currentEnrollment', label: 'Matrícula', align: 'center' },
+        { key: 'occupancyRate', label: 'Ocupación %', align: 'center', isBadge: true },
+        { key: 'monthlyRevenue', label: 'Facturación Mensual', align: 'right', isCurrency: true },
+        { key: 'ebitdaMarginPct', label: 'Margen EBITDA', align: 'center', isBadge: true },
+        { key: 'studentRetentionPct', label: 'Retención %', align: 'center', isBadge: true }
+      ];
+      tableRows = CAMPUS_BENCHMARK_SEED.map(c => ({
+        ...c,
+        campusName: c.campusName,
+        occupancyRate: `${c.occupancyRate.toFixed(1)}%`,
+        ebitdaMarginPct: `${c.ebitdaMarginPct.toFixed(1)}%`,
+        studentRetentionPct: `${c.studentRetentionPct.toFixed(1)}%`
+      }));
+    } else {
+      // Por defecto y vistas Matrix / Aging: Padrón de deudores auditados con SAT CFDI
+      tableCols = [
+        { key: 'studentName', label: 'Alumno / Matrícula', align: 'left' },
+        { key: 'campusName', label: 'Plantel & Nivel', align: 'left' },
+        { key: 'concept', label: 'Concepto Exigible', align: 'left' },
+        { key: 'amount', label: 'Monto Adeudo', align: 'right', isCurrency: true },
+        { key: 'daysOverdue', label: 'Días Vencido', align: 'center', isBadge: true },
+        { key: 'tutorInfo', label: 'Tutor Registrado & Contacto', align: 'left' },
+        { key: 'cfdiStatus', label: 'Estatus CFDI 4.0 SAT', align: 'center', isBadge: true },
+        { key: 'recommendedAction', label: 'Acción Directiva Resolutiva', align: 'left' }
+      ];
+      tableRows = displayedDebtors.map(d => ({
+        ...d,
+        studentName: `${d.studentName} (${d.studentId})`,
+        campusName: `${d.campusName} - ${d.level} ${d.gradeGroup}`,
+        daysOverdue: `${d.daysOverdue} días`,
+        tutorInfo: `${d.tutorName} · ${d.tutorPhone}`,
+        cfdiStatus: d.cfdiStatus.toUpperCase()
+      }));
+    }
+
+    return {
+      domain: 'STRATEGIC_CEO_RADAR',
+      queryReceived: `Dictamen Ejecutivo de Gobernanza y Finanzas — ${horizonData.horizonPeriod}`,
+      reportTitle: `Informe Integral de Gobernanza Financiera y Operativa para Junta Directiva (${horizonData.horizonPeriod})`,
+      schoolName: selectedCampusObj ? `${holdingName} · Campus ${selectedCampusObj.shortName}` : holdingName,
+      schoolId: schoolId || 'ibime-holding',
+      isConsolidated: !selectedCampusObj,
+      generatedAt: new Date().toISOString(),
+      tokenCost: 0,
+      explanation: {
+        summary: `El presente expediente consolida el estado financiero y operativo de ${selectedCampusObj ? `la sede ${selectedCampusObj.campusName}` : `la red corporativa ${holdingName} (4 planteles, ${horizonData.enrolledStudents.toLocaleString('es-MX')} alumnos)`}. Se audita una facturación de ${formatMXN(horizonData.totalRevenue)} con EBITDA operativo de ${formatMXN(horizonData.ebitdaValue)} (${horizonData.ebitdaMarginPct.toFixed(1)}% de margen). La eficiencia de cobranza se sitúa en ${horizonData.collectionEfficiencyPct.toFixed(1)}% con un importe en cartera vencida de ${formatMXN(horizonData.collectionOverdue)}. Todos los registros se encuentran conciliados con el motor de facturación CFDI 4.0 SAT y las directivas académicas NEM 2024.`,
+        fieldsIncluded: ['Facturación', 'Nómina Docente y Administrativa', 'EBITDA', 'Cartera Vencida', 'Ocupación', 'CFDI SAT'],
+        filtersApplied: [
+          `Horizonte: ${horizonData.horizonLabel}`,
+          selectedCampusObj ? `Sede: ${selectedCampusObj.campusName}` : 'Red Consolidada (4 Planteles)'
+        ],
+        visualizationDescription: 'Scorecard ejecutivo, radar cuatridimensional de salud escolar y padrón auditado de expedientes.',
+        followUpPrompt: '¿Deseas desglosar los acuerdos de cobro para el Consejo de Administración?'
+      },
+      directAnswer: `**Dictamen Oficial para el Consejo de Administración:**\n\n• **EBITDA y Margen:** Se reporta un EBITDA de **${formatMXN(horizonData.ebitdaValue)}** representando un margen operativo de **${horizonData.ebitdaMarginPct.toFixed(1)}%** (${horizonData.ebitdaDeltaText}).\n• **Facturación y Cobranza:** Ingresos totales de **${formatMXN(horizonData.totalRevenue)}** con eficiencia de recuperación de cobranza del **${horizonData.collectionEfficiencyPct.toFixed(1)}%**.\n• **Cartera Vencida en Riesgo:** Saldo en mora de **${formatMXN(horizonData.collectionOverdue)}** concentrado en ${displayedDebtors.length} expedientes auditados.\n• **Capacidad Instalada:** Ocupación del **${horizonData.capacitySubtitle}** con una matrícula activa de **${horizonData.enrolledStudents.toLocaleString('es-MX')} alumnos** distribuidos en los 4 planteles.\n• **Resolución Inmediata:** Se somete a aprobación del Consejo la suscripción de convenios de pago diferido y la aplicación estricta de timbrado complementario de pagos bajo CFDI 4.0 SAT.`,
+      kpis: [
+        {
+          id: 'ebitda',
+          label: 'Margen EBITDA',
+          value: `${horizonData.ebitdaMarginPct.toFixed(1)}%`,
+          subtext: `${formatMXN(horizonData.ebitdaValue)} Operativo`,
+          trend: { direction: 'up', value: horizonData.ebitdaDeltaText },
+          color: 'emerald'
+        },
+        {
+          id: 'revenue',
+          label: 'Facturación Total',
+          value: formatMXN(horizonData.totalRevenue),
+          subtext: horizonData.revenueDeltaText,
+          trend: { direction: 'up', value: `+${horizonData.revenueMetaPct}% meta` },
+          color: 'cyan'
+        },
+        {
+          id: 'collection',
+          label: 'Eficiencia Cobranza',
+          value: `${horizonData.collectionEfficiencyPct.toFixed(1)}%`,
+          subtext: `${formatMXN(horizonData.collectionOverdue)} en mora`,
+          trend: { direction: 'up', value: `Meta: ${horizonData.collectionTargetPct}%` },
+          color: 'amber'
+        },
+        {
+          id: 'capacity',
+          label: 'Matrícula & Capacidad',
+          value: `${horizonData.enrolledStudents.toLocaleString('es-MX')}`,
+          subtext: `${horizonData.capacitySubtitle} ocupación`,
+          trend: { direction: 'neutral', value: horizonData.ratioStudentTeacher },
+          color: 'purple'
+        }
+      ],
+      table: {
+        columns: tableCols,
+        rows: tableRows,
+        totalRows: tableRows.length
+      },
+      suggestedQueries: []
+    };
+  }, [activeMainView, horizonData, displayedDebtors, selectedCampusObj, holdingName, schoolId]);
+
   return (
-    <div className={`select-none transition-all duration-200 ${
+    <div className={`select-none transition-all duration-200 print:overflow-visible print:bg-white print:h-auto print:min-h-0 print:border-none print:shadow-none ${
       isMaximized 
         ? 'fixed inset-0 z-50 flex flex-col h-screen w-full bg-[#0d131f] text-slate-100 font-sans overflow-hidden shadow-2xl'
         : isEmbeddedView 
         ? 'flex flex-col min-h-[850px] w-full bg-[#0d131f] text-slate-100 font-sans rounded-2xl border border-slate-800 shadow-xl overflow-hidden relative'
         : 'flex flex-col min-h-screen w-full bg-[#0d131f] text-slate-100 font-sans overflow-hidden'
     }`}>
+      {/* 1. CONTENEDOR EN PANTALLA (MODO SALA DE JUNTAS / DARK MODE) - OCULTO AL IMPRIMIR */}
+      <div className="w-full flex-1 flex flex-col overflow-hidden print:hidden">
 
       {/* ========================================================================= */}
       {/* 1. TOP HEADER EJECUTIVO & CONTROLES DE NIVEL C-SUITE                     */}
@@ -1692,6 +1824,22 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
 
           </div>
         </div>
+      )}
+
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 2. DOSSIER EJECUTIVO OFICIAL PARA JUNTAS DIRECTIVAS (SOLO VISIBLE AL IMPRIMIR) */}
+      {/* ========================================================================= */}
+      {activeMainView !== 'assistant' && (
+        <ExecutiveBoardReportDocument
+          report={biBoardReport}
+          institution={{
+            name: selectedCampusObj ? `${holdingName} · Campus ${selectedCampusObj.shortName}` : holdingName,
+            cct: '15EPR2840Z',
+            campus: selectedCampusObj?.campusName
+          }}
+        />
       )}
 
     </div>

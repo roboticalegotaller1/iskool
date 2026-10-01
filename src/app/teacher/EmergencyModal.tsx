@@ -383,7 +383,8 @@ export function EmergencyModal({ isOpen, onClose, currentTeacher, detailedStuden
             visibility: visible !important;
           }
           #nem-emergency-printable {
-            position: absolute !important;
+            position: relative !important;
+            display: block !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;

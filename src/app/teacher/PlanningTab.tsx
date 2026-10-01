@@ -2026,10 +2026,10 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
                   }
 
                   #nem-print-container {
-                    position: absolute !important;
+                    position: relative !important;
+                    display: block !important;
                     left: 0 !important;
                     top: 0 !important;
-                    right: 0 !important;
                     width: 100% !important;
                     max-width: 100% !important;
                     margin: 0 !important;

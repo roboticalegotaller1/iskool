@@ -587,3 +587,93 @@ body {
   }
 }
 
+/* =========================================================================
+   SISTEMA QUIRÚRGICO DE IMPRESIÓN Y EXPORTACIÓN A PDF (CALIDAD EJECUTIVA BOARD-LEVEL)
+   Garantiza paginación impecable, cero cortes de contenido y reporte integral para juntas directivas.
+   ========================================================================= */
+@media print {
+  @page {
+    size: letter portrait;
+    margin: 12mm 14mm 12mm 14mm;
+  }
+
+  html,
+  body {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-width: 100% !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Ocultar elementos interactivos de pantalla durante la impresión */
+  .print-hidden,
+  .print\:hidden,
+  button:not(.print-include),
+  input:not(.print-include),
+  select:not(.print-include),
+  textarea:not(.print-include),
+  header:not(.print-include),
+  nav:not(.print-include),
+  aside:not(.print-include),
+  [role="dialog"]:not(.print-include) {
+    display: none !important;
+  }
+
+  /* Reglas de paginación estrictas para juntas directivas */
+  .print-page-break,
+  .print-page-break-before {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+
+  .print-page-break-after {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+
+  .print-avoid-break,
+  .print\:break-inside-avoid,
+  .break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Prevención de tablas cortadas */
+  table {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  tfoot {
+    display: table-footer-group !important;
+  }
+
+  tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Títulos y encabezados sin huérfanos */
+  h1, h2, h3, h4, h5, h6 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  p, li {
+    orphans: 3 !important;
+    widows: 3 !important;
+  }
+}
+
