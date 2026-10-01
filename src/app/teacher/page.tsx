@@ -869,10 +869,10 @@ function TeacherDashboardContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50">
+    <div className="min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 overflow-x-hidden">
       <Header />
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 flex flex-col gap-4 sm:gap-6 overflow-x-hidden">
         
         {/* Banner de Supervisión y Auditoría Directiva (CEO / Administrador de Colegio) */}
         {isAdminSupervisor && (
@@ -1044,10 +1044,10 @@ function TeacherDashboardContent() {
               {/* Pestañas rápidas dentro de Mis Clases con Identidad Cromática */}
               {(currentMenuTab !== 'canvas' && currentMenuTab !== 'community') && (
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
-                  <div className="flex flex-wrap gap-1.5 bg-zinc-100 dark:bg-zinc-950 p-1.5 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 w-full xl:w-auto shadow-inner">
+                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar bg-zinc-100 dark:bg-zinc-950 p-1.5 rounded-2xl border border-zinc-200/60 dark:border-zinc-800/60 w-full xl:w-auto shadow-inner scroll-smooth">
                     <button
                       onClick={() => setCurrentMenuTab('classroom')}
-                      className={`flex-1 xl:flex-initial px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                      className={`shrink-0 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer min-h-[42px] ${
                         currentMenuTab === 'classroom'
                           ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-500/25 glow-indigo'
                           : 'text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/50'
@@ -1057,7 +1057,7 @@ function TeacherDashboardContent() {
                     </button>
                     <button
                       onClick={() => setCurrentMenuTab('evaluation')}
-                      className={`flex-1 xl:flex-initial px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                      className={`shrink-0 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer min-h-[42px] ${
                         currentMenuTab === 'evaluation'
                           ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 shadow-md shadow-amber-400/25 glow-gold'
                           : 'text-zinc-600 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-white/50'
@@ -1067,7 +1067,7 @@ function TeacherDashboardContent() {
                     </button>
                     <button
                       onClick={() => setCurrentMenuTab('planning')}
-                      className={`flex-1 xl:flex-initial px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                      className={`shrink-0 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer min-h-[42px] ${
                         currentMenuTab === 'planning'
                           ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 glow-blue'
                           : 'text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white/50'
@@ -1077,7 +1077,7 @@ function TeacherDashboardContent() {
                     </button>
                     <button
                       onClick={() => setCurrentMenuTab('attendance')}
-                      className={`flex-1 xl:flex-initial px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                      className={`shrink-0 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer min-h-[42px] ${
                         currentMenuTab === 'attendance'
                           ? 'bg-gradient-to-r from-sky-500 to-cyan-600 text-white shadow-md shadow-sky-500/25'
                           : 'text-zinc-600 dark:text-zinc-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-white/50'
@@ -1087,7 +1087,7 @@ function TeacherDashboardContent() {
                     </button>
                     <button
                       onClick={() => setCurrentMenuTab('tasks')}
-                      className={`flex-1 xl:flex-initial px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                      className={`shrink-0 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer min-h-[42px] ${
                         currentMenuTab === 'tasks'
                           ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-md shadow-orange-500/25 glow-orange'
                           : 'text-zinc-600 dark:text-zinc-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-white/50'

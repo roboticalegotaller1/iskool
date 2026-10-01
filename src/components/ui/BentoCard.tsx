@@ -38,13 +38,13 @@ export const BentoCard: React.FC<BentoCardProps> = ({
 
   // Base styles reflecting the Bento System and Dual UX
   const baseCardStyles = isMinimalist
-    ? "relative bg-white dark:bg-zinc-900/90 text-slate-900 dark:text-zinc-50 border border-slate-200/80 dark:border-zinc-800/80 rounded-3xl p-6 shadow-sm shadow-slate-100 dark:shadow-none flex flex-col justify-between overflow-hidden"
-    : "relative bg-slate-900/90 text-white border border-slate-800 rounded-3xl p-6 shadow-gamified-card flex flex-col justify-between overflow-hidden";
+    ? "relative bg-white dark:bg-zinc-900/90 text-slate-900 dark:text-zinc-50 border border-slate-200/80 dark:border-zinc-800/80 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm shadow-slate-100 dark:shadow-none flex flex-col justify-between overflow-hidden"
+    : "relative bg-slate-900/90 text-white border border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-gamified-card flex flex-col justify-between overflow-hidden";
 
   const hoverStyles = hoverable
     ? isMinimalist
-      ? "transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:border-blue-400/50 cursor-pointer"
-      : "transition-all duration-300 hover:scale-[1.02] hover:shadow-gamified-hud hover:border-amber-500/50 cursor-pointer"
+      ? "transition-all duration-300 hover:scale-[1.015] active:scale-[0.98] hover:shadow-xl hover:border-blue-400/50 cursor-pointer"
+      : "transition-all duration-300 hover:scale-[1.015] active:scale-[0.98] hover:shadow-gamified-hud hover:border-amber-500/50 cursor-pointer"
     : "";
 
   const combinedClassName = `${colSpan} ${rowSpan} ${baseCardStyles} ${hoverStyles} ${className}`.trim();

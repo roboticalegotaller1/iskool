@@ -485,7 +485,7 @@ export default function TeacherIdiomasPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col overflow-x-hidden">
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6 overflow-x-hidden">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
         
         {/* Barra Superior con Control de Retroceso Inteligente y Selector Institucional */}
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -539,7 +539,7 @@ export default function TeacherIdiomasPage() {
             ? 'bg-gradient-to-r from-[#0B132B] via-[#0F172A] to-[#1a0808] border border-[#E41B14]/40 shadow-red-950/20'
             : 'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/30'
         }`}>
-          <div className="space-y-2 flex-1 min-w-[300px]">
+          <div className="space-y-2 flex-1 min-w-0">
             {/* Fila de Insignias y CCT */}
             <div className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-wider">
               {isIbimePresentationMode ? (
@@ -650,7 +650,7 @@ export default function TeacherIdiomasPage() {
         {/* =========================================================================
             BARRA DE NAVEGACIÓN POR PESTAÑAS (UTILIDAD & FUNCIONALIDAD DOCENTE)
             ========================================================================= */}
-        <div className="flex flex-wrap items-center gap-2 pb-2 border-b border-slate-800">
+        <div className="flex items-center gap-2 pb-2 border-b border-slate-800 overflow-x-auto no-scrollbar scroll-smooth">
           <button
             type="button"
             onClick={() => setActiveTab('editor')}
