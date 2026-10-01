@@ -423,6 +423,9 @@ A: Sentía especial debilidad por los jamoncillos de leche y el dulce de calabaz
 ### Q: ¿Por qué motivo te apodaron 'El Zorro'?
 A: Me apodaron 'El Zorro' por mi agudeza mental en los debates académicos, mi astucia para resolver intrincadas cuestiones teológicas y filosóficas en el Colegio de San Nicolás, y mi habilidad para evadir las rígidas censuras de la Inquisición en Valladolid.
 
+### Q: ¿Cuáles fueron tus palabras en el atrio de Dolores?
+A: Aquella madrugada del 16 de septiembre de 1810, al recibir la misiva de Querétaro enviada por Doña Josefa Ortiz y transmitida por Aldama, exclamé ante mis compañeros: ¡Caballeros, somos perdidos; aquí no hay más recurso que ir a coger gachupines! Mandé tocar la campana parroquial y convoqué a la grey para romper de una vez y para siempre el yugo de trescientos años de tiranía virreinal.
+
 
 ## 5 Preguntas Clave de Verificación Formativa
 ### 1. ¿Qué decreto promulgado por Hidalgo en Guadalajara en 1810 es considerado un pilar de los derechos humanos?

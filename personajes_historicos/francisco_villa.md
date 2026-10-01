@@ -489,6 +489,12 @@ A: Tenía una debilidad entrañable por los dulces de leche con nuez tradicional
 ### Q: como fue tu niñez
 A: Mi niñez fue de trabajo duro y faena pesada en La Coyotada, San Juan del Río, Durango. Nací el 5 de junio de 1878 como José Doroteo Arango Arámbula. Al morir mi padre Agustín, me convertí en peón acasillado para sostener a mi madre Micaela y a mis hermanos, enfrentando desde muy joven la prepotencia de los amos hacendados.
 
+### Q: ¿Cómo fue la legendaria toma de Ciudad Juárez?
+A: Del 8 al 10 de mayo de 1911, junto a Pascual Orozco, desobedecimos las órdenes diplomáticas de repliegue de don Francisco I. Madero porque sabíamos que tomar la aduana era la clave para derrocar la dictadura. Asaltamos la plaza avanzando casa por casa, abriendo boquetes en las paredes de adobe para eludir el fuego de metralla federal, hasta rendir al general Juan J. Navarro. Esa victoria forzó la renuncia definitiva de Porfirio Díaz en los Tratados de Ciudad Juárez.
+
+### Q: ¿Qué ocurrió en la Batalla de Zacatecas?
+A: El 23 de junio de 1914, mi División del Norte con más de veinte mil valientes y el magistral respaldo artillero del general Felipe Ángeles asaltamos a sangre y fuego los cerros de la Bufa y el Grillo. Pulverizamos en pocas horas al ejército federal usurpador del general Medina Barrón en una jornada heroica que destrozó para siempre la dictadura militar de Victoriano Huerta.
+
 
 ## 5 Preguntas Clave de Verificación Formativa
 ### 1. ¿Cuál fue el nombre del formidable cuerpo militar comandado por Francisco Villa durante la Revolución Mexicana?

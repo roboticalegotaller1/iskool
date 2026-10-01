@@ -102,4 +102,63 @@ describe('🏛️ PERSONAJES HISTÓRICOS Y MOTOR DE IA EN TIEMPO REAL', { timeou
       // Ignorar en test
     }
   });
+
+  it('debe enlazar quirúrgicamente mediante similitud léxico-semántica multi-palabra la pregunta de El Zorro con 0 tokens', async () => {
+    const req = new NextRequest('http://localhost:3000/api/ai/historical-figure', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'chat_persona',
+        characterName: 'Miguel Hidalgo y Costilla',
+        question: '¿Por qué motivo te apodaron "El Zorro"?'
+      })
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.success).toBe(true);
+    expect(data.cached).toBe(true);
+    expect(data.tokenCost).toBe(0);
+    expect(data.answer).toMatch(/El Zorro/i);
+    expect(data.answer).toMatch(/agudeza mental/i);
+  });
+
+  it('debe enlazar variaciones naturales de estudiantes hacia la Bóveda Curricular sin consumir tokens', async () => {
+    // Variación 1: "¿Por qué te decían El Zorro?"
+    const req1 = new NextRequest('http://localhost:3000/api/ai/historical-figure', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'chat_persona',
+        characterName: 'Miguel Hidalgo y Costilla',
+        question: '¿Por qué te decían El Zorro?'
+      })
+    });
+    const res1 = await POST(req1);
+    const data1 = await res1.json();
+    expect(data1.success).toBe(true);
+    expect(data1.cached).toBe(true);
+    expect(data1.tokenCost).toBe(0);
+    expect(data1.answer).toMatch(/El Zorro/i);
+
+    // Variación 2: "¿Qué falló en las batallas de Celaya?"
+    const req2 = new NextRequest('http://localhost:3000/api/ai/historical-figure', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'chat_persona',
+        characterName: 'Francisco Villa',
+        question: '¿Qué falló en las batallas de Celaya?'
+      })
+    });
+    const res2 = await POST(req2);
+    const data2 = await res2.json();
+    expect(data2.success).toBe(true);
+    expect(data2.cached).toBe(true);
+    expect(data2.tokenCost).toBe(0);
+    expect(data2.answer).toMatch(/(Bajío|Obregón|Celaya)/i);
+  });
 });
+

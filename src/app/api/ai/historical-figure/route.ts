@@ -1373,6 +1373,13 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
     return generateCanonicalAnachronismResponse(name);
   }
 
+  // Consulta prioritaria de Bóveda Curricular por similitud léxico-semántica antes de fallback genérico
+  const vaultSlug = normalizeHistoricalSlug(name);
+  const vaultResult = searchQaInVaultNode(vaultSlug, question);
+  if (vaultResult.found && vaultResult.answer) {
+    return vaultResult.answer;
+  }
+
   const isJosefa = name.toLowerCase().includes('josefa') || name.toLowerCase().includes('corregidora');
   const isHidalgo = name.toLowerCase().includes('hidalgo');
   const isMorelos = name.toLowerCase().includes('morelos');
@@ -1591,6 +1598,15 @@ async function generateFallbackPersonaAnswer(name: string, question: string): Pr
     }
     if (intent === 'FOOD_DISLIKES') {
       return `Detestaba los banquetes ostentosos y cargados de grasa que consumía la élite virreinal mientras los campesinos e indígenas no tenían ni para un puñado de maíz. Asimismo, me causaban profundo rechazo las provisiones rancias y el agua turbia que debíamos consumir en las marchas apresuradas de nuestra campaña libertaria.`;
+    }
+    if (normQ.includes('zorro') || normQ.includes('apodo')) {
+      return `Me apodaron 'El Zorro' por mi agudeza mental en los debates académicos, mi astucia para resolver intrincadas cuestiones teológicas y filosóficas en el Colegio de San Nicolás, y mi habilidad para evadir las rígidas censuras de la Inquisición en Valladolid.`;
+    }
+    if (normQ.includes('dulce') || normQ.includes('jamoncillo') || normQ.includes('camote') || normQ.includes('golosina')) {
+      return `Sentía especial debilidad por los jamoncillos de leche y el dulce de calabaza y camote enmielado con piloncillo criollo. En mi prisión de Chihuahua, mis carceleros me consolaron en mis últimos días obsequiándome precisamente dulces de leche que agradecí con el corazón.`;
+    }
+    if (normQ.includes('ninez') || normQ.includes('infancia') || normQ.includes('creciste') || normQ.includes('pequeno')) {
+      return `Pasé mi niñez en la Hacienda de San Diego de Corralejo en Pénjamo, Guanajuato, donde mi padre Cristóbal Hidalgo era administrador. Crecí en contacto íntimo con los trabajadores agrícolas, aprendiendo sus lenguas indígenas (otomí, náhuatl y purépecha) y comprendiendo desde temprana edad las penurias y el trabajo arduo del campo novohispano.`;
     }
     if (intent === 'FOOD') {
       return `En mi curato y en las comidas campesinas del Bajío, disfrutaba de los frijoles de la olla aderezados con epazote y chile cascabel, asados criollos de cerdo con nopales tiernos y tortillas recién bajadas del comal de barro. En las mañanas frías compartía con mis feligreses atole blanco de maíz o un jarro de chocolate espeso, fomentando siempre la sobriedad en la mesa y la fraternidad entre hermanos.`;

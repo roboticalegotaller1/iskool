@@ -733,7 +733,7 @@ export function isAnachronismOrModernConcept(normQ: string, birthOrDeathDates?: 
   }
 
   // 5. Acontecimientos mundiales o nacionales posteriores a personajes de épocas anteriores
-  if (/(segunda guerra mundial|primera guerra mundial|guerra fria|llegada a la luna|viaje a la luna|bomba atomica|pandemia de covid|tlcan|onu)/i.test(normQ)) {
+  if (/(segunda guerra mundial|primera guerra mundial|guerra fria|llegada a la luna|viaje a la luna|bomba atomica|pandemia de covid|\b(tlcan|onu)\b)/i.test(normQ)) {
     return true;
   }
 
@@ -1078,11 +1078,120 @@ export function isAnswerSemanticallyAligned(question: string, answer: string, ch
 }
 
 /**
- * Busca si una pregunta formulada por un estudiante ya fue respondida en el caché del nodo (0 TOKENS)
- * REGLA ESTRICTA: Coincidencia EXACTA de pregunta y validación de concordancia semántica.
- * Si no es coincidencia exacta, retorna { found: false } para que el sistema use tokens reales de inmediato.
+ * Lista de palabras vacías (stop-words) en español para filtrado léxico quirúrgico
  */
-export function searchQaInVaultNode(slug: string, question: string): { found: boolean; answer?: string } {
+export const SPANISH_QUESTION_STOP_WORDS = new Set([
+  'de', 'la', 'el', 'en', 'y', 'a', 'los', 'del', 'se', 'las', 'por', 'un', 'para',
+  'con', 'no', 'una', 'su', 'al', 'lo', 'como', 'mas', 'pero', 'sus', 'le', 'ya',
+  'o', 'este', 'si', 'porque', 'esta', 'entre', 'cuando', 'muy', 'sin', 'sobre',
+  'tambien', 'me', 'hasta', 'hay', 'donde', 'quien', 'desde', 'todo', 'nos', 'durante',
+  'todos', 'uno', 'les', 'ni', 'contra', 'otros', 'ese', 'eso', 'ante', 'ellos',
+  'e', 'esto', 'mi', 'mis', 'tu', 'tus', 'te', 'ti', 'usted', 'ustedes', 'vosotros',
+  'cual', 'cuales', 'quienes', 'cuanto', 'cuanta', 'cuantos', 'cuantas', 'era', 'eran',
+  'fue', 'fueron', 'ser', 'es', 'son', 'somos', 'sea', 'sean', 'sido', 'haber', 'he',
+  'has', 'ha', 'hemos', 'han', 'habia', 'habian', 'hubo', 'tener', 'tengo', 'tiene',
+  'tienen', 'tenia', 'tenian', 'tuve', 'tuviste', 'tuvimos', 'hacer', 'hizo', 'hiciste',
+  'hicieron', 'haces', 'hacia', 'hacian', 'estar', 'estoy', 'esta', 'estan', 'estaba',
+  'estaban', 'estuve', 'estuviste', 'estuvimos', 'dime', 'cuentame', 'platica', 'platicame',
+  'sabes', 'sabias', 'decias', 'dices', 'dijo', 'dijeron', 'acerca', 'que'
+]);
+
+/**
+ * Normaliza y extrae la raíz o concepto nuclear de una palabra en español
+ */
+export function stemSpanishHistoricalWord(rawWord: string): string {
+  let w = rawWord.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+  if (w.length <= 3) return w;
+
+  // Equivalencias semánticas clave en historia pedagógica
+  if (w.startsWith('apod') || w.startsWith('sobrenombr') || w === 'alias' || w === 'chapa') return 'apodo';
+  if (w.startsWith('llam') && (w.includes('te') || w.includes('ron') || w.includes('ban') || w.includes('ba') || w === 'llamar' || w === 'llamas')) return 'apodo';
+  if ((w.startsWith('dec') || w.startsWith('dij')) && (w.includes('ia') || w.includes('ian') || w.includes('te'))) return 'apodo';
+  if (w.startsWith('pusier') || w === 'puso') return 'apodo';
+  if (w.startsWith('palabr') || w.startsWith('dijist') || w.startsWith('proclam') || w.startsWith('gritast') || w.startsWith('areng')) return 'palabras_grito';
+  if (w.startsWith('ninez') || w.startsWith('infanci') || w.startsWith('crecist') || w.startsWith('chiquit') || w.startsWith('primeros_ano')) return 'ninez_infancia';
+  if (w.startsWith('dulc') || w.startsWith('golosin') || w.startsWith('jamoncill') || w.startsWith('postr')) return 'dulce_golosina';
+  if (w.startsWith('morist') || w.startsWith('muri') || w.startsWith('muert') || w.startsWith('fallec') || w.startsWith('asesin') || w.startsWith('fusil')) return 'muerte_deceso';
+  if (w.startsWith('nacist') || w.startsWith('naci') || w.startsWith('natal')) return 'nacimiento_origen';
+  if (w.startsWith('batall') || w.startsWith('combat') || w.startsWith('enfrentamient')) return 'batalla_combate';
+  if (w.startsWith('taller') || w.startsWith('ofici') || w.startsWith('artesan') || w.startsWith('alfareri') || w.startsWith('curtiduri') || w.startsWith('morera') || w.startsWith('sericicultur') || w.startsWith('vined')) return 'talleres_oficios';
+  if (w.startsWith('enemist') || w.startsWith('rompimient') || w.startsWith('distanciamient') || w.startsWith('conflict') || w.startsWith('desacuerd') || w.startsWith('peleast') || w.startsWith('pelea')) return 'enemistad_rompimiento';
+  if (w.startsWith('fall') || w.startsWith('derrot') || w.startsWith('perdist') || w.startsWith('fracas')) return 'fallo_derrota';
+  if (w.startsWith('caball') || w.startsWith('yegu') || w === 'corcel' || w === 'potro') return 'caballo_montura';
+  if (w.startsWith('espos') || w.startsWith('marid') || w.startsWith('conyug') || w.startsWith('casast') || w.startsWith('matrimoni') || w.startsWith('nupcia')) return 'conyuge_matrimonio';
+  if (w.startsWith('padr') || w.startsWith('progenitor') || w.startsWith('papa') || w.startsWith('mama') || w.startsWith('madre')) return 'padres_progenitores';
+  if (w.startsWith('hij') || w.startsWith('vastag') || w.startsWith('descendient')) return 'hijos_descendencia';
+  if (w.startsWith('tacon') || w.startsWith('zapato') || w.startsWith('golpeast') || w.startsWith('entarimad')) return 'taconeo_alerta';
+  if (w.startsWith('arma') || w.startsWith('fusil') || w.startsWith('pistola') || w.startsWith('carabin') || w.startsWith('mauser') || w === '3030') return 'armamento';
+
+  // Lematización morfológica de sufijos comunes en español
+  w = w.replace(/(mente|isimo|isima|isimos|isimas)$/, '');
+  w = w.replace(/(aron|ieron|abais|iais|iendo|ando|aban|ian|aste|iste|ara|iera|ases|ises)$/, '');
+  w = w.replace(/(aria|eria|idad|ades|ismo|ista|able|ible)$/, '');
+  w = w.replace(/(es|as|os|ar|er|ir)$/, '');
+  w = w.replace(/(a|e|o)$/, '');
+  return w;
+}
+
+/**
+ * Extrae tokens y raíces significativas de una pregunta excluyendo palabras vacías
+ */
+export function extractSignificantTokens(questionText: string): { words: Set<string>; stems: Set<string>; stemList: string[] } {
+  const rawWords = questionText
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[¿?¡!.,:;()"'`_/\-\\]/g, ' ')
+    .split(/\s+/);
+
+  const cleanWords: string[] = [];
+  const stemList: string[] = [];
+
+  for (const raw of rawWords) {
+    const clean = raw.replace(/[^a-z0-9]/g, '');
+    if (clean.length >= 3 && !SPANISH_QUESTION_STOP_WORDS.has(clean)) {
+      const stem = stemSpanishHistoricalWord(clean);
+      if (stem && stem.length >= 2) {
+        cleanWords.push(clean);
+        stemList.push(stem);
+      }
+    }
+  }
+
+  return {
+    words: new Set(cleanWords),
+    stems: new Set(stemList),
+    stemList
+  };
+}
+
+/**
+ * Términos ancla de alta especificidad histórica
+ */
+const HISTORICAL_ANCHOR_TERMS = new Set([
+  'zorro', 'taconeo', 'tacon', 'perez', 'cerradura', 'bufa', 'celaya', 'obregon', 
+  'carranza', 'pershing', 'columbus', 'canutillo', 'trinidad', 'vales', 'moliere', 
+  'alhondiga', 'calderon', 'bajan', 'elizondo', 'acueducto', 'conin', 'tapia', 
+  'jamoncillo', 'camote', 'siete leguas', '30-30', 'mauser', 'vizcainas', 'ecatepec', 
+  'temalaca', 'carranco', 'penjamo', 'dolores', 'inquisicion', 'san nicolas', 'valladolid',
+  'santa clara', 'santa teresa', 'corregimiento', 'dominguez', 'moradas'
+].map(stemSpanishHistoricalWord));
+
+/**
+ * Busca si una pregunta formulada por un estudiante ya fue respondida en el nodo de la Bóveda Curricular (0 TOKENS)
+ * 1. Coincidencia EXACTA normalizada (Paso 1).
+ * 2. Enlace Quirúrgico de Similitud Léxica y Semántica Multi-Palabra (Paso 2):
+ *    - Comprueba múltiples palabras clave significativas compartidas.
+ *    - Respeta estrictamente polaridad (preguntas afirmativas vs de aversión/rechazo jamás se cruzan).
+ *    - Respeta entidades objetivo para no confundir padres con hijos, armas con comida, etc.
+ *    - Valida concordancia pedagógica con isAnswerSemanticallyAligned.
+ */
+export function searchQaInVaultNode(slug: string, question: string): { 
+  found: boolean; 
+  answer?: string; 
+  matchedQuestion?: string;
+  similarityScore?: number;
+} {
   const figure = findHistoricalFigureInVault(slug);
   if (!figure || !figure.qaCache || figure.qaCache.length === 0) {
     return { found: false };
@@ -1091,17 +1200,137 @@ export function searchQaInVaultNode(slug: string, question: string): { found: bo
   const normTarget = normalizeQuestionText(question);
   if (!normTarget || normTarget.length < 3) return { found: false };
 
-  // Coincidencia EXACTA de la pregunta en la Bóveda Curricular
-  // Se erradica el matching difuso temático para no generar falsos positivos con polaridades opuestas.
+  // =========================================================================
+  // PASO 1: Coincidencia EXACTA de la pregunta en la Bóveda Curricular
+  // =========================================================================
   for (const item of figure.qaCache) {
     const normItem = normalizeQuestionText(item.question);
     if (normItem === normTarget) {
       if (isAnswerSemanticallyAligned(question, item.answer, figure.characterName)) {
-        return { found: true, answer: item.answer.trim() };
+        return { found: true, answer: item.answer.trim(), matchedQuestion: item.question, similarityScore: 1.0 };
       } else {
         console.warn(`[Bóveda Curricular] Entrada en caché para "${item.question}" no concuerda semánticamente con la pregunta. Descartada para re-inferencia.`);
       }
     }
+  }
+
+  // =========================================================================
+  // PASO 2: Enlace Quirúrgico de Similitud Semántica y Léxica Multi-Palabra
+  // =========================================================================
+  const userAnalysis = analyzeHistoricalQuestion(question, figure.birthDeathDates, figure.characterName);
+  
+  // Si la pregunta es un anacronismo o tecnología fuera de época, no recuperar respuestas regulares de la bóveda
+  if (userAnalysis.isAnachronismOrOutOfTime || userAnalysis.specificIntent === 'ANACHRONISM_OUT_OF_TIME') {
+    return { found: false };
+  }
+
+  const userTokens = extractSignificantTokens(question);
+  if (userTokens.stems.size === 0) return { found: false };
+
+  let bestMatch: { question: string; answer: string } | null = null;
+  let bestScore = 0;
+
+  for (const item of figure.qaCache) {
+    const itemAnalysis = analyzeHistoricalQuestion(item.question, figure.birthDeathDates, figure.characterName);
+
+    // Salvaguarda 1: Polaridad inquebrantable (ej. ¿Qué comida NO te gustaba? jamás debe coincidir con comida favorita)
+    if (userAnalysis.isNegated !== itemAnalysis.isNegated) {
+      continue;
+    }
+
+    // Salvaguarda 2: Conflicto estricto de Entidades Incompatibles
+    const INCOMPATIBLE_ENTITY_PAIRS: Array<[string, string]> = [
+      ['PARENTS', 'CHILDREN'],
+      ['PARENTS', 'SPOUSE'],
+      ['CHILDREN', 'SPOUSE'],
+      ['FOOD', 'WEAPONS'],
+      ['FOOD', 'CLOTHING'],
+      ['BIRTHPLACE', 'DEATH_BURIAL'],
+      ['FRIENDS_ALLIES', 'ENEMIES_RIVALS'],
+      ['FRIENDS_ALLIES', 'TRAITORS_BETRAYAL']
+    ];
+
+    const isStrictConflict = INCOMPATIBLE_ENTITY_PAIRS.some(([e1, e2]) => 
+      (userAnalysis.targetEntity === e1 && itemAnalysis.targetEntity === e2) ||
+      (userAnalysis.targetEntity === e2 && itemAnalysis.targetEntity === e1)
+    );
+
+    if (isStrictConflict) {
+      continue;
+    }
+
+    // Si una pregunta es estrictamente sobre nacimiento o sepultura, no mezclar con otra entidad distinta
+    if ((userAnalysis.targetEntity === 'BIRTHPLACE' || userAnalysis.targetEntity === 'DEATH_BURIAL') &&
+        itemAnalysis.targetEntity !== 'GENERAL' && userAnalysis.targetEntity !== itemAnalysis.targetEntity) {
+      continue;
+    }
+
+    // Salvaguarda 3: Conflicto de Intención Específica Fina
+    if (
+      userAnalysis.specificIntent !== 'GENERAL_QUESTION' && 
+      itemAnalysis.specificIntent !== 'GENERAL_QUESTION' &&
+      userAnalysis.specificIntent !== itemAnalysis.specificIntent
+    ) {
+      // Bloquear cruces flagrantes: ej. nombres de hijos vs conteo de hijos, comida favorita vs rechazos
+      const intentConflict = 
+        (userAnalysis.specificIntent.startsWith('CHILDREN_') && itemAnalysis.specificIntent.startsWith('CHILDREN_')) ||
+        (userAnalysis.specificIntent.startsWith('FOOD_') && itemAnalysis.specificIntent.startsWith('FOOD_')) ||
+        (userAnalysis.specificIntent.startsWith('PARENTS_') && itemAnalysis.specificIntent.startsWith('PARENTS_'));
+      if (intentConflict) continue;
+    }
+
+    const itemTokens = extractSignificantTokens(item.question);
+    if (itemTokens.stems.size === 0) continue;
+
+    // Intersección de raíces significativas
+    const intersect = [...userTokens.stems].filter(s => itemTokens.stems.has(s));
+    if (intersect.length === 0) continue;
+
+    // Detección de Términos Ancla de Alta Fidelidad
+    const hasAnchor = intersect.some(s => 
+      HISTORICAL_ANCHOR_TERMS.has(s) || 
+      [...HISTORICAL_ANCHOR_TERMS].some(a => s.includes(a) || a.includes(s))
+    );
+
+    // Detección de coincidencia de entidad e interrogativo directo (ej. ¿Quiénes fueron tus padres?)
+    const sameEntityIntent = 
+      userAnalysis.targetEntity !== 'GENERAL' && 
+      userAnalysis.targetEntity === itemAnalysis.targetEntity &&
+      (userAnalysis.interrogativeType === itemAnalysis.interrogativeType || userAnalysis.interrogativeType === 'GENERAL' || itemAnalysis.interrogativeType === 'GENERAL');
+
+    // REGLA QUIRÚRGICA: "Comprobar con varias palabras que la pregunta sea muy similar"
+    // Si no cuenta con un término ancla distintivo ni con concordancia estrecha de entidad objetivo,
+    // se exige OBLIGATORIAMENTE un mínimo de 2 palabras/raíces coincidentes para no contestar por contestar.
+    if (!hasAnchor && !sameEntityIntent && intersect.length < 2) {
+      continue;
+    }
+
+    // Coeficiente de Sørensen-Dice y Cobertura sobre la pregunta del alumno
+    const dice = (2 * intersect.length) / (userTokens.stems.size + itemTokens.stems.size);
+    const coverageUser = intersect.length / Math.max(1, userTokens.stems.size);
+    
+    // Bonificaciones proporcionales
+    const bonus = hasAnchor ? 0.35 : (sameEntityIntent ? 0.30 : 0);
+    const score = (dice * 0.35) + (coverageUser * 0.45) + bonus;
+
+    // Comprobar si supera la mejor puntuación actual y verificar alineación semántica de la respuesta
+    if (score > bestScore) {
+      const isAligned = isAnswerSemanticallyAligned(question, item.answer, figure.characterName);
+      if (isAligned) {
+        bestScore = score;
+        bestMatch = item;
+      }
+    }
+  }
+
+  // Umbral de corte quirúrgico (mínimo 0.40 para evitar respuestas erróneas)
+  if (bestMatch && bestScore >= 0.40) {
+    return {
+      found: true,
+      answer: bestMatch.answer.trim(),
+      matchedQuestion: bestMatch.question,
+      similarityScore: bestScore
+    };
   }
 
   return { found: false };

@@ -8,6 +8,14 @@ export const villaQAs: QAPair[] = [
   // 1. PREGUNTAS ESPECÍFICAS DE FRANCISCO VILLA
   // ==========================================
   {
+    question: "¿Cómo fue la legendaria toma de Ciudad Juárez?",
+    answer: "Del 8 al 10 de mayo de 1911, junto a Pascual Orozco, desobedecimos las órdenes diplomáticas de repliegue de don Francisco I. Madero porque sabíamos que tomar la aduana era la clave para derrocar la dictadura. Asaltamos la plaza avanzando casa por casa, abriendo boquetes en las paredes de adobe para eludir el fuego de metralla federal, hasta rendir al general Juan J. Navarro. Esa victoria forzó la renuncia definitiva de Porfirio Díaz en los Tratados de Ciudad Juárez."
+  },
+  {
+    question: "¿Qué ocurrió en la Batalla de Zacatecas?",
+    answer: "El 23 de junio de 1914, mi División del Norte con más de veinte mil valientes y el magistral respaldo artillero del general Felipe Ángeles asaltamos a sangre y fuego los cerros de la Bufa y el Grillo. Pulverizamos en pocas horas al ejército federal usurpador del general Medina Barrón en una jornada heroica que destrozó para siempre la dictadura militar de Victoriano Huerta."
+  },
+  {
     question: "¿Cómo influyó el rompimiento con Venustiano Carranza durante la Toma de Zacatecas en el desenlace de la Revolución?",
     answer: "Carranza me ordenó desviar parte de mi ejército a Saltillo para impedir que la División del Norte tomara Zacatecas y entrara triunfante a la capital antes que él. Al desobedecerlo y asaltar el Cerro de la Bufa el 23 de junio de 1914, aniquilamos al ejército usurpador de Victoriano Huerta, pero se selló el rompimiento irreconciliable entre nosotros. Esa ruptura condujo a la escisión en la Convención de Aguascalientes y a la dolorosa guerra de facciones que desangró a la patria."
   },
