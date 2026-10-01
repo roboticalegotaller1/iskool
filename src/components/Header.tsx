@@ -33,20 +33,25 @@ export const Header: React.FC = () => {
   const whiteLabelPrimary = useWhiteLabelStore(state => state.primaryColor);
   const whiteLabelSchoolName = useWhiteLabelStore(state => state.schoolName);
 
-  // En el portal de alumno, derivar el colegio directamente del perfil del estudiante activo
+  // En el portal de alumno y padres, derivar el colegio del perfil o tenant activo
   const activeStudentProfile = detailedStudents?.find(s => s.id === activeStudentId);
-  const studentSchoolId = (user?.role === 'student' && user.school_id && user.school_id !== 'sch-jjrosseau')
+  const isIbimeActive = (typeof window !== 'undefined' && (document.documentElement.getAttribute('data-tenant') === 'ibime' || localStorage.getItem('tenant-id') === 'ibime')) ||
+                        user?.school_id === 'sch-ibime' || 
+                        activeStudentProfile?.school_id === 'sch-ibime' ||
+                        user?.email?.toLowerCase().includes('ibime');
+
+  const studentSchoolId = isIbimeActive ? 'sch-ibime' : ((user?.role === 'student' && user.school_id && user.school_id !== 'sch-jjrosseau')
     ? user.school_id
-    : (activeStudentProfile?.school_id || 'sch-test-case');
+    : (activeStudentProfile?.school_id || 'sch-test-case'));
 
   const effectiveSchoolId = pathname.startsWith('/student')
     ? studentSchoolId
-    : resolveEffectiveSchoolId(user, activeSchoolId, 'sch-jjrosseau');
+    : (isIbimeActive ? 'sch-ibime' : resolveEffectiveSchoolId(user, activeSchoolId, 'sch-jjrosseau'));
   const currentInstitution = institutionsList.find(i => i.id === effectiveSchoolId);
   const schoolSettings = currentInstitution?.settings || rawSchoolSettings;
 
-  const effectiveLogoUrl = whiteLabelLogo || schoolSettings?.logoUrl;
-  const effectiveSchoolName = whiteLabelSchoolName || schoolSettings?.name || 'ISkool';
+  const effectiveLogoUrl = isIbimeActive ? '/brand/ibime_logo.webp' : (whiteLabelLogo || schoolSettings?.logoUrl);
+  const effectiveSchoolName = isIbimeActive ? 'Instituto Bilingüe IBIME S.C.' : (whiteLabelSchoolName || schoolSettings?.name || 'ISkool');
 
   useEffect(() => {
     if (schoolSettings?.themeColors) {

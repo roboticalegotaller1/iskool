@@ -53,10 +53,10 @@ export const ISKOOL_THEME_TOKENS: TenantThemeTokens = {
 
 export const IBIME_THEME_TOKENS: TenantThemeTokens = {
   tenantId: 'ibime',
-  schoolName: 'Instituto Bicultural IBIME',
+  schoolName: 'Instituto Bilingüe IBIME S.C.',
   shortName: 'IBIME',
-  tagline: 'Excelencia Académica, Liderazgo Bicultural e Innovación Pedagógica',
-  badgeText: 'IBIME Bicultural Hub',
+  tagline: 'Excelencia Bilingüe y Formación Humana desde 2004 · Montes · Lagos · San Cristóbal · Coacalco',
+  badgeText: 'Instituto Bilingüe IBIME S.C.',
   logoUrl: '/brand/ibime_logo.webp',
   faviconUrl: '/brand/ibime_favicon.ico',
   primaryColorHex: '#047857', // Verde Esmeralda Institucional IBIME

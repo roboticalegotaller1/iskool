@@ -530,7 +530,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
           break;
         case 'student':
         default:
-          targetPath = '/ibime/portal?tab=alumnos';
+          targetPath = '/student';
           break;
       }
     } else {
@@ -1062,7 +1062,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
                           : 'hover:text-zinc-900 dark:hover:text-white'
                       }`}
                     >
-                      Alumnos 360
+                      {isIbimeMode ? 'Alumnos y Familias' : 'Alumnos 360'}
                     </button>
                   </div>
 

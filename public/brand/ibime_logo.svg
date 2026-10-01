@@ -1,0 +1,56 @@
+<svg width="240" height="60" viewBox="0 0 240 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ibimeShieldGradSvg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#047857" />
+      <stop offset="50%" stopColor="#065F46" />
+      <stop offset="100%" stopColor="#022c22" />
+    </linearGradient>
+    <linearGradient id="ibimeGoldGradSvg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#FBBF24" />
+      <stop offset="50%" stopColor="#D97706" />
+      <stop offset="100%" stopColor="#92400E" />
+    </linearGradient>
+    <linearGradient id="ibimeTorchGradSvg" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stopColor="#EA580C" />
+      <stop offset="40%" stopColor="#F59E0B" />
+      <stop offset="100%" stopColor="#FEF08A" />
+    </linearGradient>
+  </defs>
+
+  <!-- Escudo Heráldico (X: 5, Y: 5, W: 50, H: 50) -->
+  <g transform="translate(5, 5) scale(0.5)">
+    <!-- Halo exterior dorado -->
+    <circle cx="50" cy="50" r="48" fill="url(#ibimeGoldGradSvg)" opacity="0.9" />
+    <!-- Anillo de contraste verde esmeralda -->
+    <circle cx="50" cy="50" r="45" fill="#064E3B" stroke="#FDE68A" stroke-width="1.5" />
+    <!-- Silueta del Escudo Mayor -->
+    <path d="M50 12 L78 22 C78 52 50 78 50 78 C50 78 22 52 22 22 Z" fill="url(#ibimeShieldGradSvg)" stroke="url(#ibimeGoldGradSvg)" stroke-width="2.5" />
+    <!-- Libro Abierto -->
+    <path d="M34 56 C39 53 45 53 50 56 C55 53 61 53 66 56 L66 64 C61 61 55 61 50 64 C45 61 39 61 34 64 Z" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1" />
+    <line x1="50" y1="56" x2="50" y2="64" stroke="#047857" stroke-width="1.2" />
+    <!-- Antorcha Central -->
+    <path d="M48 42 L52 42 L51 54 L49 54 Z" fill="url(#ibimeGoldGradSvg)" />
+    <path d="M46 42 Q50 45 54 42 L53 38 L47 38 Z" fill="#D97706" />
+    <path d="M50 25 C45 31 46 37 50 39 C54 37 55 31 50 25 Z" fill="url(#ibimeTorchGradSvg)" />
+    <!-- 4 Estrellas -->
+    <polygon points="50,14 51.5,17 55,17 52,19.5 53,23 50,21 47,23 48,19.5 45,17 48.5,17" fill="#FDE68A" />
+    <polygon points="30,30 31,32 33,32 31.5,33.5 32,35.5 30,34 28,35.5 28.5,33.5 27,32 29,32" fill="#FDE68A" />
+    <polygon points="70,30 71,32 73,32 71.5,33.5 72,35.5 70,34 68,35.5 68.5,33.5 67,32 69,32" fill="#FDE68A" />
+    <polygon points="50,71 50.8,72.5 52.5,72.5 51,73.5 51.5,75 50,74 48.5,75 49,73.5 47.5,72.5 49.2,72.5" fill="#FDE68A" />
+  </g>
+
+  <!-- Tipografía Oficial -->
+  <text x="65" y="24" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="16" fill="#047857" letter-spacing="0.5">
+    IBIME
+  </text>
+  <rect x="118" y="12" width="28" height="14" rx="3" fill="#D97706" fill-opacity="0.2" stroke="#D97706" stroke-width="0.8" />
+  <text x="122" y="22.5" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="8" fill="#B45309" letter-spacing="0.5">
+    S.C.
+  </text>
+  <text x="65" y="38" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="800" font-size="11" fill="#1E293B" letter-spacing="0.2">
+    INSTITUTO BILINGÜE
+  </text>
+  <text x="65" y="50" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="8" fill="#059669" letter-spacing="0.5">
+    MONTES · LAGOS · SAN CRISTÓBAL · COACALCO
+  </text>
+</svg>

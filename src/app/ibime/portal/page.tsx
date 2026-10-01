@@ -37,9 +37,12 @@ import {
   Compass,
   FileText,
   Lock,
-  Globe
+  Globe,
+  Heart
 } from 'lucide-react';
 import { DetailedStudent, Subject, Campus, UserProfile } from '@/types';
+import { useStudentStore } from '@/store/useStudentStore';
+import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 
 type IbimeTab = 'sedes' | 'alumnos' | 'docentes' | 'boveda' | 'finanzas';
 
@@ -65,16 +68,30 @@ function IbimePortalContent() {
 
   // Validación de Control de Acceso Zero-Trust:
   // Requiere sesión activa y pertenencia a IBIME con rol directivo o administrativo.
+  // Si el usuario es alumno o padre de familia, se le transfiere amablemente a su portal correspondiente.
   useEffect(() => {
     if (!authLoading) {
       if (!user) {
         router.push('/ibime/login');
         return;
       }
+      if (user.role === 'student') {
+        router.push('/student');
+        return;
+      }
+      if (user.role === 'parent' || user.role === 'tutor') {
+        router.push('/parent');
+        return;
+      }
       const isIbimeStaff = user.school_id === 'sch-ibime' || 
                            user.email?.toLowerCase().includes('ibime') ||
                            user.role === 'admin' || 
-                           user.role === 'superadmin';
+                           user.role === 'superadmin' ||
+                           user.role === 'teacher' ||
+                           user.role === 'director' ||
+                           user.role === 'coordinator' ||
+                           user.role === 'billing' ||
+                           user.role === 'owner';
       if (!isIbimeStaff) {
         router.push('/login?error=unauthorized_ibime');
       }
@@ -238,10 +255,36 @@ function IbimePortalContent() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
+              <button
+                onClick={async () => {
+                  await useStudentStore.getState().switchStudent('std-ibime-montes-01');
+                  router.push('/student');
+                }}
+                className="py-1.5 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-amber-300 active:scale-98"
+                title="Vivenciar la experiencia inmersiva del alumno (Iker Santiago Morales - Ignis)"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-900" />
+                <span className="hidden sm:inline">Experiencia Alumno 360°</span>
+                <span className="sm:hidden">Alumno</span>
+              </button>
+
+              <button
+                onClick={async () => {
+                  await useStudentStore.getState().switchStudent('std-ibime-montes-01');
+                  router.push('/parent');
+                }}
+                className="py-1.5 px-3 rounded-xl bg-emerald-700/90 hover:bg-emerald-600 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-emerald-500 active:scale-98"
+                title="Vivenciar la experiencia de padres de familia (Familia Morales Peña)"
+              >
+                <Heart className="w-3.5 h-3.5 text-rose-300" />
+                <span className="hidden sm:inline">Experiencia Familia</span>
+                <span className="sm:hidden">Familia</span>
+              </button>
+
               <button
                 onClick={() => setViewMode('operational')}
-                className="py-2 px-3.5 rounded-xl bg-white text-[#047857] hover:bg-emerald-50 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-emerald-200 active:scale-98"
+                className="py-1.5 px-3 rounded-xl bg-white text-[#047857] hover:bg-emerald-50 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-emerald-200 active:scale-98"
                 title="Conmutar al Tablero Operativo Clásico"
               >
                 <Layers className="w-4 h-4 text-emerald-700" />
@@ -284,8 +327,8 @@ function IbimePortalContent() {
           
           {/* Identidad Institucional Oficial */}
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-white text-[#047857] flex items-center justify-center font-black text-xl shadow-md border border-emerald-300 shrink-0">
-              IB
+            <div className="p-1 rounded-2xl bg-white shadow-md border border-emerald-300 shrink-0 flex items-center justify-center">
+              <IbimeOfficialLogo size={42} showText={false} />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -325,14 +368,41 @@ function IbimePortalContent() {
               {userName[0] || 'I'}
             </div>
 
+            {/* Acceso directo a Experiencias Alumno y Familia */}
+            <button
+              onClick={async () => {
+                await useStudentStore.getState().switchStudent('std-ibime-montes-01');
+                router.push('/student');
+              }}
+              className="py-1.5 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-amber-300"
+              title="Vivenciar la experiencia inmersiva del alumno (Iker Santiago Morales - Ignis)"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-900" />
+              <span className="hidden sm:inline">Experiencia Alumno 360°</span>
+              <span className="sm:hidden">Alumno</span>
+            </button>
+
+            <button
+              onClick={async () => {
+                await useStudentStore.getState().switchStudent('std-ibime-montes-01');
+                router.push('/parent');
+              }}
+              className="py-1.5 px-3 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-emerald-600"
+              title="Vivenciar la experiencia de padres de familia (Familia Morales Peña)"
+            >
+              <Heart className="w-3.5 h-3.5 text-rose-300" />
+              <span className="hidden sm:inline">Experiencia Familia</span>
+              <span className="sm:hidden">Familia</span>
+            </button>
+
             {/* Acceso directo a Visión CEO para Directores y Dueños */}
             {(isDirector || activeUser.role === 'owner') && (
               <button
                 onClick={() => setViewMode('ceo')}
-                className="py-1.5 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-extrabold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-amber-300"
+                className="py-1.5 px-3 rounded-xl bg-emerald-900/90 hover:bg-emerald-800 text-emerald-100 font-extrabold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-emerald-700"
                 title="Abrir Visión Ejecutiva CEO"
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-900" />
+                <Layers className="w-3.5 h-3.5 text-emerald-300" />
                 <span className="hidden sm:inline">Visión CEO</span>
               </button>
             )}
@@ -741,13 +811,26 @@ function IbimePortalContent() {
                             </div>
                           </td>
                           <td className="py-3.5 px-4 text-right">
-                            <button
-                              onClick={() => setSelectedStudentDetail(std)}
-                              className="py-1 px-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-[#047857] dark:text-emerald-300 rounded-lg font-bold text-[11px] transition-colors cursor-pointer border border-emerald-200/60 dark:border-emerald-800 inline-flex items-center gap-1"
-                            >
-                              <span>Expediente</span>
-                              <ChevronRight className="w-3 h-3" />
-                            </button>
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={async () => {
+                                  await useStudentStore.getState().switchStudent(std.id);
+                                  router.push('/student');
+                                }}
+                                className="py-1 px-2.5 bg-amber-400 hover:bg-amber-300 text-amber-950 rounded-lg font-black text-[11px] transition-colors cursor-pointer border border-amber-300 inline-flex items-center gap-1 shadow-xs"
+                                title={`Vivenciar experiencia del alumno ${std.first_name}`}
+                              >
+                                <Sparkles className="w-3 h-3 text-amber-900" />
+                                <span>Vivenciar</span>
+                              </button>
+                              <button
+                                onClick={() => setSelectedStudentDetail(std)}
+                                className="py-1 px-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-[#047857] dark:text-emerald-300 rounded-lg font-bold text-[11px] transition-colors cursor-pointer border border-emerald-200/60 dark:border-emerald-800 inline-flex items-center gap-1"
+                              >
+                                <span>Expediente</span>
+                                <ChevronRight className="w-3 h-3" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -1075,10 +1158,34 @@ function IbimePortalContent() {
               </div>
             </div>
 
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-right">
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={async () => {
+                    await useStudentStore.getState().switchStudent(selectedStudentDetail.id);
+                    router.push('/student');
+                  }}
+                  className="py-2 px-3.5 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-amber-950 font-black text-xs rounded-xl transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-950" />
+                  <span>Vivenciar Alumno 360°</span>
+                </button>
+
+                <button
+                  onClick={async () => {
+                    await useStudentStore.getState().switchStudent(selectedStudentDetail.id);
+                    router.push('/parent');
+                  }}
+                  className="py-2 px-3.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-sm flex items-center gap-1.5 border border-emerald-600"
+                >
+                  <Heart className="w-3.5 h-3.5 text-rose-300" />
+                  <span>Vivenciar Familia</span>
+                </button>
+              </div>
+
               <button
                 onClick={() => setSelectedStudentDetail(null)}
-                className="py-2 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                className="py-2 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-colors cursor-pointer"
               >
                 Cerrar Expediente
               </button>

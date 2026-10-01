@@ -193,10 +193,27 @@ export const useGamificationStore = create<GamificationStoreState>()(
   persist(
     (set, get) => ({
       missionsList: MISSIONS_SEED,
-      questAttempts: [],
+      questAttempts: [
+        { id: 'qa-ibime-1', student_id: 'std-ibime-montes-01', quest_id: 'q-ibime-steam-1', is_completed: true, score: 100, attempts_count: 1, created_at: new Date(Date.now() - 48 * 3600 * 1000).toISOString(), updated_at: new Date(Date.now() - 48 * 3600 * 1000).toISOString() },
+        { id: 'qa-ibime-2', student_id: 'std-ibime-montes-01', quest_id: 'q-ibime-cambridge-1', is_completed: true, score: 95, attempts_count: 1, created_at: new Date(Date.now() - 24 * 3600 * 1000).toISOString(), updated_at: new Date(Date.now() - 24 * 3600 * 1000).toISOString() },
+        { id: 'qa-ibime-3', student_id: 'std-ibime-lagos-01', quest_id: 'q-ibime-cambridge-1', is_completed: true, score: 90, attempts_count: 1, created_at: new Date(Date.now() - 36 * 3600 * 1000).toISOString(), updated_at: new Date(Date.now() - 36 * 3600 * 1000).toISOString() },
+        { id: 'qa-ibime-4', student_id: 'std-ibime-san-01', quest_id: 'q-ibime-nem-1', is_completed: true, score: 100, attempts_count: 1, created_at: new Date(Date.now() - 20 * 3600 * 1000).toISOString(), updated_at: new Date(Date.now() - 20 * 3600 * 1000).toISOString() },
+        { id: 'qa-ibime-5', student_id: 'std-ibime-coac-01', quest_id: 'q-ibime-cch-1', is_completed: true, score: 98, attempts_count: 1, created_at: new Date(Date.now() - 30 * 3600 * 1000).toISOString(), updated_at: new Date(Date.now() - 30 * 3600 * 1000).toISOString() }
+      ],
       studentBadges: [
         { student_id: 'std-pa', badge_id: 'badge-1', earned_at: new Date().toISOString() },
-        { student_id: 'std-sec', badge_id: 'badge-3', earned_at: new Date().toISOString() }
+        { student_id: 'std-sec', badge_id: 'badge-3', earned_at: new Date().toISOString() },
+        // Medallas Oficiales Alumnos IBIME
+        { student_id: 'std-ibime-montes-01', badge_id: 'badge-ibime-steam', earned_at: new Date().toISOString() },
+        { student_id: 'std-ibime-montes-01', badge_id: 'badge-ibime-cambridge', earned_at: new Date().toISOString() },
+        { student_id: 'std-ibime-montes-01', badge_id: 'badge-6', earned_at: new Date().toISOString() },
+        { student_id: 'std-ibime-montes-01', badge_id: 'badge-1', earned_at: new Date().toISOString() },
+        { student_id: 'std-ibime-lagos-01', badge_id: 'badge-ibime-cambridge', earned_at: new Date().toISOString() },
+        { student_id: 'std-ibime-lagos-01', badge_id: 'badge-3', earned_at: new Date().toISOString() },
+        { student_id: 'std-ibime-san-01', badge_id: 'badge-ibime-comunitario', earned_at: new Date().toISOString() },
+        { student_id: 'std-ibime-san-01', badge_id: 'badge-1', earned_at: new Date().toISOString() },
+        { student_id: 'std-ibime-coac-01', badge_id: 'badge-ibime-cch', earned_at: new Date().toISOString() },
+        { student_id: 'std-ibime-coac-01', badge_id: 'badge-ibime-steam', earned_at: new Date().toISOString() }
       ],
   guildBoss: { id: '', name: 'Cargando Jefe...', hp_max: 1, hp_actual: 1, xp_reward: 0 },
   guildSubmissions: [],
@@ -1006,7 +1023,9 @@ export const useGamificationStore = create<GamificationStoreState>()(
       });
 
       if (missionsWithSortedQuests.length > 0) {
-        set({ missionsList: missionsWithSortedQuests });
+        const existingIds = new Set(missionsWithSortedQuests.map((m) => m.id));
+        const missingSeeds = MISSIONS_SEED.filter((m) => !existingIds.has(m.id));
+        set({ missionsList: [...missionsWithSortedQuests, ...missingSeeds] });
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);

@@ -821,7 +821,12 @@ export const BADGES_SEED: Badge[] = [
   { id: 'badge-3', name: 'Espíritu Indomable', description: 'Completa un reto después de haber fallado en el primer intento.', icon_name: 'Sparkles', category: 'persistence', xp_required: 200, created_at: new Date().toISOString() },
   { id: 'badge-4', name: 'Creador de Universos', description: 'Sube una evidencia artística o dibujo digital de alta calidad.', icon_name: 'Palette', category: 'creative', xp_required: 150, created_at: new Date().toISOString() },
   { id: 'badge-5', name: 'Compañero Estelar', description: 'Realiza una coevaluación constructiva para un compañero.', icon_name: 'Users', category: 'social', xp_required: 100, created_at: new Date().toISOString() },
-  { id: 'badge-6', name: 'Racha del Sol', description: 'Mantén una racha de actividad diaria de 5 días seguidos.', icon_name: 'Flame', category: 'persistence', xp_required: 300, created_at: new Date().toISOString() }
+  { id: 'badge-6', name: 'Racha del Sol', description: 'Mantén una racha de actividad diaria de 5 días seguidos.', icon_name: 'Flame', category: 'persistence', xp_required: 300, created_at: new Date().toISOString() },
+  // Medallas Institucionales Oficiales IBIME
+  { id: 'badge-ibime-steam', name: 'Maestro Robótica STEAM', description: 'Construye y calibra un mecanismo robótico o hidráulico en Campus Montes.', icon_name: 'Cpu', category: 'academic', xp_required: 250, created_at: new Date().toISOString() },
+  { id: 'badge-ibime-cambridge', name: 'Cambridge Starters Honor', description: 'Domina los diálogos y comprensión auditiva de certificación bilingüe en Campus Lagos.', icon_name: 'Award', category: 'academic', xp_required: 300, created_at: new Date().toISOString() },
+  { id: 'badge-ibime-cch', name: 'Excelencia CCH UNAM', description: 'Demuestra rigor universitario en el laboratorio propedéutico de Campus Coacalco.', icon_name: 'GraduationCap', category: 'academic', xp_required: 400, created_at: new Date().toISOString() },
+  { id: 'badge-ibime-comunitario', name: 'Guardián Comunitario NEM', description: 'Lidera un proyecto de conservación ambiental y cuidado hídrico en San Cristóbal.', icon_name: 'Users', category: 'social', xp_required: 200, created_at: new Date().toISOString() }
 ];
 
 // Misiones Muestra
@@ -991,6 +996,382 @@ export const MISSIONS_SEED: Mission[] = [
               explanation: 'Necesita selva alta perennifolia continua y corredores biológicos en el sureste de México.'
             }
           ]
+        }
+      }
+    ]
+  },
+  // =========================================================================
+  // MISIONES INSTITUCIONALES OFICIALES: INSTITUTO BILINGÜE IBIME S.C.
+  // =========================================================================
+  {
+    id: 'mis-ibime-steam',
+    school_id: 'sch-ibime',
+    subject_id: 'sub-ibime-steam-pri',
+    level_grade_id: 'primaria',
+    title: 'Desafío Robótica STEAM y Presión Hidráulica',
+    description: 'Aplica el Principio de Pascal y cinemática en el laboratorio mecatrónico de Campus Montes.',
+    story_intro: 'El Prof. Alejandro Mendoza te convoca al laboratorio STEAM de Campus Montes. Para el Torneo Inter-Planteles IBIME, necesitamos calibrar un brazo robótico accionado por jeringas y calcular la fuerza de empuje para levantar probetas con material reciclado.',
+    map_position_x: 35,
+    map_position_y: 45,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    quests: [
+      {
+        id: 'q-ibime-steam-1',
+        mission_id: 'mis-ibime-steam',
+        title: 'El Principio de Pascal y Mecatrónica',
+        description: 'Calcula la transmisión de presión en fluidos incompresibles para el brazo robótico.',
+        type: 'quiz',
+        sequence_order: 1,
+        xp_reward: 120,
+        coins_reward: 30,
+        created_at: new Date().toISOString(),
+        campos_formativos: ['Saberes y Pensamiento Científico'],
+        ejes_articuladores: ['Pensamiento Crítico', 'Apropiación de las culturas a través de la ciencia'],
+        pdas: ['Fase 4 y 5 - Saberes y Pensamiento Científico: Comprende el principio de transmisión de presión hidrostática en sistemas mecánicos aplicados a prototipos robóticos.'],
+        content: {
+          questions: [
+            {
+              id: 'q-steam-1',
+              question: '¿Qué establece el Principio de Pascal aplicado a los pistones hidráulicos del brazo robótico?',
+              options: [
+                'La presión ejercida en un fluido incompresible se transmite con igual intensidad en todas las direcciones',
+                'La presión solo se transmite hacia la base del cilindro sin fuerza lateral',
+                'El fluido pierde energía en proporción al volumen total del aire',
+                'La fuerza se disipa totalmente si la manguera es flexible'
+              ],
+              correctAnswerIndex: 0,
+              explanation: '¡Exacto! El Principio de Pascal afirma que la presión aplicada en un punto de un líquido incompresible se transmite íntegramente a todos los puntos del fluido y paredes del recipiente.'
+            },
+            {
+              id: 'q-steam-2',
+              question: 'Si aplicas una fuerza de 10 Newtons en una jeringa de 2 cm² conectada a otra de 6 cm², ¿qué fuerza resulta en el pistón mayor?',
+              options: [
+                '30 Newtons (se multiplica por 3 gracias a la relación de áreas)',
+                '10 Newtons (se mantiene exactamente igual)',
+                '3.33 Newtons (se reduce a la tercera parte)',
+                '60 Newtons (se multiplica por 6)'
+              ],
+              correctAnswerIndex: 0,
+              explanation: '¡Brillante deducción física! P1 = F1/A1 = 10 N / 2 cm² = 5 N/cm². Al transmitirse al émbolo mayor (A2 = 6 cm²), F2 = P1 * A2 = 5 N/cm² * 6 cm² = 30 N.'
+            },
+            {
+              id: 'q-steam-3',
+              question: '¿Qué componente mecatrónico permite fijar los grados de libertad de articulación en la pinza robótica?',
+              options: [
+                'Servomotor con tope mecánico de 180°',
+                'Batería química sellada de plomo',
+                'Resistencia calefactora pasiva',
+                'Condensador cerámico sin polaridad'
+              ],
+              correctAnswerIndex: 0,
+              explanation: 'Los servomotores con sensor angular integrado garantizan el control de posición preciso en los ejes del robot.'
+            }
+          ]
+        }
+      },
+      {
+        id: 'q-ibime-steam-2',
+        mission_id: 'mis-ibime-steam',
+        title: 'Evidencia en Bóveda Curricular: Brazo Hidráulico STEAM',
+        description: 'Documenta la construcción de tu prototipo o bitácora de ingeniería y súbela a tu portafolio.',
+        type: 'portfolio_submission',
+        sequence_order: 2,
+        xp_reward: 160,
+        coins_reward: 40,
+        created_at: new Date().toISOString(),
+        campos_formativos: ['Saberes y Pensamiento Científico'],
+        ejes_articuladores: ['Pensamiento Crítico', 'Artes y Experiencias Estéticas'],
+        pdas: ['Fase 5 - Saberes y Pensamiento Científico: Diseña y evalúa prototipos tecnológicos describiendo su función y principios mecánicos.'],
+        content: {
+          instructions: '1. Fotografía o escanea tu bitácora del prototipo de brazo robótico.\n2. Indica la relación de diámetros de las jeringas.\n3. Explica cómo aseguraste la hermeticidad de las mangueras.\n4. Sube tu evidencia para retroalimentación docente.',
+          acceptedFormats: ['image', 'pdf']
+        }
+      },
+      {
+        id: 'q-ibime-steam-3',
+        mission_id: 'mis-ibime-steam',
+        title: 'Protocolo de Seguridad Neumática y Robótica',
+        description: 'Lectura técnica y resolución rápida de protocolos de operación segura de actuadores.',
+        type: 'timed_reading',
+        sequence_order: 3,
+        xp_reward: 180,
+        coins_reward: 45,
+        created_at: new Date().toISOString(),
+        campos_formativos: ['Saberes y Pensamiento Científico'],
+        ejes_articuladores: ['Pensamiento Crítico'],
+        pdas: ['Fase 5 - Diseña protocolos de seguridad en el uso de herramientas de laboratorio y mecatrónica escolar.'],
+        content: {
+          readingText: 'En los laboratorios STEAM del Instituto Bilingüe IBIME, la seguridad en sistemas de fluidos presurizados es prioritaria. Antes de activar actuadores neumáticos o hidráulicos, se debe verificar la ausencia de burbujas en los conductos cerrados, ya que el aire comprimido acumula energía elástica potencial que puede ocasionar movimientos bruscos no controlados. Los alumnos deben purgar el circuito con agua destilada y operar siempre dentro del rango nominal de 1 a 3 bares.',
+          timeLimitSeconds: 65,
+          wordCount: 78,
+          targetWpm: 120,
+          bossName: 'Guardián Hidráulico',
+          bossHp: 120,
+          storyIntro: '¡La presión en la línea del laboratorio está aumentando! Lee el protocolo técnico y responde con precisión para estabilizar la válvula central.',
+          questions: [
+            {
+              id: 'q-steam-r1',
+              question: '¿Por qué se deben eliminar las burbujas de aire en un sistema hidráulico?',
+              options: [
+                'Porque el aire se comprime y genera respuestas mecánicas bruscas o erráticas',
+                'Porque el aire congela instantáneamente las jeringas de plástico',
+                'Porque cambia el color del líquido del circuito',
+                'Porque incrementa el peso del brazo en un 200%'
+              ],
+              correctAnswerIndex: 0,
+              explanation: 'El aire es compresible a diferencia de los líquidos; si hay burbujas, absorben la fuerza antes de mover el pistón.'
+            },
+            {
+              id: 'q-steam-r2',
+              question: '¿Qué líquido se recomienda para purgar los circuitos cerrados escolares?',
+              options: [
+                'Agua destilada o soluciones acuosas no corrosivas',
+                'Aceite mineral pesado de motor',
+                'Alcohol isopropílico de alta densidad',
+                'Líquido de frenos sintético'
+              ],
+              correctAnswerIndex: 0,
+              explanation: 'El agua destilada es inocua, inodora y segura para el entorno escolar de laboratorio STEAM.'
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    id: 'mis-ibime-cambridge',
+    school_id: 'sch-ibime',
+    subject_id: 'sub-ibime-cambridge-pri',
+    level_grade_id: 'primaria',
+    title: 'Cambridge Young Learners & Bicultural Dialogue',
+    description: 'Consolida tu vocabulario y comprensión auditiva para la certificación internacional en Campus Lagos.',
+    story_intro: 'Miss Elizabeth Hernández Ramos te da la bienvenida a la sala bilingüe de Campus Lagos. Prepárate para el examen Cambridge Young Learners practicando intercambios de conversación, descripción de lugares y rutinas cotidianas en inglés auténtico.',
+    map_position_x: 65,
+    map_position_y: 25,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    quests: [
+      {
+        id: 'q-ibime-cambridge-1',
+        mission_id: 'mis-ibime-cambridge',
+        title: 'Young Learners Fluency & Daily Routines',
+        description: 'Demuestra tu dominio léxico y gramatical para el certificado Cambridge English.',
+        type: 'quiz',
+        sequence_order: 1,
+        xp_reward: 120,
+        coins_reward: 30,
+        created_at: new Date().toISOString(),
+        campos_formativos: ['Lenguajes'],
+        ejes_articuladores: ['Interculturalidad Crítica', 'Apropiación de las culturas a través de la lectura'],
+        pdas: ['Fase 4 y 5 - Lenguajes (Inglés): Expresa ideas y necesidades básicas sobre actividades cotidianas utilizando estructuras gramaticales formales en una segunda lengua.'],
+        content: {
+          questions: [
+            {
+              id: 'q-cam-1',
+              question: 'Complete the sentence with the correct Cambridge grammar structure: "At IBIME School, our robotics team _____ practical science experiments every Tuesday."',
+              options: [
+                'conducts',
+                'conducting',
+                'conduct',
+                'are conduct'
+              ],
+              correctAnswerIndex: 0,
+              explanation: 'Correct! "Our robotics team" is a collective singular subject in third person (it), requiring the third-person singular verb ending "-s" (conducts) in simple present.'
+            },
+            {
+              id: 'q-cam-2',
+              question: 'Which connector expresses a contrast in ideas during an oral debate?',
+              options: [
+                'However',
+                'Because',
+                'Furthermore',
+                'Therefore'
+              ],
+              correctAnswerIndex: 0,
+              explanation: '"However" indicates contrast or qualification of the previous statement, essential for Cambridge speaking tasks.'
+            },
+            {
+              id: 'q-cam-3',
+              question: 'Select the polite formal phrase to ask a teacher for clarification in class:',
+              options: [
+                'Could you please clarify that concept for me?',
+                'Tell me that again now.',
+                'I don’t know what you said.',
+                'Repeat!'
+              ],
+              correctAnswerIndex: 0,
+              explanation: 'Using modal verbs such as "Could you please..." exhibits polite formal communication aligned with Cambridge B1/B2 descriptors.'
+            }
+          ]
+        }
+      },
+      {
+        id: 'q-ibime-cambridge-2',
+        mission_id: 'mis-ibime-cambridge',
+        title: 'Bicultural Voice: Cambridge Speaking Task',
+        description: 'Graba un audio en inglés de 45 segundos describiendo un proyecto científico y compártelo en tu portafolio.',
+        type: 'portfolio_submission',
+        sequence_order: 2,
+        xp_reward: 160,
+        coins_reward: 35,
+        created_at: new Date().toISOString(),
+        campos_formativos: ['Lenguajes'],
+        ejes_articuladores: ['Interculturalidad Crítica'],
+        pdas: ['Fase 5 - Lenguajes: Produce mensajes orales en inglés con fluidez y entonación adecuada para contextos académicos.'],
+        content: {
+          instructions: '1. Read and practice: "Welcome to IBIME Bicultural Campus. Today we are presenting our science project about hydraulic pressure and renewable energy..."\n2. Record your audio clearly.\n3. Upload your sound file.',
+          acceptedFormats: ['audio', 'video']
+        }
+      }
+    ]
+  },
+  {
+    id: 'mis-ibime-nem',
+    school_id: 'sch-ibime',
+    subject_id: 'sub-ibime-soc-pri',
+    level_grade_id: 'primaria',
+    title: 'Proyecto Comunitario: Cuidado del Agua y Sustentabilidad',
+    description: 'Diagnóstico hídrico y captación pluvial situada en Ecatepec Centro (Campus San Cristóbal).',
+    story_intro: 'El Prof. Fernando Morales y el claustro docente de Campus San Cristóbal coordinan el Proyecto Comunitario de la Nueva Escuela Mexicana 2024. Diseña una propuesta de captación y reutilización de agua para la comunidad escolar y las colonias aledañas.',
+    map_position_x: 50,
+    map_position_y: 70,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    quests: [
+      {
+        id: 'q-ibime-nem-1',
+        mission_id: 'mis-ibime-nem',
+        title: 'Diagnóstico Hídrico Familiar y Ecosistémico',
+        description: 'Calcula el consumo de agua por habitante y formula estrategias de mitigación.',
+        type: 'quiz',
+        sequence_order: 1,
+        xp_reward: 110,
+        coins_reward: 25,
+        created_at: new Date().toISOString(),
+        campos_formativos: ['Ética, Naturaleza y Sociedades', 'De lo Humano y lo Comunitario'],
+        ejes_articuladores: ['Pensamiento Crítico', 'Vida Saludable', 'Inclusión'],
+        pdas: ['Fase 4 y 5 - Ética, Naturaleza y Sociedades: Analiza críticamente el derecho humano al agua y propone acciones comunitarias para su preservación en la cuenca del Valle de México.'],
+        content: {
+          questions: [
+            {
+              id: 'q-nem-1',
+              question: 'Según la Organización Mundial de la Salud, ¿cuál es el volumen mínimo de agua diario por persona para cubrir necesidades básicas e higiene?',
+              options: [
+                'Entre 50 y 100 litros diarios por persona',
+                'Menos de 10 litros diarios',
+                'Más de 800 litros diarios',
+                'Exactamente 5 litros diarios'
+              ],
+              correctAnswerIndex: 0,
+              explanation: 'La OMS establece que entre 50 y 100 litros diarios por persona garantizan la satisfacción de la mayoría de las necesidades básicas y de higiene sin comprometer la salud.'
+            },
+            {
+              id: 'q-nem-2',
+              question: '¿Qué método de bajo costo es más eficaz para aprovechar el agua pluvial en azoteas escolares?',
+              options: [
+                'Sistema de canaletas con filtro de primeras lluvias (tlalocoque) y almacenamiento sombreado',
+                'Dejar recipientes abiertos al sol sin tapaderas ni mallas',
+                'Verter cloro comercial sin medir la concentración',
+                'Desechar el agua en el drenaje sin retención'
+              ],
+              correctAnswerIndex: 0,
+              explanation: 'Separar el primer caudal de lluvia remueve el polvo y sedimentos del techo, permitiendo cosechar agua limpia para sanitarios y riego.'
+            }
+          ]
+        }
+      },
+      {
+        id: 'q-ibime-nem-2',
+        mission_id: 'mis-ibime-nem',
+        title: 'Cartel Comunitario de Concientización Hídrica',
+        description: 'Crea una infografía o cartel y compártelo para socializarlo con padres de familia.',
+        type: 'portfolio_submission',
+        sequence_order: 2,
+        xp_reward: 150,
+        coins_reward: 30,
+        created_at: new Date().toISOString(),
+        campos_formativos: ['De lo Humano y lo Comunitario'],
+        ejes_articuladores: ['Apropiación de las culturas a través de la lectura y la escritura', 'Vida Saludable'],
+        pdas: ['Fase 5 - Elabora materiales gráficos informativos para promover la cultura de sustentabilidad ambiental en la comunidad.'],
+        content: {
+          instructions: '1. Elabora una infografía con 3 consejos prácticos para evitar fugas y recolectar agua en el hogar.\n2. Integra una frase motivacional sobre el compromiso cívico de IBIME.\n3. Sube la imagen de tu cartel.',
+          acceptedFormats: ['image', 'pdf']
+        }
+      }
+    ]
+  },
+  {
+    id: 'mis-ibime-cch',
+    school_id: 'sch-ibime',
+    subject_id: 'sub-ibime-cch-bio',
+    level_grade_id: 'preparatoria',
+    title: 'Laboratorio Propedéutico CCH UNAM: Fotosíntesis & Microcontroladores',
+    description: 'Prácticas de laboratorio experimental y control de pH con microcontroladores (Campus Coacalco / Montes Clave UNAM 7998).',
+    story_intro: 'La Profa. Sofía Cordero supervisa la investigación propedéutica de Biología I-IV para el Bachillerato Incorporado CCH UNAM. Analiza la curva espectral de absorción lumínica en lechuga hidropónica y la optimización de macronutrientes NPK.',
+    map_position_x: 80,
+    map_position_y: 55,
+    is_active: true,
+    created_at: new Date().toISOString(),
+    quests: [
+      {
+        id: 'q-ibime-cch-1',
+        mission_id: 'mis-ibime-cch',
+        title: 'Fotosíntesis, Nutrientes NPK y Balance de pH',
+        description: 'Rigor científico y evaluación de reactivos experimentales del programa de Biología CCH.',
+        type: 'quiz',
+        sequence_order: 1,
+        xp_reward: 150,
+        coins_reward: 40,
+        created_at: new Date().toISOString(),
+        campos_formativos: ['Ciencias Experimentales CCH UNAM'],
+        ejes_articuladores: ['Pensamiento Crítico'],
+        pdas: ['Programa CCH UNAM - Biología II: Explica la fase luminosa y oscura de la fotosíntesis relacionando la disponibilidad nutrimental con el rendimiento metabólico vegetal.'],
+        content: {
+          questions: [
+            {
+              id: 'q-cch-1',
+              question: '¿Qué longitud de onda del espectro electromagnético es absorbida con mayor eficiencia por la clorofila "a" durante la fase luminosa?',
+              options: [
+                'Azul (430 nm) y Rojo (660 nm)',
+                'Verde (520 nm) exclusivamente',
+                'Infrarrojo lejano (1200 nm)',
+                'Rayos ultravioleta C (200 nm)'
+              ],
+              correctAnswerIndex: 0,
+              explanation: 'La clorofila "a" presenta picos máximos de absorción en las regiones azul (~430 nm) y roja (~660 nm), reflejando la longitud de onda verde, motivo por el cual percibimos las hojas de ese color.'
+            },
+            {
+              id: 'q-cch-2',
+              question: 'En un cultivo hidropónico cerrado, ¿cuál es el rango óptimo de pH para garantizar la asimilación biodisponible de nitratos y fósforo?',
+              options: [
+                'Entre 5.8 y 6.5',
+                'Entre 2.0 y 3.5 (fuertemente ácido)',
+                'Entre 9.0 y 11.5 (fuertemente alcalino)',
+                'Exactamente 14.0'
+              ],
+              correctAnswerIndex: 0,
+              explanation: 'Un pH ligeramente ácido entre 5.8 y 6.5 mantiene los iones nutrientes en disolución soluble evitando su precipitación química como sales insolubles.'
+            }
+          ]
+        }
+      },
+      {
+        id: 'q-ibime-cch-2',
+        mission_id: 'mis-ibime-cch',
+        title: 'Reporte Experimental CCH UNAM en Bóveda Curricular',
+        description: 'Redacta tu informe con resumen, metodología experimental, gráficas de crecimiento y conclusiones.',
+        type: 'portfolio_submission',
+        sequence_order: 2,
+        xp_reward: 200,
+        coins_reward: 50,
+        created_at: new Date().toISOString(),
+        campos_formativos: ['Ciencias Experimentales CCH UNAM'],
+        ejes_articuladores: ['Pensamiento Crítico'],
+        pdas: ['Programa CCH UNAM: Elabora reportes de investigación experimental aplicando la metodología científica y análisis estadístico.'],
+        content: {
+          instructions: '1. Integra el informe de laboratorio del cultivo hidropónico.\n2. Incluye la gráfica de crecimiento de biomasa contra días de exposición lumínica.\n3. Adjunta el archivo PDF o imagen de la bitácora.',
+          acceptedFormats: ['pdf', 'image']
         }
       }
     ]
@@ -2672,8 +3053,31 @@ export const DETAILED_STUDENTS_SEED: DetailedStudent[] = [
     scholarship_type: 'academica',
     scholarship_notes: 'Beca de Excelencia Académica Bilingüe IBIME.',
     pending_payments: [],
+    subject_grades: [
+      { subject_name: 'Saberes y Pensamiento Científico (Matemáticas)', grade: 9.9 },
+      { subject_name: 'Robótica STEAM y Presión Hidráulica', grade: 10.0 },
+      { subject_name: 'Cambridge English Bicultural (Flyers)', grade: 9.8 },
+      { subject_name: 'Proyecto Comunitario Sustentable NEM', grade: 9.6 }
+    ],
     behavior_reports: [],
-    teacher_notes: []
+    teacher_notes: [
+      {
+        id: 'tn-ibime-1',
+        date: '2026-06-02',
+        teacher_name: 'Prof. Alejandro Mendoza',
+        note: 'Iker ha demostrado un dominio sobresaliente en el diseño del brazo hidráulico y la formulación del principio de Pascal. Felicitaciones por su liderazgo en el equipo de robótica STEAM de Campus Montes.',
+        parent_reply: 'Muchas gracias Profesor Alejandro, en casa estamos reforzando los modelos tridimensionales con Iker y está muy motivado.',
+        replied_at: '2026-06-03T09:30:00.000Z'
+      },
+      {
+        id: 'tn-ibime-2',
+        date: '2026-05-28',
+        teacher_name: 'Profa. Elizabeth Hernández Ramos',
+        note: 'Outstanding performance in the Cambridge Bicultural Seminar! Iker answered all questions fluently in English with great confidence and clear pronunciation.',
+        parent_reply: 'Thank you teacher Elizabeth! We read together in English every evening.',
+        replied_at: '2026-05-29T18:45:00.000Z'
+      }
+    ]
   },
   {
     id: 'std-ibime-lagos-01',
@@ -4013,7 +4417,8 @@ export const STATS_MAP_SEED: Record<string, StudentStats> = {
   // Estadísticas y Radar 360 de Alumnos Oficiales IBIME
   'std-ibime-montes-01': {
     student_id: 'std-ibime-montes-01', xp: 1450, level: 5, coins: 380, current_streak: 8, max_streak: 15, updated_at: '2026-07-08T11:50:26.932Z',
-    rpg_class: 'guerrero', attribute_strength: 18, attribute_intelligence: 20, attribute_defense: 16, skill_points: 3
+    rpg_class: 'guerrero', attribute_strength: 18, attribute_intelligence: 20, attribute_defense: 16, skill_points: 3,
+    pet_stage: 'teen', pet_energy: 100, pet_happiness: 95, friendship_exp: 450, tasks_completed_count: 14
   },
   'std-ibime-lagos-01': {
     student_id: 'std-ibime-lagos-01', xp: 920, level: 3, coins: 210, current_streak: 5, max_streak: 10, updated_at: '2026-07-08T11:50:26.932Z'
@@ -5077,10 +5482,10 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
   },
   {
     id: 'sch-ibime',
-    name: 'Instituto Bilingüe IBIME',
+    name: 'Instituto Bilingüe IBIME S.C.',
     tagline: 'Excelencia Bilingüe y Formación Humana desde 2004 · Bachillerato UNAM CCH · Primaria y Secundaria Oficial SEP',
     cct: '15PPR3322G',
-    logoUrl: '',
+    logoUrl: '/brand/ibime_logo.webp',
     isTestCase: false,
     status: 'active',
     createdAt: '2026-01-10T08:00:00.000Z',
@@ -5109,9 +5514,9 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
     },
     settings: {
       isConfigured: true,
-      name: 'Instituto Bilingüe IBIME',
+      name: 'Instituto Bilingüe IBIME S.C.',
       website: 'https://ibime.edu.mx',
-      logoUrl: '',
+      logoUrl: '/brand/ibime_logo.webp',
       cct: '15PPR3322G',
       address: 'Av. Jardines de Morelos s/n, Sección Montes, C.P. 55070, Ecatepec de Morelos, Edomex',
       phone: '55-4440-1009',
@@ -5123,9 +5528,9 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
         'Profa. Carmen Del Valle (Coacalco Bilingüe)'
       ],
       themeColors: {
-        primary: '213 73% 16%',    // Azul Marino Profundo (#0B2545)
-        secondary: '45 68% 53%',   // Oro Institucional (#D4AF37)
-        accent: '348 83% 27%'      // Borgoña Académico (#780016)
+        primary: '163 94% 24%',    // Verde Esmeralda Institucional IBIME (#047857)
+        secondary: '163 88% 20%',  // Verde Bosque Profundo (#065F46)
+        accent: '32 95% 44%'       // Ámbar Dorado Académico (#D97706)
       }
     }
   },

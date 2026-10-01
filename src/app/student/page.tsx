@@ -7,8 +7,10 @@ import {
   useCurrentStudentStats, 
   useCurrentStudentAvatar, 
   useCurrentStudentAcademicLevel, 
+  useCurrentDetailedStudent,
   normalizeStudentId 
 } from '@/store/useStudentStore';
+import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { useGamificationStore } from '@/store/useGamificationStore';
 import { usePortfolioStore } from '@/store/usePortfolioStore';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
@@ -138,7 +140,12 @@ export default function StudentDashboard() {
   const rawStats = useCurrentStudentStats();
   const rawAvatar = useCurrentStudentAvatar();
   const academicLevel = useCurrentStudentAcademicLevel();
+  const detailedStudent = useCurrentDetailedStudent();
   const detailedStudents = useSchoolAdminStore(state => state.detailedStudents);
+
+  const isIbime = detailedStudent?.school_id === 'sch-ibime' || 
+                  user?.school_id === 'sch-ibime' || 
+                  activeStudentId?.includes('ibime');
 
   const normalizedId = normalizeStudentId(activeStudentId);
   const studentInventoryMap = useStudentStore(state => state.studentInventoryMap);
@@ -264,6 +271,20 @@ export default function StudentDashboard() {
     });
   }, [allQuests, activeTab, selectedSubjectFilter, getQuestStatus]);
 
+  // Priorizar misiones del colegio IBIME en la parte superior si el alumno pertenece a IBIME
+  const displayedQuests = useMemo(() => {
+    if (isIbime) {
+      return [...filteredQuests].sort((a, b) => {
+        const aIsIbime = a.id.startsWith('q-ibime-') || a.mission_id?.includes('ibime');
+        const bIsIbime = b.id.startsWith('q-ibime-') || b.mission_id?.includes('ibime');
+        if (aIsIbime && !bIsIbime) return -1;
+        if (!aIsIbime && bIsIbime) return 1;
+        return 0;
+      });
+    }
+    return filteredQuests;
+  }, [filteredQuests, isIbime]);
+
   const completedCount = useMemo(() => {
     return allQuests.filter(q => getQuestStatus(q.id) === 'completed').length;
   }, [allQuests, getQuestStatus]);
@@ -377,6 +398,40 @@ export default function StudentDashboard() {
           {/* Brillos ambientales */}
           <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-amber-500/15 blur-3xl pointer-events-none animate-pulse" />
           <div className="absolute -left-16 -bottom-16 h-56 w-56 rounded-full bg-indigo-500/15 blur-3xl pointer-events-none" />
+
+          {/* BANNER INSTITUCIONAL OFICIAL IBIME (100% MARCA BLANCA) */}
+          {isIbime && (
+            <div className="relative z-10 mb-6 pb-6 border-b border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-r from-emerald-950/80 via-slate-900/90 to-emerald-950/60 p-4 sm:p-5 rounded-2xl border border-emerald-500/30 shadow-lg">
+              <div className="flex items-center gap-3.5">
+                <div className="p-1 rounded-xl bg-slate-950/90 border border-emerald-400/50 shadow-md shrink-0">
+                  <IbimeOfficialLogo size={46} showText={false} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm sm:text-base font-black tracking-tight text-white">
+                      INSTITUTO BILINGÜE IBIME S.C.
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">
+                      {detailedStudent?.campus_name || 'Campus Montes (Sede Matriz & CCH)'}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-900/80 text-emerald-200 border border-emerald-700/50">
+                      CCT 09PPR1492Z
+                    </span>
+                  </div>
+                  <p className="text-xs text-emerald-200/90 font-medium mt-0.5">
+                    Red Bilingüe & Bachillerato CCH UNAM • Cambridge Assessment English
+                  </p>
+                </div>
+              </div>
+
+              {detailedStudent?.scholarship_notes && (
+                <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold shrink-0 shadow-md">
+                  <Trophy className="w-4 h-4 text-amber-400 animate-pulse" />
+                  <span>{detailedStudent.scholarship_notes}</span>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8">
             
@@ -492,7 +547,7 @@ export default function StudentDashboard() {
                 </div>
 
                 <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1 truncate">
-                  {avatar?.avatar_name || 'Estudiante Héroe'}
+                  {isIbime && detailedStudent ? `${detailedStudent.first_name} ${detailedStudent.last_name_1} ${detailedStudent.last_name_2 || ''}`.trim() : (avatar?.avatar_name || 'Estudiante Héroe')}
                 </h1>
                 
                 <p className="text-xs text-slate-300/90 font-medium">
@@ -757,7 +812,7 @@ export default function StudentDashboard() {
             </div>
 
             {/* Cuadrícula de Tarjetas de Misión (QuestCard) */}
-            {filteredQuests.length === 0 ? (
+            {displayedQuests.length === 0 ? (
               <div className="rounded-3xl border border-slate-800 bg-slate-900/40 p-12 text-center flex flex-col items-center justify-center">
                 <span className="text-4xl mb-3">📜</span>
                 <h3 className="text-lg font-black text-white">Tu diario de misiones está al día</h3>
@@ -767,7 +822,7 @@ export default function StudentDashboard() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredQuests.map((quest, idx) => (
+                {displayedQuests.map((quest, idx) => (
                   <QuestCard
                     key={quest.id}
                     quest={quest}

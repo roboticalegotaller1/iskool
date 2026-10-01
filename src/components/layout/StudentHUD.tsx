@@ -24,6 +24,7 @@ import {
   Zap
 } from 'lucide-react';
 import { isPlatformSuperUser } from '@/types';
+import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 
 export function StudentHUD() {
   const pathname = usePathname();
@@ -37,10 +38,16 @@ export function StudentHUD() {
   const isSuperUser = isPlatformSuperUser(user);
   const isManagementRole = isSuperUser || user?.role === 'owner' || user?.role === 'admin' || user?.role === 'director';
 
+  const isIbime = (typeof window !== 'undefined' && (document.documentElement.getAttribute('data-tenant') === 'ibime' || localStorage.getItem('tenant-id') === 'ibime')) ||
+                  activeStudent?.school_id === 'sch-ibime' ||
+                  activeStudent?.id?.startsWith('std-ibime') ||
+                  user?.school_id === 'sch-ibime' ||
+                  user?.email?.toLowerCase().includes('ibime');
+
   const avatarUrl = getStudentAvatarUrl(activeStudent);
   const studentName = activeStudent 
     ? `${activeStudent.first_name} ${activeStudent.last_name_1 || ''}`.trim() 
-    : 'Lucas Hernández';
+    : (isIbime ? 'Iker Santiago Morales' : 'Lucas Hernández');
 
   // Cálculo de progreso de XP hacia el próximo nivel
   const currentLevel = stats?.level || 1;
@@ -57,13 +64,27 @@ export function StudentHUD() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-xl border-b border-indigo-500/30 shadow-2xl shadow-indigo-950/50 transition-colors">
+    <header className={`sticky top-0 z-40 backdrop-blur-xl border-b transition-colors shadow-2xl ${
+      isIbime 
+        ? 'bg-slate-950/95 border-emerald-500/30 shadow-emerald-950/40' 
+        : 'bg-slate-950/90 border-indigo-500/30 shadow-indigo-950/50'
+    }`}>
       <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between gap-2 sm:gap-4">
         
-        {/* LADO IZQUIERDO: HUD AVATAR & RANGO DEL JUGADOR */}
+        {/* LADO IZQUIERDO: LOGO INSTITUCIONAL + HUD AVATAR & RANGO DEL JUGADOR */}
         <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          {isIbime && (
+            <Link href="/ibime/portal" className="hidden min-[480px]:flex items-center pr-2.5 border-r border-emerald-500/30 hover:opacity-90 transition-opacity" title="Portal IBIME">
+              <IbimeOfficialLogo variant="shield_only" size="sm" />
+            </Link>
+          )}
+
           <Link href="/student/avatar" className="relative group/avatar cursor-pointer" title={`Expediente 360° · ${studentName}`}>
-            <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-2xl p-0.5 bg-gradient-to-tr from-amber-500 via-indigo-500 to-teal-400 group-hover:scale-105 transition-transform shadow-md shadow-indigo-950/60">
+            <div className={`relative w-10 h-10 sm:w-11 sm:h-11 rounded-2xl p-0.5 group-hover:scale-105 transition-transform shadow-md ${
+              isIbime 
+                ? 'bg-gradient-to-tr from-emerald-500 via-teal-400 to-amber-400 shadow-emerald-950/60' 
+                : 'bg-gradient-to-tr from-amber-500 via-indigo-500 to-teal-400 shadow-indigo-950/60'
+            }`}>
               <div className="w-full h-full rounded-[14px] bg-slate-900 overflow-hidden flex items-center justify-center">
                 <img
                   src={avatarUrl}
@@ -76,7 +97,11 @@ export function StudentHUD() {
               </div>
             </div>
             {/* Nivel Badge */}
-            <span className="absolute -bottom-1 -right-1 px-1.5 py-0.2 rounded-full text-[9px] font-black bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 border border-amber-300 shadow-xs">
+            <span className={`absolute -bottom-1 -right-1 px-1.5 py-0.2 rounded-full text-[9px] font-black text-slate-950 shadow-xs border ${
+              isIbime 
+                ? 'bg-gradient-to-r from-emerald-400 to-amber-300 border-amber-200' 
+                : 'bg-gradient-to-r from-amber-500 to-yellow-500 border-amber-300'
+            }`}>
               Nv.{currentLevel}
             </span>
           </Link>
@@ -86,20 +111,30 @@ export function StudentHUD() {
               <span className="text-xs sm:text-sm font-black text-white truncate max-w-[130px] sm:max-w-[180px]">
                 {studentName}
               </span>
-              <span className="hidden sm:inline-block text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-indigo-500/25 border border-indigo-400/30 text-indigo-300">
-                {activeLevel.fullGradeLabel}
+              <span className={`hidden sm:inline-block text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${
+                isIbime 
+                  ? 'bg-emerald-500/25 border-emerald-400/40 text-emerald-300' 
+                  : 'bg-indigo-500/25 border-indigo-400/30 text-indigo-300'
+              }`}>
+                {isIbime && activeStudent?.campus_name ? activeStudent.campus_name.replace('Campus ', '') : activeLevel.fullGradeLabel}
               </span>
             </div>
 
             {/* Barra de Vida/XP estilo RPG en pantallas medianas */}
             <div className="hidden sm:flex items-center gap-2 mt-1">
-              <div className="w-28 xl:w-36 h-2 bg-slate-800 rounded-full overflow-hidden border border-indigo-500/30">
+              <div className={`w-28 xl:w-36 h-2 bg-slate-800 rounded-full overflow-hidden border ${
+                isIbime ? 'border-emerald-500/30' : 'border-indigo-500/30'
+              }`}>
                 <div 
-                  className="h-full bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full transition-all duration-500 shadow-xs shadow-amber-400"
+                  className={`h-full rounded-full transition-all duration-500 shadow-xs ${
+                    isIbime 
+                      ? 'bg-gradient-to-r from-emerald-400 to-amber-400 shadow-emerald-400' 
+                      : 'bg-gradient-to-r from-amber-400 to-yellow-500 shadow-amber-400'
+                  }`}
                   style={{ width: `${xpPercentage}%` }}
                 />
               </div>
-              <span className="text-[9px] font-black text-amber-300 font-mono">
+              <span className={`text-[9px] font-black font-mono ${isIbime ? 'text-emerald-300' : 'text-amber-300'}`}>
                 {currentXp} XP
               </span>
             </div>
