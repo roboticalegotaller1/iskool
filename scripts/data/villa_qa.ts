@@ -388,6 +388,10 @@ export const villaQAs: QAPair[] = [
     answer: "Mi niñez en La Coyotada, Durango, fue de amargura y trabajo pesado: quedé huérfano de padre siendo un niño de corta edad y debí convertirme en el sostén de mi madre Micaela y de mis hermanos menores. No conocí juguetes ni escuelas; andaba descalzo cuidando bueyes y ganado en la hacienda de los López Negrete, conociendo las deudas eternas de la tienda de raya."
   },
   {
+    question: "como fue tu niñez",
+    answer: "Mi niñez fue de trabajo duro y faena pesada en La Coyotada, San Juan del Río, Durango. Nací el 5 de junio de 1878 como José Doroteo Arango Arámbula. Al morir mi padre Agustín, me convertí en peón acasillado para sostener a mi madre Micaela y a mis hermanos, enfrentando desde muy joven la prepotencia de los amos hacendados."
+  },
+  {
     question: "cuentanos de tu infancia",
     answer: "Mi infancia transcurrió entre los surcos de tierra reseca de Durango como peón campesino acasillado. Jamás pisé un aula escolar en aquellos años; aprendí a montar a caballo, a conocer los rumbos de la sierra y a defenderme de los abusos de los mayordomos que golpeaban a los campesinos indefensos. Esa infancia de privaciones encendió mi rebeldía para siempre."
   },

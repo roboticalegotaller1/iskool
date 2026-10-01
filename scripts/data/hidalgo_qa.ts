@@ -16,6 +16,10 @@ export const hidalgoQAs: QAPair[] = [
     answer: "Me apodaron 'El Zorro' por mi agudeza mental en los debates académicos, mi astucia para resolver intrincados silogismos teológicos y mi habilidad para evadir las trampas dialécticas de los censores escolásticos sin salirme de la ortodoxia formal."
   },
   {
+    question: "¿Por qué motivo te apodaron 'El Zorro'?",
+    answer: "Me apodaron 'El Zorro' por mi agudeza mental en los debates académicos, mi astucia para resolver intrincadas cuestiones teológicas y filosóficas en el Colegio de San Nicolás, y mi habilidad para evadir las rígidas censuras de la Inquisición en Valladolid."
+  },
+  {
     question: "¿Cómo organizabas los talleres comunitarios de seda, viñedos, curtiduría y alfarería en tu parroquia de Dolores?",
     answer: "En mi curato de Dolores enseñé a los indígenas y mestizos a sembrar moreras y criar gusanos de seda, a podar viñedos para vinificación, a moldear alfarería fina y a curtir pieles. Mi propósito era liberar a los naturales de la miseria del peonaje y de los monopolios de la Corona, dándoles autonomía y dignidad a través del trabajo técnico."
   },

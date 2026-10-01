@@ -171,6 +171,44 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
       ];
     }
 
+    if (norm.includes('hidalgo')) {
+      return [
+        {
+          id: 'cap-1',
+          title: 'Los Talleres Populares de Dolores',
+          duration: 18,
+          imageUrl: '/images/history/hidalgo_talleres.jpg',
+          script: narratorScript || 'En lugar de limitarse a oficios religiosos, Hidalgo enseña alfarería, cultivo de la vid y telares a indígenas y mestizos para romper la dependencia virreinal.',
+          cameraMovement: 'zoom_in',
+          youtubeUrl: videoUrl
+        },
+        {
+          id: 'cap-2',
+          title: 'El Grito de Independencia en el Atrio',
+          duration: 20,
+          imageUrl: '/images/history/hidalgo_grito_comic_4.png',
+          script: 'Con el repicar de la campana parroquial y el estandarte guadalupano en mano, Hidalgo llama al pueblo a sacudirse trescientos años de tiranía virreinal.',
+          cameraMovement: 'dawn_ascend'
+        },
+        {
+          id: 'cap-3',
+          title: 'La Toma de la Alhóndiga de Granaditas',
+          duration: 18,
+          imageUrl: '/images/history/alhondiga_granaditas.jpg',
+          script: 'Ante el refugio de las autoridades virreinales en la fortaleza granera, el minero El Pípila quema la puerta principal con una losa en la espalda permitiendo la victoria patriota.',
+          cameraMovement: 'pan_slow'
+        },
+        {
+          id: 'cap-4',
+          title: 'El Decreto Histórico de Abolición de la Esclavitud',
+          duration: 22,
+          imageUrl: '/images/history/hidalgo_decreto_abolicion.jpg',
+          script: '6 de diciembre de 1810. En Guadalajara, Don Miguel Hidalgo promulga el histórico bando que declara totalmente libres a los esclavos y suprime los tributos de castas en América.',
+          cameraMovement: 'gallop_sweep'
+        }
+      ];
+    }
+
     return [
       {
         id: 'cap-1',

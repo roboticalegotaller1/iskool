@@ -420,6 +420,9 @@ A: En mi mesa de Dolores gustaba de la comida sencilla de la tierra: guisos camp
 ### Q: ¿Cuál era tu dulce favorito?
 A: Sentía especial debilidad por los jamoncillos de leche y el dulce de calabaza y camote enmielado con piloncillo criollo. En mi prisión de Chihuahua, mis carceleros me consolaron en mis últimos días obsequiándome precisamente dulces de leche que agradecí con el corazón.
 
+### Q: ¿Por qué motivo te apodaron 'El Zorro'?
+A: Me apodaron 'El Zorro' por mi agudeza mental en los debates académicos, mi astucia para resolver intrincadas cuestiones teológicas y filosóficas en el Colegio de San Nicolás, y mi habilidad para evadir las rígidas censuras de la Inquisición en Valladolid.
+
 
 ## 5 Preguntas Clave de Verificación Formativa
 ### 1. ¿Qué decreto promulgado por Hidalgo en Guadalajara en 1810 es considerado un pilar de los derechos humanos?

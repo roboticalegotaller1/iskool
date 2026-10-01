@@ -486,6 +486,10 @@ A: En los campamentos de la División del Norte lo que más disfrutaba era una b
 ### Q: ¿Cuál era tu dulce favorito?
 A: Tenía una debilidad entrañable por los dulces de leche con nuez tradicionales de Parral y los higos cristalizados. Cuando entrábamos a los pueblos, mandaba comprar dulces de leche para repartir a los niños y guardarme unas cuantas barras para la montura.
 
+### Q: como fue tu niñez
+A: Mi niñez fue de trabajo duro y faena pesada en La Coyotada, San Juan del Río, Durango. Nací el 5 de junio de 1878 como José Doroteo Arango Arámbula. Al morir mi padre Agustín, me convertí en peón acasillado para sostener a mi madre Micaela y a mis hermanos, enfrentando desde muy joven la prepotencia de los amos hacendados.
+
+
 ## 5 Preguntas Clave de Verificación Formativa
 ### 1. ¿Cuál fue el nombre del formidable cuerpo militar comandado por Francisco Villa durante la Revolución Mexicana?
 - [ ] El Ejército Libertador del Sur
