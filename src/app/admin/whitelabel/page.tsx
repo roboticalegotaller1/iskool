@@ -27,6 +27,7 @@ import {
   ExternalLink,
   Info
 } from 'lucide-react';
+import { BackButton } from '@/components/navigation/BackButton';
 
 // Paleta de Presets Institucionales Recomendados
 const COLOR_PRESETS = [
@@ -174,13 +175,11 @@ export default function WhiteLabelAdminPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-zinc-800">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <Link
-                href="/admin"
-                className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-white transition-colors"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Portal Directivo</span>
-              </Link>
+              <BackButton 
+                fallbackUrl="/admin" 
+                label="Volver a la página anterior" 
+                variant="subtle" 
+              />
               <span className="text-slate-300 dark:text-zinc-700">•</span>
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                 <Paintbrush className="w-3 h-3" />

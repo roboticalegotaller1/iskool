@@ -16,6 +16,7 @@ import {
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { BackButton } from '@/components/navigation/BackButton';
 import { ModularAnimeAvatarSprite } from '@/components/avatar/ModularAnimeAvatarSprite';
 import { AvatarAnimationState } from '@/components/avatar/avatarCustomizationTypes';
 import { ShopArtifact, ShopArtifactCategory, ShopArtifactRarity } from '@/types';
@@ -106,7 +107,7 @@ export default function MagicShopPage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/login');
+      router.replace('/login');
     }
   }, [user, loading, router]);
 
@@ -298,13 +299,11 @@ export default function MagicShopPage() {
         {/* ========================================================================= */}
         <div className="flex flex-wrap justify-between items-center gap-3 p-3.5 rounded-3xl bg-slate-900/70 border border-cyan-500/20 backdrop-blur-xl shadow-xl">
           <div className="flex items-center gap-2.5">
-            <Link 
-              href="/student"
-              className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-slate-200 hover:text-white transition-all shadow-md active:scale-95 cursor-pointer"
-            >
-              <ArrowLeft className="h-4 w-4 text-cyan-400" />
-              <span>Portal Escolar</span>
-            </Link>
+            <BackButton 
+              fallbackUrl="/student" 
+              label="Volver a la página anterior" 
+              variant="default" 
+            />
 
             <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-cyan-950/40 border border-cyan-800/50 text-xs text-cyan-300 font-bold">
               <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />

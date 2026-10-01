@@ -16,6 +16,7 @@ import {
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, useSearchParams, notFound } from 'next/navigation';
+import { BackButton } from '@/components/navigation/BackButton';
 import dynamic from 'next/dynamic';
 import { useCoopStore } from '@/store/useCoopStore';
 import CoopInviteWidget from '@/components/CoopInviteWidget';
@@ -226,7 +227,7 @@ function MissionPageContent({ params }: MissionPageContentProps) {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/login');
+      router.replace('/login');
     }
   }, [user, loading, router]);
 
@@ -582,10 +583,11 @@ function MissionPageContent({ params }: MissionPageContentProps) {
 
       {/* Navegación y Título */}
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <Link href="/student" className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors">
-          <ArrowLeft className="h-4 w-4" />
-          Regresar a Misiones
-        </Link>
+        <BackButton 
+          fallbackUrl="/student" 
+          label="Regresar a Misiones" 
+          variant="subtle" 
+        />
       </div>
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

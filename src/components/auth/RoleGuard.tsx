@@ -23,35 +23,35 @@ export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        router.push('/login');
+        router.replace('/login');
       } else if (!isAllowed) {
-        // Redirigir al usuario estrictamente a su propio portal según su rol
+        // Redirigir al usuario estrictamente a su propio portal según su rol con replace para no atrapar el historial
         switch (user.role) {
           case 'teacher':
-            router.push('/teacher');
+            router.replace('/teacher');
             break;
           case 'parent':
           case 'tutor':
-            router.push('/parent');
+            router.replace('/parent');
             break;
           case 'coordinator':
-            router.push('/coordinator');
+            router.replace('/coordinator');
             break;
           case 'billing':
-            router.push('/coordinator/billing');
+            router.replace('/coordinator/billing');
             break;
           case 'director':
-            router.push('/director');
+            router.replace('/director');
             break;
           case 'ceo':
           case 'owner':
           case 'superadmin':
           case 'admin':
-            router.push('/admin');
+            router.replace('/admin');
             break;
           case 'student':
           default:
-            router.push('/student');
+            router.replace('/student');
             break;
         }
       }

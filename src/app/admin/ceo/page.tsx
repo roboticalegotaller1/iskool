@@ -6,6 +6,7 @@ import CEOExecutiveDashboard, { buildHoldingForInstitution, DEFAULT_IBIME_HOLDIN
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useAuth } from '@/context/AuthContext';
 import { isPlatformSuperUser } from '@/types';
+import { useNavigationStore } from '@/store/useNavigationStore';
 
 function CEOExecutiveDashboardContent() {
   const router = useRouter();
@@ -23,6 +24,7 @@ function CEOExecutiveDashboardContent() {
 
   const isSuperUser = isPlatformSuperUser(user);
   const effectiveId = querySchoolId || activeSchoolId;
+  const popBackUrl = useNavigationStore(state => state.popBackUrl);
 
   // Determinar la institución actual: por parámetro de URL, activeSchoolId, o usuario
   const currentInstitution = useMemo(() => {
@@ -48,10 +50,14 @@ function CEOExecutiveDashboardContent() {
       holding={dynamicHolding}
       schoolId={currentInstitution?.id}
       isSuperUser={isSuperUser}
-      onSwitchToOperational={() => router.push('/admin')}
+      onSwitchToOperational={() => {
+        const target = popBackUrl('/admin/ceo', user?.role, '/admin');
+        router.push(target);
+      }}
       onBackToDirectory={isSuperUser ? () => {
         selectSchool(null);
-        router.push('/admin');
+        const target = popBackUrl('/admin/ceo', user?.role, '/admin');
+        router.push(target);
       } : undefined}
     />
   );

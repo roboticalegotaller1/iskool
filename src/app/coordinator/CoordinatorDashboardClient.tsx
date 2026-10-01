@@ -204,9 +204,9 @@ export default function CoordinatorDashboard() {
   useEffect(() => {
     if (!authLoading) {
       if (!user) {
-        router.push('/login');
+        router.replace('/login');
       } else if (user.role === 'student') {
-        router.push('/student');
+        router.replace('/student');
       }
     }
   }, [user, authLoading, router]);

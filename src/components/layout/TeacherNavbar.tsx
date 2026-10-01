@@ -22,6 +22,7 @@ import {
   ExternalLink,
   Languages
 } from 'lucide-react';
+import { BackButton } from '@/components/navigation/BackButton';
 
 export function TeacherNavbar() {
   const pathname = usePathname();
@@ -52,6 +53,14 @@ export function TeacherNavbar() {
         
         {/* Identidad Institucional & Marca Blanca */}
         <div className="flex items-center gap-3 shrink-0">
+          {pathname !== '/teacher' && (
+            <BackButton 
+              fallbackUrl="/teacher" 
+              label="Regresar" 
+              variant="subtle" 
+              className="py-1 px-2.5 text-[11px] rounded-xl"
+            />
+          )}
           <Link href="/teacher" className="flex items-center gap-2.5 group">
             {whiteLabelLogo ? (
               <img

@@ -12,6 +12,7 @@ import { Flame, Coins, Trophy, RefreshCw, GraduationCap, Users, User, ArrowRight
 import { useAuth } from '@/context/AuthContext';
 import { isPlatformSuperUser } from '@/types';
 import { useWhiteLabelStore } from '@/store/useWhiteLabelStore';
+import { BackButton } from '@/components/navigation/BackButton';
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
@@ -201,6 +202,14 @@ export const Header: React.FC = () => {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-3 sm:px-6 lg:px-8 gap-2 sm:gap-4">
         {/* Logo e Identidad Institucional (Dirige al portal específico del usuario, o a todas las opciones sólo si es Super Usuario) */}
         <div className="flex items-center gap-2.5 shrink-0">
+          {pathname !== '/' && pathname !== '/admin' && pathname !== '/director' && pathname !== '/parent' && pathname !== '/coordinator' && (
+            <BackButton 
+              fallbackUrl={getHomeHref()} 
+              label="Regresar" 
+              variant="subtle" 
+              className="py-1 px-2.5 text-[11px] rounded-xl"
+            />
+          )}
           <Link 
             href={getHomeHref()} 
             aria-label="Página de inicio institucional"

@@ -32,6 +32,7 @@ import {
   Globe
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { BackButton } from '@/components/navigation/BackButton';
 
 function TeacherStudioContent() {
   const router = useRouter();
@@ -135,14 +136,11 @@ function TeacherStudioContent() {
         {/* Navegación y Selector de Modo */}
         {!isEmbedded && (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-            <button
-              type="button"
-              onClick={() => router.push('/teacher')}
-              className="inline-flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-2xl bg-slate-800/90 border border-slate-700/80 text-slate-200 font-bold text-xs hover:bg-slate-750 hover:border-teal-500/50 hover:text-white transition-all shadow-sm group w-fit cursor-pointer"
-            >
-              <ArrowLeft className="w-4 h-4 text-teal-400 group-hover:-translate-x-1 transition-transform" />
-              <span>Volver al Hub Docente</span>
-            </button>
+            <BackButton 
+              fallbackUrl="/teacher" 
+              label="Volver a la página anterior" 
+              variant="default" 
+            />
 
             {/* Switch de Vistas */}
             <div className="flex items-center gap-1.5 bg-slate-850 p-1.5 rounded-2xl border border-slate-750 self-stretch sm:self-auto shadow-inner justify-between sm:justify-start">

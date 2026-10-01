@@ -7,6 +7,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { GlobalHelpFab } from "@/components/help/GlobalHelpFab";
 import { ComingSoonProvider } from "@/components/ui/ComingSoonModal";
 import { TenantBrandingProvider } from "@/components/branding/TenantBrandingProvider";
+import { NavigationTracker } from "@/components/navigation/NavigationTracker";
 import { generateServerTenantCss } from "@/lib/branding/tenantThemeTokens";
 import { TenantId } from "@/lib/auth/multiTenantSession";
 
@@ -78,6 +79,7 @@ export default async function RootLayout({
         <TenantBrandingProvider initialTenant={resolvedTenant}>
           <ThemeSync />
           <AuthProvider>
+            <NavigationTracker />
             <ComingSoonProvider>
               {children}
               <GlobalHelpFab />

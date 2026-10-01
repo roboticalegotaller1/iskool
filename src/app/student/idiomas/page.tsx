@@ -9,6 +9,7 @@ import {
 } from '@/store/useLanguagesStore';
 import { HumanGesticulatingAvatar } from '@/components/languages/HumanGesticulatingAvatar';
 import { LanguageKaraokePlayer } from '@/components/languages/LanguageKaraokePlayer';
+import { BackButton } from '@/components/navigation/BackButton';
 import { 
   Languages, 
   Sparkles, 
@@ -59,6 +60,15 @@ export default function StudentIdiomasPage() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
         
+        {/* Control de Retorno Inteligente */}
+        <div className="flex items-center justify-between">
+          <BackButton 
+            fallbackUrl="/student" 
+            label="Volver a la página anterior" 
+            variant="header" 
+          />
+        </div>
+
         {/* BARRA SUPERIOR GAMIFICADA DEL ALUMNO */}
         <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/40 shadow-2xl">
           <div className="flex items-center gap-3">

@@ -14,6 +14,7 @@ import { LanguageKaraokePlayer } from '@/components/languages/LanguageKaraokePla
 import { HardwareAudioTester } from '@/components/languages/HardwareAudioTester';
 import { LanguageAnalyticsCharts } from '@/components/languages/LanguageAnalyticsCharts';
 import { Curriculum12PhasesExplorer } from '@/components/languages/Curriculum12PhasesExplorer';
+import { BackButton } from '@/components/navigation/BackButton';
 import { 
   MULTILINGUAL_HISTORICAL_FIGURES, 
   MultilingualHistoricalFigure,
@@ -374,6 +375,15 @@ export default function TeacherIdiomasPage() {
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col overflow-x-hidden">
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6 overflow-x-hidden">
         
+        {/* Barra Superior con Control de Retroceso Inteligente */}
+        <div className="flex items-center justify-between">
+          <BackButton 
+            fallbackUrl="/teacher" 
+            label="Volver a la página anterior" 
+            variant="header" 
+          />
+        </div>
+
         {/* =========================================================================
             ENCABEZADO INSTITUCIONAL DEL CENTRO DE IDIOMAS (12 FASES · ESL & FLE)
             ========================================================================= */}

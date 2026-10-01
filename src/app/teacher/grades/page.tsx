@@ -113,9 +113,9 @@ export default function TeacherGrades() {
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        router.push('/login');
+        router.replace('/login');
       } else if (user.role === 'student') {
-        router.push('/student');
+        router.replace('/student');
       }
     }
   }, [user, loading, router]);

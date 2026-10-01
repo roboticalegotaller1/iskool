@@ -151,15 +151,15 @@ export default function SuperUserAdminPage() {
   useEffect(() => {
     if (!authLoading) {
       if (!user) {
-        router.push('/login');
+        router.replace('/login');
       } else if (user.school_id === 'sch-ibime' || (user.email && user.email.toLowerCase().includes('ibime'))) {
         router.replace('/ibime/portal');
       } else if (user.role === 'student') {
-        router.push('/student');
+        router.replace('/student');
       } else if (user.role === 'teacher') {
-        router.push('/teacher');
+        router.replace('/teacher');
       } else if (!isSuperUser && user.role !== 'owner' && user.role !== 'ceo') {
-        router.push('/login');
+        router.replace('/login');
       }
     }
   }, [user, authLoading, router, isSuperUser]);

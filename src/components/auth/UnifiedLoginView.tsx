@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { useStudentStore } from '@/store/useStudentStore';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
+import { useNavigationStore } from '@/store/useNavigationStore';
 import { supabase } from '@/lib/supabaseClient';
 
 export type LoginMode = 'public' | 'full_demo' | 'ibime_demo';
@@ -359,6 +360,23 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
   const switchStudent = useStudentStore(state => state.switchStudent);
   const router = useRouter();
   const isSchoolSuspended = useSchoolAdminStore(state => state.isSchoolSuspended);
+  const getSafeBackUrl = useNavigationStore(state => state.getSafeBackUrl);
+
+  // Si el usuario ya cuenta con una sesión activa, NUNCA mostrar la ventana de login ante un retroceso
+  React.useEffect(() => {
+    if (!authLoading && user) {
+      if (typeof window !== 'undefined') {
+        const searchParams = new URLSearchParams(window.location.search);
+        const redirectParam = searchParams.get('redirect');
+        if (redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')) {
+          router.replace(redirectParam);
+          return;
+        }
+      }
+      const target = getSafeBackUrl(window.location.pathname, user.role);
+      router.replace(target);
+    }
+  }, [user, authLoading, router, getSafeBackUrl]);
 
   // Forzar síncronamente el tenant correcto en cookies y DOM si es modo IBIME
   React.useEffect(() => {
@@ -463,10 +481,10 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
       const searchParams = new URLSearchParams(window.location.search);
       const redirectParam = searchParams.get('redirect');
       if (redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')) {
-        router.push(redirectParam);
+        router.replace(redirectParam);
         setTimeout(() => {
           if (typeof window !== 'undefined') {
-            window.location.href = redirectParam;
+            window.location.replace(redirectParam);
           }
         }, 300);
         return;
@@ -548,10 +566,10 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
       }
     }
 
-    router.push(targetPath);
+    router.replace(targetPath);
     setTimeout(() => {
       if (typeof window !== 'undefined') {
-        window.location.href = targetPath;
+        window.location.replace(targetPath);
       }
     }, 400);
   };
@@ -608,6 +626,18 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
 
   const currentAccountsPool = isIbimeMode ? IBIME_DEMO_ACCOUNTS : GENERAL_DEMO_ACCOUNTS;
   const filteredDemoAccounts = currentAccountsPool.filter(d => d.category === activeDemoCategory);
+
+  // Si el usuario ya está autenticado, no renderizar la pantalla de login para evitar parpadeos
+  if (!authLoading && user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+          <p className="text-sm font-semibold text-slate-300">Sesión activa detectada. Regresando a tu espacio institucional...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-[#FAFAFA] dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans selection:bg-blue-500/20">

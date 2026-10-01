@@ -51,9 +51,9 @@ export default function ParentDashboard() {
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        router.push('/login');
+        router.replace('/login');
       } else if (user.role === 'student') {
-        router.push('/student');
+        router.replace('/student');
       } else if (user.id === 'usr-parent-ibime-01' || user.email?.includes('morales') || user.email?.includes('ibime')) {
         // Enlazar al estudiante de IBIME correspondiente (Iker Santiago Morales Peña)
         useStudentStore.getState().switchStudent('std-ibime-montes-01');

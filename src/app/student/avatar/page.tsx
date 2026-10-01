@@ -7,6 +7,8 @@ import { useHydration } from '@/hooks/useHydration';
 import { Loader } from '@/components/Loader';
 import dynamic from 'next/dynamic';
 
+import { useNavigationStore } from '@/store/useNavigationStore';
+
 const AvatarCustomizer = dynamic(
   () => import('@/components/AvatarCustomizer').then((m) => m.AvatarCustomizer),
   {
@@ -19,10 +21,11 @@ export default function AvatarCustomizerPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
   const isHydrated = useHydration();
+  const popBackUrl = useNavigationStore(state => state.popBackUrl);
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/login');
+      router.replace('/login');
     }
   }, [user, loading, router]);
 
@@ -30,11 +33,16 @@ export default function AvatarCustomizerPage() {
     return <Loader message="Cargando vestidor de avatar..." />;
   }
 
+  const handleClose = () => {
+    const target = popBackUrl('/student/avatar', user?.role, '/student');
+    router.push(target);
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center">
       <AvatarCustomizer 
         isOpen={true} 
-        onClose={() => router.push('/student')} 
+        onClose={handleClose} 
       />
     </div>
   );

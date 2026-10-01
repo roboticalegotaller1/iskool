@@ -96,12 +96,12 @@ export default function DirectorPortalPage() {
   useEffect(() => {
     if (!authLoading) {
       if (!user) {
-        router.push('/login');
+        router.replace('/login');
       } else if (user.school_id === 'sch-ibime' || (user.email && user.email.toLowerCase().includes('ibime'))) {
         // Aislamiento Hermético: Los directores de IBIME operan exclusivamente en su sistema institucional
         router.replace('/ibime/portal');
       } else if (user.role !== 'director' && user.role !== 'admin' && user.role !== 'superadmin' && user.role !== 'owner') {
-        router.push('/login');
+        router.replace('/login');
       }
     }
   }, [user, authLoading, router]);
