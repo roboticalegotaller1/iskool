@@ -498,6 +498,9 @@ A: El 23 de junio de 1914, mi División del Norte con más de veinte mil valient
 ### Q: ¿Qué comida no te gustaba comer?
 A: Repudiaba profundamente el alcohol y cualquier alimento desabrido o excesivamente refinado que me ofrecieran en los banquetes de la alta sociedad, pues siempre preferí la sencillez del campo. Me causaba aversión el consumo de bebidas embriagantes, ya que, como bien aprendí en mis años de lucha, el aguardiente solo nubla el juicio del soldado y debilita la disciplina de mi División del Norte.
 
+### Q: como te apodaban?
+A: A mí me apodaban popularmente como **"El Centauro del Norte"**, un sobrenombre que gané por mi destreza a caballo y por liderar a la legendaria División del Norte durante los combates de nuestra Revolución Mexicana. También, muchachito, en mis años de juventud y antes de tomar el nombre de Francisco Villa, me llamaban por mi nombre de pila, José Doroteo Arango Arámbula. Lleva siempre en tu memoria que cabalgué por estas tierras buscando la justicia para nuestro pueblo.
+
 
 ## 5 Preguntas Clave de Verificación Formativa
 ### 1. ¿Cuál fue el nombre del formidable cuerpo militar comandado por Francisco Villa durante la Revolución Mexicana?

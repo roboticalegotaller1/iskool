@@ -51,8 +51,108 @@ import {
   Landmark,
   ShieldCheck,
   Play,
-  Pause
+  Pause,
+  Building2,
+  GraduationCap,
+  Check,
+  School
 } from 'lucide-react';
+import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
+
+interface IbimeCampus {
+  id: string;
+  name: string;
+  shortName: string;
+  cct: string;
+  badge: string;
+  levelInfo: string;
+}
+
+const IBIME_CAMPUSES: IbimeCampus[] = [
+  {
+    id: 'montes',
+    name: 'Campus Montes (Sede Central & CCH)',
+    shortName: 'Montes',
+    cct: '15PPR3322G',
+    badge: 'Sede Matriz · CCH UNAM',
+    levelInfo: 'Preescolar · Primaria · Secundaria · Bachillerato CCH'
+  },
+  {
+    id: 'lagos',
+    name: 'Campus Lagos (Fundador 2004)',
+    shortName: 'Lagos',
+    cct: '15PES0124X',
+    badge: 'Fundador · Bilingüe Integral',
+    levelInfo: 'Maternal · Preescolar · Primaria'
+  },
+  {
+    id: 'sancristobal',
+    name: 'Campus San Cristóbal (Ecatepec Centro)',
+    shortName: 'San Cristóbal',
+    cct: '15PES0891Z',
+    badge: 'Centro Integral · Idiomas',
+    levelInfo: 'Primaria · Secundaria Bilingüe'
+  },
+  {
+    id: 'coacalco',
+    name: 'Campus Coacalco (Zarzaparrillas)',
+    shortName: 'Coacalco',
+    cct: '15PPR4411K',
+    badge: 'Valle de México · ESL/FLE',
+    levelInfo: 'Preescolar · Primaria Bilingüe'
+  }
+];
+
+const CEFR_CERTIFICATIONS: Record<string, {
+  cambridge: string;
+  french: string;
+  cenni: string;
+  unamNote: string;
+  color: string;
+}> = {
+  A1: {
+    cambridge: 'Cambridge English: Pre-A1 Starters / A1 Movers',
+    french: 'DELF Prim / Scolaire A1',
+    cenni: 'CENNI Nivel 3 - 5 (Básico Inicial)',
+    unamNote: 'Iniciación Temprana · Fase 1 a 3',
+    color: 'from-emerald-500/20 to-teal-500/20 border-emerald-500/40 text-emerald-300'
+  },
+  A2: {
+    cambridge: 'Cambridge English: A2 Key (KET) for Schools',
+    french: 'DELF A2 Junior / Scolaire',
+    cenni: 'CENNI Nivel 6 - 8 (Básico Consolidado)',
+    unamNote: 'Egreso Primaria & Secundaria Temprana',
+    color: 'from-cyan-500/20 to-blue-500/20 border-cyan-500/40 text-cyan-300'
+  },
+  B1: {
+    cambridge: 'Cambridge English: B1 Preliminary (PET) for Schools',
+    french: 'DELF B1 Scolaire',
+    cenni: 'CENNI Nivel 9 - 11 (Intermedio Independiente)',
+    unamNote: 'Perfil Egreso Secundaria Bilingüe IBIME',
+    color: 'from-amber-500/20 to-orange-500/20 border-amber-500/40 text-amber-300'
+  },
+  B2: {
+    cambridge: 'Cambridge English: B2 First (FCE) for Schools',
+    french: 'DELF B2 Tout Public / Scolaire',
+    cenni: 'CENNI Nivel 12 - 14 (Avanzado Operativo)',
+    unamNote: 'Requisito Oficial de Egreso y Titulación CCH UNAM',
+    color: 'from-rose-500/20 to-red-500/20 border-red-500/40 text-red-300'
+  },
+  C1: {
+    cambridge: 'Cambridge English: C1 Advanced (CAE)',
+    french: 'DALF C1 Académique',
+    cenni: 'CENNI Nivel 15 - 17 (Dominio Operativo Eficaz)',
+    unamNote: 'Nivel Docente / Excelencia Universitaria',
+    color: 'from-purple-500/20 to-violet-500/20 border-purple-500/40 text-purple-300'
+  },
+  C2: {
+    cambridge: 'Cambridge English: C2 Proficiency (CPE)',
+    french: 'DALF C2 Maîtrise',
+    cenni: 'CENNI Nivel 18 - 20 (Maestría Plena)',
+    unamNote: 'Dominio Nativo Bilingüe',
+    color: 'from-yellow-500/20 to-amber-500/20 border-yellow-500/40 text-yellow-300'
+  }
+};
 
 export default function TeacherIdiomasPage() {
   const { 
@@ -75,6 +175,10 @@ export default function TeacherIdiomasPage() {
   const [useHistoricalFigure, setUseHistoricalFigure] = useState<boolean>(false);
   const [selectedHistoricalId, setSelectedHistoricalId] = useState<string>('shakespeare');
 
+  // Estado Institucional IBIME y Sedes
+  const [selectedCampusId, setSelectedCampusId] = useState<string>('montes');
+  const [isIbimePresentationMode, setIsIbimePresentationMode] = useState<boolean>(true);
+
   // Estado de reproducción y prueba auditiva de la voz
   const [isPlayingPreview, setIsPlayingPreview] = useState<boolean>(false);
   const [activePlayingLineId, setActivePlayingLineId] = useState<string | null>(null);
@@ -83,6 +187,14 @@ export default function TeacherIdiomasPage() {
   const activeLesson = useMemo(() => {
     return lessons.find(l => l.id === activeLessonId) || lessons[0];
   }, [lessons, activeLessonId]);
+
+  const selectedCampus = useMemo(() => {
+    return IBIME_CAMPUSES.find(c => c.id === selectedCampusId) || IBIME_CAMPUSES[0];
+  }, [selectedCampusId]);
+
+  const activeCertification = useMemo(() => {
+    return CEFR_CERTIFICATIONS[activeLesson.level] || CEFR_CERTIFICATIONS['B1'];
+  }, [activeLesson.level]);
 
   // Personajes históricos filtrados por el idioma de la lección
   const availableHistoricalFigures = useMemo(() => {
@@ -375,81 +487,163 @@ export default function TeacherIdiomasPage() {
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col overflow-x-hidden">
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6 overflow-x-hidden">
         
-        {/* Barra Superior con Control de Retroceso Inteligente */}
-        <div className="flex items-center justify-between">
+        {/* Barra Superior con Control de Retroceso Inteligente y Selector Institucional */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <BackButton 
             fallbackUrl="/teacher" 
             label="Volver a la página anterior" 
             variant="header" 
           />
+
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+            {/* Selector de Campus IBIME */}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-sm text-xs">
+              <Building2 className="w-3.5 h-3.5 text-red-500 shrink-0" />
+              <label htmlFor="campus-select" className="text-slate-400 font-bold hidden sm:inline">Plantel:</label>
+              <select
+                id="campus-select"
+                value={selectedCampusId}
+                onChange={(e) => setSelectedCampusId(e.target.value)}
+                className="bg-transparent text-slate-200 font-bold focus:outline-hidden cursor-pointer"
+              >
+                {IBIME_CAMPUSES.map(campus => (
+                  <option key={campus.id} value={campus.id} className="bg-slate-900 text-white">
+                    {campus.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Alternador de Modo Presentación Institucional IBIME */}
+            <button
+              type="button"
+              onClick={() => setIsIbimePresentationMode(!isIbimePresentationMode)}
+              className={`px-3 py-1.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer border ${
+                isIbimePresentationMode
+                  ? 'bg-red-600/20 border-red-500/50 text-red-300 shadow-sm shadow-red-900/20'
+                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+              }`}
+              title="Alternar entre presentación institucional IBIME y visualización general"
+            >
+              <div className={`w-2 h-2 rounded-full ${isIbimePresentationMode ? 'bg-[#E41B14] shadow-sm shadow-red-500 animate-pulse' : 'bg-slate-500'}`} />
+              <span>{isIbimePresentationMode ? 'Presentación IBIME Activa' : 'Modo General'}</span>
+            </button>
+          </div>
         </div>
 
         {/* =========================================================================
             ENCABEZADO INSTITUCIONAL DEL CENTRO DE IDIOMAS (12 FASES · ESL & FLE)
             ========================================================================= */}
-        <div className="flex flex-wrap items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/30 shadow-2xl">
-          <div className="space-y-1.5">
+        <div className={`flex flex-wrap items-center justify-between gap-6 p-6 sm:p-7 rounded-3xl transition-all shadow-2xl ${
+          isIbimePresentationMode
+            ? 'bg-gradient-to-r from-[#0B132B] via-[#0F172A] to-[#1a0808] border border-[#E41B14]/40 shadow-red-950/20'
+            : 'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/30'
+        }`}>
+          <div className="space-y-2 flex-1 min-w-[300px]">
+            {/* Fila de Insignias y CCT */}
             <div className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-wider">
-              <span className="px-2.5 py-0.5 rounded-md bg-indigo-500/20 border border-indigo-500/40 text-indigo-300">
-                Centro de Idiomas Profesional ISkool
-              </span>
-              <span className="text-slate-500">·</span>
-              <span className="text-cyan-300 font-mono">12 Fases Curriculares Oficiales</span>
-              <span className="text-slate-500">·</span>
-              <span className="text-teal-300">SEP CENNI (1-20) & DELF/DALF</span>
+              {isIbimePresentationMode ? (
+                <>
+                  <span className="px-2.5 py-0.5 rounded-md bg-[#E41B14]/20 border border-[#E41B14]/40 text-red-300 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#E41B14] animate-pulse" />
+                    Instituto Bilingüe IBIME S.C.
+                  </span>
+                  <span className="text-slate-600">·</span>
+                  <span className="text-amber-400 font-mono">CCT {selectedCampus.cct}</span>
+                  <span className="text-slate-600">·</span>
+                  <span className="text-cyan-300 font-mono">{selectedCampus.shortName}</span>
+                  <span className="text-slate-600">·</span>
+                  <span className="text-slate-300">Cambridge & DELF Preparation Centre</span>
+                </>
+              ) : (
+                <>
+                  <span className="px-2.5 py-0.5 rounded-md bg-indigo-500/20 border border-indigo-500/40 text-indigo-300">
+                    Centro de Idiomas Profesional ISkool
+                  </span>
+                  <span className="text-slate-500">·</span>
+                  <span className="text-cyan-300 font-mono">12 Fases Curriculares Oficiales</span>
+                  <span className="text-slate-500">·</span>
+                  <span className="text-teal-300">SEP CENNI (1-20) & DELF/DALF</span>
+                </>
+              )}
             </div>
             
-            <h1 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-3">
-              <Globe2 className="w-8 h-8 text-cyan-400" />
-              <span>Centro de Idiomas & Fonética Avanzada</span>
-            </h1>
+            {/* Título y Logo */}
+            <div className="flex items-center gap-4 pt-1">
+              {isIbimePresentationMode ? (
+                <div className="p-2 rounded-2xl bg-slate-900/90 border border-slate-700/60 shadow-lg shrink-0">
+                  <IbimeOfficialLogo variant="shield_only" size={50} />
+                </div>
+              ) : (
+                <div className="p-2.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 text-cyan-400 shrink-0">
+                  <Globe2 className="w-9 h-9" />
+                </div>
+              )}
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-black text-white flex flex-wrap items-center gap-2">
+                  <span>Centro de Idiomas & Fonética Avanzada</span>
+                  {isIbimePresentationMode && (
+                    <span className="text-[11px] font-black px-2 py-0.5 rounded-md bg-[#E41B14] text-white tracking-widest uppercase shadow-sm">
+                      Edición Institucional IBIME
+                    </span>
+                  )}
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-300 font-medium">
+                  {isIbimePresentationMode
+                    ? 'Red Bilingüe IBIME · Gestión integral de inmersión oral en Inglés (ESL) y Francés (FLE) con acreditación internacional.'
+                    : 'Consola docente de gestión integral de lenguas extranjeras en Inglés (ESL) y Francés (FLE).'}
+                </p>
+              </div>
+            </div>
             
-            <p className="text-xs sm:text-sm text-slate-300 max-w-3xl leading-relaxed">
-              Consola docente de gestión integral de lenguas extranjeras en <strong>Inglés (ESL) y Francés (FLE)</strong>. Integra avatares gesticulantes, personajes históricos en primera persona, karaoke fonético en tiempo real, radares de macro-habilidades y diagnóstico de audio.
+            <p className="text-xs text-slate-400 max-w-3xl leading-relaxed pt-1">
+              Mentores conversacionales gesticulantes, personajes históricos en primera persona, reconocimiento de fonemas en tiempo real, radares CEFR y vinculación con la <strong>Bóveda Curricular</strong> institucional.
             </p>
           </div>
 
           {/* Selector de Idioma Rápido */}
-          <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-950/80 border border-indigo-700/50 shadow-inner">
-            <button
-              type="button"
-              onClick={() => {
-                const newVoice = activeLesson.avatarGender === 'female' ? 'en-US-JennyNeural' : 'en-US-GuyNeural';
-                updateLesson(activeLesson.id, { 
-                  language: 'en',
-                  avatarVoice: newVoice,
-                  avatarName: activeLesson.avatarGender === 'female' ? 'Claire' : 'Arthur'
-                });
-              }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
-                activeLesson.language === 'en'
-                  ? 'bg-cyan-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <span>🇬🇧</span>
-              <span>Inglés</span>
-            </button>
+          <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
+            <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-950/80 border border-slate-800 shadow-inner">
+              <button
+                type="button"
+                onClick={() => {
+                  const newVoice = activeLesson.avatarGender === 'female' ? 'en-US-JennyNeural' : 'en-US-GuyNeural';
+                  updateLesson(activeLesson.id, { 
+                    language: 'en',
+                    avatarVoice: newVoice,
+                    avatarName: activeLesson.avatarGender === 'female' ? 'Claire' : 'Arthur'
+                  });
+                }}
+                className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
+                  activeLesson.language === 'en'
+                    ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-lg shadow-red-700/40 ring-1 ring-red-400' : 'bg-cyan-600 text-white shadow-md')
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <span className="text-base leading-none">🇬🇧</span>
+                <span>Inglés (ESL)</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                const newVoice = activeLesson.avatarGender === 'female' ? 'fr-FR-DeniseNeural' : 'fr-FR-HenriNeural';
-                updateLesson(activeLesson.id, { 
-                  language: 'fr',
-                  avatarVoice: newVoice,
-                  avatarName: activeLesson.avatarGender === 'female' ? 'Sophie' : 'Henri'
-                });
-              }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
-                activeLesson.language === 'fr'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <span>🇫🇷</span>
-              <span>Francés</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const newVoice = activeLesson.avatarGender === 'female' ? 'fr-FR-DeniseNeural' : 'fr-FR-HenriNeural';
+                  updateLesson(activeLesson.id, { 
+                    language: 'fr',
+                    avatarVoice: newVoice,
+                    avatarName: activeLesson.avatarGender === 'female' ? 'Sophie' : 'Henri'
+                  });
+                }}
+                className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
+                  activeLesson.language === 'fr'
+                    ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-lg shadow-red-700/40 ring-1 ring-red-400' : 'bg-indigo-600 text-white shadow-md')
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <span className="text-base leading-none">🇫🇷</span>
+                <span>Francés (FLE)</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -462,7 +656,7 @@ export default function TeacherIdiomasPage() {
             onClick={() => setActiveTab('editor')}
             className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'editor'
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30 ring-1 ring-red-400/40' : 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20')
                 : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'
             }`}
           >
@@ -475,7 +669,7 @@ export default function TeacherIdiomasPage() {
             onClick={() => setActiveTab('analytics')}
             className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'analytics'
-                ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20'
+                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30 ring-1 ring-red-400/40' : 'bg-teal-600 text-white shadow-md shadow-teal-600/20')
                 : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'
             }`}
           >
@@ -488,7 +682,7 @@ export default function TeacherIdiomasPage() {
             onClick={() => setActiveTab('curriculum')}
             className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'curriculum'
-                ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
+                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30 ring-1 ring-red-400/40' : 'bg-purple-600 text-white shadow-md shadow-purple-600/20')
                 : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'
             }`}
           >
@@ -501,7 +695,7 @@ export default function TeacherIdiomasPage() {
             onClick={() => setActiveTab('hardware')}
             className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'hardware'
-                ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/20'
+                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30 ring-1 ring-red-400/40' : 'bg-cyan-600 text-white shadow-md shadow-cyan-600/20')
                 : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'
             }`}
           >
@@ -514,7 +708,7 @@ export default function TeacherIdiomasPage() {
             onClick={() => setActiveTab('reports')}
             className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 relative ${
               activeTab === 'reports'
-                ? 'bg-rose-600 text-white shadow-md shadow-rose-600/20'
+                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30 ring-1 ring-red-400/40' : 'bg-rose-600 text-white shadow-md shadow-rose-600/20')
                 : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'
             }`}
           >
@@ -524,6 +718,47 @@ export default function TeacherIdiomasPage() {
               <span className="w-2.5 h-2.5 rounded-full bg-rose-400 animate-ping absolute -top-1 -right-1" />
             )}
           </button>
+        </div>
+
+        {/* =========================================================================
+            FRANJA INSTITUCIONAL DE ACREDITACIÓN CEFR & CERTIFICACIONES OFICIALES
+            ========================================================================= */}
+        <div className={`p-4 rounded-2xl border transition-all flex flex-wrap items-center justify-between gap-3 text-xs ${
+          isIbimePresentationMode
+            ? 'bg-slate-900/90 border-[#E41B14]/30 shadow-lg shadow-red-950/20'
+            : 'bg-slate-900/60 border-slate-800'
+        }`}>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-red-600/20 border border-red-500/40 text-red-300 font-black">
+              <GraduationCap className="w-4 h-4 text-amber-400" />
+              <span>Nivel CEFR: {activeLesson.level}</span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 text-slate-300 font-medium">
+              <span className="font-bold text-white">
+                {activeLesson.language === 'en' ? activeCertification.cambridge : activeCertification.french}
+              </span>
+              <span className="text-slate-600 hidden sm:inline">|</span>
+              <span className="text-amber-400 font-mono font-semibold">
+                {activeCertification.cenni}
+              </span>
+              <span className="text-slate-600 hidden md:inline">|</span>
+              <span className="text-cyan-300 font-semibold hidden md:inline">
+                {activeCertification.unamNote}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 font-mono text-[11px] border border-slate-700 flex items-center gap-1.5">
+              <School className="w-3.5 h-3.5 text-red-400" />
+              <span>{selectedCampus.name} · CCT {selectedCampus.cct}</span>
+            </span>
+            <span className="px-2.5 py-1 rounded-lg bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-bold text-[11px] flex items-center gap-1.5">
+              <Check className="w-3.5 h-3.5" />
+              <span>Acreditación Curricular Validada</span>
+            </span>
+          </div>
         </div>
 
         {/* =========================================================================
@@ -550,7 +785,7 @@ export default function TeacherIdiomasPage() {
                     }}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
                       lesson.id === activeLesson.id
-                        ? 'bg-indigo-600 text-white shadow-md border border-indigo-400'
+                        ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md border border-red-400' : 'bg-indigo-600 text-white shadow-md border border-indigo-400')
                         : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
                     }`}
                   >
