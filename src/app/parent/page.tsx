@@ -117,10 +117,10 @@ export default function ParentDashboard() {
   const renderChildStats = () => {
     if (isIbime) {
       return (
-        <div className="bg-emerald-50 dark:bg-emerald-950/40 p-4 rounded-2xl border border-emerald-200 dark:border-emerald-800 text-xs shadow-xs min-w-[280px]">
+        <div className="bg-red-50/70 dark:bg-red-950/30 p-4 rounded-2xl border border-red-200/80 dark:border-red-900/50 text-xs shadow-xs min-w-[280px]">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="font-extrabold text-emerald-800 dark:text-emerald-300">Desempeño Bilingüe IBIME</h3>
-            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+            <h3 className="font-extrabold text-[#E41B14] dark:text-red-400">Desempeño Bilingüe IBIME</h3>
+            <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#0F2744] text-white border border-blue-900">
               Campus Montes
             </span>
           </div>
@@ -128,8 +128,8 @@ export default function ParentDashboard() {
             <div>Mascota: <strong>{avatar.pet_name || 'Ignis'}</strong> (Dragón Fuego - Nv. {stats.level || 5})</div>
             <div>Promedio Oficial: <strong>{adminStudent?.average_grade ? `${adminStudent.average_grade} / 10` : '9.8 / 10'} ⭐</strong></div>
             <div>Beca Vigente: <strong>{adminStudent?.scholarship_notes || 'Beca de Excelencia Académica Bilingüe (15%)'}</strong></div>
-            <div className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-bold mt-0.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <div className="flex items-center gap-1 text-[#E41B14] dark:text-red-400 font-bold mt-0.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#E41B14]" />
               <span>Colegiaturas al corriente · CFDI 4.0 Timbrado</span>
             </div>
           </div>
@@ -250,32 +250,32 @@ export default function ParentDashboard() {
         
         {/* Banner Institucional Oficial IBIME */}
         {isIbime && (
-          <div className="mb-6 rounded-3xl bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-900 text-white p-5 sm:p-6 shadow-md border border-emerald-600 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="mb-6 rounded-3xl bg-gradient-to-r from-[#0F2744] via-[#17426D] to-[#800F0A] text-white p-5 sm:p-6 shadow-md border border-blue-900/60 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="p-1.5 rounded-2xl bg-white/95 border border-emerald-300 shadow-md shrink-0">
+              <div className="p-1 rounded-2xl bg-white shadow-md border border-slate-200 shrink-0 flex items-center justify-center">
                 <IbimeOfficialLogo size={48} showText={false} />
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-base sm:text-lg font-black tracking-tight text-white">
-                    INSTITUTO BILINGÜE IBIME S.C.
+                    Instituto Bilingüe Ibime
                   </h2>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-950/70 text-emerald-200 border border-emerald-400/50">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#0B1E36] text-blue-200 border border-blue-600/50">
                     {adminStudent?.campus_name || 'Campus Montes (Sede Matriz & CCH)'}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-400 text-amber-950">
-                    CCT 09PPR1492Z
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#E41B14] text-white shadow-2xs">
+                    CCT 15PPR3322G
                   </span>
                 </div>
-                <p className="text-xs text-emerald-100 mt-1 font-medium">
-                  Portal Oficial de Acompañamiento Familiar · Red Educativa Multisede
+                <p className="text-xs text-blue-100 mt-1 font-medium">
+                  https://ibime.edu.mx · Portal Oficial de Acompañamiento Familiar · Red Bilingüe 4 Sedes
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
               <span className="px-3 py-1.5 rounded-xl bg-white/10 border border-white/20 text-xs font-bold text-white flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                <CheckCircle2 className="w-4 h-4 text-red-300" />
                 <span>Ciclo Escolar 2025 - 2026</span>
               </span>
             </div>

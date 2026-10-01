@@ -178,7 +178,7 @@ function IbimePortalContent() {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
         <div className="flex items-center gap-3">
-          <Clock className="w-6 h-6 animate-spin text-emerald-400" />
+          <Clock className="w-6 h-6 animate-spin text-red-400" />
           <span>Verificando credenciales perimetrales IBIME...</span>
         </div>
       </div>
@@ -202,11 +202,11 @@ function IbimePortalContent() {
         </div>
         <h1 className="text-2xl font-bold mb-2">403 - Acceso Denegado</h1>
         <p className="text-slate-400 max-w-md mb-6">
-          Se requiere una sesión activa con rol directivo o administrativo perteneciente a la organización Instituto Bilingüe IBIME para acceder a este portal.
+          Se requiere una sesión activa con rol directivo o administrativo perteneciente a la organización Instituto Bilingüe Ibime para acceder a este portal.
         </p>
         <button
           onClick={() => router.push('/ibime/login')}
-          className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition cursor-pointer"
+          className="px-6 py-2.5 bg-[#E41B14] hover:bg-red-500 text-white rounded-lg font-medium transition cursor-pointer"
         >
           Iniciar Sesión Institucional
         </button>
@@ -227,21 +227,21 @@ function IbimePortalContent() {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 flex flex-col">
         {/* HEADER INSTITUCIONAL SOBERANO IBIME - VISIÓN EJECUTIVA CEO */}
-        <header className="sticky top-0 z-50 w-full bg-[#047857] text-white shadow-md border-b border-emerald-800">
+        <header className="sticky top-0 z-50 w-full bg-[#0F2744] text-white shadow-md border-b border-blue-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-2xl bg-white text-[#047857] flex items-center justify-center font-black text-xl shadow-md border border-emerald-300 shrink-0">
-                IB
+              <div className="p-1 rounded-2xl bg-white shadow-md border border-slate-200 shrink-0 flex items-center justify-center">
+                <IbimeOfficialLogo size={42} showText={false} />
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-lg sm:text-xl font-extrabold tracking-tight text-white block">
-                    Instituto Bilingüe IBIME
+                    Instituto Bilingüe Ibime
                   </span>
                   <span 
                     data-testid="institutional-badge" 
-                    style={{ color: '#047857' }}
-                    className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-[#047857] border border-emerald-300 shadow-xs"
+                    style={{ color: '#E41B14' }}
+                    className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-50 text-[#E41B14] border border-red-300 shadow-xs"
                   >
                     IBIME Bicultural Hub
                   </span>
@@ -249,7 +249,7 @@ function IbimePortalContent() {
                     Visión Ejecutiva CEO
                   </span>
                 </div>
-                <span className="text-[11px] text-emerald-100 font-medium hidden md:block">
+                <span className="text-[11px] text-blue-100 font-medium hidden md:block">
                   Red Bilingüe & Bachillerato CCH UNAM (4 Sedes: Montes, Lagos, San Cristóbal, Coacalco)
                 </span>
               </div>
@@ -274,7 +274,7 @@ function IbimePortalContent() {
                   await useStudentStore.getState().switchStudent('std-ibime-montes-01');
                   router.push('/parent');
                 }}
-                className="py-1.5 px-3 rounded-xl bg-emerald-700/90 hover:bg-emerald-600 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-emerald-500 active:scale-98"
+                className="py-1.5 px-3 rounded-xl bg-[#17426D] hover:bg-[#1E5285] text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-red-400 active:scale-98"
                 title="Vivenciar la experiencia de padres de familia (Familia Morales Peña)"
               >
                 <Heart className="w-3.5 h-3.5 text-rose-300" />
@@ -284,16 +284,16 @@ function IbimePortalContent() {
 
               <button
                 onClick={() => setViewMode('operational')}
-                className="py-1.5 px-3 rounded-xl bg-white text-[#047857] hover:bg-emerald-50 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-emerald-200 active:scale-98"
+                className="py-1.5 px-3 rounded-xl bg-white text-[#E41B14] hover:bg-red-50 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-red-200 active:scale-98"
                 title="Conmutar al Tablero Operativo Clásico"
               >
-                <Layers className="w-4 h-4 text-emerald-700" />
+                <Layers className="w-4 h-4 text-[#C01D0C]" />
                 <span className="hidden sm:inline">Tablero Operativo</span>
               </button>
 
               <button
                 onClick={handleLogout}
-                className="py-2 px-3.5 rounded-xl bg-emerald-900/90 hover:bg-rose-700 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer border border-emerald-700 hover:border-rose-600 shadow-xs"
+                className="py-2 px-3.5 rounded-xl bg-emerald-900/90 hover:bg-rose-700 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer border border-blue-800 hover:border-rose-600 shadow-xs"
                 title="Cerrar sesión institucional y volver al portal"
               >
                 <LogOut className="w-3.5 h-3.5" />
@@ -322,31 +322,31 @@ function IbimePortalContent() {
       {/* =========================================================================
           1. HEADER INSTITUCIONAL SOBERANO DE IBIME (100% MARCA BLANCA IBIME)
           ========================================================================= */}
-      <header className="sticky top-0 z-50 w-full bg-[#047857] text-white shadow-md border-b border-emerald-800">
+      <header className="sticky top-0 z-50 w-full bg-[#0F2744] text-white shadow-md border-b border-blue-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
           
           {/* Identidad Institucional Oficial */}
           <div className="flex items-center gap-3.5">
-            <div className="p-1 rounded-2xl bg-white shadow-md border border-emerald-300 shrink-0 flex items-center justify-center">
+            <div className="p-1 rounded-2xl bg-white shadow-md border border-red-300 shrink-0 flex items-center justify-center">
               <IbimeOfficialLogo size={42} showText={false} />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-lg sm:text-xl font-extrabold tracking-tight text-white block">
-                  Instituto Bilingüe IBIME
+                  Instituto Bilingüe Ibime
                 </span>
                 <span 
                   data-testid="institutional-badge" 
-                  style={{ color: '#047857' }}
-                  className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-[#047857] border border-emerald-300 shadow-xs"
+                  style={{ color: '#E41B14' }}
+                  className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-50 text-[#E41B14] border border-red-300 shadow-xs"
                 >
                   IBIME Bicultural Hub
                 </span>
-                <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-900/80 text-emerald-200 border border-emerald-600/60">
-                  CCT 09PPR1492Z
+                <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#0B1E36] text-blue-200 border border-blue-700/60">
+                  CCT 15PPR3322G
                 </span>
               </div>
-              <span className="text-[11px] text-emerald-100 font-medium hidden md:block">
+              <span className="text-[11px] text-blue-100 font-medium hidden md:block">
                 Red Bilingüe & Bachillerato CCH UNAM (4 Sedes: Montes, Lagos, San Cristóbal, Coacalco)
               </span>
             </div>
@@ -357,14 +357,14 @@ function IbimePortalContent() {
             <div className="hidden lg:flex flex-col text-right">
               <span className="text-xs font-bold text-white flex items-center justify-end gap-1.5">
                 <span>{userName}</span>
-                <span className="w-2 h-2 rounded-full bg-emerald-300 animate-ping" />
+                <span className="w-2 h-2 rounded-full bg-red-400 animate-ping" />
               </span>
-              <span className="text-[10px] text-emerald-200 truncate max-w-[280px]">
+              <span className="text-[10px] text-blue-200 truncate max-w-[280px]">
                 {userCampus}
               </span>
             </div>
 
-            <div className="w-9 h-9 rounded-xl bg-emerald-800 border border-emerald-600 flex items-center justify-center font-bold text-sm text-white shadow-xs">
+            <div className="w-9 h-9 rounded-xl bg-[#17426D] border border-blue-700 flex items-center justify-center font-bold text-sm text-white shadow-xs">
               {userName[0] || 'I'}
             </div>
 
@@ -387,7 +387,7 @@ function IbimePortalContent() {
                 await useStudentStore.getState().switchStudent('std-ibime-montes-01');
                 router.push('/parent');
               }}
-              className="py-1.5 px-3 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-emerald-600"
+              className="py-1.5 px-3 rounded-xl bg-[#17426D] hover:bg-[#C01D0C] text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-blue-700"
               title="Vivenciar la experiencia de padres de familia (Familia Morales Peña)"
             >
               <Heart className="w-3.5 h-3.5 text-rose-300" />
@@ -399,17 +399,17 @@ function IbimePortalContent() {
             {(isDirector || activeUser.role === 'owner') && (
               <button
                 onClick={() => setViewMode('ceo')}
-                className="py-1.5 px-3 rounded-xl bg-emerald-900/90 hover:bg-emerald-800 text-emerald-100 font-extrabold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-emerald-700"
+                className="py-1.5 px-3 rounded-xl bg-emerald-900/90 hover:bg-[#17426D] text-blue-100 font-extrabold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-blue-800"
                 title="Abrir Visión Ejecutiva CEO"
               >
-                <Layers className="w-3.5 h-3.5 text-emerald-300" />
+                <Layers className="w-3.5 h-3.5 text-blue-300" />
                 <span className="hidden sm:inline">Visión CEO</span>
               </button>
             )}
 
             <button
               onClick={handleLogout}
-              className="py-1.5 px-3 rounded-xl bg-emerald-900/90 hover:bg-rose-700 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer border border-emerald-700 hover:border-rose-600 shadow-xs"
+              className="py-1.5 px-3 rounded-xl bg-emerald-900/90 hover:bg-rose-700 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer border border-blue-800 hover:border-rose-600 shadow-xs"
               title="Cerrar sesión institucional y volver al portal"
             >
               <LogOut className="w-3.5 h-3.5" />
@@ -422,7 +422,7 @@ function IbimePortalContent() {
       {/* =========================================================================
           2. BANNER DE BIENVENIDA Y RESUMEN EJECUTIVO (4 SEDES OFICIALES IBIME)
           ========================================================================= */}
-      <section className="bg-gradient-to-r from-[#047857] via-[#065F46] to-[#0B2545] text-white py-6 border-b border-emerald-900 shadow-inner">
+      <section className="bg-gradient-to-r from-[#0F2744] via-[#17426D] to-[#800F0A] text-white py-6 border-b border-blue-950 shadow-inner">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -430,7 +430,7 @@ function IbimePortalContent() {
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-amber-400 text-amber-950 shadow-xs">
                   Ciclo Escolar 2025-2026
                 </span>
-                <span className="text-xs text-emerald-200 font-medium">
+                <span className="text-xs text-blue-200 font-medium">
                   Incorporación CCH UNAM & Certificación Cambridge English
                 </span>
               </div>
@@ -441,7 +441,7 @@ function IbimePortalContent() {
                 {isBilling && `Tesorería, Facturación CFDI 4.0 & Cobranza`}
                 {!isDirector && !isTeacher && !isCoordinator && !isBilling && `Portal Institucional de la Comunidad IBIME`}
               </h1>
-              <p className="text-xs sm:text-sm text-emerald-100/90 mt-1 max-w-3xl">
+              <p className="text-xs sm:text-sm text-blue-100/90 mt-1 max-w-3xl">
                 {isDirector && `Supervisión directiva inter-planteles de los 4 campus oficiales. Control centralizado de matrícula bilingüe, cuerpo docente STEAM, vinculación CCH UNAM y finanzas.`}
                 {isTeacher && `Herramientas pedagógicas bilingües, planeaciones NEM 2024, evaluación formativa y acompañamiento a tus grupos.`}
                 {isCoordinator && `Gestión de planes de estudio, horarios docentes y enlace curricular con la Dirección General de CCH UNAM.`}
@@ -451,13 +451,13 @@ function IbimePortalContent() {
 
             {/* Selector de Campus Interactivo */}
             <div className="bg-white/10 backdrop-blur-md p-2.5 rounded-2xl border border-white/20 shrink-0">
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-emerald-200 mb-1">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-blue-200 mb-1">
                 Filtro de Sede Activa
               </label>
               <select
                 value={selectedCampusId}
                 onChange={(e) => setSelectedCampusId(e.target.value)}
-                className="bg-emerald-950/80 text-white font-bold text-xs rounded-xl px-3 py-1.5 border border-emerald-500/50 outline-none focus:border-amber-400 cursor-pointer"
+                className="bg-[#0A1A2E]/80 text-white font-bold text-xs rounded-xl px-3 py-1.5 border border-red-400/50 outline-none focus:border-amber-400 cursor-pointer"
               >
                 <option value="all">🌟 Todas las Sedes (Red Completa)</option>
                 {ibimeCampuses.map((camp) => (
@@ -472,39 +472,39 @@ function IbimePortalContent() {
           {/* Tarjetas Métricas Directivas (4 KPIs Clave) */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 mt-6">
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3.5 border border-white/15">
-              <div className="flex items-center justify-between text-emerald-200 text-xs font-semibold">
+              <div className="flex items-center justify-between text-blue-200 text-xs font-semibold">
                 <span>Planteles Oficiales</span>
                 <Building2 className="w-4 h-4 text-amber-300" />
               </div>
               <p className="text-2xl font-black text-white mt-1">4 Sedes</p>
-              <p className="text-[10px] text-emerald-200/80">Montes, Lagos, San Cristóbal, Coacalco</p>
+              <p className="text-[10px] text-blue-200/80">Montes, Lagos, San Cristóbal, Coacalco</p>
             </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3.5 border border-white/15">
-              <div className="flex items-center justify-between text-emerald-200 text-xs font-semibold">
+              <div className="flex items-center justify-between text-blue-200 text-xs font-semibold">
                 <span>Alumnos Matriculados</span>
-                <Users className="w-4 h-4 text-emerald-300" />
+                <Users className="w-4 h-4 text-blue-300" />
               </div>
               <p className="text-2xl font-black text-white mt-1">{ibimeStudents.length} Alumnos 360</p>
-              <p className="text-[10px] text-emerald-200/80">Seguimiento bilingüe y becas SEP</p>
+              <p className="text-[10px] text-blue-200/80">Seguimiento bilingüe y becas SEP</p>
             </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3.5 border border-white/15">
-              <div className="flex items-center justify-between text-emerald-200 text-xs font-semibold">
+              <div className="flex items-center justify-between text-blue-200 text-xs font-semibold">
                 <span>Cuerpo Docente</span>
                 <GraduationCap className="w-4 h-4 text-cyan-300" />
               </div>
               <p className="text-2xl font-black text-white mt-1">{ibimeTeachers.length + 2} Profesores</p>
-              <p className="text-[10px] text-emerald-200/80">Docentes Bilingües STEAM y CCH</p>
+              <p className="text-[10px] text-blue-200/80">Docentes Bilingües STEAM y CCH</p>
             </div>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-3.5 border border-white/15">
-              <div className="flex items-center justify-between text-emerald-200 text-xs font-semibold">
+              <div className="flex items-center justify-between text-blue-200 text-xs font-semibold">
                 <span>Acreditación Curricular</span>
                 <Award className="w-4 h-4 text-amber-300" />
               </div>
               <p className="text-2xl font-black text-white mt-1">100% Vigente</p>
-              <p className="text-[10px] text-emerald-200/80">CCH UNAM & Cambridge B2</p>
+              <p className="text-[10px] text-blue-200/80">CCH UNAM & Cambridge B2</p>
             </div>
           </div>
         </div>
@@ -543,7 +543,7 @@ function IbimePortalContent() {
             onClick={() => setActiveTab('sedes')}
             className={`py-2 px-4 rounded-xl font-bold text-xs transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
               activeTab === 'sedes'
-                ? 'bg-white dark:bg-emerald-950 text-[#047857] dark:text-emerald-300 shadow-sm border border-emerald-200/60 dark:border-emerald-800'
+                ? 'bg-white dark:bg-[#0A1A2E] text-[#E41B14] dark:text-blue-300 shadow-sm border border-red-200/60 dark:border-blue-900'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
@@ -555,13 +555,13 @@ function IbimePortalContent() {
             onClick={() => setActiveTab('alumnos')}
             className={`py-2 px-4 rounded-xl font-bold text-xs transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
               activeTab === 'alumnos'
-                ? 'bg-white dark:bg-emerald-950 text-[#047857] dark:text-emerald-300 shadow-sm border border-emerald-200/60 dark:border-emerald-800'
+                ? 'bg-white dark:bg-[#0A1A2E] text-[#E41B14] dark:text-blue-300 shadow-sm border border-red-200/60 dark:border-blue-900'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Users className="w-4 h-4" />
             <span>Control Escolar & Alumnos 360</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200">
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-red-100 dark:bg-emerald-900 text-emerald-800 dark:text-blue-200">
               {ibimeStudents.length}
             </span>
           </button>
@@ -570,7 +570,7 @@ function IbimePortalContent() {
             onClick={() => setActiveTab('docentes')}
             className={`py-2 px-4 rounded-xl font-bold text-xs transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
               activeTab === 'docentes'
-                ? 'bg-white dark:bg-emerald-950 text-[#047857] dark:text-emerald-300 shadow-sm border border-emerald-200/60 dark:border-emerald-800'
+                ? 'bg-white dark:bg-[#0A1A2E] text-[#E41B14] dark:text-blue-300 shadow-sm border border-red-200/60 dark:border-blue-900'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
@@ -582,7 +582,7 @@ function IbimePortalContent() {
             onClick={() => setActiveTab('boveda')}
             className={`py-2 px-4 rounded-xl font-bold text-xs transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
               activeTab === 'boveda'
-                ? 'bg-white dark:bg-emerald-950 text-[#047857] dark:text-emerald-300 shadow-sm border border-emerald-200/60 dark:border-emerald-800'
+                ? 'bg-white dark:bg-[#0A1A2E] text-[#E41B14] dark:text-blue-300 shadow-sm border border-red-200/60 dark:border-blue-900'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
@@ -594,7 +594,7 @@ function IbimePortalContent() {
             onClick={() => setActiveTab('finanzas')}
             className={`py-2 px-4 rounded-xl font-bold text-xs transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
               activeTab === 'finanzas'
-                ? 'bg-white dark:bg-emerald-950 text-[#047857] dark:text-emerald-300 shadow-sm border border-emerald-200/60 dark:border-emerald-800'
+                ? 'bg-white dark:bg-[#0A1A2E] text-[#E41B14] dark:text-blue-300 shadow-sm border border-red-200/60 dark:border-blue-900'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
@@ -611,14 +611,14 @@ function IbimePortalContent() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Building2 className="w-5 h-5 text-emerald-600" />
-                  <span>Red de Planteles Oficiales del Instituto Bilingüe IBIME</span>
+                  <Building2 className="w-5 h-5 text-[#E41B14]" />
+                  <span>Red de Planteles Oficiales del Instituto Bilingüe Ibime</span>
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   Supervisión y gobierno de las 4 sedes operativas en el Estado de México.
                 </p>
               </div>
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-50 dark:bg-[#0A1A2E]/60 text-[#C01D0C] dark:text-blue-300 border border-red-200 dark:border-blue-900">
                 4 Campus Homologados
               </span>
             </div>
@@ -637,11 +637,11 @@ function IbimePortalContent() {
                     key={campus.id}
                     className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between"
                   >
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-bl-full pointer-events-none" />
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-bl-full pointer-events-none" />
 
                     <div>
                       <div className="flex items-start justify-between gap-3 mb-3">
-                        <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-[#047857] dark:text-emerald-400 flex items-center justify-center font-bold text-lg border border-emerald-200/60 dark:border-emerald-800 shrink-0">
+                        <div className="w-12 h-12 rounded-2xl bg-red-50 dark:bg-[#0A1A2E]/50 text-[#E41B14] dark:text-red-400 flex items-center justify-center font-bold text-lg border border-red-200/60 dark:border-blue-900 shrink-0">
                           <Building2 className="w-6 h-6" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -656,7 +656,7 @@ function IbimePortalContent() {
                             )}
                           </div>
                           <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
-                            <MapPin className="w-3 h-3 text-emerald-600 shrink-0" />
+                            <MapPin className="w-3 h-3 text-[#E41B14] shrink-0" />
                             <span className="truncate">{campus.address}</span>
                           </p>
                         </div>
@@ -674,7 +674,7 @@ function IbimePortalContent() {
                             </span>
                           ))}
                           {campus.grades.length > 8 && (
-                            <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded-md text-[10px] font-bold">
+                            <span className="px-2 py-0.5 bg-red-50 dark:bg-[#0A1A2E] text-[#C01D0C] dark:text-blue-300 rounded-md text-[10px] font-bold">
                               +{campus.grades.length - 8} grados más
                             </span>
                           )}
@@ -685,15 +685,15 @@ function IbimePortalContent() {
                     <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                       <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
                         <span className="flex items-center gap-1">
-                          <Phone className="w-3 h-3 text-emerald-600" />
+                          <Phone className="w-3 h-3 text-[#E41B14]" />
                           <span>{campus.phone}</span>
                         </span>
-                        <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                        <span className="font-semibold text-[#C01D0C] dark:text-red-400">
                           {campusStudents.length > 0 ? `${campusStudents.length} alumnos` : 'Matrícula activa'}
                         </span>
                       </div>
 
-                      <span className="flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400">
+                      <span className="flex items-center gap-1 font-bold text-[#E41B14] dark:text-red-400">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>Operativo</span>
                       </span>
@@ -713,7 +713,7 @@ function IbimePortalContent() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h2 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Users className="w-5 h-5 text-emerald-600" />
+                  <Users className="w-5 h-5 text-[#E41B14]" />
                   <span>Matrícula y Control Escolar IBIME</span>
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -726,7 +726,7 @@ function IbimePortalContent() {
                 <select
                   value={selectedLevelFilter}
                   onChange={(e) => setSelectedLevelFilter(e.target.value)}
-                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:border-emerald-500"
+                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:border-red-400"
                 >
                   <option value="all">Todos los Niveles</option>
                   <option value="primaria">Primaria Bilingüe</option>
@@ -744,7 +744,7 @@ function IbimePortalContent() {
                 value={studentSearch}
                 onChange={(e) => setStudentSearch(e.target.value)}
                 placeholder="Buscar por nombre de alumno, CURP o correo electrónico..."
-                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-emerald-500 shadow-xs"
+                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-medium text-slate-900 dark:text-white outline-none focus:border-red-400 shadow-xs"
               />
             </div>
 
@@ -771,7 +771,7 @@ function IbimePortalContent() {
                         <tr key={std.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                           <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
                             <div className="flex items-center gap-2.5">
-                              <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-[#047857] dark:text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">
+                              <div className="w-8 h-8 rounded-xl bg-red-100 dark:bg-[#0A1A2E] text-[#E41B14] dark:text-red-400 flex items-center justify-center font-bold text-xs shrink-0">
                                 {std.first_name[0]}
                               </div>
                               <div>
@@ -782,7 +782,7 @@ function IbimePortalContent() {
                           </td>
                           <td className="py-3.5 px-4 text-slate-600 dark:text-slate-400 font-medium">
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[10px]">
-                              <MapPin className="w-2.5 h-2.5 text-emerald-600" />
+                              <MapPin className="w-2.5 h-2.5 text-[#E41B14]" />
                               <span>{std.campus_name || 'Campus Montes'}</span>
                             </span>
                           </td>
@@ -795,14 +795,14 @@ function IbimePortalContent() {
                                 Beca {std.scholarship_percentage}% ({std.scholarship_type || 'Excelencia'})
                               </span>
                             ) : (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-[#C01D0C] border border-red-200">
                                 Regular Al Día
                               </span>
                             )}
                           </td>
                           <td className="py-3.5 px-4">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                              <span className="text-xs font-bold text-[#C01D0C] dark:text-red-400">
                                 {(std as any).overall_average ? `${(std as any).overall_average} Prom` : '9.6 Prom'}
                               </span>
                               <span className="text-[10px] text-slate-400">
@@ -825,7 +825,7 @@ function IbimePortalContent() {
                               </button>
                               <button
                                 onClick={() => setSelectedStudentDetail(std)}
-                                className="py-1 px-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-[#047857] dark:text-emerald-300 rounded-lg font-bold text-[11px] transition-colors cursor-pointer border border-emerald-200/60 dark:border-emerald-800 inline-flex items-center gap-1"
+                                className="py-1 px-2.5 bg-red-50 hover:bg-red-100 dark:bg-[#0A1A2E]/60 dark:hover:bg-emerald-900/60 text-[#E41B14] dark:text-blue-300 rounded-lg font-bold text-[11px] transition-colors cursor-pointer border border-red-200/60 dark:border-blue-900 inline-flex items-center gap-1"
                               >
                                 <span>Expediente</span>
                                 <ChevronRight className="w-3 h-3" />
@@ -850,7 +850,7 @@ function IbimePortalContent() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5 text-emerald-600" />
+                  <GraduationCap className="w-5 h-5 text-[#E41B14]" />
                   <span>Cuerpo Académico Bilingüe & Docentes Titulares IBIME</span>
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -864,19 +864,19 @@ function IbimePortalContent() {
               <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
                 <div>
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold text-base shadow-xs shrink-0">
+                    <div className="w-12 h-12 rounded-2xl bg-[#E41B14] text-white flex items-center justify-center font-bold text-base shadow-xs shrink-0">
                       GM
                     </div>
                     <div>
                       <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">Prof. Gabriela Morales</h3>
-                      <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold">Docente Titular STEAM & Cambridge English</p>
+                      <p className="text-xs text-[#C01D0C] dark:text-red-400 font-semibold">Docente Titular STEAM & Cambridge English</p>
                       <span className="text-[10px] text-slate-400">Campus Montes & Campus Lagos</span>
                     </div>
                   </div>
                   <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
                     <p className="flex items-center justify-between">
                       <span className="font-medium">Certificación:</span>
-                      <span className="font-bold text-emerald-700 dark:text-emerald-400">Cambridge C1 Advanced</span>
+                      <span className="font-bold text-[#C01D0C] dark:text-red-400">Cambridge C1 Advanced</span>
                     </p>
                     <p className="flex items-center justify-between">
                       <span className="font-medium">Materias a cargo:</span>
@@ -884,13 +884,13 @@ function IbimePortalContent() {
                     </p>
                     <p className="flex items-center justify-between">
                       <span className="font-medium">Planeaciones NEM:</span>
-                      <span className="font-bold text-emerald-600">8 Planes Validados</span>
+                      <span className="font-bold text-[#E41B14]">8 Planes Validados</span>
                     </p>
                   </div>
                 </div>
                 <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px]">
                   <span className="text-slate-400">profesora.bicultural@ibime.edu.mx</span>
-                  <span className="text-emerald-600 font-bold">Activo</span>
+                  <span className="text-[#E41B14] font-bold">Activo</span>
                 </div>
               </div>
 
@@ -973,14 +973,14 @@ function IbimePortalContent() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-emerald-600" />
+                  <BookOpen className="w-5 h-5 text-[#E41B14]" />
                   <span>Bóveda Curricular Bilingüe Oficial de IBIME</span>
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   Asignaturas acreditadas, códigos oficiales SEP / UNAM y planeaciones didácticas con rúbricas analíticas.
                 </p>
               </div>
-              <span className="px-3 py-1 bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 text-xs font-bold rounded-full border border-emerald-300 dark:border-emerald-800">
+              <span className="px-3 py-1 bg-red-50 dark:bg-[#0A1A2E] text-emerald-800 dark:text-blue-200 text-xs font-bold rounded-full border border-red-300 dark:border-blue-900">
                 Overlay Bicultural Vigente
               </span>
             </div>
@@ -996,7 +996,7 @@ function IbimePortalContent() {
                       <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                         {sub.level_grade_id.toUpperCase()}
                       </span>
-                      <span className="font-mono text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+                      <span className="font-mono text-[10px] font-bold text-[#C01D0C] dark:text-red-400 bg-red-50 dark:bg-[#0A1A2E] px-2 py-0.5 rounded-md border border-red-200 dark:border-blue-900">
                         {sub.sep_code}
                       </span>
                     </div>
@@ -1007,7 +1007,7 @@ function IbimePortalContent() {
                   </div>
 
                   <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
-                    <span className="text-[11px] text-emerald-600 font-semibold">Planeaciones Validadas</span>
+                    <span className="text-[11px] text-[#E41B14] font-semibold">Planeaciones Validadas</span>
                     <span className="font-bold text-slate-700 dark:text-slate-300">NEM / CCH</span>
                   </div>
                 </div>
@@ -1024,7 +1024,7 @@ function IbimePortalContent() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-emerald-600" />
+                  <DollarSign className="w-5 h-5 text-[#E41B14]" />
                   <span>Tesorería, Facturación CFDI 4.0 & Cobranza IBIME</span>
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -1040,7 +1040,7 @@ function IbimePortalContent() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm">
                 <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Recuperación de Colegiaturas</p>
-                <p className="text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-1">94.8%</p>
+                <p className="text-2xl font-black text-[#C01D0C] dark:text-red-400 mt-1">94.8%</p>
                 <p className="text-[11px] text-slate-400 mt-0.5">Cobranza oportuna inter-planteles</p>
               </div>
 
@@ -1052,7 +1052,7 @@ function IbimePortalContent() {
 
               <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm">
                 <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Nómina Educativa Quincenal</p>
-                <p className="text-2xl font-black text-[#047857] dark:text-emerald-300 mt-1">$148,500 MXN</p>
+                <p className="text-2xl font-black text-[#E41B14] dark:text-blue-300 mt-1">$148,500 MXN</p>
                 <p className="text-[11px] text-slate-400 mt-0.5">Personal docente y directivo de las 4 sedes</p>
               </div>
             </div>
@@ -1086,11 +1086,11 @@ function IbimePortalContent() {
                         <td className="py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">
                           ${rec.base_salary?.toLocaleString('es-MX')} MXN
                         </td>
-                        <td className="py-3 px-4 font-bold text-emerald-700 dark:text-emerald-400">
+                        <td className="py-3 px-4 font-bold text-[#C01D0C] dark:text-red-400">
                           ${rec.net_salary?.toLocaleString('es-MX')} MXN
                         </td>
                         <td className="py-3 px-4">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-emerald-800">
                             {rec.status === 'pagado' ? 'Dispersado' : 'Pendiente'}
                           </span>
                         </td>
@@ -1111,14 +1111,14 @@ function IbimePortalContent() {
           <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-lg w-full border border-slate-200 dark:border-slate-800 shadow-2xl relative">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold text-base">
+                <div className="w-10 h-10 rounded-2xl bg-[#E41B14] text-white flex items-center justify-center font-bold text-base">
                   {selectedStudentDetail.first_name[0]}
                 </div>
                 <div>
                   <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
                     {selectedStudentDetail.first_name} {selectedStudentDetail.last_name_1}
                   </h3>
-                  <p className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold">
+                  <p className="text-xs text-[#C01D0C] dark:text-red-400 font-semibold">
                     {selectedStudentDetail.campus_name || 'Campus Montes'}
                   </p>
                 </div>
@@ -1139,7 +1139,7 @@ function IbimePortalContent() {
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl">
                   <p className="text-[10px] text-slate-400 font-bold uppercase">Beca Asignada</p>
-                  <p className="font-bold text-emerald-600 mt-0.5">
+                  <p className="font-bold text-[#E41B14] mt-0.5">
                     {selectedStudentDetail.scholarship_percentage ? `${selectedStudentDetail.scholarship_percentage}% (${selectedStudentDetail.scholarship_type})` : 'Ninguna'}
                   </p>
                 </div>
@@ -1176,7 +1176,7 @@ function IbimePortalContent() {
                     await useStudentStore.getState().switchStudent(selectedStudentDetail.id);
                     router.push('/parent');
                   }}
-                  className="py-2 px-3.5 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-sm flex items-center gap-1.5 border border-emerald-600"
+                  className="py-2 px-3.5 bg-[#C01D0C] hover:bg-[#E41B14] text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-sm flex items-center gap-1.5 border border-blue-700"
                 >
                   <Heart className="w-3.5 h-3.5 text-rose-300" />
                   <span>Vivenciar Familia</span>
@@ -1203,7 +1203,7 @@ export default function IbimePortalPage() {
     <Suspense fallback={
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
         <div className="flex items-center gap-3">
-          <Clock className="w-6 h-6 animate-spin text-emerald-400" />
+          <Clock className="w-6 h-6 animate-spin text-red-400" />
           <span>Cargando portal institucional IBIME...</span>
         </div>
       </div>

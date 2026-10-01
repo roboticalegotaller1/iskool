@@ -39,6 +39,7 @@ import { InstitutionalMemoryBanner } from '@/components/teacher/InstitutionalMem
 import { useSchoolBooksStore } from '@/store/useSchoolBooksStore';
 import { SmartBookNotebookModal } from '@/components/books/SmartBookNotebookModal';
 import { SchoolDigitalBook } from '@/types/schoolBooks';
+import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 
 // ==========================================
 // BASE DE DATOS CURRICULAR DE LA NEM 2022
@@ -2119,19 +2120,37 @@ Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructu
               `}</style>
 
               {/* Membrete Oficial */}
-              <div className="flex flex-col sm:flex-row justify-between items-center sm:items-start gap-4 border-b-2 border-double border-zinc-200 dark:border-zinc-800 pb-5 mb-5 print-section">
-                <div className="text-center sm:text-left flex flex-col gap-1">
-                  <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest leading-none">Secretaría de Educación Pública</span>
-                  <h2 className="text-lg font-black tracking-tight text-zinc-950 dark:text-white leading-tight">COLEGIO ANGLO MEXICANO</h2>
-                  <p className="text-[10.5px] font-medium text-zinc-500">Módulo Académico Gamificado • Planeación Didáctica NEM</p>
-                </div>
-                
-                {/* Sello Escolar */}
-                <div className="h-16 w-16 rounded-full border-2 border-dashed border-zinc-300 dark:border-zinc-700 flex flex-col items-center justify-center text-[8.5px] font-black text-zinc-400 text-center uppercase leading-tight p-1 flex-shrink-0 tracking-wider">
-                  <span>Sello</span>
-                  <span>Escolar</span>
-                </div>
-              </div>
+              {(() => {
+                const isIbimeTeacher = currentTeacher?.school_id === 'sch-ibime' || (typeof window !== 'undefined' && (document.documentElement.getAttribute('data-tenant') === 'ibime' || localStorage.getItem('tenant-id') === 'ibime'));
+                const officialSchoolName = isIbimeTeacher ? 'INSTITUTO BILINGÜE IBIME' : 'COLEGIO ANGLO MEXICANO';
+                const officialCct = isIbimeTeacher ? 'CCT: 15PPR3322G' : 'CCT: 09PPR1234Z';
+
+                return (
+                  <div className="flex flex-col sm:flex-row justify-between items-center sm:items-start gap-4 border-b-2 border-double border-zinc-200 dark:border-zinc-800 pb-5 mb-5 print-section">
+                    <div className="text-center sm:text-left flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest leading-none">Secretaría de Educación Pública</span>
+                      <h2 className="text-lg font-black tracking-tight text-zinc-950 dark:text-white leading-tight">{officialSchoolName}</h2>
+                      <p className="text-[10.5px] font-medium text-zinc-500">
+                        {isIbimeTeacher 
+                          ? `Educación Bilingüe de Excelencia SEP NEM 2024 & Cambridge • ${officialCct} • https://ibime.edu.mx` 
+                          : 'Módulo Académico Gamificado • Planeación Didáctica NEM'}
+                      </p>
+                    </div>
+                    
+                    {/* Sello Escolar */}
+                    {isIbimeTeacher ? (
+                      <div className="h-16 w-16 p-1 rounded-2xl bg-white border border-slate-200 shadow-xs flex items-center justify-center flex-shrink-0">
+                        <IbimeOfficialLogo variant="shield_only" size={48} />
+                      </div>
+                    ) : (
+                      <div className="h-16 w-16 rounded-full border-2 border-dashed border-zinc-300 dark:border-zinc-700 flex flex-col items-center justify-center text-[8.5px] font-black text-zinc-400 text-center uppercase leading-tight p-1 flex-shrink-0 tracking-wider">
+                        <span>Sello</span>
+                        <span>Escolar</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Título de la Sesión (Auto-ajustable en múltiples líneas para títulos largos) */}
               <div className="mb-5 flex flex-col gap-1.5 print-section">

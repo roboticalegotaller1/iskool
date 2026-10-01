@@ -401,25 +401,25 @@ export default function StudentDashboard() {
 
           {/* BANNER INSTITUCIONAL OFICIAL IBIME (100% MARCA BLANCA) */}
           {isIbime && (
-            <div className="relative z-10 mb-6 pb-6 border-b border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-r from-emerald-950/80 via-slate-900/90 to-emerald-950/60 p-4 sm:p-5 rounded-2xl border border-emerald-500/30 shadow-lg">
+            <div className="relative z-10 mb-6 pb-6 border-b border-[#E41B14]/30 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-r from-[#0F2744]/95 via-[#17426D]/90 to-[#0A1A2E]/95 p-4 sm:p-5 rounded-2xl border border-[#17426D]/60 shadow-lg">
               <div className="flex items-center gap-3.5">
-                <div className="p-1 rounded-xl bg-slate-950/90 border border-emerald-400/50 shadow-md shrink-0">
+                <div className="p-1 rounded-xl bg-white shadow-md border border-slate-200 shrink-0 flex items-center justify-center">
                   <IbimeOfficialLogo size={46} showText={false} />
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm sm:text-base font-black tracking-tight text-white">
-                      INSTITUTO BILINGÜE IBIME S.C.
+                      Instituto Bilingüe Ibime
                     </span>
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#E41B14]/20 text-red-200 border border-[#E41B14]/40">
                       {detailedStudent?.campus_name || 'Campus Montes (Sede Matriz & CCH)'}
                     </span>
-                    <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-900/80 text-emerald-200 border border-emerald-700/50">
-                      CCT 09PPR1492Z
+                    <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-[#0B1E36] text-blue-200 border border-blue-700/50">
+                      CCT 15PPR3322G
                     </span>
                   </div>
-                  <p className="text-xs text-emerald-200/90 font-medium mt-0.5">
-                    Red Bilingüe & Bachillerato CCH UNAM • Cambridge Assessment English
+                  <p className="text-xs text-blue-200/90 font-medium mt-0.5">
+                    https://ibime.edu.mx · Red Bilingüe & Bachillerato CCH UNAM · Cambridge Assessment English
                   </p>
                 </div>
               </div>

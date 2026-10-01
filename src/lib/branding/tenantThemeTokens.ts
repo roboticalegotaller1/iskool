@@ -53,34 +53,34 @@ export const ISKOOL_THEME_TOKENS: TenantThemeTokens = {
 
 export const IBIME_THEME_TOKENS: TenantThemeTokens = {
   tenantId: 'ibime',
-  schoolName: 'Instituto Bilingüe IBIME S.C.',
+  schoolName: 'Instituto Bilingüe Ibime',
   shortName: 'IBIME',
-  tagline: 'Excelencia Bilingüe y Formación Humana desde 2004 · Montes · Lagos · San Cristóbal · Coacalco',
-  badgeText: 'Instituto Bilingüe IBIME S.C.',
+  tagline: 'Excelencia Bilingüe y Formación Humana desde 2004 · https://ibime.edu.mx',
+  badgeText: 'Instituto Bilingüe Ibime',
   logoUrl: '/brand/ibime_logo.webp',
-  faviconUrl: '/brand/ibime_favicon.ico',
-  primaryColorHex: '#047857', // Verde Esmeralda Institucional IBIME
-  secondaryColorHex: '#065F46', // Verde Bosque Profundo
-  accentColorHex: '#D97706', // Ámbar Dorado Académico
-  heroGradient: 'from-emerald-700 via-teal-700 to-emerald-900',
+  faviconUrl: '/brand/ibime_favicon.png',
+  primaryColorHex: '#E41B14', // Rojo Escarlata Oficial IBIME
+  secondaryColorHex: '#0F2744', // Azul Marino Profundo Institucional
+  accentColorHex: '#C01D0C', // Carmesí Sombra Facetada
+  heroGradient: 'from-[#0F2744] via-[#17426D] to-[#E41B14]',
   cardRadius: 'rounded-2xl',
-  themePreset: 'emerald',
+  themePreset: 'ibime-official',
   cssVariables: {
-    '--color-primary': '#047857',
-    '--color-primary-rgb': '4, 120, 87',
-    '--color-primary-hsl': '163 94% 24%',
-    '--color-secondary': '#065F46',
-    '--color-secondary-rgb': '6, 95, 70',
-    '--color-secondary-hsl': '163 88% 20%',
-    '--color-accent': '#D97706',
-    '--color-accent-rgb': '217, 119, 6',
-    '--color-accent-hsl': '32 95% 44%',
-    '--brand-primary': '#047857',
-    '--brand-primary-hover': '#065f46',
-    '--brand-primary-light': '#ecfdf5',
-    '--brand-hero-gradient': 'linear-gradient(135deg, #047857 0%, #0f766e 50%, #065f46 100%)',
-    '--brand-badge-bg': '#ecfdf5',
-    '--brand-badge-text': '#047857'
+    '--color-primary': '#E41B14',
+    '--color-primary-rgb': '228, 27, 20',
+    '--color-primary-hsl': '2 84% 49%',
+    '--color-secondary': '#0F2744',
+    '--color-secondary-rgb': '15, 39, 68',
+    '--color-secondary-hsl': '213 64% 16%',
+    '--color-accent': '#17426D',
+    '--color-accent-rgb': '23, 66, 109',
+    '--color-accent-hsl': '210 65% 26%',
+    '--brand-primary': '#E41B14',
+    '--brand-primary-hover': '#c01d0c',
+    '--brand-primary-light': '#fef2f2',
+    '--brand-hero-gradient': 'linear-gradient(135deg, #0f2744 0%, #17426d 50%, #e41b14 100%)',
+    '--brand-badge-bg': '#fef2f2',
+    '--brand-badge-text': '#e41b14'
   }
 };
 

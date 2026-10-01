@@ -11,9 +11,11 @@ interface IbimeOfficialLogoProps {
 }
 
 /**
- * Logotipo y Escudo Oficial del Instituto Bilingüe IBIME S.C.
- * Renderizado vectorial ultra nítido con el blasón heráldico, antorcha del saber,
- * libro abierto y los 4 astros representativos de los planteles (Montes, Lagos, San Cristóbal, Coacalco).
+ * Logotipo y Escudo Oficial del Instituto Bilingüe Ibime.
+ * Renderizado vectorial ultra nítido con el blasón heráldico facetado en dos tonos
+ * (Rojo Escarlata Oficial #E41B14 y Carmesí Sombra #C01D0C), emblema en blanco óptico
+ * con el sol/cabeza del estudiante y el libro abierto de 6 columnas fanning.
+ * Portal oficial: https://ibime.edu.mx
  */
 export const IbimeOfficialLogo: React.FC<IbimeOfficialLogoProps> = ({
   className = '',
@@ -31,7 +33,7 @@ export const IbimeOfficialLogo: React.FC<IbimeOfficialLogoProps> = ({
     xl: 'h-24 text-xl'
   }[size];
 
-  // Escudo Heráldico Vectorial Oficial
+  // Escudo Heráldico Vectorial Oficial Bicolor
   const renderShieldSvg = (dim: number = 44) => (
     <svg
       width={dim}
@@ -41,78 +43,52 @@ export const IbimeOfficialLogo: React.FC<IbimeOfficialLogoProps> = ({
       xmlns="http://www.w3.org/2000/svg"
       className="shrink-0 drop-shadow-md select-none"
     >
-      <defs>
-        <linearGradient id="ibimeShieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#047857" />
-          <stop offset="50%" stopColor="#065F46" />
-          <stop offset="100%" stopColor="#022c22" />
-        </linearGradient>
-        <linearGradient id="ibimeGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FBBF24" />
-          <stop offset="50%" stopColor="#D97706" />
-          <stop offset="100%" stopColor="#92400E" />
-        </linearGradient>
-        <linearGradient id="ibimeTorchGrad" x1="0%" y1="100%" x2="0%" y2="0%">
-          <stop offset="0%" stopColor="#EA580C" />
-          <stop offset="40%" stopColor="#F59E0B" />
-          <stop offset="100%" stopColor="#FEF08A" />
-        </linearGradient>
-      </defs>
-
-      {/* Halo exterior dorado */}
-      <circle cx="50" cy="50" r="48" fill="url(#ibimeGoldGrad)" opacity="0.9" />
-
-      {/* Anillo de contraste verde esmeralda */}
-      <circle cx="50" cy="50" r="45" fill="#064E3B" stroke="#FDE68A" strokeWidth="1.5" />
-
-      {/* Silueta del Escudo Mayor */}
+      {/* Faceta Izquierda del Escudo (Rojo Escarlata Vivo Oficial #E41B14) */}
       <path
-        d="M50 12 L78 22 C78 52 50 78 50 78 C50 78 22 52 22 22 Z"
-        fill="url(#ibimeShieldGrad)"
-        stroke="url(#ibimeGoldGrad)"
-        strokeWidth="2.5"
+        d="M50 15 L16 24 C16 40 16 58 26 71 C35.5 82.5 46.5 88 50 89.5 L50 15 Z"
+        fill="#E41B14"
       />
 
-      {/* Libro Abierto (Fundamento Académico Bilingüe) */}
+      {/* Faceta Derecha del Escudo (Carmesí Sombra Facetada #C01D0C) */}
       <path
-        d="M34 56 C39 53 45 53 50 56 C55 53 61 53 66 56 L66 64 C61 61 55 61 50 64 C45 61 39 61 34 64 Z"
-        fill="#F8FAFC"
-        stroke="#CBD5E1"
-        strokeWidth="1"
-      />
-      <line x1="50" y1="56" x2="50" y2="64" stroke="#047857" strokeWidth="1.2" />
-
-      {/* Antorcha Central del Saber */}
-      <path
-        d="M48 42 L52 42 L51 54 L49 54 Z"
-        fill="url(#ibimeGoldGrad)"
-      />
-      {/* Copa de la antorcha */}
-      <path
-        d="M46 42 Q50 45 54 42 L53 38 L47 38 Z"
-        fill="#D97706"
-      />
-      {/* Llama viva de la excelencia */}
-      <path
-        d="M50 25 C45 31 46 37 50 39 C54 37 55 31 50 25 Z"
-        fill="url(#ibimeTorchGrad)"
-        filter="drop-shadow(0 0 3px rgba(251,191,36,0.8))"
+        d="M50 15 L84 24 C84 40 84 58 74 71 C64.5 82.5 53.5 88 50 89.5 L50 15 Z"
+        fill="#C01D0C"
       />
 
-      {/* 4 Estrellas de Excelencia (4 Planteles: Montes, Lagos, San Cristóbal, Coacalco) */}
-      <polygon points="50,14 51.5,17 55,17 52,19.5 53,23 50,21 47,23 48,19.5 45,17 48.5,17" fill="#FDE68A" />
-      <polygon points="30,30 31,32 33,32 31.5,33.5 32,35.5 30,34 28,35.5 28.5,33.5 27,32 29,32" fill="#FDE68A" />
-      <polygon points="70,30 71,32 73,32 71.5,33.5 72,35.5 70,34 68,35.5 68.5,33.5 67,32 69,32" fill="#FDE68A" />
-      <polygon points="50,71 50.8,72.5 52.5,72.5 51,73.5 51.5,75 50,74 48.5,75 49,73.5 47.5,72.5 49.2,72.5" fill="#FDE68A" />
-
-      {/* Laurel de Victoria Académica */}
+      {/* Borde Perimetral Sutil de Definición Óptica */}
       <path
-        d="M26 44 C25 55 32 66 42 72 M74 44 C75 55 68 66 58 72"
-        stroke="#F59E0B"
-        strokeWidth="1.5"
-        strokeLinecap="round"
+        d="M50 15 L16 24 C16 40 16 58 26 71 C35.5 82.5 46.5 88 50 89.5 C53.5 88 64.5 82.5 74 71 C84 58 84 40 84 24 Z"
         fill="none"
-        strokeDasharray="2 3"
+        stroke="#FFFFFF"
+        strokeWidth="0.8"
+        strokeOpacity="0.35"
+      />
+
+      {/* Emblema Blanco: Sol / Cabeza del Estudiante */}
+      <circle cx="50" cy="37" r="6" fill="#FFFFFF" />
+
+      {/* Emblema Blanco: Cuerpo Central (Libro Abierto / Torso) */}
+      {/* Hoja Central Izquierda */}
+      <path d="M50 49 L39 42.5 L39 63 C43.5 65.5 47.5 68 50 71 L50 49 Z" fill="#FFFFFF" />
+      {/* Hoja Central Derecha */}
+      <path d="M50 49 L61 42.5 L61 63 C56.5 65.5 52.5 68 50 71 L50 49 Z" fill="#FFFFFF" />
+
+      {/* Columnas / Páginas Fanning Izquierda */}
+      <path d="M33.5 45.5 L37 43.5 L37 61.8 C35 60.8 33.5 59.5 33.5 58 Z" fill="#FFFFFF" />
+      <path d="M28 47.5 L31.5 46 L31.5 60.5 C29.8 59.5 28 58 28 56.5 Z" fill="#FFFFFF" />
+
+      {/* Columnas / Páginas Fanning Derecha */}
+      <path d="M66.5 45.5 L63 43.5 L63 61.8 C65 60.8 66.5 59.5 66.5 58 Z" fill="#FFFFFF" />
+      <path d="M72 47.5 L68.5 46 L68.5 60.5 C70.2 59.5 72 58 72 56.5 Z" fill="#FFFFFF" />
+
+      {/* Hojas Inferiores Abiertas (Líneas de Base Fanning del Libro) */}
+      <path
+        d="M50 71 C44 67.5 35 65.5 28 64.8 C34 67 43 69.5 50 73 C57 69.5 66 67 72 64.8 C65 65.5 56 67.5 50 71 Z"
+        fill="#FFFFFF"
+      />
+      <path
+        d="M50 73.8 C43 70.8 34.5 69 29.5 67.8 C35.5 70 43.5 72 50 75.5 C56.5 72 64.5 70 70.5 67.8 C65.5 69 57 70.8 50 73.8 Z"
+        fill="#FFFFFF"
       />
     </svg>
   );
@@ -131,21 +107,21 @@ export const IbimeOfficialLogo: React.FC<IbimeOfficialLogoProps> = ({
 
       <div className="flex flex-col justify-center leading-tight">
         <div className="flex items-center gap-1.5">
-          <span className="font-black tracking-tight uppercase text-emerald-800 dark:text-emerald-400 font-serif text-[1.05em]">
+          <span className="font-black tracking-tight uppercase text-[#E41B14] font-sans text-[1.1em]">
             IBIME
           </span>
-          <span className="text-[0.62em] font-black uppercase px-1.5 py-0.5 rounded-sm bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-400/40 tracking-wider">
+          <span className="text-[0.62em] font-black uppercase px-1.5 py-0.5 rounded-sm bg-[#0F2744] text-white tracking-wider shadow-2xs">
             S.C.
           </span>
         </div>
 
-        <span className="font-extrabold text-[0.82em] tracking-normal text-slate-800 dark:text-slate-100 uppercase">
+        <span className="font-extrabold text-[0.82em] tracking-normal text-[#0F2744] dark:text-slate-100 uppercase">
           Instituto Bilingüe
         </span>
 
         {variant === 'full' && (
-          <span className="text-[0.62em] font-semibold text-emerald-700 dark:text-emerald-300/80 tracking-wider uppercase mt-0.5">
-            Montes · Lagos · San Cristóbal · Coacalco
+          <span className="text-[0.62em] font-semibold text-slate-500 dark:text-slate-400 tracking-wider uppercase mt-0.5">
+            ibime.edu.mx · Montes · Lagos · San Cristóbal · Coacalco
           </span>
         )}
       </div>

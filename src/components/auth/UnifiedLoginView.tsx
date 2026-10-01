@@ -27,6 +27,7 @@ import { useStudentStore } from '@/store/useStudentStore';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useNavigationStore } from '@/store/useNavigationStore';
 import { supabase } from '@/lib/supabaseClient';
+import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 
 export type LoginMode = 'public' | 'full_demo' | 'ibime_demo';
 
@@ -645,32 +646,34 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
       {/* Columna Izquierda: Identidad Institucional & Calidad Visual */}
       <div className={`hidden lg:flex lg:w-5/12 xl:w-1/2 relative flex-col justify-between p-12 xl:p-16 border-r border-zinc-200/10 dark:border-zinc-800/40 text-white overflow-hidden ${
         isIbimeMode 
-          ? 'bg-gradient-to-br from-slate-950 via-[#071E3D] to-[#043224]' 
+          ? 'bg-gradient-to-br from-[#0F2744] via-[#17426D] to-[#0A1A2E]' 
           : 'bg-gradient-to-br from-blue-900 via-indigo-950 to-zinc-950'
       }`}>
         {/* Glow de fondo */}
         <div className={`absolute -top-24 -left-24 w-96 h-96 rounded-full blur-3xl pointer-events-none ${
-          isIbimeMode ? 'bg-emerald-500/15' : 'bg-blue-500/20'
+          isIbimeMode ? 'bg-[#E41B14]/20' : 'bg-blue-500/20'
         }`} />
         <div className={`absolute -bottom-24 -right-24 w-96 h-96 rounded-full blur-3xl pointer-events-none ${
-          isIbimeMode ? 'bg-amber-400/15' : 'bg-purple-500/20'
+          isIbimeMode ? 'bg-[#17426D]/35' : 'bg-purple-500/20'
         }`} />
 
         {/* Barra superior con Identidad */}
         <div className="flex items-center gap-3.5 z-10">
-          <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg border ${
-            isIbimeMode 
-              ? 'bg-emerald-600/30 border-emerald-400/30 text-emerald-300' 
-              : 'bg-white/10 backdrop-blur-md border-white/20 text-blue-300 shadow-inner'
-          }`}>
-            {isIbimeMode ? <Building2 className="h-6 w-6" /> : <GraduationCap className="h-6 w-6" />}
-          </div>
+          {isIbimeMode ? (
+            <div className="p-1.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
+              <IbimeOfficialLogo variant="shield_only" size={38} />
+            </div>
+          ) : (
+            <div className="w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg border bg-white/10 backdrop-blur-md border-white/20 text-blue-300 shadow-inner">
+              <GraduationCap className="h-6 w-6" />
+            </div>
+          )}
           <div>
             <span className="text-xl font-extrabold tracking-tight text-white block">
-              {isIbimeMode ? 'Instituto Bilingüe IBIME' : 'ISkool'}
+              {isIbimeMode ? 'Instituto Bilingüe Ibime' : 'ISkool'}
             </span>
             <span className="block text-[11px] text-blue-200/80 font-medium tracking-wide">
-              {isIbimeMode ? 'Red Bilingüe & Bachillerato CCH UNAM (4 Sedes)' : 'Ecosistema Pedagógico Integral'}
+              {isIbimeMode ? 'https://ibime.edu.mx · Red Bilingüe & Bachillerato CCH UNAM' : 'Ecosistema Pedagógico Integral'}
             </span>
           </div>
         </div>
@@ -679,10 +682,10 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
         <div className="max-w-md my-auto z-10 flex flex-col gap-6">
           <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold w-fit tracking-wide ${
             isIbimeMode 
-              ? 'bg-emerald-500/15 border-emerald-400/30 text-emerald-300' 
+              ? 'bg-[#E41B14]/25 border-[#E41B14]/40 text-red-100' 
               : 'bg-blue-500/15 border-blue-400/25 text-blue-300'
           }`}>
-            {isIbimeMode ? <Globe className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
+            {isIbimeMode ? <Globe className="h-3.5 w-3.5 text-red-200" /> : <Sparkles className="h-3.5 w-3.5" />}
             <span>
               {isIbimeMode 
                 ? 'Excelencia Bilingüe y Formación Humana desde 2004' 
@@ -706,7 +709,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
           <div className="grid grid-cols-1 gap-3 pt-2">
             <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
               <div className={`p-2 rounded-xl ${
-                isIbimeMode ? 'bg-emerald-500/20 text-emerald-300' : 'bg-purple-500/20 text-purple-300'
+                isIbimeMode ? 'bg-[#E41B14]/25 text-red-300' : 'bg-purple-500/20 text-purple-300'
               }`}>
                 <BookOpen className="h-4 w-4" />
               </div>
@@ -724,7 +727,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
 
             <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
               <div className={`p-2 rounded-xl ${
-                isIbimeMode ? 'bg-amber-500/20 text-amber-300' : 'bg-blue-500/20 text-blue-300'
+                isIbimeMode ? 'bg-[#17426D]/40 text-sky-300' : 'bg-blue-500/20 text-blue-300'
               }`}>
                 <Compass className="h-4 w-4" />
               </div>
@@ -742,7 +745,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
 
             <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
               <div className={`p-2 rounded-xl ${
-                isIbimeMode ? 'bg-blue-500/20 text-blue-300' : 'bg-emerald-500/20 text-emerald-300'
+                isIbimeMode ? 'bg-[#C01D0C]/30 text-rose-300' : 'bg-emerald-500/20 text-emerald-300'
               }`}>
                 <ShieldCheck className="h-4 w-4" />
               </div>
@@ -762,9 +765,9 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
 
         {/* Pie de Marca */}
         <div className="text-zinc-400 text-xs z-10 flex items-center justify-between border-t border-white/10 pt-4">
-          <span>{isIbimeMode ? '© 2026 Instituto Bilingüe IBIME S.C.' : '© 2026 ISkool Academic.'}</span>
-          <span className="text-[11px] text-zinc-500">
-            {isIbimeMode ? 'Licencia Institucional Enterprise Multi-Plantel' : 'Diseñado con enfoque centrado en el docente'}
+          <span>{isIbimeMode ? '© 2026 Instituto Bilingüe Ibime' : '© 2026 ISkool Academic.'}</span>
+          <span className="text-[11px] text-zinc-400">
+            {isIbimeMode ? 'https://ibime.edu.mx · Licencia Institucional Enterprise' : 'Diseñado con enfoque centrado en el docente'}
           </span>
         </div>
       </div>
@@ -776,30 +779,32 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
           {/* Header del Formulario */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2.5 lg:hidden mb-2">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-md ${
-                isIbimeMode ? 'bg-emerald-600 text-white' : 'bg-blue-600 text-white'
-              }`}>
-                {isIbimeMode ? <Building2 className="h-5 w-5" /> : <GraduationCap className="h-5 w-5" />}
-              </div>
+              {isIbimeMode ? (
+                <IbimeOfficialLogo variant="shield_only" size={36} />
+              ) : (
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-md bg-blue-600 text-white">
+                  <GraduationCap className="h-5 w-5" />
+                </div>
+              )}
               <span className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
-                {isIbimeMode ? 'IBIME' : 'ISkool'}
+                {isIbimeMode ? 'Instituto Bilingüe Ibime' : 'ISkool'}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
-                {isIbimeMode ? 'Portal IBIME' : 'Iniciar Sesión'}
+                {isIbimeMode ? 'Portal Instituto Bilingüe Ibime' : 'Iniciar Sesión'}
               </h1>
               {isIbimeMode && (
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                  Bilingüe Oficial
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-red-50 dark:bg-red-950/60 text-[#E41B14] dark:text-red-300 border border-red-200 dark:border-red-900/60">
+                  Oficial
                 </span>
               )}
             </div>
 
             <p className="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed">
               {isIbimeMode 
-                ? 'Acceso exclusivo con credenciales institucionales para la comunidad del Instituto Bilingüe IBIME.'
+                ? 'Acceso exclusivo con credenciales institucionales para la comunidad del Instituto Bilingüe Ibime (ibime.edu.mx).'
                 : 'Inicia sesión con tus credenciales institucionales para acceder a tu portal.'}
             </p>
           </div>
@@ -872,7 +877,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
               disabled={isSubmitting || authLoading || isSsoLoading}
               className={`w-full py-3.5 px-6 font-bold text-sm rounded-2xl shadow-md transition-all duration-200 flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50 active:scale-[0.99] border group ${
                 isIbimeMode 
-                  ? 'bg-[#0B2545] hover:bg-[#071E3D] text-white border-blue-900' 
+                  ? 'bg-[#0F2744] hover:bg-[#17426D] text-white border-blue-900/50 shadow-[#0F2744]/20' 
                   : 'bg-zinc-950 dark:bg-white hover:bg-zinc-850 dark:hover:bg-zinc-100 text-white dark:text-zinc-950 border-zinc-800 dark:border-zinc-200'
               }`}
             >
@@ -884,7 +889,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
               ) : (
                 <>
                   {isIbimeMode ? (
-                    <Building2 className="h-5 w-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                    <IbimeOfficialLogo variant="shield_only" size={24} />
                   ) : (
                     <GraduationCap className="h-5 w-5 text-blue-400 dark:text-blue-600 group-hover:scale-110 transition-transform" />
                   )}
@@ -929,7 +934,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
                   onChange={(e) => setEmail(e.target.value)}
                   className={`w-full pl-11 pr-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 shadow-xs focus:outline-none transition-all duration-200 ${
                     isIbimeMode 
-                      ? 'focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600' 
+                      ? 'focus:ring-2 focus:ring-red-500/20 focus:border-[#E41B14]' 
                       : 'focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500'
                   }`}
                 />
@@ -961,7 +966,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
                   onChange={(e) => setPassword(e.target.value)}
                   className={`w-full pl-11 pr-11 py-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 shadow-xs focus:outline-none transition-all duration-200 ${
                     isIbimeMode 
-                      ? 'focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600' 
+                      ? 'focus:ring-2 focus:ring-red-500/20 focus:border-[#E41B14]' 
                       : 'focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500'
                   }`}
                 />
@@ -982,7 +987,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
               disabled={isSubmitting || authLoading}
               className={`w-full mt-2 py-3.5 px-5 text-white text-sm font-bold rounded-2xl shadow-md transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.99] ${
                 isIbimeMode 
-                  ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/20' 
+                  ? 'bg-[#E41B14] hover:bg-[#C01D0C] shadow-[#E41B14]/25' 
                   : 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/20'
               }`}
             >
@@ -1008,19 +1013,19 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
                 onClick={() => setShowDemoSelector(!showDemoSelector)}
                 className={`w-full py-2.5 px-4 rounded-xl border text-xs font-semibold flex items-center justify-between transition-colors group ${
                   isIbimeMode 
-                    ? 'border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/60 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100/60' 
+                    ? 'border-red-200 dark:border-red-900/60 bg-red-50/60 dark:bg-red-950/20 text-[#C01D0C] dark:text-red-300 hover:bg-red-100/60' 
                     : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-900/50 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 text-zinc-600 dark:text-zinc-300'
                 }`}
               >
                 <span className="flex items-center gap-2">
-                  <Sparkles className={`h-3.5 w-3.5 ${isIbimeMode ? 'text-emerald-600' : 'text-blue-500'}`} />
+                  <Sparkles className={`h-3.5 w-3.5 ${isIbimeMode ? 'text-[#E41B14]' : 'text-blue-500'}`} />
                   <span>
                     {isIbimeMode 
                       ? 'Perfiles de Demostración IBIME (Acceso 1-Clic)' 
                       : 'Explorar con Perfiles de Demostración'}
                   </span>
                 </span>
-                <span className={`text-[11px] ${isIbimeMode ? 'text-emerald-700' : 'text-zinc-400 group-hover:text-blue-500'} transition-colors`}>
+                <span className={`text-[11px] ${isIbimeMode ? 'text-[#E41B14]' : 'text-zinc-400 group-hover:text-blue-500'} transition-colors`}>
                   {showDemoSelector ? 'Ocultar' : 'Ver perfiles'}
                 </span>
               </button>
@@ -1081,7 +1086,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
                             isSuspended
                               ? 'border-rose-200 dark:border-rose-900/50 bg-rose-50/40 dark:bg-rose-950/20 hover:bg-rose-100/50'
                               : isIbimeMode
-                                ? 'border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/40 hover:bg-emerald-50/50 dark:hover:bg-zinc-800/90 hover:border-emerald-300 dark:hover:border-zinc-700'
+                                ? 'border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/40 hover:bg-red-50/60 dark:hover:bg-zinc-800/90 hover:border-red-300 dark:hover:border-zinc-700'
                                 : 'border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/40 hover:bg-blue-50/50 dark:hover:bg-zinc-800/90 hover:border-blue-200 dark:hover:border-zinc-700'
                           }`}
                         >
@@ -1091,7 +1096,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
                             </div>
                             <div className="min-w-0">
                               <p className={`text-xs font-semibold text-zinc-800 dark:text-zinc-200 transition-colors truncate flex items-center gap-1.5 ${
-                                isIbimeMode ? 'group-hover:text-emerald-600' : 'group-hover:text-blue-600'
+                                isIbimeMode ? 'group-hover:text-[#E41B14]' : 'group-hover:text-blue-600'
                               }`}>
                                 {demo.name}
                               </p>
@@ -1099,7 +1104,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
                                 {demo.grade}
                               </p>
                               {demo.campusName && (
-                                <span className="inline-block mt-0.5 text-[9px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded-md">
+                                <span className="inline-block mt-0.5 text-[9px] font-medium text-[#E41B14] dark:text-red-400 bg-red-50 dark:bg-red-950/60 px-1.5 py-0.2 rounded-md">
                                   {demo.campusName}
                                 </span>
                               )}
@@ -1108,7 +1113,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
                           
                           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 transition-colors ${
                             isIbimeMode 
-                              ? 'bg-zinc-200/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/40 group-hover:text-emerald-700 dark:group-hover:text-emerald-300'
+                              ? 'bg-zinc-200/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 group-hover:bg-red-100 dark:group-hover:bg-red-900/40 group-hover:text-[#E41B14] dark:group-hover:text-red-300'
                               : 'bg-zinc-200/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40 group-hover:text-blue-600 dark:group-hover:text-blue-300'
                           }`}>
                             Acceder

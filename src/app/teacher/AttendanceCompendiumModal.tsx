@@ -9,6 +9,7 @@ import {
   MessageSquare, RefreshCw
 } from 'lucide-react';
 import { DetailedStudent, Group, ClassSchedule, Subject, Attendance, AttendanceStatus } from '@/types';
+import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 
 interface AttendanceCompendiumModalProps {
   isOpen: boolean;
@@ -84,6 +85,24 @@ export function AttendanceCompendiumModal({
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>(
     initialSubjectId || 'all'
   );
+
+  // Detección de institución activa (Aislamiento Multi-Tenant)
+  const isIbimeGroup = useMemo(() => {
+    const currentGroup = groupsList.find(g => g.id === selectedGroupId);
+    if (currentGroup && (currentGroup as any).school_id === 'sch-ibime') return true;
+    if (detailedStudents.some(s => s.group_id === selectedGroupId && (s.school_id === 'sch-ibime' || s.id.startsWith('std-ibime')))) return true;
+    if (typeof window !== 'undefined') {
+      if (document.documentElement.getAttribute('data-tenant') === 'ibime') return true;
+      if (localStorage.getItem('tenant-id') === 'ibime') return true;
+      if (localStorage.getItem('activeSchoolId') === 'sch-ibime') return true;
+    }
+    return false;
+  }, [groupsList, selectedGroupId, detailedStudents]);
+
+  const institutionDisplayName = isIbimeGroup ? 'Instituto Bilingüe Ibime' : 'Colegio Anglo Mexicano';
+  const institutionDisplayNameUpper = isIbimeGroup ? 'INSTITUTO BILINGÜE IBIME' : 'COLEGIO ANGLO MEXICANO';
+  const institutionAcronym = isIbimeGroup ? 'IBIME' : 'CAM';
+  const institutionCCT = isIbimeGroup ? '15PPR3322G' : '09PPR1234Z';
 
   // Fechas del periodo (Por defecto: detectar automáticamente el periodo activo de registros del grupo o mes en curso)
   const defaultDates = useMemo(() => {
@@ -378,7 +397,7 @@ export function AttendanceCompendiumModal({
     });
 
     const csvContent = "\uFEFF" + [
-      `"COMPENDIO OFICIAL DE ASISTENCIA - COLEGIO ANGLO MEXICANO"`,
+      `"COMPENDIO OFICIAL DE ASISTENCIA - ${institutionDisplayNameUpper}"`,
       `"Grupo: ${groupName}","Asignatura: ${subjectName}","Periodo: ${startDate} al ${endDate}"`,
       `"Fecha de Generación: ${new Date().toLocaleDateString('es-MX')}","Promedio Grupal: ${groupMetrics.promedioAsistencia}%"`,
       "",
@@ -442,8 +461,12 @@ export function AttendanceCompendiumModal({
               <div>
                 <h2 className="text-base sm:text-lg font-black text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                   Compendio Oficial de Asistencias
-                  <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60">
-                    Colegio Anglo Mexicano
+                  <span className={`text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full ${
+                    isIbimeGroup 
+                      ? 'bg-red-100 dark:bg-red-950/70 text-red-700 dark:text-red-300 border border-red-200/60 dark:border-red-800/60'
+                      : 'bg-indigo-100 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/60'
+                  }`}>
+                    {institutionDisplayName}
                   </span>
                 </h2>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -760,18 +783,24 @@ export function AttendanceCompendiumModal({
           <div className="border-b-2 border-black pb-2 mb-2">
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl border-2 border-black bg-zinc-100 flex items-center justify-center font-black text-xs text-black">
-                  CAM
-                </div>
+                {isIbimeGroup ? (
+                  <div className="w-11 h-11 rounded-xl border border-zinc-300 bg-white flex items-center justify-center p-1">
+                    <IbimeOfficialLogo variant="shield_only" size={36} />
+                  </div>
+                ) : (
+                  <div className="w-11 h-11 rounded-xl border-2 border-black bg-zinc-100 flex items-center justify-center font-black text-xs text-black">
+                    {institutionAcronym}
+                  </div>
+                )}
                 <div>
                   <h1 className="text-sm font-black tracking-tight uppercase leading-tight text-black">
-                    Colegio Anglo Mexicano
+                    {institutionDisplayNameUpper}
                   </h1>
                   <h2 className="text-xs font-bold text-zinc-900 leading-tight">
-                    Compendio Oficial de Asistencia y Puntualidad Escolar
+                    Compendio Oficial de Asistencia y Puntualidad Escolar {isIbimeGroup ? `• CCT: ${institutionCCT}` : ''}
                   </h2>
                   <p className="text-[9px] text-zinc-600 font-medium">
-                    Sistema de Control Escolar e Integración Curricular NEM
+                    {isIbimeGroup ? 'Educación Bilingüe de Excelencia SEP NEM 2024 & Cambridge • https://ibime.edu.mx' : 'Sistema de Control Escolar e Integración Curricular NEM'}
                   </p>
                 </div>
               </div>
@@ -873,7 +902,7 @@ export function AttendanceCompendiumModal({
           {/* Nota Pedagógica Institucional */}
           <div className="text-[8px] text-zinc-600 mb-4 italic flex justify-between">
             <span>* Regla Institucional: Presente (P) y Justificado (J) computan como asistencia. 3 retardos (R) acumulan 1 falta (F). Mínimo aprobatorio SEP: 80%.</span>
-            <span>Documento generado para control interno docente • Colegio Anglo Mexicano</span>
+            <span>Documento generado para control interno docente • {institutionDisplayName}</span>
           </div>
 
           {/* Espacio de Validación Oficial y Firmas */}
@@ -886,7 +915,7 @@ export function AttendanceCompendiumModal({
             <div>
               <div className="border-b border-black w-3/4 mx-auto mb-1 pt-6"></div>
               <p className="text-[9px] font-bold text-black uppercase">Firma de Dirección Académica</p>
-              <p className="text-[8px] text-zinc-600">Colegio Anglo Mexicano • Sello y Validación</p>
+              <p className="text-[8px] text-zinc-600">{institutionDisplayName} • Sello y Validación</p>
             </div>
           </div>
 

@@ -17,8 +17,21 @@ import {
   Calendar, 
   Landmark 
 } from 'lucide-react';
+import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 
 export default function AccountStatementPrintPage() {
+  const [isIbime, setIsIbime] = React.useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isIb = 
+        document.documentElement.getAttribute('data-tenant') === 'ibime' ||
+        localStorage.getItem('tenant-id') === 'ibime' ||
+        localStorage.getItem('activeSchoolId') === 'sch-ibime' ||
+        window.location.search.includes('ibime');
+      setIsIbime(isIb);
+    }
+  }, []);
   const dateStr = new Date().toLocaleDateString('es-MX', {
     year: 'numeric',
     month: 'long',
@@ -111,17 +124,25 @@ export default function AccountStatementPrintPage() {
       <div className="max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-2xl border border-slate-300 shadow-lg print:border-none print:shadow-none print:p-0">
         
         {/* Encabezado Institucional */}
-        <div className="border-b-2 border-blue-900 pb-6 mb-6 flex justify-between items-start">
+        <div className={`border-b-2 ${isIbime ? 'border-[#E41B14]' : 'border-blue-900'} pb-6 mb-6 flex justify-between items-start`}>
           <div>
-            <div className="text-2xl font-black text-blue-900 tracking-tight flex items-center gap-2">
-              <Building2 className="w-7 h-7 text-blue-800 shrink-0" />
-              <span>COLEGIO ISKOOL MÉXICO</span>
+            <div className={`text-2xl font-black ${isIbime ? 'text-[#0F2744]' : 'text-blue-900'} tracking-tight flex items-center gap-3`}>
+              {isIbime ? (
+                <div className="shrink-0">
+                  <IbimeOfficialLogo variant="shield_only" size={38} />
+                </div>
+              ) : (
+                <Building2 className="w-7 h-7 text-blue-800 shrink-0" />
+              )}
+              <span>{isIbime ? 'INSTITUTO BILINGÜE IBIME' : 'COLEGIO ISKOOL MÉXICO'}</span>
             </div>
             <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">
-              Institución Educativa Oficial • CCT: 09PPR1849Z
+              Institución Educativa Oficial • CCT: {isIbime ? '15PPR3322G' : '09PPR1849Z'}
             </div>
             <div className="text-xs text-slate-400 mt-0.5">
-              Departamento de Control Escolar, Cobranza y Facturación
+              {isIbime 
+                ? 'Departamento de Control Escolar, Cobranza y Finanzas • https://ibime.edu.mx'
+                : 'Departamento de Control Escolar, Cobranza y Facturación'}
             </div>
           </div>
 
@@ -129,7 +150,7 @@ export default function AccountStatementPrintPage() {
             <div className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-lg">
               <div className="text-[10px] uppercase font-bold text-slate-400">Documento Oficial</div>
               <div className="text-sm font-bold text-slate-900">ESTADO DE CUENTA</div>
-              <div className="text-[11px] text-blue-800 font-mono font-semibold">PERIODO: CICLO 2026-2027</div>
+              <div className={`text-[11px] ${isIbime ? 'text-[#E41B14]' : 'text-blue-800'} font-mono font-semibold`}>PERIODO: CICLO 2026-2027</div>
               <div className="text-[10px] text-slate-500 mt-0.5">Fecha de Emisión: {dateStr}</div>
             </div>
           </div>

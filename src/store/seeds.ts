@@ -5482,7 +5482,7 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
   },
   {
     id: 'sch-ibime',
-    name: 'Instituto Bilingüe IBIME S.C.',
+    name: 'Instituto Bilingüe Ibime',
     tagline: 'Excelencia Bilingüe y Formación Humana desde 2004 · Bachillerato UNAM CCH · Primaria y Secundaria Oficial SEP',
     cct: '15PPR3322G',
     logoUrl: '/brand/ibime_logo.webp',
@@ -5492,7 +5492,7 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
     address: 'Av. Jardines de Morelos s/n, Sección Montes, C.P. 55070, Ecatepec de Morelos, Edomex',
     phone: '55-4440-1009',
     website: 'https://ibime.edu.mx',
-    coordinatorName: 'Dirección General IBIME S.C.',
+    coordinatorName: 'Dirección General Instituto Bilingüe Ibime',
     campusesCount: 4,
     studentsCount: 3740,
     teachersCount: 200,
@@ -5503,18 +5503,18 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
       planName: 'Licencia Institucional Enterprise Multi-Plantel (4 Sedes)',
       isSoftwareOwner: false, // Cliente licenciatario, no dueño del software
       licenseKey: 'ISK-LIC-2026-IBIME-ENT-4CAMPUS',
-      licensee: 'Instituto Bilingüe IBIME S.C.',
+      licensee: 'Instituto Bilingüe Ibime',
       licensor: 'ISkool Technologies Inc.',
       contractedSeats: 3900,
       assignedSeats: 3740,
       validUntil: '2027-08-31',
       billingCycle: 'Anual',
       status: 'active',
-      ipNotice: 'Plataforma, código fuente y motor de Inteligencia Artificial Pedagógica son propiedad intelectual exclusiva de ISkool Technologies Inc. Licencia concedida a Instituto Bilingüe IBIME S.C. para uso escolar en 4 planteles.'
+      ipNotice: 'Plataforma, código fuente y motor de Inteligencia Artificial Pedagógica son propiedad intelectual exclusiva de ISkool Technologies Inc. Licencia concedida a Instituto Bilingüe Ibime para uso escolar en 4 planteles.'
     },
     settings: {
       isConfigured: true,
-      name: 'Instituto Bilingüe IBIME S.C.',
+      name: 'Instituto Bilingüe Ibime',
       website: 'https://ibime.edu.mx',
       logoUrl: '/brand/ibime_logo.webp',
       cct: '15PPR3322G',
@@ -5528,9 +5528,9 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
         'Profa. Carmen Del Valle (Coacalco Bilingüe)'
       ],
       themeColors: {
-        primary: '163 94% 24%',    // Verde Esmeralda Institucional IBIME (#047857)
-        secondary: '163 88% 20%',  // Verde Bosque Profundo (#065F46)
-        accent: '32 95% 44%'       // Ámbar Dorado Académico (#D97706)
+        primary: '2 84% 49%',     // Rojo Escarlata Institucional Oficial IBIME (#E41B14)
+        secondary: '213 64% 16%', // Azul Marino Profundo Oficial IBIME (#0F2744)
+        accent: '210 65% 26%'     // Azul Zafiro / Carmesí Oficial (#17426D / #C01D0C)
       }
     }
   },
