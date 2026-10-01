@@ -38,7 +38,11 @@ import {
   Globe,
   Compass,
   Eye,
-  Sliders
+  Sliders,
+  Volume2,
+  VolumeX,
+  Mic,
+  MicOff
 } from 'lucide-react';
 import {
   NodeCluster,
@@ -256,8 +260,95 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
   const [isTableExpanded, setIsTableExpanded] = useState<boolean>(false);
 
   const [copiedNotification, setCopiedNotification] = useState<boolean>(false);
+  const [isSpeakingDictamen, setIsSpeakingDictamen] = useState<boolean>(false);
+  const [isListeningVoice, setIsListeningVoice] = useState<boolean>(false);
+  const brainRecognitionRef = useRef<any>(null);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const lastInitialQueryRef = useRef<string | null>(null);
+
+  // Inicializar reconocimiento y síntesis de voz en el Cerebro Institucional
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const rec = new SpeechRecognition();
+        rec.continuous = false;
+        rec.interimResults = true;
+        rec.lang = 'es-MX';
+        rec.onstart = () => setIsListeningVoice(true);
+        rec.onresult = (ev: any) => {
+          let str = '';
+          for (let i = ev.resultIndex; i < ev.results.length; i++) {
+            str += ev.results[i][0].transcript;
+          }
+          setChatInput(str);
+        };
+        rec.onerror = () => setIsListeningVoice(false);
+        rec.onend = () => setIsListeningVoice(false);
+        brainRecognitionRef.current = rec;
+      }
+    }
+    return () => {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  const toggleVoiceInput = () => {
+    if (!brainRecognitionRef.current) {
+      alert('Tu navegador no cuenta con soporte para dictado por voz.');
+      return;
+    }
+    if (isListeningVoice) {
+      brainRecognitionRef.current.stop();
+      setIsListeningVoice(false);
+    } else {
+      setChatInput('');
+      try {
+        brainRecognitionRef.current.start();
+      } catch (err) {
+        console.warn('Speech start error:', err);
+      }
+    }
+  };
+
+  const toggleSpeakDictamen = (textToSpeak?: string) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      alert('Tu navegador no cuenta con soporte para síntesis de voz.');
+      return;
+    }
+    if (isSpeakingDictamen) {
+      window.speechSynthesis.cancel();
+      setIsSpeakingDictamen(false);
+      return;
+    }
+    const content = textToSpeak || activeDictamen?.text;
+    if (!content) return;
+
+    window.speechSynthesis.cancel();
+    const cleanText = content
+      .replace(/[*#_~`\[\]]/g, '')
+      .replace(/•/g, '')
+      .replace(/\|/g, ' ')
+      .replace(/\n+/g, '. ');
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = 'es-MX';
+    utterance.rate = 1.05;
+    utterance.pitch = 0.98;
+
+    const voices = window.speechSynthesis.getVoices();
+    const esVoice = voices.find(v => v.lang.startsWith('es-MX')) ||
+                    voices.find(v => v.lang.startsWith('es')) || null;
+    if (esVoice) utterance.voice = esVoice;
+
+    utterance.onend = () => setIsSpeakingDictamen(false);
+    utterance.onerror = () => setIsSpeakingDictamen(false);
+
+    setIsSpeakingDictamen(true);
+    window.speechSynthesis.speak(utterance);
+  };
 
   // Nodos con persistencia reactiva local por colegio
   const storageKeyNodes = `iskool_boveda_nodes_${effectiveSchoolId}_v3`;
@@ -480,8 +571,12 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
     let targetNode: BrainNode | undefined = specificTargetNode;
 
     if (!targetNode) {
-      // 1. Coincidencia por campus o sedes
-      if (analyticResult.domain === 'CAMPUSES_GROUPS' || qLower.includes('campus') || qLower.includes('plantel') || qLower.includes('sede')) {
+      // 0. Mandato Estratégico Ejecutivo del CEO ("¿Qué necesita mi atención esta semana?")
+      if (analyticResult.domain === 'STRATEGIC_CEO_RADAR' || qLower.includes('atencion') || qLower.includes('prioridad') || qLower.includes('radar')) {
+        targetNode = nodes.find(n => n.id === `core-${effectiveSchoolId}`) ||
+                     nodes.find(n => n.cluster === 'gobernanza') ||
+                     nodes[0];
+      } else if (analyticResult.domain === 'CAMPUSES_GROUPS' || qLower.includes('campus') || qLower.includes('plantel') || qLower.includes('sede')) {
         targetNode = nodes.find(n => 
           (n.entityType === 'campus' || n.cluster === 'gobernanza') && 
           (qLower.includes(n.title.toLowerCase()) || analyticResult.reportTitle.toLowerCase().includes(n.title.toLowerCase()))
@@ -1580,6 +1675,19 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
                       </h4>
                     </div>
                     <div className="flex items-center gap-2 text-[10px] font-mono">
+                      <button
+                        type="button"
+                        onClick={() => toggleSpeakDictamen(activeDictamen.text)}
+                        title={isSpeakingDictamen ? "Detener reproducción por voz" : "Escuchar dictamen institucional por voz"}
+                        className={`px-2 py-0.5 rounded font-bold flex items-center gap-1 border transition-all cursor-pointer ${
+                          isSpeakingDictamen 
+                            ? 'bg-rose-500/20 text-rose-300 border-rose-500/50 animate-pulse' 
+                            : 'bg-indigo-900/60 hover:bg-indigo-800/80 text-indigo-300 border-indigo-500/40'
+                        }`}
+                      >
+                        {isSpeakingDictamen ? <VolumeX size={12} className="text-rose-400" /> : <Volume2 size={12} className="text-indigo-400" />}
+                        <span>{isSpeakingDictamen ? 'Detener Voz' : 'Escuchar Voz'}</span>
+                      </button>
                       {activeDictamen.isOptimized && (
                         <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 px-2 py-0.5 rounded font-bold flex items-center gap-1">
                           <Check size={11} className="text-emerald-400 stroke-[3]" />
@@ -1752,6 +1860,7 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
                     'Pipeline de Atracción de Talento & Onboarding',
                     'Simuladores Operativos & Práctica Técnica'
                   ] : [
+                    '¿Qué necesita mi atención esta semana?',
                     'Matriz de Cobertura Curricular y Planeaciones NEM 2024',
                     'Manual de Facturación SAT CFDI 4.0',
                     'Expediente 360 & Alertas Médicas',
@@ -1792,10 +1901,24 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
                   type="text"
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
-                  placeholder={isCorporate ? "Consulta al Asistente Corporativo IA (ej. ¿Cómo opera la certificación de competencias?)" : "Consulta al Asistente Pedagógico IA (ej. ¿Cómo opera el CFDI 4.0?)"}
-                  className="w-full bg-slate-900 border border-slate-700 focus:border-indigo-400 rounded-2xl py-3 pl-10 pr-36 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-inner select-text"
+                  placeholder={isListeningVoice ? "Escuchando dictado por voz..." : (isCorporate ? "Consulta al Asistente Corporativo IA (ej. ¿Cómo opera la certificación de competencias?)" : "Consulta al Asistente Pedagógico IA (ej. ¿Qué necesita mi atención esta semana?)")}
+                  className="w-full bg-slate-900 border border-slate-700 focus:border-indigo-400 rounded-2xl py-3 pl-10 pr-44 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all shadow-inner select-text"
                 />
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                  {/* Botón Micrófono */}
+                  <button
+                    type="button"
+                    onClick={toggleVoiceInput}
+                    title={isListeningVoice ? "Detener dictado por voz" : "Dictar consulta con tu voz"}
+                    className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                      isListeningVoice
+                        ? 'bg-rose-600 text-white animate-pulse'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                    }`}
+                  >
+                    {isListeningVoice ? <MicOff size={14} /> : <Mic size={14} />}
+                  </button>
+
                   {chatInput.length > 0 && (
                     <button
                       type="button"

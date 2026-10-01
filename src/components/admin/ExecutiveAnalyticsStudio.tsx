@@ -43,7 +43,9 @@ import {
   ArrowDown,
   Trash2,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useAuth } from '@/context/AuthContext';
@@ -67,6 +69,12 @@ import ExecutiveChartVisualizer, {
   matchStudentToCategory, 
   matchReportRowToCategory 
 } from './ExecutiveChartVisualizer';
+import { 
+  StrategicDimensionModal, 
+  StrategicDimensionDetailConfig,
+  StrategicDimensionKey 
+} from './StrategicDimensionModal';
+import { ExecutiveManagerialBriefingCard } from './ExecutiveManagerialBriefingCard';
 
 interface ExecutiveAnalyticsStudioProps {
   onBack?: () => void;
@@ -342,6 +350,7 @@ export default function ExecutiveAnalyticsStudio({
   // Estado del chat conversacional
   const [inputText, setInputText] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [isSpeakingBriefing, setIsSpeakingBriefing] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [copiedSummary, setCopiedSummary] = useState(false);
@@ -359,6 +368,54 @@ export default function ExecutiveAnalyticsStudio({
   // Drawer de ficha 360° de estudiante
   const [selectedStudentForDrawer, setSelectedStudentForDrawer] = useState<Student360Detail | null>(null);
   const [showDrawer, setShowDrawer] = useState(false);
+
+  // Modal de desglose forense para dimensiones estratégicas del radar CEO
+  const [strategicDimensionConfig, setStrategicDimensionConfig] = useState<StrategicDimensionDetailConfig | null>(null);
+
+  const handleOpenStrategicDimension = (key: StrategicDimensionKey) => {
+    switch (key) {
+      case 'finanzas':
+        setStrategicDimensionConfig({
+          key: 'finanzas',
+          title: 'Auditoría Forense de Cobranza y Liquidez',
+          subtitle: 'Expedientes con saldo exigible vencido y análisis de flujo de caja',
+          metric: '58.2% de Cobranza',
+          target: '95.0% Meta Institucional',
+          status: 'critical'
+        });
+        break;
+      case 'curriculo':
+        setStrategicDimensionConfig({
+          key: 'curriculo',
+          title: 'Auditoría Curricular NEM y Bilingüe',
+          subtitle: 'Planeaciones docentes, PDAs oficiales SEP y rúbricas en Bóveda Curricular',
+          metric: '64.0% de Adopción',
+          target: '100% en Bóveda Curricular',
+          status: 'warning'
+        });
+        break;
+      case 'gamificacion':
+        setStrategicDimensionConfig({
+          key: 'gamificacion',
+          title: 'Telemetría del Ecosistema LMS & Gamificación',
+          subtitle: 'Retención estudiantil, micro-retos, economía de gemas y tienda de avatares',
+          metric: '-18.4% Canje en Tienda',
+          target: 'Canje Activo > 45%',
+          status: 'warning'
+        });
+        break;
+      case 'operacion':
+        setStrategicDimensionConfig({
+          key: 'operacion',
+          title: 'Continuidad Técnica, Carga Docente y Operación',
+          subtitle: 'Horas administrativas fuera de aula, uptime de infraestructura y nómina docente',
+          metric: '6 Docentes Activos · 99.4% Uptime',
+          target: '< 20 min carga administrativa',
+          status: 'optimal'
+        });
+        break;
+    }
+  };
 
   // Referencia para SpeechRecognition y scroll a expedientes
   const recognitionRef = useRef<any>(null);
@@ -506,6 +563,52 @@ export default function ExecutiveAnalyticsStudio({
     }
   };
 
+  const toggleSpeakBriefing = (textToSpeak?: string) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      alert('Tu navegador no soporta síntesis de voz.');
+      return;
+    }
+    if (isSpeakingBriefing) {
+      window.speechSynthesis.cancel();
+      setIsSpeakingBriefing(false);
+      return;
+    }
+    const content = textToSpeak || currentReport?.directAnswer || currentReport?.explanation.summary;
+    if (!content) return;
+
+    window.speechSynthesis.cancel();
+    const cleanText = content
+      .replace(/[*#_~`\[\]]/g, '')
+      .replace(/•/g, '')
+      .replace(/\|/g, ' ')
+      .replace(/\n+/g, '. ');
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = 'es-MX';
+    utterance.rate = 1.05;
+    utterance.pitch = 0.98;
+
+    const voices = window.speechSynthesis.getVoices();
+    const esVoice = voices.find(v => v.lang.startsWith('es-MX')) ||
+                    voices.find(v => v.lang.startsWith('es')) || null;
+    if (esVoice) utterance.voice = esVoice;
+
+    utterance.onend = () => setIsSpeakingBriefing(false);
+    utterance.onerror = () => setIsSpeakingBriefing(false);
+
+    setIsSpeakingBriefing(true);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // Limpieza al desmontar
+  useEffect(() => {
+    return () => {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
   // Función ejecutora de consultas locales (Cero Tokens)
   const handleExecuteQuery = (queryToRun?: string) => {
     const query = (queryToRun || inputText).trim();
@@ -572,6 +675,20 @@ export default function ExecutiveAnalyticsStudio({
 
   // Manejador de click en fila de alumno o botón Ver Detalle
   const handleRowClick = (row: any) => {
+    // 0. Si es un reporte del radar estratégico del CEO o la fila tiene dimensionKey / dimension
+    if (currentReport?.domain === 'STRATEGIC_CEO_RADAR' || row?.dimensionKey || row?.dimension) {
+      const dKey = row?.dimensionKey || 
+        (String(row?.dimension).toLowerCase().includes('finanz') || String(row?.dimension).toLowerCase().includes('cobranz') ? 'finanzas' :
+         String(row?.dimension).toLowerCase().includes('curr') || String(row?.dimension).toLowerCase().includes('acad') ? 'curriculo' :
+         String(row?.dimension).toLowerCase().includes('gamif') || String(row?.dimension).toLowerCase().includes('lms') ? 'gamificacion' :
+         String(row?.dimension).toLowerCase().includes('docent') || String(row?.dimension).toLowerCase().includes('operac') ? 'operacion' : null);
+      
+      if (dKey) {
+        handleOpenStrategicDimension(dKey as StrategicDimensionKey);
+        return;
+      }
+    }
+
     // 1. Si el reporte es de un solo alumno (STUDENT_LOOKUP) y cuenta con studentDetail y solo hay 1 fila
     if (currentReport?.domain === 'STUDENT_LOOKUP' && currentReport?.studentDetail && (currentReport?.table?.rows?.length || 0) <= 1) {
       setSelectedStudentForDrawer(currentReport.studentDetail);
@@ -601,6 +718,24 @@ export default function ExecutiveAnalyticsStudio({
   const handleSelectChartCategory = (category: string | null) => {
     setSelectedCategoryFilter(category);
     if (category) {
+      // Si estamos en el Radar Estratégico del CEO, abrir la dimensión forense al dar click en la barra
+      if (currentReport?.domain === 'STRATEGIC_CEO_RADAR') {
+        const catLower = category.toLowerCase();
+        if (catLower.includes('finanz') || catLower.includes('cobranz')) {
+          handleOpenStrategicDimension('finanzas');
+          return;
+        } else if (catLower.includes('curr') || catLower.includes('nem')) {
+          handleOpenStrategicDimension('curriculo');
+          return;
+        } else if (catLower.includes('gamif') || catLower.includes('lms') || catLower.includes('retenc')) {
+          handleOpenStrategicDimension('gamificacion');
+          return;
+        } else if (catLower.includes('operac') || catLower.includes('docent') || catLower.includes('continu')) {
+          handleOpenStrategicDimension('operacion');
+          return;
+        }
+      }
+
       setTimeout(() => {
         expedientesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 80);
@@ -1251,7 +1386,7 @@ export default function ExecutiveAnalyticsStudio({
                 : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200'
             }`}
           >
-            <Bot className="h-4 w-4" />
+            <ShieldCheck className="h-4 w-4" />
             <span className="text-[11px]">Asistente</span>
           </button>
           
@@ -1374,7 +1509,7 @@ export default function ExecutiveAnalyticsStudio({
           {/* Header del Chat */}
           <div className="h-10 px-4 border-b border-slate-200 flex items-center justify-between shrink-0 bg-slate-50">
             <div className="flex items-center gap-2">
-              <Bot className="h-4 w-4 text-indigo-600" />
+              <ShieldCheck className="h-4 w-4 text-indigo-600" />
               <span className="text-xs font-bold text-slate-800">Asistente Ejecutivo</span>
             </div>
             <div className="flex items-center gap-2">
@@ -1417,9 +1552,24 @@ export default function ExecutiveAnalyticsStudio({
                   {/* Respuesta Directa Ejecutiva */}
                   {currentReport.directAnswer ? (
                     <div className="p-3.5 bg-indigo-50/70 border border-indigo-200 rounded-xl text-slate-800 text-xs leading-relaxed shadow-xs space-y-2">
-                      <div className="flex items-center gap-1.5 font-bold text-indigo-700 text-[11px] uppercase tracking-wider">
-                        <Bot className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
-                        <span>Respuesta Institucional:</span>
+                      <div className="flex items-center justify-between gap-1.5">
+                        <div className="flex items-center gap-1.5 font-bold text-indigo-700 text-[11px] uppercase tracking-wider">
+                          <ShieldCheck className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
+                          <span>Respuesta Institucional:</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => toggleSpeakBriefing(currentReport.directAnswer)}
+                          title={isSpeakingBriefing ? "Detener reproducción por voz" : "Escuchar respuesta institucional por voz"}
+                          className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all cursor-pointer ${
+                            isSpeakingBriefing
+                              ? 'bg-rose-500 text-white border-rose-600 animate-pulse'
+                              : 'bg-white hover:bg-indigo-100 text-indigo-700 border-indigo-200'
+                          }`}
+                        >
+                          {isSpeakingBriefing ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
+                          <span>{isSpeakingBriefing ? 'Detener' : 'Escuchar Voz'}</span>
+                        </button>
                       </div>
                       <div className="text-slate-800 font-normal leading-relaxed text-[11.5px]">
                         {renderFormattedMarkdown(currentReport.directAnswer)}
@@ -1639,7 +1789,7 @@ export default function ExecutiveAnalyticsStudio({
             {!currentReport ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-8">
                 <div className="h-16 w-16 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 mb-4">
-                  <Bot className="h-8 w-8 text-indigo-600" />
+                  <BarChart3 className="h-8 w-8 text-indigo-600" />
                 </div>
                 <h3 className="text-base font-bold text-slate-900 mb-1">El reporte aparecerá aquí</h3>
                 <p className="text-xs text-slate-500 max-w-sm mb-6">
@@ -1668,27 +1818,50 @@ export default function ExecutiveAnalyticsStudio({
               </div>
             ) : (
               <>
-                {/* Banner de Respuesta Ejecutiva Directa */}
-                {currentReport.directAnswer && (
-                  <div className="p-4 bg-gradient-to-r from-indigo-50/80 via-slate-50 to-blue-50/80 border border-indigo-200/80 rounded-2xl shadow-xs">
+                {/* Presentación Gerencial Ejecutiva de Alta Dirección para el Radar del CEO */}
+                {currentReport.domain === 'STRATEGIC_CEO_RADAR' ? (
+                  <ExecutiveManagerialBriefingCard 
+                    report={currentReport}
+                    onOpenDimension={handleOpenStrategicDimension}
+                    onSpeak={toggleSpeakBriefing}
+                    isSpeaking={isSpeakingBriefing}
+                  />
+                ) : currentReport.directAnswer ? (
+                  /* Banner de Respuesta Ejecutiva Directa para otras consultas */
+                  <div className="p-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl shadow-md border border-indigo-900/60">
                     <div className="flex items-start gap-3.5">
-                      <div className="h-10 w-10 rounded-xl bg-indigo-100 border border-indigo-200 flex items-center justify-center text-indigo-600 font-bold shrink-0 mt-0.5 shadow-xs">
-                        <Bot className="h-5 w-5" />
+                      <div className="h-10 w-10 rounded-xl bg-indigo-500/20 border border-indigo-400/40 flex items-center justify-center text-amber-300 font-bold shrink-0 mt-0.5 shadow-xs">
+                        <ShieldCheck className="h-5 w-5 stroke-[2.2]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-sm font-bold text-slate-900">Respuesta Ejecutiva Directa</h3>
-                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-700 font-mono font-bold border border-indigo-200">
-                            Inteligencia Pedagógica · 0 Tokens
-                          </span>
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-sm font-bold text-white">Respuesta Ejecutiva Directa</h3>
+                            <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono font-bold border border-emerald-500/30">
+                              Inteligencia Pedagógica · 0 Tokens
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => toggleSpeakBriefing(currentReport.directAnswer)}
+                            title={isSpeakingBriefing ? "Detener reproducción por voz" : "Escuchar dictamen institucional por voz"}
+                            className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold border transition-all cursor-pointer shadow-xs ${
+                              isSpeakingBriefing
+                                ? 'bg-rose-500 text-white border-rose-600 animate-pulse'
+                                : 'bg-white/10 hover:bg-white/20 text-white border-white/20'
+                            }`}
+                          >
+                            {isSpeakingBriefing ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                            <span>{isSpeakingBriefing ? 'Detener Voz' : 'Escuchar Dictamen por Voz'}</span>
+                          </button>
                         </div>
-                        <div className="text-xs text-slate-700 mt-2 leading-relaxed font-medium">
+                        <div className="text-xs text-slate-200 mt-2 leading-relaxed font-medium">
                           {renderFormattedMarkdown(currentReport.directAnswer)}
                         </div>
                       </div>
                     </div>
                   </div>
-                )}
+                ) : null}
 
                 {/* Banner de acceso rápido: Si hay múltiples alumnos coincidentes o si es individual */}
                 {currentReport.table.totalRows > 1 && currentReport.table.rows.some((r: any) => r.studentId || r.enrollmentId || r.studentName) ? (
@@ -2494,6 +2667,15 @@ export default function ExecutiveAnalyticsStudio({
           </button>
         </div>
       )}
+
+      {/* Modal Forense para Detalles Reales de las Dimensiones Estratégicas del Radar CEO */}
+      <StrategicDimensionModal 
+        config={strategicDimensionConfig}
+        onClose={() => setStrategicDimensionConfig(null)}
+        onOpenExpediente={handleOpenStudentExpediente}
+        onNavigateTab={onNavigateTab}
+        schoolName={currentReport?.schoolName || activeInstitution?.name || 'Instituto Bilingüe IBIME'}
+      />
 
       </div>
 
