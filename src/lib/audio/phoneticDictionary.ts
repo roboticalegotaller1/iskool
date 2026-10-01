@@ -197,6 +197,97 @@ export const MEXICAN_HISTORICAL_PHONETIC_MAP: Record<string, PhoneticEntry> = {
     alias: 'pátrios',
     ipa: 'ˈpa.tɾjos',
     description: 'Modulación fonética natural masculina plural de patrios [ˈpa.tɾjos]'
+  },
+  // Nombres y Términos Históricos Anglosajones con Pronunciación Auténtica
+  john_pershing: {
+    term: 'John J. Pershing',
+    alias: 'Jon Pérshin',
+    ipa: 'dʒɒn ˈpɜːrʃɪŋ',
+    description: 'General John J. Pershing, comandante de la Expedición Punitiva'
+  },
+  pershing: {
+    term: 'Pershing',
+    alias: 'Pérshin',
+    ipa: 'ˈpɜːrʃɪŋ',
+    description: 'General John J. Pershing'
+  },
+  columbus: {
+    term: 'Columbus',
+    alias: 'Colómbus',
+    ipa: 'kəˈlʌmbəs',
+    description: 'Población de Columbus, Nuevo México, asaltada por Villa en 1916'
+  },
+  woodrow_wilson: {
+    term: 'Woodrow Wilson',
+    alias: 'Uúdrou Uílson',
+    ipa: 'ˈwʊdroʊ ˈwɪlsən',
+    description: 'Presidente Woodrow Wilson'
+  },
+  henry_lane_wilson: {
+    term: 'Henry Lane Wilson',
+    alias: 'Jénri Léin Uílson',
+    ipa: 'ˈhɛnri leɪn ˈwɪlsən',
+    description: 'Embajador estadounidense Henry Lane Wilson, pacto de la Embajada'
+  },
+  wilson: {
+    term: 'Wilson',
+    alias: 'Uílson',
+    ipa: 'ˈwɪlsən',
+    description: 'Apellido Wilson'
+  },
+  james_polk: {
+    term: 'James K. Polk',
+    alias: 'Yeims Polk',
+    ipa: 'dʒeɪmz poʊk',
+    description: 'Presidente James K. Polk'
+  },
+  winfield_scott: {
+    term: 'Winfield Scott',
+    alias: 'Uínfild Eskót',
+    ipa: 'ˈwɪnfiːld skɒt',
+    description: 'General Winfield Scott'
+  },
+  zachary_taylor: {
+    term: 'Zachary Taylor',
+    alias: 'Zácari Téilor',
+    ipa: 'ˈzækəri ˈteɪlər',
+    description: 'General Zachary Taylor'
+  },
+  george_washington: {
+    term: 'George Washington',
+    alias: 'Yorch Uáshington',
+    ipa: 'dʒɔːrdʒ ˈwɒʃɪŋtən',
+    description: 'George Washington'
+  },
+  washington: {
+    term: 'Washington',
+    alias: 'Uáshington',
+    ipa: 'ˈwɒʃɪŋtən',
+    description: 'Washington'
+  },
+  abraham_lincoln: {
+    term: 'Abraham Lincoln',
+    alias: 'Éibraham Líncoln',
+    ipa: 'ˈeɪbrəhæm ˈlɪŋkən',
+    description: 'Presidente Abraham Lincoln'
+  },
+  lincoln: {
+    term: 'Lincoln',
+    alias: 'Líncoln',
+    ipa: 'ˈlɪŋkən',
+    description: 'Lincoln'
+  },
+  roosevelt: {
+    term: 'Roosevelt',
+    alias: 'Róusevelt',
+    ipa: 'ˈroʊzəvɛlt',
+    description: 'Presidente Roosevelt'
+  },
+  eisenhower: {
+    term: 'Eisenhower',
+    alias: 'Aisenjáuer',
+    ipa: 'ˈaɪzənhaʊər',
+    description: 'Presidente Dwight Eisenhower'
   }
 };
 
@@ -257,7 +348,23 @@ export function applyPhoneticSubstitutions(
     { regex: /\bpatrias\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.patrias },
     { regex: /\bpatria\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.patria },
     { regex: /\bpatrios\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.patrios },
-    { regex: /\bpatrio\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.patrio }
+    { regex: /\bpatrio\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.patrio },
+    // Figuras y Nombres Anglosajones en Contexto Histórico
+    { regex: /\bJohn\s+J\.\s+Pershing\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.john_pershing },
+    { regex: /\bPershing\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.pershing },
+    { regex: /\bColumbus\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.columbus },
+    { regex: /\bWoodrow\s+Wilson\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.woodrow_wilson },
+    { regex: /\bHenry\s+Lane\s+Wilson\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.henry_lane_wilson },
+    { regex: /\bWilson\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.wilson },
+    { regex: /\bJames\s+K\.\s+Polk\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.james_polk },
+    { regex: /\bWinfield\s+Scott\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.winfield_scott },
+    { regex: /\bZachary\s+Taylor\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.zachary_taylor },
+    { regex: /\bGeorge\s+Washington\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.george_washington },
+    { regex: /\bWashington\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.washington },
+    { regex: /\bAbraham\s+Lincoln\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.abraham_lincoln },
+    { regex: /\bLincoln\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.lincoln },
+    { regex: /\bRoosevelt\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.roosevelt },
+    { regex: /\bEisenhower\b/gi, entry: MEXICAN_HISTORICAL_PHONETIC_MAP.eisenhower }
   ];
 
   for (const { regex, entry } of patterns) {

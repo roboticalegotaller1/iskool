@@ -11,9 +11,12 @@ import {
   VolumeX, 
   Sparkles, 
   ExternalLink,
-  Clock,
   Tv,
-  Layers
+  Layers,
+  Eye,
+  Subtitles,
+  Maximize2,
+  Clock
 } from 'lucide-react';
 import { getYouTubeEmbedUrl } from '@/components/studio/player/StudioFlowPlayer';
 
@@ -61,6 +64,8 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [viewMode, setViewMode] = useState<'cinematic_flow' | 'external_video'>('cinematic_flow');
+  const [framingMode, setFramingMode] = useState<'fit' | 'fill'>('fit');
+  const [showOnScreenSubtitles, setShowOnScreenSubtitles] = useState<boolean>(true);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
 
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -257,6 +262,10 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
     if (!isPlaying) {
       return { scale: 1, x: 0, y: 0 };
     }
+    // En modo 'fit' (100% Texto Visible), movimiento sutil que jamás corta bordes ni textos
+    if (framingMode === 'fit') {
+      return { scale: [1, 1.03], y: [0, -3] };
+    }
     switch (activeCapsule.cameraMovement) {
       case 'zoom_in':
         return { scale: [1, 1.14], x: [0, -8], y: [0, -6] };
@@ -289,8 +298,38 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
           </div>
         </div>
 
-        {/* Selector de Modo: Flow Cinemático vs Documental */}
-        <div className="flex items-center gap-2">
+        {/* Selector de Modo: Flow Cinemático vs Documental y Opciones de Visualización */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Alternar Encuadre Completo / Sin Cortes de Texto */}
+          <button
+            type="button"
+            onClick={() => setFramingMode(prev => prev === 'fit' ? 'fill' : 'fit')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-all cursor-pointer ${
+              framingMode === 'fit'
+                ? 'bg-amber-500/20 text-amber-200 border-amber-400 shadow-sm'
+                : 'bg-white/10 hover:bg-white/20 text-slate-300 border-white/20'
+            }`}
+            title={framingMode === 'fit' ? 'Texto 100% visible sin recortes (Activo)' : 'Llenar pantalla completa'}
+          >
+            <Eye className="w-3.5 h-3.5 text-amber-400" />
+            <span>{framingMode === 'fit' ? 'Texto 100% Visible' : 'Llenar Pantalla'}</span>
+          </button>
+
+          {/* Alternar Subtítulos de Alta Visibilidad */}
+          <button
+            type="button"
+            onClick={() => setShowOnScreenSubtitles(!showOnScreenSubtitles)}
+            className={`px-2.5 py-1.5 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-all cursor-pointer ${
+              showOnScreenSubtitles
+                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                : 'bg-white/10 hover:bg-white/20 text-white/50 border-white/20'
+            }`}
+            title="Subtítulos en pantalla"
+          >
+            <Subtitles className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Subtítulos</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setViewMode(viewMode === 'cinematic_flow' ? 'external_video' : 'cinematic_flow')}
@@ -321,9 +360,21 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
         ) : (
           /* ================= PLAYER FLOW CINEMÁTICO (KEN BURNS + PARTICULAS) ================= */
           <div className="relative w-full h-full overflow-hidden flex items-center justify-center bg-slate-950 select-none">
+            {/* Fondo ambiental desenfocado cinemático (evita bordes muertos en modo fit) */}
+            {framingMode === 'fit' && (
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <img
+                  src={activeCapsule.imageUrl}
+                  alt=""
+                  className="w-full h-full object-cover filter blur-2xl opacity-30 scale-110"
+                />
+                <div className="absolute inset-0 bg-black/60" />
+              </div>
+            )}
+
             {/* Imagen Ilustrada con Cámara Dinámica Ken Burns */}
             <motion.img 
-              key={`${activeCapsule.id}-${isPlaying}`}
+              key={`${activeCapsule.id}-${isPlaying}-${framingMode}`}
               src={activeCapsule.imageUrl} 
               alt={activeCapsule.title}
               animate={getKenBurnsAnimation()}
@@ -336,21 +387,29 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
                   (e.target as HTMLImageElement).src = avatarImageUrl;
                 }
               }}
-              className="w-full h-full object-cover filter contrast-105 brightness-95"
+              className={`z-10 filter contrast-105 brightness-95 transition-all select-none ${
+                framingMode === 'fit' 
+                  ? 'w-auto h-auto max-w-full max-h-[420px] object-contain rounded-xl border border-amber-500/25 shadow-2xl p-1' 
+                  : 'w-full h-full object-cover'
+              }`}
             />
 
-            {/* Viñeta Cinematográfica y Barras Letterbox Anamórficas */}
-            <div className="absolute inset-0 bg-radial from-transparent via-black/30 to-black/80 pointer-events-none" />
-            <div className="absolute top-0 left-0 right-0 h-6 bg-black/90 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 right-0 h-6 bg-black/90 pointer-events-none" />
+            {/* Viñeta Cinematográfica (Solo en modo fill para no oscurecer textos en modo fit) */}
+            {framingMode === 'fill' && (
+              <>
+                <div className="absolute inset-0 bg-radial from-transparent via-black/30 to-black/80 pointer-events-none" />
+                <div className="absolute top-0 left-0 right-0 h-6 bg-black/90 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 right-0 h-6 bg-black/90 pointer-events-none" />
+              </>
+            )}
 
             {/* Partículas de Polvo Dorado y Brillo Ambiental (Google Flow) */}
-            <div className="absolute inset-0 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:24px_24px] opacity-25 pointer-events-none animate-pulse" />
+            <div className="absolute inset-0 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:24px_24px] opacity-20 pointer-events-none animate-pulse" />
 
-            {/* Overlay Informativo Superior */}
-            <div className="absolute top-8 left-6 right-6 flex items-center justify-between pointer-events-none">
+            {/* Overlay Informativo Superior (Discreto y sin bloquear textos de encabezado) */}
+            <div className="absolute top-3 left-4 right-4 flex items-center justify-between pointer-events-none z-20">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-1 rounded-full bg-black/75 border border-amber-500/40 text-[10px] font-black uppercase text-amber-300 tracking-wider backdrop-blur-md">
+                <span className="px-2.5 py-1 rounded-full bg-black/80 border border-amber-500/40 text-[10px] font-black uppercase text-amber-300 tracking-wider backdrop-blur-md shadow-md">
                   Cápsula {currentCapsuleIndex + 1} de {capsules.length}
                 </span>
                 <span className="text-xs font-bold text-amber-100/90 font-serif drop-shadow-md">
@@ -358,6 +417,17 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
                 </span>
               </div>
             </div>
+
+            {/* Subtítulos Dinámicos de Alta Visibilidad dentro del Player */}
+            {showOnScreenSubtitles && activeCapsule.script && (
+              <div className="absolute bottom-14 left-4 right-4 z-20 flex justify-center pointer-events-none">
+                <div className="max-w-2xl px-3.5 py-1.5 rounded-xl bg-black/85 border border-amber-500/40 backdrop-blur-md shadow-2xl text-center">
+                  <p className="text-xs sm:text-sm font-serif font-bold text-amber-100 italic leading-snug drop-shadow-md">
+                    "{activeCapsule.script}"
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Botón Central Flotante de Play cuando está en Pausa */}
             {!isPlaying && (

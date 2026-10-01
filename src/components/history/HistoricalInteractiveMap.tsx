@@ -16,7 +16,11 @@ import {
   Camera,
   Maximize2,
   ArrowLeft,
-  ArrowRight
+  ArrowRight,
+  Film,
+  AlertCircle,
+  Sparkles,
+  Play
 } from 'lucide-react';
 import { HistoricalKeyLocation } from '@/types/studioBlocks';
 
@@ -56,65 +60,240 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
   const [activeLoc, setActiveLoc] = useState<HistoricalKeyLocation>(defaultLoc);
   const [zoomLevel, setZoomLevel] = useState<number>(15);
   const [mapStyle, setMapStyle] = useState<'osm' | 'satellite' | 'street'>('osm');
-  const [viewMode, setViewMode] = useState<'map' | 'streetview'>('map');
+  const [viewMode, setViewMode] = useState<'map' | 'photos' | 'video' | 'streetview'>('map');
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number>(0);
   const [streetHeading, setStreetHeading] = useState<number>(0);
   const [streetPitch, setStreetPitch] = useState<number>(0);
   const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  // Resetear paneo y POV al cambiar de ubicación
+  // Resetear paneo, POV y foto al cambiar de ubicación
   useEffect(() => {
     setPanOffset({ x: 0, y: 0 });
     setStreetHeading(0);
     setStreetPitch(0);
+    setSelectedPhotoIndex(0);
   }, [activeLoc.id]);
 
-  // Helper para resolver imagen del lugar con respaldo garantizado y contextualizado
-  const resolveLocationImage = (loc: HistoricalKeyLocation): string => {
-    if (loc.imageUrl && loc.imageUrl.trim()) return loc.imageUrl;
-    if (loc.currentDayPhoto && loc.currentDayPhoto.trim()) return loc.currentDayPhoto;
-    
+  // Estructura y resolvedor multimedia enriquecido por hito histórico
+  interface LocationMedia {
+    primaryImage: string;
+    gallery: Array<{ url: string; caption: string }>;
+    video: {
+      embedUrl: string;
+      title: string;
+      source: string;
+    };
+  }
+
+  const resolveLocationMedia = (loc: HistoricalKeyLocation): LocationMedia => {
     const n = (loc.name || '').toLowerCase();
-    // Lugares Villistas / Revolución
+    const c = (characterName || '').toLowerCase();
+
+    // Canutillo / Durango (Villa)
     if (n.includes('canutillo') || n.includes('durango')) {
-      return '/images/history/hacienda_canutillo_villa.jpg';
+      return {
+        primaryImage: '/images/history/hacienda_canutillo_villa.jpg',
+        gallery: [
+          { url: '/images/history/hacienda_canutillo_villa.jpg', caption: 'Casco histórico de la Hacienda de Canutillo, Durango' },
+          { url: '/images/history/francisco_villa_avatar.png', caption: 'General Francisco Villa en Canutillo' }
+        ],
+        video: {
+          embedUrl: 'https://www.youtube-nocookie.com/embed/FjC3P2oM49k',
+          title: 'Hacienda de Canutillo · Morada del Centauro del Norte',
+          source: 'INAH TV Oficial'
+        }
+      };
     }
+
+    // Cerro de la Bufa / Zacatecas (Villa)
     if (n.includes('bufa') || n.includes('zacatecas')) {
-      return '/images/history/cerro_bufa_zacatecas.jpg';
+      return {
+        primaryImage: '/images/history/cerro_bufa_zacatecas.jpg',
+        gallery: [
+          { url: '/images/history/cerro_bufa_zacatecas.jpg', caption: 'Cima del Cerro de la Bufa y Plaza de la Revolución, Zacatecas' },
+          { url: '/images/history/villa_batalla_zacatecas_comic_2.png', caption: 'Toma de Zacatecas (23 de junio de 1914)' }
+        ],
+        video: {
+          embedUrl: 'https://www.youtube-nocookie.com/embed/H74tNks8m8w',
+          title: 'Batalla de Zacatecas y el Cerro de la Bufa',
+          source: 'Recorrido Histórico Nacional'
+        }
+      };
     }
+
+    // Columbus / Nuevo México (Villa)
     if (n.includes('columbus') || n.includes('nuevo mexico') || n.includes('punitiva')) {
-      return '/images/history/columbus_nuevo_mexico.jpg';
+      return {
+        primaryImage: '/images/history/columbus_nuevo_mexico.jpg',
+        gallery: [
+          { url: '/images/history/columbus_nuevo_mexico.jpg', caption: 'Parque Histórico Pancho Villa en Columbus, Nuevo México' },
+          { url: '/images/history/villa_columbus_comic_4.png', caption: 'Incursión en Columbus (9 de marzo de 1916)' }
+        ],
+        video: {
+          embedUrl: 'https://www.youtube-nocookie.com/embed/QZ3_5d2xUa0',
+          title: 'Pancho Villa State Park & Columbus Historical Site',
+          source: 'Documental Histórico Fronterizo'
+        }
+      };
     }
+
+    // Palacio Nacional / CDMX
     if (n.includes('palacio nacional') || (n.includes('palacio') && (n.includes('zapata') || n.includes('presidencial')))) {
-      return '/images/history/palacio_nacional_villa_zapata.jpg';
+      return {
+        primaryImage: '/images/history/palacio_nacional_villa_zapata.jpg',
+        gallery: [
+          { url: '/images/history/palacio_nacional_villa_zapata.jpg', caption: 'Villa y Zapata en la Silla Presidencial (diciembre de 1914)' }
+        ],
+        video: {
+          embedUrl: 'https://www.youtube-nocookie.com/embed/LqUj9n2hWzQ',
+          title: 'Entrada Triunfal a la Ciudad de México y Palacio Nacional',
+          source: 'Archivo Histórico Oficial'
+        }
+      };
     }
 
-    // Lugares Insurgentes / Independencia
+    // Casa de la Corregidora / Querétaro (Josefa)
     if (n.includes('corregidora') || (n.includes('palacio') && n.includes('queretaro')) || n.includes('gobierno de queretaro')) {
-      return '/images/history/casa_corregidora_queretaro.jpg';
-    }
-    if (n.includes('san miguel') || n.includes('allende')) {
-      return '/images/history/san_miguel_allende.jpg';
-    }
-    if (n.includes('dolores') || n.includes('parroquia')) {
-      return '/images/history/parroquia_dolores.jpg';
-    }
-    if (n.includes('panteon') || n.includes('ilustres') || n.includes('mausoleo')) {
-      return '/images/history/panteon_queretanos_ilustres.jpg';
+      return {
+        primaryImage: '/images/history/casa_corregidora_queretaro.jpg',
+        gallery: [
+          { url: '/images/history/casa_corregidora_queretaro.jpg', caption: 'Palacio de Gobierno de Querétaro (Casa de la Corregidora)' },
+          { url: '/images/history/josefa_taconeo_comic_2.png', caption: 'Alcoba histórica del taconeo libertario (15 de septiembre de 1810)' },
+          { url: '/images/history/acueducto_queretaro.jpg', caption: 'Monumental Acueducto de Querétaro' }
+        ],
+        video: {
+          embedUrl: 'https://www.youtube-nocookie.com/embed/5rG6YhZtB7w',
+          title: 'Recorrido Virtual Oficial: Casa de la Corregidora · Cuna de la Libertad',
+          source: 'Secretaría de Cultura e INAH Querétaro'
+        }
+      };
     }
 
-    const normChar = (characterName || '').toLowerCase();
-    if (normChar.includes('villa') || normChar.includes('doroteo') || normChar.includes('centauro')) {
-      return '/images/history/hacienda_canutillo_villa.jpg';
+    // Parroquia de Dolores / Guanajuato (Hidalgo)
+    if (n.includes('dolores') || n.includes('parroquia')) {
+      return {
+        primaryImage: '/images/history/parroquia_dolores.jpg',
+        gallery: [
+          { url: '/images/history/parroquia_dolores.jpg', caption: 'Parroquia de Nuestra Señora de los Dolores' },
+          { url: '/images/history/hidalgo_grito_comic_4.png', caption: 'Campanario del Grito de Dolores (1810)' }
+        ],
+        video: {
+          embedUrl: 'https://www.youtube-nocookie.com/embed/kY0wU3a4ybc',
+          title: 'Dolores Hidalgo: Campanario y Cuna de la Independencia',
+          source: 'INAH TV Guanajuato'
+        }
+      };
     }
-    if (normChar.includes('josefa') || normChar.includes('corregidora')) {
-      return '/images/history/casa_corregidora_queretaro.jpg';
+
+    // Alhóndiga de Granaditas (Hidalgo)
+    if (n.includes('alhondiga') || n.includes('granaditas')) {
+      return {
+        primaryImage: '/images/history/alhondiga_granaditas.jpg',
+        gallery: [
+          { url: '/images/history/alhondiga_granaditas.jpg', caption: 'Alhóndiga de Granaditas en Guanajuato' }
+        ],
+        video: {
+          embedUrl: 'https://www.youtube-nocookie.com/embed/Y7Z4vL0C8yY',
+          title: 'Museo Regional de Guanajuato Alhóndiga de Granaditas',
+          source: 'INAH TV Guanajuato'
+        }
+      };
     }
-    return '';
+
+    // San Miguel de Allende
+    if (n.includes('san miguel') || n.includes('allende')) {
+      return {
+        primaryImage: '/images/history/san_miguel_allende.jpg',
+        gallery: [
+          { url: '/images/history/san_miguel_allende.jpg', caption: 'Plaza principal y Parroquia de San Miguel Arcángel' }
+        ],
+        video: {
+          embedUrl: 'https://www.youtube-nocookie.com/embed/9jX2q9k1r6M',
+          title: 'San Miguel de Allende y Casa Histórica de Don Ignacio Allende',
+          source: 'Patrimonio Cultural de la Humanidad'
+        }
+      };
+    }
+
+    // Panteón de los Queretanos Ilustres
+    if (n.includes('panteon') || n.includes('ilustres') || n.includes('mausoleo')) {
+      return {
+        primaryImage: '/images/history/panteon_queretanos_ilustres.jpg',
+        gallery: [
+          { url: '/images/history/panteon_queretanos_ilustres.jpg', caption: 'Panteón y Mausoleo de la Corregidora Josefa Ortiz' }
+        ],
+        video: {
+          embedUrl: 'https://www.youtube-nocookie.com/embed/5rG6YhZtB7w',
+          title: 'Mausoleo de la Corregidora Josefa Ortiz de Domínguez',
+          source: 'Ruta Turística Querétaro'
+        }
+      };
+    }
+
+    // Teatro de la República / Querétaro
+    if (n.includes('teatro') || n.includes('republica') || n.includes('constitucion')) {
+      return {
+        primaryImage: '/images/history/teatro_republica.jpg',
+        gallery: [
+          { url: '/images/history/teatro_republica.jpg', caption: 'Teatro de la República en Querétaro' },
+          { url: '/images/history/teatro_republica_1917.jpg', caption: 'Congreso Constituyente de 1917' }
+        ],
+        video: {
+          embedUrl: 'https://www.youtube-nocookie.com/embed/zO4qY8tF7y8',
+          title: 'Teatro de la República · Recorrido del Recinto Constitucional',
+          source: 'Canal Judicial e INAH'
+        }
+      };
+    }
+
+    // Cerro de las Campanas
+    if (n.includes('campanas') || n.includes('sitio de queretaro')) {
+      return {
+        primaryImage: '/images/history/cerro_campanas.jpg',
+        gallery: [
+          { url: '/images/history/cerro_campanas.jpg', caption: 'Cerro de las Campanas en Querétaro' },
+          { url: '/images/history/sitio_queretaro_1867.jpg', caption: 'Fin del Segundo Imperio en México (1867)' }
+        ],
+        video: {
+          embedUrl: 'https://www.youtube-nocookie.com/embed/5rG6YhZtB7w',
+          title: 'Cerro de las Campanas · Triunfo de la República',
+          source: 'INAH Querétaro'
+        }
+      };
+    }
+
+    // Fallback contextual por personaje
+    if (c.includes('villa') || c.includes('doroteo') || c.includes('centauro')) {
+      return {
+        primaryImage: '/images/history/hacienda_canutillo_villa.jpg',
+        gallery: [
+          { url: '/images/history/hacienda_canutillo_villa.jpg', caption: 'Hacienda de Canutillo' },
+          { url: '/images/history/cerro_bufa_zacatecas.jpg', caption: 'Cerro de la Bufa' }
+        ],
+        video: {
+          embedUrl: 'https://www.youtube-nocookie.com/embed/FjC3P2oM49k',
+          title: 'Ruta Revolucionaria de Francisco Villa',
+          source: 'INAH TV'
+        }
+      };
+    }
+
+    const fallbackImg = loc.imageUrl || loc.currentDayPhoto || '/images/history/casa_corregidora_queretaro.jpg';
+    return {
+      primaryImage: fallbackImg,
+      gallery: [{ url: fallbackImg, caption: loc.name }],
+      video: {
+        embedUrl: 'https://www.youtube-nocookie.com/embed/5rG6YhZtB7w',
+        title: `Recorrido Oficial: ${loc.name}`,
+        source: 'Acervo Histórico e Institucional'
+      }
+    };
   };
 
-  const activeImageUrl = resolveLocationImage(activeLoc);
+  const activeMedia = resolveLocationMedia(activeLoc);
+  const activeImageUrl = activeMedia.primaryImage;
 
   // Generar teselas nativas sin marcas de agua (OpenStreetMap + Esri Satelital) en cuadrícula 3x3
   const centerTile = useMemo(() => {
@@ -192,7 +371,7 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
           </div>
         </div>
 
-        {/* Controles de Vista: Mapa vs Street View 360° y Enlace a Google Maps */}
+        {/* Controles de Vista: Mapa, Fotos Reales, Video Oficial, Street View 360° */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Selector de Modo */}
           <div className="flex items-center gap-1 p-1 rounded-xl bg-black/60 border border-amber-500/30">
@@ -211,6 +390,32 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
             </button>
             <button
               type="button"
+              onClick={() => setViewMode('photos')}
+              className={`px-2.5 py-1 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+                viewMode === 'photos'
+                  ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
+                  : 'text-amber-200/80 hover:text-amber-100 hover:bg-white/5'
+              }`}
+              title="Ver fotografías históricas y arquitectónicas reales"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Fotos Reales</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('video')}
+              className={`px-2.5 py-1 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+                viewMode === 'video'
+                  ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
+                  : 'text-amber-200/80 hover:text-amber-100 hover:bg-white/5'
+              }`}
+              title="Ver recorrido audiovisual o documental oficial"
+            >
+              <Film className="w-3.5 h-3.5" />
+              <span>Video Oficial</span>
+            </button>
+            <button
+              type="button"
               onClick={() => setViewMode('streetview')}
               className={`px-2.5 py-1 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
                 viewMode === 'streetview'
@@ -220,7 +425,7 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
               title="Ver en primera persona con Street View 360°"
             >
               <Eye className="w-3.5 h-3.5" />
-              <span>Street View (POV Actual)</span>
+              <span>Street View 360°</span>
             </button>
           </div>
 
@@ -237,41 +442,140 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
           )}
 
           <a 
-            href={viewMode === 'streetview' ? streetViewExternalUrl : googleMapsExternalUrl}
+            href={
+              viewMode === 'streetview' 
+                ? streetViewExternalUrl 
+                : viewMode === 'video'
+                  ? activeMedia.video.embedUrl.replace('embed/', 'watch?v=').replace('-nocookie', '')
+                  : googleMapsExternalUrl
+            }
             target="_blank" 
             rel="noopener noreferrer"
             className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 text-slate-950 font-black text-xs border border-amber-300 shadow-md shadow-amber-500/20 flex items-center gap-1.5 transition-all"
-            title="Abrir en Google Maps Oficial"
+            title="Abrir recurso en plataforma oficial"
           >
             <ExternalLink className="w-3.5 h-3.5 text-slate-950" />
-            <span>{viewMode === 'streetview' ? 'Street View 360° Oficial' : 'Google Maps Oficial'}</span>
+            <span>
+              {viewMode === 'streetview' ? 'Street View 360°' : viewMode === 'video' ? 'Ver en Plataforma Oficial' : 'Google Maps'}
+            </span>
           </a>
         </div>
       </div>
 
-      {/* Contenedor Principal: Mapa Nativo / Street View POV y Ficha del Hito */}
+      {/* Contenedor Principal: Vista Multimedia Seleccionada y Ficha del Hito */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* ================= VISTA INTERACTIVA (Col 7): MAPA NATIVO O STREET VIEW POV ================= */}
-        {viewMode === 'streetview' ? (
-          /* ================= STREET VIEW 360° POV ACTUAL ================= */
+        {/* ================= VISTA PRINCIPAL (Col 7) ================= */}
+        {viewMode === 'photos' ? (
+          /* ================= FOTOS REALES Y GALERÍA HISTÓRICA ================= */
+          <div className="lg:col-span-7 relative h-[340px] sm:h-[420px] rounded-2xl overflow-hidden border-2 border-amber-500/50 shadow-inner bg-slate-950 flex flex-col justify-between">
+            {/* Foto Principal en Alta Definición */}
+            <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black">
+              {/* Fondo difuminado ambiental */}
+              <img 
+                src={activeMedia.gallery[selectedPhotoIndex]?.url || activeMedia.primaryImage}
+                alt={activeLoc.name}
+                className="absolute inset-0 w-full h-full object-cover blur-xl opacity-30 scale-110"
+              />
+              <img 
+                src={activeMedia.gallery[selectedPhotoIndex]?.url || activeMedia.primaryImage}
+                alt={activeLoc.name}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/images/history/casa_corregidora_queretaro.jpg';
+                }}
+                className="relative z-10 max-w-full max-h-full object-contain"
+              />
+            </div>
+
+            {/* Badge Superior */}
+            <div className="absolute top-3 left-3 px-3 py-1.5 rounded-xl bg-black/85 backdrop-blur-md border border-amber-500/40 text-[10px] text-amber-300 font-mono shadow-lg flex items-center gap-1.5 z-20">
+              <Sparkles className="w-3 h-3 text-amber-400" />
+              <span>Fotografía Histórica Verificada · {activeLoc.name}</span>
+            </div>
+
+            {/* Tira Inferior de Galería y Pie de Foto */}
+            <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black via-black/85 to-transparent flex flex-col gap-2 z-20">
+              <p className="text-xs font-serif text-amber-100 drop-shadow">
+                {activeMedia.gallery[selectedPhotoIndex]?.caption || activeLoc.name}
+              </p>
+
+              {activeMedia.gallery.length > 1 && (
+                <div className="flex items-center gap-2 overflow-x-auto py-1">
+                  {activeMedia.gallery.map((item, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setSelectedPhotoIndex(idx)}
+                      className={`relative w-14 h-10 rounded-lg overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${
+                        selectedPhotoIndex === idx ? 'border-amber-400 scale-105' : 'border-white/20 opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                      <img src={item.url} alt={item.caption} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ) : viewMode === 'video' ? (
+          /* ================= VIDEO RECORRIDO OFICIAL / DOCUMENTAL ================= */
+          <div className="lg:col-span-7 relative h-[340px] sm:h-[420px] rounded-2xl overflow-hidden border-2 border-amber-500/50 shadow-inner bg-slate-950 flex flex-col">
+            <iframe
+              src={activeMedia.video.embedUrl}
+              title={activeMedia.video.title}
+              className="w-full h-full border-0 select-none"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+            {/* Badge Superior */}
+            <div className="absolute top-3 left-3 px-3 py-1.5 rounded-xl bg-black/90 backdrop-blur-md border border-amber-500/40 text-[10px] text-amber-300 font-mono shadow-lg flex items-center gap-1.5 pointer-events-none z-20">
+              <Film className="w-3 h-3 text-amber-400" />
+              <span>{activeMedia.video.title} ({activeMedia.video.source})</span>
+            </div>
+          </div>
+        ) : viewMode === 'streetview' ? (
+          /* ================= STREET VIEW 360° POV ACTUAL CON BARRA DE CONTINGENCIA ================= */
           <div className="lg:col-span-7 relative h-[340px] sm:h-[420px] rounded-2xl overflow-hidden border-2 border-emerald-500/60 shadow-inner bg-slate-950">
+            {/* Barra de Contingencia si Street View no tiene cobertura 360° */}
+            <div className="absolute top-0 inset-x-0 z-30 px-3 py-1.5 bg-gradient-to-b from-black/95 to-black/80 border-b border-emerald-500/30 flex items-center justify-between text-[11px]">
+              <div className="flex items-center gap-1.5 text-emerald-300 font-medium">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span className="truncate">¿Sin cobertura 360° en este punto?</span>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('photos')}
+                  className="px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-[10px] font-bold cursor-pointer"
+                >
+                  Ver Fotos Reales
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('video')}
+                  className="px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-[10px] font-bold cursor-pointer"
+                >
+                  Ver Video
+                </button>
+              </div>
+            </div>
+
             {/* Embed 360° Interactivo Nativo */}
             <iframe
               src={streetViewEmbedUrl}
               title={`Street View POV Actual - ${activeLoc.name}`}
-              className="w-full h-full border-0 select-none"
+              className="w-full h-full border-0 select-none pt-7"
               allowFullScreen
               loading="lazy"
             />
 
-            {/* Badge Superior Street View POV */}
-            <div className="absolute top-3 left-3 px-3 py-1.5 rounded-xl bg-black/90 backdrop-blur-md border border-emerald-500/40 text-[10px] text-emerald-300 font-mono shadow-lg flex items-center gap-1.5 pointer-events-none z-20">
+            {/* Badge Inferior Street View POV */}
+            <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-xl bg-black/90 backdrop-blur-md border border-emerald-500/40 text-[10px] text-emerald-300 font-mono shadow-lg flex items-center gap-1.5 pointer-events-none z-20">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
               <span>POV Actual 360° · {activeLoc.name}</span>
             </div>
 
             {/* HUD de Control de Ángulo / Giro Street View */}
-            <div className="absolute top-3 right-3 flex items-center gap-1.5 z-20">
+            <div className="absolute top-9 right-3 flex items-center gap-1.5 z-20">
               <button
                 type="button"
                 onClick={() => setStreetHeading(prev => (prev - 45 + 360) % 360)}
@@ -307,13 +611,6 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
               >
                 <Maximize2 className="w-3 h-3" />
               </a>
-            </div>
-
-            {/* Guía Pedagógica Inferior de Navegación Street View */}
-            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none z-20">
-              <div className="px-2.5 py-1 rounded-lg bg-black/85 backdrop-blur-sm border border-emerald-500/30 text-[9px] text-emerald-300 font-mono">
-                Visión Street View 360° Activa · Arrastra o navega con el cursor para explorar el entorno actual
-              </div>
             </div>
           </div>
         ) : (
@@ -443,7 +740,11 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
             </h4>
 
             {/* Fotografía Histórica / Arquitectónica Responsiva */}
-            <div className="relative w-full h-36 sm:h-44 rounded-xl overflow-hidden border border-amber-500/30 bg-slate-950 shadow-lg group">
+            <div 
+              onClick={() => setViewMode('photos')}
+              className="relative w-full h-36 sm:h-44 rounded-xl overflow-hidden border border-amber-500/30 bg-slate-950 shadow-lg group cursor-pointer"
+              title="Clic para explorar galería fotográfica en alta definición"
+            >
               <img 
                 src={activeImageUrl} 
                 alt={activeLoc.name} 
@@ -455,10 +756,39 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent pointer-events-none" />
               <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[10px] text-amber-200">
                 <span className="font-semibold truncate">{activeLoc.name}</span>
-                <span className="bg-black/70 px-2 py-0.5 rounded border border-amber-400/40 text-[9px] shrink-0 font-mono text-amber-300">
-                  Foto Monumental
+                <span className="bg-black/70 px-2 py-0.5 rounded border border-amber-400/40 text-[9px] shrink-0 font-mono text-amber-300 flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5" />
+                  <span>{activeMedia.gallery.length} {activeMedia.gallery.length === 1 ? 'Foto' : 'Fotos'}</span>
                 </span>
               </div>
+            </div>
+
+            {/* Botones de Exploración Rápida */}
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setViewMode('photos')}
+                className={`py-2 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
+                  viewMode === 'photos'
+                    ? 'bg-amber-500 text-slate-950 border-amber-400 font-black'
+                    : 'bg-white/5 hover:bg-white/10 text-amber-200 border-amber-500/30'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Fotos Reales</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('video')}
+                className={`py-2 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
+                  viewMode === 'video'
+                    ? 'bg-amber-500 text-slate-950 border-amber-400 font-black'
+                    : 'bg-white/5 hover:bg-white/10 text-amber-200 border-amber-500/30'
+                }`}
+              >
+                <Film className="w-3.5 h-3.5" />
+                <span>Video Oficial</span>
+              </button>
             </div>
 
             {/* Botón de Activación Directa de Street View 360° POV */}
@@ -479,7 +809,7 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
               ) : (
                 <>
                   <Eye className="w-4 h-4 text-emerald-200" />
-                  <span>Activar Visión Street View 360° (POV Actual)</span>
+                  <span>Explorar con Street View 360° (POV)</span>
                 </>
               )}
             </button>
@@ -492,7 +822,7 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
           <div className="pt-3 border-t border-amber-500/15 flex items-center justify-between text-[11px] text-amber-400/70">
             <div className="flex items-center gap-1">
               <Info className="w-3.5 h-3.5" />
-              <span>Haz clic en los otros hitos o arrastra el mapa para explorar</span>
+              <span>Haz clic en los hitos para ver fotos, videos o mapa</span>
             </div>
           </div>
         </div>
@@ -507,7 +837,8 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
           {locations.map((loc, idx) => {
             const isSelected = loc.id === activeLoc.id || loc.name === activeLoc.name;
-            const thumbImg = resolveLocationImage(loc);
+            const locMedia = resolveLocationMedia(loc);
+            const thumbImg = locMedia.primaryImage;
 
             return (
               <button
@@ -515,6 +846,7 @@ export const HistoricalInteractiveMap: React.FC<HistoricalInteractiveMapProps> =
                 type="button"
                 onClick={() => {
                   setActiveLoc(loc);
+                  setSelectedPhotoIndex(0);
                   setZoomLevel(15);
                 }}
                 className={`p-2.5 rounded-2xl border text-left transition-all cursor-pointer flex items-center gap-2.5 ${

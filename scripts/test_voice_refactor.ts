@@ -60,7 +60,7 @@ async function runRefactorVerificationSuite() {
   }
 
   // TEST 1: Fechas y Números
-  console.log('--- 1. Expansión Léxica de Fechas, Años y Números Romanos ---');
+  console.log('--- 1. Expansión Léxica de Fechas, Años, Números y Tropas ---');
   const d1 = normalizeMexicanSpanishText('En 1810 se inició la gesta.');
   assert(d1.includes('mil ochocientos diez'), 'Año 1810 -> mil ochocientos diez');
 
@@ -73,6 +73,9 @@ async function runRefactorVerificationSuite() {
   const d4 = normalizeMexicanSpanishText('El volcán se eleva a 3500 m.s.n.m. a 120 km con 95% de niebla.');
   assert(d4.includes('metros sobre el nivel del mar') && d4.includes('kilómetros') && d4.includes('por ciento'), 'Símbolos %, km, m.s.n.m.');
 
+  const d5 = normalizeMexicanSpanishText('Villa comandó más de 20 000 combatientes y 1,500 cañones.');
+  assert(d5.includes('veinte mil combatientes') && d5.includes('mil quinientos cañones'), '20 000 combatientes -> veinte mil combatientes');
+
   // TEST 2: Supresión Total de Puntos Suspensivos y Sintagmas
   console.log('\n--- 2. Sintagmas, Sinalefa y Supresión de Elipsis (...) ---');
   const phrase = 'Luchamos en la patria de los héroes para el pueblo con la espada por la libertad.';
@@ -83,10 +86,10 @@ async function runRefactorVerificationSuite() {
   assert(!/\bpara\s*<break[^>]*\/>\s*el\b/i.test(syntagma), 'Sin ruptura en "para el" (sintagma intacto)');
   assert(!/\bpor\s*<break[^>]*\/>\s*la\b/i.test(syntagma), 'Sin ruptura en "por la" (sintagma intacto)');
 
-  // TEST 3: Diccionario Fonético Náhuatl e Histórico
-  console.log('\n--- 3. Diccionario Fonético Prehispánico e Histórico ---');
+  // TEST 3: Diccionario Fonético Náhuatl, Histórico y Anglosajón
+  console.log('\n--- 3. Diccionario Fonético Prehispánico, Histórico y Anglosajón ---');
   const nahuatlPhrase = 'Cuauhtémoc, Nezahualcóyotl, Tenochtitlán, Tlaxcala, Xochimilco, Oaxaca y Popocatépetl.';
-  const phoneticSub = applyPhoneticSubstitutions(nahuatlPhrase, 'sub');
+  const phoneticSub = applyPhoneticSubstitutions(nahuatlPhrase, 'sub').toLowerCase();
   assert(phoneticSub.includes('alias="cuautémoc"'), 'Alias Cuauhtémoc');
   assert(phoneticSub.includes('alias="nesagualcóyotl"'), 'Alias Nezahualcóyotl');
   assert(phoneticSub.includes('alias="tenochtitlán"'), 'Alias Tenochtitlán');
@@ -94,6 +97,12 @@ async function runRefactorVerificationSuite() {
   assert(phoneticSub.includes('alias="sochimilco"'), 'Alias Xochimilco');
   assert(phoneticSub.includes('alias="oajaca"'), 'Alias Oaxaca');
   assert(phoneticSub.includes('alias="popocatépetl"'), 'Alias Popocatépetl');
+
+  const englishPhrase = 'El general John J. Pershing atacó Columbus bajo órdenes de Woodrow Wilson.';
+  const englishSub = applyPhoneticSubstitutions(englishPhrase, 'sub');
+  assert(englishSub.includes('alias="Jon Pérshin"'), 'Pronunciación auténtica John J. Pershing -> Jon Pérshin');
+  assert(englishSub.includes('alias="Colómbus"'), 'Pronunciación auténtica Columbus -> Colómbus');
+  assert(englishSub.includes('alias="Uúdrou Uílson"'), 'Pronunciación auténtica Woodrow Wilson -> Uúdrou Uílson');
 
   // TEST 4: Constructor buildOptimizedSSML e Inyección Expresiva Dinámica
   console.log('\n--- 4. Inyección Expresiva Dinámica (<mstts:express-as>) ---');

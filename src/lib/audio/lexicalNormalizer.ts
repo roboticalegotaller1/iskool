@@ -64,7 +64,9 @@ const HUNDREDS: Record<number, string> = {
 };
 
 /**
- * Convierte un número entero del 0 al 9999 a palabras en español mexicano.
+ * Convierte un número entero no negativo del 0 al 999,999,999 a palabras en español mexicano.
+ * Soporta de manera fluida cantidades históricas, tropas y censos:
+ * e.g. 20000 -> "veinte mil", 100000 -> "cien mil", 1000000 -> "un millón".
  */
 export function numberToSpanishWords(n: number): string {
   if (n < 0 || !Number.isInteger(n)) return String(n);
@@ -87,12 +89,24 @@ export function numberToSpanishWords(n: number): string {
     return `${hundredsWord} ${numberToSpanishWords(remainder)}`;
   }
 
-  if (n < 10000) {
-    const thousandsDigit = Math.floor(n / 1000);
+  if (n < 1000000) {
+    const thousands = Math.floor(n / 1000);
     const remainder = n % 1000;
-    const thousandsWord = thousandsDigit === 1 ? 'mil' : `${UNITS[thousandsDigit]} mil`;
-    if (remainder === 0) return thousandsWord;
-    return `${thousandsWord} ${numberToSpanishWords(remainder)}`;
+    const thousandsMultiplier = thousands === 1
+      ? 'mil'
+      : `${numberToSpanishWords(thousands).replace(/\bveintiuno\b/g, 'veintiún').replace(/\buno\b/g, 'un')} mil`;
+    if (remainder === 0) return thousandsMultiplier;
+    return `${thousandsMultiplier} ${numberToSpanishWords(remainder)}`;
+  }
+
+  if (n < 1000000000) {
+    const millions = Math.floor(n / 1000000);
+    const remainder = n % 1000000;
+    const millionsMultiplier = millions === 1
+      ? 'un millón'
+      : `${numberToSpanishWords(millions).replace(/\bveintiuno\b/g, 'veintiún').replace(/\buno\b/g, 'un')} millones`;
+    if (remainder === 0) return millionsMultiplier;
+    return `${millionsMultiplier} ${numberToSpanishWords(remainder)}`;
   }
 
   return String(n);
@@ -217,6 +231,30 @@ export function normalizeMexicanSpanishText(text: string): string {
     return yearToSpanishWords(parseInt(yearStr, 10));
   });
 
+  // 5. Números formateados con separador de miles (espacio o coma), tropas y censos:
+  // e.g. "20 000 combatientes" -> "veinte mil combatientes", "100 000 hombres", "1,500 cañones"
+  const spacedThousandsRegex = /\b(\d{1,3}(?:\s+\d{3})+)\b/g;
+  result = result.replace(spacedThousandsRegex, (_match, numStr) => {
+    const cleanNum = parseInt(numStr.replace(/\s+/g, ''), 10);
+    return isNaN(cleanNum) ? numStr : numberToSpanishWords(cleanNum);
+  });
+
+  const commaThousandsRegex = /\b(\d{1,3}(?:,\d{3})+)\b/g;
+  result = result.replace(commaThousandsRegex, (_match, numStr) => {
+    const cleanNum = parseInt(numStr.replace(/,/g, ''), 10);
+    return isNaN(cleanNum) ? numStr : numberToSpanishWords(cleanNum);
+  });
+
+  // Cantidades monetarias e importes: e.g. "$20,000", "$500 pesos", "$100"
+  const currencyRegex = /\$\s*(\d[\d\s,.]*)\s*(?:pesos|dólares|usd|mxn)?\b/gi;
+  result = result.replace(currencyRegex, (_match, amountStr) => {
+    const clean = parseInt(amountStr.replace(/[\s,]/g, ''), 10);
+    if (!isNaN(clean)) {
+      return `${numberToSpanishWords(clean)} pesos`;
+    }
+    return _match;
+  });
+
   // 5. Siglos en números romanos: "Siglo XIX" -> "Siglo diecinueve"
   const centuryRegex = /\b([Ss]iglo|[Ss]iglos)\s+([IVXLCDM]+)\b/g;
   result = result.replace(centuryRegex, (match, word, roman) => {
@@ -291,7 +329,19 @@ export function normalizeMexicanSpanishText(text: string): string {
     result = result.replace(item.regex, item.replace);
   }
 
-  // 9. Puntuación Expresiva Latina (Apertura de ¿ e ¡)
+  // 9. Cantidades y Números Cardinales Restantes en Contexto Histórico
+  // Apócope contextual de "1" y "21" antes de sustantivos (ej. 1 soldado -> un soldado, 21 cañones -> veintiún cañones)
+  result = result.replace(/\b1\s+([a-záéíóúñ]+)\b/gi, 'un $1');
+  result = result.replace(/\b21\s+([a-záéíóúñ]+)\b/gi, 'veintiún $1');
+
+  // Conversión de enteros restantes (e.g. 500 combatientes, 25 cañones, 4 momentos, 15 días)
+  result = result.replace(/\b([1-9]\d{0,8})\b/g, (_match, numStr) => {
+    const val = parseInt(numStr, 10);
+    if (isNaN(val)) return numStr;
+    return numberToSpanishWords(val);
+  });
+
+  // 10. Puntuación Expresiva Latina (Apertura de ¿ e ¡)
   // Asegura que las preguntas lleven signo de apertura para una correcta entonación
   result = result.replace(/(^|[.?!\n;]\s*)([^.?!\n¿]+)(\?)/g, '$1¿$2$3');
   // Asegura que las exclamaciones lleven signo de apertura
