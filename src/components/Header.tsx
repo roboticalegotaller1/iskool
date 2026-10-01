@@ -51,7 +51,7 @@ export const Header: React.FC = () => {
   const schoolSettings = currentInstitution?.settings || rawSchoolSettings;
 
   const effectiveLogoUrl = isIbimeActive ? '/brand/ibime_logo.webp' : (whiteLabelLogo || schoolSettings?.logoUrl);
-  const effectiveSchoolName = isIbimeActive ? 'Instituto Bilingüe IBIME S.C.' : (whiteLabelSchoolName || schoolSettings?.name || 'ISkool');
+  const effectiveSchoolName = isIbimeActive ? 'Instituto Bilingüe IBIME' : (whiteLabelSchoolName || schoolSettings?.name || 'ISkool');
 
   useEffect(() => {
     if (schoolSettings?.themeColors) {

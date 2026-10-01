@@ -409,7 +409,7 @@ export default function StudentDashboard() {
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm sm:text-base font-black tracking-tight text-white">
-                      Instituto Bilingüe Ibime
+                      Instituto Bilingüe IBIME
                     </span>
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#E41B14]/20 text-red-200 border border-[#E41B14]/40">
                       {detailedStudent?.campus_name || 'Campus Montes (Sede Matriz & CCH)'}

@@ -202,7 +202,7 @@ function IbimePortalContent() {
         </div>
         <h1 className="text-2xl font-bold mb-2">403 - Acceso Denegado</h1>
         <p className="text-slate-400 max-w-md mb-6">
-          Se requiere una sesión activa con rol directivo o administrativo perteneciente a la organización Instituto Bilingüe Ibime para acceder a este portal.
+          Se requiere una sesión activa con rol directivo o administrativo perteneciente a la organización Instituto Bilingüe IBIME para acceder a este portal.
         </p>
         <button
           onClick={() => router.push('/ibime/login')}
@@ -236,7 +236,7 @@ function IbimePortalContent() {
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                   <span className="text-base sm:text-lg lg:text-xl font-extrabold tracking-tight text-white whitespace-nowrap">
-                    Instituto Bilingüe Ibime
+                    Instituto Bilingüe IBIME
                   </span>
                   <span 
                     data-testid="institutional-badge" 
@@ -333,7 +333,7 @@ function IbimePortalContent() {
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                 <span className="text-base sm:text-lg lg:text-xl font-extrabold tracking-tight text-white whitespace-nowrap">
-                  Instituto Bilingüe Ibime
+                  Instituto Bilingüe IBIME
                 </span>
                 <span 
                   data-testid="institutional-badge" 
@@ -612,7 +612,7 @@ function IbimePortalContent() {
               <div>
                 <h2 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                   <Building2 className="w-5 h-5 text-[#E41B14]" />
-                  <span>Red de Planteles Oficiales del Instituto Bilingüe Ibime</span>
+                  <span>Red de Planteles Oficiales del Instituto Bilingüe IBIME</span>
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   Supervisión y gobierno de las 4 sedes operativas en el Estado de México.

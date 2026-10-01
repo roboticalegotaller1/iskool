@@ -63,7 +63,7 @@ export function TeacherNavbar() {
 
   const displayName = user ? `${user.first_name || 'Profesor(a)'} ${user.last_name || ''}`.trim() : 'Docente';
   const schoolName = isIbime 
-    ? 'Instituto Bilingüe Ibime' 
+    ? 'Instituto Bilingüe IBIME' 
     : (whiteLabelSchoolName || schoolSettings?.name || 'Colegio Nacional Mexico');
 
   return (

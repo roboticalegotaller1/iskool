@@ -88,6 +88,7 @@ import {
 import { InstitutionalBrainStudio } from './InstitutionalBrainStudio';
 import { OperationalEcosystemControl } from './OperationalEcosystemControl';
 import { PhaseCurricularAuditModal } from './PhaseCurricularAuditModal';
+import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import ExecutiveAnalyticsStudio from './ExecutiveAnalyticsStudio';
 import ExecutiveBiCommandCenter from './ExecutiveBiCommandCenter';
 import { AcademicPortalAdminModal } from './AcademicPortalAdminModal';
@@ -682,6 +683,27 @@ export default function CEOExecutiveDashboard({
            schoolId?.startsWith('emp-') ||
            schoolId === 'sec-empresas-ceo';
   }, [currentInstitution, holding, schoolId]);
+
+  // Detección de experiencia institucional IBIME
+  const isIbime = useMemo(() => {
+    if (schoolId === 'sch-ibime') return true;
+    if (holding?.slug === 'ibime') return true;
+    if (typeof holding?.name === 'string' && holding.name.toLowerCase().includes('ibime')) return true;
+    if (currentInstitution?.id === 'sch-ibime') return true;
+    if (typeof currentInstitution?.name === 'string' && currentInstitution.name.toLowerCase().includes('ibime')) return true;
+    if (typeof window !== 'undefined') {
+      if (document.documentElement.getAttribute('data-tenant') === 'ibime') return true;
+      if (localStorage.getItem('tenant-id') === 'ibime') return true;
+      if (localStorage.getItem('activeSchoolId') === 'sch-ibime') return true;
+      if (window.location.pathname.includes('/ibime')) return true;
+    }
+    return false;
+  }, [schoolId, holding, currentInstitution]);
+
+  const institutionalDisplayName = useMemo(() => {
+    if (isIbime) return 'Instituto Bilingüe IBIME';
+    return currentInstitution?.licensing?.licensee || currentInstitution?.name || holding.name;
+  }, [isIbime, currentInstitution, holding]);
 
   // ------------------------------------------
   // Estados de Control de Vista y Filtros
@@ -1701,12 +1723,20 @@ export default function CEOExecutiveDashboard({
 
             {/* Identidad del Holding */}
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-              <Building2 className="text-slate-700 shrink-0 hidden sm:block" size={18} />
+              {isIbime ? (
+                <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 shadow-2xs flex items-center justify-center shrink-0 p-0.5">
+                  <IbimeOfficialLogo variant="shield_only" size={20} />
+                </div>
+              ) : (
+                <Building2 className="text-slate-700 shrink-0 hidden sm:block" size={18} />
+              )}
               <h1 className="text-xs sm:text-base lg:text-lg font-black text-slate-900 tracking-tight truncate max-w-[120px] xs:max-w-[160px] sm:max-w-[220px] md:max-w-none">
-                {holding.name}
+                {isIbime ? 'Instituto Bilingüe IBIME' : holding.name}
               </h1>
-              <span className="hidden md:inline-block text-[10px] bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded-full border border-indigo-200 shrink-0">
-                {isCorporate ? 'Consorcio Empresarial' : 'Holding Educativo'}
+              <span className={`hidden md:inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
+                isIbime ? 'bg-red-50 text-[#E41B14] border-red-200' : 'bg-indigo-50 text-indigo-700 border-indigo-200'
+              }`}>
+                {isIbime ? 'Red Bilingüe 4 Planteles' : (isCorporate ? 'Consorcio Empresarial' : 'Holding Educativo')}
               </span>
             </div>
 
@@ -1826,23 +1856,29 @@ export default function CEOExecutiveDashboard({
               {/* TARJETA DE LICENCIA SAAS EMPRESARIAL ISKOOL • TENANT ESCOLAR */}
               <div className="bg-white p-4 rounded-2xl border border-indigo-100 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 print:hidden no-print">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-900 to-indigo-950 text-amber-400 flex items-center justify-center shrink-0 shadow-xs">
-                    <Building2 size={20} />
-                  </div>
+                  {isIbime ? (
+                    <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center shrink-0 p-1">
+                      <IbimeOfficialLogo variant="shield_only" size={38} />
+                    </div>
+                  ) : (
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-900 to-indigo-950 text-amber-400 flex items-center justify-center shrink-0 shadow-xs">
+                      <Building2 size={20} />
+                    </div>
+                  )}
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="text-sm font-bold text-slate-900">
-                        {currentInstitution?.licensing?.licensee || currentInstitution?.name || holding.name}
+                        {institutionalDisplayName}
                       </h3>
                       <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                        {currentInstitution?.licensing?.planName || 'Licencia SaaS Enterprise Activa'}
+                        {currentInstitution?.licensing?.planName || (isIbime ? 'Licencia Institucional Enterprise Multi-Plantel (4 Sedes)' : 'Licencia SaaS Enterprise Activa')}
                       </span>
                       <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
                         ID: {currentInstitution?.licensing?.licenseKey || `ISK-LIC-2026-${(holding.slug || 'ENT').toUpperCase()}-${holding.campuses.length}CAMPUS`}
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      <span className="font-semibold text-slate-700">Licenciatario:</span> {currentInstitution?.name || holding.name} ({holding.campuses.length} {isCorporate ? 'Sedes / Plantas' : 'Planteles'}) • <span className="font-semibold text-slate-700">Software Propietario:</span> {currentInstitution?.licensing?.licensor || 'ISkool Technologies Inc.'} • <span className="text-indigo-600 font-medium">Asientos: {metrics.totalStudents.toLocaleString()} en uso de {(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200)).toLocaleString()} contratados ({Math.min(100, Math.round(((metrics.totalStudents) / (currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200))) * 1000) / 10)}% ocupación)</span>
+                      <span className="font-semibold text-slate-700">Licenciatario:</span> {isIbime ? 'Instituto Bilingüe IBIME' : (currentInstitution?.name || holding.name)} ({holding.campuses.length} {isCorporate ? 'Sedes / Plantas' : 'Planteles'}) • <span className="font-semibold text-slate-700">Software Propietario:</span> {currentInstitution?.licensing?.licensor || 'ISkool Technologies Inc.'} • <span className="text-indigo-600 font-medium">Asientos: {metrics.totalStudents.toLocaleString()} en uso de {(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200)).toLocaleString()} contratados ({Math.min(100, Math.round(((metrics.totalStudents) / (currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200))) * 1000) / 10)}% ocupación)</span>
                     </p>
                   </div>
                 </div>
@@ -1853,7 +1889,7 @@ export default function CEOExecutiveDashboard({
                     <div className="text-[10px] text-emerald-600 font-semibold">{isCorporate ? '● Facturación CFDI 4.0 B2B Activa' : '● Timbrado CFDI/IEDU 0 Tokens Activo'}</div>
                   </div>
                   <button
-                    onClick={() => triggerToast(`✓ Contrato de Licencia SaaS verificado: ${(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200)).toLocaleString()} asientos autorizados para ${currentInstitution?.name || holding.name}`)}
+                    onClick={() => triggerToast(`✓ Contrato de Licencia SaaS verificado: ${(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200)).toLocaleString()} asientos autorizados para ${institutionalDisplayName}`)}
                     className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
                   >
                     <FileCheck2 size={14} />

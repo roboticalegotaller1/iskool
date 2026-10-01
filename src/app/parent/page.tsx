@@ -258,7 +258,7 @@ export default function ParentDashboard() {
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-base sm:text-lg font-black tracking-tight text-white">
-                    Instituto Bilingüe Ibime
+                    Instituto Bilingüe IBIME
                   </h2>
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#0B1E36] text-blue-200 border border-blue-600/50">
                     {adminStudent?.campus_name || 'Campus Montes (Sede Matriz & CCH)'}

@@ -5482,7 +5482,7 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
   },
   {
     id: 'sch-ibime',
-    name: 'Instituto Bilingüe Ibime',
+    name: 'Instituto Bilingüe IBIME',
     tagline: 'Excelencia Bilingüe y Formación Humana desde 2004 · Bachillerato UNAM CCH · Primaria y Secundaria Oficial SEP',
     cct: '15PPR3322G',
     logoUrl: '/brand/ibime_logo.webp',
@@ -5492,7 +5492,7 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
     address: 'Av. Jardines de Morelos s/n, Sección Montes, C.P. 55070, Ecatepec de Morelos, Edomex',
     phone: '55-4440-1009',
     website: 'https://ibime.edu.mx',
-    coordinatorName: 'Dirección General Instituto Bilingüe Ibime',
+    coordinatorName: 'Dirección General Instituto Bilingüe IBIME',
     campusesCount: 4,
     studentsCount: 3740,
     teachersCount: 200,
@@ -5503,18 +5503,18 @@ export const INSTITUTIONS_SEED: import('../types').Institution[] = [
       planName: 'Licencia Institucional Enterprise Multi-Plantel (4 Sedes)',
       isSoftwareOwner: false, // Cliente licenciatario, no dueño del software
       licenseKey: 'ISK-LIC-2026-IBIME-ENT-4CAMPUS',
-      licensee: 'Instituto Bilingüe Ibime',
+      licensee: 'Instituto Bilingüe IBIME',
       licensor: 'ISkool Technologies Inc.',
       contractedSeats: 3900,
       assignedSeats: 3740,
       validUntil: '2027-08-31',
       billingCycle: 'Anual',
       status: 'active',
-      ipNotice: 'Plataforma, código fuente y motor de Inteligencia Artificial Pedagógica son propiedad intelectual exclusiva de ISkool Technologies Inc. Licencia concedida a Instituto Bilingüe Ibime para uso escolar en 4 planteles.'
+      ipNotice: 'Plataforma, código fuente y motor de Inteligencia Artificial Pedagógica son propiedad intelectual exclusiva de ISkool Technologies Inc. Licencia concedida a Instituto Bilingüe IBIME para uso escolar en 4 planteles.'
     },
     settings: {
       isConfigured: true,
-      name: 'Instituto Bilingüe Ibime',
+      name: 'Instituto Bilingüe IBIME',
       website: 'https://ibime.edu.mx',
       logoUrl: '/brand/ibime_logo.webp',
       cct: '15PPR3322G',
