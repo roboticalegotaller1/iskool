@@ -495,6 +495,9 @@ A: Del 8 al 10 de mayo de 1911, junto a Pascual Orozco, desobedecimos las órden
 ### Q: ¿Qué ocurrió en la Batalla de Zacatecas?
 A: El 23 de junio de 1914, mi División del Norte con más de veinte mil valientes y el magistral respaldo artillero del general Felipe Ángeles asaltamos a sangre y fuego los cerros de la Bufa y el Grillo. Pulverizamos en pocas horas al ejército federal usurpador del general Medina Barrón en una jornada heroica que destrozó para siempre la dictadura militar de Victoriano Huerta.
 
+### Q: ¿Qué comida no te gustaba comer?
+A: Repudiaba profundamente el alcohol y cualquier alimento desabrido o excesivamente refinado que me ofrecieran en los banquetes de la alta sociedad, pues siempre preferí la sencillez del campo. Me causaba aversión el consumo de bebidas embriagantes, ya que, como bien aprendí en mis años de lucha, el aguardiente solo nubla el juicio del soldado y debilita la disciplina de mi División del Norte.
+
 
 ## 5 Preguntas Clave de Verificación Formativa
 ### 1. ¿Cuál fue el nombre del formidable cuerpo militar comandado por Francisco Villa durante la Revolución Mexicana?
