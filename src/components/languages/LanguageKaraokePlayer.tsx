@@ -495,15 +495,33 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
     let evalSource: 'stt' | 'acoustic' | 'manual' = 'manual';
 
     if (forcedAccuracy !== undefined) {
-      calculatedAcc = forcedAccuracy;
       const forcedErrList = forcedErrors || [];
-      finalErrorIndices = targetWords
-        .map((w, idx) => ({ w, idx }))
-        .filter(item => forcedErrList.includes(item.w))
+      // 1. Encontrar coincidencias exactas o normalizadas de palabras con error en la frase actual
+      let matchedErrIndices = targetWords
+        .map((w, idx) => ({ w: w.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''), idx }))
+        .filter(item => forcedErrList.some(e => e.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') === item.w))
         .map(item => item.idx);
+
+      // 2. Si forcedAccuracy < 100 y no coincidió ninguna palabra (ej. palabras de simulación genéricas o en otro idioma),
+      // calcular matemáticamente la cantidad de errores requerida por la tasa solicitada
+      if (forcedAccuracy < 100 && matchedErrIndices.length === 0) {
+        const errorRatio = Math.max(0.01, 1 - (forcedAccuracy / 100));
+        const neededErrors = Math.max(1, Math.min(targetWords.length, Math.round(targetWords.length * errorRatio)));
+        matchedErrIndices = targetWords.map((_, idx) => idx).slice(-neededErrors);
+      } else if (forcedAccuracy === 100) {
+        matchedErrIndices = [];
+      }
+
+      finalErrorIndices = matchedErrIndices;
       finalCorrectIndices = targetWords
         .map((_, idx) => idx)
         .filter(idx => !finalErrorIndices.includes(idx));
+
+      // LEY MATEMÁTICA INVIOLABLE: La precisión SIEMPRE es estrictamente proporcional a las palabras correctas
+      calculatedAcc = targetWords.length > 0 
+        ? Math.round((finalCorrectIndices.length / targetWords.length) * 100)
+        : 0;
+
       evalSource = 'manual';
     } else {
       const state = voiceStateRef.current;
@@ -2118,7 +2136,11 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
             </button>
             <button
               type="button"
-              onClick={() => completeEvaluation(67, ['cappuccino', 'blueberry', 'muffin'])}
+              onClick={() => {
+                const errorCount = Math.max(1, Math.round(targetWords.length * 0.33));
+                const sampleErrors = targetWords.slice(-errorCount);
+                completeEvaluation(Math.round(((targetWords.length - errorCount) / targetWords.length) * 100), sampleErrors);
+              }}
               className="px-3.5 py-1.5 rounded-xl bg-rose-950 hover:bg-rose-900 border border-rose-500/70 text-rose-300 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-md"
               title="Simula errores para probar palabras rojas y consejos"
             >

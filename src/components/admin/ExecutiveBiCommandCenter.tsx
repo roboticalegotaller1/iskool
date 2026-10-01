@@ -34,6 +34,7 @@ import {
   UserCheck,
   GraduationCap
 } from 'lucide-react';
+import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { 
   HOLDING_CASHFLOW_12M_SEED, 
   CAMPUS_BENCHMARK_SEED, 
@@ -84,6 +85,19 @@ export default function ExecutiveBiCommandCenter({
 }: ExecutiveBiCommandCenterProps) {
   // Inteligencia de pantalla y viewport en tiempo real (Laptop vs PC)
   const viewport = useDeviceViewport();
+
+  // Detección de experiencia institucional IBIME
+  const isIbime = useMemo(() => {
+    if (schoolId === 'sch-ibime') return true;
+    if (holdingName?.toLowerCase().includes('ibime')) return true;
+    if (typeof window !== 'undefined') {
+      if (document.documentElement.getAttribute('data-tenant') === 'ibime') return true;
+      if (localStorage.getItem('tenant-id') === 'ibime') return true;
+      if (localStorage.getItem('activeSchoolId') === 'sch-ibime') return true;
+      if (window.location.pathname.includes('/ibime')) return true;
+    }
+    return false;
+  }, [schoolId, holdingName]);
 
   // Estados de control de vista
   const [activeMainView, setActiveMainView] = useState<BiMainView>('matrix');
@@ -775,18 +789,30 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
         
         {/* Identidad de la Suite Directiva */}
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 p-[1.5px] shrink-0 shadow-lg shadow-indigo-500/20">
-            <div className="w-full h-full bg-[#0d131f] rounded-[10px] flex items-center justify-center">
-              <BarChart3 className="w-4 h-4 text-cyan-400" />
+          <div className={`w-9 h-9 rounded-xl p-[1.5px] shrink-0 shadow-lg ${
+            isIbime 
+              ? 'bg-gradient-to-br from-[#E41B14] via-[#C01D0C] to-[#0F2744] shadow-red-900/40 ring-1 ring-red-500/40' 
+              : 'bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 shadow-indigo-500/20'
+          }`}>
+            <div className="w-full h-full bg-[#0d131f] rounded-[10px] flex items-center justify-center p-0.5 overflow-hidden">
+              {isIbime ? (
+                <IbimeOfficialLogo variant="shield_only" size={24} />
+              ) : (
+                <BarChart3 className="w-4 h-4 text-cyan-400" />
+              )}
             </div>
           </div>
 
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
               <h1 className="text-sm sm:text-base font-black text-white tracking-tight truncate">
-                ISkool Executive Analytics
+                {isIbime ? 'IBIME Executive Analytics' : 'ISkool Executive Analytics'}
               </h1>
-              <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/60 hidden xs:inline-block">
+              <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full hidden xs:inline-block ${
+                isIbime 
+                  ? 'bg-red-950/80 text-red-300 border border-red-800/60' 
+                  : 'bg-cyan-950/80 text-cyan-400 border border-cyan-800/60'
+              }`}>
                 CEO Suite
               </span>
               <span className="text-[9px] font-mono text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/60 hidden md:inline-block">
@@ -807,11 +833,13 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
                   onClick={() => setTimeHorizon(hz)}
                   className={`px-3 py-1.5 rounded-lg transition-all duration-200 cursor-pointer text-xs font-bold flex items-center gap-1.5 ${
                     isActive 
-                      ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-black shadow-md shadow-indigo-600/40 ring-1 ring-indigo-400/60 scale-[1.02]' 
+                      ? (isIbime 
+                          ? 'bg-gradient-to-r from-[#E41B14] to-[#C01D0C] text-white font-black shadow-md shadow-red-600/40 ring-1 ring-red-400/60 scale-[1.02]' 
+                          : 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-black shadow-md shadow-indigo-600/40 ring-1 ring-indigo-400/60 scale-[1.02]')
                       : 'hover:text-slate-200 hover:bg-slate-800/60 text-slate-400'
                   }`}
                 >
-                  {isActive && <span className="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse" />}
+                  {isActive && <span className={`w-1.5 h-1.5 rounded-full ${isIbime ? 'bg-amber-300' : 'bg-cyan-300'} animate-pulse`} />}
                   <span>{hz === 'mtd' ? 'Este Mes' : hz === 'qtd' ? 'Trimestre' : hz === 'ytd' ? 'Año Acumulado' : 'Proyección 90d'}</span>
                 </button>
               );
@@ -896,7 +924,9 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
                 onClick={() => setActiveMainView(tab.id as BiMainView)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition cursor-pointer whitespace-nowrap ${
                   isActive 
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20' 
+                    ? (isIbime 
+                        ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30 ring-1 ring-red-400/50' 
+                        : 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20')
                     : 'text-slate-400 hover:text-white hover:bg-slate-800/70'
                 }`}
               >

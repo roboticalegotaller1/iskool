@@ -42,6 +42,7 @@ interface ExecutiveChartVisualizerProps {
   onSelectCategory?: (category: string | null) => void;
   onOpenExpediente?: (studentId?: string, studentName?: string) => void;
   allStudents?: DetailedStudent[];
+  showDebtorsList?: boolean;
 }
 
 const PALETTE = [
@@ -161,7 +162,8 @@ export default function ExecutiveChartVisualizer({
   selectedCategory: externalSelectedCategory,
   onSelectCategory,
   onOpenExpediente,
-  allStudents = []
+  allStudents = [],
+  showDebtorsList = false
 }: ExecutiveChartVisualizerProps) {
   // Tipos disponibles sugeridos para este dataset
   const availableTypes: ChartType[] = useMemo(() => {
@@ -1152,7 +1154,7 @@ export default function ExecutiveChartVisualizer({
       {/* ========================================================================= */}
       {/* SECCIÓN DE DEUDORES: NOMBRES EN LA PARTE BAJA Y ACCESO A EXPEDIENTES 360° */}
       {/* ========================================================================= */}
-      {displayedDebtors.length > 0 && (
+      {showDebtorsList && displayedDebtors.length > 0 && (
         <div className="mt-5 pt-4 border-t border-slate-200 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">

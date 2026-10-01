@@ -45,7 +45,10 @@ import {
   Maximize2,
   Minimize2,
   Volume2,
-  VolumeX
+  VolumeX,
+  LayoutGrid,
+  Table as TableIcon,
+  Receipt
 } from 'lucide-react';
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useAuth } from '@/context/AuthContext';
@@ -89,9 +92,9 @@ interface ExecutiveAnalyticsStudioProps {
 
 /**
  * Renderizador de formato enriquecido sin dependencias externas:
- * Procesa **negritas**, *cursivas*, y viñetas (•, -, *) con espaciado limpio.
+ * Procesa **negritas**, *cursivas*, y viñetas (•, -, *) con espaciado limpio y alto contraste institucional.
  */
-function renderFormattedMarkdown(content?: string | null) {
+function renderFormattedMarkdown(content?: string | null, isDark: boolean = false, isIbime: boolean = false) {
   if (!content) return null;
   const lines = content.split('\n');
 
@@ -119,14 +122,21 @@ function renderFormattedMarkdown(content?: string | null) {
           if (match[2]) {
             // **bold**
             parts.push(
-              <strong key={`${lineIdx}-${match.index}`} className="font-bold text-indigo-700">
+              <strong 
+                key={`${lineIdx}-${match.index}`} 
+                className={`font-black ${
+                  isDark 
+                    ? (isIbime ? 'text-red-200 font-extrabold' : 'text-cyan-300 font-bold') 
+                    : (isIbime ? 'text-red-900 font-extrabold' : 'text-indigo-900 font-bold')
+                }`}
+              >
                 {match[2]}
               </strong>
             );
           } else if (match[3]) {
             // *italic*
             parts.push(
-              <em key={`${lineIdx}-${match.index}`} className="italic text-slate-600">
+              <em key={`${lineIdx}-${match.index}`} className={`italic ${isDark ? 'text-slate-200' : 'text-slate-600'}`}>
                 {match[3]}
               </em>
             );
@@ -140,15 +150,15 @@ function renderFormattedMarkdown(content?: string | null) {
 
         if (isBullet) {
           return (
-            <div key={lineIdx} className="flex items-start gap-2 pl-1.5 text-slate-800">
-              <span className="text-indigo-600 font-bold select-none leading-normal shrink-0">•</span>
+            <div key={lineIdx} className={`flex items-start gap-2 pl-1.5 ${isDark ? 'text-white font-medium' : 'text-slate-800'}`}>
+              <span className={`${isDark ? (isIbime ? 'text-[#E41B14]' : 'text-cyan-400') : (isIbime ? 'text-[#E41B14]' : 'text-indigo-600')} font-black select-none leading-normal shrink-0 text-base`}>•</span>
               <div className="flex-1 leading-snug">{parts}</div>
             </div>
           );
         }
 
         return (
-          <p key={lineIdx} className="leading-snug text-slate-800">
+          <p key={lineIdx} className={`leading-snug ${isDark ? 'text-white font-medium' : 'text-slate-800'}`}>
             {parts}
           </p>
         );
@@ -367,6 +377,27 @@ export default function ExecutiveAnalyticsStudio({
   const [tableSearch, setTableSearch] = useState('');
   const [tableStatusFilter, setTableStatusFilter] = useState('all');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string | null>(null);
+
+  // Modo de visualización del directorio homologado de expedientes: fichas 360° vs tabla detallada
+  const [directoryViewMode, setDirectoryViewMode] = useState<'cards' | 'table'>('cards');
+
+  // Detección reactiva de identidad institucional IBIME
+  const isIbime = useMemo(() => {
+    const sId = selectedSchoolFilter?.toLowerCase() || '';
+    const instName = (activeInstitution?.name || '').toLowerCase();
+    const instId = (activeInstitution?.id || '').toLowerCase();
+    const instSlug = ((activeInstitution as any)?.slug || '').toLowerCase();
+    const reportSchool = (currentReport?.schoolName || '').toLowerCase();
+    return sId.includes('ibime') || instName.includes('ibime') || instId.includes('ibime') || instSlug.includes('ibime') || reportSchool.includes('ibime');
+  }, [selectedSchoolFilter, activeInstitution, currentReport]);
+
+  // Indicador de si el reporte actual contiene filas de alumnos/expedientes
+  const hasStudentRows = useMemo(() => {
+    if (!currentReport?.table?.rows) return false;
+    return currentReport.table.rows.some((r: any) => 
+      r.studentId || r.enrollmentId || r.studentName || (r.recordType && String(r.recordType).includes('Alumno'))
+    );
+  }, [currentReport]);
 
   // Drawer de ficha 360° de estudiante
   const [selectedStudentForDrawer, setSelectedStudentForDrawer] = useState<Student360Detail | null>(null);
@@ -1038,13 +1069,156 @@ export default function ExecutiveAnalyticsStudio({
 
   const currentInstitutionObj = institutionsList.find(i => i.id === selectedSchoolFilter) || institutionsList[0];
 
-  // Renderizado del directorio interactivo de expedientes escolares coincidentes
+  // Renderizado de tabla de datos tabulares (reutilizable y homologado)
+  const renderDataTable = (isCompact: boolean = false) => {
+    if (!currentReport) return null;
+
+    return (
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+        <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70">
+          <div className="flex items-center gap-2 flex-1 max-w-md bg-white border border-slate-200 rounded-xl px-3 py-1.5 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500/20">
+            <Search className="h-4 w-4 text-slate-400 shrink-0" />
+            <input aria-label="Buscar en el reporte..."
+              type="text"
+              value={tableSearch}
+              onChange={(e) => setTableSearch(e.target.value)}
+              placeholder="Buscar por estudiante, nivel, folio o concepto..."
+              className="w-full bg-transparent text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
+            />
+          </div>
+
+          <div className="flex items-center gap-3 text-xs">
+            <span className="text-slate-600 font-medium">Estado:</span>
+            <select aria-label="Seleccionar opción"
+              value={tableStatusFilter}
+              onChange={(e) => setTableStatusFilter(e.target.value)}
+              className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-slate-700 font-medium focus:outline-none text-xs"
+            >
+              <option value="all">Todos los registros</option>
+              <option value="pendiente">Pendientes</option>
+              <option value="vencido">Vencidos</option>
+              <option value="liquidado">Liquidados / Pagados</option>
+            </select>
+
+            <span className="text-slate-500 font-mono text-[11px]">
+              Mostrando {filteredTableRows.length} de {currentReport.table.totalRows}
+            </span>
+
+            <button
+              onClick={handleExportCSV}
+              className="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 font-bold transition flex items-center gap-1.5 cursor-pointer"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span>CSV</span>
+            </button>
+          </div>
+        </div>
+
+        <div 
+          className="overflow-x-auto overflow-y-auto custom-scrollbar"
+          style={{ maxHeight: isCompact ? `${viewport.tableMaxHeight}px` : `min(${viewport.tableMaxHeight + 160}px, 68vh)` }}
+        >
+          <table className="w-full text-left text-xs border-collapse">
+            <thead className="sticky top-0 z-10 bg-slate-100/95 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[11px] shadow-xs backdrop-blur-sm">
+              <tr>
+                {activeTableColumns.map((col) => (
+                  <th 
+                    key={col.key} 
+                    className={`py-3 px-4 ${col.align === 'right' ? 'text-right' : (col.align === 'center' ? 'text-center' : 'text-left')}`}
+                  >
+                    {col.label}
+                  </th>
+                ))}
+                <th className="py-3 px-4 text-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredTableRows.length === 0 ? (
+                <tr>
+                  <td colSpan={activeTableColumns.length + 1} className="py-8 text-center text-slate-500">
+                    No se encontraron registros que coincidan con la búsqueda.
+                  </td>
+                </tr>
+              ) : (
+                filteredTableRows.map((row, rowIdx) => (
+                  <tr 
+                    key={rowIdx} 
+                    onClick={() => handleRowClick(row)}
+                    className="hover:bg-slate-50 transition cursor-pointer group"
+                  >
+                    {activeTableColumns.map((col) => {
+                      const val = row[col.key];
+
+                      if (col.isCurrency) {
+                        return (
+                          <td key={col.key} className="py-3 px-4 text-right font-mono font-bold text-slate-900">
+                            {formatMXN(Number(val) || 0)}
+                          </td>
+                        );
+                      }
+
+                      if (col.isBadge) {
+                        const statusStr = String(val).toLowerCase();
+                        const isBad = statusStr.includes('vencido') || statusStr.includes('falta') || statusStr.includes('atención');
+                        const isGood = statusStr.includes('liquidado') || statusStr.includes('presente') || statusStr.includes('superávit') || statusStr.includes('dispersado');
+                        
+                        return (
+                          <td key={col.key} className="py-3 px-4 text-center">
+                            <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                              isBad 
+                                ? 'bg-rose-50 border border-rose-200 text-rose-700' 
+                                : (isGood 
+                                    ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' 
+                                    : 'bg-amber-50 border border-amber-200 text-amber-700')
+                            }`}>
+                              {val}
+                            </span>
+                          </td>
+                        );
+                      }
+
+                      return (
+                        <td 
+                          key={col.key} 
+                          className={`py-3 px-4 ${col.align === 'center' ? 'text-center' : ''} text-slate-700 font-medium`}
+                        >
+                          {val ?? '-'}
+                        </td>
+                      );
+                    })}
+
+                    <td className="py-3 px-4 text-right">
+                      <button 
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRowClick(row);
+                        }}
+                        className={`text-[11px] font-bold hover:underline flex items-center gap-1 ml-auto cursor-pointer ${
+                          isIbime ? 'text-[#E41B14] hover:text-[#C01D0C]' : 'text-indigo-600 hover:text-indigo-800'
+                        }`}
+                      >
+                        <span>
+                          {row.studentId || row.studentName 
+                            ? 'Ver expediente' 
+                            : (row.campusName || row.name ? 'Ver alumnos' : (row.netSalary ? 'Ver recibo' : 'Ver detalle'))}
+                        </span>
+                        <ExternalLink className="h-3 w-3" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
+  // Renderizado del directorio interactivo de expedientes escolares coincidentes homologado
   const renderExpedientesGrid = () => {
     if (!currentReport || !currentReport.table?.rows || currentReport.table.rows.length === 0) return null;
-
-    const hasStudentRows = currentReport.table.rows.some((r: any) => 
-      r.studentId || r.enrollmentId || r.studentName || (r.recordType && String(r.recordType).includes('Alumno'))
-    );
 
     if (!hasStudentRows && !selectedCategoryFilter) return null;
 
@@ -1099,31 +1273,77 @@ export default function ExecutiveAnalyticsStudio({
     }
 
     return (
-      <div ref={expedientesSectionRef} className="bg-slate-900/90 border border-white/10 rounded-2xl p-5 shadow-lg space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
+      <div 
+        ref={expedientesSectionRef} 
+        className={`rounded-2xl p-5 shadow-lg space-y-4 border ${
+          isIbime 
+            ? 'bg-gradient-to-br from-[#0F2744] via-[#123055] to-[#17426D] border-[#E41B14]/30 text-white' 
+            : 'bg-slate-900/95 border-white/10 text-white'
+        }`}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
+            <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${
+              isIbime 
+                ? 'bg-[#E41B14]/20 border border-[#E41B14]/40 text-red-300' 
+                : 'bg-indigo-500/20 border border-indigo-500/30 text-indigo-400'
+            }`}>
               <FolderOpen className="h-4 w-4" />
             </div>
             <div>
               <h3 className="text-sm md:text-base font-bold text-white flex items-center gap-2">
-                <span>Expedientes Escolares Coincidentes</span>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-mono font-bold">
+                <span>Directorio Homologado de Alumnos</span>
+                <span className={`text-xs px-2.5 py-0.5 rounded-full font-mono font-bold ${
+                  isIbime 
+                    ? 'bg-[#E41B14]/25 text-red-200 border border-[#E41B14]/40' 
+                    : 'bg-indigo-500/20 text-indigo-300'
+                }`}>
                   {displayedRows.length} {displayedRows.length === 1 ? 'registro' : 'registros'}
                 </span>
               </h3>
-              <p className="text-xs text-slate-400">
-                Información institucional completa. Haz clic en cualquier tarjeta o en el botón para abrir el Expediente 360°.
+              <p className="text-xs text-slate-300">
+                Vista institucional homologada. Consulta los expedientes en tarjetas o en tabla detallada.
               </p>
             </div>
           </div>
-          <div className="text-xs text-slate-400 bg-white/5 px-3 py-1.5 rounded-lg font-medium self-start sm:self-auto border border-white/5">
-            Criterio: <span className="text-cyan-400 font-mono font-bold">{currentReport.queryReceived}</span>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Conmutador de Vista: Fichas 360° vs Tabla Detallada */}
+            <div className="flex items-center bg-black/30 p-1 rounded-xl border border-white/10">
+              <button
+                type="button"
+                onClick={() => setDirectoryViewMode('cards')}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  directoryViewMode === 'cards'
+                    ? (isIbime ? 'bg-[#E41B14] text-white shadow-xs' : 'bg-indigo-600 text-white shadow-xs')
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+                <span>Fichas 360°</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setDirectoryViewMode('table')}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  directoryViewMode === 'table'
+                    ? (isIbime ? 'bg-[#E41B14] text-white shadow-xs' : 'bg-indigo-600 text-white shadow-xs')
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <TableIcon className="h-3.5 w-3.5" />
+                <span>Tabla Detallada</span>
+              </button>
+            </div>
+
+            <div className="text-xs text-slate-300 bg-white/5 px-3 py-1.5 rounded-lg font-medium self-start sm:self-auto border border-white/5 hidden md:block">
+              Criterio: <span className="text-cyan-300 font-mono font-bold">{currentReport.queryReceived}</span>
+            </div>
           </div>
         </div>
 
         {selectedCategoryFilter && (
-          <div className="flex items-center justify-between p-3 bg-gradient-to-r from-indigo-950/80 via-slate-900 to-indigo-950/80 border border-indigo-500/40 rounded-xl text-xs shadow-md">
+          <div className="flex items-center justify-between p-3 bg-gradient-to-r from-black/40 via-white/5 to-black/40 border border-white/15 rounded-xl text-xs shadow-md">
             <div className="flex items-center gap-2 text-slate-200">
               <Filter className="h-4 w-4 text-cyan-400 shrink-0" />
               <span>
@@ -1141,151 +1361,212 @@ export default function ExecutiveAnalyticsStudio({
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {displayedRows.map((row: any, idx: number) => {
-            const studentId = row.studentId || row.student_id;
-            const studentName = row.studentName || row.name || 'Estudiante';
-            const enrollmentId = row.enrollmentId || row.referenceId || 'MAT-2026';
-            const levelGrade = row.levelGrade || `${row.level || 'Primaria'} ${row.grade || '1º'}`;
-            const age = row.age || 'N/D';
-            const birthDate = row.birthDateStr || row.birthDate || '';
-            const scholarshipNotes = row.scholarshipNotes || (
-              (row.scholarshipPercentage && row.scholarshipPercentage > 0)
-                ? `Beca ${String(row.scholarshipType || 'Escolar').toUpperCase()} (${row.scholarshipPercentage}%)`
-                : (row.matchedField && String(row.matchedField).toLowerCase().includes('beca') ? row.matchedField : undefined)
-            );
-            const scholarshipPercentage = row.scholarshipPercentage || 0;
+        {/* CONTENIDO SEGÚN MODO DE VISTA: FICHAS O TABLA */}
+        {directoryViewMode === 'table' ? (
+          <div className="pt-1">
+            {renderDataTable(true)}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {displayedRows.map((row: any, idx: number) => {
+              const studentId = row.studentId || row.student_id;
+              const studentName = row.studentName || row.name || 'Estudiante';
+              const enrollmentId = row.enrollmentId || row.referenceId || row.folio || 'MAT-2026';
+              const levelGrade = row.levelGrade || `${row.level || 'Primaria'} ${row.grade || '1º'}`;
+              const age = row.age || 'N/D';
+              const birthDate = row.birthDateStr || row.birthDate || '';
+              
+              // Información Financiera y de Cobranza (Homologación)
+              const debtAmount = Number(row.debtAmount ?? row.amount ?? row.montoAdeudado ?? row.monto ?? 0);
+              const concept = row.concept || row.concepto || '';
+              const dueDate = row.dueDate || row.vencimiento || '';
+              const receiptFolio = row.folio || row.receiptFolio || '';
+              const hasDebtInfo = Boolean(debtAmount > 0 || concept || dueDate || receiptFolio);
 
-            const rawMedical = row.medicalNotes || (
-              row.matchedField && (
-                String(row.matchedField).toLowerCase().includes('alerg') || 
-                String(row.matchedField).toLowerCase().includes('condición') ||
-                String(row.matchedField).toLowerCase().includes('médic') ||
-                String(row.matchedField).toLowerCase().includes('asma') ||
-                String(row.matchedField).toLowerCase().includes('inhalador')
-              )
-                ? row.matchedField 
-                : undefined
-            );
-            const medicalNotes = (rawMedical && !String(rawMedical).toLowerCase().includes('beca')) ? rawMedical : undefined;
-            const bloodType = row.bloodType || '';
-            const tutor = row.tutorName || row.tutorContact || row.parentContact || 'Tutor Familiar';
-            const phone = row.emergencyContactPhone || row.phone || 'N/D';
-            const campus = row.campusName || 'Plantel Principal';
-            const status = row.status || 'Al Corriente';
-            const isOverdue = String(status).toLowerCase().includes('adeudo') || String(status).toLowerCase().includes('vencid');
+              const scholarshipNotes = row.scholarshipNotes || (
+                (row.scholarshipPercentage && row.scholarshipPercentage > 0)
+                  ? `Beca ${String(row.scholarshipType || 'Escolar').toUpperCase()} (${row.scholarshipPercentage}%)`
+                  : (row.matchedField && String(row.matchedField).toLowerCase().includes('beca') ? row.matchedField : undefined)
+              );
+              const scholarshipPercentage = row.scholarshipPercentage || 0;
 
-            return (
-              <div 
-                key={idx}
-                onClick={() => handleOpenStudentExpediente(studentId, studentName)}
-                className="bg-white hover:bg-slate-50 border border-slate-200 hover:border-indigo-400 rounded-xl p-4 flex flex-col justify-between gap-3 shadow-sm hover:shadow-md transition-all cursor-pointer group relative overflow-hidden"
-              >
-                {/* Header de la tarjeta */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="h-10 w-10 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-xs shrink-0 shadow-xs">
-                      {String(studentName).split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
-                    </div>
-                    <div className="min-w-0">
-                      <h4 className="text-xs font-bold text-slate-900 group-hover:text-indigo-600 transition truncate">
-                        {studentName}
-                      </h4>
-                      <div className="flex items-center gap-1.5 text-[10px] text-slate-500 mt-0.5">
-                        <span className="font-mono text-indigo-600 font-bold">{enrollmentId}</span>
-                        <span>·</span>
-                        <span>{levelGrade}</span>
+              const rawMedical = row.medicalNotes || (
+                row.matchedField && (
+                  String(row.matchedField).toLowerCase().includes('alerg') || 
+                  String(row.matchedField).toLowerCase().includes('condición') ||
+                  String(row.matchedField).toLowerCase().includes('médic') ||
+                  String(row.matchedField).toLowerCase().includes('asma') ||
+                  String(row.matchedField).toLowerCase().includes('inhalador')
+                )
+                  ? row.matchedField 
+                  : undefined
+              );
+              const medicalNotes = (rawMedical && !String(rawMedical).toLowerCase().includes('beca')) ? rawMedical : undefined;
+              const bloodType = row.bloodType || '';
+              const tutor = row.tutorName || row.tutorContact || row.parentContact || 'Tutor Familiar';
+              const phone = row.emergencyContactPhone || row.phone || 'N/D';
+              const campus = row.campusName || 'Plantel Principal';
+              const status = row.status || 'Al Corriente';
+              const isOverdue = String(status).toLowerCase().includes('adeudo') || String(status).toLowerCase().includes('vencid');
+
+              return (
+                <div 
+                  key={idx}
+                  onClick={() => handleOpenStudentExpediente(studentId, studentName)}
+                  className={`bg-white hover:bg-slate-50 border rounded-xl p-4 flex flex-col justify-between gap-3 shadow-sm hover:shadow-md transition-all cursor-pointer group relative overflow-hidden ${
+                    isIbime ? 'border-slate-200 hover:border-[#E41B14]' : 'border-slate-200 hover:border-indigo-400'
+                  }`}
+                >
+                  {/* Header de la tarjeta */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className={`h-10 w-10 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 shadow-xs ${
+                        isIbime 
+                          ? 'bg-[#0F2744]/10 border border-[#0F2744]/20 text-[#0F2744]' 
+                          : 'bg-indigo-50 border border-indigo-200 text-indigo-700'
+                      }`}>
+                        {String(studentName).split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className={`text-xs font-bold text-slate-900 transition truncate ${
+                          isIbime ? 'group-hover:text-[#E41B14]' : 'group-hover:text-indigo-600'
+                        }`}>
+                          {studentName}
+                        </h4>
+                        <div className="flex items-center gap-1.5 text-[10px] text-slate-500 mt-0.5">
+                          <span className={`font-mono font-bold ${isIbime ? 'text-[#0F2744]' : 'text-indigo-600'}`}>
+                            {enrollmentId}
+                          </span>
+                          <span>·</span>
+                          <span>{levelGrade}</span>
+                        </div>
                       </div>
                     </div>
+
+                    <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0 ${
+                      isOverdue 
+                        ? 'bg-rose-50 border border-rose-200 text-rose-700' 
+                        : 'bg-emerald-50 border border-emerald-200 text-emerald-700'
+                    }`}>
+                      {status}
+                    </span>
                   </div>
 
-                  <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0 ${
-                    isOverdue ? 'bg-rose-50 border border-rose-200 text-rose-700' : 'bg-emerald-50 border border-emerald-200 text-emerald-700'
-                  }`}>
-                    {status}
-                  </span>
-                </div>
-
-                {/* Beca Institucional autorizada (> 0%) */}
-                {scholarshipNotes && (
-                  <div className="p-2.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 flex items-center gap-1">
-                        <GraduationCap className="h-3.5 w-3.5" />
-                        <span>Beca Institucional Autorizada</span>
-                      </span>
-                      {scholarshipPercentage > 0 && (
-                        <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-indigo-100 border border-indigo-200 rounded text-indigo-800">
-                          🏷️ {scholarshipPercentage}% DCTO
+                  {/* Detalle Exigible / Cobro Homologado */}
+                  {hasDebtInfo && (
+                    <div className={`p-2.5 rounded-lg border text-xs space-y-1 ${
+                      isIbime 
+                        ? 'bg-rose-50/60 border-rose-200 text-rose-950' 
+                        : 'bg-amber-50/70 border-amber-200 text-amber-950'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 flex items-center gap-1">
+                          <Receipt className="h-3 w-3" />
+                          <span>Adeudo Exigible</span>
                         </span>
+                        {debtAmount > 0 && (
+                          <span className="font-mono font-black text-rose-700 text-xs">
+                            {formatMXN(debtAmount)}
+                          </span>
+                        )}
+                      </div>
+                      {concept && (
+                        <p className="text-[11px] font-medium leading-snug text-slate-800">
+                          {concept}
+                        </p>
                       )}
-                    </div>
-                    <p className="text-[11px] font-medium leading-snug text-slate-700">
-                      {scholarshipNotes}
-                    </p>
-                  </div>
-                )}
-
-                {/* Ficha Médica / Alergia destacada */}
-                {(medicalNotes || isAllergySearch || (bloodType && bloodType !== 'N/D')) && (
-                  <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 text-xs space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 flex items-center gap-1">
-                        <AlertTriangle className="h-3 w-3" />
-                        <span>Alergia / Ficha Médica</span>
-                      </span>
-                      {bloodType && bloodType !== 'N/D' && (
-                        <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-rose-100 border border-rose-200 rounded text-rose-800">
-                          🩸 {bloodType}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[11px] font-medium leading-snug text-rose-800">
-                      {medicalNotes || 'Diagnóstico clínico registrado en expediente escolar.'}
-                    </p>
-                  </div>
-                )}
-
-                {/* Filiación Familiar & Contacto de Emergencia */}
-                <div className="text-[11px] text-slate-600 space-y-1 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-500">Tutor:</span>
-                    <span className="font-medium text-slate-800 truncate max-w-[170px]">{tutor}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-500">Emergencia:</span>
-                    <span className="font-medium text-indigo-700 font-mono">{phone}</span>
-                  </div>
-                  {age && age !== 'N/D' && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">Edad:</span>
-                      <span className="font-medium text-slate-800">{age} {birthDate ? `(${birthDate})` : ''}</span>
+                      <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono pt-0.5">
+                        {receiptFolio && <span>Folio: <strong className="text-slate-700">{receiptFolio}</strong></span>}
+                        {dueDate && <span>Vence: <strong className="text-slate-700">{dueDate}</strong></span>}
+                      </div>
                     </div>
                   )}
-                  {campus && (
-                    <div className="flex items-center justify-between text-[10px]">
-                      <span className="text-slate-500">Plantel:</span>
-                      <span className="font-medium text-slate-600 truncate max-w-[170px]">{campus}</span>
+
+                  {/* Beca Institucional autorizada (> 0%) */}
+                  {scholarshipNotes && (
+                    <div className="p-2.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 flex items-center gap-1">
+                          <GraduationCap className="h-3.5 w-3.5" />
+                          <span>Beca Institucional Autorizada</span>
+                        </span>
+                        {scholarshipPercentage > 0 && (
+                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-indigo-100 border border-indigo-200 rounded text-indigo-800">
+                            🏷️ {scholarshipPercentage}% DCTO
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] font-medium leading-snug text-slate-700">
+                        {scholarshipNotes}
+                      </p>
                     </div>
                   )}
-                </div>
 
-                {/* Botón de acción Abrir Expediente 360° */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleOpenStudentExpediente(studentId, studentName);
-                  }}
-                  className="w-full py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer mt-1 shadow-sm"
-                >
-                  <span>Abrir Expediente 360°</span>
-                  <ExternalLink className="h-3 w-3" />
-                </button>
-              </div>
-            );
-          })}
-        </div>
+                  {/* Ficha Médica / Alergia destacada */}
+                  {(medicalNotes || isAllergySearch || (bloodType && bloodType !== 'N/D')) && (
+                    <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 text-xs space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3" />
+                          <span>Alergia / Ficha Médica</span>
+                        </span>
+                        {bloodType && bloodType !== 'N/D' && (
+                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-rose-100 border border-rose-200 rounded text-rose-800">
+                            🩸 {bloodType}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] font-medium leading-snug text-rose-800">
+                        {medicalNotes || 'Diagnóstico clínico registrado en expediente escolar.'}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Filiación Familiar & Contacto de Emergencia */}
+                  <div className="text-[11px] text-slate-600 space-y-1 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">Tutor:</span>
+                      <span className="font-medium text-slate-800 truncate max-w-[170px]">{tutor}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">Emergencia:</span>
+                      <span className={`font-medium font-mono ${isIbime ? 'text-[#0F2744]' : 'text-indigo-700'}`}>{phone}</span>
+                    </div>
+                    {age && age !== 'N/D' && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500">Edad:</span>
+                        <span className="font-medium text-slate-800">{age} {birthDate ? `(${birthDate})` : ''}</span>
+                      </div>
+                    )}
+                    {campus && (
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-slate-500">Plantel:</span>
+                        <span className="font-medium text-slate-600 truncate max-w-[170px]">{campus}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Botón de acción Abrir Expediente 360° */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenStudentExpediente(studentId, studentName);
+                    }}
+                    className={`w-full py-2 rounded-lg text-white text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer mt-1 shadow-sm ${
+                      isIbime 
+                        ? 'bg-[#E41B14] hover:bg-[#C01D0C]' 
+                        : 'bg-indigo-600 hover:bg-indigo-700'
+                    }`}
+                  >
+                    <span>Abrir Expediente 360°</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   };
@@ -1562,10 +1843,16 @@ export default function ExecutiveAnalyticsStudio({
 
                   {/* Respuesta Directa Ejecutiva */}
                   {currentReport.directAnswer ? (
-                    <div className="p-3.5 bg-indigo-50/70 border border-indigo-200 rounded-xl text-slate-800 text-xs leading-relaxed shadow-xs space-y-2">
+                    <div className={`p-3.5 rounded-xl text-xs leading-relaxed shadow-xs space-y-2 border ${
+                      isIbime
+                        ? 'bg-gradient-to-br from-[#0F2744] via-[#123157] to-[#17426D] border-[#E41B14]/40 text-white shadow-md'
+                        : 'bg-indigo-50/70 border-indigo-200 text-slate-800'
+                    }`}>
                       <div className="flex items-center justify-between gap-1.5">
-                        <div className="flex items-center gap-1.5 font-bold text-indigo-700 text-[11px] uppercase tracking-wider">
-                          <ShieldCheck className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
+                        <div className={`flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider ${
+                          isIbime ? 'text-red-300' : 'text-indigo-700'
+                        }`}>
+                          <ShieldCheck className={`h-3.5 w-3.5 shrink-0 ${isIbime ? 'text-[#E41B14]' : 'text-indigo-600'}`} />
                           <span>Respuesta Institucional:</span>
                         </div>
                         <button
@@ -1575,20 +1862,22 @@ export default function ExecutiveAnalyticsStudio({
                           className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all cursor-pointer ${
                             isSpeakingBriefing
                               ? 'bg-rose-500 text-white border-rose-600 animate-pulse'
-                              : 'bg-white hover:bg-indigo-100 text-indigo-700 border-indigo-200'
+                              : (isIbime 
+                                  ? 'bg-white/10 hover:bg-white/20 text-white border-white/20' 
+                                  : 'bg-white hover:bg-indigo-100 text-indigo-700 border-indigo-200')
                           }`}
                         >
                           {isSpeakingBriefing ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
                           <span>{isSpeakingBriefing ? 'Detener' : 'Escuchar Voz'}</span>
                         </button>
                       </div>
-                      <div className="text-slate-800 font-normal leading-relaxed text-[11.5px]">
-                        {renderFormattedMarkdown(currentReport.directAnswer)}
+                      <div className={`font-normal leading-relaxed text-[11.5px] ${isIbime ? 'text-white' : 'text-slate-800'}`}>
+                        {renderFormattedMarkdown(currentReport.directAnswer, isIbime, isIbime)}
                       </div>
                     </div>
                   ) : currentReport.explanation.summary ? (
                     <div className="p-3 bg-white border border-slate-200 rounded-xl text-slate-800 text-xs leading-relaxed shadow-xs">
-                      {renderFormattedMarkdown(currentReport.explanation.summary)}
+                      {renderFormattedMarkdown(currentReport.explanation.summary, false, isIbime)}
                     </div>
                   ) : null}
 
@@ -1750,7 +2039,7 @@ export default function ExecutiveAnalyticsStudio({
                 onClick={() => setActiveTab('preview')}
                 className={`py-2.5 border-b-2 transition cursor-pointer ${
                   activeTab === 'preview'
-                    ? 'border-indigo-600 text-indigo-700 font-bold'
+                    ? (isIbime ? 'border-[#E41B14] text-[#E41B14] font-bold' : 'border-indigo-600 text-indigo-700 font-bold')
                     : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
@@ -1761,11 +2050,11 @@ export default function ExecutiveAnalyticsStudio({
                 onClick={() => setActiveTab('charts')}
                 className={`py-2.5 border-b-2 transition cursor-pointer flex items-center gap-1.5 ${
                   activeTab === 'charts'
-                    ? 'border-indigo-600 text-indigo-700 font-bold'
+                    ? (isIbime ? 'border-[#E41B14] text-[#E41B14] font-bold' : 'border-indigo-600 text-indigo-700 font-bold')
                     : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
-                <BarChart3 className="h-3.5 w-3.5 text-indigo-600" />
+                <BarChart3 className={`h-3.5 w-3.5 ${isIbime ? 'text-[#E41B14]' : 'text-indigo-600'}`} />
                 <span>Vista Gráfica</span>
               </button>
               
@@ -1773,7 +2062,7 @@ export default function ExecutiveAnalyticsStudio({
                 onClick={() => setActiveTab('table')}
                 className={`py-2.5 border-b-2 transition cursor-pointer ${
                   activeTab === 'table'
-                    ? 'border-indigo-600 text-indigo-700 font-bold'
+                    ? (isIbime ? 'border-[#E41B14] text-[#E41B14] font-bold' : 'border-indigo-600 text-indigo-700 font-bold')
                     : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
@@ -1784,7 +2073,7 @@ export default function ExecutiveAnalyticsStudio({
                 onClick={() => setActiveTab('edition')}
                 className={`py-2.5 border-b-2 transition cursor-pointer ${
                   activeTab === 'edition'
-                    ? 'border-indigo-600 text-indigo-700 font-bold'
+                    ? (isIbime ? 'border-[#E41B14] text-[#E41B14] font-bold' : 'border-indigo-600 text-indigo-700 font-bold')
                     : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
@@ -1843,16 +2132,28 @@ export default function ExecutiveAnalyticsStudio({
                   />
                 ) : currentReport.directAnswer ? (
                   /* Banner de Respuesta Ejecutiva Directa para otras consultas */
-                  <div className="p-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl shadow-md border border-indigo-900/60">
+                  <div className={`p-5 rounded-2xl shadow-lg border ${
+                    isIbime 
+                      ? 'bg-gradient-to-r from-[#0F2744] via-[#17426D] to-[#0F2744] border-[#E41B14]/40 text-white' 
+                      : 'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-indigo-900/60 text-white'
+                  }`}>
                     <div className="flex items-start gap-3.5">
-                      <div className="h-10 w-10 rounded-xl bg-indigo-500/20 border border-indigo-400/40 flex items-center justify-center text-amber-300 font-bold shrink-0 mt-0.5 shadow-xs">
+                      <div className={`h-10 w-10 rounded-xl flex items-center justify-center font-bold shrink-0 mt-0.5 shadow-xs ${
+                        isIbime 
+                          ? 'bg-[#E41B14]/20 border border-[#E41B14]/40 text-amber-300' 
+                          : 'bg-indigo-500/20 border border-indigo-400/40 text-amber-300'
+                      }`}>
                         <ShieldCheck className="h-5 w-5 stroke-[2.2]" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                           <div className="flex items-center gap-2">
                             <h3 className="text-sm font-bold text-white">Respuesta Ejecutiva Directa</h3>
-                            <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono font-bold border border-emerald-500/30">
+                            <span className={`text-[10px] px-2 py-0.5 rounded-md font-mono font-bold border ${
+                              isIbime 
+                                ? 'bg-[#E41B14]/25 text-red-200 border-[#E41B14]/40' 
+                                : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                            }`}>
                               Inteligencia Pedagógica · 0 Tokens
                             </span>
                           </div>
@@ -1870,8 +2171,8 @@ export default function ExecutiveAnalyticsStudio({
                             <span>{isSpeakingBriefing ? 'Detener Voz' : 'Escuchar Dictamen por Voz'}</span>
                           </button>
                         </div>
-                        <div className="text-xs text-slate-200 mt-2 leading-relaxed font-medium">
-                          {renderFormattedMarkdown(currentReport.directAnswer)}
+                        <div className="text-xs text-white mt-2.5 leading-relaxed font-medium">
+                          {renderFormattedMarkdown(currentReport.directAnswer, true, isIbime)}
                         </div>
                       </div>
                     </div>
@@ -1880,9 +2181,13 @@ export default function ExecutiveAnalyticsStudio({
 
                 {/* Banner de acceso rápido: Si hay múltiples alumnos coincidentes o si es individual */}
                 {currentReport.table.totalRows > 1 && currentReport.table.rows.some((r: any) => r.studentId || r.enrollmentId || r.studentName) ? (
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white border border-slate-200 rounded-2xl shadow-xs">
+                  <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white rounded-2xl shadow-xs border ${
+                    isIbime ? 'border-[#0F2744]/20' : 'border-slate-200'
+                  }`}>
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-cyan-50 border border-cyan-200 flex items-center justify-center text-cyan-700 font-bold shrink-0">
+                      <div className={`h-10 w-10 rounded-xl flex items-center justify-center font-bold shrink-0 ${
+                        isIbime ? 'bg-[#0F2744]/10 border border-[#0F2744]/20 text-[#0F2744]' : 'bg-cyan-50 border border-cyan-200 text-cyan-700'
+                      }`}>
                         <Users className="h-5 w-5" />
                       </div>
                       <div>
@@ -1890,7 +2195,9 @@ export default function ExecutiveAnalyticsStudio({
                           <h3 className="text-sm font-bold text-slate-900">
                             Directorio de Expedientes: {currentReport.table.totalRows} Alumnos Coincidentes
                           </h3>
-                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-cyan-50 text-cyan-700 border border-cyan-200 font-mono font-bold">
+                          <span className={`text-[10px] px-2 py-0.5 rounded-md font-mono font-bold border ${
+                            isIbime ? 'bg-red-50 text-[#E41B14] border-red-200' : 'bg-cyan-50 text-cyan-700 border border-cyan-200'
+                          }`}>
                             Catálogo Oficial
                           </span>
                         </div>
@@ -1904,16 +2211,22 @@ export default function ExecutiveAnalyticsStudio({
                       onClick={() => {
                         expedientesSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
                       }}
-                      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition cursor-pointer self-start sm:self-auto shrink-0"
+                      className={`px-4 py-2 rounded-xl text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition cursor-pointer self-start sm:self-auto shrink-0 ${
+                        isIbime ? 'bg-[#E41B14] hover:bg-[#C01D0C]' : 'bg-indigo-600 hover:bg-indigo-700'
+                      }`}
                     >
                       <span>Explorar Expedientes Abajo</span>
                       <ArrowDown className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 ) : currentReport.studentDetail ? (
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white border border-indigo-200 rounded-2xl shadow-xs">
+                  <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white rounded-2xl shadow-xs border ${
+                    isIbime ? 'border-[#0F2744]/30' : 'border-indigo-200'
+                  }`}>
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 font-bold shrink-0">
+                      <div className={`h-10 w-10 rounded-xl flex items-center justify-center font-bold shrink-0 ${
+                        isIbime ? 'bg-[#0F2744]/10 border border-[#0F2744]/20 text-[#0F2744]' : 'bg-indigo-50 border border-indigo-200 text-indigo-600'
+                      }`}>
                         <User className="h-5 w-5" />
                       </div>
                       <div>
@@ -1921,7 +2234,9 @@ export default function ExecutiveAnalyticsStudio({
                           <h3 className="text-sm font-bold text-slate-900">
                             Ficha Integral 360°: {currentReport.studentDetail.student.first_name} {currentReport.studentDetail.student.last_name_1}
                           </h3>
-                          <span className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 font-mono font-bold">
+                          <span className={`text-[10px] px-2 py-0.5 rounded-md font-mono font-bold border ${
+                            isIbime ? 'bg-red-50 border-red-200 text-[#E41B14]' : 'bg-indigo-50 border border-indigo-200 text-indigo-700'
+                          }`}>
                             {currentReport.studentDetail.student.level.toUpperCase()} · {currentReport.studentDetail.student.grade}
                           </span>
                         </div>
@@ -1938,7 +2253,9 @@ export default function ExecutiveAnalyticsStudio({
                           setShowDrawer(true);
                         }
                       }}
-                      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition cursor-pointer self-start sm:self-auto shrink-0"
+                      className={`px-4 py-2 rounded-xl text-white text-xs font-bold shadow-xs flex items-center gap-1.5 transition cursor-pointer self-start sm:self-auto shrink-0 ${
+                        isIbime ? 'bg-[#E41B14] hover:bg-[#C01D0C]' : 'bg-indigo-600 hover:bg-indigo-700'
+                      }`}
                     >
                       <span>Abrir Expediente 360°</span>
                       <ExternalLink className="h-3.5 w-3.5" />
@@ -1999,7 +2316,7 @@ export default function ExecutiveAnalyticsStudio({
                   })}
                 </div>
 
-                {/* VISTA PREVIA: KPIS + GRÁFICA INTERACTIVA COMPACTA + EXPEDIENTES + TABLA */}
+                {/* VISTA PREVIA: KPIS + GRÁFICA INTERACTIVA COMPACTA + EXPEDIENTES HOMOLOGADOS */}
                 {activeTab === 'preview' && (
                   <>
                     {/* Gráfica interactiva adaptativa con selector de tipos */}
@@ -2014,142 +2331,15 @@ export default function ExecutiveAnalyticsStudio({
                         onSelectCategory={handleSelectChartCategory}
                         onOpenExpediente={handleOpenStudentExpediente}
                         onExpandToFull={() => setActiveTab('charts')}
+                        showDebtorsList={false}
                       />
                     )}
 
-                    {/* Catálogo visual de Expedientes Coincidentes */}
+                    {/* Catálogo visual de Expedientes Coincidentes homologado con selector fichas/tabla */}
                     {renderExpedientesGrid()}
 
-                    {/* Tabla de datos tabulares con búsqueda */}
-                    <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-                      <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70">
-                        <div className="flex items-center gap-2 flex-1 max-w-sm bg-white border border-slate-200 rounded-xl px-3 py-1.5 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500/20">
-                          <Search className="h-4 w-4 text-slate-400 shrink-0" />
-                          <input aria-label="Buscar en el reporte..."
-                            type="text"
-                            value={tableSearch}
-                            onChange={(e) => setTableSearch(e.target.value)}
-                            placeholder="Buscar en el reporte..."
-                            className="w-full bg-transparent text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
-                          />
-                        </div>
-
-                        <div className="flex items-center gap-3 text-xs">
-                          <span className="text-slate-600 font-medium">Estado:</span>
-                          <select aria-label="Seleccionar opción"
-                            value={tableStatusFilter}
-                            onChange={(e) => setTableStatusFilter(e.target.value)}
-                            className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-slate-700 font-medium focus:outline-none text-xs"
-                          >
-                            <option value="all">Todos los registros</option>
-                            <option value="pendiente">Pendientes</option>
-                            <option value="vencido">Vencidos</option>
-                            <option value="liquidado">Liquidados / Pagados</option>
-                          </select>
-
-                          <span className="text-slate-500 font-mono text-[11px]">
-                            Mostrando {filteredTableRows.length} de {currentReport.table.totalRows}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div 
-                        className="overflow-x-auto overflow-y-auto custom-scrollbar"
-                        style={{ maxHeight: `${viewport.tableMaxHeight}px` }}
-                      >
-                        <table className="w-full text-left text-xs border-collapse">
-                          <thead className="sticky top-0 z-10 bg-slate-100/95 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[11px] shadow-xs backdrop-blur-sm">
-                            <tr>
-                              {activeTableColumns.map((col) => (
-                                <th 
-                                  key={col.key} 
-                                  className={`py-3 px-4 ${col.align === 'right' ? 'text-right' : (col.align === 'center' ? 'text-center' : 'text-left')}`}
-                                >
-                                  {col.label}
-                                </th>
-                              ))}
-                              <th className="py-3 px-4 text-right">Acción</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100">
-                            {filteredTableRows.length === 0 ? (
-                              <tr>
-                                <td colSpan={activeTableColumns.length + 1} className="py-8 text-center text-slate-500">
-                                  No se encontraron registros que coincidan con la búsqueda.
-                                </td>
-                              </tr>
-                            ) : (
-                              filteredTableRows.map((row, rowIdx) => (
-                                <tr 
-                                  key={rowIdx} 
-                                  onClick={() => handleRowClick(row)}
-                                  className="hover:bg-slate-50 transition cursor-pointer group"
-                                >
-                                  {activeTableColumns.map((col) => {
-                                    const val = row[col.key];
-
-                                    if (col.isCurrency) {
-                                      return (
-                                        <td key={col.key} className="py-3 px-4 text-right font-mono font-bold text-slate-900">
-                                          {formatMXN(Number(val) || 0)}
-                                        </td>
-                                      );
-                                    }
-
-                                    if (col.isBadge) {
-                                      const statusStr = String(val).toLowerCase();
-                                      const isBad = statusStr.includes('vencido') || statusStr.includes('falta') || statusStr.includes('atención');
-                                      const isGood = statusStr.includes('liquidado') || statusStr.includes('presente') || statusStr.includes('superávit') || statusStr.includes('dispersado');
-                                      
-                                      return (
-                                        <td key={col.key} className="py-3 px-4 text-center">
-                                          <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                                            isBad 
-                                              ? 'bg-rose-50 border border-rose-200 text-rose-700' 
-                                              : (isGood 
-                                                  ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' 
-                                                  : 'bg-amber-50 border border-amber-200 text-amber-700')
-                                          }`}>
-                                            {val}
-                                          </span>
-                                        </td>
-                                      );
-                                    }
-
-                                    return (
-                                      <td 
-                                        key={col.key} 
-                                        className={`py-3 px-4 ${col.align === 'center' ? 'text-center' : ''} text-slate-700 font-medium`}
-                                      >
-                                        {val ?? '-'}
-                                      </td>
-                                    );
-                                  })}
-
-                                  <td className="py-3 px-4 text-right">
-                                    <button 
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleRowClick(row);
-                                      }}
-                                      className="text-[11px] font-bold text-indigo-600 group-hover:text-indigo-800 hover:underline flex items-center gap-1 ml-auto cursor-pointer"
-                                    >
-                                      <span>
-                                        {row.studentId || row.studentName 
-                                          ? 'Ver expediente' 
-                                          : (row.campusName || row.name ? 'Ver alumnos' : (row.netSalary ? 'Ver recibo' : 'Ver detalle'))}
-                                      </span>
-                                      <ExternalLink className="h-3 w-3" />
-                                    </button>
-                                  </td>
-                                </tr>
-                              ))
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
+                    {/* Si no es catálogo de alumnos, desplegar tabla de datos tabulares estándar */}
+                    {!hasStudentRows && renderDataTable(true)}
                   </>
                 )}
 
@@ -2235,141 +2425,7 @@ export default function ExecutiveAnalyticsStudio({
                 )}
 
                 {/* VISTA TABULAR DEDICADA */}
-                {activeTab === 'table' && (
-                  <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-                    <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70">
-                      <div className="flex items-center gap-2 flex-1 max-w-md bg-white border border-slate-200 rounded-xl px-3 py-1.5 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500/20">
-                        <Search className="h-4 w-4 text-slate-400 shrink-0" />
-                        <input aria-label="Buscar por estudiante, nivel, folio o concepto..."
-                          type="text"
-                          value={tableSearch}
-                          onChange={(e) => setTableSearch(e.target.value)}
-                          placeholder="Buscar por estudiante, nivel, folio o concepto..."
-                          className="w-full bg-transparent text-xs text-slate-800 placeholder-slate-400 focus:outline-none"
-                        />
-                      </div>
-
-                      <div className="flex items-center gap-3 text-xs">
-                        <span className="text-slate-600 font-medium">Estado:</span>
-                        <select aria-label="Seleccionar opción"
-                          value={tableStatusFilter}
-                          onChange={(e) => setTableStatusFilter(e.target.value)}
-                          className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-slate-700 font-medium focus:outline-none text-xs"
-                        >
-                          <option value="all">Todos los registros</option>
-                          <option value="pendiente">Pendientes</option>
-                          <option value="vencido">Vencidos</option>
-                          <option value="liquidado">Liquidados / Pagados</option>
-                        </select>
-
-                        <button
-                          onClick={handleExportCSV}
-                          className="px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 font-bold transition flex items-center gap-1.5 cursor-pointer"
-                        >
-                          <Download className="h-3.5 w-3.5" />
-                          <span>CSV</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    <div 
-                      className="overflow-x-auto overflow-y-auto custom-scrollbar"
-                      style={{ maxHeight: `min(${viewport.tableMaxHeight + 160}px, 68vh)` }}
-                    >
-                      <table className="w-full text-left text-xs border-collapse">
-                        <thead className="sticky top-0 z-10 bg-slate-100/95 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[11px] shadow-xs backdrop-blur-sm">
-                          <tr>
-                            {activeTableColumns.map((col) => (
-                              <th 
-                                key={col.key} 
-                                className={`py-3 px-4 ${col.align === 'right' ? 'text-right' : (col.align === 'center' ? 'text-center' : 'text-left')}`}
-                              >
-                                {col.label}
-                              </th>
-                            ))}
-                            <th className="py-3 px-4 text-right">Acción</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                          {filteredTableRows.length === 0 ? (
-                            <tr>
-                              <td colSpan={activeTableColumns.length + 1} className="py-8 text-center text-slate-500">
-                                No se encontraron registros que coincidan con los filtros actuales.
-                              </td>
-                            </tr>
-                          ) : (
-                            filteredTableRows.map((row, rowIdx) => (
-                              <tr 
-                                key={rowIdx} 
-                                onClick={() => handleRowClick(row)}
-                                className="hover:bg-slate-50 transition cursor-pointer group"
-                              >
-                                {activeTableColumns.map((col) => {
-                                  const val = row[col.key];
-
-                                  if (col.isCurrency) {
-                                    return (
-                                      <td key={col.key} className="py-3 px-4 text-right font-mono font-bold text-slate-900">
-                                        {formatMXN(Number(val) || 0)}
-                                      </td>
-                                    );
-                                  }
-
-                                  if (col.isBadge) {
-                                    const statusStr = String(val).toLowerCase();
-                                    const isBad = statusStr.includes('vencido') || statusStr.includes('falta') || statusStr.includes('atención');
-                                    const isGood = statusStr.includes('liquidado') || statusStr.includes('presente') || statusStr.includes('superávit') || statusStr.includes('dispersado');
-                                    
-                                    return (
-                                      <td key={col.key} className="py-3 px-4 text-center">
-                                        <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                                          isBad 
-                                            ? 'bg-rose-50 border border-rose-200 text-rose-700' 
-                                            : (isGood 
-                                                ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' 
-                                                : 'bg-amber-50 border border-amber-200 text-amber-700')
-                                        }`}>
-                                          {val}
-                                        </span>
-                                      </td>
-                                    );
-                                  }
-
-                                  return (
-                                    <td 
-                                      key={col.key} 
-                                      className={`py-3 px-4 ${col.align === 'center' ? 'text-center' : ''} text-slate-700 font-medium`}
-                                    >
-                                      {val ?? '-'}
-                                    </td>
-                                  );
-                                })}
-
-                                <td className="py-3 px-4 text-right">
-                                  <button 
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleRowClick(row);
-                                    }}
-                                    className="text-[11px] font-bold text-indigo-600 group-hover:text-indigo-800 hover:underline flex items-center gap-1 ml-auto cursor-pointer"
-                                  >
-                                    <span>
-                                      {row.studentId || row.studentName 
-                                        ? 'Ver expediente' 
-                                        : (row.campusName || row.name ? 'Ver alumnos' : (row.netSalary ? 'Ver recibo' : 'Ver detalle'))}
-                                    </span>
-                                    <ExternalLink className="h-3 w-3" />
-                                  </button>
-                                </td>
-                              </tr>
-                            ))
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
+                {activeTab === 'table' && renderDataTable(false)}
 
                 {/* VISTA DE EDICIÓN Y PARÁMETROS DEL REPORTE */}
                 {activeTab === 'edition' && (
