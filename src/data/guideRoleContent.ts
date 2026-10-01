@@ -38,12 +38,15 @@ export const GUIDE_ROLE_DATA: Record<string, RoleGuideData> = {
     roleTitle: 'Guía Integral del Profesor, Bóveda Curricular & Taller Gamificado',
     roleSubtitle: 'Colegio Anglo Mexicano • 703 Nodos NEM 2024, Libros Digitales SEP y Estudio Didáctico',
     roleBadge: 'Rol: Docente / Titular de Academia',
-    heroDescription: 'Diseña planeaciones didácticas oficiales con la Bóveda Curricular de 703 nodos NEM 2024 y transforma tus clases en aventuras interactivas. Con ISkool puedes consultar planeaciones al instante (<5ms), aprovechar el mapeo curricular directo en Bóveda Curricular de los Libros de Texto Digitales de la SEP, generar proyectos con el Asistente Pedagógico IA, construir actividades con 17 bloques interactivos en el Lienzo Digital, integrar videoteca certificada (YouTube 200 OK), incrustar 50 simuladores científicos y evaluar el dominio formativo de tus alumnos en tiempo real.',
+    heroDescription: 'Diseña planeaciones didácticas oficiales con la Bóveda Curricular de 703 nodos NEM 2024 y transforma tus clases en aventuras interactivas. Con ISkool puedes consultar planeaciones al instante (<5ms), aprovechar el mapeo curricular directo en Bóveda Curricular de los Libros de Texto Digitales de la SEP, generar proyectos con el Asistente Pedagógico IA, construir actividades con 28 bloques interactivos en el Lienzo Digital (incluyendo Personajes Históricos Vivos en 3D, Centro de Idiomas DELF/Cambridge/CENNI, Circuitos Lógicos y Escape Rooms con tolerancia a acentos), integrar videoteca certificada, incrustar 50 simuladores científicos y evaluar el dominio formativo de tus alumnos en tiempo real.',
     keyBenefits: [
       '📚 Bóveda Curricular con 703 Planeaciones Oficiales NEM 2024 listas para usar con respuesta en menos de 5 ms.',
       '📖 Libros de Texto Digitales de la SEP & Cuaderno Inteligente: Mapeo curricular directo en Bóveda Curricular con citas de páginas oficiales de Conaliteg.',
       '🧠 Arquitectura Vault-First: Entrega instantánea de nodos preexistentes con respaldo de IA Pedagógica exclusiva ante ausencias.',
-      '🎨 Estudio de Actividades con 17 Bloques Gamificados (Drag & Drop, Escape Rooms, Crucigramas, Ruletas, Duelos Boss RPG y Laboratorios).',
+      '🎨 Estudio de Actividades con 28 Bloques Gamificados (Drag & Drop, Escape Rooms con Códigos Secretos, Ruletas, Duelos Boss RPG, Lectura Cronometrada PPM y Laboratorios).',
+      '🏛️ Personajes y Sitios Históricos Vivos: Libro Mágico 3D interactivo, cartografía satelital con fotografías reales verificadas y avatares con voz histórica en 1ª persona.',
+      '🗣️ Centro de Idiomas & Fonética: Práctica de conversación, Karaoke Fonético, Tutor Socrático IA y misiones Roleplay alineadas a DELF, Cambridge y CENNI.',
+      '💻 Pensamiento Computacional & Lógica: Simuladores de compuertas lógicas booleanas, algoritmos de grafos y máquinas de Turing interactivos.',
       '🎥 Videoteca Pedagógica Certificada (YouTube oEmbed 200 OK) para Inglés (Pre-A1 a B2), Matemáticas, Ciencias, Historia y Español.',
       '🌐 Directorio integrado de 50 Simuladores Web interactivos (PhET, GeoGebra, Desmos, NASA, Tinkercad) listos para incrustar.',
       '🛡️ Purga Automática de Enlaces Rotos con reporte en un solo clic para garantizar recursos 100% disponibles.',
@@ -84,15 +87,15 @@ export const GUIDE_ROLE_DATA: Record<string, RoleGuideData> = {
       {
         stepNumber: 3,
         title: 'Paso 3: Construir Actividades en el Estudio Didáctico',
-        subtitle: 'Lienzo Digital & 17 Bloques Gamificados',
-        description: 'Diseña experiencias interactivas conectando nodos en el Lienzo Digital. Agrega bloques desde el dock inferior o el catálogo (+) y jala flechas desde los puertos de salida (●) de cualquier nodo hacia el siguiente. Modula libremente las rutas de aprendizaje: desde preguntas de opción múltiple hasta crucigramas, líneas temporales, candados de escape room y duelos contra monstruos del aprendizaje.',
+        subtitle: 'Lienzo Digital & 28 Bloques Gamificados',
+        description: 'Diseña experiencias interactivas conectando nodos en el Lienzo Digital. Agrega bloques desde el dock inferior o el catálogo (+) y jala flechas desde los puertos de salida (●) de cualquier nodo hacia el siguiente. Modula libremente las rutas de aprendizaje: desde preguntas de opción múltiple hasta crucigramas, líneas temporales, Personajes Históricos Vivos con Libro Mágico 3D, Práctica de Idiomas y Karaoke Fonético (DELF/Cambridge/CENNI), Simuladores de Circuitos Lógicos y Turing, candados de Escape Room tolerantes a acentos y duelos contra monstruos del aprendizaje.',
         iconName: 'Workflow',
         badgeText: 'Lienzo Digital',
         colorClass: 'from-purple-500 to-indigo-600',
         highlights: [
           'Trazado intuitivo de conexiones arrastrando flechas con el ratón.',
-          '17 bloques interactivos con vidas, temporizadores, pistas y rachas de fuego.',
-          'Configuración granular de PDA, Campo Formativo y criterios formativos.',
+          '28 bloques interactivos con vidas, temporizadores, pistas y rachas de fuego.',
+          'Nuevos módulos: Personajes Históricos 3D, Centro de Idiomas, Compuertas Booleanas y Escape Rooms.',
           'Generador asistido de reactivos impulsado por el Asistente Pedagógico IA.'
         ]
       },
@@ -152,7 +155,7 @@ export const GUIDE_ROLE_DATA: Record<string, RoleGuideData> = {
         id: 'studio-creator',
         title: 'Estudio Creador de Actividades (Lienzo Digital)',
         category: 'Creación Didáctica',
-        description: 'Diseño interactivo con 17 bloques gamificados, conexiones visuales de nodos pedagógicos por flechas y auto-guardado.',
+        description: 'Diseño interactivo con 28 bloques gamificados, conexiones visuales de nodos pedagógicos por flechas, Libro Mágico de Historia 3D, Centro de Idiomas y auto-guardado.',
         icon: 'Sparkles',
         benefit: 'Ahorra hasta un 70% del tiempo de planeación docente.',
         actionUrl: '/teacher/studio',
@@ -213,8 +216,8 @@ export const GUIDE_ROLE_DATA: Record<string, RoleGuideData> = {
         a: 'El sistema indexa localmente los libros de texto gratuitos oficiales de Conaliteg para Primaria y Secundaria. La extracción de lecturas, conceptos y ejercicios opera mediante indexación estructural directa, lo que permite aprovechar los contenidos curriculares de forma instantánea y sin demoras. Además, el Cuaderno Inteligente fundamenta las respuestas y orientaciones citando el número de página y tomo exacto.'
       },
       {
-        q: '¿Cuáles son los 17 bloques disponibles en el Estudio de Actividades (Lienzo Digital)?',
-        a: 'El Estudio cuenta con 17 bloques modulares: Pregunta de Opción Múltiple, Arrastrar y Soltar (Drag & Drop), Completar Enunciado, Escape Room con Candado de Misterio, Batalla contra Boss RPG, Tarjetas de Memoria, Ordenar Cronología / Pasos, Ruleta de Preguntas, Verdadero o Falso, Laboratorio / Simulador Externo Web, Video Pedagógico Certificado, Texto Informativo, Imagen Interactiva, Audio Narrado, Selección Múltiple, Calculadora / Fórmula y Pantalla de Victoria con Recompensas XP.'
+        q: '¿Cuáles son los 28 bloques disponibles en el Estudio de Actividades (Lienzo Digital)?',
+        a: 'El Estudio cuenta con 28 bloques modulares distribuidos en 4 familias pedagógicas: 1) Tronco Común & Evaluación (Opción Múltiple, Arrastrar y Soltar, Texto Mutilado/Fill Blanks, Línea de Tiempo, Pregunta Abierta y Rúbricas Formativas); 2) Gamificación & Desafíos (Duelos RPG contra Bosses Pixi, Cofre de Botín XP/Gemas, Escape Rooms con Códigos Secretos tolerantes a acentos, Ruletas y Minijuegos Arcade); 3) Nuevos Módulos Vivos: Personajes y Sitios Históricos (Libro Mágico 3D, mapas por satélite y avatares con voz en 1ª persona), Centro de Idiomas (Karaoke Fonético, Conversación DELF/Cambridge/CENNI, Tutor Socrático y Misiones Roleplay); y 4) Lógica & STEM: Simulador de Compuertas Lógicas Booleanas, Grafos y Rutas de Euler, Máquinas de Turing, Restricciones CSP, Lectura Cronometrada con PPM y 50 Simuladores Web (PhET, GeoGebra, Desmos).'
       },
       {
         q: '¿Cómo se aseguran de que los videos y recursos para Inglés u otras materias no estén rotos?',

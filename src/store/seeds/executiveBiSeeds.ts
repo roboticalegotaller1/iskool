@@ -769,3 +769,332 @@ export const HOLDING_EXECUTIVE_SUMMARY_SEED = {
   cfdiTimbradoEfficiencyPct: 96.8,
   lastAuditTimestamp: '2026-09-25T11:15:00-06:00'
 };
+
+// -------------------------------------------------------------------------
+// 6. PIPELINE DETALLADO DE ASPIRANTES & BENCHMARK DE ADMISIONES BI
+// -------------------------------------------------------------------------
+export interface ApplicantLead {
+  id: string;
+  studentName: string;
+  targetLevel: 'Preescolar' | 'Primaria' | 'Secundaria' | 'Preparatoria (CCH UNAM)';
+  targetGrade: string;
+  tutorName: string;
+  tutorPhone: string;
+  tutorEmail: string;
+  campusId: string;
+  campusName: string;
+  stage: 'leads' | 'tours' | 'evaluations' | 'enrolled';
+  stageName: string;
+  channel: 'Recomendación Familiar' | 'Pauta Digital' | 'Convenios Corporativos' | 'Open House & Eventos' | 'Web Orgánica';
+  registeredDate: string;
+  admissionAdvisor: string;
+  conversionProbabilityPct: number;
+  projectedAnnualTuitionMxn: number;
+  notes: string;
+}
+
+export interface CampusAdmissionsMetric {
+  campusId: string;
+  campusName: string;
+  targetQuota: number;
+  registeredLeads: number;
+  completedTours: number;
+  passedEvaluations: number;
+  enrolledStudents: number;
+  fulfillmentPct: number;
+  avgConversionDays: number;
+  revenueGeneratedMxn: number;
+}
+
+export interface AcquisitionChannelMetric {
+  channelName: string;
+  leadsVolume: number;
+  enrolledCount: number;
+  conversionRatePct: number;
+  cacMxn: number;
+  totalSpendMxn: number;
+  roasRatio: number;
+}
+
+export const CAMPUS_ADMISSIONS_BREAKDOWN_SEED: CampusAdmissionsMetric[] = [
+  {
+    campusId: 'cmp-montes',
+    campusName: 'Campus Montes (Sede Matriz & CCH)',
+    targetQuota: 65,
+    registeredLeads: 168,
+    completedTours: 112,
+    passedEvaluations: 82,
+    enrolledStudents: 68,
+    fulfillmentPct: 104.6,
+    avgConversionDays: 14.2,
+    revenueGeneratedMxn: 1780000
+  },
+  {
+    campusId: 'cmp-lagos',
+    campusName: 'Campus Lagos (Fundador 2004)',
+    targetQuota: 45,
+    registeredLeads: 115,
+    completedTours: 74,
+    passedEvaluations: 52,
+    enrolledStudents: 44,
+    fulfillmentPct: 97.8,
+    avgConversionDays: 16.5,
+    revenueGeneratedMxn: 1140000
+  },
+  {
+    campusId: 'cmp-sancristobal',
+    campusName: 'Campus San Cristóbal (Ecatepec Centro)',
+    targetQuota: 35,
+    registeredLeads: 98,
+    completedTours: 56,
+    passedEvaluations: 38,
+    enrolledStudents: 32,
+    fulfillmentPct: 91.4,
+    avgConversionDays: 19.8,
+    revenueGeneratedMxn: 830000
+  },
+  {
+    campusId: 'cmp-coacalco',
+    campusName: 'Campus Coacalco (Av. Zarzaparrillas)',
+    targetQuota: 25,
+    registeredLeads: 69,
+    completedTours: 38,
+    passedEvaluations: 23,
+    enrolledStudents: 18,
+    fulfillmentPct: 72.0,
+    avgConversionDays: 22.4,
+    revenueGeneratedMxn: 468000
+  }
+];
+
+export const ACQUISITION_CHANNELS_SEED: AcquisitionChannelMetric[] = [
+  {
+    channelName: 'Recomendación Familiar (Boca a boca)',
+    leadsVolume: 192,
+    enrolledCount: 78,
+    conversionRatePct: 40.6,
+    cacMxn: 280,
+    totalSpendMxn: 21840,
+    roasRatio: 122.4
+  },
+  {
+    channelName: 'Pauta Digital (Redes & Buscadores)',
+    leadsVolume: 126,
+    enrolledCount: 38,
+    conversionRatePct: 30.2,
+    cacMxn: 1840,
+    totalSpendMxn: 69920,
+    roasRatio: 26.3
+  },
+  {
+    channelName: 'Convenios Corporativos & Feeder',
+    leadsVolume: 74,
+    enrolledCount: 29,
+    conversionRatePct: 39.2,
+    cacMxn: 450,
+    totalSpendMxn: 13050,
+    roasRatio: 78.5
+  },
+  {
+    channelName: 'Open House & Festivales de Ciencia',
+    leadsVolume: 58,
+    enrolledCount: 17,
+    conversionRatePct: 29.3,
+    cacMxn: 920,
+    totalSpendMxn: 15640,
+    roasRatio: 42.1
+  }
+];
+
+export const DETAILED_APPLICANT_LEADS_SEED: ApplicantLead[] = [
+  {
+    id: 'lead-101',
+    studentName: 'Sofía Valentina Reyes',
+    targetLevel: 'Primaria',
+    targetGrade: 'Primaria 2°',
+    tutorName: 'Lic. Fernando Reyes',
+    tutorPhone: '55 4192 8841',
+    tutorEmail: 'fernando.reyes@email.com',
+    campusId: 'cmp-montes',
+    campusName: 'Campus Montes',
+    stage: 'evaluations',
+    stageName: '3. Evaluación Diagnóstica NEM',
+    channel: 'Recomendación Familiar',
+    registeredDate: '2026-09-18',
+    admissionAdvisor: 'Lic. Mariana Cordero',
+    conversionProbabilityPct: 85,
+    projectedAnnualTuitionMxn: 46200,
+    notes: 'Examen diagnóstico con promedio de 9.4 en razonamiento lógico y lectura. Familia visitó laboratorio de robótica.'
+  },
+  {
+    id: 'lead-102',
+    studentName: 'Mateo Emiliano Albarrán',
+    targetLevel: 'Secundaria',
+    targetGrade: 'Secundaria 1°',
+    tutorName: 'Mtra. Claudia Albarrán',
+    tutorPhone: '55 8320 1194',
+    tutorEmail: 'claudia.albarran@email.com',
+    campusId: 'cmp-sancristobal',
+    campusName: 'Campus San Cristóbal',
+    stage: 'enrolled',
+    stageName: '4. Inscripción Formalizada & Pagada',
+    channel: 'Pauta Digital',
+    registeredDate: '2026-09-10',
+    admissionAdvisor: 'Lic. Roberto Pineda',
+    conversionProbabilityPct: 100,
+    projectedAnnualTuitionMxn: 49800,
+    notes: 'Inscripción y primera colegiatura liquidadas con SPEI. Certificado médico y boleta previa SEP entregados.'
+  },
+  {
+    id: 'lead-103',
+    studentName: 'Valentina Garza Morales',
+    targetLevel: 'Preescolar',
+    targetGrade: 'Kínder 3',
+    tutorName: 'Dr. Roberto Garza',
+    tutorPhone: '55 3190 2481',
+    tutorEmail: 'roberto.garza@hospital.com',
+    campusId: 'cmp-lagos',
+    campusName: 'Campus Lagos',
+    stage: 'enrolled',
+    stageName: '4. Inscripción Formalizada & Pagada',
+    channel: 'Recomendación Familiar',
+    registeredDate: '2026-09-08',
+    admissionAdvisor: 'Lic. Mariana Cordero',
+    conversionProbabilityPct: 100,
+    projectedAnnualTuitionMxn: 42000,
+    notes: 'Hermano mayor cursa 4° de Primaria en el mismo plantel. Facturación CFDI 4.0 con complemento IEDU configurada.'
+  },
+  {
+    id: 'lead-104',
+    studentName: 'Diego Alejandro Montes',
+    targetLevel: 'Preparatoria (CCH UNAM)',
+    targetGrade: 'Preparatoria 1° (CCH UNAM)',
+    tutorName: 'Ing. Carlos Montes',
+    tutorPhone: '55 9012 3456',
+    tutorEmail: 'carlos.montes@techcorp.mx',
+    campusId: 'cmp-montes',
+    campusName: 'Campus Montes',
+    stage: 'tours',
+    stageName: '2. Recorrido en Campus / Open House',
+    channel: 'Convenios Corporativos',
+    registeredDate: '2026-09-22',
+    admissionAdvisor: 'Lic. Diana Hinojosa',
+    conversionProbabilityPct: 70,
+    projectedAnnualTuitionMxn: 58800,
+    notes: 'Interesado en la incorporación oficial a la UNAM y laboratorios de ciencias biológicas y física.'
+  },
+  {
+    id: 'lead-105',
+    studentName: 'Camila Ximena Navarrete',
+    targetLevel: 'Primaria',
+    targetGrade: 'Primaria 4°',
+    tutorName: 'Dra. Patricia Navarrete',
+    tutorPhone: '55 6745 2311',
+    tutorEmail: 'patricia.navarrete@salud.gob.mx',
+    campusId: 'cmp-lagos',
+    campusName: 'Campus Lagos',
+    stage: 'evaluations',
+    stageName: '3. Evaluación Diagnóstica NEM',
+    channel: 'Open House & Eventos',
+    registeredDate: '2026-09-19',
+    admissionAdvisor: 'Lic. Roberto Pineda',
+    conversionProbabilityPct: 90,
+    projectedAnnualTuitionMxn: 46200,
+    notes: 'Excelente desempeño en idioma inglés. Se recomienda ubicación en grupo Cambridge B1 Preliminar.'
+  },
+  {
+    id: 'lead-106',
+    studentName: 'Santiago Gael Mendoza',
+    targetLevel: 'Secundaria',
+    targetGrade: 'Secundaria 2°',
+    tutorName: 'Lic. Gerardo Mendoza',
+    tutorPhone: '55 5892 4110',
+    tutorEmail: 'gerardo.mendoza@bufete.com',
+    campusId: 'cmp-coacalco',
+    campusName: 'Campus Coacalco',
+    stage: 'leads',
+    stageName: '1. Lead / Prospecto Registrado',
+    channel: 'Pauta Digital',
+    registeredDate: '2026-09-24',
+    admissionAdvisor: 'Lic. Diana Hinojosa',
+    conversionProbabilityPct: 45,
+    projectedAnnualTuitionMxn: 49800,
+    notes: 'Solicitó información mediante formulario web sobre transporte escolar y actividades extracurriculares de robótica.'
+  },
+  {
+    id: 'lead-107',
+    studentName: 'Regina Lucía Barrientos',
+    targetLevel: 'Preescolar',
+    targetGrade: 'Kínder 2',
+    tutorName: 'Arq. Lucía Barrientos',
+    tutorPhone: '55 4321 8765',
+    tutorEmail: 'lucia.barrientos@estudio.mx',
+    campusId: 'cmp-montes',
+    campusName: 'Campus Montes',
+    stage: 'enrolled',
+    stageName: '4. Inscripción Formalizada & Pagada',
+    channel: 'Recomendación Familiar',
+    registeredDate: '2026-09-12',
+    admissionAdvisor: 'Lic. Mariana Cordero',
+    conversionProbabilityPct: 100,
+    projectedAnnualTuitionMxn: 42000,
+    notes: 'Matrícula completada. Requiere taller vespertino de estimulación temprana y arte.'
+  },
+  {
+    id: 'lead-108',
+    studentName: 'Leonardo Daniel Orozco',
+    targetLevel: 'Preparatoria (CCH UNAM)',
+    targetGrade: 'Preparatoria 2° (CCH UNAM)',
+    tutorName: 'Mtro. Daniel Orozco',
+    tutorPhone: '55 7890 1234',
+    tutorEmail: 'daniel.orozco@instituto.edu.mx',
+    campusId: 'cmp-montes',
+    campusName: 'Campus Montes',
+    stage: 'evaluations',
+    stageName: '3. Evaluación Diagnóstica NEM',
+    channel: 'Convenios Corporativos',
+    registeredDate: '2026-09-20',
+    admissionAdvisor: 'Lic. Roberto Pineda',
+    conversionProbabilityPct: 80,
+    projectedAnnualTuitionMxn: 58800,
+    notes: 'Cambio de domicilio desde Querétaro. Boleta UNAM con promedio 9.1 sin adeudos académicos.'
+  },
+  {
+    id: 'lead-109',
+    studentName: 'Ivanna Montserrat Salazar',
+    targetLevel: 'Primaria',
+    targetGrade: 'Primaria 1°',
+    tutorName: 'Contadora Silvia Salazar',
+    tutorPhone: '55 2345 6789',
+    tutorEmail: 'silvia.salazar@corporativo.com',
+    campusId: 'cmp-sancristobal',
+    campusName: 'Campus San Cristóbal',
+    stage: 'tours',
+    stageName: '2. Recorrido en Campus / Open House',
+    channel: 'Open House & Eventos',
+    registeredDate: '2026-09-21',
+    admissionAdvisor: 'Lic. Mariana Cordero',
+    conversionProbabilityPct: 65,
+    projectedAnnualTuitionMxn: 46200,
+    notes: 'Asistió a la clase muestra bilingüe. Familia interesada en el programa de formación en valores y club de ajedrez.'
+  },
+  {
+    id: 'lead-110',
+    studentName: 'Emiliano Sebastián Trejo',
+    targetLevel: 'Secundaria',
+    targetGrade: 'Secundaria 3°',
+    tutorName: 'Dr. Héctor Trejo',
+    tutorPhone: '55 3456 7890',
+    tutorEmail: 'hector.trejo@clinica.mx',
+    campusId: 'cmp-coacalco',
+    campusName: 'Campus Coacalco',
+    stage: 'tours',
+    stageName: '2. Recorrido en Campus / Open House',
+    channel: 'Web Orgánica',
+    registeredDate: '2026-09-23',
+    admissionAdvisor: 'Lic. Diana Hinojosa',
+    conversionProbabilityPct: 60,
+    projectedAnnualTuitionMxn: 49800,
+    notes: 'Revisión de instalaciones deportivas y canchas de fútbol. Cita agendada para examen diagnóstico la próxima semana.'
+  }
+];

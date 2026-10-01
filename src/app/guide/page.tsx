@@ -77,6 +77,12 @@ const renderIcon = (iconName: string, className: string = "w-5 h-5") => {
     case 'User': return <Users className={className} />;
     case 'Smile': return <Smile className={className} />;
     case 'ShoppingBag': return <ShoppingBag className={className} />;
+    case 'Eye': return <Eye className={className} />;
+    case 'Zap': return <Zap className={className} />;
+    case 'Lock': return <Lock className={className} />;
+    case 'Compass': return <Compass className={className} />;
+    case 'HelpCircle': return <HelpCircle className={className} />;
+    case 'Layers': return <Layers className={className} />;
     case 'Award': return <Award className={className} />;
     case 'TrendingUp': return <TrendingUp className={className} />;
     case 'LayoutDashboard': return <LayoutDashboard className={className} />;
@@ -127,23 +133,43 @@ const SANCTUARY_HOUSES = [
 ];
 
 const STUDIO_BLOCKS = [
-  { name: 'Opción Múltiple', type: 'Evaluación', icon: 'CheckSquare', desc: 'Reactivo estándar con 4 opciones y retroalimentación inmediata.' },
-  { name: 'Arrastrar y Soltar', type: 'Gamificado', icon: 'Layers', desc: 'Asociación de parejas, definiciones o clasificaciones visuales.' },
-  { name: 'Completar Enunciado', type: 'Lenguaje', icon: 'BookOpen', desc: 'Rellenar huecos con palabras clave o términos gramaticales.' },
-  { name: 'Escape Room', type: 'Gamificado', icon: 'ShieldCheck', desc: 'Candados numéricos, acertijos de lógica y pistas guiadas.' },
-  { name: 'Duelo Boss RPG', type: 'Combate Pixi', icon: 'Swords', desc: 'Enfrentamiento épico donde los aciertos causan daño al monstruo.' },
-  { name: 'Tarjetas de Memoria', type: 'Gamificado', icon: 'Sparkles', desc: 'Juego de parejas y memoria para vocabulario o fórmulas.' },
-  { name: 'Línea de Tiempo', type: 'Historia', icon: 'TrendingUp', desc: 'Orden cronológico de eventos históricos o pasos procedimentales.' },
-  { name: 'Ruleta de Preguntas', type: 'Gamificado', icon: 'HelpCircle', desc: 'Giro aleatorio de categorías con multiplicadores de puntos.' },
-  { name: 'Verdadero o Falso', type: 'Evaluación', icon: 'CheckSquare', desc: 'Evaluación ágil de afirmaciones con justificación requerida.' },
-  { name: 'Simulador Científico', type: 'Laboratorio', icon: 'Globe', desc: 'Incrustación de laboratorios PhET, GeoGebra, Desmos o Tinkercad.' },
-  { name: 'Video Pedagógico', type: 'Multimedia', icon: 'Video', desc: 'Videoteca verificada con preguntas intermedias obligatorias.' },
-  { name: 'Texto & Lectura', type: 'Contenido', icon: 'BookOpen', desc: 'Fragmentos de lectura guiada con narración por voz nativa.' },
-  { name: 'Imagen Interactiva', type: 'Visual', icon: 'Eye', desc: 'Puntos calientes (hotspots) explorables con tarjetas explicativas.' },
-  { name: 'Audio Narrado', type: 'Auditivo', icon: 'Play', desc: 'Pistas sonoras para listening en inglés o dictados.' },
-  { name: 'Selección Múltiple', type: 'Evaluación', icon: 'CheckSquare', desc: 'Casillas de verificación para reactivos con varias respuestas.' },
-  { name: 'Fórmula Matemática', type: 'Ciencias', icon: 'Zap', desc: 'Entrada guiada de ecuaciones, cálculo y resolución algebraica.' },
-  { name: 'Pantalla de Victoria', type: 'Recompensa', icon: 'Award', desc: 'Cofres de recompensa con XP, monedas de oro y medallas oficiales.' }
+  // Tronco Común & Evaluación
+  { name: 'Texto & Lore Narrativo', type: 'Lore / Inicio', icon: 'BookOpen', desc: 'Introducción temática, lore de la misión y contexto narrativo guiado.' },
+  { name: 'Opción Múltiple', type: 'Evaluación', icon: 'CheckSquare', desc: 'Reactivo estándar con 4 opciones y retroalimentación formativa inmediata.' },
+  { name: 'Lectura Cronometrada', type: 'Comprensión', icon: 'BookOpen', desc: 'Medición de velocidad lectora en PPM con reactivos pedagógicos de comprensión.' },
+  { name: 'Arrastrar y Soltar', type: 'Gamificado', icon: 'Layers', desc: 'Emparejamiento de conceptos, definiciones, vocabulario y fórmulas.' },
+  { name: 'Secuencia Cronológica', type: 'Historia / STEM', icon: 'TrendingUp', desc: 'Orden cronológico de eventos históricos o secuencias algorítmicas.' },
+  { name: 'Completar Espacios (Blanks)', type: 'Lenguaje', icon: 'BookOpen', desc: 'Rellenar huecos en textos mutilados con términos clave.' },
+  { name: 'Pregunta Abierta & Nube', type: 'Formativa', icon: 'FileText', desc: 'Reflexión crítica con retroalimentación cualitativa impulsada por IA.' },
+  { name: 'Punto de Control & Gate', type: 'Rúbrica NEM', icon: 'ShieldCheck', desc: 'Autoevaluación formativa intermedia antes de continuar la misión.' },
+
+  // Gamificación & Desafíos
+  { name: 'Cofre de Recompensas', type: 'Gamificado', icon: 'Award', desc: 'Botín interactivo con monedas de oro, gemas, puntos XP e insignias.' },
+  { name: 'Duelo Boss RPG', type: 'Combate Pixi', icon: 'Swords', desc: 'Enfrentamiento épico por turnos donde los aciertos causan daño al enemigo.' },
+  { name: 'Escape Room & Código Secreto', type: 'Gamificado', icon: 'Lock', desc: 'Candados y acertijos con verificación inteligente tolerante a acentos y mayúsculas.' },
+  { name: 'Minijuegos Arcade (Ruleta)', type: 'Lúdico', icon: 'HelpCircle', desc: 'Ruleta de categorías, memoramas y dinámicas lúdicas de activación.' },
+  { name: 'Bifurcación Condicional', type: 'Rutas Adaptativas', icon: 'Workflow', desc: 'Ramificación del flujo según acierto, fallo o nivel de dominio del alumno.' },
+  { name: 'Diploma & Certificado', type: 'Acreditación', icon: 'Award', desc: 'Emisión de diploma y constancia digital al culminar con éxito la ruta.' },
+  { name: 'Efectos Sonoros & SFX', type: 'Ambientación', icon: 'Play', desc: 'Sonidos de fanfarria, victorias épicas y ambientaciones de inmersión.' },
+
+  // Historia & Humanidades
+  { name: 'Personajes Históricos 3D', type: 'Historia Viva', icon: 'Compass', desc: 'Libro Mágico 3D, cartografía satelital con fotos reales verificadas y voz en 1ª persona.' },
+
+  // Idiomas & Fonética
+  { name: 'Portal de Práctica Idiomas', type: 'Idiomas', icon: 'Globe', desc: 'Inmersión lingüística con avatares conversacionales y fluidez adaptativa.' },
+  { name: 'Karaoke Fonético', type: 'Pronunciación', icon: 'Play', desc: 'Evaluación de fluidez oral y lectura guiada con reconocimiento fonético.' },
+  { name: 'Tutor Socrático IA', type: 'Idiomas', icon: 'Sparkles', desc: 'Diálogo adaptativo para certificaciones oficiales DELF, Cambridge y CENNI.' },
+  { name: 'Misión Roleplay Accional', type: 'Inmersión', icon: 'Users', desc: 'Simulaciones en situaciones reales de viaje, trabajo y vida cotidiana.' },
+  { name: 'Rúbrica de Evaluación Oral', type: 'Evaluación', icon: 'ShieldCheck', desc: 'Criterios formativos oficiales de dominio comunicativo y gramática.' },
+
+  // Pensamiento Computacional & STEM
+  { name: 'Reto de Lógica & Estados', type: 'Algoritmia', icon: 'Cpu', desc: 'Desafíos interactivos de condiciones lógicas y árboles de decisión.' },
+  { name: 'Compuertas Lógicas', type: 'STEM Digital', icon: 'Zap', desc: 'Simulador de circuitos booleanos interactivos (AND, OR, NOT, XOR).' },
+  { name: 'Rutas de Grafos & Redes', type: 'Algoritmia', icon: 'TrendingUp', desc: 'Recorridos de Euler, árboles generadores, flujos de red y algoritmos BFS.' },
+  { name: 'Máquina de Turing', type: 'Computación', icon: 'Cpu', desc: 'Simulador visual de autómatas finitos y cinta infinita con cabezal lector.' },
+  { name: 'Satisfacción Restricciones (CSP)', type: 'Optimización', icon: 'Layers', desc: 'Modelado de restricciones, colas de prioridad y balanceo de carga.' },
+  { name: 'Simulador Científico Web', type: 'Laboratorio', icon: 'Globe', desc: 'Incrustación de más de 50 simuladores (PhET, GeoGebra, Desmos, NASA).' },
+  { name: 'Video Pedagógico Certificado', type: 'Multimedia', icon: 'Video', desc: 'Videoteca verificada (YouTube 200 OK) sin distractores comerciales.' }
 ];
 
 function GuideContent() {

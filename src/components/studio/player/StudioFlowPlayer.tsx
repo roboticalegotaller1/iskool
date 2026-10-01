@@ -460,13 +460,22 @@ export const StudioFlowPlayer: React.FC<Props> = ({
     }, 1000);
   };
 
+  // Normalizador de texto para códigos secretos (ignora mayúsculas, espacios y acentos/diacríticos)
+  const normalizeSecretText = (text: string): string => {
+    return (text || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toUpperCase();
+  };
+
   // Manejar desbloqueo de código secreto
   const handleVerifySecretCode = () => {
     if (!activeBlock || activeBlock.type !== 'secret_code_puzzle') return;
-    const cleanInput = secretCodeInput.trim().toUpperCase();
-    const cleanAnswer = activeBlock.data.secretAnswer.trim().toUpperCase();
+    const cleanInput = normalizeSecretText(secretCodeInput);
+    const cleanAnswer = normalizeSecretText(activeBlock.data?.secretAnswer || '');
 
-    if (cleanInput === cleanAnswer) {
+    if (cleanInput.length > 0 && cleanInput === cleanAnswer) {
       playSound('victory');
       setIsSecretUnlocked(true);
       setAccumulatedXp(prev => prev + 50);

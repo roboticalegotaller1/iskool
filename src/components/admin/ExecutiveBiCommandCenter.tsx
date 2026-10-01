@@ -32,7 +32,11 @@ import {
   HelpCircle,
   ArrowRight,
   UserCheck,
-  GraduationCap
+  GraduationCap,
+  Search,
+  Target,
+  Phone,
+  Mail
 } from 'lucide-react';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { 
@@ -43,6 +47,10 @@ import {
   ENROLLMENT_FUNNEL_SEED, 
   HOLDING_GROWTH_UNIT_ECONOMICS, 
   HOLDING_EXECUTIVE_SUMMARY_SEED,
+  CAMPUS_ADMISSIONS_BREAKDOWN_SEED,
+  ACQUISITION_CHANNELS_SEED,
+  DETAILED_APPLICANT_LEADS_SEED,
+  ApplicantLead,
   AgingDebtorProfile,
   CampusBenchmarkRecord,
   MonthlyCashflowRecord
@@ -141,6 +149,39 @@ export default function ExecutiveBiCommandCenter({
     }
     return list;
   }, [selectedCampusFilter, activeAgingTrancheFilter]);
+
+  // Estados interactivos para el Embudo de Admisiones BI
+  const [funnelSearchTerm, setFunnelSearchTerm] = useState<string>('');
+  const [funnelStageFilter, setFunnelStageFilter] = useState<'all' | 'leads' | 'tours' | 'evaluations' | 'enrolled'>('all');
+  const [selectedLeadForDrawer, setSelectedLeadForDrawer] = useState<ApplicantLead | null>(null);
+
+  // Filtrado de familias aspirantes según sede, etapa del embudo y búsqueda
+  const displayedLeads = useMemo(() => {
+    let list = DETAILED_APPLICANT_LEADS_SEED;
+    if (selectedCampusFilter !== 'all') {
+      const cmp = CAMPUS_BENCHMARK_SEED.find(c => c.campusId === selectedCampusFilter);
+      if (cmp) {
+        list = list.filter(l => 
+          l.campusId.toLowerCase().includes(cmp.slug.toLowerCase()) || 
+          l.campusName.toLowerCase().includes(cmp.shortName.toLowerCase())
+        );
+      }
+    }
+    if (funnelStageFilter !== 'all') {
+      list = list.filter(l => l.stage === funnelStageFilter);
+    }
+    if (funnelSearchTerm.trim()) {
+      const term = funnelSearchTerm.toLowerCase();
+      list = list.filter(l => 
+        l.studentName.toLowerCase().includes(term) ||
+        l.tutorName.toLowerCase().includes(term) ||
+        l.admissionAdvisor.toLowerCase().includes(term) ||
+        l.targetLevel.toLowerCase().includes(term) ||
+        l.channel.toLowerCase().includes(term)
+      );
+    }
+    return list;
+  }, [selectedCampusFilter, funnelStageFilter, funnelSearchTerm]);
 
   // Cómputo exhaustivo de telemetría reactiva según el horizonte temporal y sede
   const horizonData = useMemo(() => {
@@ -1759,6 +1800,388 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
         )}
 
         {/* --------------------------------------------------------------------- */}
+        {/* VISTA D: REPORTE BI DE EMBUDO DE ADMISIONES & UNIT ECONOMICS          */}
+        {/* --------------------------------------------------------------------- */}
+        {activeMainView === 'funnel' && (
+          <div className="space-y-6 animate-in fade-in">
+            {/* Cabecera & Selector de Filtros Rápidos */}
+            <div className="p-5 bg-[#111827] border border-slate-800 rounded-2xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="p-2 rounded-xl bg-emerald-950/80 border border-emerald-800/60 text-emerald-400">
+                    <UserCheck className="w-5 h-5" />
+                  </span>
+                  <div>
+                    <h2 className="text-lg font-black text-white flex items-center gap-2">
+                      <span>Reporte BI: Embudo de Admisiones & Crecimiento Matricular</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-800/60">
+                        Ciclo 2026–2027
+                      </span>
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Pipeline de conversión en tiempo real, análisis de unit economics (CAC vs LTV) y directorio de familias aspirantes.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Botón de Exportación CSV */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const csvRows = [
+                      ['Alumno Aspirante', 'Nivel', 'Grado', 'Tutor', 'Telefono', 'Email', 'Plantel', 'Etapa', 'Canal', 'Fecha', 'Asesor', 'Probabilidad %', 'Colegiatura Anual Proyectada MXN'].join(','),
+                      ...displayedLeads.map(l => [
+                        `"${l.studentName}"`,
+                        `"${l.targetLevel}"`,
+                        `"${l.targetGrade}"`,
+                        `"${l.tutorName}"`,
+                        `"${l.tutorPhone}"`,
+                        `"${l.tutorEmail}"`,
+                        `"${l.campusName}"`,
+                        `"${l.stageName}"`,
+                        `"${l.channel}"`,
+                        `"${l.registeredDate}"`,
+                        `"${l.admissionAdvisor}"`,
+                        l.conversionProbabilityPct,
+                        l.projectedAnnualTuitionMxn
+                      ].join(','))
+                    ].join('\n');
+                    const blob = new Blob([csvRows], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', `IBIME_Reporte_Admisiones_${new Date().toISOString().slice(0, 10)}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md shadow-emerald-600/30"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Exportar Reporte BI (CSV)</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Cuadrícula Superior de 5 KPIs Ejecutivos de Admisiones */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <div className="p-4 rounded-2xl bg-[#111827] border border-slate-800 shadow-xl space-y-1">
+                <div className="flex items-center justify-between text-slate-400 text-xs">
+                  <span className="font-bold">Total Prospectos</span>
+                  <Users className="w-4 h-4 text-blue-400" />
+                </div>
+                <div className="text-2xl font-black text-white font-mono">
+                  {Math.round(450 * campusScale)}
+                </div>
+                <span className="text-[10px] text-blue-400 font-bold block">100% cuota prospectada</span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#111827] border border-slate-800 shadow-xl space-y-1">
+                <div className="flex items-center justify-between text-slate-400 text-xs">
+                  <span className="font-bold">Tasa de Conversión</span>
+                  <Target className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div className="text-2xl font-black text-emerald-400 font-mono">
+                  {HOLDING_GROWTH_UNIT_ECONOMICS.overallConversionRatePct.toFixed(1)}%
+                </div>
+                <span className="text-[10px] text-emerald-400 font-bold block">Meta holding: &gt;32%</span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#111827] border border-slate-800 shadow-xl space-y-1">
+                <div className="flex items-center justify-between text-slate-400 text-xs">
+                  <span className="font-bold">CAC Promedio</span>
+                  <DollarSign className="w-4 h-4 text-cyan-400" />
+                </div>
+                <div className="text-2xl font-black text-cyan-400 font-mono">
+                  {formatMXN(HOLDING_GROWTH_UNIT_ECONOMICS.averageCACMxn)}
+                </div>
+                <span className="text-[10px] text-cyan-400 font-bold block">Costo adquisición / alumno</span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#111827] border border-slate-800 shadow-xl space-y-1">
+                <div className="flex items-center justify-between text-slate-400 text-xs">
+                  <span className="font-bold">LTV Proyectado</span>
+                  <TrendingUp className="w-4 h-4 text-purple-400" />
+                </div>
+                <div className="text-2xl font-black text-purple-400 font-mono">
+                  {formatMXN(HOLDING_GROWTH_UNIT_ECONOMICS.projectedLTVMxn)}
+                </div>
+                <span className="text-[10px] text-purple-400 font-bold block">Valor vida escolar (3.2 años)</span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#111827] border border-slate-800 shadow-xl space-y-1 col-span-2 md:col-span-1">
+                <div className="flex items-center justify-between text-slate-400 text-xs">
+                  <span className="font-bold">Ratio LTV / CAC</span>
+                  <PieChart className="w-4 h-4 text-amber-400" />
+                </div>
+                <div className="text-2xl font-black text-amber-400 font-mono">
+                  {HOLDING_GROWTH_UNIT_ECONOMICS.ltvToCacRatio}x
+                </div>
+                <span className="text-[10px] text-amber-400 font-bold block">Unit economics de élite</span>
+              </div>
+            </div>
+
+            {/* SECCIÓN INTERMEDIA: Embudo Trapezoidal + Rendimiento por Plantel & Canales */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              
+              {/* Embudo Visual Gráfico Trapezoidal (7 Columnas LG) */}
+              <div className="lg:col-span-7 bg-[#111827] border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div>
+                    <h3 className="text-sm font-black text-white flex items-center gap-2">
+                      <Layers className="w-4 h-4 text-indigo-400" />
+                      <span>Embudo de Conversión Paso a Paso</span>
+                    </h3>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Flujo de avance de familias desde el registro inicial hasta la formalización de matrícula
+                    </p>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-slate-400 bg-slate-900 px-2 py-1 rounded border border-slate-800">
+                    Velocidad Media: 17.5 días
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  {ENROLLMENT_FUNNEL_SEED.map((stage, idx) => {
+                    const widthPct = 100 - idx * 18;
+                    const stageCount = Math.round(stage.count * campusScale);
+                    const prevCount = idx === 0 ? stageCount : Math.round(ENROLLMENT_FUNNEL_SEED[idx - 1].count * campusScale);
+                    const dropoff = idx === 0 ? 0 : prevCount - stageCount;
+                    const dropoffPct = idx === 0 ? 0 : Math.round((dropoff / prevCount) * 100);
+
+                    return (
+                      <div key={stage.id} className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: stage.color }} />
+                            <span className="font-black text-white">{stage.name}</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            {idx > 0 && (
+                              <span className="text-[10px] text-rose-400 font-mono">
+                                -{dropoff} familias ({dropoffPct}% drop)
+                              </span>
+                            )}
+                            <span className="font-mono font-black text-white text-sm">
+                              {stageCount}{' '}
+                              <span className="text-[10px] text-slate-400 font-normal">
+                                ({stage.passRate}%)
+                              </span>
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Barra Proporcional Animada */}
+                        <div className="w-full bg-slate-900 h-9 rounded-xl p-1 border border-slate-800 flex items-center">
+                          <div
+                            className={`h-full rounded-lg bg-gradient-to-r ${stage.gradient} transition-all duration-700 flex items-center justify-between px-3 text-xs font-black text-white shadow-md`}
+                            style={{ width: `${widthPct}%` }}
+                          >
+                            <span className="text-[11px] truncate max-w-[200px]">{stage.name.split('/')[0]}</span>
+                            <span className="font-mono">{stageCount}</span>
+                          </div>
+                        </div>
+                        <p className="text-[10px] text-slate-500 pl-4">{stage.description}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Benchmark de Planteles & Canales (5 Columnas LG) */}
+              <div className="lg:col-span-5 space-y-6">
+                {/* Meta de Admisiones por Plantel */}
+                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+                      <Building2 className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Cumplimiento por Plantel</span>
+                    </h3>
+                    <span className="text-[10px] text-cyan-400 font-mono font-bold">Meta vs Inscritos</span>
+                  </div>
+
+                  <div className="space-y-3">
+                    {CAMPUS_ADMISSIONS_BREAKDOWN_SEED.map((c) => {
+                      const isTargetMet = c.fulfillmentPct >= 100;
+                      return (
+                        <div key={c.campusId} className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-bold text-white truncate max-w-[180px]">{c.campusName}</span>
+                            <span className={`font-mono font-bold text-xs ${isTargetMet ? 'text-emerald-400' : 'text-amber-400'}`}>
+                              {c.enrolledStudents} / {c.targetQuota} ({c.fulfillmentPct}%)
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800/80">
+                            <div
+                              className={`h-full rounded-full transition-all duration-500 ${
+                                isTargetMet ? 'bg-emerald-500' : 'bg-gradient-to-r from-amber-500 to-yellow-400'
+                              }`}
+                              style={{ width: `${Math.min(100, c.fulfillmentPct)}%` }}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono">
+                            <span>{c.registeredLeads} prospectos captados</span>
+                            <span>{formatMXN(c.revenueGeneratedMxn)}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Canales de Adquisición */}
+                <div className="bg-[#111827] border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                  <h3 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-800 pb-2">
+                    <PieChart className="w-3.5 h-3.5 text-purple-400" />
+                    <span>Canales de Atracción & Eficiencia</span>
+                  </h3>
+                  <div className="space-y-2">
+                    {ACQUISITION_CHANNELS_SEED.map((ch, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/80 border border-slate-800/80 text-xs">
+                        <div>
+                          <span className="font-semibold text-slate-200 block text-[11px]">{ch.channelName}</span>
+                          <span className="text-[10px] text-slate-500">{ch.leadsVolume} leads · {ch.enrolledCount} inscritos ({ch.conversionRatePct}%)</span>
+                        </div>
+                        <div className="text-right font-mono">
+                          <span className="text-cyan-400 font-bold block text-xs">{formatMXN(ch.cacMxn)}</span>
+                          <span className="text-[10px] text-emerald-400 font-bold">ROAS {ch.roasRatio}x</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* DIRECTORIO EJECUTIVO EN VIVO: Pipeline de Familias Aspirantes */}
+            <div className="p-6 bg-[#111827] border border-slate-800 rounded-2xl shadow-xl space-y-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                <div>
+                  <h3 className="text-sm font-black text-white flex items-center gap-2">
+                    <Users className="w-4 h-4 text-emerald-400" />
+                    <span>Directorio de Familias & Aspirantes en Pipeline ({displayedLeads.length})</span>
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Expedientes activos de nuevo ingreso con estatus, probabilidad de cierre y asesor asignado.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Buscador */}
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-500" />
+                    <input
+                      type="text"
+                      value={funnelSearchTerm}
+                      onChange={(e) => setFunnelSearchTerm(e.target.value)}
+                      placeholder="Buscar alumno, tutor..."
+                      className="pl-8 pr-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 w-44"
+                    />
+                  </div>
+
+                  {/* Filtro por Etapa */}
+                  <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
+                    {[
+                      { id: 'all', label: 'Todas' },
+                      { id: 'leads', label: '1. Leads' },
+                      { id: 'tours', label: '2. Tours' },
+                      { id: 'evaluations', label: '3. Examen' },
+                      { id: 'enrolled', label: '4. Inscritos' }
+                    ].map((st) => (
+                      <button
+                        key={st.id}
+                        onClick={() => setFunnelStageFilter(st.id as any)}
+                        className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition cursor-pointer ${
+                          funnelStageFilter === st.id
+                            ? 'bg-emerald-600 text-white shadow-sm'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {st.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Tabla de Familias */}
+              <div
+                className="overflow-x-auto overflow-y-auto border border-slate-800 rounded-xl custom-scrollbar"
+                style={{ maxHeight: `${viewport.tableMaxHeight}px` }}
+              >
+                <table className="w-full text-left text-xs">
+                  <thead className="sticky top-0 z-10 bg-slate-900 text-slate-300 font-black border-b border-slate-800 uppercase tracking-wider text-[10px] shadow-md backdrop-blur-sm">
+                    <tr>
+                      <th className={viewport.classes.tableCellPadding}>Aspirante</th>
+                      <th className="p-3">Nivel & Grado</th>
+                      <th className="p-3">Plantel</th>
+                      <th className="p-3">Tutor Familiar & Contacto</th>
+                      <th className="p-3">Canal</th>
+                      <th className="p-3 text-center">Etapa Actual</th>
+                      <th className="p-3 text-center">Probabilidad</th>
+                      <th className="p-3">Asesor</th>
+                      <th className="p-3 text-center">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/80 font-mono text-slate-300">
+                    {displayedLeads.map((lead) => {
+                      const stageColor = 
+                        lead.stage === 'enrolled' ? 'bg-emerald-950 text-emerald-400 border-emerald-800/60' :
+                        lead.stage === 'evaluations' ? 'bg-teal-950 text-teal-400 border-teal-800/60' :
+                        lead.stage === 'tours' ? 'bg-cyan-950 text-cyan-400 border-cyan-800/60' :
+                        'bg-blue-950 text-blue-400 border-blue-800/60';
+
+                      return (
+                        <tr key={lead.id} className="hover:bg-slate-800/40 transition">
+                          <td className="p-3 font-bold text-white">
+                            <div>{lead.studentName}</div>
+                            <span className="text-[10px] text-slate-500 font-normal">Reg: {lead.registeredDate}</span>
+                          </td>
+                          <td className="p-3">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-200">
+                              {lead.targetGrade}
+                            </span>
+                          </td>
+                          <td className="p-3 font-medium text-slate-300">{lead.campusName}</td>
+                          <td className="p-3 font-sans">
+                            <div className="font-bold text-slate-200">{lead.tutorName}</div>
+                            <div className="text-[10px] text-slate-400 font-mono">{lead.tutorPhone}</div>
+                          </td>
+                          <td className="p-3 font-sans text-slate-400 text-[11px]">{lead.channel}</td>
+                          <td className="p-3 text-center">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${stageColor}`}>
+                              {lead.stageName.split('.')[1] || lead.stageName}
+                            </span>
+                          </td>
+                          <td className="p-3 text-center">
+                            <span className={`font-black ${lead.conversionProbabilityPct === 100 ? 'text-emerald-400' : lead.conversionProbabilityPct >= 70 ? 'text-cyan-400' : 'text-amber-400'}`}>
+                              {lead.conversionProbabilityPct}%
+                            </span>
+                          </td>
+                          <td className="p-3 font-sans text-slate-400 text-[11px]">{lead.admissionAdvisor}</td>
+                          <td className="p-3 text-center">
+                            <button
+                              onClick={() => setSelectedLeadForDrawer(lead)}
+                              className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] transition cursor-pointer"
+                            >
+                              Ver Ficha
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* --------------------------------------------------------------------- */}
         {/* VISTA E: ASISTENTE CONVERSACIONAL INTEGRADO CON IA PEDAGÓGICA         */}
         {/* --------------------------------------------------------------------- */}
         {activeMainView === 'assistant' && (
@@ -1861,6 +2284,103 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
                 className="flex-1 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-black text-white transition cursor-pointer shadow-lg shadow-indigo-600/30"
               >
                 Generar Convenio
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 6. DRAWER SLIDE-OVER: EXPEDIENTE 360° DEL ASPIRANTE EN ADMISIONES         */}
+      {/* ========================================================================= */}
+      {selectedLeadForDrawer && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
+          <div className="w-full max-w-md bg-[#111827] border-l border-slate-800 h-full flex flex-col justify-between shadow-2xl p-6 overflow-y-auto">
+            
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-xl bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-black text-lg">
+                    {selectedLeadForDrawer.studentName.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-white">{selectedLeadForDrawer.studentName}</h3>
+                    <p className="text-xs text-slate-400">{selectedLeadForDrawer.campusName} · {selectedLeadForDrawer.targetGrade}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedLeadForDrawer(null)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Resumen del Pipeline */}
+              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Etapa en Pipeline</span>
+                  <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-950/70 border border-emerald-800/50 px-2 py-0.5 rounded">
+                    {selectedLeadForDrawer.conversionProbabilityPct}% Probabilidad
+                  </span>
+                </div>
+                <div className="text-sm font-black text-white">
+                  {selectedLeadForDrawer.stageName}
+                </div>
+                <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-800">
+                  <span>Canal de Atracción:</span>
+                  <span className="font-bold text-white">{selectedLeadForDrawer.channel}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-slate-400">
+                  <span>Fecha de Registro:</span>
+                  <span className="font-mono text-slate-300">{selectedLeadForDrawer.registeredDate}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-slate-400">
+                  <span>Colegiatura Anual Est.:</span>
+                  <span className="font-mono text-emerald-400 font-bold">{formatMXN(selectedLeadForDrawer.projectedAnnualTuitionMxn)}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-slate-400">
+                  <span>Asesor de Admisiones:</span>
+                  <span className="font-bold text-cyan-400">{selectedLeadForDrawer.admissionAdvisor}</span>
+                </div>
+              </div>
+
+              {/* Información del Tutor */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Tutor Familiar</span>
+                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1">
+                  <div className="font-bold text-white">{selectedLeadForDrawer.tutorName}</div>
+                  <div className="text-slate-400 font-mono">Teléfono: {selectedLeadForDrawer.tutorPhone}</div>
+                  <div className="text-slate-400">Correo: {selectedLeadForDrawer.tutorEmail}</div>
+                </div>
+              </div>
+
+              {/* Bitácora / Notas de Admisiones */}
+              <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs text-slate-300 space-y-1.5">
+                <span className="font-bold flex items-center gap-1.5 text-indigo-400">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Bitácora de Admisiones & Diagnóstico:
+                </span>
+                <p className="leading-relaxed text-slate-400 text-[11px]">{selectedLeadForDrawer.notes}</p>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-800 flex items-center gap-3">
+              <button
+                onClick={() => setSelectedLeadForDrawer(null)}
+                className="flex-1 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 transition cursor-pointer"
+              >
+                Cerrar
+              </button>
+              <button
+                onClick={() => {
+                  alert(`Aspirante ${selectedLeadForDrawer.studentName} avanzado a la siguiente etapa de Admisiones.`);
+                  setSelectedLeadForDrawer(null);
+                }}
+                className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-black text-white transition cursor-pointer shadow-lg shadow-emerald-600/30"
+              >
+                Avanzar Etapa
               </button>
             </div>
 

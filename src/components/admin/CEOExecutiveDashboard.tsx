@@ -919,6 +919,14 @@ export default function CEOExecutiveDashboard({
   const activeFunnelData = useMemo(() => {
     const campusBase: Record<string, [number, number, number, number, number]> = {
       all: [184, 126, 82, 54, 28],
+      montes: [64, 46, 30, 20, 11],
+      'cmp-montes': [64, 46, 30, 20, 11],
+      lagos: [48, 34, 22, 15, 8],
+      'cmp-lagos': [48, 34, 22, 15, 8],
+      sancristobal: [42, 28, 18, 11, 5],
+      'cmp-sancristobal': [42, 28, 18, 11, 5],
+      coacalco: [30, 18, 12, 8, 4],
+      'cmp-coacalco': [30, 18, 12, 8, 4],
       cdmx: [68, 48, 32, 22, 12],
       satelite: [46, 32, 21, 14, 7],
       interlomas: [28, 19, 12, 8, 4],

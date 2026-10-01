@@ -34,7 +34,7 @@ export const SecretCodePuzzleBlockView: React.FC<Props> = ({ block }) => {
       <div className="space-y-1">
         <label className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 flex items-center gap-1">
           <Lock className="w-3.5 h-3.5 text-amber-500" />
-          <span>Respuesta Secreta Correcta (No distingue mayúsculas):</span>
+          <span>Respuesta Secreta Correcta (No distingue mayúsculas ni acentos):</span>
         </label>
         <input aria-label="FUERZA"
           type="text"

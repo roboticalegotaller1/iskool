@@ -50,7 +50,7 @@ interface HistoricalCapsule {
 }
 
 export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> = ({
-  videoUrl = 'https://youtu.be/25cq1V8AsTg',
+  videoUrl,
   durationSeconds = 15,
   title = 'Cápsulas Cinematográficas Históricas',
   narratorScript,
@@ -223,7 +223,8 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
   }, [moments, characterName, narratorScript, durationSeconds, videoUrl, title, avatarImageUrl, shortBio]);
 
   const activeCapsule = capsules[currentCapsuleIndex] || capsules[0];
-  const embedUrl = getYouTubeEmbedUrl(activeCapsule.youtubeUrl || videoUrl);
+  const activeVideoUrl = activeCapsule?.youtubeUrl || videoUrl || '';
+  const embedUrl = activeVideoUrl ? getYouTubeEmbedUrl(activeVideoUrl) : '';
 
   // Manejo de la locución en primera/tercera persona con motor neural latino y dicción perfecta
   const speakNarrator = () => {
