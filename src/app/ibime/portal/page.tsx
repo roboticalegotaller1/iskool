@@ -228,44 +228,44 @@ function IbimePortalContent() {
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 flex flex-col">
         {/* HEADER INSTITUCIONAL SOBERANO IBIME - VISIÓN EJECUTIVA CEO */}
         <header className="sticky top-0 z-50 w-full bg-[#0F2744] text-white shadow-md border-b border-blue-900">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
+          <div className="max-w-[1680px] w-full mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5 min-w-0 shrink">
               <div className="p-1 rounded-2xl bg-white shadow-md border border-slate-200 shrink-0 flex items-center justify-center">
-                <IbimeOfficialLogo size={42} showText={false} />
+                <IbimeOfficialLogo size={40} showText={false} />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg sm:text-xl font-extrabold tracking-tight text-white block">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                  <span className="text-base sm:text-lg lg:text-xl font-extrabold tracking-tight text-white whitespace-nowrap">
                     Instituto Bilingüe Ibime
                   </span>
                   <span 
                     data-testid="institutional-badge" 
                     style={{ color: '#E41B14' }}
-                    className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-50 text-[#E41B14] border border-red-300 shadow-xs"
+                    className="hidden md:inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-50 text-[#E41B14] border border-red-300 shadow-xs whitespace-nowrap"
                   >
                     IBIME Bicultural Hub
                   </span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-400 text-amber-950 border border-amber-300 shadow-xs font-bold">
+                  <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-400 text-amber-950 border border-amber-300 shadow-xs font-bold whitespace-nowrap">
                     Visión Ejecutiva CEO
                   </span>
                 </div>
-                <span className="text-[11px] text-blue-100 font-medium hidden md:block">
+                <span className="text-[11px] text-blue-100 font-medium hidden 2xl:block truncate">
                   Red Bilingüe & Bachillerato CCH UNAM (4 Sedes: Montes, Lagos, San Cristóbal, Coacalco)
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
+            <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 flex-nowrap">
               <button
                 onClick={async () => {
                   await useStudentStore.getState().switchStudent('std-ibime-montes-01');
                   router.push('/student');
                 }}
-                className="py-1.5 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-amber-300 active:scale-98"
+                className="h-9 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-amber-300 active:scale-98 shrink-0 leading-none"
                 title="Vivenciar la experiencia inmersiva del alumno (Iker Santiago Morales - Ignis)"
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-900" />
-                <span className="hidden sm:inline">Experiencia Alumno 360°</span>
+                <Sparkles className="w-3.5 h-3.5 text-amber-900 shrink-0" />
+                <span className="hidden sm:inline whitespace-nowrap">Experiencia Alumno 360°</span>
                 <span className="sm:hidden">Alumno</span>
               </button>
 
@@ -274,30 +274,30 @@ function IbimePortalContent() {
                   await useStudentStore.getState().switchStudent('std-ibime-montes-01');
                   router.push('/parent');
                 }}
-                className="py-1.5 px-3 rounded-xl bg-[#17426D] hover:bg-[#1E5285] text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-red-400 active:scale-98"
+                className="h-9 px-3 rounded-xl bg-[#17426D] hover:bg-[#1E5285] text-white font-bold text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-red-400 active:scale-98 shrink-0 leading-none"
                 title="Vivenciar la experiencia de padres de familia (Familia Morales Peña)"
               >
-                <Heart className="w-3.5 h-3.5 text-rose-300" />
-                <span className="hidden sm:inline">Experiencia Familia</span>
+                <Heart className="w-3.5 h-3.5 text-rose-300 shrink-0" />
+                <span className="hidden sm:inline whitespace-nowrap">Experiencia Familia</span>
                 <span className="sm:hidden">Familia</span>
               </button>
 
               <button
                 onClick={() => setViewMode('operational')}
-                className="py-1.5 px-3 rounded-xl bg-white text-[#E41B14] hover:bg-red-50 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-red-200 active:scale-98"
+                className="h-9 px-3 rounded-xl bg-white text-[#E41B14] hover:bg-red-50 font-bold text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-red-200 active:scale-98 shrink-0 leading-none"
                 title="Conmutar al Tablero Operativo Clásico"
               >
-                <Layers className="w-4 h-4 text-[#C01D0C]" />
-                <span className="hidden sm:inline">Tablero Operativo</span>
+                <Layers className="w-4 h-4 text-[#C01D0C] shrink-0" />
+                <span className="hidden sm:inline whitespace-nowrap">Tablero Operativo</span>
               </button>
 
               <button
                 onClick={handleLogout}
-                className="py-2 px-3.5 rounded-xl bg-emerald-900/90 hover:bg-rose-700 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer border border-blue-800 hover:border-rose-600 shadow-xs"
+                className="h-9 px-3.5 rounded-xl bg-emerald-900/90 hover:bg-rose-700 text-white font-semibold text-xs transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer border border-blue-800 hover:border-rose-600 shadow-xs shrink-0 leading-none"
                 title="Cerrar sesión institucional y volver al portal"
               >
-                <LogOut className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Cerrar Sesión</span>
+                <LogOut className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline whitespace-nowrap">Cerrar Sesión</span>
               </button>
             </div>
           </div>
@@ -323,48 +323,48 @@ function IbimePortalContent() {
           1. HEADER INSTITUCIONAL SOBERANO DE IBIME (100% MARCA BLANCA IBIME)
           ========================================================================= */}
       <header className="sticky top-0 z-50 w-full bg-[#0F2744] text-white shadow-md border-b border-blue-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
+        <div className="max-w-[1680px] w-full mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
           
           {/* Identidad Institucional Oficial */}
-          <div className="flex items-center gap-3.5">
+          <div className="flex items-center gap-3.5 min-w-0 shrink">
             <div className="p-1 rounded-2xl bg-white shadow-md border border-red-300 shrink-0 flex items-center justify-center">
-              <IbimeOfficialLogo size={42} showText={false} />
+              <IbimeOfficialLogo size={40} showText={false} />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-lg sm:text-xl font-extrabold tracking-tight text-white block">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                <span className="text-base sm:text-lg lg:text-xl font-extrabold tracking-tight text-white whitespace-nowrap">
                   Instituto Bilingüe Ibime
                 </span>
                 <span 
                   data-testid="institutional-badge" 
                   style={{ color: '#E41B14' }}
-                  className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-50 text-[#E41B14] border border-red-300 shadow-xs"
+                  className="hidden md:inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-50 text-[#E41B14] border border-red-300 shadow-xs whitespace-nowrap"
                 >
                   IBIME Bicultural Hub
                 </span>
-                <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#0B1E36] text-blue-200 border border-blue-700/60">
+                <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#0B1E36] text-blue-200 border border-blue-700/60 whitespace-nowrap">
                   CCT 15PPR3322G
                 </span>
               </div>
-              <span className="text-[11px] text-blue-100 font-medium hidden md:block">
+              <span className="text-[11px] text-blue-100 font-medium hidden 2xl:block truncate">
                 Red Bilingüe & Bachillerato CCH UNAM (4 Sedes: Montes, Lagos, San Cristóbal, Coacalco)
               </span>
             </div>
           </div>
 
           {/* Perfil del Usuario Activo & Salida */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 flex-nowrap">
             <div className="hidden lg:flex flex-col text-right">
               <span className="text-xs font-bold text-white flex items-center justify-end gap-1.5">
                 <span>{userName}</span>
                 <span className="w-2 h-2 rounded-full bg-red-400 animate-ping" />
               </span>
-              <span className="text-[10px] text-blue-200 truncate max-w-[280px]">
+              <span className="text-[10px] text-blue-200 truncate max-w-[240px]">
                 {userCampus}
               </span>
             </div>
 
-            <div className="w-9 h-9 rounded-xl bg-[#17426D] border border-blue-700 flex items-center justify-center font-bold text-sm text-white shadow-xs">
+            <div className="w-9 h-9 rounded-xl bg-[#17426D] border border-blue-700 flex items-center justify-center font-bold text-sm text-white shadow-xs shrink-0">
               {userName[0] || 'I'}
             </div>
 
@@ -374,11 +374,11 @@ function IbimePortalContent() {
                 await useStudentStore.getState().switchStudent('std-ibime-montes-01');
                 router.push('/student');
               }}
-              className="py-1.5 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-amber-300"
+              className="h-9 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-amber-300 shrink-0 leading-none"
               title="Vivenciar la experiencia inmersiva del alumno (Iker Santiago Morales - Ignis)"
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-900" />
-              <span className="hidden sm:inline">Experiencia Alumno 360°</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-900 shrink-0" />
+              <span className="hidden sm:inline whitespace-nowrap">Experiencia Alumno 360°</span>
               <span className="sm:hidden">Alumno</span>
             </button>
 
@@ -387,11 +387,11 @@ function IbimePortalContent() {
                 await useStudentStore.getState().switchStudent('std-ibime-montes-01');
                 router.push('/parent');
               }}
-              className="py-1.5 px-3 rounded-xl bg-[#17426D] hover:bg-[#C01D0C] text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-blue-700"
+              className="h-9 px-3 rounded-xl bg-[#17426D] hover:bg-[#C01D0C] text-white font-bold text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-blue-700 shrink-0 leading-none"
               title="Vivenciar la experiencia de padres de familia (Familia Morales Peña)"
             >
-              <Heart className="w-3.5 h-3.5 text-rose-300" />
-              <span className="hidden sm:inline">Experiencia Familia</span>
+              <Heart className="w-3.5 h-3.5 text-rose-300 shrink-0" />
+              <span className="hidden sm:inline whitespace-nowrap">Experiencia Familia</span>
               <span className="sm:hidden">Familia</span>
             </button>
 
@@ -399,21 +399,21 @@ function IbimePortalContent() {
             {(isDirector || activeUser.role === 'owner') && (
               <button
                 onClick={() => setViewMode('ceo')}
-                className="py-1.5 px-3 rounded-xl bg-emerald-900/90 hover:bg-[#17426D] text-blue-100 font-extrabold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs border border-blue-800"
+                className="h-9 px-3 rounded-xl bg-[#0B1E36] hover:bg-[#17426D] text-blue-100 font-extrabold text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-blue-800 shrink-0 leading-none"
                 title="Abrir Visión Ejecutiva CEO"
               >
-                <Layers className="w-3.5 h-3.5 text-blue-300" />
-                <span className="hidden sm:inline">Visión CEO</span>
+                <Layers className="w-3.5 h-3.5 text-blue-300 shrink-0" />
+                <span className="hidden sm:inline whitespace-nowrap">Visión CEO</span>
               </button>
             )}
 
             <button
               onClick={handleLogout}
-              className="py-1.5 px-3 rounded-xl bg-emerald-900/90 hover:bg-rose-700 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 cursor-pointer border border-blue-800 hover:border-rose-600 shadow-xs"
+              className="h-9 px-3 rounded-xl bg-emerald-900/90 hover:bg-rose-700 text-white font-semibold text-xs transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer border border-blue-800 hover:border-rose-600 shadow-xs shrink-0 leading-none"
               title="Cerrar sesión institucional y volver al portal"
             >
-              <LogOut className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Cerrar Sesión</span>
+              <LogOut className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden sm:inline whitespace-nowrap">Cerrar Sesión</span>
             </button>
           </div>
         </div>
