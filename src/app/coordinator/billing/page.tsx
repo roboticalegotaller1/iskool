@@ -56,6 +56,7 @@ import {
 } from '@/store/useSchoolAdminStore';
 import { FamilyBillingRecord, TuitionPricing, DetailedStudent } from '@/types';
 import { TUITION_PRICINGS_SEED, BILLING_RECORDS_SEED } from '@/store/seeds';
+import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 
 export default function CoordinatorBillingDashboardPage() {
   const { user, loading: authLoading } = useAuth();
@@ -83,6 +84,17 @@ export default function CoordinatorBillingDashboardPage() {
     if (activeSchoolId) return activeSchoolId;
     return 'sch-test-case';
   }, [user, activeSchoolId]);
+
+  const isIbime = useMemo(() => {
+    if (effectiveSchoolId === 'sch-ibime') return true;
+    if (typeof window !== 'undefined') {
+      if (document.documentElement.getAttribute('data-tenant') === 'ibime') return true;
+      if (localStorage.getItem('tenant-id') === 'ibime') return true;
+      if (localStorage.getItem('activeSchoolId') === 'sch-ibime') return true;
+      if (window.location.pathname.includes('/ibime')) return true;
+    }
+    return false;
+  }, [effectiveSchoolId]);
 
   const currentGovernance = useMemo(() => {
     return getSchoolGovernance(schoolGovernance, effectiveSchoolId);
@@ -1409,13 +1421,23 @@ export default function CoordinatorBillingDashboardPage() {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-5 animate-in fade-in zoom-in-95 duration-200">
             
             <div className="flex items-center justify-between pb-3 border-b border-slate-200">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
-                  JJR
-                </div>
+              <div className="flex items-center gap-2.5">
+                {isIbime ? (
+                  <div className="w-9 h-9 rounded-xl border border-slate-200 bg-white flex items-center justify-center p-0.5 shadow-xs">
+                    <IbimeOfficialLogo variant="shield_only" size={28} />
+                  </div>
+                ) : (
+                  <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
+                    JJR
+                  </div>
+                )}
                 <div>
-                  <h3 className="font-bold text-sm text-slate-900">UP Juan Jacobo Rosseau</h3>
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">Recibo Oficial de Pago • Control Escolar</p>
+                  <h3 className="font-bold text-sm text-slate-900">
+                    {isIbime ? 'INSTITUTO BILINGÜE IBIME' : 'UP Juan Jacobo Rosseau'}
+                  </h3>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">
+                    Recibo Oficial de Pago • Control Escolar{isIbime ? ' • CCT: 15PPR3322G' : ''}
+                  </p>
                 </div>
               </div>
               <button aria-label="Cerrar"

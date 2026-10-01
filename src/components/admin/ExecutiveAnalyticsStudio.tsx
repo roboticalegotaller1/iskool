@@ -2766,9 +2766,9 @@ export default function ExecutiveAnalyticsStudio({
         <ExecutiveBoardReportDocument 
           report={currentReport}
           institution={{
-            name: currentReport?.schoolName || activeInstitution?.name || 'Colegio ISkool México',
-            cct: activeInstitution?.cct || '15EPR2840Z',
-            logoUrl: activeInstitution?.logoUrl,
+            name: isIbime ? 'INSTITUTO BILINGÜE IBIME' : (currentReport?.schoolName || activeInstitution?.name || 'Colegio ISkool México'),
+            cct: isIbime ? '15PPR3322G' : (activeInstitution?.cct || '15EPR2840Z'),
+            logoUrl: isIbime ? '/brand/ibime_shield.webp' : activeInstitution?.logoUrl,
             campus: (activeInstitution as any)?.campuses?.[0]?.name || activeInstitution?.name
           }}
         />

@@ -14,6 +14,21 @@ export async function GET(req: NextRequest) {
   const paymentMethod = req.nextUrl.searchParams.get('payment_method') || 'Tarjeta de Crédito (Visa ***4012)';
   const dateStr = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
 
+  const tenantParam = req.nextUrl.searchParams.get('tenant') || '';
+  const cookieTenant = req.cookies.get('tenant-id')?.value || '';
+  const referer = req.headers.get('referer') || '';
+  const isIbime = tenantParam.toLowerCase().includes('ibime') || 
+                  cookieTenant.toLowerCase().includes('ibime') || 
+                  referer.toLowerCase().includes('ibime');
+
+  const schoolName = isIbime ? 'INSTITUTO BILINGÜE IBIME' : 'COLEGIO ISKOOL MÉXICO';
+  const schoolSub = isIbime ? 'Educación Bilingüe de Excelencia • CCT: 15PPR3322G • https://ibime.edu.mx' : 'Institución Educativa de Excelencia • CCT: 09PPR1849Z';
+  const razonSocial = isIbime ? 'INSTITUTO BILINGÜE IBIME S.C.' : 'COLEGIO ISKOOL DE MEXICO S.C.';
+  const rfcEmisor = isIbime ? 'IBI150901AB3' : 'ISK180312AB9';
+  const expedicion = isIbime ? 'C.P. 55000 (Estado de México)' : 'C.P. 06700 (CDMX)';
+  const primaryColor = isIbime ? '#E41B14' : '#1e40af';
+  const secondaryColor = isIbime ? '#0F2744' : '#0f172a';
+
   const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -23,17 +38,17 @@ export async function GET(req: NextRequest) {
     @page { size: letter portrait; margin: 15mm; }
     * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     body { font-family: 'Segoe UI', Helvetica, Arial, sans-serif; color: #1e293b; background: #fff; margin: 0; padding: 20px; font-size: 11px; line-height: 1.4; }
-    .header-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; border-bottom: 2px solid #1e40af; padding-bottom: 10px; }
-    .header-logo { font-size: 20px; font-weight: 800; color: #1e40af; letter-spacing: -0.5px; }
+    .header-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; border-bottom: 2px solid ${primaryColor}; padding-bottom: 10px; }
+    .header-logo { font-size: 18px; font-weight: 800; color: ${secondaryColor}; letter-spacing: -0.5px; }
     .header-sub { font-size: 9px; color: #64748b; font-weight: 600; text-transform: uppercase; }
     .fiscal-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; margin-bottom: 12px; }
     .fiscal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .box-title { font-size: 10px; font-weight: 700; color: #1e40af; text-transform: uppercase; margin-bottom: 5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 2px; }
+    .box-title { font-size: 10px; font-weight: 700; color: ${primaryColor}; text-transform: uppercase; margin-bottom: 5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 2px; }
     .data-row { margin-bottom: 3px; font-size: 10px; }
     .data-label { font-weight: 600; color: #475569; display: inline-block; width: 120px; }
     .data-val { color: #0f172a; font-weight: 500; }
     .table-conceptos { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 10px; }
-    .table-conceptos th { background: #1e40af; color: #fff; padding: 6px 8px; text-align: left; font-weight: 600; }
+    .table-conceptos th { background: ${isIbime ? '#0F2744' : '#1e40af'}; color: #fff; padding: 6px 8px; text-align: left; font-weight: 600; }
     .table-conceptos td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; }
     .totals-table { width: 280px; margin-left: auto; border-collapse: collapse; margin-bottom: 15px; }
     .totals-table td { padding: 4px 8px; font-size: 10px; }
@@ -43,7 +58,7 @@ export async function GET(req: NextRequest) {
     .stamp-text { font-family: monospace; word-break: break-all; color: #475569; }
     .stamp-title { font-weight: bold; color: #0f172a; margin-top: 3px; }
     .no-print { margin-bottom: 20px; padding: 12px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
-    .btn-print { background: #1e40af; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; }
+    .btn-print { background: ${primaryColor}; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; }
     @media print { .no-print { display: none; } body { padding: 0; } }
   </style>
 </head>
@@ -51,7 +66,7 @@ export async function GET(req: NextRequest) {
 
   <div class="no-print">
     <div>
-      <strong style="color: #1e40af;">Representación Impresa Oficial del SAT (CFDI 4.0)</strong>
+      <strong style="color: ${primaryColor};">Representación Impresa Oficial del SAT (CFDI 4.0)</strong>
       <div style="color: #64748b; font-size: 11px;">Este documento es un comprobante fiscal digital válido emitido bajo las normas del SAT.</div>
     </div>
     <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
@@ -60,12 +75,17 @@ export async function GET(req: NextRequest) {
   <table class="header-table">
     <tr>
       <td>
-        <div class="header-logo">COLEGIO ISKOOL MÉXICO</div>
-        <div class="header-sub">Institución Educativa de Excelencia • CCT: 09PPR1849Z</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          ${isIbime ? '<img src="/brand/ibime_shield.webp" alt="IBIME" style="width: 44px; height: 44px; object-fit: contain;" />' : ''}
+          <div>
+            <div class="header-logo">${schoolName}</div>
+            <div class="header-sub">${schoolSub}</div>
+          </div>
+        </div>
       </td>
       <td style="text-align: right;">
         <div style="font-size: 13px; font-weight: 800; color: #0f172a;">FACTURA ELECTRÓNICA (CFDI 4.0)</div>
-        <div style="font-size: 11px; font-weight: 700; color: #1e40af;">FOLIO: ${receiptId}</div>
+        <div style="font-size: 11px; font-weight: 700; color: ${primaryColor};">FOLIO: ${receiptId}</div>
         <div style="font-size: 9px; color: #64748b;">Fecha de Emisión: ${dateStr}</div>
       </td>
     </tr>
@@ -74,10 +94,10 @@ export async function GET(req: NextRequest) {
   <div class="fiscal-grid">
     <div class="fiscal-box">
       <div class="box-title">Datos del Emisor</div>
-      <div class="data-row"><span class="data-label">Razón Social:</span> <span class="data-val">COLEGIO ISKOOL DE MEXICO S.C.</span></div>
-      <div class="data-row"><span class="data-label">RFC Emisor:</span> <span class="data-val">ISK180312AB9</span></div>
+      <div class="data-row"><span class="data-label">Razón Social:</span> <span class="data-val">${razonSocial}</span></div>
+      <div class="data-row"><span class="data-label">RFC Emisor:</span> <span class="data-val">${rfcEmisor}</span></div>
       <div class="data-row"><span class="data-label">Régimen Fiscal:</span> <span class="data-val">603 - Personas Morales con Fines no Lucrativos</span></div>
-      <div class="data-row"><span class="data-label">Lugar de Expedición:</span> <span class="data-val">C.P. 06700 (CDMX)</span></div>
+      <div class="data-row"><span class="data-label">Lugar de Expedición:</span> <span class="data-val">${expedicion}</span></div>
       <div class="data-row"><span class="data-label">Tipo Comprobante:</span> <span class="data-val">I - Ingreso</span></div>
     </div>
 
@@ -177,7 +197,7 @@ export async function GET(req: NextRequest) {
   </div>
 
   <div style="text-align: center; font-size: 8px; color: #94a3b8; margin-top: 15px;">
-    Este documento es una representación impresa de un CFDI Versión 4.0 emitido por Colegio ISkool México.
+    Este documento es una representación impresa de un CFDI Versión 4.0 emitido por ${schoolName}.
   </div>
 
 </body>

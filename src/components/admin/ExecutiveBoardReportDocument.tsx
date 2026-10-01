@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Building2, ShieldCheck, CheckCircle2, AlertTriangle, TrendingUp, TrendingDown, Award } from 'lucide-react';
+import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { AnalyticReportResult, formatMXN } from '@/services/executiveAnalyticsEngine';
 
 export interface ExecutiveBoardReportDocumentProps {
@@ -83,8 +84,26 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
   report,
   institution
 }) => {
-  const schoolName = report.schoolName || institution?.name || 'Colegio ISkool México';
-  const cct = institution?.cct || '15EPR2840Z';
+  // Detección reactiva de experiencia institucional IBIME
+  const isIbime = React.useMemo(() => {
+    const sName = (report?.schoolName || institution?.name || '').toLowerCase();
+    const instName = (institution?.name || '').toLowerCase();
+    const repSchool = (report?.schoolName || '').toLowerCase();
+    if (sName.includes('ibime') || instName.includes('ibime') || repSchool.includes('ibime')) return true;
+    if (typeof window !== 'undefined') {
+      if (document.documentElement.getAttribute('data-tenant') === 'ibime') return true;
+      if (localStorage.getItem('tenant-id') === 'ibime') return true;
+      if (localStorage.getItem('activeSchoolId') === 'sch-ibime') return true;
+      if (window.location.pathname.includes('/ibime')) return true;
+    }
+    return false;
+  }, [report, institution]);
+
+  const schoolName = isIbime 
+    ? 'INSTITUTO BILINGÜE IBIME' 
+    : (report.schoolName || institution?.name || 'Colegio ISkool México');
+
+  const cct = isIbime ? '15PPR3322G' : (institution?.cct || '15EPR2840Z');
   const folioNumber = String(report.generatedAt || Date.now()).replace(/\D/g, '').slice(-6) || '202601';
   const emissionDate = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
   const emissionTime = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
@@ -169,9 +188,16 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
       <section className="print-page-break-after h-auto min-h-0 flex flex-col justify-between pt-1 pb-4">
         <div>
           {/* Membrete Oficial Superior */}
+          {isIbime && (
+            <div className="h-1.5 w-full bg-gradient-to-r from-[#E41B14] via-[#0F2744] to-[#C01D0C] rounded-full mb-3" />
+          )}
           <div className="border-b-2 border-slate-900 pb-3.5 mb-4 flex justify-between items-start">
-            <div className="flex items-center gap-3">
-              {institution?.logoUrl ? (
+            <div className="flex items-center gap-3.5">
+              {isIbime ? (
+                <div className="w-14 h-14 rounded-xl border border-slate-200 bg-white flex items-center justify-center p-1 shadow-xs shrink-0">
+                  <IbimeOfficialLogo variant="shield_only" size={48} />
+                </div>
+              ) : institution?.logoUrl ? (
                 <img 
                   src={institution.logoUrl} 
                   alt={schoolName} 
@@ -191,15 +217,19 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
                   Consejo de Administración & Dirección General • Secretaría de Gobernanza
                 </p>
                 <p className="text-[9px] text-slate-500 font-medium">
-                  Clave de Centro de Trabajo (CCT): <span className="font-mono font-bold text-slate-700">{cct}</span> · Validez Oficial SEP · Ciclo 2026-2027
+                  Clave de Centro de Trabajo (CCT): <span className="font-mono font-bold text-slate-700">{cct}</span> · Validez Oficial SEP · Ciclo 2026-2027{isIbime ? ' · https://ibime.edu.mx' : ''}
                 </p>
               </div>
             </div>
 
             {/* Cuadro de Folio y Metadatos Oficiales */}
-            <div className="text-right border border-slate-300 bg-slate-50/90 p-2.5 rounded-lg text-[9.5px] text-slate-700 min-w-[220px] shrink-0">
-              <div className="text-[8px] uppercase font-bold text-slate-500 tracking-wider">
-                Informe Oficial de Junta Directiva
+            <div className={`text-right border p-2.5 rounded-lg text-[9.5px] min-w-[220px] shrink-0 ${
+              isIbime 
+                ? 'border-[#E41B14]/40 bg-slate-50/90 text-slate-800' 
+                : 'border-slate-300 bg-slate-50/90 text-slate-700'
+            }`}>
+              <div className={`text-[8px] uppercase font-bold tracking-wider ${isIbime ? 'text-[#E41B14]' : 'text-slate-500'}`}>
+                {isIbime ? 'Informe Oficial de Gobernanza IBIME' : 'Informe Oficial de Junta Directiva'}
               </div>
               <div className="text-xs font-mono font-black text-slate-950 mt-0.5">
                 FOLIO: EXP-BI-{folioNumber}
@@ -210,7 +240,9 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
               <div>
                 <span className="font-semibold text-slate-600">Hora de Auditoría:</span> {emissionTime} hrs
               </div>
-              <div className="mt-1 pt-1 border-t border-slate-200 text-[8px] font-bold text-amber-900 uppercase">
+              <div className={`mt-1 pt-1 border-t text-[8px] font-bold uppercase ${
+                isIbime ? 'border-[#E41B14]/20 text-[#C01D0C]' : 'border-slate-200 text-amber-900'
+              }`}>
                 Documento Oficial Confidencial
               </div>
             </div>
@@ -317,7 +349,7 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
 
         {/* Pie de Página 1 */}
         <div className="pt-2 border-t border-slate-300 text-[8.5px] text-slate-500 flex justify-between items-center">
-          <span>{schoolName} · Sistema de Inteligencia Institucional ISkool</span>
+          <span>{isIbime ? 'Instituto Bilingüe IBIME · Secretaría General y Consejo Directivo · https://ibime.edu.mx' : `${schoolName} · Sistema de Inteligencia Institucional`}</span>
           <span className="font-bold">Dossier Ejecutivo de Junta Directiva · Página 1</span>
           <span>Folio: EXP-BI-{folioNumber}</span>
         </div>
@@ -330,7 +362,15 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
         <div>
           {/* Encabezado Secundario Continuo de Junta */}
           <div className="border-b border-slate-400 pb-2 mb-4 flex justify-between items-center text-[9px] text-slate-600">
-            <span className="font-bold uppercase tracking-wider text-slate-900">{schoolName}</span>
+            <div className="flex items-center gap-2">
+              {isIbime ? (
+                <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                  <IbimeOfficialLogo variant="shield_only" size={18} />
+                </div>
+              ) : null}
+              <span className="font-bold uppercase tracking-wider text-slate-900">{schoolName}</span>
+              {isIbime && <span className="font-mono text-slate-500 text-[8px]">· CCT: {cct}</span>}
+            </div>
             <span>Informe: {report.reportTitle}</span>
             <span className="font-mono font-bold">Folio: EXP-BI-{folioNumber}</span>
           </div>
@@ -471,7 +511,7 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
 
         {/* Pie de Página 2 */}
         <div className="pt-2 border-t border-slate-300 text-[8.5px] text-slate-500 flex justify-between items-center">
-          <span>{schoolName} · Sistema de Inteligencia Institucional ISkool</span>
+          <span>{isIbime ? 'Instituto Bilingüe IBIME · Secretaría General y Consejo Directivo · https://ibime.edu.mx' : `${schoolName} · Sistema de Inteligencia Institucional`}</span>
           <span className="font-bold">Dossier Ejecutivo de Junta Directiva · Página 2</span>
           <span>Folio: EXP-BI-{folioNumber}</span>
         </div>
@@ -485,7 +525,15 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
           <div>
             {/* Encabezado Secundario Continuo de Junta */}
             <div className="border-b border-slate-400 pb-2 mb-4 flex justify-between items-center text-[9px] text-slate-600">
-              <span className="font-bold uppercase tracking-wider text-slate-900">{schoolName}</span>
+              <div className="flex items-center gap-2">
+                {isIbime ? (
+                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                    <IbimeOfficialLogo variant="shield_only" size={18} />
+                  </div>
+                ) : null}
+                <span className="font-bold uppercase tracking-wider text-slate-900">{schoolName}</span>
+                {isIbime && <span className="font-mono text-slate-500 text-[8px]">· CCT: {cct}</span>}
+              </div>
               <span>Padrón Detallado de Registros Auditados</span>
               <span className="font-mono font-bold">Folio: EXP-BI-{folioNumber}</span>
             </div>
@@ -576,8 +624,20 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
               </div>
 
               <div className="flex flex-col items-center justify-center">
-                <div className="w-24 h-14 border border-dashed border-slate-400 rounded flex items-center justify-center text-[7.5px] text-slate-400 font-mono uppercase mb-1">
-                  SELLO INSTITUCIONAL
+                <div className={`w-28 h-16 border border-dashed rounded flex flex-col items-center justify-center text-[7.5px] font-mono uppercase mb-1 p-1 ${
+                  isIbime ? 'border-[#E41B14]/50 bg-red-50/20 text-[#0F2744]' : 'border-slate-400 text-slate-400'
+                }`}>
+                  {isIbime ? (
+                    <>
+                      <div className="w-6 h-6 flex items-center justify-center mb-0.5 opacity-70">
+                        <IbimeOfficialLogo variant="shield_only" size={22} />
+                      </div>
+                      <span className="font-bold text-[7px] text-[#0F2744]">SELLO OFICIAL IBIME</span>
+                      <span className="text-[6px] text-slate-500">CCT: 15PPR3322G</span>
+                    </>
+                  ) : (
+                    <span>SELLO INSTITUCIONAL</span>
+                  )}
                 </div>
                 <p className="font-bold text-slate-950">Control Escolar y Finanzas</p>
                 <p className="text-slate-500 text-[8.5px]">Cotejo y Validez de Registros</p>
@@ -593,7 +653,7 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
             </div>
 
             <div className="mt-6 pt-2.5 border-t border-slate-200 text-center text-[8px] text-slate-500 flex justify-between items-center">
-              <span>{schoolName} · Sistema de Inteligencia Institucional ISkool</span>
+              <span>{isIbime ? 'Instituto Bilingüe IBIME · Secretaría General y Consejo Directivo · https://ibime.edu.mx' : `${schoolName} · Sistema de Inteligencia Institucional`}</span>
               <span className="font-bold">Emisión Oficial Certificada · Carácter Vinculante</span>
               <span>Documento Confidencial para Uso Exclusivo de Junta Directiva</span>
             </div>

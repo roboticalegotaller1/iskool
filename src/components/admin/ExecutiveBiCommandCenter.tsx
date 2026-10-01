@@ -1876,8 +1876,9 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
       <ExecutiveBoardReportDocument
         report={biBoardReport}
         institution={{
-          name: selectedCampusObj ? `${holdingName} · Campus ${selectedCampusObj.shortName}` : holdingName,
-          cct: '15EPR2840Z',
+          name: isIbime ? 'INSTITUTO BILINGÜE IBIME' : (selectedCampusObj ? `${holdingName} · Campus ${selectedCampusObj.shortName}` : holdingName),
+          cct: isIbime ? '15PPR3322G' : '15EPR2840Z',
+          logoUrl: isIbime ? '/brand/ibime_shield.webp' : undefined,
           campus: selectedCampusObj?.campusName
         }}
       />
