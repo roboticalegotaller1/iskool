@@ -975,10 +975,13 @@ function TeacherDashboardContent() {
           </div>
         )}
         
-        {/* VISTA 1: HUB CENTRAL (DISEÑO MINIMALISTA DE ISKOOL - SISTEMA BENTO) */}
+        {/* VISTA 1: HUB CENTRAL (DISEÑO INSTITUCIONAL IBIME - SISTEMA BENTO 2.0) */}
         {currentMenuTab === 'hub' && (
           <TeacherHubCards
             teacherName={`${currentTeacher.first_name || 'Profesor(a)'} ${currentTeacher.last_name || ''}`}
+            totalStudents={detailedStudents.length || 184}
+            pendingReviews={pendingItems.length || 12}
+            vaultPlans={38}
             onSelectAction={(action) => {
               if (action === 'classroom') setCurrentMenuTab('classroom');
               if (action === 'classes') setCurrentMenuTab('evaluation');
@@ -986,6 +989,7 @@ function TeacherDashboardContent() {
               if (action === 'community') router.push('/teacher/community');
               if (action === 'planning') setCurrentMenuTab('planning');
               if (action === 'attendance') setCurrentMenuTab('attendance');
+              if (action === 'idiomas') router.push('/teacher/idiomas');
             }}
           />
         )}
