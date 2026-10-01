@@ -1466,11 +1466,11 @@ export default function SuperUserAdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col selection:bg-indigo-500 selection:text-white print:min-h-0 print:h-auto print:overflow-visible print:bg-white print:block">
       
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-5 right-5 z-50 bg-indigo-600 text-white px-5 py-3 rounded-2xl shadow-2xl border border-indigo-400/30 flex items-center gap-3">
+        <div className="fixed top-5 right-5 z-50 bg-indigo-600 text-white px-5 py-3 rounded-2xl shadow-2xl border border-indigo-400/30 flex items-center gap-3 print:hidden no-print">
           <CheckCircle2 className="h-5 w-5 text-indigo-200" />
           <span className="text-xs font-bold">{toastMessage}</span>
         </div>
@@ -2128,7 +2128,7 @@ export default function SuperUserAdminPage() {
           </main>
         </div>
       ) : (overviewMode === 'executive' && activeTab === 'overview') ? (
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col print:h-auto print:min-h-0 print:overflow-visible print:block">
           <CEOExecutiveDashboard
             holding={currentSchoolHolding}
             schoolId={currentSchool?.id}

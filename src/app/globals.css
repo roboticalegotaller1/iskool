@@ -594,16 +594,21 @@ body {
 @media print {
   @page {
     size: letter portrait;
-    margin: 12mm 14mm 12mm 14mm;
+    margin: 10mm 12mm 10mm 12mm;
   }
 
   html,
-  body {
+  body,
+  #__next,
+  [data-nextjs-scroll-focus-boundary],
+  #root,
+  main {
     overflow: visible !important;
     overflow-x: visible !important;
     overflow-y: visible !important;
     height: auto !important;
     min-height: 0 !important;
+    max-height: none !important;
     max-width: 100% !important;
     background: #ffffff !important;
     color: #0f172a !important;
@@ -611,18 +616,56 @@ body {
     print-color-adjust: exact !important;
   }
 
+  /* Desbloquear de raíz cualquier contenedor con altura o scroll en pantalla para evitar cortes */
+  body * {
+    overflow: visible !important;
+  }
+
+  .h-screen,
+  .h-dvh,
+  .min-h-screen,
+  .max-h-screen,
+  .overflow-hidden,
+  .overflow-y-auto,
+  .overflow-x-auto,
+  .overflow-auto,
+  [class*="h-screen"],
+  [class*="min-h-screen"],
+  [class*="min-h-["] {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
   /* Ocultar elementos interactivos de pantalla durante la impresión */
+  .no-print,
   .print-hidden,
   .print\:hidden,
+  [class*="print:hidden"],
+  [class*="no-print"],
   button:not(.print-include),
   input:not(.print-include),
   select:not(.print-include),
   textarea:not(.print-include),
   header:not(.print-include),
   nav:not(.print-include),
-  aside:not(.print-include),
-  [role="dialog"]:not(.print-include) {
+  aside:not(.print-include) {
     display: none !important;
+  }
+
+  /* Si un dossier oficial de junta directiva está presente, asegurar visibilidad e higiene */
+  #executive-board-dossier,
+  .executive-board-dossier {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   /* Reglas de paginación estrictas para juntas directivas */

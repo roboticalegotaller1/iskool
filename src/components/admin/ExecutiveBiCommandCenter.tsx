@@ -752,7 +752,7 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
   }, [activeMainView, horizonData, displayedDebtors, selectedCampusObj, holdingName, schoolId]);
 
   return (
-    <div className={`select-none transition-all duration-200 print:overflow-visible print:bg-white print:h-auto print:min-h-0 print:border-none print:shadow-none ${
+    <div className={`select-none transition-all duration-200 print:!overflow-visible print:!bg-white print:!h-auto print:!min-h-0 print:!max-h-none print:!border-none print:!shadow-none print:!p-0 print:!m-0 print:!block ${
       isMaximized 
         ? 'fixed inset-0 z-50 flex flex-col h-screen w-full bg-[#0d131f] text-slate-100 font-sans overflow-hidden shadow-2xl'
         : isEmbeddedView 
@@ -760,7 +760,7 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
         : 'flex flex-col min-h-screen w-full bg-[#0d131f] text-slate-100 font-sans overflow-hidden'
     }`}>
       {/* 1. CONTENEDOR EN PANTALLA (MODO SALA DE JUNTAS / DARK MODE) - OCULTO AL IMPRIMIR */}
-      <div className="w-full flex-1 flex flex-col overflow-hidden print:hidden">
+      <div className="w-full flex-1 flex flex-col overflow-hidden print:hidden no-print">
 
       {/* ========================================================================= */}
       {/* 1. TOP HEADER EJECUTIVO & CONTROLES DE NIVEL C-SUITE                     */}
@@ -1831,16 +1831,14 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
       {/* ========================================================================= */}
       {/* 2. DOSSIER EJECUTIVO OFICIAL PARA JUNTAS DIRECTIVAS (SOLO VISIBLE AL IMPRIMIR) */}
       {/* ========================================================================= */}
-      {activeMainView !== 'assistant' && (
-        <ExecutiveBoardReportDocument
-          report={biBoardReport}
-          institution={{
-            name: selectedCampusObj ? `${holdingName} · Campus ${selectedCampusObj.shortName}` : holdingName,
-            cct: '15EPR2840Z',
-            campus: selectedCampusObj?.campusName
-          }}
-        />
-      )}
+      <ExecutiveBoardReportDocument
+        report={biBoardReport}
+        institution={{
+          name: selectedCampusObj ? `${holdingName} · Campus ${selectedCampusObj.shortName}` : holdingName,
+          cct: '15EPR2840Z',
+          campus: selectedCampusObj?.campusName
+        }}
+      />
 
     </div>
   );

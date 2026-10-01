@@ -1321,7 +1321,9 @@ export default function ExecutiveAnalyticsStudio({
           }
 
           /* Mostrar exclusivamente el documento oficial ejecutivo integral */
-          #executive-report-print-container {
+          #executive-report-print-container,
+          #executive-board-dossier,
+          .executive-board-dossier {
             display: block !important;
             position: static !important;
             width: 100% !important;
@@ -1349,7 +1351,7 @@ export default function ExecutiveAnalyticsStudio({
       `}</style>
 
       {/* 1. CONTENEDOR EN PANTALLA (INTERACTIVO, SPLIT-VIEW, MODO CLARO) - OCULTO AL IMPRIMIR */}
-      <div className={`screen-only-studio select-none print:hidden transition-all duration-200 ${
+      <div className={`screen-only-studio select-none print:hidden no-print transition-all duration-200 ${
         isMaximized
           ? 'fixed inset-0 z-50 flex flex-col h-screen w-full bg-slate-50 text-slate-900 font-sans overflow-hidden shadow-2xl'
           : isEmbeddedView

@@ -161,12 +161,12 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
   const hasTableRows = report.table && report.table.rows && report.table.rows.length > 0;
 
   return (
-    <div id="executive-board-dossier" className="hidden print:block w-full bg-white text-slate-900 font-sans leading-normal">
+    <div id="executive-board-dossier" className="executive-board-dossier hidden print:block w-full bg-white text-slate-900 font-sans leading-normal">
 
       {/* ========================================================================= */}
       {/* PÁGINA 1: CARÁTULA OFICIAL, DICTAMEN EJECUTIVO Y SCORECARD DE KPIS        */}
       {/* ========================================================================= */}
-      <section className="print-page-break-after min-h-[960px] flex flex-col justify-between pt-2 pb-6">
+      <section className="print-page-break-after h-auto min-h-0 flex flex-col justify-between pt-1 pb-4">
         <div>
           {/* Membrete Oficial Superior */}
           <div className="border-b-2 border-slate-900 pb-3.5 mb-4 flex justify-between items-start">
@@ -326,7 +326,7 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
       {/* ========================================================================= */}
       {/* PÁGINA 2: RADAR ESTRATÉGICO CUATRIDIMENSIONAL, GRÁFICAS Y HOJA DE RUTA   */}
       {/* ========================================================================= */}
-      <section className={`${hasTableRows ? 'print-page-break-after' : ''} min-h-[960px] flex flex-col justify-between pt-2 pb-6`}>
+      <section className={`${hasTableRows ? 'print-page-break-after' : ''} h-auto min-h-0 flex flex-col justify-between pt-1 pb-4`}>
         <div>
           {/* Encabezado Secundario Continuo de Junta */}
           <div className="border-b border-slate-400 pb-2 mb-4 flex justify-between items-center text-[9px] text-slate-600">
@@ -481,7 +481,7 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
       {/* PÁGINA 3+: PADRÓN COMPLETO DE EXPEDIENTES Y BLOQUE FINAL DE FIRMAS        */}
       {/* ========================================================================= */}
       {hasTableRows && (
-        <section className="pt-2 pb-6 min-h-[960px] flex flex-col justify-between">
+        <section className="pt-1 pb-4 h-auto min-h-0 flex flex-col justify-between">
           <div>
             {/* Encabezado Secundario Continuo de Junta */}
             <div className="border-b border-slate-400 pb-2 mb-4 flex justify-between items-center text-[9px] text-slate-600">

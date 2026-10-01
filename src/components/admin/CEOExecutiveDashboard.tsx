@@ -1442,12 +1442,12 @@ export default function CEOExecutiveDashboard({
   ];
 
   return (
-    <div className="flex h-screen bg-[#f8f9fa] text-slate-800 font-sans antialiased overflow-hidden select-none">
+    <div className="flex h-screen bg-[#f8f9fa] text-slate-800 font-sans antialiased overflow-hidden select-none print:h-auto print:min-h-0 print:overflow-visible print:bg-white print:block">
       
       {/* ========================================================= */}
       {/* 1. BARRA LATERAL DESKTOP (VISIBLE EN PANTALLAS GRANDES)   */}
       {/* ========================================================= */}
-      <aside className="hidden lg:flex w-64 bg-white border-r border-slate-200 flex-col justify-between z-20 shrink-0 select-none">
+      <aside className="hidden lg:flex w-64 bg-white border-r border-slate-200 flex-col justify-between z-20 shrink-0 select-none print:hidden no-print">
         <div>
           {/* Brand Logo Header */}
           <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100">
@@ -1677,10 +1677,10 @@ export default function CEOExecutiveDashboard({
       {/* ========================================================= */}
       {/* 2. ÁREA PRINCIPAL (HEADER + CONSOLA MODULAR ACTIVA)       */}
       {/* ========================================================= */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden print:h-auto print:min-h-0 print:overflow-visible print:block">
         
         {/* Top Header Ejecutivo Responsivo (Móvil, Tablet y Desktop) */}
-        <header className="min-h-16 bg-white border-b border-slate-200 px-3 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-2 z-10 shrink-0">
+        <header className="min-h-16 bg-white border-b border-slate-200 px-3 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-2 z-10 shrink-0 print:hidden no-print">
           <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
             {/* Botón Menú Hamburguesa para Móvil y Tablet */}
             <button
@@ -1771,7 +1771,7 @@ export default function CEOExecutiveDashboard({
 
         {/* TOAST FLOTANTE */}
         {toastMessage && (
-          <div className="fixed top-20 right-4 sm:right-8 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xl border border-slate-700 flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-100 max-w-[90vw]">
+          <div className="fixed top-20 right-4 sm:right-8 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xl border border-slate-700 flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-100 max-w-[90vw] print:hidden no-print">
             <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
             <span>{toastMessage}</span>
           </div>
@@ -1780,10 +1780,10 @@ export default function CEOExecutiveDashboard({
         {/* ========================================================= */}
         {/* CUERPO PRINCIPAL MODULAR CON TRANSICIÓN INSTANTÁNEA       */}
         {/* ========================================================= */}
-        <main className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-8 pb-24 lg:pb-8 space-y-4 sm:space-y-6">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-8 pb-24 lg:pb-8 space-y-4 sm:space-y-6 print:h-auto print:overflow-visible print:p-0 print:m-0 print:space-y-0 print:block">
           
           {/* BARRA DE MONITOREO AUTÓNOMO EN VIVO (0 TOKENS) */}
-          <div className="bg-slate-900 text-white p-3 sm:px-5 sm:py-2.5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs border border-slate-800 text-xs">
+          <div className="bg-slate-900 text-white p-3 sm:px-5 sm:py-2.5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs border border-slate-800 text-xs print:hidden no-print">
             <div className="flex items-center gap-3">
               <div className="relative flex h-3 w-3 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -1813,7 +1813,7 @@ export default function CEOExecutiveDashboard({
           </div>
 
           {/* TARJETA DE LICENCIA SAAS EMPRESARIAL ISKOOL • TENANT ESCOLAR */}
-          <div className="bg-white p-4 rounded-2xl border border-indigo-100 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="bg-white p-4 rounded-2xl border border-indigo-100 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 print:hidden no-print">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-900 to-indigo-950 text-amber-400 flex items-center justify-center shrink-0 shadow-xs">
                 <Building2 size={20} />
@@ -1852,7 +1852,7 @@ export default function CEOExecutiveDashboard({
           </div>
 
           {/* BARRA DE DIFERENCIADORES ESTRATÉGICOS ISKOOL */}
-          <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-3.5 rounded-2xl border border-indigo-500/30 flex flex-wrap items-center justify-between gap-3 text-xs text-white">
+          <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-3.5 rounded-2xl border border-indigo-500/30 flex flex-wrap items-center justify-between gap-3 text-xs text-white print:hidden no-print">
             <div className="flex items-center gap-2">
               <Sparkles size={16} className="text-amber-400" />
               <span className="font-extrabold tracking-wide uppercase text-[11px] text-amber-300">Diferenciadores Clave iSkool Élite:</span>
@@ -4311,7 +4311,7 @@ export default function CEOExecutiveDashboard({
           {/* MÓDULO 9: REPORTES BI (ESTUDIO ANALÍTICO FORENSE 0 TOKENS) */}
           {/* ======================================================= */}
           {activeTab === 'reportes' && (
-            <div className="animate-in fade-in duration-100">
+            <div className="animate-in fade-in duration-100 print:h-auto print:overflow-visible print:block print:p-0 print:m-0">
               <ExecutiveBiCommandCenter
                 isEmbeddedView={true}
                 schoolId={schoolId || activeSchoolId || currentInstitution?.id || (selectedCampusId !== 'all' ? selectedCampusId : undefined)}
