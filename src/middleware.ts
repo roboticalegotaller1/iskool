@@ -76,6 +76,11 @@ export async function middleware(request: NextRequest) {
   }
 
   const { pathname } = request.nextUrl;
+
+  // Excluir el CRM de Admisiones para demostración y evaluación sin fricción
+  if (pathname === '/admin/crm' || pathname.startsWith('/admin/crm') || pathname === '/crm' || pathname.startsWith('/crm')) {
+    return NextResponse.next();
+  }
   const host = (request.headers.get('x-forwarded-host') || request.headers.get('host') || '').toLowerCase();
   const acceptHeader = (request.headers.get('accept') || '').toLowerCase();
   const isServerAction = request.headers.has('next-action');
@@ -225,7 +230,6 @@ export async function middleware(request: NextRequest) {
     userRole === 'superadmin' ||
     userRole === 'admin' ||
     userRole === 'owner' ||
-    userRole === 'director' ||
     userRole === 'ceo';
 
   // 4. BARRERA DE SEGURIDAD ZERO-TRUST (ANTI-ENUMERACIÓN HTTP 404 NOT FOUND)

@@ -41,8 +41,8 @@ import {
   Heart
 } from 'lucide-react';
 import { DetailedStudent, Subject, Campus, UserProfile } from '@/types';
-import { useStudentStore } from '@/store/useStudentStore';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
+import { useStudentStore } from '@/store/useStudentStore';
 
 type IbimeTab = 'sedes' | 'alumnos' | 'docentes' | 'boveda' | 'finanzas';
 

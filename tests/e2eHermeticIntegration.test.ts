@@ -51,9 +51,9 @@ describe('🛡️ E2E INTEGRATION TEST: Aislamiento Hermético de iSkool e IBIME
 
       // Verificar que los tokens gráficos correspondan a IBIME
       const tokens = getTokensForTenant('ibime');
-      expect(tokens.schoolName).toBe('Instituto Bicultural IBIME');
-      expect(tokens.primaryColorHex).toBe('#047857');
-      expect(tokens.badgeText).toBe('IBIME Bicultural Hub');
+      expect(tokens.schoolName).toBe('Instituto Bilingüe Ibime');
+      expect(tokens.primaryColorHex).toBe('#E41B14');
+      expect(tokens.badgeText).toBe('Instituto Bilingüe Ibime');
     });
   });
 

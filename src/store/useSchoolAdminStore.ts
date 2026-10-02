@@ -2371,8 +2371,20 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           const deletedIds = new Set((state.studentDeletionAuditLogs || []).map(l => l.student_id));
           const missing = DETAILED_STUDENTS_SEED.filter(s => !existingIds.has(s.id) && !deletedIds.has(s.id));
           
-          // Reconciliar también instituciones (garantizar sch-ibime disponible en clientes existentes)
-          const currentInsts = state.institutionsList || [];
+          // Reconciliar también instituciones (garantizar sch-ibime y empresas corporativas con logos oficiales)
+          const currentInsts: Institution[] = (state.institutionsList || []).map(inst => {
+            if (inst.id === 'emp-bmw') {
+              inst.logoUrl = '/brand/bmw_group_logo.svg';
+              if (inst.settings) inst.settings.logoUrl = '/brand/bmw_group_logo.svg';
+            } else if (inst.id === 'emp-ventas') {
+              inst.logoUrl = '/brand/vanguardia_retail_logo.svg';
+              if (inst.settings) inst.settings.logoUrl = '/brand/vanguardia_retail_logo.svg';
+            } else if (inst.id === 'emp-tech') {
+              inst.logoUrl = '/brand/innovasoft_tech_logo.svg';
+              if (inst.settings) inst.settings.logoUrl = '/brand/innovasoft_tech_logo.svg';
+            }
+            return inst;
+          });
           const existingInstIds = new Set(currentInsts.map(i => i.id));
           const missingInsts = INSTITUTIONS_SEED.filter(i => !existingInstIds.has(i.id));
 
@@ -2433,7 +2445,7 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
     }),
     {
       name: 'iskool_school_admin_store',
-      version: 3,
+      version: 4,
       migrate: (persistedState: any, version: number) => {
         if (persistedState) {
           if (Array.isArray(persistedState.detailedStudents)) {
@@ -2443,6 +2455,19 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
             persistedState.detailedStudents = [...persistedState.detailedStudents, ...missing];
           }
           if (Array.isArray(persistedState.institutionsList)) {
+            // Asegurar logotipos vectoriales oficiales e inmutabilidad corporativa
+            persistedState.institutionsList = persistedState.institutionsList.map((inst: any) => {
+              if (inst.id === 'emp-bmw') {
+                return { ...inst, logoUrl: '/brand/bmw_group_logo.svg', settings: { ...inst.settings, logoUrl: '/brand/bmw_group_logo.svg' } };
+              }
+              if (inst.id === 'emp-ventas') {
+                return { ...inst, logoUrl: '/brand/vanguardia_retail_logo.svg', settings: { ...inst.settings, logoUrl: '/brand/vanguardia_retail_logo.svg' } };
+              }
+              if (inst.id === 'emp-tech') {
+                return { ...inst, logoUrl: '/brand/innovasoft_tech_logo.svg', settings: { ...inst.settings, logoUrl: '/brand/innovasoft_tech_logo.svg' } };
+              }
+              return inst;
+            });
             const existingInstIds = new Set(persistedState.institutionsList.map((i: any) => i.id));
             const missingInsts = INSTITUTIONS_SEED.filter(i => !existingInstIds.has(i.id));
             if (missingInsts.length > 0) {

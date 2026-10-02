@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" fill="none">
+  <!-- BMW Roundel -->
+  <g transform="translate(10, 10)">
+    <!-- Outer Ring -->
+    <circle cx="50" cy="50" r="48" fill="#1C1C1C" stroke="#D1D5DB" stroke-width="2"/>
+    <!-- Outer Bevel -->
+    <circle cx="50" cy="50" r="46" fill="none" stroke="#9CA3AF" stroke-width="1.5" stroke-dasharray="2 1"/>
+    <!-- Text Arc Placeholder or Clear Crisp Lettering -->
+    <path id="textArc" d="M 22 50 A 28 28 0 0 1 78 50" fill="none"/>
+    <text font-family="'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="12" fill="#FFFFFF" letter-spacing="4">
+      <textPath href="#textArc" startOffset="50%" text-anchor="middle">
+        BMW
+      </textPath>
+    </text>
+    <!-- Inner Circle with Quarters -->
+    <circle cx="50" cy="50" r="30" fill="#0066B1"/>
+    <!-- Quarter 1 (Top Left) White -->
+    <path d="M 50 20 A 30 30 0 0 0 20 50 L 50 50 Z" fill="#FFFFFF"/>
+    <!-- Quarter 3 (Bottom Right) White -->
+    <path d="M 50 80 A 30 30 0 0 0 80 50 L 50 50 Z" fill="#FFFFFF"/>
+    <!-- Inner Cross Lines -->
+    <line x1="50" y1="20" x2="50" y2="80" stroke="#1C1C1C" stroke-width="1.5"/>
+    <line x1="20" y1="50" x2="80" y2="50" stroke="#1C1C1C" stroke-width="1.5"/>
+    <!-- Center Bevel -->
+    <circle cx="50" cy="50" r="30" fill="none" stroke="#E5E7EB" stroke-width="1"/>
+  </g>
+  <!-- Typography Lockup -->
+  <g transform="translate(125, 30)">
+    <text x="0" y="24" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="24" fill="#0F172A" letter-spacing="1">
+      BMW GROUP
+    </text>
+    <text x="0" y="48" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="14" fill="#0066B1" letter-spacing="3">
+      MÉXICO · PLANTA SLP
+    </text>
+    <text x="0" y="64" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="600" font-size="10" fill="#64748B" letter-spacing="1">
+      ADVANCED INDUSTRIAL TRAINING & TALENT
+    </text>
+  </g>
+</svg>

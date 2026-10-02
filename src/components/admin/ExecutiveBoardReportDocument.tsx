@@ -3,6 +3,7 @@
 import React from 'react';
 import { Building2, ShieldCheck, CheckCircle2, AlertTriangle, TrendingUp, TrendingDown, Award } from 'lucide-react';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
+import { CorporateOfficialLogo } from '@/components/brand/CorporateOfficialLogo';
 import { AnalyticReportResult, formatMXN } from '@/services/executiveAnalyticsEngine';
 
 export interface ExecutiveBoardReportDocumentProps {
@@ -99,11 +100,42 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
     return false;
   }, [report, institution]);
 
+  // Detección reactiva de experiencia corporativa B2B
+  const isCorporate = React.useMemo(() => {
+    const sName = (report?.schoolName || institution?.name || '').toLowerCase();
+    const instName = (institution?.name || '').toLowerCase();
+    const rId = (report?.schoolId || '').toLowerCase();
+    return Boolean(
+      report.isCorporate ||
+      rId.startsWith('emp-') ||
+      sName.includes('bmw') ||
+      sName.includes('nexus') ||
+      sName.includes('vanguardia') ||
+      sName.includes('retail') ||
+      sName.includes('innovasoft') ||
+      instName.includes('bmw') ||
+      instName.includes('nexus') ||
+      instName.includes('vanguardia') ||
+      instName.includes('retail') ||
+      instName.includes('innovasoft')
+    );
+  }, [report, institution]);
+
+  const isBmw = isCorporate && ((report.schoolId === 'emp-bmw') || (report.schoolName?.toLowerCase().includes('bmw') || (institution?.name || '').toLowerCase().includes('bmw')));
+  const isRetail = isCorporate && ((report.schoolId === 'emp-ventas') || (report.schoolName?.toLowerCase().includes('vanguardia') || (institution?.name || '').toLowerCase().includes('vanguardia')));
+  const isTech = isCorporate && ((report.schoolId === 'emp-tech') || (report.schoolName?.toLowerCase().includes('innovasoft') || (institution?.name || '').toLowerCase().includes('innovasoft')));
+
+  const corporateLogo = isBmw 
+    ? '/brand/bmw_group_logo.svg' 
+    : (isRetail ? '/brand/vanguardia_retail_logo.svg' : '/brand/innovasoft_tech_logo.svg');
+
   const schoolName = isIbime 
     ? 'INSTITUTO BILINGÜE IBIME' 
-    : (report.schoolName || institution?.name || 'Colegio ISkool México');
+    : (report.schoolName || institution?.name || (isCorporate ? 'BMW Group México · Nexus Motors' : 'Colegio ISkool México'));
 
-  const cct = isIbime ? '15PPR3322G' : (institution?.cct || '15EPR2840Z');
+  const cct = isIbime 
+    ? '15PPR3322G' 
+    : (institution?.cct || (isBmw ? 'RFC: BGM940315BMW' : (isRetail ? 'RFC: VRT200115VR1' : (isTech ? 'RFC: INT190512AI9' : '15EPR2840Z'))));
   const folioNumber = String(report.generatedAt || Date.now()).replace(/\D/g, '').slice(-6) || '202601';
   const emissionDate = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
   const emissionTime = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
@@ -124,7 +156,36 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
     report.domain === 'ACADEMIC_GRADES_ASSESSMENT' || 
     report.domain === 'CURRICULUM_SUBJECTS';
 
-  const strategicRadar = [
+  const strategicRadar = isCorporate ? [
+    {
+      dimension: isRetail ? 'I. Logística y Suministro OTIF' : (isTech ? 'I. Infraestructura Cloud y Microservicios' : 'I. Manufactura Automatizada y Robótica KUKA'),
+      score: 99,
+      benchmark: 99,
+      status: 'Óptimo',
+      observation: isRetail ? '98.5% de cumplimiento OTIF sin cuellos de botella.' : (isTech ? '99.98% de disponibilidad SLA ininterrumpida.' : 'Disponibilidad de línea de 99.4% (meta >99.0%).')
+    },
+    {
+      dimension: isRetail ? 'II. Auditoría Comercial en Puntos de Venta' : (isTech ? 'II. Ciberseguridad & DevSecOps ISO 27001' : 'II. Seguridad Industrial y Celdas de Alto Voltaje'),
+      score: 98,
+      benchmark: 100,
+      status: 'Conforme',
+      observation: isRetail ? '96.8% Sell-Through rate en tiendas estratégicas.' : (isTech ? 'Cero incidentes y acreditación ISO 27001 conforme.' : 'Cumplimiento normativo ISO 45001 y STPS al 98.2%.')
+    },
+    {
+      dimension: 'III. Formación Técnica Especializada B2B',
+      score: 100,
+      benchmark: 100,
+      status: 'Sobresaliente',
+      observation: '120 horas de capacitación técnica acreditadas sin ausentismo.'
+    },
+    {
+      dimension: 'IV. Capital Humano & Dispersión de Nómina',
+      score: 100,
+      benchmark: 100,
+      status: 'Dispersado 100%',
+      observation: 'Masa salarial quincenal dispersada puntualmente a colaboradores clave.'
+    }
+  ] : [
     {
       dimension: 'I. Finanzas, Cobranza & Flujo de Caja',
       score: isFinanceDomain ? 78 : 92,
@@ -156,7 +217,26 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
   ];
 
   // Acuerdos y Hoja de Ruta para Votación del Consejo
-  const boardActionPlan = [
+  const boardActionPlan = isCorporate ? [
+    {
+      acuerdo: '1. Ratificación de Presupuesto y Dispersión de Nómina Especializada',
+      responsable: 'Dirección de Finanzas & Recursos Humanos',
+      plazo: 'Quincenal Inmediato',
+      prioridad: 'Alta'
+    },
+    {
+      acuerdo: '2. Homologación de Certificaciones Técnicas (ISO 45001 / NFPA 70E / STPS)',
+      responsable: 'Gerencia de Seguridad Industrial & Master Trainers',
+      plazo: '15 Días Hábiles',
+      prioridad: 'Estratégica'
+    },
+    {
+      acuerdo: '3. Continuidad Operativa y Mantenimiento de Herramentales de Precisión',
+      responsable: 'Gerencia de Operaciones y Planta',
+      plazo: 'Continuo / Ciclo 2026',
+      prioridad: 'Media'
+    }
+  ] : [
     {
       acuerdo: '1. Plan de Regularización Inmediata y Convenios de Pago',
       responsable: 'Dirección Administrativa & Tesorería',
@@ -197,6 +277,15 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
                 <div className="w-14 h-14 rounded-xl border border-slate-200 bg-white flex items-center justify-center p-1 shadow-xs shrink-0">
                   <IbimeOfficialLogo variant="shield_only" size={48} />
                 </div>
+              ) : isCorporate ? (
+                <div className="w-24 h-14 rounded-xl border border-slate-300 bg-white flex items-center justify-center p-1.5 shadow-xs shrink-0">
+                  <CorporateOfficialLogo 
+                    enterpriseId={isBmw ? 'emp-bmw' : isRetail ? 'emp-ventas' : 'emp-tech'} 
+                    name={schoolName} 
+                    size={42} 
+                    variant="horizontal" 
+                  />
+                </div>
               ) : institution?.logoUrl ? (
                 <img 
                   src={institution.logoUrl} 
@@ -214,10 +303,14 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
                   {schoolName}
                 </h1>
                 <p className="text-[10px] font-bold text-slate-700 leading-tight mt-1">
-                  Consejo de Administración & Dirección General • Secretaría de Gobernanza
+                  {isCorporate 
+                    ? 'Comité Ejecutivo de Dirección & Holding Corporativo • Reporte de Dirección General (CEO)' 
+                    : 'Consejo de Administración & Dirección General • Secretaría de Gobernanza'}
                 </p>
                 <p className="text-[9px] text-slate-500 font-medium">
-                  Clave de Centro de Trabajo (CCT): <span className="font-mono font-bold text-slate-700">{cct}</span> · Validez Oficial SEP · Ciclo 2026-2027{isIbime ? ' · https://ibime.edu.mx' : ''}
+                  {isCorporate 
+                    ? `Registro Federal de Contribuyentes: ${cct} · Aislamiento Estricto B2B · Ejercicio Corporativo 2026`
+                    : `Clave de Centro de Trabajo (CCT): ${cct} · Validez Oficial SEP · Ciclo 2026-2027${isIbime ? ' · https://ibime.edu.mx' : ''}`}
                 </p>
               </div>
             </div>
@@ -226,10 +319,12 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
             <div className={`text-right border p-2.5 rounded-lg text-[9.5px] min-w-[220px] shrink-0 ${
               isIbime 
                 ? 'border-[#E41B14]/40 bg-slate-50/90 text-slate-800' 
+                : isCorporate
+                ? 'border-blue-300 bg-blue-50/60 text-slate-800'
                 : 'border-slate-300 bg-slate-50/90 text-slate-700'
             }`}>
-              <div className={`text-[8px] uppercase font-bold tracking-wider ${isIbime ? 'text-[#E41B14]' : 'text-slate-500'}`}>
-                {isIbime ? 'Informe Oficial de Gobernanza IBIME' : 'Informe Oficial de Junta Directiva'}
+              <div className={`text-[8px] uppercase font-bold tracking-wider ${isIbime ? 'text-[#E41B14]' : isCorporate ? 'text-blue-800' : 'text-slate-500'}`}>
+                {isIbime ? 'Informe Oficial de Gobernanza IBIME' : isCorporate ? 'Informe Ejecutivo de Dirección CEO' : 'Informe Oficial de Junta Directiva'}
               </div>
               <div className="text-xs font-mono font-black text-slate-950 mt-0.5">
                 FOLIO: EXP-BI-{folioNumber}
@@ -611,7 +706,9 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
           {/* BLOQUE FORMAL DE RÚBRICAS Y SELLOS OFICIALES PARA JUNTA DIRECTIVA */}
           <div className="pt-6 border-t-2 border-slate-400 print-avoid-break mt-6">
             <div className="text-[9px] font-black uppercase tracking-wider text-slate-700 text-center mb-3">
-              Constancia Oficial de Presentación, Visto Bueno y Aprobación de Junta Directiva
+              {isCorporate 
+                ? 'Constancia Oficial de Presentación, Visto Bueno y Dictamen de Dirección General Holding' 
+                : 'Constancia Oficial de Presentación, Visto Bueno y Aprobación de Junta Directiva'}
             </div>
 
             <div className="grid grid-cols-3 gap-8 text-center text-[9.5px]">
@@ -619,13 +716,17 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
                 <div className="h-14 border-b border-slate-900 mb-1 flex items-end justify-center">
                   {/* Espacio para rúbrica */}
                 </div>
-                <p className="font-bold text-slate-950">Presidencia del Consejo Directivo</p>
-                <p className="text-slate-500 text-[8.5px]">H. Junta de Gobierno / Patronato</p>
+                <p className="font-bold text-slate-950">
+                  {isCorporate ? 'Gerencia de Operaciones y Planta' : 'Presidencia del Consejo Directivo'}
+                </p>
+                <p className="text-slate-500 text-[8.5px]">
+                  {isCorporate ? 'Dirección Técnica y Mantenimiento' : 'H. Junta de Gobierno / Patronato'}
+                </p>
               </div>
 
               <div className="flex flex-col items-center justify-center">
                 <div className={`w-28 h-16 border border-dashed rounded flex flex-col items-center justify-center text-[7.5px] font-mono uppercase mb-1 p-1 ${
-                  isIbime ? 'border-[#E41B14]/50 bg-red-50/20 text-[#0F2744]' : 'border-slate-400 text-slate-400'
+                  isIbime ? 'border-[#E41B14]/50 bg-red-50/20 text-[#0F2744]' : isCorporate ? 'border-blue-400 bg-blue-50/20 text-blue-900' : 'border-slate-400 text-slate-400'
                 }`}>
                   {isIbime ? (
                     <>
@@ -635,27 +736,41 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
                       <span className="font-bold text-[7px] text-[#0F2744]">SELLO OFICIAL IBIME</span>
                       <span className="text-[6px] text-slate-500">CCT: 15PPR3322G</span>
                     </>
+                  ) : isCorporate ? (
+                    <>
+                      <span className="font-bold text-[7px] text-slate-800">SELLO CORPORATIVO B2B</span>
+                      <span className="text-[6px] text-slate-500">RFC: {cct}</span>
+                      <span className="text-[5.5px] text-slate-400">HOLDING DIRECCIÓN GENERAL</span>
+                    </>
                   ) : (
                     <span>SELLO INSTITUCIONAL</span>
                   )}
                 </div>
-                <p className="font-bold text-slate-950">Control Escolar y Finanzas</p>
-                <p className="text-slate-500 text-[8.5px]">Cotejo y Validez de Registros</p>
+                <p className="font-bold text-slate-950">
+                  {isCorporate ? 'Auditoría de Cumplimiento & Finanzas' : 'Control Escolar y Finanzas'}
+                </p>
+                <p className="text-slate-500 text-[8.5px]">
+                  {isCorporate ? 'Fiscalización y Certificación B2B' : 'Cotejo y Validez de Registros'}
+                </p>
               </div>
 
               <div>
                 <div className="h-14 border-b border-slate-900 mb-1 flex items-end justify-center">
                   {/* Espacio para rúbrica */}
                 </div>
-                <p className="font-bold text-slate-950">Dirección General</p>
-                <p className="text-slate-500 text-[8.5px]">Rúbrica y Aprobación Ejecutiva</p>
+                <p className="font-bold text-slate-950">
+                  {isCorporate ? 'Dirección General / CEO' : 'Dirección General'}
+                </p>
+                <p className="text-slate-500 text-[8.5px]">
+                  {isCorporate ? 'Rúbrica y Aprobación Ejecutiva Holding' : 'Rúbrica y Aprobación Ejecutiva'}
+                </p>
               </div>
             </div>
 
             <div className="mt-6 pt-2.5 border-t border-slate-200 text-center text-[8px] text-slate-500 flex justify-between items-center">
-              <span>{isIbime ? 'Instituto Bilingüe IBIME · Secretaría General y Consejo Directivo · https://ibime.edu.mx' : `${schoolName} · Sistema de Inteligencia Institucional`}</span>
+              <span>{isIbime ? 'Instituto Bilingüe IBIME · Secretaría General y Consejo Directivo · https://ibime.edu.mx' : isCorporate ? `${schoolName} · Suite de Inteligencia Corporativa B2B · Modo CEO` : `${schoolName} · Sistema de Inteligencia Institucional`}</span>
               <span className="font-bold">Emisión Oficial Certificada · Carácter Vinculante</span>
-              <span>Documento Confidencial para Uso Exclusivo de Junta Directiva</span>
+              <span>{isCorporate ? 'Documento Confidencial para Uso Exclusivo del Comité de Dirección CEO' : 'Documento Confidencial para Uso Exclusivo de Junta Directiva'}</span>
             </div>
           </div>
         </section>

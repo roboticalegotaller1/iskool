@@ -360,6 +360,81 @@ describe('🏢 SUITE: Sector Corporativo B2B & Cuentas CEO en ISkool', () => {
       expect(ceoCode).toContain("isCorporate={isCorporate}");
     });
   });
+
+  describe('6. Blindaje Antiforense B2B, Logotipos Vectoriales y Resolución de Consulta CEO', () => {
+    it('debe existir el archivo SVG nítido para cada una de las 3 corporaciones en public/brand/', async () => {
+      const fs = await import('fs');
+      const path = await import('path');
+
+      const bmwPath = path.resolve('public/brand/bmw_group_logo.svg');
+      const retailPath = path.resolve('public/brand/vanguardia_retail_logo.svg');
+      const techPath = path.resolve('public/brand/innovasoft_tech_logo.svg');
+
+      expect(fs.existsSync(bmwPath)).toBe(true);
+      expect(fs.existsSync(retailPath)).toBe(true);
+      expect(fs.existsSync(techPath)).toBe(true);
+
+      const bmwContent = fs.readFileSync(bmwPath, 'utf-8');
+      expect(bmwContent).toContain('<svg');
+      expect(bmwContent.toLowerCase()).toContain('bmw group');
+
+      const retailContent = fs.readFileSync(retailPath, 'utf-8');
+      expect(retailContent).toContain('<svg');
+      expect(retailContent.toLowerCase()).toContain('vanguardia');
+
+      const techContent = fs.readFileSync(techPath, 'utf-8');
+      expect(techContent).toContain('<svg');
+      expect(techContent.toLowerCase()).toContain('innovasoft');
+    });
+
+    it('las semillas de instituciones deben enlazar sus logotipos vectoriales oficiales correspondientes', () => {
+      const bmw = INSTITUTIONS_SEED.find(i => i.id === 'emp-bmw');
+      expect(bmw?.logoUrl).toBe('/brand/bmw_group_logo.svg');
+
+      const retail = INSTITUTIONS_SEED.find(i => i.id === 'emp-ventas');
+      expect(retail?.logoUrl).toBe('/brand/vanguardia_retail_logo.svg');
+
+      const tech = INSTITUTIONS_SEED.find(i => i.id === 'emp-tech');
+      expect(tech?.logoUrl).toBe('/brand/innovasoft_tech_logo.svg');
+    });
+
+    it('la consulta "¿a qué debo prestar atención esta semana?" bajo BMW debe resolver en radar estratégico B2B y CERO menciones de alumnos o colegiaturas', async () => {
+      const { executeAnalyticQuery } = await import('@/services/executiveAnalyticsEngine');
+
+      const sources = {
+        schoolId: 'emp-bmw',
+        isSuperUser: false,
+        institutionsList: INSTITUTIONS_SEED,
+        detailedStudents: DETAILED_STUDENTS_SEED,
+        campusesList: CAMPUSES_SEED,
+        groupsList: [],
+        attendanceList: [],
+        billingRecords: [],
+        teachersList: [],
+        staffPayroll: STAFF_PAYROLL_SEED
+      };
+
+      const result = executeAnalyticQuery('a que debo prestar atencion esta semana', sources);
+
+      expect(result.domain).toBe('STRATEGIC_CEO_RADAR');
+      expect(result.isCorporate).toBe(true);
+
+      // Verificación de aislamiento estricto: CERO contaminación de Elena Salazar o colegios
+      const resultText = JSON.stringify(result).toLowerCase();
+      expect(resultText).not.toContain('elena salazar');
+      expect(resultText).not.toContain('déficit de atención');
+      expect(resultText).not.toContain('deficit de atencion');
+      expect(resultText).not.toContain('1,900');
+      expect(resultText).not.toContain('colegiatura');
+      expect(resultText).not.toContain('secundaria laboratorio demo');
+
+      // Verificación de términos corporativos de alta dirección
+      expect(resultText).toContain('kuka');
+      expect(resultText).toContain('iso 45001');
+      expect(resultText).toContain('decisiones exclusivas del ceo');
+    });
+  });
 });
+
 
 

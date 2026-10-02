@@ -162,6 +162,7 @@ export interface Institution {
   isTestCase?: boolean;
   isIndependentTeachersNetwork?: boolean; // Identifica la institución especial de Profesores Independientes
   institution_type?: 'school' | 'corporate'; // Segmentación Institucional B2B
+  isCorporate?: boolean; // Alias para compatibilidad con módulos CEO y motores analíticos
   is_corporate_enterprise?: boolean; // Identifica empresas del sector corporativo / CEO
   corporate_industry?: 'automotive' | 'retail' | 'technology' | 'healthcare' | 'finance' | 'manufacturing' | 'other';
   tax_id?: string; // RFC o ID fiscal de la empresa
@@ -903,7 +904,8 @@ export interface DetailedStudent {
   curp?: string;
   enrollment_id?: string;
   gender?: string;
-  shift?: 'matutino' | 'vespertino' | 'completo';
+  shift?: 'matutino' | 'vespertino' | 'completo' | 'mixto';
+  career?: string; // Carrera técnica o especialidad académica / corporativa
   status: 'activo' | 'inactivo' | 'baja' | 'suspendido';
   previous_school?: string;
   photo_url?: string;
@@ -1720,3 +1722,4 @@ export interface OrganizationHolding {
 }
 
 export * from './teacherGamification';
+export * from './crm';

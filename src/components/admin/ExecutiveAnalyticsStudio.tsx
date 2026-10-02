@@ -53,6 +53,7 @@ import {
 import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useAuth } from '@/context/AuthContext';
 import { DETAILED_STUDENTS_SEED } from '@/store/seeds';
+import { CorporateOfficialLogo } from '@/components/brand/CorporateOfficialLogo';
 import { 
   isPlatformSuperUser, 
   resolveEffectiveSchoolId, 
@@ -337,24 +338,13 @@ export default function ExecutiveAnalyticsStudio({
     return institutionsList.find(inst => inst.id === selectedSchoolFilter) || institutionsList[0];
   }, [institutionsList, selectedSchoolFilter]);
 
+  const activeInstitutionName = activeInstitution?.name || 'ISkool';
+
   useEffect(() => {
     if (!isSuperUser && user?.school_id) {
       setSelectedSchoolFilter(user.school_id);
     }
   }, [isSuperUser, user]);
-
-  // Pool maestro unificado de estudiantes (estado activo + semillas del sistema)
-  const masterStudentsPool: DetailedStudent[] = useMemo(() => {
-    const pool: DetailedStudent[] = [...(detailedStudents || [])];
-    const existingIds = new Set(pool.map(s => s.id));
-    for (const seed of DETAILED_STUDENTS_SEED) {
-      if (!existingIds.has(seed.id)) {
-        pool.push(seed);
-        existingIds.add(seed.id);
-      }
-    }
-    return pool;
-  }, [detailedStudents]);
 
   // Estado del layout
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -390,6 +380,66 @@ export default function ExecutiveAnalyticsStudio({
     const reportSchool = (currentReport?.schoolName || '').toLowerCase();
     return sId.includes('ibime') || instName.includes('ibime') || instId.includes('ibime') || instSlug.includes('ibime') || reportSchool.includes('ibime');
   }, [selectedSchoolFilter, activeInstitution, currentReport]);
+
+  // Detección reactiva de identidad corporativa B2B
+  const isCorporate = useMemo(() => {
+    const sId = selectedSchoolFilter?.toLowerCase() || '';
+    const instName = (activeInstitution?.name || '').toLowerCase();
+    const instId = (activeInstitution?.id || '').toLowerCase();
+    const reportSchool = (currentReport?.schoolName || '').toLowerCase();
+    const reportId = (currentReport?.schoolId || '').toLowerCase();
+    return Boolean(
+      currentReport?.isCorporate ||
+      sId.startsWith('emp-') ||
+      instId.startsWith('emp-') ||
+      reportId.startsWith('emp-') ||
+      activeInstitution?.isCorporate ||
+      (activeInstitution as any)?.is_corporate_enterprise ||
+      instName.includes('bmw') ||
+      instName.includes('nexus') ||
+      instName.includes('vanguardia') ||
+      instName.includes('retail') ||
+      instName.includes('innovasoft') ||
+      reportSchool.includes('bmw') ||
+      reportSchool.includes('nexus') ||
+      reportSchool.includes('vanguardia') ||
+      reportSchool.includes('retail') ||
+      reportSchool.includes('innovasoft')
+    );
+  }, [selectedSchoolFilter, activeInstitution, currentReport]);
+
+  const isBmw = isCorporate && ((activeInstitution?.id === 'emp-bmw') || (selectedSchoolFilter === 'emp-bmw') || (currentReport?.schoolId === 'emp-bmw') || (activeInstitution?.name || '').toLowerCase().includes('bmw') || (currentReport?.schoolName || '').toLowerCase().includes('bmw'));
+  const isRetail = isCorporate && ((activeInstitution?.id === 'emp-ventas') || (selectedSchoolFilter === 'emp-ventas') || (currentReport?.schoolId === 'emp-ventas') || (activeInstitution?.name || '').toLowerCase().includes('vanguardia') || (currentReport?.schoolName || '').toLowerCase().includes('vanguardia'));
+  const isTech = isCorporate && ((activeInstitution?.id === 'emp-tech') || (selectedSchoolFilter === 'emp-tech') || (currentReport?.schoolId === 'emp-tech') || (activeInstitution?.name || '').toLowerCase().includes('innovasoft') || (currentReport?.schoolName || '').toLowerCase().includes('innovasoft'));
+
+  const corporateLogoUrl = isBmw 
+    ? '/brand/bmw_group_logo.svg' 
+    : (isRetail ? '/brand/vanguardia_retail_logo.svg' : '/brand/innovasoft_tech_logo.svg');
+
+  // Pool maestro unificado de colaboradores / estudiantes (aislamiento estricto para corporate)
+  const masterStudentsPool: DetailedStudent[] = useMemo(() => {
+    let pool: DetailedStudent[] = [...(detailedStudents || [])];
+    const existingIds = new Set(pool.map(s => s.id));
+    for (const seed of DETAILED_STUDENTS_SEED) {
+      if (!existingIds.has(seed.id)) {
+        pool.push(seed);
+        existingIds.add(seed.id);
+      }
+    }
+
+    if (isCorporate) {
+      const activeCorpId = selectedSchoolFilter || activeInstitution?.id || currentReport?.schoolId;
+      return pool.filter(s => {
+        if (s.school_id && activeCorpId && s.school_id === activeCorpId) return true;
+        if ((activeCorpId === 'emp-bmw' || isBmw) && (s.campus_id?.includes('bmw') || s.id.startsWith('std-bmw'))) return true;
+        if ((activeCorpId === 'emp-ventas' || isRetail) && (s.campus_id?.includes('ventas') || s.id.startsWith('std-corp-sales'))) return true;
+        if ((activeCorpId === 'emp-tech' || isTech) && (s.campus_id?.includes('tech') || s.id.startsWith('std-corp-tech'))) return true;
+        return false;
+      });
+    }
+
+    return pool;
+  }, [detailedStudents, isCorporate, isBmw, isRetail, isTech, selectedSchoolFilter, activeInstitution, currentReport]);
 
   // Indicador de si el reporte actual contiene filas de alumnos/expedientes
   const hasStudentRows = useMemo(() => {
@@ -1444,109 +1494,135 @@ export default function ExecutiveAnalyticsStudio({
                     </div>
 
                     <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0 ${
-                      isOverdue 
-                        ? 'bg-rose-50 border border-rose-200 text-rose-700' 
-                        : 'bg-emerald-50 border border-emerald-200 text-emerald-700'
+                      isCorporate
+                        ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
+                        : isOverdue 
+                          ? 'bg-rose-50 border border-rose-200 text-rose-700' 
+                          : 'bg-emerald-50 border border-emerald-200 text-emerald-700'
                     }`}>
-                      {status}
+                      {isCorporate ? 'Activo · Nómina Vigente' : status}
                     </span>
                   </div>
 
-                  {/* Detalle Exigible / Cobro Homologado */}
-                  {hasDebtInfo && (
-                    <div className={`p-2.5 rounded-lg border text-xs space-y-1 ${
-                      isIbime 
-                        ? 'bg-rose-50/60 border-rose-200 text-rose-950' 
-                        : 'bg-amber-50/70 border-amber-200 text-amber-950'
-                    }`}>
+                  {isCorporate ? (
+                    /* Tarjeta Ejecutiva de Colaborador Corporativo B2B */
+                    <div className="text-[11px] text-slate-600 space-y-1.5 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 flex items-center gap-1">
-                          <Receipt className="h-3 w-3" />
-                          <span>Adeudo Exigible</span>
-                        </span>
-                        {debtAmount > 0 && (
-                          <span className="font-mono font-black text-rose-700 text-xs">
-                            {formatMXN(debtAmount)}
-                          </span>
-                        )}
+                        <span className="text-slate-500 font-medium">Puesto / Función:</span>
+                        <span className="font-semibold text-slate-800 truncate max-w-[170px]">{row.position || row.career || levelGrade || 'Especialista Técnico Industrial'}</span>
                       </div>
-                      {concept && (
-                        <p className="text-[11px] font-medium leading-snug text-slate-800">
-                          {concept}
-                        </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 font-medium">Planta / Sede:</span>
+                        <span className="font-medium text-slate-700 truncate max-w-[170px]">{campus || activeInstitutionName}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 font-medium">Capacitación / Horas:</span>
+                        <span className="font-semibold text-indigo-700">120 hrs técnicas</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 font-medium">Estatus Nómina:</span>
+                        <span className="font-bold text-emerald-700">Vigente</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Detalle Exigible / Cobro Homologado */}
+                      {hasDebtInfo && (
+                        <div className={`p-2.5 rounded-lg border text-xs space-y-1 ${
+                          isIbime 
+                            ? 'bg-rose-50/60 border-rose-200 text-rose-950' 
+                            : 'bg-amber-50/70 border-amber-200 text-amber-950'
+                        }`}>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 flex items-center gap-1">
+                              <Receipt className="h-3 w-3" />
+                              <span>Adeudo Exigible</span>
+                            </span>
+                            {debtAmount > 0 && (
+                              <span className="font-mono font-black text-rose-700 text-xs">
+                                {formatMXN(debtAmount)}
+                              </span>
+                            )}
+                          </div>
+                          {concept && (
+                            <p className="text-[11px] font-medium leading-snug text-slate-800">
+                              {concept}
+                            </p>
+                          )}
+                          <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono pt-0.5">
+                            {receiptFolio && <span>Folio: <strong className="text-slate-700">{receiptFolio}</strong></span>}
+                            {dueDate && <span>Vence: <strong className="text-slate-700">{dueDate}</strong></span>}
+                          </div>
+                        </div>
                       )}
-                      <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono pt-0.5">
-                        {receiptFolio && <span>Folio: <strong className="text-slate-700">{receiptFolio}</strong></span>}
-                        {dueDate && <span>Vence: <strong className="text-slate-700">{dueDate}</strong></span>}
-                      </div>
-                    </div>
-                  )}
 
-                  {/* Beca Institucional autorizada (> 0%) */}
-                  {scholarshipNotes && (
-                    <div className="p-2.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 flex items-center gap-1">
-                          <GraduationCap className="h-3.5 w-3.5" />
-                          <span>Beca Institucional Autorizada</span>
-                        </span>
-                        {scholarshipPercentage > 0 && (
-                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-indigo-100 border border-indigo-200 rounded text-indigo-800">
-                            🏷️ {scholarshipPercentage}% DCTO
-                          </span>
+                      {/* Beca Institucional autorizada (> 0%) */}
+                      {scholarshipNotes && (
+                        <div className="p-2.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 flex items-center gap-1">
+                              <GraduationCap className="h-3.5 w-3.5" />
+                              <span>Beca Institucional Autorizada</span>
+                            </span>
+                            {scholarshipPercentage > 0 && (
+                              <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-indigo-100 border border-indigo-200 rounded text-indigo-800">
+                                🏷️ {scholarshipPercentage}% DCTO
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] font-medium leading-snug text-slate-700">
+                            {scholarshipNotes}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Ficha Médica / Alergia destacada */}
+                      {(medicalNotes || isAllergySearch || (bloodType && bloodType !== 'N/D')) && (
+                        <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 text-xs space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 flex items-center gap-1">
+                              <AlertTriangle className="h-3 w-3" />
+                              <span>Alergia / Ficha Médica</span>
+                            </span>
+                            {bloodType && bloodType !== 'N/D' && (
+                              <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-rose-100 border border-rose-200 rounded text-rose-800">
+                                🩸 {bloodType}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] font-medium leading-snug text-rose-800">
+                            {medicalNotes || 'Diagnóstico clínico registrado en expediente escolar.'}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Filiación Familiar & Contacto de Emergencia */}
+                      <div className="text-[11px] text-slate-600 space-y-1 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500">Tutor:</span>
+                          <span className="font-medium text-slate-800 truncate max-w-[170px]">{tutor}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500">Emergencia:</span>
+                          <span className={`font-medium font-mono ${isIbime ? 'text-[#0F2744]' : 'text-indigo-700'}`}>{phone}</span>
+                        </div>
+                        {age && age !== 'N/D' && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-500">Edad:</span>
+                            <span className="font-medium text-slate-800">{age} {birthDate ? `(${birthDate})` : ''}</span>
+                          </div>
+                        )}
+                        {campus && (
+                          <div className="flex items-center justify-between text-[10px]">
+                            <span className="text-slate-500">Plantel:</span>
+                            <span className="font-medium text-slate-600 truncate max-w-[170px]">{campus}</span>
+                          </div>
                         )}
                       </div>
-                      <p className="text-[11px] font-medium leading-snug text-slate-700">
-                        {scholarshipNotes}
-                      </p>
-                    </div>
+                    </>
                   )}
 
-                  {/* Ficha Médica / Alergia destacada */}
-                  {(medicalNotes || isAllergySearch || (bloodType && bloodType !== 'N/D')) && (
-                    <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-900 text-xs space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 flex items-center gap-1">
-                          <AlertTriangle className="h-3 w-3" />
-                          <span>Alergia / Ficha Médica</span>
-                        </span>
-                        {bloodType && bloodType !== 'N/D' && (
-                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 bg-rose-100 border border-rose-200 rounded text-rose-800">
-                            🩸 {bloodType}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[11px] font-medium leading-snug text-rose-800">
-                        {medicalNotes || 'Diagnóstico clínico registrado en expediente escolar.'}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Filiación Familiar & Contacto de Emergencia */}
-                  <div className="text-[11px] text-slate-600 space-y-1 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">Tutor:</span>
-                      <span className="font-medium text-slate-800 truncate max-w-[170px]">{tutor}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">Emergencia:</span>
-                      <span className={`font-medium font-mono ${isIbime ? 'text-[#0F2744]' : 'text-indigo-700'}`}>{phone}</span>
-                    </div>
-                    {age && age !== 'N/D' && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-500">Edad:</span>
-                        <span className="font-medium text-slate-800">{age} {birthDate ? `(${birthDate})` : ''}</span>
-                      </div>
-                    )}
-                    {campus && (
-                      <div className="flex items-center justify-between text-[10px]">
-                        <span className="text-slate-500">Plantel:</span>
-                        <span className="font-medium text-slate-600 truncate max-w-[170px]">{campus}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Botón de acción Abrir Expediente 360° */}
+                  {/* Botón de acción */}
                   <button
                     type="button"
                     onClick={(e) => {
@@ -1554,12 +1630,14 @@ export default function ExecutiveAnalyticsStudio({
                       handleOpenStudentExpediente(studentId, studentName);
                     }}
                     className={`w-full py-2 rounded-lg text-white text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer mt-1 shadow-sm ${
-                      isIbime 
-                        ? 'bg-[#E41B14] hover:bg-[#C01D0C]' 
-                        : 'bg-indigo-600 hover:bg-indigo-700'
+                      isCorporate
+                        ? 'bg-slate-900 hover:bg-slate-800'
+                        : isIbime 
+                          ? 'bg-[#E41B14] hover:bg-[#C01D0C]' 
+                          : 'bg-indigo-600 hover:bg-indigo-700'
                     }`}
                   >
-                    <span>Abrir Expediente 360°</span>
+                    <span>{isCorporate ? 'Abrir Ficha de Colaborador' : 'Abrir Expediente 360°'}</span>
                     <ExternalLink className="h-3 w-3" />
                   </button>
                 </div>
@@ -1806,7 +1884,7 @@ export default function ExecutiveAnalyticsStudio({
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] text-slate-500 bg-slate-200/60 px-2 py-0.5 rounded font-mono hidden sm:inline">
-                IA Pedagógica & Analítica
+                {isCorporate ? 'Inteligencia Corporativa B2B · Visión CEO' : 'IA Pedagógica & Analítica'}
               </span>
               <button
                 onClick={() => setIsSidebarOpen(false)}
@@ -1832,7 +1910,9 @@ export default function ExecutiveAnalyticsStudio({
             {isProcessing ? (
               <div className="flex items-center gap-2 text-slate-600 p-3 bg-slate-50 rounded-xl animate-pulse border border-slate-200">
                 <div className="h-3 w-3 rounded-full bg-indigo-600 animate-ping" />
-                <span className="text-xs">Consultando base de datos escolar local...</span>
+                <span className="text-xs">
+                  {isCorporate ? 'Consultando telemetría corporativa y holding B2B...' : 'Consultando base de datos escolar local...'}
+                </span>
               </div>
             ) : currentReport ? (
               <div className="flex flex-col items-start">
@@ -2081,43 +2161,98 @@ export default function ExecutiveAnalyticsStudio({
               </button>
             </div>
 
-            <span className="text-[11px] text-slate-500 font-medium">
-              Institución: <span className="text-slate-900 font-bold">{currentReport?.schoolName || activeInstitution?.name}</span>
-            </span>
+            <div className="flex items-center gap-2">
+              {isCorporate && (
+                <div className="h-6 w-16 bg-white border border-slate-200 rounded p-0.5 flex items-center justify-center shrink-0 shadow-2xs">
+                  <CorporateOfficialLogo 
+                    enterpriseId={isBmw ? 'emp-bmw' : isRetail ? 'emp-ventas' : 'emp-tech'} 
+                    size={20} 
+                    variant="horizontal" 
+                  />
+                </div>
+              )}
+              <span className="text-[11px] text-slate-500 font-medium">
+                {isCorporate ? 'Empresa B2B:' : 'Institución:'}{' '}
+                <span className="text-slate-900 font-bold">{currentReport?.schoolName || activeInstitution?.name}</span>
+              </span>
+            </div>
           </div>
 
           {/* CONTENIDO DEL REPORTE */}
           <div className={`flex-1 overflow-y-auto ${viewport.classes.containerPadding} ${viewport.classes.sectionSpacing} custom-scrollbar`}>
             
-            {/* Si no hay reporte cargado: Estado vacío idéntico al de la Imagen 2 */}
+            {/* Si no hay reporte cargado: Estado vacío adaptado al contexto */}
             {!currentReport ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-8">
-                <div className="h-16 w-16 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 mb-4">
-                  <BarChart3 className="h-8 w-8 text-indigo-600" />
+                <div className="h-16 w-20 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-500 mb-4 p-1">
+                  {isCorporate ? (
+                    <CorporateOfficialLogo 
+                      enterpriseId={isBmw ? 'emp-bmw' : isRetail ? 'emp-ventas' : 'emp-tech'} 
+                      size={44} 
+                      variant="horizontal" 
+                    />
+                  ) : (
+                    <BarChart3 className="h-8 w-8 text-indigo-600" />
+                  )}
                 </div>
-                <h3 className="text-base font-bold text-slate-900 mb-1">El reporte aparecerá aquí</h3>
+                <h3 className="text-base font-bold text-slate-900 mb-1">
+                  {isCorporate ? 'Tablero de Control Ejecutivo del CEO' : 'El reporte aparecerá aquí'}
+                </h3>
                 <p className="text-xs text-slate-500 max-w-sm mb-6">
-                  Escribe una instrucción en el chat o usa el micrófono para ver el resultado.
+                  {isCorporate 
+                    ? 'Selecciona una directriz ejecutiva o formula una consulta estratégica para la empresa.' 
+                    : 'Escribe una instrucción en el chat o usa el micrófono para ver el resultado.'}
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center max-w-md">
-                  <button
-                    onClick={() => handleExecuteQuery('Estudiantes con adeudo activo por nivel y monto pendiente')}
-                    className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs text-slate-700 shadow-xs transition"
-                  >
-                    Estudiantes con adeudo activo
-                  </button>
-                  <button
-                    onClick={() => handleExecuteQuery('Comparativa de ingresos y nómina mes a mes')}
-                    className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs text-slate-700 shadow-xs transition"
-                  >
-                    Comparativa entre meses
-                  </button>
-                  <button
-                    onClick={() => handleExecuteQuery('Asistencias y retardos del colegio')}
-                    className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs text-slate-700 shadow-xs transition"
-                  >
-                    Control de asistencias
-                  </button>
+                  {isCorporate ? (
+                    <>
+                      <button
+                        onClick={() => handleExecuteQuery('¿A qué debo prestar atención esta semana?')}
+                        className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition"
+                      >
+                        ¿A qué debo prestar atención esta semana?
+                      </button>
+                      <button
+                        onClick={() => handleExecuteQuery('¿Cuál es la nómina quincenal de los colaboradores técnicos?')}
+                        className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs text-slate-700 shadow-xs transition font-semibold"
+                      >
+                        Nómina de colaboradores
+                      </button>
+                      <button
+                        onClick={() => handleExecuteQuery('Directorio oficial de colaboradores y especialistas de planta')}
+                        className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs text-slate-700 shadow-xs transition font-semibold"
+                      >
+                        Directorio de colaboradores
+                      </button>
+                      <button
+                        onClick={() => handleExecuteQuery('Programas de capacitación industrial y certificaciones')}
+                        className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs text-slate-700 shadow-xs transition font-semibold"
+                      >
+                        Programas y certificaciones B2B
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => handleExecuteQuery('Estudiantes con adeudo activo por nivel y monto pendiente')}
+                        className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs text-slate-700 shadow-xs transition"
+                      >
+                        Estudiantes con adeudo activo
+                      </button>
+                      <button
+                        onClick={() => handleExecuteQuery('Comparativa de ingresos y nómina mes a mes')}
+                        className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs text-slate-700 shadow-xs transition"
+                      >
+                        Comparativa entre meses
+                      </button>
+                      <button
+                        onClick={() => handleExecuteQuery('Asistencias y retardos del colegio')}
+                        className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-xs text-slate-700 shadow-xs transition"
+                      >
+                        Control de asistencias
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ) : (
@@ -2152,9 +2287,11 @@ export default function ExecutiveAnalyticsStudio({
                             <span className={`text-[10px] px-2 py-0.5 rounded-md font-mono font-bold border ${
                               isIbime 
                                 ? 'bg-[#E41B14]/25 text-red-200 border-[#E41B14]/40' 
+                                : isCorporate
+                                ? 'bg-blue-500/20 text-cyan-300 border-blue-400/40'
                                 : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
                             }`}>
-                              Inteligencia Pedagógica · 0 Tokens
+                              {isCorporate ? 'Inteligencia Corporativa B2B · Modo CEO · 0 Tokens' : 'Inteligencia Pedagógica · 0 Tokens'}
                             </span>
                           </div>
                           <button
@@ -2486,7 +2623,11 @@ export default function ExecutiveAnalyticsStudio({
             {/* Header del Drawer */}
             <div className="flex items-center justify-between border-b border-slate-200 pb-4 mb-4">
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-xl bg-indigo-100 border border-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-lg">
+                <div className={`h-12 w-12 rounded-xl flex items-center justify-center font-bold text-lg ${
+                  isCorporate
+                    ? 'bg-slate-900 border border-slate-700 text-amber-400'
+                    : 'bg-indigo-100 border border-indigo-200 text-indigo-700'
+                }`}>
                   {selectedStudentForDrawer.student.first_name[0]}{selectedStudentForDrawer.student.last_name_1[0]}
                 </div>
                 <div>
@@ -2494,12 +2635,15 @@ export default function ExecutiveAnalyticsStudio({
                     {selectedStudentForDrawer.student.first_name} {selectedStudentForDrawer.student.last_name_1}
                   </h2>
                   <p className="text-xs text-slate-500">
-                    {selectedStudentForDrawer.student.level.toUpperCase()} · {selectedStudentForDrawer.student.grade} Grupo {selectedStudentForDrawer.student.group_id || 'A'}
+                    {isCorporate 
+                      ? (selectedStudentForDrawer.student.career || 'Especialista Técnico Industrial · Planta SLP')
+                      : `${selectedStudentForDrawer.student.level.toUpperCase()} · ${selectedStudentForDrawer.student.grade} Grupo ${selectedStudentForDrawer.student.group_id || 'A'}`
+                    }
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {canDeleteStudent && (
+                {canDeleteStudent && !isCorporate && (
                   <button 
                     type="button"
                     onClick={() => setIsConfirmDeleteOpen(true)}
@@ -2519,122 +2663,188 @@ export default function ExecutiveAnalyticsStudio({
               </div>
             </div>
 
-            {/* Resumen Financiero y Asistencias */}
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
-                <span className="text-[10px] text-slate-500 uppercase font-semibold">Adeudo Total</span>
-                <p className={`text-lg font-black ${selectedStudentForDrawer.totalDebt > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
-                  {formatMXN(selectedStudentForDrawer.totalDebt)}
-                </p>
-                <span className="text-[10px] text-slate-500">{selectedStudentForDrawer.billingRecords.filter(b => b.status !== 'paid').length} recibos pendientes</span>
-              </div>
-
-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
-                <span className="text-[10px] text-slate-500 uppercase font-semibold">Asistencia</span>
-                <p className="text-lg font-black text-indigo-600">
-                  {selectedStudentForDrawer.attendanceStats.attendanceRate.toFixed(1)}%
-                </p>
-                <span className="text-[10px] text-slate-500">
-                  {selectedStudentForDrawer.attendanceStats.faltas} faltas / {selectedStudentForDrawer.attendanceStats.retardos} retardos
-                </span>
-              </div>
-            </div>
-
-            {/* Filiación y Contactos */}
-            <div className="space-y-3 mb-6 text-xs bg-slate-50 p-4 rounded-xl border border-slate-200">
-              <h4 className="font-bold text-slate-800 uppercase text-[11px] tracking-wider mb-2">Datos Generales y Filiación</h4>
-              <div className="grid grid-cols-2 gap-2.5 text-slate-700">
-                <div>
-                  <span className="text-slate-500 block text-[10px]">Edad Calculada:</span>
-                  <span className="font-bold text-emerald-700 text-xs">
-                    {selectedStudentForDrawer.student.birth_date 
-                      ? `${2026 - new Date(selectedStudentForDrawer.student.birth_date).getFullYear()} Años Cumplidos`
-                      : '7 Años'}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block text-[10px]">Fecha de Nacimiento:</span>
-                  <span className="font-semibold text-slate-900">
-                    {selectedStudentForDrawer.student.birth_date 
-                      ? new Date(selectedStudentForDrawer.student.birth_date).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })
-                      : '10 de Mayo de 2019'}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block text-[10px]">CURP:</span>
-                  <span className="font-mono font-semibold text-slate-900">{selectedStudentForDrawer.student.curp || 'N/D'}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block text-[10px]">Matrícula:</span>
-                  <span className="font-mono font-semibold text-slate-900">{selectedStudentForDrawer.student.enrollment_id || 'MAT-2026'}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block text-[10px]">Plantel y Turno:</span>
-                  <span className="font-semibold text-slate-900">
-                    {selectedStudentForDrawer.student.campus_name || 'Plantel Principal'} ({selectedStudentForDrawer.student.shift || 'Matutino'})
-                  </span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block text-[10px]">Tutor Responsable:</span>
-                  <span className="font-semibold text-slate-900">{selectedStudentForDrawer.student.tutor_name || selectedStudentForDrawer.student.father_name || 'Tutor registrado'}</span>
-                </div>
-                <div className="col-span-2">
-                  <span className="text-slate-500 block text-[10px]">Teléfono de Contacto Familiar:</span>
-                  <span className="font-semibold text-emerald-700 text-xs flex items-center gap-1.5">
-                    <Phone className="h-3 w-3" />
-                    {selectedStudentForDrawer.student.emergency_contact_phone || selectedStudentForDrawer.student.phone || '55-4160-8800'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Observaciones de Salud y Pedagógicas */}
-            {(selectedStudentForDrawer.student.medical_notes || selectedStudentForDrawer.student.academic_notes) && (
-              <div className="space-y-2.5 mb-6 text-xs bg-slate-50 p-4 rounded-xl border border-slate-200">
-                <h4 className="font-bold text-slate-800 uppercase text-[11px] tracking-wider">Ficha Médica y Pedagógica</h4>
-                {selectedStudentForDrawer.student.medical_notes && (
-                  <div>
-                    <span className="text-amber-700 font-semibold block text-[10px]">Salud y Alergias:</span>
-                    <p className="text-slate-700 text-[11px] mt-0.5">{selectedStudentForDrawer.student.medical_notes}</p>
+            {isCorporate ? (
+              /* Vista Ejecutiva Corporativa del Colaborador B2B */
+              <div className="flex-1 flex flex-col">
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
+                    <span className="text-[10px] text-slate-500 uppercase font-semibold">Horas Capacitación</span>
+                    <p className="text-lg font-black text-indigo-600">120 hrs</p>
+                    <span className="text-[10px] text-emerald-600 font-semibold">100% Cumplimiento ISO</span>
                   </div>
-                )}
-                {selectedStudentForDrawer.student.academic_notes && (
-                  <div className="pt-2 border-t border-slate-200">
-                    <span className="text-indigo-700 font-semibold block text-[10px]">Desempeño Académico:</span>
-                    <p className="text-slate-700 text-[11px] mt-0.5">{selectedStudentForDrawer.student.academic_notes}</p>
-                  </div>
-                )}
-              </div>
-            )}
 
-            {/* Recibos de Cobranza del Alumno */}
-            <div className="space-y-2 mb-6 flex-1">
-              <h4 className="font-bold text-slate-800 uppercase text-[11px] tracking-wider">Estado de Cuenta</h4>
-              <div className="space-y-2">
-                {selectedStudentForDrawer.billingRecords.length === 0 ? (
-                  <p className="text-xs text-slate-500 italic">No hay cargos registrados para este estudiante.</p>
-                ) : (
-                  selectedStudentForDrawer.billingRecords.map((b) => (
-                    <div key={b.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
-                      <div>
-                        <p className="font-bold text-slate-900">{b.concept}</p>
-                        <p className="text-[11px] text-slate-500">Vencimiento: {b.dueDate}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-mono font-bold text-slate-900">{formatMXN(Number(b.amount))}</p>
-                        <span className={`text-[10px] font-bold uppercase ${b.status === 'paid' ? 'text-emerald-700' : 'text-rose-700'}`}>
-                          {b.status === 'paid' ? 'Pagado' : 'Pendiente'}
-                        </span>
-                      </div>
+                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
+                    <span className="text-[10px] text-slate-500 uppercase font-semibold">Evaluación Técnica</span>
+                    <p className="text-lg font-black text-emerald-600">98.5%</p>
+                    <span className="text-[10px] text-slate-500">Auditoría Acreditada</span>
+                  </div>
+                </div>
+
+                <div className="space-y-3 mb-6 text-xs bg-slate-50 p-4 rounded-xl border border-slate-200">
+                  <h4 className="font-bold text-slate-800 uppercase text-[11px] tracking-wider mb-2">Ficha de Perfil Profesional y Técnico</h4>
+                  <div className="grid grid-cols-2 gap-2.5 text-slate-700">
+                    <div>
+                      <span className="text-slate-500 block text-[10px]">No. Empleado:</span>
+                      <span className="font-mono font-bold text-slate-900 text-xs">{selectedStudentForDrawer.student.enrollment_id || 'COLAB-2026'}</span>
                     </div>
-                  ))
-                )}
+                    <div>
+                      <span className="text-slate-500 block text-[10px]">Puesto / Función:</span>
+                      <span className="font-semibold text-slate-900">{selectedStudentForDrawer.student.career || 'Especialista Técnico de Operaciones'}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[10px]">Planta / Sede:</span>
+                      <span className="font-semibold text-slate-900">{selectedStudentForDrawer.student.campus_name || activeInstitutionName}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[10px]">Estatus de Nómina:</span>
+                      <span className="font-bold text-emerald-700 text-xs">Vigente / Activo</span>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="text-slate-500 block text-[10px]">Teléfono Corporativo / Contacto:</span>
+                      <span className="font-semibold text-slate-800 text-xs flex items-center gap-1.5">
+                        <Phone className="h-3 w-3" />
+                        {selectedStudentForDrawer.student.emergency_contact_phone || selectedStudentForDrawer.student.phone || '444-800-0000'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2.5 mb-6 text-xs bg-slate-50 p-4 rounded-xl border border-slate-200">
+                  <h4 className="font-bold text-slate-800 uppercase text-[11px] tracking-wider">Acreditaciones y Seguridad Industrial</h4>
+                  <div>
+                    <span className="text-indigo-700 font-semibold block text-[10px]">Certificaciones Técnicas:</span>
+                    <p className="text-slate-700 text-[11px] mt-0.5">
+                      {selectedStudentForDrawer.student.academic_notes || 'Operador Certificado en Robótica Industrial KUKA KR QUANTEC y Seguridad Eléctrica NFPA 70E.'}
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-slate-200">
+                    <span className="text-emerald-700 font-semibold block text-[10px]">Protocolo de Seguridad Ocupacional:</span>
+                    <p className="text-slate-700 text-[11px] mt-0.5">
+                      Acreditación vigente de Norma ISO 45001 y Protocolo Cero Accidentes en Planta.
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <>
+                {/* Resumen Financiero y Asistencias */}
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
+                    <span className="text-[10px] text-slate-500 uppercase font-semibold">Adeudo Total</span>
+                    <p className={`text-lg font-black ${selectedStudentForDrawer.totalDebt > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                      {formatMXN(selectedStudentForDrawer.totalDebt)}
+                    </p>
+                    <span className="text-[10px] text-slate-500">{selectedStudentForDrawer.billingRecords.filter(b => b.status !== 'paid').length} recibos pendientes</span>
+                  </div>
+
+                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1">
+                    <span className="text-[10px] text-slate-500 uppercase font-semibold">Asistencia</span>
+                    <p className="text-lg font-black text-indigo-600">
+                      {selectedStudentForDrawer.attendanceStats.attendanceRate.toFixed(1)}%
+                    </p>
+                    <span className="text-[10px] text-slate-500">
+                      {selectedStudentForDrawer.attendanceStats.faltas} faltas / {selectedStudentForDrawer.attendanceStats.retardos} retardos
+                    </span>
+                  </div>
+                </div>
+
+                {/* Filiación y Contactos */}
+                <div className="space-y-3 mb-6 text-xs bg-slate-50 p-4 rounded-xl border border-slate-200">
+                  <h4 className="font-bold text-slate-800 uppercase text-[11px] tracking-wider mb-2">Datos Generales y Filiación</h4>
+                  <div className="grid grid-cols-2 gap-2.5 text-slate-700">
+                    <div>
+                      <span className="text-slate-500 block text-[10px]">Edad Calculada:</span>
+                      <span className="font-bold text-emerald-700 text-xs">
+                        {selectedStudentForDrawer.student.birth_date 
+                          ? `${2026 - new Date(selectedStudentForDrawer.student.birth_date).getFullYear()} Años Cumplidos`
+                          : '7 Años'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[10px]">Fecha de Nacimiento:</span>
+                      <span className="font-semibold text-slate-900">
+                        {selectedStudentForDrawer.student.birth_date 
+                          ? new Date(selectedStudentForDrawer.student.birth_date).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })
+                          : '10 de Mayo de 2019'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[10px]">CURP:</span>
+                      <span className="font-mono font-semibold text-slate-900">{selectedStudentForDrawer.student.curp || 'N/D'}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[10px]">Matrícula:</span>
+                      <span className="font-mono font-semibold text-slate-900">{selectedStudentForDrawer.student.enrollment_id || 'MAT-2026'}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[10px]">Plantel y Turno:</span>
+                      <span className="font-semibold text-slate-900">
+                        {selectedStudentForDrawer.student.campus_name || 'Plantel Principal'} ({selectedStudentForDrawer.student.shift || 'Matutino'})
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[10px]">Tutor Responsable:</span>
+                      <span className="font-semibold text-slate-900">{selectedStudentForDrawer.student.tutor_name || selectedStudentForDrawer.student.father_name || 'Tutor registrado'}</span>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="text-slate-500 block text-[10px]">Teléfono de Contacto Familiar:</span>
+                      <span className="font-semibold text-emerald-700 text-xs flex items-center gap-1.5">
+                        <Phone className="h-3 w-3" />
+                        {selectedStudentForDrawer.student.emergency_contact_phone || selectedStudentForDrawer.student.phone || '55-4160-8800'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Observaciones de Salud y Pedagógicas */}
+                {(selectedStudentForDrawer.student.medical_notes || selectedStudentForDrawer.student.academic_notes) && (
+                  <div className="space-y-2.5 mb-6 text-xs bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <h4 className="font-bold text-slate-800 uppercase text-[11px] tracking-wider">Ficha Médica y Pedagógica</h4>
+                    {selectedStudentForDrawer.student.medical_notes && (
+                      <div>
+                        <span className="text-amber-700 font-semibold block text-[10px]">Salud y Alergias:</span>
+                        <p className="text-slate-700 text-[11px] mt-0.5">{selectedStudentForDrawer.student.medical_notes}</p>
+                      </div>
+                    )}
+                    {selectedStudentForDrawer.student.academic_notes && (
+                      <div className="pt-2 border-t border-slate-200">
+                        <span className="text-indigo-700 font-semibold block text-[10px]">Desempeño Académico:</span>
+                        <p className="text-slate-700 text-[11px] mt-0.5">{selectedStudentForDrawer.student.academic_notes}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Recibos de Cobranza del Alumno */}
+                <div className="space-y-2 mb-6 flex-1">
+                  <h4 className="font-bold text-slate-800 uppercase text-[11px] tracking-wider">Estado de Cuenta</h4>
+                  <div className="space-y-2">
+                    {selectedStudentForDrawer.billingRecords.length === 0 ? (
+                      <p className="text-xs text-slate-500 italic">No hay cargos registrados para este estudiante.</p>
+                    ) : (
+                      selectedStudentForDrawer.billingRecords.map((b) => (
+                        <div key={b.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
+                          <div>
+                            <p className="font-bold text-slate-900">{b.concept}</p>
+                            <p className="text-[11px] text-slate-500">Vencimiento: {b.dueDate}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-mono font-bold text-slate-900">{formatMXN(Number(b.amount))}</p>
+                            <span className={`text-[10px] font-bold uppercase ${b.status === 'paid' ? 'text-emerald-700' : 'text-rose-700'}`}>
+                              {b.status === 'paid' ? 'Pagado' : 'Pendiente'}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* Acciones del Expediente */}
             <div className="space-y-2 pt-2 border-t border-slate-200">
-              {canDeleteStudent && (
+              {canDeleteStudent && !isCorporate && (
                 <button
                   type="button"
                   onClick={() => setIsConfirmDeleteOpen(true)}
@@ -2649,7 +2859,7 @@ export default function ExecutiveAnalyticsStudio({
                 onClick={() => setShowDrawer(false)}
                 className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-800 border border-slate-200 transition cursor-pointer"
               >
-                Cerrar Expediente
+                {isCorporate ? 'Cerrar Ficha de Colaborador' : 'Cerrar Expediente'}
               </button>
             </div>
           </div>
@@ -2766,9 +2976,9 @@ export default function ExecutiveAnalyticsStudio({
         <ExecutiveBoardReportDocument 
           report={currentReport}
           institution={{
-            name: isIbime ? 'INSTITUTO BILINGÜE IBIME' : (currentReport?.schoolName || activeInstitution?.name || 'Colegio ISkool México'),
-            cct: isIbime ? '15PPR3322G' : (activeInstitution?.cct || '15EPR2840Z'),
-            logoUrl: isIbime ? '/brand/ibime_shield.webp' : activeInstitution?.logoUrl,
+            name: isIbime ? 'INSTITUTO BILINGÜE IBIME' : (currentReport?.schoolName || activeInstitution?.name || (isCorporate ? 'BMW Group México · Nexus Motors' : 'Colegio ISkool México')),
+            cct: isIbime ? '15PPR3322G' : (isCorporate ? (activeInstitution?.cct || 'RFC: BGM940315BMW') : (activeInstitution?.cct || '15EPR2840Z')),
+            logoUrl: isIbime ? '/brand/ibime_shield.webp' : (isCorporate ? corporateLogoUrl : activeInstitution?.logoUrl),
             campus: (activeInstitution as any)?.campuses?.[0]?.name || activeInstitution?.name
           }}
         />

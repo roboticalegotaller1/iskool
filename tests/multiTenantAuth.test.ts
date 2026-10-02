@@ -322,8 +322,8 @@ describe('🛡️ SEGURIDAD MULTI-TENANT: iSkool Core e IBIME', () => {
         role: 'student'
       });
 
-      // Simular navegación a /teacher con sesión de IBIME
-      const req = new NextRequest('http://localhost:3000/teacher', {
+      // Simular navegación a /admin con sesión de IBIME
+      const req = new NextRequest('http://localhost:3000/admin', {
         headers: {
           cookie: `ibime_session=${ibimeToken}`
         }

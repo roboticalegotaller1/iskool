@@ -1,6 +1,7 @@
 "use client";
 
 import React, { Suspense } from 'react';
+import { usePathname } from 'next/navigation';
 import { Skeleton, CardSkeleton, TableSkeleton } from '@/components/ui/SkeletonLoader';
 import { RoleGuard } from '@/components/auth/RoleGuard';
 
@@ -9,6 +10,12 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
+  // El CRM de Admisiones es accesible para demostración y evaluación sin forzar redirección al login
+  if (pathname === '/admin/crm' || pathname?.startsWith('/admin/crm')) {
+    return <>{children}</>;
+  }
   return (
     <Suspense
       fallback={

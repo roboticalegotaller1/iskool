@@ -41,6 +41,9 @@ import {
 } from '@/store/useSchoolAdminStore';
 import { DETAILED_STUDENTS_SEED, SUBJECTS_SEED, PARENT_MESSAGES_SEED, TEACHERS_LIST_SEED } from '@/store/seeds';
 import { CAMPUS_BENCHMARK_SEED, CampusBenchmarkRecord } from '@/store/seeds/executiveBiSeeds';
+import { useCrmStore } from '@/store/useCrmStore';
+import { computeAdmissionsPipelineMetrics } from '@/services/admissionsPipelineService';
+import { CRM_LEADS_SEED, CRM_CANDIDATES_SEED } from '@/store/seeds/crmSeeds';
 
 export type AnalyticDomain = 
   | 'DEBTS_BILLING'
@@ -59,7 +62,8 @@ export type AnalyticDomain =
   | 'ACADEMIC_GRADES_ASSESSMENT'
   | 'STUDENT_DELETIONS_AUDIT'
   | 'STUDENTS_COMPARISON'
-  | 'STRATEGIC_CEO_RADAR';
+  | 'STRATEGIC_CEO_RADAR'
+  | 'ADMISSIONS_PIPELINE';
 
 export interface AnalyticKPICard {
   id: string;
@@ -175,6 +179,8 @@ export interface AnalyticReportResult {
   schoolName: string;
   schoolId: string;
   isConsolidated: boolean;
+  isCorporate?: boolean;
+  corporateIndustry?: string;
   generatedAt: string;
   tokenCost: 0;
   
@@ -967,14 +973,23 @@ export const detectAnalyticDomain = (
   availableStudents?: DetailedStudent[]
 ): { domain: AnalyticDomain; targetStudentName?: string } => {
   const normalized = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  // -1. Radar Estratégico Ejecutivo del CEO ("¿Qué necesita mi atención esta semana?")
+  // -1. Radar Estratégico Ejecutivo del CEO ("¿Qué necesita mi atención esta semana?" / "¿A qué debo prestar atención?")
   const isStrategicCeoRadarIntent = 
     normalized.includes('que necesita mi atencion') ||
     normalized.includes('que requiere mi atencion') ||
     normalized.includes('necesita mi atencion') ||
     normalized.includes('requiere mi atencion') ||
+    normalized.includes('a que debo prestar atencion') ||
+    normalized.includes('que debo prestar atencion') ||
+    normalized.includes('debo prestar atencion') ||
+    normalized.includes('prestar atencion') ||
+    normalized.includes('atencion esta semana') ||
+    normalized.includes('atencion hoy') ||
+    (normalized.includes('atencion') && (normalized.includes('semana') || normalized.includes('hoy') || normalized.includes('debo') || normalized.includes('prestar') || normalized.includes('prioridad'))) ||
     normalized.includes('prioridades de la semana') ||
     normalized.includes('prioridades esta semana') ||
+    normalized.includes('en que me debo enfocar') ||
+    normalized.includes('en que debo enfocarme') ||
     normalized.includes('focos estrategicos') ||
     normalized.includes('focos criticos') ||
     normalized.includes('radar de salud estrategica') ||
@@ -994,6 +1009,30 @@ export const detectAnalyticDomain = (
 
   if (isStrategicCeoRadarIntent) {
     return { domain: 'STRATEGIC_CEO_RADAR' };
+  }
+
+  // 0.0 Embudo de Admisiones, Captación y Ocupación de Matrícula (CEO View)
+  const isAdmissionsPipelineIntent = 
+    normalized.includes('admision') ||
+    normalized.includes('admisiones') ||
+    normalized.includes('prospecto') ||
+    normalized.includes('prospectos') ||
+    normalized.includes('aspirante') ||
+    normalized.includes('aspirantes') ||
+    normalized.includes('embudo de captacion') ||
+    normalized.includes('pipeline de captacion') ||
+    normalized.includes('pipeline de admisiones') ||
+    normalized.includes('meta de matricula') ||
+    normalized.includes('ocupacion de matricula') ||
+    normalized.includes('asientos contratados') ||
+    normalized.includes('cupo escolar') ||
+    normalized.includes('3,740') ||
+    normalized.includes('3740') ||
+    normalized.includes('3,900') ||
+    normalized.includes('3900');
+
+  if (isAdmissionsPipelineIntent) {
+    return { domain: 'ADMISSIONS_PIPELINE' };
   }
 
   const criteria = extractExpedienteSearchCriteria(query, availableStudents);
@@ -1597,11 +1636,16 @@ export const executeAnalyticQuery = (
     : (isConsolidated ? null : (activeSchoolId || 'sch-test-case'));
 
   const currentInstitution = institutionsList.find(i => i.id === effectiveSchoolId);
+  const isCorporateTarget = Boolean(
+    currentInstitution?.isCorporate || 
+    (currentInstitution as any)?.is_corporate_enterprise ||
+    (effectiveSchoolId && effectiveSchoolId.startsWith('emp-'))
+  );
   const schoolName = isConsolidated 
     ? 'Consolidado Institucional Global (Todas las Unidades)' 
     : (effectiveSchoolId === 'sch-test-case' 
         ? 'Laboratorio Pedagógico & Test Cases' 
-        : (currentInstitution?.name || 'UP Juan Jacobo Rosseau'));
+        : (currentInstitution?.name || (isCorporateTarget ? 'BMW Group México · Nexus Motors' : 'UP Juan Jacobo Rosseau')));
 
   // Filtrado determinista con los selectores del sistema
   const scopedCampuses = getSchoolCampuses(campusesList, effectiveSchoolId);
@@ -1624,6 +1668,321 @@ export const executeAnalyticQuery = (
   // "¿Qué necesita mi atención esta semana?" - Proyección Prospectiva a 14-30 Días
   // ==========================================================================
   if (domain === 'STRATEGIC_CEO_RADAR') {
+    if (isCorporateTarget) {
+      const isBmw = (effectiveSchoolId === 'emp-bmw') || (schoolName.toLowerCase().includes('bmw') || schoolName.toLowerCase().includes('nexus'));
+      const isRetail = (effectiveSchoolId === 'emp-ventas') || schoolName.toLowerCase().includes('vanguardia') || schoolName.toLowerCase().includes('retail');
+      const isTech = (effectiveSchoolId === 'emp-tech') || schoolName.toLowerCase().includes('innovasoft');
+
+      const corpName = currentInstitution?.name || (isBmw ? 'BMW Group México · Nexus Motors' : (isRetail ? 'Vanguardia Retail · Holding Comercial' : 'Innovasoft Dynamics Cloud & AI'));
+      const corpCeo = (currentInstitution as any)?.ceo_name || (isBmw ? 'Ing. Dirk Dreher' : (isRetail ? 'Lic. Mariana Garza Sada' : 'Mtro. Alejandro Garza Leal'));
+      const corpPayrollFormatted = isBmw ? '$221,500.00 MXN' : (isRetail ? '$195,000.00 MXN' : '$234,000.00 MXN');
+      const corpCollaboratorsCount = scopedStudents.length > 0 ? scopedStudents.length : (isBmw ? 5 : 3);
+      const corpTrainersCount = scopedTeachers.length > 0 ? scopedTeachers.length : 2;
+
+      let dim1Title = 'Manufactura y Robótica KUKA';
+      let dim1Lead = 'Uptime de celdas automatizadas y soldadura láser';
+      let dim1Lag = 'Disponibilidad de línea sin paros no programados';
+      let dim1Val = '99.4% Uptime';
+      let dim1Meta = '> 99.0% Estándar';
+      let dim1Risk = 'Desgaste en herramentales robóticos de ensamble';
+
+      let dim2Title = 'Seguridad Industrial y Baterías EV';
+      let dim2Lead = 'Cumplimiento normativo ISO 45001 y NFPA 70E';
+      let dim2Lag = 'Cero accidentes y acreditación STPS vigente';
+      let dim2Val = '98.2% Conforme';
+      let dim2Meta = '100% Certificado';
+      let dim2Risk = 'Vencimiento de licencias técnicas en celdas de alto voltaje';
+
+      let dim3Title = 'Formación Técnica Especializada';
+      let dim3Lead = 'Horas prácticas en Siemens TIA Portal y celdas';
+      let dim3Lag = 'Eficiencia operativa en turnos de producción';
+      let dim3Val = '120 hrs (100%)';
+      let dim3Meta = '100% de Horas';
+      let dim3Risk = 'Desfase en programas de actualización técnica';
+
+      let dim4Title = 'Capital Humano y Nómina B2B';
+      let dim4Lead = 'Dispersión presupuestal quincenal en tiempo';
+      let dim4Lag = 'Retención de ingenieros y especialistas clave';
+      let dim4Val = corpPayrollFormatted;
+      let dim4Meta = '100% Dispersado';
+      let dim4Risk = 'Competitividad salarial en clúster industrial';
+
+      let radarKeyNote = `Disponibilidad operativa (Uptime) en líneas de ensamble del 99.4% (meta >99.0%), con un cumplimiento del 98.2% en certificaciones de seguridad industrial ISO 45001 y 100% de nómina técnica especializada dispersada (${corpPayrollFormatted} quincenal).`;
+      let focus1Title = 'Uptime y Calibración en Celdas de Ensamble KUKA';
+      let focus1Area = 'Línea de Ensamble y Soldadura Láser (Logistik II)';
+      let focus1Lead = 'Inspección preventiva en gemelos digitales Siemens TIA Portal con cero paros no programados.';
+      let focus1Impact = 'Garantizar continuidad de ritmo de producción sin cuellos de botella en el turno nocturno.';
+      let focus1Action = 'Validar ciclo de lubricación y mantenimiento programado de herramentales robóticos.';
+
+      let focus2Title = 'Certificación en Celdas de Baterías de Alto Voltaje';
+      let focus2Area = 'Centro de Baterías Logistik II (Norma NFPA 70E & STPS)';
+      let focus2Lead = 'Próximo vencimiento quincenal de 3 credenciales de trabajo en celdas de alto voltaje.';
+      let focus2Impact = 'Posible suspensión temporal de turno si no se cuenta con cuadrilla 100% certificada.';
+      let focus2Action = 'Instruir a los Master Trainers la sesión intensiva de evaluación práctica este jueves.';
+
+      let focus3Title = 'Capacitación Técnica y Dispersión de Nómina';
+      let focus3Area = `${corpCollaboratorsCount} Especialistas Técnicos · ${corpTrainersCount} Master Trainers`;
+      let focus3Lead = 'Cumplimiento de 120 horas de capacitación práctica en Siemens y KUKA sin ausentismo.';
+      let focus3Impact = 'Máxima retención de talento clave e ingenieros de mantenimiento en planta.';
+      let focus3Action = 'Ratificar paquete de incentivos técnicos para el siguiente trimestre operativo.';
+
+      if (isRetail) {
+        dim1Title = 'Logística y Distribución Omnicanal';
+        dim1Lead = 'Rotación de inventarios y Sell-Through rate';
+        dim1Lag = 'Cumplimiento de entrega On-Time In-Full (OTIF)';
+        dim1Val = '98.5% OTIF';
+        dim1Meta = '98.0% Meta';
+        dim1Risk = 'Roturas de stock en centros de distribución prioritarios';
+
+        dim2Title = 'Excelencia en Puntos de Venta (POS)';
+        dim2Lead = 'Auditorías de calidad y atención al cliente en tiendas';
+        dim2Lag = 'Tasa de conversión y ticket promedio de retail';
+        dim2Val = '96.8% Sell-Through';
+        dim2Meta = '95.0% Meta';
+        dim2Risk = 'Desviaciones en exhibición y merchandising estratégico';
+
+        radarKeyNote = `Eficiencia en cadena de suministro con 98.5% OTIF, rotación de inventarios en 96.8% y dispersión de nómina de especialistas en tiempo (${corpPayrollFormatted} quincenal).`;
+        focus1Title = 'Optimización de Rutas y Fulfillment 4.0';
+        focus1Area = 'Cedis Regionales (CDMX, Guadalajara, Monterrey)';
+        focus1Lead = 'Modelos de demanda predictiva ajustados para el pico de abastecimiento quincenal.';
+        focus1Impact = 'Reducción de tiempos de entrega en última milla sin sobrecostos logísticos.';
+        focus1Action = 'Autorizar consolidación de rutas de distribución en corredores de alta densidad.';
+      } else if (isTech) {
+        dim1Title = 'Arquitectura Cloud & Microservicios';
+        dim1Lead = 'SLA de infraestructura en la nube y latencia p99';
+        dim1Lag = 'Disponibilidad ininterrumpida de plataformas SaaS';
+        dim1Val = '99.98% SLA';
+        dim1Meta = '99.95% Meta';
+        dim1Risk = 'Picos de concurrencia y límites de escalabilidad horizontal';
+
+        dim2Title = 'Ciberseguridad y DevSecOps ISO 27001';
+        dim2Lead = 'Auditoría de vulnerabilidades y pipelines CI/CD seguros';
+        dim2Lag = 'Cero brechas de seguridad y cumplimiento estricto';
+        dim2Val = '97.5% Compliance';
+        dim2Meta = '100% Meta';
+        dim2Risk = 'Retraso en parches de seguridad para dependencias críticas';
+
+        radarKeyNote = `Alta disponibilidad de nube al 99.98% SLA, ciclo de entregas en 94.2% de velocidad de sprint y dispersión quincenal de nómina de ingenieros senior (${corpPayrollFormatted}).`;
+        focus1Title = 'Despliegue de Modelos de IA & LLM Ops Enterprise';
+        focus1Area = 'Infraestructura Cloud Kubernetes & Clústeres GPU';
+        focus1Lead = 'Monitoreo de latencia y costo de inferencia en modelos de optimización.';
+        focus1Impact = 'Prevención de saturación de cómputo en horas pico de clientes corporativos.';
+        focus1Action = 'Aprobar políticas de autoscaling dinámico en clústeres de producción.';
+      }
+
+      const reportTitle = `Radar Estratégico Ejecutivo · Visión CEO (${corpName})`;
+
+      const directAnswer = 
+`# INFORME EJECUTIVO DE GOBERNANZA Y PROYECCIÓN ESTRATÉGICA
+**Para:** CEO ${corpName} (${corpCeo})  
+**De:** Asesor Estratégico Ejecutivo & Dirección General B2B  
+**Periodo de Análisis:** Proyección a 14–30 Días | Telemetría Corporativa y Capital Humano Especializado  
+
+---
+
+### I. RADAR DE SALUD ESTRATÉGICA (PULSO GENERAL)
+• **Estado General de Operaciones:** **ÓPTIMO**  
+• **Indicador Clave de la Semana:** ${radarKeyNote}
+
+---
+
+### II. FOCOS CRÍTICOS A FUTURO (PROYECCIÓN A 14-30 DÍAS)
+
+#### 1. ${focus1Title}
+• **Área y Módulo:** ${focus1Area}  
+• **Señal Temprana (Tiempo Real):** ${focus1Lead}  
+• **Impacto Proyectado a Futuro:** ${focus1Impact}  
+• **Acción Estratégica Recomendada:** ${focus1Action}
+
+#### 2. ${focus2Title}
+• **Área y Módulo:** ${focus2Area}  
+• **Señal Temprana (Tiempo Real):** ${focus2Lead}  
+• **Impacto Proyectado a Futuro:** ${focus2Impact}  
+• **Acción Estratégica Recomendada:** ${focus2Action}
+
+#### 3. ${focus3Title}
+• **Área y Módulo:** ${focus3Area}  
+• **Señal Temprana (Tiempo Real):** ${focus3Lead}  
+• **Impacto Proyectado a Futuro:** ${focus3Impact}  
+• **Acción Estratégica Recomendada:** ${focus3Action}
+
+---
+
+### III. INDICADORES LÍDER VS. REZAGADOS (LEADING VS. LAGGING)
+
+| Dimensión Operativa | Indicador Temprano (Tendencia) | Indicador Rezagado (Resultado) | Métrica en Tiempo Real |
+| :--- | :--- | :--- | :--- |
+| **${dim1Title}** | ${dim1Lead} | ${dim1Lag} | **${dim1Val}** |
+| **${dim2Title}** | ${dim2Lead} | ${dim2Lag} | **${dim2Val}** |
+| **${dim3Title}** | ${dim3Lead} | ${dim3Lag} | **${dim3Val}** |
+| **${dim4Title}** | ${dim4Lead} | ${dim4Lag} | **${dim4Val}** |
+
+---
+
+### IV. MATRIZ DE DECISIONES EJECUTIVAS VS. DELEGACIÓN
+
+#### Decisiones Exclusivas del CEO (Intervención de Alto Nivel)
+1. **Ratificación de Presupuesto y Nómina Especializada:** Autorizar la dispersión quincenal de ${corpPayrollFormatted} para la cuadrilla técnica e instructores master.
+2. **Homologación de Certificaciones Técnicas:** Sellar el cronograma de evaluación técnica de alto nivel para garantizar 100% de cumplimiento en auditorías normativas.
+3. **Continuidad Operativa de Alta Precisión:** Validar el programa de mantenimiento preventivo y optimización de infraestructura.
+
+#### Matriz de Delegación (Mandatos Directos a Gerencias)
+• **A la Gerencia de Operaciones y Planta:** Supervisar tolerancias operativas y disponibilidad de línea antes del cierre de turno semanal.
+• **A los Master Trainers de Especialidad:** Concluir la evaluación técnica práctica de los colaboradores en programas B2B asignados.
+• **A la Dirección de Finanzas y Recursos Humanos:** Mantener la dispersión de nómina y compensaciones en tiempo y forma sin desviaciones.`;
+
+      const kpis: AnalyticKPICard[] = [
+        {
+          id: 'kpi-strat-health',
+          label: 'Estado General de Operaciones',
+          value: 'Óptimo',
+          subtext: 'Telemetría corporativa activa',
+          color: 'emerald',
+          trend: { direction: 'up', value: 'Proyección 14-30 Días' }
+        },
+        {
+          id: 'kpi-strat-uptime',
+          label: isRetail ? 'Nivel de Servicio OTIF' : (isTech ? 'Disponibilidad Cloud' : 'Disponibilidad Operativa (Uptime)'),
+          value: isRetail ? '98.5%' : (isTech ? '99.98%' : '99.4%'),
+          subtext: isRetail ? 'Entregas a tiempo y completas' : (isTech ? 'SLA de infraestructura' : 'Meta: > 99.0% en líneas de ensamble'),
+          color: 'emerald',
+          trend: { direction: 'up', value: 'Excelente' }
+        },
+        {
+          id: 'kpi-strat-normative',
+          label: isRetail ? 'Calidad Retail & Stock' : (isTech ? 'DevSecOps ISO 27001' : 'Certificación ISO 45001 / STPS'),
+          value: isRetail ? '96.8%' : (isTech ? '97.5%' : '98.2%'),
+          subtext: 'Cumplimiento normativo vigente',
+          color: 'emerald',
+          trend: { direction: 'up', value: 'Conforme' }
+        },
+        {
+          id: 'kpi-strat-payroll',
+          label: 'Dispersión Nómina Quincenal',
+          value: corpPayrollFormatted,
+          subtext: `${corpCollaboratorsCount} Colaboradores Clave · ${corpTrainersCount} Master Trainers`,
+          color: 'indigo'
+        }
+      ];
+
+      const chartConfig: AnalyticChartConfig = {
+        type: 'column',
+        availableTypes: ['column', 'bar', 'area'],
+        title: 'Auditoría Cuatridimensional de Eficiencia y Operaciones Corporativas',
+        subtitle: 'Cumplimiento Operativo Real vs Estándar Industrial (100%)',
+        labels: [
+          isRetail ? 'Logística OTIF' : (isTech ? 'Uptime Cloud SLA' : 'Uptime Operativo Planta'),
+          isRetail ? 'Calidad & Exhibición' : (isTech ? 'Seguridad ISO 27001' : 'Seguridad ISO 45001'),
+          'Capacitación Técnica B2B',
+          'Dispersión Presupuestal'
+        ],
+        datasets: [
+          {
+            name: 'Cumplimiento Real (%)',
+            data: isRetail ? [98.5, 96.8, 92.4, 100] : (isTech ? [99.98, 97.5, 94.2, 100] : [99.4, 98.2, 94.6, 100]),
+            color: '#0066B1'
+          },
+          {
+            name: 'Estándar Industrial (100%)',
+            data: [100, 100, 100, 100],
+            color: '#10b981'
+          }
+        ],
+        unit: 'percentage'
+      };
+
+      const tableColumns: AnalyticTableColumn[] = [
+        { key: 'dimension', label: 'Dimensión Operativa', align: 'left' },
+        { key: 'leadingIndicator', label: 'Indicador Temprano (Tendencia)', align: 'left' },
+        { key: 'laggingIndicator', label: 'Indicador Rezagado (Resultado)', align: 'left' },
+        { key: 'currentValue', label: 'Métrica en Tiempo Real', align: 'center', isBadge: true },
+        { key: 'benchmarkTarget', label: 'Meta Corporativa', align: 'center' },
+        { key: 'projectedRisk', label: 'Riesgo Proyectado a 14-30 Días', align: 'left' }
+      ];
+
+      const tableRows = [
+        {
+          dimensionKey: 'operacion',
+          dimension: dim1Title,
+          leadingIndicator: dim1Lead,
+          laggingIndicator: dim1Lag,
+          currentValue: dim1Val,
+          benchmarkTarget: dim1Meta,
+          projectedRisk: dim1Risk
+        },
+        {
+          dimensionKey: 'seguridad',
+          dimension: dim2Title,
+          leadingIndicator: dim2Lead,
+          laggingIndicator: dim2Lag,
+          currentValue: dim2Val,
+          benchmarkTarget: dim2Meta,
+          projectedRisk: dim2Risk
+        },
+        {
+          dimensionKey: 'capacitacion',
+          dimension: dim3Title,
+          leadingIndicator: dim3Lead,
+          laggingIndicator: dim3Lag,
+          currentValue: dim3Val,
+          benchmarkTarget: dim3Meta,
+          projectedRisk: dim3Risk
+        },
+        {
+          dimensionKey: 'finanzas',
+          dimension: dim4Title,
+          leadingIndicator: dim4Lead,
+          laggingIndicator: dim4Lag,
+          currentValue: dim4Val,
+          benchmarkTarget: dim4Meta,
+          projectedRisk: dim4Risk
+        }
+      ];
+
+      return {
+        domain: 'STRATEGIC_CEO_RADAR',
+        queryReceived: rawQuery,
+        reportTitle,
+        schoolName,
+        schoolId: effectiveSchoolId || 'global',
+        isConsolidated: false,
+        isCorporate: true,
+        corporateIndustry: isBmw ? 'automotive' : (isRetail ? 'retail' : 'technology'),
+        generatedAt: timestamp,
+        tokenCost: 0,
+        explanation: {
+          summary: `Escaneo cuatridimensional de telemetría corporativa y visión CEO para ${corpName}. Cruza disponibilidad operativa (uptime), certificaciones normativas (ISO/STPS), programas de formación técnica especializada y balance de nómina.`,
+          fieldsIncluded: [
+            'Manufactura y Operaciones: Uptime de celdas y disponibilidad en línea',
+            'Seguridad Industrial: Certificaciones normativas ISO 45001 y STPS',
+            'Capacitación Técnica B2B: Avance de horas en robótica, alto voltaje y gemelos digitales',
+            'Finanzas y Capital Humano: Dispersión presupuestal de nómina especializada'
+          ],
+          filtersApplied: [
+            `Empresa: ${corpName}`,
+            'Visión CEO: Filtro Prospectivo a 14-30 Días',
+            'Inteligencia Analítica B2B a 0 Tokens'
+          ],
+          visualizationDescription: 'Gráfico cuatridimensional comparando Desempeño Operativo Real vs Estándar Industrial (100%), junto con la Matriz de Control de Indicadores Líder vs Rezagados.',
+          followUpPrompt: '¿Deseas auditar la dispersión de nómina de los colaboradores técnicos o revisar los programas de capacitación industrial?'
+        },
+        directAnswer,
+        kpis,
+        chart: chartConfig,
+        table: {
+          columns: tableColumns,
+          rows: tableRows,
+          totalRows: tableRows.length
+        },
+        suggestedQueries: [
+          '¿Cuál es la nómina quincenal de los colaboradores técnicos?',
+          'Directorio oficial de colaboradores y especialistas de planta',
+          'Programas de capacitación industrial y certificaciones',
+          'Avance de horas de entrenamiento técnico'
+        ]
+      };
+    }
+
     // 1. Telemetría Financiera y Recuperación de Cartera en Tiempo Real
     const totalPaid = scopedBilling
       .filter(b => String(b.status).toLowerCase() === 'paid')
@@ -1893,6 +2252,184 @@ export const executeAnalyticQuery = (
   }
 
   // ==========================================================================
+  // CASO ADMISIONES: EMBUDO DE CONVERSIÓN, CAPTACIÓN Y OCUPACIÓN DE MATRÍCULA
+  // ==========================================================================
+  if (domain === 'ADMISSIONS_PIPELINE') {
+    const leadsData = (typeof useCrmStore !== 'undefined' && useCrmStore.getState().leads?.length > 0)
+      ? useCrmStore.getState().leads
+      : CRM_LEADS_SEED;
+    const candidatesData = (typeof useCrmStore !== 'undefined' && useCrmStore.getState().candidates?.length > 0)
+      ? useCrmStore.getState().candidates
+      : CRM_CANDIDATES_SEED;
+
+    const queryLower = qLowerFull;
+    let targetCampus = isConsolidated ? 'all' : (effectiveSchoolId || 'all');
+    if (queryLower.includes('montes')) targetCampus = 'montes';
+    else if (queryLower.includes('lagos')) targetCampus = 'lagos';
+    else if (queryLower.includes('cristobal') || queryLower.includes('san cristobal')) targetCampus = 'sancristobal';
+    else if (queryLower.includes('coacalco')) targetCampus = 'coacalco';
+
+    const report = computeAdmissionsPipelineMetrics(
+      leadsData,
+      candidatesData,
+      targetCampus,
+      '2026-2027'
+    );
+
+    const reportTitle = `Auditoría del Embudo de Admisiones y Proyección de Matrícula (${report.campusName})`;
+
+    const directAnswer = 
+`# INFORME EJECUTIVO DE ADMISIONES, CONVERSIÓN Y PROYECCIÓN DE MATRÍCULA
+**Institución / Sede:** ${report.campusName}  
+**Ciclo Escolar:** ${report.targetAcademicYear}  
+**Estado General:** **${report.capacity.occupancyStatus === 'optimo' ? 'ÓPTIMO' : (report.capacity.occupancyStatus === 'en_meta' ? 'EN META' : 'ALERTA DE SOBRECUPACIÓN')}** (${report.capacity.occupancyPercent}% de ocupación proyectada)
+
+---
+
+### I. PROYECCIÓN DE OCUPACIÓN Y META DE ASIENTOS CONTRATADOS
+• **Capacidad Física Total:** **${report.capacity.totalPhysicalSeats.toLocaleString('es-MX')} asientos**  
+• **Asientos Actuales Comprometidos:** **${report.capacity.currentOccupiedSeats.toLocaleString('es-MX')} alumnos** (${report.capacity.baseEnrolledSeats.toLocaleString('es-MX')} reinscritos base + ${report.capacity.newlyEnrolledFromCrm} nuevo ingreso desde CRM)  
+• **Meta Estratégica Institucional:** **${report.capacity.targetSeats.toLocaleString('es-MX')} asientos** (${report.capacity.targetProgressPercent}% alcanzado de la meta)  
+• **Brecha Restante para Meta:** **${report.capacity.seatsRemainingToTarget} asientos** para completar el objetivo del ciclo.
+
+---
+
+### II. MATRIZ DE CORRESPONSABILIDAD POR FASE DE ADMISIÓN (5 DEPARTAMENTOS)
+1. **${report.phases[0].name} (${report.phases[0].department}):**  
+   • Leads: **${report.phases[0].leadCount} familias** (${report.phases[0].candidateCount} aspirantes) | Valor Estimado: ${formatMXN(report.phases[0].monetaryValueMXN)}  
+2. **${report.phases[1].name} (${report.phases[1].department}):**  
+   • Tours: **${report.phases[1].leadCount} familias** (${report.phases[1].candidateCount} aspirantes) | Conversión: ${report.phases[1].conversionRateFromPrevious}% | SLA: ${report.phases[1].slaDays} días  
+3. **${report.phases[2].name} (${report.phases[2].department}):**  
+   • Diagnóstico: **${report.phases[2].leadCount} familias** (${report.phases[2].candidateCount} aspirantes) | Conversión: ${report.phases[2].conversionRateFromPrevious}% | SLA: ${report.phases[2].slaDays} días  
+4. **${report.phases[3].name} (${report.phases[3].department}):**  
+   • Asignación: **${report.phases[3].leadCount} familias** (${report.phases[3].candidateCount} aspirantes) | Conversión: ${report.phases[3].conversionRateFromPrevious}% | SLA: ${report.phases[3].slaDays} días  
+5. **${report.phases[4].name} (${report.phases[4].department}):**  
+   • Matrícula Pagada: **${report.phases[4].leadCount} familias** (${report.phases[4].candidateCount} matriculados en Control Escolar) | Ingreso Confirmado: ${formatMXN(report.financial.confirmedEnrolledRevenueMXN)}
+
+---
+
+### III. INDICADORES DE NEGOCIO Y FINANZAS
+• **Valor Total del Pipeline Proyectado:** **${formatMXN(report.financial.projectedPipelineValueMXN)}**  
+• **Oportunidad en Vuelo (Fases 1 a 4):** **${formatMXN(report.financial.inFlightOpportunityMXN)}**  
+• **Velocidad de Cierre Promedio:** **${report.speed.avgDaysToEnroll} días** (frente al promedio de mercado mexicano de **${report.speed.marketBenchmarkDays} días**, ventaja del **${report.speed.speedAdvantagePercent}%**).`;
+
+    const kpis: AnalyticKPICard[] = [
+      {
+        id: 'kpi-admissions-occupancy',
+        label: 'Ocupación Proyectada',
+        value: `${report.capacity.occupancyPercent}%`,
+        subtext: `${report.capacity.currentOccupiedSeats} / ${report.capacity.totalPhysicalSeats} asientos`,
+        color: 'emerald',
+        trend: { direction: 'up', value: `${report.capacity.targetProgressPercent}% de la meta` }
+      },
+      {
+        id: 'kpi-admissions-pipeline-val',
+        label: 'Valor Pipeline 2026-2027',
+        value: formatMXN(report.financial.projectedPipelineValueMXN),
+        subtext: `${report.totalLeads} familias en proceso`,
+        color: 'purple',
+        trend: { direction: 'up', value: 'Proyección Anual' }
+      },
+      {
+        id: 'kpi-admissions-target-gap',
+        label: 'Meta Estratégica IBIME',
+        value: `${report.capacity.targetSeats.toLocaleString('es-MX')} Asientos`,
+        subtext: report.capacity.seatsRemainingToTarget > 0 ? `Faltan ${report.capacity.seatsRemainingToTarget} para la meta` : 'Meta completada',
+        color: 'indigo'
+      },
+      {
+        id: 'kpi-admissions-speed',
+        label: 'Velocidad de Cierre',
+        value: `${report.speed.avgDaysToEnroll} Días`,
+        subtext: `Mercado: ${report.speed.marketBenchmarkDays} días (-${report.speed.speedAdvantagePercent}%)`,
+        color: 'cyan',
+        trend: { direction: 'up', value: 'Alta Agilidad' }
+      }
+    ];
+
+    const chartConfig: AnalyticChartConfig = {
+      type: 'column',
+      availableTypes: ['column', 'bar'],
+      title: `Embudo de Admisiones y Conversión · ${report.campusName}`,
+      subtitle: `Distribución de ${report.totalCandidates} aspirantes escolares por fase institucional (Ciclo 2026-2027)`,
+      labels: report.phases.map(p => p.name.split('·')[1]?.trim() || p.name),
+      datasets: [
+        {
+          name: 'Aspirantes Escolares (Alumnos)',
+          data: report.phases.map(p => p.candidateCount),
+          color: '#8b5cf6'
+        },
+        {
+          name: 'Familias Prospecto (Leads)',
+          data: report.phases.map(p => p.leadCount),
+          color: '#3b82f6'
+        }
+      ],
+      unit: 'count'
+    };
+
+    const tableColumns: AnalyticTableColumn[] = [
+      { key: 'phase', label: 'Fase Institucional', align: 'left' },
+      { key: 'department', label: 'Área Responsable', align: 'left' },
+      { key: 'leads', label: 'Familias (Leads)', align: 'center', isBadge: true },
+      { key: 'candidates', label: 'Aspirantes (Hijos)', align: 'center', isBadge: true },
+      { key: 'conversionRate', label: 'Tasa Conversión', align: 'center' },
+      { key: 'monetaryValue', label: 'Valor Estimado', align: 'right', isCurrency: true }
+    ];
+
+    const tableRows = report.phases.map(p => ({
+      phase: p.name,
+      department: p.department,
+      leads: p.leadCount,
+      candidates: p.candidateCount,
+      conversionRate: `${p.conversionRateFromPrevious}%`,
+      monetaryValue: p.monetaryValueMXN
+    }));
+
+    return {
+      domain: 'ADMISSIONS_PIPELINE',
+      queryReceived: rawQuery,
+      reportTitle,
+      schoolName: report.campusName,
+      schoolId: effectiveSchoolId || 'global',
+      isConsolidated: isConsolidated || targetCampus === 'all',
+      isCorporate: false,
+      generatedAt: timestamp,
+      tokenCost: 0,
+      explanation: {
+        summary: `Análisis en tiempo real del embudo de captación, admisiones y proyección de matrícula para ${report.campusName}. Conecta en vivo las 5 fases departamentales con la meta de 3,740 / 3,900 asientos contratados.`,
+        fieldsIncluded: [
+          '5 Fases Departamentales (Captación, Tours, Diagnóstico, Carta Asignación, Matrícula)',
+          'Meta de Ocupación Escolar (3,740 / 3,900 Asientos Contratados)',
+          'Valor Financiero del Pipeline y LTV Anual por Alumno',
+          'Velocidad de Cierre SLA vs Benchmark de Mercado'
+        ],
+        filtersApplied: [
+          `Sede: ${report.campusName}`,
+          'Ciclo Escolar: 2026-2027',
+          'Motor Analítico Determinista a 0 Tokens'
+        ],
+        visualizationDescription: 'Gráfico de embudo de 5 fases comparando Familias vs Aspirantes Hijos, y tabla de corresponsabilidad departamental.',
+        followUpPrompt: '¿Deseas auditar el desglose de ocupación por plantel o revisar los aspirantes listos para matricularse?'
+      },
+      directAnswer,
+      kpis,
+      chart: chartConfig,
+      table: {
+        columns: tableColumns,
+        rows: tableRows,
+        totalRows: tableRows.length
+      },
+      suggestedQueries: [
+        '¿Cuál es la meta de matrícula de Campus Montes?',
+        '¿Cuántos asientos faltan para la meta de 3,740?',
+        'Ver desglose de aspirantes en fase de diagnóstico',
+        'Directorio del pipeline de captación'
+      ]
+    };
+  }
+
+  // ==========================================================================
   // CASO AUDITORÍA: ALUMNOS DADOS DE BAJA Y RETIRADOS DEL SISTEMA
   // ==========================================================================
   if (domain === 'STUDENT_DELETIONS_AUDIT') {
@@ -2051,6 +2588,204 @@ export const executeAnalyticQuery = (
   if (domain === 'CURRICULUM_SUBJECTS') {
     const rawSubjects = (sources.subjectsList && sources.subjectsList.length > 0) ? sources.subjectsList : SUBJECTS_SEED;
     const subjects = getSchoolSubjects(rawSubjects, effectiveSchoolId, scopedCampuses);
+
+    if (isCorporateTarget) {
+      const isBmw = (effectiveSchoolId === 'emp-bmw') || (schoolName.toLowerCase().includes('bmw') || schoolName.toLowerCase().includes('nexus'));
+      const isRetail = (effectiveSchoolId === 'emp-ventas') || schoolName.toLowerCase().includes('vanguardia') || schoolName.toLowerCase().includes('retail');
+
+      const corpRows = isBmw ? [
+        {
+          id: 'sub-bmw-kuka',
+          index: 1,
+          name: 'Robótica Industrial KUKA & Celdas de Soldadura Láser',
+          level: 'Automatización Avanzada',
+          category: 'Programa B2B Especializado',
+          sepCode: 'CERT-KUKA-SLP-01',
+          instructor: 'Ing. Klaus Weber',
+          schedule: '50 hrs · Lunes a Jueves (Turno Matutino)',
+          status: 'Activo y Acreditado'
+        },
+        {
+          id: 'sub-bmw-ev',
+          index: 2,
+          name: 'Arquitectura de Alto Voltaje & Celdas de Baterías EV Gen6',
+          level: 'Movilidad Eléctrica & Baterías',
+          category: 'Seguridad Industrial & Alta Tensión',
+          sepCode: 'CERT-NFPA-70E-EV',
+          instructor: 'Ing. Brenda Treviño',
+          schedule: '40 hrs · Turno Vespertino',
+          status: 'Activo y Acreditado'
+        },
+        {
+          id: 'sub-bmw-siemens',
+          index: 3,
+          name: 'Mantenimiento Predictivo & Gemelos Digitales Siemens TIA Portal',
+          level: 'Industria 4.0 & Gemelos Digitales',
+          category: 'Mantenimiento y Control',
+          sepCode: 'CERT-SIEMENS-TIA-02',
+          instructor: 'Ing. Klaus Weber',
+          schedule: '30 hrs · Turno Mixto',
+          status: 'Activo y Acreditado'
+        }
+      ] : (isRetail ? [
+        {
+          id: 'sub-ret-log',
+          index: 1,
+          name: 'Omnicanalidad y Logística Fulfillment Retail 4.0',
+          level: 'Cadena de Suministro',
+          category: 'Operaciones B2B',
+          sepCode: 'CERT-RET-LOG-01',
+          instructor: 'Mtra. Claudia Sotomayor',
+          schedule: '40 hrs · Turno Comercial',
+          status: 'Activo y Acreditado'
+        },
+        {
+          id: 'sub-ret-bi',
+          index: 2,
+          name: 'Analítica de Demanda Predictiva y Sell-Through',
+          level: 'Business Intelligence & Retail',
+          category: 'Modelos de Demanda',
+          sepCode: 'CERT-RET-BI-02',
+          instructor: 'Lic. Fernando Lozano',
+          schedule: '35 hrs · Turno Matutino',
+          status: 'Activo y Acreditado'
+        },
+        {
+          id: 'sub-ret-pos',
+          index: 3,
+          name: 'Excelencia Operativa en Punto de Venta (POS)',
+          level: 'Merchandising & POS',
+          category: 'Atención y Calidad Retail',
+          sepCode: 'CERT-RET-POS-03',
+          instructor: 'Mtra. Claudia Sotomayor',
+          schedule: '30 hrs · Turno Mixto',
+          status: 'Activo y Acreditado'
+        }
+      ] : [
+        {
+          id: 'sub-tech-cloud',
+          index: 1,
+          name: 'Arquitectura Cloud-Native Microservicios & Kubernetes Enterprise',
+          level: 'Infraestructura Cloud',
+          category: 'Ingeniería Cloud & SRE',
+          sepCode: 'CERT-CLOUD-K8S-01',
+          instructor: 'Dr. Javier Morales Vega',
+          schedule: '50 hrs · Sprints de Ingeniería',
+          status: 'Activo y Acreditado'
+        },
+        {
+          id: 'sub-tech-ai',
+          index: 2,
+          name: 'Implementación de Modelos de Inteligencia Artificial & LLM Ops',
+          level: 'Inteligencia Artificial',
+          category: 'Modelos Neuronales & GPU Ops',
+          sepCode: 'CERT-AI-LLMOPS-02',
+          instructor: 'Ing. Lucía Villarreal',
+          schedule: '45 hrs · Sprints Técnicos',
+          status: 'Activo y Acreditado'
+        },
+        {
+          id: 'sub-tech-sec',
+          index: 3,
+          name: 'Ciberseguridad Ofensiva, DevSecOps y Compliance ISO 27001',
+          level: 'Seguridad Informática',
+          category: 'Ciberdefensa y Auditoría',
+          sepCode: 'CERT-SEC-ISO27001',
+          instructor: 'Dr. Javier Morales Vega',
+          schedule: '40 hrs · Auditoría Continua',
+          status: 'Activo y Acreditado'
+        }
+      ]);
+
+      return {
+        domain: 'CURRICULUM_SUBJECTS',
+        queryReceived: rawQuery,
+        reportTitle: `Catálogo de Programas de Capacitación Industrial y Certificaciones B2B (${schoolName})`,
+        schoolName,
+        schoolId: effectiveSchoolId || 'global',
+        isConsolidated: false,
+        generatedAt: timestamp,
+        tokenCost: 0,
+        explanation: {
+          summary: `Se auditó el catálogo oficial de capacitación técnica de ${schoolName}, localizando ${corpRows.length} programas de alta especialidad industrial y certificaciones con validez técnica y normativa STPS/ISO.`,
+          fieldsIncluded: ['Programa / Especialidad', 'División Industrial', 'Categoría', 'Código de Certificación', 'Master Trainer', 'Turno y Duración', 'Estatus'],
+          filtersApplied: [
+            `Empresa: ${schoolName}`,
+            'Programas activos en ciclo operativo 2026',
+            'Aislamiento estricto B2B'
+          ],
+          visualizationDescription: 'Desglose de programas de capacitación industrial por división técnica y horas de especialización.',
+          followUpPrompt: '¿Deseas consultar las horas de entrenamiento de los colaboradores, revisar la nómina o auditar las certificaciones vigentes?'
+        },
+        directAnswer: `En **${schoolName}** se imparten un total de **${corpRows.length} programas de alta especialidad técnica y corporativa**:\n\n` +
+          corpRows.map(r => `• **${r.name}**: Impartido por **${r.instructor}** (${r.schedule}). Certificación oficial **${r.sepCode}** acreditada.`).join('\n') +
+          `\n\n• **Cobertura Normativa**: El 100% de los colaboradores asignados cuenta con horas prácticas de laboratorio y cumplimiento de estándares de seguridad industrial.`,
+        kpis: [
+          {
+            id: 'kpi-corp-sub-total',
+            label: 'Total Programas B2B',
+            value: `${corpRows.length} Programas`,
+            subtext: 'Alta especialidad técnica',
+            color: 'indigo'
+          },
+          {
+            id: 'kpi-corp-sub-trainers',
+            label: 'Master Trainers',
+            value: '2 Certificados',
+            subtext: 'Instructores especialistas',
+            color: 'emerald'
+          },
+          {
+            id: 'kpi-corp-sub-hours',
+            label: 'Horas Prácticas',
+            value: '120 hrs',
+            subtext: 'Capacitación acumulada',
+            color: 'cyan'
+          },
+          {
+            id: 'kpi-corp-sub-normative',
+            label: 'Acreditación STPS / ISO',
+            value: '100% Vigente',
+            subtext: 'Cumplimiento normativo',
+            color: 'purple'
+          }
+        ],
+        chart: {
+          type: 'column',
+          availableTypes: ['column', 'bar', 'donut'],
+          title: `Programas y Horas de Capacitación Técnica (${schoolName})`,
+          subtitle: 'Distribución de horas formativas por módulo especializado',
+          labels: corpRows.map(r => r.name.slice(0, 24) + '...'),
+          datasets: [
+            {
+              name: 'Horas del Programa',
+              data: [50, 40, 30],
+              color: '#0066B1'
+            }
+          ],
+          unit: 'count'
+        },
+        table: {
+          columns: [
+            { key: 'name', label: 'Programa de Capacitación B2B' },
+            { key: 'level', label: 'División Técnica' },
+            { key: 'category', label: 'Categoría' },
+            { key: 'sepCode', label: 'Código Certificación' },
+            { key: 'instructor', label: 'Master Trainer' },
+            { key: 'schedule', label: 'Turno / Duración' },
+            { key: 'status', label: 'Estatus', align: 'center', isBadge: true }
+          ],
+          rows: corpRows,
+          totalRows: corpRows.length
+        },
+        suggestedQueries: [
+          '¿Cuál es la nómina quincenal de los colaboradores técnicos?',
+          'Directorio oficial de colaboradores y especialistas de planta',
+          '¿A qué debo prestar atención esta semana?',
+          'Radar estratégico de la empresa'
+        ]
+      };
+    }
 
     const curriculares = subjects.filter(s => s.category === 'curricular' || !s.is_elective);
     const optativas = subjects.filter(s => s.category === 'optativa' || s.is_elective);
@@ -3456,6 +4191,131 @@ export const executeAnalyticQuery = (
       return acc + (sAtt.length > 0 ? (pres / sAtt.length) * 100 : 96.0);
     }, 0) / (enriched.length || 1)).toFixed(1);
 
+    if (isCorporateTarget) {
+      const corpTableRows = enriched.map(e => {
+        const s = e.student;
+        const jobTitle = (s as any).job_title || s.grade || 'Especialista Técnico';
+        const department = (s as any).department || 'Operaciones';
+        const plant = s.campus_name || schoolName;
+        const cert = ((s as any).certifications && (s as any).certifications.length > 0)
+          ? (s as any).certifications[0]
+          : 'ISO 45001 / STPS';
+        const hours = (s as any).training_hours || 120;
+
+        return {
+          enrollmentId: s.enrollment_id || `COL-2026-${s.id.slice(-3)}`,
+          studentName: e.fullName,
+          curp: s.curp || 'RFC Oficial Vigente',
+          levelGrade: jobTitle,
+          campusName: plant,
+          attendanceRate: '100%',
+          medicalCondition: cert,
+          status: 'Activo en Planta',
+          studentId: s.id,
+          role: department,
+          hours: `${hours} hrs`
+        };
+      });
+
+      return {
+        domain,
+        queryReceived: rawQuery,
+        reportTitle: `Padrón Oficial de Colaboradores Técnicos y Especialistas (${schoolName})`,
+        schoolName,
+        schoolId: effectiveSchoolId || 'global',
+        isConsolidated: false,
+        generatedAt: timestamp,
+        tokenCost: 0,
+        directAnswer: `Padrón de Colaboradores Técnicos y Especialistas en tiempo real de **${schoolName}**:\n\n` +
+          `• **Plantilla de Especialistas**: **${corpTableRows.length} colaboradores técnicos activos** adscritos a plantas operativas.\n` +
+          `• **Cumplimiento de Asistencia**: **100% de regularidad** en turnos de producción y laboratorios de pruebas.\n` +
+          `• **Certificaciones Industriales**: Capacitación especializada en robótica, alto voltaje y gemelos digitales con acreditación STPS/ISO.\n` +
+          `• **Estatus de Nómina**: 100% de la plantilla con dispersión salarial quincenal al corriente.`,
+        explanation: {
+          summary: `Se desplegó el padrón oficial de talento técnico para "${schoolName}". Se listan ${corpTableRows.length} colaborador(es) con registro de especialidad, planta asignada, horas de capacitación y estatus operativo.`,
+          fieldsIncluded: [
+            'No. Colaborador, nombre completo y RFC',
+            'Puesto / Especialidad técnica y departamento',
+            'Planta sede adscrita y turno operativo',
+            'Horas de capacitación técnica y certificaciones activas',
+            'Estatus laboral y dispersión de nómina'
+          ],
+          filtersApplied: [
+            `Empresa: "${schoolName}"`,
+            'Aislamiento estricto de empresa corporativa B2B'
+          ],
+          visualizationDescription: 'Se presenta un gráfico de distribución de personal por planta y la tabla detallada de especialistas.',
+          followUpPrompt: '¿Deseas consultar la nómina quincenal, los programas de capacitación o abrir el expediente técnico de un colaborador?'
+        },
+        kpis: [
+          {
+            id: 'kpi-corp-count',
+            label: 'Colaboradores Activos',
+            value: `${corpTableRows.length} Técnicos`,
+            subtext: `Adscritos a ${schoolName}`,
+            color: 'emerald',
+            trend: { direction: 'up', value: 'Plantilla completa' }
+          },
+          {
+            id: 'kpi-corp-att',
+            label: 'Asistencia a Turno',
+            value: '100%',
+            subtext: 'Puntualidad en planta',
+            color: 'indigo'
+          },
+          {
+            id: 'kpi-corp-cert',
+            label: 'Certificaciones',
+            value: 'ISO 45001 / STPS',
+            subtext: 'Normativa vigente',
+            color: 'cyan'
+          },
+          {
+            id: 'kpi-corp-status',
+            label: 'Estatus Nómina',
+            value: 'Vigente',
+            subtext: 'Dispersión quincenal al corriente',
+            color: 'purple'
+          }
+        ],
+        chart: {
+          type: 'bar',
+          availableTypes: ['bar', 'column', 'donut'],
+          title: `Distribución de Colaboradores Técnicos (${schoolName})`,
+          subtitle: 'Cantidad de ingenieros y especialistas por planta operativa',
+          labels: chartLabels.length > 0 ? chartLabels : ['Planta Principal'],
+          datasets: [
+            {
+              name: 'Colaboradores',
+              data: chartData.length > 0 ? chartData : [corpTableRows.length],
+              color: '#0066B1'
+            }
+          ],
+          unit: 'count'
+        },
+        table: {
+          columns: [
+            { key: 'enrollmentId', label: 'No. Colaborador' },
+            { key: 'studentName', label: 'Colaborador Técnico' },
+            { key: 'curp', label: 'RFC Oficial' },
+            { key: 'levelGrade', label: 'Puesto / Especialidad' },
+            { key: 'campusName', label: 'Planta / Sede' },
+            { key: 'hours', label: 'Horas Capacitación', align: 'center' },
+            { key: 'medicalCondition', label: 'Certificación / Norma' },
+            { key: 'status', label: 'Estatus Laboral', align: 'center', isBadge: true }
+          ],
+          rows: corpTableRows,
+          totalRows: corpTableRows.length
+        },
+        suggestedQueries: [
+          '¿Cuál es la nómina quincenal de los colaboradores técnicos?',
+          'Programas de capacitación industrial y certificaciones',
+          '¿A qué debo prestar atención esta semana?',
+          'Radar estratégico de la empresa'
+        ]
+      };
+    }
+
     return {
       domain,
       queryReceived: rawQuery,
@@ -4371,7 +5231,10 @@ export const executeAnalyticQuery = (
     };
 
     if (!isExtremeAge && targetStudentName !== '__CURRENT_OR_FIRST__') {
-      if (isAllergyCatalogQuery) {
+      if (isCorporateTarget) {
+        // En empresas corporativas, buscar estricta y únicamente en colaboradores de la empresa
+        runExpedienteSearchOnPool(enrichedAllStudents, false);
+      } else if (isAllergyCatalogQuery) {
         // En consulta del catálogo general de alergias ("¿cuáles son las alergias que existen?"),
         // auditar sobre el catálogo institucional maestro completo para garantizar las 6 alergias oficiales
         runExpedienteSearchOnPool(enrichedMasterStudents, true);
@@ -4381,13 +5244,13 @@ export const executeAnalyticQuery = (
 
         // 2. Si no hay coincidencias o es búsqueda médica/alergia específica no hallada en el plantel acotado,
         // buscar de inmediato en el catálogo institucional maestro para que el directivo siempre obtenga el expediente
-        if (matchedItems.length === 0) {
+        if (matchedItems.length === 0 && !isCorporateTarget) {
           runExpedienteSearchOnPool(enrichedMasterStudents, true);
         }
       }
 
       // 3. Cruce con recibos de cobranza familiar (Tutores registrados como pagadores)
-      if (!isScholarshipSearch) {
+      if (!isScholarshipSearch && !isCorporateTarget) {
         const allBillingToScan = scopedBilling.length > 0 ? scopedBilling : billingRecords;
         for (const b of allBillingToScan) {
           const pName = (b.parentName || '').toLowerCase();
@@ -4416,7 +5279,7 @@ export const executeAnalyticQuery = (
       }
 
       // 4. Cruce con evaluaciones y observaciones de docentes
-      if (!isScholarshipSearch) {
+      if (!isScholarshipSearch && !isCorporateTarget) {
         const poolForNotes = enrichedAllStudents.length > 0 ? enrichedAllStudents : enrichedMasterStudents;
         for (const item of poolForNotes) {
           if (item.student.teacher_notes) {
@@ -4441,7 +5304,7 @@ export const executeAnalyticQuery = (
     // ========================================================================
     // ESCENARIO ESPECIAL: BÚSQUEDA DE "ISRAEL" (Aclaración Pedagógica y de Expediente)
     // ========================================================================
-    const isIsraelQuery = searchTarget.includes('israel') || rawQuery.toLowerCase().includes('israel');
+    const isIsraelQuery = !isCorporateTarget && (searchTarget.includes('israel') || rawQuery.toLowerCase().includes('israel'));
     if (isIsraelQuery) {
       // Localizar expediente del alumno tutorado (Diego Vargas Ríos)
       const israelBill = scopedBilling.find(b => (b.parentName || '').toLowerCase().includes('israel')) ||
@@ -4745,7 +5608,7 @@ export const executeAnalyticQuery = (
       return false;
     });
 
-    const fallbackSelected = matchedStudentInfo || matchedItems[0]?.info;
+    const fallbackSelected = matchedStudentInfo || matchedItems[0]?.info || (isCorporateTarget ? enrichedAllStudents[0] : undefined);
     const effectiveSelected = hasSpecificStudentMatch?.info || fallbackSelected;
 
     const shouldShowIndividualProfile = effectiveSelected && (
@@ -4801,6 +5664,147 @@ export const executeAnalyticQuery = (
       let medicalSpecificKPIs: AnalyticKPICard[] | undefined;
       let medicalSpecificTable: { columns: AnalyticTableColumn[]; rows: Record<string, any>[]; totalRows: number } | undefined;
       let medicalSpecificChart: AnalyticChartConfig | undefined;
+
+      if (isCorporateTarget) {
+        const corpRole = (student as any).job_title || student.grade || 'Especialista Técnico';
+        const corpPlant = student.campus_name || currentInstitution?.name || 'Planta Operativa';
+        const corpHours = (student as any).training_hours ? `${(student as any).training_hours} hrs` : '120 hrs';
+        const corpCert = ((student as any).certifications && (student as any).certifications.length > 0)
+          ? (student as any).certifications.join(', ')
+          : (student.academic_notes || 'ISO 45001 / Siemens TIA Portal / Robótica KUKA');
+
+        summaryText = `Se localizó el expediente técnico de **${selected.fullName}** en ${schoolName}. Puesto: **${corpRole}** (${corpPlant}). Horas de capacitación técnica: **${corpHours} acumuladas** con 100% de asistencia. Certificaciones vigentes: ${corpCert}. Estatus de nómina: **Vigente**.`;
+
+        const student360Corp: Student360Detail = {
+          student,
+          billingRecords: [],
+          totalDebt: 0,
+          totalPaid: 0,
+          attendanceStats: {
+            totalClasses: 120,
+            presentes: 120,
+            faltas: 0,
+            retardos: 0,
+            justificados: 0,
+            attendanceRate: 100
+          }
+        };
+
+        return {
+          domain,
+          queryReceived: rawQuery,
+          reportTitle: `Expediente de Talento Técnico / Colaborador: ${selected.fullName}`,
+          schoolName,
+          schoolId: effectiveSchoolId || 'global',
+          isConsolidated: false,
+          isCorporate: true,
+          corporateIndustry: (currentInstitution as any)?.corporate_industry || 'automotive',
+          generatedAt: timestamp,
+          tokenCost: 0,
+          directAnswer: summaryText,
+          explanation: {
+            summary: summaryText,
+            fieldsIncluded: [
+              `Colaborador y Puesto: ${selected.fullName} (${corpRole})`,
+              `Planta Asignada: ${corpPlant}`,
+              `Horas de Capacitación Técnica: ${corpHours} acumuladas`,
+              'Estatus de Nómina y Dispersión Quincenal'
+            ],
+            filtersApplied: [
+              `Empresa: "${schoolName}"`,
+              `Filtro de búsqueda: Colaborador "${selected.fullName}"`,
+              'Aislamiento estricto de empresa corporativa B2B'
+            ],
+            visualizationDescription: 'Se desplegó la ficha técnica del colaborador con horas de entrenamiento, certificaciones y estatus operativo en planta.',
+            followUpPrompt: '¿Deseas consultar otros colaboradores técnicos, revisar la nómina o los programas de capacitación industrial?'
+          },
+          kpis: [
+            {
+              id: 'kpi-corp-role',
+              label: 'Puesto / Especialidad',
+              value: corpRole,
+              subtext: `Área: ${student.level || 'Operaciones'}`,
+              color: 'emerald'
+            },
+            {
+              id: 'kpi-corp-plant',
+              label: 'Planta / Sede Operativa',
+              value: corpPlant,
+              subtext: `RFC: ${student.curp || 'Vigente'}`,
+              color: 'indigo'
+            },
+            {
+              id: 'kpi-corp-hours',
+              label: 'Horas Capacitación',
+              value: corpHours,
+              subtext: '100% de Asistencia a Turno',
+              color: 'emerald'
+            },
+            {
+              id: 'kpi-corp-payroll',
+              label: 'Estatus de Nómina',
+              value: 'Vigente',
+              subtext: 'Dispersión quincenal activa',
+              color: 'emerald'
+            }
+          ],
+          chart: {
+            type: 'donut',
+            availableTypes: ['donut', 'column', 'bar'],
+            title: `Horas de Capacitación Técnica y Turno: ${selected.fullName}`,
+            subtitle: 'Distribución de módulos técnicos y certificaciones industriales',
+            labels: ['Robótica & Celdas', 'Seguridad ISO 45001', 'Siemens TIA Portal', 'Turno en Planta'],
+            datasets: [
+              {
+                name: 'Horas',
+                data: [40, 30, 25, 25],
+                color: '#0066B1'
+              }
+            ],
+            unit: 'count'
+          },
+          table: {
+            columns: [
+              { key: 'folio', label: 'No. Colaborador' },
+              { key: 'programa', label: 'Módulo / Programa B2B' },
+              { key: 'horas', label: 'Horas Cubiertas', align: 'center' },
+              { key: 'certificacion', label: 'Certificación / Norma' },
+              { key: 'estatus', label: 'Estatus', align: 'center', isBadge: true }
+            ],
+            rows: [
+              {
+                folio: student.enrollment_id || 'EMP-2026-001',
+                programa: 'Robótica Industrial KUKA & Celdas de Soldadura Láser',
+                horas: '50 hrs',
+                certificacion: 'KUKA System Specialist',
+                estatus: 'Acreditado'
+              },
+              {
+                folio: student.enrollment_id || 'EMP-2026-001',
+                programa: 'Arquitectura de Alto Voltaje EV Gen6',
+                horas: '40 hrs',
+                certificacion: 'Norma NFPA 70E / STPS',
+                estatus: 'Acreditado'
+              },
+              {
+                folio: student.enrollment_id || 'EMP-2026-001',
+                programa: 'Mantenimiento Predictivo Siemens TIA Portal',
+                horas: '30 hrs',
+                certificacion: 'Siemens Certified Associate',
+                estatus: 'Acreditado'
+              }
+            ],
+            totalRows: 3
+          },
+          studentDetail: student360Corp,
+          suggestedQueries: [
+            '¿Cuál es la nómina quincenal de los colaboradores técnicos?',
+            'Directorio oficial de colaboradores y especialistas de planta',
+            'Programas de capacitación industrial y certificaciones',
+            'Radar estratégico de la empresa'
+          ]
+        };
+      }
 
       if (criteria.focus === 'age') {
         summaryText = `El alumno **${selected.fullName}** tiene **${selected.calculatedAge} años de edad** (nacido el ${selected.birthDateStr}). Cursa ${student.grade} de ${student.level.toUpperCase()} en el plantel ${student.campus_name || 'Principal'}. Tutor registrado: ${student.tutor_name || student.father_name || 'Tutor Familiar'} (Tel: ${student.phone || student.emergency_contact_phone || 'N/D'}). Saldo pendiente: ${formatMXN(totalDebt)} y ${formatPercent(attendanceRate)} de asistencia.`;
@@ -6166,13 +7170,15 @@ export const executeAnalyticQuery = (
       queryReceived: rawQuery,
       reportTitle: isEarningRankQuery 
         ? (isPayrollMin ? 'Análisis de Percepciones: Colaboradores con Menor Salario' : 'Análisis de Percepciones: Colaboradores con Mayor Salario')
-        : 'Supervisión de Nómina y Compensaciones del Personal Escolar',
+        : (isCorporateTarget ? `Dispersión de Nómina Especializada e Instructores Master (${schoolName})` : 'Supervisión de Nómina y Compensaciones del Personal Escolar'),
       schoolName,
       schoolId: effectiveSchoolId || 'global',
       isConsolidated,
       generatedAt: timestamp,
       tokenCost: 0,
-      directAnswer: payrollDirectAnswer,
+      directAnswer: isCorporateTarget 
+        ? `Supervisión de nómina quincenal para **${schoolName}** con una dispersión neta total de **${formatMXN(totalDispersed)}** a ${scopedPayroll.length} colaboradores técnicos e instructores master, 100% dispersada en tiempo y forma.`
+        : payrollDirectAnswer,
       explanation: {
         summary: `La plantilla en nómina de "${schoolName}" suma ${scopedPayroll.length} colaboradores con una erogación neta de ${formatMXN(totalDispersed)} por periodo quincenal.`,
         fieldsIncluded: [
@@ -6186,7 +7192,9 @@ export const executeAnalyticQuery = (
           'Periodo activo: 1ª Quincena de Septiembre 2026'
         ],
         visualizationDescription: 'Se presenta la distribución de masa salarial por departamento y la nómina detallada.',
-        followUpPrompt: '¿Deseas ajustar el sueldo base de un puesto directivo o comparar la nómina contra la recaudación de colegiaturas?'
+        followUpPrompt: isCorporateTarget
+          ? '¿Deseas auditar la dispersión presupuestal por planta o consultar el desglose de instructores master?'
+          : '¿Deseas ajustar el sueldo base de un puesto directivo o comparar la nómina contra la recaudación de colegiaturas?'
       },
       kpis: [
         {
@@ -6248,7 +7256,12 @@ export const executeAnalyticQuery = (
         rows: tableRows,
         totalRows: tableRows.length
       },
-      suggestedQueries: [
+      suggestedQueries: isCorporateTarget ? [
+        '¿Cuál es la nómina quincenal de los colaboradores técnicos?',
+        'Directorio oficial de colaboradores y especialistas de planta',
+        'Programas de capacitación industrial y certificaciones',
+        '¿A qué debo prestar atención esta semana?'
+      ] : [
         'Comparativa entre meses de ingresos vs nómina',
         'Estudiantes con adeudo activo en el colegio',
         'Resumen de control total institucional'

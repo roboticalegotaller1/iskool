@@ -85,6 +85,7 @@ import { RowActionMenu } from '@/components/ui';
 import { useDebounce } from '@/hooks/useDebounce';
 import { IndependentTeachersSuperUserStudio } from '@/components/admin/IndependentTeachersSuperUserStudio';
 import { CorporateEnterprisesSuperUserStudio } from '@/components/admin/CorporateEnterprisesSuperUserStudio';
+import { CorporateOfficialLogo } from '@/components/brand/CorporateOfficialLogo';
 
 type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll' | 'analytics' | 'deletions' | 'books_compendium';
 
@@ -1968,16 +1969,26 @@ export default function SuperUserAdminPage() {
                   <div className="p-6 space-y-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="relative group/logo shrink-0">
-                        <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-600 via-blue-600 to-indigo-800 flex items-center justify-center text-white shadow-md shadow-indigo-600/30">
-                          <Building2 className="h-8 w-8 text-white" />
+                        <div className="h-16 w-24 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-900 border border-indigo-400/40 flex items-center justify-center p-1.5 shadow-md shadow-indigo-900/30 overflow-hidden">
+                          <div className="flex items-center -space-x-2.5">
+                            <div className="h-8 w-8 rounded-full bg-white border border-slate-300 shadow-xs flex items-center justify-center p-0.5 shrink-0 overflow-hidden" title="BMW Group México">
+                              <CorporateOfficialLogo enterpriseId="emp-bmw" size={26} variant="emblem_only" />
+                            </div>
+                            <div className="h-8 w-8 rounded-full bg-white border border-slate-300 shadow-xs flex items-center justify-center p-0.5 shrink-0 overflow-hidden" title="Grupo Comercial Vanguardia Retail">
+                              <CorporateOfficialLogo enterpriseId="emp-ventas" size={26} variant="emblem_only" />
+                            </div>
+                            <div className="h-8 w-8 rounded-full bg-white border border-slate-300 shadow-xs flex items-center justify-center p-0.5 shrink-0 overflow-hidden" title="Innovasoft Dynamics Cloud & AI">
+                              <CorporateOfficialLogo enterpriseId="emp-tech" size={26} variant="emblem_only" />
+                            </div>
+                          </div>
                         </div>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             setShowCorporateStudio(true);
                           }}
-                          title="Gestionar Identidad & Logotipos de Empresas"
-                          className="absolute -bottom-1.5 -right-1.5 p-1.5 rounded-xl bg-white text-slate-600 hover:text-slate-900 border border-slate-200 shadow-sm cursor-pointer transition-transform hover:scale-110"
+                          title="Gestionar Identidad & Logotipos Oficiales de Empresas"
+                          className="absolute -bottom-1.5 -right-1.5 p-1.5 rounded-xl bg-white text-slate-700 hover:text-indigo-600 border border-slate-200 shadow-sm cursor-pointer transition-transform hover:scale-110"
                         >
                           <ImageIcon className="h-3.5 w-3.5" />
                         </button>
@@ -2019,7 +2030,7 @@ export default function SuperUserAdminPage() {
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                        Suite ejecutiva de talento para empresas e industrias: capacitación especializada, control de competencias laborales, nóminas de empleados y analítica sin gamificación.
+                        Suite ejecutiva de talento para empresas e industrias: capacitación especializada, control de competencias laborales, nóminas corporativas y analítica ejecutiva sin gamificación.
                       </p>
                     </div>
 
@@ -2038,8 +2049,10 @@ export default function SuperUserAdminPage() {
                         <span className="text-[9px] font-bold text-slate-500 uppercase">Instructores</span>
                       </div>
                       <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
-                        <span className="text-xs font-black text-purple-600 block">{(totalCorporateTokens / 1000).toFixed(0)}k</span>
-                        <span className="text-[9px] font-bold text-slate-500 uppercase">Tokens IA</span>
+                        <span className="text-xs font-black text-indigo-600 block">
+                          {corporateEnterprises.reduce((acc, e) => acc + (e.courses_count || 4), 0)}
+                        </span>
+                        <span className="text-[9px] font-bold text-slate-500 uppercase">Programas B2B</span>
                       </div>
                     </div>
 
@@ -2051,7 +2064,7 @@ export default function SuperUserAdminPage() {
                       </div>
                       <div className="flex items-center gap-1.5 truncate">
                         <Users className="h-3 w-3 text-slate-400 shrink-0" />
-                        <span className="truncate">Nexus Motors México, Vanguardia Retail, Innovasoft Tech</span>
+                        <span className="truncate">BMW Group México, Vanguardia Retail, Innovasoft Tech</span>
                       </div>
                     </div>
                   </div>

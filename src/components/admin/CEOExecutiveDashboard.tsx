@@ -89,9 +89,30 @@ import { InstitutionalBrainStudio } from './InstitutionalBrainStudio';
 import { OperationalEcosystemControl } from './OperationalEcosystemControl';
 import { PhaseCurricularAuditModal } from './PhaseCurricularAuditModal';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
+import { CorporateOfficialLogo } from '@/components/brand/CorporateOfficialLogo';
 import ExecutiveAnalyticsStudio from './ExecutiveAnalyticsStudio';
 import ExecutiveBiCommandCenter from './ExecutiveBiCommandCenter';
 import { AcademicPortalAdminModal } from './AcademicPortalAdminModal';
+import { useAdmissionsPipeline } from '@/hooks/useAdmissionsPipeline';
+import BentoAdmissionsKanban from './BentoAdmissionsKanban';
+import { useCrmStore } from '@/store/useCrmStore';
+import { normalizeCampusKey } from '@/services/admissionsPipelineService';
+import type { CrmStageKey } from '@/types/crm';
+import Link from 'next/link';
+import dynamic from 'next/dynamic';
+
+const CrmAdmissionsStudio = dynamic(
+  () => import('@/components/crm/CrmAdmissionsStudio'),
+  { ssr: false, loading: () => (
+    <div className="p-12 text-center text-slate-400 animate-pulse bg-white rounded-3xl border border-slate-200/80 shadow-xs space-y-3">
+      <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center text-2xl shadow-md shadow-purple-500/20">
+        📋
+      </div>
+      <p className="text-base font-black text-slate-800">Cargando CRM Escolar Unificado 360°…</p>
+      <p className="text-xs text-slate-400">Sincronizando pipeline de admisiones y corresponsabilidad departamental...</p>
+    </div>
+  )}
+);
 
 // ==========================================
 // ==========================================
@@ -385,7 +406,7 @@ export interface ProspectFamily {
   campusName: string;
   stage: 1 | 2 | 3 | 4 | 5;
   stageName: string;
-  channel: 'Recomendación Familiar' | 'Canales Digitales & Web' | 'Convenios Corporativos' | 'Feria Escolar';
+  channel: 'Recomendación Familiar' | 'Canales Digitales & Web' | 'Convenios Corporativos' | 'Feria Escolar' | 'Bolsas de Empleo & Redes' | 'Headhunting Directo' | 'Recomendación Interna' | 'Convenios con Universidades';
   registeredDate: string;
   notes: string;
 }
@@ -543,83 +564,256 @@ export const INITIAL_PROSPECTS_DATA: ProspectFamily[] = [
   }
 ];
 
-export const INITIAL_CORPORATE_CANDIDATES: ProspectFamily[] = [
+export const INITIAL_BMW_CANDIDATES: ProspectFamily[] = [
   {
-    id: 'prospect-corp-1',
-    studentName: 'Ing. Fernando Reyes Aguilar',
-    grade: 'Especialista en Automatización & PLC',
-    tutorName: 'Lic. Mariana Valdés (Atracción de Talento)',
-    phone: '55 4192 8841',
-    email: 'fernando.reyes@talento-corp.mx',
-    campusId: 'cdmx',
-    campusName: 'Planta Industrial Norte (CDMX)',
-    stage: 4,
-    stageName: '4. Oferta Laboral Emitida',
-    channel: 'Recomendación Familiar',
-    registeredDate: 'Hace 3 días',
-    notes: 'Propuesta económica enviada para puesto de Especialista en PLC & Robótica Industrial. Aceptación preliminar recibida.'
-  },
-  {
-    id: 'prospect-corp-2',
-    studentName: 'Lic. Claudia Albarrán Soto',
-    grade: 'Supervisor de Seguridad & SST (Norma 035)',
-    tutorName: 'Ing. Carlos Mendoza (Operaciones)',
-    phone: '55 8320 1194',
-    email: 'claudia.albarran@talento-corp.mx',
-    campusId: 'satelite',
-    campusName: 'Sede Tecnológica Santa Fe',
-    stage: 3,
-    stageName: '3. Evaluación Técnica & Psicométrica',
-    channel: 'Canales Digitales & Web',
-    registeredDate: 'Hace 5 días',
-    notes: 'Evaluación técnica completada con 96% de aprobación en protocolos STPS y matrices de riesgo industrial.'
-  },
-  {
-    id: 'prospect-corp-3',
-    studentName: 'Ing. Roberto Garza Morales',
-    grade: 'Líder Técnico de Calidad ISO 9001',
-    tutorName: 'Lic. Brenda Juárez (Capital Humano)',
-    phone: '55 3190 2481',
-    email: 'roberto.garza@calidad-ind.mx',
-    campusId: 'interlomas',
-    campusName: 'Centro Corporativo Reforma',
-    stage: 5,
-    stageName: '5. Contratación Confirmada',
-    channel: 'Recomendación Familiar',
-    registeredDate: 'Hace 1 semana',
-    notes: 'Contratación firmada al 100%. Alta patronal en IMSS y expediente 360 corporativo activo.'
-  },
-  {
-    id: 'prospect-corp-4',
-    studentName: 'Téc. Carlos Montes Estrada',
-    grade: 'Técnico Especialista de Mantenimiento',
-    tutorName: 'Ing. Ernesto Ramos (Planta Bajío)',
-    phone: '55 9012 3456',
-    email: 'carlos.montes@mantenimiento.mx',
-    campusId: 'queretaro',
-    campusName: 'Planta Logística Bajío (Querétaro)',
-    stage: 2,
-    stageName: '2. Entrevista Inicial',
-    channel: 'Convenios Corporativos',
-    registeredDate: 'Hace 2 días',
-    notes: 'Entrevista técnica completada con Director de Mantenimiento. Pasa a prueba práctica en líneas de ensamblaje.'
-  },
-  {
-    id: 'prospect-corp-5',
-    studentName: 'Ing. Andrea Ruiz Velázquez',
-    grade: 'Analista de Procesos B2B & Supply Chain',
-    tutorName: 'Lic. Samuel Ortiz (Reclutamiento)',
-    phone: '55 3901 1284',
-    email: 'andrea.ruiz@supply-corp.mx',
-    campusId: 'sanluis',
-    campusName: 'Planta Manufactura Toluca',
+    id: 'prospect-bmw-1',
+    studentName: 'Ing. Daniel Zavala Ríos',
+    grade: 'Especialista en Robótica KUKA & Celdas de Soldadura',
+    tutorName: 'Lic. Rodrigo Sánchez Monroy (HR VP)',
+    phone: '444 812 9044',
+    email: 'daniel.zavala@ingenieria.mx',
+    campusId: 'cmp-bmw-slp',
+    campusName: 'Planta San Luis Potosí (Manufactura y Ensamble)',
     stage: 1,
     stageName: '1. Candidato en Base de Datos',
-    channel: 'Canales Digitales & Web',
-    registeredDate: 'Ayer',
-    notes: 'CV recibido por portal de empleo institucional. Perfil calificado para optimización de inventarios y logística B2B.'
+    channel: 'Bolsas de Empleo & Redes',
+    registeredDate: 'Hace 1 día',
+    notes: 'Ingeniero Mecatrónico con 6 años de experiencia en celdas robotizadas KUKA. Disponibilidad inmediata para planta SLP.'
+  },
+  {
+    id: 'prospect-bmw-2',
+    studentName: 'Mtra. Andrea L. Pantoja Cruz',
+    grade: 'Ingeniera de Ensamble Tren Motriz Eléctrico',
+    tutorName: 'Dra. Erika Von Humboldt (Alto Voltaje)',
+    phone: '444 980 1122',
+    email: 'andrea.pantoja@evmotors.de',
+    campusId: 'cmp-bmw-slp',
+    campusName: 'Planta San Luis Potosí (Manufactura y Ensamble)',
+    stage: 2,
+    stageName: '2. Entrevista Inicial',
+    channel: 'Headhunting Directo',
+    registeredDate: 'Hace 2 días',
+    notes: 'Entrevista técnica presencial programada en el Centro de Baterías de Planta SLP. Certificación DGUV Nivel 3.'
+  },
+  {
+    id: 'prospect-bmw-3',
+    studentName: 'Ing. Mauricio Garza Treviño',
+    grade: 'Líder Técnico de Ensamble & ISO 45001',
+    tutorName: 'Ing. Guillermo Schmidt (Master Trainer)',
+    phone: '444 321 8899',
+    email: 'mauricio.garza@autotech.mx',
+    campusId: 'cmp-bmw-slp',
+    campusName: 'Planta San Luis Potosí (Manufactura y Ensamble)',
+    stage: 3,
+    stageName: '3. Evaluación Técnica & Psicométrica',
+    channel: 'Bolsas de Empleo & Redes',
+    registeredDate: 'Hace 4 días',
+    notes: 'Prueba psicométrica y simulador KUKA concluidas con 93/100. Pendiente dictamen de comité de manufactura.'
+  },
+  {
+    id: 'prospect-bmw-4',
+    studentName: 'Lic. Claudia Morales Ortiz',
+    grade: 'Supervisora de Logística JIT & Cadena Automotriz',
+    tutorName: 'Lic. Andrea Fuentes (HR Santa Fe)',
+    phone: '55 4567 1122',
+    email: 'claudia.morales@logistics.org',
+    campusId: 'cmp-bmw-cdmx',
+    campusName: 'Corporativo Nexus Santa Fe',
+    stage: 4,
+    stageName: '4. Oferta Laboral Emitida',
+    channel: 'Convenios con Universidades',
+    registeredDate: 'Hace 5 días',
+    notes: 'Carta oferta económica emitida por $45,000 MXN brutos con prestaciones superiores. Aceptación preliminar recibida.'
+  },
+  {
+    id: 'prospect-bmw-5',
+    studentName: 'Ing. Fernando Schmidt Keller',
+    grade: 'Arquitecto de Telemetría Vehicular & Baterías',
+    tutorName: 'Ing. Dirk Dreher (CEO & Director)',
+    phone: '444 199 4433',
+    email: 'fernando.schmidt@bmw-corp.mx',
+    campusId: 'cmp-bmw-slp',
+    campusName: 'Planta San Luis Potosí (Manufactura y Ensamble)',
+    stage: 5,
+    stageName: '5. Contratación Confirmada',
+    channel: 'Bolsas de Empleo & Redes',
+    registeredDate: 'Hace 1 semana',
+    notes: 'Contrato firmado al 100%. Alta patronal IMSS procesada. Entrega de credencial y kit de inducción completada.'
+  },
+  {
+    id: 'prospect-bmw-6',
+    studentName: 'Lic. Gabriel Ramos Lozano',
+    grade: 'Coordinador de Postventa & Fidelización Santa Fe',
+    tutorName: 'Lic. Andrea Fuentes (HR Santa Fe)',
+    phone: '55 6789 9900',
+    email: 'gabriel.ramos@servicios.com',
+    campusId: 'cmp-bmw-cdmx',
+    campusName: 'Corporativo Nexus Santa Fe',
+    stage: 2,
+    stageName: '2. Entrevista Inicial',
+    channel: 'Bolsas de Empleo & Redes',
+    registeredDate: 'Hace 2 días',
+    notes: 'Entrevista inicial con la gerencia de postventa de Santa Fe. Evaluación de CRM y garantías automotrices.'
   }
 ];
+
+export const INITIAL_VENTAS_CANDIDATES: ProspectFamily[] = [
+  {
+    id: 'prospect-ventas-1',
+    studentName: 'Lic. Valeria Santos Orozco',
+    grade: 'Gerente de Compras Omnicanal & Retail Analytics',
+    tutorName: 'Lic. Bernardo Garza (VP Comercial)',
+    phone: '55 1234 5678',
+    email: 'valeria.santos@retail.mx',
+    campusId: 'cmp-ventas-cdmx',
+    campusName: 'Corporativo Insurgentes CDMX',
+    stage: 1,
+    stageName: '1. Candidato en Base de Datos',
+    channel: 'Bolsas de Empleo & Redes',
+    registeredDate: 'Hace 1 día',
+    notes: 'Experiencia en negociación de categorías de consumo masivo con proveedores nacionales e internacionales.'
+  },
+  {
+    id: 'prospect-ventas-2',
+    studentName: 'Lic. Rodrigo E. Villarreal Sada',
+    grade: 'Coordinador de Distribución y Flotas CEDIS',
+    tutorName: 'Lic. Mariana Garza Sada (CEO)',
+    phone: '81 8345 6789',
+    email: 'rodrigo.villarreal@logistica.com',
+    campusId: 'cmp-ventas-mty',
+    campusName: 'CEDIS Norte Monterrey (Cadena Logística)',
+    stage: 2,
+    stageName: '2. Entrevista Inicial',
+    channel: 'Bolsas de Empleo & Redes',
+    registeredDate: 'Hace 2 días',
+    notes: 'Visita técnica programada en CEDIS Apodaca para evaluar patios de maniobras y rutas metropolitanas.'
+  },
+  {
+    id: 'prospect-ventas-3',
+    studentName: 'Ing. Brenda Covarrubias Lara',
+    grade: 'Supervisora de Operaciones WMS y Logística Inversa',
+    tutorName: 'Mtro. Javier Alarcón Castillo (Logística)',
+    phone: '33 3456 7890',
+    email: 'brenda.covarrubias@wms.com',
+    campusId: 'cmp-ventas-gdl',
+    campusName: 'Hub Logístico Guadalajara',
+    stage: 3,
+    stageName: '3. Evaluación Técnica & Psicométrica',
+    channel: 'Headhunting Directo',
+    registeredDate: 'Hace 3 días',
+    notes: 'Evaluación técnica de software WMS y auditoría de inventarios cíclicos con calificación de 92%.'
+  },
+  {
+    id: 'prospect-ventas-4',
+    studentName: 'Lic. Carlos Alcocer Ramos',
+    grade: 'Key Account Manager Cuentas Clave Retail',
+    tutorName: 'Lic. Bernardo Garza (VP Comercial)',
+    phone: '55 9876 1234',
+    email: 'carlos.alcocer@kam.com.mx',
+    campusId: 'cmp-ventas-cdmx',
+    campusName: 'Corporativo Insurgentes CDMX',
+    stage: 4,
+    stageName: '4. Oferta Laboral Emitida',
+    channel: 'Recomendación Interna',
+    registeredDate: 'Hace 4 días',
+    notes: 'Propuesta de compensación fija más esquema de comisiones y bonos de cumplimiento de cuota trimestral.'
+  },
+  {
+    id: 'prospect-ventas-5',
+    studentName: 'Lic. Mónica Terán Sepúlveda',
+    grade: 'Subdirectora de Experiencia del Cliente & Postventa',
+    tutorName: 'Lic. Mariana Garza Sada (CEO)',
+    phone: '81 9988 7766',
+    email: 'monica.teran@vanguardia-retail.mx',
+    campusId: 'cmp-ventas-mty',
+    campusName: 'CEDIS Norte Monterrey (Cadena Logística)',
+    stage: 5,
+    stageName: '5. Contratación Confirmada',
+    channel: 'Convenios con Universidades',
+    registeredDate: 'Hace 1 semana',
+    notes: 'Contratada formalmente. Expediente laboral y registro en nómina de Monterrey concluido.'
+  }
+];
+
+export const INITIAL_TECH_CANDIDATES: ProspectFamily[] = [
+  {
+    id: 'prospect-tech-1',
+    studentName: 'Ing. Sebastián Ruiz Calderón',
+    grade: 'Senior DevOps & Cloud Platform Engineer',
+    tutorName: 'Mtro. Alejandro Ramos (Head of Engineering)',
+    phone: '55 2233 4455',
+    email: 'sebastian.ruiz@devops.cloud',
+    campusId: 'cmp-tech-cdmx',
+    campusName: 'Innovation Center CDMX Polanco',
+    stage: 1,
+    stageName: '1. Candidato en Base de Datos',
+    channel: 'Bolsas de Empleo & Redes',
+    registeredDate: 'Hace 1 día',
+    notes: 'Ingeniero de Plataforma con 7 años en microservicios, Terraform y orquestación multi-cloud.'
+  },
+  {
+    id: 'prospect-tech-2',
+    studentName: 'Mtra. Karla Daniela Peña Solís',
+    grade: 'Staff MLOps & AI Deployment Specialist',
+    tutorName: 'Dra. Sofía Mendoza Valdés (Lead AI)',
+    phone: '33 9988 1122',
+    email: 'karla.pena@mlops.ai',
+    campusId: 'cmp-tech-gdl',
+    campusName: 'Tech Hub Guadalajara (Silicon Valley MX)',
+    stage: 2,
+    stageName: '2. Entrevista Inicial',
+    channel: 'Headhunting Directo',
+    registeredDate: 'Hace 2 días',
+    notes: 'Entrevista técnica profunda sobre optimización de inferencia en clusters GPU y pipelines de IA.'
+  },
+  {
+    id: 'prospect-tech-3',
+    studentName: 'Ing. Héctor V. Cárdenas Mora',
+    grade: 'Fullstack Principal & Golang Microservices',
+    tutorName: 'Mtro. Alejandro Ramos (Head of Engineering)',
+    phone: '33 4455 6677',
+    email: 'hector.cardenas@fullstack.io',
+    campusId: 'cmp-tech-gdl',
+    campusName: 'Tech Hub Guadalajara (Silicon Valley MX)',
+    stage: 3,
+    stageName: '3. Evaluación Técnica & Psicométrica',
+    channel: 'Bolsas de Empleo & Redes',
+    registeredDate: 'Hace 3 días',
+    notes: 'Resolvió reto técnico de concurrencia y streaming gRPC con 96% de precisión y cero fugas.'
+  },
+  {
+    id: 'prospect-tech-4',
+    studentName: 'Ing. Diana Marcela Montes Parra',
+    grade: 'Data Architect & Big Data Distributed Pipelines',
+    tutorName: 'Mtro. Alejandro Ramos (Head of Engineering)',
+    phone: '55 6677 8899',
+    email: 'diana.montes@dataarchitect.mx',
+    campusId: 'cmp-tech-cdmx',
+    campusName: 'Innovation Center CDMX Polanco',
+    stage: 4,
+    stageName: '4. Oferta Laboral Emitida',
+    channel: 'Recomendación Interna',
+    registeredDate: 'Hace 5 días',
+    notes: 'Carta oferta firmada. Incluye bono de contratación y esquema de trabajo híbrido en Polanco.'
+  },
+  {
+    id: 'prospect-tech-5',
+    studentName: 'Dr. Rodrigo Téllez Villegas',
+    grade: 'Lead AI Scientist & Computer Vision',
+    tutorName: 'Dra. Sofía Mendoza Valdés (Lead AI)',
+    phone: '33 1122 3344',
+    email: 'rodrigo.tellez@innovasoft.ai',
+    campusId: 'cmp-tech-gdl',
+    campusName: 'Tech Hub Guadalajara (Silicon Valley MX)',
+    stage: 5,
+    stageName: '5. Contratación Confirmada',
+    channel: 'Bolsas de Empleo & Redes',
+    registeredDate: 'Hace 1 semana',
+    notes: 'Onboarding completado al 100%. Acceso a entornos de producción, VPN enterprise y contrato laboral registrado.'
+  }
+];
+
+export const INITIAL_CORPORATE_CANDIDATES: ProspectFamily[] = INITIAL_BMW_CANDIDATES;
 
 interface CEOExecutiveDashboardProps {
   holding?: OrganizationHolding;
@@ -684,6 +878,80 @@ export default function CEOExecutiveDashboard({
            schoolId === 'sec-empresas-ceo';
   }, [currentInstitution, holding, schoolId]);
 
+  // Sub-detección de empresas corporativas específicas
+  const isBmw = useMemo(() => {
+    if (!isCorporate) return false;
+    const instId = String(currentInstitution?.id || schoolId || '').toLowerCase();
+    const instName = String(currentInstitution?.name || holding?.name || '').toLowerCase();
+    return instId === 'emp-bmw' || instId.includes('bmw') || instName.includes('bmw') || instName.includes('nexus');
+  }, [isCorporate, currentInstitution, schoolId, holding]);
+
+  const isRetail = useMemo(() => {
+    if (!isCorporate) return false;
+    const instId = String(currentInstitution?.id || schoolId || '').toLowerCase();
+    const instName = String(currentInstitution?.name || holding?.name || '').toLowerCase();
+    return instId === 'emp-ventas' || instId.includes('retail') || instId.includes('ventas') || instName.includes('retail') || instName.includes('vanguardia');
+  }, [isCorporate, currentInstitution, schoolId, holding]);
+
+  const isTech = useMemo(() => {
+    if (!isCorporate) return false;
+    const instId = String(currentInstitution?.id || schoolId || '').toLowerCase();
+    const instName = String(currentInstitution?.name || holding?.name || '').toLowerCase();
+    return instId === 'emp-tech' || instId.includes('tech') || instName.includes('innovasoft') || instName.includes('technology');
+  }, [isCorporate, currentInstitution, schoolId, holding]);
+
+  // Tema visual y configuración corporativa oficial para cada empresa
+  const corporateTheme = useMemo(() => {
+    if (!isCorporate) return null;
+    if (isBmw) {
+      return {
+        id: 'emp-bmw',
+        name: 'BMW Group México · Planta SLP',
+        displayName: 'BMW Manufacturing México S.A. de C.V.',
+        planName: 'BMW Corporate Training Suite',
+        tagline: 'Planta de Manufactura Avanzada San Luis Potosí & Centro de Ensamble de Baterías',
+        primaryColor: '#0066B1',
+        primaryHover: '#004F8A',
+        activeNavClass: 'bg-[#0066B1] text-white shadow-md font-semibold',
+        activeHeroGrad: 'from-[#00142E] via-[#061E38] to-[#0066B1]',
+        badgeBg: 'bg-sky-50 text-[#0066B1] border-sky-200',
+        industryName: 'Automotriz & Manufactura Avanzada',
+        accentText: 'text-sky-300'
+      };
+    }
+    if (isRetail) {
+      return {
+        id: 'emp-ventas',
+        name: 'Grupo Comercial Vanguardia Retail',
+        displayName: 'Grupo Comercial Vanguardia Retail S.A. de C.V.',
+        planName: 'Retail Supply Chain Enterprise Suite',
+        tagline: 'Líder en Distribución Comercial, Retail Omnicanal y Cadena de Suministro',
+        primaryColor: '#047857',
+        primaryHover: '#065F46',
+        activeNavClass: 'bg-[#047857] text-white shadow-md font-semibold',
+        activeHeroGrad: 'from-[#022C22] via-[#064E3B] to-[#047857]',
+        badgeBg: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+        industryName: 'Retail & Cadena de Suministro',
+        accentText: 'text-emerald-300'
+      };
+    }
+    // Default / Tech
+    return {
+      id: 'emp-tech',
+      name: 'Innovasoft Dynamics Cloud & AI',
+      displayName: 'Innovasoft Dynamics Cloud & AI Technologies',
+      planName: 'Cloud & AI Enterprise Intelligence Suite',
+      tagline: 'Infraestructura Cloud, Microservicios & Modelos de Inteligencia Artificial',
+      primaryColor: '#4F46E5',
+      primaryHover: '#4338CA',
+      activeNavClass: 'bg-[#4F46E5] text-white shadow-md font-semibold',
+      activeHeroGrad: 'from-[#0B0F19] via-[#1E1B4B] to-[#4F46E5]',
+      badgeBg: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+      industryName: 'Cloud & Inteligencia Artificial Enterprise',
+      accentText: 'text-cyan-300'
+    };
+  }, [isCorporate, isBmw, isRetail, isTech]);
+
   // Detección de experiencia institucional IBIME
   const isIbime = useMemo(() => {
     if (schoolId === 'sch-ibime') return true;
@@ -702,8 +970,9 @@ export default function CEOExecutiveDashboard({
 
   const institutionalDisplayName = useMemo(() => {
     if (isIbime) return 'Instituto Bilingüe IBIME';
+    if (corporateTheme) return corporateTheme.displayName;
     return currentInstitution?.licensing?.licensee || currentInstitution?.name || holding.name;
-  }, [isIbime, currentInstitution, holding]);
+  }, [isIbime, corporateTheme, currentInstitution, holding]);
 
   // ------------------------------------------
   // Estados de Control de Vista y Filtros
@@ -711,6 +980,7 @@ export default function CEOExecutiveDashboard({
   const [selectedCampusId, setSelectedCampusId] = useState<string>('all');
   const [timeFilter, setTimeFilter] = useState<'semana' | 'mes' | 'bimestre' | 'ciclo'>('semana');
   const [activeTab, setActiveTab] = useState<string>('inicio');
+  const [admissionsViewMode, setAdmissionsViewMode] = useState<'bento_kanban' | 'crm_studio'>('bento_kanban');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -754,6 +1024,16 @@ export default function CEOExecutiveDashboard({
 
   // Modal de Auditoría Curricular por Fase NEM 2024
   const [selectedPhaseForAudit, setSelectedPhaseForAudit] = useState<string | null>(null);
+
+  // Conexión reactiva con el Pipeline de Admisiones y CRM Escolar Unificado 360°
+  const {
+    metrics: livePipelineMetrics,
+    campusesBreakdown: liveCampusesBreakdown,
+    capacityTarget: liveCapacityTarget
+  } = useAdmissionsPipeline({ 
+    campusId: selectedCampusId,
+    academicYear: '2026-2027'
+  });
 
   // Cerebro Institucional y Búsqueda Semántica Local (0 Tokens)
   const [isBrainModalOpen, setIsBrainModalOpen] = useState<boolean>(false);
@@ -829,16 +1109,27 @@ export default function CEOExecutiveDashboard({
   // -----------------------------------------------------------
   // GESTIÓN DEL PIPELINE DE ADMISIONES & CAPTACIÓN (0 TOKENS)
   // -----------------------------------------------------------
-  const [prospectsList, setProspectsList] = useState<ProspectFamily[]>(() => 
-    isCorporate ? INITIAL_CORPORATE_CANDIDATES : INITIAL_PROSPECTS_DATA
-  );
+  const [prospectsList, setProspectsList] = useState<ProspectFamily[]>(() => {
+    if (!isCorporate) return INITIAL_PROSPECTS_DATA;
+    if (isRetail) return INITIAL_VENTAS_CANDIDATES;
+    if (isTech) return INITIAL_TECH_CANDIDATES;
+    return INITIAL_BMW_CANDIDATES;
+  });
 
   useEffect(() => {
     if (isCorporate) {
-      setProspectsList(prev => prev === INITIAL_PROSPECTS_DATA ? INITIAL_CORPORATE_CANDIDATES : prev);
+      if (isRetail) {
+        setProspectsList(INITIAL_VENTAS_CANDIDATES);
+      } else if (isTech) {
+        setProspectsList(INITIAL_TECH_CANDIDATES);
+      } else {
+        setProspectsList(INITIAL_BMW_CANDIDATES);
+      }
       setActiveReportQuery(prev => prev.includes('Estudiantes') ? 'Colaboradores y áreas operativas con asignación de recursos y estatus' : prev);
+    } else {
+      setProspectsList(INITIAL_PROSPECTS_DATA);
     }
-  }, [isCorporate]);
+  }, [isCorporate, isBmw, isRetail, isTech]);
 
   const [isAdmissionsPipelineOpen, setIsAdmissionsPipelineOpen] = useState<boolean>(false);
   const [isAddProspectModalOpen, setIsAddProspectModalOpen] = useState<boolean>(false);
@@ -847,14 +1138,16 @@ export default function CEOExecutiveDashboard({
   const [prospectFilterCampus, setProspectFilterCampus] = useState<string>('all');
   const [newProspectForm, setNewProspectForm] = useState({
     studentName: '',
-    grade: isCorporate ? 'Especialista en Automatización & PLC' : 'Primaria 1°',
+    grade: isCorporate ? 'Especialista en Robótica KUKA & Celdas de Soldadura' : 'Primaria 1°',
     campusId: 'cdmx',
     tutorName: '',
     phone: '',
     email: '',
     channel: 'Recomendación Familiar' as ProspectFamily['channel'],
     initialStage: 1 as 1 | 2 | 3 | 4 | 5,
-    notes: ''
+    notes: '',
+    salary: '',
+    department: ''
   });
 
   // Avanzar aspirante / candidato a la siguiente etapa del pipeline
@@ -921,20 +1214,152 @@ export default function CEOExecutiveDashboard({
       notes: newProspectForm.notes || (isCorporate ? 'Registro manual desde Consola de Atracción de Talento B2B' : 'Registro manual desde Suite de Dirección General')
     };
 
+    // Sincronización atómica con useCrmStore para el CRM y Pipeline 360°
+    if (!isCorporate) {
+      try {
+        const studentParts = newProspectForm.studentName.trim().split(/\s+/);
+        const stuFirst = studentParts[0] || 'Aspirante';
+        const stuLast1 = studentParts[1] || '';
+        const stuLast2 = studentParts.slice(2).join(' ') || '';
+
+        const tutorParts = newProspectForm.tutorName.trim().split(/\s+/);
+        const tutFirst = tutorParts[0] || 'Tutor';
+        const tutLast1 = tutorParts[1] || '';
+        const tutLast2 = tutorParts.slice(2).join(' ') || '';
+
+        const stageKeys: Record<number, CrmStageKey> = {
+          1: 'registered',
+          2: 'tour_scheduled',
+          3: 'evaluation',
+          4: 'reservation',
+          5: 'enrolled'
+        };
+
+        const targetStage = stageKeys[newProspectForm.initialStage] || 'registered';
+
+        const gradeStr = newProspectForm.grade.toLowerCase();
+        let targetLevel: 'maternal' | 'preescolar' | 'primaria' | 'secundaria' | 'preparatoria' = 'primaria';
+        if (gradeStr.includes('kínder') || gradeStr.includes('preescolar')) targetLevel = 'preescolar';
+        else if (gradeStr.includes('secundaria')) targetLevel = 'secundaria';
+        else if (gradeStr.includes('preparatoria') || gradeStr.includes('bachillerato')) targetLevel = 'preparatoria';
+        else if (gradeStr.includes('maternal')) targetLevel = 'maternal';
+
+        const effectiveTargetSchool = isCorporate ? (corporateTheme?.id || 'emp-bmw') : (schoolId || 'sch-ibime');
+        const effectivePipelineType = isCorporate ? 'corporate_recruitment' : 'new_enrollment';
+        const effectiveTargetLevel = isCorporate ? 'corporativo' : targetLevel;
+
+        const leadId = useCrmStore.getState().createLead({
+          school_id: effectiveTargetSchool,
+          campus_id: normalizeCampusKey(newProspectForm.campusId),
+          pipeline_type: effectivePipelineType,
+          stage: targetStage,
+          tutor_first_name: isCorporate ? stuFirst : tutFirst,
+          tutor_last_name_1: isCorporate ? stuLast1 : tutLast1,
+          tutor_last_name_2: isCorporate ? stuLast2 : tutLast2,
+          tutor_last_name: isCorporate ? ([stuLast1, stuLast2].filter(Boolean).join(' ') || stuFirst) : ([tutLast1, tutLast2].filter(Boolean).join(' ') || tutFirst),
+          tutor_phone: newProspectForm.phone || (isCorporate ? '444 000 0000' : '55 0000 0000'),
+          tutor_email: newProspectForm.email || (isCorporate ? 'candidato@talento.mx' : 'contacto@familia.mx'),
+          tutor_relationship: isCorporate ? 'Candidato Titular' : 'Padre',
+          source_channel: isCorporate ? (
+            (newProspectForm.channel as string) === 'Recomendación Interna' ? 'internal_referral' :
+            (newProspectForm.channel as string) === 'Bolsas de Empleo & Redes' ? 'job_board' :
+            (newProspectForm.channel as string) === 'Headhunting Directo' ? 'headhunting' : 'linkedin'
+          ) : (
+            (newProspectForm.channel as string) === 'Recomendación Familiar' ? 'referral' :
+            (newProspectForm.channel as string) === 'Canales Digitales & Web' ? 'website_form' :
+            (newProspectForm.channel as string) === 'Convenios Corporativos' ? 'corporate_agreement' :
+            (newProspectForm.channel as string) === 'Feria Escolar' ? 'school_fair' : 'website_form'
+          ),
+          source_detail: isCorporate ? 'Registro manual desde la Consola CEO de Reclutamiento' : 'Registro desde Cabecera de Admisiones en Vista CEO',
+          priority: 'warm',
+          outcome: null,
+          referral_incentive_applied: false,
+          target_academic_year: '2026-2027',
+          notes: newProspectForm.notes || (isCorporate ? 'Registro de candidato en pipeline B2B' : 'Registro manual desde la Vista CEO de Admisiones'),
+          campus_name: campusObj?.name || defaultCampus,
+          proposed_salary: isCorporate ? (newProspectForm.salary || '$48,000 MXN / mes') : undefined,
+          department: isCorporate ? (newProspectForm.department || 'Operaciones Industriales') : undefined,
+          recruiter_name: isCorporate ? (tutFirst ? `${tutFirst} ${tutLast1}` : 'Comité de Capital Humano') : undefined,
+          recruiter_title: isCorporate ? 'Dirección de Atracción de Talento' : undefined,
+        });
+
+        useCrmStore.getState().addCandidate({
+          lead_id: leadId,
+          first_name: stuFirst,
+          last_name_1: stuLast1,
+          last_name_2: stuLast2,
+          last_name: [stuLast1, stuLast2].filter(Boolean).join(' ') || stuFirst,
+          target_level: effectiveTargetLevel,
+          target_grade: isCorporate ? 'Especialista' : newProspectForm.grade,
+          position_title: isCorporate ? newProspectForm.grade : undefined,
+          department: isCorporate ? (newProspectForm.department || 'Operaciones Industriales') : undefined,
+          proposed_salary: isCorporate ? (newProspectForm.salary || '$48,000 MXN / mes') : undefined,
+          technical_score: 90,
+          evaluation_status: newProspectForm.initialStage >= 3 ? 'scheduled' : 'pending',
+          scholarship_percent: 0,
+          status: newProspectForm.initialStage === 5 ? 'enrolled' : 'active'
+        });
+      } catch (err) {
+        console.error('Error syncing lead to useCrmStore:', err);
+      }
+    }
+
     setProspectsList(prev => [newEntry, ...prev]);
     setIsAddProspectModalOpen(false);
     setNewProspectForm({
       studentName: '',
-      grade: isCorporate ? 'Especialista en Automatización & PLC' : 'Primaria 1°',
+      grade: isCorporate ? 'Especialista en Robótica KUKA & Celdas de Soldadura' : 'Primaria 1°',
       campusId: holding.campuses[0]?.id || 'cdmx',
       tutorName: '',
       phone: '',
       email: '',
       channel: 'Recomendación Familiar',
       initialStage: 1,
-      notes: ''
+      notes: '',
+      salary: '',
+      department: ''
     });
     triggerToast(`✓ ${isCorporate ? 'Candidato' : 'Aspirante'} ${newEntry.studentName} agregado con éxito al Pipeline de ${newEntry.campusName}.`);
+  };
+
+  // Exportación del Directorio de Pipeline a CSV
+  const handleExportPipelineCSV = () => {
+    const listToExport = prospectsList.filter(p => {
+      const matchSearch = prospectSearchTerm === '' ||
+        p.studentName.toLowerCase().includes(prospectSearchTerm.toLowerCase()) ||
+        p.tutorName.toLowerCase().includes(prospectSearchTerm.toLowerCase()) ||
+        p.phone.includes(prospectSearchTerm);
+      const matchCampus = prospectFilterCampus === 'all' || p.campusId === prospectFilterCampus;
+      const matchStage = prospectFilterStage === 'all' || p.stage === prospectFilterStage;
+      return matchSearch && matchCampus && matchStage;
+    });
+
+    const headers = ['ID Folio', 'Aspirante / Candidato', 'Grado / Puesto', 'Tutor / Evaluador', 'Teléfono', 'Email', 'Sede', 'Fase', 'Etapa', 'Canal Origen', 'Fecha Registro', 'Notas'];
+    const rows = listToExport.map(p => [
+      `"${p.id}"`,
+      `"${p.studentName.replace(/"/g, '""')}"`,
+      `"${p.grade.replace(/"/g, '""')}"`,
+      `"${p.tutorName.replace(/"/g, '""')}"`,
+      `"${p.phone}"`,
+      `"${p.email}"`,
+      `"${p.campusName}"`,
+      `"Fase ${p.stage}"`,
+      `"${p.stageName.replace(/"/g, '""')}"`,
+      `"${p.channel}"`,
+      `"${p.registeredDate}"`,
+      `"${(p.notes || '').replace(/"/g, '""')}"`
+    ]);
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `IBIME_Directorio_Pipeline_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    triggerToast(`✓ Directorio exportado con éxito (${listToExport.length} registros en CSV).`);
   };
 
   // Cálculo del Embudo de Conversión reactivo por sede y aspirantes
@@ -965,11 +1390,11 @@ export default function CEOExecutiveDashboard({
       }).length;
     };
 
-    const c1 = base[0] + extraInStage(1);
-    const c2 = base[1] + extraInStage(2);
-    const c3 = base[2] + extraInStage(3);
-    const c4 = base[3] + extraInStage(4);
-    const c5 = base[4] + extraInStage(5);
+    const c1 = isCorporate ? (base[0] + extraInStage(1)) : (base[0] + extraInStage(1) + (livePipelineMetrics?.phases?.[0]?.candidateCount || 0));
+    const c2 = isCorporate ? (base[1] + extraInStage(2)) : (base[1] + extraInStage(2) + (livePipelineMetrics?.phases?.[1]?.candidateCount || 0));
+    const c3 = isCorporate ? (base[2] + extraInStage(3)) : (base[2] + extraInStage(3) + (livePipelineMetrics?.phases?.[2]?.candidateCount || 0));
+    const c4 = isCorporate ? (base[3] + extraInStage(4)) : (base[3] + extraInStage(4) + (livePipelineMetrics?.phases?.[3]?.candidateCount || 0));
+    const c5 = isCorporate ? (base[4] + extraInStage(5)) : (base[4] + extraInStage(5) + (livePipelineMetrics?.phases?.[4]?.candidateCount || 0));
 
     return [
       { 
@@ -1480,16 +1905,32 @@ export default function CEOExecutiveDashboard({
       <aside className="hidden lg:flex w-64 bg-white border-r border-slate-200 flex-col justify-between z-20 shrink-0 select-none print:hidden no-print">
         <div>
           {/* Brand Logo Header */}
-          <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-lg shadow-sm">
-                i
+          <div className="h-16 flex items-center justify-between px-5 border-b border-slate-100">
+            {corporateTheme ? (
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center justify-center p-1 shrink-0">
+                  <CorporateOfficialLogo enterpriseId={corporateTheme.id} size={32} variant="emblem_only" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-sm font-black tracking-tight text-slate-900 block truncate">
+                    {isBmw ? 'BMW Group SLP' : isRetail ? 'Vanguardia Retail' : 'Innovasoft AI'}
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-500 block truncate">
+                    Suite CEO B2B
+                  </span>
+                </div>
               </div>
-              <span className="text-xl font-bold tracking-tight text-slate-900">iSkool</span>
-              <span className="text-[10px] uppercase font-extrabold tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
-                CEO
-              </span>
-            </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+                  i
+                </div>
+                <span className="text-xl font-bold tracking-tight text-slate-900">iSkool</span>
+                <span className="text-[10px] uppercase font-extrabold tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
+                  CEO
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Menú de Navegación Principal */}
@@ -1503,7 +1944,7 @@ export default function CEOExecutiveDashboard({
                   onClick={() => handleNavClick(item.id)}
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-100 cursor-pointer active:scale-98 ${
                     isActive
-                      ? 'bg-slate-900 text-white shadow-sm font-semibold'
+                      ? (corporateTheme ? corporateTheme.activeNavClass : 'bg-slate-900 text-white shadow-sm font-semibold')
                       : item.highlight
                       ? 'text-indigo-900 bg-indigo-50/80 hover:bg-indigo-100 font-bold border border-indigo-200/60'
                       : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
@@ -1598,15 +2039,31 @@ export default function CEOExecutiveDashboard({
             <div>
               {/* Header del Drawer Móvil */}
               <div className="h-16 flex items-center justify-between px-5 border-b border-slate-100">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-lg shadow-sm">
-                    i
+                {corporateTheme ? (
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="h-9 w-9 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center justify-center p-1 shrink-0">
+                      <CorporateOfficialLogo enterpriseId={corporateTheme.id} size={28} variant="emblem_only" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-sm font-black tracking-tight text-slate-900 block truncate">
+                        {isBmw ? 'BMW Group SLP' : isRetail ? 'Vanguardia Retail' : 'Innovasoft AI'}
+                      </span>
+                      <span className={`text-[9px] uppercase font-extrabold tracking-wider px-1.5 py-0.2 rounded border inline-block ${corporateTheme.badgeBg}`}>
+                        CEO B2B
+                      </span>
+                    </div>
                   </div>
-                  <span className="text-xl font-bold tracking-tight text-slate-900">iSkool</span>
-                  <span className="text-[10px] uppercase font-extrabold tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
-                    CEO
-                  </span>
-                </div>
+                ) : (
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+                      i
+                    </div>
+                    <span className="text-xl font-bold tracking-tight text-slate-900">iSkool</span>
+                    <span className="text-[10px] uppercase font-extrabold tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
+                      CEO
+                    </span>
+                  </div>
+                )}
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
@@ -1627,7 +2084,7 @@ export default function CEOExecutiveDashboard({
                       onClick={() => handleNavClick(item.id)}
                       className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-100 cursor-pointer active:scale-98 ${
                         isActive
-                          ? 'bg-slate-900 text-white shadow-sm font-semibold'
+                          ? (corporateTheme ? corporateTheme.activeNavClass : 'bg-slate-900 text-white shadow-sm font-semibold')
                           : item.highlight
                           ? 'text-indigo-900 bg-indigo-50 font-bold border border-indigo-200/60'
                           : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
@@ -1721,9 +2178,13 @@ export default function CEOExecutiveDashboard({
               <Menu size={20} />
             </button>
 
-            {/* Identidad del Holding */}
+            {/* Identidad del Holding / Corporativo Oficial */}
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-              {isIbime ? (
+              {corporateTheme ? (
+                <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 shadow-2xs flex items-center justify-center shrink-0 p-1">
+                  <CorporateOfficialLogo enterpriseId={corporateTheme.id} name={corporateTheme.name} size={22} variant="emblem_only" />
+                </div>
+              ) : isIbime ? (
                 <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 shadow-2xs flex items-center justify-center shrink-0 p-0.5">
                   <IbimeOfficialLogo variant="shield_only" size={20} />
                 </div>
@@ -1731,12 +2192,12 @@ export default function CEOExecutiveDashboard({
                 <Building2 className="text-slate-700 shrink-0 hidden sm:block" size={18} />
               )}
               <h1 className="text-xs sm:text-base lg:text-lg font-black text-slate-900 tracking-tight truncate max-w-[120px] xs:max-w-[160px] sm:max-w-[220px] md:max-w-none">
-                {isIbime ? 'Instituto Bilingüe IBIME' : holding.name}
+                {corporateTheme ? corporateTheme.name : (isIbime ? 'Instituto Bilingüe IBIME' : holding.name)}
               </h1>
               <span className={`hidden md:inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
-                isIbime ? 'bg-red-50 text-[#E41B14] border-red-200' : 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                corporateTheme ? corporateTheme.badgeBg : (isIbime ? 'bg-red-50 text-[#E41B14] border-red-200' : 'bg-indigo-50 text-indigo-700 border-indigo-200')
               }`}>
-                {isIbime ? 'Red Bilingüe 4 Planteles' : (isCorporate ? 'Consorcio Empresarial' : 'Holding Educativo')}
+                {corporateTheme ? corporateTheme.industryName : (isIbime ? 'Red Bilingüe 4 Planteles' : (isCorporate ? 'Consorcio Empresarial' : 'Holding Educativo'))}
               </span>
             </div>
 
@@ -1824,16 +2285,22 @@ export default function CEOExecutiveDashboard({
           {activeTab !== 'reportes' && activeTab !== 'cerebro' && (
             <>
               {/* BARRA DE MONITOREO AUTÓNOMO EN VIVO (0 TOKENS) */}
-              <div className="bg-slate-900 text-white p-3 sm:px-5 sm:py-2.5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs border border-slate-800 text-xs print:hidden no-print">
+              <div className={`p-3 sm:px-5 sm:py-2.5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs border text-xs print:hidden no-print ${
+                corporateTheme
+                  ? `bg-gradient-to-r ${corporateTheme.activeHeroGrad} text-white border-white/10`
+                  : 'bg-slate-900 text-white border-slate-800'
+              }`}>
                 <div className="flex items-center gap-3">
                   <div className="relative flex h-3 w-3 shrink-0">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                   </div>
                   <div>
-                    <span className="font-bold text-white">Motor Autónomo de Análisis en Vivo</span>
-                    <span className="text-slate-400 ml-1.5 font-mono text-[11px] block sm:inline">
-                      • 0 Tokens • Evaluación #{autonomousCycle} ({lastEvaluationTime}) • {metrics.totalCampuses} Sedes Auditadas
+                    <span className="font-bold text-white">
+                      {isCorporate ? 'Telemetría de Planta & Auditoría B2B en Vivo' : 'Motor Autónomo de Análisis en Vivo'}
+                    </span>
+                    <span className="text-slate-300/80 ml-1.5 font-mono text-[11px] block sm:inline">
+                      • 0 Tokens • Evaluación #{autonomousCycle} ({lastEvaluationTime}) • {metrics.totalCampuses} {isCorporate ? 'Plantas / Sedes' : 'Sedes Auditadas'}
                     </span>
                   </div>
                 </div>
@@ -1845,7 +2312,11 @@ export default function CEOExecutiveDashboard({
                       setLastEvaluationTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
                       triggerToast(`Pulso ejecutado: ${metrics.totalCampuses} ${isCorporate ? 'plantas y sedes' : 'sedes'} auditadas a 0 tokens (${metrics.totalStudents.toLocaleString()} ${isCorporate ? 'colaboradores' : 'alumnos'} evaluados)`);
                     }}
-                    className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-700 active:scale-95"
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border active:scale-95 ${
+                      corporateTheme
+                        ? 'bg-white/10 hover:bg-white/20 text-white border-white/20'
+                        : 'bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white border-slate-700'
+                    }`}
                   >
                     <RefreshCw size={12} />
                     <span>Forzar Pulso Analítico</span>
@@ -1853,10 +2324,16 @@ export default function CEOExecutiveDashboard({
                 </div>
               </div>
 
-              {/* TARJETA DE LICENCIA SAAS EMPRESARIAL ISKOOL • TENANT ESCOLAR */}
-              <div className="bg-white p-4 rounded-2xl border border-indigo-100 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 print:hidden no-print">
+              {/* TARJETA DE LICENCIA SAAS EMPRESARIAL ISKOOL • TENANT ESCOLAR / CORPORATIVO (IMAGEN 2 FIX) */}
+              <div className={`p-4 rounded-2xl border shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 print:hidden no-print ${
+                corporateTheme ? 'bg-white border-slate-200' : 'bg-white border-indigo-100'
+              }`}>
                 <div className="flex items-center gap-3">
-                  {isIbime ? (
+                  {corporateTheme ? (
+                    <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center shrink-0 p-1.5">
+                      <CorporateOfficialLogo enterpriseId={corporateTheme.id} name={corporateTheme.name} size={46} variant="emblem_only" />
+                    </div>
+                  ) : isIbime ? (
                     <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center shrink-0 p-1">
                       <IbimeOfficialLogo variant="shield_only" size={38} />
                     </div>
@@ -1870,15 +2347,19 @@ export default function CEOExecutiveDashboard({
                       <h3 className="text-sm font-bold text-slate-900">
                         {institutionalDisplayName}
                       </h3>
-                      <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                        {currentInstitution?.licensing?.planName || (isIbime ? 'Licencia Institucional Enterprise Multi-Plantel (4 Sedes)' : 'Licencia SaaS Enterprise Activa')}
+                      <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${
+                        corporateTheme 
+                          ? corporateTheme.badgeBg
+                          : 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                      }`}>
+                        {corporateTheme?.planName || currentInstitution?.licensing?.planName || (isIbime ? 'Licencia Institucional Enterprise Multi-Plantel (4 Sedes)' : 'Licencia SaaS Enterprise Activa')}
                       </span>
                       <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
-                        ID: {currentInstitution?.licensing?.licenseKey || `ISK-LIC-2026-${(holding.slug || 'ENT').toUpperCase()}-${holding.campuses.length}CAMPUS`}
+                        ID: {currentInstitution?.licensing?.licenseKey || (isBmw ? 'ISK-LIC-2026-BMW-CORP-SLP' : isRetail ? 'ISK-LIC-2026-VANG-RETAIL' : `ISK-LIC-2026-${(holding.slug || 'ENT').toUpperCase()}-${holding.campuses.length}CAMPUS`)}
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      <span className="font-semibold text-slate-700">Licenciatario:</span> {isIbime ? 'Instituto Bilingüe IBIME' : (currentInstitution?.name || holding.name)} ({holding.campuses.length} {isCorporate ? 'Sedes / Plantas' : 'Planteles'}) • <span className="font-semibold text-slate-700">Software Propietario:</span> {currentInstitution?.licensing?.licensor || 'ISkool Technologies Inc.'} • <span className="text-indigo-600 font-medium">Asientos: {metrics.totalStudents.toLocaleString()} en uso de {(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200)).toLocaleString()} contratados ({Math.min(100, Math.round(((metrics.totalStudents) / (currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200))) * 1000) / 10)}% ocupación)</span>
+                      <span className="font-semibold text-slate-700">Licenciatario:</span> {corporateTheme?.name || (isIbime ? 'Instituto Bilingüe IBIME' : (currentInstitution?.name || holding.name))} ({holding.campuses.length} {isCorporate ? 'Sedes / Plantas' : 'Planteles'}) • <span className="font-semibold text-slate-700">Software Propietario:</span> {currentInstitution?.licensing?.licensor || 'ISkool Technologies Inc.'} • <span className={`${corporateTheme ? 'text-slate-700 font-medium' : 'text-indigo-600 font-medium'}`}>Asientos: {metrics.totalStudents.toLocaleString()} en uso de {(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + (isCorporate ? 483 : 200))).toLocaleString()} contratados ({Math.min(100, Math.round(((metrics.totalStudents) / (currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + (isCorporate ? 483 : 200)))) * 1000) / 10)}% ocupación)</span>
                     </p>
                   </div>
                 </div>
@@ -1889,7 +2370,7 @@ export default function CEOExecutiveDashboard({
                     <div className="text-[10px] text-emerald-600 font-semibold">{isCorporate ? '● Facturación CFDI 4.0 B2B Activa' : '● Timbrado CFDI/IEDU 0 Tokens Activo'}</div>
                   </div>
                   <button
-                    onClick={() => triggerToast(`✓ Contrato de Licencia SaaS verificado: ${(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + 200)).toLocaleString()} asientos autorizados para ${institutionalDisplayName}`)}
+                    onClick={() => triggerToast(`✓ Contrato de Licencia SaaS verificado: ${(currentInstitution?.licensing?.contractedSeats || (metrics.totalStudents + (isCorporate ? 483 : 200))).toLocaleString()} asientos autorizados para ${institutionalDisplayName}`)}
                     className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
                   >
                     <FileCheck2 size={14} />
@@ -1899,19 +2380,31 @@ export default function CEOExecutiveDashboard({
               </div>
 
               {/* BARRA DE DIFERENCIADORES ESTRATÉGICOS ISKOOL */}
-              <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-3.5 rounded-2xl border border-indigo-500/30 flex flex-wrap items-center justify-between gap-3 text-xs text-white print:hidden no-print">
+              <div className={`p-3.5 rounded-2xl border flex flex-wrap items-center justify-between gap-3 text-xs text-white print:hidden no-print ${
+                corporateTheme 
+                  ? `bg-gradient-to-r ${corporateTheme.activeHeroGrad} border-white/10` 
+                  : 'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-indigo-500/30'
+              }`}>
                 <div className="flex items-center gap-2">
                   <Sparkles size={16} className="text-amber-400" />
-                  <span className="font-extrabold tracking-wide uppercase text-[11px] text-amber-300">Diferenciadores Clave iSkool Élite:</span>
+                  <span className="font-extrabold tracking-wide uppercase text-[11px] text-amber-300">
+                    {isCorporate ? 'Diferenciadores Clave Suite Corporativa:' : 'Diferenciadores Clave iSkool Élite:'}
+                  </span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  {[
+                  {(isCorporate ? [
+                    { label: 'Simulador "What-If" EBITDA & OPEX', tab: 'vision', color: 'bg-white/10 text-white border-white/20 hover:bg-white/20' },
+                    { label: 'Matriz de Competencias Técnicas', tab: 'academico', color: 'bg-white/10 text-white border-white/20 hover:bg-white/20' },
+                    { label: 'Onboarding & Retención de Talento', tab: 'admisiones', color: 'bg-white/10 text-white border-white/20 hover:bg-white/20' },
+                    { label: 'Facturación CFDI 4.0 B2B', tab: 'finanzas', color: 'bg-white/10 text-white border-white/20 hover:bg-white/20' },
+                    { label: `Cerebro ${corporateTheme?.name || 'Empresarial'}`, tab: 'cerebro', color: 'bg-amber-500/20 text-amber-200 border-amber-400/40 hover:bg-amber-500/30' },
+                  ] : [
                     { label: 'Simulador "What-If" EBITDA', tab: 'vision', color: 'bg-indigo-600/40 text-indigo-200 border-indigo-400/40 hover:bg-indigo-600/60' },
                     { label: 'Alineación Oficial SEP NEM 2024', tab: 'academico', color: 'bg-emerald-600/40 text-emerald-200 border-emerald-400/40 hover:bg-emerald-600/60' },
                     { label: 'Gamificación & Lienzo Digital', tab: 'academico', color: 'bg-purple-600/40 text-purple-200 border-purple-400/40 hover:bg-purple-600/60' },
                     { label: 'CFDI 4.0 Complemento IEDU SAT', tab: 'finanzas', color: 'bg-amber-600/40 text-amber-200 border-amber-400/40 hover:bg-amber-600/60' },
                     { label: 'Cerebro Institucional', tab: 'cerebro', color: 'bg-cyan-600/40 text-cyan-200 border-cyan-400/40 hover:bg-cyan-600/60' },
-                  ].map((diff, i) => (
+                  ]).map((diff, i) => (
                     <button
                       key={i}
                       onClick={() => handleNavClick(diff.tab)}
@@ -1933,10 +2426,12 @@ export default function CEOExecutiveDashboard({
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                    Consola de Mando Corporativo • Ciclo 2026-2027
+                    {corporateTheme ? `${corporateTheme.industryName} • Ciclo Operativo 2026-2027` : 'Consola de Mando Corporativo • Ciclo 2026-2027'}
                   </div>
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight mt-0.5">
-                    {selectedCampusId === 'all' ? 'Resumen Ejecutivo Consolidado' : holding.campuses.find(c => c.id === selectedCampusId)?.name}
+                    {selectedCampusId === 'all' 
+                      ? (corporateTheme ? `Resumen Ejecutivo Consolidado · ${corporateTheme.name}` : 'Resumen Ejecutivo Consolidado') 
+                      : holding.campuses.find(c => c.id === selectedCampusId)?.name}
                   </h2>
                 </div>
 
@@ -1957,7 +2452,7 @@ export default function CEOExecutiveDashboard({
                     </div>
                   </div>
                   <div className="text-right text-xs italic text-slate-400 font-serif">
-                    "{holding.tagline}" <span className="font-semibold not-italic text-slate-600">— {holding.name}</span>
+                    "{corporateTheme?.tagline || holding.tagline}" <span className="font-semibold not-italic text-slate-600">— {corporateTheme?.name || holding.name}</span>
                   </div>
                 </div>
               </div>
@@ -3760,37 +4255,101 @@ export default function CEOExecutiveDashboard({
           {/* ======================================================= */}
           {activeTab === 'admisiones' && (
             <div className="space-y-6 animate-in fade-in duration-100">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-purple-700 bg-purple-50 px-2.5 py-1 rounded-md">
-                      {isCorporate ? 'Atracción & Headhunting' : 'Crecimiento & Matrícula Nueva'}
-                    </span>
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md">
-                      {isCorporate ? 'Ejercicio 2026-2027' : 'Ciclo 2026-2027'}
-                    </span>
-                    <span className="text-[11px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                      0 Tokens
-                    </span>
+              {!isCorporate && admissionsViewMode === 'crm_studio' ? (
+                <div className="space-y-4">
+                  {/* BARRA DIRECTIVA DE INTEGRACIÓN CRM 360° */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 p-4 rounded-3xl text-white shadow-md border border-purple-500/20">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-xl shrink-0">
+                        📋
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="text-sm font-black text-white tracking-wide">
+                            CRM Unificado 360° • Admisiones & Captación Institucional
+                          </h3>
+                          <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-2 py-0.5 rounded-full">
+                            Sede: {selectedCampusName}
+                          </span>
+                        </div>
+                        <p className="text-xs text-purple-200/80 mt-0.5">
+                          Kanban ágil, expediente familiar 1:N (apellidos SEP), WhatsApp directo, y corresponsabilidad de 5 departamentos escolares.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => setAdmissionsViewMode('bento_kanban')}
+                        className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-xl border border-white/20 transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                        title="Volver a la vista Bento ejecutiva con Kanban integrado"
+                      >
+                        <Layers size={13} />
+                        Tablero Bento Directivo
+                      </button>
+                      <Link
+                        href="/admin/crm"
+                        target="_blank"
+                        className="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl transition-all shadow-xs active:scale-95 flex items-center gap-1.5"
+                        title="Abrir CRM en pantalla completa independiente"
+                      >
+                        <ExternalLink size={13} />
+                        Pantalla Completa
+                      </Link>
+                    </div>
                   </div>
-                  <h2 className="text-2xl font-black text-slate-900 tracking-tight mt-1.5">
-                    {isCorporate ? 'Pipeline de Atracción de Talento & Onboarding' : 'Embudo de Admisiones & Pipeline de Captación'}
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    {isCorporate 
-                      ? `Monitoreo en tiempo real del ciclo de reclutamiento y contratación consolidado para ${selectedCampusName}.`
-                      : `Monitoreo en tiempo real del ciclo de ventas escolares consolidado para ${selectedCampusName}.`}
-                  </p>
-                </div>
 
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <button
-                    onClick={() => setIsAddProspectModalOpen(true)}
-                    className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer shadow-sm transition-all active:scale-95"
-                  >
-                    <UserPlus size={16} />
-                    + {isCorporate ? 'Registrar Candidato al Pipeline' : 'Registrar Aspirante al Pipeline'}
-                  </button>
+                  <CrmAdmissionsStudio
+                    initialCampus={selectedCampusId}
+                    initialTab="institutional"
+                    embeddedInDashboard={true}
+                    onBackToDashboard={() => setAdmissionsViewMode('bento_kanban')}
+                    onSwitchToOperational={onSwitchToOperational}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold uppercase tracking-wider text-purple-700 bg-purple-50 px-2.5 py-1 rounded-md">
+                          {isCorporate ? 'Atracción & Headhunting' : 'Crecimiento & Matrícula Nueva'}
+                        </span>
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md">
+                          {isCorporate ? 'Ejercicio 2026-2027' : 'Ciclo 2026-2027'}
+                        </span>
+                        <span className="text-[11px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                          0 Tokens
+                        </span>
+                      </div>
+                      <h2 className="text-2xl font-black text-slate-900 tracking-tight mt-1.5">
+                        {isCorporate ? 'Pipeline de Atracción de Talento & Onboarding' : 'Embudo de Admisiones & Pipeline de Captación'}
+                      </h2>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {isCorporate 
+                          ? `Monitoreo en tiempo real del ciclo de reclutamiento y contratación consolidado para ${selectedCampusName}.`
+                          : `Monitoreo en tiempo real del ciclo de ventas escolares consolidado para ${selectedCampusName}.`}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      {!isCorporate && (
+                        <button
+                          onClick={() => setAdmissionsViewMode('crm_studio')}
+                          className="px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer shadow-sm transition-all active:scale-95"
+                          title="Abrir estudio completo de admisiones con tareas y finanzas"
+                        >
+                          <Sparkles size={16} />
+                          ⚡ Estudio CRM 360°
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => setIsAddProspectModalOpen(true)}
+                        className="px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer shadow-sm transition-all active:scale-95"
+                      >
+                        <UserPlus size={16} />
+                        + {isCorporate ? 'Registrar Candidato al Pipeline' : 'Registrar Aspirante al Pipeline'}
+                      </button>
 
                   <button
                     onClick={() => {
@@ -3821,6 +4380,55 @@ export default function CEOExecutiveDashboard({
                   </button>
                 </div>
               </div>
+
+              {/* TELEMETRÍA EN VIVO DE OCUPACIÓN Y META DE ASIENTOS CONTRATADOS (IBIME 2026-2027) */}
+              {!isCorporate && livePipelineMetrics && (
+                <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-indigo-950 p-6 rounded-3xl text-white border border-emerald-500/30 shadow-lg space-y-4">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-700/60 pb-3">
+                    <div>
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        🎯 Meta de Matrícula 2026-2027
+                      </div>
+                      <h3 className="text-base font-black text-white mt-1">
+                        Proyección de Ocupación: {livePipelineMetrics.capacity.currentOccupiedSeats.toLocaleString('es-MX')} / {livePipelineMetrics.capacity.totalPhysicalSeats.toLocaleString('es-MX')} Asientos
+                      </h3>
+                      <p className="text-xs text-slate-300 mt-0.5">
+                        Meta Estratégica: <strong className="text-emerald-300">{livePipelineMetrics.capacity.targetSeats.toLocaleString('es-MX')} Asientos</strong> ({livePipelineMetrics.capacity.targetProgressPercent}% alcanzado) • Sede: <strong>{livePipelineMetrics.campusName}</strong>
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Brecha a la Meta</span>
+                        <span className="text-lg font-black text-amber-300 font-mono">
+                          {livePipelineMetrics.capacity.seatsRemainingToTarget > 0 ? `${livePipelineMetrics.capacity.seatsRemainingToTarget} asientos` : 'Meta Lograda ✓'}
+                        </span>
+                      </div>
+                      <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-xl shrink-0 font-mono font-black text-emerald-300">
+                        {livePipelineMetrics.capacity.occupancyPercent}%
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Barra de Progreso de Ocupación */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs text-slate-300">
+                      <span>Ocupación Física Total: {livePipelineMetrics.capacity.occupancyPercent}%</span>
+                      <span>Capacidad Total: {livePipelineMetrics.capacity.totalPhysicalSeats.toLocaleString('es-MX')} asientos</span>
+                    </div>
+                    <div className="w-full bg-slate-800 rounded-full h-3 p-0.5 overflow-hidden border border-slate-700">
+                      <div 
+                        className="bg-gradient-to-r from-emerald-500 to-indigo-500 h-full rounded-full transition-all duration-500" 
+                        style={{ width: `${Math.min(100, livePipelineMetrics.capacity.occupancyPercent)}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[11px] text-slate-400">
+                      <span>Reinscritos Base: {livePipelineMetrics.capacity.baseEnrolledSeats.toLocaleString('es-MX')}</span>
+                      <span>Nuevo Ingreso CRM (Fase 5): +{livePipelineMetrics.capacity.newlyEnrolledFromCrm}</span>
+                      <span>Meta Anual: {livePipelineMetrics.capacity.targetSeats.toLocaleString('es-MX')} (3,740 IBIME)</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* ARQUITECTURA DE DATOS: ¿QUIÉN ALIMENTA Y REPORTA CADA ETAPA? */}
               <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 p-6 rounded-3xl text-white border border-indigo-500/20 shadow-lg space-y-4">
@@ -3999,6 +4607,23 @@ export default function CEOExecutiveDashboard({
                 </div>
               </div>
 
+              {/* TABLERO KANBAN DE 5 FASES CORRESPONSABLES (BENTO PIPELINE 360°) */}
+              <BentoAdmissionsKanban
+                selectedCampusId={selectedCampusId}
+                selectedCampusName={selectedCampusName}
+                isCorporate={isCorporate}
+                schoolId={corporateTheme?.id || schoolId}
+                corporateEnterpriseId={corporateTheme?.id}
+                corporateEnterpriseName={corporateTheme?.name}
+                onOpenRegisterModal={() => setIsAddProspectModalOpen(true)}
+                onOpenDirectory={() => {
+                  setProspectFilterStage('all');
+                  setProspectFilterCampus(selectedCampusId);
+                  setIsAdmissionsPipelineOpen(true);
+                }}
+                onTriggerToast={triggerToast}
+              />
+
               {/* EMBUDO GRÁFICO INTERACTIVO */}
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -4124,7 +4749,9 @@ export default function CEOExecutiveDashboard({
                     <span className="text-xs text-purple-300 block">
                       {isCorporate ? 'Inversión en Nuevas Posiciones:' : 'Valor Pipeline 2026-2027:'}
                     </span>
-                    <span className="text-2xl font-black text-emerald-400 font-mono">$4,180,000 MXN</span>
+                    <span className="text-2xl font-black text-emerald-400 font-mono">
+                      {isCorporate ? '$4,180,000 MXN' : formatMXN(livePipelineMetrics.financial.projectedPipelineValueMXN || 4180000)}
+                    </span>
                   </div>
                 </div>
 
@@ -4193,6 +4820,8 @@ export default function CEOExecutiveDashboard({
                   </div>
                 </div>
               </div>
+              </div>
+            )}
             </div>
           )}
 
@@ -4895,6 +5524,14 @@ export default function CEOExecutiveDashboard({
 
               <div className="flex items-center gap-2">
                 <button
+                  onClick={handleExportPipelineCSV}
+                  className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 border border-slate-700"
+                  title="Descargar listado del pipeline en formato CSV"
+                >
+                  <Download size={14} />
+                  <span>Descargar CSV</span>
+                </button>
+                <button
                   onClick={() => setIsAddProspectModalOpen(true)}
                   className="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
                 >
@@ -5127,15 +5764,35 @@ export default function CEOExecutiveDashboard({
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-purple-500 focus:bg-white"
                   >
                     {isCorporate ? (
-                      <>
-                        <option value="Operador Técnico de Planta">Operador Técnico de Planta</option>
-                        <option value="Supervisor de Seguridad & SST">Supervisor de Seguridad & SST</option>
-                        <option value="Especialista de Calidad ISO">Especialista de Calidad ISO</option>
-                        <option value="Líder de Línea de Producción">Líder de Línea de Producción</option>
-                        <option value="Ingeniero de Mantenimiento">Ingeniero de Mantenimiento</option>
-                        <option value="Analista de Procesos B2B">Analista de Procesos B2B</option>
-                        <option value="Instructor Técnico de Capacitación">Instructor Técnico de Capacitación</option>
-                      </>
+                      isBmw ? (
+                        <>
+                          <option value="Especialista en Robótica KUKA & Celdas de Soldadura">Especialista en Robótica KUKA & Celdas de Soldadura</option>
+                          <option value="Ingeniera de Ensamble Tren Motriz Eléctrico">Ingeniera de Ensamble Tren Motriz Eléctrico</option>
+                          <option value="Especialista en Calidad & Protocolos ISO 14001">Especialista en Calidad & Protocolos ISO 14001</option>
+                          <option value="Líder Técnico de Ensamble & ISO 45001">Líder Técnico de Ensamble & ISO 45001</option>
+                          <option value="Supervisora de Logística JIT & Cadena Automotriz">Supervisora de Logística JIT & Cadena Automotriz</option>
+                          <option value="Arquitecto de Telemetría Vehicular & Baterías">Arquitecto de Telemetría Vehicular & Baterías</option>
+                          <option value="Técnico de Mantenimiento Preventivo Celdas KUKA">Técnico de Mantenimiento Preventivo Celdas KUKA</option>
+                          <option value="Coordinador de Postventa & Fidelización Santa Fe">Coordinador de Postventa & Fidelización Santa Fe</option>
+                        </>
+                      ) : isRetail ? (
+                        <>
+                          <option value="Gerente de Compras Omnicanal & Retail Analytics">Gerente de Compras Omnicanal & Retail Analytics</option>
+                          <option value="Coordinador de Distribución y Flotas CEDIS">Coordinador de Distribución y Flotas CEDIS</option>
+                          <option value="Supervisora de Operaciones WMS y Logística Inversa">Supervisora de Operaciones WMS y Logística Inversa</option>
+                          <option value="Key Account Manager Cuentas Clave Retail">Key Account Manager Cuentas Clave Retail</option>
+                          <option value="Subdirectora de Experiencia del Cliente & Postventa">Subdirectora de Experiencia del Cliente & Postventa</option>
+                          <option value="Supervisor de Inventarios Cíclicos & Merma">Supervisor de Inventarios Cíclicos & Merma</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="Senior DevOps & Cloud Platform Engineer">Senior DevOps & Cloud Platform Engineer</option>
+                          <option value="Staff MLOps & AI Deployment Specialist">Staff MLOps & AI Deployment Specialist</option>
+                          <option value="Fullstack Principal & Golang Microservices">Fullstack Principal & Golang Microservices</option>
+                          <option value="Data Architect & Big Data Distributed Pipelines">Data Architect & Big Data Distributed Pipelines</option>
+                          <option value="Lead AI Scientist & Computer Vision">Lead AI Scientist & Computer Vision</option>
+                        </>
+                      )
                     ) : (
                       <>
                         <option value="Kínder 1">Kínder 1</option>
@@ -5224,6 +5881,19 @@ export default function CEOExecutiveDashboard({
                     )}
                   </select>
                 </div>
+
+                {isCorporate && (
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Sueldo Propuesto / Expectativa Salarial</label>
+                    <input
+                      type="text"
+                      value={newProspectForm.salary}
+                      onChange={(e) => setNewProspectForm({ ...newProspectForm, salary: e.target.value })}
+                      placeholder="ej. $48,000 MXN / mes"
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-purple-500 focus:bg-white font-mono"
+                    />
+                  </div>
+                )}
               </div>
 
               <div>
