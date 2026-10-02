@@ -55,8 +55,10 @@ import {
   Building2,
   GraduationCap,
   Check,
-  School
+  School,
+  PenTool
 } from 'lucide-react';
+import Link from 'next/link';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 
 interface IbimeCampus {
@@ -718,6 +720,14 @@ export default function TeacherIdiomasPage() {
               <span className="w-2.5 h-2.5 rounded-full bg-rose-400 animate-ping absolute -top-1 -right-1" />
             )}
           </button>
+
+          <Link
+            href="/teacher/idiomas/writing"
+            className="px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 bg-gradient-to-r from-indigo-600 to-teal-500 hover:from-indigo-500 hover:to-teal-400 text-white shadow-md shadow-indigo-600/30"
+          >
+            <PenTool className="w-4 h-4" />
+            <span>Writing Engine Autónomo (Cambridge / DELF)</span>
+          </Link>
         </div>
 
         {/* =========================================================================

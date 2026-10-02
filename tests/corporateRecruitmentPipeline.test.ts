@@ -100,8 +100,11 @@ describe('CEO EMPRESAS: Pipeline Quirúrgico de Reclutamiento, Onboarding & Head
       tutor_last_name: 'Valenzuela Soto',
       tutor_email: 'rodrigo.valenzuela@bmw-talent.mx',
       tutor_phone: '444-123-9988',
+      tutor_relationship: 'Candidato Titular',
       source_channel: 'headhunting',
       priority: 'hot',
+      referral_incentive_applied: false,
+      outcome: null,
       target_academic_year: '2026',
       proposed_salary: '$92,000 MXN / mes',
       department: 'Ingeniería de Automatización',
@@ -116,10 +119,13 @@ describe('CEO EMPRESAS: Pipeline Quirúrgico de Reclutamiento, Onboarding & Head
       last_name_2: 'Soto',
       last_name: 'Valenzuela Soto',
       target_level: 'corporativo',
+      target_grade: 'Senior Specialist',
       position_title: 'Senior PLC & SCADA Specialist',
       proposed_salary: '$92,000 MXN / mes',
       technical_score: 96,
       certifications: ['Siemens TIA Portal Expert', 'KUKA Certified Robot Specialist'],
+      evaluation_status: 'approved',
+      scholarship_percent: 0,
       status: 'active'
     });
 
@@ -173,10 +179,13 @@ describe('CEO EMPRESAS: Pipeline Quirúrgico de Reclutamiento, Onboarding & Head
       stage: 'reservation',
       tutor_first_name: 'Patricia',
       tutor_last_name: 'López Domínguez',
+      tutor_relationship: 'Madre',
       tutor_phone: '55-3344-5566',
       tutor_email: 'patricia@ibime-family.mx',
       source_channel: 'referral',
       priority: 'hot',
+      referral_incentive_applied: false,
+      outcome: null,
       target_academic_year: '2026-2027'
     });
 
@@ -188,6 +197,8 @@ describe('CEO EMPRESAS: Pipeline Quirúrgico de Reclutamiento, Onboarding & Head
       last_name: 'López Domínguez',
       target_level: 'secundaria',
       target_grade: '1°',
+      evaluation_status: 'approved',
+      scholarship_percent: 0,
       status: 'active'
     });
 

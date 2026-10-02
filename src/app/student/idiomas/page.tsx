@@ -24,7 +24,8 @@ import {
   Zap,
   Play,
   RotateCcw,
-  MessageSquare
+  MessageSquare,
+  ArrowRight
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -118,16 +119,33 @@ export default function StudentIdiomasPage() {
             ========================================================================= */}
         {currentMode === 'hub' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-black text-white flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-teal-400" />
-                  <span>Misiones de Pronunciación & Diálogo Disponible</span>
-                </h2>
-                <p className="text-xs text-slate-400">
-                  Elige una lección para conversar con tu mentor o ingresar al karaoke de precisión fonética.
+            {/* BANNER DESTACADO: WRITING STUDIO AUTÓNOMO */}
+            <div className="p-6 rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-teal-950/40 border border-indigo-500/40 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/40">
+                    Nuevo Módulo Oficial
+                  </span>
+                  <span className="text-[10px] font-bold text-amber-400">
+                    Cambridge Pre-A1 a C2 · DELF-DALF Pre-A1 a C2
+                  </span>
+                </div>
+                <h3 className="text-lg font-black text-white flex items-center gap-2">
+                  <span className="text-xl">✍️</span>
+                  Writing Studio: Tutoría Socrática & Evaluación de Redacción
+                </h3>
+                <p className="text-xs text-slate-300 max-w-xl">
+                  Redacta ensayos y cartas con acompañamiento en tiempo real, 3 niveles de pistas lingüísticas sin que la IA escriba por ti, y evaluación analítica oficial.
                 </p>
               </div>
+
+              <Link
+                href="/student/idiomas/studio/writing"
+                className="px-5 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-teal-500 hover:from-indigo-500 hover:to-teal-400 text-white font-bold text-xs shadow-xl shadow-indigo-600/30 transition-all flex items-center gap-2 shrink-0 cursor-pointer text-center justify-center"
+              >
+                <span>Ingresar al Writing Studio</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
 
             {/* Cuadrícula de Lecciones */}
