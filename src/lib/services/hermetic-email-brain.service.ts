@@ -275,24 +275,42 @@ export class HermeticEmailBrainService {
     // Consulta en Bóveda Curricular propia del tenant autenticado
     let tenantDocs = ISOLATED_TENANT_KNOWLEDGE[currentTenantId];
 
-    // Si es un sandbox dinámico, generar catálogo aislado exclusivo para ese tenant
-    if (!tenantDocs && isSandbox) {
+    // Si no está en el catálogo estático predefinido (ej. nuevos colegios o tenants registrados),
+    // se genera dinámicamente un catálogo curricular y reglamentario aislado exclusivo para este tenant.
+    if (!tenantDocs) {
+      const folder = isSandbox ? `sandbox_${currentTenantId}` : currentTenantId;
       tenantDocs = [
         {
           tenant_id: currentTenantId,
-          document_title: `Lineamientos Generales de Operación (${institutionName})`,
-          source_path: `sandbox/${currentTenantId}/lineamientos_generales.md`,
-          category: 'Normativa General Sandbox',
-          content: `Reglamento interno provisional para ${institutionName}. Las consultas son resueltas por la Dirección conforme a criterios de equidad y mediación institucional.`,
-          keywords: ['horario', 'salida', 'reunión', 'pago', 'profesor', 'duda']
+          document_title: `Protocolo de Convivencia y Prevención de Violencia Escolar (${institutionName})`,
+          source_path: `planeaciones/${folder}/Protocolo_Convivencia.md`,
+          category: 'Convivencia y Mediación',
+          content: `Cualquier reporte de acoso, violencia física o verbal en ${institutionName} activa inmediatamente el Protocolo Nivel 3. La Dirección General convoca a reunión presencial con ambas familias dentro de un plazo estricto no mayor a 12 horas. Coordinación emite el informe inicial y se designa tutoría de acompañamiento socioemocional.`,
+          keywords: ['acoso', 'bullying', 'agresión', 'pelea', 'insulto', 'convivencia', 'reunión', 'demanda', 'violencia', 'urgente']
         },
         {
           tenant_id: currentTenantId,
-          document_title: `Protocolo de Convivencia y Casos Críticos (${institutionName})`,
-          source_path: `sandbox/${currentTenantId}/protocolo_convivencia.md`,
-          category: 'Convivencia Escolar',
-          content: 'Cualquier reporte de acoso o conflicto grave se atiende de forma directa por Dirección dentro de las 12 horas siguientes.',
-          keywords: ['acoso', 'bullying', 'conflicto', 'demanda', 'urgente']
+          document_title: `Manual de Cobranza, Facturación y Becas Académicas (${institutionName})`,
+          source_path: `planeaciones/${folder}/Lineamientos_Cobranza.md`,
+          category: 'Administración y Cobranza',
+          content: `Lineamientos de cobranza y facturación de ${institutionName}. Para solicitud de prórroga o factura fiscal CFDI con complemento educativo IEDU, la solicitud se turna a Tesorería y se resuelve en un plazo de 24 horas hábiles.`,
+          keywords: ['colegiatura', 'pago', 'factura', 'cfdi', 'recargo', 'adeudo', 'beca', 'cobranza', 'prórroga']
+        },
+        {
+          tenant_id: currentTenantId,
+          document_title: `Reglamento de Transporte y Logística Escolar (${institutionName})`,
+          source_path: `planeaciones/${folder}/Reglamento_Transporte.md`,
+          category: 'Transporte y Logística',
+          content: `Normativa de transporte de ${institutionName}. Ante demoras en rutas escolares imputables al tránsito vehicular mayores a 15 minutos, la Coordinación de Logística emite aviso oficial y canaliza el reporte en un plazo máximo de 48 horas.`,
+          keywords: ['transporte', 'ruta 4', 'ruta', 'camión', 'chofer', 'retraso', 'parada', 'demora']
+        },
+        {
+          tenant_id: currentTenantId,
+          document_title: `Calendario Oficial Escolar y Trámites SEP (${institutionName})`,
+          source_path: `planeaciones/${folder}/Calendario_Escolar.md`,
+          category: 'Control Escolar y Secretaría',
+          content: `Calendario oficial de ${institutionName}. La entrega de boletas y constancias de estudio oficiales con validez SEP se tramita con Control Escolar en un lapso de 48 horas. Los horarios especiales de eventos o festivales son notificados con antelación por Dirección.`,
+          keywords: ['boleta', 'kardex', 'constancia', 'calificaciones', 'certificado', 'examen', 'evaluación', 'horario', 'festival', 'salida', 'evento']
         }
       ];
     }

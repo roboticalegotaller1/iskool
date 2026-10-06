@@ -66,7 +66,8 @@ import {
   MapPin,
   Eye,
   ClipboardList,
-  Menu
+  Menu,
+  Mail
 } from 'lucide-react';
 import { CampusData, OrganizationHolding, DetailedStudent, Campus, FamilyBillingRecord, Institution, isCorporateInstitution } from '@/types';
 import { 
@@ -1961,9 +1962,9 @@ export default function CEOExecutiveDashboard({
               );
             })}
 
-            {/* Botón de Acceso a Portales Académicos por Colegio y Email */}
-            {!isCorporate && holding.campuses && holding.campuses.length > 0 && (
-              <div className="pt-2 px-0.5 space-y-1.5">
+            {/* Botón de Acceso a Portales Académicos por Colegio y Email Institucional */}
+            <div className="pt-2 px-0.5 space-y-1.5">
+              {!isCorporate && holding.campuses && holding.campuses.length > 0 && (
                 <button
                   type="button"
                   onClick={() => setIsAcademicPortalModalOpen(true)}
@@ -1973,18 +1974,21 @@ export default function CEOExecutiveDashboard({
                   <span className="font-extrabold tracking-tight">Portal Académico</span>
                   <ChevronRight size={18} className="text-white group-hover:translate-x-0.5 transition-transform" />
                 </button>
+              )}
 
-                <button
-                  type="button"
-                  onClick={() => setIsEmailModalOpen(true)}
-                  className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-[#5448f7] hover:bg-[#4639ed] text-white font-extrabold text-sm shadow-md shadow-indigo-600/30 hover:shadow-indigo-600/50 hover:scale-[1.02] active:scale-98 transition-all cursor-pointer border border-indigo-400/40 group"
-                  title="Bandeja de Correo Institucional y Comunicados Oficiales"
-                >
-                  <span className="font-extrabold tracking-tight">Email</span>
-                  <ChevronRight size={18} className="text-white group-hover:translate-x-0.5 transition-transform" />
-                </button>
-              </div>
-            )}
+              <button
+                type="button"
+                onClick={() => setIsEmailModalOpen(true)}
+                className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold text-sm shadow-md shadow-blue-600/30 hover:shadow-blue-600/50 hover:scale-[1.02] active:scale-98 transition-all cursor-pointer border border-blue-400/40 group"
+                title="Bandeja de Correo Institucional, Triage Cognitivo y Conexión Google (15 Fases)"
+              >
+                <div className="flex items-center gap-2">
+                  <Mail size={16} className="text-white" />
+                  <span className="font-extrabold tracking-tight">Email & Triage</span>
+                </div>
+                <ChevronRight size={18} className="text-white group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            </div>
           </nav>
         </div>
 
@@ -2114,9 +2118,9 @@ export default function CEOExecutiveDashboard({
                   );
                 })}
 
-                {/* Botón de Acceso a Portales Académicos por Colegio y Email (Móvil) */}
-                {!isCorporate && holding.campuses && holding.campuses.length > 0 && (
-                  <div className="pt-2 px-0.5 space-y-1.5">
+                {/* Botón de Acceso a Portales Académicos por Colegio y Email Institucional (Móvil) */}
+                <div className="pt-2 px-0.5 space-y-1.5">
+                  {!isCorporate && holding.campuses && holding.campuses.length > 0 && (
                     <button
                       type="button"
                       onClick={() => {
@@ -2129,21 +2133,24 @@ export default function CEOExecutiveDashboard({
                       <span className="font-extrabold tracking-tight">Portal Académico</span>
                       <ChevronRight size={18} className="text-white group-hover:translate-x-0.5 transition-transform" />
                     </button>
+                  )}
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsMobileMenuOpen(false);
-                        setIsEmailModalOpen(true);
-                      }}
-                      className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-[#5448f7] hover:bg-[#4639ed] text-white font-extrabold text-sm shadow-md shadow-indigo-600/30 hover:shadow-indigo-600/50 hover:scale-[1.02] active:scale-98 transition-all cursor-pointer border border-indigo-400/40 group"
-                      title="Bandeja de Correo Institucional y Comunicados Oficiales"
-                    >
-                      <span className="font-extrabold tracking-tight">Email</span>
-                      <ChevronRight size={18} className="text-white group-hover:translate-x-0.5 transition-transform" />
-                    </button>
-                  </div>
-                )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setIsEmailModalOpen(true);
+                    }}
+                    className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold text-sm shadow-md shadow-blue-600/30 hover:shadow-blue-600/50 hover:scale-[1.02] active:scale-98 transition-all cursor-pointer border border-blue-400/40 group"
+                    title="Bandeja de Correo Institucional, Triage Cognitivo y Conexión Google (15 Fases)"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Mail size={16} className="text-white" />
+                      <span className="font-extrabold tracking-tight">Email & Triage</span>
+                    </div>
+                    <ChevronRight size={18} className="text-white group-hover:translate-x-0.5 transition-transform" />
+                  </button>
+                </div>
               </nav>
             </div>
 
@@ -2280,6 +2287,17 @@ export default function CEOExecutiveDashboard({
             >
               <Download size={14} />
               <span className="hidden sm:inline">Exportar CSV</span>
+            </button>
+
+            {/* Botón Email Institucional & Triage */}
+            <button
+              onClick={() => setIsEmailModalOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-lg shadow-sm transition-all cursor-pointer active:scale-95"
+              title="Bandeja de Correo Institucional, Triage Cognitivo y Conexión Google (15 Fases)"
+            >
+              <Mail size={14} className="text-white" />
+              <span className="hidden sm:inline">Email & Triage</span>
+              <span className="sm:hidden">Email</span>
             </button>
 
             {/* Botón Explorar Cerebro */}
@@ -6002,7 +6020,7 @@ export default function CEOExecutiveDashboard({
           isOpen={isEmailModalOpen}
           onClose={() => setIsEmailModalOpen(false)}
           holding={holding}
-          schoolId={schoolId || 'sch-ibime'}
+          schoolId={schoolId || holding?.id || currentInstitution?.id || 'sch-ibime'}
           selectedCampusId={selectedCampusId}
           onTriggerToast={triggerToast}
         />

@@ -78,6 +78,7 @@ import {
 import { DetailedStudent, Subject, GroupAnnualPlan, SyllabusTopic, Campus, Group, canManageTargetRole, StaffPayrollRecord, isPlatformSuperUser, StudentDeletionAuditLog, UserRole, Institution, isCorporateInstitution } from '@/types';
 import ExecutiveAnalyticsStudio from '@/components/admin/ExecutiveAnalyticsStudio';
 import CEOExecutiveDashboard, { DEFAULT_IBIME_HOLDING, buildHoldingForInstitution } from '@/components/admin/CEOExecutiveDashboard';
+import { CEOEmailCommunicationsModal } from '@/components/admin/CEOEmailCommunicationsModal';
 import { SuperUserCompendiumStudio } from '@/components/books/SuperUserCompendiumStudio';
 import { SchoolStatusSlider } from '@/components/admin/SchoolStatusSlider';
 import { useSchoolBooksStore } from '@/store/useSchoolBooksStore';
@@ -527,6 +528,9 @@ export default function SuperUserAdminPage() {
   const currentSchoolHolding = useMemo(() => {
     return buildHoldingForInstitution(currentSchool, campusesList, detailedStudents, teachersList);
   }, [currentSchool, campusesList, detailedStudents, teachersList]);
+
+  // Modal de Email Institucional y Triage Cognitivo (15 Fases & Google Conectado)
+  const [isAdminEmailModalOpen, setIsAdminEmailModalOpen] = useState(false);
 
   // Estado para Edición de Ficha Institucional en Tab Config
   const [instEditForm, setInstEditForm] = useState({
@@ -1934,6 +1938,18 @@ export default function SuperUserAdminPage() {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
+                              selectSchool(inst.id);
+                              setIsAdminEmailModalOpen(true);
+                            }}
+                            className="p-2.5 rounded-xl border border-blue-200 hover:border-blue-400 bg-white hover:bg-blue-50 text-blue-600 hover:text-blue-700 text-xs font-black transition-all flex items-center justify-center cursor-pointer shadow-xs shrink-0"
+                            title={`Abrir Email Institucional, Triage Cognitivo y Conexión Google para ${inst.name}`}
+                          >
+                            <Mail className="h-3.5 w-3.5 text-blue-600" />
+                          </button>
+
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setSchoolToDelete(inst);
                               setDeleteConfirmationText('');
                               setShowDeleteSchoolModal(true);
@@ -2261,6 +2277,15 @@ export default function SuperUserAdminPage() {
                 <span><span className="hidden xs:inline">Descargar</span> Credenciales (CSV)</span>
               </button>
 
+              <button
+                onClick={() => setIsAdminEmailModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-black shadow-md shadow-blue-500/20 transition-all hover:scale-102 cursor-pointer shrink-0"
+                title="Bandeja de Correo Institucional, Triage Cognitivo y Conexión Google (15 Fases)"
+              >
+                <Mail className="h-4 w-4 text-white" />
+                <span>Email Institucional</span>
+              </button>
+
               <Link
                 href="/teacher"
                 className="flex items-center gap-1 px-3 sm:px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shadow-lg shadow-indigo-500/25 transition-all hover:scale-102 shrink-0"
@@ -2466,6 +2491,16 @@ export default function SuperUserAdminPage() {
                 <Palette className="h-4 w-4 text-indigo-500" />
                 <span>Marca Blanca</span>
               </Link>
+
+              <button
+                type="button"
+                onClick={() => setIsAdminEmailModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 text-blue-700 hover:text-blue-900 hover:bg-blue-50 border border-blue-200 shadow-2xs"
+                title="Bandeja de Correo Institucional, Triage Cognitivo y Conexión Google (15 Fases)"
+              >
+                <Mail className="h-4 w-4 text-blue-600" />
+                <span>Email & Triage</span>
+              </button>
             </div>
 
             {/* Botón Scroll Derecha */}
@@ -7509,6 +7544,17 @@ export default function SuperUserAdminPage() {
         }}
         onTriggerToast={(msg) => setDeletionFeedback(msg)}
       />
+
+      {/* Modal de Correo Institucional, Triage Cognitivo y Conexión Google (15 Fases) */}
+      {isAdminEmailModalOpen && (
+        <CEOEmailCommunicationsModal
+          isOpen={isAdminEmailModalOpen}
+          onClose={() => setIsAdminEmailModalOpen(false)}
+          holding={currentSchoolHolding}
+          schoolId={currentSchool?.id || effectiveSchoolId || 'sch-default'}
+          onTriggerToast={(msg) => setDeletionFeedback(msg)}
+        />
+      )}
 
     </div>
   );

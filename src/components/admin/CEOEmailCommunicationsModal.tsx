@@ -104,6 +104,149 @@ interface OutgoingEmailLog {
   sender: string;
 }
 
+// ============================================================================
+// HELPERS MULTI-TENANT PARA CUALQUIER COLEGIO O INSTITUCIÓN DE LA PLATAFORMA
+// ============================================================================
+export function getSchoolDomain(
+  targetOrName?: { id?: string; name?: string; slug?: string; domain?: string } | string,
+  schoolSlug?: string,
+  schoolId?: string
+): string {
+  const name = typeof targetOrName === 'string' ? targetOrName : targetOrName?.name;
+  const slug = schoolSlug || (typeof targetOrName === 'object' ? (targetOrName?.slug || targetOrName?.id) : undefined);
+  const id = schoolId || (typeof targetOrName === 'object' ? targetOrName?.id : undefined);
+  const explicitDomain = typeof targetOrName === 'object' ? targetOrName?.domain : undefined;
+
+  if (explicitDomain) return explicitDomain;
+  if (id === 'sch-ibime' || name?.toLowerCase().includes('ibime')) {
+    return 'ibime.edu.mx';
+  }
+  if (slug) {
+    const clean = slug.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/^-+|-+$/g, '');
+    if (clean.length > 2) return `${clean}.edu.mx`;
+  }
+  if (name) {
+    const clean = name.toLowerCase().replace(/colegio|instituto|escuela|centro|educativo|de|la|los|las|el|\s+/gi, '').replace(/[^a-z0-9-]/g, '');
+    if (clean.length > 2) return `${clean}.edu.mx`;
+  }
+  if (id) {
+    const clean = id.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/^-+|-+$/g, '');
+    if (clean.length > 2) return `${clean}.edu.mx`;
+  }
+  return 'colegio.edu.mx';
+}
+
+export function getTenantId(
+  targetOrSchoolId?: { id?: string; name?: string } | string,
+  holdingId?: string,
+  isIbime?: boolean
+): string {
+  const sId = typeof targetOrSchoolId === 'string' ? targetOrSchoolId : targetOrSchoolId?.id;
+  if (isIbime || sId === 'sch-ibime') return 'e1000000-0000-0000-0000-000000000001';
+  if (sId) return sId;
+  if (holdingId) return holdingId;
+  return 'sch-default';
+}
+
+export function generateDefaultMattersForSchool(
+  schoolName: string,
+  domain: string,
+  campuses: any[],
+  tenantId: string
+): MatterItem[] {
+  const primaryCampus = campuses[0]?.name || `${schoolName} · Plantel Central`;
+  const secondaryCampus = campuses[1]?.name || campuses[0]?.name || `${schoolName} · Campus Norte`;
+  const slug = domain.split('.')[0] || 'colegio';
+  const prefix = slug.toUpperCase().slice(0, 5);
+
+  return [
+    {
+      id: `mat-${slug}-01`,
+      matter_code: `MAT-${prefix}-2026-001`,
+      title: `Reincidencia: Queja formal por presunto acoso y convivencia en 5º B ${primaryCampus}`,
+      summary: `La familia Mendoza reporta por 3ra ocasión altercados verbales en el recreo tras intervención inicial de Coordinación. Exigen audiencia presencial urgente con Dirección General.`,
+      category: 'Convivencia / Caso Crítico Nivel 3',
+      urgency: 'CRITICA',
+      destination: 'ATENCION_CEO',
+      why_shown: `Tercera comunicación en 12 días sobre conflicto en 5º B. Riesgo de escalamiento a queja formal ante supervisión de la SEP. Facultades indelegables de Dirección General.`,
+      reincidence_count: 3,
+      recommended_action: 'Aprobar borrador de citatorio formal para mesa de mediación presencial mañana 08:30 hrs en Dirección General.',
+      suggested_draft_reply: `Estimada Familia Mendoza Peña:\n\nHe recibido personalmente su comunicación en relación con la situación en 5º Grado B de ${primaryCampus}. Para ${schoolName} la seguridad integral y el bienestar socioemocional de sus estudiantes es una prioridad inviolable.\n\nHe instruido a Coordinación Técnica la entrega inmediata del expediente escolar completo y los convoco cordialmente a una reunión presencial en mi oficina de Dirección General mañana miércoles a las 08:30 hrs, a efecto de suscribir los acuerdos correspondientes bajo el Protocolo Nivel 3 de Convivencia Escolar.\n\nAtentamente,\nDirección General · ${schoolName}`,
+      assigned_role: 'Dirección General',
+      sla_hours: 12,
+      sla_remaining_text: '⏱️ 09h 42m restantes',
+      sender_name: 'Lic. Fernando Mendoza',
+      sender_email: 'familia.mendoza@gmail.com',
+      provenance_doc: `planeaciones/${tenantId}/Protocolo_Convivencia.md (Cláusula 4.2)`,
+      received_at: 'Hoy, 08:14 hrs',
+      campus: primaryCampus
+    },
+    {
+      id: `mat-${slug}-02`,
+      matter_code: `MAT-${prefix}-2026-002`,
+      title: `Aclaración de facturación CFDI 4.0 y aplicación de descuento de hermanos en ${secondaryCampus}`,
+      summary: `Padre de familia solicita actualización de factura electrónica correspondiente a octubre y corrección del descuento de hermanos en segundo hijo.`,
+      category: 'Financiero & Cobranza CFDI',
+      urgency: 'ALTA',
+      destination: 'DELEGADO_CON_SLA',
+      why_shown: 'Trámite fiscal sujeto a cierre de timbrado SAT CFDI 4.0. Se canaliza a Tesorería con SLA de 24 horas.',
+      reincidence_count: 1,
+      recommended_action: `Delegado a Departamento de Cobranza y Finanzas (cobranza@${domain}). Notificar si vence SLA.`,
+      suggested_draft_reply: `Estimado Sr. Ramírez:\n\nAgradecemos su comunicación. Hemos turnado su solicitud al Departamento de Cobranza y Finanzas de ${schoolName}. En un plazo menor a 24 horas recibirá la factura refacturada con el complemento IEDU y el desglose de descuento de hermanos aplicado.\n\nAtentamente,\nAdministración y Finanzas · ${schoolName}`,
+      assigned_role: 'Cobranza y Finanzas',
+      sla_hours: 24,
+      sla_remaining_text: '⏱️ 18h 15m restantes',
+      sender_name: 'Ing. Carlos Ramírez',
+      sender_email: 'carlos.ramirez@empresa.com',
+      provenance_doc: `planeaciones/${tenantId}/Lineamientos_Cobranza.md (Cláusula 2.1)`,
+      received_at: 'Hoy, 09:30 hrs',
+      campus: secondaryCampus
+    },
+    {
+      id: `mat-${slug}-03`,
+      matter_code: `MAT-${prefix}-2026-003`,
+      title: `Demoras recurrentes en Ruta 4 de Transporte Escolar (${primaryCampus})`,
+      summary: `6 familias reportan demoras promedio de 22 minutos en la parada de la mañana durante los últimos tres días por obras en vía pública.`,
+      category: 'Logística & Transporte',
+      urgency: 'MEDIA',
+      destination: 'DELEGADO_CON_SLA',
+      why_shown: 'Patrón anómalo de 6 familias reportando demoras en la misma ruta. Se requiere ajuste de horario de salida y aviso preventivo.',
+      reincidence_count: 6,
+      recommended_action: `Delegado a Coordinación de Logística (transporte@${domain}) para reprogramación de salida del autobús 15 minutos antes.`,
+      suggested_draft_reply: `Estimadas familias de Ruta 4:\n\nHemos tomado debida nota del reporte. El área de logística de ${schoolName} ha ajustado la salida del recorrido a partir de mañana con 15 minutos de anticipación para evitar los cuellos de botella por obras viales.\n\nAtentamente,\nCoordinación de Transporte Escolar · ${schoolName}`,
+      assigned_role: 'Logística y Transporte',
+      sla_hours: 48,
+      sla_remaining_text: '⏱️ 41h 10m restantes',
+      sender_name: 'Comité de Padres Ruta 4',
+      sender_email: `padres.ruta4@${domain}`,
+      provenance_doc: `planeaciones/${tenantId}/Reglamento_Transporte.md (Sección 3)`,
+      received_at: 'Ayer, 18:45 hrs',
+      campus: primaryCampus
+    },
+    {
+      id: `mat-${slug}-04`,
+      matter_code: `MAT-${prefix}-2026-004`,
+      title: 'Recepción y acuse oficial de Folio de Matrícula ante Supervisión de Zona SEP',
+      summary: `Oficio de la Supervisión de Zona 14 confirmando la recepción y validación de las listas de matrícula del ciclo escolar 2026-2027 sin observaciones.`,
+      category: 'Normativo & Supervisión Escolar',
+      urgency: 'BAJA',
+      destination: 'INFORMATIVO',
+      why_shown: `Documento normativo favorable que acredita el 100% de cumplimiento oficial de la matrícula de ${schoolName}.`,
+      reincidence_count: 1,
+      recommended_action: `Archivado formal en Bóveda Curricular y Control Escolar. No requiere respuesta ni acción correctiva.`,
+      suggested_draft_reply: `Acuse de recibo institucional: ${schoolName} agradece la notificación de la Supervisión de Zona. Las listas quedan archivadas en nuestro repositorio oficial.`,
+      assigned_role: 'Control Escolar y Archivo',
+      sla_hours: 0,
+      sla_remaining_text: '✓ Informativo Concluido',
+      sender_name: 'Supervisión Escolar Zona SEP',
+      sender_email: 'supervision.zona@sep.gob.mx',
+      provenance_doc: `planeaciones/${tenantId}/Calendario_Escolar.md`,
+      received_at: '04 Oct 2026, 12:00 hrs',
+      campus: primaryCampus
+    }
+  ];
+}
+
 export function CEOEmailCommunicationsModal({
   isOpen,
   onClose,
@@ -114,6 +257,18 @@ export function CEOEmailCommunicationsModal({
 }: CEOEmailCommunicationsModalProps) {
   const { user } = useAuth();
 
+  // Resolución dinámica de metadatos del colegio y contexto multi-tenant
+  const schoolName = holding?.name || (schoolId === 'sch-ibime' ? 'Instituto Bilingüe IBIME' : 'Colegio');
+  const isIbime = schoolId === 'sch-ibime' || schoolName.toLowerCase().includes('ibime');
+  const schoolSlug = holding?.slug || schoolId?.replace(/^sch-/, '') || (isIbime ? 'ibime' : 'colegio');
+  const schoolDomain = useMemo(() => getSchoolDomain(schoolName, schoolSlug, schoolId), [schoolName, schoolSlug, schoolId]);
+  const currentTenantId = useMemo(() => getTenantId(schoolId, holding?.id, isIbime), [schoolId, holding?.id, isIbime]);
+  const campuses = useMemo(() => {
+    if (holding?.campuses && holding.campuses.length > 0) return holding.campuses;
+    return [{ id: 'central', name: isIbime ? 'Campus Montes (Sede Matriz)' : `${schoolName} · Plantel Central`, location: 'Sede Matriz' }];
+  }, [holding?.campuses, isIbime, schoolName]);
+  const directorTitle = holding?.directorName || (isIbime ? 'Lic. Patricia Sandoval Morales' : `Dirección General · ${schoolName}`);
+
   // Pestañas principales de la consola
   const [activeTab, setActiveTab] = useState<'inbox' | 'laboratorio' | 'google' | 'redactar' | 'directorio' | 'bitacora' | 'roi'>('inbox');
   
@@ -121,10 +276,27 @@ export function CEOEmailCommunicationsModal({
   const [inboxFilter, setInboxFilter] = useState<'USABLE' | 'DISCARDED'>('USABLE');
   const [usableSubFilter, setUsableSubFilter] = useState<'ALL' | 'ATENCION_CEO' | 'DELEGADO_CON_SLA' | 'INFORMATIVO'>('ALL');
   
-  // Cuenta de Google conectada
-  const [connectedEmail, setConnectedEmail] = useState<string>(
-    user?.email || 'directora.general@ibime.edu.mx'
-  );
+  // Cuenta de Google conectada con aislamiento y persistencia hermética por tenant
+  const emailStorageKey = `iskool_connected_email_${currentTenantId}`;
+  const [connectedEmail, setConnectedEmail] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(emailStorageKey);
+      if (saved) return saved;
+    }
+    return user?.email || (isIbime ? 'directora.general@ibime.edu.mx' : `direccion@${schoolDomain}`);
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(emailStorageKey);
+      if (saved) {
+        setConnectedEmail(saved);
+        return;
+      }
+    }
+    setConnectedEmail(user?.email || (isIbime ? 'directora.general@ibime.edu.mx' : `direccion@${schoolDomain}`));
+  }, [emailStorageKey, isIbime, schoolDomain, user?.email]);
+
   const [customGoogleEmailInput, setCustomGoogleEmailInput] = useState<string>('');
   const [isGoogleOAuthConnecting, setIsGoogleOAuthConnecting] = useState<boolean>(false);
   const [isSyncingLiveInbox, setIsSyncingLiveInbox] = useState<boolean>(false);
@@ -139,12 +311,12 @@ export function CEOEmailCommunicationsModal({
   const [showCatchupModal, setShowCatchupModal] = useState<boolean>(false);
 
   // Estado del Laboratorio de Ingesta en tiempo real
-  const [labRecipient, setLabRecipient] = useState<string>('direccion.general@ibime.edu.mx');
+  const [labRecipient, setLabRecipient] = useState<string>(isIbime ? 'direccion.general@ibime.edu.mx' : `direccion@${schoolDomain}`);
   const [labSenderName, setLabSenderName] = useState<string>('Familia Mendoza Peña');
   const [labSenderEmail, setLabSenderEmail] = useState<string>('familia.mendoza@gmail.com');
-  const [labSubject, setLabSubject] = useState<string>('Reincidencia de agresión verbal y acoso en 5º B de Primaria Campus Montes');
+  const [labSubject, setLabSubject] = useState<string>(`Reincidencia de agresión verbal y acoso en 5º B de Primaria ${campuses[0]?.name || 'Campus Montes'}`);
   const [labBody, setLabBody] = useState<string>(
-    'Estimada Directora Patricia Sandoval:\n\nNos dirigimos a usted por tercera ocasión en 12 días porque a pesar de la intervención de Coordinación, nuestro hijo sigue sufriendo agresiones verbales constantes en el recreo por parte de dos compañeros. Exigimos una reunión presencial urgente con ambas familias antes de escalar el caso como queja formal ante la supervisión escolar de la SEP.'
+    `Estimada Dirección General de ${schoolName}:\n\nNos dirigimos a usted por tercera ocasión en 12 días porque a pesar de la intervención de Coordinación, nuestro hijo sigue sufriendo agresiones verbales constantes en el recreo por parte de dos compañeros. Exigimos una reunión presencial urgente con ambas familias antes de escalar el caso como queja formal ante la supervisión escolar de la SEP.`
   );
   const [labReincidence, setLabReincidence] = useState<number>(3);
   const [labIsProcessing, setLabIsProcessing] = useState<boolean>(false);
@@ -152,21 +324,21 @@ export function CEOEmailCommunicationsModal({
 
   // Estados de Redacción Outbound (Comunicados)
   const [selectedRecipient, setSelectedRecipient] = useState<string>('all-network');
-  const [subject, setSubject] = useState<string>('Circular Institucional: Lineamientos de Operación y Calendario Escolar 2026-2027');
+  const [subject, setSubject] = useState<string>(`Circular Institucional: Lineamientos de Operación y Calendario Escolar 2026-2027`);
   const [content, setContent] = useState<string>(
-`Estimada Comunidad Institucional de ${holding?.name || 'Instituto Bilingüe IBIME'},
+`Estimada Comunidad Institucional de ${schoolName},
 
-Por medio del presente comunicado oficial de la Dirección General, les extendemos un cordial saludo y compartimos las directrices académicas y operativas para el ciclo escolar en curso en nuestras 4 sedes.
+Por medio del presente comunicado oficial de la Dirección General, les extendemos un cordial saludo y compartimos las directrices académicas y operativas para el ciclo escolar en curso en nuestras ${campuses.length} sedes.
 
 1. Seguimiento Curricular: Verificación continua de PDA y fases de aprendizaje activas.
 2. Comunicación Oficial: Canales institucionales abiertos para atención directiva y académica.
-3. Compromiso con la Excelencia: Continuidad en programas bilingües y formación integral.
+3. Compromiso con la Excelencia: Continuidad en programas formativos y seguimiento 360.
 
 Agradecemos su compromiso constante con nuestra misión educativa.
 
 Atentamente,
 Dirección General & Consejo Directivo
-${holding?.name || 'Instituto Bilingüe IBIME'}`
+${schoolName}`
   );
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [copiedMessage, setCopiedMessage] = useState<boolean>(false);
@@ -177,121 +349,243 @@ ${holding?.name || 'Instituto Bilingüe IBIME'}`
     {
       id: 'log-1',
       timestamp: 'Hoy, 09:15 hrs',
-      subject: 'Circular No. 2026-08: Convocatoria a Sesión de Consejo Directivo y Directores de Plantel',
+      subject: `Circular No. 2026-08: Convocatoria a Sesión de Consejo Directivo y Directores de Plantel`,
       recipientGroup: 'Directores de Campus & Coordinación',
-      targetCount: 4,
+      targetCount: campuses.length || 4,
       status: 'Entregado (100%)',
-      sender: 'direccion.general@ibime.edu.mx'
+      sender: connectedEmail
     },
     {
       id: 'log-2',
       timestamp: 'Ayer, 16:30 hrs',
-      subject: 'Aviso de Facturación CFDI 4.0 con Complemento IEDU - Ciclo 2026-2027',
-      recipientGroup: 'Comunidad de Padres de Familia (4 Sedes)',
+      subject: `Aviso de Facturación CFDI 4.0 con Complemento IEDU - Ciclo 2026-2027`,
+      recipientGroup: `Comunidad de Padres de Familia (${campuses.length} Sedes)`,
       targetCount: 3740,
       status: 'Entregado (100%)',
-      sender: 'cobranza@ibime.edu.mx'
+      sender: `cobranza@${schoolDomain}`
     },
     {
       id: 'log-3',
       timestamp: '03 Oct 2026, 11:00 hrs',
-      subject: 'Boletín Trimestral de Logros Bilingües y Evaluación Pedagógica',
+      subject: 'Boletín Trimestral de Logros Pedagógicos y Evaluación Continua',
       recipientGroup: 'Cuerpo Docente & Académico',
       targetCount: 200,
       status: 'Entregado (100%)',
-      sender: 'academico@ibime.edu.mx'
+      sender: `academico@${schoolDomain}`
     }
   ]);
 
-  // Semilla de Asuntos Usables IBIME (Alta Fidelidad 15 Fases)
-  const [mattersList, setMattersList] = useState<MatterItem[]>([
-    {
-      id: 'mat-ibime-01',
-      matter_code: 'MAT-IBIME-2026-001',
-      title: 'Reincidencia: Queja formal por presunto acoso y convivencia en 5º B Campus Montes',
-      summary: 'La familia Mendoza reporta por 3ra ocasión agresiones verbales continuas en el recreo tras intervención inicial de Coordinación. Exigen audiencia presencial urgente con Dirección General.',
-      category: 'Convivencia / Caso Crítico Nivel 3',
-      urgency: 'CRITICA',
-      destination: 'ATENCION_CEO',
-      why_shown: 'Tercera comunicación en 12 días sobre conflicto en 5º B. Riesgo de escalamiento a queja formal ante supervisión de la SEP. Facultades indelegables de Dirección General.',
-      reincidence_count: 3,
-      recommended_action: 'Aprobar borrador de citatorio formal para mesa de mediación presencial mañana 08:30 hrs en Dirección General.',
-      suggested_draft_reply: `Estimada Familia Mendoza Peña:\n\nHe recibido personalmente su comunicación en relación con la situación en 5º Grado B de Campus Montes. Para el Instituto Bilingüe IBIME la seguridad integral y el bienestar socioemocional de sus estudiantes es una prioridad inviolable.\n\nHe instruido a Coordinación Técnica la entrega inmediata del expediente escolar completo y los convoco cordialmente a una reunión presencial en mi oficina de Dirección General mañana miércoles a las 08:30 hrs, a efecto de suscribir los acuerdos correspondientes bajo el Protocolo Nivel 3 de Convivencia Escolar.\n\nAtentamente,\nLic. Patricia Sandoval Morales\nDirectora General · Instituto Bilingüe IBIME`,
-      assigned_role: 'Dirección General',
-      sla_hours: 12,
-      sla_remaining_text: '⏱️ 09h 42m restantes',
-      sender_name: 'Lic. Fernando Mendoza',
-      sender_email: 'familia.mendoza@gmail.com',
-      provenance_doc: 'planeaciones/IBIME/Protocolo_Convivencia_y_Acoso.md (Cláusula 4.2)',
-      received_at: 'Hoy, 08:14 hrs',
-      campus: 'Campus Montes (Sede Matriz)'
-    },
-    {
-      id: 'mat-ibime-02',
-      matter_code: 'MAT-IBIME-2026-002',
-      title: 'Aclaración de facturación CFDI 4.0 y aplicación de descuento de hermanos en Campus Lagos',
-      summary: 'Padre de familia solicita actualización de factura electrónica correspondiente a octubre y corrección del descuento de hermanos en segundo hijo.',
-      category: 'Financiero & Cobranza CFDI',
-      urgency: 'ALTA',
-      destination: 'DELEGADO_CON_SLA',
-      why_shown: 'Trámite fiscal sujeto a cierre de timbrado SAT CFDI 4.0. Se canaliza a Tesorería con SLA de 24 horas.',
-      reincidence_count: 1,
-      recommended_action: 'Delegado a Departamento de Cobranza y Finanzas (C.P. Claudia Albarrán). Notificar si vence SLA.',
-      suggested_draft_reply: `Estimado Sr. Ramírez:\n\nAgradecemos su comunicación. Hemos turnado su solicitud al Departamento de Cobranza y Finanzas de IBIME. En un plazo menor a 24 horas recibirá la factura refacturada con el complemento IEDU y el desglose de descuento de hermanos aplicado.\n\nAtentamente,\nAdministración y Finanzas · Instituto Bilingüe IBIME`,
-      assigned_role: 'Cobranza y Finanzas',
-      sla_hours: 24,
-      sla_remaining_text: '⏱️ 18h 15m restantes',
-      sender_name: 'Ing. Carlos Ramírez',
-      sender_email: 'carlos.ramirez@empresa.com',
-      provenance_doc: 'planeaciones/IBIME/Lineamientos_Cobranza_y_Colegiaturas.md (Cláusula 2.1)',
-      received_at: 'Hoy, 09:30 hrs',
-      campus: 'Campus Lagos'
-    },
-    {
-      id: 'mat-ibime-03',
-      matter_code: 'MAT-IBIME-2026-003',
-      title: 'Demoras recurrentes en Ruta 4 de Transporte Escolar (Sede San Cristóbal)',
-      summary: '6 familias reportan demoras promedio de 22 minutos en la parada de la mañana durante los últimos tres días por obras en vía pública.',
-      category: 'Logística & Transporte',
-      urgency: 'MEDIA',
-      destination: 'DELEGADO_CON_SLA',
-      why_shown: 'Patrón anómalo de 6 familias reportando demoras en la misma ruta. Se requiere ajuste de horario de salida y aviso preventivo.',
-      reincidence_count: 6,
-      recommended_action: 'Delegado a Coordinación de Logística para reprogramación de salida del autobús 15 minutos antes.',
-      suggested_draft_reply: `Estimadas familias de Ruta 4:\n\nHemos tomado debida nota del reporte. El área de logística ha ajustado la salida del recorrido a partir de mañana con 15 minutos de anticipación para evitar los cuellos de botella por obras viales.\n\nAtentamente,\nCoordinación de Transporte Escolar · IBIME`,
-      assigned_role: 'Logística y Transporte',
-      sla_hours: 48,
-      sla_remaining_text: '⏱️ 41h 10m restantes',
-      sender_name: 'Comité de Padres Ruta 4',
-      sender_email: 'padres.ruta4@ibime.edu.mx',
-      provenance_doc: 'planeaciones/IBIME/Politica_Transporte_y_Rutas_Escolares.md (Sección 3)',
-      received_at: 'Ayer, 18:45 hrs',
-      campus: 'Campus San Cristóbal'
-    },
-    {
-      id: 'mat-ibime-04',
-      matter_code: 'MAT-IBIME-2026-004',
-      title: 'Recepción y acuse oficial de Folio de Matrícula ante Supervisión de Zona SEP',
-      summary: 'Oficio de la Supervisión de Zona 14 confirmando la recepción y validación de las listas de matrícula del ciclo escolar 2026-2027 sin observaciones.',
-      category: 'Normativo & Supervisión Escolar',
-      urgency: 'BAJA',
-      destination: 'INFORMATIVO',
-      why_shown: 'Documento normativo favorable que acredita el 100% de cumplimiento oficial de la matrícula de los 4 planteles.',
-      reincidence_count: 1,
-      recommended_action: 'Archivado formal en Bóveda Curricular y Control Escolar. No requiere respuesta ni acción correctiva.',
-      suggested_draft_reply: `Acuse de recibo institucional: El Instituto Bilingüe IBIME agradece la notificación de la Supervisión de Zona 14. Las listas quedan archivadas en nuestro repositorio oficial.`,
-      assigned_role: 'Control Escolar y Archivo',
-      sla_hours: 0,
-      sla_remaining_text: '✓ Informativo Concluido',
-      sender_name: 'Supervisión Escolar Zona 14',
-      sender_email: 'supervision.zona14@edomex.gob.mx',
-      provenance_doc: 'planeaciones/IBIME/Calendario_Oficial_Evaluaciones_2025_2026.md',
-      received_at: '04 Oct 2026, 12:00 hrs',
-      campus: 'Consolidado Red IBIME'
+  // Semilla y Almacenamiento Aislado de Asuntos Usables (Alta Fidelidad 15 Fases) por Tenant
+  const mattersStorageKey = `iskool_matters_${currentTenantId}`;
+  const [mattersList, setMattersList] = useState<MatterItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(mattersStorageKey);
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          // Fallback a generación
+        }
+      }
     }
-  ]);
+    if (isIbime) {
+      return [
+        {
+          id: 'mat-ibime-01',
+          matter_code: 'MAT-IBIME-2026-001',
+          title: 'Reincidencia: Queja formal por presunto acoso y convivencia en 5º B Campus Montes',
+          summary: 'La familia Mendoza reporta por 3ra ocasión agresiones verbales continuas en el recreo tras intervención inicial de Coordinación. Exigen audiencia presencial urgente con Dirección General.',
+          category: 'Convivencia / Caso Crítico Nivel 3',
+          urgency: 'CRITICA',
+          destination: 'ATENCION_CEO',
+          why_shown: 'Tercera comunicación en 12 días sobre conflicto en 5º B. Riesgo de escalamiento a queja formal ante supervisión de la SEP. Facultades indelegables de Dirección General.',
+          reincidence_count: 3,
+          recommended_action: 'Aprobar borrador de citatorio formal para mesa de mediación presencial mañana 08:30 hrs en Dirección General.',
+          suggested_draft_reply: `Estimada Familia Mendoza Peña:\n\nHe recibido personalmente su comunicación en relación con la situación en 5º Grado B de Campus Montes. Para el Instituto Bilingüe IBIME la seguridad integral y el bienestar socioemocional de sus estudiantes es una prioridad inviolable.\n\nHe instruido a Coordinación Técnica la entrega inmediata del expediente escolar completo y los convoco cordialmente a una reunión presencial en mi oficina de Dirección General mañana miércoles a las 08:30 hrs, a efecto de suscribir los acuerdos correspondientes bajo el Protocolo Nivel 3 de Convivencia Escolar.\n\nAtentamente,\nLic. Patricia Sandoval Morales\nDirectora General · Instituto Bilingüe IBIME`,
+          assigned_role: 'Dirección General',
+          sla_hours: 12,
+          sla_remaining_text: '⏱️ 09h 42m restantes',
+          sender_name: 'Lic. Fernando Mendoza',
+          sender_email: 'familia.mendoza@gmail.com',
+          provenance_doc: 'planeaciones/IBIME/Protocolo_Convivencia_y_Acoso.md (Cláusula 4.2)',
+          received_at: 'Hoy, 08:14 hrs',
+          campus: 'Campus Montes (Sede Matriz)'
+        },
+        {
+          id: 'mat-ibime-02',
+          matter_code: 'MAT-IBIME-2026-002',
+          title: 'Aclaración de facturación CFDI 4.0 y aplicación de descuento de hermanos en Campus Lagos',
+          summary: 'Padre de familia solicita actualización de factura electrónica correspondiente a octubre y corrección del descuento de hermanos en segundo hijo.',
+          category: 'Financiero & Cobranza CFDI',
+          urgency: 'ALTA',
+          destination: 'DELEGADO_CON_SLA',
+          why_shown: 'Trámite fiscal sujeto a cierre de timbrado SAT CFDI 4.0. Se canaliza a Tesorería con SLA de 24 horas.',
+          reincidence_count: 1,
+          recommended_action: 'Delegado a Departamento de Cobranza y Finanzas (C.P. Claudia Albarrán). Notificar si vence SLA.',
+          suggested_draft_reply: `Estimado Sr. Ramírez:\n\nAgradecemos su comunicación. Hemos turnado su solicitud al Departamento de Cobranza y Finanzas de IBIME. En un plazo menor a 24 horas recibirá la factura refacturada con el complemento IEDU y el desglose de descuento de hermanos aplicado.\n\nAtentamente,\nAdministración y Finanzas · Instituto Bilingüe IBIME`,
+          assigned_role: 'Cobranza y Finanzas',
+          sla_hours: 24,
+          sla_remaining_text: '⏱️ 18h 15m restantes',
+          sender_name: 'Ing. Carlos Ramírez',
+          sender_email: 'carlos.ramirez@empresa.com',
+          provenance_doc: 'planeaciones/IBIME/Lineamientos_Cobranza_y_Colegiaturas.md (Cláusula 2.1)',
+          received_at: 'Hoy, 09:30 hrs',
+          campus: 'Campus Lagos'
+        },
+        {
+          id: 'mat-ibime-03',
+          matter_code: 'MAT-IBIME-2026-003',
+          title: 'Demoras recurrentes en Ruta 4 de Transporte Escolar (Sede San Cristóbal)',
+          summary: '6 familias reportan demoras promedio de 22 minutos en la parada de la mañana durante los últimos tres días por obras en vía pública.',
+          category: 'Logística & Transporte',
+          urgency: 'MEDIA',
+          destination: 'DELEGADO_CON_SLA',
+          why_shown: 'Patrón anómalo de 6 familias reportando demoras en la misma ruta. Se requiere ajuste de horario de salida y aviso preventivo.',
+          reincidence_count: 6,
+          recommended_action: 'Delegado a Coordinación de Logística para reprogramación de salida del autobús 15 minutos antes.',
+          suggested_draft_reply: `Estimadas familias de Ruta 4:\n\nHemos tomado debida nota del reporte. El área de logística ha ajustado la salida del recorrido a partir de mañana con 15 minutos de anticipación para evitar los cuellos de botella por obras viales.\n\nAtentamente,\nCoordinación de Transporte Escolar · IBIME`,
+          assigned_role: 'Logística y Transporte',
+          sla_hours: 48,
+          sla_remaining_text: '⏱️ 41h 10m restantes',
+          sender_name: 'Comité de Padres Ruta 4',
+          sender_email: 'padres.ruta4@ibime.edu.mx',
+          provenance_doc: 'planeaciones/IBIME/Politica_Transporte_y_Rutas_Escolares.md (Sección 3)',
+          received_at: 'Ayer, 18:45 hrs',
+          campus: 'Campus San Cristóbal'
+        },
+        {
+          id: 'mat-ibime-04',
+          matter_code: 'MAT-IBIME-2026-004',
+          title: 'Recepción y acuse oficial de Folio de Matrícula ante Supervisión de Zona SEP',
+          summary: 'Oficio de la Supervisión de Zona 14 confirmando la recepción y validación de las listas de matrícula del ciclo escolar 2026-2027 sin observaciones.',
+          category: 'Normativo & Supervisión Escolar',
+          urgency: 'BAJA',
+          destination: 'INFORMATIVO',
+          why_shown: 'Documento normativo favorable que acredita el 100% de cumplimiento oficial de la matrícula de los 4 planteles.',
+          reincidence_count: 1,
+          recommended_action: 'Archivado formal en Bóveda Curricular y Control Escolar. No requiere respuesta ni acción correctiva.',
+          suggested_draft_reply: `Acuse de recibo institucional: El Instituto Bilingüe IBIME agradece la notificación de la Supervisión de Zona 14. Las listas quedan archivadas en nuestro repositorio oficial.`,
+          assigned_role: 'Control Escolar y Archivo',
+          sla_hours: 0,
+          sla_remaining_text: '✓ Informativo Concluido',
+          sender_name: 'Supervisión Escolar Zona 14',
+          sender_email: 'supervision.zona14@edomex.gob.mx',
+          provenance_doc: 'planeaciones/IBIME/Calendario_Oficial_Evaluaciones_2025_2026.md',
+          received_at: '04 Oct 2026, 12:00 hrs',
+          campus: 'Consolidado Red IBIME'
+        }
+      ];
+    }
+    return generateDefaultMattersForSchool(schoolName, schoolDomain, campuses, currentTenantId);
+  });
 
-  // Semilla de Correos No Usables (Descartados / Spam Filtrado)
+  // Si cambia el tenant de la institución, recargar asuntos correspondientes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(mattersStorageKey);
+      if (saved) {
+        try {
+          setMattersList(JSON.parse(saved));
+          return;
+        } catch {
+          // Ignorar y regenerar
+        }
+      }
+    }
+    if (isIbime) {
+      setMattersList([
+        {
+          id: 'mat-ibime-01',
+          matter_code: 'MAT-IBIME-2026-001',
+          title: 'Reincidencia: Queja formal por presunto acoso y convivencia en 5º B Campus Montes',
+          summary: 'La familia Mendoza reporta por 3ra ocasión agresiones verbales continuas en el recreo tras intervención inicial de Coordinación. Exigen audiencia presencial urgente con Dirección General.',
+          category: 'Convivencia / Caso Crítico Nivel 3',
+          urgency: 'CRITICA',
+          destination: 'ATENCION_CEO',
+          why_shown: 'Tercera comunicación en 12 días sobre conflicto en 5º B. Riesgo de escalamiento a queja formal ante supervisión de la SEP. Facultades indelegables de Dirección General.',
+          reincidence_count: 3,
+          recommended_action: 'Aprobar borrador de citatorio formal para mesa de mediación presencial mañana 08:30 hrs en Dirección General.',
+          suggested_draft_reply: `Estimada Familia Mendoza Peña:\n\nHe recibido personalmente su comunicación en relación con la situación en 5º Grado B de Campus Montes. Para el Instituto Bilingüe IBIME la seguridad integral y el bienestar socioemocional de sus estudiantes es una prioridad inviolable.\n\nHe instruido a Coordinación Técnica la entrega inmediata del expediente escolar completo y los convoco cordialmente a una reunión presencial en mi oficina de Dirección General mañana miércoles a las 08:30 hrs, a efecto de suscribir los acuerdos correspondientes bajo el Protocolo Nivel 3 de Convivencia Escolar.\n\nAtentamente,\nLic. Patricia Sandoval Morales\nDirectora General · Instituto Bilingüe IBIME`,
+          assigned_role: 'Dirección General',
+          sla_hours: 12,
+          sla_remaining_text: '⏱️ 09h 42m restantes',
+          sender_name: 'Lic. Fernando Mendoza',
+          sender_email: 'familia.mendoza@gmail.com',
+          provenance_doc: 'planeaciones/IBIME/Protocolo_Convivencia_y_Acoso.md (Cláusula 4.2)',
+          received_at: 'Hoy, 08:14 hrs',
+          campus: 'Campus Montes (Sede Matriz)'
+        },
+        {
+          id: 'mat-ibime-02',
+          matter_code: 'MAT-IBIME-2026-002',
+          title: 'Aclaración de facturación CFDI 4.0 y aplicación de descuento de hermanos en Campus Lagos',
+          summary: 'Padre de familia solicita actualización de factura electrónica correspondiente a octubre y corrección del descuento de hermanos en segundo hijo.',
+          category: 'Financiero & Cobranza CFDI',
+          urgency: 'ALTA',
+          destination: 'DELEGADO_CON_SLA',
+          why_shown: 'Trámite fiscal sujeto a cierre de timbrado SAT CFDI 4.0. Se canaliza a Tesorería con SLA de 24 horas.',
+          reincidence_count: 1,
+          recommended_action: 'Delegado a Departamento de Cobranza y Finanzas (C.P. Claudia Albarrán). Notificar si vence SLA.',
+          suggested_draft_reply: `Estimado Sr. Ramírez:\n\nAgradecemos su comunicación. Hemos turnado su solicitud al Departamento de Cobranza y Finanzas de IBIME. En un plazo menor a 24 horas recibirá la factura refacturada con el complemento IEDU y el desglose de descuento de hermanos aplicado.\n\nAtentamente,\nAdministración y Finanzas · Instituto Bilingüe IBIME`,
+          assigned_role: 'Cobranza y Finanzas',
+          sla_hours: 24,
+          sla_remaining_text: '⏱️ 18h 15m restantes',
+          sender_name: 'Ing. Carlos Ramírez',
+          sender_email: 'carlos.ramirez@empresa.com',
+          provenance_doc: 'planeaciones/IBIME/Lineamientos_Cobranza_y_Colegiaturas.md (Cláusula 2.1)',
+          received_at: 'Hoy, 09:30 hrs',
+          campus: 'Campus Lagos'
+        },
+        {
+          id: 'mat-ibime-03',
+          matter_code: 'MAT-IBIME-2026-003',
+          title: 'Demoras recurrentes en Ruta 4 de Transporte Escolar (Sede San Cristóbal)',
+          summary: '6 familias reportan demoras promedio de 22 minutos en la parada de la mañana durante los últimos tres días por obras en vía pública.',
+          category: 'Logística & Transporte',
+          urgency: 'MEDIA',
+          destination: 'DELEGADO_CON_SLA',
+          why_shown: 'Patrón anómalo de 6 familias reportando demoras en la misma ruta. Se requiere ajuste de horario de salida y aviso preventivo.',
+          reincidence_count: 6,
+          recommended_action: 'Delegado a Coordinación de Logística para reprogramación de salida del autobús 15 minutos antes.',
+          suggested_draft_reply: `Estimadas familias de Ruta 4:\n\nHemos tomado debida nota del reporte. El área de logística ha ajustado la salida del recorrido a partir de mañana con 15 minutos de anticipación para evitar los cuellos de botella por obras viales.\n\nAtentamente,\nCoordinación de Transporte Escolar · IBIME`,
+          assigned_role: 'Logística y Transporte',
+          sla_hours: 48,
+          sla_remaining_text: '⏱️ 41h 10m restantes',
+          sender_name: 'Comité de Padres Ruta 4',
+          sender_email: 'padres.ruta4@ibime.edu.mx',
+          provenance_doc: 'planeaciones/IBIME/Politica_Transporte_y_Rutas_Escolares.md (Sección 3)',
+          received_at: 'Ayer, 18:45 hrs',
+          campus: 'Campus San Cristóbal'
+        },
+        {
+          id: 'mat-ibime-04',
+          matter_code: 'MAT-IBIME-2026-004',
+          title: 'Recepción y acuse oficial de Folio de Matrícula ante Supervisión de Zona SEP',
+          summary: 'Oficio de la Supervisión de Zona 14 confirmando la recepción y validación de las listas de matrícula del ciclo escolar 2026-2027 sin observaciones.',
+          category: 'Normativo & Supervisión Escolar',
+          urgency: 'BAJA',
+          destination: 'INFORMATIVO',
+          why_shown: 'Documento normativo favorable que acredita el 100% de cumplimiento oficial de la matrícula de los 4 planteles.',
+          reincidence_count: 1,
+          recommended_action: 'Archivado formal en Bóveda Curricular y Control Escolar. No requiere respuesta ni acción correctiva.',
+          suggested_draft_reply: `Acuse de recibo institucional: El Instituto Bilingüe IBIME agradece la notificación de la Supervisión de Zona 14. Las listas quedan archivadas en nuestro repositorio oficial.`,
+          assigned_role: 'Control Escolar y Archivo',
+          sla_hours: 0,
+          sla_remaining_text: '✓ Informativo Concluido',
+          sender_name: 'Supervisión Escolar Zona 14',
+          sender_email: 'supervision.zona14@edomex.gob.mx',
+          provenance_doc: 'planeaciones/IBIME/Calendario_Oficial_Evaluaciones_2025_2026.md',
+          received_at: '04 Oct 2026, 12:00 hrs',
+          campus: 'Consolidado Red IBIME'
+        }
+      ]);
+    } else {
+      setMattersList(generateDefaultMattersForSchool(schoolName, schoolDomain, campuses, currentTenantId));
+    }
+  }, [mattersStorageKey, isIbime, schoolName, schoolDomain, campuses, currentTenantId]);
+
+  // Semilla de Correos No Usables (Descartados / Spam Filtrado) por Tenant
+  const discardedStorageKey = `iskool_discarded_${currentTenantId}`;
   const [discardedList, setDiscardedList] = useState<DiscardedEmailItem[]>([
     {
       id: 'spam-001',
@@ -316,7 +610,7 @@ ${holding?.name || 'Instituto Bilingüe IBIME'}`
       sender_name: 'Seguros Industriales y Flotillas',
       sender_email: 'cotizaciones@seguros-generales-mex.net',
       subject: 'Cotización para flotilla de vehículos comerciales y camionetas',
-      discard_reason: 'Correo genérico de prospección comercial. La póliza de transporte de IBIME ya cuenta con cobertura vigente.',
+      discard_reason: `Correo genérico de prospección comercial. La póliza de transporte de ${schoolName} ya cuenta con cobertura vigente.`,
       category: 'Promoción No Solicitada',
       received_at: 'Ayer, 21:30 hrs'
     },
@@ -331,60 +625,106 @@ ${holding?.name || 'Instituto Bilingüe IBIME'}`
     }
   ]);
 
-  // Directorio institucional de cuentas oficiales
+  // Directorio institucional de cuentas oficiales dinámico por colegio
   const institutionalDirectory = useMemo(() => {
-    return [
+    if (isIbime) {
+      return [
+        {
+          campus: 'Central / Consorcio',
+          department: 'Dirección General Holding',
+          email: 'direccion.general@ibime.edu.mx',
+          holder: holding?.directorName || 'Lic. Patricia Sandoval Morales',
+          role: 'CEO & Directora General'
+        },
+        {
+          campus: 'Central / Consorcio',
+          department: 'Admisiones & Matrícula Red',
+          email: 'admisiones@ibime.edu.mx',
+          holder: 'Coordinación Central de Admisiones',
+          role: 'Atención a Nuevas Familias'
+        },
+        {
+          campus: 'Central / Consorcio',
+          department: 'Finanzas, Facturación & Cobranza',
+          email: 'cobranza@ibime.edu.mx',
+          holder: 'C.P. Claudia Albarrán',
+          role: 'Dirección de Administración y Finanzas'
+        },
+        {
+          campus: 'Campus Montes (Sede Matriz)',
+          department: 'Dirección de Plantel',
+          email: 'direccion.montes@ibime.edu.mx',
+          holder: 'Mtra. Elena Cárdenas V.',
+          role: 'Directora Técnica Montes'
+        },
+        {
+          campus: 'Campus Lagos (Fundador)',
+          department: 'Dirección de Plantel',
+          email: 'direccion.lagos@ibime.edu.mx',
+          holder: 'Lic. Roberto Garza Treviño',
+          role: 'Director Técnico Lagos'
+        },
+        {
+          campus: 'Campus San Cristóbal (Centro)',
+          department: 'Dirección de Plantel',
+          email: 'direccion.sancristobal@ibime.edu.mx',
+          holder: 'Dra. Andrea Ruiz Pantoja',
+          role: 'Directora Técnica San Cristóbal'
+        },
+        {
+          campus: 'Campus Coacalco (Metropolitano)',
+          department: 'Dirección de Plantel',
+          email: 'direccion.coacalco@ibime.edu.mx',
+          holder: 'Mtro. Héctor Ortiz Beltrán',
+          role: 'Director Técnico Coacalco'
+        }
+      ];
+    }
+
+    const baseList = [
       {
-        campus: 'Central / Consorcio',
-        department: 'Dirección General Holding',
-        email: 'direccion.general@ibime.edu.mx',
-        holder: holding?.directorName || 'Lic. Patricia Sandoval Morales',
-        role: 'CEO & Directora General'
+        campus: 'Central / Rectoría',
+        department: 'Dirección General',
+        email: `direccion@${schoolDomain}`,
+        holder: directorTitle,
+        role: 'Dirección General & Rectoría'
       },
       {
-        campus: 'Central / Consorcio',
-        department: 'Admisiones & Matrícula Red',
-        email: 'admisiones@ibime.edu.mx',
-        holder: 'Coordinación Central de Admisiones',
-        role: 'Atención a Nuevas Familias'
+        campus: 'Central / Administración',
+        department: 'Finanzas, Facturación CFDI & Cobranza',
+        email: `cobranza@${schoolDomain}`,
+        holder: 'Departamento de Tesorería',
+        role: 'Administración y Finanzas'
       },
       {
-        campus: 'Central / Consorcio',
-        department: 'Finanzas, Facturación & Cobranza',
-        email: 'cobranza@ibime.edu.mx',
-        holder: 'C.P. Claudia Albarrán',
-        role: 'Dirección de Administración y Finanzas'
+        campus: 'Central / Secretaría',
+        department: 'Control Escolar y Trámites SEP',
+        email: `controlescolar@${schoolDomain}`,
+        holder: 'Secretaría de Control Escolar',
+        role: 'Gestión de Boletas, Kardex y Matrícula'
       },
       {
-        campus: 'Campus Montes (Sede Matriz)',
-        department: 'Dirección de Plantel',
-        email: 'direccion.montes@ibime.edu.mx',
-        holder: 'Mtra. Elena Cárdenas V.',
-        role: 'Directora Técnica Montes'
-      },
-      {
-        campus: 'Campus Lagos (Fundador)',
-        department: 'Dirección de Plantel',
-        email: 'direccion.lagos@ibime.edu.mx',
-        holder: 'Lic. Roberto Garza Treviño',
-        role: 'Director Técnico Lagos'
-      },
-      {
-        campus: 'Campus San Cristóbal (Centro)',
-        department: 'Dirección de Plantel',
-        email: 'direccion.sancristobal@ibime.edu.mx',
-        holder: 'Dra. Andrea Ruiz Pantoja',
-        role: 'Directora Técnica San Cristóbal'
-      },
-      {
-        campus: 'Campus Coacalco (Metropolitano)',
-        department: 'Dirección de Plantel',
-        email: 'direccion.coacalco@ibime.edu.mx',
-        holder: 'Mtro. Héctor Ortiz Beltrán',
-        role: 'Director Técnico Coacalco'
+        campus: 'Central / Admisiones',
+        department: 'Admisiones & Nuevos Ingresos',
+        email: `admisiones@${schoolDomain}`,
+        holder: 'Coordinación de Admisiones',
+        role: 'Atención a Familias e Inscripciones'
       }
     ];
-  }, [holding]);
+
+    campuses.forEach((c) => {
+      const cSlug = c.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      baseList.push({
+        campus: c.name,
+        department: 'Dirección de Plantel',
+        email: `direccion.${cSlug.slice(0, 10)}@${schoolDomain}`,
+        holder: `Dirección Técnica · ${c.name}`,
+        role: 'Titular de Plantel'
+      });
+    });
+
+    return baseList;
+  }, [isIbime, schoolDomain, directorTitle, campuses, holding?.directorName]);
 
   // Conexión con Google OAuth
   const handleGoogleOAuthConnect = async () => {
@@ -413,7 +753,7 @@ ${holding?.name || 'Instituto Bilingüe IBIME'}`
     }
   };
 
-  // Vincular correo personalizado manual (puede ser @ibime.edu.mx o @gmail.com)
+  // Vincular correo personalizado manual (puede ser @dominio-colegio o @gmail.com)
   const handleBindCustomGoogleEmail = (e: React.FormEvent) => {
     e.preventDefault();
     if (!customGoogleEmailInput || !customGoogleEmailInput.includes('@')) {
@@ -422,8 +762,11 @@ ${holding?.name || 'Instituto Bilingüe IBIME'}`
     }
     const cleanEmail = customGoogleEmailInput.trim().toLowerCase();
     setConnectedEmail(cleanEmail);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(emailStorageKey, cleanEmail);
+    }
     setCustomGoogleEmailInput('');
-    onTriggerToast(`✓ Correo real "${cleanEmail}" vinculado a la Suite de Inteligencia IBIME`);
+    onTriggerToast(`✓ Correo real "${cleanEmail}" vinculado a la Suite de Inteligencia (${schoolName})`);
   };
 
   // Forzar sincronización de bandeja en tiempo real
@@ -432,7 +775,7 @@ ${holding?.name || 'Instituto Bilingüe IBIME'}`
     setTimeout(() => {
       setIsSyncingLiveInbox(false);
       setLastSyncTime('Justo ahora');
-      onTriggerToast('✓ Sincronización con Google Cloud API completada. 297 correos analizados, 0 incidencias no atendidas.');
+      onTriggerToast(`✓ Sincronización con Google Cloud API completada para ${schoolName}. 297 correos analizados, 0 incidencias no atendidas.`);
     }, 900);
   };
 
@@ -451,32 +794,33 @@ ${holding?.name || 'Instituto Bilingüe IBIME'}`
     };
 
     const sessionMetadata: HermeticAuthSession = {
-      tenant_id: 'e1000000-0000-0000-0000-000000000001',
+      tenant_id: currentTenantId,
       role: 'CEO',
-      institution_name: holding?.name || 'Instituto Bilingüe IBIME',
+      institution_name: schoolName,
       is_isolated_sandbox: false,
       user: {
         email: connectedEmail,
         app_metadata: {
-          tenant_id: 'e1000000-0000-0000-0000-000000000001',
+          tenant_id: currentTenantId,
           role: 'CEO',
-          institution_name: holding?.name || 'Instituto Bilingüe IBIME',
+          institution_name: schoolName,
           is_isolated_sandbox: false
         }
       }
     };
 
     try {
-      // Invocación directa al motor hermético RAG
+      // Invocación directa al motor hermético RAG con aislamiento por tenant
       const result = await HermeticEmailBrainService.processInboundEmail(emailDto, sessionMetadata);
       setLabResult(result);
       onTriggerToast(`✓ Inferencia completada en ${result.telemetry.latency_ms}ms · Cuadrante: ${result.quadrant}`);
 
       // Si el correo clasifica como accionable, lo agregamos a la lista de asuntos
       if (result.quadrant !== 'SPAM_DESCARTADO') {
+        const prefix = (schoolSlug || 'colegio').toUpperCase().slice(0, 5);
         const newMatter: MatterItem = {
           id: `mat-live-${Date.now()}`,
-          matter_code: `MAT-IBIME-2026-${(mattersList.length + 1).toString().padStart(3, '0')}`,
+          matter_code: `MAT-${prefix}-2026-${(mattersList.length + 1).toString().padStart(3, '0')}`,
           title: labSubject,
           summary: `${labSenderName} escribe: "${labBody.substring(0, 140)}..."`,
           category: result.category,
@@ -491,11 +835,15 @@ ${holding?.name || 'Instituto Bilingüe IBIME'}`
           sla_remaining_text: `⏱️ ${result.sla_hours || 24}h restantes`,
           sender_name: labSenderName,
           sender_email: labSenderEmail,
-          provenance_doc: result.provenance[0] ? `${result.provenance[0].source_path}` : 'Bóveda Curricular IBIME',
+          provenance_doc: result.provenance[0] ? `${result.provenance[0].source_path}` : `Bóveda Curricular ${schoolName}`,
           received_at: 'En vivo (Laboratorio)',
-          campus: 'Campus Montes (Sede Matriz)'
+          campus: campuses[0]?.name || `${schoolName} · Plantel Central`
         };
-        setMattersList([newMatter, ...mattersList]);
+        const updatedMatters = [newMatter, ...mattersList];
+        setMattersList(updatedMatters);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(mattersStorageKey, JSON.stringify(updatedMatters));
+        }
       } else {
         const newDiscarded: DiscardedEmailItem = {
           id: `spam-live-${Date.now()}`,
@@ -506,7 +854,11 @@ ${holding?.name || 'Instituto Bilingüe IBIME'}`
           category: result.category,
           received_at: 'En vivo (Laboratorio)'
         };
-        setDiscardedList([newDiscarded, ...discardedList]);
+        const updatedDiscarded = [newDiscarded, ...discardedList];
+        setDiscardedList(updatedDiscarded);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(discardedStorageKey, JSON.stringify(updatedDiscarded));
+        }
       }
     } catch (err: any) {
       onTriggerToast(`Error en inferencia: ${err.message || 'Desconocido'}`);
@@ -517,37 +869,40 @@ ${holding?.name || 'Instituto Bilingüe IBIME'}`
 
   // Cargar presets de prueba en el laboratorio
   const handleApplyLabPreset = (preset: 'acoso' | 'cfdi' | 'transporte' | 'spam') => {
+    const primaryCampus = campuses[0]?.name || (isIbime ? 'Campus Montes' : `${schoolName} · Plantel Central`);
+    const secondaryCampus = campuses[1]?.name || (isIbime ? 'Campus Lagos' : `${schoolName} · Campus Norte`);
+
     if (preset === 'acoso') {
-      setLabSubject('Reincidencia de agresión verbal y acoso en 5º B de Primaria Campus Montes');
+      setLabSubject(`Reincidencia de agresión verbal y acoso en 5º B de Primaria ${primaryCampus}`);
       setLabSenderName('Familia Mendoza Peña');
       setLabSenderEmail('familia.mendoza@gmail.com');
-      setLabRecipient('direccion.general@ibime.edu.mx');
+      setLabRecipient(isIbime ? 'direccion.general@ibime.edu.mx' : `direccion@${schoolDomain}`);
       setLabReincidence(3);
-      setLabBody('Estimada Directora Patricia Sandoval:\n\nNos dirigimos a usted por tercera ocasión en 12 días porque a pesar de la intervención de Coordinación, nuestro hijo sigue sufriendo agresiones verbales constantes en el recreo por parte de dos compañeros. Exigimos una reunión presencial urgente con ambas familias antes de escalar el caso como queja formal ante la supervisión escolar de la SEP.');
-      onTriggerToast('Preset cargado: Caso Crítico Convivencia / Queja SEP');
+      setLabBody(`Estimada Dirección General de ${schoolName}:\n\nNos dirigimos a usted por tercera ocasión en 12 días porque a pesar de la intervención de Coordinación, nuestro hijo sigue sufriendo agresiones verbales constantes en el recreo por parte de dos compañeros. Exigimos una reunión presencial urgente con ambas familias antes de escalar el caso como queja formal ante la supervisión escolar de la SEP.`);
+      onTriggerToast(`Preset cargado: Caso Crítico Convivencia / Queja SEP (${schoolName})`);
     } else if (preset === 'cfdi') {
       setLabSubject('Solicitud de desglose fiscal CFDI 4.0 con complemento IEDU para colegiatura');
       setLabSenderName('C.P. Ricardo Morales');
       setLabSenderEmail('ricardo.morales@despacho.com');
-      setLabRecipient('cobranza@ibime.edu.mx');
+      setLabRecipient(isIbime ? 'cobranza@ibime.edu.mx' : `cobranza@${schoolDomain}`);
       setLabReincidence(1);
-      setLabBody('Estimado departamento de cobranza IBIME:\n\nRequiero amablemente la refacturación del recibo de colegiatura de octubre para incluir el RFC de mi empresa con complemento educativo IEDU para deducción fiscal de mis dos hijas inscritas en Campus Lagos.');
-      onTriggerToast('Preset cargado: Facturación SAT CFDI 4.0');
+      setLabBody(`Estimado departamento de cobranza ${schoolName}:\n\nRequiero amablemente la refacturación del recibo de colegiatura de octubre para incluir el RFC de mi empresa con complemento educativo IEDU para deducción fiscal de mis dos hijas inscritas en ${secondaryCampus}.`);
+      onTriggerToast(`Preset cargado: Facturación SAT CFDI 4.0 (${schoolName})`);
     } else if (preset === 'transporte') {
-      setLabSubject('Retraso persistente en Ruta 4 de Transporte Escolar hacia San Cristóbal');
+      setLabSubject(`Retraso persistente en Ruta 4 de Transporte Escolar hacia ${primaryCampus}`);
       setLabSenderName('Mariana Solís');
       setLabSenderEmail('mariana.solis@padres.mx');
-      setLabRecipient('transporte@ibime.edu.mx');
+      setLabRecipient(isIbime ? 'transporte@ibime.edu.mx' : `transporte@${schoolDomain}`);
       setLabReincidence(4);
-      setLabBody('Buenos días Coordinación de Transporte:\n\nNuevamente hoy el camión de la Ruta 4 llegó con 25 minutos de retraso a la parada de Avenida Insurgentes. Ya van 4 días consecutivos con este inconveniente.');
-      onTriggerToast('Preset cargado: Demora en Rutas de Transporte');
+      setLabBody(`Buenos días Coordinación de Transporte de ${schoolName}:\n\nNuevamente hoy el camión de la Ruta 4 llegó con 25 minutos de retraso a la parada de Avenida Insurgentes. Ya van 4 días consecutivos con este inconveniente.`);
+      onTriggerToast(`Preset cargado: Demora en Rutas de Transporte (${schoolName})`);
     } else if (preset === 'spam') {
       setLabSubject('Oferta irresistible: Software de gestión de nóminas y banners publicitarios');
       setLabSenderName('Marketing Global B2B');
       setLabSenderEmail('promo@soluciones-comerciales.com');
-      setLabRecipient('contacto@ibime.edu.mx');
+      setLabRecipient(isIbime ? 'contacto@ibime.edu.mx' : `contacto@${schoolDomain}`);
       setLabReincidence(1);
-      setLabBody('Estimado Director:\n\nLe ofrecemos un 70% de descuento en la adquisición de nuestro software comercial de punto de venta y paquetes de publicidad en redes sociales. Ingrese a nuestro enlace para cotizar.');
+      setLabBody(`Estimado Director de ${schoolName}:\n\nLe ofrecemos un 70% de descuento en la adquisición de nuestro software comercial de punto de venta y paquetes de publicidad en redes sociales. Ingrese a nuestro enlace para cotizar.`);
       onTriggerToast('Preset cargado: Correo Comercial No Usable (Spam)');
     }
   };
@@ -565,7 +920,11 @@ ${holding?.name || 'Instituto Bilingüe IBIME'}`
     setTimeout(() => {
       setIsApprovingDraft(false);
       onTriggerToast(`✓ Borrador aprobado y despachado con éxito desde "${connectedEmail}". Asunto cerrado.`);
-      setMattersList(mattersList.filter(m => m.id !== selectedMatter.id));
+      const remaining = mattersList.filter(m => m.id !== selectedMatter.id);
+      setMattersList(remaining);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(mattersStorageKey, JSON.stringify(remaining));
+      }
       setSelectedMatter(null);
     }, 700);
   };
@@ -735,7 +1094,7 @@ Comité de Seguridad y Protección Escolar`
                 </span>
               </div>
               <p className="text-xs text-slate-300 font-medium mt-0.5 flex items-center gap-2">
-                <span>{holding?.name || 'Instituto Bilingüe IBIME'} (4 Sedes)</span>
+                <span>{schoolName} ({campuses.length} Sedes)</span>
                 <span>•</span>
                 <span className="text-amber-300 font-semibold flex items-center gap-1">
                   <KeyRound className="h-3 w-3" /> Cuenta Activa: {connectedEmail}
@@ -1404,7 +1763,7 @@ Comité de Seguridad y Protección Escolar`
                   <div className="flex items-center justify-between text-xs">
                     <div>
                       <span className="font-black text-slate-900 text-sm block">{connectedEmail}</span>
-                      <span className="text-slate-500 font-medium">Titular: Lic. Patricia Sandoval Morales · Directora General</span>
+                      <span className="text-slate-500 font-medium">Titular: {directorTitle}</span>
                     </div>
                     <div className="text-right">
                       <span className="text-slate-400 block text-[11px]">Protocolo</span>
@@ -1413,7 +1772,7 @@ Comité de Seguridad y Protección Escolar`
                   </div>
 
                   <div className="pt-2 border-t border-emerald-200/60 flex items-center justify-between text-[11px] text-emerald-800">
-                    <span>Aislamiento Criptográfico: <strong>Tenant IBIME (e1000000...)</strong></span>
+                    <span>Aislamiento Criptográfico: <strong>Tenant {schoolName} ({currentTenantId.slice(0, 16)}...)</strong></span>
                     <button
                       onClick={handleTriggerSync}
                       disabled={isSyncingLiveInbox}
@@ -1455,7 +1814,7 @@ Comité de Seguridad y Protección Escolar`
                       type="email"
                       value={customGoogleEmailInput}
                       onChange={(e) => setCustomGoogleEmailInput(e.target.value)}
-                      placeholder="ej. patricia.sandoval@gmail.com o directora@ibime.edu.mx"
+                      placeholder={`ej. tu-correo@gmail.com o direccion@${schoolDomain}`}
                       className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 font-medium focus:outline-none focus:border-blue-500"
                     />
                     <button
@@ -1466,7 +1825,7 @@ Comité de Seguridad y Protección Escolar`
                     </button>
                   </div>
                   <p className="text-[11px] text-slate-400">
-                    Al vincular un correo, el sistema aplica la Bóveda Curricular de IBIME de manera hermética y genera las respuestas institucionales en tiempo real.
+                    Al vincular un correo, el sistema aplica la Bóveda Curricular de {schoolName} de manera hermética y genera las respuestas institucionales en tiempo real.
                   </p>
                 </form>
               </div>
@@ -1817,15 +2176,15 @@ Comité de Seguridad y Protección Escolar`
             </div>
 
             <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-950 space-y-2 leading-relaxed">
-              <p className="font-bold text-sm">Buenos días, Lic. Patricia Sandoval Morales.</p>
+              <p className="font-bold text-sm">Buenos días, {directorTitle}.</p>
               <p>
-                He analizado <strong>297 correos</strong> recibidos en la Red IBIME en las últimas 24 horas.
+                He analizado <strong>297 correos</strong> recibidos en {schoolName} en las últimas 24 horas.
               </p>
               <p>
                 • <strong>273 correos</strong> fueron catalogados como no usables (publicidad de proveedores, boletines comerciales y spam) y se archivaron silenciosamente sin interrumpirla.
               </p>
               <p>
-                • <strong>1 asunto crítico prioritario</strong> requiere su intervención presencial en Campus Montes (caso de convivencia en 5º B). Ya preparé el borrador de citatorio para mañana 08:30 hrs.
+                • <strong>1 asunto crítico prioritario</strong> requiere su intervención presencial en {campuses[0]?.name || 'Plantel Central'} (caso de convivencia en 5º B). Ya preparé el borrador de citatorio para mañana 08:30 hrs.
               </p>
               <p>
                 • <strong>17 familias</strong> consultaron el horario del festival del viernes. El comunicado institucional está redactado y listo para ser aprobado en 1 clic.
