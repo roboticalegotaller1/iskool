@@ -422,8 +422,11 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
                 ease: 'linear'
               }}
               onError={(e) => {
-                if (avatarImageUrl) {
-                  (e.target as HTMLImageElement).src = avatarImageUrl;
+                const target = e.target as HTMLImageElement;
+                if (avatarImageUrl && !target.src.includes(avatarImageUrl)) {
+                  target.src = avatarImageUrl;
+                } else if (!target.src.includes('francisco_villa_avatar.png')) {
+                  target.src = '/images/history/francisco_villa_avatar.png';
                 }
               }}
               className={`z-10 filter contrast-105 brightness-95 transition-all select-none ${
@@ -592,8 +595,11 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
                     src={cap.imageUrl} 
                     alt={cap.title}
                     onError={(e) => {
-                      if (avatarImageUrl) {
-                        (e.target as HTMLImageElement).src = avatarImageUrl;
+                      const target = e.target as HTMLImageElement;
+                      if (avatarImageUrl && !target.src.includes(avatarImageUrl)) {
+                        target.src = avatarImageUrl;
+                      } else if (!target.src.includes('francisco_villa_avatar.png')) {
+                        target.src = '/images/history/francisco_villa_avatar.png';
                       }
                     }}
                     className="w-full h-full object-cover"

@@ -98,12 +98,99 @@ export function findHistoricalFigureInVault(nameOrSlug: string): HistoricalFigur
     'corregidora': 'josefa_ortiz_de_dominguez',
     'dona_josefa': 'josefa_ortiz_de_dominguez',
     'dona_josefa_ortiz_de_dominguez': 'josefa_ortiz_de_dominguez',
+    // 1. Gustavo Díaz Ordaz
+    'diaz_ordaz': 'gustavo_diaz_ordaz',
+    'gustavo_diaz': 'gustavo_diaz_ordaz',
+    'diazordaz': 'gustavo_diaz_ordaz',
+    // 2. Guadalupe Victoria
+    'victoria': 'guadalupe_victoria',
+    'primer_presidente': 'guadalupe_victoria',
+    'jose_miguel_ramon_adaucto_fernandez_y_felix': 'guadalupe_victoria',
+    // 3. Belisario Domínguez
+    'belisario': 'belisario_dominguez',
+    'dr_belisario_dominguez': 'belisario_dominguez',
+    'medico_de_los_pobres': 'belisario_dominguez',
+    // 4. Cuauhtémoc
+    'cuauhtemotzin': 'cuauhtemoc',
+    'ultimo_tlatoani': 'cuauhtemoc',
+    'tlatoani_cuauhtemoc': 'cuauhtemoc',
+    // 5. Lázaro Cárdenas
+    'lazaro_cardenas': 'lazaro_cardenas_del_rio',
+    'cardenas': 'lazaro_cardenas_del_rio',
+    'general_cardenas': 'lazaro_cardenas_del_rio',
+    'tata_lazaro': 'lazaro_cardenas_del_rio',
+    // 6. Plutarco Elías Calles
+    'plutarco_elias': 'plutarco_elias_calles',
+    'elias_calles': 'plutarco_elias_calles',
+    'calles': 'plutarco_elias_calles',
+    'jefe_maximo': 'plutarco_elias_calles',
+    'jefe_maximo_de_la_revolucion': 'plutarco_elias_calles',
+    // 7. José María Morelos y Pavón
+    'jose_maria_morelos': 'jose_maria_morelos_y_pavon',
+    'morelos': 'jose_maria_morelos_y_pavon',
+    'morelos_y_pavon': 'jose_maria_morelos_y_pavon',
+    'siervo_de_la_nacion': 'jose_maria_morelos_y_pavon',
+    'general_morelos': 'jose_maria_morelos_y_pavon',
+    // 8. Francisco I. Madero
+    'francisco_madero': 'francisco_i_madero',
+    'madero': 'francisco_i_madero',
+    'apostol_de_la_democracia': 'francisco_i_madero',
+    'francisco_ignacio_madero': 'francisco_i_madero',
+    // 9. Miguel Hidalgo y Costilla
+    'miguel_hidalgo': 'miguel_hidalgo_y_costilla',
+    'hidalgo': 'miguel_hidalgo_y_costilla',
+    'cura_hidalgo': 'miguel_hidalgo_y_costilla',
+    'padre_de_la_patria': 'miguel_hidalgo_y_costilla',
+    // 10. Ignacio Allende
+    'allende': 'ignacio_allende',
+    'general_allende': 'ignacio_allende',
+    'ignacio_marcos_allende': 'ignacio_allende',
+    // 11. José Guadalupe Posada
+    'guadalupe_posada': 'jose_guadalupe_posada',
+    'posada': 'jose_guadalupe_posada',
+    'creador_de_la_catrina': 'jose_guadalupe_posada',
+    'calavera_garbancera': 'jose_guadalupe_posada',
+    // 12. Andrés Quintana Roo
+    'quintana_roo': 'andres_quintana_roo',
+    'andres_quintanaroo': 'andres_quintana_roo',
+    // 13. Sor Juana Inés de la Cruz
+    'sor_juana': 'sor_juana_ines_de_la_cruz',
+    'juana_de_asbaje': 'sor_juana_ines_de_la_cruz',
+    'decima_musa': 'sor_juana_ines_de_la_cruz',
+    'la_decima_musa': 'sor_juana_ines_de_la_cruz',
+    'sor_juana_ines': 'sor_juana_ines_de_la_cruz',
+    // 14. Aquiles Serdán
+    'aquiles_serdan_alatriste': 'aquiles_serdan',
+    'serdan': 'aquiles_serdan',
+    'primer_martir': 'aquiles_serdan',
+    // 15. Carmen Serdán Alatriste
+    'carmen_serdan': 'carmen_serdan_alatriste',
+    'marcos_serrato': 'carmen_serdan_alatriste',
+    // 16. Emiliano Zapata
+    'zapata': 'emiliano_zapata',
+    'caudillo_del_sur': 'emiliano_zapata',
+    'el_caudillo_del_sur': 'emiliano_zapata',
+    'emiliano_zapata_salazar': 'emiliano_zapata',
+    // 17. Francisco Villa
     'pancho_villa': 'francisco_villa',
     'villa': 'francisco_villa',
     'doroteo_arango': 'francisco_villa',
     'centauro_del_norte': 'francisco_villa',
     'el_centauro_del_norte': 'francisco_villa',
     'general_francisco_villa': 'francisco_villa',
+    // 18. Ricardo Flores Magón
+    'flores_magon': 'ricardo_flores_magon',
+    'magon': 'ricardo_flores_magon',
+    'ricardo_magon': 'ricardo_flores_magon',
+    // 19. Benito Juárez
+    'juarez': 'benito_juarez',
+    'benito_juarez_garcia': 'benito_juarez',
+    'benemerito': 'benito_juarez',
+    'benemerito_de_las_americas': 'benito_juarez',
+    // 20. Felipe Ángeles
+    'angeles': 'felipe_angeles',
+    'general_felipe_angeles': 'felipe_angeles',
+    'general_angeles': 'felipe_angeles',
   };
 
   if (ALIASES[slug]) {

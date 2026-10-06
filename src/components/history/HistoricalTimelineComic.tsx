@@ -237,8 +237,11 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
             src={activeMomentImage} 
             alt={activeMoment.title}
             onError={(e) => {
-              if (avatarImageUrl) {
-                (e.target as HTMLImageElement).src = avatarImageUrl;
+              const target = e.target as HTMLImageElement;
+              if (avatarImageUrl && !target.src.includes(avatarImageUrl)) {
+                target.src = avatarImageUrl;
+              } else if (!target.src.includes('francisco_villa_avatar.png')) {
+                target.src = '/images/history/francisco_villa_avatar.png';
               }
             }}
             initial={{ opacity: 0, scale: 0.98 }}
@@ -324,8 +327,11 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
                   src={resolveMomentImage(mom, idx)} 
                   alt={mom.title} 
                   onError={(e) => {
-                    if (avatarImageUrl) {
-                      (e.target as HTMLImageElement).src = avatarImageUrl;
+                    const target = e.target as HTMLImageElement;
+                    if (avatarImageUrl && !target.src.includes(avatarImageUrl)) {
+                      target.src = avatarImageUrl;
+                    } else if (!target.src.includes('francisco_villa_avatar.png')) {
+                      target.src = '/images/history/francisco_villa_avatar.png';
                     }
                   }}
                   className="w-full h-full object-cover"

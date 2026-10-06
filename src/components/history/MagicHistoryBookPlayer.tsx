@@ -365,8 +365,9 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                     src={data.avatarImageUrl || '/images/history/francisco_villa_avatar.png'} 
                     alt={data.characterName} 
                     onError={(e) => {
-                      if (data.avatarImageUrl) {
-                        (e.target as HTMLImageElement).src = data.avatarImageUrl;
+                      const target = e.target as HTMLImageElement;
+                      if (!target.src.includes('francisco_villa_avatar.png')) {
+                        target.src = '/images/history/francisco_villa_avatar.png';
                       }
                     }}
                     className="w-full h-full object-cover filter contrast-105"
@@ -471,8 +472,9 @@ export const MagicHistoryBookPlayer: React.FC<MagicHistoryBookPlayerProps> = ({
                                 src={data.avatarImageUrl || '/images/history/francisco_villa_avatar.png'} 
                                 alt={data.characterName} 
                                 onError={(e) => {
-                                  if (data.avatarImageUrl) {
-                                    (e.target as HTMLImageElement).src = data.avatarImageUrl;
+                                  const target = e.target as HTMLImageElement;
+                                  if (!target.src.includes('francisco_villa_avatar.png')) {
+                                    target.src = '/images/history/francisco_villa_avatar.png';
                                   }
                                 }}
                                 className="w-full h-full object-cover"

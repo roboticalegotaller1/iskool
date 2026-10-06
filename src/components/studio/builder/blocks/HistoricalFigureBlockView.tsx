@@ -67,15 +67,22 @@ export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
   };
 
   // Consultar Bóveda Curricular o Generar con Motor de IA
-  const handleSearchOrGenerate = async () => {
-    if (!inputName.trim()) return;
+  const handleSearchOrGenerate = async (targetName?: string | unknown) => {
+    const nameToQuery = (typeof targetName === 'string' && targetName.trim()) 
+      ? targetName.trim() 
+      : (typeof inputName === 'string' ? inputName.trim() : '');
+    if (!nameToQuery) return;
+
+    if (typeof targetName === 'string' && targetName.trim()) {
+      setInputName(targetName.trim());
+    }
 
     setIsSearchingVault(true);
     setFeedbackStatus(null);
 
     try {
       // 1. Consultar primero en la Bóveda Curricular (Cache-First)
-      const vaultRes = await fetch(`/api/vault/historical-figures?name=${encodeURIComponent(inputName)}`);
+      const vaultRes = await fetch(`/api/vault/historical-figures?name=${encodeURIComponent(nameToQuery)}`);
       const vaultData = await vaultRes.json();
 
       if (vaultData.found && vaultData.figure) {
@@ -83,7 +90,7 @@ export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
         setSelectedSpine(spineToUse);
         handleUpdateData({
           ...vaultData.figure,
-          characterName: vaultData.figure.characterName || inputName,
+          characterName: vaultData.figure.characterName || nameToQuery,
           bookSpineStyle: spineToUse,
           isFromVault: true
         });
@@ -108,7 +115,7 @@ export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'generate_figure',
-          characterName: inputName,
+          characterName: nameToQuery,
           isGeographicSite: isSite,
           spineStyle: selectedSpine
         })
@@ -120,7 +127,7 @@ export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
         setSelectedSpine(spineToUse);
         handleUpdateData({
           ...aiData.figure,
-          characterName: aiData.figure.characterName || inputName,
+          characterName: aiData.figure.characterName || nameToQuery,
           isGeographicSite: isSite,
           bookSpineStyle: spineToUse,
           isFromVault: true
@@ -222,7 +229,7 @@ export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
             <button
               type="button"
               disabled={isSearchingVault || !inputName.trim()}
-              onClick={handleSearchOrGenerate}
+              onClick={() => handleSearchOrGenerate()}
               className="px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-amber-500 text-white dark:text-slate-950 font-black text-xs flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 transition-all cursor-pointer shadow-md shrink-0"
             >
               {isSearchingVault ? <Sparkles className="w-4 h-4 animate-spin text-amber-400 dark:text-slate-950" /> : <Search className="w-4 h-4" />}
@@ -244,6 +251,67 @@ export const HistoricalFigureBlockView: React.FC<Props> = ({ block }) => {
             <label htmlFor="isSiteCheck" className="text-xs text-slate-600 dark:text-zinc-300 font-medium cursor-pointer">
               Es un enclave geográfico o arqueológico (mostrará vistas panorámicas y memoria del sitio).
             </label>
+          </div>
+
+          {/* ================= EFEMÉRIDES DEL CALENDARIO CÍVICO (OCTUBRE Y NOVIEMBRE) ================= */}
+          <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-black text-slate-700 dark:text-zinc-300 flex items-center gap-1.5 uppercase tracking-wide">
+                <Calendar className="w-3.5 h-3.5 text-amber-500" />
+                <span>Efemérides del Calendario Cívico (Octubre & Noviembre • 0 Tokens):</span>
+              </span>
+              <span className="text-[10px] font-mono text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
+                20 Personajes Listos en Bóveda
+              </span>
+            </div>
+            
+            <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
+              {[
+                { name: 'Gustavo Díaz Ordaz', date: '2 oct', subtitle: 'Tlatelolco 1968' },
+                { name: 'Guadalupe Victoria', date: '4 oct', subtitle: '1.er Presidente' },
+                { name: 'Belisario Domínguez', date: '7 oct', subtitle: 'Discurso Histórico' },
+                { name: 'Cuauhtémoc', date: '12 oct', subtitle: 'Último Tlatoani' },
+                { name: 'Lázaro Cárdenas del Río', date: '19 oct', subtitle: 'Expropiación Petrolera' },
+                { name: 'Plutarco Elías Calles', date: '19 oct', subtitle: 'Fundador PNR / Maximato' },
+                { name: 'José María Morelos y Pavón', date: '22 oct', subtitle: 'Sentimientos de la Nación' },
+                { name: 'Francisco I. Madero', date: '30 oct', subtitle: 'Apóstol de la Democracia' },
+                { name: 'Miguel Hidalgo y Costilla', date: '30 oct', subtitle: 'Padre de la Patria' },
+                { name: 'Ignacio Allende', date: '30 oct', subtitle: 'Estratega Insurgente' },
+                { name: 'José Guadalupe Posada', date: '1-2 nov', subtitle: 'Creador de La Catrina' },
+                { name: 'Andrés Quintana Roo', date: '6-30 nov', subtitle: 'Acta de Independencia' },
+                { name: 'Sor Juana Inés de la Cruz', date: '12 nov', subtitle: 'Día Nacional del Libro' },
+                { name: 'Aquiles Serdán', date: '18 nov', subtitle: 'Primer Mártir' },
+                { name: 'Carmen Serdán Alatriste', date: '18 nov', subtitle: 'Heroína Revolucionaria' },
+                { name: 'Emiliano Zapata', date: '20-28 nov', subtitle: 'Plan de Ayala' },
+                { name: 'Francisco Villa', date: '20 nov', subtitle: 'Centauro del Norte' },
+                { name: 'Ricardo Flores Magón', date: '21 nov', subtitle: 'Precursor Intelectual' },
+                { name: 'Benito Juárez', date: '23 nov', subtitle: 'Ley Juárez 1855' },
+                { name: 'Felipe Ángeles', date: '26 nov', subtitle: 'General Artillero' },
+              ].map((fig) => {
+                const isActive = inputName.toLowerCase() === fig.name.toLowerCase();
+                return (
+                  <button
+                    key={fig.name}
+                    type="button"
+                    onClick={() => {
+                      setIsSite(false);
+                      handleSearchOrGenerate(fig.name);
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
+                      isActive
+                        ? 'bg-amber-500 text-slate-950 border-amber-600 shadow-sm'
+                        : 'bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-300'
+                    }`}
+                    title={`${fig.name} (${fig.date}) - ${fig.subtitle}`}
+                  >
+                    <span className="text-[9px] font-mono opacity-75 bg-black/10 dark:bg-white/10 px-1 py-0.2 rounded">
+                      {fig.date}
+                    </span>
+                    <span>{fig.name}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
