@@ -93,6 +93,7 @@ import { CorporateOfficialLogo } from '@/components/brand/CorporateOfficialLogo'
 import ExecutiveAnalyticsStudio from './ExecutiveAnalyticsStudio';
 import ExecutiveBiCommandCenter from './ExecutiveBiCommandCenter';
 import { AcademicPortalAdminModal } from './AcademicPortalAdminModal';
+import { CEOEmailCommunicationsModal } from './CEOEmailCommunicationsModal';
 import { useAdmissionsPipeline } from '@/hooks/useAdmissionsPipeline';
 import BentoAdmissionsKanban from './BentoAdmissionsKanban';
 import { useCrmStore } from '@/store/useCrmStore';
@@ -1060,8 +1061,9 @@ export default function CEOExecutiveDashboard({
     subtitle: string;
   } | null>(null);
 
-  // Modal de Acceso a Portales Académicos por Colegio
+  // Modal de Acceso a Portales Académicos por Colegio y Correo Institucional
   const [isAcademicPortalModalOpen, setIsAcademicPortalModalOpen] = useState<boolean>(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState<boolean>(false);
 
   // Estado del generador de reportes analíticos instantáneos (0 Tokens)
   const [activeReportQuery, setActiveReportQuery] = useState<string>('Estudiantes con adeudo activo por nivel y monto pendiente');
@@ -1903,9 +1905,9 @@ export default function CEOExecutiveDashboard({
       {/* 1. BARRA LATERAL DESKTOP (VISIBLE EN PANTALLAS GRANDES)   */}
       {/* ========================================================= */}
       <aside className="hidden lg:flex w-64 bg-white border-r border-slate-200 flex-col justify-between z-20 shrink-0 select-none print:hidden no-print">
-        <div>
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
           {/* Brand Logo Header */}
-          <div className="h-16 flex items-center justify-between px-5 border-b border-slate-100">
+          <div className="h-16 flex items-center justify-between px-5 border-b border-slate-100 shrink-0">
             {corporateTheme ? (
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center justify-center p-1 shrink-0">
@@ -1934,7 +1936,7 @@ export default function CEOExecutiveDashboard({
           </div>
 
           {/* Menú de Navegación Principal */}
-          <nav className="p-3 space-y-1">
+          <nav className="p-3 space-y-1 overflow-y-auto flex-1 custom-scrollbar">
             {navMenuItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -1959,16 +1961,26 @@ export default function CEOExecutiveDashboard({
               );
             })}
 
-            {/* Botón de Acceso a Portales Académicos por Colegio */}
+            {/* Botón de Acceso a Portales Académicos por Colegio y Email */}
             {!isCorporate && holding.campuses && holding.campuses.length > 0 && (
-              <div className="pt-2 px-0.5">
+              <div className="pt-2 px-0.5 space-y-1.5">
                 <button
                   type="button"
                   onClick={() => setIsAcademicPortalModalOpen(true)}
-                  className="w-full flex items-center justify-between px-4 py-2.5 rounded-2xl bg-[#5448f7] hover:bg-[#4639ed] text-white font-extrabold text-sm shadow-md shadow-indigo-600/30 hover:shadow-indigo-600/50 hover:scale-[1.02] active:scale-98 transition-all cursor-pointer border border-indigo-400/40 group"
+                  className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-[#5448f7] hover:bg-[#4639ed] text-white font-extrabold text-sm shadow-md shadow-indigo-600/30 hover:shadow-indigo-600/50 hover:scale-[1.02] active:scale-98 transition-all cursor-pointer border border-indigo-400/40 group"
                   title="Acceder a los portales académicos de cada uno de los colegios"
                 >
                   <span className="font-extrabold tracking-tight">Portal Académico</span>
+                  <ChevronRight size={18} className="text-white group-hover:translate-x-0.5 transition-transform" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsEmailModalOpen(true)}
+                  className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-[#5448f7] hover:bg-[#4639ed] text-white font-extrabold text-sm shadow-md shadow-indigo-600/30 hover:shadow-indigo-600/50 hover:scale-[1.02] active:scale-98 transition-all cursor-pointer border border-indigo-400/40 group"
+                  title="Bandeja de Correo Institucional y Comunicados Oficiales"
+                >
+                  <span className="font-extrabold tracking-tight">Email</span>
                   <ChevronRight size={18} className="text-white group-hover:translate-x-0.5 transition-transform" />
                 </button>
               </div>
@@ -1977,7 +1989,7 @@ export default function CEOExecutiveDashboard({
         </div>
 
         {/* Footer Sidebar Desktop */}
-        <div className="p-3 border-t border-slate-100 space-y-2">
+        <div className="p-3 border-t border-slate-100 space-y-2 shrink-0">
           {onBackToDirectory && (
             <button
               onClick={onBackToDirectory}
@@ -2102,19 +2114,32 @@ export default function CEOExecutiveDashboard({
                   );
                 })}
 
-                {/* Botón de Acceso a Portales Académicos por Colegio (Móvil) */}
+                {/* Botón de Acceso a Portales Académicos por Colegio y Email (Móvil) */}
                 {!isCorporate && holding.campuses && holding.campuses.length > 0 && (
-                  <div className="pt-2 px-0.5">
+                  <div className="pt-2 px-0.5 space-y-1.5">
                     <button
                       type="button"
                       onClick={() => {
                         setIsMobileMenuOpen(false);
                         setIsAcademicPortalModalOpen(true);
                       }}
-                      className="w-full flex items-center justify-between px-4 py-2.5 rounded-2xl bg-[#5448f7] hover:bg-[#4639ed] text-white font-extrabold text-sm shadow-md shadow-indigo-600/30 hover:shadow-indigo-600/50 hover:scale-[1.02] active:scale-98 transition-all cursor-pointer border border-indigo-400/40 group"
+                      className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-[#5448f7] hover:bg-[#4639ed] text-white font-extrabold text-sm shadow-md shadow-indigo-600/30 hover:shadow-indigo-600/50 hover:scale-[1.02] active:scale-98 transition-all cursor-pointer border border-indigo-400/40 group"
                       title="Acceder a los portales académicos de cada uno de los colegios"
                     >
                       <span className="font-extrabold tracking-tight">Portal Académico</span>
+                      <ChevronRight size={18} className="text-white group-hover:translate-x-0.5 transition-transform" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        setIsEmailModalOpen(true);
+                      }}
+                      className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-[#5448f7] hover:bg-[#4639ed] text-white font-extrabold text-sm shadow-md shadow-indigo-600/30 hover:shadow-indigo-600/50 hover:scale-[1.02] active:scale-98 transition-all cursor-pointer border border-indigo-400/40 group"
+                      title="Bandeja de Correo Institucional y Comunicados Oficiales"
+                    >
+                      <span className="font-extrabold tracking-tight">Email</span>
                       <ChevronRight size={18} className="text-white group-hover:translate-x-0.5 transition-transform" />
                     </button>
                   </div>
@@ -5966,6 +5991,20 @@ export default function CEOExecutiveDashboard({
           holding={holding}
           schoolId={schoolId || 'sch-ibime'}
           initialCampusId={selectedCampusId}
+        />
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL DE CORREO INSTITUCIONAL Y COMUNICADOS CEO           */}
+      {/* ========================================================= */}
+      {isEmailModalOpen && (
+        <CEOEmailCommunicationsModal
+          isOpen={isEmailModalOpen}
+          onClose={() => setIsEmailModalOpen(false)}
+          holding={holding}
+          schoolId={schoolId || 'sch-ibime'}
+          selectedCampusId={selectedCampusId}
+          onTriggerToast={triggerToast}
         />
       )}
 
