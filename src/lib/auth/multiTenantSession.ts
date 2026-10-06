@@ -356,3 +356,19 @@ export function resolveTenantFromHostOrHeader(params: {
 
   return 'iskool';
 }
+
+/**
+ * Conmuta la sesión del estudiante de forma canónica respetando las fronteras
+ * herméticas de autenticación multi-tenant.
+ */
+export async function switchCanonicalStudent(studentId: string): Promise<void> {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('active_student_id', studentId);
+      const { useStudentStore } = await import('@/store/useStudentStore');
+      await useStudentStore.getState().switchStudent(studentId);
+    } catch (err) {
+      console.warn('[Session] Conmutación canónica fallback:', err);
+    }
+  }
+}

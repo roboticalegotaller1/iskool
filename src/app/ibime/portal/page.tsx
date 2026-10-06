@@ -42,7 +42,7 @@ import {
 } from 'lucide-react';
 import { DetailedStudent, Subject, Campus, UserProfile } from '@/types';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
-import { useStudentStore } from '@/store/useStudentStore';
+import { switchCanonicalStudent } from '@/lib/auth/multiTenantSession';
 
 type IbimeTab = 'sedes' | 'alumnos' | 'docentes' | 'boveda' | 'finanzas';
 
@@ -258,7 +258,7 @@ function IbimePortalContent() {
             <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 flex-nowrap">
               <button
                 onClick={async () => {
-                  await useStudentStore.getState().switchStudent('std-ibime-montes-01');
+                  await switchCanonicalStudent('std-ibime-montes-01');
                   router.push('/student');
                 }}
                 className="h-9 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-amber-300 active:scale-98 shrink-0 leading-none"
@@ -271,7 +271,7 @@ function IbimePortalContent() {
 
               <button
                 onClick={async () => {
-                  await useStudentStore.getState().switchStudent('std-ibime-montes-01');
+                  await switchCanonicalStudent('std-ibime-montes-01');
                   router.push('/parent');
                 }}
                 className="h-9 px-3 rounded-xl bg-[#17426D] hover:bg-[#1E5285] text-white font-bold text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-red-400 active:scale-98 shrink-0 leading-none"
@@ -371,7 +371,7 @@ function IbimePortalContent() {
             {/* Acceso directo a Experiencias Alumno y Familia */}
             <button
               onClick={async () => {
-                await useStudentStore.getState().switchStudent('std-ibime-montes-01');
+                await switchCanonicalStudent('std-ibime-montes-01');
                 router.push('/student');
               }}
               className="h-9 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-amber-300 shrink-0 leading-none"
@@ -384,7 +384,7 @@ function IbimePortalContent() {
 
             <button
               onClick={async () => {
-                await useStudentStore.getState().switchStudent('std-ibime-montes-01');
+                await switchCanonicalStudent('std-ibime-montes-01');
                 router.push('/parent');
               }}
               className="h-9 px-3 rounded-xl bg-[#17426D] hover:bg-[#C01D0C] text-white font-bold text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-blue-700 shrink-0 leading-none"
@@ -814,7 +814,7 @@ function IbimePortalContent() {
                             <div className="flex items-center justify-end gap-1.5">
                               <button
                                 onClick={async () => {
-                                  await useStudentStore.getState().switchStudent(std.id);
+                                  await switchCanonicalStudent(std.id);
                                   router.push('/student');
                                 }}
                                 className="py-1 px-2.5 bg-amber-400 hover:bg-amber-300 text-amber-950 rounded-lg font-black text-[11px] transition-colors cursor-pointer border border-amber-300 inline-flex items-center gap-1 shadow-xs"
@@ -1162,7 +1162,7 @@ function IbimePortalContent() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={async () => {
-                    await useStudentStore.getState().switchStudent(selectedStudentDetail.id);
+                    await switchCanonicalStudent(selectedStudentDetail.id);
                     router.push('/student');
                   }}
                   className="py-2 px-3.5 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-amber-950 font-black text-xs rounded-xl transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
@@ -1173,7 +1173,7 @@ function IbimePortalContent() {
 
                 <button
                   onClick={async () => {
-                    await useStudentStore.getState().switchStudent(selectedStudentDetail.id);
+                    await switchCanonicalStudent(selectedStudentDetail.id);
                     router.push('/parent');
                   }}
                   className="py-2 px-3.5 bg-[#C01D0C] hover:bg-[#E41B14] text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-sm flex items-center gap-1.5 border border-blue-700"

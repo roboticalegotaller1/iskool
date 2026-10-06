@@ -155,6 +155,11 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
     return [217, 119, 6]; // shoes_tan_boots (botas nubuck trigo miel)
   }, [equippedShoes]);
 
+  // Calibración anatómica milimétrica de altura para gorros según proporción de cabeza
+  const hatOffsetY = useMemo(() => {
+    return (gender === 'female' || gender === 'neutral') ? 0 : -8;
+  }, [gender]);
+
   // Renderizado dinámico en tiempo real en Canvas de alta fidelidad
   useEffect(() => {
     let isMounted = true;
@@ -186,7 +191,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
         const hairAssetKey = hairStyle !== 'spiky' ? (HAIR_ASSET_MAP[hairStyle] || null) : null;
         const prefix = isFemale ? 'female' : isNeutral ? 'neutral' : 'male';
 
-        const v = '?v=20260915_zero_collar_final';
+        const v = '?v=20261005_master_flawless_v16';
         const baseSrc = (hairAssetKey
           ? `/images/avatar/hairstyles/trainer_${prefix}_${hairAssetKey}.png`
           : isFemale 
@@ -221,12 +226,17 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
           ? '/images/avatar/trainer_neutral_boots_mask.png' 
           : '/images/avatar/trainer_boots_mask.png') + v;
 
-        const [baseImg, skinMask, hairMask, pantsMask, bootsMask] = await Promise.all([
+        const topSrc = (equippedTop && equippedTop !== 'top_none')
+          ? `/images/avatar/tops/${prefix}_${equippedTop}.png${v}`
+          : null;
+
+        const [baseImg, skinMask, hairMask, pantsMask, bootsMask, topImg] = await Promise.all([
           loadImg(baseSrc),
           loadImg(skinMaskSrc),
           loadImg(hairMaskSrc),
           loadImg(pantsMaskSrc),
-          loadImg(bootsMaskSrc)
+          loadImg(bootsMaskSrc),
+          topSrc ? loadImg(topSrc).catch(() => null) : Promise.resolve(null)
         ]);
 
         if (!isMounted || !canvasRef.current) return;
@@ -235,8 +245,8 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) return;
 
-        const w = baseImg.naturalWidth || 768;
-        const h = baseImg.naturalHeight || 1376;
+        const w = 768;
+        const h = 1376;
         if (canvas.width !== w || canvas.height !== h) {
           canvas.width = w;
           canvas.height = h;
@@ -245,10 +255,17 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
         // 1. Dibujar imagen base sin fondo con cabello natural integrado
         ctx.clearRect(0, 0, w, h);
         ctx.drawImage(baseImg, 0, 0, w, h);
+        const baseRawData = ctx.getImageData(0, 0, w, h);
+        const brd = baseRawData.data;
 
-        const baseData = ctx.getImageData(0, 0, w, h);
+        // 2. Si hay una prenda superior modular (top), se compone anatómicamente en el lienzo
+        if (topImg) {
+          ctx.drawImage(topImg, 0, 0, w, h);
+        }
+        const compData = ctx.getImageData(0, 0, w, h);
+        const bd = compData.data;
 
-        // 2. Cargar máscaras a canvas temporales para lectura rápida de canales
+        // 3. Cargar máscaras a canvas temporales para lectura rápida de canales
         const tmp = document.createElement('canvas');
         tmp.width = w;
         tmp.height = h;
@@ -270,7 +287,6 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
         tmpCtx.drawImage(bootsMask, 0, 0, w, h);
         const bmData = tmpCtx.getImageData(0, 0, w, h).data;
 
-        const bd = baseData.data;
         const total = w * h;
 
         const isDefaultSkin = skinRgb[0] === 254 && skinRgb[1] === 215 && skinRgb[2] === 170;
@@ -280,29 +296,45 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
 
         for (let i = 0; i < total; i++) {
           const idx = i * 4;
-          if (bd[idx + 3] < 40) continue; // Píxel transparente exterior
+          if (bd[idx + 3] < 40 && brd[idx + 3] < 40) continue; // Píxel transparente exterior
 
           const br = bd[idx];
           const bg = bd[idx + 1];
           const bb = bd[idx + 2];
           const lum = 0.299 * br + 0.587 * bg + 0.114 * bb;
 
-          // A) Piel dinámica
-          if (!isDefaultSkin && smData[idx] > 128) {
-            const f = lum / 199;
-            bd[idx] = Math.min(255, Math.max(0, Math.round(skinRgb[0] * f)));
-            bd[idx + 1] = Math.min(255, Math.max(0, Math.round(skinRgb[1] * f)));
-            bd[idx + 2] = Math.min(255, Math.max(0, Math.round(skinRgb[2] * f)));
-          }
-          // B) Cabello dinámico (Coloreado anatómico de alta fidelidad según género)
-          else if (hmData[idx] > 50) {
+          // A) Cabello dinámico (Coloreado anatómico de alta fidelidad según género)
+          if (hmData[idx] > 50) {
+            // Si hay una prenda superior, restaurar el cabello frontal original de la base por encima de la prenda
+            if (topImg && brd[idx + 3] >= 40) {
+              bd[idx] = brd[idx];
+              bd[idx + 1] = brd[idx + 1];
+              bd[idx + 2] = brd[idx + 2];
+              bd[idx + 3] = Math.max(bd[idx + 3], brd[idx + 3]);
+            }
+
             if (!isDefaultHair) {
-              const hairNorm = (isNeutral && !hairAssetKey) ? 200 : isFemale ? 75 : 85;
-              const f = lum / hairNorm;
+              const origBr = bd[idx];
+              const origBg = bd[idx + 1];
+              const origBb = bd[idx + 2];
+              const origLum = 0.299 * origBr + 0.587 * origBg + 0.114 * origBb;
+              const hairNorm = (isNeutral && !hairAssetKey) ? 180 : 85;
+              // Sombreado Cel-Shaded Proporcional: Los tonos oscuros preservan el matiz vibrante del color
+              // evitando que la parte baja del peinado colapse a negro o marrón sucio
+              const minFactor = 0.48; // Base de sombras luminosa (ámbar cálido para rubio, índigo para azul, etc.)
+              const lumRatio = Math.min(1.6, origLum / hairNorm);
+              const f = minFactor + (1 - minFactor) * lumRatio;
               bd[idx] = Math.min(255, Math.max(0, Math.round(hairRgb[0] * f)));
               bd[idx + 1] = Math.min(255, Math.max(0, Math.round(hairRgb[1] * f)));
               bd[idx + 2] = Math.min(255, Math.max(0, Math.round(hairRgb[2] * f)));
             }
+          }
+          // B) Piel dinámica
+          else if (!isDefaultSkin && smData[idx] > 128) {
+            const f = lum / 199;
+            bd[idx] = Math.min(255, Math.max(0, Math.round(skinRgb[0] * f)));
+            bd[idx + 1] = Math.min(255, Math.max(0, Math.round(skinRgb[1] * f)));
+            bd[idx + 2] = Math.min(255, Math.max(0, Math.round(skinRgb[2] * f)));
           }
           // C) Pantalones modulares
           else if (!isDefaultPants && pmData[idx] > 128) {
@@ -320,7 +352,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
           }
         }
 
-        ctx.putImageData(baseData, 0, 0);
+        ctx.putImageData(compData, 0, 0);
       } catch (err) {
         console.error('Error rendering modular avatar canvas:', err);
       }
@@ -331,7 +363,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
     return () => {
       isMounted = false;
     };
-  }, [gender, skinRgb, hairRgb, pantsRgb, bootsRgb, equippedBottom, equippedShoes, hairStyle]);
+  }, [gender, skinRgb, hairRgb, pantsRgb, bootsRgb, equippedBottom, equippedShoes, hairStyle, equippedTop]);
 
   // Manejo de interacción de inclinación 3D con cursor
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
@@ -1659,25 +1691,8 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
   // Prenda Superior Modular (Top / Playera / Camisa / Chaleco / Túnica)
   // Calibrada anatómicamente por género (femenino, masculino, neutro) con estilo cel-shaded realista
   const renderTop = () => {
-    if (!equippedTop) {
-      return null;
-    }
-
-    const prefix = gender === 'female' ? 'female' : gender === 'neutral' ? 'neutral' : 'male';
-    const topSrc = `/images/avatar/tops/${prefix}_${equippedTop}.png?v=20260915_zero_collar_final`;
-
-    return (
-      <image
-        id={`top_${equippedTop}_layer`}
-        href={topSrc}
-        x="0"
-        y="0"
-        width="768"
-        height="1376"
-        preserveAspectRatio="xMidYMid meet"
-        className="pointer-events-none"
-      />
-    );
+    // La prenda superior se compone directamente en el Canvas con orden Z correcto (bajo el cabello frontal)
+    return null;
   };
 
   return (
@@ -1761,6 +1776,54 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
               </svg>
             )}
 
+            {/* Capa Posterior: Mochila de Expedición (Cuerpo y compartimentos traseros) */}
+            {equippedAccessory === 'acc_red_backpack' && (
+              <svg
+                viewBox="0 0 768 1376"
+                className="absolute inset-0 m-auto w-auto h-full max-h-full pointer-events-none overflow-visible"
+                style={{ zIndex: 5 }}
+              >
+                <defs>
+                  <linearGradient id="backpackRedGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#DC2626" />
+                    <stop offset="40%" stopColor="#B91C1C" />
+                    <stop offset="100%" stopColor="#7F1D1D" />
+                  </linearGradient>
+                </defs>
+                <g id="backpack_body_rear">
+                  {/* Asa superior de transporte resistente */}
+                  <path d="M 364,285 C 364,258 404,258 404,285" fill="none" stroke="#18181B" strokeWidth="8" strokeLinecap="round" />
+                  <path d="M 364,285 C 364,258 404,258 404,285" fill="none" stroke="#DC2626" strokeWidth="4" strokeLinecap="round" />
+
+                  {/* Silueta de mochila que asoma tras hombro izquierdo */}
+                  <path 
+                    d="M 310,310 C 265,330 250,380 252,470 C 254,540 270,590 295,620 L 320,620 Z" 
+                    fill="url(#backpackRedGrad)" 
+                    stroke="#450A0A" 
+                    strokeWidth="4" 
+                  />
+                  {/* Bolsillo lateral izquierdo / cantimplora */}
+                  <path d="M 252,430 C 240,450 240,510 255,540 L 275,540 L 272,430 Z" fill="#18181B" opacity="0.6" />
+                  <ellipse cx="258" cy="485" rx="14" ry="40" fill="#0284C7" opacity="0.4" />
+
+                  {/* Silueta de mochila que asoma tras hombro derecho */}
+                  <path 
+                    d="M 458,310 C 503,330 518,380 516,470 C 514,540 498,590 473,620 L 448,620 Z" 
+                    fill="url(#backpackRedGrad)" 
+                    stroke="#450A0A" 
+                    strokeWidth="4" 
+                  />
+                  {/* Bolsillo lateral derecho */}
+                  <path d="M 516,430 C 528,450 528,510 513,540 L 493,540 L 496,430 Z" fill="#18181B" opacity="0.6" />
+                  <ellipse cx="510" cy="485" rx="14" ry="40" fill="#0284C7" opacity="0.4" />
+
+                  {/* Costuras reflectantes laterales */}
+                  <path d="M 270,350 C 262,410 264,480 272,560" fill="none" stroke="#F87171" strokeWidth="2" strokeDasharray="6,4" />
+                  <path d="M 498,350 C 506,410 504,480 496,560" fill="none" stroke="#F87171" strokeWidth="2" strokeDasharray="6,4" />
+                </g>
+              </svg>
+            )}
+
             {/* Canvas Principal con Renderizado Cel-Shaded de Alta Definición */}
             <canvas
               ref={canvasRef}
@@ -1785,6 +1848,12 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
                   <stop offset="50%" stopColor="#FFFFFF" stopOpacity="0.45" />
                   <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
                 </linearGradient>
+                <linearGradient id="strapGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#7F1D1D" />
+                  <stop offset="25%" stopColor="#DC2626" />
+                  <stop offset="75%" stopColor="#EF4444" />
+                  <stop offset="100%" stopColor="#991B1B" />
+                </linearGradient>
               </defs>
 
               {/* 1. PEINADOS ANIME FRONTALES Y VOLÚMENES */}
@@ -1799,9 +1868,9 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
               {/* 4. CALZADO ESPECIALIZADO (FOOTWEAR: SANDALIAS ALADAS, BOTAS DE BRUJA, BOTAS ACORAZADAS) */}
               {renderFootwear()}
 
-              {/* 5. GORROS / SOMBREROS */}
+              {/* 5. GORROS / SOMBREROS CALIBRADOS MILIMÉTRICAMENTE */}
               {equippedHat === 'hat_snapback_trainer' && (
-                <g id="hat_snapback_layer" transform="translate(384, 158)">
+                <g id="hat_snapback_layer" transform={`translate(384, ${158 + hatOffsetY})`}>
                   <path d="M -80,-30 C -80,-115 80,-115 80,-30 Z" fill="#18181B" stroke="#09090B" strokeWidth="6" />
                   <path d="M -85,-28 C -35,-8 35,-8 85,-28 L 92,-38 C 35,-24 -35,-24 -92,-38 Z" fill="#09090B" stroke="#27272A" strokeWidth="4" />
                   <circle cx="45" cy="-58" r="12" fill="#E2E8F0" stroke="#475569" strokeWidth="2.5" />
@@ -1811,7 +1880,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
               )}
 
               {equippedHat === 'hat_witch' && (
-                <g id="hat_witch_layer" transform="translate(384, 150)">
+                <g id="hat_witch_layer" transform={`translate(384, ${150 + hatOffsetY})`}>
                   <ellipse cx="0" cy="5" rx="145" ry="42" fill="#3B0764" stroke="#1E0B30" strokeWidth="6" />
                   <path d="M -85,4 L 0,-180 Q 55,-140 18,-70 L 85,4 Z" fill="#4C1D95" stroke="#1E0B30" strokeWidth="6" />
                   <ellipse cx="0" cy="0" rx="90" ry="20" fill="#D946EF" />
@@ -1821,7 +1890,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
               )}
 
               {equippedHat === 'hat_beret' && (
-                <g id="hat_beret_layer" transform="translate(390, 150) rotate(-10)">
+                <g id="hat_beret_layer" transform={`translate(390, ${150 + hatOffsetY}) rotate(-10)`}>
                   <ellipse cx="0" cy="0" rx="95" ry="38" fill="#BE185D" stroke="#831843" strokeWidth="5" />
                   <ellipse cx="-15" cy="-8" rx="65" ry="24" fill="#E11D48" />
                   <line x1="0" y1="-38" x2="0" y2="-48" stroke="#831843" strokeWidth="6" strokeLinecap="round" />
@@ -1829,7 +1898,7 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
               )}
 
               {equippedHat === 'hat_guild_crown' && (
-                <g id="hat_crown_layer" transform="translate(384, 135)">
+                <g id="hat_crown_layer" transform={`translate(384, ${135 + hatOffsetY})`}>
                   <path d="M -75,20 L -85,-38 L -42,-12 L 0,-50 L 42,-12 L 85,-38 L 75,20 Z" fill="#EAB308" stroke="#713F12" strokeWidth="5" />
                   <circle cx="0" cy="-50" r="7" fill="#EF4444" />
                   <circle cx="-85" cy="-38" r="6" fill="#3B82F6" />
@@ -1840,16 +1909,67 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
               {/* 6. PRENDA SUPERIOR MODULAR ANATÓMICA (TOP) */}
               {renderTop()}
 
-              {/* 7. MOCHILA Y TIRANTES (SOLO SI ESTÁ EQUIPADA) */}
+              {/* 7. TIRANTES ERGONÓMICOS DE MOCHILA DE EXPEDICIÓN */}
               {equippedAccessory === 'acc_red_backpack' && (
                 <g id="acc_backpack_straps_layer">
-                  <path d="M 305,370 C 315,450 322,500 328,570" fill="none" stroke="#DC2626" strokeWidth="20" strokeLinecap="round" />
-                  <path d="M 305,370 C 315,450 322,500 328,570" fill="none" stroke="#991B1B" strokeWidth="4" />
-                  <rect x="312" y="470" width="26" height="12" rx="3" fill="#18181B" />
-                  <path d="M 463,370 C 453,450 446,500 440,570" fill="none" stroke="#DC2626" strokeWidth="20" strokeLinecap="round" />
-                  <path d="M 463,370 C 453,450 446,500 440,570" fill="none" stroke="#991B1B" strokeWidth="4" />
-                  <rect x="430" y="470" width="26" height="12" rx="3" fill="#18181B" />
-                  <path d="M 500,430 C 560,430 580,520 575,640 L 490,640 Z" fill="#B91C1C" stroke="#7F1D1D" strokeWidth="5" />
+                  {/* Tirante Izquierdo amoldado al pecho */}
+                  <path 
+                    d="M 302,328 C 308,380 316,450 324,520 C 328,555 330,590 332,625" 
+                    fill="none" 
+                    stroke="#1E0505" 
+                    strokeWidth="20" 
+                    strokeLinecap="round" 
+                  />
+                  <path 
+                    d="M 302,328 C 308,380 316,450 324,520 C 328,555 330,590 332,625" 
+                    fill="none" 
+                    stroke="url(#strapGrad)" 
+                    strokeWidth="16" 
+                    strokeLinecap="round" 
+                  />
+                  <path 
+                    d="M 304,340 C 310,390 317,450 323,510" 
+                    fill="none" 
+                    stroke="#FCA5A5" 
+                    strokeWidth="3" 
+                    strokeDasharray="10,6" 
+                  />
+                  <path d="M 314,440 C 308,440 306,455 314,460 L 322,460 C 328,455 328,440 322,440 Z" fill="#94A3B8" stroke="#334155" strokeWidth="2" />
+                  <rect x="318" y="525" width="16" height="18" rx="3" fill="#18181B" stroke="#64748B" strokeWidth="2" />
+                  <line x1="320" y1="534" x2="332" y2="534" stroke="#94A3B8" strokeWidth="2" />
+                  <path d="M 326,543 L 328,590" fill="none" stroke="#7F1D1D" strokeWidth="6" strokeLinecap="round" />
+
+                  {/* Tirante Derecho amoldado al pecho */}
+                  <path 
+                    d="M 466,328 C 460,380 452,450 444,520 C 440,555 438,590 436,625" 
+                    fill="none" 
+                    stroke="#1E0505" 
+                    strokeWidth="20" 
+                    strokeLinecap="round" 
+                  />
+                  <path 
+                    d="M 466,328 C 460,380 452,450 444,520 C 440,555 438,590 436,625" 
+                    fill="none" 
+                    stroke="url(#strapGrad)" 
+                    strokeWidth="16" 
+                    strokeLinecap="round" 
+                  />
+                  <path 
+                    d="M 464,340 C 458,390 451,450 445,510" 
+                    fill="none" 
+                    stroke="#FCA5A5" 
+                    strokeWidth="3" 
+                    strokeDasharray="10,6" 
+                  />
+                  <path d="M 454,440 C 460,440 462,455 454,460 L 446,460 C 440,455 440,440 446,440 Z" fill="#94A3B8" stroke="#334155" strokeWidth="2" />
+                  <rect x="434" y="525" width="16" height="18" rx="3" fill="#18181B" stroke="#64748B" strokeWidth="2" />
+                  <line x1="436" y1="534" x2="448" y2="534" stroke="#94A3B8" strokeWidth="2" />
+                  <path d="M 442,543 L 440,590" fill="none" stroke="#7F1D1D" strokeWidth="6" strokeLinecap="round" />
+
+                  {/* Cinta pectoral de amarre (Sternum Strap) entre ambos tirantes */}
+                  <path d="M 319,475 Q 384,482 449,475" fill="none" stroke="#991B1B" strokeWidth="7" />
+                  <rect x="374" y="468" width="20" height="14" rx="3" fill="#0F172A" stroke="#475569" strokeWidth="1.5" />
+                  <circle cx="384" cy="475" r="3" fill="#EF4444" />
                 </g>
               )}
 
