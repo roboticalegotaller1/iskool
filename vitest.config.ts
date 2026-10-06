@@ -6,7 +6,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     testTimeout: 15000,
-    exclude: ['**/node_modules/**', '**/tests/e2e/**', '**/*.spec.ts'],
+    exclude: ['**/node_modules/**', '**/tests/e2e/**', '**/*.spec.ts', '**/__tests__/executive-inbox.e2e.test.ts'],
   },
   resolve: {
     alias: {
