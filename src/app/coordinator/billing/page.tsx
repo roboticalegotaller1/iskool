@@ -503,7 +503,7 @@ export default function CoordinatorBillingDashboardPage() {
 
           {(user?.role === 'owner' || user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'director') && (
             <Link
-              href="/admin"
+              href={user?.school_id === 'sch-ibime' || user?.email?.toLowerCase().includes('ibime') ? '/ibime/portal?tab=finanzas' : '/admin'}
               className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white font-semibold px-4 py-2.5 rounded-lg transition-all text-xs shadow-sm"
               title="Ir al Portal de Finanzas y Nóminas del Personal del Dueño"
             >

@@ -117,4 +117,33 @@ describe('🎯 Verificación de Enrutamiento y Seeds de IBIME y Portales', () =>
       expect(res.status).toBe(404);
     });
   });
+
+  describe('3. Integridad de Enlaces de Administración en Interfaces (TeacherNavbar & StudentHUD)', () => {
+    it('el código fuente de TeacherNavbar debe enrutar dinámicamente a /ibime/portal para usuarios IBIME', async () => {
+      const fs = await import('fs');
+      const teacherNavbarCode = fs.readFileSync('src/components/layout/TeacherNavbar.tsx', 'utf-8');
+      
+      // Debe contener la lógica condicional que apunta a /ibime/portal si es IBIME
+      expect(teacherNavbarCode).toContain("href={isIbime ? '/ibime/portal' : '/admin'}");
+      // No debe contener href="/admin" sin verificación de tenant
+      expect(teacherNavbarCode).not.toMatch(/href="\/admin"/);
+    });
+
+    it('el código fuente de StudentHUD debe enrutar dinámicamente a /ibime/portal para usuarios IBIME', async () => {
+      const fs = await import('fs');
+      const studentHudCode = fs.readFileSync('src/components/layout/StudentHUD.tsx', 'utf-8');
+      
+      expect(studentHudCode).toContain("href={isIbime ? '/ibime/portal' : '/admin'}");
+      expect(studentHudCode).not.toMatch(/href="\/admin"/);
+    });
+
+    it('el componente not-found.tsx debe ofrecer enlace y recuperación para usuarios IBIME', async () => {
+      const fs = await import('fs');
+      const notFoundCode = fs.readFileSync('src/app/not-found.tsx', 'utf-8');
+      
+      expect(notFoundCode).toContain('/ibime/portal');
+      expect(notFoundCode).toContain('Portal Institucional IBIME');
+    });
+  });
 });
+

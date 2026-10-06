@@ -194,6 +194,13 @@ function TeacherDashboardContent() {
   const queryRole = searchParams?.get('role') || '';
   const queryTeacherId = searchParams?.get('teacher_id') || searchParams?.get('impersonate') || '';
 
+  const isIbime = Boolean(
+    querySchoolId === 'sch-ibime' ||
+    querySchoolId === 'ibime' ||
+    user?.school_id === 'sch-ibime' ||
+    user?.email?.toLowerCase().includes('ibime')
+  );
+
   const isAdminSupervisor = Boolean(
     queryRole === 'admin' ||
     (user && ['admin', 'superadmin', 'director', 'owner', 'ceo', 'coordinator'].includes(user.role))
@@ -663,12 +670,12 @@ function TeacherDashboardContent() {
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        router.push(querySchoolId === 'sch-ibime' ? '/ibime/login' : '/login');
+        router.push(isIbime ? '/ibime/login' : '/login');
       } else if (user.role === 'student') {
-        router.push(user.school_id === 'sch-ibime' ? '/ibime/portal' : '/student');
+        router.push(isIbime ? '/ibime/portal' : '/student');
       }
     }
-  }, [user, loading, router, querySchoolId]);
+  }, [user, loading, router, isIbime]);
 
   useEffect(() => {
     if (user && (user.role === 'teacher' || isAdminSupervisor)) {
@@ -887,7 +894,7 @@ function TeacherDashboardContent() {
                     Modo Supervisión & Auditoría
                   </span>
                   <span className="text-xs text-indigo-300 font-medium">
-                    {querySchoolId === 'sch-ibime' ? 'Instituto Bilingüe IBIME' : (querySchoolId || 'Supervisión Institucional')}
+                    {isIbime ? 'Instituto Bilingüe IBIME' : (querySchoolId || 'Supervisión Institucional')}
                   </span>
                 </div>
                 <h3 className="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-2">
@@ -902,7 +909,7 @@ function TeacherDashboardContent() {
             <div className="flex items-center gap-2.5 self-stretch sm:self-auto shrink-0 flex-wrap">
               <button
                 type="button"
-                onClick={() => router.push(querySchoolId === 'sch-ibime' ? '/ibime/portal?view=ceo' : '/admin/ceo')}
+                onClick={() => router.push(isIbime ? '/ibime/portal?view=ceo' : '/admin/ceo')}
                 className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white border border-white/20 font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <ArrowLeft size={14} />

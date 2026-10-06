@@ -293,7 +293,10 @@ export default function CrmAdmissionsStudio({
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
         <div>
           <div className="flex items-center gap-2 flex-wrap mb-1.5">
-            <Link href="/admin" className="text-slate-500 hover:text-slate-700 flex items-center text-xs font-semibold mr-1 transition-colors">
+            <Link 
+              href={activeSchoolId === 'sch-ibime' || school?.name?.toLowerCase().includes('ibime') || user?.school_id === 'sch-ibime' || user?.email?.toLowerCase().includes('ibime') ? '/ibime/portal' : '/admin'} 
+              className="text-slate-500 hover:text-slate-700 flex items-center text-xs font-semibold mr-1 transition-colors"
+            >
               <ChevronLeft className="w-3.5 h-3.5 mr-0.5" />
               Volver a Administración
             </Link>

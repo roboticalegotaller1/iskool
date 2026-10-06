@@ -1,8 +1,31 @@
-import React from 'react';
+"use client";
+
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Compass, ArrowLeft, Home, BookOpen, Sparkles, ShieldAlert } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Compass, Home, BookOpen, ShieldAlert, ShieldCheck } from 'lucide-react';
 
 export default function NotFound() {
+  const router = useRouter();
+  const [isIbime, setIsIbime] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isIbimeTenant =
+        document.documentElement.getAttribute('data-tenant') === 'ibime' ||
+        document.cookie.includes('ibime_session') ||
+        localStorage.getItem('tenant-id') === 'ibime' ||
+        localStorage.getItem('activeSchoolId') === 'sch-ibime';
+
+      setIsIbime(isIbimeTenant);
+
+      // Si un directivo o usuario de IBIME aterriza en /admin, transferir amablemente a su portal soberano
+      if (isIbimeTenant && (window.location.pathname === '/admin' || window.location.pathname.startsWith('/admin/'))) {
+        router.replace('/ibime/portal');
+      }
+    }
+  }, [router]);
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-950 text-white px-4 relative overflow-hidden select-none">
       {/* Glow effects */}
@@ -32,27 +55,51 @@ export default function NotFound() {
 
         {/* Action Links */}
         <div className="flex flex-col sm:flex-row gap-3 w-full justify-center mt-2">
-          <Link
-            href="/student"
-            aria-label="Volver al mapa de misiones del estudiante"
-            className="flex-1 px-5 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-          >
-            <Compass className="w-4 h-4" />
-            Mapa de Misiones
-          </Link>
-          
-          <Link
-            href="/teacher"
-            aria-label="Ir al portal del profesor"
-            className="flex-1 px-5 py-3 rounded-2xl bg-zinc-800/90 hover:bg-zinc-750 text-zinc-200 border border-zinc-700/60 font-bold text-xs flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
-          >
-            <BookOpen className="w-4 h-4 text-purple-400" />
-            Portal Docente
-          </Link>
+          {isIbime ? (
+            <>
+              <Link
+                href="/ibime/portal"
+                aria-label="Ir al portal directivo e institucional de IBIME"
+                className="flex-1 px-5 py-3 rounded-2xl bg-gradient-to-r from-red-600 to-[#17426D] hover:from-red-500 hover:to-[#1E5285] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-red-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <ShieldCheck className="w-4 h-4 text-white" />
+                Portal Institucional IBIME
+              </Link>
+              
+              <Link
+                href="/teacher"
+                aria-label="Ir al portal del profesor"
+                className="flex-1 px-5 py-3 rounded-2xl bg-zinc-800/90 hover:bg-zinc-750 text-zinc-200 border border-zinc-700/60 font-bold text-xs flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <BookOpen className="w-4 h-4 text-purple-400" />
+                Portal Docente
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/student"
+                aria-label="Volver al mapa de misiones del estudiante"
+                className="flex-1 px-5 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Compass className="w-4 h-4" />
+                Mapa de Misiones
+              </Link>
+              
+              <Link
+                href="/teacher"
+                aria-label="Ir al portal del profesor"
+                className="flex-1 px-5 py-3 rounded-2xl bg-zinc-800/90 hover:bg-zinc-750 text-zinc-200 border border-zinc-700/60 font-bold text-xs flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <BookOpen className="w-4 h-4 text-purple-400" />
+                Portal Docente
+              </Link>
+            </>
+          )}
           
           <Link
             href="/"
-            aria-label="Ir a la página principal de ISkool"
+            aria-label="Ir a la página principal"
             className="px-4 py-3 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
           >
             <Home className="w-4 h-4" />
