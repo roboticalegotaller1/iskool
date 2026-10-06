@@ -104,7 +104,8 @@ CREATE TABLE IF NOT EXISTS public.inbox_delegation_rules (
     escalate_to_director_on_breach BOOLEAN NOT NULL DEFAULT TRUE,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(school_id, category)
 );
 
 -- 7. AUDITORÍA DE RETROALIMENTACIÓN HUMANA (APRENDIZAJE ACTIVO DE DIRECCIÓN)
@@ -136,7 +137,8 @@ CREATE TABLE IF NOT EXISTS public.inbox_patterns (
     status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',
     dismissed_at TIMESTAMPTZ,
     promoted_to_memory BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(school_id, entity_key)
 );
 
 -- 9. CONFIGURACIÓN DE BRANDING INSTITUCIONAL (WHITE-LABEL HERRAMIENTAS)
