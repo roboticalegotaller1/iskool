@@ -24,149 +24,7 @@ interface SyncInboxPayload {
   };
 }
 
-/**
- * Cliente IMAP TLS para consultar y descargar correos reales del buzón.
- */
-function fetchImapMessages(
-  host: string,
-  port: number,
-  user: string,
-  pass: string,
-  timeoutMs = 9000
-): Promise<{
-  success: boolean;
-  appPasswordRequired?: boolean;
-  error?: string;
-  emails: Array<{
-    id: string;
-    from: string;
-    subject: string;
-    date: string;
-    body: string;
-  }>;
-}> {
-  return new Promise((resolve) => {
-    let resolved = false;
-    const cleanPass = pass.replace(/\s+/g, '');
-    const socket = tls.connect(port, host, { servername: host, minVersion: 'TLSv1.2' });
-
-    let buffer = '';
-    let step: 'INIT' | 'LOGIN' | 'SELECT' | 'SEARCH' | 'FETCH' | 'DONE' = 'INIT';
-    const emails: Array<{ id: string; from: string; subject: string; date: string; body: string }> = [];
-
-    const finish = (result: {
-      success: boolean;
-      appPasswordRequired?: boolean;
-      error?: string;
-      emails: typeof emails;
-    }) => {
-      if (resolved) return;
-      resolved = true;
-      try { socket.end(); } catch {}
-      resolve(result);
-    };
-
-    socket.setTimeout(timeoutMs, () => {
-      finish({ success: false, error: 'Tiempo de espera agotado al consultar servidor IMAP', emails: [] });
-    });
-
-    socket.on('error', (err) => {
-      finish({ success: false, error: err.message, emails: [] });
-    });
-
-    socket.on('data', (data) => {
-      buffer += data.toString('utf8');
-
-      // 1. Espera de banner inicial * OK
-      if (step === 'INIT' && buffer.includes('* OK')) {
-        step = 'LOGIN';
-        buffer = '';
-        socket.write(`A1 LOGIN "${user}" "${cleanPass}"\r\n`);
-        return;
-      }
-
-      // 2. Respuesta a LOGIN
-      if (step === 'LOGIN' && buffer.includes('A1 ')) {
-        if (buffer.includes('A1 NO') || buffer.includes('A1 BAD')) {
-          const isAppPassReq = buffer.includes('Application-specific password required') || 
-                               buffer.includes('support.google.com/accounts/answer/185833');
-          finish({
-            success: false,
-            appPasswordRequired: isAppPassReq,
-            error: isAppPassReq
-              ? 'Google IMAP requiere Contraseña de Aplicación de 16 letras con 2FA activo.'
-              : 'Credenciales rechazadas por el servidor de correo IMAP.',
-            emails: []
-          });
-          return;
-        }
-
-        if (buffer.includes('A1 OK')) {
-          step = 'SELECT';
-          buffer = '';
-          socket.write(`A2 SELECT "INBOX"\r\n`);
-          return;
-        }
-      }
-
-      // 3. Respuesta a SELECT
-      if (step === 'SELECT' && buffer.includes('A2 OK')) {
-        step = 'SEARCH';
-        buffer = '';
-        // Buscar correos recientes o no leídos
-        socket.write(`A3 SEARCH UNSEEN\r\n`);
-        return;
-      }
-
-      // 4. Respuesta a SEARCH
-      if (step === 'SEARCH' && buffer.includes('A3 OK')) {
-        const searchLine = buffer.split('\n').find(l => l.startsWith('* SEARCH')) || '';
-        const ids = searchLine.replace('* SEARCH', '').trim().split(/\s+/).filter(Boolean);
-
-        if (ids.length === 0) {
-          // Si no hay no leídos, buscar los últimos 3 correos en general
-          step = 'DONE';
-          finish({ success: true, emails: [] });
-          return;
-        }
-
-        // Obtener el ID del correo más reciente
-        const targetId = ids[ids.length - 1];
-        step = 'FETCH';
-        buffer = '';
-        socket.write(`A4 FETCH ${targetId} (BODY.PEEK[HEADER.FIELDS (FROM SUBJECT DATE)] BODY.PEEK[TEXT])\r\n`);
-        return;
-      }
-
-      // 5. Respuesta a FETCH
-      if (step === 'FETCH' && buffer.includes('A4 OK')) {
-        // Parsear encabezados y cuerpo
-        const fromMatch = buffer.match(/From:\s*(.+)/i);
-        const subjectMatch = buffer.match(/Subject:\s*(.+)/i);
-        const dateMatch = buffer.match(/Date:\s*(.+)/i);
-
-        let body = '';
-        const parts = buffer.split(/\r?\n\r?\n/);
-        if (parts.length > 2) {
-          body = parts.slice(2).join('\n').replace(/\)\r?\nA4 OK.*/, '').trim();
-        }
-
-        emails.push({
-          id: `imap-${Date.now()}`,
-          from: fromMatch ? fromMatch[1].trim() : user,
-          subject: subjectMatch ? subjectMatch[1].trim() : 'Correo recibido en buzón',
-          date: dateMatch ? dateMatch[1].trim() : new Date().toLocaleString(),
-          body: body || 'Contenido del correo recibido sincronizado vía IMAP.'
-        });
-
-        step = 'DONE';
-        finish({ success: true, emails });
-        return;
-      }
-    });
-  });
-}
-
+import { fetchLiveImapEmails } from '@/lib/services/imapClientService';
 import { InboundMailSpoolService } from '@/lib/services/inboundMailSpool';
 
 export async function POST(req: NextRequest) {
@@ -303,8 +161,17 @@ export async function POST(req: NextRequest) {
     const pass = (password || '').trim();
     const hasPlaceholder = !pass || pass === '••••••••••••' || pass === 'password';
 
+    let appPasswordRequired = false;
+
     if (!hasPlaceholder && protocol === 'IMAP') {
-      const imapResult = await fetchImapMessages(host || 'imap.gmail.com', port || 993, email, pass);
+      const imapResult = await fetchLiveImapEmails(host || 'imap.gmail.com', port || 993, email, pass, {
+        tenantId,
+        maxCount: 20
+      });
+
+      if (!imapResult.authenticated && imapResult.requiresAppPassword) {
+        appPasswordRequired = true;
+      }
 
       if (imapResult.success && imapResult.emails.length > 0) {
         for (const msg of imapResult.emails) {
@@ -312,11 +179,11 @@ export async function POST(req: NextRequest) {
           if (existingTitles.includes(normSubject)) continue;
 
           const emailDto: InboundEmailDTO = {
-            sender_name: msg.from.split('<')[0]?.replace(/["']/g, '').trim() || msg.from,
-            sender_email: (msg.from.match(/<([^>]+)>/) || [, msg.from])[1]?.trim(),
+            sender_name: msg.sender_name || msg.sender_email,
+            sender_email: msg.sender_email,
             recipient_email: email,
             subject: msg.subject,
-            body_text: msg.body,
+            body_text: msg.body_text,
             reincidence_count: 1
           };
 
@@ -355,10 +222,12 @@ export async function POST(req: NextRequest) {
       newMatters,
       autonomousBridgeActive: true,
       autoSyncIntervalSeconds: 30,
-      appPasswordRequired: false,
+      appPasswordRequired,
       message: newMatters.length > 0
         ? `✓ Se procesaron y clasificaron ${newMatters.length} correo(s) nuevo(s) con Motor de IA.`
-        : 'Sincronización en tiempo real activa (30s). Buzón institucional al día.'
+        : (appPasswordRequired
+            ? 'Conexión activa pero Google requiere Contraseña de Aplicación de 16 caracteres para descargar correos.'
+            : 'Sincronización en tiempo real activa (30s). Buzón institucional al día.')
     });
 
   } catch (err: any) {

@@ -443,6 +443,12 @@ export function CEOEmailCommunicationsModal({
   const [sms2FACodeInput, setSms2FACodeInput] = useState<string>('');
   const [appPasswordInput, setAppPasswordInput] = useState<string>('');
   const [showAppPasswordHelper, setShowAppPasswordHelper] = useState<boolean>(false);
+  const [showQuickTestEmailModal, setShowQuickTestEmailModal] = useState<boolean>(false);
+  const [quickTestSenderName, setQuickTestSenderName] = useState<string>('israel LopezAngeles');
+  const [quickTestSenderEmail, setQuickTestSenderEmail] = useState<string>('israell35mac@gmail.com');
+  const [quickTestSubject, setQuickTestSubject] = useState<string>('Alumno herido en prácticas');
+  const [quickTestBody, setQuickTestBody] = useState<string>('Estimada Dirección: Se notifica que un estudiante sufrió una lesión en el campo deportivo durante el receso. Se activó protocolo médico institucional y se solicita confirmación de seguro médico.');
+  const [isSendingQuickTest, setIsSendingQuickTest] = useState<boolean>(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -1735,8 +1741,10 @@ ${schoolName}`
 
     if (result.success) {
       setAppPasswordInput('');
+      setShowAppPasswordHelper(false);
       await persistVerifiedMailConnection(targetEmail, result.latencyMs || 24, result.serverBanner, 'Contraseña de Aplicación (16 letras)');
       onTriggerToast(`✓ Contraseña de aplicación verificada (${result.latencyMs || 24}ms). Buzón conectado e integrado.`);
+      handleTriggerSync(false);
     } else {
       onTriggerToast(`❌ Falló la autenticación con contraseña de aplicación: ${result.error}`);
     }
@@ -2153,26 +2161,49 @@ ${schoolName}`
         }
       }
 
-      // Sincronización en tiempo real de la Bandeja de Entrada estilo Gmail
+      // Sincronización en tiempo real de la Bandeja de Entrada estilo Gmail con IMAP real
       try {
-        const rawRes = await fetch(`/api/mail/raw-inbox?tenantId=${currentTenantId}&email=${encodeURIComponent(targetEmail)}`);
+        const rawRes = await fetch('/api/mail/raw-inbox', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tenantId: currentTenantId,
+            email: targetEmail,
+            password: authPassword,
+            host: currentHost,
+            port: currentPort
+          })
+        });
         const rawData = await rawRes.json();
         if (rawData.success && Array.isArray(rawData.emails)) {
-          setRawEmailsList((prev) => {
-            const seenIds = new Set(prev.map(e => e.id));
-            const seenSubjects = new Set(prev.map(e => e.subject.trim().toLowerCase()));
-            const newFromApi = rawData.emails.filter(
-              (e: RawGmailItem) => !seenIds.has(e.id) && !seenSubjects.has(e.subject.trim().toLowerCase())
-            );
-            if (newFromApi.length === 0) return prev;
-            const updated = [...newFromApi, ...prev];
+          if (rawData.authenticated && rawData.emails.length > 0) {
+            setRawEmailsList(rawData.emails);
             if (typeof window !== 'undefined') {
-              localStorage.setItem(rawEmailsStorageKey, JSON.stringify(updated));
+              localStorage.setItem(rawEmailsStorageKey, JSON.stringify(rawData.emails));
             }
-            return updated;
-          });
+          } else {
+            setRawEmailsList((prev) => {
+              const seenIds = new Set(prev.map(e => e.id));
+              const seenSubjects = new Set(prev.map(e => e.subject.trim().toLowerCase()));
+              const newFromApi = rawData.emails.filter(
+                (e: RawGmailItem) => !seenIds.has(e.id) && !seenSubjects.has(e.subject.trim().toLowerCase())
+              );
+              if (newFromApi.length === 0) return prev;
+              const updated = [...newFromApi, ...prev];
+              if (typeof window !== 'undefined') {
+                localStorage.setItem(rawEmailsStorageKey, JSON.stringify(updated));
+              }
+              return updated;
+            });
+          }
+
+          if (rawData.requiresAppPassword && (!authPassword || authPassword === '••••••••••••')) {
+            setShowAppPasswordHelper(true);
+          }
         }
-      } catch {}
+      } catch (rawErr) {
+        console.warn('Raw inbox sync error:', rawErr);
+      }
     } catch (syncErr) {
       console.warn('Sync error:', syncErr);
     }
@@ -2274,6 +2305,91 @@ ${schoolName}`
       onTriggerToast(`❌ Error al conectar con el servidor: ${err.message}`);
     } finally {
       setIsManualIngesting(false);
+    }
+  };
+
+  // Despacho directo de correo de prueba en vivo a la Bandeja de Entrada y Triage
+  const handleDispatchQuickTestEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickTestSubject.trim()) {
+      onTriggerToast('Por favor ingresa el asunto del correo.');
+      return;
+    }
+    setIsSendingQuickTest(true);
+    onTriggerToast('⚡ Despachando correo al buzón en tiempo real y ejecutando Motor de IA...');
+
+    const targetEmail = connectedEmail || authUsername || 'israell35mac@gmail.com';
+
+    try {
+      // 1. Inyectar en Bandeja de Entrada (raw-inbox)
+      const rawRes = await fetch('/api/mail/raw-inbox', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenantId: currentTenantId,
+          email: targetEmail,
+          password: authPassword,
+          host: incomingHost,
+          port: incomingPort,
+          injectEmail: {
+            sender_name: quickTestSenderName,
+            sender_email: quickTestSenderEmail,
+            subject: quickTestSubject,
+            body_text: quickTestBody
+          }
+        })
+      });
+
+      const rawData = await rawRes.json();
+      if (rawData.success && Array.isArray(rawData.emails)) {
+        setRawEmailsList(rawData.emails);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(rawEmailsStorageKey, JSON.stringify(rawData.emails));
+        }
+      }
+
+      // 2. Ejecutar Triage Cognitivo en Bandeja Inteligente (sync-inbox)
+      const syncRes = await fetch('/api/mail/sync-inbox', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: targetEmail,
+          host: incomingHost,
+          port: incomingPort,
+          security: incomingSecurity,
+          protocol: selectedProtocol,
+          password: authPassword,
+          tenantId: currentTenantId,
+          institutionName: schoolName,
+          schoolSlug,
+          manualEmail: {
+            sender_name: quickTestSenderName,
+            sender_email: quickTestSenderEmail,
+            subject: quickTestSubject,
+            body_text: quickTestBody,
+            reincidence_count: 1,
+            campus: 'Campus Central'
+          }
+        })
+      });
+
+      const syncData = await syncRes.json();
+      if (syncData.success && syncData.newMatters && syncData.newMatters.length > 0) {
+        setMattersList((prev) => {
+          const updated = [...syncData.newMatters, ...prev];
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(mattersStorageKey, JSON.stringify(updated));
+          }
+          return updated;
+        });
+      }
+
+      setIsSendingQuickTest(false);
+      setShowQuickTestEmailModal(false);
+      onTriggerToast('🔔 ¡Correo recibido en tiempo real! Aparece de inmediato en Bandeja de Entrada y clasificado en Bandeja Inteligente.');
+    } catch (err: any) {
+      setIsSendingQuickTest(false);
+      onTriggerToast(`Error al despachar correo: ${err.message}`);
     }
   };
 
@@ -4787,33 +4903,197 @@ Comité de Seguridad y Protección Escolar`
                   )}
                 </div>
 
-                {/* Pill de Conexión en Tiempo Real y Botón Sincronizar */}
-                <div className="flex items-center gap-2.5 shrink-0">
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200/80 text-[11px] font-bold text-emerald-800">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                    </span>
-                    <span className="truncate max-w-[170px]" title={connectedEmail || 'Gmail Conectado'}>
-                      {connectedEmail || 'Gmail Conectado'}
-                    </span>
-                    <span className="text-[10px] font-black text-emerald-600 bg-white px-1.5 py-0.5 rounded shadow-2xs border border-emerald-200/60">
-                      {verifiedLatency ? `${verifiedLatency}ms` : '18ms'}
-                    </span>
-                  </div>
+                {/* Controles de Conexión, Despacho y Sincronización */}
+                <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                  {/* Pill de Estado Real */}
+                  {authPassword && connectionStatus === 'connected_verified' ? (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200/80 text-[11px] font-bold text-emerald-800">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                      </span>
+                      <span className="truncate max-w-[150px]" title={connectedEmail || 'Gmail IMAP en Vivo'}>
+                        {connectedEmail || 'Gmail IMAP'}
+                      </span>
+                      <span className="text-[10px] font-black text-emerald-600 bg-white px-1.5 py-0.5 rounded shadow-2xs border border-emerald-200/60">
+                        {verifiedLatency ? `${verifiedLatency}ms` : '18ms'}
+                      </span>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowAppPasswordHelper(!showAppPasswordHelper)}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200/90 text-[11px] font-bold text-amber-800 cursor-pointer transition-colors shadow-2xs"
+                      title="Haz clic para ingresar la Clave de Aplicación de Google"
+                    >
+                      <Key className="h-3.5 w-3.5 text-amber-600" />
+                      <span>Google Requiere Clave (2FA)</span>
+                    </button>
+                  )}
 
+                  {/* Botón para Despachar Correo de Prueba en Tiempo Real */}
+                  <button
+                    type="button"
+                    onClick={() => setShowQuickTestEmailModal(!showQuickTestEmailModal)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs transition-colors cursor-pointer border border-indigo-200 shadow-2xs"
+                    title="Despachar correo de prueba en vivo para verificar la llegada inmediata"
+                  >
+                    <Send className="h-3.5 w-3.5 text-indigo-600" />
+                    <span className="hidden sm:inline">Despachar Correo</span>
+                  </button>
+
+                  {/* Botón Sincronizar */}
                   <button
                     type="button"
                     onClick={() => handleTriggerSync(false)}
                     disabled={isSyncingLiveInbox}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-700 font-bold text-xs transition-colors cursor-pointer border border-slate-200 shadow-2xs disabled:opacity-50"
-                    title="Consultar servidor ahora"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#EA4335] hover:bg-red-700 text-white font-bold text-xs transition-colors cursor-pointer border border-red-600 shadow-2xs disabled:opacity-50"
+                    title="Consultar servidor de correo ahora"
                   >
-                    <RefreshCw className={`h-3.5 w-3.5 ${isSyncingLiveInbox ? 'animate-spin text-[#EA4335]' : 'text-slate-600'}`} />
+                    <RefreshCw className={`h-3.5 w-3.5 ${isSyncingLiveInbox ? 'animate-spin' : ''}`} />
                     <span className="hidden sm:inline">Sincronizar</span>
                   </button>
                 </div>
               </div>
+
+              {/* Panel de Despacho de Correo de Prueba en Tiempo Real */}
+              {showQuickTestEmailModal && (
+                <div className="p-4 rounded-2xl bg-indigo-50/90 border border-indigo-200/90 shadow-sm space-y-3 animate-in fade-in duration-150">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Send className="h-4 w-4 text-indigo-600" />
+                      <span className="font-black text-xs text-indigo-900 uppercase tracking-wider">
+                        Despacho de Correo de Prueba en Vivo (Llegada Inmediata 0.1s)
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowQuickTestEmailModal(false)}
+                      className="p-1 rounded-lg text-indigo-500 hover:text-indigo-800 hover:bg-indigo-100"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleDispatchQuickTestEmail} className="space-y-2.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] font-bold text-indigo-700 uppercase">Nombre Remitente</label>
+                        <input
+                          type="text"
+                          value={quickTestSenderName}
+                          onChange={(e) => setQuickTestSenderName(e.target.value)}
+                          placeholder="ej. israel LopezAngeles"
+                          className="w-full px-3 py-1.5 rounded-xl bg-white border border-indigo-200 text-xs text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-indigo-700 uppercase">Correo Remitente</label>
+                        <input
+                          type="email"
+                          value={quickTestSenderEmail}
+                          onChange={(e) => setQuickTestSenderEmail(e.target.value)}
+                          placeholder="ej. israell35mac@gmail.com"
+                          className="w-full px-3 py-1.5 rounded-xl bg-white border border-indigo-200 text-xs text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold text-indigo-700 uppercase">Asunto del Correo</label>
+                      <input
+                        type="text"
+                        value={quickTestSubject}
+                        onChange={(e) => setQuickTestSubject(e.target.value)}
+                        placeholder="ej. Alumno herido en cancha"
+                        className="w-full px-3 py-1.5 rounded-xl bg-white border border-indigo-200 text-xs text-slate-800 font-bold focus:outline-none focus:border-indigo-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold text-indigo-700 uppercase">Cuerpo del Mensaje</label>
+                      <textarea
+                        rows={2}
+                        value={quickTestBody}
+                        onChange={(e) => setQuickTestBody(e.target.value)}
+                        placeholder="Contenido del mensaje..."
+                        className="w-full px-3 py-1.5 rounded-xl bg-white border border-indigo-200 text-xs text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setShowQuickTestEmailModal(false)}
+                        className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-600 font-bold text-xs border border-slate-200 cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSendingQuickTest}
+                        className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      >
+                        <Zap className={`h-3.5 w-3.5 ${isSendingQuickTest ? 'animate-spin' : ''}`} />
+                        <span>{isSendingQuickTest ? 'Enviando y Clasificando...' : 'Inyectar al Buzón Ahora'}</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* Banner Asistente de Clave de Aplicación de Google (16 caracteres) */}
+              {(!authPassword || authPassword === '••••••••••••' || showAppPasswordHelper) && (
+                <div className="bg-gradient-to-r from-red-50 via-amber-50 to-indigo-50 rounded-2xl border border-red-200/90 p-4 shadow-xs space-y-3 animate-in fade-in duration-150">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2.5 rounded-xl bg-[#EA4335] text-white shrink-0 shadow-xs">
+                        <Key className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
+                          <span>Conexión en Vivo con Google ({connectedEmail || 'israell35mac@gmail.com'})</span>
+                          <span className="px-2 py-0.5 rounded-full bg-red-100 text-[#EA4335] text-[10px] font-black uppercase">
+                            Seguridad 2FA Oficial
+                          </span>
+                        </h3>
+                        <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
+                          Por políticas de seguridad de Google, los servidores IMAP no permiten contraseñas normales. Para descargar tus correos reales de Google en tiempo real, ingresa la <strong>Contraseña de Aplicación de 16 letras</strong> de tu cuenta.
+                        </p>
+                      </div>
+                    </div>
+                    <a
+                      href="https://myaccount.google.com/apppasswords"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-bold text-xs shadow-xs transition-all shrink-0 cursor-pointer"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5 text-blue-600" />
+                      <span>Generar Clave en Google (1 clic)</span>
+                    </a>
+                  </div>
+
+                  <form onSubmit={handleApplyAppPassword} className="flex flex-col sm:flex-row gap-2 pt-1">
+                    <div className="flex-1 relative">
+                      <input
+                        type="text"
+                        value={appPasswordInput}
+                        onChange={(e) => setAppPasswordInput(e.target.value)}
+                        placeholder="Pega aquí tu clave de 16 caracteres de Google (ej. abcd efgh ijkl mnop)"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-red-300 focus:border-red-500 focus:ring-2 focus:ring-red-100 font-mono text-xs text-slate-800 outline-none shadow-2xs placeholder:text-slate-400 font-bold tracking-wider"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={isLivePinging}
+                      className="px-4 py-2.5 rounded-xl bg-[#EA4335] hover:bg-red-700 text-white font-black text-xs shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95 disabled:opacity-50 shrink-0"
+                    >
+                      <Zap className={`h-3.5 w-3.5 ${isLivePinging ? 'animate-spin' : ''}`} />
+                      <span>{isLivePinging ? 'Verificando con Google...' : 'Conectar Buzón Real'}</span>
+                    </button>
+                  </form>
+                </div>
+              )}
 
               {/* Si hay un correo seleccionado para lectura, mostrar la Vista de Lectura estilo Gmail */}
               {selectedRawEmailId ? (() => {

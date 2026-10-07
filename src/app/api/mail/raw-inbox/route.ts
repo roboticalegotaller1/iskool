@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { InboundMailSpoolService } from '@/lib/services/inboundMailSpool';
+import { fetchLiveImapEmails, getCachedInboxEmails, injectEmailIntoCache } from '@/lib/services/imapClientService';
 
 export const runtime = 'nodejs';
 
@@ -25,10 +26,9 @@ export interface RawGmailItem {
   };
 }
 
-// Semilla canónica de correos recibidos en el buzón de la institución y Google Workspace
-function getCanonicalRawEmails(accountEmail: string, tenantId: string): RawGmailItem[] {
+// Semilla canónica de respaldo en caso de desconexión sin credenciales
+function getFallbackRawEmails(accountEmail: string): RawGmailItem[] {
   const targetEmail = accountEmail || 'israell35mac@gmail.com';
-  
   return [
     {
       id: 'raw-msg-01',
@@ -38,7 +38,7 @@ function getCanonicalRawEmails(accountEmail: string, tenantId: string): RawGmail
       subject: 'Alumno herido',
       snippet: 'El alumno Patricio estrella fue herido ayer en las canchas de futball durante el horario de receso...',
       body_text: 'El alumno Patricio estrella fue herido ayer en las canchas de futball durante el horario de receso. Solicito saber qué protocolo médico se aplicó y si el colegio cuenta con seguro de gastos médicos mayores vigente para la atención inmediata.',
-      received_at: 'Hoy, 16:42 hrs',
+      received_at: 'Hoy',
       timestamp: '16:42',
       is_unread: true,
       is_starred: true,
@@ -58,7 +58,7 @@ function getCanonicalRawEmails(accountEmail: string, tenantId: string): RawGmail
       subject: 'CTE urgente',
       snippet: 'Se notifica que tendrá cte urgente mañana a las 3 pm ,confirme asistencia por favor...',
       body_text: 'Se notifica que tendrá cte urgente mañana a las 3 pm ,confirme asistencia por favor para preparar la sala de juntas de Dirección General y el orden del día curricular.',
-      received_at: 'Hoy, 15:30 hrs',
+      received_at: 'Hoy',
       timestamp: '15:30',
       is_unread: true,
       is_starred: false,
@@ -69,190 +69,6 @@ function getCanonicalRawEmails(accountEmail: string, tenantId: string): RawGmail
         label: '🟡 DELEGADO CON SLA',
         color: 'bg-amber-50 text-amber-700 border-amber-200'
       }
-    },
-    {
-      id: 'raw-msg-03',
-      sender_name: 'Lic. Fernando Mendoza',
-      sender_email: 'familia.mendoza@gmail.com',
-      recipient_email: targetEmail,
-      subject: 'Reincidencia: Queja formal por presunto acoso y convivencia en 5º B Campus Montes',
-      snippet: 'La familia Mendoza reporta por 3ra ocasión agresiones verbales continuas en el recreo tras intervención inicial de Coordinación...',
-      body_text: 'Estimada Dirección General:\n\nNos dirigimos a usted por tercera ocasión en 12 días porque a pesar de la intervención de Coordinación, nuestro hijo sigue sufriendo agresiones verbales constantes en el recreo por parte de dos compañeros. Exigimos una reunión presencial urgente con ambas familias antes de escalar el caso como queja formal ante la supervisión escolar de la SEP.\n\nAtentamente,\nLic. Fernando Mendoza Peña',
-      received_at: 'Hoy, 08:14 hrs',
-      timestamp: '08:14',
-      is_unread: false,
-      is_starred: true,
-      is_important: true,
-      category: 'principal',
-      triage_badge: {
-        quadrant: 'ATENCION_CEO',
-        label: '🔴 ATENCIÓN INMEDIATA CEO',
-        color: 'bg-red-50 text-red-700 border-red-200',
-        linkedMatterId: 'mat-ibime-01'
-      }
-    },
-    {
-      id: 'raw-msg-04',
-      sender_name: 'Ing. Carlos Ramírez',
-      sender_email: 'carlos.ramirez@empresa.com',
-      recipient_email: targetEmail,
-      subject: 'Aclaración de facturación CFDI 4.0 y aplicación de descuento de hermanos en Campus Lagos',
-      snippet: 'Padre de familia solicita actualización de factura electrónica correspondiente a octubre y corrección del descuento de hermanos...',
-      body_text: 'Buen día Dirección y Administración:\n\nSolicito atentamente la reemisión de mi comprobante fiscal digital CFDI 4.0 del mes en curso con el complemento de colegiaturas IEDU corregido, así como la bonificación del descuento del 10% por segundo hermano en Campus Lagos.\n\nQuedo a la espera de su amable confirmación.',
-      received_at: 'Hoy, 09:30 hrs',
-      timestamp: '09:30',
-      is_unread: false,
-      is_starred: false,
-      is_important: false,
-      category: 'actualizaciones',
-      triage_badge: {
-        quadrant: 'DELEGADO_CON_SLA',
-        label: '🟡 DELEGADO TESORERÍA',
-        color: 'bg-amber-50 text-amber-700 border-amber-200',
-        linkedMatterId: 'mat-ibime-02'
-      }
-    },
-    {
-      id: 'raw-msg-05',
-      sender_name: 'Comité de Padres Ruta 4',
-      sender_email: 'padres.ruta4@ibime.edu.mx',
-      recipient_email: targetEmail,
-      subject: 'Demoras recurrentes en Ruta 4 de Transporte Escolar (Sede San Cristóbal)',
-      snippet: '6 familias reportan demoras promedio de 22 minutos en la parada de la mañana durante los últimos tres días por obras en vía pública...',
-      body_text: 'Estimada Dirección General:\n\nNos dirigimos a ustedes en representación de las familias usuarias de la Ruta 4 de transporte escolar. En los últimos tres días el autobús ha llegado con un retraso promedio de 22 minutos debido a obras viales en Av. Central. Solicitamos ajustar el horario de salida matutino 15 minutos antes.\n\nAtentamente,\nComité de Padres de Familia de Transporte',
-      received_at: 'Ayer, 18:45 hrs',
-      timestamp: 'Ayer',
-      is_unread: false,
-      is_starred: false,
-      is_important: false,
-      category: 'actualizaciones',
-      triage_badge: {
-        quadrant: 'DELEGADO_CON_SLA',
-        label: '🟡 DELEGADO LOGÍSTICA',
-        color: 'bg-amber-50 text-amber-700 border-amber-200',
-        linkedMatterId: 'mat-ibime-03'
-      }
-    },
-    {
-      id: 'raw-msg-06',
-      sender_name: 'Supervisión Escolar Zona 14',
-      sender_email: 'supervision.zona14@edomex.gob.mx',
-      recipient_email: targetEmail,
-      subject: 'Recepción y acuse oficial de Folio de Matrícula ante Supervisión de Zona SEP',
-      snippet: 'Oficio de la Supervisión de Zona 14 confirmando la recepción y validación de las listas de matrícula del ciclo escolar 2026-2027 sin observaciones...',
-      body_text: 'Por medio del presente oficio notificamos a la Dirección General de la Institución que el trámite de entrega de listas de matrícula para el ciclo escolar 2026-2027 ha sido recibido y cotejado satisfactoriamente, otorgando el sello y folio oficial de validación sin observaciones.',
-      received_at: '04 Oct 2026',
-      timestamp: '4 oct',
-      is_unread: false,
-      is_starred: true,
-      is_important: true,
-      category: 'actualizaciones',
-      triage_badge: {
-        quadrant: 'INFORMATIVO',
-        label: '🟢 INFORMATIVO SEP',
-        color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        linkedMatterId: 'mat-ibime-04'
-      }
-    },
-    {
-      id: 'raw-msg-07',
-      sender_name: 'ASM Careers Team',
-      sender_email: 'no-reply@asm-careers.global',
-      recipient_email: targetEmail,
-      subject: 'ASM Careers: Oportunidades docentes internacionales y certificaciones',
-      snippet: 'Conoce las nuevas convocatorias de capacitación y programas de vinculación docente internacional para colegios bilingües...',
-      body_text: 'Estimada comunidad directiva:\n\nLes extendemos la cordial invitación a conocer las convocatorias de contratación y certificaciones docentes internacionales del ciclo 2026.\n\nPueden postular o consultar las bases en nuestro portal institucional.',
-      received_at: 'Ayer, 14:10 hrs',
-      timestamp: 'Ayer',
-      is_unread: false,
-      is_starred: false,
-      is_important: false,
-      category: 'promociones',
-      triage_badge: {
-        quadrant: 'SPAM_DESCARTADO',
-        label: '⚪ PROMOCIÓN EXTERNA',
-        color: 'bg-slate-100 text-slate-600 border-slate-200'
-      }
-    },
-    {
-      id: 'raw-msg-08',
-      sender_name: 'Agencia Digital WebPro',
-      sender_email: 'ventas@webpro-servicios.com',
-      recipient_email: targetEmail,
-      subject: 'Diseño para su web escolar y optimización de hosting con IA',
-      snippet: 'Hola, visitamos su portal escolar y detectamos oportunidades para mejorar su velocidad de carga y posicionamiento orgánico...',
-      body_text: 'Estimada Dirección General:\n\nNos ponemos en contacto para ofrecerles nuestra auditoría gratuita de velocidad y rediseño para portales de colegios privados.\n\nQuedamos a sus órdenes para una demostración virtual.',
-      received_at: '05 Oct 2026',
-      timestamp: '5 oct',
-      is_unread: false,
-      is_starred: false,
-      is_important: false,
-      category: 'promociones',
-      triage_badge: {
-        quadrant: 'SPAM_DESCARTADO',
-        label: '⚪ PROSPECCIÓN COMERCIAL',
-        color: 'bg-slate-100 text-slate-600 border-slate-200'
-      }
-    },
-    {
-      id: 'raw-msg-09',
-      sender_name: 'Ventas Nacionales Mobiliario',
-      sender_email: 'ofertas@muebles-escolares-mx.com',
-      recipient_email: targetEmail,
-      subject: 'Gran liquidación de bancas y pizarrones inteligentes 50% de descuento',
-      snippet: 'Remate especial de mobiliario escolar para renovación de aulas. Entrega inmediata en todo el país...',
-      body_text: 'Estimada Institución Educativa:\n\nAproveche nuestros precios de remate en bancas ergonómicas y pizarrones interactivos para su institución con entrega sin costo.',
-      received_at: 'Hoy, 06:45 hrs',
-      timestamp: '06:45',
-      is_unread: false,
-      is_starred: false,
-      is_important: false,
-      category: 'promociones',
-      triage_badge: {
-        quadrant: 'SPAM_DESCARTADO',
-        label: '⚪ SPAM COMERCIAL',
-        color: 'bg-slate-100 text-slate-600 border-slate-200'
-      }
-    },
-    {
-      id: 'raw-msg-10',
-      sender_name: 'Invitaciones VIP Marketing',
-      sender_email: 'invitaciones@marketing-digital-latam.org',
-      recipient_email: targetEmail,
-      subject: 'Invitación VIP al Simposio de Tendencias en Captación de Alumnos',
-      snippet: 'Boletín de prospección externa con accesos preferenciales para directores de colegios privados...',
-      body_text: 'Le invitamos a participar en el Simposio Iberoamericano de Captación de Matrícula para instituciones educativas particulares.',
-      received_at: 'Hoy, 07:12 hrs',
-      timestamp: '07:12',
-      is_unread: false,
-      is_starred: false,
-      is_important: false,
-      category: 'promociones',
-      triage_badge: {
-        quadrant: 'SPAM_DESCARTADO',
-        label: '⚪ PUBLICIDAD EXTERNA',
-        color: 'bg-slate-100 text-slate-600 border-slate-200'
-      }
-    },
-    {
-      id: 'raw-msg-11',
-      sender_name: 'Encuestas y Premios Express',
-      sender_email: 'reward-alert@global-surveys-win.xyz',
-      recipient_email: targetEmail,
-      subject: 'Has sido seleccionado para reclamar un bono de regalo en línea',
-      snippet: 'Haz clic aquí para confirmar tu participación y recibir una tarjeta de regalo por valor de $500...',
-      body_text: 'Felicidades, tu cuenta de correo ha sido elegida al azar para reclamar un incentivo digital inmediato completando 3 preguntas.',
-      received_at: 'Ayer, 23:18 hrs',
-      timestamp: 'Ayer',
-      is_unread: false,
-      is_starred: false,
-      is_important: false,
-      category: 'spam',
-      triage_badge: {
-        quadrant: 'SPAM_DESCARTADO',
-        label: '⛔ SPAM MALICIOSO / PHISHING',
-        color: 'bg-rose-50 text-rose-700 border-rose-200'
-      }
     }
   ];
 }
@@ -262,19 +78,55 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const tenantId = searchParams.get('tenantId') || 'sch-ibime';
     const email = searchParams.get('email') || 'israell35mac@gmail.com';
+    const password = searchParams.get('password') || '';
+    const host = searchParams.get('host') || 'imap.gmail.com';
+    const port = Number(searchParams.get('port')) || 993;
 
-    const baseEmails = getCanonicalRawEmails(email, tenantId);
+    let emails: RawGmailItem[] = [];
+    let authenticated = false;
+    let requiresAppPassword = false;
+    let authError: string | undefined;
+    let latencyMs = 18;
 
-    // Incorporar cualquier correo que esté en el spool dinámico de entrada
+    // 1. Si se proporciona contraseña o clave de aplicación real, consultar IMAP en vivo
+    const cleanPass = password.trim();
+    if (cleanPass && cleanPass !== '••••••••••••' && cleanPass !== 'password') {
+      const imapRes = await fetchLiveImapEmails(host, port, email, cleanPass, { tenantId });
+      latencyMs = imapRes.latencyMs || latencyMs;
+
+      if (imapRes.success && imapRes.authenticated) {
+        authenticated = true;
+        emails = imapRes.emails;
+      } else {
+        authenticated = false;
+        requiresAppPassword = imapRes.requiresAppPassword || false;
+        authError = imapRes.error;
+      }
+    } else {
+      requiresAppPassword = true;
+    }
+
+    // 2. Si no se autenticó o no se proporcionó contraseña, revisar si hay correos cacheados
+    if (emails.length === 0) {
+      const cached = getCachedInboxEmails(tenantId);
+      if (cached && cached.length > 0) {
+        emails = cached;
+      } else {
+        emails = getFallbackRawEmails(email);
+        requiresAppPassword = true;
+      }
+    }
+
+    // 3. Incorporar correos del spool dinámico de entrada (webhooks / reenvío)
     const spoolEmails = InboundMailSpoolService.getPendingEmails(tenantId);
     const additionalFromSpool: RawGmailItem[] = [];
 
     for (const item of spoolEmails) {
-      const alreadyInList = baseEmails.some(
+      const alreadyInList = emails.some(
         e => e.subject.trim().toLowerCase() === item.subject.trim().toLowerCase()
       );
       if (!alreadyInList) {
-        additionalFromSpool.push({
+        const spoolItem: RawGmailItem = {
           id: item.id,
           sender_name: item.sender_name || 'Remitente Institucional',
           sender_email: item.sender_email || email,
@@ -293,14 +145,20 @@ export async function GET(request: NextRequest) {
             label: '🔴 ATENCIÓN INMEDIATA CEO',
             color: 'bg-red-50 text-red-700 border-red-200'
           }
-        });
+        };
+        additionalFromSpool.push(spoolItem);
+        injectEmailIntoCache(tenantId, spoolItem);
       }
     }
 
-    const allEmails = [...additionalFromSpool, ...baseEmails];
+    const allEmails = [...additionalFromSpool, ...emails];
 
     return NextResponse.json({
       success: true,
+      authenticated,
+      requiresAppPassword,
+      authError,
+      latencyMs,
       emails: allEmails,
       total: allEmails.length,
       unreadCount: allEmails.filter(e => e.is_unread).length,
@@ -320,14 +178,114 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const tenantId = body.tenantId || 'sch-ibime';
     const email = body.email || 'israell35mac@gmail.com';
+    const password = body.password || '';
+    const host = body.host || 'imap.gmail.com';
+    const port = Number(body.port) || 993;
 
-    const baseEmails = getCanonicalRawEmails(email, tenantId);
+    let emails: RawGmailItem[] = [];
+    let authenticated = false;
+    let requiresAppPassword = false;
+    let authError: string | undefined;
+    let latencyMs = 18;
+
+    // Si se envía correo manual para inyección directa
+    if (body.injectEmail) {
+      const injected: RawGmailItem = {
+        id: `inj-${Date.now()}`,
+        sender_name: body.injectEmail.sender_name || 'Remitente de Prueba',
+        sender_email: body.injectEmail.sender_email || email,
+        recipient_email: email,
+        subject: body.injectEmail.subject || 'Correo de Prueba en Vivo',
+        snippet: (body.injectEmail.body_text || '').slice(0, 110) + '...',
+        body_text: body.injectEmail.body_text || 'Mensaje de prueba inyectado en tiempo real.',
+        received_at: 'Justo ahora',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        is_unread: true,
+        is_starred: false,
+        is_important: true,
+        category: 'principal',
+        triage_badge: {
+          quadrant: 'ATENCION_CEO',
+          label: '🔴 ATENCIÓN INMEDIATA CEO',
+          color: 'bg-red-50 text-red-700 border-red-200'
+        }
+      };
+
+      injectEmailIntoCache(tenantId, injected);
+      InboundMailSpoolService.enqueueEmail(tenantId, {
+        sender_name: injected.sender_name,
+        sender_email: injected.sender_email,
+        recipient_email: email,
+        subject: injected.subject,
+        body_text: injected.body_text,
+        reincidence_count: 1
+      });
+    }
+
+    // Consulta en vivo por IMAP si se cuenta con credenciales
+    const cleanPass = (password || '').trim();
+    if (cleanPass && cleanPass !== '••••••••••••' && cleanPass !== 'password') {
+      const imapRes = await fetchLiveImapEmails(host, port, email, cleanPass, { tenantId });
+      latencyMs = imapRes.latencyMs || latencyMs;
+
+      if (imapRes.success && imapRes.authenticated) {
+        authenticated = true;
+        emails = imapRes.emails;
+      } else {
+        authenticated = false;
+        requiresAppPassword = imapRes.requiresAppPassword || false;
+        authError = imapRes.error;
+      }
+    } else {
+      requiresAppPassword = true;
+    }
+
+    if (emails.length === 0) {
+      const cached = getCachedInboxEmails(tenantId);
+      if (cached && cached.length > 0) {
+        emails = cached;
+      } else {
+        emails = getFallbackRawEmails(email);
+        requiresAppPassword = true;
+      }
+    }
+
+    // Spool
+    const spoolEmails = InboundMailSpoolService.getPendingEmails(tenantId);
+    for (const item of spoolEmails) {
+      if (!emails.some(e => e.subject.trim().toLowerCase() === item.subject.trim().toLowerCase())) {
+        emails.unshift({
+          id: item.id,
+          sender_name: item.sender_name || 'Remitente Institucional',
+          sender_email: item.sender_email || email,
+          recipient_email: item.recipient_email || email,
+          subject: item.subject,
+          snippet: (item.body_text || '').slice(0, 110) + '...',
+          body_text: item.body_text || 'Sin contenido de mensaje',
+          received_at: 'Justo ahora',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          is_unread: true,
+          is_starred: false,
+          is_important: true,
+          category: 'principal',
+          triage_badge: {
+            quadrant: 'ATENCION_CEO',
+            label: '🔴 ATENCIÓN INMEDIATA CEO',
+            color: 'bg-red-50 text-red-700 border-red-200'
+          }
+        });
+      }
+    }
 
     return NextResponse.json({
       success: true,
-      emails: baseEmails,
-      total: baseEmails.length,
-      unreadCount: baseEmails.filter(e => e.is_unread).length,
+      authenticated,
+      requiresAppPassword,
+      authError,
+      latencyMs,
+      emails,
+      total: emails.length,
+      unreadCount: emails.filter(e => e.is_unread).length,
       connectedEmail: email,
       lastSyncTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     });

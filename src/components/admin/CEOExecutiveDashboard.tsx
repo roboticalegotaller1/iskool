@@ -3324,7 +3324,7 @@ export default function CEOExecutiveDashboard({
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded inline-block">
-                    {isCorporate ? 'Consorcio Empresarial B2B' : 'Red Escolar Multisede'}
+                    {isCorporate ? 'Consorcio Empresarial' : 'Holding Educativo'}
                   </div>
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight mt-1">
                     {isCorporate ? 'Control Integral de Empresas, Plantas & Benchmarking' : 'Control Integral de Planteles & Benchmarking'}
