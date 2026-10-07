@@ -59,4 +59,7 @@ high_tech_raw*.webm
 .obsidian/
 *.canvas
 .smart-env/
-
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
