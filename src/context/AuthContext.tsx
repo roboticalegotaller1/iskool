@@ -36,6 +36,18 @@ export const getDemoUser = (email: string): UserProfile => {
     }
   }
 
+  // 0. Super Usuarios Globales de ISkool (Plataforma y Directorio Multi-Colegio)
+  const matchedSuper = SUPER_USERS_ISKOOL_SEED.find(su => 
+    su.email?.toLowerCase() === emailLower || 
+    su.id === emailLower ||
+    emailLower === 'admin' ||
+    emailLower === 'superadmin' ||
+    emailLower === 'admin@iskool.edu.mx'
+  );
+  if (matchedSuper) {
+    return matchedSuper;
+  }
+
   // 1. Verificar si coincide con personal administrativo registrado (Director, Coordinador, Cobranza)
   try {
     const adminStaff = useSchoolAdminStore.getState().staffUsers || [];

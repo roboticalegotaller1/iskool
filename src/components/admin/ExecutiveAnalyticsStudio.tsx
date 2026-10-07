@@ -2961,7 +2961,7 @@ export default function ExecutiveAnalyticsStudio({
         onClose={() => setStrategicDimensionConfig(null)}
         onOpenExpediente={handleOpenStudentExpediente}
         onNavigateTab={onNavigateTab}
-        schoolName={currentReport?.schoolName || activeInstitution?.name || 'Instituto Bilingüe IBIME'}
+        schoolName={currentReport?.schoolName || activeInstitution?.name || 'Colegio ISkool'}
       />
 
       </div>
@@ -2977,8 +2977,8 @@ export default function ExecutiveAnalyticsStudio({
           report={currentReport}
           institution={{
             name: isIbime ? 'INSTITUTO BILINGÜE IBIME' : (currentReport?.schoolName || activeInstitution?.name || (isCorporate ? 'BMW Group México · Nexus Motors' : 'Colegio ISkool México')),
-            cct: isIbime ? '15PPR3322G' : (isCorporate ? (activeInstitution?.cct || 'RFC: BGM940315BMW') : (activeInstitution?.cct || '15EPR2840Z')),
-            logoUrl: isIbime ? '/brand/ibime_shield.webp' : (isCorporate ? corporateLogoUrl : activeInstitution?.logoUrl),
+            cct: isIbime ? '15PPR3322G' : (isCorporate ? (activeInstitution?.cct || 'RFC: BGM940315BMW') : (activeInstitution?.cct || '09TEST2026X')),
+            logoUrl: isIbime ? '/brand/ibime_logo.webp' : (isCorporate ? corporateLogoUrl : activeInstitution?.logoUrl),
             campus: (activeInstitution as any)?.campuses?.[0]?.name || activeInstitution?.name
           }}
         />

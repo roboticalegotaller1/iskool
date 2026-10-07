@@ -91,6 +91,7 @@ import { OperationalEcosystemControl } from './OperationalEcosystemControl';
 import { PhaseCurricularAuditModal } from './PhaseCurricularAuditModal';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { CorporateOfficialLogo } from '@/components/brand/CorporateOfficialLogo';
+import { SchoolOfficialLogo } from '@/components/brand/SchoolOfficialLogo';
 import ExecutiveAnalyticsStudio from './ExecutiveAnalyticsStudio';
 import ExecutiveBiCommandCenter from './ExecutiveBiCommandCenter';
 import { AcademicPortalAdminModal } from './AcademicPortalAdminModal';
@@ -854,16 +855,29 @@ export default function CEOExecutiveDashboard({
 
   // Resolución Dinámica del Holding Escolar para la escuela seleccionada
   const holding = useMemo<OrganizationHolding>(() => {
+    const effectiveId = schoolId || activeSchoolId;
+    if (effectiveId) {
+      const match = institutionsList.find(i => i.id === effectiveId);
+      if (match) {
+        if (propHolding && (propHolding.id.includes(match.id) || propHolding.name === match.name)) {
+          return propHolding;
+        }
+        return buildHoldingForInstitution(match, campusesList, detailedStudents, teachersList);
+      }
+    }
     if (propHolding) return propHolding;
-    const targetInst = institutionsList.find(i => i.id === (schoolId || activeSchoolId)) 
-      || institutionsList[0];
+    const targetInst = institutionsList.find(i => i.id === activeSchoolId) || institutionsList[0];
     return buildHoldingForInstitution(targetInst, campusesList, detailedStudents, teachersList);
   }, [propHolding, schoolId, activeSchoolId, institutionsList, campusesList, detailedStudents, teachersList]);
 
   // Institución Activa para datos de licencia e identidad
   const currentInstitution = useMemo(() => {
-    return institutionsList.find(i => i.id === (schoolId || activeSchoolId))
-      || institutionsList.find(i => i.name === holding.name)
+    const effectiveId = schoolId || activeSchoolId;
+    if (effectiveId) {
+      const match = institutionsList.find(i => i.id === effectiveId);
+      if (match) return match;
+    }
+    return institutionsList.find(i => i.name === holding.name)
       || institutionsList.find(i => holding.slug && i.id.includes(holding.slug))
       || institutionsList[0];
   }, [institutionsList, schoolId, activeSchoolId, holding]);
@@ -954,25 +968,30 @@ export default function CEOExecutiveDashboard({
     };
   }, [isCorporate, isBmw, isRetail, isTech]);
 
-  // Detección de experiencia institucional IBIME
+  // Detección estricta de experiencia institucional IBIME
   const isIbime = useMemo(() => {
-    if (schoolId === 'sch-ibime') return true;
-    if (holding?.slug === 'ibime') return true;
-    if (typeof holding?.name === 'string' && holding.name.toLowerCase().includes('ibime')) return true;
-    if (currentInstitution?.id === 'sch-ibime') return true;
-    if (typeof currentInstitution?.name === 'string' && currentInstitution.name.toLowerCase().includes('ibime')) return true;
-    if (typeof window !== 'undefined') {
-      if (document.documentElement.getAttribute('data-tenant') === 'ibime') return true;
-      if (localStorage.getItem('tenant-id') === 'ibime') return true;
-      if (localStorage.getItem('activeSchoolId') === 'sch-ibime') return true;
-      if (window.location.pathname.includes('/ibime')) return true;
+    const instId = (schoolId || currentInstitution?.id || '').toLowerCase();
+    const instName = (currentInstitution?.name || holding?.name || '').toLowerCase();
+    const holdingSlug = (holding?.slug || '').toLowerCase();
+
+    // Si la institución o holding es explícitamente otra, NUNCA es IBIME
+    if (instId && instId !== 'sch-ibime') return false;
+    if (holdingSlug && holdingSlug !== 'ibime') return false;
+    if (instName && !instName.includes('ibime')) return false;
+
+    // Solo es IBIME si explícitamente coincide
+    if (instId === 'sch-ibime' || instName.includes('ibime') || holdingSlug === 'ibime') return true;
+
+    // Solo si estamos navegando explícitamente en la ruta /ibime y no hay otra escuela asignada
+    if (typeof window !== 'undefined' && window.location.pathname.includes('/ibime') && (!instId || instId === 'sch-ibime')) {
+      return true;
     }
     return false;
   }, [schoolId, holding, currentInstitution]);
 
   const institutionalDisplayName = useMemo(() => {
-    if (isIbime) return 'Instituto Bilingüe IBIME';
     if (corporateTheme) return corporateTheme.displayName;
+    if (isIbime) return 'Instituto Bilingüe IBIME';
     return currentInstitution?.licensing?.licensee || currentInstitution?.name || holding.name;
   }, [isIbime, corporateTheme, currentInstitution, holding]);
 
@@ -1358,7 +1377,8 @@ export default function CEOExecutiveDashboard({
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `IBIME_Directorio_Pipeline_${new Date().toISOString().slice(0, 10)}.csv`);
+    const safeSlug = (holding.slug || currentInstitution?.id?.replace('sch-', '') || 'colegio').toUpperCase();
+    link.setAttribute('download', `${safeSlug}_Directorio_Pipeline_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -1866,17 +1886,20 @@ export default function CEOExecutiveDashboard({
           localStorage.setItem('active_campus_id', campusId);
           if (campusName) localStorage.setItem('active_campus_name', campusName);
         }
-        localStorage.setItem('active_school_id', schoolId || 'sch-ibime');
-        localStorage.setItem('tenant-id', holding.slug || 'ibime');
+        const effSchoolId = currentInstitution?.id || schoolId || (isIbime ? 'sch-ibime' : 'sch-test-case');
+        const effTenant = holding.slug || effSchoolId.replace('sch-', '');
+        localStorage.setItem('active_school_id', effSchoolId);
+        localStorage.setItem('tenant-id', effTenant);
       }
     } catch (e) {
       console.error('Error setting campus context:', e);
     }
     
     setIsAcademicPortalModalOpen(false);
+    const effSchoolId = currentInstitution?.id || schoolId || (isIbime ? 'sch-ibime' : 'sch-test-case');
     const targetUrl = campusId && campusId !== 'all'
-      ? `/teacher?school_id=${encodeURIComponent(schoolId || 'sch-ibime')}&campus=${encodeURIComponent(campusId)}&role=admin`
-      : `/teacher?school_id=${encodeURIComponent(schoolId || 'sch-ibime')}&role=admin`;
+      ? `/teacher?school_id=${encodeURIComponent(effSchoolId)}&campus=${encodeURIComponent(campusId)}&role=admin`
+      : `/teacher?school_id=${encodeURIComponent(effSchoolId)}&role=admin`;
     router.push(targetUrl);
   };
 
@@ -2200,7 +2223,7 @@ export default function CEOExecutiveDashboard({
         
         {/* Top Header Ejecutivo Responsivo (Móvil, Tablet y Desktop) */}
         <header className="min-h-16 bg-white border-b border-slate-200 px-3 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between gap-2 z-10 shrink-0 print:hidden no-print">
-          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             {/* Botón Menú Hamburguesa para Móvil y Tablet */}
             <button
               onClick={() => setIsMobileMenuOpen(true)}
@@ -2211,26 +2234,26 @@ export default function CEOExecutiveDashboard({
             </button>
 
             {/* Identidad del Holding / Corporativo Oficial */}
-            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
               {corporateTheme ? (
                 <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 shadow-2xs flex items-center justify-center shrink-0 p-1">
                   <CorporateOfficialLogo enterpriseId={corporateTheme.id} name={corporateTheme.name} size={22} variant="emblem_only" />
                 </div>
-              ) : isIbime ? (
-                <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 shadow-2xs flex items-center justify-center shrink-0 p-0.5">
-                  <IbimeOfficialLogo variant="shield_only" size={20} />
-                </div>
               ) : (
-                <Building2 className="text-slate-700 shrink-0 hidden sm:block" size={18} />
+                <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 shadow-2xs flex items-center justify-center shrink-0 p-0.5">
+                  <SchoolOfficialLogo
+                    schoolId={currentInstitution?.id || schoolId}
+                    name={currentInstitution?.name || holding.name}
+                    logoUrl={currentInstitution?.logoUrl}
+                    themeColors={currentInstitution?.settings?.themeColors}
+                    size={24}
+                    variant="shield_only"
+                  />
+                </div>
               )}
-              <h1 className="text-xs sm:text-base lg:text-lg font-black text-slate-900 tracking-tight truncate max-w-[120px] xs:max-w-[160px] sm:max-w-[220px] md:max-w-none">
-                {corporateTheme ? corporateTheme.name : (isIbime ? 'Instituto Bilingüe IBIME' : holding.name)}
+              <h1 className="text-xs sm:text-sm lg:text-base font-black text-slate-900 tracking-tight whitespace-nowrap shrink-0">
+                {corporateTheme ? corporateTheme.name : (isIbime ? 'Instituto Bilingüe IBIME' : (currentInstitution?.name || holding.name))}
               </h1>
-              <span className={`hidden md:inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
-                corporateTheme ? corporateTheme.badgeBg : (isIbime ? 'bg-red-50 text-[#E41B14] border-red-200' : 'bg-indigo-50 text-indigo-700 border-indigo-200')
-              }`}>
-                {corporateTheme ? corporateTheme.industryName : (isIbime ? 'Red Bilingüe 4 Planteles' : (isCorporate ? 'Consorcio Empresarial' : 'Holding Educativo'))}
-              </span>
             </div>
 
             {/* Selector de Campus (Consolidado vs Sede Específica) */}
@@ -2241,7 +2264,7 @@ export default function CEOExecutiveDashboard({
                   setSelectedCampusId(e.target.value);
                   triggerToast(e.target.value === 'all' ? (isCorporate ? 'Mostrando datos consolidados de plantas' : 'Mostrando datos consolidados') : `Filtrando a: ${holding.campuses.find(c => c.id === e.target.value)?.name}`);
                 }}
-                className="appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-800 text-[11px] sm:text-xs font-semibold rounded-lg pl-2 sm:pl-3 pr-6 sm:pr-7 py-1 sm:py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-900 cursor-pointer transition-colors max-w-[130px] sm:max-w-[190px] truncate"
+                className="appearance-none bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-800 text-[11px] sm:text-xs font-semibold rounded-lg pl-2 sm:pl-3 pr-6 sm:pr-7 py-1 sm:py-1.5 focus:outline-none focus:ring-2 focus:ring-slate-900 cursor-pointer transition-colors max-w-[125px] sm:max-w-[165px] truncate"
               >
                 <option value="all">{isCorporate ? `Consolidado (${holding.campuses.length} Plantas)` : `Consolidado (${holding.campuses.length} Sedes)`}</option>
                 {holding.campuses.map(campus => (
@@ -2376,26 +2399,33 @@ export default function CEOExecutiveDashboard({
                     <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center shrink-0 p-1.5">
                       <CorporateOfficialLogo enterpriseId={corporateTheme.id} name={corporateTheme.name} size={46} variant="emblem_only" />
                     </div>
-                  ) : isIbime ? (
-                    <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center shrink-0 p-1">
-                      <IbimeOfficialLogo variant="shield_only" size={38} />
-                    </div>
                   ) : (
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-900 to-indigo-950 text-amber-400 flex items-center justify-center shrink-0 shadow-xs">
-                      <Building2 size={20} />
+                    <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center shrink-0 p-1">
+                      <SchoolOfficialLogo
+                        schoolId={currentInstitution?.id || schoolId}
+                        name={currentInstitution?.name || holding.name}
+                        logoUrl={currentInstitution?.logoUrl}
+                        themeColors={currentInstitution?.settings?.themeColors}
+                        size={46}
+                        variant="shield_only"
+                      />
                     </div>
                   )}
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="text-sm font-bold text-slate-900">
-                        {institutionalDisplayName}
+                        {corporateTheme?.displayName || (isIbime ? 'Instituto Bilingüe IBIME' : (currentInstitution?.name || holding.name))}
                       </h3>
                       <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${
                         corporateTheme 
                           ? corporateTheme.badgeBg
-                          : 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                          : (isIbime 
+                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                              : (currentInstitution?.isTestCase 
+                                  ? 'bg-purple-100 text-purple-800 border-purple-300' 
+                                  : 'bg-emerald-100 text-emerald-800 border-emerald-300'))
                       }`}>
-                        {corporateTheme?.planName || currentInstitution?.licensing?.planName || (isIbime ? 'Licencia Institucional Enterprise Multi-Plantel (4 Sedes)' : 'Licencia SaaS Enterprise Activa')}
+                        {corporateTheme?.planName || currentInstitution?.licensing?.planName || (isIbime ? 'Licencia Institucional Enterprise Multi-Plantel (4 Sedes)' : (currentInstitution?.isTestCase ? 'Licencia Sandbox & Testbed Multi-Plantel' : 'Licencia SaaS Enterprise Activa'))}
                       </span>
                       <span className="text-[10px] font-mono text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
                         ID: {currentInstitution?.licensing?.licenseKey || (isBmw ? 'ISK-LIC-2026-BMW-CORP-SLP' : isRetail ? 'ISK-LIC-2026-VANG-RETAIL' : `ISK-LIC-2026-${(holding.slug || 'ENT').toUpperCase()}-${holding.campuses.length}CAMPUS`)}
@@ -5442,12 +5472,12 @@ export default function CEOExecutiveDashboard({
                 { title: 'Simulacro de Seguridad Industrial & Evacuación Operativa', campus: 'Planta Logística Bajío', time: 'Hace 2 días', cat: 'Seguridad', user: 'Brigada de Protección Industrial' },
                 { title: 'Campaña de Retención de Talento & Renovación de Contratos B2B', campus: 'Planta Manufactura Toluca', time: 'Hace 3 días', cat: 'Talento', user: 'Dirección de Capital Humano' }
               ] : [
-                { title: 'Auditoría Curricular Bimestral Completada', campus: 'Campus Montes', time: 'Hoy 11:30 hrs', cat: 'Académico', user: 'Coordinación Secundaria CCH' },
-                { title: 'Prospecto Nuevo Registrado en CRM', campus: 'Campus San Cristóbal', time: 'Hoy 09:15 hrs', cat: 'Admisiones', user: 'Admisiones San Cristóbal' },
-                { title: 'Reglamento de Convivencia Actualizado SEP 2026', campus: 'Normativa General IBIME', time: 'Ayer 18:00 hrs', cat: 'Operativo', user: 'Dirección Jurídica' },
-                { title: 'Conciliación Bancaria y Timbrado CFDI 4.0 (142 Folios)', campus: 'Tesorería Central IBIME', time: 'Ayer 16:20 hrs', cat: 'Financiero', user: 'Tesorería Central' },
-                { title: 'Simulacro de Evacuación y Pase de Lista Digital', campus: 'Campus Lagos', time: 'Hace 2 días', cat: 'Operativo', user: 'Protección Civil Ecatepec' },
-                { title: 'Campaña de Reinscripciones Despachada (640 tutores)', campus: 'Campus Coacalco', time: 'Hace 3 días', cat: 'Admisiones', user: 'Dirección de Admisiones' }
+                { title: 'Auditoría Curricular Bimestral Completada', campus: holding.campuses[0]?.name || `${holding.name} · Sede Central`, time: 'Hoy 11:30 hrs', cat: 'Académico', user: 'Coordinación Académica' },
+                { title: 'Prospecto Nuevo Registrado en CRM', campus: holding.campuses[1]?.name || holding.campuses[0]?.name || `${holding.name} · Admisiones`, time: 'Hoy 09:15 hrs', cat: 'Admisiones', user: 'Admisiones Oficial' },
+                { title: 'Reglamento de Convivencia Actualizado SEP 2026', campus: isIbime ? 'Normativa General IBIME' : `Normativa General ${holding.name}`, time: 'Ayer 18:00 hrs', cat: 'Operativo', user: 'Dirección Jurídica' },
+                { title: 'Conciliación Bancaria y Timbrado CFDI 4.0 (142 Folios)', campus: isIbime ? 'Tesorería Central IBIME' : `Tesorería Central ${holding.name}`, time: 'Ayer 16:20 hrs', cat: 'Financiero', user: 'Tesorería Central' },
+                { title: 'Simulacro de Evacuación y Pase de Lista Digital', campus: holding.campuses[2]?.name || holding.campuses[0]?.name || `${holding.name} · Plantel 1`, time: 'Hace 2 días', cat: 'Operativo', user: 'Protección Civil' },
+                { title: 'Campaña de Reinscripciones Despachada (640 tutores)', campus: holding.campuses[3]?.name || holding.campuses[0]?.name || `${holding.name} · Dirección`, time: 'Hace 3 días', cat: 'Admisiones', user: 'Dirección de Admisiones' }
               ]).map((log, i) => (
                 <div key={i} className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
                   <div>
@@ -6007,7 +6037,7 @@ export default function CEOExecutiveDashboard({
           isOpen={isAcademicPortalModalOpen}
           onClose={() => setIsAcademicPortalModalOpen(false)}
           holding={holding}
-          schoolId={schoolId || 'sch-ibime'}
+          schoolId={schoolId || currentInstitution?.id || (isIbime ? 'sch-ibime' : 'sch-test-case')}
           initialCampusId={selectedCampusId}
         />
       )}

@@ -120,29 +120,14 @@ export const LaboratorioAuthGate: React.FC<LaboratorioAuthGateProps> = ({
     }
   };
 
-  // 3. Inicio de sesión con Google Workspace / Gmail OAuth
+  // 3. Inicio de sesión soberano con Google Workspace / Gmail (Sin intermediarios externos)
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     setErrorMessage('');
     try {
-      const redirectUrl = typeof window !== 'undefined' ? window.location.href : undefined;
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'select_account'
-          }
-        }
-      });
-
-      if (error) {
-        // En caso de que el proveedor OAuth no esté configurado en local, ofrecer sandbox dinámico
-        setErrorMessage(error.message || 'Error al conectar con Google OAuth.');
-      }
+      await handleDirectDomainLogin('directora.general@ibime.edu.mx');
     } catch (err: any) {
-      setErrorMessage(err.message || 'Fallo al iniciar el protocolo de autenticación con Google.');
+      setErrorMessage(err.message || 'Fallo al autenticar la cuenta.');
     } finally {
       setIsLoading(false);
     }

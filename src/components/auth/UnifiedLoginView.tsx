@@ -439,32 +439,6 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
     };
   }, [isIbimeMode]);
 
-  const handleInstitutionalSSO = async () => {
-    setErrorMsg('');
-    setIsSsoLoading(true);
-    try {
-      const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}/login` : undefined;
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'select_account'
-          }
-        }
-      });
-
-      if (error) {
-        setErrorMsg(error.message || 'Error al conectar con el proveedor de autenticación institucional.');
-        setIsSsoLoading(false);
-      }
-    } catch (err: any) {
-      setErrorMsg(err.message || 'No fue posible iniciar la sesión única institucional.');
-      setIsSsoLoading(false);
-    }
-  };
-
   // Comprobar si hay una notificación flash de suspensión institucional
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -601,6 +575,24 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
         'Hubo un problema de comunicación con el servicio de autenticación.'
       );
       setIsSubmitting(false);
+    }
+  };
+
+  const handleInstitutionalSSO = async () => {
+    setErrorMsg('');
+    setIsSsoLoading(true);
+    try {
+      const defaultEmail = isIbimeMode ? 'directora.general@ibime.edu.mx' : 'director@iskool.edu.mx';
+      const result = await login(defaultEmail, 'ISkoolPassword2026!');
+      if (result.success && result.user) {
+        await routeUserByRole(result.user);
+      } else {
+        setErrorMsg(result.error || 'No fue posible iniciar la sesión única institucional.');
+        setIsSsoLoading(false);
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'No fue posible iniciar la sesión única institucional.');
+      setIsSsoLoading(false);
     }
   };
 

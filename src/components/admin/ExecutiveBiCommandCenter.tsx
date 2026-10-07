@@ -39,6 +39,8 @@ import {
   Mail
 } from 'lucide-react';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
+import { SchoolOfficialLogo } from '@/components/brand/SchoolOfficialLogo';
+import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { 
   HOLDING_CASHFLOW_12M_SEED, 
   CAMPUS_BENCHMARK_SEED, 
@@ -93,16 +95,20 @@ export default function ExecutiveBiCommandCenter({
 }: ExecutiveBiCommandCenterProps) {
   // Inteligencia de pantalla y viewport en tiempo real (Laptop vs PC)
   const viewport = useDeviceViewport();
+  const institutionsList = useSchoolAdminStore(state => state.institutionsList) || [];
+  const currentSchoolObj = useMemo(() => {
+    return institutionsList.find(i => i.id === schoolId) || institutionsList.find(i => i.name === holdingName) || null;
+  }, [institutionsList, schoolId, holdingName]);
 
-  // Detección de experiencia institucional IBIME
+  // Detección estricta de experiencia institucional IBIME
   const isIbime = useMemo(() => {
-    if (schoolId === 'sch-ibime') return true;
-    if (holdingName?.toLowerCase().includes('ibime')) return true;
-    if (typeof window !== 'undefined') {
-      if (document.documentElement.getAttribute('data-tenant') === 'ibime') return true;
-      if (localStorage.getItem('tenant-id') === 'ibime') return true;
-      if (localStorage.getItem('activeSchoolId') === 'sch-ibime') return true;
-      if (window.location.pathname.includes('/ibime')) return true;
+    const sId = (schoolId || '').toLowerCase();
+    const hName = (holdingName || '').toLowerCase();
+    if (sId && sId !== 'sch-ibime') return false;
+    if (hName && !hName.includes('ibime')) return false;
+    if (sId === 'sch-ibime' || hName.includes('ibime')) return true;
+    if (typeof window !== 'undefined' && window.location.pathname.includes('/ibime') && (!sId || sId === 'sch-ibime')) {
+      return true;
     }
     return false;
   }, [schoolId, holdingName]);
@@ -830,24 +836,23 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
         
         {/* Identidad de la Suite Directiva */}
         <div className="flex items-center gap-3 min-w-0">
-          <div className={`w-9 h-9 rounded-xl p-[1.5px] shrink-0 shadow-lg ${
-            isIbime 
-              ? 'bg-gradient-to-br from-[#E41B14] via-[#C01D0C] to-[#0F2744] shadow-red-900/40 ring-1 ring-red-500/40' 
-              : 'bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 shadow-indigo-500/20'
-          }`}>
+          <div className="w-9 h-9 rounded-xl p-[1.5px] shrink-0 shadow-lg bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 shadow-indigo-500/20">
             <div className="w-full h-full bg-[#0d131f] rounded-[10px] flex items-center justify-center p-0.5 overflow-hidden">
-              {isIbime ? (
-                <IbimeOfficialLogo variant="shield_only" size={24} />
-              ) : (
-                <BarChart3 className="w-4 h-4 text-cyan-400" />
-              )}
+              <SchoolOfficialLogo
+                schoolId={schoolId || currentSchoolObj?.id}
+                name={holdingName}
+                logoUrl={currentSchoolObj?.logoUrl}
+                themeColors={currentSchoolObj?.settings?.themeColors}
+                size={24}
+                variant="shield_only"
+              />
             </div>
           </div>
 
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
               <h1 className="text-sm sm:text-base font-black text-white tracking-tight truncate">
-                {isIbime ? 'IBIME Executive Analytics' : 'ISkool Executive Analytics'}
+                {isIbime ? 'IBIME Executive Analytics' : `${holdingName || 'ISkool'} Executive Analytics`}
               </h1>
               <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full hidden xs:inline-block ${
                 isIbime 
@@ -2397,8 +2402,8 @@ Generado por Motor Autónomo de Inteligencia Pedagógica & Analítica (0 Tokens)
         report={biBoardReport}
         institution={{
           name: isIbime ? 'INSTITUTO BILINGÜE IBIME' : (selectedCampusObj ? `${holdingName} · Campus ${selectedCampusObj.shortName}` : holdingName),
-          cct: isIbime ? '15PPR3322G' : '15EPR2840Z',
-          logoUrl: isIbime ? '/brand/ibime_shield.webp' : undefined,
+          cct: currentSchoolObj?.cct || (isIbime ? '15PPR3322G' : '09TEST2026X'),
+          logoUrl: isIbime ? '/brand/ibime_logo.webp' : (currentSchoolObj?.logoUrl || undefined),
           campus: selectedCampusObj?.campusName
         }}
       />

@@ -99,4 +99,37 @@ describe('📬 CONSOLA DE CORREO INSTITUCIONAL & SUITE EJECUTIVA 360° (CEOEmail
     expect(lower).not.toContain('google classroom');
     expect(lower).not.toContain('blackboard');
   });
+
+  it('debe implementar el Blindaje Soberano para que una cuenta conectada jamás se desautorice en sincronización o ping', () => {
+    // Protección contra desautorización involuntaria
+    expect(content).toContain('Blindaje Soberano');
+    expect(content).toContain('isAlreadyVerified');
+    expect(content).toContain("options?.mode === 'sync'");
+    expect(content).toContain("setConnectionStatus('connected_verified')");
+    expect(content).toContain('handleTriggerSync');
+  });
+
+  it('debe incorporar la pestaña Bandeja de Entrada entre Bitácora y ROI & Telemetría con vista estilo Gmail en tiempo real', () => {
+    expect(content).toContain("'raw_inbox'");
+    expect(content).toContain('Bandeja de Entrada');
+    
+    // Verificar que está ubicada entre Bitácora y ROI & Telemetría
+    const bitacoraIndex = content.indexOf("setActiveTab('bitacora')");
+    const rawInboxIndex = content.indexOf("setActiveTab('raw_inbox')");
+    const roiIndex = content.indexOf("setActiveTab('roi')");
+    
+    expect(bitacoraIndex).toBeGreaterThan(-1);
+    expect(rawInboxIndex).toBeGreaterThan(bitacoraIndex);
+    expect(roiIndex).toBeGreaterThan(rawInboxIndex);
+
+    // Verificar componentes clave estilo Gmail
+    expect(content).toContain('rawEmailsList');
+    expect(content).toContain('handleToggleStarRawEmail');
+    expect(content).toContain('handleMarkAsReadRawEmails');
+    expect(content).toContain('selectedRawEmailId');
+    expect(content).toContain('rawEmailCategory');
+    expect(content).toContain('rawEmailSearchQuery');
+    expect(content).toContain('/api/mail/raw-inbox');
+  });
 });
+

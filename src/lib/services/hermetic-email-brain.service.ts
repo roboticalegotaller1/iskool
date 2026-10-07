@@ -361,41 +361,63 @@ export class HermeticEmailBrainService {
     // CUADRANTE 4: SPAM / DESCARTADO ⚪
     const spamSignals = [
       'viagra', 'cripto', 'crypto', 'ganaste', 'herencia', 'casino',
-      'préstamo inmediato', 'hot singles', 'click here', 'sin buró', 'tarifa promocional no solicitada'
+      'préstamo inmediato', 'hot singles', 'click here', 'sin buró', 'tarifa promocional no solicitada',
+      'diesño para su web', 'diseño para su web', 'desarrollo web', 'marketing digital', 'carlos durán',
+      'microbiology', 'asm careers'
     ];
     if (spamSignals.some(s => text.includes(s))) {
       return {
         quadrant: 'SPAM_DESCARTADO',
         urgency: 'BAJA',
-        category: 'Spam / No Deseado',
-        why_shown_to_director: 'Correo irrelevante o publicitario. Descartado para proteger el tiempo directivo.',
+        category: 'Spam y Publicidad No Solicitada',
+        why_shown_to_director: 'Propuesta comercial no solicitada o boletín externo descartado para evitar interrupciones directivas.',
         recommended_action: 'Archivar y mantener en lista de filtrado automático.'
       };
     }
 
     // CUADRANTE 1: ATENCION_CEO 🔴
+    const isCteEmergency = text.includes('cte urgente') || (text.includes('cte') && (text.includes('mañana') || text.includes('urgente') || text.includes('confirme asistencia')));
+    const isInjuryEmergency = text.includes('herido') || text.includes('alumno herido') || text.includes('lesión') || text.includes('lesion') || text.includes('accidente') || text.includes('fractura');
     const ceoEmergencySignals = [
       'acoso', 'bullying', 'demanda', 'abogado', 'urgente dirección', 'golpe',
       'agresión', 'negligencia', 'denuncia', 'rectoría', 'amenaza', 'profeco',
-      'queja ante sep', 'denuncia sep', 'inspección sep', 'multa sep'
+      'queja ante sep', 'denuncia sep', 'inspección sep', 'multa sep',
+      'cte urgente', 'consejo técnico', 'consejo tecnico', 'sesión de consejo', 'sesion de consejo',
+      'audiencia directiva', 'solicitud de audiencia', 'reunión directiva', 'reunion directiva',
+      'herido', 'alumno herido', 'lesión', 'lesion', 'accidente', 'fractura', 'ambulancia'
     ];
-    const isCriticalIssue = ceoEmergencySignals.some(s => text.includes(s));
+    const isCriticalIssue = ceoEmergencySignals.some(s => text.includes(s)) || isCteEmergency || isInjuryEmergency;
     const isReincidenceExceeded = reincidence >= 3;
 
     if (isCriticalIssue || isReincidenceExceeded) {
       let why = 'Asunto con implicación de gobernanza o riesgo normativo que requiere criterio ético y resolución directa de Dirección.';
-      if (isReincidenceExceeded) {
+      let category = isCriticalIssue ? 'Riesgo Normativo / Caso Crítico' : 'Reincidencia Directiva';
+      let recAction = 'Convocar de inmediato a mesa de mediación presencial y activar el protocolo correspondiente.';
+
+      if (isInjuryEmergency || text.includes('herido') || text.includes('lesion') || text.includes('accidente')) {
+        category = 'Accidente Escolar / Salvaguarda y Seguridad de Alumnos';
+        why = 'Incidencia crítica de salvaguarda y protección física escolar: Reporte de alumno herido/lesionado en instalaciones del plantel. Requiere activación inmediata del protocolo de urgencias médicas escolares, valoración clínica y notificación formal a tutores.';
+        recAction = 'Activar protocolo de urgencias médicas escolares de inmediato, resguardar al alumno y contactar a tutores legales para notificación oficial.';
+      } else if (isCteEmergency || text.includes('cte') || text.includes('consejo')) {
+        category = 'Gobernanza Institucional / Consejo Técnico Escolar (CTE)';
+        why = 'Convocatoria oficial urgente a sesión de Consejo Técnico Escolar (CTE) programada con fecha y hora crítica. Requiere confirmación y preparación directiva.';
+        recAction = 'Confirmar asistencia de Dirección General y girar instrucción ejecutiva a coordinaciones académicas para integrar expediente pedagógico.';
+      } else if (text.includes('audiencia')) {
+        category = 'Audiencia Directiva / Mediación Escolar';
+        why = 'Solicitud de audiencia presencial o intervención con Dirección General por situación escolar prioritaria.';
+        recAction = 'Agendar audiencia directiva en Calendario Escolar y convocar a las partes.';
+      } else if (isReincidenceExceeded) {
         why = `Alerta de reincidencia elevada: La familia o remitente acumula ${reincidence} comunicaciones sobre este caso sin resolución conforme.`;
       }
 
       return {
         quadrant: 'ATENCION_CEO',
         urgency: isCriticalIssue ? 'CRITICA' : 'ALTA',
-        category: isCriticalIssue ? 'Riesgo Normativo / Caso Crítico' : 'Reincidencia Directiva',
+        category,
         assigned_department: 'Dirección General / CEO',
         sla_hours: 12,
         why_shown_to_director: why,
-        recommended_action: 'Convocar de inmediato a mesa de mediación presencial y activar el protocolo correspondiente.'
+        recommended_action: recAction
       };
     }
 
@@ -492,6 +514,24 @@ export class HermeticEmailBrainService {
 
     // 2. Borrador para ATENCIÓN CEO
     if (classification.quadrant === 'ATENCION_CEO') {
+      if (classification.category.includes('Accidente Escolar') || cleanSubject.toLowerCase().includes('herido') || cleanSubject.toLowerCase().includes('lesion') || cleanSubject.toLowerCase().includes('accidente')) {
+        return {
+          subject: `Re: ${cleanSubject} — Atención Inmediata de Dirección General & Salvaguarda Médica`,
+          body: `Estimada(o) ${sender}:\n\nHe recibido de manera inmediata y con la máxima prioridad su reporte respecto a la situación ocurrida en instalaciones del plantel.\n\nLe informo que en este momento se ha activado el protocolo institucional de salvaguarda médica escolar y primeros auxilios. He instruido a la Coordinación Médica y de Prefectura verificar la atención clínica oportuna, el resguardo del alumno y levantar el informe circunstanciado para los tutores legales.\n\nLe mantendré informado del seguimiento directo.\n\nAtentamente,\nDirección General\n${institutionName}`,
+          tone: 'Formal, Resolutivo y Empático',
+          can_auto_send: false
+        };
+      }
+
+      if (classification.category.includes('Consejo Técnico') || cleanSubject.toLowerCase().includes('cte')) {
+        return {
+          subject: `Re: ${cleanSubject} — Confirmación de Asistencia Dirección General`,
+          body: `Estimado(a) Colegiado de Consejo Técnico Escolar:\n\nPor medio del presente acuso recibo y confirmo formalmente la asistencia de la Dirección General a la sesión extraordinaria de CTE programada para el día de mañana a las 15:00 hrs.\n\nSe instruye a las coordinaciones académicas y de nivel tener listos los concentrados de evaluación y evidencias de aprendizaje para su análisis colegiado.\n\nAtentamente,\nDirección General\n${institutionName}`,
+          tone: 'Institucional Resolutivo y Solemne',
+          can_auto_send: false
+        };
+      }
+
       return {
         subject: `Re: ${cleanSubject} — Atención Prioritaria de Dirección General`,
         body: `Estimada(o) ${sender}:\n\nHe recibido de manera directa y prioritaria su comunicación respecto a "${cleanSubject}". En ${institutionName}, la seguridad, el bienestar y la dignidad de cada integrante de nuestra comunidad constituyen un compromiso irrestrenable.\n\nHe convocado al equipo directivo correspondiente para revisar de inmediato los antecedentes de esta situación. Deseo agendar una reunión presencial en Dirección General mañana a las 08:30 hrs para atender este caso con la formalidad y resolución que merece.\n\nLe reitero mi atención personal.\n\nAtentamente,\nDirección General\n${institutionName}`,

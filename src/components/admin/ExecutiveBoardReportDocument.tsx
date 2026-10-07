@@ -4,6 +4,7 @@ import React from 'react';
 import { Building2, ShieldCheck, CheckCircle2, AlertTriangle, TrendingUp, TrendingDown, Award } from 'lucide-react';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { CorporateOfficialLogo } from '@/components/brand/CorporateOfficialLogo';
+import { SchoolOfficialLogo } from '@/components/brand/SchoolOfficialLogo';
 import { AnalyticReportResult, formatMXN } from '@/services/executiveAnalyticsEngine';
 
 export interface ExecutiveBoardReportDocumentProps {
@@ -85,17 +86,15 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
   report,
   institution
 }) => {
-  // Detección reactiva de experiencia institucional IBIME
+  // Detección estricta de experiencia institucional IBIME
   const isIbime = React.useMemo(() => {
+    const sId = (report?.schoolId || (institution as any)?.id || '').toLowerCase();
     const sName = (report?.schoolName || institution?.name || '').toLowerCase();
-    const instName = (institution?.name || '').toLowerCase();
-    const repSchool = (report?.schoolName || '').toLowerCase();
-    if (sName.includes('ibime') || instName.includes('ibime') || repSchool.includes('ibime')) return true;
-    if (typeof window !== 'undefined') {
-      if (document.documentElement.getAttribute('data-tenant') === 'ibime') return true;
-      if (localStorage.getItem('tenant-id') === 'ibime') return true;
-      if (localStorage.getItem('activeSchoolId') === 'sch-ibime') return true;
-      if (window.location.pathname.includes('/ibime')) return true;
+    if (sId && sId !== 'sch-ibime') return false;
+    if (sName && !sName.includes('ibime')) return false;
+    if (sId === 'sch-ibime' || sName.includes('ibime')) return true;
+    if (typeof window !== 'undefined' && window.location.pathname.includes('/ibime') && (!sId || sId === 'sch-ibime')) {
+      return true;
     }
     return false;
   }, [report, institution]);
@@ -268,36 +267,24 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
       <section className="print-page-break-after h-auto min-h-0 flex flex-col justify-between pt-1 pb-4">
         <div>
           {/* Membrete Oficial Superior */}
-          {isIbime && (
-            <div className="h-1.5 w-full bg-gradient-to-r from-[#E41B14] via-[#0F2744] to-[#C01D0C] rounded-full mb-3" />
-          )}
+          <div className={`h-1.5 w-full rounded-full mb-3 ${
+            isIbime
+              ? 'bg-gradient-to-r from-[#E41B14] via-[#0F2744] to-[#C01D0C]'
+              : isCorporate
+              ? 'bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900'
+              : 'bg-gradient-to-r from-indigo-600 via-purple-600 to-amber-500'
+          }`} />
           <div className="border-b-2 border-slate-900 pb-3.5 mb-4 flex justify-between items-start">
             <div className="flex items-center gap-3.5">
-              {isIbime ? (
-                <div className="w-14 h-14 rounded-xl border border-slate-200 bg-white flex items-center justify-center p-1 shadow-xs shrink-0">
-                  <IbimeOfficialLogo variant="shield_only" size={48} />
-                </div>
-              ) : isCorporate ? (
-                <div className="w-24 h-14 rounded-xl border border-slate-300 bg-white flex items-center justify-center p-1.5 shadow-xs shrink-0">
-                  <CorporateOfficialLogo 
-                    enterpriseId={isBmw ? 'emp-bmw' : isRetail ? 'emp-ventas' : 'emp-tech'} 
-                    name={schoolName} 
-                    size={42} 
-                    variant="horizontal" 
-                  />
-                </div>
-              ) : institution?.logoUrl ? (
-                <img 
-                  src={institution.logoUrl} 
-                  alt={schoolName} 
-                  className="w-13 h-13 object-contain border border-slate-300 rounded-lg p-0.5" 
+              <div className="w-14 h-14 rounded-xl border border-slate-200 bg-white flex items-center justify-center p-1 shadow-xs shrink-0">
+                <SchoolOfficialLogo
+                  schoolId={report.schoolId || (institution as any)?.id}
+                  name={schoolName}
+                  logoUrl={institution?.logoUrl}
+                  size={48}
+                  variant="shield_only"
                 />
-              ) : (
-                <div className="w-13 h-13 rounded-lg border-2 border-slate-900 bg-slate-100 flex flex-col items-center justify-center font-black text-slate-900 shrink-0">
-                  <Building2 className="w-6 h-6 text-slate-900" />
-                  <span className="text-[7px] uppercase font-mono tracking-wider font-extrabold">ISKOOL</span>
-                </div>
-              )}
+              </div>
               <div>
                 <h1 className="text-lg font-black tracking-tight uppercase leading-none text-slate-950">
                   {schoolName}
@@ -458,13 +445,17 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
           {/* Encabezado Secundario Continuo de Junta */}
           <div className="border-b border-slate-400 pb-2 mb-4 flex justify-between items-center text-[9px] text-slate-600">
             <div className="flex items-center gap-2">
-              {isIbime ? (
-                <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                  <IbimeOfficialLogo variant="shield_only" size={18} />
-                </div>
-              ) : null}
+              <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                <SchoolOfficialLogo
+                  schoolId={report.schoolId || (institution as any)?.id}
+                  name={schoolName}
+                  logoUrl={institution?.logoUrl}
+                  size={18}
+                  variant="shield_only"
+                />
+              </div>
               <span className="font-bold uppercase tracking-wider text-slate-900">{schoolName}</span>
-              {isIbime && <span className="font-mono text-slate-500 text-[8px]">· CCT: {cct}</span>}
+              {cct && <span className="font-mono text-slate-500 text-[8px]">· CCT: {cct}</span>}
             </div>
             <span>Informe: {report.reportTitle}</span>
             <span className="font-mono font-bold">Folio: EXP-BI-{folioNumber}</span>
@@ -621,13 +612,17 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
             {/* Encabezado Secundario Continuo de Junta */}
             <div className="border-b border-slate-400 pb-2 mb-4 flex justify-between items-center text-[9px] text-slate-600">
               <div className="flex items-center gap-2">
-                {isIbime ? (
-                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                    <IbimeOfficialLogo variant="shield_only" size={18} />
-                  </div>
-                ) : null}
+                <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                  <SchoolOfficialLogo
+                    schoolId={report.schoolId || (institution as any)?.id}
+                    name={schoolName}
+                    logoUrl={institution?.logoUrl}
+                    size={18}
+                    variant="shield_only"
+                  />
+                </div>
                 <span className="font-bold uppercase tracking-wider text-slate-900">{schoolName}</span>
-                {isIbime && <span className="font-mono text-slate-500 text-[8px]">· CCT: {cct}</span>}
+                {cct && <span className="font-mono text-slate-500 text-[8px]">· CCT: {cct}</span>}
               </div>
               <span>Padrón Detallado de Registros Auditados</span>
               <span className="font-mono font-bold">Folio: EXP-BI-{folioNumber}</span>
@@ -743,7 +738,19 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
                       <span className="text-[5.5px] text-slate-400">HOLDING DIRECCIÓN GENERAL</span>
                     </>
                   ) : (
-                    <span>SELLO INSTITUCIONAL</span>
+                    <>
+                      <div className="w-6 h-6 flex items-center justify-center mb-0.5 opacity-80">
+                        <SchoolOfficialLogo
+                          schoolId={report.schoolId || (institution as any)?.id}
+                          name={schoolName}
+                          logoUrl={institution?.logoUrl}
+                          size={22}
+                          variant="shield_only"
+                        />
+                      </div>
+                      <span className="font-bold text-[7px] text-slate-900 truncate max-w-[100px]">SELLO OFICIAL</span>
+                      <span className="text-[6px] text-slate-500">CCT: {cct}</span>
+                    </>
                   )}
                 </div>
                 <p className="font-bold text-slate-950">

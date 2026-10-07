@@ -183,7 +183,7 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
     activeSchoolId
   } = useSchoolAdminStore();
 
-  const effectiveSchoolId = schoolId || activeSchoolId || 'sch-ibime';
+  const effectiveSchoolId = schoolId || activeSchoolId || institutionsList[0]?.id || 'sch-test-case';
 
   // Generación determinista del grafo aislado para este colegio
   const {

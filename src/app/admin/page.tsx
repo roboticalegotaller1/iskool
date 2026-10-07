@@ -87,6 +87,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { IndependentTeachersSuperUserStudio } from '@/components/admin/IndependentTeachersSuperUserStudio';
 import { CorporateEnterprisesSuperUserStudio } from '@/components/admin/CorporateEnterprisesSuperUserStudio';
 import { CorporateOfficialLogo } from '@/components/brand/CorporateOfficialLogo';
+import { SchoolOfficialLogo } from '@/components/brand/SchoolOfficialLogo';
 
 type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll' | 'analytics' | 'deletions' | 'books_compendium';
 
@@ -1761,17 +1762,20 @@ export default function SuperUserAdminPage() {
                                 alt={inst.name}
                                 className="h-16 w-16 rounded-2xl object-cover border border-slate-200 shadow-sm"
                               />
+                            ) : isSuspended ? (
+                              <div className="h-16 w-16 rounded-2xl flex items-center justify-center shadow-sm bg-gradient-to-br from-rose-600 to-rose-800 text-white">
+                                <Lock className="h-8 w-8" />
+                              </div>
                             ) : (
-                              <div className={`h-16 w-16 rounded-2xl flex items-center justify-center shadow-sm ${
-                                isSuspended
-                                  ? 'bg-gradient-to-br from-rose-600 to-rose-800 text-white'
-                                  : isIndependent
-                                  ? 'bg-gradient-to-br from-purple-700 via-indigo-600 to-amber-500 text-white shadow-md shadow-purple-600/30'
-                                  : isTest 
-                                  ? 'bg-gradient-to-br from-purple-600 to-amber-500 text-white'
-                                  : 'bg-gradient-to-br from-indigo-600 to-blue-500 text-white'
-                              }`}>
-                                {isSuspended ? <Lock className="h-8 w-8" /> : isIndependent ? <Sparkles className="h-8 w-8 text-amber-300" /> : isTest ? <Bot className="h-8 w-8" /> : <Building2 className="h-8 w-8" />}
+                              <div className="h-16 w-16 rounded-2xl bg-white border border-slate-200/90 shadow-sm flex items-center justify-center p-1 overflow-hidden">
+                                <SchoolOfficialLogo
+                                  schoolId={inst.id}
+                                  name={inst.name}
+                                  logoUrl={inst.logoUrl}
+                                  themeColors={inst.settings?.themeColors}
+                                  size={56}
+                                  variant="shield_only"
+                                />
                               </div>
                             )}
 
@@ -2192,8 +2196,15 @@ export default function SuperUserAdminPage() {
                       className="h-11 w-11 rounded-2xl object-cover border border-slate-200 shadow-sm"
                     />
                   ) : (
-                    <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md text-white">
-                      <Building2 className="h-6 w-6 text-white" />
+                    <div className="h-11 w-11 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center p-0.5 overflow-hidden">
+                      <SchoolOfficialLogo
+                        schoolId={currentSchool?.id}
+                        name={currentSchool?.name}
+                        logoUrl={currentSchool?.logoUrl}
+                        themeColors={currentSchool?.settings?.themeColors}
+                        size={38}
+                        variant="shield_only"
+                      />
                     </div>
                   )}
                   <button

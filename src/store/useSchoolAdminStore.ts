@@ -796,6 +796,23 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
           }
         } catch (e) {}
 
+        // Sincronizar tenant-id y data-tenant de forma inmediata para aislamiento estricto
+        if (typeof window !== 'undefined') {
+          if (!schoolId) {
+            localStorage.removeItem('activeSchoolId');
+            localStorage.setItem('tenant-id', 'iskool');
+            document.cookie = 'tenant-id=iskool; path=/; max-age=31536000; SameSite=Lax';
+            document.documentElement.setAttribute('data-tenant', 'iskool');
+          } else {
+            const targetId = schoolId === 'sch-jjr' ? 'sch-jjrosseau' : schoolId;
+            const newTenant = targetId === 'sch-ibime' ? 'ibime' : targetId.replace('sch-', '').replace('emp-', '');
+            localStorage.setItem('activeSchoolId', targetId);
+            localStorage.setItem('tenant-id', newTenant);
+            document.cookie = `tenant-id=${newTenant}; path=/; max-age=31536000; SameSite=Lax`;
+            document.documentElement.setAttribute('data-tenant', newTenant);
+          }
+        }
+
         set((state) => {
           if (!schoolId) {
             return { activeSchoolId: null };
