@@ -79,7 +79,7 @@ export class PatternMemoryBridgeService {
     return patternsFound;
   }
 
-  // 2. EXPORTADOR EPISTEMOLÓGICO A OBSIDIAN (Memoria Institucional sin duplicar Gmail)
+  // 2. EXPORTADOR EPISTEMOLÓGICO A LA BÓVEDA CURRICULAR INSTITUCIONAL (Memoria Institucional sin duplicar correos)
   static async exportToInstitutionalMemoryVault(matterId: string, decisionNotes: string, observedOutcome: string): Promise<string> {
     const supabase = this.getSupabase();
 

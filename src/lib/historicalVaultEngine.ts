@@ -197,39 +197,39 @@ export function findHistoricalFigureInVault(nameOrSlug: string): HistoricalFigur
     slug = ALIASES[slug];
   }
 
-  let targetPath = path.join(localDir, `${slug}.md`);
-  if (!fs.existsSync(targetPath) && desktopDir) {
-    const dPath = path.join(desktopDir, `${slug}.md`);
-    if (fs.existsSync(dPath)) {
+  let targetPath = path.join(/*turbopackIgnore: true*/ localDir, `${slug}.md`);
+  if (!fs.existsSync(/*turbopackIgnore: true*/ targetPath) && desktopDir) {
+    const dPath = path.join(/*turbopackIgnore: true*/ desktopDir, `${slug}.md`);
+    if (fs.existsSync(/*turbopackIgnore: true*/ dPath)) {
       targetPath = dPath;
     }
   }
 
   // Si no se encuentra con coincidencia exacta de slug, buscar en los directorios por coincidencia de nombre o prefijo
-  if (!fs.existsSync(targetPath)) {
+  if (!fs.existsSync(/*turbopackIgnore: true*/ targetPath)) {
     const searchDirs = [localDir];
     if (desktopDir) searchDirs.push(desktopDir);
 
     for (const d of searchDirs) {
-      if (!fs.existsSync(d)) continue;
-      const files = fs.readdirSync(d).filter(f => f.endsWith('.md'));
+      if (!fs.existsSync(/*turbopackIgnore: true*/ d)) continue;
+      const files = fs.readdirSync(/*turbopackIgnore: true*/ d).filter(f => f.endsWith('.md'));
       
       // 1. Coincidencia por inicio de nombre de archivo o contención
       for (const file of files) {
         const fileBase = file.replace(/\.md$/, '');
         if (fileBase === slug || fileBase.startsWith(slug) || slug.startsWith(fileBase) || fileBase.includes(slug)) {
-          targetPath = path.join(d, file);
+          targetPath = path.join(/*turbopackIgnore: true*/ d, file);
           slug = fileBase;
           break;
         }
       }
-      if (fs.existsSync(targetPath)) break;
+      if (fs.existsSync(/*turbopackIgnore: true*/ targetPath)) break;
 
       // 2. Coincidencia inspeccionando el título/frontmatter
       for (const file of files) {
         try {
-          const filePath = path.join(d, file);
-          const raw = fs.readFileSync(filePath, 'utf8');
+          const filePath = path.join(/*turbopackIgnore: true*/ d, file);
+          const raw = fs.readFileSync(/*turbopackIgnore: true*/ filePath, 'utf8');
           const titleMatch = raw.match(/^title:\s*(.+)$/m);
           if (titleMatch) {
             const fileTitleSlug = normalizeHistoricalSlug(titleMatch[1]);
@@ -243,22 +243,22 @@ export function findHistoricalFigureInVault(nameOrSlug: string): HistoricalFigur
           // continuar
         }
       }
-      if (fs.existsSync(targetPath)) break;
+      if (fs.existsSync(/*turbopackIgnore: true*/ targetPath)) break;
     }
   }
 
-  if (!fs.existsSync(targetPath)) {
+  if (!fs.existsSync(/*turbopackIgnore: true*/ targetPath)) {
     return null;
   }
 
   try {
-    const stat = fs.statSync(targetPath);
+    const stat = fs.statSync(/*turbopackIgnore: true*/ targetPath);
     const cached = historicalFigureMemoryCache.get(slug);
     if (cached && cached.mtimeMs === stat.mtimeMs && cached.filePath === targetPath) {
       return cached.data;
     }
 
-    const rawContent = fs.readFileSync(targetPath, 'utf8');
+    const rawContent = fs.readFileSync(/*turbopackIgnore: true*/ targetPath, 'utf8');
     const parsed = parseHistoricalMarkdown(rawContent, slug);
     historicalFigureMemoryCache.set(slug, {
       data: parsed,
@@ -492,8 +492,8 @@ export function saveHistoricalFigureToVault(data: HistoricalFigureBlockData): { 
   }
 
   const { localDir, desktopDir } = getHistoricalVaultDirs();
-  const allowedBase = path.resolve(localDir);
-  const localPath = path.resolve(localDir, `${slug}.md`);
+  const allowedBase = path.resolve(/*turbopackIgnore: true*/ localDir);
+  const localPath = path.resolve(/*turbopackIgnore: true*/ localDir, `${slug}.md`);
 
   if (!localPath.startsWith(allowedBase)) {
     throw new Error('Intento de Path Traversal bloqueado por el perímetro de seguridad.');
@@ -505,9 +505,9 @@ export function saveHistoricalFigureToVault(data: HistoricalFigureBlockData): { 
     fs.writeFileSync(localPath, markdownContent, 'utf8');
 
     let desktopPath: string | undefined = undefined;
-    if (desktopDir && fs.existsSync(desktopDir)) {
-      const allowedDesktopBase = path.resolve(desktopDir);
-      const dPath = path.resolve(desktopDir, `${slug}.md`);
+    if (desktopDir && fs.existsSync(/*turbopackIgnore: true*/ desktopDir)) {
+      const allowedDesktopBase = path.resolve(/*turbopackIgnore: true*/ desktopDir);
+      const dPath = path.resolve(/*turbopackIgnore: true*/ desktopDir, `${slug}.md`);
       if (dPath.startsWith(allowedDesktopBase)) {
         desktopPath = dPath;
         try {

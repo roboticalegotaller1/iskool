@@ -189,14 +189,14 @@ export class InstitutionalMemoryReconcileService {
       try {
         // Intento 1: lectura del sistema de archivos local
         const localCandidates = [
-          path.join(process.cwd(), entry.filePath),
+          path.join(process.cwd(), 'planeaciones', path.basename(entry.filePath)),
           path.join(InstitutionalMemoryService.getBaseMemoryDirectory(false), entry.fileName),
           path.join(InstitutionalMemoryService.getBaseMemoryDirectory(true), entry.fileName)
         ];
 
         for (const candidate of localCandidates) {
-          if (fs.existsSync(candidate)) {
-            fileContent = fs.readFileSync(candidate, 'utf8');
+          if (fs.existsSync(/*turbopackIgnore: true*/ candidate)) {
+            fileContent = fs.readFileSync(/*turbopackIgnore: true*/ candidate, 'utf8');
             break;
           }
         }

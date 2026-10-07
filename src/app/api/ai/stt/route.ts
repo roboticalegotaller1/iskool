@@ -24,7 +24,7 @@ function getFfmpegPath(): string {
   ];
 
   for (const c of candidates) {
-    if (c === 'ffmpeg' || fs.existsSync(c)) {
+    if (c === 'ffmpeg' || fs.existsSync(/*turbopackIgnore: true*/ c)) {
       return c;
     }
   }

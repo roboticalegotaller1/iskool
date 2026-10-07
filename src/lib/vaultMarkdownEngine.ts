@@ -14,9 +14,9 @@ marked.setOptions({
  */
 export function getVaultPlanningsDir(): string {
   const envPath = process.env.CURRICULAR_VAULT_PATH || process.env.VAULT_PATH;
-  if (envPath && fs.existsSync(envPath)) {
+  if (envPath && fs.existsSync(/*turbopackIgnore: true*/ envPath)) {
     const sub = path.join(envPath, 'planeaciones');
-    return fs.existsSync(sub) ? sub : envPath;
+    return fs.existsSync(/*turbopackIgnore: true*/ sub) ? sub : envPath;
   }
 
   const localProjectPlannings = path.join(process.cwd(), 'planeaciones');
@@ -186,15 +186,15 @@ export function buildOrGetVaultIndex(): void {
   }
 
   const vaultDir = getVaultPlanningsDir();
-  if (!fs.existsSync(vaultDir)) return;
+  if (!fs.existsSync(/*turbopackIgnore: true*/ vaultDir)) return;
 
   const scanned = scanVaultFiles(vaultDir);
   const slugsList: string[][] = [];
 
   for (const item of scanned) {
     try {
-      const raw = fs.readFileSync(item.fullPath, 'utf8');
-      const stat = fs.statSync(item.fullPath);
+      const raw = fs.readFileSync(/*turbopackIgnore: true*/ item.fullPath, 'utf8');
+      const stat = fs.statSync(/*turbopackIgnore: true*/ item.fullPath);
       const { frontmatter, body } = parseFrontmatter(raw);
 
       // Extracción de título canónico

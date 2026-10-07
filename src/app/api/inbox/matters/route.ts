@@ -10,15 +10,17 @@ export async function GET(req: Request) {
     process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  const { data: matters, error: mattersError } = await supabase
-    .from('inbox_matters')
-    .select('*')
-    .eq('school_id', schoolId)
-    .order('last_activity_at', { ascending: false });
+  try {
+    const { data: matters, error: mattersError } = await supabase
+      .from('inbox_matters')
+      .select('*')
+      .eq('school_id', schoolId)
+      .order('last_activity_at', { ascending: false });
 
-  if (mattersError) {
-    return NextResponse.json({ error: mattersError.message }, { status: 500 });
-  }
+    if (mattersError) {
+      console.warn('Advertencia al consultar inbox_matters:', mattersError.message);
+      return NextResponse.json({ matters: [], patterns: [] });
+    }
 
   const { data: patterns } = await supabase
     .from('inbox_patterns')
@@ -47,8 +49,12 @@ export async function GET(req: Request) {
     description: p.pattern_description
   }));
 
-  return NextResponse.json({
-    matters: mappedMatters,
-    patterns: mappedPatterns
-  });
+    return NextResponse.json({
+      matters: mappedMatters,
+      patterns: mappedPatterns
+    });
+  } catch (error: any) {
+    console.error('Error en API inbox matters:', error);
+    return NextResponse.json({ matters: [], patterns: [] });
+  }
 }

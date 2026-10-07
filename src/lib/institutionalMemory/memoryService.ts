@@ -314,13 +314,12 @@ export class InstitutionalMemoryService {
     // Respaldo de contingencia en disco local (Bóveda Curricular)
     const localCandidates = [
       path.join(this.getBaseMemoryDirectory(false), 'manifest.json'),
-      path.join(process.cwd(), 'planeaciones', 'Memorias_Institucionales', 'manifest.json'),
-      path.join(process.cwd(), 'manifest.json')
+      path.join(process.cwd(), 'planeaciones', 'Memorias_Institucionales', 'manifest.json')
     ];
     for (const candidate of localCandidates) {
-      if (fs.existsSync(candidate)) {
+      if (fs.existsSync(/*turbopackIgnore: true*/ candidate)) {
         try {
-          const text = fs.readFileSync(candidate, 'utf8');
+          const text = fs.readFileSync(/*turbopackIgnore: true*/ candidate, 'utf8');
           const versionHash = crypto.createHash('sha256').update(text, 'utf8').digest('hex');
           const parsed = JSON.parse(text);
           if (Array.isArray(parsed)) {
@@ -606,7 +605,7 @@ export class InstitutionalMemoryService {
 
 
   /**
-   * Serializa la memoria a Markdown con YAML frontmatter compatible con Obsidian y Dataview.
+   * Serializa la memoria a Markdown con YAML frontmatter compatible con la Bóveda Curricular y enlaces bidireccionales.
    */
   private static serializeMemoryFile(
     fm: InstitutionalMemoryFrontmatter,

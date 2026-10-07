@@ -63,3 +63,4 @@ high_tech_raw*.webm
 __pycache__/
 *.py[cod]
 *$py.class
+forensic_audit_results.json
