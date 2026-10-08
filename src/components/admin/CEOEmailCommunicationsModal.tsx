@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { OrganizationHolding } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { 
@@ -125,6 +125,7 @@ export interface MatterItem {
   recommended_action: string;
   suggested_draft_reply?: string;
   assigned_role?: string;
+  assigned_email?: string;
   sla_hours: number;
   sla_remaining_text?: string;
   sender_name?: string;
@@ -1021,12 +1022,30 @@ export function CEOEmailCommunicationsModal({
   const [showCatchupModal, setShowCatchupModal] = useState<boolean>(false);
 
   // Normalizador mandatorio de reglas CEO para correos recibidos
-  const normalizeRawEmailCeoRules = (item: RawGmailItem): RawGmailItem => {
+  // Normalizador mandatorio de reglas CEO para correos recibidos (Reglas VIP + Supervisión + Palabras Clave)
+  const normalizeRawEmailCeoRules = useCallback((item: RawGmailItem): RawGmailItem => {
     const text = `${item.subject || ''} ${item.body_text || ''} ${item.snippet || ''}`.toLowerCase();
+    const senderEmail = (item.sender_email || '').toLowerCase().trim();
+    const senderName = (item.sender_name || '').toLowerCase().trim();
+
+    // 1. Reglas VIP directas de Ajustes
+    const activeVips: VipEmailRule[] = settingsData?.vipEmails || [];
+    const isVipMatch = activeVips.some((v: VipEmailRule) =>
+      v.enabled !== false &&
+      ((v.email && senderEmail.includes(v.email.toLowerCase().trim())) ||
+       (v.contactName && senderName.includes(v.contactName.toLowerCase().trim())))
+    );
+
+    // 2. Palabras clave mandatorias de Dirección General / Supervisión
     const isMandatoryCeo =
-      /\b(supervision|supervisión|sep|cte)\b/i.test(text) ||
+      isVipMatch ||
+      /\b(supervision|supervisión|sep|cte|acoso|denuncia|inspeccion|inspección|urgente)\b/i.test(text) ||
       text.includes('supervis') ||
-      text.includes('consejo técnico');
+      text.includes('consejo técnico') ||
+      text.includes('atencion inmediata') ||
+      text.includes('atención inmediata') ||
+      text.includes('atención ceo') ||
+      item.triage_badge?.quadrant === 'ATENCION_CEO';
 
     if (isMandatoryCeo) {
       return {
@@ -1041,7 +1060,7 @@ export function CEOEmailCommunicationsModal({
       };
     }
     return item;
-  };
+  }, [settingsData?.vipEmails]);
 
   // =========================================================================
   // BANDEJA DE ENTRADA (VISTA GMAIL EN TIEMPO REAL & CARGA BRUTA DE CORREOS)
@@ -1566,6 +1585,131 @@ ${schoolName}`
       setMattersList(generateDefaultMattersForSchool(schoolName, schoolDomain, campuses, currentTenantId));
     }
   }, [mattersStorageKey, isIbime, schoolName, schoolDomain, campuses, currentTenantId]);
+
+  // =========================================================================
+  // PUENTE AUTÓNOMO DE ALTA FIDELIDAD: SINCRONIZACIÓN REACTIVA INBOX REAL -> BANDEJA INTELIGENTE
+  // Garantiza que el 100% de los correos clasificados como ATENCIÓN INMEDIATA CEO o DELEGADOS
+  // se reflejen de inmediato en la Bandeja Inteligente, con prioridad ejecutiva.
+  // =========================================================================
+  useEffect(() => {
+    if (!rawEmailsList || rawEmailsList.length === 0) return;
+
+    // 1. Normalizar correos aplicando las reglas VIP de Ajustes y palabras clave mandatorias
+    const normalizedRaw = rawEmailsList.map((item) => normalizeRawEmailCeoRules(item));
+
+    // 2. Filtrar los que deben aparecer en Bandeja Inteligente
+    const candidates = normalizedRaw.filter(email => {
+      const q = email.triage_badge?.quadrant;
+      return q === 'ATENCION_CEO' || q === 'DELEGADO_CON_PLAZO' || email.is_important;
+    });
+
+    if (candidates.length === 0) return;
+
+    setMattersList((prevMatters) => {
+      let hasChanges = false;
+      const updatedMatters = [...prevMatters];
+
+      const norm = (s: string) => (s || '').toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+
+      for (const email of candidates) {
+        const normSub = norm(email.subject);
+        if (!normSub) continue;
+
+        const isCeo = email.triage_badge?.quadrant === 'ATENCION_CEO' || email.is_important;
+        const targetDestination = isCeo ? 'ATENCION_CEO' : 'DELEGADO_CON_SLA';
+
+        // Buscar coincidencia previa por ID o por Asunto
+        const existingIdx = updatedMatters.findIndex(m => {
+          if (m.id === `mat-live-${email.id}`) return true;
+          return norm(m.title) === normSub;
+        });
+
+        if (existingIdx >= 0) {
+          const existing = updatedMatters[existingIdx];
+          if (isCeo && existing.destination !== 'ATENCION_CEO') {
+            updatedMatters[existingIdx] = {
+              ...existing,
+              destination: 'ATENCION_CEO',
+              urgency: 'CRITICA',
+              why_shown: 'Actualizado a Atención Inmediata CEO por regla VIP / Supervisión.'
+            };
+            hasChanges = true;
+          }
+        } else {
+          // No existe: sintetizar asunto y agregarlo con prioridad al inicio
+          const senderEmail = (email.sender_email || '').toLowerCase();
+          const senderName = (email.sender_name || '').toLowerCase();
+
+          const isVip = (settingsData?.vipEmails || []).some((v: VipEmailRule) =>
+            v.enabled !== false &&
+            ((v.email && senderEmail.includes(v.email.toLowerCase().trim())) ||
+             (v.contactName && senderName.includes(v.contactName.toLowerCase().trim())))
+          );
+
+          const isSep = /\b(sep|supervision|supervisión)\b/i.test(`${email.subject} ${email.body_text}`);
+
+          let category = 'Atención Inmediata CEO';
+          if (isVip) category = 'Contacto VIP Directivo';
+          else if (isSep) category = 'Supervisión SEP y Legal';
+          else if (email.subject.toLowerCase().includes('convivencia') || email.subject.toLowerCase().includes('acoso')) category = 'Convivencia / Caso Crítico Nivel 3';
+          else if (email.subject.toLowerCase().includes('factur') || email.subject.toLowerCase().includes('pago')) category = 'Financiero & Cobranza CFDI';
+
+          let whyShown = '';
+          if (isVip) {
+            whyShown = `Contacto VIP Prioritario registrado en Ajustes Directivos. Remitente: ${email.sender_name} (${email.sender_email}). Facultades reservadas para Dirección General.`;
+          } else if (isCeo) {
+            whyShown = `Correo prioritario en tiempo real clasificado por el Motor de IA Pedagógica como Atención Inmediata CEO (${category}).`;
+          } else {
+            whyShown = 'Solicitud canalizada con compromiso de tiempo (SLA 24h).';
+          }
+
+          const cleanSnippet = (email.snippet || email.body_text || '').replace(/\s+/g, ' ').trim();
+          const summary = cleanSnippet.length > 220 ? cleanSnippet.slice(0, 217) + '...' : (cleanSnippet || 'Comunicación oficial recibida en buzón.');
+
+          const primaryCampus = campuses[0]?.name || `${schoolName} · Plantel Central`;
+          const prefix = (schoolSlug || currentTenantId.replace(/^sch-/, '') || 'MAT').toUpperCase().slice(0, 5);
+
+          const defaultDraft = `Estimado(a) ${email.sender_name}:\n\nHe recibido personalmente su comunicación en relación con: "${email.subject}". En ${schoolName} la atención oportuna y fundada es una prioridad institucional.\n\nHe tomado conocimiento del requerimiento y me encuentro coordinando la atención con las áreas correspondientes para brindarle una resolución fundada en los protocolos vigentes.\n\nAtentamente,\n${directorTitle}\nDirección General · ${schoolName}`;
+
+          const synthesizedMatter: MatterItem = {
+            id: `mat-live-${email.id}`,
+            matter_code: `MAT-${prefix}-2026-${email.id.replace(/[^a-zA-Z0-9]/g, '').slice(-3).toUpperCase() || '001'}`,
+            title: email.subject,
+            summary,
+            category,
+            urgency: isCeo ? 'CRITICA' : 'MEDIA',
+            destination: targetDestination,
+            why_shown: whyShown,
+            reincidence_count: 1,
+            recommended_action: isCeo
+              ? 'Revisar expediente completo y validar borrador de respuesta oficial de Dirección General.'
+              : 'Canalizar al área delegada correspondiente con plazo SLA.',
+            suggested_draft_reply: defaultDraft,
+            assigned_role: isCeo ? 'Dirección General / CEO' : 'Coordinación Delegada',
+            assigned_email: isCeo ? email.recipient_email : undefined,
+            sla_hours: isCeo ? 12 : 24,
+            sla_remaining_text: isCeo ? '⏱️ 12h restantes' : '⏱️ 24h restantes',
+            sender_name: email.sender_name,
+            sender_email: email.sender_email,
+            provenance_doc: `Buzón Institucional en Vivo (${email.sender_email})`,
+            received_at: email.received_at ? `${email.received_at}${email.timestamp ? ` (${email.timestamp})` : ''}` : 'Hoy',
+            campus: primaryCampus
+          };
+
+          updatedMatters.unshift(synthesizedMatter);
+          hasChanges = true;
+        }
+      }
+
+      if (hasChanges) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(mattersStorageKey, JSON.stringify(updatedMatters));
+        }
+        return updatedMatters;
+      }
+      return prevMatters;
+    });
+  }, [rawEmailsList, settingsData?.vipEmails, normalizeRawEmailCeoRules, campuses, schoolName, directorTitle, schoolSlug, currentTenantId, mattersStorageKey]);
 
   // Semilla de Correos No Usables (Descartados / Spam Filtrado) por Tenant
   const discardedStorageKey = `iskool_discarded_${currentTenantId}`;
@@ -2640,9 +2784,10 @@ ${schoolName}`
         });
         const rawData = await rawRes.json();
         if (rawData.success && Array.isArray(rawData.emails) && rawData.emails.length > 0) {
-          setRawEmailsList(rawData.emails);
+          const normalized = rawData.emails.map((item: any) => normalizeRawEmailCeoRules(item));
+          setRawEmailsList(normalized);
           if (typeof window !== 'undefined') {
-            localStorage.setItem(rawEmailsStorageKey, JSON.stringify(rawData.emails));
+            localStorage.setItem(rawEmailsStorageKey, JSON.stringify(normalized));
           }
           if (rawData.authenticated) {
             setShowAppPasswordHelper(false);
@@ -3001,6 +3146,17 @@ ${schoolName}`
       setMattersList(remaining);
       if (typeof window !== 'undefined') {
         localStorage.setItem(mattersStorageKey, JSON.stringify(remaining));
+      }
+      // Marcar correo original en bandeja si proviene de live-inbox
+      const rawLiveId = selectedMatter.id.replace(/^mat-live-/, '');
+      if (rawLiveId) {
+        setRawEmailsList((prev) => {
+          const updated = prev.map((item) => item.id === rawLiveId ? { ...item, is_unread: false } : item);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(rawEmailsStorageKey, JSON.stringify(updated));
+          }
+          return updated;
+        });
       }
       setSelectedMatter(null);
     }, 700);

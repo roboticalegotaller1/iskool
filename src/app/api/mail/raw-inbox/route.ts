@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
     const hasGoogleOAuth = GoogleOAuthService.hasValidTokens(email);
     if (hasGoogleOAuth) {
       try {
-        const liveGoogle = await GoogleOAuthService.fetchRealGmailEmails(email, email, 30);
+        const liveGoogle = await GoogleOAuthService.fetchRealGmailEmails(email, email, 30, tenantId);
         if (liveGoogle.length > 0) {
           authenticated = true;
           requiresAppPassword = false;
@@ -270,10 +270,10 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. Verificar si la cuenta cuenta con autorización oficial de Google OAuth 2.0
-    const hasGoogleOAuth = body.password !== '' && GoogleOAuthService.hasValidTokens(email);
+    const hasGoogleOAuth = (body.isOAuth || body.password === '••••••••••••' || (body.password && body.password.trim() !== '')) && GoogleOAuthService.hasValidTokens(email);
     if (hasGoogleOAuth) {
       try {
-        const liveGoogle = await GoogleOAuthService.fetchRealGmailEmails(email, email, 30);
+        const liveGoogle = await GoogleOAuthService.fetchRealGmailEmails(email, email, 30, tenantId);
         if (liveGoogle.length > 0) {
           authenticated = true;
           requiresAppPassword = false;

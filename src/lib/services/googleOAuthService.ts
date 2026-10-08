@@ -235,7 +235,7 @@ export class GoogleOAuthService {
   /**
    * Descarga correos reales de la bandeja de entrada usando la Gmail API oficial
    */
-  static async fetchRealGmailEmails(tokenOrEmail: string, accountEmail?: string, maxCount = 25): Promise<RawGmailItem[]> {
+  static async fetchRealGmailEmails(tokenOrEmail: string, accountEmail?: string, maxCount = 25, tenantId = 'sch-default'): Promise<RawGmailItem[]> {
     try {
       let effectiveToken = tokenOrEmail;
       let targetAccount = (accountEmail || tokenOrEmail).trim().toLowerCase();
@@ -368,7 +368,7 @@ export class GoogleOAuthService {
           emailItems.push(rawItem);
 
           // También alimentar el spool del CEO para que se refleje en la Bandeja Inteligente
-          InboundMailSpoolService.enqueueEmail('sch-default', {
+          InboundMailSpoolService.enqueueEmail(tenantId, {
             sender_name: rawItem.sender_name,
             sender_email: rawItem.sender_email,
             recipient_email: accountEmail,
@@ -376,6 +376,16 @@ export class GoogleOAuthService {
             body_text: rawItem.body_text,
             reincidence_count: 1
           });
+          if (tenantId !== 'sch-default') {
+            InboundMailSpoolService.enqueueEmail('sch-default', {
+              sender_name: rawItem.sender_name,
+              sender_email: rawItem.sender_email,
+              recipient_email: accountEmail,
+              subject: rawItem.subject,
+              body_text: rawItem.body_text,
+              reincidence_count: 1
+            });
+          }
         } catch (itemErr) {
           console.warn('Error procesando correo individual de Gmail:', itemErr);
         }

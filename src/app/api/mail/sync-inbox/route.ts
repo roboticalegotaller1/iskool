@@ -24,8 +24,9 @@ interface SyncInboxPayload {
   };
 }
 
-import { fetchLiveImapEmails } from '@/lib/services/imapClientService';
+import { fetchLiveImapEmails, getCachedInboxEmails } from '@/lib/services/imapClientService';
 import { InboundMailSpoolService } from '@/lib/services/inboundMailSpool';
+import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 
 export async function POST(req: NextRequest) {
   try {
@@ -70,7 +71,53 @@ export async function POST(req: NextRequest) {
     const newMatters: any[] = [];
     const processedSpoolIds: string[] = [];
 
-    // PASO 1: Sincronizar buzón del usuario con los correos reales recibidos en la cuenta (deduplicando contra existingTitles)
+    // PASO 1: Ingesta directa de correo enviado manualmente (si aplica, prioridad de prueba y despacho)
+    if (manualEmail && manualEmail.subject) {
+      const normManual = manualEmail.subject.trim().toLowerCase();
+      if (!existingTitles.includes(normManual)) {
+        const emailDto: InboundEmailDTO = {
+          sender_name: manualEmail.sender_name || 'Remitente Institucional',
+          sender_email: manualEmail.sender_email || email || 'contacto@gmail.com',
+          recipient_email: email,
+          subject: manualEmail.subject,
+          body_text: manualEmail.body_text || 'Sin cuerpo de mensaje',
+          reincidence_count: manualEmail.reincidence_count || 1
+        };
+
+        const triageResult = await HermeticEmailBrainService.processInboundEmail(emailDto, authSession);
+
+        const isCandidate = triageResult.quadrant === 'ATENCION_CEO' || triageResult.quadrant === 'DELEGADO_CON_SLA';
+        if (isCandidate) {
+          const matterItem = {
+            id: `mat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            matter_code: `MAT-${prefix}-2026-${String(Math.floor(Math.random() * 900) + 100)}`,
+            title: emailDto.subject,
+            summary: triageResult.why_shown_to_director || emailDto.body_text.slice(0, 140) + '...',
+            category: triageResult.category || 'Atención General',
+            urgency: triageResult.urgency,
+            destination: triageResult.quadrant,
+            why_shown: triageResult.why_shown_to_director,
+            reincidence_count: emailDto.reincidence_count || 1,
+            recommended_action: triageResult.recommended_action,
+            suggested_draft_reply: triageResult.suggested_draft?.body || '',
+            assigned_role: triageResult.assigned_role || triageResult.assigned_department || 'Dirección General',
+            assigned_email: triageResult.delegate_email || '',
+            sla_hours: triageResult.sla_hours || 12,
+            sla_remaining_text: `⏱️ ${triageResult.sla_hours || 12}h restantes`,
+            sender_name: emailDto.sender_name,
+            sender_email: emailDto.sender_email,
+            provenance_doc: triageResult.provenance?.[0]?.source_path || `planeaciones/${tenantId}/Protocolo_Convivencia.md`,
+            received_at: 'Justo ahora',
+            campus: manualEmail.campus || 'Campus Central'
+          };
+
+          newMatters.push(matterItem);
+        }
+        existingTitles.push(normManual);
+      }
+    }
+
+    // PASO 2: Sincronizar buzón del usuario con los correos reales recibidos en la cuenta (deduplicando contra existingTitles)
     InboundMailSpoolService.syncLiveInboxForAccount(tenantId, email, existingTitles);
 
     // PASO 2: Procesar correos pendientes en el Spool Autónomo (recibidos de Gmail / servidor)
@@ -134,51 +181,96 @@ export async function POST(req: NextRequest) {
       InboundMailSpoolService.markAsProcessed(tenantId, processedSpoolIds);
     }
 
-    // PASO 3: Ingesta directa de correo enviado manualmente (si aplica)
-    if (manualEmail && manualEmail.subject) {
-      const normManual = manualEmail.subject.trim().toLowerCase();
-      if (!existingTitles.includes(normManual)) {
-        const emailDto: InboundEmailDTO = {
-          sender_name: manualEmail.sender_name || 'Remitente Institucional',
-          sender_email: manualEmail.sender_email || email || 'contacto@gmail.com',
-          recipient_email: email,
-          subject: manualEmail.subject,
-          body_text: manualEmail.body_text || 'Sin cuerpo de mensaje',
-          reincidence_count: manualEmail.reincidence_count || 1
-        };
+    // PASO 2.5: Descargar y procesar correos reales de Google OAuth 2.0 (si la cuenta está autorizada)
+    const hasGoogleOAuth = GoogleOAuthService.hasValidTokens(email);
+    if (hasGoogleOAuth) {
+      try {
+        const liveGoogle = await GoogleOAuthService.fetchRealGmailEmails(email, email, 30, tenantId);
+        for (const msg of liveGoogle) {
+          const normSubject = msg.subject.trim().toLowerCase();
+          if (existingTitles.includes(normSubject)) continue;
 
-        const triageResult = await HermeticEmailBrainService.processInboundEmail(emailDto, authSession);
+          const isCeo = msg.triage_badge?.quadrant === 'ATENCION_CEO' || msg.is_important;
+          const isDelegate = msg.triage_badge?.quadrant === 'DELEGADO_CON_PLAZO';
 
-        const isCandidate = triageResult.quadrant === 'ATENCION_CEO' || triageResult.quadrant === 'DELEGADO_CON_SLA';
-        if (isCandidate) {
-          const matterItem = {
-            id: `mat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-            matter_code: `MAT-${prefix}-2026-${String(Math.floor(Math.random() * 900) + 100)}`,
-            title: emailDto.subject,
-            summary: triageResult.why_shown_to_director || emailDto.body_text.slice(0, 140) + '...',
-            category: triageResult.category || 'Atención General',
-            urgency: triageResult.urgency,
-            destination: triageResult.quadrant,
-            why_shown: triageResult.why_shown_to_director,
-            reincidence_count: emailDto.reincidence_count || 1,
-            recommended_action: triageResult.recommended_action,
-            suggested_draft_reply: triageResult.suggested_draft?.body || '',
-            assigned_role: triageResult.assigned_role || triageResult.assigned_department || 'Dirección General',
-            assigned_email: triageResult.delegate_email || '',
-            sla_hours: triageResult.sla_hours || 12,
-            sla_remaining_text: `⏱️ ${triageResult.sla_hours || 12}h restantes`,
-            sender_name: emailDto.sender_name,
-            sender_email: emailDto.sender_email,
-            provenance_doc: triageResult.provenance?.[0]?.source_path || `planeaciones/${tenantId}/Protocolo_Convivencia.md`,
-            received_at: 'Justo ahora',
-            campus: manualEmail.campus || 'Campus Central'
-          };
-
-          newMatters.push(matterItem);
+          if (isCeo || isDelegate) {
+            newMatters.push({
+              id: `mat-live-${msg.id}`,
+              matter_code: `MAT-${prefix}-2026-${msg.id.replace(/[^a-zA-Z0-9]/g, '').slice(-3).toUpperCase() || '001'}`,
+              title: msg.subject,
+              summary: msg.snippet || msg.body_text.slice(0, 140) + '...',
+              category: isCeo ? 'Atención Inmediata CEO' : 'Gestión Delegada Operativa',
+              urgency: isCeo ? 'CRITICA' : 'MEDIA',
+              destination: isCeo ? 'ATENCION_CEO' : 'DELEGADO_CON_SLA',
+              why_shown: isCeo
+                ? 'Correo prioritario en tiempo real clasificado por el Motor de IA Pedagógica como Atención Inmediata CEO.'
+                : 'Solicitud canalizada con compromiso de tiempo (SLA 24h).',
+              reincidence_count: 1,
+              recommended_action: isCeo
+                ? 'Revisar expediente completo y validar borrador de respuesta oficial de Dirección General.'
+                : 'Canalizar al área delegada correspondiente con plazo de resolución.',
+              suggested_draft_reply: `Estimado(a) ${msg.sender_name}:\n\nHe recibido personalmente su comunicación en relación con: "${msg.subject}". En ${schoolName} la atención inmediata de este asunto es prioritaria.\n\nHe tomado conocimiento del tema y me encuentro coordinando la atención con las áreas correspondientes.\n\nAtentamente,\nDirección General · ${schoolName}`,
+              assigned_role: isCeo ? 'Dirección General / CEO' : 'Coordinación Delegada',
+              assigned_email: isCeo ? email : undefined,
+              sla_hours: isCeo ? 12 : 24,
+              sla_remaining_text: isCeo ? '⏱️ 12h restantes' : '⏱️ 24h restantes',
+              sender_name: msg.sender_name,
+              sender_email: msg.sender_email,
+              provenance_doc: `Buzón Institucional en Vivo (${msg.sender_email})`,
+              received_at: msg.received_at || 'Justo ahora',
+              campus: 'Plantel Central'
+            });
+            existingTitles.push(normSubject);
+          }
         }
-        existingTitles.push(normManual);
+      } catch (oauthErr) {
+        console.warn('Error sincronizando correos con Google OAuth en sync-inbox:', oauthErr);
       }
     }
+
+    // PASO 2.6: Revisar caché de buzón (correos ya descargados por Bandeja de Entrada)
+    const cachedInbox = getCachedInboxEmails(tenantId, email);
+    if (cachedInbox && cachedInbox.length > 0) {
+      for (const msg of cachedInbox) {
+        const normSubject = msg.subject.trim().toLowerCase();
+        if (existingTitles.includes(normSubject)) continue;
+
+        const isCeo = msg.triage_badge?.quadrant === 'ATENCION_CEO' || msg.is_important;
+        const isDelegate = msg.triage_badge?.quadrant === 'DELEGADO_CON_PLAZO';
+
+        if (isCeo || isDelegate) {
+          newMatters.push({
+            id: `mat-live-${msg.id}`,
+            matter_code: `MAT-${prefix}-2026-${msg.id.replace(/[^a-zA-Z0-9]/g, '').slice(-3).toUpperCase() || '001'}`,
+            title: msg.subject,
+            summary: msg.snippet || msg.body_text.slice(0, 140) + '...',
+            category: isCeo ? 'Atención Inmediata CEO' : 'Gestión Delegada Operativa',
+            urgency: isCeo ? 'CRITICA' : 'MEDIA',
+            destination: isCeo ? 'ATENCION_CEO' : 'DELEGADO_CON_SLA',
+            why_shown: isCeo
+              ? 'Correo de alta prioridad clasificado por el Motor de IA Pedagógica como Atención Inmediata CEO.'
+              : 'Solicitud canalizada con compromiso de tiempo (SLA 24h).',
+            reincidence_count: 1,
+            recommended_action: isCeo
+              ? 'Revisar expediente completo y validar borrador de respuesta oficial de Dirección General.'
+              : 'Canalizar al área delegada correspondiente.',
+            suggested_draft_reply: `Estimado(a) ${msg.sender_name}:\n\nHe recibido personalmente su comunicación en relación con: "${msg.subject}". En ${schoolName} la atención inmediata de este asunto es prioritaria.\n\nAtentamente,\nDirección General · ${schoolName}`,
+            assigned_role: isCeo ? 'Dirección General / CEO' : 'Coordinación Delegada',
+            assigned_email: isCeo ? email : undefined,
+            sla_hours: isCeo ? 12 : 24,
+            sla_remaining_text: isCeo ? '⏱️ 12h restantes' : '⏱️ 24h restantes',
+            sender_name: msg.sender_name,
+            sender_email: msg.sender_email,
+            provenance_doc: `Buzón Institucional en Vivo (${msg.sender_email})`,
+            received_at: msg.received_at || 'Justo ahora',
+            campus: 'Plantel Central'
+          });
+          existingTitles.push(normSubject);
+        }
+      }
+    }
+
+
 
     // PASO 4: Consulta vía socket IMAP si se cuenta con contraseña / clave de aplicación
     let pass = (password || '').replace(/\s+/g, '');
