@@ -196,10 +196,14 @@ export function getTenantId(
   holdingId?: string,
   isIbime?: boolean
 ): string {
-  const sId = typeof targetOrSchoolId === 'string' ? targetOrSchoolId : targetOrSchoolId?.id;
-  if (isIbime || sId === 'sch-ibime') return 'e1000000-0000-0000-0000-000000000001';
-  if (sId) return sId;
-  if (holdingId) return holdingId;
+  const raw = typeof targetOrSchoolId === 'string' ? targetOrSchoolId : targetOrSchoolId?.id || holdingId || '';
+  const clean = raw.replace(/^org-/, '').replace(/-holding$/, '').trim();
+  if (isIbime || clean === 'sch-ibime' || clean === 'ibime') {
+    return 'e1000000-0000-0000-0000-000000000001';
+  }
+  if (clean) {
+    return clean;
+  }
   return 'sch-default';
 }
 
@@ -413,6 +417,8 @@ export function CEOEmailCommunicationsModal({
   // Cuenta de Google conectada con aislamiento y persistencia hermética por tenant
   const emailStorageKey = `iskool_connected_email_${currentTenantId}`;
   const mailVerifiedStorageKey = `iskool_mail_verified_${currentTenantId}`;
+  const mailConfigStorageKey = `iskool_mail_config_${currentTenantId}`;
+  const rawEmailsStorageKey = `iskool_raw_emails_${currentTenantId}`;
 
   const [connectedEmail, setConnectedEmail] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -420,7 +426,7 @@ export function CEOEmailCommunicationsModal({
       if (saved === 'DISCONNECTED') return '';
       if (saved) return saved;
     }
-    return 'israell35mac@gmail.com';
+    return '';
   });
 
   // Estado riguroso de verificación en tiempo real por ping
@@ -446,15 +452,51 @@ export function CEOEmailCommunicationsModal({
       const saved = localStorage.getItem(`iskool_app_pass_input_${currentTenantId}`);
       if (saved) return saved;
     }
-    return 'orqm tfag qzev wihw';
+    return '';
   });
   const [showAppPasswordHelper, setShowAppPasswordHelper] = useState<boolean>(false);
   const [showQuickTestEmailModal, setShowQuickTestEmailModal] = useState<boolean>(false);
-  const [quickTestSenderName, setQuickTestSenderName] = useState<string>('israel LopezAngeles');
-  const [quickTestSenderEmail, setQuickTestSenderEmail] = useState<string>('israell35mac@gmail.com');
-  const [quickTestSubject, setQuickTestSubject] = useState<string>('Alumno herido en prácticas');
+  const [quickTestSenderName, setQuickTestSenderName] = useState<string>(directorTitle || 'Dirección Escolar');
+  const [quickTestSenderEmail, setQuickTestSenderEmail] = useState<string>(`direccion@${schoolDomain}`);
+  const [quickTestSubject, setQuickTestSubject] = useState<string>('Comunicado Oficial de Dirección');
   const [quickTestBody, setQuickTestBody] = useState<string>('Estimada Dirección: Se notifica que un estudiante sufrió una lesión en el campo deportivo durante el receso. Se activó protocolo médico institucional y se solicita confirmación de seguro médico.');
   const [isSendingQuickTest, setIsSendingQuickTest] = useState<boolean>(false);
+
+  // Purga defensiva mandatoria de llaves contaminadas entre colegios
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedEmail = localStorage.getItem(emailStorageKey);
+      if (savedEmail && currentTenantId !== 'e1000000-0000-0000-0000-000000000001') {
+        if (savedEmail.includes('roboticalegotaller1') || savedEmail.includes('israell35mac')) {
+          localStorage.setItem(emailStorageKey, 'DISCONNECTED');
+          localStorage.removeItem(mailConfigStorageKey);
+          localStorage.removeItem(mailVerifiedStorageKey);
+          localStorage.removeItem(rawEmailsStorageKey);
+          localStorage.removeItem(`iskool_auth_pass_${currentTenantId}`);
+          localStorage.removeItem(`iskool_app_pass_input_${currentTenantId}`);
+          setConnectedEmail('');
+          setConnectionStatus('disconnected');
+          setRawEmailsList([]);
+        }
+      }
+      const savedRaw = localStorage.getItem(rawEmailsStorageKey);
+      if (savedRaw && currentTenantId !== 'e1000000-0000-0000-0000-000000000001') {
+        if (savedRaw.includes('roboticalegotaller1') || savedRaw.includes('israell35mac') || savedRaw.includes('israel LopezAngeles')) {
+          localStorage.removeItem(rawEmailsStorageKey);
+          setRawEmailsList([]);
+        }
+      }
+      const orphanKeys = [
+        'iskool_connected_email_jjrosseau',
+        'iskool_raw_emails_jjrosseau',
+        'iskool_mail_config_jjrosseau',
+        'iskool_mail_verified_jjrosseau',
+        'iskool_app_pass_input_jjrosseau',
+        'iskool_auth_pass_jjrosseau'
+      ];
+      orphanKeys.forEach(k => localStorage.removeItem(k));
+    }
+  }, [currentTenantId, emailStorageKey, mailConfigStorageKey, mailVerifiedStorageKey]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -494,14 +536,14 @@ export function CEOEmailCommunicationsModal({
         } catch {}
       }
 
-      // Si existe un correo en storage pero no cuenta con registro, mantenerlo en espera sin marcar fallo
       setConnectionStatus('connected_verified');
       setVerifiedLatency(24);
       setLastPingError(null);
       return;
     }
-    setConnectedEmail(user?.email || (isIbime ? 'directora.general@ibime.edu.mx' : `direccion@${schoolDomain}`));
-  }, [emailStorageKey, mailVerifiedStorageKey, isIbime, schoolDomain, user?.email]);
+    setConnectedEmail('');
+    setConnectionStatus('disconnected');
+  }, [emailStorageKey, mailVerifiedStorageKey, mailConfigStorageKey, isIbime, schoolDomain, user?.email]);
 
   // Permisos autorizados para la Suite Google Workspace (Lectura de correos, Envío de correos y Calendario)
   const permissionsStorageKey = `iskool_permissions_${currentTenantId}`;
@@ -521,21 +563,32 @@ export function CEOEmailCommunicationsModal({
       const saved = localStorage.getItem(emailStorageKey);
       if (saved && saved !== 'DISCONNECTED') return saved;
     }
-    return 'israell35mac@gmail.com';
+    return '';
   });
   const [authPassword, setAuthPassword] = useState<string>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(`iskool_auth_pass_${currentTenantId}`);
       if (saved) return saved;
     }
-    return 'orqmtfagqzevwihw';
+    return '';
   });
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isAuthorizing, setIsAuthorizing] = useState<boolean>(false);
   const [showAuthForm, setShowAuthForm] = useState<boolean>(false);
 
+  // Sincronización reactiva de credenciales al cambiar de colegio o tenant
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedEmail = localStorage.getItem(emailStorageKey);
+      setAuthUsername(savedEmail && savedEmail !== 'DISCONNECTED' ? savedEmail : '');
+      const savedPass = localStorage.getItem(`iskool_auth_pass_${currentTenantId}`);
+      setAuthPassword(savedPass || '');
+      const savedAppPass = localStorage.getItem(`iskool_app_pass_input_${currentTenantId}`);
+      setAppPasswordInput(savedAppPass || '');
+    }
+  }, [currentTenantId, emailStorageKey]);
+
   // Configuración Quirúrgica de Servidores de Correo (POP3, IMAP, SMTP)
-  const mailConfigStorageKey = `iskool_mail_config_${currentTenantId}`;
   const [selectedProtocol, setSelectedProtocol] = useState<MailProtocol>('IMAP');
   const [incomingHost, setIncomingHost] = useState<string>('imap.gmail.com');
   const [incomingPort, setIncomingPort] = useState<number>(993);
@@ -543,7 +596,7 @@ export function CEOEmailCommunicationsModal({
   const [outgoingHost, setOutgoingHost] = useState<string>('smtp.gmail.com');
   const [outgoingPort, setOutgoingPort] = useState<number>(465);
   const [outgoingSecurity, setOutgoingSecurity] = useState<SecurityType>('SSL_TLS');
-  const [mailUsername, setMailUsername] = useState<string>('israell35mac@gmail.com');
+  const [mailUsername, setMailUsername] = useState<string>('');
   const [isEditingServerConfig, setIsEditingServerConfig] = useState<boolean>(false);
   const [isTestingMailConnection, setIsTestingMailConnection] = useState<boolean>(false);
   const [connectionTestResult, setConnectionTestResult] = useState<{
@@ -619,7 +672,7 @@ export function CEOEmailCommunicationsModal({
   // Ingesta Manual y Triage Directo de Correos Recibidos / Enviados
   const [showManualIngestModal, setShowManualIngestModal] = useState<boolean>(false);
   const [manualSenderName, setManualSenderName] = useState<string>('Familia Mendoza Peña');
-  const [manualSenderEmail, setManualSenderEmail] = useState<string>('israell35mac@gmail.com');
+  const [manualSenderEmail, setManualSenderEmail] = useState<string>('contacto.padres@gmail.com');
   const [manualSubject, setManualSubject] = useState<string>('');
   const [manualBody, setManualBody] = useState<string>('');
   const [manualReincidence, setManualReincidence] = useState<number>(1);
@@ -642,7 +695,6 @@ export function CEOEmailCommunicationsModal({
   // =========================================================================
   // BANDEJA DE ENTRADA (VISTA GMAIL EN TIEMPO REAL & CARGA BRUTA DE CORREOS)
   // =========================================================================
-  const rawEmailsStorageKey = `iskool_raw_emails_${currentTenantId}`;
   const [rawEmailsList, setRawEmailsList] = useState<RawGmailItem[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(rawEmailsStorageKey);
@@ -655,294 +707,25 @@ export function CEOEmailCommunicationsModal({
         } catch {}
       }
     }
-    const targetEmail = connectedEmail || 'israell35mac@gmail.com';
-    return [
-      {
-        id: 'raw-msg-01',
-        sender_name: 'israel LopezAngeles',
-        sender_email: 'kami-mac@hotmail.com',
-        recipient_email: targetEmail,
-        subject: 'Alumno herido',
-        snippet: 'El alumno Patricio estrella fue herido ayer en las canchas de futball durante el horario de receso...',
-        body_text: 'El alumno Patricio estrella fue herido ayer en las canchas de futball durante el horario de receso. Solicito saber qué protocolo médico se aplicó y si el colegio cuenta con seguro de gastos médicos mayores vigente para la atención inmediata.',
-        received_at: 'Hoy, 16:42 hrs',
-        timestamp: '16:42',
-        is_unread: true,
-        is_starred: true,
-        is_important: true,
-        category: 'principal',
-        triage_badge: {
-          quadrant: 'ATENCION_CEO',
-          label: '🔴 ATENCIÓN INMEDIATA CEO',
-          color: 'bg-red-50 text-red-700 border-red-200'
-        }
-      },
-      {
-        id: 'raw-msg-02',
-        sender_name: 'israel LopezAngeles',
-        sender_email: 'kami-mac@hotmail.com',
-        recipient_email: targetEmail,
-        subject: 'CTE pospuesto',
-        snippet: 'Se notifica que el CTE queda pospuesto para nueva fecha acordada...',
-        body_text: 'Se notifica que el Consejo Técnico Escolar (CTE) queda pospuesto para nueva fecha acordada con supervisión escolar.',
-        received_at: 'Hoy, 15:30 hrs',
-        timestamp: '15:30',
-        is_unread: true,
-        is_starred: false,
-        is_important: true,
-        category: 'principal',
-        triage_badge: {
-          quadrant: 'DELEGADO_CON_SLA',
-          label: '🟡 DELEGADO CON SLA',
-          color: 'bg-amber-50 text-amber-700 border-amber-200'
-        }
-      },
-      {
-        id: 'raw-msg-02b',
-        sender_name: 'israel LopezAngeles',
-        sender_email: 'kami-mac@hotmail.com',
-        recipient_email: targetEmail,
-        subject: 'Dicumento de proyección civil',
-        snippet: 'Adjunto dictamen técnico de protección civil y plan de contingencia escolar...',
-        body_text: 'Estimada Dirección General: Adjunto dictamen técnico de protección civil y plan de contingencia escolar para la revisión de instalaciones y rutas de evacuación del plantel.',
-        received_at: 'Hoy, 14:20 hrs',
-        timestamp: '14:20',
-        is_unread: true,
-        is_starred: true,
-        is_important: true,
-        category: 'principal',
-        triage_badge: {
-          quadrant: 'ATENCION_CEO',
-          label: '🔴 ATENCIÓN INMEDIATA CEO',
-          color: 'bg-red-50 text-red-700 border-red-200'
-        }
-      },
-      {
-        id: 'raw-msg-02c',
-        sender_name: 'israel LopezAngeles',
-        sender_email: 'kami-mac@hotmail.com',
-        recipient_email: targetEmail,
-        subject: 'Supervisión documento importante',
-        snippet: 'Atenta entrega de documentación requerida para supervisión de zona escolar...',
-        body_text: 'Atenta entrega de documentación requerida para supervisión de zona escolar correspondiente al ciclo activo.',
-        received_at: 'Hoy, 13:50 hrs',
-        timestamp: '13:50',
-        is_unread: true,
-        is_starred: true,
-        is_important: true,
-        category: 'principal',
-        triage_badge: {
-          quadrant: 'ATENCION_CEO',
-          label: '🔴 ATENCIÓN INMEDIATA CEO',
-          color: 'bg-red-50 text-red-700 border-red-200'
-        }
-      },
-      {
-        id: 'raw-msg-02d',
-        sender_name: 'Google',
-        sender_email: 'no-reply@accounts.google.com',
-        recipient_email: targetEmail,
-        subject: 'Alerta de seguridad',
-        snippet: 'Se detectó un nuevo acceso autorizado en tu cuenta de Google...',
-        body_text: 'Se detectó un nuevo acceso o inicio de sesión autorizado en tu cuenta de Google para sincronización de correo electrónico.',
-        received_at: 'Hoy, 13:00 hrs',
-        timestamp: '13:00',
-        is_unread: false,
-        is_starred: false,
-        is_important: false,
-        category: 'actualizaciones',
-        triage_badge: {
-          quadrant: 'INFORMATIVO',
-          label: '🟢 INFORMATIVO',
-          color: 'bg-emerald-50 text-emerald-700 border-emerald-200'
-        }
-      },
-      {
-        id: 'raw-msg-03',
-        sender_name: 'Lic. Fernando Mendoza',
-        sender_email: 'familia.mendoza@gmail.com',
-        recipient_email: targetEmail,
-        subject: 'Reincidencia: Queja formal por presunto acoso y convivencia en 5º B Campus Montes',
-        snippet: 'La familia Mendoza reporta por 3ra ocasión agresiones verbales continuas en el recreo tras intervención inicial de Coordinación...',
-        body_text: 'Estimada Dirección General:\n\nNos dirigimos a usted por tercera ocasión en 12 días porque a pesar de la intervención de Coordinación, nuestro hijo sigue sufriendo agresiones verbales constantes en el recreo por parte de dos compañeros. Exigimos una reunión presencial urgente con ambas familias antes de escalar el caso como queja formal ante la supervisión escolar de la SEP.\n\nAtentamente,\nLic. Fernando Mendoza Peña',
-        received_at: 'Hoy, 08:14 hrs',
-        timestamp: '08:14',
-        is_unread: false,
-        is_starred: true,
-        is_important: true,
-        category: 'principal',
-        triage_badge: {
-          quadrant: 'ATENCION_CEO',
-          label: '🔴 ATENCIÓN INMEDIATA CEO',
-          color: 'bg-red-50 text-red-700 border-red-200',
-          linkedMatterId: 'mat-ibime-01'
-        }
-      },
-      {
-        id: 'raw-msg-04',
-        sender_name: 'Ing. Carlos Ramírez',
-        sender_email: 'carlos.ramirez@empresa.com',
-        recipient_email: targetEmail,
-        subject: 'Aclaración de facturación CFDI 4.0 y aplicación de descuento de hermanos en Campus Lagos',
-        snippet: 'Padre de familia solicita actualización de factura electrónica correspondiente a octubre y corrección del descuento de hermanos...',
-        body_text: 'Buen día Dirección y Administración:\n\nSolicito atentamente la reemisión de mi comprobante fiscal digital CFDI 4.0 del mes en curso con el complemento de colegiaturas IEDU corregido, así como la bonificación del descuento del 10% por segundo hermano en Campus Lagos.\n\nQuedo a la espera de su amable confirmación.',
-        received_at: 'Hoy, 09:30 hrs',
-        timestamp: '09:30',
-        is_unread: false,
-        is_starred: false,
-        is_important: false,
-        category: 'actualizaciones',
-        triage_badge: {
-          quadrant: 'DELEGADO_CON_SLA',
-          label: '🟡 DELEGADO TESORERÍA',
-          color: 'bg-amber-50 text-amber-700 border-amber-200',
-          linkedMatterId: 'mat-ibime-02'
-        }
-      },
-      {
-        id: 'raw-msg-05',
-        sender_name: 'Comité de Padres Ruta 4',
-        sender_email: 'padres.ruta4@ibime.edu.mx',
-        recipient_email: targetEmail,
-        subject: 'Demoras recurrentes en Ruta 4 de Transporte Escolar (Sede San Cristóbal)',
-        snippet: '6 familias reportan demoras promedio de 22 minutos en la parada de la mañana durante los últimos tres días por obras en vía pública...',
-        body_text: 'Estimada Dirección General:\n\nNos dirigimos a ustedes en representación de las familias usuarias de la Ruta 4 de transporte escolar. En los últimos tres días el autobús ha llegado con un retraso promedio de 22 minutos debido a obras viales en Av. Central. Solicitamos ajustar el horario de salida matutino 15 minutos antes.\n\nAtentamente,\nComité de Padres de Familia de Transporte',
-        received_at: 'Ayer, 18:45 hrs',
-        timestamp: 'Ayer',
-        is_unread: false,
-        is_starred: false,
-        is_important: false,
-        category: 'actualizaciones',
-        triage_badge: {
-          quadrant: 'DELEGADO_CON_SLA',
-          label: '🟡 DELEGADO LOGÍSTICA',
-          color: 'bg-amber-50 text-amber-700 border-amber-200',
-          linkedMatterId: 'mat-ibime-03'
-        }
-      },
-      {
-        id: 'raw-msg-06',
-        sender_name: 'Supervisión Escolar Zona 14',
-        sender_email: 'supervision.zona14@edomex.gob.mx',
-        recipient_email: targetEmail,
-        subject: 'Recepción y acuse oficial de Folio de Matrícula ante Supervisión de Zona SEP',
-        snippet: 'Oficio de la Supervisión de Zona 14 confirmando la recepción y validación de las listas de matrícula del ciclo escolar 2026-2027 sin observaciones...',
-        body_text: 'Por medio del presente oficio notificamos a la Dirección General de la Institución que el trámite de entrega de listas de matrícula para el ciclo escolar 2026-2027 ha sido recibido y cotejado satisfactoriamente, otorgando el sello y folio oficial de validación sin observaciones.',
-        received_at: '04 Oct 2026',
-        timestamp: '4 oct',
-        is_unread: false,
-        is_starred: true,
-        is_important: true,
-        category: 'actualizaciones',
-        triage_badge: {
-          quadrant: 'INFORMATIVO',
-          label: '🟢 INFORMATIVO SEP',
-          color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-          linkedMatterId: 'mat-ibime-04'
-        }
-      },
-      {
-        id: 'raw-msg-07',
-        sender_name: 'ASM Careers Team',
-        sender_email: 'no-reply@asm-careers.global',
-        recipient_email: targetEmail,
-        subject: 'ASM Careers: Oportunidades docentes internacionales y convocatorias',
-        snippet: 'Conoce las nuevas convocatorias de capacitación y programas de vinculación docente internacional para colegios bilingües...',
-        body_text: 'Estimada comunidad directiva:\n\nLes extendemos la cordial invitación a conocer las convocatorias de contratación y certificaciones docentes internacionales del ciclo 2026.\n\nPueden postular o consultar las bases en nuestro portal institucional.',
-        received_at: 'Ayer, 14:10 hrs',
-        timestamp: 'Ayer',
-        is_unread: false,
-        is_starred: false,
-        is_important: false,
-        category: 'promociones',
-        triage_badge: {
-          quadrant: 'SPAM_DESCARTADO',
-          label: '⚪ PROMOCIÓN EXTERNA',
-          color: 'bg-slate-100 text-slate-600 border-slate-200'
-        }
-      },
-      {
-        id: 'raw-msg-08',
-        sender_name: 'Agencia Digital WebPro',
-        sender_email: 'ventas@webpro-servicios.com',
-        recipient_email: targetEmail,
-        subject: 'Diseño para su web escolar y optimización de hosting con IA',
-        snippet: 'Hola, visitamos su portal escolar y detectamos oportunidades para mejorar su velocidad de carga y posicionamiento orgánico...',
-        body_text: 'Estimada Dirección General:\n\nNos ponemos en contacto para ofrecerles nuestra auditoría gratuita de velocidad y rediseño para portales de colegios privados.\n\nQuedamos a sus órdenes para una demostración virtual.',
-        received_at: '05 Oct 2026',
-        timestamp: '5 oct',
-        is_unread: false,
-        is_starred: false,
-        is_important: false,
-        category: 'promociones',
-        triage_badge: {
-          quadrant: 'SPAM_DESCARTADO',
-          label: '⚪ PROSPECCIÓN COMERCIAL',
-          color: 'bg-slate-100 text-slate-600 border-slate-200'
-        }
-      },
-      {
-        id: 'raw-msg-09',
-        sender_name: 'Ventas Nacionales Mobiliario',
-        sender_email: 'ofertas@muebles-escolares-mx.com',
-        recipient_email: targetEmail,
-        subject: 'Gran liquidación de bancas y pizarrones inteligentes 50% de descuento',
-        snippet: 'Remate especial de mobiliario escolar para renovación de aulas. Entrega inmediata en todo el país...',
-        body_text: 'Estimada Institución Educativa:\n\nAproveche nuestros precios de remate en bancas ergonómicas y pizarrones interactivos para su institución con entrega sin costo.',
-        received_at: 'Hoy, 06:45 hrs',
-        timestamp: '06:45',
-        is_unread: false,
-        is_starred: false,
-        is_important: false,
-        category: 'promociones',
-        triage_badge: {
-          quadrant: 'SPAM_DESCARTADO',
-          label: '⚪ SPAM COMERCIAL',
-          color: 'bg-slate-100 text-slate-600 border-slate-200'
-        }
-      },
-      {
-        id: 'raw-msg-10',
-        sender_name: 'Invitaciones VIP Marketing',
-        sender_email: 'invitaciones@marketing-digital-latam.org',
-        recipient_email: targetEmail,
-        subject: 'Invitación VIP al Simposio de Tendencias en Captación de Alumnos',
-        snippet: 'Boletín de prospección externa con accesos preferenciales para directores de colegios privados...',
-        body_text: 'Le invitamos a participar en el Simposio Iberoamericano de Captación de Matrícula para instituciones educativas particulares.',
-        received_at: 'Hoy, 07:12 hrs',
-        timestamp: '07:12',
-        is_unread: false,
-        is_starred: false,
-        is_important: false,
-        category: 'promociones',
-        triage_badge: {
-          quadrant: 'SPAM_DESCARTADO',
-          label: '⚪ PUBLICIDAD EXTERNA',
-          color: 'bg-slate-100 text-slate-600 border-slate-200'
-        }
-      },
-      {
-        id: 'raw-msg-11',
-        sender_name: 'Encuestas y Premios Express',
-        sender_email: 'reward-alert@global-surveys-win.xyz',
-        recipient_email: targetEmail,
-        subject: 'Has sido seleccionado para reclamar un bono de regalo en línea',
-        snippet: 'Haz clic aquí para confirmar tu participación y recibir una tarjeta de regalo por valor de $500...',
-        body_text: 'Felicidades, tu cuenta de correo ha sido elegida al azar para reclamar un incentivo digital inmediato completando 3 preguntas.',
-        received_at: 'Ayer, 23:18 hrs',
-        timestamp: 'Ayer',
-        is_unread: false,
-        is_starred: false,
-        is_important: false,
-        category: 'spam',
-        triage_badge: {
-          quadrant: 'SPAM_DESCARTADO',
-          label: '⛔ SPAM MALICIOSO / PHISHING',
-          color: 'bg-rose-50 text-rose-700 border-rose-200'
-        }
-      }
-    ];
+    return [];
   });
+
+  // Sincronización reactiva inmediata de la bandeja cruda al cambiar de colegio o tenant
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(rawEmailsStorageKey);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            setRawEmailsList(parsed);
+            return;
+          }
+        } catch {}
+      }
+    }
+    setRawEmailsList([]);
+  }, [rawEmailsStorageKey, currentTenantId]);
 
   const [selectedRawEmailId, setSelectedRawEmailId] = useState<string | null>(null);
   const [rawEmailCategory, setRawEmailCategory] = useState<'todos' | 'principal' | 'actualizaciones' | 'promociones' | 'spam'>('todos');
@@ -1798,14 +1581,18 @@ ${schoolName}`
   // Validar contraseña de aplicación de 16 caracteres de Google
   const handleApplyAppPassword = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const rawVal = appPasswordInput || 'orqm tfag qzev wihw';
+    const rawVal = appPasswordInput || '';
     const cleanAppPass = rawVal.replace(/\s+/g, '');
     if (cleanAppPass.length < 8) {
-      onTriggerToast('La contraseña de aplicación debe contener 16 caracteres.');
+      onTriggerToast('La contraseña de aplicación debe contener al menos 8 caracteres (recomendado 16).');
+      return;
+    }
+    const targetEmail = (connectedEmail || authUsername || '').trim().toLowerCase();
+    if (!targetEmail) {
+      onTriggerToast('Por favor ingrese primero el correo institucional o cuenta de Google.');
       return;
     }
     setAuthPassword(cleanAppPass);
-    const targetEmail = (connectedEmail || authUsername || 'israell35mac@gmail.com').trim().toLowerCase();
     const isGmail = targetEmail.includes('@gmail.com');
     const hostToUse = isGmail ? 'imap.gmail.com' : (incomingHost || 'imap.gmail.com');
     const portToUse = isGmail ? 993 : (Number(incomingPort) || 993);
@@ -1964,7 +1751,7 @@ ${schoolName}`
 
     handleSelectProviderPreset(presetId);
 
-    const targetEmail = (authUsername || connectedEmail || (presetId === 'google' ? 'israell35mac@gmail.com' : '')).trim();
+    const targetEmail = (authUsername || connectedEmail || '').trim();
     const popupUrl = `/auth/oauth/${presetId}?email=${encodeURIComponent(targetEmail)}`;
     const width = 520;
     const height = 680;
@@ -2030,9 +1817,15 @@ ${schoolName}`
       localStorage.setItem(emailStorageKey, 'DISCONNECTED');
       localStorage.removeItem(mailConfigStorageKey);
       localStorage.removeItem(mailVerifiedStorageKey);
+      localStorage.removeItem(rawEmailsStorageKey);
+      localStorage.removeItem(`iskool_auth_pass_${currentTenantId}`);
+      localStorage.removeItem(`iskool_app_pass_input_${currentTenantId}`);
     }
     setConnectedEmail('');
     setAuthUsername('');
+    setAuthPassword('');
+    setAppPasswordInput('');
+    setRawEmailsList([]);
     setCustomGoogleEmailInput('');
     setConnectionTestResult(null);
     setConnectionStatus('disconnected');
@@ -2182,8 +1975,14 @@ ${schoolName}`
 
   // Forzar o auto-ejecutar sincronización de bandeja en tiempo real con descarga y Triage Cognitivo (Blindada contra desautorización)
   const handleTriggerSync = async (isSilent = false, autoDetectUserSentMail = false) => {
+    // Aislamiento Multi-Tenant Estricto: Si la escuela no tiene un correo conectado o está desconectada, ABORTAR INMEDIATAMENTE
+    const targetEmail = (connectedEmail || authUsername || '').trim().toLowerCase();
+    if (!targetEmail || targetEmail === 'disconnected' || connectionStatus === 'disconnected') {
+      setIsSyncingLiveInbox(false);
+      return;
+    }
+
     setIsSyncingLiveInbox(true);
-    const targetEmail = (connectedEmail || authUsername || 'israell35mac@gmail.com').trim().toLowerCase();
     const isGmail = targetEmail.includes('@gmail.com');
     const currentHost = isGmail ? 'imap.gmail.com' : (incomingHost || `mail.${schoolDomain}`);
     const currentPort = isGmail ? 993 : (Number(incomingPort) || 993);
@@ -2208,8 +2007,7 @@ ${schoolName}`
     const rawVal = appPasswordInput || '';
     const effectivePass = (
       (rawVal.trim().length >= 8 ? rawVal : '') ||
-      (authPassword && authPassword !== '••••••••••••' ? authPassword : '') ||
-      (isGmail ? 'orqmtfagqzevwihw' : '')
+      (authPassword && authPassword !== '••••••••••••' ? authPassword : '')
     ).replace(/\s+/g, '');
 
     if (effectivePass && effectivePass !== authPassword) {
@@ -2416,9 +2214,12 @@ ${schoolName}`
       return;
     }
     setIsSendingQuickTest(true);
-    onTriggerToast('⚡ Despachando correo al buzón en tiempo real y ejecutando Motor de IA...');
-
-    const targetEmail = connectedEmail || authUsername || 'israell35mac@gmail.com';
+    const targetEmail = connectedEmail || authUsername || '';
+    if (!targetEmail) {
+      onTriggerToast('No hay una cuenta de correo vinculada para recibir el correo de prueba.');
+      setIsSendingQuickTest(false);
+      return;
+    }
 
     try {
       // 1. Inyectar en Bandeja de Entrada (raw-inbox)
@@ -5083,7 +4884,7 @@ Comité de Seguridad y Protección Escolar`
                           type="text"
                           value={quickTestSenderName}
                           onChange={(e) => setQuickTestSenderName(e.target.value)}
-                          placeholder="ej. israel LopezAngeles"
+                          placeholder="ej. Juan Pérez (Padre de Familia)"
                           className="w-full px-3 py-1.5 rounded-xl bg-white border border-indigo-200 text-xs text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
                         />
                       </div>
@@ -5093,7 +4894,7 @@ Comité de Seguridad y Protección Escolar`
                           type="email"
                           value={quickTestSenderEmail}
                           onChange={(e) => setQuickTestSenderEmail(e.target.value)}
-                          placeholder="ej. israell35mac@gmail.com"
+                          placeholder="ej. remitente@gmail.com"
                           className="w-full px-3 py-1.5 rounded-xl bg-white border border-indigo-200 text-xs text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
                         />
                       </div>
@@ -5152,7 +4953,7 @@ Comité de Seguridad y Protección Escolar`
                       </div>
                       <div>
                         <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
-                          <span>Conexión en Vivo con Google ({connectedEmail || 'israell35mac@gmail.com'})</span>
+                          <span>Conexión en Vivo con Google ({connectedEmail || 'Buzón no vinculado'})</span>
                           <span className="px-2 py-0.5 rounded-full bg-red-100 text-[#EA4335] text-[10px] font-black uppercase">
                             Seguridad 2FA Oficial
                           </span>

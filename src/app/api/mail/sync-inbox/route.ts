@@ -37,6 +37,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Tenant ID requerido.' }, { status: 400 });
     }
 
+    if (!email || email === 'DISCONNECTED') {
+      return NextResponse.json({
+        success: true,
+        newMatters: [],
+        count: 0,
+        appPasswordRequired: false,
+        message: 'No hay cuenta conectada para este colegio.'
+      });
+    }
+
     const schoolName = institutionName || 'Instituto Educativo';
     const prefix = (schoolSlug || tenantId.replace(/^sch-/, '') || 'INST').toUpperCase().slice(0, 5);
 
@@ -159,7 +169,7 @@ export async function POST(req: NextRequest) {
 
     // PASO 4: Consulta vía socket IMAP si se cuenta con contraseña / clave de aplicación
     let pass = (password || '').replace(/\s+/g, '');
-    const isTargetGmail = (email || '').toLowerCase().includes('israell35mac') || (email || '').toLowerCase().includes('gmail.com');
+    const isTargetGmail = (email || '').toLowerCase().includes('gmail.com');
     const imapHost = isTargetGmail ? 'imap.gmail.com' : (host || 'imap.gmail.com');
     const imapPort = isTargetGmail ? 993 : (Number(port) || 993);
 

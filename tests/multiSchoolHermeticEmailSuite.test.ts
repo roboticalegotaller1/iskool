@@ -168,4 +168,25 @@ describe('🏛️ SUITE DE CORREO INSTITUCIONAL HERMÉTICO & MULTI-COLEGIO (CEO 
       checkWhiteLabel(modalContent);
     });
   });
+
+  describe('6. Blindaje Antifuga y Prevención de Contaminación Cruzada', () => {
+    it('no debe contener fallbacks hardcodeados a cuentas personales ni contraseñas de aplicación fijas', () => {
+      expect(modalContent).not.toContain('const rawVal = appPasswordInput || \'orqm');
+      expect(modalContent).not.toContain('targetEmail = (connectedEmail || authUsername || \'israell35mac');
+      expect(modalContent).not.toContain('targetEmail = connectedEmail || authUsername || \'israell35mac');
+      expect(modalContent).not.toContain('isGmail ? \'orqmtfagqzevwihw\'');
+    });
+
+    it('debe garantizar remontaje React con key basada en colegio en admin/page.tsx y CEOExecutiveDashboard', () => {
+      expect(adminContent).toContain('key={currentSchool?.id || effectiveSchoolId || \'sch-default\'}');
+      expect(ceoContent).toContain('key={schoolId || currentInstitution?.id || holding?.id || \'sch-default\'}');
+    });
+
+    it('debe aislar el caché IMAP en backend estrictamente por combinación tenantId y usuario', () => {
+      const imapServiceContent = fs.readFileSync(path.join(process.cwd(), 'src/lib/services/imapClientService.ts'), 'utf-8');
+      expect(imapServiceContent).toContain('const tenantKey = `${tenantId}:${cleanUser}`');
+      expect(imapServiceContent).toContain('clearTenantInboxCache(tenantId: string, email?: string)');
+    });
+  });
 });
+

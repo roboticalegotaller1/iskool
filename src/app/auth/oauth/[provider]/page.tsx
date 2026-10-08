@@ -12,7 +12,7 @@ export default function ProviderOAuthPage() {
   const provider = (params?.provider as string || 'google').toLowerCase();
   const initialEmail = searchParams.get('email') || '';
 
-  const [emailInput, setEmailInput] = useState(initialEmail || (provider === 'google' ? 'israell35mac@gmail.com' : ''));
+  const [emailInput, setEmailInput] = useState(initialEmail || '');
   const [step, setStep] = useState<'SELECT_ACCOUNT' | 'VERIFY_2FA' | 'CONSENT' | 'COMPLETED'>('SELECT_ACCOUNT');
   const [isProcessing, setIsProcessing] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);

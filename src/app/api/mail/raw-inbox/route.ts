@@ -28,99 +28,30 @@ export interface RawGmailItem {
 
 // Semilla canónica de respaldo en caso de desconexión sin credenciales
 function getFallbackRawEmails(accountEmail: string): RawGmailItem[] {
-  const targetEmail = accountEmail || 'israell35mac@gmail.com';
-  return [
-    {
-      id: 'raw-msg-01',
-      sender_name: 'israel LopezAngeles',
-      sender_email: 'kami-mac@hotmail.com',
-      recipient_email: targetEmail,
-      subject: 'Alumno herido',
-      snippet: 'El alumno Patricio estrella fue herido ayer en las canchas de futball durante el horario de receso...',
-      body_text: 'El alumno Patricio estrella fue herido ayer en las canchas de futball durante el horario de receso. Solicito saber qué protocolo médico se aplicó y si el colegio cuenta con seguro de gastos médicos mayores vigente para la atención inmediata.',
-      received_at: 'Hoy',
-      timestamp: '16:42',
-      is_unread: true,
-      is_starred: true,
-      is_important: true,
-      category: 'principal',
-      triage_badge: {
-        quadrant: 'ATENCION_CEO',
-        label: '🔴 ATENCIÓN INMEDIATA CEO',
-        color: 'bg-red-50 text-red-700 border-red-200'
-      }
-    },
-    {
-      id: 'raw-msg-02',
-      sender_name: 'israel LopezAngeles',
-      sender_email: 'kami-mac@hotmail.com',
-      recipient_email: targetEmail,
-      subject: 'CTE pospuesto',
-      snippet: 'Se notifica que el CTE queda pospuesto para nueva fecha acordada...',
-      body_text: 'Se notifica que el Consejo Técnico Escolar (CTE) queda pospuesto para nueva fecha acordada con supervisión escolar.',
-      received_at: 'Hoy',
-      timestamp: '15:30',
-      is_unread: true,
-      is_starred: false,
-      is_important: true,
-      category: 'principal',
-      triage_badge: {
-        quadrant: 'DELEGADO_CON_SLA',
-        label: '🟡 DELEGADO CON SLA',
-        color: 'bg-amber-50 text-amber-700 border-amber-200'
-      }
-    },
-    {
-      id: 'raw-msg-03',
-      sender_name: 'israel LopezAngeles',
-      sender_email: 'kami-mac@hotmail.com',
-      recipient_email: targetEmail,
-      subject: 'Dicumento de proyección civil',
-      snippet: 'Adjunto dictamen técnico de protección civil y plan de contingencia escolar...',
-      body_text: 'Estimada Dirección General: Adjunto dictamen técnico de protección civil y plan de contingencia escolar para la revisión de instalaciones y rutas de evacuación del plantel.',
-      received_at: 'Hoy',
-      timestamp: '14:20',
-      is_unread: true,
-      is_starred: true,
-      is_important: true,
-      category: 'principal',
-      triage_badge: {
-        quadrant: 'ATENCION_CEO',
-        label: '🔴 ATENCIÓN INMEDIATA CEO',
-        color: 'bg-red-50 text-red-700 border-red-200'
-      }
-    },
-    {
-      id: 'raw-msg-04',
-      sender_name: 'Google',
-      sender_email: 'no-reply@accounts.google.com',
-      recipient_email: targetEmail,
-      subject: 'Alerta de seguridad',
-      snippet: 'Se detectó un nuevo inicio de sesión o acceso de aplicación en tu cuenta de Google...',
-      body_text: 'Se detectó un nuevo inicio de sesión o acceso de aplicación autorizada en tu cuenta de Google para sincronización de correo electrónico.',
-      received_at: 'Hoy',
-      timestamp: '13:00',
-      is_unread: false,
-      is_starred: false,
-      is_important: false,
-      category: 'actualizaciones',
-      triage_badge: {
-        quadrant: 'INFORMATIVO',
-        label: '🟢 INFORMATIVO',
-        color: 'bg-emerald-50 text-emerald-700 border-emerald-200'
-      }
-    }
-  ];
+  return [];
 }
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenantId') || 'sch-ibime';
-    const email = searchParams.get('email') || 'israell35mac@gmail.com';
+    const tenantId = searchParams.get('tenantId') || 'sch-default';
+    const email = (searchParams.get('email') || '').trim();
     const password = searchParams.get('password') || '';
     const host = searchParams.get('host') || 'imap.gmail.com';
     const port = Number(searchParams.get('port')) || 993;
+
+    if (!email || email === 'DISCONNECTED') {
+      return NextResponse.json({
+        success: true,
+        authenticated: false,
+        requiresAppPassword: false,
+        emails: [],
+        total: 0,
+        unreadCount: 0,
+        connectedEmail: '',
+        lastSyncTime: 'Sin cuenta conectada'
+      });
+    }
 
     let emails: RawGmailItem[] = [];
     let authenticated = false;
@@ -130,7 +61,7 @@ export async function GET(request: NextRequest) {
 
     // 1. Resolver host y credencial para buzones Google
     let cleanPass = (password || '').replace(/\s+/g, '');
-    const isTargetGmail = email.toLowerCase().includes('israell35mac') || email.toLowerCase().includes('gmail.com');
+    const isTargetGmail = email.toLowerCase().includes('gmail.com');
     const targetHost = isTargetGmail ? 'imap.gmail.com' : (host || 'imap.gmail.com');
     const targetPort = isTargetGmail ? 993 : (Number(port) || 993);
 
@@ -151,13 +82,13 @@ export async function GET(request: NextRequest) {
       requiresAppPassword = true;
     }
 
-    // 3. Si no se autenticó o no se descargó, revisar caché o fallback enriquecido
+    // 3. Si no se descargó en vivo, consultar caché estricto del tenant y cuenta
     if (emails.length === 0) {
-      const cached = getCachedInboxEmails(tenantId);
+      const cached = getCachedInboxEmails(tenantId, email);
       if (cached && cached.length > 0) {
         emails = cached;
       } else {
-        emails = getFallbackRawEmails(email);
+        emails = [];
         requiresAppPassword = !authenticated;
       }
     }
@@ -221,11 +152,24 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const tenantId = body.tenantId || 'sch-ibime';
-    const email = body.email || 'israell35mac@gmail.com';
+    const tenantId = body.tenantId || 'sch-default';
+    const email = (body.email || '').trim();
     const password = body.password || '';
     const host = body.host || 'imap.gmail.com';
     const port = Number(body.port) || 993;
+
+    if (!email || email === 'DISCONNECTED') {
+      return NextResponse.json({
+        success: true,
+        authenticated: false,
+        requiresAppPassword: false,
+        emails: [],
+        total: 0,
+        unreadCount: 0,
+        connectedEmail: '',
+        lastSyncTime: 'Sin cuenta conectada'
+      });
+    }
 
     let emails: RawGmailItem[] = [];
     let authenticated = false;
@@ -269,7 +213,7 @@ export async function POST(request: NextRequest) {
 
     // Resolver credencial y host para buzones Google
     let cleanPass = (password || '').replace(/\s+/g, '');
-    const isTargetGmail = email.toLowerCase().includes('israell35mac') || email.toLowerCase().includes('gmail.com');
+    const isTargetGmail = email.toLowerCase().includes('gmail.com');
     const targetHost = isTargetGmail ? 'imap.gmail.com' : (host || 'imap.gmail.com');
     const targetPort = isTargetGmail ? 993 : (Number(port) || 993);
 
@@ -291,11 +235,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (emails.length === 0) {
-      const cached = getCachedInboxEmails(tenantId);
+      const cached = getCachedInboxEmails(tenantId, email);
       if (cached && cached.length > 0) {
         emails = cached;
       } else {
-        emails = getFallbackRawEmails(email);
+        emails = [];
         requiresAppPassword = !authenticated;
       }
     }

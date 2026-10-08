@@ -226,7 +226,7 @@ export async function fetchLiveImapEmails(
   const timeoutMs = options?.timeoutMs || 8500;
   const cleanPass = (pass || '').replace(/\s+/g, '');
   const cleanUser = (user || '').trim().toLowerCase();
-  const tenantKey = options?.tenantId || cleanUser;
+  const tenantKey = `${options?.tenantId || 'sch-default'}:${cleanUser}`;
 
   // Si no hay contraseña real, informar inmediatamente sin fingir
   if (!cleanPass || cleanPass === '••••••••••••' || cleanPass === 'password') {
@@ -492,10 +492,16 @@ export async function fetchLiveImapEmails(
 }
 
 /**
- * Obtener correos cacheados de la sesión para respuesta instantánea
+ * Obtener correos cacheados de la sesión para respuesta instantánea (con aislamiento estricto por tenant y cuenta)
  */
-export function getCachedInboxEmails(tenantId: string): RawGmailItem[] | null {
-  const item = globalInboxCache.get(tenantId);
+export function getCachedInboxEmails(tenantId: string, email?: string): RawGmailItem[] | null {
+  if (!email) {
+    const item = globalInboxCache.get(tenantId);
+    return item ? item.emails : null;
+  }
+  const cleanUser = email.trim().toLowerCase();
+  const tenantKey = `${tenantId}:${cleanUser}`;
+  const item = globalInboxCache.get(tenantKey) || globalInboxCache.get(tenantId);
   return item ? item.emails : null;
 }
 
@@ -503,12 +509,29 @@ export function getCachedInboxEmails(tenantId: string): RawGmailItem[] | null {
  * Inyectar manualmente un correo en el caché del buzón (para pruebas y webhooks)
  */
 export function injectEmailIntoCache(tenantId: string, email: RawGmailItem): void {
-  const current = globalInboxCache.get(tenantId)?.emails || [];
+  const cleanUser = (email.recipient_email || '').trim().toLowerCase();
+  const tenantKey = cleanUser ? `${tenantId}:${cleanUser}` : tenantId;
+  const current = globalInboxCache.get(tenantKey)?.emails || [];
   const exists = current.some(e => e.id === email.id || e.subject.trim().toLowerCase() === email.subject.trim().toLowerCase());
   if (!exists) {
-    globalInboxCache.set(tenantId, {
+    globalInboxCache.set(tenantKey, {
       emails: [email, ...current],
       lastSync: Date.now()
     });
+  }
+}
+
+/**
+ * Purgar completamente el caché de un colegio o cuenta específica
+ */
+export function clearTenantInboxCache(tenantId: string, email?: string): void {
+  if (email) {
+    globalInboxCache.delete(`${tenantId}:${email.trim().toLowerCase()}`);
+  }
+  globalInboxCache.delete(tenantId);
+  for (const key of Array.from(globalInboxCache.keys())) {
+    if (key.startsWith(`${tenantId}:`)) {
+      globalInboxCache.delete(key);
+    }
   }
 }

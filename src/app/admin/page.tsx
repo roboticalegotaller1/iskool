@@ -2163,8 +2163,9 @@ export default function SuperUserAdminPage() {
       ) : (overviewMode === 'executive' && activeTab === 'overview') ? (
         <div className="flex-1 flex flex-col print:h-auto print:min-h-0 print:overflow-visible print:block">
           <CEOExecutiveDashboard
+            key={currentSchool?.id || effectiveSchoolId || 'sch-default'}
             holding={currentSchoolHolding}
-            schoolId={currentSchool?.id}
+            schoolId={currentSchool?.id || effectiveSchoolId || 'sch-default'}
             isSuperUser={isSuperUser}
             onSwitchToOperational={() => setOverviewMode('classic')}
             onBackToDirectory={() => selectSchool(null)}
@@ -7559,6 +7560,7 @@ export default function SuperUserAdminPage() {
       {/* Modal de Correo Institucional, Triage Cognitivo y Conexión Google (15 Fases) */}
       {isAdminEmailModalOpen && (
         <CEOEmailCommunicationsModal
+          key={currentSchool?.id || effectiveSchoolId || 'sch-default'}
           isOpen={isAdminEmailModalOpen}
           onClose={() => setIsAdminEmailModalOpen(false)}
           holding={currentSchoolHolding}

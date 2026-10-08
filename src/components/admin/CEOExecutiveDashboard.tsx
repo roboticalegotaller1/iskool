@@ -6047,6 +6047,7 @@ export default function CEOExecutiveDashboard({
       {/* ========================================================= */}
       {isEmailModalOpen && (
         <CEOEmailCommunicationsModal
+          key={schoolId || currentInstitution?.id || holding?.id || 'sch-default'}
           isOpen={isEmailModalOpen}
           onClose={() => setIsEmailModalOpen(false)}
           holding={holding}
