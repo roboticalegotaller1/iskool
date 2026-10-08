@@ -94,27 +94,35 @@ export async function POST(req: NextRequest) {
 
       const triageResult = await HermeticEmailBrainService.processInboundEmail(emailDto, authSession);
 
-      newMatters.push({
-        id: `mat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-        matter_code: `MAT-${prefix}-2026-${String(Math.floor(Math.random() * 900) + 100)}`,
-        title: emailDto.subject,
-        summary: triageResult.why_shown_to_director || emailDto.body_text.slice(0, 140) + '...',
-        category: triageResult.category || 'Atención General',
-        urgency: triageResult.urgency,
-        destination: triageResult.quadrant,
-        why_shown: triageResult.why_shown_to_director,
-        reincidence_count: emailDto.reincidence_count || 1,
-        recommended_action: triageResult.recommended_action,
-        suggested_draft_reply: triageResult.suggested_draft?.body || '',
-        assigned_role: triageResult.assigned_department || 'Dirección General',
-        sla_hours: triageResult.sla_hours || 12,
-        sla_remaining_text: `⏱️ ${triageResult.sla_hours || 12}h restantes`,
-        sender_name: emailDto.sender_name,
-        sender_email: emailDto.sender_email,
-        provenance_doc: triageResult.provenance?.[0]?.source_path || `planeaciones/${tenantId}/Protocolo_Convivencia.md`,
-        received_at: 'Justo ahora',
-        campus: 'Campus Central'
-      });
+      // REGLA OBLIGATORIA: En Bandeja Inteligente SOLO deben aparecer Atención CEO y Delegados.
+      // Los informativos y spam permanecen en Bandeja de Entrada (raw-inbox) pero no se muestran en Bandeja Inteligente.
+      const isIntelligentInboxCandidate =
+        triageResult.quadrant === 'ATENCION_CEO' ||
+        triageResult.quadrant === 'DELEGADO_CON_SLA';
+
+      if (isIntelligentInboxCandidate) {
+        newMatters.push({
+          id: `mat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          matter_code: `MAT-${prefix}-2026-${String(Math.floor(Math.random() * 900) + 100)}`,
+          title: emailDto.subject,
+          summary: triageResult.why_shown_to_director || emailDto.body_text.slice(0, 140) + '...',
+          category: triageResult.category || 'Atención General',
+          urgency: triageResult.urgency,
+          destination: triageResult.quadrant,
+          why_shown: triageResult.why_shown_to_director,
+          reincidence_count: emailDto.reincidence_count || 1,
+          recommended_action: triageResult.recommended_action,
+          suggested_draft_reply: triageResult.suggested_draft?.body || '',
+          assigned_role: triageResult.assigned_department || 'Dirección General',
+          sla_hours: triageResult.sla_hours || 12,
+          sla_remaining_text: `⏱️ ${triageResult.sla_hours || 12}h restantes`,
+          sender_name: emailDto.sender_name,
+          sender_email: emailDto.sender_email,
+          provenance_doc: triageResult.provenance?.[0]?.source_path || `planeaciones/${tenantId}/Protocolo_Convivencia.md`,
+          received_at: 'Justo ahora',
+          campus: 'Campus Central'
+        });
+      }
 
       processedSpoolIds.push(pendingMsg.id);
       // Agregar al set local para evitar duplicados en la misma tanda
@@ -140,29 +148,32 @@ export async function POST(req: NextRequest) {
 
         const triageResult = await HermeticEmailBrainService.processInboundEmail(emailDto, authSession);
 
-        const matterItem = {
-          id: `mat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          matter_code: `MAT-${prefix}-2026-${String(Math.floor(Math.random() * 900) + 100)}`,
-          title: emailDto.subject,
-          summary: triageResult.why_shown_to_director || emailDto.body_text.slice(0, 140) + '...',
-          category: triageResult.category || 'Atención General',
-          urgency: triageResult.urgency,
-          destination: triageResult.quadrant,
-          why_shown: triageResult.why_shown_to_director,
-          reincidence_count: emailDto.reincidence_count || 1,
-          recommended_action: triageResult.recommended_action,
-          suggested_draft_reply: triageResult.suggested_draft?.body || '',
-          assigned_role: triageResult.assigned_department || 'Dirección General',
-          sla_hours: triageResult.sla_hours || 12,
-          sla_remaining_text: `⏱️ ${triageResult.sla_hours || 12}h restantes`,
-          sender_name: emailDto.sender_name,
-          sender_email: emailDto.sender_email,
-          provenance_doc: triageResult.provenance?.[0]?.source_path || `planeaciones/${tenantId}/Protocolo_Convivencia.md`,
-          received_at: 'Justo ahora',
-          campus: manualEmail.campus || 'Campus Central'
-        };
+        const isCandidate = triageResult.quadrant === 'ATENCION_CEO' || triageResult.quadrant === 'DELEGADO_CON_SLA';
+        if (isCandidate) {
+          const matterItem = {
+            id: `mat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            matter_code: `MAT-${prefix}-2026-${String(Math.floor(Math.random() * 900) + 100)}`,
+            title: emailDto.subject,
+            summary: triageResult.why_shown_to_director || emailDto.body_text.slice(0, 140) + '...',
+            category: triageResult.category || 'Atención General',
+            urgency: triageResult.urgency,
+            destination: triageResult.quadrant,
+            why_shown: triageResult.why_shown_to_director,
+            reincidence_count: emailDto.reincidence_count || 1,
+            recommended_action: triageResult.recommended_action,
+            suggested_draft_reply: triageResult.suggested_draft?.body || '',
+            assigned_role: triageResult.assigned_department || 'Dirección General',
+            sla_hours: triageResult.sla_hours || 12,
+            sla_remaining_text: `⏱️ ${triageResult.sla_hours || 12}h restantes`,
+            sender_name: emailDto.sender_name,
+            sender_email: emailDto.sender_email,
+            provenance_doc: triageResult.provenance?.[0]?.source_path || `planeaciones/${tenantId}/Protocolo_Convivencia.md`,
+            received_at: 'Justo ahora',
+            campus: manualEmail.campus || 'Campus Central'
+          };
 
-        newMatters.push(matterItem);
+          newMatters.push(matterItem);
+        }
         existingTitles.push(normManual);
       }
     }
@@ -203,27 +214,29 @@ export async function POST(req: NextRequest) {
 
           const triage = await HermeticEmailBrainService.processInboundEmail(emailDto, authSession);
 
-          newMatters.push({
-            id: `mat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-            matter_code: `MAT-${prefix}-2026-${String(Math.floor(Math.random() * 900) + 100)}`,
-            title: emailDto.subject,
-            summary: triage.why_shown_to_director || emailDto.body_text.slice(0, 140) + '...',
-            category: triage.category || 'Atención General',
-            urgency: triage.urgency,
-            destination: triage.quadrant,
-            why_shown: triage.why_shown_to_director,
-            reincidence_count: 1,
-            recommended_action: triage.recommended_action,
-            suggested_draft_reply: triage.suggested_draft?.body || '',
-            assigned_role: triage.assigned_department || 'Dirección General',
-            sla_hours: triage.sla_hours || 12,
-            sla_remaining_text: `⏱️ ${triage.sla_hours || 12}h restantes`,
-            sender_name: emailDto.sender_name,
-            sender_email: emailDto.sender_email,
-            provenance_doc: triage.provenance?.[0]?.source_path || `planeaciones/${tenantId}/Calendario_Escolar.md`,
-            received_at: 'Justo ahora',
-            campus: 'Plantel Central'
-          });
+          if (triage.quadrant === 'ATENCION_CEO' || triage.quadrant === 'DELEGADO_CON_SLA') {
+            newMatters.push({
+              id: `mat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+              matter_code: `MAT-${prefix}-2026-${String(Math.floor(Math.random() * 900) + 100)}`,
+              title: emailDto.subject,
+              summary: triage.why_shown_to_director || emailDto.body_text.slice(0, 140) + '...',
+              category: triage.category || 'Atención General',
+              urgency: triage.urgency,
+              destination: triage.quadrant,
+              why_shown: triage.why_shown_to_director,
+              reincidence_count: 1,
+              recommended_action: triage.recommended_action,
+              suggested_draft_reply: triage.suggested_draft?.body || '',
+              assigned_role: triage.assigned_department || 'Dirección General',
+              sla_hours: triage.sla_hours || 12,
+              sla_remaining_text: `⏱️ ${triage.sla_hours || 12}h restantes`,
+              sender_name: emailDto.sender_name,
+              sender_email: emailDto.sender_email,
+              provenance_doc: triage.provenance?.[0]?.source_path || `planeaciones/${tenantId}/Calendario_Escolar.md`,
+              received_at: 'Justo ahora',
+              campus: 'Plantel Central'
+            });
+          }
 
           existingTitles.push(normSubject);
         }

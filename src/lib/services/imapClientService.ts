@@ -136,13 +136,14 @@ function classifyEmailTriage(subject: string, body: string): {
 } {
   const text = `${subject} ${body}`.toLowerCase();
 
-  const urgentKeywords = ['herido', 'accidente', 'urgente', 'queja', 'agresión', 'demanda', 'sep', 'supervisión', 'emergencia', 'violencia', 'grave', 'hospital'];
+  const isMandatoryCeoKeyword = /\b(supervision|supervisión|sep|cte)\b/i.test(text) || text.includes('supervisi') || text.includes('supervisió') || text.includes('cte');
+  const urgentKeywords = ['herido', 'accidente', 'urgente', 'queja', 'agresión', 'demanda', 'emergencia', 'violencia', 'grave', 'hospital'];
   const operationalKeywords = ['factura', 'pago', 'colegiatura', 'cfdi', 'transporte', 'ruta', 'descuento', 'beca', 'constancia', 'inscripción', 'reinscripción'];
-  const informativeKeywords = ['circular', 'aviso', 'calendario', 'reunión', 'cte', 'asistencia', 'oficio', 'acuse', 'convocatoria'];
+  const informativeKeywords = ['circular', 'aviso', 'calendario', 'reunión', 'asistencia', 'oficio', 'acuse', 'convocatoria'];
   const spamKeywords = ['premio', 'tarjeta de regalo', 'ganador', 'bitcoin', 'crypto', 'remate', 'préstamo', 'oferta exclusiva'];
   const promoKeywords = ['descuento', 'liquidación', 'marketing', 'simposio', 'conferencia', 'software', 'hosting', 'webinar'];
 
-  if (urgentKeywords.some(k => text.includes(k))) {
+  if (isMandatoryCeoKeyword || urgentKeywords.some(k => text.includes(k))) {
     return {
       category: 'principal',
       triage_badge: {
@@ -157,8 +158,8 @@ function classifyEmailTriage(subject: string, body: string): {
     return {
       category: 'actualizaciones',
       triage_badge: {
-        quadrant: 'DELEGADO_CON_SLA',
-        label: '🟡 DELEGADO CON SLA',
+        quadrant: 'DELEGADO_CON_PLAZO',
+        label: '🟡 DELEGADO OPERATIVO',
         color: 'bg-amber-50 text-amber-700 border-amber-200'
       }
     };

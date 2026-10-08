@@ -375,6 +375,9 @@ export class HermeticEmailBrainService {
       };
     }
 
+    // REGLA OBLIGATORIA: Si en alguna parte dice "supervision", "supervisión", "SEP", "sep" o "CTE", marcar como ATENCIÓN INMEDIATA CEO
+    const isMandatoryCeoKeyword = /\b(supervision|supervisión|sep|cte)\b/i.test(text) || text.includes('supervisi') || text.includes('supervisió');
+
     // CUADRANTE 1: ATENCION_CEO 🔴
     const isCteEmergency = text.includes('cte urgente') || (text.includes('cte') && (text.includes('mañana') || text.includes('urgente') || text.includes('confirme asistencia')));
     const isInjuryEmergency = text.includes('herido') || text.includes('alumno herido') || text.includes('lesión') || text.includes('lesion') || text.includes('accidente') || text.includes('fractura');
@@ -386,7 +389,7 @@ export class HermeticEmailBrainService {
       'audiencia directiva', 'solicitud de audiencia', 'reunión directiva', 'reunion directiva',
       'herido', 'alumno herido', 'lesión', 'lesion', 'accidente', 'fractura', 'ambulancia'
     ];
-    const isCriticalIssue = ceoEmergencySignals.some(s => text.includes(s)) || isCteEmergency || isInjuryEmergency;
+    const isCriticalIssue = isMandatoryCeoKeyword || ceoEmergencySignals.some(s => text.includes(s)) || isCteEmergency || isInjuryEmergency;
     const isReincidenceExceeded = reincidence >= 3;
 
     if (isCriticalIssue || isReincidenceExceeded) {
@@ -394,7 +397,17 @@ export class HermeticEmailBrainService {
       let category = isCriticalIssue ? 'Riesgo Normativo / Caso Crítico' : 'Reincidencia Directiva';
       let recAction = 'Convocar de inmediato a mesa de mediación presencial y activar el protocolo correspondiente.';
 
-      if (isInjuryEmergency || text.includes('herido') || text.includes('lesion') || text.includes('accidente')) {
+      if (isMandatoryCeoKeyword) {
+        if (text.includes('cte')) {
+          category = 'Gobernanza Institucional / Consejo Técnico Escolar (CTE)';
+          why = 'Asunto oficial de Consejo Técnico Escolar (CTE). Por mandato institucional requiere atención, preparación y seguimiento directo e indelegable del CEO.';
+          recAction = 'Confirmar agenda de Dirección General, coordinar concentrados de evaluación y girar instrucción ejecutiva.';
+        } else {
+          category = 'Supervisión Oficial SEP / Asunto Regulatorio';
+          why = 'Comunicación o requerimiento oficial vinculado a Supervisión Escolar / SEP. Requiere intervención y resolución directa e indelegable de Dirección General / CEO.';
+          recAction = 'Atención directa inmediata de Dirección General / CEO y desahogo de requerimiento ante la autoridad educativa.';
+        }
+      } else if (isInjuryEmergency || text.includes('herido') || text.includes('lesion') || text.includes('accidente')) {
         category = 'Accidente Escolar / Salvaguarda y Seguridad de Alumnos';
         why = 'Incidencia crítica de salvaguarda y protección física escolar: Reporte de alumno herido/lesionado en instalaciones del plantel. Requiere activación inmediata del protocolo de urgencias médicas escolares, valoración clínica y notificación formal a tutores.';
         recAction = 'Activar protocolo de urgencias médicas escolares de inmediato, resguardar al alumno y contactar a tutores legales para notificación oficial.';
@@ -431,7 +444,7 @@ export class HermeticEmailBrainService {
         assigned_department: 'Departamento Administrativo / Cobranza',
         sla_hours: 24,
         why_shown_to_director: 'Trámite operativo derivado a Cobranza para emisión de factura o resolución de aclaración financiera.',
-        recommended_action: 'Derivar a Cobranza con SLA de 24 horas y enviar borrador informativo preventivo.'
+        recommended_action: 'Derivar a Cobranza con plazo de 24 horas y enviar borrador informativo preventivo.'
       };
     }
 

@@ -97,6 +97,35 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Inyectar en la bandeja cruda (raw-inbox) para disponibilidad instantánea
+    try {
+      const { injectEmailIntoCache } = await import('@/lib/services/imapClientService');
+      const rawItem = {
+        id: queuedItem?.id || `inb-${Date.now()}`,
+        sender_name: emailDto.sender_name || 'Remitente Institucional',
+        sender_email: emailDto.sender_email,
+        recipient_email: emailDto.recipient_email || 'direccion@iskool.edu.mx',
+        subject: emailDto.subject,
+        snippet: emailDto.body_text.slice(0, 110) + '...',
+        body_text: emailDto.body_text,
+        received_at: 'Justo ahora',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        is_unread: true,
+        is_starred: false,
+        is_important: triageResult ? triageResult.quadrant === 'ATENCION_CEO' : true,
+        category: 'principal' as const,
+        triage_badge: triageResult ? {
+          quadrant: triageResult.quadrant as any,
+          label: triageResult.quadrant === 'ATENCION_CEO' ? '🔴 ATENCIÓN INMEDIATA CEO' : '🟢 INFORMATIVO',
+          color: triageResult.quadrant === 'ATENCION_CEO' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+        } : undefined
+      };
+      injectEmailIntoCache(tenantId, rawItem);
+      injectEmailIntoCache('global', rawItem);
+    } catch (e) {
+      console.warn('Could not inject into raw inbox cache:', e);
+    }
+
     return NextResponse.json({
       success: true,
       message: queuedItem

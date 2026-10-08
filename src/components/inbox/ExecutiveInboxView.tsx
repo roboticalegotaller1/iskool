@@ -190,7 +190,7 @@ export const ExecutiveInboxView: React.FC<ExecutiveInboxProps> = ({
                 </div>
 
                 <div className="flex flex-col items-end gap-2 shrink-0">
-                  <span className="text-xs font-mono font-medium text-slate-400">SLA: {matter.sla_hours}h</span>
+                  <span className="text-xs font-mono font-medium text-slate-400">Plazo: {matter.sla_hours}h</span>
                   <button className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white group-hover:bg-indigo-600 transition">
                     Atender Asunto →
                   </button>

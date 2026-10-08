@@ -159,6 +159,23 @@ export class CognitiveTriageService {
   private static async classifyNewEmail(email: any) {
     const text = `${email.subject} ${email.body_text}`.toLowerCase();
 
+    // REGLA OBLIGATORIA: Si en alguna parte del correo dice "supervision", "supervisión", "SEP", "sep" o "CTE", debe asignarse a Dirección/CEO
+    const isMandatoryCeo = /\b(supervision|supervisión|sep|cte)\b/i.test(text) || text.includes('supervisi') || text.includes('supervisió');
+    if (isMandatoryCeo) {
+      return {
+        category: text.includes('cte') ? 'Gobernanza / Consejo Técnico Escolar (CTE)' : 'Supervisión Oficial SEP / Asunto Regulatorio',
+        entityType: 'autoridad',
+        entityId: 'sep-supervision',
+        urgency: 'ALTA' as const,
+        destination: 'DIRECCION' as const,
+        assignedRole: 'Dirección General / CEO',
+        slaHours: 12,
+        whyShown: 'Mención prioritaria de Supervisión / SEP / CTE: Requiere atención ejecutiva inmediata del CEO.',
+        recommendedAction: 'Revisión y atención directa por Dirección General.',
+        confidence: 0.99
+      };
+    }
+
     // Detección de casos que necesitan obligatoriamente Dirección
     if (text.includes('acoso') || text.includes('bullying') || text.includes('demanda') || text.includes('urgente dirección') || text.includes('reunión con dirección')) {
       return {
@@ -202,7 +219,7 @@ export class CognitiveTriageService {
         assignedRole: 'Administración y Finanzas',
         slaHours: 48,
         whyShown: 'Delegable: Asunto operativo estándar de cobranza.',
-        recommendedAction: 'Delegado a Administración. Se notificará si vence SLA de 48h.',
+        recommendedAction: 'Delegado a Administración. Se notificará si vence plazo de 48h.',
         confidence: 0.93
       };
     }
