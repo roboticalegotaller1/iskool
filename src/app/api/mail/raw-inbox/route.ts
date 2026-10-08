@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { InboundMailSpoolService } from '@/lib/services/inboundMailSpool';
 import { fetchLiveImapEmails, getCachedInboxEmails, injectEmailIntoCache } from '@/lib/services/imapClientService';
+import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 
 export const runtime = 'nodejs';
 
@@ -26,58 +27,22 @@ export interface RawGmailItem {
   };
 }
 
-// Semilla canónica de respaldo en caso de desconexión sin credenciales o primer arranque
+// Semilla canónica de respaldo exclusivamente para sandboxes de prueba locales
 function getFallbackRawEmails(accountEmail: string): RawGmailItem[] {
-  const targetEmail = (accountEmail || 'israell35mac@gmail.com').trim().toLowerCase();
+  const targetEmail = (accountEmail || '').trim().toLowerCase();
+  // Jamás entregar correos falsos a cuentas reales del usuario
+  if (!targetEmail.includes('sandbox') && !targetEmail.includes('test-case')) {
+    return [];
+  }
   return [
     {
       id: 'raw-msg-01',
-      sender_name: 'israel LopezAngeles',
-      sender_email: 'kami-mac@hotmail.com',
+      sender_name: 'Supervisión Escolar',
+      sender_email: 'supervision.zona@edomex.gob.mx',
       recipient_email: targetEmail,
-      subject: 'Alumno herido',
-      snippet: 'El alumno Patricio estrella fue herido ayer en las canchas de futball durante el horario de receso...',
-      body_text: 'El alumno Patricio estrella fue herido ayer en las canchas de futball durante el horario de receso. Solicito saber qué protocolo médico se aplicó y si el colegio cuenta con seguro de gastos médicos mayores vigente para la atención inmediata.',
-      received_at: 'Hoy',
-      timestamp: '16:42',
-      is_unread: true,
-      is_starred: true,
-      is_important: true,
-      category: 'principal',
-      triage_badge: {
-        quadrant: 'ATENCION_CEO',
-        label: '🔴 ATENCIÓN INMEDIATA CEO',
-        color: 'bg-red-50 text-red-700 border-red-200'
-      }
-    },
-    {
-      id: 'raw-msg-02',
-      sender_name: 'israel LopezAngeles',
-      sender_email: 'kami-mac@hotmail.com',
-      recipient_email: targetEmail,
-      subject: 'CTE pospuesto',
-      snippet: 'Se notifica que el CTE queda pospuesto para nueva fecha acordada...',
-      body_text: 'Se notifica que el Consejo Técnico Escolar (CTE) queda pospuesto para nueva fecha acordada con supervisión escolar de zona.',
-      received_at: 'Hoy',
-      timestamp: '15:30',
-      is_unread: true,
-      is_starred: false,
-      is_important: true,
-      category: 'principal',
-      triage_badge: {
-        quadrant: 'ATENCION_CEO',
-        label: '🔴 ATENCIÓN INMEDIATA CEO',
-        color: 'bg-red-50 text-red-700 border-red-200'
-      }
-    },
-    {
-      id: 'raw-msg-03',
-      sender_name: 'israel LopezAngeles',
-      sender_email: 'kami-mac@hotmail.com',
-      recipient_email: targetEmail,
-      subject: 'Dicumento de proyección civil',
-      snippet: 'Adjunto dictamen técnico de protección civil y plan de contingencia escolar...',
-      body_text: 'Estimada Dirección General: Adjunto dictamen técnico de protección civil y plan de contingencia escolar para la revisión de instalaciones y rutas de evacuación del plantel.',
+      subject: 'Auditoría Curricular y Supervisión de Zona',
+      snippet: 'Entrega de documentación requerida para supervisión de zona escolar correspondiente al ciclo activo...',
+      body_text: 'Estimada Dirección General: Se requiere la entrega de evidencias de proyectos comunitarios de la NEM y listas de asistencia técnica.',
       received_at: 'Hoy',
       timestamp: '14:20',
       is_unread: true,
@@ -89,46 +54,6 @@ function getFallbackRawEmails(accountEmail: string): RawGmailItem[] {
         label: '🔴 ATENCIÓN INMEDIATA CEO',
         color: 'bg-red-50 text-red-700 border-red-200'
       }
-    },
-    {
-      id: 'raw-msg-04',
-      sender_name: 'israel LopezAngeles',
-      sender_email: 'kami-mac@hotmail.com',
-      recipient_email: targetEmail,
-      subject: 'Supervisión documento importante',
-      snippet: 'Atenta entrega de documentación requerida para supervisión de zona escolar...',
-      body_text: 'Atenta entrega de documentación requerida para supervisión de zona escolar correspondiente al ciclo activo.',
-      received_at: 'Hoy',
-      timestamp: '13:45',
-      is_unread: false,
-      is_starred: false,
-      is_important: true,
-      category: 'principal',
-      triage_badge: {
-        quadrant: 'ATENCION_CEO',
-        label: '🔴 ATENCIÓN INMEDIATA CEO',
-        color: 'bg-red-50 text-red-700 border-red-200'
-      }
-    },
-    {
-      id: 'raw-msg-05',
-      sender_name: 'Google',
-      sender_email: 'no-reply@accounts.google.com',
-      recipient_email: targetEmail,
-      subject: 'Alerta de seguridad',
-      snippet: 'Se detectó un nuevo inicio de sesión o acceso de aplicación en tu cuenta...',
-      body_text: 'Se detectó un nuevo inicio de sesión o acceso de aplicación autorizada en tu cuenta de Google para sincronización de correo electrónico institucional.',
-      received_at: 'Hoy',
-      timestamp: '13:00',
-      is_unread: false,
-      is_starred: false,
-      is_important: false,
-      category: 'actualizaciones',
-      triage_badge: {
-        quadrant: 'INFORMATIVO',
-        label: '🟢 INFORMATIVO',
-        color: 'bg-emerald-50 text-emerald-700 border-emerald-200'
-      }
     }
   ];
 }
@@ -136,7 +61,7 @@ function getFallbackRawEmails(accountEmail: string): RawGmailItem[] {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenantId') || 'sch-default';
+    const tenantId = searchParams.get('tenantId') || 'e1000000-0000-0000-0000-000000000001';
     const email = (searchParams.get('email') || '').trim();
     const password = searchParams.get('password') || '';
     const host = searchParams.get('host') || 'imap.gmail.com';
@@ -161,76 +86,101 @@ export async function GET(request: NextRequest) {
     let authError: string | undefined;
     let latencyMs = 18;
 
-    // 1. Resolver host y credencial para buzones Google
+    // 1. Verificar si la cuenta cuenta con autorización oficial de Google OAuth 2.0
+    const hasGoogleOAuth = GoogleOAuthService.hasValidTokens(email);
+    if (hasGoogleOAuth) {
+      try {
+        const liveGoogle = await GoogleOAuthService.fetchRealGmailEmails(email, email, 30);
+        if (liveGoogle.length > 0) {
+          authenticated = true;
+          requiresAppPassword = false;
+          emails = liveGoogle;
+          for (const item of liveGoogle) {
+            injectEmailIntoCache(tenantId, item);
+          }
+        }
+      } catch (err: any) {
+        console.warn('Error sincronizando correos con Google OAuth:', err?.message);
+      }
+    }
+
+    // 2. Si no se descargó por OAuth y se proporciona contraseña real, consultar IMAP en vivo
     let cleanPass = (password || '').replace(/\s+/g, '');
     const isTargetGmail = email.toLowerCase().includes('gmail.com');
     const targetHost = isTargetGmail ? 'imap.gmail.com' : (host || 'imap.gmail.com');
     const targetPort = isTargetGmail ? 993 : (Number(port) || 993);
 
-    // 2. Si se proporciona contraseña o clave de aplicación real, consultar IMAP en vivo
-    if (cleanPass && cleanPass !== '••••••••••••' && cleanPass !== 'password') {
+    if (!authenticated && cleanPass && cleanPass !== '••••••••••••' && cleanPass !== 'password') {
       const imapRes = await fetchLiveImapEmails(targetHost, targetPort, email, cleanPass, { tenantId });
       latencyMs = imapRes.latencyMs || latencyMs;
 
       if (imapRes.success && imapRes.authenticated) {
         authenticated = true;
+        requiresAppPassword = false;
         emails = imapRes.emails;
       } else {
         authenticated = false;
         requiresAppPassword = imapRes.requiresAppPassword || false;
         authError = imapRes.error;
       }
-    } else {
+    } else if (!hasGoogleOAuth) {
       requiresAppPassword = true;
     }
 
-    // 3. Si no se descargó en vivo, consultar caché estricto del tenant y cuenta
+    // 3. Consultar caché estricto del tenant y cuenta
+    const isSandboxAccount = email.toLowerCase().includes('sandbox') || email.toLowerCase().includes('test-case');
     if (emails.length === 0) {
-      const cached = getCachedInboxEmails(tenantId, email);
-      if (cached && cached.length > 0) {
-        emails = cached;
-      } else {
-        // Cargar semillas canónicas del buzón del usuario para que jamás quede en cero
-        const fallback = getFallbackRawEmails(email);
-        emails = fallback;
-        for (const item of fallback) {
-          injectEmailIntoCache(tenantId, item);
+      if (hasGoogleOAuth || authenticated || isSandboxAccount) {
+        const cached = getCachedInboxEmails(tenantId, email);
+        if (cached && cached.length > 0) {
+          emails = cached;
+          if (hasGoogleOAuth) {
+            authenticated = true;
+            requiresAppPassword = false;
+          }
+        } else if (isSandboxAccount) {
+          const fallback = getFallbackRawEmails(email);
+          emails = fallback;
+          for (const item of fallback) {
+            injectEmailIntoCache(tenantId, item);
+          }
         }
-        requiresAppPassword = !authenticated;
       }
+      requiresAppPassword = !authenticated && !hasGoogleOAuth;
     }
 
     // 4. Incorporar todos los correos del spool de entrada (webhooks, reenvíos, pruebas)
-    const allSpool = InboundMailSpoolService.getAllInboundEmails(tenantId, email);
     const additionalFromSpool: RawGmailItem[] = [];
-
-    for (const item of allSpool) {
-      const alreadyInList = emails.some(
-        e => e.id === item.id || e.subject.trim().toLowerCase() === item.subject.trim().toLowerCase()
-      );
-      if (!alreadyInList) {
-        const spoolItem: RawGmailItem = {
-          id: item.id,
-          sender_name: item.sender_name || 'Remitente Institucional',
-          sender_email: item.sender_email || email,
-          recipient_email: item.recipient_email || email,
-          subject: item.subject,
-          snippet: (item.body_text || item.subject || '').slice(0, 110) + '...',
-          body_text: item.body_text || 'Sin contenido de mensaje',
-          received_at: 'Justo ahora',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          is_unread: true,
-          is_starred: false,
-          is_important: true,
-          category: 'principal',
-          triage_badge: {
-            quadrant: 'ATENCION_CEO',
-            label: '🔴 ATENCIÓN INMEDIATA CEO',
-            color: 'bg-red-50 text-red-700 border-red-200'
-          }
-        };
-        additionalFromSpool.push(spoolItem);
-        injectEmailIntoCache(tenantId, spoolItem);
+    if (authenticated || hasGoogleOAuth || isSandboxAccount) {
+      const allSpool = InboundMailSpoolService.getAllInboundEmails(tenantId, email);
+      for (const item of allSpool) {
+        const alreadyInList = emails.some(
+          e => e.id === item.id || e.subject.trim().toLowerCase() === item.subject.trim().toLowerCase()
+        );
+        if (!alreadyInList) {
+          const spoolItem: RawGmailItem = {
+            id: item.id,
+            sender_name: item.sender_name || 'Remitente Institucional',
+            sender_email: item.sender_email || email,
+            recipient_email: item.recipient_email || email,
+            subject: item.subject,
+            snippet: (item.body_text || item.subject || '').slice(0, 110) + '...',
+            body_text: item.body_text || 'Sin contenido de mensaje',
+            received_at: 'Justo ahora',
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            is_unread: true,
+            is_starred: false,
+            is_important: true,
+            category: 'principal',
+            triage_badge: {
+              quadrant: 'ATENCION_CEO',
+              label: '🔴 ATENCIÓN INMEDIATA CEO',
+              color: 'bg-red-50 text-red-700 border-red-200'
+            }
+          };
+          additionalFromSpool.push(spoolItem);
+          injectEmailIntoCache(tenantId, spoolItem);
+        }
       }
     }
 
@@ -316,69 +266,97 @@ export async function POST(request: NextRequest) {
         body_text: injected.body_text,
         reincidence_count: 1
       });
+      emails.push(injected);
     }
 
-    // Resolver credencial y host para buzones Google
+    // 1. Verificar si la cuenta cuenta con autorización oficial de Google OAuth 2.0
+    const hasGoogleOAuth = body.password !== '' && GoogleOAuthService.hasValidTokens(email);
+    if (hasGoogleOAuth) {
+      try {
+        const liveGoogle = await GoogleOAuthService.fetchRealGmailEmails(email, email, 30);
+        if (liveGoogle.length > 0) {
+          authenticated = true;
+          requiresAppPassword = false;
+          emails = liveGoogle;
+          for (const item of liveGoogle) {
+            injectEmailIntoCache(tenantId, item);
+          }
+        }
+      } catch (err: any) {
+        console.warn('Error sincronizando correos con Google OAuth en POST:', err?.message);
+      }
+    }
+
+    // 2. Consulta en vivo por IMAP si se cuenta con credenciales
     let cleanPass = (password || '').replace(/\s+/g, '');
     const isTargetGmail = email.toLowerCase().includes('gmail.com');
     const targetHost = isTargetGmail ? 'imap.gmail.com' : (host || 'imap.gmail.com');
     const targetPort = isTargetGmail ? 993 : (Number(port) || 993);
 
-    // Consulta en vivo por IMAP si se cuenta con credenciales
-    if (cleanPass && cleanPass !== '••••••••••••' && cleanPass !== 'password') {
+    if (!authenticated && cleanPass && cleanPass !== '••••••••••••' && cleanPass !== 'password') {
       const imapRes = await fetchLiveImapEmails(targetHost, targetPort, email, cleanPass, { tenantId });
       latencyMs = imapRes.latencyMs || latencyMs;
 
       if (imapRes.success && imapRes.authenticated) {
         authenticated = true;
+        requiresAppPassword = false;
         emails = imapRes.emails;
       } else {
         authenticated = false;
         requiresAppPassword = imapRes.requiresAppPassword || false;
         authError = imapRes.error;
       }
-    } else {
+    } else if (!hasGoogleOAuth) {
       requiresAppPassword = true;
     }
 
+    const isSandboxAccount = email.toLowerCase().includes('sandbox') || email.toLowerCase().includes('test-case');
     if (emails.length === 0) {
-      const cached = getCachedInboxEmails(tenantId, email);
-      if (cached && cached.length > 0) {
-        emails = cached;
-      } else {
-        const fallback = getFallbackRawEmails(email);
-        emails = fallback;
-        for (const item of fallback) {
-          injectEmailIntoCache(tenantId, item);
+      if (hasGoogleOAuth || authenticated || isSandboxAccount) {
+        const cached = getCachedInboxEmails(tenantId, email);
+        if (cached && cached.length > 0) {
+          emails = cached;
+          if (hasGoogleOAuth) {
+            authenticated = true;
+            requiresAppPassword = false;
+          }
+        } else if (isSandboxAccount) {
+          const fallback = getFallbackRawEmails(email);
+          emails = fallback;
+          for (const item of fallback) {
+            injectEmailIntoCache(tenantId, item);
+          }
         }
-        requiresAppPassword = !authenticated;
       }
+      requiresAppPassword = !authenticated && !hasGoogleOAuth;
     }
 
     // Incorporar todos los correos del spool de entrada (webhooks, reenvíos, pruebas)
-    const allSpool = InboundMailSpoolService.getAllInboundEmails(tenantId, email);
-    for (const item of allSpool) {
-      if (!emails.some(e => e.id === item.id || e.subject.trim().toLowerCase() === item.subject.trim().toLowerCase())) {
-        emails.unshift({
-          id: item.id,
-          sender_name: item.sender_name || 'Remitente Institucional',
-          sender_email: item.sender_email || email,
-          recipient_email: item.recipient_email || email,
-          subject: item.subject,
-          snippet: (item.body_text || '').slice(0, 110) + '...',
-          body_text: item.body_text || 'Sin contenido de mensaje',
-          received_at: 'Justo ahora',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          is_unread: true,
-          is_starred: false,
-          is_important: true,
-          category: 'principal',
-          triage_badge: {
-            quadrant: 'ATENCION_CEO',
-            label: '🔴 ATENCIÓN INMEDIATA CEO',
-            color: 'bg-red-50 text-red-700 border-red-200'
-          }
-        });
+    if (authenticated || hasGoogleOAuth || isSandboxAccount) {
+      const allSpool = InboundMailSpoolService.getAllInboundEmails(tenantId, email);
+      for (const item of allSpool) {
+        if (!emails.some(e => e.id === item.id || e.subject.trim().toLowerCase() === item.subject.trim().toLowerCase())) {
+          emails.unshift({
+            id: item.id,
+            sender_name: item.sender_name || 'Remitente Institucional',
+            sender_email: item.sender_email || email,
+            recipient_email: item.recipient_email || email,
+            subject: item.subject,
+            snippet: (item.body_text || '').slice(0, 110) + '...',
+            body_text: item.body_text || 'Sin contenido de mensaje',
+            received_at: 'Justo ahora',
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            is_unread: true,
+            is_starred: false,
+            is_important: true,
+            category: 'principal',
+            triage_badge: {
+              quadrant: 'ATENCION_CEO',
+              label: '🔴 ATENCIÓN INMEDIATA CEO',
+              color: 'bg-red-50 text-red-700 border-red-200'
+            }
+          });
+        }
       }
     }
 

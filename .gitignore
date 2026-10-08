@@ -65,3 +65,4 @@ __pycache__/
 *$py.class
 forensic_audit_results.json
 /scratch/
+/.data/

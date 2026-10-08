@@ -503,7 +503,18 @@ export function getCachedInboxEmails(tenantId: string, email?: string): RawGmail
   const cleanUser = email.trim().toLowerCase();
   const tenantKey = `${tenantId}:${cleanUser}`;
   const item = globalInboxCache.get(tenantKey) || globalInboxCache.get(tenantId);
-  return item ? item.emails : null;
+  if (item && item.emails.length > 0) {
+    return item.emails;
+  }
+
+  // Búsqueda flexible en todos los tenants para la misma cuenta de correo
+  for (const [k, v] of Array.from(globalInboxCache.entries())) {
+    if (k.endsWith(`:${cleanUser}`) && v?.emails && v.emails.length > 0) {
+      return v.emails;
+    }
+  }
+
+  return null;
 }
 
 /**

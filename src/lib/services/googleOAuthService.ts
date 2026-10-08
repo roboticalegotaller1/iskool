@@ -1,0 +1,390 @@
+import fs from 'fs';
+import path from 'path';
+import { RawGmailItem } from '@/app/api/mail/raw-inbox/route';
+import { InboundMailSpoolService } from './inboundMailSpool';
+
+export interface GoogleTokens {
+  accessToken: string;
+  refreshToken?: string;
+  expiresAt: number;
+  email: string;
+  name?: string;
+  picture?: string;
+}
+
+const TOKENS_FILE = path.join(process.cwd(), '.data', 'google_tokens.json');
+
+function loadTokensFromFile(): Map<string, GoogleTokens> {
+  const map = new Map<string, GoogleTokens>();
+  try {
+    if (fs.existsSync(TOKENS_FILE)) {
+      const raw = fs.readFileSync(TOKENS_FILE, 'utf8');
+      const data = JSON.parse(raw);
+      if (Array.isArray(data)) {
+        for (const item of data) {
+          if (item?.email) {
+            map.set(item.email.toLowerCase().trim(), item);
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Error loading google tokens from file:', e);
+  }
+  return map;
+}
+
+function saveTokensToFile(map: Map<string, GoogleTokens>) {
+  try {
+    const dir = path.dirname(TOKENS_FILE);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const arr = Array.from(map.values());
+    fs.writeFileSync(TOKENS_FILE, JSON.stringify(arr, null, 2), 'utf8');
+  } catch (e) {
+    console.warn('Error saving google tokens to file:', e);
+  }
+}
+
+// Almacén seguro y persistente de tokens OAuth (memoria + globalThis + disco)
+const tokenStore: Map<string, GoogleTokens> =
+  (globalThis as any).__iskoolGoogleTokens ||
+  ((globalThis as any).__iskoolGoogleTokens = loadTokensFromFile());
+
+export class GoogleOAuthService {
+  private static getClientId(): string {
+    return process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+  }
+
+  private static getClientSecret(): string {
+    return process.env.GOOGLE_CLIENT_SECRET || process.env.SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET || '';
+  }
+
+  /**
+   * Genera la URL oficial de Google OAuth 2.0 para redireccionar al usuario
+   */
+  static getAuthUrl(origin: string, state?: string, loginHint?: string): string {
+    const clientId = this.getClientId();
+    const redirectUri = `${origin}/api/auth/callback/google`;
+    const scopes = [
+      'openid',
+      'email',
+      'profile',
+      'https://www.googleapis.com/auth/gmail.readonly',
+      'https://www.googleapis.com/auth/gmail.send',
+      'https://www.googleapis.com/auth/calendar',
+      'https://www.googleapis.com/auth/calendar.events'
+    ].join(' ');
+
+    const params = new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      response_type: 'code',
+      scope: scopes,
+      access_type: 'offline',
+      prompt: 'consent',
+      include_granted_scopes: 'true'
+    });
+
+    if (state) {
+      params.set('state', state);
+    }
+    if (loginHint) {
+      params.set('login_hint', loginHint);
+    }
+
+    return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+  }
+
+  /**
+   * Intercambia el código de autorización temporal por tokens reales de acceso
+   */
+  static async exchangeCodeForTokens(code: string, origin: string): Promise<GoogleTokens> {
+    const clientId = this.getClientId();
+    const clientSecret = this.getClientSecret();
+    const redirectUri = `${origin}/api/auth/callback/google`;
+
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: clientId,
+        client_secret: clientSecret,
+        code,
+        grant_type: 'authorization_code',
+        redirect_uri: redirectUri
+      }).toString()
+    });
+
+    if (!tokenRes.ok) {
+      const errBody = await tokenRes.text();
+      throw new Error(`Fallo al intercambiar código con Google: ${tokenRes.status} ${errBody}`);
+    }
+
+    const tokenData = await tokenRes.json();
+    const accessToken = tokenData.access_token;
+    const refreshToken = tokenData.refresh_token;
+    const expiresIn = Number(tokenData.expires_in) || 3600;
+
+    // Obtener información del usuario autenticado
+    const userRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+
+    let email = '';
+    let name = 'Usuario de Google';
+    let picture = '';
+
+    if (userRes.ok) {
+      const userData = await userRes.json();
+      email = (userData.email || '').toLowerCase().trim();
+      name = userData.name || userData.email;
+      picture = userData.picture || '';
+    }
+
+    const tokens: GoogleTokens = {
+      accessToken,
+      refreshToken,
+      expiresAt: Date.now() + expiresIn * 1000,
+      email,
+      name,
+      picture
+    };
+
+    if (email) {
+      tokenStore.set(email, tokens);
+      saveTokensToFile(tokenStore);
+    }
+
+    return tokens;
+  }
+
+  /**
+   * Determina si una cuenta de correo cuenta con autorización OAuth activa
+   */
+  static hasValidTokens(email?: string): boolean {
+    if (!email) return false;
+    const clean = email.toLowerCase().trim();
+    const tokens = tokenStore.get(clean);
+    if (!tokens) {
+      // Si no existe con ese email exacto, buscar si hay algún token guardado
+      return false;
+    }
+    return !!tokens.refreshToken || tokens.expiresAt > Date.now();
+  }
+
+  /**
+   * Obtiene los tokens almacenados para una cuenta de correo
+   */
+  static getStoredTokens(email?: string): GoogleTokens | undefined {
+    if (!email) {
+      // Retornar el primer token disponible si no se especifica email
+      const first = tokenStore.values().next();
+      return first.value;
+    }
+    const clean = email.toLowerCase().trim();
+    return tokenStore.get(clean) || tokenStore.values().next().value;
+  }
+
+  /**
+   * Obtiene un access token válido, renovándolo automáticamente con Google si expiró
+   */
+  static async getValidAccessToken(email?: string): Promise<string | null> {
+    const tokens = this.getStoredTokens(email);
+    if (!tokens) return null;
+
+    if (tokens.accessToken && tokens.expiresAt > Date.now() + 60000) {
+      return tokens.accessToken;
+    }
+
+    if (tokens.refreshToken) {
+      try {
+        const clientId = this.getClientId();
+        const clientSecret = this.getClientSecret();
+        const res = await fetch('https://oauth2.googleapis.com/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            client_id: clientId,
+            client_secret: clientSecret,
+            refresh_token: tokens.refreshToken,
+            grant_type: 'refresh_token'
+          }).toString()
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          tokens.accessToken = data.access_token;
+          tokens.expiresAt = Date.now() + (Number(data.expires_in) || 3600) * 1000;
+          if (data.refresh_token) {
+            tokens.refreshToken = data.refresh_token;
+          }
+          tokenStore.set(tokens.email.toLowerCase().trim(), tokens);
+          saveTokensToFile(tokenStore);
+          return tokens.accessToken;
+        }
+      } catch (err) {
+        console.warn('Error renovando Google access token:', err);
+      }
+    }
+
+    return tokens.accessToken || null;
+  }
+
+  /**
+   * Descarga correos reales de la bandeja de entrada usando la Gmail API oficial
+   */
+  static async fetchRealGmailEmails(tokenOrEmail: string, accountEmail?: string, maxCount = 25): Promise<RawGmailItem[]> {
+    try {
+      let effectiveToken = tokenOrEmail;
+      let targetAccount = (accountEmail || tokenOrEmail).trim().toLowerCase();
+
+      // Si se pasa un correo en vez de un token directo ya29, resolver token válido automáticamente
+      if (!effectiveToken.startsWith('ya29.')) {
+        targetAccount = tokenOrEmail.trim().toLowerCase();
+        const valid = await this.getValidAccessToken(targetAccount);
+        if (!valid) {
+          console.warn('No hay token de acceso válido de Google disponible para:', targetAccount);
+          return [];
+        }
+        effectiveToken = valid;
+      }
+
+      // 1. Obtener lista de IDs de mensajes en INBOX
+      const listRes = await fetch(
+        `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=${maxCount}&q=in:inbox`,
+        {
+          headers: { Authorization: `Bearer ${effectiveToken}` }
+        }
+      );
+
+      if (!listRes.ok) {
+        console.warn('Gmail API list messages failed:', listRes.status);
+        return [];
+      }
+
+      const listData = await listRes.json();
+      const messages: { id: string; threadId: string }[] = listData.messages || [];
+
+      if (messages.length === 0) {
+        return [];
+      }
+
+      // 2. Descargar cada mensaje en paralelo
+      const emailItems: RawGmailItem[] = [];
+
+      for (const msgRef of messages) {
+        try {
+          const detailRes = await fetch(
+            `https://gmail.googleapis.com/gmail/v1/users/me/messages/${msgRef.id}?format=full`,
+            {
+              headers: { Authorization: `Bearer ${effectiveToken}` }
+            }
+          );
+
+          if (!detailRes.ok) continue;
+
+          const detail = await detailRes.json();
+          const headers: { name: string; value: string }[] = detail.payload?.headers || [];
+
+          const getHeader = (name: string) => {
+            const h = headers.find(item => item.name.toLowerCase() === name.toLowerCase());
+            return h ? h.value : '';
+          };
+
+          const fromHeader = getHeader('From');
+          const subject = getHeader('Subject') || '(Sin Asunto)';
+          const dateHeader = getHeader('Date');
+
+          // Parsear Remitente
+          let senderName = fromHeader;
+          let senderEmail = fromHeader;
+          const matchEmail = fromHeader.match(/<([^>]+)>/);
+          if (matchEmail) {
+            senderEmail = matchEmail[1].trim();
+            senderName = fromHeader.replace(/<[^>]+>/, '').trim().replace(/"/g, '') || senderEmail;
+          }
+
+          // Extraer cuerpo de texto
+          let bodyText = '';
+          const extractBody = (part: any) => {
+            if (part.mimeType === 'text/plain' && part.body?.data) {
+              const decoded = Buffer.from(part.body.data, 'base64').toString('utf8');
+              bodyText += decoded;
+            } else if (part.parts && Array.isArray(part.parts)) {
+              for (const subPart of part.parts) {
+                extractBody(subPart);
+              }
+            }
+          };
+
+          if (detail.payload) {
+            extractBody(detail.payload);
+          }
+
+          if (!bodyText && detail.snippet) {
+            bodyText = detail.snippet;
+          }
+
+          const isUnread = (detail.labelIds || []).includes('UNREAD');
+          const isStarred = (detail.labelIds || []).includes('STARRED');
+          const isImportant = (detail.labelIds || []).includes('IMPORTANT');
+
+          // Categorización y Reglas Mandatorias del CEO
+          const textToEvaluate = `${subject} ${bodyText}`.toLowerCase();
+          const isMandatoryCeo =
+            /\b(supervision|supervisión|sep|cte)\b/i.test(textToEvaluate) ||
+            textToEvaluate.includes('supervis') ||
+            textToEvaluate.includes('consejo técnico');
+
+          const rawItem: RawGmailItem = {
+            id: `gmail-${detail.id}`,
+            sender_name: senderName,
+            sender_email: senderEmail,
+            recipient_email: targetAccount || 'israell35mac@gmail.com',
+            subject,
+            snippet: detail.snippet || bodyText.slice(0, 110) + '...',
+            body_text: bodyText || detail.snippet || 'Sin contenido',
+            received_at: dateHeader ? new Date(dateHeader).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Hoy',
+            timestamp: dateHeader ? new Date(dateHeader).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Ahora',
+            is_unread: isUnread,
+            is_starred: isStarred,
+            is_important: isImportant || isMandatoryCeo,
+            category: 'principal',
+            triage_badge: isMandatoryCeo
+              ? {
+                  quadrant: 'ATENCION_CEO',
+                  label: '🔴 ATENCIÓN INMEDIATA CEO',
+                  color: 'bg-red-50 text-red-700 border-red-200'
+                }
+              : {
+                  quadrant: 'DELEGADO_CON_PLAZO',
+                  label: '🟡 DELEGADO OPERATIVO',
+                  color: 'bg-amber-50 text-amber-700 border-amber-200'
+                }
+          };
+
+          emailItems.push(rawItem);
+
+          // También alimentar el spool del CEO para que se refleje en la Bandeja Inteligente
+          InboundMailSpoolService.enqueueEmail('sch-default', {
+            sender_name: rawItem.sender_name,
+            sender_email: rawItem.sender_email,
+            recipient_email: accountEmail,
+            subject: rawItem.subject,
+            body_text: rawItem.body_text,
+            reincidence_count: 1
+          });
+        } catch (itemErr) {
+          console.warn('Error procesando correo individual de Gmail:', itemErr);
+        }
+      }
+
+      return emailItems;
+    } catch (err: any) {
+      console.error('Error al sincronizar con Gmail API:', err.message);
+      return [];
+    }
+  }
+}

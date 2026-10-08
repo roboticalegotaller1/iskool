@@ -138,7 +138,8 @@ export const InboundMailSpoolService = {
 
     const emailsToProcess: InboundEmailDTO[] = (externalEmails && externalEmails.length > 0)
       ? externalEmails
-      : [
+      : (targetEmail.includes('sandbox') || targetEmail.includes('test-case'))
+        ? [
           {
             sender_name: 'israel LopezAngeles',
             sender_email: 'kami-mac@hotmail.com',
@@ -179,7 +180,8 @@ export const InboundMailSpoolService = {
             body_text: 'Se detectó un nuevo acceso o inicio de sesión autorizado en tu cuenta de Google para sincronización de correo electrónico institucional.',
             reincidence_count: 1
           }
-        ];
+        ]
+      : [];
 
     const newlyEnqueued: QueuedInboundEmail[] = [];
 

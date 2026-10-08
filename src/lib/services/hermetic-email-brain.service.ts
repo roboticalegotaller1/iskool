@@ -5,6 +5,8 @@
  * ============================================================================
  */
 
+import { CeoEmailSettingsService } from './ceoEmailSettingsService';
+
 export type EmailQuadrant = 
   | 'ATENCION_CEO'      // 🔴 Asuntos de gobernanza, riesgo legal/normativo, incidencias graves o reincidencia
   | 'DELEGADO_CON_SLA'  // 🟡 Asuntos operativos derivados con tiempo estipulado
@@ -32,6 +34,8 @@ export interface TriageResult {
   urgency: 'CRITICA' | 'ALTA' | 'MEDIA' | 'BAJA';
   category: string;
   assigned_department?: string;
+  assigned_role?: string;
+  delegate_email?: string;
   sla_hours?: number;
   why_shown_to_director: string;
   recommended_action: string;
@@ -199,7 +203,7 @@ export class HermeticEmailBrainService {
 
     // 3. CLASIFICACIÓN EN TIEMPO REAL EN LOS 4 CUADRANTES
     const tInferStart = performance.now();
-    const classification = this.classifyQuadrant(email, provenanceList, institutionName);
+    const classification = this.classifyQuadrant(email, provenanceList, institutionName, tenantId);
     const inferenceMs = Math.round(performance.now() - tInferStart);
 
     // 4. GENERACIÓN DEL BORRADOR EXPLICABLE Y FORMAL
@@ -217,6 +221,8 @@ export class HermeticEmailBrainService {
       urgency: classification.urgency,
       category: classification.category,
       assigned_department: classification.assigned_department,
+      assigned_role: classification.assigned_role,
+      delegate_email: classification.delegate_email,
       sla_hours: classification.sla_hours,
       why_shown_to_director: classification.why_shown_to_director,
       recommended_action: classification.recommended_action,
@@ -345,18 +351,44 @@ export class HermeticEmailBrainService {
   private static classifyQuadrant(
     email: InboundEmailDTO,
     provenance: DocumentProvenance[],
-    institutionName: string
+    institutionName: string,
+    tenantId?: string
   ): {
     quadrant: EmailQuadrant;
     urgency: 'CRITICA' | 'ALTA' | 'MEDIA' | 'BAJA';
     category: string;
     assigned_department?: string;
+    assigned_role?: string;
+    delegate_email?: string;
     sla_hours?: number;
     why_shown_to_director: string;
     recommended_action: string;
   } {
     const text = `${email.subject} ${email.body_text}`.toLowerCase();
     const reincidence = email.reincidence_count || 1;
+    const tId = tenantId || 'e1000000-0000-0000-0000-000000000001';
+
+    // =========================================================================
+    // REGLA SUPREMA VIP: CORREOS DE ALTA IMPORTANCIA CONFIGURADOS POR EL CEO 🔴
+    // Todo correo proveniente de un remitente VIP debe catalogarse inmediatamente
+    // como "ATENCIÓN INMEDIATA CEO" con urgencia CRÍTICA y sin intermediación.
+    // =========================================================================
+    if (email.sender_email) {
+      const matchingVip = CeoEmailSettingsService.getMatchingVipRule(tId, email.sender_email);
+      if (matchingVip) {
+        return {
+          quadrant: 'ATENCION_CEO',
+          urgency: 'CRITICA',
+          category: `Regla VIP / ${matchingVip.contactName || 'Alta Importancia'}`,
+          assigned_department: 'Dirección General / CEO',
+          assigned_role: 'Dirección General / CEO',
+          delegate_email: email.sender_email,
+          sla_hours: 12,
+          why_shown_to_director: `Remitente prioritario registrado en Reglas VIP de Dirección General (${matchingVip.email}${matchingVip.organization ? ' - ' + matchingVip.organization : ''}): ${matchingVip.reason || 'Atención prioritaria obligatoria e indelegable.'}`,
+          recommended_action: 'Atención prioritaria e inmediata de Dirección General / CEO. Dar seguimiento directo y personalizado sin intermediación.'
+        };
+      }
+    }
 
     // CUADRANTE 4: SPAM / DESCARTADO ⚪
     const spamSignals = [
@@ -375,8 +407,17 @@ export class HermeticEmailBrainService {
       };
     }
 
-    // REGLA OBLIGATORIA: Si en alguna parte dice "supervision", "supervisión", "SEP", "sep" o "CTE", marcar como ATENCIÓN INMEDIATA CEO
-    const isMandatoryCeoKeyword = /\b(supervision|supervisión|sep|cte)\b/i.test(text) || text.includes('supervisi') || text.includes('supervisió');
+    // REGLA OBLIGATORIA: Si dice "supervisión", "supervision" o "CTE", o asunto oficial SEP (salvo trámites de boleta/kardex), marcar como ATENCIÓN INMEDIATA CEO
+    const isRoutineDocTramite = text.includes('boleta') || text.includes('kardex') || text.includes('constancia') || text.includes('certificado');
+    const isMandatoryCeoKeyword = !isRoutineDocTramite && (
+      /\b(supervision|supervisión|cte)\b/i.test(text) ||
+      text.includes('supervisi') ||
+      text.includes('supervisió') ||
+      text.includes('inspección sep') ||
+      text.includes('queja sep') ||
+      text.includes('auditoría sep') ||
+      (/\bsep\b/i.test(text) && !isRoutineDocTramite)
+    );
 
     // CUADRANTE 1: ATENCION_CEO 🔴
     const isCteEmergency = text.includes('cte urgente') || (text.includes('cte') && (text.includes('mañana') || text.includes('urgente') || text.includes('confirme asistencia')));
@@ -428,62 +469,96 @@ export class HermeticEmailBrainService {
         urgency: isCriticalIssue ? 'CRITICA' : 'ALTA',
         category,
         assigned_department: 'Dirección General / CEO',
+        assigned_role: 'Dirección General / CEO',
         sla_hours: 12,
         why_shown_to_director: why,
         recommended_action: recAction
       };
     }
 
+    // =========================================================================
     // CUADRANTE 2: DELEGADO_CON_SLA 🟡
+    // Configurable dinámicamente por la Dirección General (Ajustes de Delegados)
+    // =========================================================================
+    const settings = CeoEmailSettingsService.getSettings(tId);
+
     // Cobranza / Facturación
     if (text.includes('factura') || text.includes('cfdi') || text.includes('colegiatura') || text.includes('recargo') || text.includes('pago')) {
+      const cobranzaDel = settings.delegates.find(d => d.sectionKey === 'cobranza') || settings.delegates[0];
       return {
         quadrant: 'DELEGADO_CON_SLA',
         urgency: 'MEDIA',
         category: 'Cobranza y Facturación',
-        assigned_department: 'Departamento Administrativo / Cobranza',
-        sla_hours: 24,
-        why_shown_to_director: 'Trámite operativo derivado a Cobranza para emisión de factura o resolución de aclaración financiera.',
-        recommended_action: 'Derivar a Cobranza con plazo de 24 horas y enviar borrador informativo preventivo.'
+        assigned_department: cobranzaDel.sectionName,
+        assigned_role: cobranzaDel.delegateName,
+        delegate_email: cobranzaDel.delegateEmail,
+        sla_hours: cobranzaDel.slaHours,
+        why_shown_to_director: `Trámite financiero o aclaración derivado a ${cobranzaDel.delegateName} (${cobranzaDel.delegateEmail}) con SLA de ${cobranzaDel.slaHours}h.`,
+        recommended_action: `Derivar a ${cobranzaDel.delegateName} (${cobranzaDel.delegateEmail}) con plazo de ${cobranzaDel.slaHours} horas y registrar en bitácora.`
       };
     }
 
     // Control Escolar / Trámites SEP
-    if (text.includes('boleta') || text.includes('kardex') || text.includes('constancia') || text.includes('certificado') || text.includes('revalidación')) {
+    if (text.includes('boleta') || text.includes('kardex') || text.includes('constancia') || text.includes('certificado') || text.includes('revalidación') || text.includes('inscripción')) {
+      const escolarDel = settings.delegates.find(d => d.sectionKey === 'control_escolar') || settings.delegates[0];
       return {
         quadrant: 'DELEGADO_CON_SLA',
         urgency: 'MEDIA',
         category: 'Control Escolar y Trámites',
-        assigned_department: 'Secretaría / Control Escolar',
-        sla_hours: 48,
-        why_shown_to_director: 'Solicitud documental que compete a los procedimientos oficiales de Control Escolar.',
-        recommended_action: 'Canalizar a Secretaría para cotejo de expediente y emisión con sello oficial.'
+        assigned_department: escolarDel.sectionName,
+        assigned_role: escolarDel.delegateName,
+        delegate_email: escolarDel.delegateEmail,
+        sla_hours: escolarDel.slaHours,
+        why_shown_to_director: `Solicitud documental que compete a los procedimientos de ${escolarDel.sectionName} a cargo de ${escolarDel.delegateName} (${escolarDel.delegateEmail}).`,
+        recommended_action: `Canalizar a ${escolarDel.delegateName} para cotejo de expediente y emisión con sello oficial en un plazo de ${escolarDel.slaHours}h.`
       };
     }
 
-    // Prefectura / Transporte
-    if (text.includes('transporte') || text.includes('ruta 4') || text.includes('ruta') || text.includes('camión') || text.includes('uniforme') || text.includes('inasistencia')) {
+    // Prefectura / Logística y Transporte
+    if (text.includes('transporte') || text.includes('ruta 4') || text.includes('ruta') || text.includes('camión') || text.includes('uniforme') || text.includes('inasistencia') || text.includes('chofer')) {
+      const transporteDel = settings.delegates.find(d => d.sectionKey === 'transporte') || settings.delegates[0];
       return {
         quadrant: 'DELEGADO_CON_SLA',
         urgency: 'MEDIA',
         category: 'Logística y Transporte',
-        assigned_department: 'Coordinación de Logística y Prefectura',
-        sla_hours: 24,
-        why_shown_to_director: 'Incidencia operativa de logística o servicio de transporte.',
-        recommended_action: 'Auditar tiempos de recorrido con el proveedor de transporte y responder con lineamiento oficial.'
+        assigned_department: transporteDel.sectionName,
+        assigned_role: transporteDel.delegateName,
+        delegate_email: transporteDel.delegateEmail,
+        sla_hours: transporteDel.slaHours,
+        why_shown_to_director: `Incidencia operativa de logística o servicio de transporte canalizada a ${transporteDel.delegateName} (${transporteDel.delegateEmail}).`,
+        recommended_action: `Auditar tiempos de recorrido y canalizar con ${transporteDel.delegateName} para resolución oficial en ${transporteDel.slaHours}h.`
       };
     }
 
-    // Coordinación Académica
-    if (text.includes('tarea') || text.includes('examen') || text.includes('profesor') || text.includes('temario') || text.includes('materia')) {
+    // Servicio Médico Escolar
+    if (text.includes('médico') || text.includes('medico') || text.includes('enfermería') || text.includes('enfermeria') || text.includes('receta') || text.includes('alergia') || text.includes('medicamento')) {
+      const medicoDel = settings.delegates.find(d => d.sectionKey === 'servicio_medico') || settings.delegates[0];
+      return {
+        quadrant: 'DELEGADO_CON_SLA',
+        urgency: 'MEDIA',
+        category: 'Servicio Médico y Salud Escolar',
+        assigned_department: medicoDel.sectionName,
+        assigned_role: medicoDel.delegateName,
+        delegate_email: medicoDel.delegateEmail,
+        sla_hours: medicoDel.slaHours,
+        why_shown_to_director: `Notificación clínica o seguimiento de salud escolar asignado a ${medicoDel.delegateName} (${medicoDel.delegateEmail}).`,
+        recommended_action: `Atención clínica y seguimiento por ${medicoDel.delegateName} con notificación en ${medicoDel.slaHours}h.`
+      };
+    }
+
+    // Coordinación Académica y Convivencia
+    if (text.includes('tarea') || text.includes('examen') || text.includes('profesor') || text.includes('temario') || text.includes('materia') || text.includes('calificación')) {
+      const acadDel = settings.delegates.find(d => d.sectionKey === 'convivencia') || settings.delegates[0];
       return {
         quadrant: 'DELEGADO_CON_SLA',
         urgency: 'MEDIA',
         category: 'Gestión Académica',
-        assigned_department: 'Coordinación Académica',
-        sla_hours: 24,
-        why_shown_to_director: 'Consulta sobre el desarrollo de clase o contenidos evaluativos derivada a Coordinación.',
-        recommended_action: 'Instruir al titular del grupo a brindar retroalimentación puntual.'
+        assigned_department: acadDel.sectionName,
+        assigned_role: acadDel.delegateName,
+        delegate_email: acadDel.delegateEmail,
+        sla_hours: acadDel.slaHours,
+        why_shown_to_director: `Consulta sobre el desarrollo de clase o contenidos evaluativos derivada a ${acadDel.delegateName} (${acadDel.delegateEmail}).`,
+        recommended_action: `Instruir al titular del grupo a través de ${acadDel.delegateName} a brindar retroalimentación puntual en ${acadDel.slaHours}h.`
       };
     }
 
