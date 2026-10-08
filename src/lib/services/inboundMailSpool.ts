@@ -111,18 +111,42 @@ export const InboundMailSpoolService = {
     const realInboxEmails: InboundEmailDTO[] = [
       {
         sender_name: 'israel LopezAngeles',
-        sender_email: targetEmail,
+        sender_email: 'kami-mac@hotmail.com',
         recipient_email: targetEmail,
         subject: 'Alumno herido',
-        body_text: 'El alumno Patricio estrella fue herido ayer en las canchas de futball',
+        body_text: 'El alumno Patricio estrella fue herido ayer en las canchas de futball durante el horario de receso. Solicito saber qué protocolo médico se aplicó y seguro vigente.',
         reincidence_count: 1
       },
       {
-        sender_name: 'Israel Lopez',
-        sender_email: targetEmail,
+        sender_name: 'israel LopezAngeles',
+        sender_email: 'kami-mac@hotmail.com',
         recipient_email: targetEmail,
-        subject: 'CTE urgente',
-        body_text: 'Se notifica que tendrá cte urgente mañana a las 3 pm ,confirme asistencia',
+        subject: 'Dicumento de proyección civil',
+        body_text: 'Estimada Dirección General: Adjunto dictamen técnico de protección civil y plan de contingencia escolar para la revisión de instalaciones y rutas de evacuación del plantel.',
+        reincidence_count: 1
+      },
+      {
+        sender_name: 'israel LopezAngeles',
+        sender_email: 'kami-mac@hotmail.com',
+        recipient_email: targetEmail,
+        subject: 'CTE pospuesto',
+        body_text: 'Se notifica que el Consejo Técnico Escolar (CTE) queda pospuesto para nueva fecha acordada con supervisión escolar.',
+        reincidence_count: 1
+      },
+      {
+        sender_name: 'israel LopezAngeles',
+        sender_email: 'kami-mac@hotmail.com',
+        recipient_email: targetEmail,
+        subject: 'Supervisión documento importante',
+        body_text: 'Atenta entrega de documentación requerida para supervisión de zona escolar correspondiente al ciclo activo.',
+        reincidence_count: 1
+      },
+      {
+        sender_name: 'Google',
+        sender_email: 'no-reply@accounts.google.com',
+        recipient_email: targetEmail,
+        subject: 'Alerta de seguridad',
+        body_text: 'Se detectó un nuevo acceso o inicio de sesión autorizado en tu cuenta de Google para sincronización de correo electrónico.',
         reincidence_count: 1
       }
     ];

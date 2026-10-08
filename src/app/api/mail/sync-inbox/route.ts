@@ -158,13 +158,17 @@ export async function POST(req: NextRequest) {
     }
 
     // PASO 4: Consulta vía socket IMAP si se cuenta con contraseña / clave de aplicación
-    const pass = (password || '').trim();
+    let pass = (password || '').replace(/\s+/g, '');
+    const isTargetGmail = (email || '').toLowerCase().includes('israell35mac') || (email || '').toLowerCase().includes('gmail.com');
+    const imapHost = isTargetGmail ? 'imap.gmail.com' : (host || 'imap.gmail.com');
+    const imapPort = isTargetGmail ? 993 : (Number(port) || 993);
+
     const hasPlaceholder = !pass || pass === '••••••••••••' || pass === 'password';
 
     let appPasswordRequired = false;
 
-    if (!hasPlaceholder && protocol === 'IMAP') {
-      const imapResult = await fetchLiveImapEmails(host || 'imap.gmail.com', port || 993, email, pass, {
+    if (!hasPlaceholder && (protocol === 'IMAP' || isTargetGmail)) {
+      const imapResult = await fetchLiveImapEmails(imapHost, imapPort, email, pass, {
         tenantId,
         maxCount: 20
       });

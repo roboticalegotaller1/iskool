@@ -297,7 +297,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Verificación de Autenticación / Credenciales
-    const pass = (payload.password || '').trim();
+    const pass = (payload.password || '').replace(/\s+/g, '');
     const hasPlaceholderPass = !pass || pass === '••••••••••••' || pass === 'password';
 
     // Para buzones comerciales (ej. Gmail, Outlook, etc.) se requiere contraseña, token real o confirmación 2FA
@@ -349,16 +349,18 @@ export async function POST(req: NextRequest) {
 
       // Si se proporcionó una contraseña para IMAP comercial, comprobar el LOGIN
       if (payload.protocol === 'IMAP' && isTls) {
+        const isGoogle = domain.includes('gmail') || domain.includes('google');
+        const testHost = isGoogle ? 'imap.gmail.com' : payload.incomingHost;
+        const testPort = isGoogle ? 993 : Number(payload.incomingPort);
         const authCheck = await verifyImapCredentials(
-          payload.incomingHost,
-          Number(payload.incomingPort),
+          testHost,
+          testPort,
           payload.username || payload.email,
           pass,
           4500
         );
 
         if (!authCheck.authenticated) {
-          const isGoogle = domain.includes('gmail') || domain.includes('google');
           const isMicrosoft = domain.includes('outlook') || domain.includes('hotmail') || domain.includes('live') || domain.includes('office365');
           const isApple = domain.includes('icloud') || domain.includes('me.com') || domain.includes('mac.com');
 

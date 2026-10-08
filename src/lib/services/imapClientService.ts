@@ -35,9 +35,11 @@ export function decodeMimeHeader(input: string): string {
   if (!input) return '';
   return input.replace(/=\?([^?]+)\?([BQbq])\?([^?]+)\?=/g, (match, charset, encoding, text) => {
     try {
+      const cs = charset.toLowerCase();
       const enc = encoding.toUpperCase();
+      let buf: Buffer;
       if (enc === 'B') {
-        return Buffer.from(text, 'base64').toString('utf8');
+        buf = Buffer.from(text, 'base64');
       } else if (enc === 'Q') {
         const bytes: number[] = [];
         for (let i = 0; i < text.length; i++) {
@@ -50,12 +52,18 @@ export function decodeMimeHeader(input: string): string {
             bytes.push(text.charCodeAt(i));
           }
         }
-        return Buffer.from(bytes).toString('utf8');
+        buf = Buffer.from(bytes);
+      } else {
+        return match;
       }
+
+      if (cs.includes('iso-8859-1') || cs.includes('latin1')) {
+        return buf.toString('latin1');
+      }
+      return buf.toString('utf8');
     } catch {
       return match;
     }
-    return match;
   });
 }
 

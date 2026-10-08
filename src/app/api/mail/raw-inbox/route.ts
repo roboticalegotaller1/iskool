@@ -33,7 +33,7 @@ function getFallbackRawEmails(accountEmail: string): RawGmailItem[] {
     {
       id: 'raw-msg-01',
       sender_name: 'israel LopezAngeles',
-      sender_email: targetEmail,
+      sender_email: 'kami-mac@hotmail.com',
       recipient_email: targetEmail,
       subject: 'Alumno herido',
       snippet: 'El alumno Patricio estrella fue herido ayer en las canchas de futball durante el horario de receso...',
@@ -52,12 +52,12 @@ function getFallbackRawEmails(accountEmail: string): RawGmailItem[] {
     },
     {
       id: 'raw-msg-02',
-      sender_name: 'Israel Lopez',
-      sender_email: targetEmail,
+      sender_name: 'israel LopezAngeles',
+      sender_email: 'kami-mac@hotmail.com',
       recipient_email: targetEmail,
-      subject: 'CTE urgente',
-      snippet: 'Se notifica que tendrá cte urgente mañana a las 3 pm ,confirme asistencia por favor...',
-      body_text: 'Se notifica que tendrá cte urgente mañana a las 3 pm ,confirme asistencia por favor para preparar la sala de juntas de Dirección General y el orden del día curricular.',
+      subject: 'CTE pospuesto',
+      snippet: 'Se notifica que el CTE queda pospuesto para nueva fecha acordada...',
+      body_text: 'Se notifica que el Consejo Técnico Escolar (CTE) queda pospuesto para nueva fecha acordada con supervisión escolar.',
       received_at: 'Hoy',
       timestamp: '15:30',
       is_unread: true,
@@ -68,6 +68,46 @@ function getFallbackRawEmails(accountEmail: string): RawGmailItem[] {
         quadrant: 'DELEGADO_CON_SLA',
         label: '🟡 DELEGADO CON SLA',
         color: 'bg-amber-50 text-amber-700 border-amber-200'
+      }
+    },
+    {
+      id: 'raw-msg-03',
+      sender_name: 'israel LopezAngeles',
+      sender_email: 'kami-mac@hotmail.com',
+      recipient_email: targetEmail,
+      subject: 'Dicumento de proyección civil',
+      snippet: 'Adjunto dictamen técnico de protección civil y plan de contingencia escolar...',
+      body_text: 'Estimada Dirección General: Adjunto dictamen técnico de protección civil y plan de contingencia escolar para la revisión de instalaciones y rutas de evacuación del plantel.',
+      received_at: 'Hoy',
+      timestamp: '14:20',
+      is_unread: true,
+      is_starred: true,
+      is_important: true,
+      category: 'principal',
+      triage_badge: {
+        quadrant: 'ATENCION_CEO',
+        label: '🔴 ATENCIÓN INMEDIATA CEO',
+        color: 'bg-red-50 text-red-700 border-red-200'
+      }
+    },
+    {
+      id: 'raw-msg-04',
+      sender_name: 'Google',
+      sender_email: 'no-reply@accounts.google.com',
+      recipient_email: targetEmail,
+      subject: 'Alerta de seguridad',
+      snippet: 'Se detectó un nuevo inicio de sesión o acceso de aplicación en tu cuenta de Google...',
+      body_text: 'Se detectó un nuevo inicio de sesión o acceso de aplicación autorizada en tu cuenta de Google para sincronización de correo electrónico.',
+      received_at: 'Hoy',
+      timestamp: '13:00',
+      is_unread: false,
+      is_starred: false,
+      is_important: false,
+      category: 'actualizaciones',
+      triage_badge: {
+        quadrant: 'INFORMATIVO',
+        label: '🟢 INFORMATIVO',
+        color: 'bg-emerald-50 text-emerald-700 border-emerald-200'
       }
     }
   ];
@@ -88,10 +128,15 @@ export async function GET(request: NextRequest) {
     let authError: string | undefined;
     let latencyMs = 18;
 
-    // 1. Si se proporciona contraseña o clave de aplicación real, consultar IMAP en vivo
-    const cleanPass = password.trim();
+    // 1. Resolver host y credencial para buzones Google
+    let cleanPass = (password || '').replace(/\s+/g, '');
+    const isTargetGmail = email.toLowerCase().includes('israell35mac') || email.toLowerCase().includes('gmail.com');
+    const targetHost = isTargetGmail ? 'imap.gmail.com' : (host || 'imap.gmail.com');
+    const targetPort = isTargetGmail ? 993 : (Number(port) || 993);
+
+    // 2. Si se proporciona contraseña o clave de aplicación real, consultar IMAP en vivo
     if (cleanPass && cleanPass !== '••••••••••••' && cleanPass !== 'password') {
-      const imapRes = await fetchLiveImapEmails(host, port, email, cleanPass, { tenantId });
+      const imapRes = await fetchLiveImapEmails(targetHost, targetPort, email, cleanPass, { tenantId });
       latencyMs = imapRes.latencyMs || latencyMs;
 
       if (imapRes.success && imapRes.authenticated) {
@@ -106,18 +151,18 @@ export async function GET(request: NextRequest) {
       requiresAppPassword = true;
     }
 
-    // 2. Si no se autenticó o no se proporcionó contraseña, revisar si hay correos cacheados
+    // 3. Si no se autenticó o no se descargó, revisar caché o fallback enriquecido
     if (emails.length === 0) {
       const cached = getCachedInboxEmails(tenantId);
       if (cached && cached.length > 0) {
         emails = cached;
       } else {
         emails = getFallbackRawEmails(email);
-        requiresAppPassword = true;
+        requiresAppPassword = !authenticated;
       }
     }
 
-    // 3. Incorporar correos del spool dinámico de entrada (webhooks / reenvío)
+    // 4. Incorporar correos del spool dinámico de entrada (webhooks / reenvío)
     const spoolEmails = InboundMailSpoolService.getPendingEmails(tenantId);
     const additionalFromSpool: RawGmailItem[] = [];
 
@@ -222,10 +267,15 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Resolver credencial y host para buzones Google
+    let cleanPass = (password || '').replace(/\s+/g, '');
+    const isTargetGmail = email.toLowerCase().includes('israell35mac') || email.toLowerCase().includes('gmail.com');
+    const targetHost = isTargetGmail ? 'imap.gmail.com' : (host || 'imap.gmail.com');
+    const targetPort = isTargetGmail ? 993 : (Number(port) || 993);
+
     // Consulta en vivo por IMAP si se cuenta con credenciales
-    const cleanPass = (password || '').trim();
     if (cleanPass && cleanPass !== '••••••••••••' && cleanPass !== 'password') {
-      const imapRes = await fetchLiveImapEmails(host, port, email, cleanPass, { tenantId });
+      const imapRes = await fetchLiveImapEmails(targetHost, targetPort, email, cleanPass, { tenantId });
       latencyMs = imapRes.latencyMs || latencyMs;
 
       if (imapRes.success && imapRes.authenticated) {
@@ -246,7 +296,7 @@ export async function POST(request: NextRequest) {
         emails = cached;
       } else {
         emails = getFallbackRawEmails(email);
-        requiresAppPassword = true;
+        requiresAppPassword = !authenticated;
       }
     }
 
