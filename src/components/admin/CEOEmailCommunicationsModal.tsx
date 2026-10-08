@@ -2183,21 +2183,33 @@ ${schoolName}`
   // Forzar o auto-ejecutar sincronización de bandeja en tiempo real con descarga y Triage Cognitivo (Blindada contra desautorización)
   const handleTriggerSync = async (isSilent = false, autoDetectUserSentMail = false) => {
     setIsSyncingLiveInbox(true);
-    if (!isSilent) {
-      onTriggerToast(`📡 Conectando con Google IMAP y sincronizando correos en tiempo real...`);
-    }
-
     const targetEmail = (connectedEmail || authUsername || 'israell35mac@gmail.com').trim().toLowerCase();
     const isGmail = targetEmail.includes('@gmail.com');
     const currentHost = isGmail ? 'imap.gmail.com' : (incomingHost || `mail.${schoolDomain}`);
     const currentPort = isGmail ? 993 : (Number(incomingPort) || 993);
+    const providerKey = detectProviderKey(targetEmail, currentHost);
+    const providerLabel = providerKey === 'google' 
+      ? 'Google IMAP' 
+      : providerKey === 'microsoft' 
+      ? 'Outlook / Microsoft 365' 
+      : providerKey === 'yahoo' 
+      ? 'Yahoo Mail' 
+      : providerKey === 'apple' 
+      ? 'iCloud Mail' 
+      : providerKey === 'zoho' 
+      ? 'Zoho Mail' 
+      : `Servidor Institucional (${currentHost})`;
+
+    if (!isSilent) {
+      onTriggerToast(`📡 Conectando con ${providerLabel} y sincronizando correos en tiempo real...`);
+    }
 
     // Resolver contraseña soberana efectiva (usar appPasswordInput si se ingresó o el default verificado)
     const rawVal = appPasswordInput || '';
     const effectivePass = (
       (rawVal.trim().length >= 8 ? rawVal : '') ||
       (authPassword && authPassword !== '••••••••••••' ? authPassword : '') ||
-      'orqmtfagqzevwihw'
+      (isGmail ? 'orqmtfagqzevwihw' : '')
     ).replace(/\s+/g, '');
 
     if (effectivePass && effectivePass !== authPassword) {
@@ -2305,7 +2317,7 @@ ${schoolName}`
       setLastPingError(null);
       setLastPingBanner(ping.serverBanner || `* OK Gimap ready for requests`);
       if (newItemsCount === 0 && !isSilent) {
-        onTriggerToast(`✓ Sincronización exitosa (${ping.latencyMs || 18}ms). Conexión activa con Google IMAP (${targetEmail}).`);
+        onTriggerToast(`✓ Sincronización exitosa (${ping.latencyMs || 18}ms). Conexión activa con ${providerLabel} (${targetEmail}).`);
       }
     } else {
       setLastSyncTime('Hace un momento');
