@@ -309,7 +309,7 @@ export function AcademicPortalAdminModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-150 select-none">
-      <div className="bg-white rounded-3xl max-w-6xl w-full max-h-[96vh] shadow-2xl border border-slate-200 overflow-hidden flex flex-col animate-in zoom-in-95 duration-150">
+      <div className="bg-white rounded-3xl max-w-6xl xl:max-w-7xl 2xl:max-w-[1560px] w-full max-h-[96vh] shadow-2xl border border-slate-200 overflow-hidden flex flex-col animate-in zoom-in-95 duration-150">
         
         {/* ========================================================================= */}
         {/* 1. HEADER INSTITUCIONAL CON IDENTIFICACIÓN DE CUENTA DEL ADMINISTRADOR   */}

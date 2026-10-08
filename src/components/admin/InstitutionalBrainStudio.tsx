@@ -2111,7 +2111,7 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 animate-in fade-in zoom-in duration-150">
-      <div className="w-full max-w-7xl h-[94dvh] rounded-3xl overflow-hidden shadow-[0_0_80px_rgba(99,102,241,0.25)] border border-indigo-500/40">
+      <div className="w-full max-w-7xl xl:max-w-[1500px] 2xl:max-w-[1700px] h-[94dvh] rounded-3xl overflow-hidden shadow-[0_0_80px_rgba(99,102,241,0.25)] border border-indigo-500/40">
         {studioContent}
       </div>
     </div>
