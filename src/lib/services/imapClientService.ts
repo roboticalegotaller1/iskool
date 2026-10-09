@@ -138,8 +138,12 @@ function classifyEmailTriage(subject: string, body: string): {
   const text = `${subject} ${body}`.toLowerCase();
 
   const isMandatoryCeoKeyword = /\b(supervision|supervisión|sep|cte)\b/i.test(text) || text.includes('supervisi') || text.includes('supervisió') || text.includes('cte');
-  const urgentKeywords = ['herido', 'accidente', 'urgente', 'queja', 'agresión', 'demanda', 'emergencia', 'violencia', 'grave', 'hospital'];
-  const operationalKeywords = ['factura', 'pago', 'colegiatura', 'cfdi', 'transporte', 'ruta', 'descuento', 'beca', 'constancia', 'inscripción', 'reinscripción'];
+  const urgentKeywords = ['urgente', 'emergencia', 'accidente', 'herido', 'ambulancia', 'hospital', 'grave', 'queja', 'demanda', 'violencia', 'abuso', 'intoxicaci', 'salud', 'comedor', 'malestar'];
+  const operationalKeywords = [
+    'factura', 'pago', 'colegiatura', 'cfdi', 'transporte', 'ruta', 'descuento', 'beca', 
+    'constancia', 'inscripción', 'reinscripción', 'prima vacacional', 'prima', 'vacacional', 
+    'vacaciones', 'nómina', 'nomina', 'recursos humanos', 'rh', 'sueldo', 'salario', 'prestaciones', 'aguinaldo'
+  ];
   const informativeKeywords = ['circular', 'aviso', 'calendario', 'reunión', 'asistencia', 'oficio', 'acuse', 'convocatoria'];
   const spamKeywords = ['premio', 'tarjeta de regalo', 'ganador', 'bitcoin', 'crypto', 'remate', 'préstamo', 'oferta exclusiva'];
   const promoKeywords = ['descuento', 'liquidación', 'marketing', 'simposio', 'conferencia', 'software', 'hosting', 'webinar'];

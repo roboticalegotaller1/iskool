@@ -124,6 +124,16 @@ export function getDefaultDelegates(tenantId: string): SectionDelegateConfig[] {
       slaHours: 24,
       autoNotify: true,
       keywords: ['tutoría', 'convivencia', 'psicopedagogía', 'orientación', 'conducta', 'receso', 'tarea', 'examen']
+    },
+    {
+      id: `del-rh-${tenantId}`,
+      sectionKey: 'recursos_humanos',
+      sectionName: 'Departamento de Recursos Humanos y Nómina',
+      delegateName: 'Lic. Roberto Méndez',
+      delegateEmail: `recursos.humanos@${domain}`,
+      slaHours: 24,
+      autoNotify: true,
+      keywords: ['prima vacacional', 'prima', 'vacacional', 'vacaciones', 'nómina', 'nomina', 'recursos humanos', 'rh', 'sueldo', 'salario', 'prestaciones', 'aguinaldo', 'finiquito', 'incapacidad', 'recibo de nómina']
     }
   ];
 }

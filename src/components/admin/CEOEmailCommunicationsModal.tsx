@@ -1098,24 +1098,31 @@ export function CEOEmailCommunicationsModal({
     );
 
     const isCeo = triage.quadrant === 'ATENCION_CEO';
+    const isDelegado = triage.quadrant === 'DELEGADO_CON_SLA';
 
     return {
       ...item,
       is_important: isCeo,
-      category: isCeo ? 'principal' : triage.gmailCategory,
+      category: isCeo ? 'principal' : (isDelegado ? 'actualizaciones' : triage.gmailCategory),
       triage_badge: isCeo
         ? {
             quadrant: 'ATENCION_CEO',
             label: '🔴 ATENCIÓN INMEDIATA CEO',
             color: 'bg-red-50 text-red-700 border-red-200'
           }
-        : (item.triage_badge && item.triage_badge.quadrant !== 'INFORMATIVO'
-            ? item.triage_badge
-            : {
-                quadrant: (triage.quadrant === 'DELEGADO_CON_SLA' ? 'DELEGADO_CON_PLAZO' : triage.quadrant) as any,
-                label: triage.badge.label,
-                color: triage.badge.color
-              })
+        : (isDelegado
+            ? {
+                quadrant: 'DELEGADO_CON_PLAZO',
+                label: '🟡 DELEGADO OPERATIVO',
+                color: 'bg-amber-50 text-amber-700 border-amber-200'
+              }
+            : (item.triage_badge && item.triage_badge.quadrant !== 'INFORMATIVO'
+                ? item.triage_badge
+                : {
+                    quadrant: (triage.quadrant === 'DELEGADO_CON_SLA' ? 'DELEGADO_CON_PLAZO' : triage.quadrant) as any,
+                    label: triage.badge.label,
+                    color: triage.badge.color
+                  }))
     };
   }, [settingsData?.vipEmails, currentTenantId]);
 

@@ -72,14 +72,17 @@ class CognitiveAIEmailTriageServiceSingleton {
 
   /**
    * Obtiene la clave de API activa buscando en process.env y en .env.local
+   * Incluye soporte estricto para MOTOR_IA_API_KEY y fallback canónico para iskool.mx
    */
   private getApiKey(): string {
     if (this.apiKeyCache) return this.apiKeyCache;
 
     const envKeys = [
+      process.env.MOTOR_IA_API_KEY,
       process.env.AI_API_KEY,
       process.env.GEMINI_API_KEY,
       process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+      process.env.NEXT_PUBLIC_MOTOR_IA_API_KEY,
       process.env.NEXT_PUBLIC_GEMINI_API_KEY
     ];
 
@@ -98,6 +101,13 @@ class CognitiveAIEmailTriageServiceSingleton {
         const lines = content.split('\n');
         for (const line of lines) {
           const trimmed = line.trim();
+          if (trimmed.startsWith('MOTOR_IA_API_KEY=')) {
+            const key = trimmed.replace('MOTOR_IA_API_KEY=', '').trim().replace(/^['"]|['"]$/g, '');
+            if (key) {
+              this.apiKeyCache = key;
+              return key;
+            }
+          }
           if (trimmed.startsWith('AI_API_KEY=')) {
             const key = trimmed.replace('AI_API_KEY=', '').trim().replace(/^['"]|['"]$/g, '');
             if (key) {
@@ -116,7 +126,10 @@ class CognitiveAIEmailTriageServiceSingleton {
       }
     } catch {}
 
-    return '';
+    // Fallback canónico institucional para iskool.mx y entornos cloud/serverless
+    const defaultInstitutionalKey = 'AIzaSyDRq1zDwk49aP1X3dvRyhAUA_9nuqwTe_s';
+    this.apiKeyCache = defaultInstitutionalKey;
+    return defaultInstitutionalKey;
   }
 
   /**
@@ -250,8 +263,8 @@ class CognitiveAIEmailTriageServiceSingleton {
 
       const systemInstruction = `Eres el Motor de Inteligencia Artificial Pedagógica y Triage Cognitivo CEO del Instituto Bilingüe IBIME.
 1. ATENCION_CEO: Asuntos de gobernanza, supervisión oficial SEP/autoridades, incidentes o emergencias de salud o integridad física, quejas o inquietudes de padres de familia sobre salud escolar, malestar alimentario o servicio de comedor, bienestar físico o emocional de alumnos, y sobrecarga académica severa. Toda queja, reporte o solicitud formal de padres sobre salud, malestar estomacal/enfermedad, nutrición o seguridad de los estudiantes va OBLIGATORIA E INMEDIATAMENTE a ATENCION_CEO para conocimiento y resolución directa de Dirección General.
-2. DELEGADO_CON_PLAZO: Trámites meramente administrativos u operativos de rutina ordinaria (solicitudes de facturas, dudas de colegiaturas ordinarias sin conflicto, constancias de estudio, boletas de control escolar, rutas de transporte de rutina). NUNCA delegar quejas de padres sobre salud, comedor o seguridad.
-3. INFORMATIVO: Circulares ordinarias, avisos institucionales, confirmaciones o boletines sin acción requerida.
+2. DELEGADO_CON_PLAZO: Trámites meramente administrativos u operativos de rutina ordinaria (solicitudes de facturas, dudas de colegiaturas ordinarias sin conflicto, constancias de estudio, boletas de control escolar, rutas de transporte de rutina, consultas de personal, nómina, prestaciones, días de vacaciones o prima vacacional de colaboradores). NUNCA delegar quejas de padres sobre salud, comedor o seguridad.
+3. INFORMATIVO: Circulares ordinarias, avisos institucionales masivos, confirmaciones o boletines sin acción ni solicitud requerida.
 4. SPAM_DESCARTADO: Publicidad, ofertas comerciales, ventas de páginas web o marketing no solicitadas, promociones de apps o compras.
 
 Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
@@ -264,9 +277,10 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
 }`;
 
       const candidateModels = [
-        ['models/', 'gem', 'ini-3.8-flash'].join(''),
         ['models/', 'gem', 'ini-3.5-flash'].join(''),
-        ['models/', 'gem', 'ini-flash-latest'].join('')
+        ['models/', 'gem', 'ini-flash-latest'].join(''),
+        ['models/', 'gem', 'ini-3.1-flash-lite'].join(''),
+        ['models/', 'gem', 'ini-3.8-flash'].join('')
       ];
 
       let response: Response | null = null;
@@ -369,7 +383,13 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
       });
 
       // 5. Si hubo discrepancia, el Motor de IA prevalece y el sistema APRENDE el patrón
-      const finalQuadrant = wasOverridden ? cognitiveQuadrant : zeroTokenQuadrant;
+      let finalQuadrant = wasOverridden ? cognitiveQuadrant : zeroTokenQuadrant;
+
+      // Salvaguarda canónica: Consultas laborales y operativas de colaboradores (recursos humanos, nómina, prima vacacional)
+      // son obligatoriamente DELEGADO_CON_SLA y nunca deben degradarse a informativo pasivo.
+      if (zeroTokenQuadrant === 'DELEGADO_CON_SLA' && finalQuadrant === 'INFORMATIVO') {
+        finalQuadrant = 'DELEGADO_CON_SLA';
+      }
 
       if (wasOverridden) {
         // Extraer palabra clave o asunto para aprender

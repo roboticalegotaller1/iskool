@@ -212,8 +212,14 @@ export class LearnedTriageMemoryService {
 
   static learnPattern(tenantId: string = 'sch-default', rule: Omit<LearnedTriageRule, 'id' | 'createdAt'>): LearnedTriageRule {
     const existing = this.getRules(tenantId);
+    let effectiveTarget = rule.targetQuadrant;
+    const lowerVal = (rule.patternValue || '').toLowerCase();
+    if (effectiveTarget === 'INFORMATIVO' && (lowerVal.includes('prima') || lowerVal.includes('vacacio') || lowerVal.includes('nomina') || lowerVal.includes('nómina') || lowerVal.includes('prestacion'))) {
+      effectiveTarget = 'DELEGADO_CON_SLA';
+    }
     const newRule: LearnedTriageRule = {
       ...rule,
+      targetQuadrant: effectiveTarget,
       id: `rule-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       createdAt: new Date().toISOString()
     };
@@ -510,6 +516,9 @@ export function classifyZeroTokenEmail(
       return buildZeroTokenResult(lr.targetQuadrant, 'Regla de Aprendizaje / Dominio', lr.reason || 'Dominio aprendido como ' + lr.targetQuadrant);
     }
     if (lr.patternType === 'subject' && fullText.includes(val)) {
+      if (lr.targetQuadrant === 'INFORMATIVO' && (val.includes('prima') || val.includes('vacacio') || val.includes('nomina') || val.includes('nómina') || val.includes('prestacion') || val.includes('sueldo') || val.includes('salario'))) {
+        continue;
+      }
       return buildZeroTokenResult(lr.targetQuadrant, 'Regla de Aprendizaje / Patrón', lr.reason || 'Patrón aprendido en triage.');
     }
   }
@@ -624,6 +633,46 @@ export function classifyZeroTokenEmail(
       sla_hours: 24,
       why_shown_to_director: 'Notificación clínica o seguimiento de salud escolar asignado a enfermería.',
       recommended_action: 'Registro en expediente clínico escolar y seguimiento de prescripción médica.'
+    };
+  }
+
+  const isHRorPayroll = 
+    fullText.includes('prima vacacional') || 
+    fullText.includes('prima') || 
+    fullText.includes('vacacional') || 
+    fullText.includes('vacaciones') || 
+    fullText.includes('días de vacaciones') || 
+    fullText.includes('dias de vacaciones') || 
+    fullText.includes('nómina') || 
+    fullText.includes('nomina') || 
+    fullText.includes('recursos humanos') || 
+    fullText.includes('rh') || 
+    fullText.includes('prestaciones') || 
+    fullText.includes('sueldo') || 
+    fullText.includes('salario') || 
+    fullText.includes('aguinaldo') || 
+    fullText.includes('finiquito') || 
+    fullText.includes('liquidación') || 
+    fullText.includes('liquidacion') || 
+    fullText.includes('incapacidad') || 
+    fullText.includes('recibo de nómina');
+  if (isHRorPayroll) {
+    return {
+      quadrant: 'DELEGADO_CON_SLA',
+      urgency: 'MEDIA',
+      category: 'Recursos Humanos & Nómina',
+      badge: {
+        quadrant: 'DELEGADO_CON_SLA',
+        label: '🟡 DELEGADO OPERATIVO',
+        color: 'bg-amber-50 text-amber-700 border-amber-200'
+      },
+      gmailCategory: 'actualizaciones',
+      assigned_department: 'Departamento de Recursos Humanos y Nómina',
+      assigned_role: 'Coordinación de Personal y Nómina',
+      delegate_email: 'recursos.humanos@ibime.edu.mx',
+      sla_hours: 24,
+      why_shown_to_director: 'Trámite laboral o consulta de personal y prestaciones derivado a Recursos Humanos con SLA de 24h.',
+      recommended_action: 'Canalizar a Recursos Humanos y Nómina para cálculo de prestaciones y respuesta formal.'
     };
   }
 
