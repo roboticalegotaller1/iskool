@@ -1383,8 +1383,13 @@ export function CEOEmailCommunicationsModal({
     if (targetEmail) {
       setRawEmailsList(prev => {
         const exists = prev.some(e => e.id === targetEmail.id);
-        if (exists) return prev;
-        return [targetEmail, ...prev];
+        const nextList = exists ? prev : [targetEmail, ...prev];
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(rawEmailsStorageKey, JSON.stringify(nextList));
+          } catch {}
+        }
+        return nextList;
       });
       setSelectedRawEmailId(targetEmail.id);
       setEmailReaderReturnTab('inbox');
@@ -7237,8 +7242,21 @@ Comité de Seguridad y Protección Escolar`
 
               {/* Si hay un correo seleccionado para lectura, mostrar la Vista de Lectura estilo Gmail */}
               {selectedRawEmailId ? (() => {
-                const rawFound = rawEmailsList.find(e => e.id === selectedRawEmailId);
-                const currentEmail = rawFound ? normalizeRawEmailCeoRules(rawFound) : null;
+                let rawCandidate = rawEmailsList.find(e => e.id === selectedRawEmailId);
+                if (!rawCandidate) {
+                  // Fallback reactivo: buscar en mattersList o sintetizar con getOriginalEmailsForMatter
+                  const matchingMatter = mattersList.find(m =>
+                    m.id === selectedRawEmailId ||
+                    m.id.replace(/^mat-live-/, '') === selectedRawEmailId ||
+                    `mat-live-${selectedRawEmailId}` === m.id ||
+                    (m.matter_code && selectedRawEmailId.includes(m.matter_code))
+                  );
+                  if (matchingMatter) {
+                    const origs = getOriginalEmailsForMatter(matchingMatter);
+                    rawCandidate = origs.find(e => e.id === selectedRawEmailId) || origs[0];
+                  }
+                }
+                const currentEmail = rawCandidate ? normalizeRawEmailCeoRules(rawCandidate) : null;
                 if (!currentEmail) {
                   return (
                     <div className="p-8 text-center bg-white rounded-2xl border border-slate-200">
