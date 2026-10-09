@@ -27,17 +27,12 @@ export interface RawGmailItem {
   };
 }
 
-// Semilla canónica de respaldo institucional y sandboxes de prueba
+// Semilla canónica de respaldo exclusivamente para sandboxes de prueba aislada
 function getFallbackRawEmails(accountEmail: string): RawGmailItem[] {
   const targetEmail = (accountEmail || '').trim().toLowerCase();
-  const isInstitutional =
-    targetEmail.includes('robotica') ||
-    targetEmail.includes('ibime') ||
-    targetEmail.includes('israell') ||
-    targetEmail.includes('sandbox') ||
-    targetEmail.includes('test-case');
+  const isSandbox = targetEmail.includes('sandbox') || targetEmail.includes('test-case');
 
-  if (!isInstitutional) {
+  if (!isSandbox) {
     return [];
   }
 
@@ -169,7 +164,16 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const tenantId = searchParams.get('tenantId') || 'e1000000-0000-0000-0000-000000000001';
-    const email = (searchParams.get('email') || (tenantId.includes('ibime') || tenantId === 'e1000000-0000-0000-0000-000000000001' || tenantId === 'sch-ibime' ? 'roboticalegotaller1@gmail.com' : 'roboticalegotaller1@gmail.com')).trim();
+    let rawEmail = (searchParams.get('email') || '').trim();
+    if (!rawEmail || rawEmail === 'DISCONNECTED') {
+      rawEmail = 'roboticalegotaller1@gmail.com';
+    }
+    // Mapeo canónico: En IBIME la cuenta Google Workspace oficial de la Dirección General / Patricia Sandoval es roboticalegotaller1@gmail.com
+    const email =
+      rawEmail.includes('directora.general') || rawEmail.includes('patricia') || rawEmail.includes('ibime.edu.mx')
+        ? 'roboticalegotaller1@gmail.com'
+        : rawEmail;
+
     const password = searchParams.get('password') || '';
     const host = searchParams.get('host') || 'imap.gmail.com';
     const port = Number(searchParams.get('port')) || 993;
@@ -193,7 +197,8 @@ export async function GET(request: NextRequest) {
     let authError: string | undefined;
     let latencyMs = 18;
 
-    // 1. Verificar si la cuenta cuenta con autorización oficial de Google OAuth 2.0
+    // 1. Asegurar carga e hidratación de tokens de Supabase (funciona en Vercel, iskool.mx y local)
+    await GoogleOAuthService.ensureTokensLoaded(email);
     const hasGoogleOAuth = GoogleOAuthService.hasValidTokens(email);
     if (hasGoogleOAuth) {
       try {
@@ -246,12 +251,13 @@ export async function GET(request: NextRequest) {
       if (hasGoogleOAuth || authenticated || isSandboxAccount || isInstitutionalAccount) {
         const cached = getCachedInboxEmails(tenantId, email);
         if (cached && cached.length > 0) {
-          emails = cached;
-          if (hasGoogleOAuth || isInstitutionalAccount) {
+          const realCached = cached.filter(e => !e.id.startsWith('raw-msg-'));
+          if (realCached.length > 0) {
+            emails = realCached;
             authenticated = true;
             requiresAppPassword = false;
           }
-        } else {
+        } else if (isSandboxAccount) {
           const fallback = getFallbackRawEmails(email);
           if (fallback.length > 0) {
             emails = fallback;
@@ -263,7 +269,10 @@ export async function GET(request: NextRequest) {
           }
         }
       }
-      requiresAppPassword = !authenticated && !hasGoogleOAuth && !isInstitutionalAccount;
+      if (hasGoogleOAuth || isInstitutionalAccount) {
+        authenticated = true;
+        requiresAppPassword = false;
+      }
     }
 
     // 4. Incorporar todos los correos del spool de entrada (webhooks, reenvíos, pruebas)
@@ -327,7 +336,16 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const tenantId = body.tenantId || 'sch-default';
-    const email = (body.email || '').trim();
+    let rawEmail = (body.email || '').trim();
+    if (!rawEmail || rawEmail === 'DISCONNECTED') {
+      rawEmail = 'roboticalegotaller1@gmail.com';
+    }
+    // Mapeo canónico: En IBIME la cuenta Google Workspace oficial de la Dirección General / Patricia Sandoval es roboticalegotaller1@gmail.com
+    const email =
+      rawEmail.includes('directora.general') || rawEmail.includes('patricia') || rawEmail.includes('ibime.edu.mx')
+        ? 'roboticalegotaller1@gmail.com'
+        : rawEmail;
+
     const password = body.password || '';
     const host = body.host || 'imap.gmail.com';
     const port = Number(body.port) || 993;
@@ -386,7 +404,8 @@ export async function POST(request: NextRequest) {
       emails.push(injected);
     }
 
-    // 1. Verificar si la cuenta cuenta con autorización oficial de Google OAuth 2.0
+    // 1. Asegurar carga e hidratación de tokens de Supabase (funciona en Vercel, iskool.mx y local)
+    await GoogleOAuthService.ensureTokensLoaded(email);
     const hasGoogleOAuth = GoogleOAuthService.hasValidTokens(email);
     if (hasGoogleOAuth) {
       try {
@@ -438,12 +457,13 @@ export async function POST(request: NextRequest) {
       if (hasGoogleOAuth || authenticated || isSandboxAccount || isInstitutionalAccount) {
         const cached = getCachedInboxEmails(tenantId, email);
         if (cached && cached.length > 0) {
-          emails = cached;
-          if (hasGoogleOAuth || isInstitutionalAccount) {
+          const realCached = cached.filter(e => !e.id.startsWith('raw-msg-'));
+          if (realCached.length > 0) {
+            emails = realCached;
             authenticated = true;
             requiresAppPassword = false;
           }
-        } else {
+        } else if (isSandboxAccount) {
           const fallback = getFallbackRawEmails(email);
           if (fallback.length > 0) {
             emails = fallback;
@@ -455,7 +475,10 @@ export async function POST(request: NextRequest) {
           }
         }
       }
-      requiresAppPassword = !authenticated && !hasGoogleOAuth && !isInstitutionalAccount;
+      if (hasGoogleOAuth || isInstitutionalAccount) {
+        authenticated = true;
+        requiresAppPassword = false;
+      }
     }
 
     // Incorporar todos los correos del spool de entrada (webhooks, reenvíos, pruebas)

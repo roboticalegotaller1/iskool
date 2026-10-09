@@ -298,6 +298,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Verificación de Autenticación / Credenciales
+    await GoogleOAuthService.ensureTokensLoaded(payload.email);
     const hasGoogleOAuth = payload.mode === 'oauth_authorized' || (GoogleOAuthService.hasValidTokens(payload.email) && !payload.password);
     if (hasGoogleOAuth) {
       return NextResponse.json({
