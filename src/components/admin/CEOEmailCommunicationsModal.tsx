@@ -1140,9 +1140,9 @@ export function CEOEmailCommunicationsModal({
       setRawEmailsList([]);
     }
 
-    const targetEmail = (connectedEmail || authUsername || 'roboticalegotaller1@gmail.com').trim();
+    const targetEmail = (connectedEmail || authUsername || (isIbime ? 'roboticalegotaller1@gmail.com' : '')).trim();
     const effectiveEmail =
-      targetEmail.includes('directora.general') || targetEmail.includes('patricia') || targetEmail.includes('ibime.edu.mx')
+      targetEmail.includes('directora.general') || targetEmail.includes('patricia') || targetEmail.includes('ibime.edu.mx') || !targetEmail
         ? 'roboticalegotaller1@gmail.com'
         : targetEmail;
 
@@ -1152,16 +1152,18 @@ export function CEOEmailCommunicationsModal({
         .then(data => {
           if (data.success && Array.isArray(data.emails)) {
             const cleanEmails = data.emails.filter((e: any) => !String(e.id || '').startsWith('raw-msg-'));
-            const normalized = cleanEmails.map(normalizeRawEmailCeoRules);
-            setRawEmailsList(normalized);
-            if (typeof window !== 'undefined') {
-              localStorage.setItem(rawEmailsStorageKey, JSON.stringify(normalized));
+            if (cleanEmails.length > 0) {
+              const normalized = cleanEmails.map(normalizeRawEmailCeoRules);
+              setRawEmailsList(normalized);
+              if (typeof window !== 'undefined') {
+                localStorage.setItem(rawEmailsStorageKey, JSON.stringify(normalized));
+              }
             }
           }
         })
         .catch(err => console.warn('Auto fetch raw inbox failed:', err));
     }
-  }, [rawEmailsStorageKey, currentTenantId, isOpen, connectedEmail, authUsername]);
+  }, [rawEmailsStorageKey, currentTenantId, isOpen, activeTab, connectedEmail, authUsername, isIbime]);
 
   const [selectedRawEmailId, setSelectedRawEmailId] = useState<string | null>(null);
   const [rawEmailCategory, setRawEmailCategory] = useState<'todos' | 'principal' | 'actualizaciones' | 'informativo' | 'promociones' | 'spam'>('todos');
@@ -3010,8 +3012,12 @@ ${schoolName}`
   // Forzar o auto-ejecutar sincronización de bandeja en tiempo real con descarga y Triage Cognitivo (Blindada contra desautorización)
   const handleTriggerSync = async (isSilent = false, autoDetectUserSentMail = false) => {
     // Aislamiento Multi-Tenant Estricto: Si la escuela no tiene un correo conectado o está desconectada, ABORTAR INMEDIATAMENTE
-    const targetEmail = (connectedEmail || authUsername || '').trim().toLowerCase();
-    if (!targetEmail || targetEmail === 'disconnected' || connectionStatus === 'disconnected') {
+    const rawTarget = (connectedEmail || authUsername || (isIbime ? 'roboticalegotaller1@gmail.com' : '')).trim().toLowerCase();
+    const targetEmail =
+      rawTarget.includes('directora.general') || rawTarget.includes('patricia') || rawTarget.includes('ibime.edu.mx') || !rawTarget
+        ? 'roboticalegotaller1@gmail.com'
+        : rawTarget;
+    if (!targetEmail || targetEmail === 'disconnected') {
       setIsSyncingLiveInbox(false);
       return;
     }

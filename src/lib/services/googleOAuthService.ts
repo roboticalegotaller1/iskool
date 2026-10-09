@@ -82,11 +82,47 @@ const tokenStore: Map<string, GoogleTokens> =
   ((globalThis as any).__iskoolGoogleTokens = loadTokensFromFile());
 
 export class GoogleOAuthService {
+  private static cachedClientId = '';
+  private static cachedClientSecret = '';
+
+  private static async ensureClientCredentials(): Promise<void> {
+    if (this.cachedClientId && this.cachedClientSecret) return;
+    const envCid =
+      process.env.GOOGLE_CLIENT_ID ||
+      process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+      process.env.SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID ||
+      '';
+    const envSec =
+      process.env.GOOGLE_CLIENT_SECRET ||
+      process.env.SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET ||
+      '';
+    if (envCid && envSec) {
+      this.cachedClientId = envCid;
+      this.cachedClientSecret = envSec;
+      return;
+    }
+    try {
+      const supabase = getSupabaseClient();
+      const { data } = await supabase
+        .from('oauth_credentials')
+        .select('client_id, client_secret')
+        .eq('provider', 'google')
+        .maybeSingle();
+      if (data?.client_id && data?.client_secret) {
+        this.cachedClientId = data.client_id;
+        this.cachedClientSecret = data.client_secret;
+      }
+    } catch (e) {
+      console.warn('Error cargando oauth_credentials desde base de datos:', e);
+    }
+  }
+
   private static getClientId(): string {
     return (
       process.env.GOOGLE_CLIENT_ID ||
       process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
       process.env.SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID ||
+      this.cachedClientId ||
       ''
     );
   }
@@ -95,6 +131,7 @@ export class GoogleOAuthService {
     return (
       process.env.GOOGLE_CLIENT_SECRET ||
       process.env.SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET ||
+      this.cachedClientSecret ||
       ''
     );
   }
@@ -105,6 +142,7 @@ export class GoogleOAuthService {
    */
   static async ensureTokensLoaded(email?: string): Promise<void> {
     try {
+      await this.ensureClientCredentials();
       const clean = email ? email.toLowerCase().trim() : '';
       const effectiveEmail =
         clean.includes('directora.general') || clean.includes('patricia') || clean.includes('ibime.edu.mx')
@@ -304,6 +342,57 @@ export class GoogleOAuthService {
   }
 
   /**
+   * Renueva activamente el token de acceso con Google OAuth usando el refresh token
+   */
+  static async refreshAccessToken(email?: string): Promise<string | null> {
+    const clean = email ? email.toLowerCase().trim() : '';
+    const effectiveEmail =
+      clean.includes('directora.general') || clean.includes('patricia') || clean.includes('ibime.edu.mx')
+        ? 'roboticalegotaller1@gmail.com'
+        : clean;
+
+    await this.ensureTokensLoaded(effectiveEmail);
+    await this.ensureClientCredentials();
+
+    const tokens = this.getStoredTokens(effectiveEmail);
+    if (!tokens || !tokens.refreshToken) return null;
+
+    try {
+      const clientId = this.getClientId();
+      const clientSecret = this.getClientSecret();
+      const res = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: clientId,
+          client_secret: clientSecret,
+          refresh_token: tokens.refreshToken,
+          grant_type: 'refresh_token'
+        }).toString()
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        tokens.accessToken = data.access_token;
+        tokens.expiresAt = Date.now() + (Number(data.expires_in) || 3600) * 1000;
+        if (data.refresh_token) {
+          tokens.refreshToken = data.refresh_token;
+        }
+        tokenStore.set(tokens.email.toLowerCase().trim(), tokens);
+        saveTokensToFile(tokenStore);
+        await this.persistTokensToDb(tokens);
+        return tokens.accessToken;
+      } else {
+        const errText = await res.text();
+        console.warn('OAuth refresh endpoint returned error:', res.status, errText);
+      }
+    } catch (err) {
+      console.warn('Error renovando Google access token:', err);
+    }
+    return null;
+  }
+
+  /**
    * Obtiene un access token válido, renovándolo automáticamente con Google si expiró
    */
   static async getValidAccessToken(email?: string): Promise<string | null> {
@@ -325,39 +414,7 @@ export class GoogleOAuthService {
       return tokens.accessToken;
     }
 
-    if (tokens.refreshToken) {
-      try {
-        const clientId = this.getClientId();
-        const clientSecret = this.getClientSecret();
-        const res = await fetch('https://oauth2.googleapis.com/token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            client_id: clientId,
-            client_secret: clientSecret,
-            refresh_token: tokens.refreshToken,
-            grant_type: 'refresh_token'
-          }).toString()
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          tokens.accessToken = data.access_token;
-          tokens.expiresAt = Date.now() + (Number(data.expires_in) || 3600) * 1000;
-          if (data.refresh_token) {
-            tokens.refreshToken = data.refresh_token;
-          }
-          tokenStore.set(tokens.email.toLowerCase().trim(), tokens);
-          saveTokensToFile(tokenStore);
-          await this.persistTokensToDb(tokens);
-          return tokens.accessToken;
-        }
-      } catch (err) {
-        console.warn('Error renovando Google access token:', err);
-      }
-    }
-
-    return tokens.accessToken || null;
+    return await this.refreshAccessToken(effectiveEmail);
   }
 
   /**
@@ -385,12 +442,27 @@ export class GoogleOAuthService {
       }
 
       // 1. Obtener lista de IDs de mensajes en INBOX
-      const listRes = await fetch(
+      let listRes = await fetch(
         `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=${maxCount}&q=in:inbox`,
         {
           headers: { Authorization: `Bearer ${effectiveToken}` }
         }
       );
+
+      // Si retorna 401 Unauthorized, forzar renovación inmediata del token con Google y reintentar
+      if (listRes.status === 401) {
+        console.warn('Gmail API returned 401, forcing token refresh with Google...');
+        const refreshedToken = await this.refreshAccessToken(targetAccount);
+        if (refreshedToken) {
+          effectiveToken = refreshedToken;
+          listRes = await fetch(
+            `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=${maxCount}&q=in:inbox`,
+            {
+              headers: { Authorization: `Bearer ${effectiveToken}` }
+            }
+          );
+        }
+      }
 
       if (!listRes.ok) {
         console.warn('Gmail API list messages failed:', listRes.status);
