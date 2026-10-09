@@ -81,6 +81,9 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  const isFemale = gender === 'female';
+  const isNeutral = gender === 'neutral';
+
   // Estados de interacción 3D interactiva con cursor/touch
   const [rotate3D, setRotate3D] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [clickReaction, setClickReaction] = useState(false);
@@ -136,16 +139,19 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
 
   // Color de pantalones según la prenda equipada
   const pantsRgb: [number, number, number] = useMemo(() => {
+    if (equippedBottom === 'bottom_ibime_pants') return [15, 23, 42]; // Azul marino institucional IBIME
+    if (equippedBottom === 'bottom_ibime_plaid_skirt') return skinRgb; // Tono de piel natural para falda escolar con calcetas
     if (equippedBottom === 'bottom_basic') return [30, 41, 59]; // Pantalón formal escolar oscuro
     if (equippedBottom === 'bottom_blue_jeans') return [29, 78, 216]; // Jeans clásicos azules
     if (equippedBottom === 'bottom_dark_slacks') return [10, 10, 12]; // Pantalón negro élite
     if (equippedBottom === 'bottom_tactical_joggers') return [63, 79, 56]; // Joggers verdes tácticos
     if (equippedBottom === 'bottom_witch_skirt') return [59, 7, 100]; // Falda morada hechicera
     return [37, 99, 235]; // bottom_ripped_jeans (denim azul base)
-  }, [equippedBottom]);
+  }, [equippedBottom, skinRgb]);
 
   // Color de calzado según la prenda equipada
   const bootsRgb: [number, number, number] = useMemo(() => {
+    if (equippedShoes === 'shoes_ibime_formal') return [12, 14, 18]; // Calzado escolar oficial IBIME de piel lustrada negra
     if (equippedShoes === 'shoes_sneakers') return [220, 38, 38]; // Tenis urbanos rojos
     if (equippedShoes === 'shoes_combat') return [20, 20, 24]; // Botas combate negras
     if (equippedShoes === 'shoes_basic') return [15, 23, 42]; // Zapatos escolares oscuros
@@ -337,18 +343,31 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
             bd[idx + 2] = Math.min(255, Math.max(0, Math.round(skinRgb[2] * f)));
           }
           // C) Pantalones modulares
-          else if (!isDefaultPants && pmData[idx] > 128) {
-            const f = lum / 120;
-            bd[idx] = Math.min(255, Math.max(0, Math.round(pantsRgb[0] * f)));
-            bd[idx + 1] = Math.min(255, Math.max(0, Math.round(pantsRgb[1] * f)));
-            bd[idx + 2] = Math.min(255, Math.max(0, Math.round(pantsRgb[2] * f)));
+          else if (pmData[idx] > 128) {
+            if (equippedBottom === 'bottom_ibime_plaid_skirt' || equippedBottom === 'bottom_ibime_pants') {
+              bd[idx + 3] = 0; // Transparente para dar paso a la prenda oficial de alta fidelidad
+            } else if (!isDefaultPants) {
+              const f = lum / 120;
+              bd[idx] = Math.min(255, Math.max(0, Math.round(pantsRgb[0] * f)));
+              bd[idx + 1] = Math.min(255, Math.max(0, Math.round(pantsRgb[1] * f)));
+              bd[idx + 2] = Math.min(255, Math.max(0, Math.round(pantsRgb[2] * f)));
+            }
           }
           // D) Calzado modular
-          else if (!isDefaultBoots && bmData[idx] > 128) {
-            const f = lum / 140;
-            bd[idx] = Math.min(255, Math.max(0, Math.round(bootsRgb[0] * f)));
-            bd[idx + 1] = Math.min(255, Math.max(0, Math.round(bootsRgb[1] * f)));
-            bd[idx + 2] = Math.min(255, Math.max(0, Math.round(bootsRgb[2] * f)));
+          else if (bmData[idx] > 128) {
+            if (equippedShoes === 'shoes_ibime_formal' || equippedBottom === 'bottom_ibime_plaid_skirt') {
+              bd[idx + 3] = 0; // Transparente para dar paso al calzado escolar oficial
+            } else if (!isDefaultBoots) {
+              const f = lum / 140;
+              bd[idx] = Math.min(255, Math.max(0, Math.round(bootsRgb[0] * f)));
+              bd[idx + 1] = Math.min(255, Math.max(0, Math.round(bootsRgb[1] * f)));
+              bd[idx + 2] = Math.min(255, Math.max(0, Math.round(bootsRgb[2] * f)));
+            }
+          }
+
+          // E) Blindaje milimétrico de calzado: eliminar cualquier residuo de botas anchas a nivel de tobillo y suelas
+          if ((equippedShoes === 'shoes_ibime_formal' || equippedBottom === 'bottom_ibime_plaid_skirt') && Math.floor(i / w) >= 1060) {
+            bd[idx + 3] = 0;
           }
         }
 
@@ -893,6 +912,56 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
               <circle cx="0" cy="0" r="4" fill="#E879F9" />
             </g>
             <path d="M 462,1248 L 570,1250 L 566,1264 L 462,1260 Z" fill="#18181B" stroke="#09090B" strokeWidth="3" />
+          </g>
+        );
+
+      case 'shoes_ibime_formal': // Calzado escolar oficial IBIME de piel negra lustrada (Mary Jane / Oxford)
+        return (
+          <g id="footwear_ibime_formal_layer">
+            <image
+              href={isFemale ? "/images/avatar/shoes/female_shoes_ibime_formal.png" : isNeutral ? "/images/avatar/shoes/neutral_shoes_ibime_formal.png" : "/images/avatar/shoes/male_shoes_ibime_formal.png"}
+              x="0"
+              y="0"
+              width="768"
+              height="1376"
+            />
+          </g>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  // =========================================================================
+  // 2.5. RENDERIZADO MODULAR DE PRENDAS INFERIORES ESPECIALES (BOTTOMS OVERLAY)
+  // Pants deportivo con franja roja y rótulo "INSTITUTO IBIME", Falda escocesa tableada
+  // =========================================================================
+  const renderBottomOverlays = () => {
+    switch (equippedBottom) {
+      case 'bottom_ibime_pants': // Pantalón formal escolar de vestir oficial IBIME (Corte sastre entallado)
+        return (
+          <g id="bottom_ibime_pants_overlay">
+            <image
+              href={isFemale ? "/images/avatar/bottoms/female_bottom_ibime_pants.png" : isNeutral ? "/images/avatar/bottoms/neutral_bottom_ibime_pants.png" : "/images/avatar/bottoms/male_bottom_ibime_pants.png"}
+              x="0"
+              y="0"
+              width="768"
+              height="1376"
+            />
+          </g>
+        );
+
+      case 'bottom_ibime_plaid_skirt': // Falda escolar plisada escocesa oficial IBIME con calcetas colegiales
+        return (
+          <g id="bottom_ibime_skirt_overlay">
+            <image
+              href={isFemale ? "/images/avatar/bottoms/female_bottom_ibime_plaid_skirt.png" : "/images/avatar/bottoms/neutral_bottom_ibime_plaid_skirt.png"}
+              x="0"
+              y="0"
+              width="768"
+              height="1376"
+            />
           </g>
         );
 
@@ -1683,6 +1752,32 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
           </g>
         );
 
+      case 'outerwear_ibime_blazer': // Saco Blazer Oficial de Gala IBIME (Corte sastre entallado al milímetro con botones dorados y escudo bordado)
+        return (
+          <g id="outerwear_ibime_blazer_layer">
+            <image
+              href={isFemale ? "/images/avatar/outerwear/female_outerwear_ibime_blazer.png" : isNeutral ? "/images/avatar/outerwear/neutral_outerwear_ibime_blazer.png" : "/images/avatar/outerwear/male_outerwear_ibime_blazer.png"}
+              x="0"
+              y="0"
+              width="768"
+              height="1376"
+            />
+          </g>
+        );
+
+      case 'outerwear_ibime_track': // Chamarra Deportiva Oficial IBIME (Azul Marino con Paneles Rojos y Vivos Blancos)
+        return (
+          <g id="outerwear_ibime_track_layer">
+            <image
+              href={isFemale ? "/images/avatar/outerwear/female_outerwear_ibime_track.png" : isNeutral ? "/images/avatar/outerwear/neutral_outerwear_ibime_track.png" : "/images/avatar/outerwear/male_outerwear_ibime_track.png"}
+              x="0"
+              y="0"
+              width="768"
+              height="1376"
+            />
+          </g>
+        );
+
       default:
         return null;
     }
@@ -1865,7 +1960,10 @@ export const ModularAnimeAvatarSprite: React.FC<ModularAnimeAvatarSpriteProps> =
               {/* 3. FORMAS Y EXPRESIONES DE OJOS ANIME ALTAMENTE VISIBLES */}
               {renderEyes()}
 
-              {/* 4. CALZADO ESPECIALIZADO (FOOTWEAR: SANDALIAS ALADAS, BOTAS DE BRUJA, BOTAS ACORAZADAS) */}
+              {/* 3.5. PRENDAS INFERIORES ESPECIALES (PANTS IBIME / FALDA ESCOCESA) */}
+              {renderBottomOverlays()}
+
+              {/* 4. CALZADO ESPECIALIZADO (FOOTWEAR: SANDALIAS ALADAS, BOTAS DE BRUJA, BOTAS ACORAZADAS, ZAPATOS IBIME) */}
               {renderFootwear()}
 
               {/* 5. GORROS / SOMBREROS CALIBRADOS MILIMÉTRICAMENTE */}
