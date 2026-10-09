@@ -117,6 +117,31 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    function isSpamCommercial(subject: string, bodyText: string = ''): boolean {
+      const text = `${subject} ${bodyText}`.toLowerCase();
+      return (
+        text.includes('amazon') ||
+        text.includes('prime') ||
+        text.includes('membresía') ||
+        text.includes('membresia') ||
+        text.includes('ofertas') ||
+        text.includes('vivobook') ||
+        text.includes('ryzen') ||
+        text.includes('asus') ||
+        text.includes('cama matrimonial') ||
+        text.includes('gamma') ||
+        text.includes('página web') ||
+        text.includes('pagina web') ||
+        text.includes('inversión financiera') ||
+        text.includes('inversion financiera') ||
+        text.includes('financial stocks') ||
+        text.includes('cinépolis') ||
+        text.includes('cinepolis') ||
+        text.includes('prime opinion') ||
+        text.includes('asm career')
+      );
+    }
+
     // PASO 2: Sincronizar buzón del usuario con los correos reales recibidos en la cuenta (deduplicando contra existingTitles)
     InboundMailSpoolService.syncLiveInboxForAccount(tenantId, email, existingTitles);
 
@@ -124,8 +149,8 @@ export async function POST(req: NextRequest) {
     const pendingSpoolEmails = InboundMailSpoolService.getPendingEmails(tenantId, email);
     for (const pendingMsg of pendingSpoolEmails) {
       const normSub = pendingMsg.subject.trim().toLowerCase();
-      // Verificación estricta: si ya existe en el dashboard, marcar como procesado y omitir
-      if (existingTitles.includes(normSub)) {
+      // Verificación estricta: si ya existe en el dashboard o es spam comercial, marcar como procesado y omitir
+      if (existingTitles.includes(normSub) || isSpamCommercial(pendingMsg.subject, pendingMsg.body_text)) {
         processedSpoolIds.push(pendingMsg.id);
         continue;
       }
@@ -143,7 +168,7 @@ export async function POST(req: NextRequest) {
 
       // REGLA OBLIGATORIA: En Bandeja Inteligente SOLO deben aparecer correos de "Atención Inmediata CEO".
       // Los informativos, delegados y spam permanecen en Bandeja de Entrada (raw-inbox) pero NUNCA en Bandeja Inteligente.
-      const isIntelligentInboxCandidate = triageResult.quadrant === 'ATENCION_CEO';
+      const isIntelligentInboxCandidate = triageResult.quadrant === 'ATENCION_CEO' && !isSpamCommercial(emailDto.subject, emailDto.body_text);
 
       if (isIntelligentInboxCandidate) {
         newMatters.push({
@@ -189,7 +214,7 @@ export async function POST(req: NextRequest) {
           const normSubject = msg.subject.trim().toLowerCase();
           if (existingTitles.includes(normSubject)) continue;
 
-          const isCeo = msg.triage_badge?.quadrant === 'ATENCION_CEO';
+          const isCeo = msg.triage_badge?.quadrant === 'ATENCION_CEO' && !isSpamCommercial(msg.subject, msg.body_text || msg.snippet);
 
           if (isCeo) {
             newMatters.push({
@@ -229,7 +254,7 @@ export async function POST(req: NextRequest) {
         const normSubject = msg.subject.trim().toLowerCase();
         if (existingTitles.includes(normSubject)) continue;
 
-        const isCeo = msg.triage_badge?.quadrant === 'ATENCION_CEO';
+        const isCeo = msg.triage_badge?.quadrant === 'ATENCION_CEO' && !isSpamCommercial(msg.subject, msg.body_text || msg.snippet);
 
         if (isCeo) {
           newMatters.push({
@@ -297,7 +322,7 @@ export async function POST(req: NextRequest) {
 
           const triage = await HermeticEmailBrainService.processInboundEmail(emailDto, authSession);
 
-          if (triage.quadrant === 'ATENCION_CEO') {
+          if (triage.quadrant === 'ATENCION_CEO' && !isSpamCommercial(emailDto.subject, emailDto.body_text)) {
             newMatters.push({
               id: `mat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
               matter_code: `MAT-${prefix}-2026-${String(Math.floor(Math.random() * 900) + 100)}`,
@@ -326,15 +351,19 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const filteredNewMatters = newMatters.filter(
+      (m) => !isSpamCommercial(m.title, `${m.summary} ${m.why_shown}`)
+    );
+
     return NextResponse.json({
       success: true,
-      count: newMatters.length,
-      newMatters,
+      count: filteredNewMatters.length,
+      newMatters: filteredNewMatters,
       autonomousBridgeActive: true,
       autoSyncIntervalSeconds: 30,
       appPasswordRequired,
-      message: newMatters.length > 0
-        ? `✓ Se procesaron y clasificaron ${newMatters.length} correo(s) nuevo(s) con Motor de IA.`
+      message: filteredNewMatters.length > 0
+        ? `✓ Se procesaron y clasificaron ${filteredNewMatters.length} correo(s) nuevo(s) con Motor de IA.`
         : (appPasswordRequired
             ? 'Conexión activa pero Google requiere Contraseña de Aplicación de 16 caracteres para descargar correos.'
             : 'Sincronización en tiempo real activa (30s). Buzón institucional al día.')

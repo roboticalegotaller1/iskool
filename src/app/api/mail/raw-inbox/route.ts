@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { InboundMailSpoolService } from '@/lib/services/inboundMailSpool';
 import { fetchLiveImapEmails, getCachedInboxEmails, injectEmailIntoCache } from '@/lib/services/imapClientService';
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
+import { HermeticEmailBrainService } from '@/lib/services/hermetic-email-brain.service';
 
 export const runtime = 'nodejs';
 
@@ -284,6 +285,16 @@ export async function GET(request: NextRequest) {
           e => e.id === item.id || e.subject.trim().toLowerCase() === item.subject.trim().toLowerCase()
         );
         if (!alreadyInList) {
+          const triage = HermeticEmailBrainService.classifyZeroTokenEmail(
+            item.subject,
+            item.body_text || item.subject || '',
+            item.sender_email || email,
+            item.sender_name || 'Remitente Institucional',
+            undefined,
+            tenantId
+          );
+          const isCeo = triage.quadrant === 'ATENCION_CEO';
+          const isSpam = triage.quadrant === 'SPAM_DESCARTADO';
           const spoolItem: RawGmailItem = {
             id: item.id,
             sender_name: item.sender_name || 'Remitente Institucional',
@@ -296,12 +307,12 @@ export async function GET(request: NextRequest) {
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             is_unread: true,
             is_starred: false,
-            is_important: true,
-            category: 'principal',
+            is_important: isCeo,
+            category: (triage.gmailCategory || (isSpam ? 'promociones' : 'principal')) as any,
             triage_badge: {
-              quadrant: 'ATENCION_CEO',
-              label: '🔴 ATENCIÓN INMEDIATA CEO',
-              color: 'bg-red-50 text-red-700 border-red-200'
+              quadrant: (triage.quadrant === 'DELEGADO_CON_SLA' ? 'DELEGADO_CON_PLAZO' : triage.quadrant) as any,
+              label: triage.badge?.label || (isCeo ? '🔴 ATENCIÓN INMEDIATA CEO' : isSpam ? '🟣 SPAM / PROMOCIÓN' : '🟢 INFORMATIVO'),
+              color: triage.badge?.color || (isCeo ? 'bg-red-50 text-red-700 border-red-200' : isSpam ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200')
             }
           };
           additionalFromSpool.push(spoolItem);
@@ -486,6 +497,16 @@ export async function POST(request: NextRequest) {
       const allSpool = InboundMailSpoolService.getAllInboundEmails(tenantId, email);
       for (const item of allSpool) {
         if (!emails.some(e => e.id === item.id || e.subject.trim().toLowerCase() === item.subject.trim().toLowerCase())) {
+          const triage = HermeticEmailBrainService.classifyZeroTokenEmail(
+            item.subject,
+            item.body_text || item.subject || '',
+            item.sender_email || email,
+            item.sender_name || 'Remitente Institucional',
+            undefined,
+            tenantId
+          );
+          const isCeo = triage.quadrant === 'ATENCION_CEO';
+          const isSpam = triage.quadrant === 'SPAM_DESCARTADO';
           emails.unshift({
             id: item.id,
             sender_name: item.sender_name || 'Remitente Institucional',
@@ -498,12 +519,12 @@ export async function POST(request: NextRequest) {
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             is_unread: true,
             is_starred: false,
-            is_important: true,
-            category: 'principal',
+            is_important: isCeo,
+            category: (triage.gmailCategory || (isSpam ? 'promociones' : 'principal')) as any,
             triage_badge: {
-              quadrant: 'ATENCION_CEO',
-              label: '🔴 ATENCIÓN INMEDIATA CEO',
-              color: 'bg-red-50 text-red-700 border-red-200'
+              quadrant: (triage.quadrant === 'DELEGADO_CON_SLA' ? 'DELEGADO_CON_PLAZO' : triage.quadrant) as any,
+              label: triage.badge?.label || (isCeo ? '🔴 ATENCIÓN INMEDIATA CEO' : isSpam ? '🟣 SPAM / PROMOCIÓN' : '🟢 INFORMATIVO'),
+              color: triage.badge?.color || (isCeo ? 'bg-red-50 text-red-700 border-red-200' : isSpam ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200')
             }
           });
         }

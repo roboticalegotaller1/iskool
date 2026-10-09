@@ -1419,10 +1419,47 @@ ${schoolName}`
     }
   ]);
 
+  // Filtro canónico absoluto para erradicar falsos positivos comerciales o spam de la Bandeja Inteligente
+  const isSpamOrCommercialMatter = (item: any): boolean => {
+    if (!item) return false;
+    const code = (item.matter_code || '').toUpperCase();
+    if (code === 'MAT-IBIME-2026-544' || code === 'MAT-IBIME-2026-812') return true;
+    const id = String(item.id || '');
+    if (id.includes('544') || id.includes('812')) return true;
+    const text = `${item.title || ''} ${item.subject || ''} ${item.summary || ''} ${item.why_shown || ''} ${item.category || ''} ${item.sender_email || ''} ${item.body_text || ''} ${item.snippet || ''}`.toLowerCase();
+    return (
+      text.includes('amazon') ||
+      text.includes('prime') ||
+      text.includes('membresía') ||
+      text.includes('membresia') ||
+      text.includes('vivobook') ||
+      text.includes('ryzen') ||
+      text.includes('asus') ||
+      text.includes('mega ofertas') ||
+      text.includes('ofertas de prime') ||
+      text.includes('ofertas para ti') ||
+      text.includes('cama matrimonial') ||
+      text.includes('gamma') ||
+      text.includes('página web') ||
+      text.includes('pagina web') ||
+      text.includes('inversión financiera') ||
+      text.includes('inversion financiera') ||
+      text.includes('financial stocks') ||
+      text.includes('prime opinion') ||
+      text.includes('cinépolis') ||
+      text.includes('cinepolis') ||
+      text.includes('asm career') ||
+      text.includes('chicv technology') ||
+      text.includes('reclamo de vendedor') ||
+      text.includes('kami-mac')
+    );
+  };
+
   // Utilidad de deduplicación estricta y cumplimiento mandatorio de reglas CEO por título normalizado
   const deduplicateExecutiveMatters = (items: MatterItem[]): MatterItem[] => {
     const seen = new Set<string>();
     return items
+      .filter((item) => !isSpamOrCommercialMatter(item))
       .map((item) => {
         const text = `${item.title || ''} ${item.summary || ''} ${item.why_shown || ''}`.toLowerCase();
         const isMandatoryCeo =
@@ -1450,8 +1487,9 @@ ${schoolName}`
       });
   };
 
-  // Semilla y Almacenamiento Aislado de Asuntos Usables (Alta Fidelidad 15 Fases) por Tenant
+  // Semilla y Almacenamiento Aislado de Asuntos Usables y Descartados por Tenant
   const mattersStorageKey = `iskool_matters_${currentTenantId}`;
+  const discardedStorageKey = `iskool_discarded_${currentTenantId}`;
   const [mattersList, setMattersList] = useState<MatterItem[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(mattersStorageKey);
@@ -1459,7 +1497,9 @@ ${schoolName}`
         try {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            return deduplicateExecutiveMatters(parsed);
+            const cleaned = deduplicateExecutiveMatters(parsed).filter((m) => !isSpamOrCommercialMatter(m));
+            localStorage.setItem(mattersStorageKey, JSON.stringify(cleaned));
+            return cleaned;
           }
         } catch {
           // Fallback a generación
@@ -1566,24 +1606,7 @@ ${schoolName}`
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
             const deduped = deduplicateExecutiveMatters(parsed);
-            const cleaned = deduped.filter((m: any) => {
-              const from = (m.sender_email || '').toLowerCase();
-              const sub = (m.title || '').toLowerCase();
-              const code = (m.matter_code || '').toUpperCase();
-              const isSpam =
-                code === 'MAT-IBIME-2026-544' ||
-                code === 'MAT-IBIME-2026-812' ||
-                sub.includes('amazon') ||
-                sub.includes('prime') ||
-                sub.includes('membresía') ||
-                sub.includes('membresia') ||
-                sub.includes('ofertas') ||
-                sub.includes('vivobook') ||
-                sub.includes('ryzen') ||
-                sub.includes('cama matrimonial') ||
-                sub.includes('gamma');
-              return !isSpam && !from.includes('kami-mac') && !sub.includes('alumno herido') && !sub.includes('cte pospuesto');
-            });
+            const cleaned = deduped.filter((m: any) => !isSpamOrCommercialMatter(m));
             setMattersList(cleaned.length > 0 ? cleaned : isIbime ? [] : generateDefaultMattersForSchool(schoolName, schoolDomain, campuses, currentTenantId));
             localStorage.setItem(mattersStorageKey, JSON.stringify(cleaned));
             return;
@@ -1685,6 +1708,20 @@ ${schoolName}`
     }
   }, [mattersStorageKey, isIbime, schoolName, schoolDomain, campuses, currentTenantId]);
 
+  // Purga en caliente obligatoria y permanente de falsos positivos en el estado y localStorage
+  useEffect(() => {
+    setMattersList((prev) => {
+      const sanitized = prev.filter((m) => !isSpamOrCommercialMatter(m));
+      if (sanitized.length !== prev.length) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(mattersStorageKey, JSON.stringify(sanitized));
+        }
+        return sanitized;
+      }
+      return prev;
+    });
+  }, [mattersStorageKey]);
+
   // =========================================================================
   // PUENTE AUTÓNOMO DE ALTA FIDELIDAD: SINCRONIZACIÓN REACTIVA INBOX REAL -> BANDEJA INTELIGENTE
   // REGLA SUPREMA: En la Bandeja Inteligente del CEO SOLO deben aparecer asuntos de ATENCIÓN INMEDIATA CEO.
@@ -1696,8 +1733,10 @@ ${schoolName}`
     // 1. Normalizar correos aplicando reglas VIP y clasificador Zero-Tokens (4 cuadrantes)
     const normalizedRaw = rawEmailsList.map((item) => normalizeRawEmailCeoRules(item));
 
-    // 2. Filtrar candidatos para Bandeja Inteligente: ESTRICTAMENTE ATENCIÓN INMEDIATA CEO
-    const candidates = normalizedRaw.filter(email => email.triage_badge?.quadrant === 'ATENCION_CEO');
+    // 2. Filtrar candidatos para Bandeja Inteligente: ESTRICTAMENTE ATENCIÓN INMEDIATA CEO Y CERO SPAM
+    const candidates = normalizedRaw.filter(
+      (email) => email.triage_badge?.quadrant === 'ATENCION_CEO' && !isSpamOrCommercialMatter(email)
+    );
 
     setMattersList((prevMatters) => {
       let hasChanges = false;
@@ -1705,51 +1744,18 @@ ${schoolName}`
 
       // Identificar asuntos que pertenecen a spam, promociones, informativos o delegados para purgarlos
       const nonCeoSubjects = normalizedRaw
-        .filter(email => email.triage_badge?.quadrant !== 'ATENCION_CEO')
-        .map(email => norm(email.subject));
+        .filter((email) => email.triage_badge?.quadrant !== 'ATENCION_CEO' || isSpamOrCommercialMatter(email))
+        .map((email) => norm(email.subject));
 
-      const isSpamOrPromoTitle = (title: string) => {
-        const t = (title || '').toLowerCase();
-        return (
-          t.includes('gamma') ||
-          t.includes('cama matrimonial') ||
-          t.includes('chicv') ||
-          t.includes('página web') ||
-          t.includes('pagina web') ||
-          t.includes('inversión financiera') ||
-          t.includes('inversion financiera') ||
-          t.includes('financial stocks') ||
-          t.includes('webinar') ||
-          t.includes('festivalciberlatam') ||
-          t.includes('jmbe live') ||
-          t.includes('prime opinion') ||
-          t.includes('cinépolis') ||
-          t.includes('cinepolis') ||
-          t.includes('asm career') ||
-          t.includes('puntos de play') ||
-          t.includes('amazon') ||
-          t.includes('prime') ||
-          t.includes('membresía') ||
-          t.includes('membresia') ||
-          t.includes('expirar') ||
-          t.includes('ofertas') ||
-          t.includes('mega ofertas') ||
-          t.includes('vivobook') ||
-          t.includes('ryzen') ||
-          t.includes('asus') ||
-          t.includes('descuento')
-        );
-      };
-
-      // Purgar de la Bandeja Inteligente cualquier asunto que no sea ATENCIÓN INMEDIATA CEO
-      const filteredPrev = prevMatters.filter(m => {
-        const nTitle = norm(m.title);
-        const mCode = (m.matter_code || '').toUpperCase();
-        if (mCode === 'MAT-IBIME-2026-544' || mCode === 'MAT-IBIME-2026-812') {
+      // Purgar de la Bandeja Inteligente cualquier asunto que sea spam comercial o no sea ATENCIÓN INMEDIATA CEO
+      const filteredPrev = prevMatters.filter((m) => {
+        if (isSpamOrCommercialMatter(m)) {
           hasChanges = true;
           return false;
         }
-        if (isSpamOrPromoTitle(nTitle) || isSpamOrPromoTitle(m.summary || '')) {
+        const nTitle = norm(m.title);
+        const mCode = (m.matter_code || '').toUpperCase();
+        if (mCode === 'MAT-IBIME-2026-544' || mCode === 'MAT-IBIME-2026-812') {
           hasChanges = true;
           return false;
         }
@@ -1767,11 +1773,12 @@ ${schoolName}`
       const updatedMatters = [...filteredPrev];
 
       for (const email of candidates) {
+        if (isSpamOrCommercialMatter(email)) continue;
         const normSub = norm(email.subject);
         if (!normSub) continue;
 
         // Buscar coincidencia previa por ID o por Asunto
-        const existingIdx = updatedMatters.findIndex(m => {
+        const existingIdx = updatedMatters.findIndex((m) => {
           if (m.id === `mat-live-${email.id}`) return true;
           return norm(m.title) === normSub;
         });
@@ -1846,10 +1853,43 @@ ${schoolName}`
       }
       return prevMatters;
     });
-  }, [rawEmailsList, settingsData?.vipEmails, normalizeRawEmailCeoRules, campuses, schoolName, directorTitle, schoolSlug, currentTenantId, mattersStorageKey]);
+
+    // Sincronizar automáticamente correos catalogados como spam comercial hacia la pestaña de Descartados
+    const detectedSpam = normalizedRaw.filter(
+      (item) => item.triage_badge?.quadrant === 'SPAM_DESCARTADO' || isSpamOrCommercialMatter(item)
+    );
+    if (detectedSpam.length > 0) {
+      setDiscardedList((prevDiscarded) => {
+        const seenSubs = new Set(prevDiscarded.map((d) => (d.subject || '').trim().toLowerCase()));
+        const toAdd: DiscardedEmailItem[] = [];
+        for (const s of detectedSpam) {
+          const sKey = (s.subject || '').trim().toLowerCase();
+          if (sKey && !seenSubs.has(sKey)) {
+            seenSubs.add(sKey);
+            toAdd.push({
+              id: `discarded-live-${s.id}`,
+              sender_name: s.sender_name || 'Remitente Comercial',
+              sender_email: s.sender_email || '',
+              subject: s.subject,
+              discard_reason: 'Boletín comercial o promoción externa descartada automáticamente para preservar el tiempo de Dirección General.',
+              category: 'Spam / Promoción Comercial',
+              received_at: s.received_at || 'Reciente'
+            });
+          }
+        }
+        if (toAdd.length > 0) {
+          const updated = [...toAdd, ...prevDiscarded];
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(discardedStorageKey, JSON.stringify(updated));
+          }
+          return updated;
+        }
+        return prevDiscarded;
+      });
+    }
+  }, [rawEmailsList, settingsData?.vipEmails, normalizeRawEmailCeoRules, campuses, schoolName, directorTitle, schoolSlug, currentTenantId, mattersStorageKey, discardedStorageKey]);
 
   // Semilla de Correos No Usables (Descartados / Spam Filtrado) por Tenant
-  const discardedStorageKey = `iskool_discarded_${currentTenantId}`;
   const [discardedList, setDiscardedList] = useState<DiscardedEmailItem[]>([
     {
       id: 'spam-001',
@@ -3154,6 +3194,7 @@ ${schoolName}`
               prev.map(m => (m.title || '').trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim())
             );
             const trulyNew = syncData.newMatters.filter((m: any) => {
+              if (isSpamOrCommercialMatter(m)) return false;
               const key = (m.title || '').trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
               if (!key || seen.has(key)) return false;
               seen.add(key);
@@ -3161,7 +3202,7 @@ ${schoolName}`
             });
             if (trulyNew.length === 0) return prev;
             newItemsCount = trulyNew.length;
-            const updated = [...trulyNew, ...prev];
+            const updated = [...trulyNew, ...prev].filter((m) => !isSpamOrCommercialMatter(m));
             if (typeof window !== 'undefined') {
               localStorage.setItem(mattersStorageKey, JSON.stringify(updated));
             }
@@ -3701,23 +3742,24 @@ Comité de Seguridad y Protección Escolar`
   // REGLA SUPREMA MANDATORIA: En Bandeja Inteligente SOLO deben aparecer correos de "Atención Inmediata CEO".
   // Los correos delegados, informativos y spam permanecen en Bandeja de Entrada pero NUNCA en Bandeja Inteligente.
   const intelligentMatters = useMemo(() => {
-    return mattersList.filter((m) => m.destination === 'ATENCION_CEO');
+    return mattersList.filter((m) => m.destination === 'ATENCION_CEO' && !isSpamOrCommercialMatter(m));
   }, [mattersList]);
 
   // Filtrado de asuntos en pestaña Bandeja Inteligente (Exclusivamente CEO: Todos, Crítica/Urgente, Supervisión SEP)
   const filteredMatters = useMemo(() => {
+    const base = intelligentMatters.filter((m) => !isSpamOrCommercialMatter(m));
     if (usableSubFilter === 'CRITICA') {
-      return intelligentMatters.filter((m) => m.urgency === 'CRITICA');
+      return base.filter((m) => m.urgency === 'CRITICA');
     }
     if (usableSubFilter === 'SEP') {
-      return intelligentMatters.filter((m) =>
+      return base.filter((m) =>
         m.category.toLowerCase().includes('sep') ||
         m.category.toLowerCase().includes('supervis') ||
         m.title.toLowerCase().includes('sep') ||
         m.title.toLowerCase().includes('supervis')
       );
     }
-    return intelligentMatters;
+    return base;
   }, [intelligentMatters, usableSubFilter]);
 
   // Estados para preguntas interactivas en tiempo real dentro de "Ponte al día conmigo"
@@ -4310,7 +4352,7 @@ Comité de Seguridad y Protección Escolar`
                       }`}
                     >
                       <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      <span>🟢 Correos Usables & Asuntos Clave ({mattersList.length})</span>
+                      <span>🟢 Correos Usables & Asuntos Clave ({mattersList.filter(m => !isSpamOrCommercialMatter(m)).length})</span>
                     </button>
 
                     <button

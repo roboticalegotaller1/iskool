@@ -69,27 +69,32 @@ export async function POST(req: NextRequest) {
       triageResult = await HermeticEmailBrainService.processInboundEmail(emailDto, authSession);
       const prefix = (schoolSlug || tenantId.replace(/^sch-/, '') || 'INST').toUpperCase().slice(0, 5);
 
-      matterItem = {
-        id: `mat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-        matter_code: `MAT-${prefix}-2026-${String(Math.floor(Math.random() * 900) + 100)}`,
-        title: emailDto.subject,
-        summary: triageResult.why_shown_to_director || emailDto.body_text.slice(0, 140) + '...',
-        category: triageResult.category || 'Atención General',
-        urgency: triageResult.urgency,
-        destination: triageResult.quadrant,
-        why_shown: triageResult.why_shown_to_director,
-        reincidence_count: emailDto.reincidence_count || 1,
-        recommended_action: triageResult.recommended_action,
-        suggested_draft_reply: triageResult.suggested_draft?.body || '',
-        assigned_role: triageResult.assigned_department || 'Dirección General',
-        sla_hours: triageResult.sla_hours || 12,
-        sla_remaining_text: `⏱️ ${triageResult.sla_hours || 12}h restantes`,
-        sender_name: emailDto.sender_name,
-        sender_email: emailDto.sender_email,
-        provenance_doc: triageResult.provenance?.[0]?.source_path || `planeaciones/${tenantId}/Protocolo_Convivencia.md`,
-        received_at: 'Justo ahora',
-        campus: body.campus || 'Campus Central'
-      };
+      if (triageResult.quadrant === 'ATENCION_CEO') {
+        const prefix = (schoolSlug || tenantId.replace(/^sch-/, '') || 'INST').toUpperCase().slice(0, 5);
+        matterItem = {
+          id: `mat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          matter_code: `MAT-${prefix}-2026-${String(Math.floor(Math.random() * 900) + 100)}`,
+          title: emailDto.subject,
+          summary: triageResult.why_shown_to_director || emailDto.body_text.slice(0, 140) + '...',
+          category: triageResult.category || 'Atención Inmediata CEO',
+          urgency: triageResult.urgency,
+          destination: 'ATENCION_CEO',
+          why_shown: triageResult.why_shown_to_director,
+          reincidence_count: emailDto.reincidence_count || 1,
+          recommended_action: triageResult.recommended_action,
+          suggested_draft_reply: triageResult.suggested_draft?.body || '',
+          assigned_role: triageResult.assigned_department || 'Dirección General',
+          sla_hours: triageResult.sla_hours || 12,
+          sla_remaining_text: `⏱️ ${triageResult.sla_hours || 12}h restantes`,
+          sender_name: emailDto.sender_name,
+          sender_email: emailDto.sender_email,
+          provenance_doc: triageResult.provenance?.[0]?.source_path || `planeaciones/${tenantId}/Protocolo_Convivencia.md`,
+          received_at: 'Justo ahora',
+          campus: body.campus || 'Campus Central'
+        };
+      } else {
+        matterItem = null;
+      }
 
       // Marcar como procesado en el spool
       if (queuedItem) {
@@ -100,6 +105,10 @@ export async function POST(req: NextRequest) {
     // Inyectar en la bandeja cruda (raw-inbox) para disponibilidad instantánea
     try {
       const { injectEmailIntoCache } = await import('@/lib/services/imapClientService');
+      const isCeo = triageResult ? triageResult.quadrant === 'ATENCION_CEO' : false;
+      const isSpam = triageResult ? triageResult.quadrant === 'SPAM_DESCARTADO' : false;
+      const rawCategory = isSpam ? 'promociones' : 'principal';
+
       const rawItem = {
         id: queuedItem?.id || `inb-${Date.now()}`,
         sender_name: emailDto.sender_name || 'Remitente Institucional',
@@ -112,12 +121,12 @@ export async function POST(req: NextRequest) {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         is_unread: true,
         is_starred: false,
-        is_important: triageResult ? triageResult.quadrant === 'ATENCION_CEO' : true,
-        category: 'principal' as const,
+        is_important: isCeo,
+        category: rawCategory as any,
         triage_badge: triageResult ? {
-          quadrant: triageResult.quadrant as any,
-          label: triageResult.quadrant === 'ATENCION_CEO' ? '🔴 ATENCIÓN INMEDIATA CEO' : '🟢 INFORMATIVO',
-          color: triageResult.quadrant === 'ATENCION_CEO' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+          quadrant: (triageResult.quadrant === 'DELEGADO_CON_SLA' ? 'DELEGADO_CON_PLAZO' : triageResult.quadrant) as any,
+          label: isCeo ? '🔴 ATENCIÓN INMEDIATA CEO' : isSpam ? '🟣 SPAM / PROMOCIÓN' : '🟢 INFORMATIVO',
+          color: isCeo ? 'bg-red-50 text-red-700 border-red-200' : isSpam ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'
         } : undefined
       };
       injectEmailIntoCache(tenantId, rawItem);
