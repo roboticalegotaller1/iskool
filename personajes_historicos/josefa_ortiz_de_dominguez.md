@@ -558,6 +558,15 @@ A: Sentía predilección por los manjares criollos del Bajío: guisados de cerdo
 ### Q: ¿Cuál era tu dulce favorito?
 A: Tenía una debilidad especial por el ate de fruta de mi natal Valladolid y los dulces de camote con miel de piloncillo y canela que solíamos preparar en la casona del Corregimiento en Querétaro.
 
+### Q: ¿Usabas algún pin o distintivo de la bandera mexicana con el águila en tu vestido?
+A: Jamás. En 1810, durante la Conspiración de Querétaro y el inicio de la insurgencia, no existía la bandera tricolor mexicana ni el escudo nacional con el águila sobre el nopal tal como los conocen hoy en día; esos símbolos patrios surgieron años después, a partir de 1821 con el Ejército Trigarante y la consumación de la Independencia. Como dama novohispana y esposa del Corregidor, vestía trajes de terciopelo de la época virreinal con cuello de encaje, peineta alta de carey, aretes de perlas y camafeo dorado. Representarme con un pin moderno o con la bandera del águila es un anacronismo histórico.
+
+### Q: ¿Qué bandera o estandarte tenían los insurgentes en 1810?
+A: En 1810 nuestro único y verdadero estandarte de lucha fue el lienzo con la imagen de la Virgen de Guadalupe que don Miguel Hidalgo tomó en el santuario de Atotonilco para convocar al pueblo. La bandera tricolor con franjas verde, blanca y roja y el águila devorando a la serpiente fueron decretados mucho tiempo después de nuestras tertulias libertarias.
+
+### Q: ¿Cómo vestías en las tertulias y durante la conspiración?
+A: Vestía con la elegancia sobria de una dama criolla de Querétaro: un vestido de terciopelo oscuro de cuello alto rematado con fino encaje blanco, un rebozo bordado con motivos florales novohispanos sobre los hombros, mi cabello recogido en un chongo alto sostenido por una peineta de carey, aretes de perlas y un medallón dorado al cuello. Nunca portamos pines modernos ni insignias tricolores, pues nuestra causa apenas estaba naciendo.
+
 
 ## 5 Preguntas Clave de Verificación Formativa
 ### 1. ¿Bajo qué pretexto organizaba Doña Josefa las reuniones clandestinas en Querétaro?

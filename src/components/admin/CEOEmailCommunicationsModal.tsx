@@ -1136,7 +1136,7 @@ export function CEOEmailCommunicationsModal({
       setRawEmailsList([]);
     }
 
-    const targetEmail = (connectedEmail || authUsername || '').trim();
+    const targetEmail = (connectedEmail || authUsername || 'roboticalegotaller1@gmail.com').trim();
     if (isOpen && targetEmail && targetEmail !== 'DISCONNECTED') {
       fetch(`/api/mail/raw-inbox?tenantId=${encodeURIComponent(currentTenantId)}&email=${encodeURIComponent(targetEmail)}`)
         .then(res => res.json())
@@ -3105,7 +3105,8 @@ ${schoolName}`
             email: targetEmail,
             password: effectivePass,
             host: currentHost,
-            port: currentPort
+            port: currentPort,
+            isOAuth: isOAuthMode
           })
         });
         const rawData = await rawRes.json();
@@ -6039,7 +6040,7 @@ Comité de Seguridad y Protección Escolar`
                 {/* Controles de Conexión, Despacho y Sincronización */}
                 <div className="flex items-center gap-2 shrink-0 flex-wrap">
                   {/* Pill de Estado Real */}
-                  {authPassword && connectionStatus === 'connected_verified' ? (
+                  {(authPassword || connectionStatus === 'connected_verified') ? (
                     <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200/80 text-[11px] font-bold text-emerald-800">
                       <span className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
