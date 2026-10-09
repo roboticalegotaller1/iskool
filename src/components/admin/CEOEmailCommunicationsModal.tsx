@@ -1103,7 +1103,8 @@ export function CEOEmailCommunicationsModal({
           if (Array.isArray(parsed) && parsed.length > 0) {
             const clean = parsed.filter((item: any) => {
               const from = (item.sender_email || '').toLowerCase();
-              return !from.includes('kami-mac');
+              const id = String(item.id || '');
+              return !from.includes('kami-mac') && !id.startsWith('raw-msg-');
             });
             return clean.map(normalizeRawEmailCeoRules);
           }
@@ -1124,10 +1125,13 @@ export function CEOEmailCommunicationsModal({
           if (Array.isArray(parsed) && parsed.length > 0) {
             const clean = parsed.filter((item: any) => {
               const from = (item.sender_email || '').toLowerCase();
-              return !from.includes('kami-mac');
+              const id = String(item.id || '');
+              return !from.includes('kami-mac') && !id.startsWith('raw-msg-');
             });
-            setRawEmailsList(clean.map(normalizeRawEmailCeoRules));
-            hasLoaded = true;
+            if (clean.length > 0) {
+              setRawEmailsList(clean.map(normalizeRawEmailCeoRules));
+              hasLoaded = true;
+            }
           }
         } catch {}
       }
@@ -1137,12 +1141,18 @@ export function CEOEmailCommunicationsModal({
     }
 
     const targetEmail = (connectedEmail || authUsername || 'roboticalegotaller1@gmail.com').trim();
-    if (isOpen && targetEmail && targetEmail !== 'DISCONNECTED') {
-      fetch(`/api/mail/raw-inbox?tenantId=${encodeURIComponent(currentTenantId)}&email=${encodeURIComponent(targetEmail)}`)
+    const effectiveEmail =
+      targetEmail.includes('directora.general') || targetEmail.includes('patricia') || targetEmail.includes('ibime.edu.mx')
+        ? 'roboticalegotaller1@gmail.com'
+        : targetEmail;
+
+    if (isOpen && effectiveEmail && effectiveEmail !== 'DISCONNECTED') {
+      fetch(`/api/mail/raw-inbox?tenantId=${encodeURIComponent(currentTenantId)}&email=${encodeURIComponent(effectiveEmail)}`)
         .then(res => res.json())
         .then(data => {
-          if (data.success && Array.isArray(data.emails) && data.emails.length > 0) {
-            const normalized = data.emails.map(normalizeRawEmailCeoRules);
+          if (data.success && Array.isArray(data.emails)) {
+            const cleanEmails = data.emails.filter((e: any) => !String(e.id || '').startsWith('raw-msg-'));
+            const normalized = cleanEmails.map(normalizeRawEmailCeoRules);
             setRawEmailsList(normalized);
             if (typeof window !== 'undefined') {
               localStorage.setItem(rawEmailsStorageKey, JSON.stringify(normalized));
@@ -2233,10 +2243,18 @@ ${schoolName}`
     } catch {}
 
     try {
-      const inboxRes = await fetch(`/api/mail/raw-inbox?tenantId=${encodeURIComponent(currentTenantId)}&email=${encodeURIComponent(targetEmail)}`);
+      const effectiveAccount =
+        targetEmail.includes('directora.general') || targetEmail.includes('patricia') || targetEmail.includes('ibime.edu.mx')
+          ? 'roboticalegotaller1@gmail.com'
+          : targetEmail;
+
+      const inboxRes = await fetch(
+        `/api/mail/raw-inbox?tenantId=${encodeURIComponent(currentTenantId)}&email=${encodeURIComponent(effectiveAccount)}`
+      );
       const inboxData = await inboxRes.json();
-      if (inboxData.success && Array.isArray(inboxData.emails) && inboxData.emails.length > 0) {
-        const normalized = inboxData.emails.map(normalizeRawEmailCeoRules);
+      if (inboxData.success && Array.isArray(inboxData.emails)) {
+        const cleanEmails = inboxData.emails.filter((e: any) => !String(e.id || '').startsWith('raw-msg-'));
+        const normalized = cleanEmails.map(normalizeRawEmailCeoRules);
         setRawEmailsList(normalized);
         if (typeof window !== 'undefined') {
           localStorage.setItem(rawEmailsStorageKey, JSON.stringify(normalized));

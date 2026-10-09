@@ -180,6 +180,7 @@ export async function POST(req: NextRequest) {
     }
 
     // PASO 2.5: Descargar y procesar correos reales de Google OAuth 2.0 (si la cuenta está autorizada)
+    await GoogleOAuthService.ensureTokensLoaded(email);
     const hasGoogleOAuth = GoogleOAuthService.hasValidTokens(email);
     if (hasGoogleOAuth) {
       try {
