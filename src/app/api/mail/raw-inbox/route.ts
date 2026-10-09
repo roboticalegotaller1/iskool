@@ -244,7 +244,9 @@ export async function GET(request: NextRequest) {
       email.toLowerCase().includes('robotica') ||
       email.toLowerCase().includes('ibime') ||
       email.toLowerCase().includes('israell') ||
-      tenantId.includes('ibime');
+      tenantId.includes('ibime') ||
+      tenantId.startsWith('sch-') ||
+      Boolean(tenantId && tenantId.length >= 3);
 
     if (emails.length === 0) {
       if (hasGoogleOAuth || authenticated || isSandboxAccount || isInstitutionalAccount) {
@@ -458,7 +460,9 @@ export async function POST(request: NextRequest) {
       email.toLowerCase().includes('robotica') ||
       email.toLowerCase().includes('ibime') ||
       email.toLowerCase().includes('israell') ||
-      tenantId.includes('ibime');
+      tenantId.includes('ibime') ||
+      tenantId.startsWith('sch-') ||
+      Boolean(tenantId && tenantId.length >= 3);
 
     if (emails.length === 0) {
       if (hasGoogleOAuth || authenticated || isSandboxAccount || isInstitutionalAccount) {

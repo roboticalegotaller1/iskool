@@ -316,6 +316,27 @@ export function generateDefaultMattersForSchool(
       provenance_doc: `planeaciones/${tenantId}/Calendario_Escolar.md`,
       received_at: '04 Oct 2026, 12:00 hrs',
       campus: primaryCampus
+    },
+    {
+      id: `mat-${slug}-05`,
+      matter_code: `MAT-${prefix}-2026-005`,
+      title: 'Solicitud de atención y consideración respecto al servicio de comedor y bienestar escolar',
+      summary: 'Familia reporta inquietud prioritaria respecto a la calidad del servicio de comedor escolar y malestar estomacal de su hijo. Requiere atención directa de Dirección General.',
+      category: 'Salud y Alimentación Escolar',
+      urgency: 'CRITICA',
+      destination: 'ATENCION_CEO',
+      why_shown: 'Queja prioritaria sobre salud, bienestar físico y servicio de comedor escolar clasificada para atención inmediata de Dirección General.',
+      reincidence_count: 1,
+      recommended_action: 'Aprobar borrador de respuesta oficial e instruir revisión inmediata de insumos con el área médica.',
+      suggested_draft_reply: `Estimada Familia:\n\nHe recibido personalmente su comunicación en relación con el servicio de comedor escolar y el estado de salud de su hijo. En ${schoolName} la salud, nutrición y bienestar de nuestros estudiantes es un compromiso absoluto e inviolable.\n\nHe instruido una revisión inmediata de los insumos y menús servidos en cafetería y comedor, así como un seguimiento puntual con el área médica escolar. Me pongo a su entera disposición para cualquier aclaración directa.\n\nAtentamente,\nDirección General · ${schoolName}`,
+      assigned_role: 'Dirección General / CEO',
+      sla_hours: 12,
+      sla_remaining_text: '⏱️ 11h 50m restantes',
+      sender_name: 'Comité de Familias',
+      sender_email: `familias@${domain}`,
+      provenance_doc: `planeaciones/${tenantId}/Protocolo_Salud_y_Comedor.md`,
+      received_at: 'Hoy, 08:35 hrs',
+      campus: primaryCampus
     }
   ];
 }
@@ -432,8 +453,8 @@ export function CEOEmailCommunicationsModal({
   const emailStorageKey = `iskool_connected_email_${currentTenantId}`;
   const mailVerifiedStorageKey = `iskool_mail_verified_${currentTenantId}`;
   const mailConfigStorageKey = `iskool_mail_config_${currentTenantId}`;
-  const rawEmailsStorageKey = `iskool_raw_emails_${currentTenantId}`;
-  const mattersStorageKey = `iskool_matters_${currentTenantId}`;
+  const rawEmailsStorageKey = `iskool_raw_emails_v3_${currentTenantId}`;
+  const mattersStorageKey = `iskool_matters_v3_${currentTenantId}`;
   const discardedStorageKey = `iskool_discarded_${currentTenantId}`;
   const globalConnectedEmailKey = 'iskool_last_connected_email';
   const globalMailVerifiedKey = 'iskool_last_mail_verified';
@@ -445,7 +466,7 @@ export function CEOEmailCommunicationsModal({
       const globalSaved = localStorage.getItem('iskool_last_connected_email');
       if (globalSaved && globalSaved !== 'DISCONNECTED' && globalSaved !== 'direccion@gmail.com') return globalSaved;
     }
-    return 'roboticalegotaller1@gmail.com';
+    return isIbime ? 'roboticalegotaller1@gmail.com' : (user?.email || (schoolDomain ? `direccion@${schoolDomain}` : ''));
   });
 
   // Estado riguroso de verificación en tiempo real por ping
@@ -505,8 +526,8 @@ export function CEOEmailCommunicationsModal({
         if (globalSaved && globalSaved !== 'DISCONNECTED') {
           saved = globalSaved;
         } else {
-          // Semilla canónica de IBIME / ISkool: roboticalegotaller1@gmail.com conectada de forma permanente
-          saved = 'roboticalegotaller1@gmail.com';
+          // Semilla canónica de IBIME: roboticalegotaller1@gmail.com conectada de forma permanente. Para otras instituciones: correo institucional
+          saved = isIbime ? 'roboticalegotaller1@gmail.com' : (user?.email || (schoolDomain ? `direccion@${schoolDomain}` : ''));
         }
         localStorage.setItem(emailStorageKey, saved);
         localStorage.setItem(globalConnectedEmailKey, saved);
@@ -526,7 +547,7 @@ export function CEOEmailCommunicationsModal({
       setLastPingError(null);
       setLastPingBanner('* OK Google Workspace OAuth 2.0 API Connected [TLS 1.3]');
     }
-  }, [emailStorageKey, mailVerifiedStorageKey, mailConfigStorageKey, globalConnectedEmailKey]);
+  }, [emailStorageKey, mailVerifiedStorageKey, mailConfigStorageKey, globalConnectedEmailKey, isIbime, user?.email, schoolDomain]);
 
   // Permisos autorizados para la Suite Google Workspace (Lectura de correos, Envío de correos y Calendario)
   const permissionsStorageKey = `iskool_permissions_${currentTenantId}`;
@@ -546,7 +567,7 @@ export function CEOEmailCommunicationsModal({
       const saved = localStorage.getItem(emailStorageKey);
       if (saved && saved !== 'DISCONNECTED' && saved !== 'direccion@gmail.com') return saved;
     }
-    return 'roboticalegotaller1@gmail.com';
+    return isIbime ? 'roboticalegotaller1@gmail.com' : (user?.email || (schoolDomain ? `direccion@${schoolDomain}` : ''));
   });
   const [authPassword, setAuthPassword] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -563,13 +584,13 @@ export function CEOEmailCommunicationsModal({
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedEmail = localStorage.getItem(emailStorageKey);
-      setAuthUsername(savedEmail && savedEmail !== 'DISCONNECTED' && savedEmail !== 'direccion@gmail.com' ? savedEmail : 'roboticalegotaller1@gmail.com');
+      setAuthUsername(savedEmail && savedEmail !== 'DISCONNECTED' && savedEmail !== 'direccion@gmail.com' ? savedEmail : (isIbime ? 'roboticalegotaller1@gmail.com' : (user?.email || (schoolDomain ? `direccion@${schoolDomain}` : ''))));
       const savedPass = localStorage.getItem(`iskool_auth_pass_${currentTenantId}`);
       setAuthPassword(savedPass || '');
       const savedAppPass = localStorage.getItem(`iskool_app_pass_input_${currentTenantId}`);
       setAppPasswordInput(savedAppPass || '');
     }
-  }, [currentTenantId, emailStorageKey]);
+  }, [currentTenantId, emailStorageKey, isIbime, schoolDomain, user?.email]);
 
   // Configuración Quirúrgica de Servidores de Correo (POP3, IMAP, SMTP)
   const [selectedProtocol, setSelectedProtocol] = useState<MailProtocol>('IMAP');
@@ -1658,11 +1679,13 @@ ${schoolName}`
           /\b(supervision|supervisión|sep|cte)\b/i.test(text) ||
           text.includes('supervis') ||
           text.includes('consejo técnico');
-        if (isMandatoryCeo && item.destination !== 'ATENCION_CEO') {
+        const isDiningConcern = /comedor|alimento|comida|intoxicaci|malestar|est[oó]mac/i.test(text);
+        if ((isMandatoryCeo || isDiningConcern) && item.destination !== 'ATENCION_CEO') {
           return {
             ...item,
             destination: 'ATENCION_CEO' as const,
-            urgency: item.urgency === 'BAJA' ? 'ALTA' : item.urgency
+            category: isDiningConcern ? 'Salud y Alimentación Escolar' : item.category,
+            urgency: isDiningConcern ? 'CRITICA' : (item.urgency === 'BAJA' ? 'ALTA' : item.urgency)
           };
         }
         return item;
@@ -1781,6 +1804,27 @@ ${schoolName}`
           provenance_doc: 'planeaciones/IBIME/Calendario_Oficial_Evaluaciones_2025_2026.md',
           received_at: '04 Oct 2026, 12:00 hrs',
           campus: 'Consolidado Red IBIME'
+        },
+        {
+          id: 'mat-ibime-dining-01',
+          matter_code: 'MAT-IBIME-2026-387',
+          title: 'Solicitud de atención y consideración respecto al servicio de comedor',
+          summary: 'Familia reporta inquietud prioritaria respecto a la calidad del servicio de comedor escolar y malestar estomacal de su hijo. Requiere atención directa de Dirección General.',
+          category: 'Salud y Alimentación Escolar',
+          urgency: 'CRITICA',
+          destination: 'ATENCION_CEO',
+          why_shown: 'Queja prioritaria sobre salud, bienestar físico y servicio de comedor escolar clasificada para atención inmediata de Dirección General.',
+          reincidence_count: 1,
+          recommended_action: 'Aprobar borrador de respuesta oficial e instruir revisión inmediata de insumos con el área médica.',
+          suggested_draft_reply: `Estimada Familia:\n\nHe recibido personalmente su comunicación en relación con el servicio de comedor escolar y el estado de salud de su hijo. En Instituto Bilingüe IBIME la salud, nutrición y bienestar de nuestros estudiantes es un compromiso absoluto e inviolable.\n\nHe instruido una revisión inmediata de los insumos y menús servidos en cafetería y comedor, así como un seguimiento puntual con el área médica escolar. Me pongo a su entera disposición para cualquier aclaración directa.\n\nAtentamente,\nLic. Patricia Sandoval Morales\nDirectora General · Instituto Bilingüe IBIME`,
+          assigned_role: 'Dirección General / CEO',
+          sla_hours: 12,
+          sla_remaining_text: '⏱️ 11h 50m restantes',
+          sender_name: 'Miguel Valencia',
+          sender_email: 'miguel.valencia@familias-ibime.edu.mx',
+          provenance_doc: 'planeaciones/IBIME/Protocolo_Salud_y_Comedor.md',
+          received_at: 'Hoy, 08:35 hrs',
+          campus: 'Campus Montes (Sede Matriz)'
         }
       ];
     }
@@ -1891,6 +1935,27 @@ ${schoolName}`
           provenance_doc: 'planeaciones/IBIME/Calendario_Oficial_Evaluaciones_2025_2026.md',
           received_at: '04 Oct 2026, 12:00 hrs',
           campus: 'Consolidado Red IBIME'
+        },
+        {
+          id: 'mat-ibime-dining-01',
+          matter_code: 'MAT-IBIME-2026-387',
+          title: 'Solicitud de atención y consideración respecto al servicio de comedor',
+          summary: 'Familia reporta inquietud prioritaria respecto a la calidad del servicio de comedor escolar y malestar estomacal de su hijo. Requiere atención directa de Dirección General.',
+          category: 'Salud y Alimentación Escolar',
+          urgency: 'CRITICA',
+          destination: 'ATENCION_CEO',
+          why_shown: 'Queja prioritaria sobre salud, bienestar físico y servicio de comedor escolar clasificada para atención inmediata de Dirección General.',
+          reincidence_count: 1,
+          recommended_action: 'Aprobar borrador de respuesta oficial e instruir revisión inmediata de insumos con el área médica.',
+          suggested_draft_reply: `Estimada Familia:\n\nHe recibido personalmente su comunicación en relación con el servicio de comedor escolar y el estado de salud de su hijo. En Instituto Bilingüe IBIME la salud, nutrición y bienestar de nuestros estudiantes es un compromiso absoluto e inviolable.\n\nHe instruido una revisión inmediata de los insumos y menús servidos en cafetería y comedor, así como un seguimiento puntual con el área médica escolar. Me pongo a su entera disposición para cualquier aclaración directa.\n\nAtentamente,\nLic. Patricia Sandoval Morales\nDirectora General · Instituto Bilingüe IBIME`,
+          assigned_role: 'Dirección General / CEO',
+          sla_hours: 12,
+          sla_remaining_text: '⏱️ 11h 50m restantes',
+          sender_name: 'Miguel Valencia',
+          sender_email: 'miguel.valencia@familias-ibime.edu.mx',
+          provenance_doc: 'planeaciones/IBIME/Protocolo_Salud_y_Comedor.md',
+          received_at: 'Hoy, 08:35 hrs',
+          campus: 'Campus Montes (Sede Matriz)'
         }
       ]);
     } else {
