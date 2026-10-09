@@ -12,7 +12,8 @@ export interface EmailTriageRecord {
   cost_usd: number;
   cost_mxn: number;
   zero_token_quadrant: string;
-  gemini_quadrant: string;
+  ai_quadrant: string;
+  gemini_quadrant?: string;
   was_overridden: boolean;
   reason: string;
   tenant_id: string;
@@ -34,12 +35,12 @@ export interface TriageTelemetrySummary {
   records: EmailTriageRecord[];
 }
 
-const TELEMETRY_FILE_PATH = path.join(process.cwd(), '.gemini-triage-telemetry.json');
+const TELEMETRY_FILE_PATH = path.join(process.cwd(), '.cognitive-triage-telemetry.json');
 const USD_TO_MXN_RATE = 20.0;
 
-// Tarifas de Gemini 3.8 Flash (por millón de tokens)
-const GEMINI_FLASH_INPUT_RATE_PER_MILLION = 0.075;
-const GEMINI_FLASH_OUTPUT_RATE_PER_MILLION = 0.30;
+// Tarifas oficiales del Motor de Inteligencia Artificial Flash (por millón de tokens)
+const AI_ENGINE_INPUT_RATE_PER_MILLION = 0.075;
+const AI_ENGINE_OUTPUT_RATE_PER_MILLION = 0.30;
 
 class EmailTriageTelemetryServiceSingleton {
   private inMemorySummary: TriageTelemetrySummary;
@@ -88,8 +89,8 @@ class EmailTriageTelemetryServiceSingleton {
    */
   public calculateCost(promptTokens: number, candidatesTokens: number): { costUsd: number; costMxn: number } {
     const costUsd =
-      (promptTokens * GEMINI_FLASH_INPUT_RATE_PER_MILLION) / 1_000_000 +
-      (candidatesTokens * GEMINI_FLASH_OUTPUT_RATE_PER_MILLION) / 1_000_000;
+      (promptTokens * AI_ENGINE_INPUT_RATE_PER_MILLION) / 1_000_000 +
+      (candidatesTokens * AI_ENGINE_OUTPUT_RATE_PER_MILLION) / 1_000_000;
     const costMxn = costUsd * USD_TO_MXN_RATE;
     return {
       costUsd: Number(costUsd.toFixed(8)),
@@ -172,7 +173,7 @@ class EmailTriageTelemetryServiceSingleton {
 - **Tokens Ahorrados por Aprendizaje Heurístico:** ${s.tokens_saved_by_learning.toLocaleString()} tokens
 - **Ahorro Financiero por Aprendizaje:** $${savedMxnFormatted} MXN
 
-*Tarifas oficiales aplicadas (Motor Gemini 3.8 Flash): $0.075 USD / 1M tokens prompt | $0.30 USD / 1M tokens respuesta.*`;
+*Tarifas oficiales aplicadas (Motor de Inteligencia Artificial Flash): $0.075 USD / 1M tokens prompt | $0.30 USD / 1M tokens respuesta.*`;
   }
 }
 

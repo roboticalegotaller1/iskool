@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { RawGmailItem } from '@/app/api/mail/raw-inbox/route';
 import { InboundMailSpoolService } from './inboundMailSpool';
 import { HermeticEmailBrainService } from './hermetic-email-brain.service';
-import { GeminiEmailTriageService } from './geminiEmailTriage.service';
+import { CognitiveAIEmailTriageService } from './geminiEmailTriage.service';
 import { injectEmailsBatchIntoCache } from './imapClientService';
 
 export interface GoogleTokens {
@@ -633,7 +633,7 @@ export class GoogleOAuthService {
       // 4. Evaluación en paralelo ultra-eficiente de todos los candidatos (resuelve simultáneamente en ~1.5s)
       const emailItems: RawGmailItem[] = await Promise.all(
         candidates.map(async (c) => {
-          const evaluation = await GeminiEmailTriageService.evaluateEmail({
+          const evaluation = await CognitiveAIEmailTriageService.evaluateEmail({
             emailId: `gmail-${c.detailId}`,
             subject: c.subject,
             bodyText: c.bodyText,

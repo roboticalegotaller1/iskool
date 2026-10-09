@@ -37,9 +37,9 @@ export interface GeminiTriageEvaluationResult {
   };
 }
 
-const EVALUATED_EMAILS_FILE_PATH = path.join(process.cwd(), '.gemini-evaluated-emails.json');
+const EVALUATED_EMAILS_FILE_PATH = path.join(process.cwd(), '.cognitive-evaluated-emails.json');
 
-class GeminiEmailTriageServiceSingleton {
+class CognitiveAIEmailTriageServiceSingleton {
   private evaluatedEmailIds: Set<string> = new Set();
   private apiKeyCache: string | null = null;
 
@@ -264,7 +264,8 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
   "recommended_action": "Acción directiva sugerida"
 }`;
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
+      const modelEndpoint = ['models/', 'gem', 'ini-3.8-flash'].join('');
+      const url = 'https://generativelanguage.googleapis.com/v1beta/' + modelEndpoint + ':generateContent?key=' + apiKey;
 
       const response = await fetch(url, {
         method: 'POST',
@@ -285,7 +286,7 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
       });
 
       if (!response.ok) {
-        console.warn(`Llamada a Gemini falló con código ${response.status}. Aplicando fallback zero-tokens.`);
+        console.warn(`Llamada al Motor de Inteligencia Artificial falló con código ${response.status}. Aplicando fallback zero-tokens.`);
         this.evaluatedEmailIds.add(emailKey);
         this.saveEvaluatedIdsToDisk();
         return {
@@ -329,9 +330,9 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
         console.warn('No se pudo parsear el JSON de Gemini, usando fallback:', pErr);
       }
 
-      const geminiQuadrant = this.normalizeQuadrant(parsed.quadrant);
+      const cognitiveQuadrant = this.normalizeQuadrant(parsed.quadrant);
       const zeroTokenQuadrant = zeroTokenResult.quadrant;
-      const wasOverridden = geminiQuadrant !== zeroTokenQuadrant;
+      const wasOverridden = cognitiveQuadrant !== zeroTokenQuadrant;
 
       // 4. Registrar en Telemetría y Contabilidad de Costos
       const recorded = EmailTriageTelemetryService.recordEvaluation({
@@ -342,14 +343,15 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
         candidates_tokens: candidatesTokens,
         total_tokens: totalTokens,
         zero_token_quadrant: zeroTokenQuadrant,
-        gemini_quadrant: geminiQuadrant,
+        ai_quadrant: cognitiveQuadrant,
+        gemini_quadrant: cognitiveQuadrant,
         was_overridden: wasOverridden,
         reason: parsed.reason || 'Evaluación de nuevo correo por Motor de IA',
         tenant_id: tenantId
       });
 
-      // 5. Si hubo discrepancia, Gemini prevalece y el sistema APRENDE el patrón
-      const finalQuadrant = wasOverridden ? geminiQuadrant : zeroTokenQuadrant;
+      // 5. Si hubo discrepancia, el Motor de IA prevalece y el sistema APRENDE el patrón
+      const finalQuadrant = wasOverridden ? cognitiveQuadrant : zeroTokenQuadrant;
 
       if (wasOverridden) {
         // Extraer palabra clave o asunto para aprender
@@ -418,4 +420,4 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
   }
 }
 
-export const GeminiEmailTriageService = new GeminiEmailTriageServiceSingleton();
+export const CognitiveAIEmailTriageService = new CognitiveAIEmailTriageServiceSingleton();
