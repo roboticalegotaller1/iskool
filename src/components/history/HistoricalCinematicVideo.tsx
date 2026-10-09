@@ -332,7 +332,7 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
               {title}
             </h3>
             <p className="text-[11px] text-amber-400/70">
-              4 Cápsulas narradas con movimiento cinemático (Google Flow / Ken Burns)
+              4 Cápsulas narradas con movimiento cinemático fluido (Efecto Flow / Ken Burns)
             </p>
           </div>
         </div>
@@ -445,16 +445,16 @@ export const HistoricalCinematicVideo: React.FC<HistoricalCinematicVideoProps> =
               </>
             )}
 
-            {/* Partículas de Polvo Dorado y Brillo Ambiental (Google Flow) */}
+            {/* Partículas de Polvo Dorado y Brillo Ambiental (Efecto Flow) */}
             <div className="absolute inset-0 bg-[radial-gradient(#f59e0b_1px,transparent_1px)] [background-size:24px_24px] opacity-20 pointer-events-none animate-pulse" />
 
             {/* Overlay Informativo Superior (Discreto y sin bloquear textos de encabezado) */}
             <div className="absolute top-3 left-4 right-4 flex items-center justify-between pointer-events-none z-20">
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-1 rounded-full bg-black/80 border border-amber-500/40 text-[10px] font-black uppercase text-amber-300 tracking-wider backdrop-blur-md shadow-md">
+              <div className="flex flex-wrap items-center gap-2 max-w-[85%]">
+                <span className="px-2.5 py-1 rounded-full bg-black/85 border border-amber-500/40 text-[10px] font-black uppercase text-amber-300 tracking-wider backdrop-blur-md shadow-md">
                   Cápsula {currentCapsuleIndex + 1} de {capsules.length}
                 </span>
-                <span className="text-xs font-bold text-amber-100/90 font-serif drop-shadow-md">
+                <span className="px-3 py-1 rounded-full bg-black/85 border border-amber-500/40 text-xs font-bold text-amber-100 font-serif drop-shadow-md backdrop-blur-md shadow-md line-clamp-1">
                   {activeCapsule.title}
                 </span>
               </div>
