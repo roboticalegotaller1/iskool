@@ -141,11 +141,9 @@ export async function POST(req: NextRequest) {
 
       const triageResult = await HermeticEmailBrainService.processInboundEmail(emailDto, authSession);
 
-      // REGLA OBLIGATORIA: En Bandeja Inteligente SOLO deben aparecer Atención CEO y Delegados.
-      // Los informativos y spam permanecen en Bandeja de Entrada (raw-inbox) pero no se muestran en Bandeja Inteligente.
-      const isIntelligentInboxCandidate =
-        triageResult.quadrant === 'ATENCION_CEO' ||
-        triageResult.quadrant === 'DELEGADO_CON_SLA';
+      // REGLA OBLIGATORIA: En Bandeja Inteligente SOLO deben aparecer correos de "Atención Inmediata CEO".
+      // Los informativos, delegados y spam permanecen en Bandeja de Entrada (raw-inbox) pero NUNCA en Bandeja Inteligente.
+      const isIntelligentInboxCandidate = triageResult.quadrant === 'ATENCION_CEO';
 
       if (isIntelligentInboxCandidate) {
         newMatters.push({
@@ -153,9 +151,9 @@ export async function POST(req: NextRequest) {
           matter_code: `MAT-${prefix}-2026-${String(Math.floor(Math.random() * 900) + 100)}`,
           title: emailDto.subject,
           summary: triageResult.why_shown_to_director || emailDto.body_text.slice(0, 140) + '...',
-          category: triageResult.category || 'Atención General',
+          category: triageResult.category || 'Atención Inmediata CEO',
           urgency: triageResult.urgency,
-          destination: triageResult.quadrant,
+          destination: 'ATENCION_CEO',
           why_shown: triageResult.why_shown_to_director,
           reincidence_count: emailDto.reincidence_count || 1,
           recommended_action: triageResult.recommended_action,
@@ -190,30 +188,25 @@ export async function POST(req: NextRequest) {
           const normSubject = msg.subject.trim().toLowerCase();
           if (existingTitles.includes(normSubject)) continue;
 
-          const isCeo = msg.triage_badge?.quadrant === 'ATENCION_CEO' || msg.is_important;
-          const isDelegate = msg.triage_badge?.quadrant === 'DELEGADO_CON_PLAZO';
+          const isCeo = msg.triage_badge?.quadrant === 'ATENCION_CEO';
 
-          if (isCeo || isDelegate) {
+          if (isCeo) {
             newMatters.push({
               id: `mat-live-${msg.id}`,
               matter_code: `MAT-${prefix}-2026-${msg.id.replace(/[^a-zA-Z0-9]/g, '').slice(-3).toUpperCase() || '001'}`,
               title: msg.subject,
               summary: msg.snippet || msg.body_text.slice(0, 140) + '...',
-              category: isCeo ? 'Atención Inmediata CEO' : 'Gestión Delegada Operativa',
-              urgency: isCeo ? 'CRITICA' : 'MEDIA',
-              destination: isCeo ? 'ATENCION_CEO' : 'DELEGADO_CON_SLA',
-              why_shown: isCeo
-                ? 'Correo prioritario en tiempo real clasificado por el Motor de IA Pedagógica como Atención Inmediata CEO.'
-                : 'Solicitud canalizada con compromiso de tiempo (SLA 24h).',
+              category: 'Atención Inmediata CEO',
+              urgency: 'CRITICA',
+              destination: 'ATENCION_CEO',
+              why_shown: 'Correo prioritario en tiempo real clasificado por el Asistente Pedagógico IA como Atención Inmediata CEO.',
               reincidence_count: 1,
-              recommended_action: isCeo
-                ? 'Revisar expediente completo y validar borrador de respuesta oficial de Dirección General.'
-                : 'Canalizar al área delegada correspondiente con plazo de resolución.',
+              recommended_action: 'Revisar expediente completo y validar borrador de respuesta oficial de Dirección General.',
               suggested_draft_reply: `Estimado(a) ${msg.sender_name}:\n\nHe recibido personalmente su comunicación en relación con: "${msg.subject}". En ${schoolName} la atención inmediata de este asunto es prioritaria.\n\nHe tomado conocimiento del tema y me encuentro coordinando la atención con las áreas correspondientes.\n\nAtentamente,\nDirección General · ${schoolName}`,
-              assigned_role: isCeo ? 'Dirección General / CEO' : 'Coordinación Delegada',
-              assigned_email: isCeo ? email : undefined,
-              sla_hours: isCeo ? 12 : 24,
-              sla_remaining_text: isCeo ? '⏱️ 12h restantes' : '⏱️ 24h restantes',
+              assigned_role: 'Dirección General / CEO',
+              assigned_email: email,
+              sla_hours: 12,
+              sla_remaining_text: '⏱️ 12h restantes',
               sender_name: msg.sender_name,
               sender_email: msg.sender_email,
               provenance_doc: `Buzón Institucional en Vivo (${msg.sender_email})`,
@@ -235,30 +228,25 @@ export async function POST(req: NextRequest) {
         const normSubject = msg.subject.trim().toLowerCase();
         if (existingTitles.includes(normSubject)) continue;
 
-        const isCeo = msg.triage_badge?.quadrant === 'ATENCION_CEO' || msg.is_important;
-        const isDelegate = msg.triage_badge?.quadrant === 'DELEGADO_CON_PLAZO';
+        const isCeo = msg.triage_badge?.quadrant === 'ATENCION_CEO';
 
-        if (isCeo || isDelegate) {
+        if (isCeo) {
           newMatters.push({
             id: `mat-live-${msg.id}`,
             matter_code: `MAT-${prefix}-2026-${msg.id.replace(/[^a-zA-Z0-9]/g, '').slice(-3).toUpperCase() || '001'}`,
             title: msg.subject,
             summary: msg.snippet || msg.body_text.slice(0, 140) + '...',
-            category: isCeo ? 'Atención Inmediata CEO' : 'Gestión Delegada Operativa',
-            urgency: isCeo ? 'CRITICA' : 'MEDIA',
-            destination: isCeo ? 'ATENCION_CEO' : 'DELEGADO_CON_SLA',
-            why_shown: isCeo
-              ? 'Correo de alta prioridad clasificado por el Motor de IA Pedagógica como Atención Inmediata CEO.'
-              : 'Solicitud canalizada con compromiso de tiempo (SLA 24h).',
+            category: 'Atención Inmediata CEO',
+            urgency: 'CRITICA',
+            destination: 'ATENCION_CEO',
+            why_shown: 'Correo de alta prioridad clasificado por el Asistente Pedagógico IA como Atención Inmediata CEO.',
             reincidence_count: 1,
-            recommended_action: isCeo
-              ? 'Revisar expediente completo y validar borrador de respuesta oficial de Dirección General.'
-              : 'Canalizar al área delegada correspondiente.',
+            recommended_action: 'Revisar expediente completo y validar borrador de respuesta oficial de Dirección General.',
             suggested_draft_reply: `Estimado(a) ${msg.sender_name}:\n\nHe recibido personalmente su comunicación en relación con: "${msg.subject}". En ${schoolName} la atención inmediata de este asunto es prioritaria.\n\nAtentamente,\nDirección General · ${schoolName}`,
-            assigned_role: isCeo ? 'Dirección General / CEO' : 'Coordinación Delegada',
-            assigned_email: isCeo ? email : undefined,
-            sla_hours: isCeo ? 12 : 24,
-            sla_remaining_text: isCeo ? '⏱️ 12h restantes' : '⏱️ 24h restantes',
+            assigned_role: 'Dirección General / CEO',
+            assigned_email: email,
+            sla_hours: 12,
+            sla_remaining_text: '⏱️ 12h restantes',
             sender_name: msg.sender_name,
             sender_email: msg.sender_email,
             provenance_doc: `Buzón Institucional en Vivo (${msg.sender_email})`,
@@ -308,15 +296,15 @@ export async function POST(req: NextRequest) {
 
           const triage = await HermeticEmailBrainService.processInboundEmail(emailDto, authSession);
 
-          if (triage.quadrant === 'ATENCION_CEO' || triage.quadrant === 'DELEGADO_CON_SLA') {
+          if (triage.quadrant === 'ATENCION_CEO') {
             newMatters.push({
               id: `mat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
               matter_code: `MAT-${prefix}-2026-${String(Math.floor(Math.random() * 900) + 100)}`,
               title: emailDto.subject,
               summary: triage.why_shown_to_director || emailDto.body_text.slice(0, 140) + '...',
-              category: triage.category || 'Atención General',
+              category: triage.category || 'Atención Inmediata CEO',
               urgency: triage.urgency,
-              destination: triage.quadrant,
+              destination: 'ATENCION_CEO',
               why_shown: triage.why_shown_to_director,
               reincidence_count: 1,
               recommended_action: triage.recommended_action,

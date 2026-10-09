@@ -6,6 +6,7 @@
  */
 
 import { CeoEmailSettingsService } from './ceoEmailSettingsService';
+import { supabase } from '@/lib/supabaseClient';
 
 export type EmailQuadrant = 
   | 'ATENCION_CEO'      // 🔴 Asuntos de gobernanza, riesgo legal/normativo, incidencias graves o reincidencia
@@ -154,7 +155,417 @@ const ISOLATED_TENANT_KNOWLEDGE: Record<string, CatalogDoc[]> = {
   ]
 };
 
-import { supabase } from '@/lib/supabaseClient';
+export interface ZeroTokenTriageResult {
+  quadrant: EmailQuadrant;
+  urgency: 'CRITICA' | 'ALTA' | 'MEDIA' | 'BAJA';
+  category: string;
+  badge: {
+    quadrant: EmailQuadrant;
+    label: string;
+    color: string;
+  };
+  gmailCategory: 'principal' | 'actualizaciones' | 'promociones' | 'spam';
+  assigned_department?: string;
+  assigned_role?: string;
+  delegate_email?: string;
+  sla_hours?: number;
+  why_shown_to_director: string;
+  recommended_action: string;
+}
+
+export interface LearnedTriageRule {
+  id: string;
+  patternType: 'sender' | 'subject' | 'domain';
+  patternValue: string;
+  targetQuadrant: EmailQuadrant;
+  reason?: string;
+  learnedFromEmailId?: string;
+  createdAt: string;
+}
+
+export class LearnedTriageMemoryService {
+  public static inMemoryRules: Map<string, LearnedTriageRule[]> = new Map();
+
+  static clearRules(tenantId?: string) {
+    if (tenantId) {
+      this.inMemoryRules.delete(tenantId);
+    } else {
+      this.inMemoryRules.clear();
+    }
+  }
+
+  static getRules(tenantId: string = 'sch-default'): LearnedTriageRule[] {
+    const list = this.inMemoryRules.get(tenantId) || [];
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(`iskool_learned_triage_rules_${tenantId}`);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            return parsed;
+          }
+        }
+      } catch {}
+    }
+    return list;
+  }
+
+  static learnPattern(tenantId: string = 'sch-default', rule: Omit<LearnedTriageRule, 'id' | 'createdAt'>): LearnedTriageRule {
+    const existing = this.getRules(tenantId);
+    const newRule: LearnedTriageRule = {
+      ...rule,
+      id: `rule-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      createdAt: new Date().toISOString()
+    };
+    const updated = [newRule, ...existing.filter(r => !(r.patternType === rule.patternType && r.patternValue.toLowerCase() === rule.patternValue.toLowerCase()))];
+    this.inMemoryRules.set(tenantId, updated);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(`iskool_learned_triage_rules_${tenantId}`, JSON.stringify(updated));
+      } catch {}
+    }
+    return newRule;
+  }
+}
+
+/**
+ * MOTOR DE TRIAGE ZERO-TOKENS CON APRENDIZAJE HEURÍSTICO LOCAL (100% GRATUITO Y DETERMINISTA)
+ * Clasifica cualquier correo en 4 cuadrantes canónicos sin consumir tokens de IA.
+ */
+export function classifyZeroTokenEmail(
+  subject: string,
+  bodyText: string,
+  senderEmail?: string,
+  senderName?: string,
+  vipRules?: { email: string; contactName?: string; enabled?: boolean }[],
+  tenantId?: string,
+  reincidenceCount?: number
+): ZeroTokenTriageResult {
+  const sSub = (subject || '').trim();
+  const sBody = (bodyText || '').trim();
+  const sFromEmail = (senderEmail || '').trim().toLowerCase();
+  const sFromName = (senderName || '').trim().toLowerCase();
+  const fullText = `${sSub} ${sBody} ${sFromName} ${sFromEmail}`.toLowerCase();
+  const tId = tenantId || 'e1000000-0000-0000-0000-000000000001';
+  const reincidence = reincidenceCount || 1;
+
+  // 0. APRENDIZAJE ADAPTATIVO ZERO-TOKENS: Reglas memorizadas por retroalimentación directiva
+  const learnedRules = LearnedTriageMemoryService.getRules(tId);
+  for (const lr of learnedRules) {
+    const val = lr.patternValue.toLowerCase().trim();
+    if (lr.patternType === 'sender' && sFromEmail.includes(val)) {
+      return buildZeroTokenResult(lr.targetQuadrant, 'Regla de Aprendizaje / Remitente', lr.reason || 'Clasificado según aprendizaje local previo.');
+    }
+    if (lr.patternType === 'domain' && sFromEmail.split('@')[1]?.includes(val)) {
+      return buildZeroTokenResult(lr.targetQuadrant, 'Regla de Aprendizaje / Dominio', lr.reason || 'Dominio aprendido como ' + lr.targetQuadrant);
+    }
+    if (lr.patternType === 'subject' && fullText.includes(val)) {
+      return buildZeroTokenResult(lr.targetQuadrant, 'Regla de Aprendizaje / Patrón', lr.reason || 'Patrón aprendido en triage.');
+    }
+  }
+
+  // 1. REGLA SUPREMA VIP: Remitentes prioritarios registrados por el CEO en Ajustes
+  let matchingVip: any = null;
+  if (sFromEmail) {
+    if (vipRules && vipRules.length > 0) {
+      matchingVip = vipRules.find(v => v.enabled !== false && v.email && sFromEmail.includes(v.email.toLowerCase().trim()));
+    }
+    if (!matchingVip) {
+      matchingVip = CeoEmailSettingsService.getMatchingVipRule(tId, sFromEmail);
+    }
+  }
+  if (matchingVip) {
+    return {
+      quadrant: 'ATENCION_CEO',
+      urgency: 'CRITICA',
+      category: `Regla VIP / ${matchingVip.contactName || 'Alta Importancia'}`,
+      badge: {
+        quadrant: 'ATENCION_CEO',
+        label: '🔴 ATENCIÓN INMEDIATA CEO',
+        color: 'bg-red-50 text-red-700 border-red-200'
+      },
+      gmailCategory: 'principal',
+      assigned_department: 'Dirección General / CEO',
+      assigned_role: 'Dirección General / CEO',
+      delegate_email: sFromEmail,
+      sla_hours: 12,
+      why_shown_to_director: `Remitente prioritario registrado en Reglas VIP de Dirección General (${matchingVip.email}${matchingVip.organization ? ' - ' + matchingVip.organization : ''}): ${matchingVip.reason || 'Atención prioritaria obligatoria e indelegable.'}`,
+      recommended_action: 'Atención prioritaria e inmediata de Dirección General / CEO. Dar seguimiento directo y personalizado sin intermediación.'
+    };
+  }
+
+  // 2. CUADRANTE 4: SPAM Y PROMOCIONES COMERCIALES (🟣 0 Tokens)
+  // Se evalúa antes de palabras clave rutinarias para evitar que boletines comerciales se eleven a CEO o Delegados
+  const spamAndMarketingSenders = [
+    'gamma.app', 'hello@gamma.app', 'cinepolis', 'cinépolis', 'primeopinion', 'prime opinion',
+    'play.google', 'googleplay', 'chicv', 'chicv technology', 'mercadolibre', 'mercado libre',
+    'amazon.com.mx', 'amazon.com', 'asm.org/careers', 'asm careers'
+  ];
+
+  const isSpamSender = spamAndMarketingSenders.some(dom => sFromEmail.includes(dom) || sFromName.includes(dom));
+
+  const spamAndPromoSignals = [
+    // Novedades de Apps y SaaS Comercial (e.g. Gamma, Canva, etc.)
+    'ya llegó el nuevo gamma', 'ya llego el nuevo gamma', 'gamma 5', 'nuestra mayor actualización',
+    'nuestra mayor actualizacion', 'gamma.app', 'hello@gamma.app', 'presentaciones con ia',
+    'novedades de canva', 'novedades de notion', 'novedades de figma',
+
+    // Entretenimiento, Cine y Ocio (e.g. Cinépolis)
+    'club cinépolis', 'club cinepolis', 'cinépolis', 'cinepolis', 'salida al cine',
+    'arma la salida al cine', 'seleccione las p', 'seleccioné las p', 'combo cupones',
+    'palomitas', 'boletos de cine', 'cinemex',
+
+    // Recompensas, Puntos y Encuestas Pagadas (e.g. Prime Opinion, Google Play)
+    'prime opinion', 'saldo 124 puntos', 'puntos de play', 'google play games', 'tus puntos de play',
+    'instala google play', 'ingresos pasivos', 'encuestas pagadas', 'cashback', 'gana dinero respondiendo',
+    'recompensas de play',
+
+    // Compras Personales, Paquetes y Reclamos Marketplace (e.g. Base de Cama, Chicv)
+    'base de king cama', 'cama matrimonial', 'tamaño de metal 190cm', 'tamano de metal',
+    'chicv technology', 'te respondieron sobre el reclamo de', 'reclamo de vendedor',
+    'rastreo de paquete', 'tu paquete fue entregado', 'envío en camino', 'devolución de producto',
+
+    // Boletines de Acciones, Finanzas y Cripto (e.g. Inversión Financiera)
+    'inversión financiera', 'inversion financiera', 'financial stocks have their worst',
+    'worst month vs the market', 'top story financial stocks', 'financial stocks',
+    'top story 📰 financial', 'mercados bursátiles', 'trading de cripto', 'criptomonedas',
+    'bitcoin', 'acciones en wall street', 'bolsa de valores de ny',
+
+    // Ventas en Frío y Ofertas de Rediseño Web (e.g. Carlos Durán)
+    '¿sabía que una página web desactualizada', 'sabia que una pagina web desactualizada',
+    'página web desactualizada puede hacerle perder', 'diseño para su web', 'desarrollo web y hosting',
+    'marketing digital para colegios', 'agencia seo', 'potencie sus ventas', 'cotización no solicitada de diseño',
+
+    // Bolsas de Trabajo Externas y Reclutamiento Comercial (e.g. ASM Careers)
+    'asm careers', 'asm career connections', 'apply for open jobs', 'bolsa de trabajo externa',
+    'postúlate a esta vacante', 'vacantes abiertas', 'job alerts',
+
+    // Spam clásico y fraudes
+    'viagra', 'casino', 'préstamo inmediato', 'sin buró', 'ganaste un premio',
+    'herencia millonaria', 'click here to claim', 'tarifa promocional no solicitada'
+  ];
+
+  const isCarlosDuranMarketing = sFromEmail.includes('carlos.duran') && (
+    fullText.includes('página web') || fullText.includes('pagina web') ||
+    fullText.includes('inversión financiera') || fullText.includes('financial stocks') ||
+    fullText.includes('base de king cama') || fullText.includes('reclamo')
+  );
+
+  const isSpamContent = isSpamSender || isCarlosDuranMarketing || spamAndPromoSignals.some(sig => fullText.includes(sig));
+
+  if (isSpamContent) {
+    return {
+      quadrant: 'SPAM_DESCARTADO',
+      urgency: 'BAJA',
+      category: 'Spam y Promociones Comerciales',
+      badge: {
+        quadrant: 'SPAM_DESCARTADO',
+        label: '🟣 SPAM / PROMOCIÓN',
+        color: 'bg-purple-50 text-purple-700 border-purple-200'
+      },
+      gmailCategory: 'promociones',
+      why_shown_to_director: 'Boletín comercial o promoción externa descartada para proteger el tiempo de Dirección General.',
+      recommended_action: 'Mantener en bandeja de promociones/spam sin generar expediente en Bandeja Inteligente.'
+    };
+  }
+
+  // 3. CUADRANTE 1: ATENCIÓN INMEDIATA CEO (🔴 0 Tokens)
+  // Mandatorio: Supervisión SEP, CTE urgente, incidentes médicos graves, acoso/riesgo legal, reincidencia >= 3
+  const isRoutineDocTramite = fullText.includes('boleta') || fullText.includes('kardex') || fullText.includes('constancia de estudio') || fullText.includes('certificado escolar');
+  const isMandatorySepInspection = !isRoutineDocTramite && (
+    /\b(supervision|supervisión|zona escolar|inspector sep|inspección sep|queja sep|auditoría sep|multa sep)\b/i.test(fullText) ||
+    fullText.includes('supervisi') ||
+    fullText.includes('supervisió') ||
+    fullText.includes('secretaría de educación')
+  );
+
+  const isCteEmergency = fullText.includes('cte urgente') || (fullText.includes('cte') && (fullText.includes('mañana') || fullText.includes('urgente') || fullText.includes('confirme asistencia') || fullText.includes('3 pm')));
+  const isInjuryEmergency = fullText.includes('herido') || fullText.includes('alumno herido') || fullText.includes('estudiante herido') || fullText.includes('lesión') || fullText.includes('lesion') || fullText.includes('accidente grave') || fullText.includes('fractura') || fullText.includes('ambulancia');
+  const isSevereConflictOrLegal = [
+    'acoso', 'bullying', 'demanda', 'abogado', 'urgente dirección', 'agresión física',
+    'negligencia grave', 'denuncia ante autoridades', 'amenaza', 'profeco', 'citatorio legal'
+  ].some(sig => fullText.includes(sig));
+
+  const isCeoCritical = isMandatorySepInspection || isCteEmergency || isInjuryEmergency || isSevereConflictOrLegal || reincidence >= 3;
+
+  if (isCeoCritical) {
+    let cat = 'Atención Inmediata CEO';
+    let why = 'Asunto con implicación de gobernanza o riesgo normativo que requiere criterio ético y resolución directa de Dirección.';
+    let action = 'Atención directa inmediata de Dirección General / CEO.';
+
+    if (isMandatorySepInspection) {
+      cat = 'Supervisión Oficial SEP / Asunto Regulatorio';
+      why = 'Comunicación o requerimiento oficial vinculado a Supervisión Escolar / SEP. Requiere intervención y resolución directa e indelegable de Dirección General / CEO.';
+      action = 'Atención directa inmediata de Dirección General / CEO y desahogo de requerimiento ante la autoridad educativa.';
+    } else if (isCteEmergency) {
+      cat = 'Gobernanza Institucional / Consejo Técnico Escolar (CTE)';
+      why = 'Convocatoria oficial urgente a sesión de Consejo Técnico Escolar (CTE). Por mandato institucional requiere atención y confirmación directa del CEO.';
+      action = 'Confirmar agenda de Dirección General, coordinar concentrados de evaluación y girar instrucción ejecutiva.';
+    } else if (isInjuryEmergency) {
+      cat = 'Accidente Escolar / Salvaguarda y Seguridad de Alumnos';
+      why = 'Incidencia crítica de salvaguarda y protección física escolar: Reporte de alumno herido en instalaciones. Requiere activación inmediata del protocolo de urgencias médicas escolares.';
+      action = 'Activar protocolo de urgencias médicas escolares de inmediato, resguardar al alumno y contactar a tutores legales para notificación oficial.';
+    } else if (isSevereConflictOrLegal) {
+      cat = 'Convivencia / Caso Crítico Nivel 3';
+      why = 'Asunto con implicación de gobernanza o riesgo normativo que requiere criterio ético y resolución directa de Dirección.';
+      action = 'Convocar de inmediato a mesa de mediación presencial y activar el protocolo correspondiente.';
+    } else if (reincidence >= 3) {
+      cat = 'Reincidencia Directiva';
+      why = `Alerta de reincidencia elevada: La familia o remitente acumula ${reincidence} comunicaciones sobre este caso sin resolución conforme.`;
+      action = 'Atención directa y prioritaria del CEO para cierre definitivo del caso.';
+    }
+
+    const urgency = (reincidence >= 3 && !isMandatorySepInspection && !isCteEmergency && !isInjuryEmergency && !isSevereConflictOrLegal) ? 'ALTA' : 'CRITICA';
+
+    return {
+      quadrant: 'ATENCION_CEO',
+      urgency,
+      category: cat,
+      badge: {
+        quadrant: 'ATENCION_CEO',
+        label: '🔴 ATENCIÓN INMEDIATA CEO',
+        color: 'bg-red-50 text-red-700 border-red-200'
+      },
+      gmailCategory: 'principal',
+      assigned_department: 'Dirección General / CEO',
+      assigned_role: 'Dirección General / CEO',
+      sla_hours: 12,
+      why_shown_to_director: why,
+      recommended_action: action
+    };
+  }
+
+  // 4. CUADRANTE 2: DELEGADO OPERATIVO (🟡 0 Tokens)
+  // Trámites departamentales de cobranza, control escolar, rutas de transporte, enfermería de rutina
+  const isFinance = fullText.includes('factura') || fullText.includes('cfdi') || fullText.includes('colegiatura') || fullText.includes('recargo') || fullText.includes('adeudo') || fullText.includes('descuento de hermanos') || fullText.includes('pago de colegiatura');
+  if (isFinance) {
+    return {
+      quadrant: 'DELEGADO_CON_SLA',
+      urgency: 'MEDIA',
+      category: 'Cobranza y Facturación',
+      badge: {
+        quadrant: 'DELEGADO_CON_SLA',
+        label: '🟡 DELEGADO OPERATIVO',
+        color: 'bg-amber-50 text-amber-700 border-amber-200'
+      },
+      gmailCategory: 'actualizaciones',
+      assigned_department: 'Departamento de Cobranza y Finanzas',
+      assigned_role: 'Tesorería y Facturación',
+      sla_hours: 24,
+      why_shown_to_director: 'Trámite financiero o aclaración derivado al área de Cobranza con SLA de 24h.',
+      recommended_action: 'Canalizar a Tesorería para emisión de comprobante y timbrado SAT.'
+    };
+  }
+
+  const isControlEscolar = fullText.includes('boleta') || fullText.includes('kardex') || fullText.includes('constancia de estudio') || fullText.includes('certificado escolar') || fullText.includes('revalidación') || fullText.includes('inscripción') || fullText.includes('reinscripción');
+  if (isControlEscolar) {
+    return {
+      quadrant: 'DELEGADO_CON_SLA',
+      urgency: 'MEDIA',
+      category: 'Control Escolar y Trámites',
+      badge: {
+        quadrant: 'DELEGADO_CON_SLA',
+        label: '🟡 DELEGADO OPERATIVO',
+        color: 'bg-amber-50 text-amber-700 border-amber-200'
+      },
+      gmailCategory: 'actualizaciones',
+      assigned_department: 'Control Escolar y Secretaría',
+      assigned_role: 'Control Escolar',
+      sla_hours: 48,
+      why_shown_to_director: 'Solicitud documental que compete a los procedimientos de Control Escolar.',
+      recommended_action: 'Canalizar a Control Escolar para cotejo de expediente y emisión oficial.'
+    };
+  }
+
+  const isTransport = fullText.includes('transporte') || fullText.includes('ruta 4') || fullText.includes('ruta escolar') || fullText.includes('camión') || fullText.includes('chofer') || fullText.includes('parada del autobús');
+  if (isTransport) {
+    return {
+      quadrant: 'DELEGADO_CON_SLA',
+      urgency: 'MEDIA',
+      category: 'Logística y Transporte',
+      badge: {
+        quadrant: 'DELEGADO_CON_SLA',
+        label: '🟡 DELEGADO OPERATIVO',
+        color: 'bg-amber-50 text-amber-700 border-amber-200'
+      },
+      gmailCategory: 'actualizaciones',
+      assigned_department: 'Coordinación de Logística y Prefectura',
+      assigned_role: 'Transporte y Prefectura',
+      sla_hours: 24,
+      why_shown_to_director: 'Incidencia operativa de logística o servicio de transporte canalizada a Coordinación de Logística y Prefectura.',
+      recommended_action: 'Auditar tiempos de recorrido y canalizar con Coordinación de Logística para resolución oficial en 24h.'
+    };
+  }
+
+  const isRoutineHealth = fullText.includes('enfermería') || fullText.includes('enfermeria') || fullText.includes('receta médica') || fullText.includes('justificante médico') || fullText.includes('alergia escolar') || fullText.includes('medicamento');
+  if (isRoutineHealth) {
+    return {
+      quadrant: 'DELEGADO_CON_SLA',
+      urgency: 'MEDIA',
+      category: 'Servicio Médico y Salud Escolar',
+      badge: {
+        quadrant: 'DELEGADO_CON_SLA',
+        label: '🟡 DELEGADO OPERATIVO',
+        color: 'bg-amber-50 text-amber-700 border-amber-200'
+      },
+      gmailCategory: 'actualizaciones',
+      assigned_department: 'Servicio Médico Escolar',
+      assigned_role: 'Médico Escolar',
+      sla_hours: 24,
+      why_shown_to_director: 'Notificación clínica o seguimiento de salud escolar asignado a enfermería.',
+      recommended_action: 'Registro en expediente clínico escolar y seguimiento de prescripción médica.'
+    };
+  }
+
+  // 5. CUADRANTE 3: INFORMATIVO (🔵 0 Tokens)
+  // Webinars, confirmaciones de asistencia/registro, trámites de servicio social concluidos, avisos de términos técnicos
+  const isWebinarOrConference = fullText.includes('webinar') || fullText.includes('webinars') || fullText.includes('conferencia') || fullText.includes('festivalciberlatam') || fullText.includes('jmbe live') || fullText.includes('zoom');
+  const isConfirmationOrReceipt = fullText.includes('confirmation') || fullText.includes('confirmación') || fullText.includes('thank you for registering') || fullText.includes('gracias por registrarte') || fullText.includes('registro confirmado');
+  const isSocialServiceNotice = fullText.includes('tramites.ss') || fullText.includes('trámites ss') || fullText.includes('servicio social') || fullText.includes('constancia de liberacion') || fullText.includes('constancia de liberación') || fullText.includes('acatlan.unam.mx');
+  const isServiceTermsUpdate = fullText.includes('condiciones del servicio') || fullText.includes('dropbox') || fullText.includes('términos del servicio') || fullText.includes('aviso de privacidad');
+
+  let informativeCat = 'Comunicación Institucional / Informativo';
+  if (isWebinarOrConference || isConfirmationOrReceipt) informativeCat = 'Webinars & Confirmaciones de Registro';
+  else if (isSocialServiceNotice) informativeCat = 'Servicio Social & Constancias Informativas';
+  else if (isServiceTermsUpdate) informativeCat = 'Actualización de Términos y Plataformas';
+
+  return {
+    quadrant: 'INFORMATIVO',
+    urgency: 'BAJA',
+    category: informativeCat,
+    badge: {
+      quadrant: 'INFORMATIVO',
+      label: '🔵 INFORMATIVO',
+      color: 'bg-blue-50 text-blue-700 border-blue-200'
+    },
+    gmailCategory: 'actualizaciones',
+    why_shown_to_director: 'Comunicado general, felicitación o notificación que no requiere gestión ejecutiva.',
+    recommended_action: 'Archivar con acuse de recibo estandarizado.'
+  };
+}
+
+function buildZeroTokenResult(
+  quadrant: EmailQuadrant,
+  category: string,
+  why: string
+): ZeroTokenTriageResult {
+  const badgeMap: Record<EmailQuadrant, { label: string; color: string; gmailCategory: 'principal' | 'actualizaciones' | 'promociones' | 'spam'; urgency: 'CRITICA' | 'ALTA' | 'MEDIA' | 'BAJA' }> = {
+    ATENCION_CEO: { label: '🔴 ATENCIÓN INMEDIATA CEO', color: 'bg-red-50 text-red-700 border-red-200', gmailCategory: 'principal', urgency: 'CRITICA' },
+    DELEGADO_CON_SLA: { label: '🟡 DELEGADO OPERATIVO', color: 'bg-amber-50 text-amber-700 border-amber-200', gmailCategory: 'actualizaciones', urgency: 'MEDIA' },
+    INFORMATIVO: { label: '🔵 INFORMATIVO', color: 'bg-blue-50 text-blue-700 border-blue-200', gmailCategory: 'actualizaciones', urgency: 'BAJA' },
+    SPAM_DESCARTADO: { label: '🟣 SPAM / PROMOCIÓN', color: 'bg-purple-50 text-purple-700 border-purple-200', gmailCategory: 'promociones', urgency: 'BAJA' }
+  };
+  const b = badgeMap[quadrant];
+  return {
+    quadrant,
+    urgency: b.urgency,
+    category,
+    badge: { quadrant, label: b.label, color: b.color },
+    gmailCategory: b.gmailCategory,
+    why_shown_to_director: why,
+    recommended_action: quadrant === 'ATENCION_CEO' ? 'Atención inmediata de Dirección General / CEO.' : 'Seguimiento institucional correspondiente.'
+  };
+}
 
 export class HermeticEmailBrainService {
   private static isRealSupabaseConfigured(): boolean {
@@ -346,8 +757,10 @@ export class HermeticEmailBrainService {
   }
 
   /**
-   * Clasificación en los 4 Cuadrantes Canónicos
+   * Clasificación en los 4 Cuadrantes Canónicos (100% Zero-Tokens & Aprendizaje Local)
    */
+  static classifyZeroTokenEmail = classifyZeroTokenEmail;
+
   private static classifyQuadrant(
     email: InboundEmailDTO,
     provenance: DocumentProvenance[],
@@ -364,211 +777,25 @@ export class HermeticEmailBrainService {
     why_shown_to_director: string;
     recommended_action: string;
   } {
-    const text = `${email.subject} ${email.body_text}`.toLowerCase();
-    const reincidence = email.reincidence_count || 1;
-    const tId = tenantId || 'e1000000-0000-0000-0000-000000000001';
-
-    // =========================================================================
-    // REGLA SUPREMA VIP: CORREOS DE ALTA IMPORTANCIA CONFIGURADOS POR EL CEO 🔴
-    // Todo correo proveniente de un remitente VIP debe catalogarse inmediatamente
-    // como "ATENCIÓN INMEDIATA CEO" con urgencia CRÍTICA y sin intermediación.
-    // =========================================================================
-    if (email.sender_email) {
-      const matchingVip = CeoEmailSettingsService.getMatchingVipRule(tId, email.sender_email);
-      if (matchingVip) {
-        return {
-          quadrant: 'ATENCION_CEO',
-          urgency: 'CRITICA',
-          category: `Regla VIP / ${matchingVip.contactName || 'Alta Importancia'}`,
-          assigned_department: 'Dirección General / CEO',
-          assigned_role: 'Dirección General / CEO',
-          delegate_email: email.sender_email,
-          sla_hours: 12,
-          why_shown_to_director: `Remitente prioritario registrado en Reglas VIP de Dirección General (${matchingVip.email}${matchingVip.organization ? ' - ' + matchingVip.organization : ''}): ${matchingVip.reason || 'Atención prioritaria obligatoria e indelegable.'}`,
-          recommended_action: 'Atención prioritaria e inmediata de Dirección General / CEO. Dar seguimiento directo y personalizado sin intermediación.'
-        };
-      }
-    }
-
-    // CUADRANTE 4: SPAM / DESCARTADO ⚪
-    const spamSignals = [
-      'viagra', 'cripto', 'crypto', 'ganaste', 'herencia', 'casino',
-      'préstamo inmediato', 'hot singles', 'click here', 'sin buró', 'tarifa promocional no solicitada',
-      'diesño para su web', 'diseño para su web', 'desarrollo web', 'marketing digital', 'carlos durán',
-      'microbiology', 'asm careers'
-    ];
-    if (spamSignals.some(s => text.includes(s))) {
-      return {
-        quadrant: 'SPAM_DESCARTADO',
-        urgency: 'BAJA',
-        category: 'Spam y Publicidad No Solicitada',
-        why_shown_to_director: 'Propuesta comercial no solicitada o boletín externo descartado para evitar interrupciones directivas.',
-        recommended_action: 'Archivar y mantener en lista de filtrado automático.'
-      };
-    }
-
-    // REGLA OBLIGATORIA: Si dice "supervisión", "supervision" o "CTE", o asunto oficial SEP (salvo trámites de boleta/kardex), marcar como ATENCIÓN INMEDIATA CEO
-    const isRoutineDocTramite = text.includes('boleta') || text.includes('kardex') || text.includes('constancia') || text.includes('certificado');
-    const isMandatoryCeoKeyword = !isRoutineDocTramite && (
-      /\b(supervision|supervisión|cte)\b/i.test(text) ||
-      text.includes('supervisi') ||
-      text.includes('supervisió') ||
-      text.includes('inspección sep') ||
-      text.includes('queja sep') ||
-      text.includes('auditoría sep') ||
-      (/\bsep\b/i.test(text) && !isRoutineDocTramite)
+    const zeroToken = classifyZeroTokenEmail(
+      email.subject,
+      email.body_text,
+      email.sender_email,
+      email.sender_name,
+      undefined,
+      tenantId,
+      email.reincidence_count
     );
-
-    // CUADRANTE 1: ATENCION_CEO 🔴
-    const isCteEmergency = text.includes('cte urgente') || (text.includes('cte') && (text.includes('mañana') || text.includes('urgente') || text.includes('confirme asistencia')));
-    const isInjuryEmergency = text.includes('herido') || text.includes('alumno herido') || text.includes('lesión') || text.includes('lesion') || text.includes('accidente') || text.includes('fractura');
-    const ceoEmergencySignals = [
-      'acoso', 'bullying', 'demanda', 'abogado', 'urgente dirección', 'golpe',
-      'agresión', 'negligencia', 'denuncia', 'rectoría', 'amenaza', 'profeco',
-      'queja ante sep', 'denuncia sep', 'inspección sep', 'multa sep',
-      'cte urgente', 'consejo técnico', 'consejo tecnico', 'sesión de consejo', 'sesion de consejo',
-      'audiencia directiva', 'solicitud de audiencia', 'reunión directiva', 'reunion directiva',
-      'herido', 'alumno herido', 'lesión', 'lesion', 'accidente', 'fractura', 'ambulancia'
-    ];
-    const isCriticalIssue = isMandatoryCeoKeyword || ceoEmergencySignals.some(s => text.includes(s)) || isCteEmergency || isInjuryEmergency;
-    const isReincidenceExceeded = reincidence >= 3;
-
-    if (isCriticalIssue || isReincidenceExceeded) {
-      let why = 'Asunto con implicación de gobernanza o riesgo normativo que requiere criterio ético y resolución directa de Dirección.';
-      let category = isCriticalIssue ? 'Riesgo Normativo / Caso Crítico' : 'Reincidencia Directiva';
-      let recAction = 'Convocar de inmediato a mesa de mediación presencial y activar el protocolo correspondiente.';
-
-      if (isMandatoryCeoKeyword) {
-        if (text.includes('cte')) {
-          category = 'Gobernanza Institucional / Consejo Técnico Escolar (CTE)';
-          why = 'Asunto oficial de Consejo Técnico Escolar (CTE). Por mandato institucional requiere atención, preparación y seguimiento directo e indelegable del CEO.';
-          recAction = 'Confirmar agenda de Dirección General, coordinar concentrados de evaluación y girar instrucción ejecutiva.';
-        } else {
-          category = 'Supervisión Oficial SEP / Asunto Regulatorio';
-          why = 'Comunicación o requerimiento oficial vinculado a Supervisión Escolar / SEP. Requiere intervención y resolución directa e indelegable de Dirección General / CEO.';
-          recAction = 'Atención directa inmediata de Dirección General / CEO y desahogo de requerimiento ante la autoridad educativa.';
-        }
-      } else if (isInjuryEmergency || text.includes('herido') || text.includes('lesion') || text.includes('accidente')) {
-        category = 'Accidente Escolar / Salvaguarda y Seguridad de Alumnos';
-        why = 'Incidencia crítica de salvaguarda y protección física escolar: Reporte de alumno herido/lesionado en instalaciones del plantel. Requiere activación inmediata del protocolo de urgencias médicas escolares, valoración clínica y notificación formal a tutores.';
-        recAction = 'Activar protocolo de urgencias médicas escolares de inmediato, resguardar al alumno y contactar a tutores legales para notificación oficial.';
-      } else if (isCteEmergency || text.includes('cte') || text.includes('consejo')) {
-        category = 'Gobernanza Institucional / Consejo Técnico Escolar (CTE)';
-        why = 'Convocatoria oficial urgente a sesión de Consejo Técnico Escolar (CTE) programada con fecha y hora crítica. Requiere confirmación y preparación directiva.';
-        recAction = 'Confirmar asistencia de Dirección General y girar instrucción ejecutiva a coordinaciones académicas para integrar expediente pedagógico.';
-      } else if (text.includes('audiencia')) {
-        category = 'Audiencia Directiva / Mediación Escolar';
-        why = 'Solicitud de audiencia presencial o intervención con Dirección General por situación escolar prioritaria.';
-        recAction = 'Agendar audiencia directiva en Calendario Escolar y convocar a las partes.';
-      } else if (isReincidenceExceeded) {
-        why = `Alerta de reincidencia elevada: La familia o remitente acumula ${reincidence} comunicaciones sobre este caso sin resolución conforme.`;
-      }
-
-      return {
-        quadrant: 'ATENCION_CEO',
-        urgency: isCriticalIssue ? 'CRITICA' : 'ALTA',
-        category,
-        assigned_department: 'Dirección General / CEO',
-        assigned_role: 'Dirección General / CEO',
-        sla_hours: 12,
-        why_shown_to_director: why,
-        recommended_action: recAction
-      };
-    }
-
-    // =========================================================================
-    // CUADRANTE 2: DELEGADO_CON_SLA 🟡
-    // Configurable dinámicamente por la Dirección General (Ajustes de Delegados)
-    // =========================================================================
-    const settings = CeoEmailSettingsService.getSettings(tId);
-
-    // Cobranza / Facturación
-    if (text.includes('factura') || text.includes('cfdi') || text.includes('colegiatura') || text.includes('recargo') || text.includes('pago')) {
-      const cobranzaDel = settings.delegates.find(d => d.sectionKey === 'cobranza') || settings.delegates[0];
-      return {
-        quadrant: 'DELEGADO_CON_SLA',
-        urgency: 'MEDIA',
-        category: 'Cobranza y Facturación',
-        assigned_department: cobranzaDel.sectionName,
-        assigned_role: cobranzaDel.delegateName,
-        delegate_email: cobranzaDel.delegateEmail,
-        sla_hours: cobranzaDel.slaHours,
-        why_shown_to_director: `Trámite financiero o aclaración derivado a ${cobranzaDel.delegateName} (${cobranzaDel.delegateEmail}) con SLA de ${cobranzaDel.slaHours}h.`,
-        recommended_action: `Derivar a ${cobranzaDel.delegateName} (${cobranzaDel.delegateEmail}) con plazo de ${cobranzaDel.slaHours} horas y registrar en bitácora.`
-      };
-    }
-
-    // Control Escolar / Trámites SEP
-    if (text.includes('boleta') || text.includes('kardex') || text.includes('constancia') || text.includes('certificado') || text.includes('revalidación') || text.includes('inscripción')) {
-      const escolarDel = settings.delegates.find(d => d.sectionKey === 'control_escolar') || settings.delegates[0];
-      return {
-        quadrant: 'DELEGADO_CON_SLA',
-        urgency: 'MEDIA',
-        category: 'Control Escolar y Trámites',
-        assigned_department: escolarDel.sectionName,
-        assigned_role: escolarDel.delegateName,
-        delegate_email: escolarDel.delegateEmail,
-        sla_hours: escolarDel.slaHours,
-        why_shown_to_director: `Solicitud documental que compete a los procedimientos de ${escolarDel.sectionName} a cargo de ${escolarDel.delegateName} (${escolarDel.delegateEmail}).`,
-        recommended_action: `Canalizar a ${escolarDel.delegateName} para cotejo de expediente y emisión con sello oficial en un plazo de ${escolarDel.slaHours}h.`
-      };
-    }
-
-    // Prefectura / Logística y Transporte
-    if (text.includes('transporte') || text.includes('ruta 4') || text.includes('ruta') || text.includes('camión') || text.includes('uniforme') || text.includes('inasistencia') || text.includes('chofer')) {
-      const transporteDel = settings.delegates.find(d => d.sectionKey === 'transporte') || settings.delegates[0];
-      return {
-        quadrant: 'DELEGADO_CON_SLA',
-        urgency: 'MEDIA',
-        category: 'Logística y Transporte',
-        assigned_department: transporteDel.sectionName,
-        assigned_role: transporteDel.delegateName,
-        delegate_email: transporteDel.delegateEmail,
-        sla_hours: transporteDel.slaHours,
-        why_shown_to_director: `Incidencia operativa de logística o servicio de transporte canalizada a ${transporteDel.delegateName} (${transporteDel.delegateEmail}).`,
-        recommended_action: `Auditar tiempos de recorrido y canalizar con ${transporteDel.delegateName} para resolución oficial en ${transporteDel.slaHours}h.`
-      };
-    }
-
-    // Servicio Médico Escolar
-    if (text.includes('médico') || text.includes('medico') || text.includes('enfermería') || text.includes('enfermeria') || text.includes('receta') || text.includes('alergia') || text.includes('medicamento')) {
-      const medicoDel = settings.delegates.find(d => d.sectionKey === 'servicio_medico') || settings.delegates[0];
-      return {
-        quadrant: 'DELEGADO_CON_SLA',
-        urgency: 'MEDIA',
-        category: 'Servicio Médico y Salud Escolar',
-        assigned_department: medicoDel.sectionName,
-        assigned_role: medicoDel.delegateName,
-        delegate_email: medicoDel.delegateEmail,
-        sla_hours: medicoDel.slaHours,
-        why_shown_to_director: `Notificación clínica o seguimiento de salud escolar asignado a ${medicoDel.delegateName} (${medicoDel.delegateEmail}).`,
-        recommended_action: `Atención clínica y seguimiento por ${medicoDel.delegateName} con notificación en ${medicoDel.slaHours}h.`
-      };
-    }
-
-    // Coordinación Académica y Convivencia
-    if (text.includes('tarea') || text.includes('examen') || text.includes('profesor') || text.includes('temario') || text.includes('materia') || text.includes('calificación')) {
-      const acadDel = settings.delegates.find(d => d.sectionKey === 'convivencia') || settings.delegates[0];
-      return {
-        quadrant: 'DELEGADO_CON_SLA',
-        urgency: 'MEDIA',
-        category: 'Gestión Académica',
-        assigned_department: acadDel.sectionName,
-        assigned_role: acadDel.delegateName,
-        delegate_email: acadDel.delegateEmail,
-        sla_hours: acadDel.slaHours,
-        why_shown_to_director: `Consulta sobre el desarrollo de clase o contenidos evaluativos derivada a ${acadDel.delegateName} (${acadDel.delegateEmail}).`,
-        recommended_action: `Instruir al titular del grupo a través de ${acadDel.delegateName} a brindar retroalimentación puntual en ${acadDel.slaHours}h.`
-      };
-    }
-
-    // CUADRANTE 3: INFORMATIVO 🔵
     return {
-      quadrant: 'INFORMATIVO',
-      urgency: 'BAJA',
-      category: 'Comunicación Institucional / Informativo',
-      why_shown_to_director: 'Comunicado general, felicitación o notificación que no requiere gestión ejecutiva.',
-      recommended_action: 'Archivar con acuse de recibo estandarizado.'
+      quadrant: zeroToken.quadrant,
+      urgency: zeroToken.urgency,
+      category: zeroToken.category,
+      assigned_department: zeroToken.assigned_department,
+      assigned_role: zeroToken.assigned_role,
+      delegate_email: zeroToken.delegate_email,
+      sla_hours: zeroToken.sla_hours,
+      why_shown_to_director: zeroToken.why_shown_to_director,
+      recommended_action: zeroToken.recommended_action
     };
   }
 

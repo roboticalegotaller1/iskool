@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { RawGmailItem } from '@/app/api/mail/raw-inbox/route';
 import { InboundMailSpoolService } from './inboundMailSpool';
+import { HermeticEmailBrainService } from './hermetic-email-brain.service';
 
 export interface GoogleTokens {
   accessToken: string;
@@ -331,12 +332,17 @@ export class GoogleOAuthService {
           const isStarred = (detail.labelIds || []).includes('STARRED');
           const isImportant = (detail.labelIds || []).includes('IMPORTANT');
 
-          // Categorización y Reglas Mandatorias del CEO
-          const textToEvaluate = `${subject} ${bodyText}`.toLowerCase();
-          const isMandatoryCeo =
-            /\b(supervision|supervisión|sep|cte)\b/i.test(textToEvaluate) ||
-            textToEvaluate.includes('supervis') ||
-            textToEvaluate.includes('consejo técnico');
+          // Clasificación Zero-Tokens en los 4 Cuadrantes Canónicos (0 tokens)
+          const triage = HermeticEmailBrainService.classifyZeroTokenEmail(
+            subject,
+            bodyText || detail.snippet || '',
+            senderEmail,
+            senderName,
+            undefined,
+            tenantId
+          );
+
+          const isCeo = triage.quadrant === 'ATENCION_CEO';
 
           const rawItem: RawGmailItem = {
             id: `gmail-${detail.id}`,
@@ -350,34 +356,21 @@ export class GoogleOAuthService {
             timestamp: dateHeader ? new Date(dateHeader).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Ahora',
             is_unread: isUnread,
             is_starred: isStarred,
-            is_important: isImportant || isMandatoryCeo,
-            category: 'principal',
-            triage_badge: isMandatoryCeo
-              ? {
-                  quadrant: 'ATENCION_CEO',
-                  label: '🔴 ATENCIÓN INMEDIATA CEO',
-                  color: 'bg-red-50 text-red-700 border-red-200'
-                }
-              : {
-                  quadrant: 'DELEGADO_CON_PLAZO',
-                  label: '🟡 DELEGADO OPERATIVO',
-                  color: 'bg-amber-50 text-amber-700 border-amber-200'
-                }
+            is_important: isCeo,
+            category: triage.gmailCategory,
+            triage_badge: {
+              quadrant: (triage.quadrant === 'DELEGADO_CON_SLA' ? 'DELEGADO_CON_PLAZO' : triage.quadrant) as any,
+              label: triage.badge.label,
+              color: triage.badge.color
+            }
           };
 
           emailItems.push(rawItem);
 
-          // También alimentar el spool del CEO para que se refleje en la Bandeja Inteligente
-          InboundMailSpoolService.enqueueEmail(tenantId, {
-            sender_name: rawItem.sender_name,
-            sender_email: rawItem.sender_email,
-            recipient_email: accountEmail,
-            subject: rawItem.subject,
-            body_text: rawItem.body_text,
-            reincidence_count: 1
-          });
-          if (tenantId !== 'sch-default') {
-            InboundMailSpoolService.enqueueEmail('sch-default', {
+          // REGLA SUPREMA: En la Bandeja Inteligente del CEO SOLO deben aparecer correos de ATENCIÓN INMEDIATA CEO.
+          // Los delegados, informativos y spam NO deben encolarse en el spool de asuntos ejecutivos.
+          if (isCeo) {
+            InboundMailSpoolService.enqueueEmail(tenantId, {
               sender_name: rawItem.sender_name,
               sender_email: rawItem.sender_email,
               recipient_email: accountEmail,
@@ -385,6 +378,16 @@ export class GoogleOAuthService {
               body_text: rawItem.body_text,
               reincidence_count: 1
             });
+            if (tenantId !== 'sch-default') {
+              InboundMailSpoolService.enqueueEmail('sch-default', {
+                sender_name: rawItem.sender_name,
+                sender_email: rawItem.sender_email,
+                recipient_email: accountEmail,
+                subject: rawItem.subject,
+                body_text: rawItem.body_text,
+                reincidence_count: 1
+              });
+            }
           }
         } catch (itemErr) {
           console.warn('Error procesando correo individual de Gmail:', itemErr);

@@ -8,7 +8,8 @@ import {
   TriageResult, 
   InboundEmailDTO, 
   EmailQuadrant,
-  HermeticAuthSession 
+  HermeticAuthSession,
+  LearnedTriageMemoryService
 } from '@/lib/services/hermetic-email-brain.service';
 import {
   Mail,
@@ -73,6 +74,8 @@ import {
   ArrowLeft,
   MailOpen,
   ShieldAlert,
+  Info,
+  Ban,
   Save
 } from 'lucide-react';
 import { RawGmailItem } from '@/app/api/mail/raw-inbox/route';
@@ -420,9 +423,9 @@ export function CEOEmailCommunicationsModal({
   // Pestañas principales de la consola (Bandeja, Calendario, Laboratorio, Google, Redactar, Directorio, Bitácora, Bandeja de Entrada, ROI, Ajustes)
   const [activeTab, setActiveTab] = useState<'inbox' | 'laboratorio' | 'google' | 'redactar' | 'calendario' | 'directorio' | 'bitacora' | 'raw_inbox' | 'roi' | 'ajustes'>('inbox');
   
-  // Filtro en Bandeja Inteligente: Solo Atención CEO y Delegados (Informativos van a Bandeja de Entrada)
+  // Filtro en Bandeja Inteligente: Exclusivamente Atención Inmediata CEO (0 Delegados, 0 Informativos, 0 Spam)
   const [inboxFilter, setInboxFilter] = useState<'USABLE' | 'DISCARDED'>('USABLE');
-  const [usableSubFilter, setUsableSubFilter] = useState<'ALL' | 'ATENCION_CEO' | 'DELEGADO_CON_SLA'>('ALL');
+  const [usableSubFilter, setUsableSubFilter] = useState<'ALL' | 'CRITICA' | 'SEP'>('ALL');
   
   // Cuenta de Google conectada con aislamiento y persistencia hermética por tenant
   const emailStorageKey = `iskool_connected_email_${currentTenantId}`;
@@ -1021,14 +1024,12 @@ export function CEOEmailCommunicationsModal({
   // Modal de "Ponte al día conmigo" (Executive Catchup)
   const [showCatchupModal, setShowCatchupModal] = useState<boolean>(false);
 
-  // Normalizador mandatorio de reglas CEO para correos recibidos
-  // Normalizador mandatorio de reglas CEO para correos recibidos (Reglas VIP + Supervisión + Palabras Clave)
+  // Normalizador mandatorio de reglas CEO para correos recibidos (Reglas VIP + Supervisión + 4 Cuadrantes Zero-Tokens)
   const normalizeRawEmailCeoRules = useCallback((item: RawGmailItem): RawGmailItem => {
-    const text = `${item.subject || ''} ${item.body_text || ''} ${item.snippet || ''}`.toLowerCase();
     const senderEmail = (item.sender_email || '').toLowerCase().trim();
     const senderName = (item.sender_name || '').toLowerCase().trim();
 
-    // 1. Reglas VIP directas de Ajustes
+    // 1. Reglas VIP directas de Ajustes (Máxima prioridad de Dirección General)
     const activeVips: VipEmailRule[] = settingsData?.vipEmails || [];
     const isVipMatch = activeVips.some((v: VipEmailRule) =>
       v.enabled !== false &&
@@ -1036,18 +1037,7 @@ export function CEOEmailCommunicationsModal({
        (v.contactName && senderName.includes(v.contactName.toLowerCase().trim())))
     );
 
-    // 2. Palabras clave mandatorias de Dirección General / Supervisión
-    const isMandatoryCeo =
-      isVipMatch ||
-      /\b(supervision|supervisión|sep|cte|acoso|denuncia|inspeccion|inspección|urgente)\b/i.test(text) ||
-      text.includes('supervis') ||
-      text.includes('consejo técnico') ||
-      text.includes('atencion inmediata') ||
-      text.includes('atención inmediata') ||
-      text.includes('atención ceo') ||
-      item.triage_badge?.quadrant === 'ATENCION_CEO';
-
-    if (isMandatoryCeo) {
+    if (isVipMatch) {
       return {
         ...item,
         is_important: true,
@@ -1059,8 +1049,30 @@ export function CEOEmailCommunicationsModal({
         }
       };
     }
-    return item;
-  }, [settingsData?.vipEmails]);
+
+    // 2. Clasificación Zero-Tokens Heurística Canónica en 4 Cuadrantes (0 Tokens)
+    const triage = HermeticEmailBrainService.classifyZeroTokenEmail(
+      item.subject,
+      item.body_text || item.snippet,
+      item.sender_email,
+      item.sender_name,
+      settingsData?.vipEmails,
+      currentTenantId
+    );
+
+    const isCeo = triage.quadrant === 'ATENCION_CEO';
+
+    return {
+      ...item,
+      is_important: isCeo,
+      category: triage.gmailCategory,
+      triage_badge: {
+        quadrant: (triage.quadrant === 'DELEGADO_CON_SLA' ? 'DELEGADO_CON_PLAZO' : triage.quadrant) as any,
+        label: triage.badge.label,
+        color: triage.badge.color
+      }
+    };
+  }, [settingsData?.vipEmails, currentTenantId]);
 
   // =========================================================================
   // BANDEJA DE ENTRADA (VISTA GMAIL EN TIEMPO REAL & CARGA BRUTA DE CORREOS)
@@ -1125,7 +1137,7 @@ export function CEOEmailCommunicationsModal({
   }, [rawEmailsStorageKey, currentTenantId, isOpen, connectedEmail, authUsername]);
 
   const [selectedRawEmailId, setSelectedRawEmailId] = useState<string | null>(null);
-  const [rawEmailCategory, setRawEmailCategory] = useState<'todos' | 'principal' | 'actualizaciones' | 'promociones' | 'spam'>('todos');
+  const [rawEmailCategory, setRawEmailCategory] = useState<'todos' | 'principal' | 'actualizaciones' | 'informativo' | 'promociones' | 'spam'>('todos');
   const [rawEmailSearchQuery, setRawEmailSearchQuery] = useState<string>('');
   const [selectedRawEmailIds, setSelectedRawEmailIds] = useState<string[]>([]);
   const [rawReplyDraft, setRawReplyDraft] = useState<string>('');
@@ -1201,6 +1213,78 @@ export function CEOEmailCommunicationsModal({
     handleDeleteRawEmails(ids);
     onTriggerToast(`✓ ${ids.length} correo(s) archivado(s).`);
   };
+
+  // Reclasificación Zero-Tokens con Retroalimentación Directiva y Aprendizaje Local Adaptativo (0 Tokens)
+  const handleReclassifyEmail = useCallback((
+    email: RawGmailItem,
+    targetQuadrant: EmailQuadrant,
+    customReason?: string
+  ) => {
+    const senderEmail = (email.sender_email || '').toLowerCase().trim();
+    const domain = senderEmail.split('@')[1] || '';
+    const isGenericDomain = ['gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com', 'icloud.com'].includes(domain);
+    const patternType = (!isGenericDomain && domain) ? 'domain' : 'sender';
+    const patternValue = patternType === 'domain' ? domain : senderEmail;
+
+    // 1. Guardar regla de aprendizaje local permanente (0 tokens)
+    LearnedTriageMemoryService.learnPattern(currentTenantId, {
+      patternType,
+      patternValue,
+      targetQuadrant,
+      reason: customReason || `Retroalimentación directa de Dirección General: clasificado como ${targetQuadrant}`,
+      learnedFromEmailId: email.id
+    });
+
+    // 2. Si se marcó como SPAM, INFORMATIVO o DELEGADO, remover inmediatamente de la Bandeja Inteligente
+    if (targetQuadrant !== 'ATENCION_CEO') {
+      setMattersList(prev => prev.filter(m => {
+        const isMatch = m.id === `mat-live-${email.id}` || m.title.trim().toLowerCase() === email.subject.trim().toLowerCase();
+        return !isMatch;
+      }));
+    }
+
+    // 3. Actualizar la lista en crudo con la nueva clasificación
+    setRawEmailsList(prev => {
+      const updated = prev.map(item => {
+        const matches = item.id === email.id || 
+          (patternType === 'domain' && item.sender_email.toLowerCase().endsWith(`@${domain}`)) ||
+          (patternType === 'sender' && item.sender_email.toLowerCase() === senderEmail);
+
+        if (matches) {
+          const badgeMap: Record<EmailQuadrant, { label: string; color: string; category: RawGmailItem['category'] }> = {
+            ATENCION_CEO: { label: '🔴 ATENCIÓN INMEDIATA CEO', color: 'bg-red-50 text-red-700 border-red-200', category: 'principal' },
+            DELEGADO_CON_SLA: { label: '🟡 DELEGADO OPERATIVO', color: 'bg-amber-50 text-amber-700 border-amber-200', category: 'actualizaciones' },
+            INFORMATIVO: { label: '🔵 INFORMATIVO', color: 'bg-blue-50 text-blue-700 border-blue-200', category: 'actualizaciones' },
+            SPAM_DESCARTADO: { label: '🟣 SPAM / PROMOCIÓN', color: 'bg-purple-50 text-purple-700 border-purple-200', category: 'promociones' }
+          };
+          const b = badgeMap[targetQuadrant];
+          return {
+            ...item,
+            category: b.category,
+            is_important: targetQuadrant === 'ATENCION_CEO',
+            triage_badge: {
+              quadrant: (targetQuadrant === 'DELEGADO_CON_SLA' ? 'DELEGADO_CON_PLAZO' : targetQuadrant) as any,
+              label: b.label,
+              color: b.color
+            }
+          };
+        }
+        return item;
+      });
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(rawEmailsStorageKey, JSON.stringify(updated));
+      }
+      return updated;
+    });
+
+    const quadrantNames: Record<EmailQuadrant, string> = {
+      ATENCION_CEO: '🔴 Atención Inmediata CEO',
+      DELEGADO_CON_SLA: '🟡 Delegado Operativo',
+      INFORMATIVO: '🔵 Informativo',
+      SPAM_DESCARTADO: '🟣 Spam / Promoción'
+    };
+    onTriggerToast(`🧠 Aprendizaje local (0 tokens): ${email.sender_name || patternValue} fue aprendido como ${quadrantNames[targetQuadrant]}.`);
+  }, [currentTenantId, rawEmailsStorageKey, onTriggerToast]);
 
   const handleOpenRawEmailDetail = (emailItem: RawGmailItem) => {
     setSelectedRawEmailId(emailItem.id);
@@ -1588,35 +1672,74 @@ ${schoolName}`
 
   // =========================================================================
   // PUENTE AUTÓNOMO DE ALTA FIDELIDAD: SINCRONIZACIÓN REACTIVA INBOX REAL -> BANDEJA INTELIGENTE
-  // Garantiza que el 100% de los correos clasificados como ATENCIÓN INMEDIATA CEO o DELEGADOS
-  // se reflejen de inmediato en la Bandeja Inteligente, con prioridad ejecutiva.
+  // REGLA SUPREMA: En la Bandeja Inteligente del CEO SOLO deben aparecer asuntos de ATENCIÓN INMEDIATA CEO.
+  // Queda estrictamente prohibido que aparezcan correos delegados, informativos o spam.
   // =========================================================================
   useEffect(() => {
     if (!rawEmailsList || rawEmailsList.length === 0) return;
 
-    // 1. Normalizar correos aplicando las reglas VIP de Ajustes y palabras clave mandatorias
+    // 1. Normalizar correos aplicando reglas VIP y clasificador Zero-Tokens (4 cuadrantes)
     const normalizedRaw = rawEmailsList.map((item) => normalizeRawEmailCeoRules(item));
 
-    // 2. Filtrar los que deben aparecer en Bandeja Inteligente
-    const candidates = normalizedRaw.filter(email => {
-      const q = email.triage_badge?.quadrant;
-      return q === 'ATENCION_CEO' || q === 'DELEGADO_CON_PLAZO' || email.is_important;
-    });
-
-    if (candidates.length === 0) return;
+    // 2. Filtrar candidatos para Bandeja Inteligente: ESTRICTAMENTE ATENCIÓN INMEDIATA CEO
+    const candidates = normalizedRaw.filter(email => email.triage_badge?.quadrant === 'ATENCION_CEO');
 
     setMattersList((prevMatters) => {
       let hasChanges = false;
-      const updatedMatters = [...prevMatters];
-
       const norm = (s: string) => (s || '').toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+
+      // Identificar asuntos que pertenecen a spam, promociones, informativos o delegados para purgarlos
+      const nonCeoSubjects = normalizedRaw
+        .filter(email => email.triage_badge?.quadrant !== 'ATENCION_CEO')
+        .map(email => norm(email.subject));
+
+      const isSpamOrPromoTitle = (title: string) => {
+        const t = (title || '').toLowerCase();
+        return (
+          t.includes('gamma') ||
+          t.includes('cama matrimonial') ||
+          t.includes('chicv') ||
+          t.includes('carlos durán') ||
+          t.includes('carlos duran') ||
+          t.includes('página web') ||
+          t.includes('pagina web') ||
+          t.includes('inversión financiera') ||
+          t.includes('inversion financiera') ||
+          t.includes('financial stocks') ||
+          t.includes('webinar') ||
+          t.includes('festivalciberlatam') ||
+          t.includes('jmbe live') ||
+          t.includes('prime opinion') ||
+          t.includes('cinépolis') ||
+          t.includes('cinepolis') ||
+          t.includes('asm career') ||
+          t.includes('puntos de play')
+        );
+      };
+
+      // Purgar de la Bandeja Inteligente cualquier asunto que no sea ATENCIÓN INMEDIATA CEO
+      const filteredPrev = prevMatters.filter(m => {
+        const nTitle = norm(m.title);
+        if (isSpamOrPromoTitle(nTitle)) {
+          hasChanges = true;
+          return false;
+        }
+        if (nonCeoSubjects.includes(nTitle)) {
+          hasChanges = true;
+          return false;
+        }
+        if (m.destination !== 'ATENCION_CEO') {
+          hasChanges = true;
+          return false;
+        }
+        return true;
+      });
+
+      const updatedMatters = [...filteredPrev];
 
       for (const email of candidates) {
         const normSub = norm(email.subject);
         if (!normSub) continue;
-
-        const isCeo = email.triage_badge?.quadrant === 'ATENCION_CEO' || email.is_important;
-        const targetDestination = isCeo ? 'ATENCION_CEO' : 'DELEGADO_CON_SLA';
 
         // Buscar coincidencia previa por ID o por Asunto
         const existingIdx = updatedMatters.findIndex(m => {
@@ -1624,18 +1747,7 @@ ${schoolName}`
           return norm(m.title) === normSub;
         });
 
-        if (existingIdx >= 0) {
-          const existing = updatedMatters[existingIdx];
-          if (isCeo && existing.destination !== 'ATENCION_CEO') {
-            updatedMatters[existingIdx] = {
-              ...existing,
-              destination: 'ATENCION_CEO',
-              urgency: 'CRITICA',
-              why_shown: 'Actualizado a Atención Inmediata CEO por regla VIP / Supervisión.'
-            };
-            hasChanges = true;
-          }
-        } else {
+        if (existingIdx === -1) {
           // No existe: sintetizar asunto y agregarlo con prioridad al inicio
           const senderEmail = (email.sender_email || '').toLowerCase();
           const senderName = (email.sender_name || '').toLowerCase();
@@ -1652,15 +1764,13 @@ ${schoolName}`
           if (isVip) category = 'Contacto VIP Directivo';
           else if (isSep) category = 'Supervisión SEP y Legal';
           else if (email.subject.toLowerCase().includes('convivencia') || email.subject.toLowerCase().includes('acoso')) category = 'Convivencia / Caso Crítico Nivel 3';
-          else if (email.subject.toLowerCase().includes('factur') || email.subject.toLowerCase().includes('pago')) category = 'Financiero & Cobranza CFDI';
+          else if (email.subject.toLowerCase().includes('herido') || email.subject.toLowerCase().includes('accidente')) category = 'Accidente Escolar / Salvaguarda';
 
           let whyShown = '';
           if (isVip) {
             whyShown = `Contacto VIP Prioritario registrado en Ajustes Directivos. Remitente: ${email.sender_name} (${email.sender_email}). Facultades reservadas para Dirección General.`;
-          } else if (isCeo) {
-            whyShown = `Correo prioritario en tiempo real clasificado por el Motor de IA Pedagógica como Atención Inmediata CEO (${category}).`;
           } else {
-            whyShown = 'Solicitud canalizada con compromiso de tiempo (SLA 24h).';
+            whyShown = `Correo prioritario en tiempo real clasificado por el Asistente Pedagógico IA como Atención Inmediata CEO (${category}).`;
           }
 
           const cleanSnippet = (email.snippet || email.body_text || '').replace(/\s+/g, ' ').trim();
@@ -1677,18 +1787,16 @@ ${schoolName}`
             title: email.subject,
             summary,
             category,
-            urgency: isCeo ? 'CRITICA' : 'MEDIA',
-            destination: targetDestination,
+            urgency: 'CRITICA',
+            destination: 'ATENCION_CEO',
             why_shown: whyShown,
             reincidence_count: 1,
-            recommended_action: isCeo
-              ? 'Revisar expediente completo y validar borrador de respuesta oficial de Dirección General.'
-              : 'Canalizar al área delegada correspondiente con plazo SLA.',
+            recommended_action: 'Revisar expediente completo y validar borrador de respuesta oficial de Dirección General.',
             suggested_draft_reply: defaultDraft,
-            assigned_role: isCeo ? 'Dirección General / CEO' : 'Coordinación Delegada',
-            assigned_email: isCeo ? email.recipient_email : undefined,
-            sla_hours: isCeo ? 12 : 24,
-            sla_remaining_text: isCeo ? '⏱️ 12h restantes' : '⏱️ 24h restantes',
+            assigned_role: 'Dirección General / CEO',
+            assigned_email: email.recipient_email,
+            sla_hours: 12,
+            sla_remaining_text: '⏱️ 12h restantes',
             sender_name: email.sender_name,
             sender_email: email.sender_email,
             provenance_doc: `Buzón Institucional en Vivo (${email.sender_email})`,
@@ -3326,28 +3434,23 @@ Comité de Seguridad y Protección Escolar`
     onTriggerToast('Abriendo cliente de correo institucional...');
   };
 
-  // REGLA OBLIGATORIA: En Bandeja Inteligente SOLO deben aparecer Atención CEO y Delegados.
-  // Los demás permanecen en Bandeja de Entrada (raw_inbox) pero NO aparecen en Bandeja Inteligente.
+  // REGLA SUPREMA MANDATORIA: En Bandeja Inteligente SOLO deben aparecer correos de "Atención Inmediata CEO".
+  // Los correos delegados, informativos y spam permanecen en Bandeja de Entrada pero NUNCA en Bandeja Inteligente.
   const intelligentMatters = useMemo(() => {
-    return mattersList.filter(
-      (m) =>
-        m.destination === 'ATENCION_CEO' ||
-        m.destination === 'DELEGADO_CON_SLA' ||
-        (m.destination as any) === 'DELEGADO_CON_PLAZO'
-    );
+    return mattersList.filter((m) => m.destination === 'ATENCION_CEO');
   }, [mattersList]);
 
-  // Filtrado de asuntos en pestaña Inbox
+  // Filtrado de asuntos en pestaña Bandeja Inteligente (Exclusivamente CEO: Todos, Crítica/Urgente, Supervisión SEP)
   const filteredMatters = useMemo(() => {
-    if (usableSubFilter === 'ALL') return intelligentMatters;
-    if (usableSubFilter === 'ATENCION_CEO') {
-      return intelligentMatters.filter((m) => m.destination === 'ATENCION_CEO');
+    if (usableSubFilter === 'CRITICA') {
+      return intelligentMatters.filter((m) => m.urgency === 'CRITICA');
     }
-    if (usableSubFilter === 'DELEGADO_CON_SLA') {
-      return intelligentMatters.filter(
-        (m) =>
-          m.destination === 'DELEGADO_CON_SLA' ||
-          (m.destination as any) === 'DELEGADO_CON_PLAZO'
+    if (usableSubFilter === 'SEP') {
+      return intelligentMatters.filter((m) =>
+        m.category.toLowerCase().includes('sep') ||
+        m.category.toLowerCase().includes('supervis') ||
+        m.title.toLowerCase().includes('sep') ||
+        m.title.toLowerCase().includes('supervis')
       );
     }
     return intelligentMatters;
@@ -3894,29 +3997,29 @@ Comité de Seguridad y Protección Escolar`
                           usableSubFilter === 'ALL' ? 'bg-slate-900 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                         }`}
                       >
-                        Todos ({intelligentMatters.length})
+                        Todos Atención CEO ({intelligentMatters.length})
                       </button>
                       <button
-                        onClick={() => setUsableSubFilter('ATENCION_CEO')}
+                        onClick={() => setUsableSubFilter('CRITICA')}
                         className={`px-3 py-1.5 rounded-xl text-[11px] font-bold cursor-pointer transition-colors flex items-center gap-1.5 ${
-                          usableSubFilter === 'ATENCION_CEO' ? 'bg-red-600 text-white shadow-xs' : 'bg-red-50 text-red-700 hover:bg-red-100'
+                          usableSubFilter === 'CRITICA' ? 'bg-red-600 text-white shadow-xs' : 'bg-red-50 text-red-700 hover:bg-red-100'
                         }`}
                       >
-                        <span>🔴 Atención CEO ({intelligentMatters.filter(m => m.destination === 'ATENCION_CEO').length})</span>
+                        <span>🔴 Crítica / Urgente ({intelligentMatters.filter(m => m.urgency === 'CRITICA').length})</span>
                       </button>
                       <button
-                        onClick={() => setUsableSubFilter('DELEGADO_CON_SLA')}
+                        onClick={() => setUsableSubFilter('SEP')}
                         className={`px-3 py-1.5 rounded-xl text-[11px] font-bold cursor-pointer transition-colors flex items-center gap-1.5 ${
-                          usableSubFilter === 'DELEGADO_CON_SLA' ? 'bg-amber-500 text-white shadow-xs' : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+                          usableSubFilter === 'SEP' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
                         }`}
                       >
-                        <span>🟡 Delegados ({intelligentMatters.filter(m => m.destination === 'DELEGADO_CON_SLA' || (m.destination as any) === 'DELEGADO_CON_PLAZO').length})</span>
+                        <span>🏛️ Supervisión SEP ({intelligentMatters.filter(m => m.category.toLowerCase().includes('sep') || m.category.toLowerCase().includes('supervis') || m.title.toLowerCase().includes('sep')).length})</span>
                       </button>
                     </div>
 
                     <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/80">
                       <ShieldCheck className="h-3 w-3 text-emerald-600" />
-                      <span>Filtro VIP: Solo Atención CEO y Delegados (Informativos en Bandeja de Entrada)</span>
+                      <span>Filtro Rector: Solo Atención Inmediata CEO (Delegados, Informativos y Spam en Bandeja de Entrada)</span>
                     </div>
                   </div>
                 )}
@@ -5978,6 +6081,66 @@ Comité de Seguridad y Protección Escolar`
                         </div>
                       ) : null}
 
+                      {/* Barra de Reclasificación y Aprendizaje Local (0 Tokens) */}
+                      <div className="p-3 bg-slate-50 border border-slate-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                        <div className="flex items-center gap-2">
+                          <Zap className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                          <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider">
+                            Reclasificar Triage & Enseñar al Sistema (0 Tokens):
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => handleReclassifyEmail(currentEmail, 'ATENCION_CEO')}
+                            className={`px-2.5 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer border ${
+                              currentEmail.triage_badge?.quadrant === 'ATENCION_CEO'
+                                ? 'bg-red-600 text-white border-red-600 shadow-2xs'
+                                : 'bg-white hover:bg-red-50 text-red-700 border-red-200'
+                            }`}
+                            title="Marcar como Atención Inmediata CEO y enseñar al sistema"
+                          >
+                            🔴 CEO
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleReclassifyEmail(currentEmail, 'DELEGADO_CON_SLA')}
+                            className={`px-2.5 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer border ${
+                              currentEmail.triage_badge?.quadrant === 'DELEGADO_CON_PLAZO' || (currentEmail.triage_badge?.quadrant as any) === 'DELEGADO_CON_SLA'
+                                ? 'bg-amber-500 text-white border-amber-500 shadow-2xs'
+                                : 'bg-white hover:bg-amber-50 text-amber-700 border-amber-200'
+                            }`}
+                            title="Delegar a coordinación operativa"
+                          >
+                            🟡 Delegar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleReclassifyEmail(currentEmail, 'INFORMATIVO')}
+                            className={`px-2.5 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer border ${
+                              currentEmail.triage_badge?.quadrant === 'INFORMATIVO'
+                                ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
+                                : 'bg-white hover:bg-blue-50 text-blue-700 border-blue-200'
+                            }`}
+                            title="Marcar como comunicado meramente informativo"
+                          >
+                            🔵 Informativo
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleReclassifyEmail(currentEmail, 'SPAM_DESCARTADO')}
+                            className={`px-2.5 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer border ${
+                              currentEmail.triage_badge?.quadrant === 'SPAM_DESCARTADO'
+                                ? 'bg-purple-600 text-white border-purple-600 shadow-2xs'
+                                : 'bg-white hover:bg-purple-50 text-purple-700 border-purple-200'
+                            }`}
+                            title="Enviar a Spam y promociones comerciales"
+                          >
+                            🟣 Spam / Promo
+                          </button>
+                        </div>
+                      </div>
+
                       {/* Tarjeta del Remitente */}
                       <div className="flex items-start justify-between gap-3 pt-2 pb-4 border-b border-slate-100">
                         <div className="flex items-center gap-3">
@@ -6061,9 +6224,25 @@ Comité de Seguridad y Protección Escolar`
                   </div>
                 );
               })() : (() => {
+                // Normalizar lista de correos con el clasificador Zero-Tokens (4 divisiones)
+                const normalizedList = rawEmailsList.map(item => normalizeRawEmailCeoRules(item));
+
                 // Filtrado por categoría y por texto de búsqueda
-                const filteredRawEmails = rawEmailsList.filter((email) => {
-                  if (rawEmailCategory !== 'todos' && email.category !== rawEmailCategory) {
+                const filteredRawEmails = normalizedList.filter((email) => {
+                  const qdr = email.triage_badge?.quadrant;
+                  if (rawEmailCategory === 'principal' && qdr !== 'ATENCION_CEO') {
+                    return false;
+                  }
+                  if (rawEmailCategory === 'actualizaciones' && qdr !== 'DELEGADO_CON_PLAZO' && (qdr as any) !== 'DELEGADO_CON_SLA') {
+                    return false;
+                  }
+                  if (rawEmailCategory === 'informativo' && qdr !== 'INFORMATIVO') {
+                    return false;
+                  }
+                  if (rawEmailCategory === 'promociones' && qdr !== 'SPAM_DESCARTADO' && email.category !== 'promociones') {
+                    return false;
+                  }
+                  if (rawEmailCategory === 'spam' && qdr !== 'SPAM_DESCARTADO' && email.category !== 'spam') {
                     return false;
                   }
                   if (rawEmailSearchQuery.trim()) {
@@ -6081,7 +6260,7 @@ Comité de Seguridad y Protección Escolar`
 
                 return (
                   <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-                    {/* Barra de Categorías de Gmail (Principal, Actualizaciones, Promociones, Spam, Todos) */}
+                    {/* Barra de Categorías / Divisiones (Todos, CEO, Delegados, Informativo, Spam) */}
                     <div className="border-b border-slate-200 bg-slate-50/50 flex items-center overflow-x-auto">
                       <button
                         type="button"
@@ -6095,7 +6274,7 @@ Comité de Seguridad y Protección Escolar`
                         <Inbox className="h-3.5 w-3.5" />
                         <span>Todos</span>
                         <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600">
-                          {rawEmailsList.length}
+                          {normalizedList.length}
                         </span>
                       </button>
 
@@ -6108,13 +6287,13 @@ Comité de Seguridad y Protección Escolar`
                             : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
                         }`}
                       >
-                        <Inbox className="h-3.5 w-3.5" />
-                        <span>Principal</span>
-                        {rawEmailsList.some(e => e.category === 'principal' && e.is_unread) && (
+                        <span className="text-red-600">🔴</span>
+                        <span>Atención CEO</span>
+                        {normalizedList.some(e => e.triage_badge?.quadrant === 'ATENCION_CEO' && e.is_unread) && (
                           <span className="w-1.5 h-1.5 rounded-full bg-[#EA4335]" />
                         )}
-                        <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600">
-                          {rawEmailsList.filter(e => e.category === 'principal').length}
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-red-100 text-red-700 font-bold">
+                          {normalizedList.filter(e => e.triage_badge?.quadrant === 'ATENCION_CEO').length}
                         </span>
                       </button>
 
@@ -6127,26 +6306,26 @@ Comité de Seguridad y Protección Escolar`
                             : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
                         }`}
                       >
-                        <Tag className="h-3.5 w-3.5" />
-                        <span>Actualizaciones</span>
-                        <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600">
-                          {rawEmailsList.filter(e => e.category === 'actualizaciones').length}
+                        <span className="text-amber-500">🟡</span>
+                        <span>Delegados</span>
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-100 text-amber-800 font-bold">
+                          {normalizedList.filter(e => e.triage_badge?.quadrant === 'DELEGADO_CON_PLAZO' || (e.triage_badge?.quadrant as any) === 'DELEGADO_CON_SLA').length}
                         </span>
                       </button>
 
                       <button
                         type="button"
-                        onClick={() => setRawEmailCategory('promociones')}
+                        onClick={() => setRawEmailCategory('informativo')}
                         className={`flex items-center gap-2 px-4 py-3 text-xs font-bold transition-all border-b-2 cursor-pointer shrink-0 ${
-                          rawEmailCategory === 'promociones'
+                          rawEmailCategory === 'informativo'
                             ? 'border-[#EA4335] text-[#EA4335] bg-white font-black'
                             : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
                         }`}
                       >
-                        <Sparkles className="h-3.5 w-3.5" />
-                        <span>Promociones</span>
-                        <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600">
-                          {rawEmailsList.filter(e => e.category === 'promociones').length}
+                        <span className="text-blue-600">🔵</span>
+                        <span>Informativos</span>
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-blue-100 text-blue-800 font-bold">
+                          {normalizedList.filter(e => e.triage_badge?.quadrant === 'INFORMATIVO').length}
                         </span>
                       </button>
 
@@ -6154,15 +6333,15 @@ Comité de Seguridad y Protección Escolar`
                         type="button"
                         onClick={() => setRawEmailCategory('spam')}
                         className={`flex items-center gap-2 px-4 py-3 text-xs font-bold transition-all border-b-2 cursor-pointer shrink-0 ${
-                          rawEmailCategory === 'spam'
+                          rawEmailCategory === 'spam' || rawEmailCategory === 'promociones'
                             ? 'border-[#EA4335] text-[#EA4335] bg-white font-black'
                             : 'border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
                         }`}
                       >
-                        <ShieldAlert className="h-3.5 w-3.5" />
-                        <span>Spam / Filtrados</span>
-                        <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600">
-                          {rawEmailsList.filter(e => e.category === 'spam').length}
+                        <span className="text-purple-600">🟣</span>
+                        <span>Spam / Promoción</span>
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-purple-100 text-purple-800 font-bold">
+                          {normalizedList.filter(e => e.triage_badge?.quadrant === 'SPAM_DESCARTADO' || e.category === 'promociones' || e.category === 'spam').length}
                         </span>
                       </button>
                     </div>
@@ -6333,6 +6512,22 @@ Comité de Seguridad y Protección Escolar`
                                 className="hidden group-hover:flex items-center gap-1 shrink-0"
                                 onClick={(e) => e.stopPropagation()}
                               >
+                                <button
+                                  type="button"
+                                  onClick={() => handleReclassifyEmail(item, 'SPAM_DESCARTADO')}
+                                  className="p-1.5 rounded-md hover:bg-purple-100 text-slate-400 hover:text-purple-700 transition-colors"
+                                  title="Marcar como Spam / Promoción y enseñar al sistema (0 tokens)"
+                                >
+                                  <Ban className="h-3.5 w-3.5 text-purple-600" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleReclassifyEmail(item, 'INFORMATIVO')}
+                                  className="p-1.5 rounded-md hover:bg-blue-100 text-slate-400 hover:text-blue-700 transition-colors"
+                                  title="Mover a Informativo (0 tokens)"
+                                >
+                                  <Info className="h-3.5 w-3.5 text-blue-600" />
+                                </button>
                                 <button
                                   type="button"
                                   onClick={() => handleMarkAsReadRawEmails([item.id], !item.is_unread)}
