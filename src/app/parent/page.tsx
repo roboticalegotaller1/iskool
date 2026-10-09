@@ -11,16 +11,94 @@ import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { 
   Heart, MessageSquare, Send, CheckCircle2, 
   Trophy, Flame, Coins, Smile, Landmark, Award, Mic,
-  Bell, Mail, Check, Clock, AlertTriangle, Lock
+  Bell, Mail, Check, Clock, AlertTriangle, Lock,
+  Users, Eye, ChevronDown, UserCheck, Sparkles, X, ShieldCheck
 } from 'lucide-react';
 import { FormattedDate } from '@/components/FormattedDate';
+import { switchCanonicalStudent } from '@/lib/auth/multiTenantSession';
 
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+export interface SystemParentAccount {
+  id: string;
+  family: string;
+  tutorName: string;
+  email: string;
+  studentId: string;
+  studentName: string;
+  campus: string;
+  grade: string;
+  institution: string;
+  isIbime: boolean;
+}
+
+export const SYSTEM_PARENT_ACCOUNTS: SystemParentAccount[] = [
+  {
+    id: 'usr-parent-ibime-01',
+    family: 'Familia Morales Peña',
+    tutorName: 'Fernando Morales Soto',
+    email: 'familia.morales@ibime.edu.mx',
+    studentId: 'std-ibime-montes-01',
+    studentName: 'Iker Santiago Morales Peña',
+    campus: 'Campus Montes (Sede Matriz & CCH)',
+    grade: '5ºA Primaria Bilingüe',
+    institution: 'Instituto Bilingüe IBIME',
+    isIbime: true
+  },
+  {
+    id: 'usr-parent-ibime-ximena',
+    family: 'Familia Castillo Ruiz',
+    tutorName: 'Laura Ruiz de Castillo',
+    email: 'familia.castillo@ibime.edu.mx',
+    studentId: 'std-ibime-lagos-01',
+    studentName: 'Ximena Valentina Castillo Ruiz',
+    campus: 'Campus Lagos de Guadalupe',
+    grade: '4ºB Primaria Bilingüe',
+    institution: 'Instituto Bilingüe IBIME',
+    isIbime: true
+  },
+  {
+    id: 'usr-parent-ibime-regina',
+    family: 'Familia Albarrán Cruz',
+    tutorName: 'Roberto Albarrán',
+    email: 'familia.albarran@ibime.edu.mx',
+    studentId: 'std-ibime-coac-01',
+    studentName: 'Regina Sofía Albarrán Cruz',
+    campus: 'Campus Coacalco',
+    grade: '6ºA Primaria Bilingüe',
+    institution: 'Instituto Bilingüe IBIME',
+    isIbime: true
+  },
+  {
+    id: 'usr-parent-ibime-mateo',
+    family: 'Familia Navas Corona',
+    tutorName: 'Javier Navas',
+    email: 'familia.navas@ibime.edu.mx',
+    studentId: 'std-ibime-san-01',
+    studentName: 'Mateo Alejandro Navas Corona',
+    campus: 'Campus San Cristóbal',
+    grade: '3ºA Secundaria Bilingüe',
+    institution: 'Instituto Bilingüe IBIME',
+    isIbime: true
+  },
+  {
+    id: 'usr-parent-1',
+    family: 'Familia Skywalker',
+    tutorName: 'Carlos Skywalker',
+    email: 'carlos.sky@mail.com',
+    studentId: 'std-pa',
+    studentName: 'Lucas Skywalker',
+    campus: 'Campus Central ISkool',
+    grade: 'Primaria Alta 5º',
+    institution: 'Colegio ISkool',
+    isIbime: false
+  }
+];
+
 export default function ParentDashboard() {
-  const { user, loading } = useAuth();
+  const { user, login, loading } = useAuth();
   const router = useRouter();
 
   const currentStudent = useCurrentStudentProfile();
@@ -43,20 +121,36 @@ export default function ParentDashboard() {
   const markMessageAsRead = useSchoolAdminStore(state => state.markMessageAsRead);
   const replyToParentMessage = useSchoolAdminStore(state => state.replyToParentMessage);
   
-  const currentParent = user || PARENT_SEED;
+  const [selectedParentAccount, setSelectedParentAccount] = useState<SystemParentAccount>(SYSTEM_PARENT_ACCOUNTS[0]);
+  
+  const currentParent = (user && user.role === 'parent') ? user : {
+    id: selectedParentAccount.id,
+    first_name: selectedParentAccount.family,
+    last_name: `(${selectedParentAccount.tutorName})`,
+    email: selectedParentAccount.email,
+    role: 'parent' as const,
+    school_id: selectedParentAccount.isIbime ? 'sch-ibime' : 'sch-jjrosseau',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
 
   const [parentComment, setParentComment] = useState<Record<string, string>>({});
   const [currentTab, setCurrentTab] = useState<'achievements' | 'messages'>('achievements');
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
+  const [showParentModal, setShowParentModal] = useState(false);
+  const [isSwitchingParent, setIsSwitchingParent] = useState(false);
 
   useEffect(() => {
     if (!loading) {
-      if (!user) {
-        router.replace('/login');
-      } else if (user.role === 'student') {
-        router.replace('/student');
-      } else if (user.id === 'usr-parent-ibime-01' || user.email?.includes('morales') || user.email?.includes('ibime')) {
-        // Enlazar al estudiante de IBIME correspondiente (Iker Santiago Morales Peña)
+      if (user && (user.id === 'usr-parent-ibime-01' || user.email?.includes('morales'))) {
+        useStudentStore.getState().switchStudent('std-ibime-montes-01');
+      } else if (user && (user.id === 'usr-parent-ibime-ximena' || user.email?.includes('castillo'))) {
+        useStudentStore.getState().switchStudent('std-ibime-lagos-01');
+      } else if (user && (user.id === 'usr-parent-ibime-regina' || user.email?.includes('albarran'))) {
+        useStudentStore.getState().switchStudent('std-ibime-coac-01');
+      } else if (user && (user.id === 'usr-parent-ibime-mateo' || user.email?.includes('navas'))) {
+        useStudentStore.getState().switchStudent('std-ibime-san-01');
+      } else {
         useStudentStore.getState().switchStudent('std-ibime-montes-01');
       }
     }
@@ -201,52 +295,63 @@ export default function ParentDashboard() {
     );
   }
 
-  const isParentOrAdmin = user && ['parent', 'tutor', 'admin', 'superadmin', 'owner'].includes(user.role);
+  const isParentOrAdmin = user && ['parent', 'tutor', 'admin', 'superadmin', 'owner', 'director', 'coordinator', 'teacher'].includes(user.role);
 
-  if (!isParentOrAdmin) {
-    const getRedirectInfo = () => {
-      switch (user?.role) {
-        case 'student':
-          return { label: 'Ir a mi Portal de Alumno', path: '/student' };
-        case 'teacher':
-          return { label: 'Ir a mi Portal Docente', path: '/teacher' };
-        case 'coordinator':
-          return { label: 'Ir a mi Portal de Coordinador', path: '/coordinator' };
-        case 'director':
-          return { label: 'Ir a mi Portal de Director', path: '/director' };
-        case 'billing':
-          return { label: 'Ir a mi Portal de Cobranza', path: '/coordinator/billing' };
-        default:
-          return { label: 'Iniciar Sesión', path: '/login' };
+  const handleSwitchParentAccount = async (account: SystemParentAccount) => {
+    setIsSwitchingParent(true);
+    setSelectedParentAccount(account);
+    try {
+      await switchCanonicalStudent(account.studentId);
+      if (login) {
+        await login(account.email);
       }
-    };
+      useStudentStore.getState().switchStudent(account.studentId);
+    } catch (err) {
+      console.error('Error switching parent account:', err);
+    } finally {
+      setIsSwitchingParent(false);
+      setShowParentModal(false);
+    }
+  };
 
-    const redirectInfo = getRedirectInfo();
-
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950 text-white p-6">
-        <div className="max-w-md w-full p-8 rounded-3xl bg-zinc-900 border border-white/10 text-center space-y-4 shadow-2xl">
-          <div className="h-14 w-14 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 mx-auto flex items-center justify-center">
-            <Lock className="h-7 w-7" />
-          </div>
-          <h2 className="text-lg font-black text-white">Acceso Restringido</h2>
-          <p className="text-xs text-zinc-400">El portal familiar es de uso exclusivo para padres de familia y tutores autorizados.</p>
-          <button
-            onClick={() => router.push(redirectInfo.path)}
-            className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-600/30 cursor-pointer transition-all"
-          >
-            {redirectInfo.label}
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Si el usuario es directivo, administrativo o no ha iniciado sesión como padre,
+  // se le habilita directamente la Experiencia Familiar enlazada a la Familia Morales Peña (IBIME)
+  const isDemonstrationMode = !user || user.role !== 'parent';
 
   return (
     <div className="min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-950">
       <Header />
 
       <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Barra de Navegación Rápida y Retorno Institucional */}
+        {isDemonstrationMode && (
+          <div className="mb-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-900 dark:text-amber-200 shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <span className="p-1.5 rounded-xl bg-amber-500 text-slate-950 font-black shrink-0">👨‍👩‍👧</span>
+              <div>
+                <strong className="block font-bold text-amber-950 dark:text-amber-100">Modo Experiencia Familiar Activo</strong>
+                <span className="text-[11px] opacity-85">
+                  Visualizando la plataforma institucional desde la perspectiva del tutor familiar ({selectedParentAccount.family}).
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => setShowParentModal(true)}
+                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs cursor-pointer transition-all shadow-xs"
+              >
+                Cambiar de Familia
+              </button>
+              <Link
+                href="/ibime/portal"
+                className="px-3 py-1.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white font-bold text-xs cursor-pointer transition-all border border-blue-700 shadow-xs"
+              >
+                Volver al Portal IBIME
+              </Link>
+            </div>
+          </div>
+        )}
         
         {/* Banner Institucional Oficial IBIME */}
         {isIbime && (
@@ -282,20 +387,179 @@ export default function ParentDashboard() {
           </div>
         )}
 
-        {/* Banner de Tutor */}
-        <div className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 sm:p-6 mb-6 sm:mb-8 shadow-sm flex flex-col md:flex-row justify-between gap-6 items-start md:items-center">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black text-zinc-950 dark:text-white">Panel de Padres de Familia</h1>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              Hijo(a) vinculado: <strong>{currentStudent.first_name} {currentStudent.last_name}</strong> | Grado: {getStudentLevelLabel(currentStudent.id)}
-            </p>
+        {/* Banner de Tutor y Cuenta Conectada */}
+        <div className="rounded-3xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 sm:p-6 mb-6 sm:mb-8 shadow-sm flex flex-col gap-4">
+          <div className="flex flex-col md:flex-row justify-between gap-6 items-start md:items-center">
+            <div>
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <h1 className="text-xl sm:text-2xl font-black text-zinc-950 dark:text-white">Panel de Padres de Familia</h1>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                  <UserCheck className="w-3 h-3 text-emerald-600" />
+                  Cuenta Activa: {currentParent.first_name} {currentParent.last_name}
+                </span>
+              </div>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Correo: <strong className="text-zinc-800 dark:text-zinc-200">{currentParent.email}</strong> | Alumno vinculado: <strong>{currentStudent.first_name} {currentStudent.last_name}</strong> | Grado: {getStudentLevelLabel(currentStudent.id)}
+              </p>
+            </div>
+
+            {/* Atributos dinámicos del hijo */}
+            <div className="w-full md:w-auto">
+              {renderChildStats()}
+            </div>
           </div>
 
-          {/* Atributos dinámicos del hijo */}
-          <div className="w-full md:w-auto">
-            {renderChildStats()}
+          {/* Barra interactiva de Cuentas de Padres en el Sistema */}
+          <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-blue-600" />
+                Cuentas de Padres disponibles ({SYSTEM_PARENT_ACCOUNTS.length}):
+              </span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {SYSTEM_PARENT_ACCOUNTS.map((acc) => {
+                  const isCurrent = user?.email === acc.email || user?.id === acc.id;
+                  return (
+                    <button
+                      key={acc.id}
+                      onClick={() => handleSwitchParentAccount(acc)}
+                      disabled={isSwitchingParent}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer border ${
+                        isCurrent
+                          ? 'bg-blue-600 text-white border-blue-700 shadow-2xs font-black'
+                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                      }`}
+                      title={`Conmutar a ${acc.family} (${acc.tutorName}) - Hijo: ${acc.studentName}`}
+                    >
+                      {acc.isIbime && <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />}
+                      <span>{acc.family.replace('Familia ', '')}</span>
+                      {isCurrent && <Check className="w-3 h-3 text-white" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowParentModal(true)}
+              className="px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-xs font-black transition-all flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer"
+            >
+              <Eye className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-600" />
+              <span>Ver Cuentas del Sistema</span>
+            </button>
           </div>
         </div>
+
+        {/* Modal Interactivo de Exploración de Cuentas de Padres en el Sistema */}
+        {showParentModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-zinc-900 rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col max-h-[90vh] overflow-hidden">
+              <div className="flex items-center justify-between pb-4 border-b border-zinc-200 dark:border-zinc-800">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base sm:text-lg font-black text-zinc-950 dark:text-white">
+                      Cuentas de Padres Registradas en el Sistema
+                    </h3>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      Selecciona una cuenta de tutor real para vivenciar su experiencia familiar e historial académico
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowParentModal(false)}
+                  className="p-2 rounded-xl text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto py-4 space-y-3 pr-1">
+                {SYSTEM_PARENT_ACCOUNTS.map((account) => {
+                  const isCurrent = user?.email === account.email || user?.id === account.id;
+                  return (
+                    <div
+                      key={account.id}
+                      className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+                        isCurrent
+                          ? 'bg-blue-50/80 dark:bg-blue-950/40 border-blue-500/50 shadow-xs'
+                          : 'bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700/60 hover:border-zinc-300 dark:hover:border-zinc-600'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black shrink-0 ${
+                          account.isIbime
+                            ? 'bg-red-500/10 text-red-600 border border-red-200 dark:border-red-900/60'
+                            : 'bg-emerald-500/10 text-emerald-600 border border-emerald-200'
+                        }`}>
+                          {account.isIbime ? 'IB' : 'IS'}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-black text-zinc-900 dark:text-white">
+                              {account.family}
+                            </span>
+                            {isCurrent && (
+                              <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-blue-600 text-white">
+                                ACTIVA AHORA
+                              </span>
+                            )}
+                            <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
+                              (Tutor: {account.tutorName})
+                            </span>
+                          </div>
+                          <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                            {account.email}
+                          </p>
+                          <div className="flex items-center gap-3 text-[11px] text-zinc-600 dark:text-zinc-400 mt-1 flex-wrap">
+                            <span>Hijo: <strong>{account.studentName}</strong></span>
+                            <span>·</span>
+                            <span>{account.grade}</span>
+                            <span>·</span>
+                            <span>{account.campus}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => handleSwitchParentAccount(account)}
+                        disabled={isSwitchingParent || isCurrent}
+                        className={`w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                          isCurrent
+                            ? 'bg-emerald-600 text-white cursor-default opacity-90'
+                            : 'bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm'
+                        }`}
+                      >
+                        {isCurrent ? (
+                          <>
+                            <CheckCircle2 className="w-4 h-4 text-white" />
+                            <span>Conectada</span>
+                          </>
+                        ) : (
+                          <>
+                            <UserCheck className="w-4 h-4" />
+                            <span>Vincular Cuenta</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 flex justify-end">
+                <button
+                  onClick={() => setShowParentModal(false)}
+                  className="px-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-xs hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Tab switcher de Padres */}
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between mb-8">

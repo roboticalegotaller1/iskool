@@ -52,7 +52,20 @@ function IbimePortalContent() {
   const viewParam = searchParams?.get('view');
   const tabParam = searchParams?.get('tab') as IbimeTab | null;
 
-  const { user, logout, loading: authLoading } = useAuth();
+  const { user, login, logout, loading: authLoading } = useAuth();
+
+  // Conmutador directo a la experiencia de padres enlazando una cuenta real de tutor IBIME
+  const handleGoToParentExperience = async () => {
+    try {
+      await switchCanonicalStudent('std-ibime-montes-01');
+      if (login) {
+        await login('familia.morales@ibime.edu.mx');
+      }
+    } catch (err) {
+      console.error('Error switching to parent account:', err);
+    }
+    router.push('/parent');
+  };
 
   // Estado para alternar entre Visión Ejecutiva CEO y Tablero Operativo Clásico
   const [viewMode, setViewMode] = useState<'ceo' | 'operational'>('operational');
@@ -270,10 +283,7 @@ function IbimePortalContent() {
               </button>
 
               <button
-                onClick={async () => {
-                  await switchCanonicalStudent('std-ibime-montes-01');
-                  router.push('/parent');
-                }}
+                onClick={handleGoToParentExperience}
                 className="h-9 px-3 rounded-xl bg-[#17426D] hover:bg-[#1E5285] text-white font-bold text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-red-400 active:scale-98 shrink-0 leading-none"
                 title="Vivenciar la experiencia de padres de familia (Familia Morales Peña)"
               >
@@ -383,10 +393,7 @@ function IbimePortalContent() {
             </button>
 
             <button
-              onClick={async () => {
-                await switchCanonicalStudent('std-ibime-montes-01');
-                router.push('/parent');
-              }}
+              onClick={handleGoToParentExperience}
               className="h-9 px-3 rounded-xl bg-[#17426D] hover:bg-[#C01D0C] text-white font-bold text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-blue-700 shrink-0 leading-none"
               title="Vivenciar la experiencia de padres de familia (Familia Morales Peña)"
             >

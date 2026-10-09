@@ -147,6 +147,16 @@ export const AVATAR_RACE_FEATURES: TraitOption[] = [
 export const AVATAR_CLOTHING_ITEMS: ClothingItem[] = [
   // --- ZAPATOS ---
   {
+    id: 'shoes_ibime_formal',
+    name: 'Zapatos Escolares de Piel IBIME',
+    category: 'shoes',
+    price: 0,
+    badgeEmoji: '👞',
+    rarity: 'common',
+    description: 'Calzado escolar oficial de piel negra lustrada con suela ergonómica y calcetas escolares.',
+    isDefault: true
+  },
+  {
     id: 'shoes_basic',
     name: 'Zapatos Escolares Básicos',
     category: 'shoes',
@@ -203,6 +213,26 @@ export const AVATAR_CLOTHING_ITEMS: ClothingItem[] = [
   },
 
   // --- PANTALONES / FALDAS ---
+  {
+    id: 'bottom_ibime_pants',
+    name: 'Pants Escolar Oficial IBIME',
+    category: 'bottom',
+    price: 0,
+    badgeEmoji: '👖',
+    rarity: 'rare',
+    description: 'Pants deportivo y escolar azul marino con franja lateral roja, vivos blancos y rótulo oficial "INSTITUTO IBIME".',
+    isDefault: true
+  },
+  {
+    id: 'bottom_ibime_plaid_skirt',
+    name: 'Falda Tableada Escocesa IBIME',
+    category: 'bottom',
+    price: 0,
+    badgeEmoji: '👗',
+    rarity: 'rare',
+    description: 'Falda tableada institucional con patrón tartán escocés en azul marino, gris y vivos claros con calcetas escolares.',
+    isDefault: true
+  },
   {
     id: 'bottom_basic',
     name: 'Pantalón Escolar Básico',
@@ -270,6 +300,26 @@ export const AVATAR_CLOTHING_ITEMS: ClothingItem[] = [
 
   // --- PLAYERAS / CAMISAS ---
   {
+    id: 'top_ibime_polo',
+    name: 'Playera Polo Oficial IBIME',
+    category: 'top',
+    price: 0,
+    badgeEmoji: '👕',
+    rarity: 'rare',
+    description: 'Playera tipo polo blanca oficial con cuello y puños azul marino con franja roja y escudo heráldico IBIME en el pecho.',
+    isDefault: true
+  },
+  {
+    id: 'top_ibime_blouse',
+    name: 'Camisa Escolar y Corbata IBIME',
+    category: 'top',
+    price: 0,
+    badgeEmoji: '👔',
+    rarity: 'epic',
+    description: 'Camisa escolar blanca de gala con corbata formal y cuello impecable de academia bilingüe.',
+    isDefault: true
+  },
+  {
     id: 'top_basic',
     name: 'Playera Básica de Algodón',
     category: 'top',
@@ -335,6 +385,25 @@ export const AVATAR_CLOTHING_ITEMS: ClothingItem[] = [
   },
 
   // --- SUÉTERES / CHAMARRAS / CAPAS ---
+  {
+    id: 'outerwear_ibime_blazer',
+    name: 'Saco Escolar Oficial IBIME (Gala & Diario)',
+    category: 'outerwear',
+    price: 0,
+    badgeEmoji: '🏫',
+    rarity: 'legendary',
+    description: 'Saco sastre azul marino institucional con escudo heráldico IBIME bordado en pecho izquierdo, solapa con muesca y dos botones dorados.',
+    isDefault: true
+  },
+  {
+    id: 'outerwear_ibime_track',
+    name: 'Chamarra Deportiva Oficial IBIME',
+    category: 'outerwear',
+    price: 0,
+    badgeEmoji: '🏃',
+    rarity: 'epic',
+    description: 'Chamarra deportiva azul marino con canesú en rojo escarlata vivo, vivos blancos y escudo bordado.'
+  },
   {
     id: 'outerwear_none',
     name: 'Sin Abrigo (Solo Playera)',

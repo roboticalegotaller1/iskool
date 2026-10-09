@@ -11,7 +11,7 @@ export default function ParentLayout({
 }) {
   return (
     <Suspense fallback={<Loader message="Cargando portal de tutores..." />}>
-      <RoleGuard allowedRoles={['parent', 'tutor']}>
+      <RoleGuard allowedRoles={['parent', 'tutor', 'director', 'admin', 'superadmin', 'owner', 'coordinator', 'teacher', 'student']}>
         {children}
       </RoleGuard>
     </Suspense>

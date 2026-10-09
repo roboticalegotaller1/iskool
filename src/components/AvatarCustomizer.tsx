@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useStudentStore, useCurrentStudentStats, useCurrentStudentAvatar } from '../store/useStudentStore';
 import { 
   Sparkles, 
@@ -83,59 +83,111 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
   // Modo de Cámara: Cuerpo entero vs Rostro
   const [cameraZoom, setCameraZoom] = useState<'full' | 'face'>('full');
 
+  // Detectar si el estudiante pertenece a la red de colegios IBIME
+  const isIbimeStudent = Boolean(
+    activeStudentId?.includes('ibime') ||
+    avatar.student_id?.includes('ibime') || 
+    (avatar as any)?.school_id === 'sch-ibime' ||
+    (typeof window !== 'undefined' && (
+      window.location.search.includes('ibime') || 
+      window.location.pathname.includes('ibime') ||
+      window.location.hostname.includes('ibime')
+    ))
+  );
+
+  const IBIME_OFFICIAL_UNIFORM_ITEMS = useMemo(() => [
+    'shoes_ibime_formal',
+    'bottom_ibime_pants',
+    'bottom_ibime_plaid_skirt',
+    'top_ibime_polo',
+    'top_ibime_blouse',
+    'outerwear_ibime_blazer',
+    'outerwear_ibime_track',
+    'hat_none',
+    'acc_none'
+  ], []);
+
   // Estados locales para respuesta inmediata sin lag
-  const [selectedGender, setSelectedGender] = useState<'female' | 'male' | 'neutral'>(avatar.gender || 'female');
+  const [selectedGender, setSelectedGender] = useState<'female' | 'male' | 'neutral'>(
+    avatar.gender || (isIbimeStudent ? 'male' : 'female')
+  );
   const [selectedScale, setSelectedScale] = useState<'compact' | 'normal' | 'tall'>(avatar.body_scale || 'normal');
   const [selectedSkinTone, setSelectedSkinTone] = useState(avatar.skin_tone || '#FED7AA');
   const [selectedHairStyle, setSelectedHairStyle] = useState(avatar.hair_style || 'spiky');
-  const [selectedHairColor, setSelectedHairColor] = useState(avatar.hair_color || '#FBBF24');
+  const [selectedHairColor, setSelectedHairColor] = useState(avatar.hair_color || '#1F2937');
   const [selectedEyesStyle, setSelectedEyesStyle] = useState(avatar.eyes_style || 'determined');
   const [selectedRaceFeature, setSelectedRaceFeature] = useState(avatar.race_feature || 'human');
 
-  const [selectedShoes, setSelectedShoes] = useState(avatar.equipped_shoes || 'shoes_tan_boots');
-  const [selectedBottom, setSelectedBottom] = useState(avatar.equipped_bottom || 'bottom_ripped_jeans');
-  const [selectedTop, setSelectedTop] = useState(avatar.equipped_top || 'top_dia_de_muertos');
-  const [selectedOuterwear, setSelectedOuterwear] = useState(avatar.equipped_outerwear || 'outerwear_none');
-  const [selectedHat, setSelectedHat] = useState(avatar.equipped_hat || 'hat_snapback_trainer');
-  const [selectedAccessory, setSelectedAccessory] = useState(avatar.equipped_accessory || 'acc_red_backpack');
+  const [selectedShoes, setSelectedShoes] = useState(
+    avatar.equipped_shoes || (isIbimeStudent ? 'shoes_ibime_formal' : 'shoes_tan_boots')
+  );
+  const [selectedBottom, setSelectedBottom] = useState(
+    avatar.equipped_bottom || (isIbimeStudent ? (avatar.gender === 'female' ? 'bottom_ibime_plaid_skirt' : 'bottom_ibime_pants') : 'bottom_ripped_jeans')
+  );
+  const [selectedTop, setSelectedTop] = useState(
+    avatar.equipped_top || (isIbimeStudent ? 'top_ibime_polo' : 'top_dia_de_muertos')
+  );
+  const [selectedOuterwear, setSelectedOuterwear] = useState(
+    avatar.equipped_outerwear || (isIbimeStudent ? 'outerwear_ibime_blazer' : 'outerwear_none')
+  );
+  const [selectedHat, setSelectedHat] = useState(
+    avatar.equipped_hat || (isIbimeStudent ? 'hat_none' : 'hat_snapback_trainer')
+  );
+  const [selectedAccessory, setSelectedAccessory] = useState(
+    avatar.equipped_accessory || (isIbimeStudent ? 'acc_none' : 'acc_red_backpack')
+  );
 
   // Animación / Pose activa
   const [previewAnimation, setPreviewAnimation] = useState<AvatarAnimationState>('idle');
-  const [avatarName, setAvatarName] = useState(avatar.avatar_name || 'Entrenador');
+  const [avatarName, setAvatarName] = useState(avatar.avatar_name || (isIbimeStudent ? 'Iker Morales' : 'Entrenador'));
   const [isEditingName, setIsEditingName] = useState(false);
   const [feedbackNotice, setFeedbackNotice] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
 
   // Sincronizar estados locales cuando se abre el modal
   useEffect(() => {
     if (isOpen && avatar) {
-      setSelectedGender(avatar.gender || 'female');
+      setSelectedGender(avatar.gender || (isIbimeStudent ? 'male' : 'female'));
       setSelectedScale(avatar.body_scale || 'normal');
       setSelectedSkinTone(avatar.skin_tone || '#FED7AA');
       setSelectedHairStyle(avatar.hair_style || 'spiky');
-      setSelectedHairColor(avatar.hair_color || '#FBBF24');
+      setSelectedHairColor(avatar.hair_color || '#1F2937');
       setSelectedEyesStyle(avatar.eyes_style || 'determined');
       setSelectedRaceFeature(avatar.race_feature || 'human');
-      setSelectedShoes(avatar.equipped_shoes || 'shoes_tan_boots');
-      setSelectedBottom(avatar.equipped_bottom || 'bottom_ripped_jeans');
-      setSelectedTop(avatar.equipped_top || 'top_dia_de_muertos');
-      setSelectedOuterwear(avatar.equipped_outerwear || 'outerwear_none');
-      setSelectedHat(avatar.equipped_hat || 'hat_snapback_trainer');
-      setSelectedAccessory(avatar.equipped_accessory || 'acc_red_backpack');
-      setAvatarName(avatar.avatar_name || 'Entrenador');
+      const isCasualDefault = 
+        avatar.equipped_shoes === 'shoes_tan_boots' ||
+        avatar.equipped_bottom === 'bottom_ripped_jeans' ||
+        avatar.equipped_top === 'top_dia_de_muertos' ||
+        avatar.equipped_hat === 'hat_snapback_trainer';
+
+      const shouldForceIbimeUniform = isIbimeStudent && (isCasualDefault || !avatar.equipped_top?.includes('ibime'));
+
+      setSelectedShoes(shouldForceIbimeUniform ? 'shoes_ibime_formal' : (avatar.equipped_shoes || 'shoes_ibime_formal'));
+      setSelectedBottom(shouldForceIbimeUniform ? (avatar.gender === 'female' ? 'bottom_ibime_plaid_skirt' : 'bottom_ibime_pants') : (avatar.equipped_bottom || 'bottom_ibime_pants'));
+      setSelectedTop(shouldForceIbimeUniform ? 'top_ibime_polo' : (avatar.equipped_top || 'top_ibime_polo'));
+      setSelectedOuterwear(shouldForceIbimeUniform ? 'outerwear_ibime_blazer' : (avatar.equipped_outerwear || 'outerwear_ibime_blazer'));
+      setSelectedHat(shouldForceIbimeUniform ? 'hat_none' : (avatar.equipped_hat || 'hat_none'));
+      setSelectedAccessory(shouldForceIbimeUniform ? 'acc_none' : (avatar.equipped_accessory || 'acc_none'));
+      setAvatarName(avatar.avatar_name || (isIbimeStudent ? 'Iker Morales' : 'Entrenador'));
     }
-  }, [isOpen, avatar]);
+  }, [isOpen, avatar, isIbimeStudent]);
 
   if (!isOpen) return null;
 
   const currentCoins = stats.coins ?? 0;
-  const ownedItems = avatar.wardrobe_inventory || [
+  const defaultBaseList = [
     'shoes_basic', 'shoes_tan_boots',
     'bottom_basic', 'bottom_ripped_jeans',
     'top_basic', 'top_dia_de_muertos',
     'outerwear_none', 'outerwear_fur_duster',
     'hat_none', 'hat_snapback_trainer',
-    'acc_none', 'acc_red_backpack'
+    'acc_none', 'acc_red_backpack',
+    ...IBIME_OFFICIAL_UNIFORM_ITEMS
   ];
+
+  const ownedItems = Array.from(new Set([
+    ...(avatar.wardrobe_inventory || defaultBaseList),
+    ...IBIME_OFFICIAL_UNIFORM_ITEMS
+  ]));
 
   const triggerAnim = (anim: AvatarAnimationState) => {
     setPreviewAnimation(anim);
@@ -339,14 +391,24 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
   // Filtrar prendas según la categoría seleccionada
   const getItemsForCategory = () => {
     if (activeCategory === 'featured') {
-      return AVATAR_CLOTHING_ITEMS.filter(item => 
-        item.id === 'top_dia_de_muertos' || 
-        item.id === 'outerwear_fur_duster' || 
-        item.id === 'bottom_ripped_jeans' || 
-        item.id === 'shoes_tan_boots' || 
-        item.id === 'hat_snapback_trainer' || 
-        item.id === 'acc_red_backpack'
-      );
+      const featuredOrder = [
+        'outerwear_ibime_blazer',
+        'top_ibime_polo',
+        'bottom_ibime_pants',
+        'bottom_ibime_plaid_skirt',
+        'shoes_ibime_formal',
+        'outerwear_ibime_track',
+        'top_ibime_blouse',
+        'shoes_tan_boots',
+        'bottom_ripped_jeans',
+        'top_dia_de_muertos',
+        'outerwear_fur_duster',
+        'hat_snapback_trainer',
+        'acc_red_backpack'
+      ];
+      return featuredOrder
+        .map(id => AVATAR_CLOTHING_ITEMS.find(item => item.id === id))
+        .filter(Boolean) as AvatarClothingItem[];
     }
     if (activeCategory === 'tops') return AVATAR_CLOTHING_ITEMS.filter(i => i.category === 'top');
     if (activeCategory === 'bottoms') return AVATAR_CLOTHING_ITEMS.filter(i => i.category === 'bottom');
@@ -707,7 +769,106 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
 
             {/* SECCIÓN C: CATÁLOGO DE PRENDAS MODULARES */}
             {activeCategory !== 'appearance' && activeCategory !== 'poses' && (
-              <div className="grid grid-cols-1 gap-2.5">
+              <div className="flex flex-col gap-2.5">
+                {/* PRESET HERO DEL UNIFORME OFICIAL IBIME */}
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-[#0F2744] via-[#17426D] to-[#800F0A] text-white shadow-md border border-blue-900/60 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">👔</span>
+                      <div>
+                        <span className="text-[11px] font-black uppercase tracking-wider block text-white">Uniforme Oficial IBIME</span>
+                        <span className="text-[9px] text-blue-200">Gala Institucional & Deportivo</span>
+                      </div>
+                    </div>
+                    <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-[#E41B14] text-white shadow-xs">OFICIAL</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newOuter = 'outerwear_ibime_blazer';
+                        const newTop = 'top_ibime_polo';
+                        const newBottom = selectedGender === 'female' ? 'bottom_ibime_plaid_skirt' : 'bottom_ibime_pants';
+                        const newShoes = 'shoes_ibime_formal';
+                        const newHat = 'hat_none';
+                        const newAcc = 'acc_none';
+
+                        setSelectedOuterwear(newOuter);
+                        setSelectedTop(newTop);
+                        setSelectedBottom(newBottom);
+                        setSelectedShoes(newShoes);
+                        setSelectedHat(newHat);
+                        setSelectedAccessory(newAcc);
+
+                        equipClothingItem(activeStudentId, 'outerwear', newOuter);
+                        equipClothingItem(activeStudentId, 'top', newTop);
+                        equipClothingItem(activeStudentId, 'bottom', newBottom);
+                        equipClothingItem(activeStudentId, 'shoes', newShoes);
+                        equipClothingItem(activeStudentId, 'hat', newHat);
+                        equipClothingItem(activeStudentId, 'accessory', newAcc);
+
+                        changeAvatar({
+                          equipped_outerwear: newOuter,
+                          equipped_top: newTop,
+                          equipped_bottom: newBottom,
+                          equipped_shoes: newShoes,
+                          equipped_hat: newHat,
+                          equipped_accessory: newAcc
+                        });
+                        setFeedbackNotice({ msg: '¡Uniforme Oficial de Gala IBIME equipado con éxito!', type: 'success' });
+                        triggerAnim('cheer');
+                        setTimeout(() => setFeedbackNotice(null), 3000);
+                      }}
+                      className="py-2 px-2.5 rounded-xl bg-white text-[#0F2744] hover:bg-blue-50 font-black text-[11px] transition-all cursor-pointer shadow-xs text-center flex items-center justify-center gap-1 active:scale-95"
+                    >
+                      <span>✨</span>
+                      <span>Vestir de Gala</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newOuter = 'outerwear_ibime_track';
+                        const newTop = 'top_ibime_polo';
+                        const newBottom = 'bottom_ibime_pants';
+                        const newShoes = 'shoes_ibime_formal';
+                        const newHat = 'hat_none';
+                        const newAcc = 'acc_none';
+
+                        setSelectedOuterwear(newOuter);
+                        setSelectedTop(newTop);
+                        setSelectedBottom(newBottom);
+                        setSelectedShoes(newShoes);
+                        setSelectedHat(newHat);
+                        setSelectedAccessory(newAcc);
+
+                        equipClothingItem(activeStudentId, 'outerwear', newOuter);
+                        equipClothingItem(activeStudentId, 'top', newTop);
+                        equipClothingItem(activeStudentId, 'bottom', newBottom);
+                        equipClothingItem(activeStudentId, 'shoes', newShoes);
+                        equipClothingItem(activeStudentId, 'hat', newHat);
+                        equipClothingItem(activeStudentId, 'accessory', newAcc);
+
+                        changeAvatar({
+                          equipped_outerwear: newOuter,
+                          equipped_top: newTop,
+                          equipped_bottom: newBottom,
+                          equipped_shoes: newShoes,
+                          equipped_hat: newHat,
+                          equipped_accessory: newAcc
+                        });
+                        setFeedbackNotice({ msg: '¡Uniforme Deportivo IBIME equipado con éxito!', type: 'success' });
+                        triggerAnim('cheer');
+                        setTimeout(() => setFeedbackNotice(null), 3000);
+                      }}
+                      className="py-2 px-2.5 rounded-xl bg-[#E41B14] hover:bg-[#C01D0C] text-white font-black text-[11px] transition-all cursor-pointer shadow-xs text-center flex items-center justify-center gap-1 active:scale-95"
+                    >
+                      <span>🏃</span>
+                      <span>Vestir Deportivo</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-2.5">
                 {currentItems.map((item) => {
                   const isEquipped = 
                     selectedShoes === item.id ||
@@ -814,6 +975,7 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ isOpen, onCl
                     </div>
                   );
                 })}
+                </div>
               </div>
             )}
 

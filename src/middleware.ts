@@ -100,11 +100,19 @@ export async function middleware(request: NextRequest) {
 
   const querySchoolId = request.nextUrl.searchParams.get('school_id') || request.nextUrl.searchParams.get('schoolId');
   const isIbimeSchool = querySchoolId === 'sch-ibime' || querySchoolId === 'ibime';
-  const isSharedAcademicPath = pathname.startsWith('/teacher') || pathname.startsWith('/student') || pathname.startsWith('/planeaciones');
+  const isSharedAcademicPath = pathname.startsWith('/teacher') || pathname.startsWith('/student') || pathname.startsWith('/parent') || pathname.startsWith('/planeaciones');
   const isIbimeCookieActive = Boolean(ibimeCookie && !iskoolCookie);
 
-  const isIbimePath = pathname.startsWith('/ibime') || pathname.startsWith('/api/v1/ibime') || pathname === '/02DJoUJSkwYQZjn' || pathname.startsWith('/02DJoUJSkwYQZjn/');
   const isIbimeHost = host.startsWith('ibime.') || host.includes('ibime');
+  const isIbimePath = pathname.startsWith('/ibime') || pathname.startsWith('/api/v1/ibime') || pathname === '/02DJoUJSkwYQZjn' || pathname.startsWith('/02DJoUJSkwYQZjn/');
+
+  // Si un usuario o directivo de IBIME navega a /director, transferirlo limpiamente a su portal institucional
+  if (pathname === '/director' || pathname.startsWith('/director/')) {
+    if (ibimeCookie || isIbimeSchool || isIbimeHost) {
+      return NextResponse.redirect(new URL('/ibime/portal', request.url));
+    }
+  }
+
   const targetTenantRequired: TenantId = (isIbimePath || isIbimeHost || isIbimeSchool || (isIbimeCookieActive && isSharedAcademicPath)) ? 'ibime' : 'iskool';
 
   const isIskoolProtected = ISKOOL_PROTECTED_PREFIXES.some(prefix => pathname.startsWith(prefix));
@@ -245,6 +253,9 @@ export async function middleware(request: NextRequest) {
   }
 
   if (targetTenantRequired === 'iskool' && (isIskoolProtected || isIntegrationApi) && userTenant !== 'iskool') {
+    if (pathname === '/director' || pathname.startsWith('/director/')) {
+      return NextResponse.redirect(new URL('/ibime/portal', request.url));
+    }
     if (!isSuperUser) {
       if (isJsonExpected) {
         return createCrossTenantNotFoundResponse();

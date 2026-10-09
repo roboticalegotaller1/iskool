@@ -94,7 +94,14 @@ export const CONTRACTIONS_MAP: Record<string, string[]> = {
   "j'ai": ["jai", "je", "ai"],
   "jai": ["jai", "je", "ai"],
   "d'un": ["de", "un"],
-  "dun": ["de", "un"]
+  "dun": ["de", "un"],
+  // Contracciones y enlaces de pronunciación canadiense / quebequense (liaisons)
+  "n'a": ["ne", "a"],
+  "na": ["ne", "a"],
+  "néa": ["ne", "a"],
+  "nea": ["ne", "a"],
+  "n'est": ["ne", "est"],
+  "nest": ["ne", "est"]
 };
 
 // Diccionario exhaustivo de equivalencias fonéticas de aprendizaje para hispanohablantes
@@ -166,8 +173,18 @@ const FR_PHONETIC_VARIANTS: Record<string, string[]> = {
   // Variantes fonéticas exhaustivas para la lección de Napoleón Bonaparte y oratoria histórica
   'napoleon': ['napoleon', 'napoléon', 'napoleone', 'napolion', 'napolio'],
   'bonaparte': ['bonaparte', 'bonapart', 'bonapartes', 'bonapard'],
-  'ne': ['ne', 'né', 'nee', 'née', 'nay', 'nez', 'net', 'nes', 'neh'],
-  'a': ['a', 'à', 'ah', 'ha', 'at', 'as'],
+  'ne': [
+    'ne', 'né', 'nee', 'née', 'nay', 'nez', 'net', 'nes', 'neh',
+    'nait', 'naît', 'nais', 'nest', "n'est", 'na', "n'a", 'ney', 'nae', 'nea', 'néa',
+    'nai', 'nè', 'nê', 'neis', 'neyt', 'n'
+  ],
+  'né': [
+    'ne', 'né', 'nee', 'née', 'nay', 'nez', 'net', 'nes', 'neh',
+    'nait', 'naît', 'nais', 'nest', "n'est", 'na', "n'a", 'ney', 'nae', 'nea', 'néa',
+    'nai', 'nè', 'nê', 'neis', 'neyt', 'n'
+  ],
+  'a': ['a', 'à', 'ah', 'ha', 'at', 'as', 'al', 'ar', 'â', 'ha'],
+  'à': ['a', 'à', 'ah', 'ha', 'at', 'as', 'al', 'ar', 'â', 'ha'],
   'ajaccio': ['ajaccio', 'ayaccio', 'ajacio', 'ayacio', 'axacio', 'agaccio', 'a ajaccio', 'ajacc'],
   'en': ['en', 'an', 'on', 'ahn', 'un', 'hen'],
   'corse': ['corse', 'cors', 'corsica', 'kors', 'korse'],

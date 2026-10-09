@@ -172,28 +172,49 @@ export default function StudentDashboard() {
     updated_at: new Date().toISOString()
   };
 
+  const isIbimeStudent = Boolean(
+    activeStudentId?.includes('ibime') || 
+    detailedStudent?.school_id === 'sch-ibime' ||
+    user?.school_id === 'sch-ibime' || 
+    user?.email?.includes('ibime') ||
+    (typeof window !== 'undefined' && (
+      window.location.search.includes('ibime') || 
+      window.location.pathname.includes('ibime') ||
+      window.location.hostname.includes('ibime')
+    ))
+  );
+
   const defaultAvatar = {
     student_id: activeStudentId || '',
-    avatar_name: 'Héroe Estudiante',
-    hair_style: 'spiky_hero',
-    hair_color: '#4B5563',
-    eyes_style: 'determined',
+    avatar_name: isIbimeStudent ? 'Iker Santiago Morales' : 'Héroe Estudiante',
+    gender: isIbimeStudent ? ('male' as const) : ('female' as const),
+    hair_style: 'spiky',
+    hair_color: '#1F2937',
+    eyes_style: 'sparkle',
     outfit_style: 'explorer',
-    outfit_color: '#3B82F6',
+    outfit_color: '#059669',
     background_style: 'forest',
-    unlocked_items: ['classic', 'happy', 'explorer', 'forest'],
+    unlocked_items: ['classic', 'happy', 'explorer', 'forest', 'spiky', 'sparkle'],
     race_feature: 'human',
     body_scale: 'normal' as const,
-    equipped_shoes: 'shoes_basic',
-    equipped_bottom: 'bottom_basic',
-    equipped_top: 'top_basic',
-    equipped_outerwear: 'outerwear_none',
+    equipped_shoes: isIbimeStudent ? 'shoes_ibime_formal' : 'shoes_basic',
+    equipped_bottom: isIbimeStudent ? 'bottom_ibime_pants' : 'bottom_basic',
+    equipped_top: isIbimeStudent ? 'top_ibime_polo' : 'top_basic',
+    equipped_outerwear: isIbimeStudent ? 'outerwear_ibime_blazer' : 'outerwear_none',
     equipped_hat: 'hat_none',
     equipped_accessory: 'acc_none',
+    wardrobe_inventory: [
+      'shoes_ibime_formal', 'shoes_basic', 'shoes_tan_boots',
+      'bottom_ibime_pants', 'bottom_ibime_plaid_skirt', 'bottom_basic', 'bottom_ripped_jeans',
+      'top_ibime_polo', 'top_ibime_blouse', 'top_basic', 'top_dia_de_muertos',
+      'outerwear_ibime_blazer', 'outerwear_ibime_track', 'outerwear_none',
+      'hat_none',
+      'acc_none'
+    ],
     pet_type: 'dragon' as const,
-    pet_name: 'Compañero',
-    pet_hunger: 50,
-    pet_happiness: 50,
+    pet_name: isIbimeStudent ? 'Ignis' : 'Compañero',
+    pet_hunger: 80,
+    pet_happiness: 95,
     pet_outfit: 'none',
     updated_at: new Date().toISOString()
   };
@@ -226,6 +247,30 @@ export default function StudentDashboard() {
       };
     }
   }, [user?.id, fetchStats, fetchPortfolioItems, fetchMissions, subscribeToPortfolioChanges, unsubscribeFromPortfolioChanges, subscribeToStudentStats, unsubscribeFromStudentStats]);
+
+  // Garantizar que los alumnos de IBIME vistan por defecto su uniforme oficial sin atuendos casuales erróneos
+  React.useEffect(() => {
+    if (isIbimeStudent) {
+      const isWearingCasual = avatar.equipped_shoes === 'shoes_tan_boots' || 
+                              avatar.equipped_bottom === 'bottom_ripped_jeans' || 
+                              avatar.equipped_top === 'top_dia_de_muertos' ||
+                              avatar.equipped_hat === 'hat_snapback_trainer' ||
+                              avatar.equipped_accessory === 'acc_red_backpack' ||
+                              !avatar.equipped_top?.includes('ibime');
+      if (isWearingCasual) {
+        const uniformUpdate = {
+          equipped_outerwear: 'outerwear_ibime_blazer',
+          equipped_top: 'top_ibime_polo',
+          equipped_bottom: avatar.gender === 'female' ? 'bottom_ibime_plaid_skirt' : 'bottom_ibime_pants',
+          equipped_shoes: 'shoes_ibime_formal',
+          equipped_hat: 'hat_none',
+          equipped_accessory: 'acc_none'
+        };
+        useStudentStore.getState().updatePhysicalTraits(activeStudentId, uniformUpdate);
+        useStudentStore.getState().changeAvatar(uniformUpdate);
+      }
+    }
+  }, [isIbimeStudent, activeStudentId]);
 
   const isHydrated = useHydration();
 
@@ -447,21 +492,21 @@ export default function StudentDashboard() {
                     <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden bg-slate-900/90 border-2 border-amber-400/60 shadow-xl shadow-amber-500/20 group-hover:scale-105 transition-transform flex items-center justify-center p-1 relative">
                       <div className="w-full h-full relative flex items-center justify-center">
                         <AnimeAvatarSprite 
-                          gender={(avatar as any)?.gender ?? 'female'}
+                          gender={(avatar as any)?.gender ?? (isIbimeStudent ? 'male' : 'female')}
                           rpgClass={(avatar as any)?.rpg_class ?? avatar?.outfit_style ?? 'mago'}
                           headType={(avatar as any)?.head_type ?? avatar?.eyes_style ?? 'standard'}
                           skinTone={(avatar as any)?.skin_tone ?? 'light'}
-                          hairColor={avatar?.hair_color ?? 'yellow'}
+                          hairColor={avatar?.hair_color ?? (isIbimeStudent ? '#1F2937' : 'yellow')}
                           hairStyle={avatar?.hair_style ?? 'spiky'}
                           eyesStyle={avatar?.eyes_style ?? 'determined'}
                           raceFeature={avatar?.race_feature}
                           bodyScale={(avatar as any)?.body_scale ?? 'normal'}
-                          equippedShoes={avatar?.equipped_shoes || 'shoes_tan_boots'}
-                          equippedBottom={avatar?.equipped_bottom || 'bottom_ripped_jeans'}
-                          equippedTop={avatar?.equipped_top || 'top_dia_de_muertos'}
-                          equippedOuterwear={avatar?.equipped_outerwear}
-                          equippedHat={avatar?.equipped_hat || 'hat_snapback_trainer'}
-                          equippedAccessory={avatar?.equipped_accessory || 'acc_red_backpack'}
+                          equippedShoes={avatar?.equipped_shoes || (isIbimeStudent ? 'shoes_ibime_formal' : 'shoes_tan_boots')}
+                          equippedBottom={avatar?.equipped_bottom || (isIbimeStudent ? 'bottom_ibime_pants' : 'bottom_ripped_jeans')}
+                          equippedTop={avatar?.equipped_top || (isIbimeStudent ? 'top_ibime_polo' : 'top_dia_de_muertos')}
+                          equippedOuterwear={avatar?.equipped_outerwear || (isIbimeStudent ? 'outerwear_ibime_blazer' : undefined)}
+                          equippedHat={avatar?.equipped_hat || (isIbimeStudent ? 'hat_none' : 'hat_snapback_trainer')}
+                          equippedAccessory={avatar?.equipped_accessory || (isIbimeStudent ? 'acc_none' : 'acc_red_backpack')}
                           equippedArtifacts={ownedArtifactIds}
                           showPedestal={false}
                           zoom="upper"

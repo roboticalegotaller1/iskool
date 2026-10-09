@@ -360,6 +360,54 @@ export const getDemoUser = (email: string): UserProfile => {
     };
   }
 
+  if (
+    emailLower === 'familia.castillo@ibime.edu.mx' ||
+    emailLower === 'usr-parent-ibime-ximena'
+  ) {
+    return {
+      id: 'usr-parent-ibime-ximena',
+      first_name: 'Familia Castillo',
+      last_name: 'Ruiz (Tutor IBIME)',
+      role: 'parent',
+      email: 'familia.castillo@ibime.edu.mx',
+      school_id: 'sch-ibime',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
+    emailLower === 'familia.albarran@ibime.edu.mx' ||
+    emailLower === 'usr-parent-ibime-regina'
+  ) {
+    return {
+      id: 'usr-parent-ibime-regina',
+      first_name: 'Familia Albarrán',
+      last_name: 'Cruz (Tutor IBIME)',
+      role: 'parent',
+      email: 'familia.albarran@ibime.edu.mx',
+      school_id: 'sch-ibime',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
+    emailLower === 'familia.navas@ibime.edu.mx' ||
+    emailLower === 'usr-parent-ibime-mateo'
+  ) {
+    return {
+      id: 'usr-parent-ibime-mateo',
+      first_name: 'Familia Navas',
+      last_name: 'Corona (Tutor IBIME)',
+      role: 'parent',
+      email: 'familia.navas@ibime.edu.mx',
+      school_id: 'sch-ibime',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
   // ==========================================
   // RESOLUTORES OFICIALES SECTOR CORPORATIVO / CEO (B2B)
   // ==========================================

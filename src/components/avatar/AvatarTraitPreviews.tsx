@@ -427,6 +427,35 @@ export const ClothingItemPreviewSvg: React.FC<{ item: ClothingItem }> = ({ item 
   const { id } = item;
 
   // --- PLAYERAS Y TOPS ---
+  if (id === 'top_ibime_polo') {
+    return (
+      <svg viewBox="0 0 44 44" className="w-full h-full">
+        <polygon points="12,12 32,12 30,34 14,34" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="1.2" />
+        <path d="M 12,12 L 6,18 L 10,22 L 13,16" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="1" />
+        <path d="M 32,12 L 38,18 L 34,22 L 31,16" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="1" />
+        <path d="M 17,12 L 20,18 L 22,18 L 24,18 L 27,12" stroke="#0F2744" strokeWidth="3" strokeLinecap="round" fill="none" />
+        <path d="M 18,12 L 20,17 L 24,17 L 26,12" stroke="#E41B14" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+        <line x1="22" y1="18" x2="22" y2="25" stroke="#0F2744" strokeWidth="1.2" />
+        <polygon points="16,20 19,21 19,25 17.5,26.5 16,25" fill="#E41B14" />
+      </svg>
+    );
+  }
+
+  if (id === 'top_ibime_blouse') {
+    return (
+      <svg viewBox="0 0 44 44" className="w-full h-full">
+        <polygon points="12,12 32,12 30,34 14,34" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="1.2" />
+        <path d="M 12,12 L 6,18 L 10,22 L 13,16" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="1" />
+        <path d="M 32,12 L 38,18 L 34,22 L 31,16" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="1" />
+        <polygon points="17,12 21,16 22,12" fill="#F8FAFC" stroke="#CBD5E1" strokeWidth="0.8" />
+        <polygon points="27,12 23,16 22,12" fill="#F8FAFC" stroke="#CBD5E1" strokeWidth="0.8" />
+        <polygon points="22,14 20,18 24,18" fill="#0F2744" />
+        <polygon points="22,18 20.5,28 22,30 23.5,28" fill="#17426D" />
+        <polygon points="16,21 18.5,22 18.5,25.5 17.2,27 16,25.5" fill="#E41B14" />
+      </svg>
+    );
+  }
+
   if (id === 'top_dia_de_muertos') {
     return (
       <svg viewBox="0 0 44 44" className="w-full h-full">
@@ -510,6 +539,33 @@ export const ClothingItemPreviewSvg: React.FC<{ item: ClothingItem }> = ({ item 
   }
 
   // --- PANTALONES / FALDAS ---
+  if (id === 'bottom_ibime_pants') {
+    return (
+      <svg viewBox="0 0 44 44" className="w-full h-full">
+        <path d="M 14,10 L 30,10 L 28,34 L 23,34 L 22,20 L 21,34 L 16,34 Z" fill="#0F2744" stroke="#0B1E36" strokeWidth="1.2" />
+        <line x1="15" y1="12" x2="16.5" y2="33" stroke="#E41B14" strokeWidth="1.8" />
+        <line x1="14" y1="12" x2="15.5" y2="33" stroke="#FFFFFF" strokeWidth="0.6" />
+        <line x1="29" y1="12" x2="27.5" y2="33" stroke="#E41B14" strokeWidth="1.8" />
+        <line x1="30" y1="12" x2="28.5" y2="33" stroke="#FFFFFF" strokeWidth="0.6" />
+      </svg>
+    );
+  }
+
+  if (id === 'bottom_ibime_plaid_skirt') {
+    return (
+      <svg viewBox="0 0 44 44" className="w-full h-full">
+        <path d="M 15,12 L 29,12 L 36,31 Q 22,34 8,31 Z" fill="#10243E" stroke="#0B1E36" strokeWidth="1.2" />
+        <line x1="13" y1="14" x2="11" y2="31" stroke="#243349" strokeWidth="1.2" />
+        <line x1="17" y1="13" x2="16" y2="32" stroke="#243349" strokeWidth="1.2" />
+        <line x1="22" y1="12.5" x2="22" y2="33" stroke="#243349" strokeWidth="1.2" />
+        <line x1="27" y1="13" x2="28" y2="32" stroke="#243349" strokeWidth="1.2" />
+        <line x1="31" y1="14" x2="33" y2="31" stroke="#243349" strokeWidth="1.2" />
+        <path d="M 10,24 Q 22,27 34,24" stroke="#F59E0B" strokeWidth="0.8" fill="none" opacity="0.8" />
+        <path d="M 9,28 Q 22,31 35,28" stroke="#E41B14" strokeWidth="0.8" fill="none" opacity="0.8" />
+      </svg>
+    );
+  }
+
   if (id === 'bottom_ripped_jeans') {
     return (
       <svg viewBox="0 0 44 44" className="w-full h-full">
@@ -560,6 +616,19 @@ export const ClothingItemPreviewSvg: React.FC<{ item: ClothingItem }> = ({ item 
   }
 
   // --- CALZADO ---
+  if (id === 'shoes_ibime_formal') {
+    return (
+      <svg viewBox="0 0 44 44" className="w-full h-full">
+        <ellipse cx="16" cy="24" rx="7.5" ry="4.5" fill="#0F172A" stroke="#020617" strokeWidth="1" />
+        <ellipse cx="28" cy="24" rx="7.5" ry="4.5" fill="#0F172A" stroke="#020617" strokeWidth="1" />
+        <ellipse cx="15" cy="22.5" rx="4" ry="1.5" fill="#334155" opacity="0.6" />
+        <ellipse cx="27" cy="22.5" rx="4" ry="1.5" fill="#334155" opacity="0.6" />
+        <rect x="13" y="19" width="6" height="2" rx="0.5" fill="#FFFFFF" />
+        <rect x="25" y="19" width="6" height="2" rx="0.5" fill="#FFFFFF" />
+      </svg>
+    );
+  }
+
   if (id === 'shoes_tan_boots') {
     return (
       <svg viewBox="0 0 44 44" className="w-full h-full">
@@ -601,6 +670,40 @@ export const ClothingItemPreviewSvg: React.FC<{ item: ClothingItem }> = ({ item 
   }
 
   // --- CAPAS Y CHAMARRAS ---
+  if (id === 'outerwear_ibime_blazer') {
+    return (
+      <svg viewBox="0 0 44 44" className="w-full h-full">
+        <polygon points="13,10 31,10 29,35 15,35" fill="#0F223D" stroke="#07101E" strokeWidth="1.2" />
+        <path d="M 13,10 L 6,24 L 11,26 L 15,16" fill="#0F223D" stroke="#07101E" strokeWidth="1" />
+        <path d="M 31,10 L 38,24 L 33,26 L 29,16" fill="#0F223D" stroke="#07101E" strokeWidth="1" />
+        <path d="M 17,10 L 16,18 L 19,23 L 22,23 L 20,10 Z" fill="#152B4D" />
+        <path d="M 27,10 L 28,18 L 25,23 L 22,23 L 24,10 Z" fill="#0B1A30" />
+        <polygon points="20,10 24,10 22,17" fill="#FFFFFF" />
+        <polygon points="16,19 18.5,20 18.5,23.5 17.2,25 16,23.5" fill="#E41B14" stroke="#FFFFFF" strokeWidth="0.4" />
+        <circle cx="22" cy="25" r="1.5" fill="#F59E0B" stroke="#78350F" strokeWidth="0.5" />
+        <circle cx="22" cy="29" r="1.5" fill="#F59E0B" stroke="#78350F" strokeWidth="0.5" />
+        <line x1="16" y1="30" x2="19" y2="30" stroke="#0B1A30" strokeWidth="1.2" />
+        <line x1="25" y1="30" x2="28" y2="30" stroke="#0B1A30" strokeWidth="1.2" />
+      </svg>
+    );
+  }
+
+  if (id === 'outerwear_ibime_track') {
+    return (
+      <svg viewBox="0 0 44 44" className="w-full h-full">
+        <polygon points="13,10 31,10 29,35 15,35" fill="#0F223D" stroke="#07101E" strokeWidth="1.2" />
+        <polygon points="13,10 31,10 30,17 14,17" fill="#E41B14" />
+        <path d="M 13,10 L 6,18 L 9,19 L 14,15" fill="#E41B14" />
+        <path d="M 31,10 L 38,18 L 35,19 L 30,15" fill="#E41B14" />
+        <path d="M 6,18 L 7,24 L 11,26 L 9,19" fill="#0F223D" />
+        <path d="M 38,18 L 37,24 L 33,26 L 35,19" fill="#0F223D" />
+        <line x1="14" y1="17" x2="30" y2="17" stroke="#FFFFFF" strokeWidth="1" />
+        <line x1="22" y1="10" x2="22" y2="35" stroke="#FFFFFF" strokeWidth="1.2" />
+        <polygon points="16,20 18.5,21 18.5,24 17.2,25.5 16,24" fill="#E41B14" />
+      </svg>
+    );
+  }
+
   if (id === 'outerwear_fur_duster') {
     return (
       <svg viewBox="0 0 44 44" className="w-full h-full">
