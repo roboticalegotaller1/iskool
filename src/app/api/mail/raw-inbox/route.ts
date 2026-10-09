@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const tenantId = searchParams.get('tenantId') || 'e1000000-0000-0000-0000-000000000001';
-    const email = (searchParams.get('email') || '').trim();
+    const email = (searchParams.get('email') || (tenantId.includes('ibime') || tenantId === 'e1000000-0000-0000-0000-000000000001' || tenantId === 'sch-ibime' ? 'roboticalegotaller1@gmail.com' : 'roboticalegotaller1@gmail.com')).trim();
     const password = searchParams.get('password') || '';
     const host = searchParams.get('host') || 'imap.gmail.com';
     const port = Number(searchParams.get('port')) || 993;
