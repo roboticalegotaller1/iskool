@@ -22,17 +22,40 @@ interface SyncInboxPayload {
     campus?: string;
     reincidence_count?: number;
   };
+  existingTitles?: string[];
+  resolvedTitles?: string[];
 }
 
 import { fetchLiveImapEmails, getCachedInboxEmails } from '@/lib/services/imapClientService';
 import { InboundMailSpoolService } from '@/lib/services/inboundMailSpool';
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
+import { isEmailResolvedServer } from '@/app/api/mail/raw-inbox/route';
 
 export async function POST(req: NextRequest) {
   try {
-    const payload = (await req.json()) as SyncInboxPayload & { existingTitles?: string[] };
+    const payload = (await req.json()) as SyncInboxPayload;
     const { email, host, port, protocol, password, tenantId, institutionName, schoolSlug, manualEmail } = payload;
     const existingTitles: string[] = (payload.existingTitles || []).map(t => (t || '').trim().toLowerCase());
+    const resolvedSet = new Set<string>([
+      ...(payload.resolvedTitles || []).map(t => (t || '').trim().toLowerCase()),
+      ...(payload.resolvedTitles || []).map(t => (t || '').trim())
+    ]);
+
+    function isMatterResolved(id?: string, subject?: string): boolean {
+      if (id) {
+        const cleanId = id.replace(/^mat-live-/, '');
+        if (resolvedSet.has(id.toLowerCase()) || resolvedSet.has(id) || resolvedSet.has(cleanId.toLowerCase()) || resolvedSet.has(cleanId)) {
+          return true;
+        }
+      }
+      if (subject) {
+        const norm = subject.trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+        if (resolvedSet.has(norm) || resolvedSet.has(subject.trim().toLowerCase())) {
+          return true;
+        }
+      }
+      return isEmailResolvedServer(tenantId, id, subject);
+    }
 
     if (!tenantId) {
       return NextResponse.json({ success: false, error: 'Tenant ID requerido.' }, { status: 400 });
@@ -74,7 +97,7 @@ export async function POST(req: NextRequest) {
     // PASO 1: Ingesta directa de correo enviado manualmente (si aplica, prioridad de prueba y despacho)
     if (manualEmail && manualEmail.subject) {
       const normManual = manualEmail.subject.trim().toLowerCase();
-      if (!existingTitles.includes(normManual)) {
+      if (!existingTitles.includes(normManual) && !isMatterResolved(undefined, manualEmail.subject)) {
         const emailDto: InboundEmailDTO = {
           sender_name: manualEmail.sender_name || 'Remitente Institucional',
           sender_email: manualEmail.sender_email || email || 'contacto@gmail.com',
@@ -153,8 +176,8 @@ export async function POST(req: NextRequest) {
     const pendingSpoolEmails = InboundMailSpoolService.getPendingEmails(tenantId, email);
     for (const pendingMsg of pendingSpoolEmails) {
       const normSub = pendingMsg.subject.trim().toLowerCase();
-      // Verificación estricta: si ya existe en el dashboard o es spam comercial, marcar como procesado y omitir
-      if (existingTitles.includes(normSub) || isSpamCommercial(pendingMsg.subject, pendingMsg.body_text)) {
+      // Verificación estricta: si ya existe en el dashboard, fue atendido/resuelto, o es spam comercial, omitir
+      if (existingTitles.includes(normSub) || isMatterResolved(pendingMsg.id, pendingMsg.subject) || isSpamCommercial(pendingMsg.subject, pendingMsg.body_text)) {
         processedSpoolIds.push(pendingMsg.id);
         continue;
       }
@@ -216,7 +239,7 @@ export async function POST(req: NextRequest) {
         const liveGoogle = await GoogleOAuthService.fetchRealGmailEmails(email, email, 30, tenantId);
         for (const msg of liveGoogle) {
           const normSubject = msg.subject.trim().toLowerCase();
-          if (existingTitles.includes(normSubject)) continue;
+          if (existingTitles.includes(normSubject) || isMatterResolved(msg.id, msg.subject)) continue;
 
           const isFoodDining = /comedor|alimento|comida|intoxicaci|malestar|est[oó]mac/i.test(`${msg.subject} ${msg.body_text || msg.snippet}`);
           const isCeo = (msg.triage_badge?.quadrant === 'ATENCION_CEO' || isFoodDining) && !isSpamCommercial(msg.subject, msg.body_text || msg.snippet);
@@ -261,7 +284,7 @@ export async function POST(req: NextRequest) {
     if (cachedInbox && cachedInbox.length > 0) {
       for (const msg of cachedInbox) {
         const normSubject = msg.subject.trim().toLowerCase();
-        if (existingTitles.includes(normSubject)) continue;
+        if (existingTitles.includes(normSubject) || isMatterResolved(msg.id, msg.subject)) continue;
 
         const isFoodDining = /comedor|alimento|comida|intoxicaci|malestar|est[oó]mac/i.test(`${msg.subject} ${msg.body_text || msg.snippet}`);
         const isCeo = (msg.triage_badge?.quadrant === 'ATENCION_CEO' || isFoodDining) && !isSpamCommercial(msg.subject, msg.body_text || msg.snippet);
@@ -298,8 +321,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-
-
     // PASO 4: Consulta vía socket IMAP si se cuenta con contraseña / clave de aplicación
     let pass = (password || '').replace(/\s+/g, '');
     const isTargetGmail = (email || '').toLowerCase().includes('gmail.com');
@@ -323,7 +344,7 @@ export async function POST(req: NextRequest) {
       if (imapResult.success && imapResult.emails.length > 0) {
         for (const msg of imapResult.emails) {
           const normSubject = msg.subject.trim().toLowerCase();
-          if (existingTitles.includes(normSubject)) continue;
+          if (existingTitles.includes(normSubject) || isMatterResolved(msg.id, msg.subject)) continue;
 
           const emailDto: InboundEmailDTO = {
             sender_name: msg.sender_name || msg.sender_email,

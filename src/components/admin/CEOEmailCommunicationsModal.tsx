@@ -144,6 +144,9 @@ export interface MatterItem {
   provenance_doc?: string;
   received_at?: string;
   campus?: string;
+  is_resolved?: boolean;
+  is_replied?: boolean;
+  resolved_at?: string;
 }
 
 export interface DiscardedEmailItem {
@@ -462,9 +465,55 @@ export function CEOEmailCommunicationsModal({
   const mailConfigStorageKey = `iskool_mail_config_${currentTenantId}`;
   const rawEmailsStorageKey = `iskool_raw_emails_v3_${currentTenantId}`;
   const mattersStorageKey = `iskool_matters_v3_${currentTenantId}`;
+  const resolvedMattersStorageKey = `iskool_resolved_matters_v3_${currentTenantId}`;
+  const logsStorageKey = `iskool_ceo_logs_${currentTenantId}`;
   const discardedStorageKey = `iskool_discarded_${currentTenantId}`;
   const globalConnectedEmailKey = 'iskool_last_connected_email';
   const globalMailVerifiedKey = 'iskool_last_mail_verified';
+
+  // Registro persistente de expedientes atendidos y resueltos por Dirección General
+  const [resolvedMatterIds, setResolvedMatterIds] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(`iskool_resolved_matters_v3_${currentTenantId}`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      } catch {}
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(resolvedMattersStorageKey);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            setResolvedMatterIds(parsed);
+          }
+        }
+      } catch {}
+    }
+  }, [resolvedMattersStorageKey]);
+
+  const isMatterOrEmailResolved = useCallback(
+    (item: { id?: string; title?: string; subject?: string; matter_code?: string; is_resolved?: boolean }): boolean => {
+      if (item.is_resolved) return true;
+      const id = item.id || '';
+      const rawLiveId = id.replace(/^mat-live-/, '');
+      const title = (item.title || item.subject || '').trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+      const code = (item.matter_code || '').toUpperCase().trim();
+      if (id && resolvedMatterIds.includes(id)) return true;
+      if (rawLiveId && resolvedMatterIds.includes(rawLiveId)) return true;
+      if (title && resolvedMatterIds.includes(title)) return true;
+      if (code && resolvedMatterIds.includes(code)) return true;
+      return false;
+    },
+    [resolvedMatterIds]
+  );
 
   const [connectedEmail, setConnectedEmail] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -1724,7 +1773,7 @@ ${schoolName}`
         try {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            const cleaned = deduplicateExecutiveMatters(parsed).filter((m) => !isSpamOrCommercialMatter(m));
+            const cleaned = deduplicateExecutiveMatters(parsed).filter((m) => !isSpamOrCommercialMatter(m) && !isMatterOrEmailResolved(m));
             localStorage.setItem(mattersStorageKey, JSON.stringify(cleaned));
             return cleaned;
           }
@@ -1854,7 +1903,7 @@ ${schoolName}`
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
             const deduped = deduplicateExecutiveMatters(parsed);
-            const cleaned = deduped.filter((m: any) => !isSpamOrCommercialMatter(m));
+            const cleaned = deduped.filter((m: any) => !isSpamOrCommercialMatter(m) && !isMatterOrEmailResolved(m));
             setMattersList(cleaned.length > 0 ? cleaned : isIbime ? [] : generateDefaultMattersForSchool(schoolName, schoolDomain, campuses, currentTenantId));
             localStorage.setItem(mattersStorageKey, JSON.stringify(cleaned));
             return;
@@ -2002,9 +2051,13 @@ ${schoolName}`
     // 1. Normalizar correos aplicando reglas VIP y clasificador Zero-Tokens (4 cuadrantes)
     const normalizedRaw = rawEmailsList.map((item) => normalizeRawEmailCeoRules(item));
 
-    // 2. Filtrar candidatos para Bandeja Inteligente: ESTRICTAMENTE ATENCIÓN INMEDIATA CEO Y CERO SPAM
+    // 2. Filtrar candidatos para Bandeja Inteligente: ESTRICTAMENTE ATENCIÓN INMEDIATA CEO, CERO SPAM Y NO RESUELTOS
     const candidates = normalizedRaw.filter(
-      (email) => email.triage_badge?.quadrant === 'ATENCION_CEO' && !isSpamOrCommercialMatter(email)
+      (email) =>
+        email.triage_badge?.quadrant === 'ATENCION_CEO' &&
+        !isSpamOrCommercialMatter(email) &&
+        !email.is_resolved &&
+        !isMatterOrEmailResolved(email)
     );
 
     setMattersList((prevMatters) => {
@@ -2016,9 +2069,13 @@ ${schoolName}`
         .filter((email) => email.triage_badge?.quadrant !== 'ATENCION_CEO' || isSpamOrCommercialMatter(email))
         .map((email) => norm(email.subject));
 
-      // Purgar de la Bandeja Inteligente cualquier asunto que sea spam comercial o no sea ATENCIÓN INMEDIATA CEO
+      // Purgar de la Bandeja Inteligente cualquier asunto que sea spam comercial, resuelto o no sea ATENCIÓN INMEDIATA CEO
       const filteredPrev = prevMatters.filter((m) => {
         if (isSpamOrCommercialMatter(m)) {
+          hasChanges = true;
+          return false;
+        }
+        if (isMatterOrEmailResolved(m)) {
           hasChanges = true;
           return false;
         }
@@ -2042,7 +2099,7 @@ ${schoolName}`
       const updatedMatters = [...filteredPrev];
 
       for (const email of candidates) {
-        if (isSpamOrCommercialMatter(email)) continue;
+        if (isSpamOrCommercialMatter(email) || isMatterOrEmailResolved(email)) continue;
         const normSub = norm(email.subject);
         if (!normSub) continue;
 
@@ -2175,7 +2232,7 @@ ${schoolName}`
         return prevDiscarded;
       });
     }
-  }, [rawEmailsList, settingsData?.vipEmails, normalizeRawEmailCeoRules, campuses, schoolName, directorTitle, schoolSlug, currentTenantId, mattersStorageKey, discardedStorageKey]);
+  }, [rawEmailsList, settingsData?.vipEmails, normalizeRawEmailCeoRules, campuses, schoolName, directorTitle, schoolSlug, currentTenantId, mattersStorageKey, discardedStorageKey, resolvedMatterIds, isMatterOrEmailResolved]);
 
   // Semilla de Correos No Usables (Descartados / Spam Filtrado) por Tenant
   const [discardedList, setDiscardedList] = useState<DiscardedEmailItem[]>([
@@ -3471,6 +3528,7 @@ ${schoolName}`
             institutionName: schoolName,
             schoolSlug,
             existingTitles,
+            resolvedTitles: resolvedMatterIds,
             autoDetectUserSentMail
           })
         });
@@ -3482,7 +3540,7 @@ ${schoolName}`
               prev.map(m => (m.title || '').trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim())
             );
             const trulyNew = syncData.newMatters.filter((m: any) => {
-              if (isSpamOrCommercialMatter(m)) return false;
+              if (isSpamOrCommercialMatter(m) || isMatterOrEmailResolved(m)) return false;
               const key = (m.title || '').trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
               if (!key || seen.has(key)) return false;
               seen.add(key);
@@ -3490,7 +3548,7 @@ ${schoolName}`
             });
             if (trulyNew.length === 0) return prev;
             newItemsCount = trulyNew.length;
-            const updated = [...trulyNew, ...prev].filter((m) => !isSpamOrCommercialMatter(m));
+            const updated = [...trulyNew, ...prev].filter((m) => !isSpamOrCommercialMatter(m) && !isMatterOrEmailResolved(m));
             if (typeof window !== 'undefined') {
               localStorage.setItem(mattersStorageKey, JSON.stringify(updated));
             }
@@ -3824,7 +3882,7 @@ ${schoolName}`
     CeoStyleLearnerService.recordInteraction(currentTenantId, 'open', matter.title, matter.sender_email);
   };
 
-  // Aprobar borrador desde el modal de detalle
+  // Aprobar borrador desde el modal de detalle y retirar de bandeja inteligente
   const handleApproveDraft = () => {
     if (!selectedMatter) return;
     setIsApprovingDraft(true);
@@ -3840,27 +3898,196 @@ ${schoolName}`
       );
     }
 
+    const matterToResolve = selectedMatter;
+    const rawLiveId = matterToResolve.id.replace(/^mat-live-/, '');
+    const normTitle = (matterToResolve.title || '').trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+    const matterCode = (matterToResolve.matter_code || '').toUpperCase().trim();
+
+    const keysToAdd = [
+      matterToResolve.id,
+      rawLiveId,
+      normTitle,
+      matterCode
+    ].filter(Boolean);
+
     setTimeout(() => {
       setIsApprovingDraft(false);
-      onTriggerToast(`✓ Borrador aprobado y despachado. El motor adaptativo aprendió de tu redacción (0 tokens).`);
-      const remaining = mattersList.filter(m => m.id !== selectedMatter.id);
-      setMattersList(remaining);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(mattersStorageKey, JSON.stringify(remaining));
-      }
-      // Marcar correo original en bandeja si proviene de live-inbox
-      const rawLiveId = selectedMatter.id.replace(/^mat-live-/, '');
-      if (rawLiveId) {
-        setRawEmailsList((prev) => {
-          const updated = prev.map((item) => item.id === rawLiveId ? { ...item, is_unread: false } : item);
-          if (typeof window !== 'undefined') {
-            localStorage.setItem(rawEmailsStorageKey, JSON.stringify(updated));
-          }
-          return updated;
+      onTriggerToast(`✓ Borrador aprobado y respuesta oficial despachada a ${matterToResolve.sender_email || 'remitente'}. Retirado de Bandeja Inteligente.`);
+
+      // 1. Registrar permanentemente en lista de resueltos
+      setResolvedMatterIds((prev) => {
+        const combined = Array.from(new Set([...prev, ...keysToAdd]));
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(resolvedMattersStorageKey, JSON.stringify(combined));
+          } catch {}
+        }
+        return combined;
+      });
+
+      // 2. Retirar de mattersList
+      setMattersList((prev) => {
+        const remaining = prev.filter(m => {
+          if (m.id === matterToResolve.id) return false;
+          if (rawLiveId && m.id.replace(/^mat-live-/, '') === rawLiveId) return false;
+          const tNorm = (m.title || '').trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+          if (normTitle && tNorm === normTitle) return false;
+          return true;
         });
-      }
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(mattersStorageKey, JSON.stringify(remaining));
+          } catch {}
+        }
+        return remaining;
+      });
+
+      // 3. Marcar correo como resuelto y respondido en rawEmailsList
+      setRawEmailsList((prev) => {
+        const updated = prev.map((item) => {
+          const itemNorm = (item.subject || '').trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+          if (item.id === rawLiveId || item.id === matterToResolve.id || (normTitle && itemNorm === normTitle)) {
+            return {
+              ...item,
+              is_unread: false,
+              is_resolved: true,
+              is_replied: true,
+              reply_status: 'RESPONDIDO' as const,
+              resolved_at: formatCdmxDateTime(new Date())
+            };
+          }
+          return item;
+        });
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(rawEmailsStorageKey, JSON.stringify(updated));
+          } catch {}
+        }
+        return updated;
+      });
+
+      // 4. Agregar a Bitácora oficial (logs)
+      const newLog: OutgoingEmailLog = {
+        id: `log-reply-${Date.now()}`,
+        timestamp: `${formatCdmxTime(new Date())} (CDMX)`,
+        subject: `Re: ${matterToResolve.title}`,
+        recipientGroup: matterToResolve.sender_name || matterToResolve.sender_email || 'Remitente Institucional',
+        targetCount: 1,
+        status: 'Entregado (100%)',
+        sender: connectedEmail || (isIbime ? 'roboticalegotaller1@gmail.com' : `direccion@${schoolDomain}`)
+      };
+      setLogs((prev) => [newLog, ...prev]);
+
+      // 5. Notificar al backend para persistencia en memoria y servidor
+      fetch('/api/mail/raw-inbox', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'mark_resolved',
+          tenantId: currentTenantId,
+          emailId: rawLiveId || matterToResolve.id,
+          subject: matterToResolve.title
+        })
+      }).catch(() => {});
+
       setSelectedMatter(null);
-    }, 700);
+    }, 600);
+  };
+
+  // Marcar expediente como atendido y retirarlo de inmediato de la bandeja inteligente
+  const handleQuickResolveMatter = (matter: MatterItem) => {
+    const rawLiveId = matter.id.replace(/^mat-live-/, '');
+    const normTitle = (matter.title || '').trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+    const matterCode = (matter.matter_code || '').toUpperCase().trim();
+
+    const keysToAdd = [
+      matter.id,
+      rawLiveId,
+      normTitle,
+      matterCode
+    ].filter(Boolean);
+
+    onTriggerToast(`✓ Expediente ${matter.matter_code} marcado como atendido. Retirado de Bandeja Inteligente.`);
+
+    // 1. Registrar permanentemente en lista de resueltos
+    setResolvedMatterIds((prev) => {
+      const combined = Array.from(new Set([...prev, ...keysToAdd]));
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(resolvedMattersStorageKey, JSON.stringify(combined));
+        } catch {}
+      }
+      return combined;
+    });
+
+    // 2. Retirar de mattersList
+    setMattersList((prev) => {
+      const remaining = prev.filter(m => {
+        if (m.id === matter.id) return false;
+        if (rawLiveId && m.id.replace(/^mat-live-/, '') === rawLiveId) return false;
+        const tNorm = (m.title || '').trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+        if (normTitle && tNorm === normTitle) return false;
+        return true;
+      });
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(mattersStorageKey, JSON.stringify(remaining));
+        } catch {}
+      }
+      return remaining;
+    });
+
+    // 3. Marcar correo como resuelto en rawEmailsList
+    setRawEmailsList((prev) => {
+      const updated = prev.map((item) => {
+        const itemNorm = (item.subject || '').trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+        if (item.id === rawLiveId || item.id === matter.id || (normTitle && itemNorm === normTitle)) {
+          return {
+            ...item,
+            is_unread: false,
+            is_resolved: true,
+            is_replied: true,
+            reply_status: 'RESPONDIDO' as const,
+            resolved_at: formatCdmxDateTime(new Date())
+          };
+        }
+        return item;
+      });
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(rawEmailsStorageKey, JSON.stringify(updated));
+        } catch {}
+      }
+      return updated;
+    });
+
+    // 4. Registrar en Bitácora
+    const newLog: OutgoingEmailLog = {
+      id: `log-res-${Date.now()}`,
+      timestamp: `${formatCdmxTime(new Date())} (CDMX)`,
+      subject: `Atendido: ${matter.title}`,
+      recipientGroup: matter.sender_name || matter.sender_email || 'Expediente Escolar',
+      targetCount: 1,
+      status: 'Entregado (100%)',
+      sender: connectedEmail || (isIbime ? 'roboticalegotaller1@gmail.com' : `direccion@${schoolDomain}`)
+    };
+    setLogs((prev) => [newLog, ...prev]);
+
+    // 5. Notificar al servidor
+    fetch('/api/mail/raw-inbox', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'mark_resolved',
+        tenantId: currentTenantId,
+        emailId: rawLiveId || matter.id,
+        subject: matter.title
+      })
+    }).catch(() => {});
+
+    if (selectedMatter && selectedMatter.id === matter.id) {
+      setSelectedMatter(null);
+    }
   };
 
   // Plantillas de comunicados oficiales
@@ -4029,9 +4256,12 @@ Comité de Seguridad y Protección Escolar`
 
   // REGLA SUPREMA MANDATORIA: En Bandeja Inteligente SOLO deben aparecer correos de "Atención Inmediata CEO".
   // Los correos delegados, informativos y spam permanecen en Bandeja de Entrada pero NUNCA en Bandeja Inteligente.
+  // Todo asunto aprobado, despachado o atendido es retirado de forma inmediata e irrevocable.
   const intelligentMatters = useMemo(() => {
-    return mattersList.filter((m) => m.destination === 'ATENCION_CEO' && !isSpamOrCommercialMatter(m));
-  }, [mattersList]);
+    return mattersList.filter(
+      (m) => m.destination === 'ATENCION_CEO' && !isSpamOrCommercialMatter(m) && !isMatterOrEmailResolved(m)
+    );
+  }, [mattersList, isMatterOrEmailResolved]);
 
   // Filtrado de asuntos en pestaña Bandeja Inteligente (Exclusivamente CEO: Todos, Crítica/Urgente, Supervisión SEP)
   const filteredMatters = useMemo(() => {
@@ -4720,6 +4950,30 @@ Comité de Seguridad y Protección Escolar`
 
               {/* LISTA DE CORREOS USABLES (ASUNTOS CONSOLIDADOS) */}
               {inboxFilter === 'USABLE' && (
+                filteredMatters.length === 0 ? (
+                  <div className="p-8 sm:p-12 rounded-3xl bg-white border border-slate-200/90 text-center space-y-4 shadow-xs animate-in fade-in">
+                    <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
+                      <CheckCircle2 className="h-7 w-7 text-emerald-600" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-base font-black text-slate-900">Bandeja Inteligente al Día</h4>
+                      <p className="text-xs text-slate-500 max-w-md mx-auto">
+                        No hay asuntos críticos ni oficios prioritarios pendientes de atención inmediata. Todas las comunicaciones han sido atendidas o turnadas a sus respectivas áreas.
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => handleTriggerSync(false)}
+                        disabled={isSyncingLiveInbox}
+                        className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                      >
+                        <RefreshCw className={`h-3.5 w-3.5 ${isSyncingLiveInbox ? 'animate-spin text-indigo-600' : ''}`} />
+                        <span>Comprobar Nuevos Correos</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
                 <div className="space-y-3">
                   {filteredMatters.map((matter) => {
                     const isUrgent = matter.urgency === 'CRITICA';
@@ -4798,6 +5052,14 @@ Comité de Seguridad y Protección Escolar`
 
                           <div className="flex items-center gap-2 w-full sm:w-auto">
                             <button
+                              onClick={() => handleQuickResolveMatter(matter)}
+                              className="px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+                              title="Marcar expediente como atendido y retirarlo de la bandeja inteligente"
+                            >
+                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                              <span>Atendido</span>
+                            </button>
+                            <button
                               onClick={() => handleOpenMatterDetail(matter)}
                               className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
                             >
@@ -4810,6 +5072,7 @@ Comité de Seguridad y Protección Escolar`
                     );
                   })}
                 </div>
+                )
               )}
 
               {/* LISTA DE CORREOS NO USABLES (SPAM & DESCARTADOS) */}

@@ -27,6 +27,39 @@ export interface RawGmailItem {
     color: string;
     linkedMatterId?: string;
   };
+  is_resolved?: boolean;
+  is_replied?: boolean;
+  reply_status?: 'PENDIENTE' | 'RESPONDIDO' | 'RESUELTO';
+  resolved_at?: string;
+}
+
+const serverResolvedRegistry: Set<string> =
+  (globalThis as any).__iskoolResolvedEmails ||
+  ((globalThis as any).__iskoolResolvedEmails = new Set<string>());
+
+export function markEmailAsResolvedServer(tenantId: string, emailId?: string, subject?: string): void {
+  if (emailId) {
+    serverResolvedRegistry.add(`${tenantId}:${emailId}`);
+    serverResolvedRegistry.add(emailId);
+  }
+  if (subject) {
+    const norm = subject.trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+    serverResolvedRegistry.add(`${tenantId}:${norm}`);
+    serverResolvedRegistry.add(norm);
+  }
+}
+
+export function isEmailResolvedServer(tenantId: string, emailId?: string, subject?: string): boolean {
+  if (emailId && (serverResolvedRegistry.has(`${tenantId}:${emailId}`) || serverResolvedRegistry.has(emailId))) {
+    return true;
+  }
+  if (subject) {
+    const norm = subject.trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+    if (serverResolvedRegistry.has(`${tenantId}:${norm}`) || serverResolvedRegistry.has(norm)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // Semilla canónica de respaldo exclusivamente para sandboxes de prueba aislada
@@ -325,6 +358,17 @@ export async function GET(request: NextRequest) {
     const allEmails = [...additionalFromSpool, ...emails];
 
     const sanitizedEmails = allEmails.map((item: RawGmailItem) => {
+      const isResolved = isEmailResolvedServer(tenantId, item.id, item.subject);
+      if (isResolved) {
+        return {
+          ...item,
+          is_unread: false,
+          is_resolved: true,
+          is_replied: true,
+          reply_status: 'RESPONDIDO' as const
+        };
+      }
+
       if (item.triage_badge?.quadrant === 'ATENCION_CEO') {
         return item;
       }
@@ -381,6 +425,19 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const tenantId = body.tenantId || 'sch-default';
+
+    // Acción directa de resolución de expediente por el CEO
+    if (body.action === 'mark_resolved' || body.action === 'resolve_matter') {
+      const emailId = body.emailId || '';
+      const subject = body.subject || '';
+      markEmailAsResolvedServer(tenantId, emailId, subject);
+      return NextResponse.json({
+        success: true,
+        message: 'Expediente marcado como atendido y resuelto por Dirección General.',
+        resolvedId: emailId,
+        subject
+      });
+    }
     let rawEmail = (body.email || '').trim();
     if (!rawEmail || rawEmail === 'DISCONNECTED') {
       rawEmail = 'roboticalegotaller1@gmail.com';
@@ -566,6 +623,17 @@ export async function POST(request: NextRequest) {
     }
 
     const sanitizedEmails = emails.map((item: RawGmailItem) => {
+      const isResolved = isEmailResolvedServer(tenantId, item.id, item.subject);
+      if (isResolved) {
+        return {
+          ...item,
+          is_unread: false,
+          is_resolved: true,
+          is_replied: true,
+          reply_status: 'RESPONDIDO' as const
+        };
+      }
+
       if (item.triage_badge?.quadrant === 'ATENCION_CEO') {
         return item;
       }
