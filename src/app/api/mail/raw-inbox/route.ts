@@ -232,12 +232,21 @@ export async function GET(request: NextRequest) {
     let authError: string | undefined;
     let latencyMs = 18;
 
+    // 0. Si ya existen correos en el caché del buzón, utilizarlos de inmediato y evitar peticiones redundantes
+    const cachedInbox = getCachedInboxEmails(tenantId, email);
+    if (cachedInbox && cachedInbox.length > 0) {
+      authenticated = true;
+      emails = cachedInbox;
+    }
+
     // 1. Asegurar carga e hidratación de tokens de Supabase (funciona en Vercel, iskool.mx y local)
     await GoogleOAuthService.ensureTokensLoaded(email);
     const hasGoogleOAuth = GoogleOAuthService.hasValidTokens(email);
-    if (hasGoogleOAuth) {
+    const forceRefresh = searchParams.get('force') === 'true';
+
+    if (hasGoogleOAuth && (!cachedInbox || cachedInbox.length === 0 || forceRefresh)) {
       try {
-        const liveGoogle = await GoogleOAuthService.fetchRealGmailEmails(email, email, 30, tenantId);
+        const liveGoogle = await GoogleOAuthService.fetchRealGmailEmails(email, email, 15, tenantId);
         if (liveGoogle.length > 0) {
           authenticated = true;
           requiresAppPassword = false;
@@ -509,9 +518,13 @@ export async function POST(request: NextRequest) {
     // 1. Asegurar carga e hidratación de tokens de Supabase (funciona en Vercel, iskool.mx y local)
     await GoogleOAuthService.ensureTokensLoaded(email);
     const hasGoogleOAuth = GoogleOAuthService.hasValidTokens(email);
-    if (hasGoogleOAuth) {
+    const cachedInboxPost = getCachedInboxEmails(tenantId, email);
+    if (cachedInboxPost && cachedInboxPost.length > 0) {
+      authenticated = true;
+      emails = cachedInboxPost;
+    } else if (hasGoogleOAuth) {
       try {
-        const liveGoogle = await GoogleOAuthService.fetchRealGmailEmails(email, email, 30, tenantId);
+        const liveGoogle = await GoogleOAuthService.fetchRealGmailEmails(email, email, 15, tenantId);
         if (liveGoogle.length > 0) {
           authenticated = true;
           requiresAppPassword = false;

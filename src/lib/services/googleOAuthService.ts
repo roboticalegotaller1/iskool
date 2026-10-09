@@ -84,6 +84,11 @@ const tokenStore: Map<string, GoogleTokens> =
   (globalThis as any).__iskoolGoogleTokens ||
   ((globalThis as any).__iskoolGoogleTokens = loadTokensFromFile());
 
+// Caché en memoria de corto plazo (25s) para evitar sobrepasar límites de cuota por usuario en Google API
+const gmailFetchCache: Map<string, { emails: RawGmailItem[]; timestamp: number }> =
+  (globalThis as any).__iskoolGmailFetchCache ||
+  ((globalThis as any).__iskoolGmailFetchCache = new Map());
+
 export class GoogleOAuthService {
   private static cachedClientId = '';
   private static cachedClientSecret = '';
@@ -467,6 +472,13 @@ export class GoogleOAuthService {
         effectiveToken = valid;
       }
 
+      // Verificación de caché de corto plazo (25s) para mitigar Rate Limit de cuotas por usuario de Google
+      const cacheKey = `${tenantId}:${targetAccount}`;
+      const cached = gmailFetchCache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < 25000 && cached.emails.length > 0) {
+        return cached.emails;
+      }
+
       // 1. Obtener lista de IDs de mensajes en INBOX
       let listRes = await fetch(
         `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=${maxCount}&q=in:inbox`,
@@ -694,6 +706,7 @@ export class GoogleOAuthService {
 
       // 5. Inyección atómica en lote al caché del buzón (O(N) sin cuellos de botella)
       injectEmailsBatchIntoCache(tenantId, emailItems, targetAccount);
+      gmailFetchCache.set(cacheKey, { emails: emailItems, timestamp: Date.now() });
 
       return emailItems;
     } catch (err: any) {
@@ -800,6 +813,104 @@ export class GoogleOAuthService {
         googleEventId: event.googleCalendarEventId || `gcal-${event.id}`,
         isLiveApi: false,
         error: err.message
+      };
+    }
+  }
+
+  /**
+   * Envía un correo electrónico en vivo a través de la API oficial de Google Mail (OAuth 2.0)
+   */
+  static async sendEmailViaGmailApi(params: {
+    senderEmail?: string;
+    recipientEmail: string;
+    recipientName?: string;
+    subject: string;
+    bodyText: string;
+    bodyHtml?: string;
+    threadId?: string;
+    inReplyToMessageId?: string;
+  }): Promise<{
+    success: boolean;
+    messageId?: string;
+    threadId?: string;
+    error?: string;
+  }> {
+    try {
+      const sender = (params.senderEmail || 'roboticalegotaller1@gmail.com').trim().toLowerCase();
+      const recipient = (params.recipientEmail || '').trim();
+      if (!recipient) {
+        throw new Error('Se requiere una dirección de correo de destinatario válida.');
+      }
+
+      await this.ensureTokensLoaded(sender);
+      const token = await this.getValidAccessToken(sender);
+      if (!token) {
+        throw new Error(`No se encontró token de acceso válido para la cuenta ${sender}.`);
+      }
+
+      const subject = params.subject || 'Sin Asunto';
+      const body = params.bodyText || '';
+      const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
+      const recipientFormatted = params.recipientName ? `"${params.recipientName}" <${recipient}>` : recipient;
+
+      const dateHeader = new Date().toUTCString();
+      const messageIdDomain = sender.includes('@') ? sender.split('@')[1] : 'iskool.mx';
+      const uniqueMsgId = `<${Date.now()}.${Math.random().toString(36).substring(2, 10)}@${messageIdDomain}>`;
+
+      const headers = [
+        `From: ${sender}`,
+        `To: ${recipientFormatted}`,
+        `Subject: ${utf8Subject}`,
+        `Date: ${dateHeader}`,
+        `Message-ID: ${uniqueMsgId}`,
+        `MIME-Version: 1.0`,
+        `Content-Type: text/plain; charset=utf-8`,
+        `Content-Transfer-Encoding: 8bit`
+      ];
+
+      if (params.inReplyToMessageId) {
+        headers.push(`In-Reply-To: <${params.inReplyToMessageId}>`);
+        headers.push(`References: <${params.inReplyToMessageId}>`);
+      }
+
+      const rawRfc822 = `${headers.join('\r\n')}\r\n\r\n${body}`;
+      const encodedMessage = Buffer.from(rawRfc822)
+        .toString('base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+
+      const payload: any = { raw: encodedMessage };
+      if (params.threadId) {
+        payload.threadId = params.threadId;
+      }
+
+      const res = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        const errMsg = errJson?.error?.message || `HTTP ${res.status} al despachar correo vía Google Mail`;
+        throw new Error(errMsg);
+      }
+
+      const data = await res.json();
+      return {
+        success: true,
+        messageId: data.id,
+        threadId: data.threadId
+      };
+    } catch (err: any) {
+      console.error('Error en sendEmailViaGmailApi:', err);
+      return {
+        success: false,
+        error: err.message || 'Error desconocido al enviar correo'
       };
     }
   }

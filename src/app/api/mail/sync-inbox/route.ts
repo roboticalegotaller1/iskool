@@ -231,12 +231,15 @@ export async function POST(req: NextRequest) {
       InboundMailSpoolService.markAsProcessed(tenantId, processedSpoolIds);
     }
 
-    // PASO 2.5: Descargar y procesar correos reales de Google OAuth 2.0 (si la cuenta está autorizada)
+    // PASO 2.5: Procesar correos de Google OAuth 2.0 (con verificación de caché para evitar agotar cuotas)
     await GoogleOAuthService.ensureTokensLoaded(email);
     const hasGoogleOAuth = GoogleOAuthService.hasValidTokens(email);
     if (hasGoogleOAuth) {
       try {
-        const liveGoogle = await GoogleOAuthService.fetchRealGmailEmails(email, email, 30, tenantId);
+        const cached = getCachedInboxEmails(tenantId, email);
+        const liveGoogle = (cached && cached.length > 0)
+          ? cached
+          : await GoogleOAuthService.fetchRealGmailEmails(email, email, 15, tenantId);
         for (const msg of liveGoogle) {
           const normSubject = msg.subject.trim().toLowerCase();
           if (existingTitles.includes(normSubject) || isMatterResolved(msg.id, msg.subject)) continue;

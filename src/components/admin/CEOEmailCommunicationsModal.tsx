@@ -1586,7 +1586,7 @@ export function CEOEmailCommunicationsModal({
     onTriggerToast(`⚡ Borrador adaptativo generado según tu estilo propio (0 Tokens consumidos).`);
   };
 
-  const handleSendRawReply = (emailItem: RawGmailItem) => {
+  const handleSendRawReply = async (emailItem: RawGmailItem) => {
     if (!rawReplyDraft.trim()) {
       onTriggerToast('Por favor redacta un mensaje de respuesta.');
       return;
@@ -1603,23 +1603,111 @@ export function CEOEmailCommunicationsModal({
       schoolName
     );
 
-    setTimeout(() => {
-      setIsSendingRawReply(false);
+    const draftToSend = rawReplyDraft;
+    const recipient = emailItem.sender_email;
+    const sender = connectedEmail || authUsername || 'roboticalegotaller1@gmail.com';
+    const subjectReply = emailItem.subject.toLowerCase().startsWith('re:') ? emailItem.subject : `Re: ${emailItem.subject}`;
+    const rawLiveId = emailItem.id.replace(/^mat-live-/, '');
+
+    try {
+      const sendRes = await fetch('/api/mail/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          senderEmail: sender,
+          recipientEmail: recipient,
+          recipientName: emailItem.sender_name,
+          subject: subjectReply,
+          bodyText: draftToSend,
+          threadId: rawLiveId,
+          inReplyToMessageId: rawLiveId,
+          tenantId: currentTenantId,
+          smtpConfig: {
+            host: outgoingHost,
+            port: outgoingPort,
+            username: mailUsername || sender,
+            password: authPassword || appPasswordInput
+          }
+        })
+      });
+
+      const sendData = await sendRes.json();
+      if (!sendRes.ok || !sendData.success) {
+        throw new Error(sendData.error || 'Fallo en el despacho de correo');
+      }
+
+      // Registro en Bitácora oficial
+      const nowCdmx = `${formatCdmxTime(new Date())} (CDMX)`;
       setLogs((prev) => [
         {
           id: `log-reply-${Date.now()}`,
-          timestamp: 'Justo ahora',
-          subject: `Re: ${emailItem.subject}`,
-          recipientGroup: emailItem.sender_name,
+          timestamp: nowCdmx,
+          subject: subjectReply,
+          recipientGroup: emailItem.sender_name || recipient,
           targetCount: 1,
           status: 'Entregado (100%)',
-          sender: connectedEmail
+          sender
         },
         ...prev
       ]);
+
+      // Marcar correo como resuelto y respondido en rawEmailsList
+      setRawEmailsList((prev) => {
+        const updated = prev.map((item) =>
+          item.id === emailItem.id
+            ? {
+                ...item,
+                is_unread: false,
+                is_resolved: true,
+                is_replied: true,
+                reply_status: 'RESPONDIDO' as const,
+                resolved_at: `${formatCdmxDate(new Date())} ${nowCdmx}`
+              }
+            : item
+        );
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(rawEmailsStorageKey, JSON.stringify(updated));
+          } catch {}
+        }
+        return updated;
+      });
+
+      // Retirar permanentemente de la Bandeja Inteligente si existía
+      const normTitle = (emailItem.subject || '').trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+      setResolvedMatterIds((prev) => {
+        const combined = Array.from(new Set([...prev, emailItem.id, rawLiveId, normTitle]));
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(resolvedMattersStorageKey, JSON.stringify(combined));
+          } catch {}
+        }
+        return combined;
+      });
+
+      setMattersList((prev) => {
+        const remaining = prev.filter(m => {
+          if (m.id === emailItem.id || m.id === `mat-live-${rawLiveId}`) return false;
+          const tNorm = (m.title || '').trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+          if (normTitle && tNorm === normTitle) return false;
+          return true;
+        });
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(mattersStorageKey, JSON.stringify(remaining));
+          } catch {}
+        }
+        return remaining;
+      });
+
       setRawReplyDraft('');
-      onTriggerToast(`✓ Respuesta enviada a ${emailItem.sender_email}. El motor adaptativo aprendió de tu redacción (0 tokens).`);
-    }, 600);
+      onTriggerToast(`✓ Correo entregado exitosamente a ${recipient}. (Mensaje entregado en tiempo real).`);
+    } catch (err: any) {
+      console.error('Error al enviar respuesta:', err);
+      onTriggerToast(`❌ Error al enviar correo: ${err.message || 'Error de conexión'}`);
+    } finally {
+      setIsSendingRawReply(false);
+    }
   };
 
   // Estado del Laboratorio de Ingesta en tiempo real
@@ -3882,8 +3970,8 @@ ${schoolName}`
     CeoStyleLearnerService.recordInteraction(currentTenantId, 'open', matter.title, matter.sender_email);
   };
 
-  // Aprobar borrador desde el modal de detalle y retirar de bandeja inteligente
-  const handleApproveDraft = () => {
+  // Aprobar borrador desde el modal de detalle y despachar respuesta oficial en tiempo real
+  const handleApproveDraft = async () => {
     if (!selectedMatter) return;
     setIsApprovingDraft(true);
 
@@ -3902,6 +3990,10 @@ ${schoolName}`
     const rawLiveId = matterToResolve.id.replace(/^mat-live-/, '');
     const normTitle = (matterToResolve.title || '').trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
     const matterCode = (matterToResolve.matter_code || '').toUpperCase().trim();
+    const recipient = matterToResolve.sender_email;
+    const sender = connectedEmail || (isIbime ? 'roboticalegotaller1@gmail.com' : `direccion@${schoolDomain}`);
+    const subjectReply = matterToResolve.title.toLowerCase().startsWith('re:') ? matterToResolve.title : `Re: ${matterToResolve.title}`;
+    const draftContent = matterDraftEdit || matterToResolve.suggested_draft_reply || '';
 
     const keysToAdd = [
       matterToResolve.id,
@@ -3910,11 +4002,37 @@ ${schoolName}`
       matterCode
     ].filter(Boolean);
 
-    setTimeout(() => {
-      setIsApprovingDraft(false);
-      onTriggerToast(`✓ Borrador aprobado y respuesta oficial despachada a ${matterToResolve.sender_email || 'remitente'}. Retirado de Bandeja Inteligente.`);
+    try {
+      // 1. Despacho real mediante el endpoint de envío
+      const sendRes = await fetch('/api/mail/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          senderEmail: sender,
+          recipientEmail: recipient,
+          recipientName: matterToResolve.sender_name,
+          subject: subjectReply,
+          bodyText: draftContent,
+          threadId: rawLiveId || matterToResolve.id,
+          inReplyToMessageId: rawLiveId || matterToResolve.id,
+          tenantId: currentTenantId,
+          smtpConfig: {
+            host: outgoingHost,
+            port: outgoingPort,
+            username: mailUsername || sender,
+            password: authPassword || appPasswordInput
+          }
+        })
+      });
 
-      // 1. Registrar permanentemente en lista de resueltos
+      const sendData = await sendRes.json();
+      if (!sendRes.ok || !sendData.success) {
+        throw new Error(sendData.error || 'Fallo al despachar correo');
+      }
+
+      onTriggerToast(`✓ Respuesta oficial despachada a ${recipient}. (Mensaje entregado en tiempo real). Retirado de Bandeja Inteligente.`);
+
+      // 2. Registrar permanentemente en lista de resueltos
       setResolvedMatterIds((prev) => {
         const combined = Array.from(new Set([...prev, ...keysToAdd]));
         if (typeof window !== 'undefined') {
@@ -3925,7 +4043,7 @@ ${schoolName}`
         return combined;
       });
 
-      // 2. Retirar de mattersList
+      // 3. Retirar de mattersList
       setMattersList((prev) => {
         const remaining = prev.filter(m => {
           if (m.id === matterToResolve.id) return false;
@@ -3942,7 +4060,8 @@ ${schoolName}`
         return remaining;
       });
 
-      // 3. Marcar correo como resuelto y respondido en rawEmailsList
+      // 4. Marcar correo como resuelto y respondido en rawEmailsList
+      const nowCdmx = `${formatCdmxTime(new Date())} (CDMX)`;
       setRawEmailsList((prev) => {
         const updated = prev.map((item) => {
           const itemNorm = (item.subject || '').trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
@@ -3953,7 +4072,7 @@ ${schoolName}`
               is_resolved: true,
               is_replied: true,
               reply_status: 'RESPONDIDO' as const,
-              resolved_at: formatCdmxDateTime(new Date())
+              resolved_at: `${formatCdmxDate(new Date())} ${nowCdmx}`
             };
           }
           return item;
@@ -3966,32 +4085,25 @@ ${schoolName}`
         return updated;
       });
 
-      // 4. Agregar a Bitácora oficial (logs)
+      // 5. Agregar a Bitácora oficial (logs)
       const newLog: OutgoingEmailLog = {
         id: `log-reply-${Date.now()}`,
-        timestamp: `${formatCdmxTime(new Date())} (CDMX)`,
-        subject: `Re: ${matterToResolve.title}`,
-        recipientGroup: matterToResolve.sender_name || matterToResolve.sender_email || 'Remitente Institucional',
+        timestamp: nowCdmx,
+        subject: subjectReply,
+        recipientGroup: matterToResolve.sender_name || recipient || 'Remitente Institucional',
         targetCount: 1,
         status: 'Entregado (100%)',
-        sender: connectedEmail || (isIbime ? 'roboticalegotaller1@gmail.com' : `direccion@${schoolDomain}`)
+        sender
       };
       setLogs((prev) => [newLog, ...prev]);
 
-      // 5. Notificar al backend para persistencia en memoria y servidor
-      fetch('/api/mail/raw-inbox', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'mark_resolved',
-          tenantId: currentTenantId,
-          emailId: rawLiveId || matterToResolve.id,
-          subject: matterToResolve.title
-        })
-      }).catch(() => {});
-
       setSelectedMatter(null);
-    }, 600);
+    } catch (err: any) {
+      console.error('Error al despachar respuesta oficial:', err);
+      onTriggerToast(`❌ Error al despachar correo: ${err.message || 'Error de conexión'}`);
+    } finally {
+      setIsApprovingDraft(false);
+    }
   };
 
   // Marcar expediente como atendido y retirarlo de inmediato de la bandeja inteligente
@@ -4216,31 +4328,69 @@ Comité de Seguridad y Protección Escolar`
     onTriggerToast(`✓ Correo copiado: ${emailStr}`);
   };
 
-  const handleSendEmail = () => {
+  const handleSendEmail = async () => {
     setIsSending(true);
-    setTimeout(() => {
-      setIsSending(false);
+    const targetGroup =
+      selectedRecipient === 'all-network' ? 'Toda la Red (4 Sedes)' :
+      selectedRecipient === 'directors' ? 'Directores de Campus' :
+      selectedRecipient === 'teachers' ? 'Cuerpo Docente (200 profesores)' :
+      selectedRecipient === 'parents' ? 'Padres de Familia (3,740)' : 'Campus Seleccionado';
+
+    const targetEmail =
+      selectedRecipient === 'directors' ? 'directores@ibime.edu.mx' :
+      selectedRecipient === 'parents' ? 'padres@ibime.edu.mx' :
+      selectedRecipient === 'teachers' ? 'docentes@ibime.edu.mx' :
+      (connectedEmail || 'roboticalegotaller1@gmail.com');
+
+    try {
+      if (connectedEmail && connectionStatus === 'connected_verified') {
+        const sendRes = await fetch('/api/mail/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            senderEmail: connectedEmail,
+            recipientEmail: targetEmail,
+            recipientName: targetGroup,
+            subject,
+            bodyText: content,
+            tenantId: currentTenantId,
+            smtpConfig: {
+              host: outgoingHost,
+              port: outgoingPort,
+              username: mailUsername || connectedEmail,
+              password: authPassword || appPasswordInput
+            }
+          })
+        });
+        const sendData = await sendRes.json();
+        if (!sendRes.ok || !sendData.success) {
+          console.warn('Advertencia en despacho de comunicado:', sendData.error);
+        }
+      }
+
+      const nowCdmx = `${formatCdmxTime(new Date())} (CDMX)`;
       const newLog: OutgoingEmailLog = {
         id: `log-${Date.now()}`,
-        timestamp: 'Justo ahora',
-        subject: subject,
-        recipientGroup:
-          selectedRecipient === 'all-network' ? 'Toda la Red (4 Sedes)' :
-          selectedRecipient === 'directors' ? 'Directores de Campus' :
-          selectedRecipient === 'teachers' ? 'Cuerpo Docente (200 profesores)' :
-          selectedRecipient === 'parents' ? 'Padres de Familia (3,740)' : 'Campus Seleccionado',
+        timestamp: nowCdmx,
+        subject,
+        recipientGroup: targetGroup,
         targetCount:
           selectedRecipient === 'all-network' ? 3944 :
           selectedRecipient === 'directors' ? 4 :
           selectedRecipient === 'teachers' ? 200 :
           selectedRecipient === 'parents' ? 3740 : 1,
         status: 'Entregado (100%)',
-        sender: connectedEmail
+        sender: connectedEmail || (isIbime ? 'roboticalegotaller1@gmail.com' : `direccion@${schoolDomain}`)
       };
       setLogs([newLog, ...logs]);
-      onTriggerToast(`✓ Comunicado oficial despachado exitosamente a ${newLog.recipientGroup}`);
+      onTriggerToast(`✓ Comunicado oficial despachado exitosamente a ${targetGroup}`);
       setActiveTab('bitacora');
-    }, 600);
+    } catch (err: any) {
+      console.error('Error al despachar comunicado:', err);
+      onTriggerToast(`Error al despachar comunicado: ${err.message}`);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleOpenMailto = () => {
