@@ -3456,6 +3456,105 @@ Comité de Seguridad y Protección Escolar`
     return intelligentMatters;
   }, [intelligentMatters, usableSubFilter]);
 
+  // Estados para preguntas interactivas en tiempo real dentro de "Ponte al día conmigo"
+  const [catchupQuery, setCatchupQuery] = useState<string>('');
+  const [catchupConversation, setCatchupConversation] = useState<Array<{ q: string; a: string }>>([]);
+
+  // Métricas reactivas y dinámicas en tiempo real para "Ponte al día conmigo"
+  const catchupMetrics = useMemo(() => {
+    const rawTotal = rawEmailsList.length;
+    const mattersTotal = mattersList.length;
+    const totalCount = rawTotal > 0 ? rawTotal : mattersTotal;
+
+    // Cuadrante 4: Spam / Promoción
+    const spamItems = rawEmailsList.filter(e => 
+      e.triage_badge?.quadrant === 'SPAM_DESCARTADO' || 
+      e.category === 'promociones' || 
+      e.category === 'spam'
+    );
+    const spamCount = rawTotal > 0 ? spamItems.length : discardedList.length;
+
+    // Cuadrante 3: Informativo
+    const infoItems = rawEmailsList.filter(e => 
+      e.triage_badge?.quadrant === 'INFORMATIVO'
+    );
+    const infoCount = infoItems.length;
+
+    // Cuadrante 2: Delegados con SLA
+    const delegatedRawItems = rawEmailsList.filter(e => 
+      e.triage_badge?.quadrant === 'DELEGADO_CON_PLAZO'
+    );
+    const delegatedMatters = mattersList.filter(m => m.destination === 'DELEGADO_CON_SLA');
+    const delegatedCount = rawTotal > 0 ? delegatedRawItems.length : delegatedMatters.length;
+
+    // Cuadrante 1: Atención Inmediata CEO
+    const ceoMatters = intelligentMatters.filter(m => m.destination === 'ATENCION_CEO');
+    const criticalMatters = ceoMatters.filter(m => m.urgency === 'CRITICA' || m.urgency === 'ALTA');
+    const primaryUrgentMatter = criticalMatters[0] || ceoMatters[0] || null;
+
+    // Comunicaciones de Familias
+    const familyInquiries = rawEmailsList.filter(e => 
+      /familia|padre|madre|tutor|inscrip|colegiatura|cita|horario|reuni/i.test(`${e.sender_name} ${e.subject} ${e.snippet || ''}`)
+    );
+
+    // Asuntos SEP / Supervisión
+    const sepMatters = ceoMatters.filter(m => 
+      /sep|supervisi|supervisión|zona escolar/i.test(`${m.title} ${m.category || ''}`)
+    );
+
+    const hour = new Date().getHours();
+    const timeGreeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
+
+    return {
+      totalCount,
+      rawTotal,
+      spamCount,
+      infoCount,
+      delegatedCount,
+      ceoCount: ceoMatters.length,
+      criticalCount: criticalMatters.length,
+      primaryUrgentMatter,
+      familyCount: familyInquiries.length,
+      sepCount: sepMatters.length,
+      timeGreeting
+    };
+  }, [rawEmailsList, mattersList, intelligentMatters, discardedList.length]);
+
+  const handleAskCatchupQuestion = (customQ?: string) => {
+    const q = (customQ ?? catchupQuery).trim();
+    if (!q) return;
+
+    const lower = q.toLowerCase();
+    let answer = '';
+
+    if (lower.includes('urgente') || lower.includes('crítico') || lower.includes('critico') || lower.includes('prioridad') || lower.includes('necesita de mí')) {
+      if (catchupMetrics.primaryUrgentMatter) {
+        answer = `El asunto de máxima prioridad es "${catchupMetrics.primaryUrgentMatter.title}" en ${catchupMetrics.primaryUrgentMatter.campus || campuses[0]?.name || 'Plantel Central'}. Urgencia: ${catchupMetrics.primaryUrgentMatter.urgency}. Razón directiva: ${catchupMetrics.primaryUrgentMatter.why_shown}. Acción recomendada: ${catchupMetrics.primaryUrgentMatter.recommended_action}.`;
+      } else {
+        answer = `No se registran emergencias ni asuntos críticos prioritarios pendientes en este momento. La bandeja de Dirección General se encuentra al corriente.`;
+      }
+    } else if (lower.includes('spam') || lower.includes('publicidad') || lower.includes('promoci')) {
+      answer = `Se detectaron ${catchupMetrics.spamCount} correos catalogados en el cuadrante Spam / Promoción (ofertas de terceros, boletines comerciales y prospección externa). Todos se archivaron silenciosamente sin generar interrupciones ni alertas a Dirección.`;
+    } else if (lower.includes('sep') || lower.includes('supervisi') || lower.includes('zona')) {
+      if (catchupMetrics.sepCount > 0) {
+        answer = `Se registran ${catchupMetrics.sepCount} asunto(s) oficial(es) de Supervisión Escolar SEP catalogados con atención preferente de Dirección General.`;
+      } else {
+        answer = `No se registran oficios o requerimientos pendientes de Supervisión Escolar SEP en el buzón actualmente.`;
+      }
+    } else if (lower.includes('delegado') || lower.includes('área') || lower.includes('coordinaci') || lower.includes('cobranza') || lower.includes('sla')) {
+      answer = `Hay ${catchupMetrics.delegatedCount} asuntos turnados a Delegados Operativos con SLA vigente (en Cobranza, Control Escolar, Coordinación Académica o Logística) bajo resolución y seguimiento desatendido.`;
+    } else if (lower.includes('informativo') || lower.includes('circular') || lower.includes('webinar')) {
+      answer = `Hay ${catchupMetrics.infoCount} correos informativos procesados (circulares institucionales, notificaciones de plataformas educativas y avisos generales) archivados con acuse automático.`;
+    } else if (lower.includes('cuántos') || lower.includes('total') || lower.includes('resumen') || lower.includes('estadística')) {
+      answer = `Resumen en tiempo real: ${catchupMetrics.totalCount} correos analizados. Distribución: ${catchupMetrics.ceoCount} Atención Inmediata CEO, ${catchupMetrics.delegatedCount} Delegados con SLA, ${catchupMetrics.infoCount} Informativos y ${catchupMetrics.spamCount} Spam/Promociones.`;
+    } else {
+      answer = `En tiempo real se analizaron ${catchupMetrics.totalCount} correos: ${catchupMetrics.ceoCount} requieren atención directa del CEO, ${catchupMetrics.delegatedCount} fueron derivados a departamentos con SLA, ${catchupMetrics.infoCount} son informativos y ${catchupMetrics.spamCount} corresponden a publicidad/spam archivado.`;
+    }
+
+    setCatchupConversation(prev => [...prev, { q, a: answer }]);
+    setCatchupQuery('');
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -7491,40 +7590,202 @@ Comité de Seguridad y Protección Escolar`
       {/* ========================================================= */}
       {showCatchupModal && (
         <div className="fixed inset-0 z-70 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 text-xs animate-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-indigo-600" />
-                <h3 className="text-base font-black text-slate-900">Ponte al día conmigo</h3>
+          <div className="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 text-xs animate-in zoom-in-95 max-h-[92vh] flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center">
+                  <Sparkles className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                    <span>Ponte al día conmigo</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      En tiempo real
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    Sincronización activa • {lastSyncTime} • {connectedEmail || authUsername || 'Buzón Oficial'}
+                  </p>
+                </div>
               </div>
-              <button onClick={() => setShowCatchupModal(false)} className="p-1 rounded-lg text-slate-400 hover:text-slate-800">
+              <button 
+                onClick={() => setShowCatchupModal(false)} 
+                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                title="Cerrar resumen"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-950 space-y-2 leading-relaxed">
-              <p className="font-bold text-sm">Buenos días, {directorTitle}.</p>
-              <p>
-                He analizado <strong>297 correos</strong> recibidos en {schoolName} en las últimas 24 horas.
-              </p>
-              <p>
-                • <strong>273 correos</strong> fueron catalogados como no usables (publicidad de proveedores, boletines comerciales y spam) y se archivaron silenciosamente sin interrumpirla.
-              </p>
-              <p>
-                • <strong>1 asunto crítico prioritario</strong> requiere su intervención presencial en {campuses[0]?.name || 'Plantel Central'} (caso de convivencia en 5º B). Ya preparé el borrador de citatorio para mañana 08:30 hrs.
-              </p>
-              <p>
-                • <strong>17 familias</strong> consultaron el horario del festival del viernes. El comunicado institucional está redactado y listo para ser aprobado en 1 clic.
-              </p>
+            {/* Scrollable Body */}
+            <div className="space-y-4 overflow-y-auto flex-1 pr-1">
+              {/* Tarjeta Ejecutiva Dinámica en Tiempo Real */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-indigo-50/80 border border-indigo-200 text-indigo-950 space-y-3 leading-relaxed">
+                <p className="font-bold text-sm text-indigo-950">
+                  {catchupMetrics.timeGreeting}, {directorTitle}.
+                </p>
+                <p className="text-xs text-indigo-900">
+                  He analizado en tiempo real <strong>{catchupMetrics.totalCount} correos</strong> recibidos en {schoolName} en las últimas 24 horas.
+                </p>
+
+                <div className="space-y-2 pt-1 border-t border-indigo-100/80 text-xs">
+                  <p className="flex items-start gap-1.5">
+                    <span className="text-purple-600 font-bold shrink-0">•</span>
+                    <span>
+                      <strong>{catchupMetrics.spamCount} correos</strong> fueron catalogados como no usables (publicidad de proveedores, boletines comerciales y spam) y se archivaron silenciosamente sin interrumpirle.
+                    </span>
+                  </p>
+
+                  <p className="flex items-start gap-1.5">
+                    <span className="text-red-600 font-bold shrink-0">•</span>
+                    <span>
+                      {catchupMetrics.ceoCount > 0 ? (
+                        <>
+                          <strong>{catchupMetrics.ceoCount} asunto{catchupMetrics.ceoCount > 1 ? 's' : ''} crítico{catchupMetrics.ceoCount > 1 ? 's' : ''} prioritario{catchupMetrics.ceoCount > 1 ? 's' : ''}</strong> requiere{catchupMetrics.ceoCount > 1 ? 'n' : ''} su intervención
+                          {catchupMetrics.primaryUrgentMatter ? (
+                            <> en {catchupMetrics.primaryUrgentMatter.campus || campuses[0]?.name || 'Plantel Central'} ({catchupMetrics.primaryUrgentMatter.title}). {catchupMetrics.primaryUrgentMatter.suggested_draft_reply ? 'Ya preparé el borrador de respuesta oficial listo para ser aprobado en 1 clic.' : ''}</>
+                          ) : '.'}
+                        </>
+                      ) : (
+                        <>
+                          <strong>0 asuntos críticos prioritarios pendientes:</strong> La bandeja de Dirección General se encuentra al corriente sin emergencias escolares ni oficios pendientes.
+                        </>
+                      )}
+                    </span>
+                  </p>
+
+                  <p className="flex items-start gap-1.5">
+                    <span className="text-blue-600 font-bold shrink-0">•</span>
+                    <span>
+                      <strong>{catchupMetrics.infoCount} correos informativos</strong> (circulares, plataformas educativas y conferencias) procesados y archivados con acuse.
+                    </span>
+                  </p>
+
+                  <p className="flex items-start gap-1.5">
+                    <span className="text-amber-600 font-bold shrink-0">•</span>
+                    <span>
+                      <strong>{catchupMetrics.delegatedCount} correos turnados a Delegados con SLA</strong> en Coordinación Académica, Cobranza, Control Escolar o Logística bajo supervisión desatendida.
+                    </span>
+                  </p>
+
+                  {catchupMetrics.familyCount > 0 && (
+                    <p className="flex items-start gap-1.5">
+                      <span className="text-emerald-600 font-bold shrink-0">•</span>
+                      <span>
+                        <strong>{catchupMetrics.familyCount} familias</strong> consultaron información escolar o administrativa en el ciclo activo.
+                      </span>
+                    </p>
+                  )}
+
+                  {catchupMetrics.sepCount > 0 && (
+                    <p className="flex items-start gap-1.5">
+                      <span className="text-red-700 font-bold shrink-0">•</span>
+                      <span>
+                        <strong>{catchupMetrics.sepCount} oficio(s) de Supervisión Escolar SEP</strong> clasificados con máxima prioridad directiva.
+                      </span>
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Conversación / Preguntas al Motor Pedagógico IA */}
+              {catchupConversation.length > 0 && (
+                <div className="space-y-2">
+                  {catchupConversation.map((msg, idx) => (
+                    <div key={idx} className="space-y-1 text-xs">
+                      <div className="bg-slate-100 p-2.5 rounded-xl font-bold text-slate-700">
+                        Tú: {msg.q}
+                      </div>
+                      <div className="bg-emerald-50 p-2.5 rounded-xl text-emerald-950 border border-emerald-200 whitespace-pre-line leading-relaxed">
+                        <span className="font-bold text-emerald-800">Motor de IA Pedagógica:</span> {msg.a}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Caja de Consulta Interactiva a 0 Tokens */}
+              <div className="space-y-1.5 pt-1">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={catchupQuery}
+                    onChange={(e) => setCatchupQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAskCatchupQuestion()}
+                    placeholder="Pregunta en vivo: ¿Cuál es el caso más urgente? ¿Hay algo de la SEP?..."
+                    className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleAskCatchupQuestion()}
+                    className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-colors shrink-0 cursor-pointer"
+                  >
+                    Preguntar
+                  </button>
+                </div>
+                <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                  <span className="text-[10px] text-slate-400 font-bold">Sugerencias rápidas:</span>
+                  <button
+                    type="button"
+                    onClick={() => handleAskCatchupQuestion('¿Cuál es el caso más urgente?')}
+                    className="text-[10px] bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-700 px-2 py-0.5 rounded-lg border border-slate-200 transition-colors cursor-pointer"
+                  >
+                    ¿Cuál es el caso más urgente?
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAskCatchupQuestion('¿Qué correos son spam?')}
+                    className="text-[10px] bg-slate-100 hover:bg-purple-50 text-slate-600 hover:text-purple-700 px-2 py-0.5 rounded-lg border border-slate-200 transition-colors cursor-pointer"
+                  >
+                    ¿Qué es spam?
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAskCatchupQuestion('¿Hay algo de la SEP?')}
+                    className="text-[10px] bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-700 px-2 py-0.5 rounded-lg border border-slate-200 transition-colors cursor-pointer"
+                  >
+                    ¿Hay algo de la SEP?
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2">
+            {/* Footer con Acciones Directas en Tiempo Real */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-3 border-t border-slate-100 shrink-0">
               <button
-                onClick={() => setShowCatchupModal(false)}
-                className="w-full py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition-colors"
+                type="button"
+                onClick={() => handleTriggerSync(false)}
+                disabled={isSyncingLiveInbox}
+                className="w-full sm:w-auto px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer"
+                title="Sincronizar correos reales de Google / IMAP ahora mismo"
               >
-                Entendido, continuar en la Consola
+                <RefreshCw className={`h-3.5 w-3.5 ${isSyncingLiveInbox ? 'animate-spin text-indigo-600' : ''}`} />
+                <span>{isSyncingLiveInbox ? 'Sincronizando...' : 'Sincronizar en Vivo'}</span>
               </button>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                {catchupMetrics.ceoCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowCatchupModal(false);
+                      setActiveTab('inbox');
+                    }}
+                    className="px-3 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition-colors cursor-pointer"
+                  >
+                    Ver Asuntos CEO ({catchupMetrics.ceoCount})
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setShowCatchupModal(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-colors cursor-pointer"
+                >
+                  Entendido, continuar en la Consola
+                </button>
+              </div>
             </div>
           </div>
         </div>
