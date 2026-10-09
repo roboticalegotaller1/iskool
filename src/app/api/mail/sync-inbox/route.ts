@@ -119,6 +119,10 @@ export async function POST(req: NextRequest) {
 
     function isSpamCommercial(subject: string, bodyText: string = ''): boolean {
       const text = `${subject} ${bodyText}`.toLowerCase();
+      // Salvaguarda canónica: Temas de salud física, alimentación y comedor escolar jamás son spam comercial
+      if (/comedor|alimento|comida|intoxicaci|malestar|est[oó]mac/i.test(text)) {
+        return false;
+      }
       return (
         text.includes('amazon') ||
         text.includes('prime') ||
@@ -214,7 +218,8 @@ export async function POST(req: NextRequest) {
           const normSubject = msg.subject.trim().toLowerCase();
           if (existingTitles.includes(normSubject)) continue;
 
-          const isCeo = msg.triage_badge?.quadrant === 'ATENCION_CEO' && !isSpamCommercial(msg.subject, msg.body_text || msg.snippet);
+          const isFoodDining = /comedor|alimento|comida|intoxicaci|malestar|est[oó]mac/i.test(`${msg.subject} ${msg.body_text || msg.snippet}`);
+          const isCeo = (msg.triage_badge?.quadrant === 'ATENCION_CEO' || isFoodDining) && !isSpamCommercial(msg.subject, msg.body_text || msg.snippet);
 
           if (isCeo) {
             newMatters.push({
@@ -222,13 +227,17 @@ export async function POST(req: NextRequest) {
               matter_code: `MAT-${prefix}-2026-${msg.id.replace(/[^a-zA-Z0-9]/g, '').slice(-3).toUpperCase() || '001'}`,
               title: msg.subject,
               summary: msg.snippet || msg.body_text.slice(0, 140) + '...',
-              category: 'Atención Inmediata CEO',
+              category: isFoodDining ? 'Salud y Alimentación Escolar' : 'Atención Inmediata CEO',
               urgency: 'CRITICA',
               destination: 'ATENCION_CEO',
-              why_shown: 'Correo prioritario en tiempo real clasificado por el Asistente Pedagógico IA como Atención Inmediata CEO.',
+              why_shown: isFoodDining
+                ? 'Queja prioritaria sobre salud, bienestar físico y servicio de comedor escolar clasificada para atención inmediata de Dirección General.'
+                : 'Correo prioritario en tiempo real clasificado por el Asistente Pedagógico IA como Atención Inmediata CEO.',
               reincidence_count: 1,
               recommended_action: 'Revisar expediente completo y validar borrador de respuesta oficial de Dirección General.',
-              suggested_draft_reply: `Estimado(a) ${msg.sender_name}:\n\nHe recibido personalmente su comunicación en relación con: "${msg.subject}". En ${schoolName} la atención inmediata de este asunto es prioritaria.\n\nHe tomado conocimiento del tema y me encuentro coordinando la atención con las áreas correspondientes.\n\nAtentamente,\nDirección General · ${schoolName}`,
+              suggested_draft_reply: isFoodDining
+                ? `Estimado(a) ${msg.sender_name}:\n\nHe recibido personalmente su comunicación en relación con el servicio de comedor escolar y el estado de salud de su hijo. En ${schoolName} la salud, nutrición y bienestar de nuestros estudiantes es un compromiso absoluto e inviolable.\n\nHe instruido una revisión inmediata de los insumos y menús servidos en cafetería y comedor, así como un seguimiento puntual con el área médica escolar. Me pongo a su entera disposición para cualquier aclaración directa.\n\nAtentamente,\nDirección General · ${schoolName}`
+                : `Estimado(a) ${msg.sender_name}:\n\nHe recibido personalmente su comunicación en relación con: "${msg.subject}". En ${schoolName} la atención inmediata de este asunto es prioritaria.\n\nHe tomado conocimiento del tema y me encuentro coordinando la atención con las áreas correspondientes.\n\nAtentamente,\nDirección General · ${schoolName}`,
               assigned_role: 'Dirección General / CEO',
               assigned_email: email,
               sla_hours: 12,
@@ -254,7 +263,8 @@ export async function POST(req: NextRequest) {
         const normSubject = msg.subject.trim().toLowerCase();
         if (existingTitles.includes(normSubject)) continue;
 
-        const isCeo = msg.triage_badge?.quadrant === 'ATENCION_CEO' && !isSpamCommercial(msg.subject, msg.body_text || msg.snippet);
+        const isFoodDining = /comedor|alimento|comida|intoxicaci|malestar|est[oó]mac/i.test(`${msg.subject} ${msg.body_text || msg.snippet}`);
+        const isCeo = (msg.triage_badge?.quadrant === 'ATENCION_CEO' || isFoodDining) && !isSpamCommercial(msg.subject, msg.body_text || msg.snippet);
 
         if (isCeo) {
           newMatters.push({
@@ -262,13 +272,17 @@ export async function POST(req: NextRequest) {
             matter_code: `MAT-${prefix}-2026-${msg.id.replace(/[^a-zA-Z0-9]/g, '').slice(-3).toUpperCase() || '001'}`,
             title: msg.subject,
             summary: msg.snippet || msg.body_text.slice(0, 140) + '...',
-            category: 'Atención Inmediata CEO',
+            category: isFoodDining ? 'Salud y Alimentación Escolar' : 'Atención Inmediata CEO',
             urgency: 'CRITICA',
             destination: 'ATENCION_CEO',
-            why_shown: 'Correo de alta prioridad clasificado por el Asistente Pedagógico IA como Atención Inmediata CEO.',
+            why_shown: isFoodDining
+              ? 'Queja prioritaria sobre salud, bienestar físico y servicio de comedor escolar clasificada para atención inmediata de Dirección General.'
+              : 'Correo de alta prioridad clasificado por el Asistente Pedagógico IA como Atención Inmediata CEO.',
             reincidence_count: 1,
             recommended_action: 'Revisar expediente completo y validar borrador de respuesta oficial de Dirección General.',
-            suggested_draft_reply: `Estimado(a) ${msg.sender_name}:\n\nHe recibido personalmente su comunicación en relación con: "${msg.subject}". En ${schoolName} la atención inmediata de este asunto es prioritaria.\n\nAtentamente,\nDirección General · ${schoolName}`,
+            suggested_draft_reply: isFoodDining
+              ? `Estimado(a) ${msg.sender_name}:\n\nHe recibido personalmente su comunicación en relación con el servicio de comedor escolar y el estado de salud de su hijo. En ${schoolName} la salud, nutrición y bienestar de nuestros estudiantes es un compromiso absoluto e inviolable.\n\nHe instruido una revisión inmediata de los insumos y menús servidos en cafetería y comedor, así como un seguimiento puntual con el área médica escolar. Me pongo a su entera disposición para cualquier aclaración directa.\n\nAtentamente,\nDirección General · ${schoolName}`
+              : `Estimado(a) ${msg.sender_name}:\n\nHe recibido personalmente su comunicación en relación con: "${msg.subject}". En ${schoolName} la atención inmediata de este asunto es prioritaria.\n\nAtentamente,\nDirección General · ${schoolName}`,
             assigned_role: 'Dirección General / CEO',
             assigned_email: email,
             sla_hours: 12,

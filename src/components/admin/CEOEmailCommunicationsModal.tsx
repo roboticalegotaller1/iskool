@@ -433,6 +433,8 @@ export function CEOEmailCommunicationsModal({
   const mailVerifiedStorageKey = `iskool_mail_verified_${currentTenantId}`;
   const mailConfigStorageKey = `iskool_mail_config_${currentTenantId}`;
   const rawEmailsStorageKey = `iskool_raw_emails_${currentTenantId}`;
+  const mattersStorageKey = `iskool_matters_${currentTenantId}`;
+  const discardedStorageKey = `iskool_discarded_${currentTenantId}`;
   const globalConnectedEmailKey = 'iskool_last_connected_email';
   const globalMailVerifiedKey = 'iskool_last_mail_verified';
 
@@ -1298,10 +1300,101 @@ export function CEOEmailCommunicationsModal({
 
     // 2. Si se marcó como SPAM, INFORMATIVO o DELEGADO, remover inmediatamente de la Bandeja Inteligente
     if (targetQuadrant !== 'ATENCION_CEO') {
-      setMattersList(prev => prev.filter(m => {
-        const isMatch = m.id === `mat-live-${email.id}` || m.title.trim().toLowerCase() === email.subject.trim().toLowerCase();
-        return !isMatch;
-      }));
+      setMattersList(prev => {
+        const filtered = prev.filter(m => {
+          const isMatch = m.id === `mat-live-${email.id}` || m.title.trim().toLowerCase() === email.subject.trim().toLowerCase();
+          return !isMatch;
+        });
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(mattersStorageKey, JSON.stringify(filtered));
+          } catch {}
+        }
+        return filtered;
+      });
+    } else {
+      // 2.1 MANDATORIO: Si se marcó como ATENCIÓN INMEDIATA CEO, inyectar o actualizar DE INMEDIATO en Bandeja Inteligente
+      setMattersList(prev => {
+        const normSub = (email.subject || '').toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+        const existingIdx = prev.findIndex(m => 
+          m.id === `mat-live-${email.id}` || 
+          (m.title || '').toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim() === normSub
+        );
+
+        const cleanSnippet = (email.snippet || email.body_text || '').replace(/\s+/g, ' ').trim();
+        const summary = cleanSnippet.length > 220 ? cleanSnippet.slice(0, 217) + '...' : (cleanSnippet || 'Comunicación oficial recibida en buzón.');
+        const primaryCampus = campuses[0]?.name || `${schoolName} · Plantel Central`;
+        const prefix = (schoolSlug || currentTenantId.replace(/^sch-/, '') || 'MAT').toUpperCase().slice(0, 5);
+
+        const isFoodDiningConcern = /comedor|alimento|comida|intoxicaci|malestar|est[oó]mac/i.test(`${email.subject} ${email.body_text || ''}`);
+        const category = isFoodDiningConcern 
+          ? 'Salud y Alimentación Escolar' 
+          : (email.subject.toLowerCase().includes('convivencia') || email.subject.toLowerCase().includes('acoso') 
+              ? 'Convivencia / Caso Crítico Nivel 3' 
+              : 'Atención Inmediata CEO');
+
+        const defaultDraft = isFoodDiningConcern
+          ? `Estimado(a) ${email.sender_name}:\n\nHe recibido personalmente su comunicación en relación con el servicio de comedor escolar y el estado de salud de su hijo. En ${schoolName} la salud, nutrición y bienestar de nuestros estudiantes es un compromiso absoluto e inviolable.\n\nHe instruido una revisión inmediata de los insumos y menús servidos en cafetería y comedor, así como un seguimiento puntual con el área médica escolar. Me pongo a su entera disposición para cualquier aclaración directa.\n\nAtentamente,\n${directorTitle}\nDirección General · ${schoolName}`
+          : `Estimado(a) ${email.sender_name}:\n\nHe recibido personalmente su comunicación en relación con: "${email.subject}". En ${schoolName} la atención oportuna y fundada es una prioridad institucional.\n\nHe tomado conocimiento del requerimiento y me encuentro coordinando la atención con las áreas correspondientes para brindarle una resolución fundada en los protocolos vigentes.\n\nAtentamente,\n${directorTitle}\nDirección General · ${schoolName}`;
+
+        const synthesizedMatter: MatterItem = {
+          id: `mat-live-${email.id}`,
+          matter_code: `MAT-${prefix}-2026-${email.id.replace(/[^a-zA-Z0-9]/g, '').slice(-3).toUpperCase() || '001'}`,
+          title: email.subject,
+          summary,
+          category,
+          urgency: 'CRITICA',
+          destination: 'ATENCION_CEO',
+          why_shown: isFoodDiningConcern
+            ? 'Queja prioritaria sobre salud, bienestar físico y servicio de comedor escolar clasificada para atención inmediata de Dirección General.'
+            : 'Correo prioritario clasificado como Atención Inmediata CEO por instrucción directiva.',
+          reincidence_count: 1,
+          recommended_action: 'Revisar expediente completo y validar borrador de respuesta oficial de Dirección General.',
+          suggested_draft_reply: defaultDraft,
+          assigned_role: 'Dirección General / CEO',
+          assigned_email: email.recipient_email,
+          sla_hours: 12,
+          sla_remaining_text: '⏱️ 12h restantes',
+          sender_name: email.sender_name,
+          sender_email: email.sender_email,
+          provenance_doc: `Buzón Institucional en Vivo (${email.sender_email})`,
+          received_at: email.received_at ? `${email.received_at}${email.timestamp ? ` (${email.timestamp})` : ''}` : 'Hoy',
+          campus: primaryCampus
+        };
+
+        let updated: MatterItem[];
+        if (existingIdx >= 0) {
+          updated = [...prev];
+          updated[existingIdx] = {
+            ...updated[existingIdx],
+            destination: 'ATENCION_CEO',
+            urgency: 'CRITICA',
+            category,
+            why_shown: synthesizedMatter.why_shown,
+            suggested_draft_reply: defaultDraft
+          };
+        } else {
+          updated = [synthesizedMatter, ...prev];
+        }
+
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(mattersStorageKey, JSON.stringify(updated));
+          } catch {}
+        }
+        return updated;
+      });
+
+      // Remover de descartados si estuviera presente
+      setDiscardedList(prev => {
+        const filtered = prev.filter(d => (d.subject || '').trim().toLowerCase() !== email.subject.trim().toLowerCase());
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(discardedStorageKey, JSON.stringify(filtered));
+          } catch {}
+        }
+        return filtered;
+      });
     }
 
     // 3. Actualizar la lista en crudo con la nueva clasificación
@@ -1355,7 +1448,7 @@ export function CEOEmailCommunicationsModal({
       SPAM_DESCARTADO: '🟣 Spam / Promoción'
     };
     onTriggerToast(`🧠 Aprendizaje local (0 tokens): ${email.sender_name || patternValue} fue aprendido como ${quadrantNames[targetQuadrant]}.`);
-  }, [currentTenantId, rawEmailsStorageKey, onTriggerToast]);
+  }, [currentTenantId, rawEmailsStorageKey, mattersStorageKey, discardedStorageKey, campuses, schoolName, directorTitle, schoolSlug, onTriggerToast]);
 
   const handleOpenRawEmailDetail = (emailItem: RawGmailItem) => {
     setSelectedRawEmailId(emailItem.id);
@@ -1513,11 +1606,20 @@ ${schoolName}`
   // Filtro canónico absoluto para erradicar falsos positivos comerciales o spam de la Bandeja Inteligente
   const isSpamOrCommercialMatter = (item: any): boolean => {
     if (!item) return false;
+    // REGLA SUPREMA INVIOLABLE: Si un asunto o correo está clasificado o marcado como ATENCIÓN INMEDIATA CEO
+    // (por el Motor de IA, por el servidor o por instrucción directiva), JAMÁS debe ser descartado como spam comercial.
+    if (item.destination === 'ATENCION_CEO' || item.triage_badge?.quadrant === 'ATENCION_CEO') {
+      return false;
+    }
     const code = (item.matter_code || '').toUpperCase();
     if (code === 'MAT-IBIME-2026-544' || code === 'MAT-IBIME-2026-812') return true;
     const id = String(item.id || '');
     if (id.includes('544') || id.includes('812')) return true;
     const text = `${item.title || ''} ${item.subject || ''} ${item.summary || ''} ${item.why_shown || ''} ${item.category || ''} ${item.sender_email || ''} ${item.body_text || ''} ${item.snippet || ''}`.toLowerCase();
+    // Salvaguarda canónica: Bienestar, salud y comedor escolar jamás son spam comercial
+    if (/comedor|alimento|comida|intoxicaci|malestar|est[oó]mac/i.test(text)) {
+      return false;
+    }
     return (
       text.includes('amazon') ||
       text.includes('prime') ||
@@ -1541,8 +1643,7 @@ ${schoolName}`
       text.includes('cinepolis') ||
       text.includes('asm career') ||
       text.includes('chicv technology') ||
-      text.includes('reclamo de vendedor') ||
-      text.includes('kami-mac')
+      text.includes('reclamo de vendedor')
     );
   };
 
@@ -1579,8 +1680,6 @@ ${schoolName}`
   };
 
   // Semilla y Almacenamiento Aislado de Asuntos Usables y Descartados por Tenant
-  const mattersStorageKey = `iskool_matters_${currentTenantId}`;
-  const discardedStorageKey = `iskool_discarded_${currentTenantId}`;
   const [mattersList, setMattersList] = useState<MatterItem[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(mattersStorageKey);
@@ -1887,14 +1986,19 @@ ${schoolName}`
 
           const isSep = /\b(sep|supervision|supervisión)\b/i.test(`${email.subject} ${email.body_text}`);
 
+          const isFoodDiningConcern = /comedor|alimento|comida|intoxicaci|malestar|est[oó]mac/i.test(`${email.subject} ${email.body_text || ''}`);
+
           let category = 'Atención Inmediata CEO';
-          if (isVip) category = 'Contacto VIP Directivo';
+          if (isFoodDiningConcern) category = 'Salud y Alimentación Escolar';
+          else if (isVip) category = 'Contacto VIP Directivo';
           else if (isSep) category = 'Supervisión SEP y Legal';
           else if (email.subject.toLowerCase().includes('convivencia') || email.subject.toLowerCase().includes('acoso')) category = 'Convivencia / Caso Crítico Nivel 3';
           else if (email.subject.toLowerCase().includes('herido') || email.subject.toLowerCase().includes('accidente')) category = 'Accidente Escolar / Salvaguarda';
 
           let whyShown = '';
-          if (isVip) {
+          if (isFoodDiningConcern) {
+            whyShown = 'Queja prioritaria sobre salud, bienestar físico y servicio de comedor escolar clasificada para atención inmediata de Dirección General.';
+          } else if (isVip) {
             whyShown = `Contacto VIP Prioritario registrado en Ajustes Directivos. Remitente: ${email.sender_name} (${email.sender_email}). Facultades reservadas para Dirección General.`;
           } else {
             whyShown = `Correo prioritario en tiempo real clasificado por el Asistente Pedagógico IA como Atención Inmediata CEO (${category}).`;
@@ -1906,7 +2010,9 @@ ${schoolName}`
           const primaryCampus = campuses[0]?.name || `${schoolName} · Plantel Central`;
           const prefix = (schoolSlug || currentTenantId.replace(/^sch-/, '') || 'MAT').toUpperCase().slice(0, 5);
 
-          const defaultDraft = `Estimado(a) ${email.sender_name}:\n\nHe recibido personalmente su comunicación en relación con: "${email.subject}". En ${schoolName} la atención oportuna y fundada es una prioridad institucional.\n\nHe tomado conocimiento del requerimiento y me encuentro coordinando la atención con las áreas correspondientes para brindarle una resolución fundada en los protocolos vigentes.\n\nAtentamente,\n${directorTitle}\nDirección General · ${schoolName}`;
+          const defaultDraft = isFoodDiningConcern
+            ? `Estimado(a) ${email.sender_name}:\n\nHe recibido personalmente su comunicación en relación con el servicio de comedor escolar y el estado de salud de su hijo. En ${schoolName} la salud, nutrición y bienestar de nuestros estudiantes es un compromiso absoluto e inviolable.\n\nHe instruido una revisión inmediata de los insumos y menús servidos en cafetería y comedor, así como un seguimiento puntual con el área médica escolar. Me pongo a su entera disposición para cualquier aclaración directa.\n\nAtentamente,\n${directorTitle}\nDirección General · ${schoolName}`
+            : `Estimado(a) ${email.sender_name}:\n\nHe recibido personalmente su comunicación en relación con: "${email.subject}". En ${schoolName} la atención oportuna y fundada es una prioridad institucional.\n\nHe tomado conocimiento del requerimiento y me encuentro coordinando la atención con las áreas correspondientes para brindarle una resolución fundada en los protocolos vigentes.\n\nAtentamente,\n${directorTitle}\nDirección General · ${schoolName}`;
 
           const synthesizedMatter: MatterItem = {
             id: `mat-live-${email.id}`,
@@ -1933,6 +2039,18 @@ ${schoolName}`
 
           updatedMatters.unshift(synthesizedMatter);
           hasChanges = true;
+        } else {
+          const existing = updatedMatters[existingIdx];
+          const isFoodDiningConcern = /comedor|alimento|comida|intoxicaci|malestar|est[oó]mac/i.test(`${email.subject} ${email.body_text || ''}`);
+          if (existing.destination !== 'ATENCION_CEO' || (isFoodDiningConcern && existing.category !== 'Salud y Alimentación Escolar')) {
+            updatedMatters[existingIdx] = {
+              ...existing,
+              destination: 'ATENCION_CEO',
+              urgency: 'CRITICA',
+              category: isFoodDiningConcern ? 'Salud y Alimentación Escolar' : existing.category
+            };
+            hasChanges = true;
+          }
         }
       }
 
