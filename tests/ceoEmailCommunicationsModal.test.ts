@@ -131,5 +131,43 @@ describe('📬 CONSOLA DE CORREO INSTITUCIONAL & SUITE EJECUTIVA 360° (CEOEmail
     expect(content).toContain('rawEmailSearchQuery');
     expect(content).toContain('/api/mail/raw-inbox');
   });
+
+  it('debe incorporar el botón Calendario antes de + Agendar Nueva Cita / Evento con modal interactivo, Drag & Drop y sincronización inmediata con Google Calendar', () => {
+    // 1. Botón "Calendario" ubicado inmediatamente antes de "+ Agendar Nueva Cita / Evento"
+    const calendarioBtnIndex = content.indexOf('<span>Calendario</span>');
+    const agendarBtnIndex = content.indexOf('<span>+ Agendar Nueva Cita / Evento</span>');
+
+    expect(calendarioBtnIndex).toBeGreaterThan(-1);
+    expect(agendarBtnIndex).toBeGreaterThan(-1);
+    expect(calendarioBtnIndex).toBeLessThan(agendarBtnIndex);
+
+    // 2. Ventana emergente (modal) con calendario interactivo y vista mensual
+    expect(content).toContain('showInteractiveCalendarModal');
+    expect(content).toContain('setShowInteractiveCalendarModal');
+    expect(content).toContain('Calendario Escolar Interactivo');
+    expect(content).toContain('calendarGridDays');
+    expect(content).toContain('MONTH_NAMES_ES');
+    expect(content).toContain('handlePrevMonth');
+    expect(content).toContain('handleNextMonth');
+
+    // 3. Sujetar y arrastrar (Drag & Drop) para mover a nueva fecha
+    expect(content).toContain('draggable={true}');
+    expect(content).toContain('handleEventDragStart');
+    expect(content).toContain('handleDayDragOver');
+    expect(content).toContain('handleDayDrop');
+    expect(content).toContain('dragOverDate');
+    expect(content).toContain('draggedEventId');
+
+    // 4. Modificación de citas existentes
+    expect(content).toContain('editingCalendarEvent');
+    expect(content).toContain('setEditingCalendarEvent');
+    expect(content).toContain('handleSaveEditedEvent');
+    expect(content).toContain('Modificar Cita o Evento');
+
+    // 5. Sincronización inmediata con Google Calendar / Gmail (TLS 1.3)
+    expect(content).toContain('handleSyncEventToGoogleCalendar');
+    expect(content).toContain('/api/mail/calendar');
+    expect(content).toContain('Google Calendar API (TLS 1.3)');
+  });
 });
 
