@@ -28,10 +28,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: ⚙️ Configurar Entorno Node.js 20
+      - name: ⚙️ Configurar Entorno Node.js 20 (LTS 20.18.0)
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20.18.0'
           cache: 'npm'
 
       - name: 📦 Instalar Dependencias
@@ -48,9 +48,15 @@ jobs:
 
       - name: 🧪 Ejecución de Tests Unitarios
         run: npm run test:unit
+        env:
+          SESSION_SECRET: 'e7b4c91a02f83d6520b174ac5d893e214fa0c6791b84e3d5029a1f7c8b36d0e4'
+          NODE_OPTIONS: '--no-warnings'
 
       - name: 🔒 Ejecución de Tests de Contratos e Integración Hermética
         run: npm run test:hermetic
+        env:
+          SESSION_SECRET: 'e7b4c91a02f83d6520b174ac5d893e214fa0c6791b84e3d5029a1f7c8b36d0e4'
+          NODE_OPTIONS: '--no-warnings'
 
   # ===========================================================================
   # JOB 2: E2E BROWSER (Compilación Real, Navegador Chromium & Playwright)
@@ -65,10 +71,10 @@ jobs:
       - name: 📥 Checkout del Repositorio Central
         uses: actions/checkout@v4
 
-      - name: ⚙️ Configurar Node.js 20
+      - name: ⚙️ Configurar Node.js 20 (LTS 20.18.0)
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20.18.0'
           cache: 'npm'
 
       - name: 📦 Instalar Dependencias

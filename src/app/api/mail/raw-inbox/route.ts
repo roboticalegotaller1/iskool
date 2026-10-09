@@ -324,15 +324,48 @@ export async function GET(request: NextRequest) {
 
     const allEmails = [...additionalFromSpool, ...emails];
 
+    const sanitizedEmails = allEmails.map((item: RawGmailItem) => {
+      if (item.triage_badge?.quadrant === 'ATENCION_CEO') {
+        return item;
+      }
+      const text = `${item.subject} ${item.body_text} ${item.snippet}`.toLowerCase();
+      const isHRorPayroll = 
+        text.includes('prima vacacional') || 
+        text.includes('prima') || 
+        text.includes('vacacional') || 
+        text.includes('vacaciones') || 
+        text.includes('nómina') || 
+        text.includes('nomina') || 
+        text.includes('recursos humanos') || 
+        text.includes('rh') || 
+        text.includes('prestaciones') || 
+        text.includes('sueldo') || 
+        text.includes('salario') || 
+        text.includes('aguinaldo');
+
+      if (isHRorPayroll) {
+        return {
+          ...item,
+          category: 'actualizaciones' as const,
+          triage_badge: {
+            quadrant: 'DELEGADO_CON_PLAZO' as const,
+            label: '🟡 DELEGADO OPERATIVO',
+            color: 'bg-amber-50 text-amber-700 border-amber-200'
+          }
+        };
+      }
+      return item;
+    });
+
     return NextResponse.json({
       success: true,
       authenticated,
       requiresAppPassword,
       authError,
       latencyMs,
-      emails: allEmails,
-      total: allEmails.length,
-      unreadCount: allEmails.filter(e => e.is_unread).length,
+      emails: sanitizedEmails,
+      total: sanitizedEmails.length,
+      unreadCount: sanitizedEmails.filter((e: RawGmailItem) => e.is_unread).length,
       connectedEmail: email,
       lastSyncTime: formatCdmxTime(new Date())
     });
@@ -532,15 +565,48 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const sanitizedEmails = emails.map((item: RawGmailItem) => {
+      if (item.triage_badge?.quadrant === 'ATENCION_CEO') {
+        return item;
+      }
+      const text = `${item.subject} ${item.body_text} ${item.snippet}`.toLowerCase();
+      const isHRorPayroll = 
+        text.includes('prima vacacional') || 
+        text.includes('prima') || 
+        text.includes('vacacional') || 
+        text.includes('vacaciones') || 
+        text.includes('nómina') || 
+        text.includes('nomina') || 
+        text.includes('recursos humanos') || 
+        text.includes('rh') || 
+        text.includes('prestaciones') || 
+        text.includes('sueldo') || 
+        text.includes('salario') || 
+        text.includes('aguinaldo');
+
+      if (isHRorPayroll) {
+        return {
+          ...item,
+          category: 'actualizaciones' as const,
+          triage_badge: {
+            quadrant: 'DELEGADO_CON_PLAZO' as const,
+            label: '🟡 DELEGADO OPERATIVO',
+            color: 'bg-amber-50 text-amber-700 border-amber-200'
+          }
+        };
+      }
+      return item;
+    });
+
     return NextResponse.json({
       success: true,
       authenticated,
       requiresAppPassword,
       authError,
       latencyMs,
-      emails,
-      total: emails.length,
-      unreadCount: emails.filter(e => e.is_unread).length,
+      emails: sanitizedEmails,
+      total: sanitizedEmails.length,
+      unreadCount: sanitizedEmails.filter((e: RawGmailItem) => e.is_unread).length,
       connectedEmail: email,
       lastSyncTime: formatCdmxTime(new Date())
     });
