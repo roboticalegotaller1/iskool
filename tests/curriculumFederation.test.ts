@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CurriculumFederationService } from '@/lib/curriculum/curriculumFederationService';
 import { UserAuditContext, CreateOrExtendPlanInput } from '@/lib/curriculum/types';
