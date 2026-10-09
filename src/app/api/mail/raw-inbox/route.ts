@@ -388,7 +388,45 @@ export async function GET(request: NextRequest) {
         tenantId
       );
 
-      const isCeo = freshTriage.quadrant === 'ATENCION_CEO' || item.triage_badge?.quadrant === 'ATENCION_CEO';
+      // Respetar clasificaciones delegadas, informativas o de spam previamente asignadas
+      if (item.triage_badge?.quadrant === 'DELEGADO_CON_PLAZO') {
+        return {
+          ...item,
+          is_important: false,
+          category: 'actualizaciones' as const,
+          triage_badge: {
+            quadrant: 'DELEGADO_CON_PLAZO' as const,
+            label: '🟡 DELEGADO OPERATIVO',
+            color: 'bg-amber-50 text-amber-700 border-amber-200'
+          }
+        };
+      }
+      if (item.triage_badge?.quadrant === 'INFORMATIVO') {
+        return {
+          ...item,
+          is_important: false,
+          category: 'actualizaciones' as const,
+          triage_badge: {
+            quadrant: 'INFORMATIVO' as const,
+            label: '🔵 INFORMATIVO',
+            color: 'bg-blue-50 text-blue-700 border-blue-200'
+          }
+        };
+      }
+      if (item.triage_badge?.quadrant === 'SPAM_DESCARTADO') {
+        return {
+          ...item,
+          is_important: false,
+          category: 'promociones' as const,
+          triage_badge: {
+            quadrant: 'SPAM_DESCARTADO' as const,
+            label: '🟣 SPAM / PROMOCIÓN',
+            color: 'bg-purple-50 text-purple-700 border-purple-200'
+          }
+        };
+      }
+
+      const isCeo = freshTriage.quadrant === 'ATENCION_CEO';
       if (isCeo) {
         return {
           ...item,
@@ -443,7 +481,7 @@ export async function GET(request: NextRequest) {
         };
       }
 
-      const isSpam = freshTriage.quadrant === 'SPAM_DESCARTADO' || item.triage_badge?.quadrant === 'SPAM_DESCARTADO';
+      const isSpam = freshTriage.quadrant === 'SPAM_DESCARTADO';
       if (isSpam) {
         return {
           ...item,

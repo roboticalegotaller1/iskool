@@ -77,7 +77,8 @@ import {
   ShieldAlert,
   Info,
   Ban,
-  Save
+  Save,
+  Forward
 } from 'lucide-react';
 import { RawGmailItem } from '@/app/api/mail/raw-inbox/route';
 import {
@@ -1120,9 +1121,119 @@ export function CEOEmailCommunicationsModal({
   // Modal de "Ponte al día conmigo" (Executive Catchup)
   const [showCatchupModal, setShowCatchupModal] = useState<boolean>(false);
 
+  // =========================================================
+  // GESTIÓN DE ANULACIÓN EJECUTIVA SOBERANA (EXECUTIVE OVERRIDE)
+  // Las órdenes y reclasificaciones manuales del CEO son supremas
+  // =========================================================
+  const executiveOverridesStorageKey = `iskool_executive_overrides_${currentTenantId}`;
+
+  const getExecutiveOverrides = useCallback((): Record<string, EmailQuadrant> => {
+    if (typeof window === 'undefined') return {};
+    try {
+      const raw = localStorage.getItem(executiveOverridesStorageKey);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  }, [executiveOverridesStorageKey]);
+
+  const setExecutiveOverride = useCallback((key: string, quadrant: EmailQuadrant) => {
+    if (typeof window === 'undefined' || !key) return;
+    try {
+      const current = getExecutiveOverrides();
+      current[key.toLowerCase().trim()] = quadrant;
+      localStorage.setItem(executiveOverridesStorageKey, JSON.stringify(current));
+    } catch {}
+  }, [getExecutiveOverrides, executiveOverridesStorageKey]);
+
+  const getExecutiveOverrideForItem = useCallback((id: string, subject?: string, senderEmail?: string): EmailQuadrant | null => {
+    const overrides = getExecutiveOverrides();
+    const cleanId = (id || '').replace(/^mat-live-/, '').toLowerCase().trim();
+    if (cleanId && overrides[cleanId]) return overrides[cleanId];
+    if (id && overrides[id.toLowerCase().trim()]) return overrides[id.toLowerCase().trim()];
+    if (subject) {
+      const normSub = subject.toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+      if (normSub && overrides[normSub]) return overrides[normSub];
+    }
+    return null;
+  }, [getExecutiveOverrides]);
+
   // Normalizador mandatorio de reglas CEO para correos recibidos (Reglas VIP + Supervisión + 4 Cuadrantes Zero-Tokens)
   const normalizeRawEmailCeoRules = useCallback((item: RawGmailItem): RawGmailItem => {
-    // 1. Si el correo ya viene clasificado por el backend / Motor de IA como ATENCION_CEO, respetarlo con máxima prioridad
+    // 0. AUTORIDAD SOBERANA DEL CEO: ANULACIÓN EJECUTIVA MANUAL (EXECUTIVE OVERRIDE)
+    // Las decisiones explícitas tomadas por el CEO en la interfaz prevalecen de forma absoluta sobre cualquier IA, heurística o backend.
+    const override = getExecutiveOverrideForItem(item.id, item.subject, item.sender_email);
+    if (override) {
+      const isCeo = override === 'ATENCION_CEO';
+      const isDelegado = override === 'DELEGADO_CON_SLA' || (override as any) === 'DELEGADO_CON_PLAZO';
+      const isInfo = override === 'INFORMATIVO';
+      const isSpam = override === 'SPAM_DESCARTADO';
+
+      return {
+        ...item,
+        is_important: isCeo,
+        category: isCeo ? 'principal' : (isDelegado || isInfo ? 'actualizaciones' : 'promociones'),
+        triage_badge: {
+          quadrant: (isDelegado ? 'DELEGADO_CON_PLAZO' : override) as any,
+          label: isCeo
+            ? '🔴 ATENCIÓN INMEDIATA CEO'
+            : isDelegado
+            ? '🟡 DELEGADO OPERATIVO'
+            : isInfo
+            ? '🔵 INFORMATIVO'
+            : '🟣 SPAM / PROMOCIÓN',
+          color: isCeo
+            ? 'bg-red-50 text-red-700 border-red-200'
+            : isDelegado
+            ? 'bg-amber-50 text-amber-700 border-amber-200'
+            : isInfo
+            ? 'bg-blue-50 text-blue-700 border-blue-200'
+            : 'bg-purple-50 text-purple-700 border-purple-200'
+        }
+      };
+    }
+
+    // 1. Respetar clasificaciones previas delegadas, informativas o de spam en su badge
+    if (item.triage_badge?.quadrant === 'DELEGADO_CON_PLAZO' || (item.triage_badge?.quadrant as any) === 'DELEGADO_CON_SLA') {
+      return {
+        ...item,
+        is_important: false,
+        category: 'actualizaciones',
+        triage_badge: {
+          quadrant: 'DELEGADO_CON_PLAZO',
+          label: '🟡 DELEGADO OPERATIVO',
+          color: 'bg-amber-50 text-amber-700 border-amber-200'
+        }
+      };
+    }
+
+    if (item.triage_badge?.quadrant === 'INFORMATIVO') {
+      return {
+        ...item,
+        is_important: false,
+        category: 'actualizaciones',
+        triage_badge: {
+          quadrant: 'INFORMATIVO',
+          label: '🔵 INFORMATIVO',
+          color: 'bg-blue-50 text-blue-700 border-blue-200'
+        }
+      };
+    }
+
+    if (item.triage_badge?.quadrant === 'SPAM_DESCARTADO') {
+      return {
+        ...item,
+        is_important: false,
+        category: 'promociones',
+        triage_badge: {
+          quadrant: 'SPAM_DESCARTADO',
+          label: '🟣 SPAM / PROMOCIÓN',
+          color: 'bg-purple-50 text-purple-700 border-purple-200'
+        }
+      };
+    }
+
+    // 2. Si el correo viene clasificado por el backend como ATENCION_CEO, respetarlo
     if (item.triage_badge?.quadrant === 'ATENCION_CEO') {
       return {
         ...item,
@@ -1468,7 +1579,7 @@ export function CEOEmailCommunicationsModal({
     onTriggerToast(`✓ ${ids.length} correo(s) archivado(s).`);
   };
 
-  // Reclasificación Zero-Tokens con Retroalimentación Directiva y Aprendizaje Local Adaptativo (0 Tokens)
+  // Reclasificación Zero-Tokens con Retroalimentación Directiva y Anulación Ejecutiva Soberana del CEO
   const handleReclassifyEmail = useCallback((
     email: RawGmailItem,
     targetQuadrant: EmailQuadrant,
@@ -1480,33 +1591,52 @@ export function CEOEmailCommunicationsModal({
     const patternType = (!isGenericDomain && domain) ? 'domain' : 'sender';
     const patternValue = patternType === 'domain' ? domain : senderEmail;
 
-    // 1. Guardar regla de aprendizaje local permanente (0 tokens) para remitente
+    const cleanId = (email.id || '').replace(/^mat-live-/, '').trim();
+    const normSub = (email.subject || '').toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+
+    // 0. ANULACIÓN EJECUTIVA SOBERANA (EXECUTIVE OVERRIDE): La orden del CEO es suprema y permanente
+    setExecutiveOverride(cleanId, targetQuadrant);
+    setExecutiveOverride(email.id, targetQuadrant);
+    if (normSub) {
+      setExecutiveOverride(normSub, targetQuadrant);
+    }
+    if (email.triage_badge?.linkedMatterId) {
+      setExecutiveOverride(email.triage_badge.linkedMatterId, targetQuadrant);
+    }
+
+    // 1. Guardar regla de aprendizaje local permanente (0 tokens) para ID, remitente y asunto
     LearnedTriageMemoryService.learnPattern(currentTenantId, {
       patternType,
       patternValue,
       targetQuadrant,
-      reason: customReason || `Retroalimentación directa de Dirección General: clasificado como ${targetQuadrant}`,
+      reason: customReason || `Instrucción directiva de Dirección General: clasificado como ${targetQuadrant}`,
       learnedFromEmailId: email.id
     });
 
-    // 1.1 Si el asunto es descriptivo, enseñar también el patrón de asunto
-    if (email.subject && email.subject.trim().length >= 3) {
-      const cleanSub = email.subject.toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+    if (normSub && normSub.length >= 3) {
       LearnedTriageMemoryService.learnPattern(currentTenantId, {
         patternType: 'subject',
-        patternValue: cleanSub,
+        patternValue: normSub,
         targetQuadrant,
-        reason: customReason || `Retroalimentación directiva para asunto "${cleanSub}"`,
+        reason: customReason || `Instrucción directiva para asunto "${normSub}"`,
         learnedFromEmailId: email.id
       });
     }
 
-    // 2. Si se marcó como SPAM, INFORMATIVO o DELEGADO, remover inmediatamente de la Bandeja Inteligente
+    // 2. Si se marcó como DELEGADO, INFORMATIVO o SPAM, retirar inmediatamente de la Bandeja Inteligente del CEO
     if (targetQuadrant !== 'ATENCION_CEO') {
       setMattersList(prev => {
         const filtered = prev.filter(m => {
-          const isMatch = m.id === `mat-live-${email.id}` || m.title.trim().toLowerCase() === email.subject.trim().toLowerCase();
-          return !isMatch;
+          const mCleanId = (m.id || '').replace(/^mat-live-/, '').trim();
+          const mNormSub = (m.title || '').toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+          const isIdMatch = m.id === email.id || mCleanId === cleanId || m.id === `mat-live-${cleanId}`;
+          const isSubMatch = mNormSub === normSub || (normSub.length > 5 && mNormSub.includes(normSub)) || (mNormSub.length > 5 && normSub.includes(mNormSub));
+          const isMatterCodeMatch = m.matter_code && (
+            email.id.includes(m.matter_code) ||
+            cleanId.includes(m.matter_code) ||
+            (email.triage_badge?.linkedMatterId && email.triage_badge.linkedMatterId === m.matter_code)
+          );
+          return !(isIdMatch || isSubMatch || isMatterCodeMatch);
         });
         if (typeof window !== 'undefined') {
           try {
@@ -1515,45 +1645,43 @@ export function CEOEmailCommunicationsModal({
         }
         return filtered;
       });
+
+      // Si el expediente actualmente abierto corresponde a este correo, cerrar el drawer
+      setSelectedMatter(curr => {
+        if (!curr) return null;
+        const currCleanId = (curr.id || '').replace(/^mat-live-/, '').trim();
+        const currNormSub = (curr.title || '').toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+        if (curr.id === email.id || currCleanId === cleanId || currNormSub === normSub) {
+          return null;
+        }
+        return curr;
+      });
     } else {
-      // 2.1 MANDATORIO: Si se marcó como ATENCIÓN INMEDIATA CEO, inyectar o actualizar DE INMEDIATO en Bandeja Inteligente
+      // 2.1 Si se marcó como ATENCIÓN INMEDIATA CEO, inyectar o actualizar DE INMEDIATO en Bandeja Inteligente
       setMattersList(prev => {
-        const normSub = (email.subject || '').toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
-        const existingIdx = prev.findIndex(m => 
-          m.id === `mat-live-${email.id}` || 
-          (m.title || '').toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim() === normSub
-        );
+        const existingIdx = prev.findIndex(m => {
+          const mCleanId = (m.id || '').replace(/^mat-live-/, '').trim();
+          const mNormSub = (m.title || '').toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+          return m.id === `mat-live-${email.id}` || mCleanId === cleanId || mNormSub === normSub;
+        });
 
         const cleanSnippet = (email.snippet || email.body_text || '').replace(/\s+/g, ' ').trim();
         const summary = cleanSnippet.length > 220 ? cleanSnippet.slice(0, 217) + '...' : (cleanSnippet || 'Comunicación oficial recibida en buzón.');
         const primaryCampus = campuses[0]?.name || `${schoolName} · Plantel Central`;
         const prefix = (schoolSlug || currentTenantId.replace(/^sch-/, '') || 'MAT').toUpperCase().slice(0, 5);
 
-        const isFoodDiningConcern = /comedor|alimento|comida|intoxicaci|malestar|est[oó]mac/i.test(`${email.subject} ${email.body_text || ''}`);
-        const category = isFoodDiningConcern 
-          ? 'Salud y Alimentación Escolar' 
-          : (email.subject.toLowerCase().includes('convivencia') || email.subject.toLowerCase().includes('acoso') 
-              ? 'Convivencia / Caso Crítico Nivel 3' 
-              : 'Atención Inmediata CEO');
-
-        const defaultDraft = isFoodDiningConcern
-          ? `Estimado(a) ${email.sender_name}:\n\nHe recibido personalmente su comunicación en relación con el servicio de comedor escolar y el estado de salud de su hijo. En ${schoolName} la salud, nutrición y bienestar de nuestros estudiantes es un compromiso absoluto e inviolable.\n\nHe instruido una revisión inmediata de los insumos y menús servidos en cafetería y comedor, así como un seguimiento puntual con el área médica escolar. Me pongo a su entera disposición para cualquier aclaración directa.\n\nAtentamente,\n${directorTitle}\nDirección General · ${schoolName}`
-          : `Estimado(a) ${email.sender_name}:\n\nHe recibido personalmente su comunicación en relación con: "${email.subject}". En ${schoolName} la atención oportuna y fundada es una prioridad institucional.\n\nHe tomado conocimiento del requerimiento y me encuentro coordinando la atención con las áreas correspondientes para brindarle una resolución fundada en los protocolos vigentes.\n\nAtentamente,\n${directorTitle}\nDirección General · ${schoolName}`;
-
         const synthesizedMatter: MatterItem = {
-          id: `mat-live-${email.id}`,
-          matter_code: `MAT-${prefix}-2026-${email.id.replace(/[^a-zA-Z0-9]/g, '').slice(-3).toUpperCase() || '001'}`,
+          id: `mat-live-${cleanId || email.id}`,
+          matter_code: `MAT-${prefix}-2026-${(cleanId || email.id).replace(/[^a-zA-Z0-9]/g, '').slice(-3).toUpperCase() || '001'}`,
           title: email.subject,
           summary,
-          category,
+          category: 'Atención Inmediata CEO',
           urgency: 'CRITICA',
           destination: 'ATENCION_CEO',
-          why_shown: isFoodDiningConcern
-            ? 'Queja prioritaria sobre salud, bienestar físico y servicio de comedor escolar clasificada para atención inmediata de Dirección General.'
-            : 'Correo prioritario clasificado como Atención Inmediata CEO por instrucción directiva.',
+          why_shown: 'Correo prioritario clasificado como Atención Inmediata CEO por instrucción directiva.',
           reincidence_count: 1,
           recommended_action: 'Revisar expediente completo y validar borrador de respuesta oficial de Dirección General.',
-          suggested_draft_reply: defaultDraft,
+          suggested_draft_reply: `Estimado(a) ${email.sender_name}:\n\nHe recibido personalmente su comunicación en relación con: "${email.subject}". En ${schoolName} la atención oportuna y fundada es una prioridad institucional.\n\nAtentamente,\n${directorTitle}\nDirección General · ${schoolName}`,
           assigned_role: 'Dirección General / CEO',
           assigned_email: email.recipient_email,
           sla_hours: 12,
@@ -1572,9 +1700,7 @@ export function CEOEmailCommunicationsModal({
             ...updated[existingIdx],
             destination: 'ATENCION_CEO',
             urgency: 'CRITICA',
-            category,
-            why_shown: synthesizedMatter.why_shown,
-            suggested_draft_reply: defaultDraft
+            why_shown: synthesizedMatter.why_shown
           };
         } else {
           updated = [synthesizedMatter, ...prev];
@@ -1587,35 +1713,17 @@ export function CEOEmailCommunicationsModal({
         }
         return updated;
       });
-
-      // Remover de descartados si estuviera presente
-      setDiscardedList(prev => {
-        const filtered = prev.filter(d => (d.subject || '').trim().toLowerCase() !== email.subject.trim().toLowerCase());
-        if (typeof window !== 'undefined') {
-          try {
-            localStorage.setItem(discardedStorageKey, JSON.stringify(filtered));
-          } catch {}
-        }
-        return filtered;
-      });
     }
 
-    // 3. Actualizar la lista en crudo con la nueva clasificación
+    // 3. Actualizar la lista en crudo con la nueva clasificación soberana
     setRawEmailsList(prev => {
       const updated = prev.map(item => {
-        // Si el correo trata sobre bienestar o alumno Martín, jamás degradarlo por coincidencia genérica de remitente
-        const isStudentConcern = (item.body_text || '').toLowerCase().includes('martín') || 
-                                 (item.body_text || '').toLowerCase().includes('martin') || 
-                                 (item.subject || '').toLowerCase().includes('atención') || 
-                                 (item.subject || '').toLowerCase().includes('apoyo');
-
-        if (item.id !== email.id && isStudentConcern && targetQuadrant !== 'ATENCION_CEO') {
-          return item;
-        }
-
-        const matches = item.id === email.id || 
+        const itemCleanId = (item.id || '').replace(/^mat-live-/, '').trim();
+        const itemNormSub = (item.subject || '').toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+        const isDirectTarget = item.id === email.id || itemCleanId === cleanId || item.id === cleanId || itemCleanId === email.id || (normSub.length > 5 && itemNormSub === normSub);
+        const matches = isDirectTarget || 
           (patternType === 'domain' && item.sender_email.toLowerCase().endsWith(`@${domain}`)) ||
-          (patternType === 'sender' && item.sender_email.toLowerCase() === senderEmail && !isStudentConcern);
+          (patternType === 'sender' && item.sender_email.toLowerCase() === senderEmail && !isDirectTarget);
 
         if (matches) {
           const badgeMap: Record<EmailQuadrant, { label: string; color: string; category: RawGmailItem['category'] }> = {
@@ -1639,19 +1747,42 @@ export function CEOEmailCommunicationsModal({
         return item;
       });
       if (typeof window !== 'undefined') {
-        localStorage.setItem(rawEmailsStorageKey, JSON.stringify(updated));
+        try {
+          localStorage.setItem(rawEmailsStorageKey, JSON.stringify(updated));
+        } catch {}
       }
       return updated;
     });
 
     const quadrantNames: Record<EmailQuadrant, string> = {
       ATENCION_CEO: '🔴 Atención Inmediata CEO',
-      DELEGADO_CON_SLA: '🟡 Delegado Operativo',
-      INFORMATIVO: '🔵 Informativo',
-      SPAM_DESCARTADO: '🟣 Spam / Promoción'
+      DELEGADO_CON_SLA: '🟡 Delegado a Coordinación Operativa',
+      INFORMATIVO: '🔵 Comunicado Informativo',
+      SPAM_DESCARTADO: '🟣 Correo no deseado / Spam'
     };
-    onTriggerToast(`🧠 Aprendizaje local (0 tokens): ${email.sender_name || patternValue} fue aprendido como ${quadrantNames[targetQuadrant]}.`);
-  }, [currentTenantId, rawEmailsStorageKey, mattersStorageKey, discardedStorageKey, campuses, schoolName, directorTitle, schoolSlug, onTriggerToast]);
+    onTriggerToast(`✓ Estado actualizado por Dirección General: marcado como ${quadrantNames[targetQuadrant]}.`);
+  }, [currentTenantId, rawEmailsStorageKey, mattersStorageKey, campuses, schoolName, directorTitle, schoolSlug, onTriggerToast, setExecutiveOverride]);
+
+  // Delegación rápida directa de un asunto / expediente a coordinación
+  const handleDelegateMatter = (matter: MatterItem) => {
+    const origEmails = getOriginalEmailsForMatter(matter);
+    const targetEmail = origEmails[0] || {
+      id: matter.id,
+      sender_name: matter.sender_name || 'Remitente Institucional',
+      sender_email: matter.sender_email || 'buzon@iskool.mx',
+      recipient_email: connectedEmail || 'roboticalegotaller1@gmail.com',
+      subject: matter.title,
+      snippet: matter.summary,
+      body_text: matter.summary,
+      received_at: matter.received_at,
+      timestamp: matter.received_at,
+      is_unread: false,
+      is_starred: false,
+      is_important: false,
+      category: 'actualizaciones'
+    };
+    handleReclassifyEmail(targetEmail, 'DELEGADO_CON_SLA', `Delegado formalmente desde Expediente ${matter.matter_code || matter.id} por Dirección General`);
+  };
 
   const handleOpenRawEmailDetail = (emailItem: RawGmailItem) => {
     setSelectedRawEmailId(emailItem.id);
@@ -5352,6 +5483,17 @@ Comité de Seguridad y Protección Escolar`
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
+                                handleDelegateMatter(matter);
+                              }}
+                              className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+                              title="Delegar este asunto a Coordinación Operativa de Plantel"
+                            >
+                              <Forward className="h-3.5 w-3.5 text-amber-600" />
+                              <span>Delegar</span>
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 handleQuickResolveMatter(matter);
                               }}
                               className="px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
@@ -7358,7 +7500,7 @@ Comité de Seguridad y Protección Escolar`
                       </div>
 
                       {/* Tarjeta de Integración y Enlace con Triage Inteligente */}
-                      {matchingMatter ? (
+                      {currentEmail.triage_badge?.quadrant === 'ATENCION_CEO' && matchingMatter ? (
                         <div className="p-3.5 rounded-xl bg-red-50/80 border border-red-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                           <div className="flex items-start gap-2.5 min-w-0">
                             <Sparkles className="h-4 w-4 text-[#EA4335] shrink-0 mt-0.5" />
@@ -7383,6 +7525,47 @@ Comité de Seguridad y Protección Escolar`
                             <span>Abrir Expediente en Bandeja Inteligente</span>
                             <ArrowUpRight className="h-3.5 w-3.5" />
                           </button>
+                        </div>
+                      ) : (currentEmail.triage_badge?.quadrant === 'DELEGADO_CON_PLAZO' || (currentEmail.triage_badge?.quadrant as any) === 'DELEGADO_CON_SLA') ? (
+                        <div className="p-3.5 rounded-xl bg-amber-50/90 border border-amber-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="flex items-start gap-2.5 min-w-0">
+                            <Forward className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                            <div>
+                              <p className="text-xs font-black text-amber-950">
+                                🟡 Asunto Delegado a Coordinación Operativa {matchingMatter ? `· Expediente ${matchingMatter.matter_code}` : ''}
+                              </p>
+                              <p className="text-[11px] text-amber-800 mt-0.5">
+                                Este correo fue canalizado por Dirección General para seguimiento de plantel con plazo de resolución. Retirado de Bandeja CEO.
+                              </p>
+                            </div>
+                          </div>
+                          <span className="px-3 py-1 rounded-xl bg-amber-100 text-amber-800 font-black text-xs border border-amber-300/80 shrink-0">
+                            En Gestión de Plantel
+                          </span>
+                        </div>
+                      ) : currentEmail.triage_badge?.quadrant === 'INFORMATIVO' ? (
+                        <div className="p-3.5 rounded-xl bg-blue-50/90 border border-blue-200/90 flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-base">🔵</span>
+                            <p className="text-xs font-bold text-blue-900">
+                              Reclasificado como Comunicado Informativo · Archivado en buzón para consulta
+                            </p>
+                          </div>
+                          <span className="text-[11px] font-bold text-blue-700 bg-blue-100/70 px-2.5 py-1 rounded-lg">
+                            Archivado para Consulta
+                          </span>
+                        </div>
+                      ) : currentEmail.triage_badge?.quadrant === 'SPAM_DESCARTADO' ? (
+                        <div className="p-3.5 rounded-xl bg-purple-50/90 border border-purple-200/90 flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-base">🟣</span>
+                            <p className="text-xs font-bold text-purple-900">
+                              Descartado por Dirección General como Correo No Deseado / Promoción
+                            </p>
+                          </div>
+                          <span className="text-[11px] font-bold text-purple-700 bg-purple-100/70 px-2.5 py-1 rounded-lg">
+                            Spam / Promo
+                          </span>
                         </div>
                       ) : null}
 
@@ -8735,13 +8918,22 @@ Comité de Seguridad y Protección Escolar`
           <div className="w-full max-w-2xl bg-white h-full shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 text-xs">
             <div className="p-6 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-mono font-bold bg-slate-100 px-2.5 py-1 rounded-md text-slate-800 text-xs">
                     {selectedMatter.matter_code}
                   </span>
                   <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-red-100 text-red-800">
                     {selectedMatter.destination}
                   </span>
+                  <button
+                    type="button"
+                    onClick={() => handleDelegateMatter(selectedMatter)}
+                    className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition-colors flex items-center gap-1 cursor-pointer"
+                    title="Delegar este expediente a coordinación de plantel"
+                  >
+                    <Forward className="h-3 w-3 text-amber-600" />
+                    <span>Delegar a Plantel</span>
+                  </button>
                 </div>
                 <button
                   onClick={() => setSelectedMatter(null)}
@@ -8900,7 +9092,17 @@ Comité de Seguridad y Protección Escolar`
                 Volver a Bandeja
               </button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => handleDelegateMatter(selectedMatter)}
+                  className="px-3.5 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                  title="Delegar este asunto a Coordinación Operativa de Plantel"
+                >
+                  <Forward className="h-4 w-4 text-amber-600" />
+                  <span>Delegar Asunto</span>
+                </button>
+
                 <button
                   onClick={() => handleScheduleMatterMeeting(selectedMatter)}
                   className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
