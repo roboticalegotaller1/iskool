@@ -1105,7 +1105,11 @@ export function CEOEmailCommunicationsModal({
               return !from.includes('kami-mac') && !id.startsWith('raw-msg-');
             });
             if (clean.length > 0) {
-              setRawEmailsList(clean.map(normalizeRawEmailCeoRules));
+              const normalized = clean.map(normalizeRawEmailCeoRules);
+              setRawEmailsList(normalized);
+              try {
+                localStorage.setItem(rawEmailsStorageKey, JSON.stringify(normalized));
+              } catch {}
             }
           }
         } catch {}
@@ -1248,9 +1252,19 @@ export function CEOEmailCommunicationsModal({
     // 3. Actualizar la lista en crudo con la nueva clasificación
     setRawEmailsList(prev => {
       const updated = prev.map(item => {
+        // Si el correo trata sobre bienestar o alumno Martín, jamás degradarlo por coincidencia genérica de remitente
+        const isStudentConcern = (item.body_text || '').toLowerCase().includes('martín') || 
+                                 (item.body_text || '').toLowerCase().includes('martin') || 
+                                 (item.subject || '').toLowerCase().includes('atención') || 
+                                 (item.subject || '').toLowerCase().includes('apoyo');
+
+        if (item.id !== email.id && isStudentConcern && targetQuadrant !== 'ATENCION_CEO') {
+          return item;
+        }
+
         const matches = item.id === email.id || 
           (patternType === 'domain' && item.sender_email.toLowerCase().endsWith(`@${domain}`)) ||
-          (patternType === 'sender' && item.sender_email.toLowerCase() === senderEmail);
+          (patternType === 'sender' && item.sender_email.toLowerCase() === senderEmail && !isStudentConcern);
 
         if (matches) {
           const badgeMap: Record<EmailQuadrant, { label: string; color: string; category: RawGmailItem['category'] }> = {
@@ -6387,7 +6401,8 @@ Comité de Seguridad y Protección Escolar`
 
               {/* Si hay un correo seleccionado para lectura, mostrar la Vista de Lectura estilo Gmail */}
               {selectedRawEmailId ? (() => {
-                const currentEmail = rawEmailsList.find(e => e.id === selectedRawEmailId);
+                const rawFound = rawEmailsList.find(e => e.id === selectedRawEmailId);
+                const currentEmail = rawFound ? normalizeRawEmailCeoRules(rawFound) : null;
                 if (!currentEmail) {
                   return (
                     <div className="p-8 text-center bg-white rounded-2xl border border-slate-200">

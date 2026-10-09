@@ -58,6 +58,10 @@ high_tech_raw*.webm
 # Knowledge vault workspace files
 .obsidian/
 *.canvas
+
+# Gemini email triage telemetry and cache
+.gemini-evaluated-emails.json
+.gemini-triage-telemetry.json
 .smart-env/
 # Python cache
 __pycache__/

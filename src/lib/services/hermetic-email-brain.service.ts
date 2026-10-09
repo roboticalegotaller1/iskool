@@ -311,14 +311,15 @@ export function classifyZeroTokenEmail(
     'herencia millonaria', 'click here to claim', 'tarifa promocional no solicitada'
   ];
 
-  const isCarlosDuranMarketing = sFromEmail.includes('carlos.duran') && (
+  const isStudentParentCommunication = fullText.includes('martín') || fullText.includes('martin') || fullText.includes('hijo') || fullText.includes('hija') || fullText.includes('alumno') || fullText.includes('carga') || fullText.includes('bienestar');
+  const isCarlosDuranMarketing = !isStudentParentCommunication && sFromEmail.includes('carlos.duran') && (
     fullText.includes('página web') || fullText.includes('pagina web') ||
     fullText.includes('inversión financiera') || fullText.includes('financial stocks') ||
     fullText.includes('base de king cama') || fullText.includes('reclamo') ||
     fullText.includes('prime') || fullText.includes('amazon') || fullText.includes('vivobook') || fullText.includes('ofertas')
   );
 
-  const isSpamContent = isSpamSender || isCarlosDuranMarketing || spamAndPromoSignals.some(sig => fullText.includes(sig));
+  const isSpamContent = isSpamSender || isCarlosDuranMarketing || (!isStudentParentCommunication && spamAndPromoSignals.some(sig => fullText.includes(sig)));
 
   if (isSpamContent) {
     return {
@@ -359,15 +360,28 @@ export function classifyZeroTokenEmail(
     'bienestar general de nuestro hijo',
     'bienestar de nuestro hijo',
     'bienestar de nuestra hija',
+    'bienestar emocional',
     'salud y equilibrio emocional',
     'equilibrio emocional',
     'sobrecarga de actividades',
     'sobrecarga académica',
     'sobrecarga academica',
+    'carga académica',
+    'carga academica',
     'carga académica diaria',
     'carga academica diaria',
+    'carga académica que están enfrentando',
+    'carga academica que estan enfrentando',
+    'solicito su atención',
+    'solicito su atencion',
+    'solicito su apoyo',
+    'solicitar su intervención',
+    'solicitar su intervencion',
+    'intervención respecto a la carga',
+    'intervencion respecto a la carga',
     'altas horas de la noche',
     'tiempo de descanso',
+    'necesidades de descanso',
     'volumen de las asignaciones',
     'revisar el volumen',
     'afectar contrariamente su rendimiento',
@@ -381,6 +395,7 @@ export function classifyZeroTokenEmail(
     'demasiadas tareas',
     'saturar su rutina',
     'dedica una cantidad considerable de horas',
+    'horas diarias a tareas',
     'sostenible para los estudiantes',
     'coordinar los tiempos de entrega',
     'preocupa ver cómo la carga',
@@ -397,9 +412,17 @@ export function classifyZeroTokenEmail(
     'salud mental de nuestro hijo',
     'salud mental de nuestra hija',
     'agotamiento del estudiante',
-    'agotamiento de nuestro hijo'
+    'agotamiento de nuestro hijo',
+    'dinámica que pueda estar afectando a varios estudiantes',
+    'dinamica que pueda estar afectando a varios estudiantes',
+    'no hemos recibido una solución clara',
+    'no hemos recibido una solucion clara',
+    'equilibrar las responsabilidades escolares'
   ].some(sig => fullText.includes(sig)) || (
-    fullText.includes('bienestar') && (fullText.includes('hijo') || fullText.includes('hija') || fullText.includes('alumno') || fullText.includes('estudiante'))
+    fullText.includes('bienestar') && (fullText.includes('hijo') || fullText.includes('hija') || fullText.includes('alumno') || fullText.includes('estudiante') || fullText.includes('emocional'))
+  ) || (
+    (fullText.includes('carga') || fullText.includes('tarea') || fullText.includes('deberes') || fullText.includes('intervención') || fullText.includes('intervencion')) &&
+    (fullText.includes('académica') || fullText.includes('academica') || fullText.includes('estudiante') || fullText.includes('alumno') || fullText.includes('hijo') || fullText.includes('martín') || fullText.includes('martin'))
   ) || (
     fullText.includes('preocupa') && (fullText.includes('carga') || fullText.includes('tarea') || fullText.includes('deberes') || fullText.includes('horas') || fullText.includes('descanso') || fullText.includes('rendimiento'))
   );

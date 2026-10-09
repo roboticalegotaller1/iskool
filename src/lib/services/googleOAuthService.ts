@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { RawGmailItem } from '@/app/api/mail/raw-inbox/route';
 import { InboundMailSpoolService } from './inboundMailSpool';
 import { HermeticEmailBrainService } from './hermetic-email-brain.service';
+import { GeminiEmailTriageService } from './geminiEmailTriage.service';
 
 export interface GoogleTokens {
   accessToken: string;
@@ -571,17 +572,18 @@ export class GoogleOAuthService {
           const isUnread = (detail.labelIds || []).includes('UNREAD');
           const isStarred = (detail.labelIds || []).includes('STARRED');
 
-          // Clasificación Zero-Tokens en los 4 Cuadrantes Canónicos (0 tokens)
-          const triage = HermeticEmailBrainService.classifyZeroTokenEmail(
+          // Clasificación con Motor de Inteligencia Artificial Pedagógica y Triage Cognitivo
+          // (Usa tokens de IA solo para nuevos correos, compara y aprende; 0 tokens para correos ya evaluados)
+          const evaluation = await GeminiEmailTriageService.evaluateEmail({
+            emailId: `gmail-${detail.id}`,
             subject,
-            bodyText || detail.snippet || '',
+            bodyText: bodyText || detail.snippet || '',
             senderEmail,
             senderName,
-            undefined,
             tenantId
-          );
+          });
 
-          const isCeo = triage.quadrant === 'ATENCION_CEO';
+          const isCeo = evaluation.quadrant === 'ATENCION_CEO';
 
           const rawItem: RawGmailItem = {
             id: `gmail-${detail.id}`,
@@ -600,11 +602,11 @@ export class GoogleOAuthService {
             is_unread: isUnread,
             is_starred: isStarred,
             is_important: isCeo,
-            category: triage.gmailCategory,
+            category: isCeo ? 'principal' : (evaluation.quadrant === 'SPAM_DESCARTADO' ? 'promociones' : 'actualizaciones'),
             triage_badge: {
-              quadrant: (triage.quadrant === 'DELEGADO_CON_SLA' ? 'DELEGADO_CON_PLAZO' : triage.quadrant) as any,
-              label: triage.badge.label,
-              color: triage.badge.color
+              quadrant: evaluation.badge.quadrant,
+              label: evaluation.badge.label,
+              color: evaluation.badge.color
             }
           };
 

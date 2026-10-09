@@ -311,8 +311,8 @@ export async function GET(request: NextRequest) {
             category: (triage.gmailCategory || (isSpam ? 'promociones' : 'principal')) as any,
             triage_badge: {
               quadrant: (triage.quadrant === 'DELEGADO_CON_SLA' ? 'DELEGADO_CON_PLAZO' : triage.quadrant) as any,
-              label: triage.badge?.label || (isCeo ? '🔴 ATENCIÓN INMEDIATA CEO' : isSpam ? '🟣 SPAM / PROMOCIÓN' : '🟢 INFORMATIVO'),
-              color: triage.badge?.color || (isCeo ? 'bg-red-50 text-red-700 border-red-200' : isSpam ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200')
+              label: triage.badge?.label || (isCeo ? '🔴 ATENCIÓN INMEDIATA CEO' : isSpam ? '🟣 SPAM / PROMOCIÓN' : '🔵 INFORMATIVO'),
+              color: triage.badge?.color || (isCeo ? 'bg-red-50 text-red-700 border-red-200' : isSpam ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-blue-50 text-blue-700 border-blue-200')
             }
           };
           additionalFromSpool.push(spoolItem);
@@ -523,8 +523,8 @@ export async function POST(request: NextRequest) {
             category: (triage.gmailCategory || (isSpam ? 'promociones' : 'principal')) as any,
             triage_badge: {
               quadrant: (triage.quadrant === 'DELEGADO_CON_SLA' ? 'DELEGADO_CON_PLAZO' : triage.quadrant) as any,
-              label: triage.badge?.label || (isCeo ? '🔴 ATENCIÓN INMEDIATA CEO' : isSpam ? '🟣 SPAM / PROMOCIÓN' : '🟢 INFORMATIVO'),
-              color: triage.badge?.color || (isCeo ? 'bg-red-50 text-red-700 border-red-200' : isSpam ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200')
+              label: triage.badge?.label || (isCeo ? '🔴 ATENCIÓN INMEDIATA CEO' : isSpam ? '🟣 SPAM / PROMOCIÓN' : '🔵 INFORMATIVO'),
+              color: triage.badge?.color || (isCeo ? 'bg-red-50 text-red-700 border-red-200' : isSpam ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-blue-50 text-blue-700 border-blue-200')
             }
           });
         }
