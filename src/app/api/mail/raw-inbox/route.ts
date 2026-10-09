@@ -378,11 +378,42 @@ export async function GET(request: NextRequest) {
         };
       }
 
-      if (item.triage_badge?.quadrant === 'ATENCION_CEO') {
-        return item;
+      // Re-evaluar con el motor canónico hermético para que cualquier actualización de reglas se refleje de inmediato
+      const freshTriage = HermeticEmailBrainService.classifyZeroTokenEmail(
+        item.subject,
+        item.body_text || item.snippet,
+        item.sender_email,
+        item.sender_name,
+        undefined,
+        tenantId
+      );
+
+      const isCeo = freshTriage.quadrant === 'ATENCION_CEO' || item.triage_badge?.quadrant === 'ATENCION_CEO';
+      if (isCeo) {
+        return {
+          ...item,
+          is_important: true,
+          category: 'principal' as const,
+          triage_badge: {
+            quadrant: 'ATENCION_CEO' as const,
+            label: '🔴 ATENCIÓN INMEDIATA CEO',
+            color: 'bg-red-50 text-red-700 border-red-200'
+          }
+        };
       }
+
       const text = `${item.subject} ${item.body_text} ${item.snippet}`.toLowerCase();
-      const isHRorPayroll = 
+      const isDelegatedOperational =
+        freshTriage.quadrant === 'DELEGADO_CON_SLA' ||
+        text.includes('menú') ||
+        text.includes('menu') ||
+        text.includes('comedor') ||
+        text.includes('cafetería') ||
+        text.includes('cafeteria') ||
+        text.includes('alimento') ||
+        text.includes('almuerzo') ||
+        text.includes('desayuno') ||
+        text.includes('refrigerio') ||
         text.includes('prima vacacional') || 
         text.includes('prima') || 
         text.includes('vacacional') || 
@@ -394,9 +425,13 @@ export async function GET(request: NextRequest) {
         text.includes('prestaciones') || 
         text.includes('sueldo') || 
         text.includes('salario') || 
-        text.includes('aguinaldo');
+        text.includes('aguinaldo') ||
+        text.includes('taller') ||
+        text.includes('uniforme') ||
+        text.includes('credencial') ||
+        text.includes('transporte');
 
-      if (isHRorPayroll) {
+      if (isDelegatedOperational) {
         return {
           ...item,
           category: 'actualizaciones' as const,
@@ -407,6 +442,20 @@ export async function GET(request: NextRequest) {
           }
         };
       }
+
+      const isSpam = freshTriage.quadrant === 'SPAM_DESCARTADO' || item.triage_badge?.quadrant === 'SPAM_DESCARTADO';
+      if (isSpam) {
+        return {
+          ...item,
+          category: 'promociones' as const,
+          triage_badge: {
+            quadrant: 'SPAM_DESCARTADO' as const,
+            label: '🟣 SPAM / PROMOCIÓN',
+            color: 'bg-purple-50 text-purple-700 border-purple-200'
+          }
+        };
+      }
+
       return item;
     });
 
@@ -647,11 +696,42 @@ export async function POST(request: NextRequest) {
         };
       }
 
-      if (item.triage_badge?.quadrant === 'ATENCION_CEO') {
-        return item;
+      // Re-evaluar con el motor canónico hermético para que cualquier actualización de reglas se refleje de inmediato
+      const freshTriage = HermeticEmailBrainService.classifyZeroTokenEmail(
+        item.subject,
+        item.body_text || item.snippet,
+        item.sender_email,
+        item.sender_name,
+        undefined,
+        tenantId
+      );
+
+      const isCeo = freshTriage.quadrant === 'ATENCION_CEO' || item.triage_badge?.quadrant === 'ATENCION_CEO';
+      if (isCeo) {
+        return {
+          ...item,
+          is_important: true,
+          category: 'principal' as const,
+          triage_badge: {
+            quadrant: 'ATENCION_CEO' as const,
+            label: '🔴 ATENCIÓN INMEDIATA CEO',
+            color: 'bg-red-50 text-red-700 border-red-200'
+          }
+        };
       }
+
       const text = `${item.subject} ${item.body_text} ${item.snippet}`.toLowerCase();
-      const isHRorPayroll = 
+      const isDelegatedOperational =
+        freshTriage.quadrant === 'DELEGADO_CON_SLA' ||
+        text.includes('menú') ||
+        text.includes('menu') ||
+        text.includes('comedor') ||
+        text.includes('cafetería') ||
+        text.includes('cafeteria') ||
+        text.includes('alimento') ||
+        text.includes('almuerzo') ||
+        text.includes('desayuno') ||
+        text.includes('refrigerio') ||
         text.includes('prima vacacional') || 
         text.includes('prima') || 
         text.includes('vacacional') || 
@@ -663,9 +743,13 @@ export async function POST(request: NextRequest) {
         text.includes('prestaciones') || 
         text.includes('sueldo') || 
         text.includes('salario') || 
-        text.includes('aguinaldo');
+        text.includes('aguinaldo') ||
+        text.includes('taller') ||
+        text.includes('uniforme') ||
+        text.includes('credencial') ||
+        text.includes('transporte');
 
-      if (isHRorPayroll) {
+      if (isDelegatedOperational) {
         return {
           ...item,
           category: 'actualizaciones' as const,
@@ -676,6 +760,20 @@ export async function POST(request: NextRequest) {
           }
         };
       }
+
+      const isSpam = freshTriage.quadrant === 'SPAM_DESCARTADO' || item.triage_badge?.quadrant === 'SPAM_DESCARTADO';
+      if (isSpam) {
+        return {
+          ...item,
+          category: 'promociones' as const,
+          triage_badge: {
+            quadrant: 'SPAM_DESCARTADO' as const,
+            label: '🟣 SPAM / PROMOCIÓN',
+            color: 'bg-purple-50 text-purple-700 border-purple-200'
+          }
+        };
+      }
+
       return item;
     });
 

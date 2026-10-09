@@ -138,8 +138,36 @@ function classifyEmailTriage(subject: string, body: string, senderEmail?: string
   triage_badge: RawGmailItem['triage_badge'];
 } {
   const triage = HermeticEmailBrainService.classifyZeroTokenEmail(subject, body, senderEmail, senderName);
+  const fullText = `${subject} ${body}`.toLowerCase();
+  const isDelegatedKeyword =
+    fullText.includes('menú') ||
+    fullText.includes('menu') ||
+    fullText.includes('comedor') ||
+    fullText.includes('cafetería') ||
+    fullText.includes('cafeteria') ||
+    fullText.includes('alimento') ||
+    fullText.includes('almuerzo') ||
+    fullText.includes('desayuno') ||
+    fullText.includes('refrigerio') ||
+    fullText.includes('prima vacacional') ||
+    fullText.includes('prima') ||
+    fullText.includes('vacacional') ||
+    fullText.includes('vacaciones') ||
+    fullText.includes('nómina') ||
+    fullText.includes('nomina') ||
+    fullText.includes('recursos humanos') ||
+    fullText.includes('rh') ||
+    fullText.includes('prestaciones') ||
+    fullText.includes('sueldo') ||
+    fullText.includes('salario') ||
+    fullText.includes('aguinaldo') ||
+    fullText.includes('taller') ||
+    fullText.includes('uniforme') ||
+    fullText.includes('credencial') ||
+    fullText.includes('transporte');
+
   const isCeo = triage.quadrant === 'ATENCION_CEO';
-  const isDelegado = triage.quadrant === 'DELEGADO_CON_SLA';
+  const isDelegado = !isCeo && (triage.quadrant === 'DELEGADO_CON_SLA' || isDelegatedKeyword);
   const isSpam = triage.quadrant === 'SPAM_DESCARTADO';
 
   return {
