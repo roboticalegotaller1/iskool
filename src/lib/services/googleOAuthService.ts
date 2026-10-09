@@ -517,13 +517,29 @@ export class GoogleOAuthService {
             senderName = fromHeader.replace(/<[^>]+>/, '').trim().replace(/"/g, '') || senderEmail;
           }
 
-          // Extraer cuerpo de texto
+          // Extraer cuerpo de texto completo con decodificación URL-Safe Base64 y fallback HTML limpio
           let bodyText = '';
+          let htmlFallback = '';
+
+          const decodeGmailBase64 = (data: string): string => {
+            try {
+              const normalized = data.replace(/-/g, '+').replace(/_/g, '/');
+              return Buffer.from(normalized, 'base64').toString('utf8');
+            } catch {
+              return '';
+            }
+          };
+
           const extractBody = (part: any) => {
+            if (!part) return;
             if (part.mimeType === 'text/plain' && part.body?.data) {
-              const decoded = Buffer.from(part.body.data, 'base64').toString('utf8');
-              bodyText += decoded;
-            } else if (part.parts && Array.isArray(part.parts)) {
+              const text = decodeGmailBase64(part.body.data);
+              if (text) bodyText += (bodyText ? '\n' : '') + text;
+            } else if (part.mimeType === 'text/html' && part.body?.data) {
+              const html = decodeGmailBase64(part.body.data);
+              if (html) htmlFallback += (htmlFallback ? '\n' : '') + html;
+            }
+            if (part.parts && Array.isArray(part.parts)) {
               for (const subPart of part.parts) {
                 extractBody(subPart);
               }
@@ -532,6 +548,20 @@ export class GoogleOAuthService {
 
           if (detail.payload) {
             extractBody(detail.payload);
+          }
+
+          if (!bodyText && htmlFallback) {
+            bodyText = htmlFallback
+              .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+              .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+              .replace(/<[^>]+>/g, ' ')
+              .replace(/&nbsp;/g, ' ')
+              .replace(/&amp;/g, '&')
+              .replace(/&lt;/g, '<')
+              .replace(/&gt;/g, '>')
+              .replace(/&quot;/g, '"')
+              .replace(/\s+/g, ' ')
+              .trim();
           }
 
           if (!bodyText && detail.snippet) {

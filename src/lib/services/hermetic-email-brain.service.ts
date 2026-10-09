@@ -249,53 +249,8 @@ export function classifyZeroTokenEmail(
   const tId = tenantId || 'e1000000-0000-0000-0000-000000000001';
   const reincidence = reincidenceCount || 1;
 
-  // 0. APRENDIZAJE ADAPTATIVO ZERO-TOKENS: Reglas memorizadas por retroalimentación directiva
-  const learnedRules = LearnedTriageMemoryService.getRules(tId);
-  for (const lr of learnedRules) {
-    const val = lr.patternValue.toLowerCase().trim();
-    if (lr.patternType === 'sender' && sFromEmail.includes(val)) {
-      return buildZeroTokenResult(lr.targetQuadrant, 'Regla de Aprendizaje / Remitente', lr.reason || 'Clasificado según aprendizaje local previo.');
-    }
-    if (lr.patternType === 'domain' && sFromEmail.split('@')[1]?.includes(val)) {
-      return buildZeroTokenResult(lr.targetQuadrant, 'Regla de Aprendizaje / Dominio', lr.reason || 'Dominio aprendido como ' + lr.targetQuadrant);
-    }
-    if (lr.patternType === 'subject' && fullText.includes(val)) {
-      return buildZeroTokenResult(lr.targetQuadrant, 'Regla de Aprendizaje / Patrón', lr.reason || 'Patrón aprendido en triage.');
-    }
-  }
-
-  // 1. REGLA SUPREMA VIP: Remitentes prioritarios registrados por el CEO en Ajustes
-  let matchingVip: any = null;
-  if (sFromEmail) {
-    if (vipRules && vipRules.length > 0) {
-      matchingVip = vipRules.find(v => v.enabled !== false && v.email && sFromEmail.includes(v.email.toLowerCase().trim()));
-    }
-    if (!matchingVip) {
-      matchingVip = CeoEmailSettingsService.getMatchingVipRule(tId, sFromEmail);
-    }
-  }
-  if (matchingVip) {
-    return {
-      quadrant: 'ATENCION_CEO',
-      urgency: 'CRITICA',
-      category: `Regla VIP / ${matchingVip.contactName || 'Alta Importancia'}`,
-      badge: {
-        quadrant: 'ATENCION_CEO',
-        label: '🔴 ATENCIÓN INMEDIATA CEO',
-        color: 'bg-red-50 text-red-700 border-red-200'
-      },
-      gmailCategory: 'principal',
-      assigned_department: 'Dirección General / CEO',
-      assigned_role: 'Dirección General / CEO',
-      delegate_email: sFromEmail,
-      sla_hours: 12,
-      why_shown_to_director: `Remitente prioritario registrado en Reglas VIP de Dirección General (${matchingVip.email}${matchingVip.organization ? ' - ' + matchingVip.organization : ''}): ${matchingVip.reason || 'Atención prioritaria obligatoria e indelegable.'}`,
-      recommended_action: 'Atención prioritaria e inmediata de Dirección General / CEO. Dar seguimiento directo y personalizado sin intermediación.'
-    };
-  }
-
-  // 2. CUADRANTE 4: SPAM Y PROMOCIONES COMERCIALES (🟣 0 Tokens)
-  // Se evalúa antes de palabras clave rutinarias para evitar que boletines comerciales se eleven a CEO o Delegados
+  // 1. CUADRANTE 4: SPAM Y PROMOCIONES COMERCIALES (🟣 0 Tokens - EVALUACIÓN PRIORITARIA SUPREMA)
+  // Ningún correo comercial, membresía o publicidad debe llegar al CEO, sin importar quién lo reenvíe.
   const spamAndMarketingSenders = [
     'gamma.app', 'hello@gamma.app', 'cinepolis', 'cinépolis', 'primeopinion', 'prime opinion',
     'play.google', 'googleplay', 'chicv', 'chicv technology', 'mercadolibre', 'mercado libre',
@@ -309,6 +264,17 @@ export function classifyZeroTokenEmail(
     'ya llegó el nuevo gamma', 'ya llego el nuevo gamma', 'gamma 5', 'nuestra mayor actualización',
     'nuestra mayor actualizacion', 'gamma.app', 'hello@gamma.app', 'presentaciones con ia',
     'novedades de canva', 'novedades de notion', 'novedades de figma',
+
+    // Comercio Electrónico, Membresías y Retail (e.g. Amazon, Prime, Mercado Libre)
+    'amazon', 'amazon prime', 'miembro prime', 'membresía prime', 'membresia prime',
+    'tu membresía va a expirar', 'tu membresia va a expirar', 'membresía amazon', 'membresia amazon',
+    'mega ofertas', 'mega ofertas de prime', 'ofertas de prime', 'ofertas para ti',
+    'vivobook', 'ryzen', 'asus vivobook', 'descuento exclusivo', 'precio especial',
+    'compra ahora', 'envío gratis', 'envio gratis', 'carrito de compras', 'finalizar compra',
+    'cupón de descuento', 'cupon de descuento', 'promoción exclusiva', 'promocion exclusiva',
+    'suscripción mensual', 'suscripcion mensual', 'suscripción anual', 'suscripcion anual',
+    'renovación automática', 'renovacion automatica', 'mercado libre', 'mercadolibre',
+    'shein', 'temu', 'aliexpress',
 
     // Entretenimiento, Cine y Ocio (e.g. Cinépolis)
     'club cinépolis', 'club cinepolis', 'cinépolis', 'cinepolis', 'salida al cine',
@@ -348,7 +314,8 @@ export function classifyZeroTokenEmail(
   const isCarlosDuranMarketing = sFromEmail.includes('carlos.duran') && (
     fullText.includes('página web') || fullText.includes('pagina web') ||
     fullText.includes('inversión financiera') || fullText.includes('financial stocks') ||
-    fullText.includes('base de king cama') || fullText.includes('reclamo')
+    fullText.includes('base de king cama') || fullText.includes('reclamo') ||
+    fullText.includes('prime') || fullText.includes('amazon') || fullText.includes('vivobook') || fullText.includes('ofertas')
   );
 
   const isSpamContent = isSpamSender || isCarlosDuranMarketing || spamAndPromoSignals.some(sig => fullText.includes(sig));
@@ -369,8 +336,9 @@ export function classifyZeroTokenEmail(
     };
   }
 
-  // 3. CUADRANTE 1: ATENCIÓN INMEDIATA CEO (🔴 0 Tokens)
-  // Mandatorio: Supervisión SEP, CTE urgente, incidentes médicos graves, acoso/riesgo legal, reincidencia >= 3
+  // 2. CUADRANTE 1: ATENCIÓN INMEDIATA CEO (🔴 0 Tokens)
+  // Mandatorio: Supervisión SEP, CTE urgente, incidentes médicos graves, acoso/riesgo legal,
+  // y MUY ESPECIALMENTE inquietudes de padres de familia sobre bienestar del alumno y sobrecarga académica
   const isRoutineDocTramite = fullText.includes('boleta') || fullText.includes('kardex') || fullText.includes('constancia de estudio') || fullText.includes('certificado escolar');
   const isMandatorySepInspection = !isRoutineDocTramite && (
     /\b(supervision|supervisión|zona escolar|inspector sep|inspección sep|queja sep|auditoría sep|multa sep)\b/i.test(fullText) ||
@@ -386,14 +354,68 @@ export function classifyZeroTokenEmail(
     'negligencia grave', 'denuncia ante autoridades', 'amenaza', 'profeco', 'citatorio legal'
   ].some(sig => fullText.includes(sig));
 
-  const isCeoCritical = isMandatorySepInspection || isCteEmergency || isInjuryEmergency || isSevereConflictOrLegal || reincidence >= 3;
+  // Inquietud de padres sobre bienestar del alumno, carga académica excesiva y salud socioemocional
+  const isStudentWellbeingOrWorkloadConcern = [
+    'bienestar general de nuestro hijo',
+    'bienestar de nuestro hijo',
+    'bienestar de nuestra hija',
+    'salud y equilibrio emocional',
+    'equilibrio emocional',
+    'sobrecarga de actividades',
+    'sobrecarga académica',
+    'sobrecarga academica',
+    'carga académica diaria',
+    'carga academica diaria',
+    'altas horas de la noche',
+    'tiempo de descanso',
+    'volumen de las asignaciones',
+    'revisar el volumen',
+    'afectar contrariamente su rendimiento',
+    'afectar su rendimiento',
+    'afectar su descanso',
+    'preocupación por su salud',
+    'preocupacion por su salud',
+    'cansancio acumulado',
+    'deberes y proyectos escolares',
+    'exceso de tareas',
+    'demasiadas tareas',
+    'saturar su rutina',
+    'dedica una cantidad considerable de horas',
+    'sostenible para los estudiantes',
+    'coordinar los tiempos de entrega',
+    'preocupa ver cómo la carga',
+    'preocupa ver como la carga',
+    'inquietud y su valiosa disposición',
+    'inquietud y su valiosa disposicion',
+    'criterio pedagógico',
+    'criterio pedagogico',
+    'formación académica e integral',
+    'formacion academica e integral',
+    'estrés escolar',
+    'estres escolar',
+    'salud mental del alumno',
+    'salud mental de nuestro hijo',
+    'salud mental de nuestra hija',
+    'agotamiento del estudiante',
+    'agotamiento de nuestro hijo'
+  ].some(sig => fullText.includes(sig)) || (
+    fullText.includes('bienestar') && (fullText.includes('hijo') || fullText.includes('hija') || fullText.includes('alumno') || fullText.includes('estudiante'))
+  ) || (
+    fullText.includes('preocupa') && (fullText.includes('carga') || fullText.includes('tarea') || fullText.includes('deberes') || fullText.includes('horas') || fullText.includes('descanso') || fullText.includes('rendimiento'))
+  );
+
+  const isCeoCritical = isMandatorySepInspection || isCteEmergency || isInjuryEmergency || isSevereConflictOrLegal || isStudentWellbeingOrWorkloadConcern || reincidence >= 3;
 
   if (isCeoCritical) {
     let cat = 'Atención Inmediata CEO';
     let why = 'Asunto con implicación de gobernanza o riesgo normativo que requiere criterio ético y resolución directa de Dirección.';
     let action = 'Atención directa inmediata de Dirección General / CEO.';
 
-    if (isMandatorySepInspection) {
+    if (isStudentWellbeingOrWorkloadConcern) {
+      cat = 'Atención Inmediata CEO / Bienestar del Estudiante y Carga Académica';
+      why = 'Inquietud formal de padre de familia sobre bienestar socioemocional, descanso y sobrecarga de tareas escolares del estudiante. Asunto de gobernanza escolar y atención directiva indelegable.';
+      action = 'Atención directa inmediata de Dirección General / CEO: Revisar carga de tareas con docentes y responder formalmente a la familia.';
+    } else if (isMandatorySepInspection) {
       cat = 'Supervisión Oficial SEP / Asunto Regulatorio';
       why = 'Comunicación o requerimiento oficial vinculado a Supervisión Escolar / SEP. Requiere intervención y resolución directa e indelegable de Dirección General / CEO.';
       action = 'Atención directa inmediata de Dirección General / CEO y desahogo de requerimiento ante la autoridad educativa.';
@@ -434,6 +456,52 @@ export function classifyZeroTokenEmail(
       recommended_action: action
     };
   }
+
+  // 3. APRENDIZAJE ADAPTATIVO ZERO-TOKENS: Reglas memorizadas por retroalimentación directiva
+  const learnedRules = LearnedTriageMemoryService.getRules(tId);
+  for (const lr of learnedRules) {
+    const val = lr.patternValue.toLowerCase().trim();
+    if (lr.patternType === 'sender' && sFromEmail.includes(val)) {
+      return buildZeroTokenResult(lr.targetQuadrant, 'Regla de Aprendizaje / Remitente', lr.reason || 'Clasificado según aprendizaje local previo.');
+    }
+    if (lr.patternType === 'domain' && sFromEmail.split('@')[1]?.includes(val)) {
+      return buildZeroTokenResult(lr.targetQuadrant, 'Regla de Aprendizaje / Dominio', lr.reason || 'Dominio aprendido como ' + lr.targetQuadrant);
+    }
+    if (lr.patternType === 'subject' && fullText.includes(val)) {
+      return buildZeroTokenResult(lr.targetQuadrant, 'Regla de Aprendizaje / Patrón', lr.reason || 'Patrón aprendido en triage.');
+    }
+  }
+
+  // 4. REGLA SUPREMA VIP: Remitentes prioritarios registrados por el CEO en Ajustes
+  let matchingVip: any = null;
+  if (sFromEmail) {
+    if (vipRules && vipRules.length > 0) {
+      matchingVip = vipRules.find(v => v.enabled !== false && v.email && sFromEmail.includes(v.email.toLowerCase().trim()));
+    }
+    if (!matchingVip) {
+      matchingVip = CeoEmailSettingsService.getMatchingVipRule(tId, sFromEmail);
+    }
+  }
+  if (matchingVip) {
+    return {
+      quadrant: 'ATENCION_CEO',
+      urgency: 'CRITICA',
+      category: `Regla VIP / ${matchingVip.contactName || 'Alta Importancia'}`,
+      badge: {
+        quadrant: 'ATENCION_CEO',
+        label: '🔴 ATENCIÓN INMEDIATA CEO',
+        color: 'bg-red-50 text-red-700 border-red-200'
+      },
+      gmailCategory: 'principal',
+      assigned_department: 'Dirección General / CEO',
+      assigned_role: 'Dirección General / CEO',
+      delegate_email: sFromEmail,
+      sla_hours: 12,
+      why_shown_to_director: `Remitente prioritario registrado en Reglas VIP de Dirección General (${matchingVip.email}${matchingVip.organization ? ' - ' + matchingVip.organization : ''}): ${matchingVip.reason || 'Atención prioritaria obligatoria e indelegable.'}`,
+      recommended_action: 'Atención prioritaria e inmediata de Dirección General / CEO. Dar seguimiento directo y personalizado sin intermediación.'
+    };
+  }
+
 
   // 4. CUADRANTE 2: DELEGADO OPERATIVO (🟡 0 Tokens)
   // Trámites departamentales de cobranza, control escolar, rutas de transporte, enfermería de rutina
