@@ -534,6 +534,37 @@ export function injectEmailIntoCache(tenantId: string, email: RawGmailItem): voi
 }
 
 /**
+ * Inyectar en lote una lista de correos en el caché del buzón (O(N) optimizado, sin reasignaciones intermedias)
+ */
+export function injectEmailsBatchIntoCache(tenantId: string, emails: RawGmailItem[], recipientEmail?: string): void {
+  if (!emails || emails.length === 0) return;
+  const targetEmail = recipientEmail || emails[0]?.recipient_email || '';
+  const cleanUser = targetEmail.trim().toLowerCase();
+  const tenantKey = cleanUser ? `${tenantId}:${cleanUser}` : tenantId;
+  const current = globalInboxCache.get(tenantKey)?.emails || [];
+  
+  const existingIds = new Set(current.map(e => e.id));
+  const existingSubjects = new Set(current.map(e => e.subject.trim().toLowerCase()));
+
+  const newItems: RawGmailItem[] = [];
+  for (const item of emails) {
+    const normSub = item.subject.trim().toLowerCase();
+    if (!existingIds.has(item.id) && !existingSubjects.has(normSub)) {
+      newItems.push(item);
+      existingIds.add(item.id);
+      existingSubjects.add(normSub);
+    }
+  }
+
+  if (newItems.length > 0 || !globalInboxCache.has(tenantKey)) {
+    globalInboxCache.set(tenantKey, {
+      emails: [...newItems, ...current],
+      lastSync: Date.now()
+    });
+  }
+}
+
+/**
  * Purgar completamente el caché de un colegio o cuenta específica
  */
 export function clearTenantInboxCache(tenantId: string, email?: string): void {

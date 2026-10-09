@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { InboundMailSpoolService } from '@/lib/services/inboundMailSpool';
-import { fetchLiveImapEmails, getCachedInboxEmails, injectEmailIntoCache } from '@/lib/services/imapClientService';
+import { fetchLiveImapEmails, getCachedInboxEmails, injectEmailIntoCache, injectEmailsBatchIntoCache } from '@/lib/services/imapClientService';
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { HermeticEmailBrainService } from '@/lib/services/hermetic-email-brain.service';
 
@@ -208,9 +208,7 @@ export async function GET(request: NextRequest) {
           authenticated = true;
           requiresAppPassword = false;
           emails = liveGoogle;
-          for (const item of liveGoogle) {
-            injectEmailIntoCache(tenantId, item);
-          }
+          injectEmailsBatchIntoCache(tenantId, liveGoogle, email);
         }
       } catch (err: any) {
         console.warn('Error sincronizando correos con Google OAuth:', err?.message);
@@ -425,9 +423,7 @@ export async function POST(request: NextRequest) {
           authenticated = true;
           requiresAppPassword = false;
           emails = liveGoogle;
-          for (const item of liveGoogle) {
-            injectEmailIntoCache(tenantId, item);
-          }
+          injectEmailsBatchIntoCache(tenantId, liveGoogle, email);
         }
       } catch (err: any) {
         console.warn('Error sincronizando correos con Google OAuth en POST:', err?.message);

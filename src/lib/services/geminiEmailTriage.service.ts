@@ -280,7 +280,8 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
             responseMimeType: 'application/json',
             temperature: 0.1
           }
-        })
+        }),
+        signal: AbortSignal.timeout(9000)
       });
 
       if (!response.ok) {

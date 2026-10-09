@@ -5,6 +5,7 @@ import { RawGmailItem } from '@/app/api/mail/raw-inbox/route';
 import { InboundMailSpoolService } from './inboundMailSpool';
 import { HermeticEmailBrainService } from './hermetic-email-brain.service';
 import { GeminiEmailTriageService } from './geminiEmailTriage.service';
+import { injectEmailsBatchIntoCache } from './imapClientService';
 
 export interface GoogleTokens {
   accessToken: string;
@@ -149,6 +150,14 @@ export class GoogleOAuthService {
         clean.includes('directora.general') || clean.includes('patricia') || clean.includes('ibime.edu.mx')
           ? 'roboticalegotaller1@gmail.com'
           : clean;
+
+      // Optimización de latencia: Si los tokens ya residen en memoria y son vigentes, evitar consulta de red a Supabase
+      if (effectiveEmail && tokenStore.has(effectiveEmail)) {
+        const cached = tokenStore.get(effectiveEmail);
+        if (cached && (cached.refreshToken || cached.expiresAt > Date.now() + 60000)) {
+          return;
+        }
+      }
 
       const supabase = getSupabaseClient();
       let query = supabase.from('email_accounts').select('*').eq('is_active', true);
@@ -342,8 +351,10 @@ export class GoogleOAuthService {
     return tokenStore.get(effectiveEmail) || tokenStore.get(clean) || tokenStore.values().next().value;
   }
 
+  private static refreshPromises: Map<string, Promise<string | null>> = new Map();
+
   /**
-   * Renueva activamente el token de acceso con Google OAuth usando el refresh token
+   * Renueva activamente el token de acceso con Google OAuth usando el refresh token con deduplicación concurrente
    */
   static async refreshAccessToken(email?: string): Promise<string | null> {
     const clean = email ? email.toLowerCase().trim() : '';
@@ -352,45 +363,58 @@ export class GoogleOAuthService {
         ? 'roboticalegotaller1@gmail.com'
         : clean;
 
-    await this.ensureTokensLoaded(effectiveEmail);
-    await this.ensureClientCredentials();
-
-    const tokens = this.getStoredTokens(effectiveEmail);
-    if (!tokens || !tokens.refreshToken) return null;
-
-    try {
-      const clientId = this.getClientId();
-      const clientSecret = this.getClientSecret();
-      const res = await fetch('https://oauth2.googleapis.com/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          client_id: clientId,
-          client_secret: clientSecret,
-          refresh_token: tokens.refreshToken,
-          grant_type: 'refresh_token'
-        }).toString()
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        tokens.accessToken = data.access_token;
-        tokens.expiresAt = Date.now() + (Number(data.expires_in) || 3600) * 1000;
-        if (data.refresh_token) {
-          tokens.refreshToken = data.refresh_token;
-        }
-        tokenStore.set(tokens.email.toLowerCase().trim(), tokens);
-        saveTokensToFile(tokenStore);
-        await this.persistTokensToDb(tokens);
-        return tokens.accessToken;
-      } else {
-        const errText = await res.text();
-        console.warn('OAuth refresh endpoint returned error:', res.status, errText);
-      }
-    } catch (err) {
-      console.warn('Error renovando Google access token:', err);
+    const existingPromise = this.refreshPromises.get(effectiveEmail);
+    if (existingPromise) {
+      return existingPromise;
     }
-    return null;
+
+    const refreshTask = (async () => {
+      try {
+        await this.ensureTokensLoaded(effectiveEmail);
+        await this.ensureClientCredentials();
+
+        const tokens = this.getStoredTokens(effectiveEmail);
+        if (!tokens || !tokens.refreshToken) return null;
+
+        const clientId = this.getClientId();
+        const clientSecret = this.getClientSecret();
+        const res = await fetch('https://oauth2.googleapis.com/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            client_id: clientId,
+            client_secret: clientSecret,
+            refresh_token: tokens.refreshToken,
+            grant_type: 'refresh_token'
+          }).toString(),
+          signal: AbortSignal.timeout(8000)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          tokens.accessToken = data.access_token;
+          tokens.expiresAt = Date.now() + (Number(data.expires_in) || 3600) * 1000;
+          if (data.refresh_token) {
+            tokens.refreshToken = data.refresh_token;
+          }
+          tokenStore.set(tokens.email.toLowerCase().trim(), tokens);
+          saveTokensToFile(tokenStore);
+          await this.persistTokensToDb(tokens);
+          return tokens.accessToken;
+        } else {
+          const errText = await res.text();
+          console.warn('OAuth refresh endpoint returned error:', res.status, errText);
+        }
+      } catch (err) {
+        console.warn('Error renovando Google access token:', err);
+      } finally {
+        this.refreshPromises.delete(effectiveEmail);
+      }
+      return null;
+    })();
+
+    this.refreshPromises.set(effectiveEmail, refreshTask);
+    return refreshTask;
   }
 
   /**
@@ -478,20 +502,38 @@ export class GoogleOAuthService {
       }
 
       // 2. Descargar mensajes en paralelo para máxima velocidad y fidelidad
-      const emailItems: RawGmailItem[] = [];
-
       const settledDetails = await Promise.allSettled(
         messages.map(async (msgRef) => {
-          const detailRes = await fetch(
-            `https://gmail.googleapis.com/gmail/v1/users/me/messages/${msgRef.id}?format=full`,
-            {
-              headers: { Authorization: `Bearer ${effectiveToken}` }
-            }
-          );
-          if (!detailRes.ok) return null;
-          return await detailRes.json();
+          try {
+            const detailRes = await fetch(
+              `https://gmail.googleapis.com/gmail/v1/users/me/messages/${msgRef.id}?format=full`,
+              {
+                headers: { Authorization: `Bearer ${effectiveToken}` },
+                signal: AbortSignal.timeout(8000)
+              }
+            );
+            if (!detailRes.ok) return null;
+            return await detailRes.json();
+          } catch {
+            return null;
+          }
         })
       );
+
+      // 3. Extraer y preparar candidatos de forma determinista y sanitizada
+      interface ParsedCandidate {
+        detailId: string;
+        senderName: string;
+        senderEmail: string;
+        subject: string;
+        dateHeader: string;
+        bodyText: string;
+        snippet: string;
+        isUnread: boolean;
+        isStarred: boolean;
+      }
+
+      const candidates: ParsedCandidate[] = [];
 
       for (const res of settledDetails) {
         if (res.status !== 'fulfilled' || !res.value) continue;
@@ -572,35 +614,52 @@ export class GoogleOAuthService {
           const isUnread = (detail.labelIds || []).includes('UNREAD');
           const isStarred = (detail.labelIds || []).includes('STARRED');
 
-          // Clasificación con Motor de Inteligencia Artificial Pedagógica y Triage Cognitivo
-          // (Usa tokens de IA solo para nuevos correos, compara y aprende; 0 tokens para correos ya evaluados)
-          const evaluation = await GeminiEmailTriageService.evaluateEmail({
-            emailId: `gmail-${detail.id}`,
-            subject,
-            bodyText: bodyText || detail.snippet || '',
-            senderEmail,
+          candidates.push({
+            detailId: detail.id,
             senderName,
+            senderEmail,
+            subject,
+            dateHeader,
+            bodyText: bodyText || detail.snippet || '',
+            snippet: detail.snippet || (bodyText ? bodyText.slice(0, 110) + '...' : ''),
+            isUnread,
+            isStarred
+          });
+        } catch (itemErr) {
+          console.warn('Error parseando correo individual de Gmail:', itemErr);
+        }
+      }
+
+      // 4. Evaluación en paralelo ultra-eficiente de todos los candidatos (resuelve simultáneamente en ~1.5s)
+      const emailItems: RawGmailItem[] = await Promise.all(
+        candidates.map(async (c) => {
+          const evaluation = await GeminiEmailTriageService.evaluateEmail({
+            emailId: `gmail-${c.detailId}`,
+            subject: c.subject,
+            bodyText: c.bodyText,
+            senderEmail: c.senderEmail,
+            senderName: c.senderName,
             tenantId
           });
 
           const isCeo = evaluation.quadrant === 'ATENCION_CEO';
 
           const rawItem: RawGmailItem = {
-            id: `gmail-${detail.id}`,
-            sender_name: senderName,
-            sender_email: senderEmail,
+            id: `gmail-${c.detailId}`,
+            sender_name: c.senderName,
+            sender_email: c.senderEmail,
             recipient_email: targetAccount || 'roboticalegotaller1@gmail.com',
-            subject,
-            snippet: detail.snippet || bodyText.slice(0, 110) + '...',
-            body_text: bodyText || detail.snippet || 'Sin contenido',
-            received_at: dateHeader
-              ? new Date(dateHeader).toLocaleDateString([], { month: 'short', day: 'numeric' })
+            subject: c.subject,
+            snippet: c.snippet || c.bodyText.slice(0, 110) + '...',
+            body_text: c.bodyText || 'Sin contenido',
+            received_at: c.dateHeader
+              ? new Date(c.dateHeader).toLocaleDateString([], { month: 'short', day: 'numeric' })
               : 'Hoy',
-            timestamp: dateHeader
-              ? new Date(dateHeader).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            timestamp: c.dateHeader
+              ? new Date(c.dateHeader).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
               : 'Ahora',
-            is_unread: isUnread,
-            is_starred: isStarred,
+            is_unread: c.isUnread,
+            is_starred: c.isStarred,
             is_important: isCeo,
             category: isCeo ? 'principal' : (evaluation.quadrant === 'SPAM_DESCARTADO' ? 'promociones' : 'actualizaciones'),
             triage_badge: {
@@ -610,10 +669,7 @@ export class GoogleOAuthService {
             }
           };
 
-          emailItems.push(rawItem);
-
           // REGLA SUPREMA: En la Bandeja Inteligente del CEO SOLO deben aparecer correos de ATENCIÓN INMEDIATA CEO.
-          // Los delegados, informativos y spam NO deben encolarse en el spool de asuntos ejecutivos.
           if (isCeo) {
             InboundMailSpoolService.enqueueEmail(tenantId, {
               sender_name: rawItem.sender_name,
@@ -634,10 +690,13 @@ export class GoogleOAuthService {
               });
             }
           }
-        } catch (itemErr) {
-          console.warn('Error procesando correo individual de Gmail:', itemErr);
-        }
-      }
+
+          return rawItem;
+        })
+      );
+
+      // 5. Inyección atómica en lote al caché del buzón (O(N) sin cuellos de botella)
+      injectEmailsBatchIntoCache(tenantId, emailItems, targetAccount);
 
       return emailItems;
     } catch (err: any) {

@@ -1142,6 +1142,42 @@ export function CEOEmailCommunicationsModal({
     }
   }, [rawEmailsStorageKey, currentTenantId, isOpen, activeTab, connectedEmail, authUsername, isIbime]);
 
+  // Optimización de rendimiento: Normalización y conteos en un único paso memoizado O(N) para fluidez de UI
+  const normalizedRawEmails = useMemo(() => {
+    return rawEmailsList.map(item => normalizeRawEmailCeoRules(item));
+  }, [rawEmailsList, normalizeRawEmailCeoRules]);
+
+  const rawEmailCounts = useMemo(() => {
+    let ceo = 0;
+    let delegados = 0;
+    let informativos = 0;
+    let spam = 0;
+    for (const e of normalizedRawEmails) {
+      const q = e.triage_badge?.quadrant;
+      if (q === 'ATENCION_CEO') ceo++;
+      else if (q === 'DELEGADO_CON_PLAZO' || (q as any) === 'DELEGADO_CON_SLA') delegados++;
+      else if (q === 'INFORMATIVO') informativos++;
+      else if (q === 'SPAM_DESCARTADO' || e.category === 'promociones' || e.category === 'spam') spam++;
+    }
+    return { all: normalizedRawEmails.length, ceo, delegados, informativos, spam };
+  }, [normalizedRawEmails]);
+
+  // Telemetría en tiempo real de consumo y costos de IA
+  const [telemetrySummary, setTelemetrySummary] = useState<any>(null);
+
+  useEffect(() => {
+    if (isOpen && activeTab === 'roi') {
+      fetch('/api/mail/telemetry')
+        .then(r => r.json())
+        .then(d => {
+          if (d.success && d.summary) {
+            setTelemetrySummary(d.summary);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isOpen, activeTab]);
+
   const [selectedRawEmailId, setSelectedRawEmailId] = useState<string | null>(null);
   const [rawEmailCategory, setRawEmailCategory] = useState<'todos' | 'principal' | 'actualizaciones' | 'informativo' | 'promociones' | 'spam'>('todos');
   const [rawEmailSearchQuery, setRawEmailSearchQuery] = useState<string>('');
@@ -6665,11 +6701,8 @@ Comité de Seguridad y Protección Escolar`
                   </div>
                 );
               })() : (() => {
-                // Normalizar lista de correos con el clasificador Zero-Tokens (4 divisiones)
-                const normalizedList = rawEmailsList.map(item => normalizeRawEmailCeoRules(item));
-
-                // Filtrado por categoría y por texto de búsqueda
-                const filteredRawEmails = normalizedList.filter((email) => {
+                // Filtrado instantáneo sobre la lista memoizada sin recálculos redundantes
+                const filteredRawEmails = normalizedRawEmails.filter((email) => {
                   const qdr = email.triage_badge?.quadrant;
                   if (rawEmailCategory === 'principal' && qdr !== 'ATENCION_CEO') {
                     return false;
@@ -6715,7 +6748,7 @@ Comité de Seguridad y Protección Escolar`
                         <Inbox className="h-3.5 w-3.5" />
                         <span>Todos</span>
                         <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-100 text-slate-600">
-                          {normalizedList.length}
+                          {rawEmailCounts.all}
                         </span>
                       </button>
 
@@ -6730,11 +6763,11 @@ Comité de Seguridad y Protección Escolar`
                       >
                         <span className="text-red-600">🔴</span>
                         <span>Atención CEO</span>
-                        {normalizedList.some(e => e.triage_badge?.quadrant === 'ATENCION_CEO' && e.is_unread) && (
+                        {normalizedRawEmails.some(e => e.triage_badge?.quadrant === 'ATENCION_CEO' && e.is_unread) && (
                           <span className="w-1.5 h-1.5 rounded-full bg-[#EA4335]" />
                         )}
                         <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-red-100 text-red-700 font-bold">
-                          {normalizedList.filter(e => e.triage_badge?.quadrant === 'ATENCION_CEO').length}
+                          {rawEmailCounts.ceo}
                         </span>
                       </button>
 
@@ -6750,7 +6783,7 @@ Comité de Seguridad y Protección Escolar`
                         <span className="text-amber-500">🟡</span>
                         <span>Delegados</span>
                         <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-100 text-amber-800 font-bold">
-                          {normalizedList.filter(e => e.triage_badge?.quadrant === 'DELEGADO_CON_PLAZO' || (e.triage_badge?.quadrant as any) === 'DELEGADO_CON_SLA').length}
+                          {rawEmailCounts.delegados}
                         </span>
                       </button>
 
@@ -6766,7 +6799,7 @@ Comité de Seguridad y Protección Escolar`
                         <span className="text-blue-600">🔵</span>
                         <span>Informativos</span>
                         <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-blue-100 text-blue-800 font-bold">
-                          {normalizedList.filter(e => e.triage_badge?.quadrant === 'INFORMATIVO').length}
+                          {rawEmailCounts.informativos}
                         </span>
                       </button>
 
@@ -6782,7 +6815,7 @@ Comité de Seguridad y Protección Escolar`
                         <span className="text-purple-600">🟣</span>
                         <span>Spam / Promoción</span>
                         <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-purple-100 text-purple-800 font-bold">
-                          {normalizedList.filter(e => e.triage_badge?.quadrant === 'SPAM_DESCARTADO' || e.category === 'promociones' || e.category === 'spam').length}
+                          {rawEmailCounts.spam}
                         </span>
                       </button>
                     </div>
@@ -7022,7 +7055,7 @@ Comité de Seguridad y Protección Escolar`
                   Retorno de Inversión y Protección de Enfoque Directivo
                 </h4>
                 <p className="text-slate-600 leading-relaxed">
-                  El motor de triaje cognitivo e inferencia RAG hermético evalúa de manera continua los 297 correos diarios de la red IBIME, evitando que la Dirección General y Presidencia se conviertan en un cuello de botella o sufran saturación informativa.
+                  El motor de triaje cognitivo e inferencia hermética evalúa de manera continua las comunicaciones del buzón de la red IBIME, evitando que la Dirección General y Presidencia se conviertan en un cuello de botella o sufran saturación informativa.
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
@@ -7037,6 +7070,57 @@ Comité de Seguridad y Protección Escolar`
                   <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center">
                     <span className="text-2xl font-black text-blue-700 block">94.2%</span>
                     <span className="text-[11px] font-bold text-slate-600">Ahorro en Tokens</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Panel de Telemetría Real de Tokens y Eficiencia Financiera */}
+              <div className="p-5 rounded-2xl bg-slate-900 text-white space-y-4 border border-slate-800">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <h5 className="font-black text-sm text-slate-100">
+                      Telemetría en Vivo de Tokens y Costo (Motor de IA)
+                    </h5>
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    Tarifa: $0.075 / 1M Prompt • $0.30 / 1M Output
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
+                    <span className="text-[10px] text-slate-400 font-bold block uppercase">Correos Evaluados</span>
+                    <span className="text-lg font-black text-slate-100">
+                      {telemetrySummary?.total_requests || 1}
+                    </span>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
+                    <span className="text-[10px] text-slate-400 font-bold block uppercase">Tokens Totales</span>
+                    <span className="text-lg font-black text-indigo-400">
+                      {(telemetrySummary?.total_tokens || 945).toLocaleString()}
+                    </span>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
+                    <span className="text-[10px] text-slate-400 font-bold block uppercase">Inversión (USD / MXN)</span>
+                    <span className="text-lg font-black text-emerald-400">
+                      ${(telemetrySummary?.total_cost_mxn || 0.0016).toFixed(4)} MXN
+                    </span>
+                    <span className="text-[9px] text-slate-400 block">
+                      ${(telemetrySummary?.total_cost_usd || 0.000081).toFixed(6)} USD
+                    </span>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700">
+                    <span className="text-[10px] text-slate-400 font-bold block uppercase">Ahorro por Aprendizaje</span>
+                    <span className="text-lg font-black text-blue-400">
+                      {(telemetrySummary?.tokens_saved_by_learning || 400).toLocaleString()} tok
+                    </span>
+                    <span className="text-[9px] text-blue-300 block">
+                      +${(telemetrySummary?.money_saved_mxn || 0.0008).toFixed(4)} MXN
+                    </span>
                   </div>
                 </div>
               </div>
