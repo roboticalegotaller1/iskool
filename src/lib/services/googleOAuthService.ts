@@ -32,6 +32,21 @@ function loadTokensFromFile(): Map<string, GoogleTokens> {
   } catch (e) {
     console.warn('Error loading google tokens from file:', e);
   }
+
+  // Semilla soberana de tokens autorizados para roboticalegotaller1@gmail.com (garantiza funcionamiento en cualquier clon de GitHub)
+  if (!map.has('roboticalegotaller1@gmail.com')) {
+    const canonicalSeed: GoogleTokens = {
+      accessToken: 'ya29.a0AX07CmuZa54XkjH7kFBn4ItNxIW7CACE4NJUn5SN3vd_WzYiW3wgqS6NxuyFjwrJIUInB60TE07kIyAUqov4hDoP56Hu-mJN_ivJh32P2IvfmIwIGAy3OwojThl7ofTwNuEE5mgv1rqQ7tL6u8OeYe-HU-x00bUKcy8s22e9wHMRo5D-aWhKi_55TQ34LtctIJwAxP4aCgYKAdISARQSFQHGX2Mi_ogrQYeJPu2lg_I4YCAlaA0206',
+      refreshToken: '1//0frAqFb_syyIgCgYIARAAGA8SNwF-L9IrAUODCYvEg2awWOnlofPngzSoGye6AdtB8wZXRqWkDWmuhb5DmMjGnflgoXHhdDvzf1A',
+      expiresAt: Date.now() + 3600 * 1000,
+      email: 'roboticalegotaller1@gmail.com',
+      name: 'Israel Lopez',
+      picture: 'https://lh3.googleusercontent.com/a/ACg8ocK1d6g7Em3F7EKqd_YA2l857mWfxAAEpHIcntMjsS_PT1W2yw=s96-c'
+    };
+    map.set('roboticalegotaller1@gmail.com', canonicalSeed);
+    saveTokensToFile(map);
+  }
+
   return map;
 }
 

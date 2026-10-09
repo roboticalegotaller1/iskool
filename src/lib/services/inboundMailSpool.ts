@@ -134,7 +134,7 @@ export const InboundMailSpoolService = {
     externalEmails?: InboundEmailDTO[]
   ): QueuedInboundEmail[] {
     const normExisting = new Set(existingTitles.map(t => normalizeSubject(t)));
-    const targetEmail = (accountEmail || 'israell35mac@gmail.com').trim().toLowerCase();
+    const targetEmail = (accountEmail || 'roboticalegotaller1@gmail.com').trim().toLowerCase();
 
     const emailsToProcess: InboundEmailDTO[] = (externalEmails && externalEmails.length > 0)
       ? externalEmails

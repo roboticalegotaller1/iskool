@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const targetEmail = (email || 'israell35mac@gmail.com').toLowerCase().trim();
+    const targetEmail = (email || 'roboticalegotaller1@gmail.com').toLowerCase().trim();
 
     if (action === 'sync_event') {
       const result = await GoogleOAuthService.syncCalendarEvent(targetEmail, event);

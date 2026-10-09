@@ -443,7 +443,7 @@ export function CEOEmailCommunicationsModal({
       const globalSaved = localStorage.getItem('iskool_last_connected_email');
       if (globalSaved && globalSaved !== 'DISCONNECTED' && globalSaved !== 'direccion@gmail.com') return globalSaved;
     }
-    return 'israell35mac@gmail.com';
+    return 'roboticalegotaller1@gmail.com';
   });
 
   // Estado riguroso de verificación en tiempo real por ping
@@ -537,7 +537,7 @@ export function CEOEmailCommunicationsModal({
       const saved = localStorage.getItem(emailStorageKey);
       if (saved && saved !== 'DISCONNECTED' && saved !== 'direccion@gmail.com') return saved;
     }
-    return 'israell35mac@gmail.com';
+    return 'roboticalegotaller1@gmail.com';
   });
   const [authPassword, setAuthPassword] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -554,7 +554,7 @@ export function CEOEmailCommunicationsModal({
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedEmail = localStorage.getItem(emailStorageKey);
-      setAuthUsername(savedEmail && savedEmail !== 'DISCONNECTED' && savedEmail !== 'direccion@gmail.com' ? savedEmail : 'israell35mac@gmail.com');
+      setAuthUsername(savedEmail && savedEmail !== 'DISCONNECTED' && savedEmail !== 'direccion@gmail.com' ? savedEmail : 'roboticalegotaller1@gmail.com');
       const savedPass = localStorage.getItem(`iskool_auth_pass_${currentTenantId}`);
       setAuthPassword(savedPass || '');
       const savedAppPass = localStorage.getItem(`iskool_app_pass_input_${currentTenantId}`);
@@ -2527,7 +2527,7 @@ ${schoolName}`
 
     if (presetId === 'google') {
       handleSelectProviderPreset('google');
-      const targetEmail = (authUsername || connectedEmail || 'israell35mac@gmail.com').trim();
+      const targetEmail = (authUsername || connectedEmail || 'roboticalegotaller1@gmail.com').trim();
       setConnectedEmail(targetEmail);
       const popupUrl = `/api/auth/google/login?tenantId=${encodeURIComponent(currentTenantId)}&email=${encodeURIComponent(targetEmail)}`;
       const width = 560;
@@ -2599,7 +2599,7 @@ ${schoolName}`
       
       const defaultDomain = preset.domains[0] || 'gmail.com';
       if (!authUsername || !authUsername.includes('@') || authUsername.endsWith(schoolDomain) || authUsername === 'direccion@gmail.com') {
-        setAuthUsername(defaultDomain === 'gmail.com' ? 'israell35mac@gmail.com' : `direccion@${defaultDomain}`);
+        setAuthUsername(defaultDomain === 'gmail.com' ? 'roboticalegotaller1@gmail.com' : `direccion@${defaultDomain}`);
       }
       onTriggerToast(`✓ Preset "${preset.providerName}" seleccionado con puertos oficiales.`);
     } else {
@@ -2681,7 +2681,7 @@ ${schoolName}`
   ) => {
     try {
       setIsSyncingCalendarToGoogle(true);
-      const targetEmail = connectedEmail || authUsername || 'israell35mac@gmail.com';
+      const targetEmail = connectedEmail || authUsername || 'roboticalegotaller1@gmail.com';
       const res = await fetch('/api/mail/calendar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -6179,7 +6179,7 @@ Comité de Seguridad y Protección Escolar`
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
-                            <span>Conexión Real con Google Mail ({connectedEmail || authUsername || 'israell35mac@gmail.com'})</span>
+                            <span>Conexión Real con Google Mail ({connectedEmail || authUsername || 'roboticalegotaller1@gmail.com'})</span>
                           </h3>
                           <span className="px-2 py-0.5 rounded-full bg-amber-600 text-white text-[10px] font-black uppercase tracking-wider">
                             Autenticación Requerida
