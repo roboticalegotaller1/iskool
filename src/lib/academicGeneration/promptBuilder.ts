@@ -93,11 +93,11 @@ export class AcademicGenerationPromptBuilder {
       `- Language Function: ${request.language_function}`,
       `- Activity Pattern: ${request.activity_type}`,
       `- Total Duration: ${request.duration_minutes} minutes`,
-      `- Adaptation Mode: ${request.adaptation.toUpperCase()}`
+      `- Adaptation Mode: ${(request.adaptation || 'core').toUpperCase()}`
     ];
 
     // Inyección de contexto académico sin PII (Privacy by Design)
-    if (request.extraParams.student_context_text) {
+    if (request.extraParams?.student_context_text) {
       lines.push('');
       lines.push(String(request.extraParams.student_context_text));
     }

@@ -235,7 +235,20 @@ export class AIGateway {
    * Ejecuta la llamada HTTP con control de timeout.
    */
   private static async performInference(prompt: string, model: string, timeoutMs: number): Promise<string> {
-    const apiKey = process.env.AI_ENGINE_API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    let apiKey = process.env.MOTOR_IA_API_KEY || process.env.AI_API_KEY || process.env.AI_ENGINE_API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+    if (!apiKey) {
+      try {
+        const fs = await import('fs');
+        const path = await import('path');
+        const envLocal = path.join(process.cwd(), '.env.local');
+        if (fs.existsSync(envLocal)) {
+          const content = fs.readFileSync(envLocal, 'utf8');
+          const m = content.match(/MOTOR_IA_API_KEY=([^\r\n]+)/) || content.match(/AI_API_KEY=([^\r\n]+)/) || content.match(/GEMINI_API_KEY=([^\r\n]+)/);
+          if (m) apiKey = m[1].trim();
+        }
+      } catch {}
+    }
+
     if (!apiKey) {
       // Modo offline simulado si no hay llave en entorno local
       return JSON.stringify({
@@ -246,7 +259,13 @@ export class AIGateway {
     }
 
     const cleanModel = model.replace(/^models\//, '');
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${cleanModel}:generateContent?key=${apiKey}`;
+    const realModelMap: Record<string, string> = {
+      'pedagogical-ai-flash-lite': 'gemini-3.1-flash-lite',
+      'pedagogical-ai-core': 'gemini-3.5-flash',
+      'pedagogical-ai-pro': 'gemini-3.8-flash'
+    };
+    const targetModel = realModelMap[cleanModel] || cleanModel;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
 
     const controller = new AbortController();
     const timeoutHandle = setTimeout(() => controller.abort(), timeoutMs);

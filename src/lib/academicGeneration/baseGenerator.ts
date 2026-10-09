@@ -65,7 +65,7 @@ export abstract class BaseAcademicGenerator<TOutput> {
     const generation_id = `gen_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
     const traceability: TraceabilityRecord = {
       generation_id,
-      request: request.toParams(),
+      request: typeof (request as any).toParams === 'function' ? (request as any).toParams() : (request as any),
       knowledge_document_ids: retrieved.knowledge_document_ids,
       knowledge_versions: retrieved.knowledge_versions,
       prompt_version: AcademicGenerationPromptBuilder.PROMPT_VERSION,

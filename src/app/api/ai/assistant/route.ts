@@ -160,16 +160,77 @@ ACTIVIDAD ACTUAL:
     }
 
     // 6. Invocación Segura de API (Llaves resguardadas en el Servidor)
-    const apiKey = process.env.MOTOR_IA_API_KEY || process.env.AI_API_KEY || process.env.OPENAI_API_KEY;
+    let effectiveApiKey = process.env.MOTOR_IA_API_KEY || process.env.AI_API_KEY;
+    if (!effectiveApiKey) {
+      try {
+        const fs = await import('fs');
+        const path = await import('path');
+        const envLocal = path.join(process.cwd(), '.env.local');
+        if (fs.existsSync(envLocal)) {
+          const content = fs.readFileSync(envLocal, 'utf8');
+          const m = content.match(/MOTOR_IA_API_KEY=([^\r\n]+)/) || content.match(/AI_API_KEY=([^\r\n]+)/);
+          if (m) effectiveApiKey = m[1].trim();
+        }
+      } catch {
+        // Fallback silencioso
+      }
+    }
+
     let replyText = '';
 
-    if (apiKey) {
+    // A) Invocación al Motor de Inteligencia Artificial Pedagógica (Tokens Reales)
+    if (effectiveApiKey) {
+      const candidateEndpoints = [
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent',
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent',
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent',
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent'
+      ];
+
+      for (const ep of candidateEndpoints) {
+        try {
+          const aiResponse = await fetch(`${ep}?key=${effectiveApiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: 'user',
+                  parts: [
+                    { text: systemInstruction },
+                    { text: `Mensaje del usuario: "${message}"` }
+                  ]
+                }
+              ],
+              generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 650
+              }
+            })
+          });
+
+          if (aiResponse.ok) {
+            const aiData = await aiResponse.json();
+            const textPart = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (textPart) {
+              replyText = textPart.trim();
+              break;
+            }
+          }
+        } catch (err) {
+          console.warn(`Fallo en endpoint ${ep} de Asistente IA:`, err);
+        }
+      }
+    }
+
+    // B) Invocación a OpenAI como proveedor secundario si existe llave específica
+    if (!replyText && process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-')) {
       try {
         const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
           },
           body: JSON.stringify({
             model: 'gpt-4o-mini',
@@ -187,7 +248,7 @@ ACTIVIDAD ACTUAL:
           replyText = aiData.choices?.[0]?.message?.content || '';
         }
       } catch (err) {
-        console.warn('Fallo en invocación a API de inferencia, aplicando generador pedagógico seguro:', err);
+        console.warn('Fallo en invocación secundaria a OpenAI:', err);
       }
     }
 
