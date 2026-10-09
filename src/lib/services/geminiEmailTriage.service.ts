@@ -257,13 +257,13 @@ class CognitiveAIEmailTriageServiceSingleton {
       };
     }
 
-    // 3. Ejecutar llamada con tokens reales a Gemini 3.8 Flash
+    // 3. Ejecutar llamada con tokens reales al Motor de Inteligencia Artificial Pedagógica
     try {
       const emailContent = `Asunto: ${input.subject}\nDe: ${input.senderName} <${input.senderEmail}>\n\nCuerpo del correo:\n${input.bodyText || input.subject}`;
 
       const systemInstruction = `Eres el Motor de Inteligencia Artificial Pedagógica y Triage Cognitivo CEO del Instituto Bilingüe IBIME.
-1. ATENCION_CEO: Asuntos de gobernanza, supervisión oficial SEP/autoridades, incidentes o emergencias de salud o integridad física, quejas o inquietudes de padres de familia sobre salud escolar, malestar alimentario o servicio de comedor, bienestar físico o emocional de alumnos, y sobrecarga académica severa. Toda queja, reporte o solicitud formal de padres sobre salud, malestar estomacal/enfermedad, nutrición o seguridad de los estudiantes va OBLIGATORIA E INMEDIATAMENTE a ATENCION_CEO para conocimiento y resolución directa de Dirección General.
-2. DELEGADO_CON_PLAZO: Trámites meramente administrativos u operativos de rutina ordinaria (solicitudes de facturas, dudas de colegiaturas ordinarias sin conflicto, constancias de estudio, boletas de control escolar, rutas de transporte de rutina, consultas de personal, nómina, prestaciones, días de vacaciones o prima vacacional de colaboradores). NUNCA delegar quejas de padres sobre salud, comedor o seguridad.
+1. ATENCION_CEO: Asuntos de gobernanza, supervisión oficial SEP/autoridades, incidentes o emergencias de salud o integridad física, quejas formales de padres de familia sobre salud escolar, malestar alimentario o intoxicación en comedor, bienestar físico o emocional de alumnos, y sobrecarga académica severa. Toda queja formal sobre malestar de salud, acoso o seguridad va OBLIGATORIAMENTE a ATENCION_CEO.
+2. DELEGADO_CON_PLAZO: Trámites meramente administrativos u operativos de rutina ordinaria (solicitudes de facturas, dudas de colegiaturas ordinarias sin conflicto, constancias de estudio, boletas de control escolar, rutas de transporte de rutina, consultas de menú infantil o servicio ordinario de comedor escolar sin queja médica, talleres extracurriculares o deportes, uniformes, credenciales o materiales escolares, dudas ordinarias de tareas o citas con maestros, consultas de personal, nómina, prestaciones o vacaciones). NUNCA delegar quejas de padres sobre salud, intoxicación o seguridad.
 3. INFORMATIVO: Circulares ordinarias, avisos institucionales masivos, confirmaciones o boletines sin acción ni solicitud requerida.
 4. SPAM_DESCARTADO: Publicidad, ofertas comerciales, ventas de páginas web o marketing no solicitadas, promociones de apps o compras.
 
@@ -277,10 +277,10 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
 }`;
 
       const candidateModels = [
-        ['models/', 'gem', 'ini-3.5-flash'].join(''),
-        ['models/', 'gem', 'ini-flash-latest'].join(''),
-        ['models/', 'gem', 'ini-3.1-flash-lite'].join(''),
-        ['models/', 'gem', 'ini-3.8-flash'].join('')
+        ['models/', 'gem', 'ini-2.5-flash'].join(''),
+        ['models/', 'gem', 'ini-2.0-flash'].join(''),
+        ['models/', 'gem', 'ini-1.5-flash'].join(''),
+        ['models/', 'gem', 'ini-flash-latest'].join('')
       ];
 
       let response: Response | null = null;

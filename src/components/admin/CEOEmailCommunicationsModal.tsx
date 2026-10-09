@@ -1373,7 +1373,7 @@ export function CEOEmailCommunicationsModal({
     const patternType = (!isGenericDomain && domain) ? 'domain' : 'sender';
     const patternValue = patternType === 'domain' ? domain : senderEmail;
 
-    // 1. Guardar regla de aprendizaje local permanente (0 tokens)
+    // 1. Guardar regla de aprendizaje local permanente (0 tokens) para remitente
     LearnedTriageMemoryService.learnPattern(currentTenantId, {
       patternType,
       patternValue,
@@ -1381,6 +1381,18 @@ export function CEOEmailCommunicationsModal({
       reason: customReason || `Retroalimentación directa de Dirección General: clasificado como ${targetQuadrant}`,
       learnedFromEmailId: email.id
     });
+
+    // 1.1 Si el asunto es descriptivo, enseñar también el patrón de asunto
+    if (email.subject && email.subject.trim().length >= 3) {
+      const cleanSub = email.subject.toLowerCase().replace(/^(re:|fwd:)\s*/i, '').trim();
+      LearnedTriageMemoryService.learnPattern(currentTenantId, {
+        patternType: 'subject',
+        patternValue: cleanSub,
+        targetQuadrant,
+        reason: customReason || `Retroalimentación directiva para asunto "${cleanSub}"`,
+        learnedFromEmailId: email.id
+      });
+    }
 
     // 2. Si se marcó como SPAM, INFORMATIVO o DELEGADO, remover inmediatamente de la Bandeja Inteligente
     if (targetQuadrant !== 'ATENCION_CEO') {

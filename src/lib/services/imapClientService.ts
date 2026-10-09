@@ -1,6 +1,7 @@
 import tls from 'tls';
 import { RawGmailItem } from '@/app/api/mail/raw-inbox/route';
 import { formatCdmxDate, formatCdmxTime } from '@/utils/timeZoneUtils';
+import { HermeticEmailBrainService } from './hermetic-email-brain.service';
 
 /**
  * ============================================================================
@@ -130,85 +131,23 @@ export function cleanEmailBody(rawBody: string): string {
 
 /**
  * Clasificación y cuadrante cognitivo basado en el contenido del correo
+ * Utiliza el motor hermético determinista institucional unificado
  */
-function classifyEmailTriage(subject: string, body: string): {
+function classifyEmailTriage(subject: string, body: string, senderEmail?: string, senderName?: string): {
   category: 'principal' | 'actualizaciones' | 'promociones' | 'spam';
   triage_badge: RawGmailItem['triage_badge'];
 } {
-  const text = `${subject} ${body}`.toLowerCase();
-
-  const isMandatoryCeoKeyword = /\b(supervision|supervisión|sep|cte)\b/i.test(text) || text.includes('supervisi') || text.includes('supervisió') || text.includes('cte');
-  const urgentKeywords = ['urgente', 'emergencia', 'accidente', 'herido', 'ambulancia', 'hospital', 'grave', 'queja', 'demanda', 'violencia', 'abuso', 'intoxicaci', 'salud', 'comedor', 'malestar'];
-  const operationalKeywords = [
-    'factura', 'pago', 'colegiatura', 'cfdi', 'transporte', 'ruta', 'descuento', 'beca', 
-    'constancia', 'inscripción', 'reinscripción', 'prima vacacional', 'prima', 'vacacional', 
-    'vacaciones', 'nómina', 'nomina', 'recursos humanos', 'rh', 'sueldo', 'salario', 'prestaciones', 'aguinaldo'
-  ];
-  const informativeKeywords = ['circular', 'aviso', 'calendario', 'reunión', 'asistencia', 'oficio', 'acuse', 'convocatoria'];
-  const spamKeywords = ['premio', 'tarjeta de regalo', 'ganador', 'bitcoin', 'crypto', 'remate', 'préstamo', 'oferta exclusiva'];
-  const promoKeywords = ['descuento', 'liquidación', 'marketing', 'simposio', 'conferencia', 'software', 'hosting', 'webinar'];
-
-  if (isMandatoryCeoKeyword || urgentKeywords.some(k => text.includes(k))) {
-    return {
-      category: 'principal',
-      triage_badge: {
-        quadrant: 'ATENCION_CEO',
-        label: '🔴 ATENCIÓN INMEDIATA CEO',
-        color: 'bg-red-50 text-red-700 border-red-200'
-      }
-    };
-  }
-
-  if (operationalKeywords.some(k => text.includes(k))) {
-    return {
-      category: 'actualizaciones',
-      triage_badge: {
-        quadrant: 'DELEGADO_CON_PLAZO',
-        label: '🟡 DELEGADO OPERATIVO',
-        color: 'bg-amber-50 text-amber-700 border-amber-200'
-      }
-    };
-  }
-
-  if (spamKeywords.some(k => text.includes(k))) {
-    return {
-      category: 'spam',
-      triage_badge: {
-        quadrant: 'SPAM_DESCARTADO',
-        label: '⛔ SPAM MALICIOSO / PHISHING',
-        color: 'bg-rose-50 text-rose-700 border-rose-200'
-      }
-    };
-  }
-
-  if (promoKeywords.some(k => text.includes(k))) {
-    return {
-      category: 'promociones',
-      triage_badge: {
-        quadrant: 'SPAM_DESCARTADO',
-        label: '⚪ PROMOCIÓN EXTERNA',
-        color: 'bg-slate-100 text-slate-600 border-slate-200'
-      }
-    };
-  }
-
-  if (informativeKeywords.some(k => text.includes(k))) {
-    return {
-      category: 'actualizaciones',
-      triage_badge: {
-        quadrant: 'INFORMATIVO',
-        label: '🟢 INFORMATIVO',
-        color: 'bg-emerald-50 text-emerald-700 border-emerald-200'
-      }
-    };
-  }
+  const triage = HermeticEmailBrainService.classifyZeroTokenEmail(subject, body, senderEmail, senderName);
+  const isCeo = triage.quadrant === 'ATENCION_CEO';
+  const isDelegado = triage.quadrant === 'DELEGADO_CON_SLA';
+  const isSpam = triage.quadrant === 'SPAM_DESCARTADO';
 
   return {
-    category: 'principal',
+    category: isCeo ? 'principal' : (isDelegado ? 'actualizaciones' : (isSpam ? 'promociones' : triage.gmailCategory)),
     triage_badge: {
-      quadrant: 'INFORMATIVO',
-      label: '🟢 COMUNICACIÓN GENERAL',
-      color: 'bg-slate-100 text-slate-700 border-slate-200'
+      quadrant: (isDelegado ? 'DELEGADO_CON_PLAZO' : triage.quadrant) as any,
+      label: triage.badge?.label || (isCeo ? '🔴 ATENCIÓN INMEDIATA CEO' : isDelegado ? '🟡 DELEGADO OPERATIVO' : isSpam ? '🟣 SPAM / PROMOCIÓN' : '🔵 INFORMATIVO'),
+      color: triage.badge?.color || (isCeo ? 'bg-red-50 text-red-700 border-red-200' : isDelegado ? 'bg-amber-50 text-amber-700 border-amber-200' : isSpam ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-blue-50 text-blue-700 border-blue-200')
     }
   };
 }
@@ -446,7 +385,7 @@ export async function fetchLiveImapEmails(
           const snippet = cleanBody.slice(0, 130) + (cleanBody.length > 130 ? '...' : '');
 
           // Clasificación y Cuadrante Cognitivo
-          const triage = classifyEmailTriage(decodedSubject, cleanBody);
+          const triage = classifyEmailTriage(decodedSubject, cleanBody, senderEmail, senderName);
 
           // Formateo de fecha y hora
           let formattedDate = 'Hoy';

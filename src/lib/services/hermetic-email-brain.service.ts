@@ -424,20 +424,18 @@ export function classifyZeroTokenEmail(
     'no hemos recibido una solución clara',
     'no hemos recibido una solucion clara',
     'equilibrar las responsabilidades escolares',
-    // Inquietudes sobre comedor escolar, alimentación, nutrición y salud del alumno
-    'servicio de comedor',
-    'comedor escolar',
-    'comedor del colegio',
+    // Inquietudes críticas sobre intoxicación, malestar estomacal o alergias alimentarias en el colegio
     'malestar estomacal',
     'intoxicación',
     'intoxicacion',
     'alergia alimentaria',
-    'alimentos proporcionados',
-    'opciones alimenticias',
-    'alimentos que recibe',
-    'tolerados por él',
-    'tolerados por ella',
     'enfermedad estomacal',
+    'alimentos en mal estado',
+    'alimentos descompuestos',
+    'infección gastrointestinal',
+    'infeccion gastrointestinal',
+    'alimento contaminado',
+    'alimentos contaminados',
     'solicitud de atención y consideración',
     'solicitud de atencion y consideracion'
   ].some(sig => fullText.includes(sig)) || (
@@ -449,7 +447,7 @@ export function classifyZeroTokenEmail(
     fullText.includes('preocupa') && (fullText.includes('carga') || fullText.includes('tarea') || fullText.includes('deberes') || fullText.includes('horas') || fullText.includes('descanso') || fullText.includes('rendimiento'))
   ) || (
     (fullText.includes('comedor') || fullText.includes('alimento') || fullText.includes('desayuno') || fullText.includes('comida')) &&
-    (fullText.includes('malestar') || fullText.includes('estómac') || fullText.includes('estomac') || fullText.includes('salud') || fullText.includes('hijo') || fullText.includes('hija') || fullText.includes('alumno') || fullText.includes('alumna') || fullText.includes('colegio') || fullText.includes('direcci') || fullText.includes('atención') || fullText.includes('atencion'))
+    (fullText.includes('malestar') || fullText.includes('estómac') || fullText.includes('estomac') || fullText.includes('intoxicaci') || fullText.includes('alergia') || fullText.includes('enfermedad') || fullText.includes('descompuest') || fullText.includes('descomposici') || fullText.includes('bacteri') || fullText.includes('higiene') || fullText.includes('queja grave') || fullText.includes('dañino') || fullText.includes('dañó'))
   );
 
   const isCeoCritical = isMandatorySepInspection || isCteEmergency || isInjuryEmergency || isSevereConflictOrLegal || isStudentWellbeingOrWorkloadConcern || reincidence >= 3;
@@ -673,6 +671,198 @@ export function classifyZeroTokenEmail(
       sla_hours: 24,
       why_shown_to_director: 'Trámite laboral o consulta de personal y prestaciones derivado a Recursos Humanos con SLA de 24h.',
       recommended_action: 'Canalizar a Recursos Humanos y Nómina para cálculo de prestaciones y respuesta formal.'
+    };
+  }
+
+  // Comedor escolar, nutrición, menús infantiles y alimentos ordinarios (sin intoxicación ni queja grave de salud)
+  const isCafeteriaAndMenu = 
+    fullText.includes('menú infantil') ||
+    fullText.includes('menu infantil') ||
+    fullText.includes('menú de la semana') ||
+    fullText.includes('menu de la semana') ||
+    fullText.includes('menú escolar') ||
+    fullText.includes('menu escolar') ||
+    fullText.includes('menú semanal') ||
+    fullText.includes('menu semanal') ||
+    fullText.includes('menú del día') ||
+    fullText.includes('menu del dia') ||
+    fullText.includes('menú') ||
+    fullText.includes('menu') ||
+    fullText.includes('comedor') ||
+    fullText.includes('cafetería') ||
+    fullText.includes('cafeteria') ||
+    fullText.includes('servicio de comedor') ||
+    fullText.includes('alimentos de la semana') ||
+    fullText.includes('opciones de almuerzo') ||
+    fullText.includes('almuerzo escolar') ||
+    fullText.includes('desayuno escolar') ||
+    fullText.includes('refrigerio') ||
+    fullText.includes('costo de comedor') ||
+    fullText.includes('costo del comedor') ||
+    fullText.includes('costo de cafetería') ||
+    fullText.includes('dieta escolar');
+  if (isCafeteriaAndMenu) {
+    return {
+      quadrant: 'DELEGADO_CON_SLA',
+      urgency: 'MEDIA',
+      category: 'Comedor Escolar & Menú Infantil',
+      badge: {
+        quadrant: 'DELEGADO_CON_SLA',
+        label: '🟡 DELEGADO OPERATIVO',
+        color: 'bg-amber-50 text-amber-700 border-amber-200'
+      },
+      gmailCategory: 'actualizaciones',
+      assigned_department: 'Coordinación de Comedor y Nutrición Escolar',
+      assigned_role: 'Nutrición y Comedor',
+      sla_hours: 24,
+      why_shown_to_director: 'Solicitud ordinaria de menú infantil, opciones de comedor o servicio de cafetería canalizada a nutrición.',
+      recommended_action: 'Canalizar a Coordinación de Comedor para envío del menú y opciones de la semana.'
+    };
+  }
+
+  // Actividades extracurriculares, talleres, deportes y academias vespertinas
+  const isExtracurricular =
+    fullText.includes('taller') ||
+    fullText.includes('talleres') ||
+    fullText.includes('extracurricular') ||
+    fullText.includes('extracurriculares') ||
+    fullText.includes('fútbol') ||
+    fullText.includes('futbol') ||
+    fullText.includes('básquetbol') ||
+    fullText.includes('basquetbol') ||
+    fullText.includes('taekwondo') ||
+    fullText.includes('danza') ||
+    fullText.includes('música') ||
+    fullText.includes('musica') ||
+    fullText.includes('robótica') ||
+    fullText.includes('robotica') ||
+    fullText.includes('ajedrez') ||
+    fullText.includes('natación') ||
+    fullText.includes('natacion') ||
+    fullText.includes('gimnasia') ||
+    fullText.includes('club de tareas') ||
+    fullText.includes('taller vespertino');
+  if (isExtracurricular) {
+    return {
+      quadrant: 'DELEGADO_CON_SLA',
+      urgency: 'MEDIA',
+      category: 'Actividades Extracurriculares y Talleres',
+      badge: {
+        quadrant: 'DELEGADO_CON_SLA',
+        label: '🟡 DELEGADO OPERATIVO',
+        color: 'bg-amber-50 text-amber-700 border-amber-200'
+      },
+      gmailCategory: 'actualizaciones',
+      assigned_department: 'Coordinación de Actividades Extracurriculares y Deportes',
+      assigned_role: 'Coordinación Extracurricular',
+      sla_hours: 24,
+      why_shown_to_director: 'Consulta sobre talleres formativos o deportivos vespertinos canalizada a Coordinación Extracurricular.',
+      recommended_action: 'Canalizar a Coordinación Extracurricular para información de horarios, cupos y costos.'
+    };
+  }
+
+  // Uniformes, credenciales, libros, útiles y materiales escolares
+  const isUniformsAndSupplies =
+    fullText.includes('uniforme') ||
+    fullText.includes('uniformes') ||
+    fullText.includes('chamarra escolar') ||
+    fullText.includes('suéter escolar') ||
+    fullText.includes('sueter escolar') ||
+    fullText.includes('bata de laboratorio') ||
+    fullText.includes('playera polo') ||
+    fullText.includes('credencial') ||
+    fullText.includes('credenciales') ||
+    fullText.includes('reposición de credencial') ||
+    fullText.includes('reposicion de credencial') ||
+    fullText.includes('útiles escolares') ||
+    fullText.includes('utiles escolares') ||
+    fullText.includes('lista de útiles') ||
+    fullText.includes('libros de texto') ||
+    fullText.includes('paquete de libros') ||
+    fullText.includes('objeto perdido') ||
+    fullText.includes('mochila olvidada') ||
+    fullText.includes('suéter perdido') ||
+    fullText.includes('sueter perdido') ||
+    fullText.includes('chamarra perdida');
+  if (isUniformsAndSupplies) {
+    return {
+      quadrant: 'DELEGADO_CON_SLA',
+      urgency: 'MEDIA',
+      category: 'Uniformes, Credenciales y Materiales',
+      badge: {
+        quadrant: 'DELEGADO_CON_SLA',
+        label: '🟡 DELEGADO OPERATIVO',
+        color: 'bg-amber-50 text-amber-700 border-amber-200'
+      },
+      gmailCategory: 'actualizaciones',
+      assigned_department: 'Administración y Servicios Escolares',
+      assigned_role: 'Servicios Escolares y Almacén',
+      sla_hours: 24,
+      why_shown_to_director: 'Solicitud de uniformes, credenciales o entrega de materiales escolares canalizada a Servicios Escolares.',
+      recommended_action: 'Canalizar a Servicios Escolares para entrega o reposición correspondiente.'
+    };
+  }
+
+  // Dudas ordinarias de clase, avisos de inasistencia justificada o citas con docentes
+  const isAcademicCoordination =
+    fullText.includes('aviso de inasistencia') ||
+    fullText.includes('justificante de inasistencia') ||
+    fullText.includes('cita con maestro') ||
+    fullText.includes('cita con maestra') ||
+    fullText.includes('cita con profesor') ||
+    fullText.includes('reunión con profesor') ||
+    fullText.includes('junta con maestra') ||
+    fullText.includes('horario de clases') ||
+    fullText.includes('temario de examen') ||
+    fullText.includes('material para la clase') ||
+    fullText.includes('solicito información sobre la clase');
+  if (isAcademicCoordination) {
+    return {
+      quadrant: 'DELEGADO_CON_SLA',
+      urgency: 'MEDIA',
+      category: 'Coordinación Académica y Plantel',
+      badge: {
+        quadrant: 'DELEGADO_CON_SLA',
+        label: '🟡 DELEGADO OPERATIVO',
+        color: 'bg-amber-50 text-amber-700 border-amber-200'
+      },
+      gmailCategory: 'actualizaciones',
+      assigned_department: 'Coordinación Académica de Plantel',
+      assigned_role: 'Coordinación Académica',
+      sla_hours: 24,
+      why_shown_to_director: 'Comunicación académica ordinaria de padres o docentes canalizada a Coordinación Académica.',
+      recommended_action: 'Canalizar a Coordinación Académica o docente titular de grupo para atención y seguimiento.'
+    };
+  }
+
+  // Soporte técnico, contraseñas y accesos a plataformas escolares
+  const isITSupport =
+    fullText.includes('contraseña') ||
+    fullText.includes('contrasena') ||
+    fullText.includes('recuperar contraseña') ||
+    fullText.includes('plataforma no entra') ||
+    fullText.includes('acceso a la plataforma') ||
+    fullText.includes('acceso al portal') ||
+    fullText.includes('soporte técnico') ||
+    fullText.includes('soporte tecnico') ||
+    fullText.includes('correo institucional') ||
+    fullText.includes('portal escolar');
+  if (isITSupport) {
+    return {
+      quadrant: 'DELEGADO_CON_SLA',
+      urgency: 'MEDIA',
+      category: 'Soporte Técnico y Plataformas Digitales',
+      badge: {
+        quadrant: 'DELEGADO_CON_SLA',
+        label: '🟡 DELEGADO OPERATIVO',
+        color: 'bg-amber-50 text-amber-700 border-amber-200'
+      },
+      gmailCategory: 'actualizaciones',
+      assigned_department: 'Sistemas y Soporte Técnico',
+      assigned_role: 'Soporte Técnico',
+      sla_hours: 12,
+      why_shown_to_director: 'Incidencia técnica o solicitud de acceso a plataformas canalizada al área de Sistemas con SLA de 12h.',
+      recommended_action: 'Restablecer credenciales y validar enrolamiento del usuario en plataforma.'
     };
   }
 
