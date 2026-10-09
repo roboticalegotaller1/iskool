@@ -105,7 +105,8 @@ import {
   VipEmailRule,
   SectionDelegateConfig,
   OfficialTemplateConfig,
-  getDefaultSettings
+  getDefaultSettings,
+  getDefaultDelegates
 } from '@/lib/services/ceoEmailSettingsTypes';
 import {
   formatCdmxTime,
@@ -758,6 +759,10 @@ export function CEOEmailCommunicationsModal({
   });
   const [isLoadingSettings, setIsLoadingSettings] = useState<boolean>(false);
   const [isSavingSettings, setIsSavingSettings] = useState<boolean>(false);
+
+  // Modal de Delegación por Sección con reenvío de correo oficial
+  const [delegatingMatter, setDelegatingMatter] = useState<MatterItem | null>(null);
+  const [isForwardingDelegate, setIsForwardingDelegate] = useState<boolean>(false);
 
   // Formulario para nuevo correo VIP
   const [showAddVipModal, setShowAddVipModal] = useState<boolean>(false);
@@ -1763,25 +1768,123 @@ export function CEOEmailCommunicationsModal({
     onTriggerToast(`✓ Estado actualizado por Dirección General: marcado como ${quadrantNames[targetQuadrant]}.`);
   }, [currentTenantId, rawEmailsStorageKey, mattersStorageKey, campuses, schoolName, directorTitle, schoolSlug, onTriggerToast, setExecutiveOverride]);
 
-  // Delegación rápida directa de un asunto / expediente a coordinación
+  // Delegación de un asunto / expediente con selección de sección y reenvío oficial
   const handleDelegateMatter = (matter: MatterItem) => {
-    const origEmails = getOriginalEmailsForMatter(matter);
-    const targetEmail = origEmails[0] || {
-      id: matter.id,
-      sender_name: matter.sender_name || 'Remitente Institucional',
-      sender_email: matter.sender_email || 'buzon@iskool.mx',
-      recipient_email: connectedEmail || 'roboticalegotaller1@gmail.com',
-      subject: matter.title,
-      snippet: matter.summary,
-      body_text: matter.summary,
-      received_at: matter.received_at,
-      timestamp: matter.received_at,
-      is_unread: false,
-      is_starred: false,
-      is_important: false,
-      category: 'actualizaciones'
-    };
-    handleReclassifyEmail(targetEmail, 'DELEGADO_CON_SLA', `Delegado formalmente desde Expediente ${matter.matter_code || matter.id} por Dirección General`);
+    setDelegatingMatter(matter);
+  };
+
+  const handleConfirmDelegateToSection = async (matter: MatterItem, delegate: SectionDelegateConfig) => {
+    try {
+      setIsForwardingDelegate(true);
+      const origEmails = getOriginalEmailsForMatter(matter);
+      const original = origEmails[0];
+      const origBody = original?.body_text || original?.snippet || matter.summary;
+
+      // 1. Despachar reenvío oficial por correo vía /api/mail/send
+      const forwardSubject = `[DELEGADO - ${delegate.sectionName}] Fwd: ${matter.title} (${matter.matter_code})`;
+      const forwardBody = `Estimado(a) ${delegate.delegateName} (${delegate.sectionName}):
+
+Por indicación de Dirección General, se le delega formalmente la atención y resolución del siguiente asunto escolar recibido en el buzón institucional.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXPEDIENTE: ${matter.matter_code}
+SECCIÓN ASIGNADA: ${delegate.sectionName}
+DELEGADO(A) RESPONSABLE: ${delegate.delegateName} <${delegate.delegateEmail}>
+PLAZO MÁXIMO DE RESOLUCIÓN (SLA): ${delegate.slaHours} Horas
+REMITENTE ORIGINAL: ${matter.sender_name} <${matter.sender_email}>
+FECHA DE RECEPCIÓN: ${matter.received_at || 'Hoy'}
+PLANTEL: ${matter.campus || 'IBIME'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ASUNTO ORIGINAL:
+${matter.title}
+
+MENSAJE ORIGINAL RECIBIDO:
+${origBody}
+
+INDICACIONES DE DIRECCIÓN GENERAL:
+Favor de atender y dar seguimiento directo al remitente dentro del plazo institucional asignado (${delegate.slaHours} horas) y registrar minuta o reporte de resolución.`;
+
+      fetch('/api/mail/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          senderEmail: connectedEmail || 'roboticalegotaller1@gmail.com',
+          recipientEmail: delegate.delegateEmail,
+          recipientName: delegate.delegateName,
+          subject: forwardSubject,
+          bodyText: forwardBody,
+          tenantId: currentTenantId
+        })
+      }).catch(err => console.warn('Error al despachar reenvío a delegado:', err));
+
+      // 2. Reclasificar con distintivo de delegado formal
+      const targetEmailItem: RawGmailItem = original || {
+        id: matter.id,
+        sender_name: matter.sender_name || 'Remitente Institucional',
+        sender_email: matter.sender_email || 'buzon@iskool.mx',
+        recipient_email: connectedEmail || 'roboticalegotaller1@gmail.com',
+        subject: matter.title,
+        snippet: matter.summary,
+        body_text: matter.summary,
+        received_at: matter.received_at,
+        timestamp: matter.received_at,
+        is_unread: false,
+        is_starred: false,
+        is_important: false,
+        category: 'actualizaciones'
+      };
+
+      const updatedEmail: RawGmailItem = {
+        ...targetEmailItem,
+        is_important: false,
+        category: 'actualizaciones' as const,
+        triage_badge: {
+          quadrant: 'DELEGADO_CON_PLAZO' as const,
+          label: `🟡 DELEGADO: ${delegate.sectionName.toUpperCase()}`,
+          color: 'bg-amber-50 text-amber-700 border-amber-300'
+        }
+      };
+
+      setRawEmailsList(prev => {
+        const next = prev.map(e => e.id === targetEmailItem.id ? updatedEmail : e);
+        if (!next.some(e => e.id === targetEmailItem.id)) {
+          next.unshift(updatedEmail);
+        }
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(rawEmailsStorageKey, JSON.stringify(next));
+        }
+        return next;
+      });
+
+      // Retirar de las materias inteligentes activas del CEO
+      setMattersList(prev => {
+        const filtered = prev.filter(m => m.id !== matter.id && m.matter_code !== matter.matter_code);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(mattersStorageKey, JSON.stringify(filtered));
+        }
+        return filtered;
+      });
+
+      // Registrar memoria de interacción (0 tokens)
+      CeoStyleLearnerService.recordInteraction(
+        currentTenantId,
+        'important',
+        matter.title,
+        matter.sender_email
+      );
+
+      setDelegatingMatter(null);
+      if (selectedMatter?.id === matter.id) {
+        setSelectedMatter(null);
+      }
+
+      onTriggerToast(`✅ Asunto reenviado y delegado a ${delegate.delegateName} (${delegate.delegateEmail}) · ${delegate.sectionName}`);
+    } catch (err: any) {
+      onTriggerToast('Error al delegar asunto: ' + err.message);
+    } finally {
+      setIsForwardingDelegate(false);
+    }
   };
 
   const handleOpenRawEmailDetail = (emailItem: RawGmailItem) => {
@@ -9121,6 +9224,133 @@ Comité de Seguridad y Protección Escolar`
                   <span>{isApprovingDraft ? 'Despachando Respuesta...' : 'Aprobar y Enviar Respuesta Oficial'}</span>
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* 5.5 MODAL: DELEGAR ASUNTO POR SECCIÓN & REENVIAR CORREO   */}
+      {/* ========================================================= */}
+      {delegatingMatter && (
+        <div className="fixed inset-0 z-70 bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 text-xs">
+            {/* Header del Modal */}
+            <div className="p-5 border-b border-slate-200 bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center shadow-inner">
+                  <Forward className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-black tracking-tight">Delegar Asunto por Sección</h3>
+                    <span className="px-2 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-black uppercase tracking-wider">
+                      {(settingsData?.delegates?.length || 6)} Delegados Oficiales
+                    </span>
+                  </div>
+                  <p className="text-xs text-amber-100 font-medium">
+                    Selecciona a qué sección y persona canalizar el asunto para reenviar el correo oficial
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDelegatingMatter(null)}
+                className="p-1.5 rounded-xl hover:bg-white/20 text-white transition-colors cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Resumen del Asunto a Delegar */}
+            <div className="p-4 bg-amber-50/70 border-b border-amber-200/80 space-y-2 shrink-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-bold bg-white px-2 py-0.5 rounded-md text-amber-950 border border-amber-200 text-xs">
+                    {delegatingMatter.matter_code}
+                  </span>
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-red-100 text-red-800">
+                    🔴 ATENCIÓN CEO
+                  </span>
+                  <span className="text-xs text-slate-400">➔</span>
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
+                    🟡 DELEGADO OPERATIVO
+                  </span>
+                </div>
+                <span className="text-[11px] text-slate-500 font-medium">
+                  Plantel: {delegatingMatter.campus || 'IBIME'}
+                </span>
+              </div>
+              <div>
+                <p className="font-black text-slate-900 text-sm">{delegatingMatter.title}</p>
+                <p className="text-xs text-slate-600 mt-0.5">
+                  Remitente Original: <strong>{delegatingMatter.sender_name}</strong> &lt;{delegatingMatter.sender_email}&gt;
+                </p>
+              </div>
+            </div>
+
+            {/* Lista de Delegados por Sección */}
+            <div className="p-5 overflow-y-auto space-y-3 flex-1 bg-slate-50/60">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <Users className="h-3.5 w-3.5 text-indigo-600" />
+                  <span>Delegados por Sección ({settingsData?.delegates?.length || 6})</span>
+                </span>
+                <span className="text-[11px] text-slate-500 font-semibold">
+                  Al hacer clic se reenvía el correo con distintivo de delegar
+                </span>
+              </div>
+
+              {(settingsData?.delegates && settingsData.delegates.length > 0 ? settingsData.delegates : getDefaultDelegates(currentTenantId)).map((del) => (
+                <div
+                  key={del.id || del.sectionKey}
+                  className="p-4 rounded-2xl bg-white border border-slate-200/90 hover:border-amber-400 shadow-2xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
+                >
+                  <div className="space-y-1.5 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-black text-indigo-950 px-2.5 py-0.5 rounded-lg bg-indigo-50 border border-indigo-200">
+                        {del.sectionName}
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                        SLA: {del.slaHours}h
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-black text-slate-900 text-sm">
+                        {del.delegateName}
+                      </span>
+                      <span className="text-xs text-slate-500 font-mono">
+                        &lt;{del.delegateEmail}&gt;
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={isForwardingDelegate}
+                    onClick={() => handleConfirmDelegateToSection(delegatingMatter, del)}
+                    className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-xs shadow-xs hover:shadow-sm transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer active:scale-95 disabled:opacity-50"
+                    title={`Reenviar correo y delegar a ${del.delegateName}`}
+                  >
+                    <Forward className="h-3.5 w-3.5" />
+                    <span>{isForwardingDelegate ? 'Reenviando...' : 'Reenviar y Delegar'}</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-slate-200 bg-white flex items-center justify-between shrink-0">
+              <span className="text-[11px] text-slate-500 font-medium">
+                El asunto se retirará de la Bandeja CEO y pasará a la sección correspondiente.
+              </span>
+              <button
+                type="button"
+                onClick={() => setDelegatingMatter(null)}
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
             </div>
           </div>
         </div>
