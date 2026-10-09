@@ -249,9 +249,8 @@ class CognitiveAIEmailTriageServiceSingleton {
       const emailContent = `Asunto: ${input.subject}\nDe: ${input.senderName} <${input.senderEmail}>\n\nCuerpo del correo:\n${input.bodyText || input.subject}`;
 
       const systemInstruction = `Eres el Motor de Inteligencia Artificial Pedagógica y Triage Cognitivo CEO del Instituto Bilingüe IBIME.
-Tu tarea es clasificar rigurosamente el correo escolar en uno de los 4 cuadrantes canónicos de Dirección General:
-1. ATENCION_CEO: Asunto de gobernanza, supervisión oficial SEP, emergencias de salud o integridad física, o inquietudes graves de padres de familia sobre bienestar emocional, salud o sobrecarga académica severa de los alumnos que no han sido resueltas en instancias previas. Requiere resolución directa e indelegable del CEO / Dirección General.
-2. DELEGADO_CON_PLAZO: Trámites operativos canalizables a áreas subalternas (cobranza, facturación, boletas de control escolar, rutas de transporte, enfermería de rutina).
+1. ATENCION_CEO: Asuntos de gobernanza, supervisión oficial SEP/autoridades, incidentes o emergencias de salud o integridad física, quejas o inquietudes de padres de familia sobre salud escolar, malestar alimentario o servicio de comedor, bienestar físico o emocional de alumnos, y sobrecarga académica severa. Toda queja, reporte o solicitud formal de padres sobre salud, malestar estomacal/enfermedad, nutrición o seguridad de los estudiantes va OBLIGATORIA E INMEDIATAMENTE a ATENCION_CEO para conocimiento y resolución directa de Dirección General.
+2. DELEGADO_CON_PLAZO: Trámites meramente administrativos u operativos de rutina ordinaria (solicitudes de facturas, dudas de colegiaturas ordinarias sin conflicto, constancias de estudio, boletas de control escolar, rutas de transporte de rutina). NUNCA delegar quejas de padres sobre salud, comedor o seguridad.
 3. INFORMATIVO: Circulares ordinarias, avisos institucionales, confirmaciones o boletines sin acción requerida.
 4. SPAM_DESCARTADO: Publicidad, ofertas comerciales, ventas de páginas web o marketing no solicitadas, promociones de apps o compras.
 
@@ -264,29 +263,48 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
   "recommended_action": "Acción directiva sugerida"
 }`;
 
-      const modelEndpoint = ['models/', 'gem', 'ini-3.8-flash'].join('');
-      const url = 'https://generativelanguage.googleapis.com/v1beta/' + modelEndpoint + ':generateContent?key=' + apiKey;
+      const candidateModels = [
+        ['models/', 'gem', 'ini-3.8-flash'].join(''),
+        ['models/', 'gem', 'ini-3.5-flash'].join(''),
+        ['models/', 'gem', 'ini-flash-latest'].join('')
+      ];
 
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: 'user',
-              parts: [{ text: `${systemInstruction}\n\nCorreo a clasificar:\n${emailContent}` }]
-            }
-          ],
-          generationConfig: {
-            responseMimeType: 'application/json',
-            temperature: 0.1
+      let response: Response | null = null;
+      let lastStatus = 0;
+
+      for (const m of candidateModels) {
+        try {
+          const url = 'https://generativelanguage.googleapis.com/v1beta/' + m + ':generateContent?key=' + apiKey;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: 'user',
+                  parts: [{ text: `${systemInstruction}\n\nCorreo a clasificar:\n${emailContent}` }]
+                }
+              ],
+              generationConfig: {
+                responseMimeType: 'application/json',
+                temperature: 0.1
+              }
+            }),
+            signal: AbortSignal.timeout(9000)
+          });
+          if (res.ok) {
+            response = res;
+            break;
           }
-        }),
-        signal: AbortSignal.timeout(9000)
-      });
+          lastStatus = res.status;
+          console.warn(`Llamada al modelo ${m} retornó código ${res.status}. Probando modelo de respaldo...`);
+        } catch (callErr: any) {
+          console.warn(`Error llamando al modelo ${m}:`, callErr?.message);
+        }
+      }
 
-      if (!response.ok) {
-        console.warn(`Llamada al Motor de Inteligencia Artificial falló con código ${response.status}. Aplicando fallback zero-tokens.`);
+      if (!response || !response.ok) {
+        console.warn(`Llamada al Motor de Inteligencia Artificial falló con código ${lastStatus}. Aplicando fallback zero-tokens.`);
         this.evaluatedEmailIds.add(emailKey);
         this.saveEvaluatedIdsToDisk();
         return {

@@ -1043,8 +1043,21 @@ export function CEOEmailCommunicationsModal({
 
   // Normalizador mandatorio de reglas CEO para correos recibidos (Reglas VIP + Supervisión + 4 Cuadrantes Zero-Tokens)
   const normalizeRawEmailCeoRules = useCallback((item: RawGmailItem): RawGmailItem => {
-    // Clasificación Zero-Tokens Heurística Canónica en 4 Cuadrantes (0 Tokens)
-    // El motor evalúa con prioridad absoluta el filtro anti-spam antes de las reglas VIP
+    // 1. Si el correo ya viene clasificado por el backend / Motor de IA como ATENCION_CEO, respetarlo con máxima prioridad
+    if (item.triage_badge?.quadrant === 'ATENCION_CEO') {
+      return {
+        ...item,
+        is_important: true,
+        category: 'principal',
+        triage_badge: {
+          quadrant: 'ATENCION_CEO',
+          label: item.triage_badge.label || '🔴 ATENCIÓN INMEDIATA CEO',
+          color: item.triage_badge.color || 'bg-red-50 text-red-700 border-red-200'
+        }
+      };
+    }
+
+    // 2. Clasificación Zero-Tokens Heurística Canónica en 4 Cuadrantes (0 Tokens)
     const triage = HermeticEmailBrainService.classifyZeroTokenEmail(
       item.subject,
       item.body_text || item.snippet,
@@ -1059,12 +1072,20 @@ export function CEOEmailCommunicationsModal({
     return {
       ...item,
       is_important: isCeo,
-      category: triage.gmailCategory,
-      triage_badge: {
-        quadrant: (triage.quadrant === 'DELEGADO_CON_SLA' ? 'DELEGADO_CON_PLAZO' : triage.quadrant) as any,
-        label: triage.badge.label,
-        color: triage.badge.color
-      }
+      category: isCeo ? 'principal' : triage.gmailCategory,
+      triage_badge: isCeo
+        ? {
+            quadrant: 'ATENCION_CEO',
+            label: '🔴 ATENCIÓN INMEDIATA CEO',
+            color: 'bg-red-50 text-red-700 border-red-200'
+          }
+        : (item.triage_badge && item.triage_badge.quadrant !== 'INFORMATIVO'
+            ? item.triage_badge
+            : {
+                quadrant: (triage.quadrant === 'DELEGADO_CON_SLA' ? 'DELEGADO_CON_PLAZO' : triage.quadrant) as any,
+                label: triage.badge.label,
+                color: triage.badge.color
+              })
     };
   }, [settingsData?.vipEmails, currentTenantId]);
 
@@ -1079,9 +1100,8 @@ export function CEOEmailCommunicationsModal({
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
             const clean = parsed.filter((item: any) => {
-              const from = (item.sender_email || '').toLowerCase();
               const id = String(item.id || '');
-              return !from.includes('kami-mac') && !id.startsWith('raw-msg-');
+              return !id.startsWith('raw-msg-');
             });
             return clean.map(normalizeRawEmailCeoRules);
           }
@@ -1100,9 +1120,8 @@ export function CEOEmailCommunicationsModal({
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
             const clean = parsed.filter((item: any) => {
-              const from = (item.sender_email || '').toLowerCase();
               const id = String(item.id || '');
-              return !from.includes('kami-mac') && !id.startsWith('raw-msg-');
+              return !id.startsWith('raw-msg-');
             });
             if (clean.length > 0) {
               const normalized = clean.map(normalizeRawEmailCeoRules);
@@ -1351,6 +1370,28 @@ export function CEOEmailCommunicationsModal({
         }
         return updated;
       });
+    }
+
+    // Hidratación inmediata en segundo plano si el cuerpo estaba ausente o truncado
+    if (!emailItem.body_text || emailItem.body_text.length <= (emailItem.snippet?.length || 0)) {
+      const targetEmail = (connectedEmail || authUsername || 'roboticalegotaller1@gmail.com').trim();
+      fetch(`/api/mail/raw-inbox?tenantId=${encodeURIComponent(currentTenantId)}&email=${encodeURIComponent(targetEmail)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && Array.isArray(data.emails)) {
+            const fresh = data.emails.find((e: any) => e.id === emailItem.id);
+            if (fresh && fresh.body_text && fresh.body_text.length > (emailItem.body_text?.length || 0)) {
+              setRawEmailsList((prev) => {
+                const updated = prev.map((item) => (item.id === fresh.id ? { ...item, ...fresh, ...normalizeRawEmailCeoRules(fresh) } : item));
+                if (typeof window !== 'undefined') {
+                  localStorage.setItem(rawEmailsStorageKey, JSON.stringify(updated));
+                }
+                return updated;
+              });
+            }
+          }
+        })
+        .catch(() => {});
     }
   };
 

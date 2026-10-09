@@ -417,7 +417,23 @@ export function classifyZeroTokenEmail(
     'dinamica que pueda estar afectando a varios estudiantes',
     'no hemos recibido una solución clara',
     'no hemos recibido una solucion clara',
-    'equilibrar las responsabilidades escolares'
+    'equilibrar las responsabilidades escolares',
+    // Inquietudes sobre comedor escolar, alimentación, nutrición y salud del alumno
+    'servicio de comedor',
+    'comedor escolar',
+    'comedor del colegio',
+    'malestar estomacal',
+    'intoxicación',
+    'intoxicacion',
+    'alergia alimentaria',
+    'alimentos proporcionados',
+    'opciones alimenticias',
+    'alimentos que recibe',
+    'tolerados por él',
+    'tolerados por ella',
+    'enfermedad estomacal',
+    'solicitud de atención y consideración',
+    'solicitud de atencion y consideracion'
   ].some(sig => fullText.includes(sig)) || (
     fullText.includes('bienestar') && (fullText.includes('hijo') || fullText.includes('hija') || fullText.includes('alumno') || fullText.includes('estudiante') || fullText.includes('emocional'))
   ) || (
@@ -425,6 +441,9 @@ export function classifyZeroTokenEmail(
     (fullText.includes('académica') || fullText.includes('academica') || fullText.includes('estudiante') || fullText.includes('alumno') || fullText.includes('hijo') || fullText.includes('martín') || fullText.includes('martin'))
   ) || (
     fullText.includes('preocupa') && (fullText.includes('carga') || fullText.includes('tarea') || fullText.includes('deberes') || fullText.includes('horas') || fullText.includes('descanso') || fullText.includes('rendimiento'))
+  ) || (
+    (fullText.includes('comedor') || fullText.includes('alimento') || fullText.includes('desayuno') || fullText.includes('comida')) &&
+    (fullText.includes('malestar') || fullText.includes('estómac') || fullText.includes('estomac') || fullText.includes('salud') || fullText.includes('hijo') || fullText.includes('hija') || fullText.includes('alumno') || fullText.includes('alumna') || fullText.includes('colegio') || fullText.includes('direcci') || fullText.includes('atención') || fullText.includes('atencion'))
   );
 
   const isCeoCritical = isMandatorySepInspection || isCteEmergency || isInjuryEmergency || isSevereConflictOrLegal || isStudentWellbeingOrWorkloadConcern || reincidence >= 3;
