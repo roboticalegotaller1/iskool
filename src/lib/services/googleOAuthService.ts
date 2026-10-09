@@ -32,6 +32,23 @@ function loadTokensFromFile(): Map<string, GoogleTokens> {
   } catch (e) {
     console.warn('Error loading google tokens from file:', e);
   }
+
+  // Carga segura desde variables de entorno opcionales si no existe en disco
+  const envRefreshToken = process.env.GOOGLE_REFRESH_TOKEN || process.env.GOOGLE_DEMO_REFRESH_TOKEN;
+  const envAccessToken = process.env.GOOGLE_ACCESS_TOKEN || process.env.GOOGLE_DEMO_ACCESS_TOKEN;
+  if (!map.has('roboticalegotaller1@gmail.com') && envRefreshToken) {
+    const envSeed: GoogleTokens = {
+      accessToken: envAccessToken || '',
+      refreshToken: envRefreshToken,
+      expiresAt: Date.now() + 3600 * 1000,
+      email: 'roboticalegotaller1@gmail.com',
+      name: 'Israel Lopez',
+      picture: 'https://lh3.googleusercontent.com/a/ACg8ocK1d6g7Em3F7EKqd_YA2l857mWfxAAEpHIcntMjsS_PT1W2yw=s96-c'
+    };
+    map.set('roboticalegotaller1@gmail.com', envSeed);
+    saveTokensToFile(map);
+  }
+
   return map;
 }
 
