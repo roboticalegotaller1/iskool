@@ -103,6 +103,7 @@ import { normalizeCampusKey } from '@/services/admissionsPipelineService';
 import type { CrmStageKey } from '@/types/crm';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import { formatCdmxTime } from '@/utils/timeZoneUtils';
 
 const CrmAdmissionsStudio = dynamic(
   () => import('@/components/crm/CrmAdmissionsStudio'),
@@ -1577,7 +1578,7 @@ export default function CEOExecutiveDashboard({
     const interval = setInterval(() => {
       setAutonomousCycle(c => c + 1);
       const now = new Date();
-      setLastEvaluationTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+      setLastEvaluationTime(formatCdmxTime(now, true) + ' (CDMX)');
     }, 15000);
     return () => clearInterval(interval);
   }, [isAutonomousActive]);
@@ -1806,7 +1807,7 @@ export default function CEOExecutiveDashboard({
       kpis: finalKpis,
       actionType: finalActionType,
       actionLabel: finalActionLabel,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      timestamp: formatCdmxTime(new Date(), true) + ' (CDMX)'
     });
     setIsRagSearching(false);
     triggerToast(`Bóveda Curricular: Consulta analizada en ${latency} ms a 0 tokens`);
@@ -2375,7 +2376,7 @@ export default function CEOExecutiveDashboard({
                     onClick={() => {
                       setAutonomousCycle(c => c + 1);
                       const now = new Date();
-                      setLastEvaluationTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+                      setLastEvaluationTime(formatCdmxTime(now, true) + ' (CDMX)');
                       triggerToast(`Pulso ejecutado: ${metrics.totalCampuses} ${isCorporate ? 'plantas y sedes' : 'sedes'} auditadas a 0 tokens (${metrics.totalStudents.toLocaleString()} ${isCorporate ? 'colaboradores' : 'alumnos'} evaluados)`);
                     }}
                     className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border active:scale-95 ${

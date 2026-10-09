@@ -106,6 +106,13 @@ import {
   OfficialTemplateConfig,
   getDefaultSettings
 } from '@/lib/services/ceoEmailSettingsTypes';
+import {
+  formatCdmxTime,
+  formatCdmxDate,
+  formatCdmxDateTime,
+  formatCdmxRelative,
+  getRecentCdmxTimeStr
+} from '@/utils/timeZoneUtils';
 
 interface CEOEmailCommunicationsModalProps {
   isOpen: boolean;
@@ -251,7 +258,7 @@ export function generateDefaultMattersForSchool(
       sender_name: 'Lic. Fernando Mendoza',
       sender_email: 'familia.mendoza@gmail.com',
       provenance_doc: `planeaciones/${tenantId}/Protocolo_Convivencia.md (Cláusula 4.2)`,
-      received_at: 'Hoy, 08:14 hrs',
+      received_at: getRecentCdmxTimeStr(45),
       campus: primaryCampus
     },
     {
@@ -272,7 +279,7 @@ export function generateDefaultMattersForSchool(
       sender_name: 'Ing. Carlos Ramírez',
       sender_email: 'carlos.ramirez@empresa.com',
       provenance_doc: `planeaciones/${tenantId}/Lineamientos_Cobranza.md (Cláusula 2.1)`,
-      received_at: 'Hoy, 09:30 hrs',
+      received_at: getRecentCdmxTimeStr(30),
       campus: secondaryCampus
     },
     {
@@ -293,7 +300,7 @@ export function generateDefaultMattersForSchool(
       sender_name: 'Comité de Padres Ruta 4',
       sender_email: `padres.ruta4@${domain}`,
       provenance_doc: `planeaciones/${tenantId}/Reglamento_Transporte.md (Sección 3)`,
-      received_at: 'Ayer, 18:45 hrs',
+      received_at: getRecentCdmxTimeStr(120),
       campus: primaryCampus
     },
     {
@@ -314,7 +321,7 @@ export function generateDefaultMattersForSchool(
       sender_name: 'Supervisión Escolar Zona SEP',
       sender_email: 'supervision.zona@sep.gob.mx',
       provenance_doc: `planeaciones/${tenantId}/Calendario_Escolar.md`,
-      received_at: '04 Oct 2026, 12:00 hrs',
+      received_at: formatCdmxRelative(new Date(Date.now() - 24 * 3600 * 1000)),
       campus: primaryCampus
     },
     {
@@ -335,7 +342,7 @@ export function generateDefaultMattersForSchool(
       sender_name: 'Comité de Familias',
       sender_email: `familias@${domain}`,
       provenance_doc: `planeaciones/${tenantId}/Protocolo_Salud_y_Comedor.md`,
-      received_at: 'Hoy, 08:35 hrs',
+      received_at: getRecentCdmxTimeStr(15),
       campus: primaryCampus
     }
   ];
@@ -690,7 +697,7 @@ export function CEOEmailCommunicationsModal({
   const [customGoogleEmailInput, setCustomGoogleEmailInput] = useState<string>('');
   const [isGoogleOAuthConnecting, setIsGoogleOAuthConnecting] = useState<boolean>(false);
   const [isSyncingLiveInbox, setIsSyncingLiveInbox] = useState<boolean>(false);
-  const [lastSyncTime, setLastSyncTime] = useState<string>('Hace 2 minutos');
+  const [lastSyncTime, setLastSyncTime] = useState<string>(() => `${formatCdmxTime(new Date())} (CDMX)`);
 
   // =========================================================================
   // AJUSTES EJECUTIVOS DEL CEO (REGLAS VIP, DELEGADOS, COMUNICADOS OFICIALES)
@@ -878,7 +885,7 @@ export function CEOEmailCommunicationsModal({
           urgency: json.triage.urgency,
           category: json.triage.category,
           action: json.triage.recommended_action,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+          timestamp: formatCdmxTime(new Date(), true)
         });
         onTriggerToast('🧪 Ingesta VIP en vivo comprobada: Catalogado como 🔴 ATENCIÓN INMEDIATA CEO');
       }
@@ -951,7 +958,7 @@ export function CEOEmailCommunicationsModal({
           delegateEmail: json.triage.delegate_email || delegate.delegateEmail,
           slaHours: json.triage.sla_hours || delegate.slaHours,
           assignedRole: json.triage.assigned_department || delegate.sectionName,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+          timestamp: formatCdmxTime(new Date(), true)
         });
         onTriggerToast(`🧪 Enrutamiento verificado: Derivado a ${delegate.delegateName} (${delegate.delegateEmail})`);
       }
@@ -1379,7 +1386,7 @@ export function CEOEmailCommunicationsModal({
           sender_name: email.sender_name,
           sender_email: email.sender_email,
           provenance_doc: `Buzón Institucional en Vivo (${email.sender_email})`,
-          received_at: email.received_at ? `${email.received_at}${email.timestamp ? ` (${email.timestamp})` : ''}` : 'Hoy',
+          received_at: email.received_at ? `${email.received_at}${email.timestamp ? ` (${email.timestamp})` : ''}` : formatCdmxRelative(new Date()),
           campus: primaryCampus
         };
 
@@ -1597,7 +1604,7 @@ ${schoolName}`
   const [logs, setLogs] = useState<OutgoingEmailLog[]>([
     {
       id: 'log-1',
-      timestamp: 'Hoy, 09:15 hrs',
+      timestamp: getRecentCdmxTimeStr(55),
       subject: `Circular No. 2026-08: Convocatoria a Sesión de Consejo Directivo y Directores de Plantel`,
       recipientGroup: 'Directores de Campus & Coordinación',
       targetCount: campuses.length || 4,
@@ -1606,7 +1613,7 @@ ${schoolName}`
     },
     {
       id: 'log-2',
-      timestamp: 'Ayer, 16:30 hrs',
+      timestamp: formatCdmxRelative(new Date(Date.now() - 24 * 3600 * 1000)),
       subject: `Aviso de Facturación CFDI 4.0 con Complemento IEDU - Ciclo 2026-2027`,
       recipientGroup: `Comunidad de Padres de Familia (${campuses.length} Sedes)`,
       targetCount: 3740,
@@ -1615,7 +1622,7 @@ ${schoolName}`
     },
     {
       id: 'log-3',
-      timestamp: '03 Oct 2026, 11:00 hrs',
+      timestamp: formatCdmxRelative(new Date(Date.now() - 5 * 24 * 3600 * 1000)),
       subject: 'Boletín Trimestral de Logros Pedagógicos y Evaluación Continua',
       recipientGroup: 'Cuerpo Docente & Académico',
       targetCount: 200,
@@ -1739,7 +1746,7 @@ ${schoolName}`
           sender_name: 'Lic. Fernando Mendoza',
           sender_email: 'familia.mendoza@gmail.com',
           provenance_doc: 'planeaciones/IBIME/Protocolo_Convivencia_y_Acoso.md (Cláusula 4.2)',
-          received_at: 'Hoy, 08:14 hrs',
+          received_at: getRecentCdmxTimeStr(45),
           campus: 'Campus Montes (Sede Matriz)'
         },
         {
@@ -1760,7 +1767,7 @@ ${schoolName}`
           sender_name: 'Ing. Carlos Ramírez',
           sender_email: 'carlos.ramirez@empresa.com',
           provenance_doc: 'planeaciones/IBIME/Lineamientos_Cobranza_y_Colegiaturas.md (Cláusula 2.1)',
-          received_at: 'Hoy, 09:30 hrs',
+          received_at: getRecentCdmxTimeStr(30),
           campus: 'Campus Lagos'
         },
         {
@@ -1781,7 +1788,7 @@ ${schoolName}`
           sender_name: 'Comité de Padres Ruta 4',
           sender_email: 'padres.ruta4@ibime.edu.mx',
           provenance_doc: 'planeaciones/IBIME/Politica_Transporte_y_Rutas_Escolares.md (Sección 3)',
-          received_at: 'Ayer, 18:45 hrs',
+          received_at: getRecentCdmxTimeStr(120),
           campus: 'Campus San Cristóbal'
         },
         {
@@ -1802,7 +1809,7 @@ ${schoolName}`
           sender_name: 'Supervisión Escolar Zona 14',
           sender_email: 'supervision.zona14@edomex.gob.mx',
           provenance_doc: 'planeaciones/IBIME/Calendario_Oficial_Evaluaciones_2025_2026.md',
-          received_at: '04 Oct 2026, 12:00 hrs',
+          received_at: formatCdmxRelative(new Date(Date.now() - 24 * 3600 * 1000)),
           campus: 'Consolidado Red IBIME'
         },
         {
@@ -1823,7 +1830,7 @@ ${schoolName}`
           sender_name: 'Miguel Valencia',
           sender_email: 'miguel.valencia@familias-ibime.edu.mx',
           provenance_doc: 'planeaciones/IBIME/Protocolo_Salud_y_Comedor.md',
-          received_at: 'Hoy, 08:35 hrs',
+          received_at: getRecentCdmxTimeStr(15),
           campus: 'Campus Montes (Sede Matriz)'
         }
       ];
@@ -1870,7 +1877,7 @@ ${schoolName}`
           sender_name: 'Lic. Fernando Mendoza',
           sender_email: 'familia.mendoza@gmail.com',
           provenance_doc: 'planeaciones/IBIME/Protocolo_Convivencia_y_Acoso.md (Cláusula 4.2)',
-          received_at: 'Hoy, 08:14 hrs',
+          received_at: getRecentCdmxTimeStr(45),
           campus: 'Campus Montes (Sede Matriz)'
         },
         {
@@ -1891,7 +1898,7 @@ ${schoolName}`
           sender_name: 'Ing. Carlos Ramírez',
           sender_email: 'carlos.ramirez@empresa.com',
           provenance_doc: 'planeaciones/IBIME/Lineamientos_Cobranza_y_Colegiaturas.md (Cláusula 2.1)',
-          received_at: 'Hoy, 09:30 hrs',
+          received_at: getRecentCdmxTimeStr(30),
           campus: 'Campus Lagos'
         },
         {
@@ -1912,7 +1919,7 @@ ${schoolName}`
           sender_name: 'Comité de Padres Ruta 4',
           sender_email: 'padres.ruta4@ibime.edu.mx',
           provenance_doc: 'planeaciones/IBIME/Politica_Transporte_y_Rutas_Escolares.md (Sección 3)',
-          received_at: 'Ayer, 18:45 hrs',
+          received_at: getRecentCdmxTimeStr(120),
           campus: 'Campus San Cristóbal'
         },
         {
@@ -1933,7 +1940,7 @@ ${schoolName}`
           sender_name: 'Supervisión Escolar Zona 14',
           sender_email: 'supervision.zona14@edomex.gob.mx',
           provenance_doc: 'planeaciones/IBIME/Calendario_Oficial_Evaluaciones_2025_2026.md',
-          received_at: '04 Oct 2026, 12:00 hrs',
+          received_at: formatCdmxRelative(new Date(Date.now() - 24 * 3600 * 1000)),
           campus: 'Consolidado Red IBIME'
         },
         {
@@ -1954,7 +1961,7 @@ ${schoolName}`
           sender_name: 'Miguel Valencia',
           sender_email: 'miguel.valencia@familias-ibime.edu.mx',
           provenance_doc: 'planeaciones/IBIME/Protocolo_Salud_y_Comedor.md',
-          received_at: 'Hoy, 08:35 hrs',
+          received_at: getRecentCdmxTimeStr(15),
           campus: 'Campus Montes (Sede Matriz)'
         }
       ]);
@@ -2098,7 +2105,7 @@ ${schoolName}`
             sender_name: email.sender_name,
             sender_email: email.sender_email,
             provenance_doc: `Buzón Institucional en Vivo (${email.sender_email})`,
-            received_at: email.received_at ? `${email.received_at}${email.timestamp ? ` (${email.timestamp})` : ''}` : 'Hoy',
+            received_at: email.received_at ? `${email.received_at}${email.timestamp ? ` (${email.timestamp})` : ''}` : formatCdmxRelative(new Date()),
             campus: primaryCampus
           };
 
@@ -2172,7 +2179,7 @@ ${schoolName}`
       subject: 'Gran liquidación de bancas y pizarrones inteligentes 50% de descuento',
       discard_reason: 'Publicidad comercial no solicitada de proveedor externo. Sin expediente ni relación contractual activa.',
       category: 'Spam Comercial',
-      received_at: 'Hoy, 06:45 hrs'
+      received_at: getRecentCdmxTimeStr(75)
     },
     {
       id: 'spam-002',
@@ -2181,7 +2188,7 @@ ${schoolName}`
       subject: 'Invitación VIP al Simposio de Tendencias en Captación de Alumnos',
       discard_reason: 'Boletín de prospección externa no alineado al marco pedagógico ni a las prioridades del colegio.',
       category: 'Publicidad Externa',
-      received_at: 'Hoy, 07:12 hrs'
+      received_at: getRecentCdmxTimeStr(50)
     },
     {
       id: 'spam-003',
@@ -2190,7 +2197,7 @@ ${schoolName}`
       subject: 'Cotización para flotilla de vehículos comerciales y camionetas',
       discard_reason: `Correo genérico de prospección comercial. La póliza de transporte de ${schoolName} ya cuenta con cobertura vigente.`,
       category: 'Promoción No Solicitada',
-      received_at: 'Ayer, 21:30 hrs'
+      received_at: formatCdmxRelative(new Date(Date.now() - 20 * 3600 * 1000))
     },
     {
       id: 'spam-004',
@@ -2199,7 +2206,7 @@ ${schoolName}`
       subject: 'Has sido seleccionado para reclamar un bono de regalo en línea',
       discard_reason: 'Filtro de seguridad heurístico: Detección de phishing / spam no deseado.',
       category: 'Spam Malicioso / Phishing',
-      received_at: 'Ayer, 23:18 hrs'
+      received_at: formatCdmxRelative(new Date(Date.now() - 22 * 3600 * 1000))
     }
   ]);
 
@@ -2517,7 +2524,7 @@ ${schoolName}`
       outgoingPort: Number(outgoingPort),
       outgoingSecurity,
       username: mailUsername || targetEmail,
-      lastConnectedAt: new Date().toLocaleTimeString(),
+      lastConnectedAt: `${formatCdmxTime(new Date(), true)} (CDMX)`,
       connectionStatus: 'connected',
       latencyMs,
       statusMessage: `Verificado por ${authMethod}`
@@ -2734,7 +2741,7 @@ ${schoolName}`
         outgoingPort: Number(outgoingPort),
         outgoingSecurity,
         username: mailUsername || emailToConnect,
-        lastConnectedAt: new Date().toLocaleTimeString(),
+        lastConnectedAt: `${formatCdmxTime(new Date(), true)} (CDMX)`,
         connectionStatus: 'connected',
         latencyMs: pingRes.latencyMs,
         statusMessage: `Verificado por ping en tiempo real`
@@ -3490,7 +3497,7 @@ ${schoolName}`
       console.warn('General sync error:', generalErr);
     }
 
-    setLastSyncTime('Justo ahora');
+    setLastSyncTime(`${formatCdmxTime(new Date())} (CDMX)`);
     setVerifiedLatency(pingLatency || 18);
     setConnectionStatus('connected_verified');
     setLastPingError(null);

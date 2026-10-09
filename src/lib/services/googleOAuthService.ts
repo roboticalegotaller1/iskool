@@ -6,6 +6,7 @@ import { InboundMailSpoolService } from './inboundMailSpool';
 import { HermeticEmailBrainService } from './hermetic-email-brain.service';
 import { CognitiveAIEmailTriageService } from './geminiEmailTriage.service';
 import { injectEmailsBatchIntoCache } from './imapClientService';
+import { formatCdmxDate, formatCdmxTime } from '@/utils/timeZoneUtils';
 
 export interface GoogleTokens {
   accessToken: string;
@@ -652,12 +653,8 @@ export class GoogleOAuthService {
             subject: c.subject,
             snippet: c.snippet || c.bodyText.slice(0, 110) + '...',
             body_text: c.bodyText || 'Sin contenido',
-            received_at: c.dateHeader
-              ? new Date(c.dateHeader).toLocaleDateString([], { month: 'short', day: 'numeric' })
-              : 'Hoy',
-            timestamp: c.dateHeader
-              ? new Date(c.dateHeader).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-              : 'Ahora',
+            received_at: c.dateHeader ? formatCdmxDate(c.dateHeader) : 'Hoy',
+            timestamp: c.dateHeader ? formatCdmxTime(c.dateHeader) : 'Ahora',
             is_unread: c.isUnread,
             is_starred: c.isStarred,
             is_important: isCeo,

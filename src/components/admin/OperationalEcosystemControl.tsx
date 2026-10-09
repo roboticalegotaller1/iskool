@@ -40,6 +40,7 @@ import {
   getTraceabilityRecordsForFlow, 
   FlowExecutionTraceRecord 
 } from '@/store/seeds/operationalAutomationSeeds';
+import { formatCdmxTime } from '@/utils/timeZoneUtils';
 
 // ============================================================================
 // TIPOS DE ROLES Y EVENTOS OPERATIVOS DEL ECOSISTEMA ESCOLAR / EMPRESARIAL
@@ -754,7 +755,7 @@ export const OperationalEcosystemControl: React.FC<OperationalEcosystemControlPr
   const handleSimulateFlow = (flow: OperationalAutomationFlow) => {
     setActiveSimulationKey(flow.key);
 
-    const now = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const now = formatCdmxTime(new Date(), true);
     let newActor = 'Docente en Aula';
     let newAction = 'Acción simulada en tiempo real';
     let newImpact = 'Impacto directo en KPIs de red';

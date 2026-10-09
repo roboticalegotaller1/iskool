@@ -5,6 +5,7 @@ export { resolveEffectiveSchoolId, isPlatformSuperUser } from '../types';
 import { DETAILED_STUDENTS_SEED, GROUPS_SEED, SCHEDULES_SEED, ATTENDANCE_SEED, PARENT_MESSAGES_SEED, TEACHERS_LIST_SEED, SUBJECTS_SEED, CAMPUSES_SEED, TUITION_PRICINGS_SEED, BILLING_RECORDS_SEED, INSTITUTIONS_SEED, STAFF_USERS_SEED, DEFAULT_GOVERNANCE_SETTINGS, DEFAULT_DIRECTOR_LIMITS, STAFF_PAYROLL_SEED } from './seeds';
 import { useStudentStore } from './useStudentStore';
 import { supabase } from '@/lib/supabaseClient';
+import { formatCdmxDate } from '@/utils/timeZoneUtils';
 
 export const generateRandomPassword = (length = 6): string => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -1125,7 +1126,7 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
               return {
                 ...rec,
                 status: 'paid' as const,
-                paidAt: new Date().toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
+                paidAt: formatCdmxDate(new Date())
               };
             }
             return rec;

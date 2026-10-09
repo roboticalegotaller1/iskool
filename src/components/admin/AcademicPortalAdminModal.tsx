@@ -42,6 +42,7 @@ import {
 } from 'lucide-react';
 import { SUBJECTS_SEED, PORTFOLIO_SEED } from '@/store/seeds';
 import { getStudentAvatarUrl } from '@/utils/studentAvatar';
+import { formatCdmxDate } from '@/utils/timeZoneUtils';
 
 export interface AcademicAuditLogRecord {
   id: string;
@@ -662,7 +663,7 @@ export function AcademicPortalAdminModal({
                             <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
                               <span className="text-[10px] text-slate-400 flex items-center gap-1">
                                 <Calendar size={12} />
-                                {new Date(ev.created_at).toLocaleDateString()}
+                                {formatCdmxDate(new Date(ev.created_at))}
                               </span>
                               <button
                                 type="button"

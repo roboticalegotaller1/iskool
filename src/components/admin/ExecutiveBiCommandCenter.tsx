@@ -62,6 +62,7 @@ import ExecutiveAnalyticsStudio from './ExecutiveAnalyticsStudio';
 import ExecutiveOracleDashboard from '@/components/oracle/ExecutiveOracleDashboard';
 import { ExecutiveBoardReportDocument } from './ExecutiveBoardReportDocument';
 import { useDeviceViewport } from '@/hooks/useDeviceViewport';
+import { formatCdmxDate } from '@/utils/timeZoneUtils';
 
 interface ExecutiveBiCommandCenterProps {
   isEmbeddedView?: boolean;
@@ -627,7 +628,7 @@ export default function ExecutiveBiCommandCenter({
     const summaryText = `ISKOOL EXECUTIVE BI REPORT - ${holdingName}
 Periodo: ${horizonData.horizonPeriod}
 ${selectedCampusObj ? `Sede Filtrada: ${selectedCampusObj.campusName}` : 'Consolidado Holding: 4 Planteles (Montes, Coacalco, Central, Torres)'}
-Fecha de Emisión: ${new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
+Fecha de Emisión: ${formatCdmxDate(new Date())}
 --------------------------------------------------
 • Margen EBITDA: +${horizonData.ebitdaMarginPct}% (${horizonData.ebitdaDeltaText})
 • Facturación Total: ${formatMXN(horizonData.totalRevenue)} (Meta: ${horizonData.revenueMetaPct}%)

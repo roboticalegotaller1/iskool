@@ -3,6 +3,7 @@ import { InboundMailSpoolService } from '@/lib/services/inboundMailSpool';
 import { fetchLiveImapEmails, getCachedInboxEmails, injectEmailIntoCache, injectEmailsBatchIntoCache } from '@/lib/services/imapClientService';
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { HermeticEmailBrainService } from '@/lib/services/hermetic-email-brain.service';
+import { formatCdmxTime } from '@/utils/timeZoneUtils';
 
 export const runtime = 'nodejs';
 
@@ -304,7 +305,7 @@ export async function GET(request: NextRequest) {
             snippet: (item.body_text || item.subject || '').slice(0, 110) + '...',
             body_text: item.body_text || 'Sin contenido de mensaje',
             received_at: 'Justo ahora',
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            timestamp: formatCdmxTime(new Date()),
             is_unread: true,
             is_starred: false,
             is_important: isCeo,
@@ -333,7 +334,7 @@ export async function GET(request: NextRequest) {
       total: allEmails.length,
       unreadCount: allEmails.filter(e => e.is_unread).length,
       connectedEmail: email,
-      lastSyncTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      lastSyncTime: formatCdmxTime(new Date())
     });
   } catch (error: any) {
     return NextResponse.json({
@@ -391,7 +392,7 @@ export async function POST(request: NextRequest) {
         snippet: (body.injectEmail.body_text || '').slice(0, 110) + '...',
         body_text: body.injectEmail.body_text || 'Mensaje de prueba inyectado en tiempo real.',
         received_at: 'Justo ahora',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: formatCdmxTime(new Date()),
         is_unread: true,
         is_starred: false,
         is_important: true,
@@ -516,7 +517,7 @@ export async function POST(request: NextRequest) {
             snippet: (item.body_text || '').slice(0, 110) + '...',
             body_text: item.body_text || 'Sin contenido de mensaje',
             received_at: 'Justo ahora',
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            timestamp: formatCdmxTime(new Date()),
             is_unread: true,
             is_starred: false,
             is_important: isCeo,
@@ -541,7 +542,7 @@ export async function POST(request: NextRequest) {
       total: emails.length,
       unreadCount: emails.filter(e => e.is_unread).length,
       connectedEmail: email,
-      lastSyncTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      lastSyncTime: formatCdmxTime(new Date())
     });
   } catch (error: any) {
     return NextResponse.json({

@@ -23,6 +23,7 @@ import {
   LeadershipDataQualityPanelDTO
 } from './types';
 import { LeadershipScopeService, UserAcademicContext } from './scopeService';
+import { formatCdmxDate, formatCdmxTime } from '@/utils/timeZoneUtils';
 import { AcademicAnalyticsQueryService } from '../academicAnalytics/queryService';
 import { AcademicAnalyticsCurriculumAnalytics } from '../academicAnalytics/curriculumAnalytics';
 import { AcademicAnalyticsHealthService } from '../academicAnalytics/healthService';
@@ -49,7 +50,7 @@ export class LeadershipDashboardService {
     const academicPeriod = params.scope.academic_period || 'term_1_2026';
     const timeWindow = params.period || '30_days';
     const now = new Date();
-    const dataFreshness = `${now.toLocaleDateString('es-MX')} ${now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}`;
+    const dataFreshness = `${formatCdmxDate(now)} ${formatCdmxTime(now)}`;
 
     // 2. Cargar perfiles y evidencias de la base analítica
     const allProfiles = await AdaptiveLearningStore.getAllProfiles();

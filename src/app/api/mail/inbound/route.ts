@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { InboundMailSpoolService } from '@/lib/services/inboundMailSpool';
 import { HermeticEmailBrainService, InboundEmailDTO, HermeticAuthSession } from '@/lib/services/hermetic-email-brain.service';
+import { formatCdmxTime } from '@/utils/timeZoneUtils';
 
 export const runtime = 'nodejs';
 
@@ -118,7 +119,7 @@ export async function POST(req: NextRequest) {
         snippet: emailDto.body_text.slice(0, 110) + '...',
         body_text: emailDto.body_text,
         received_at: 'Justo ahora',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: formatCdmxTime(new Date()),
         is_unread: true,
         is_starred: false,
         is_important: isCeo,

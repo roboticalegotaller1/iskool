@@ -1,5 +1,6 @@
 import tls from 'tls';
 import { RawGmailItem } from '@/app/api/mail/raw-inbox/route';
+import { formatCdmxDate, formatCdmxTime } from '@/utils/timeZoneUtils';
 
 /**
  * ============================================================================
@@ -377,7 +378,7 @@ export async function fetchLiveImapEmails(
             authenticated: true,
             totalInBox: 0,
             emails: [],
-            lastSyncTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            lastSyncTime: formatCdmxTime(new Date()),
             connectedEmail: cleanUser
           });
           return;
@@ -445,13 +446,13 @@ export async function fetchLiveImapEmails(
 
           // Formateo de fecha y hora
           let formattedDate = 'Hoy';
-          let timeDisplay = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          let timeDisplay = formatCdmxTime(new Date());
           if (dateMatch) {
             try {
               const d = new Date(dateMatch[1].trim());
               if (!isNaN(d.getTime())) {
-                formattedDate = d.toLocaleDateString([], { day: '2-digit', month: 'short' });
-                timeDisplay = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                formattedDate = formatCdmxDate(d);
+                timeDisplay = formatCdmxTime(d);
               }
             } catch {}
           }
@@ -483,7 +484,7 @@ export async function fetchLiveImapEmails(
           authenticated: true,
           totalInBox: existsCount,
           emails,
-          lastSyncTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          lastSyncTime: formatCdmxTime(new Date()),
           connectedEmail: cleanUser
         });
         return;

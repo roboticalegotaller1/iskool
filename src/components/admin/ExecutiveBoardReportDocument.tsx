@@ -6,6 +6,7 @@ import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { CorporateOfficialLogo } from '@/components/brand/CorporateOfficialLogo';
 import { SchoolOfficialLogo } from '@/components/brand/SchoolOfficialLogo';
 import { AnalyticReportResult, formatMXN } from '@/services/executiveAnalyticsEngine';
+import { formatCdmxDate, formatCdmxTime } from '@/utils/timeZoneUtils';
 
 export interface ExecutiveBoardReportDocumentProps {
   report: AnalyticReportResult;
@@ -136,8 +137,8 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
     ? '15PPR3322G' 
     : (institution?.cct || (isBmw ? 'RFC: BGM940315BMW' : (isRetail ? 'RFC: VRT200115VR1' : (isTech ? 'RFC: INT190512AI9' : '15EPR2840Z'))));
   const folioNumber = String(report.generatedAt || Date.now()).replace(/\D/g, '').slice(-6) || '202601';
-  const emissionDate = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
-  const emissionTime = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+  const emissionDate = formatCdmxDate(new Date());
+  const emissionTime = formatCdmxTime(new Date());
 
   // 4 Dimensiones del Radar Estratégico adaptadas dinámicamente al contexto
   const titleStr = (report.reportTitle || '').toLowerCase();

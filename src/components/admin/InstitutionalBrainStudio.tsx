@@ -61,6 +61,7 @@ import {
   EngineDataSources
 } from '@/services/executiveAnalyticsEngine';
 import { useDeviceViewport } from '@/hooks/useDeviceViewport';
+import { formatCdmxTime } from '@/utils/timeZoneUtils';
 
 /**
  * Renderizador de formato enriquecido de alta fidelidad para la Terminal Pedagógica Directiva (Dark Theme)
@@ -641,7 +642,7 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
       actionLabel: 'Ver en Reportes BI',
       actionType: 'reportes',
       isOptimized: true,
-      timestamp: new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      timestamp: formatCdmxTime(new Date(), true),
       table: analyticResult.table,
       chart: analyticResult.chart,
       domain: analyticResult.domain
@@ -718,7 +719,7 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
 
     setIsOptimizingWithAI(true);
     setTimeout(() => {
-      const nowStr = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const nowStr = formatCdmxTime(new Date(), true);
       const enhancedText = isCorporate
         ? `**Directiva Optimizada por Motor de Inteligencia Artificial Corporativa:**\n\n${node.summary}\n\n1. **Fase de Detección e Inicio (0-30s):** Notificación auditada en pantalla y activación de líderes de área.\n2. **Fase de Ejecución y Contención (< 90s):** Aplicación de lineamientos estandarizados con bitácora inmutable.\n3. **Cierre Reflexivo & Comunicación (< 3m):** Respaldo criptográfico en la Bóveda Central y registro en el expediente del colaborador.\n\n*Conformidad:* Auditoría operativa certificada a 0 Tokens.`
         : `**Directiva Optimizada por Inteligencia Artificial Pedagógica (SEP 2024):**\n\n${node.summary}\n\n1. **Fase de Detección e Inicio (0-30s):** Notificación auditada en pantalla y activación de responsables.\n2. **Fase de Ejecución y Contención (< 90s):** Aplicación de lineamientos estandarizados con bitácora inmutable.\n3. **Cierre Reflexivo & Comunicación (< 3m):** Respaldo criptográfico en la Bóveda Central y comunicación a tutores legales.\n\n*Conformidad:* Auditoría pedagógica certificada a 0 Tokens.`;
@@ -824,7 +825,7 @@ export const InstitutionalBrainStudio: React.FC<InstitutionalBrainStudioProps> =
       .map(k => k.trim().toLowerCase())
       .filter(Boolean);
 
-    const nowStr = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const nowStr = formatCdmxTime(new Date(), true);
     const newCustomText = protocolForm.dictamenText.trim() || protocolForm.summary.trim();
 
     if (protocolModalMode === 'edit' && protocolForm.id) {
