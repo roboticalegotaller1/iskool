@@ -126,8 +126,8 @@ class CognitiveAIEmailTriageServiceSingleton {
       }
     } catch {}
 
-    // Fallback canónico institucional para iskool.mx y entornos cloud/serverless
-    const defaultInstitutionalKey = 'AIzaSyDRq1zDwk49aP1X3dvRyhAUA_9nuqwTe_s';
+    // Lectura de clave institucional estrictamente desde variables de entorno seguras
+    const defaultInstitutionalKey = process.env.MOTOR_IA_API_KEY || process.env.AI_API_KEY || process.env.GEMINI_API_KEY || '';
     this.apiKeyCache = defaultInstitutionalKey;
     return defaultInstitutionalKey;
   }
@@ -277,9 +277,9 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
 }`;
 
       const candidateModels = [
-        ['models/', 'gem', 'ini-2.5-flash'].join(''),
-        ['models/', 'gem', 'ini-2.0-flash'].join(''),
-        ['models/', 'gem', 'ini-1.5-flash'].join(''),
+        ['models/', 'gem', 'ini-3.1-flash-lite'].join(''),
+        ['models/', 'gem', 'ini-3.5-flash'].join(''),
+        ['models/', 'gem', 'ini-3.8-flash'].join(''),
         ['models/', 'gem', 'ini-flash-latest'].join('')
       ];
 
