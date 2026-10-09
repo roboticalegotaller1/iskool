@@ -454,12 +454,12 @@ export function CEOEmailCommunicationsModal({
   }, [holding?.campuses, isIbime, schoolName]);
   const directorTitle = holding?.directorName || (isIbime ? 'Lic. Patricia Sandoval Morales' : `Dirección General · ${schoolName}`);
 
-  // Pestañas principales de la consola (Bandeja, Calendario, Laboratorio, Google, Redactar, Directorio, Bitácora, Bandeja de Entrada, ROI, Ajustes)
-  const [activeTab, setActiveTab] = useState<'inbox' | 'laboratorio' | 'google' | 'redactar' | 'calendario' | 'directorio' | 'bitacora' | 'raw_inbox' | 'roi' | 'ajustes'>('inbox');
+  // Pestañas principales de la consola (Bandeja, Delegados, Calendario, Laboratorio, Google, Redactar, Directorio, Bitácora, Bandeja de Entrada, ROI, Ajustes)
+  const [activeTab, setActiveTab] = useState<'inbox' | 'delegados' | 'laboratorio' | 'google' | 'redactar' | 'calendario' | 'directorio' | 'bitacora' | 'raw_inbox' | 'roi' | 'ajustes'>('inbox');
   
-  // Filtro en Bandeja Inteligente: Exclusivamente Atención Inmediata CEO (0 Delegados, 0 Informativos, 0 Spam)
+  // Filtro en Bandeja Inteligente: Atención Inmediata CEO y Asuntos Delegados a Secciones
   const [inboxFilter, setInboxFilter] = useState<'USABLE' | 'DISCARDED'>('USABLE');
-  const [usableSubFilter, setUsableSubFilter] = useState<'ALL' | 'CRITICA' | 'SEP'>('ALL');
+  const [usableSubFilter, setUsableSubFilter] = useState<'ALL' | 'CRITICA' | 'SEP' | 'DELEGADOS'>('ALL');
   
   // Cuenta de Google conectada con aislamiento y persistencia hermética por tenant
   const emailStorageKey = `iskool_connected_email_${currentTenantId}`;
@@ -4782,8 +4782,60 @@ Comité de Seguridad y Protección Escolar`
     );
   }, [mattersList, isMatterOrEmailResolved]);
 
-  // Filtrado de asuntos en pestaña Bandeja Inteligente (Exclusivamente CEO: Todos, Crítica/Urgente, Supervisión SEP)
+  // Asuntos y correos delegados a Coordinaciones y Secciones de Plantel con SLA
+  const delegatedMattersList = useMemo(() => {
+    // 1. Asuntos explícitamente marcados como delegados en mattersList
+    const fromMatters = mattersList.filter(
+      (m) => (m.destination === 'DELEGADO_CON_SLA' || (m.destination as any) === 'DELEGADO_CON_PLAZO') && !isMatterOrEmailResolved(m)
+    );
+
+    // 2. Correos en crudo con distintivo de delegado que aún no tienen homólogo en mattersList
+    const fromRawEmails = rawEmailsList
+      .filter((e) => {
+        const q = e.triage_badge?.quadrant;
+        const lbl = e.triage_badge?.label || '';
+        return (q === 'DELEGADO_CON_PLAZO' || (q as any) === 'DELEGADO_CON_SLA' || lbl.includes('DELEGADO')) && !isMatterOrEmailResolved(e);
+      })
+      .map((e): MatterItem => {
+        const existing = fromMatters.find(m => m.id === `mat-live-${e.id}` || m.title === e.subject);
+        if (existing) return existing;
+        return {
+          id: `mat-del-${e.id}`,
+          matter_code: `DEL-${(schoolSlug || 'IBIME').toUpperCase()}-${(e.id || '001').slice(-4).toUpperCase()}`,
+          title: e.subject || 'Asunto Delegado',
+          summary: e.snippet || e.body_text?.slice(0, 160) || 'Canalizado para gestión y resolución operativa de plantel.',
+          category: e.triage_badge?.label?.replace('🟡', '').trim() || 'Gestión Operativa Delegada',
+          urgency: 'MEDIA',
+          destination: 'DELEGADO_CON_SLA',
+          why_shown: 'Canalizado formalmente a Coordinación Operativa para resolución oportuna con SLA.',
+          reincidence_count: 1,
+          recommended_action: 'Seguimiento por coordinación de plantel según SLA asignado.',
+          suggested_draft_reply: '',
+          assigned_role: 'Coordinación Operativa / Plantel',
+          assigned_email: e.recipient_email || 'coordinacion@iskool.mx',
+          sla_hours: 24,
+          sla_remaining_text: '⏱️ SLA 24-48h',
+          sender_name: e.sender_name || 'Remitente Institucional',
+          sender_email: e.sender_email || 'buzon@iskool.mx',
+          provenance_doc: `Buzón Institucional (${e.sender_email})`,
+          received_at: e.received_at || 'Hoy',
+          campus: campuses[0]?.name || 'Plantel Central'
+        };
+      });
+
+    const map = new Map<string, MatterItem>();
+    [...fromMatters, ...fromRawEmails].forEach(item => {
+      const key = (item.title || item.id).toLowerCase().trim();
+      if (!map.has(key)) map.set(key, item);
+    });
+    return Array.from(map.values());
+  }, [mattersList, rawEmailsList, isMatterOrEmailResolved, schoolSlug, campuses]);
+
+  // Filtrado de asuntos en pestaña Bandeja Inteligente (Atención CEO, Urgentes, SEP y Asuntos Delegados)
   const filteredMatters = useMemo(() => {
+    if (usableSubFilter === 'DELEGADOS') {
+      return delegatedMattersList;
+    }
     const base = intelligentMatters.filter((m) => !isSpamOrCommercialMatter(m));
     if (usableSubFilter === 'CRITICA') {
       return base.filter((m) => m.urgency === 'CRITICA');
@@ -4797,7 +4849,7 @@ Comité de Seguridad y Protección Escolar`
       );
     }
     return base;
-  }, [intelligentMatters, usableSubFilter]);
+  }, [intelligentMatters, usableSubFilter, delegatedMattersList]);
 
   // Estados para preguntas interactivas en tiempo real dentro de "Ponte al día conmigo"
   const [catchupQuery, setCatchupQuery] = useState<string>('');
@@ -4996,21 +5048,52 @@ Comité de Seguridad y Protección Escolar`
               {/* 1. Bandeja Inteligente */}
               <button
                 type="button"
-                onClick={() => setActiveTab('inbox')}
+                onClick={() => {
+                  setActiveTab('inbox');
+                  if (usableSubFilter === 'DELEGADOS') {
+                    setUsableSubFilter('ALL');
+                  }
+                }}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
-                  activeTab === 'inbox'
+                  activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS'
                     ? 'bg-red-50 text-[#E41B14] shadow-xs border border-red-200/80 font-black'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <Inbox className={`h-4 w-4 shrink-0 ${activeTab === 'inbox' ? 'text-[#E41B14]' : 'text-slate-400'}`} />
+                  <Inbox className={`h-4 w-4 shrink-0 ${activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS' ? 'text-[#E41B14]' : 'text-slate-400'}`} />
                   <span className="truncate">Bandeja Inteligente</span>
                 </div>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
-                  activeTab === 'inbox' ? 'bg-[#E41B14] text-white' : 'bg-slate-100 text-slate-600'
+                  activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS' ? 'bg-[#E41B14] text-white' : 'bg-slate-100 text-slate-600'
                 }`}>
                   {intelligentMatters.length}
+                </span>
+              </button>
+
+              {/* 1.5. Asuntos Delegados por Sección */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('inbox');
+                  setInboxFilter('USABLE');
+                  setUsableSubFilter('DELEGADOS');
+                  setSelectedRawEmailId(null);
+                }}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
+                  activeTab === 'inbox' && usableSubFilter === 'DELEGADOS'
+                    ? 'bg-amber-50 text-amber-950 shadow-xs border border-amber-300 font-black'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'
+                }`}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Forward className={`h-4 w-4 shrink-0 ${activeTab === 'inbox' && usableSubFilter === 'DELEGADOS' ? 'text-amber-600' : 'text-slate-400'}`} />
+                  <span className="truncate">Asuntos Delegados</span>
+                </div>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
+                  activeTab === 'inbox' && usableSubFilter === 'DELEGADOS' ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-600'
+                }`}>
+                  {delegatedMattersList.length}
                 </span>
               </button>
 
@@ -5457,11 +5540,21 @@ Comité de Seguridad y Protección Escolar`
                       >
                         <span>🏛️ Supervisión SEP ({intelligentMatters.filter(m => m.category.toLowerCase().includes('sep') || m.category.toLowerCase().includes('supervis') || m.title.toLowerCase().includes('sep')).length})</span>
                       </button>
+                      <button
+                        onClick={() => setUsableSubFilter('DELEGADOS')}
+                        className={`px-3 py-1.5 rounded-xl text-[11px] font-bold cursor-pointer transition-colors flex items-center gap-1.5 ${
+                          usableSubFilter === 'DELEGADOS' ? 'bg-amber-500 text-white shadow-xs' : 'bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-200'
+                        }`}
+                        title="Ver lista de asuntos delegados a coordinaciones operativas con SLA"
+                      >
+                        <Forward className="h-3.5 w-3.5" />
+                        <span>🟡 Asuntos Delegados ({delegatedMattersList.length})</span>
+                      </button>
                     </div>
 
                     <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/80">
                       <ShieldCheck className="h-3 w-3 text-emerald-600" />
-                      <span>Filtro Rector: Solo Atención Inmediata CEO (Delegados, Informativos y Spam en Bandeja de Entrada)</span>
+                      <span>{usableSubFilter === 'DELEGADOS' ? 'Control de Asuntos Delegados a Secciones con SLA' : 'Filtro Rector: Asuntos Prioritarios y Gestión Delegada de Plantel'}</span>
                     </div>
                   </div>
                 )}
