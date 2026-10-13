@@ -154,7 +154,17 @@ export async function POST(req: NextRequest) {
   }
 }
 
+import { validateApiAuth } from '@/lib/authValidator';
+
 export async function GET(req: NextRequest) {
+  const authResult = await validateApiAuth(req, { allowSuperAdminBypass: true });
+  if (!authResult.authenticated) {
+    return NextResponse.json(
+      { success: false, error: 'Autenticación requerida para consultar la cola de correos.' },
+      { status: 401 }
+    );
+  }
+
   const { searchParams } = new URL(req.url);
   const tenantId = searchParams.get('tenantId') || 'sch-test-case';
   const email = searchParams.get('email') || undefined;

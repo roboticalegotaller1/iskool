@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { supabase } from '@/lib/supabaseClient';
+import { resolveCanonicalDemoUser } from '@/lib/auth/demoCatalog';
 
 /**
  * ============================================================================
@@ -34,8 +35,14 @@ const LaboratorioAuthInputSchema = z.object({
   }).optional()
 });
 
+let ephemeralLaboratorioSecret: string | null = null;
 function getLaboratorioSecret(): string {
-  return process.env.SESSION_SECRET || process.env.SUPABASE_JWT_SECRET || 'iskool-hermetic-laboratorio-secret-998822334411';
+  if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
+  if (process.env.SUPABASE_JWT_SECRET) return process.env.SUPABASE_JWT_SECRET;
+  if (!ephemeralLaboratorioSecret) {
+    ephemeralLaboratorioSecret = globalThis.crypto.randomUUID() + '-' + Date.now().toString(36);
+  }
+  return ephemeralLaboratorioSecret;
 }
 
 function toBase64Url(bytes: Uint8Array): string {
@@ -265,51 +272,69 @@ export async function POST(req: NextRequest) {
     } 
     // FLUJO 2: Credenciales Institucionales (Usuario / Contraseña)
     else if (auth_method === 'credentials' && email && password) {
-      try {
-        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
+      // 1. Validar contra el catálogo de cuentas demo autorizadas
+      const canonicalDemo = resolveCanonicalDemoUser(email);
+      const isAllowedDemoPassword = password === '008805' || 
+                                    password === 'admin123' || 
+                                    password === 'ISkoolPassword2026!' || 
+                                    password === 'DIR2026' ||
+                                    password === (canonicalDemo as any)?.defaultPass;
 
-        if (authError || !authData?.user) {
-          // Soporte para credenciales de demostración de laboratorio
-          if (password === '008805' || password === 'admin123') {
-            targetEmail = email;
-            targetUserId = `usr-lab-${globalThis.crypto.randomUUID().slice(0, 8)}`;
-            resolvedProvider = 'credentials';
-          } else {
-            return NextResponse.json(
-              { success: false, error: 'Credenciales institucionales incorrectas.' },
-              { status: 401 }
-            );
-          }
-        } else {
-          targetEmail = authData.user.email || email;
-          targetUserId = authData.user.id;
-          resolvedProvider = 'credentials';
-        }
-      } catch {
-        // Fallback defensivo para entorno de pruebas
-        targetEmail = email;
-        targetUserId = `usr-lab-${globalThis.crypto.randomUUID().slice(0, 8)}`;
+      if (canonicalDemo && isAllowedDemoPassword) {
+        targetEmail = canonicalDemo.email;
+        targetUserId = canonicalDemo.id;
         resolvedProvider = 'credentials';
+      } else {
+        try {
+          const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+            email,
+            password
+          });
+
+          if (authError || !authData?.user) {
+            // Contraseñas de contingencia para demostración autorizadas si el usuario está en el catálogo
+            if (canonicalDemo && isAllowedDemoPassword) {
+              targetEmail = email;
+              targetUserId = `usr-lab-${globalThis.crypto.randomUUID().slice(0, 8)}`;
+              resolvedProvider = 'credentials';
+            } else {
+              return NextResponse.json(
+                { success: false, error: 'Credenciales institucionales incorrectas.' },
+                { status: 401 }
+              );
+            }
+          } else {
+            targetEmail = authData.user.email || email;
+            targetUserId = authData.user.id;
+            resolvedProvider = 'credentials';
+          }
+        } catch {
+          return NextResponse.json(
+            { success: false, error: 'Error al verificar credenciales con el proveedor.' },
+            { status: 500 }
+          );
+        }
       }
     }
-    // FLUJO 3: Datos de Usuario validados por Callback de Cliente o Demo
-    else if (user?.email) {
-      targetEmail = user.email;
-      targetUserId = user.id || `usr-lab-${globalThis.crypto.randomUUID().slice(0, 8)}`;
-      resolvedProvider = auth_method === 'google' ? 'google' : 'sandbox';
-    } 
-    else if (email) {
-      targetEmail = email;
-      targetUserId = `usr-lab-${globalThis.crypto.randomUUID().slice(0, 8)}`;
-      resolvedProvider = auth_method === 'google' ? 'google' : 'credentials';
+    // FLUJO 3: Demostración Institucional Autorizada
+    else if (auth_method === 'demo') {
+      const demoEmail = user?.email || email;
+      const canonicalDemo = demoEmail ? resolveCanonicalDemoUser(demoEmail) : null;
+      if (canonicalDemo) {
+        targetEmail = canonicalDemo.email;
+        targetUserId = canonicalDemo.id;
+        resolvedProvider = 'sandbox';
+      } else {
+        return NextResponse.json(
+          { success: false, error: 'Cuenta demo no autorizada o no registrada en el catálogo institucional.' },
+          { status: 401 }
+        );
+      }
     }
     else {
       return NextResponse.json(
-        { success: false, error: 'Debe ingresar un correo electrónico o proporcionar un token de acceso.' },
-        { status: 400 }
+        { success: false, error: 'Autenticación requerida. Debe ingresar contraseña o proporcionar un token de acceso válido.' },
+        { status: 401 }
       );
     }
 

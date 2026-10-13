@@ -74,28 +74,20 @@ Los fusiles de la traición apagaron mi respiración corporal, pero multiplicaro
 **Coordenadas**: 18.7761, -98.9814
 Sitio histórico y museo donde nací y crecí en el seno de una familia campesina; aquí custodié los títulos primordiales en una caja metálica enterrada bajo el piso de tierra para que los hacendados no pudieran quemarlos.
 
-![Casa Natal de Emiliano Zapata en Anenecuilco](/images/history/casa_zapata_anenecuilco.jpg)
-
 ### Ayoxuxtla de Zapata (Puebla)
 **Estado**: Puebla, México
 **Coordenadas**: 18.2392, -98.6653
 Paraje serrano en los límites de Morelos y Puebla donde me refugié con mi Estado Mayor para redactar y firmar con Otilio Montaño el Plan de Ayala el 28 de noviembre de 1911.
-
-![Ayoxuxtla de Zapata](/images/history/ayoxuxtla_plan_ayala.jpg)
 
 ### Tlaltizapán (Cuartel General del Sur)
 **Estado**: Morelos, México
 **Coordenadas**: 18.6853, -99.1192
 Población morelense donde establecí mi cuartel general permanente de 1914 a 1918; aquí operaron las comisiones agrarias, el banco de crédito campesino y los talleres de pólvora del Ejército Libertador del Sur.
 
-![Tlaltizapán Cuartel General](/images/history/tlaltizapan_cuartel_zapata.jpg)
-
 ### Hacienda de Chinameca
 **Estado**: Morelos, México
 **Coordenadas**: 18.6217, -99.0294
 Complejo hacendario azucarero donde tuvo lugar la celada y mi cobarde asesinato el 10 de abril de 1919 a manos de las tropas traidoras de Jesús Guajardo por órdenes de Pablo González y Venustiano Carranza.
-
-![Hacienda de Chinameca](/images/history/hacienda_chinameca_zapata.jpg)
 
 ## Cápsula Cinematográfica y Video
 **Título**: Emiliano Zapata: El Clamor Inquebrantable de la Tierra

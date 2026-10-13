@@ -74,14 +74,10 @@ Mi muerte no fue una derrota, sino el testimonio supremo de que la rectitud mora
 **Coordenadas**: 20.6508, -98.6528
 Población serrana de Hidalgo donde nací en una familia liberal y patriota y donde aprendí los primeros principios de austeridad y rectitud cívica.
 
-![Zacualtipán Hidalgo](/images/history/zacualtipan_angeles.jpg)
-
 ### Castillo de Chapultepec
 **Estado**: Ciudad de México, México
 **Coordenadas**: 19.4204, -99.1819
 Sede del Heroico Colegio Militar donde me formé como oficial y donde ejercí la dirección humanista de los cadetes bajo la presidencia de Francisco I. Madero.
-
-![Castillo de Chapultepec](/images/history/chapultepec_angeles.jpg)
 
 ### Cerro de la Bufa
 **Estado**: Zacatecas, México
@@ -94,8 +90,6 @@ Crestón estratégico donde planifiqué la disposición del fuego de artillería
 **Estado**: Chihuahua, México
 **Coordenadas**: 28.6353, -106.0744
 Recinto teatral de la ciudad de Chihuahua acondicionado como tribunal militar donde miles de ciudadanos escucharon mi alegato de defensa antes de ser llevado al paredón del 21.º Regimiento.
-
-![Teatro de los Héroes](/images/history/teatro_heroes_angeles.jpg)
 
 ## Cápsula Cinematográfica y Video
 **Título**: Felipe Ángeles: La Ciencia y el Honor en la Revolución

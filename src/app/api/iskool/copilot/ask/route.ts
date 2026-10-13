@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { IskoolCore } from '@/lib/iskoolCore';
 import { InputSanitizer } from '@/lib/security/inputSanitizer';
+import { validateApiAuth } from '@/lib/authValidator';
 
 /**
  * @route POST /api/iskool/copilot/ask
@@ -11,6 +12,14 @@ import { InputSanitizer } from '@/lib/security/inputSanitizer';
  */
 export async function POST(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
+    if (!auth.authenticated) {
+      return NextResponse.json(
+        { error: 'Autenticación requerida para interactuar con el Copiloto Pedagógico Institucional' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { teacherId = 'teacher_hs1_lead', courseId = 'course_hs1_eng_2026', sessionId, query } = body;
 

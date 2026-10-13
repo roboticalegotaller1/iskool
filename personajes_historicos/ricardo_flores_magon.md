@@ -74,28 +74,20 @@ La madrugada del 21 de noviembre de 1922 mi cuerpo inerte fue hallado en el frí
 **Coordenadas**: 18.2044, -96.8833
 Comunidad de la sierra mazateca donde nací y donde abrevé de mis padres el sentido de fraternidad comunal y rebeldía ancestral ante las injusticias.
 
-![San Antonio Eloxochitlán](/images/history/eloxochitlan_flores_magon.jpg)
-
 ### Oficinas de El Hijo del Ahuizote
 **Estado**: Ciudad de México, México
 **Coordenadas**: 19.4357, -99.1312
 Inmueble histórico en el centro de la capital donde editamos la sátira antiporfirista y colocamos la emblemática pancarta libertaria el 5 de febrero de 1903.
-
-![Oficinas de El Hijo del Ahuizote](/images/history/edificio_ahuizote_cdmx.jpg)
 
 ### Saint Louis (Misuri)
 **Estado**: Misuri, Estados Unidos
 **Coordenadas**: 38.6270, -90.1994
 Ciudad industrial donde establecimos el cuartel general de la Junta Organizadora del PLM y donde imprimimos y distribuimos clandestinamente el Programa de 1906 hacia México.
 
-![Saint Louis Misuri](/images/history/saint_louis_plm.jpg)
-
 ### Penitenciaría Federal de Leavenworth
 **Estado**: Kansas, Estados Unidos
 **Coordenadas**: 39.3508, -94.9297
 Prisión de máxima seguridad estadounidense donde cumplí mi última condena penal por mi oposición pacifista a la Primera Guerra Mundial y donde fui asesinado o dejado morir en noviembre de 1922.
-
-![Penitenciaría Federal de Leavenworth](/images/history/leavenworth_prison_magon.jpg)
 
 ## Cápsula Cinematográfica y Video
 **Título**: Ricardo Flores Magón: La Antorcha Inextinguible de la Libertad

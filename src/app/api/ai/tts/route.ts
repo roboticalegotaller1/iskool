@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { validateApiAuth } from '@/lib/authValidator';
 import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
 import crypto from 'crypto';
 import { 
@@ -297,6 +298,14 @@ function sanitizeSSMLForNeuralEngine(rawSSML: string, targetVoiceName: string, l
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
+    if (!auth.authenticated) {
+      return NextResponse.json(
+        { error: 'Autenticación requerida para acceder al servicio de síntesis de voz' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { 
       ssml, 
@@ -317,6 +326,13 @@ export async function POST(req: NextRequest) {
     let preliminaryVoice = voice;
     let targetSSML = '';
     let rawNormalizedText = '';
+
+    if ((text && typeof text === 'string' && text.length > 10000) || (ssml && typeof ssml === 'string' && ssml.length > 15000)) {
+      return NextResponse.json(
+        { error: 'El texto o SSML supera la longitud máxima permitida para síntesis de audio' },
+        { status: 413 }
+      );
+    }
 
     // Detección de idioma y resolución de voz certificada
     let explicitLang = language;

@@ -64,6 +64,7 @@ export async function GET(req: NextRequest) {
     const safeEmail = JSON.stringify(tokens.email);
     const safeName = JSON.stringify(tokens.name || 'Google Workspace');
     const safeCount = realEmails.length;
+    const safeOrigin = JSON.stringify(origin);
 
     const html = `<!DOCTYPE html>
 <html lang="es">
@@ -98,7 +99,7 @@ export async function GET(req: NextRequest) {
       };
 
       if (window.opener) {
-        window.opener.postMessage(authData, '*');
+        window.opener.postMessage(authData, ${safeOrigin});
         setTimeout(function() {
           window.close();
         }, 1200);

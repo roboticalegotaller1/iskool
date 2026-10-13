@@ -64,7 +64,7 @@ Cada legua recorrida por el emisario acortaba el tiempo hacia la libertad. La op
 **Coordenadas**: 21.1561, -100.9325
 **Narrativa**: Al recibir la alerta de Querétaro, don Miguel Hidalgo y Costilla convocó al pueblo con el tañido de la campana parroquial: ¡Caballeros, somos perdidos; no hay más remedio que ir a coger gachupines!
 
-![El Grito de Independencia en Dolores](/images/history/hidalgo_grito_comic_4.png)
+![El Grito de Independencia en Dolores](/images/history/josefa_alerta_dolores_comic_4.png)
 
 El pueblo de Dolores tomó machetes, lanzas y estandartes para unirse a la causa insurgente. El grito de libertad que cimbró a la Nueva España fue posible gracias al temple y serenidad de Doña Josefa Ortiz.
 

@@ -1,13 +1,28 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { POST } from '@/app/api/ai/historical-figure/route';
 import { NextRequest } from 'next/server';
+import { signSessionToken } from '@/lib/sessionToken';
 
 describe('🏛️ PERSONAJES HISTÓRICOS Y MOTOR DE IA EN TIEMPO REAL', { timeout: 45000 }, () => {
+  let authHeaders: Record<string, string>;
+
+  beforeAll(async () => {
+    const token = await signSessionToken({
+      id: 'test-student-1',
+      email: 'student@iskool.edu.mx',
+      role: 'student',
+      tenant_id: 'iskool'
+    });
+    authHeaders = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+  });
 
   it('debe responder a una pregunta en primera persona estricta sin meta-discursos', async () => {
     const req = new NextRequest('http://localhost:3000/api/ai/historical-figure', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({
         action: 'chat_persona',
         characterName: 'Francisco Villa',
@@ -35,7 +50,7 @@ describe('🏛️ PERSONAJES HISTÓRICOS Y MOTOR DE IA EN TIEMPO REAL', { timeou
   it('debe responder a Doña Josefa Ortiz de Domínguez con datos verídicos y voz de matrona republicana', async () => {
     const req = new NextRequest('http://localhost:3000/api/ai/historical-figure', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({
         action: 'chat_persona',
         characterName: 'Josefa Ortiz de Domínguez',
@@ -59,7 +74,7 @@ describe('🏛️ PERSONAJES HISTÓRICOS Y MOTOR DE IA EN TIEMPO REAL', { timeou
     // Primera invocación (genera o consulta)
     const req1 = new NextRequest('http://localhost:3000/api/ai/historical-figure', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({
         action: 'chat_persona',
         characterName: 'Francisco Villa',
@@ -73,7 +88,7 @@ describe('🏛️ PERSONAJES HISTÓRICOS Y MOTOR DE IA EN TIEMPO REAL', { timeou
     // Segunda invocación (debe provenir del caché de la Bóveda con 0 tokens)
     const req2 = new NextRequest('http://localhost:3000/api/ai/historical-figure', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({
         action: 'chat_persona',
         characterName: 'Francisco Villa',
@@ -106,7 +121,7 @@ describe('🏛️ PERSONAJES HISTÓRICOS Y MOTOR DE IA EN TIEMPO REAL', { timeou
   it('debe enlazar quirúrgicamente mediante similitud léxico-semántica multi-palabra la pregunta de El Zorro con 0 tokens', async () => {
     const req = new NextRequest('http://localhost:3000/api/ai/historical-figure', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({
         action: 'chat_persona',
         characterName: 'Miguel Hidalgo y Costilla',
@@ -129,7 +144,7 @@ describe('🏛️ PERSONAJES HISTÓRICOS Y MOTOR DE IA EN TIEMPO REAL', { timeou
     // Variación 1: "¿Por qué te decían El Zorro?"
     const req1 = new NextRequest('http://localhost:3000/api/ai/historical-figure', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({
         action: 'chat_persona',
         characterName: 'Miguel Hidalgo y Costilla',
@@ -146,7 +161,7 @@ describe('🏛️ PERSONAJES HISTÓRICOS Y MOTOR DE IA EN TIEMPO REAL', { timeou
     // Variación 2: "¿Qué falló en las batallas de Celaya?"
     const req2 = new NextRequest('http://localhost:3000/api/ai/historical-figure', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({
         action: 'chat_persona',
         characterName: 'Francisco Villa',

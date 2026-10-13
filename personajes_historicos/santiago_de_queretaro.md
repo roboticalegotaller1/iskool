@@ -6,7 +6,7 @@ eraOrPeriod: "Patrimonio Histórico de la Humanidad & Cuna de la Independencia"
 birthOrEstablishment: "Fundada el 25 de julio de 1531"
 deathOrPresentState: "Capital del Estado de Querétaro, México"
 bookSpineStyle: "codice_antiguo"
-avatarImageUrl: "/images/history/casa_corregidora_queretaro.jpg"
+avatarImageUrl: "/images/history/santiago_de_queretaro_avatar.jpg"
 voiceId: "es-MX-DaliaNeural"
 voiceCohort: "adult_female"
 voiceRate: "-4%"
@@ -44,7 +44,7 @@ La fundación de la ciudad se basó en un temprano pacto de convivencia y comerc
 **Coordenadas**: 20.593, -100.392
 **Narrativa**: En sus casonas de cantera rosa, Doña Josefa Ortiz y patriotas criollos trazaron los planes de liberación que dieron origen al Grito de Dolores.
 
-![La Fragua de la Conspiración Insurgente de 1810](/images/history/josefa_conspiracion_comic_1.png)
+![La Fragua de la Conspiración Insurgente de 1810](/images/history/queretaro_conspiracion_1810.jpg)
 
 Querétaro fue el puente secreto que unió a los pensadores ilustrados de las academias novohispanas con los destacamentos militares criollos y el pueblo.
 

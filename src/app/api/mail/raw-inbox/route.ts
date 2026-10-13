@@ -4,6 +4,7 @@ import { fetchLiveImapEmails, getCachedInboxEmails, injectEmailIntoCache, inject
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { HermeticEmailBrainService } from '@/lib/services/hermetic-email-brain.service';
 import { formatCdmxTime } from '@/utils/timeZoneUtils';
+import { validateApiAuth } from '@/lib/authValidator';
 
 export const runtime = 'nodejs';
 
@@ -197,6 +198,14 @@ function getFallbackRawEmails(accountEmail: string): RawGmailItem[] {
 
 export async function GET(request: NextRequest) {
   try {
+    const authResult = await validateApiAuth(request, { allowSuperAdminBypass: true });
+    if (!authResult.authenticated) {
+      return NextResponse.json(
+        { success: false, error: 'Autenticación requerida para acceder al buzón institucional.' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const tenantId = searchParams.get('tenantId') || 'e1000000-0000-0000-0000-000000000001';
     let rawEmail = (searchParams.get('email') || '').trim();
@@ -519,6 +528,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const authResult = await validateApiAuth(request, { allowSuperAdminBypass: true });
+    if (!authResult.authenticated) {
+      return NextResponse.json(
+        { success: false, error: 'Autenticación requerida para operar en el buzón institucional.' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const tenantId = body.tenantId || 'sch-default';
 

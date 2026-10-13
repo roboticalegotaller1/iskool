@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { validateApiAuth } from '@/lib/authValidator';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs';
@@ -48,6 +49,14 @@ export async function POST(req: NextRequest) {
   let outputPath = '';
 
   try {
+    const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
+    if (!auth.authenticated) {
+      return NextResponse.json(
+        { error: 'Autenticación requerida para acceder al servicio de reconocimiento fonético' },
+        { status: 401 }
+      );
+    }
+
     const formData = await req.formData().catch(() => null);
     if (!formData) {
       return NextResponse.json({ error: 'Formato de petición no válido' }, { status: 400 });
@@ -61,6 +70,13 @@ export async function POST(req: NextRequest) {
     }
 
     const arrayBuffer = await audioFile.arrayBuffer();
+    const MAX_AUDIO_BYTES = 15 * 1024 * 1024; // 15 MB
+    if (arrayBuffer && arrayBuffer.byteLength > MAX_AUDIO_BYTES) {
+      return NextResponse.json(
+        { error: 'El archivo de audio supera el límite máximo permitido de 15MB' },
+        { status: 413 }
+      );
+    }
     if (!arrayBuffer || arrayBuffer.byteLength < 600) {
       return NextResponse.json({ 
         success: true, 

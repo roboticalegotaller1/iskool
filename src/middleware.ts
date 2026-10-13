@@ -27,6 +27,10 @@ const ISKOOL_PROTECTED_PREFIXES = [
   '/teacher',
   '/student',
   '/director',
+  '/coordinator',
+  '/portal-ceo',
+  '/parent',
+  '/studio',
   '/billing',
   '/superadmin'
 ];
@@ -270,6 +274,8 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith('/admin') ||
       pathname.startsWith('/teacher') ||
       pathname.startsWith('/director') ||
+      pathname.startsWith('/coordinator') ||
+      pathname.startsWith('/portal-ceo') ||
       pathname.startsWith('/superadmin') ||
       pathname.startsWith('/ibime/admin') ||
       pathname.startsWith('/ibime/coordinacion')

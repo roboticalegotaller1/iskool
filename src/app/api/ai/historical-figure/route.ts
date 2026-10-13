@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { validateApiAuth } from '@/lib/authValidator';
 import { 
   findHistoricalFigureInVault, 
   saveHistoricalFigureToVault, 
@@ -111,6 +112,14 @@ function sanitizePersonaAnswer(text: string, characterName: string): string {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
+    if (!auth.authenticated) {
+      return NextResponse.json(
+        { success: false, error: 'Autenticación requerida para interactuar con los avatares históricos del Motor de IA Pedagógica' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { action, characterName, slug, question, isGeographicSite, spineStyle } = body;
 
@@ -427,7 +436,7 @@ async function generateFigureWithAiFallback(
           yearOrPeriod: 'Madrugada del 16 Septiembre 1810',
           title: 'El Grito Libertario en Dolores',
           description: 'Advertidos a tiempo por el heroísmo de Josefa, el cura Hidalgo hace sonar la campana parroquial llamando al pueblo a levantarse en armas.',
-          imageUrl: '/images/history/hidalgo_grito_comic_4.png',
+          imageUrl: '/images/history/josefa_alerta_dolores_comic_4.png',
           locationName: 'Parroquia de Dolores Hidalgo, Guanajuato',
           coordinates: { lat: 21.1561, lng: -100.9325 },
           narrativeCaption: '¡Viva la América libre! El eco de Dolores nació de la determinación inquebrantable de Josefa.'

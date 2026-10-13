@@ -14,12 +14,11 @@ export async function POST(req: NextRequest) {
     const rawBody = await req.text();
     const signatureHeader = req.headers.get('x-payment-signature') || req.headers.get('x-webhook-signature') || '';
 
-    // 1. Verificación de firma criptográfica HMAC-SHA256
+    // 1. Verificación estricta de firma criptográfica HMAC-SHA256
     const isSignatureValid = serverPaymentGateway.verifyWebhookSignature(rawBody, signatureHeader);
-    if (!isSignatureValid && process.env.NODE_ENV === 'production') {
-      console.error('[Payment Webhook] Firma criptográfica inválida.');
-      // En producción, rechazamos firmas falsas
-      return NextResponse.json({ error: 'Firma de webhook inválida' }, { status: 400 });
+    if (!isSignatureValid) {
+      console.error('[Payment Webhook] Firma criptográfica inválida o ausente.');
+      return NextResponse.json({ error: 'Firma de webhook inválida o ausente' }, { status: 400 });
     }
 
     let payload: any;

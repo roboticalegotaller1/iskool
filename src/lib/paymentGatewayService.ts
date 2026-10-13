@@ -193,8 +193,7 @@ export class StandardPaymentGatewayService extends BasePaymentGatewayService {
    */
   public verifyWebhookSignature(rawBody: string, signatureHeader: string): boolean {
     if (!signatureHeader || !this.webhookSecret) {
-      // En modo local o desarrollo se permite bypass controlado si no hay secret configurado
-      return process.env.NODE_ENV !== 'production';
+      return false;
     }
 
     try {
@@ -203,10 +202,14 @@ export class StandardPaymentGatewayService extends BasePaymentGatewayService {
         .update(rawBody)
         .digest('hex');
 
-      return crypto.timingSafeEqual(
-        Buffer.from(signatureHeader, 'utf-8'),
-        Buffer.from(computed, 'utf-8')
-      );
+      const sigBuffer = Buffer.from(signatureHeader, 'utf-8');
+      const compBuffer = Buffer.from(computed, 'utf-8');
+
+      if (sigBuffer.length !== compBuffer.length) {
+        return false;
+      }
+
+      return crypto.timingSafeEqual(sigBuffer, compBuffer);
     } catch {
       return false;
     }

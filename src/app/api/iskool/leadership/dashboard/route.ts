@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { IskoolCore } from '@/lib/iskoolCore';
 import { UserAcademicContext } from '@/lib/leadership/scopeService';
+import { validateApiAuth } from '@/lib/authValidator';
 
 /**
  * @route GET /api/iskool/leadership/dashboard
@@ -13,26 +14,53 @@ import { UserAcademicContext } from '@/lib/leadership/scopeService';
  */
 export async function GET(req: NextRequest) {
   try {
+    const authResult = await validateApiAuth(req, { allowSuperAdminBypass: true });
+    if (!authResult.authenticated || !authResult.user) {
+      return NextResponse.json(
+        { error: 'Autenticación requerida para acceder al Leadership Dashboard', code: 'UNAUTHORIZED' },
+        { status: 401 }
+      );
+    }
+
+    const userRole = (authResult.user.role || '').toLowerCase();
+    const isLeadershipRole = ['superadmin', 'admin', 'director', 'coordinator', 'coordinador', 'owner', 'ceo', 'teacher'].includes(userRole);
+    if (!isLeadershipRole) {
+      return NextResponse.json(
+        { error: 'Acceso denegado: Se requieren permisos de liderazgo o coordinación académica.' },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
-    const schoolId = searchParams.get('schoolId') || 'sch-jjrosseau';
+    const requestedSchoolId = searchParams.get('schoolId');
+    const userSchoolId = authResult.user.school_id;
+    const isSuperUser = ['superadmin', 'admin', 'owner', 'ceo'].includes(userRole);
+
+    let effectiveSchoolId = requestedSchoolId || userSchoolId || 'sch-jjrosseau';
+    if (!isSuperUser && userSchoolId && requestedSchoolId && requestedSchoolId !== userSchoolId) {
+      return NextResponse.json(
+        { error: 'Violación de Aislamiento: No tiene autorización para consultar métricas de otro plantel.' },
+        { status: 403 }
+      );
+    }
+
     const grade = searchParams.get('grade') || 'high_school_1';
-    const userId = searchParams.get('userId') || 'coord_dir_lead';
-    const role = (searchParams.get('role') || 'coordinator') as any;
+    const effectiveUserId = authResult.user.id || 'coord_dir_lead';
 
     const userProfile: UserAcademicContext = {
-      userId,
-      role,
-      schoolId,
+      userId: effectiveUserId,
+      role: (authResult.user.role as any) || 'coordinator',
+      schoolId: effectiveSchoolId,
       assignedGrades: [grade]
     };
 
     // Invocar cabina de liderazgo unificada
-    const cockpit = await IskoolCore.getCoordinatorCockpit(schoolId, grade, userProfile);
+    const cockpit = await IskoolCore.getCoordinatorCockpit(effectiveSchoolId, grade, userProfile);
 
     return NextResponse.json({
       success: true,
       timestamp: new Date().toISOString(),
-      school_id: schoolId,
+      school_id: effectiveSchoolId,
       grade,
       cockpit
     });

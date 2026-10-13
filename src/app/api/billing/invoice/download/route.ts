@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStampedCfdiByUuid } from '@/lib/fiscal/pacAdapter';
 import { buildCfdi40Xml } from '@/lib/fiscal/cfdiXmlBuilder';
+import { validateApiAuth } from '@/lib/authValidator';
 
 export async function GET(req: NextRequest) {
+  const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
+  if (!auth.authenticated) {
+    return NextResponse.json(
+      { error: 'Autenticación requerida para consultar y descargar comprobantes fiscales' },
+      { status: 401 }
+    );
+  }
+
   const receiptId = req.nextUrl.searchParams.get('receipt_id') || 'REC-2026-08102';
   const format = req.nextUrl.searchParams.get('format') || 'xml'; // 'xml' | 'pdf'
   const uuid = req.nextUrl.searchParams.get('uuid') || '4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D';

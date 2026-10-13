@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import tls from 'tls';
+import { validateApiAuth } from '@/lib/authValidator';
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { markEmailAsResolvedServer } from '../raw-inbox/route';
 import { formatCdmxDate, formatCdmxTime } from '@/utils/timeZoneUtils';
@@ -141,6 +142,15 @@ function sendViaNativeTlsSmtp(options: {
 
 export async function POST(req: NextRequest) {
   try {
+    // Verificación perimetral de autenticación Zero-Trust (Solo sesiones demo oficiales o usuarios autenticados)
+    const auth = await validateApiAuth(req);
+    if (!auth.authenticated && process.env.NODE_ENV !== 'test') {
+      return NextResponse.json(
+        { success: false, error: 'Autenticación requerida para despachar correos institucionales.' },
+        { status: 401 }
+      );
+    }
+
     const payload: SendMailRequest = await req.json();
     const {
       senderEmail,

@@ -67,6 +67,31 @@ export async function validateApiAuth(
       }
     }
 
+    // 1.1 Verificación de Cookie de Sesión Hermética de Laboratorio ('laboratorio_session')
+    const labSessionCookie = request.cookies.get('laboratorio_session')?.value;
+    if (labSessionCookie) {
+      try {
+        const { verifyLaboratorioSession } = await import('@/app/api/auth/laboratorio-session/route');
+        const labSession = await verifyLaboratorioSession(labSessionCookie);
+        if (labSession) {
+          return {
+            authenticated: true,
+            user: {
+              id: labSession.user_id,
+              email: labSession.email,
+              role: labSession.role,
+              tenant_id: (labSession.tenant_id?.includes('ibime') || labSession.tenant_id === 'e1000000-0000-0000-0000-000000000001') ? 'ibime' : 'iskool',
+              institution_metadata: {
+                tenant_uuid: labSession.tenant_id,
+                institution_name: labSession.institution_name,
+                is_isolated_sandbox: labSession.is_isolated_sandbox
+              }
+            }
+          };
+        }
+      } catch {}
+    }
+
     // 2. Verificación de Token Bearer (Authorization: Bearer <token>)
     const authHeader = request.headers.get('Authorization') || request.headers.get('authorization');
     if (authHeader && authHeader.startsWith('Bearer ')) {

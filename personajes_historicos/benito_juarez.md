@@ -74,21 +74,15 @@ El pueblo de México demostró a los imperios de la vieja Europa que ninguna pot
 **Coordenadas**: 17.3183, -96.5333
 Comunidad serrana donde nací y pastoreé ovejas en mi infancia; aquí se forjó la serenidad y la reciedumbre de carácter con que goberné la nación.
 
-![San Pablo Guelatao](/images/history/guelatao_juarez.jpg)
-
 ### Baluarte de San Juan de Ulúa y Puerto de Veracruz
 **Estado**: Veracruz, México
 **Coordenadas**: 19.2052, -96.1319
 Sede constitucional del gobierno legítimo durante los años más aciagos de la Guerra de Reforma (1858-1861) y lugar de promulgación de las Leyes de Reforma.
 
-![San Juan de Ulúa y Veracruz](/images/history/san_juan_ulua_juarez.jpg)
-
 ### Paso del Norte (Ciudad Juárez)
 **Estado**: Chihuahua, México
 **Coordenadas**: 31.7394, -106.4869
 Población fronteriza que fue el último baluarte inexpugnable del gobierno republicano entre 1865 y 1866 frente a la invasión militar francesa.
-
-![Paso del Norte](/images/history/paso_del_norte_juarez.jpg)
 
 ### Cerro de las Campanas
 **Estado**: Querétaro, México

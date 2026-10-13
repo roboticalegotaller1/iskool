@@ -92,7 +92,7 @@ export const HistoricalTimelineComic: React.FC<HistoricalTimelineComicProps> = (
         '/images/history/josefa_conspiracion_comic_1.png',
         '/images/history/josefa_taconeo_comic_2.png',
         '/images/history/josefa_alerta_comic_3.png',
-        '/images/history/hidalgo_grito_comic_4.png'
+        '/images/history/josefa_alerta_dolores_comic_4.png'
       ];
       return josefaMoments[idx % josefaMoments.length];
     }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { IskoolCore } from '@/lib/iskoolCore';
 import { InputSanitizer } from '@/lib/security/inputSanitizer';
+import { validateApiAuth } from '@/lib/authValidator';
 
 /**
  * @route POST /api/iskool/tutor/chat
@@ -10,6 +11,14 @@ import { InputSanitizer } from '@/lib/security/inputSanitizer';
  */
 export async function POST(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
+    if (!auth.authenticated) {
+      return NextResponse.json(
+        { error: 'Autenticación requerida para acceder al Tutor Pedagógico Institucional' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { sessionId, studentId, grade = 'high_school_1', message } = body;
 

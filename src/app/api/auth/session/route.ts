@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateApiAuth } from '@/lib/authValidator';
 import { signSessionToken } from '@/lib/sessionToken';
+import { resolveCanonicalDemoUser } from '@/lib/auth/demoCatalog';
 import { z } from 'zod';
 
 import { supabase } from '@/lib/supabaseClient';
@@ -102,24 +103,29 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 2. Soporte para cuentas preestablecidas de presentación / seeds institucionales (IBIME e ISkool)
+    // 2. Soporte estricto para cuentas preestablecidas de presentación / seeds institucionales (IBIME e ISkool)
     if (!authUser && body.user) {
       const u = body.user;
-      if (u && (u.id || u.email)) {
-        authUser = {
-          id: u.id,
-          email: u.email,
-          role: u.role || 'student',
-          school_id: u.school_id,
-          first_name: u.first_name || '',
-          last_name: u.last_name || ''
-        };
+      const identifier = u.email || u.id;
+      if (identifier) {
+        const canonicalDemo = resolveCanonicalDemoUser(identifier);
+        if (canonicalDemo) {
+          // El rol, escuela y nombre provienen obligatoriamente del catálogo canónico del servidor
+          authUser = {
+            id: canonicalDemo.id,
+            email: canonicalDemo.email,
+            role: canonicalDemo.role,
+            school_id: canonicalDemo.school_id,
+            first_name: canonicalDemo.first_name,
+            last_name: canonicalDemo.last_name
+          };
+        }
       }
     }
 
     if (!authUser) {
       return NextResponse.json(
-        { success: false, error: 'Token de sesión no proporcionado o inválido.' },
+        { success: false, error: 'Token de sesión no proporcionado o usuario no autorizado.' },
         { status: 401 }
       );
     }

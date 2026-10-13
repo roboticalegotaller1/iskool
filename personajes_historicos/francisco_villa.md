@@ -17,12 +17,20 @@ tags:
   - "[[francisco_villa]]"
   - "[[personajes_historicos]]"
   - "[[revolucion_mexicana_1910_1923]]"
-lastUpdated: "2026-10-06"
+lastUpdated: "2026-10-13"
 ---
 
 # Francisco Villa
 
 ## Biografía y Contexto Histórico
+Fui comandante en jefe de la División del Norte y caudillo popular de la Revolución Mexicana, conocido universalmente como el "Centauro del Norte". Nací en la hacienda de La Coyotada, municipio de San Juan del Río, Durango, el 5 de junio de 1878; fui bautizado con el nombre de José Doroteo Arango Arámbula. Crecí bajo el látigo de los terratenientes porfiristas; siendo muy joven disparé contra el hacendado Agustín López Negrete para defender a mi hermana Mariana de su agresión, viéndome forzado a fugarme a las sierras donde adopté el nombre de Francisco Villa, alternando actividades de arriería y bandolerismo social con el reparto de ganado entre los peones desposeídos.
+
+En 1910, reclutado por Abraham González, abracé la causa antirreeleccionista de Francisco I. Madero, combatiendo en Ciudad Juárez para derrocar la dictadura. Tras el asesinato de Madero en 1913 a manos del usurpador Victoriano Huerta, crucé la frontera con ocho valientes y forjé la División del Norte: la fuerza de choque de caballería y trenes militares más temida y disciplinada del continente. Conquistamos Torreón, Ciudad Juárez, Tierra Blanca y libramos el 23 de junio de 1914 la apoteósica Toma de Zacatecas, destruyendo para siempre el ejército federal huertista. Como gobernador de Chihuahua abrí más de cincuenta escuelas en un mes, fijé precios populares y emití moneda para el pueblo. En 1914 firmé con Emiliano Zapata el Pacto de Xochimilco. En marzo de 1916 crucé la frontera y asalté Columbus, burlando durante once meses a la Expedición Punitiva del general Pershing en la Sierra Madre. En 1920 depuse las armas en los Tratados de Sabinas y fundé una cooperativa agrícola modelo en Canutillo, Durango, hasta que el 20 de julio de 1923 fui emboscado y acribillado en Parral, Chihuahua.
+
+Fui comandante en jefe de la División del Norte y caudillo popular de la Revolución Mexicana, conocido universalmente como el "Centauro del Norte". Nací en la hacienda de La Coyotada, municipio de San Juan del Río, Durango, el 5 de junio de 1878; fui bautizado con el nombre de José Doroteo Arango Arámbula. Crecí bajo el látigo de los terratenientes porfiristas; siendo muy joven disparé contra el hacendado Agustín López Negrete para defender a mi hermana Mariana de su agresión, viéndome forzado a fugarme a las sierras donde adopté el nombre de Francisco Villa, alternando actividades de arriería y bandolerismo social con el reparto de ganado entre los peones desposeídos.
+
+En 1910, reclutado por Abraham González, abracé la causa antirreeleccionista de Francisco I. Madero, combatiendo en Ciudad Juárez para derrocar la dictadura. Tras el asesinato de Madero en 1913 a manos del usurpador Victoriano Huerta, crucé la frontera con ocho valientes y forjé la División del Norte: la fuerza de choque de caballería y trenes militares más temida y disciplinada del continente. Conquistamos Torreón, Ciudad Juárez, Tierra Blanca y libramos el 23 de junio de 1914 la apoteósica Toma de Zacatecas, destruyendo para siempre el ejército federal huertista. Como gobernador de Chihuahua abrí más de cincuenta escuelas en un mes, fijé precios populares y emití moneda para el pueblo. En 1914 firmé con Emiliano Zapata el Pacto de Xochimilco. En marzo de 1916 crucé la frontera y asalté Columbus, burlando durante once meses a la Expedición Punitiva del general Pershing en la Sierra Madre. En 1920 depuse las armas en los Tratados de Sabinas y fundé una cooperativa agrícola modelo en Canutillo, Durango, hasta que el 20 de julio de 1923 fui emboscado y acribillado en Parral, Chihuahua.
+
 Fui comandante en jefe de la División del Norte y caudillo popular de la Revolución Mexicana, conocido universalmente como el "Centauro del Norte". Nací en la hacienda de La Coyotada, municipio de San Juan del Río, Durango, el 5 de junio de 1878; fui bautizado con el nombre de José Doroteo Arango Arámbula. Crecí bajo el látigo de los terratenientes porfiristas; siendo muy joven disparé contra el hacendado Agustín López Negrete para defender a mi hermana Mariana de su agresión, viéndome forzado a fugarme a las sierras donde adopté el nombre de Francisco Villa, alternando actividades de arriería y bandolerismo social con el reparto de ganado entre los peones desposeídos.
 
 En 1910, reclutado por Abraham González, abracé la causa antirreeleccionista de Francisco I. Madero, combatiendo en Ciudad Juárez para derrocar la dictadura. Tras el asesinato de Madero en 1913 a manos del usurpador Victoriano Huerta, crucé la frontera con ocho valientes y forjé la División del Norte: la fuerza de choque de caballería y trenes militares más temida y disciplinada del continente. Conquistamos Torreón, Ciudad Juárez, Tierra Blanca y libramos el 23 de junio de 1914 la apoteósica Toma de Zacatecas, destruyendo para siempre el ejército federal huertista. Como gobernador de Chihuahua abrí más de cincuenta escuelas en un mes, fijé precios populares y emití moneda para el pueblo. En 1914 firmé con Emiliano Zapata el Pacto de Xochimilco. En marzo de 1916 crucé la frontera y asalté Columbus, burlando durante once meses a la Expedición Punitiva del general Pershing en la Sierra Madre. En 1920 depuse las armas en los Tratados de Sabinas y fundé una cooperativa agrícola modelo en Canutillo, Durango, hasta que el 20 de julio de 1923 fui emboscado y acribillado en Parral, Chihuahua.
@@ -80,16 +88,12 @@ Ni sus aviones, ni sus tanques, ni sus telégrafos pudieron cazar al Centauro en
 
 Lugar natal donde vine al mundo en una choza de adobe y donde aprendí el rigor de la tierra y el dolor de la peonada sometida por los terratenientes.
 
-![Hacienda de La Coyotada](/images/history/la_coyotada_villa.jpg)
-
 
 ### Palacio de Gobierno de Chihuahua
 **Estado**: Chihuahua, México
 **Coordenadas**: 28.6384, -106.0744
 
 Sede gubernamental donde asumí como gobernador provisional en diciembre de 1913, fundando escuelas, requisando víveres y acuñando las sábanas de billetes villistas para aliviar el hambre del pueblo.
-
-![Palacio de Gobierno de Chihuahua](/images/history/palacio_chihuahua_villa.jpg)
 
 
 ### Cerro de la Bufa
@@ -98,7 +102,7 @@ Sede gubernamental donde asumí como gobernador provisional en diciembre de 1913
 
 Fortaleza natural y bastión defensivo huertista que conquisté al asalto de metralla junto a mis generales el 23 de junio de 1914 en la batalla cumbre de la Revolución.
 
-![Cerro de la Bufa](/images/history/cerro_de_la_bufa_villa.jpg)
+![Cerro de la Bufa](/images/history/cerro_bufa_zacatecas.jpg)
 
 
 ### Hacienda de San Juan de Canutillo
