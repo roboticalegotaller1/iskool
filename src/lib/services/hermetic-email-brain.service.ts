@@ -235,7 +235,125 @@ export class LearnedTriageMemoryService {
 }
 
 /**
+ * DICCIONARIO OFICIAL DE GOBERNANZA EDUCATIVA Y NORMATIVA MEXICANA (SEP / AEFCM / LGDNNA / SAT)
+ * Diseñado específicamente para Directores Generales, Directores Técnicos y Representantes Legales de Colegios.
+ */
+export const MEXICAN_SEP_REGULATORY_DICTIONARY = {
+  // 1. Autoridades Educativas Federales, Estatales y Órganos de Supervisión Territorial
+  authorities: [
+    'secretaría de educación pública', 'secretaria de educacion publica', 'sep',
+    'aefcm', 'autoridad educativa federal', 'subsecretaría de educación', 'subsecretaria de educacion',
+    'supervisión escolar', 'supervision escolar', 'supervisión de zona', 'supervision de zona',
+    'zona escolar', 'inspector escolar', 'inspectora escolar', 'inspector de zona', 'inspectora de zona',
+    'jefatura de sector', 'jefe de sector', 'jefa de sector', 'atp', 'asesor técnico pedagógico', 'asesor tecnico pedagogico',
+    'dirección general de acreditación', 'dgair', 'coordinación sectorial', 'coordinacion sectorial',
+    'seduc', 'secretaría de educación del gobierno', 'secretaria de educacion del gobierno',
+    'secretaría de educación de veracruz', 'secretaría de educación de jalisco', 'secretaría de educación de nuevo león',
+    'ieepo', 'usebeq', 'segob', 'iea', 'educación básica', 'dirección general de educación básica',
+    'subdirección regional', 'subdireccion regional'
+  ],
+
+  // 2. Reconocimiento de Validez Oficial (RVOE), CCT e Inspecciones Técnico-Pedagógicas
+  rvoeAndCct: [
+    'cct', 'clave de centro de trabajo', 'centro de trabajo',
+    'rvoe', 'acuerdo de incorporación', 'acuerdo de incorporacion',
+    'incorporación a la sep', 'incorporacion a la sep', 'refrendo de rvoe',
+    'visita de inspección', 'visita de inspeccion', 'inspección ordinaria', 'inspeccion ordinaria',
+    'inspección extraordinaria', 'inspeccion extraordinaria', 'visita técnico pedagógica', 'visita tecnico pedagogica',
+    'auditoría de incorporación', 'requerimiento de incorporación', 'revocación de rvoe', 'revocacion de rvoe',
+    'apercibimiento oficial', 'emplazamiento sep', 'plazo perentorio', 'término perentorio', 'termino perentorio',
+    'acuerdo secretarial', 'acuerdo 10/09/23', 'acuerdo 14/08/22', 'acuerdo 96', 'acuerdo 97', 'acuerdo 98'
+  ],
+
+  // 3. Salvaguarda, Protocolos de Prevención de Violencia Escolar y Marco Legal (LGDNNA / SIPINNA / ASI)
+  childProtectionAndLegal: [
+    'lgdnna', 'ley general de los derechos de niñas', 'ley general de los derechos de ninas',
+    'sipinna', 'interés superior de la niñez', 'interes superior de la ninez', 'interés superior del menor',
+    'protocolo de prevención, detección y actuación', 'protocolo de actuación ante situaciones de violencia',
+    'abuso sexual infantil', 'asi', 'presunto abuso', 'tocamiento indebido',
+    'acoso escolar', 'bullying', 'violencia escolar', 'maltrato infantil', 'castigo corporal',
+    'agresión física entre alumnos', 'agresion fisica', 'riña grave', 'arma en el plantel', 'sustancia prohibida',
+    'dif', 'procuraduría de protección', 'procuraduria de proteccion', 'procuraduría de la defensa del menor',
+    'orden de restricción', 'orden de restriccion', 'patria potestad', 'guarda y custodia', 'sustracción de menor', 'sustraccion de menor',
+    'juzgado familiar', 'medida cautelar judicial', 'prohibición de entrega de menor',
+    'ministerio público', 'ministerio publico', 'fiscalía general', 'fiscalia general', 'citatorio ministerial', 'citatorio judicial',
+    'conapred', 'discriminación escolar', 'discriminacion escolar', 'derechos humanos', 'cndh', 'codhem', 'cedh',
+    'profeco', 'retención de documentos', 'retencion de documentos', 'retención de boleta', 'retencion de boleta', 'artículo 149'
+  ],
+
+  // 4. Emergencias Médicas, Protección Civil y Accidentes Escolares
+  civilProtectionAndMedical: [
+    'accidente grave', 'alumno herido', 'estudiante herido', 'fractura',
+    'traumatismo craneoencefálico', 'pérdida de conocimiento', 'perdida de conocimiento',
+    'ambulancia', 'paramédicos', 'paramedicos', 'cruz roja', 'urgencias médicas', 'urgencias medicas',
+    'seguro escolar contra accidentes', 'póliza de seguro escolar', 'poliza de seguro escolar', 'reporte de siniestro escolar',
+    'protección civil', 'proteccion civil', 'simulacro escolar', 'evacuación del plantel', 'evacuacion del plantel',
+    'fuga de gas', 'conato de incendio', 'sismo', 'daño estructural', 'dano estructural',
+    'contingencia ambiental', 'suspensión oficial de clases', 'suspension oficial de clases',
+    'alerta sanitaria escolar', 'brote epidemiológico escolar', 'brote epidemiologico escolar'
+  ],
+
+  // 5. Órganos Colegiados y Consejo Técnico Escolar (CTE)
+  cteAndGovernance: [
+    'cte', 'consejo técnico escolar', 'consejo tecnico escolar', 'cte extraordinario', 'sesión de cte',
+    'fase intensiva de cte', 'fase ordinaria de cte', 'taller intensivo de formación continua',
+    'programa analítico', 'programa analitico', 'codiseño curricular', 'codiseno curricular',
+    'programa escolar de mejora continua', 'pmc', 'pemc', 'comité de planeación escolar'
+  ],
+
+  // 6. Trámites de Control Escolar SEP (Delegado a Control Escolar con SLA)
+  controlEscolarSep: [
+    'siged', 'since', 'siice', 'said', 'siceeb', 'plataforma sep',
+    'boleta de evaluación oficial', 'boleta de evaluacion oficial', 'boleta sep', 'boleta oficial',
+    'certificado escolar', 'certificado electrónico', 'certificado electronico', 'folio digital qr',
+    'código qr de certificación', 'kardex', 'historial académico oficial', 'historial academico oficial',
+    'constancia de estudios', 'constancia con promedio', 'constancia con fotografía', 'constancia con fotografia',
+    'duplicado de certificado', 'baja escolar oficial', 'alta en siged', 'traslado de alumno',
+    'equivalencia de estudios', 'revalidación de estudios', 'revalidacion de estudios', 'dgair',
+    'regularización de materias', 'regularizacion de materias', 'exámenes extraordinarios', 'examenes extraordinarios',
+    'periodo de recuperación', 'periodo de recuperacion', 'captura de calificaciones sep', 'acta de evaluación'
+  ],
+
+  // 7. Becas SEP por Incorporación RVOE y Órganos de Participación Social
+  scholarshipsAndCommunity: [
+    'becas sep', 'beca por incorporación', 'beca por incorporacion', 'exención del 5%', 'exencion del 5%',
+    'convocatoria de becas rvoe', 'convocatoria de becas sep', 'comité de becas rvoe', 'solicitud de beca escolar',
+    'ceps', 'consejo escolar de participación social', 'consejo escolar de participacion social',
+    'apf', 'asociación de padres de familia', 'asociacion de padres de familia', 'mesa directiva apf',
+    'cpse', 'comité participativo de salud escolar', 'comite participativo de salud escolar'
+  ],
+
+  // 8. Facturación Fiscal y Complemento Educativo (SAT)
+  fiscalSat: [
+    'factura de colegiatura', 'cfdi con complemento educativo', 'complemento iedu', 'deducibilidad sat',
+    'timbrado sat', 'constancia de situación fiscal del tutor', 'constancia de situacion fiscal',
+    'colegiatura', 'recargo por mora', 'adeudo de colegiatura', 'prórroga de pago de colegiatura'
+  ],
+
+  // 9. Nueva Escuela Mexicana (NEM) y Vida Cívica Escolar (Informativo / Vida Escolar)
+  nemAndCivicLife: [
+    'nem', 'nueva escuela mexicana', 'fase 1', 'fase 2', 'fase 3', 'fase 4', 'fase 5', 'fase 6',
+    'campo formativo', 'campos formativos', 'lenguajes', 'saberes y pensamiento científico',
+    'ética, naturaleza y sociedades', 'de lo humano y lo comunitario',
+    'eje articulador', 'ejes articuladores', 'proyectos comunitarios', 'aprendizaje servicio',
+    'honores a la bandera', 'acto cívico', 'acto civico', 'escolta escolar', 'efemérides sep',
+    'efeméride oficial', 'desfile cívico', 'desfile civico', '16 de septiembre', '20 de noviembre',
+    '5 de febrero', '21 de marzo', '5 de mayo', 'festival del día de las madres', 'festival del día del niño',
+    'festival del día del maestro'
+  ],
+
+  // 10. Spam Escolar y Proveeduría Comercial No Solicitada
+  schoolCommercialSpam: [
+    'butacas escolares', 'mobiliario escolar', 'pizarrones interactivos en oferta',
+    'editorial escolar privada', 'venta de paquetes de libros comerciales', 'paquetes de graduación comercial',
+    'viajes de fin de curso comercial', 'agencia de marketing para colegios', 'rediseño web para escuelas',
+    'publicidad escolar no solicitada', 'proveedor de papelería al mayoreo'
+  ]
+};
+
+/**
  * MOTOR DE TRIAGE ZERO-TOKENS CON APRENDIZAJE HEURÍSTICO LOCAL (100% GRATUITO Y DETERMINISTA)
+ * Especializado en Normativa Escolar Mexicana (SEP / AEFCM / LGDNNA / SAT).
  * Clasifica cualquier correo en 4 cuadrantes canónicos sin consumir tokens de IA.
  */
 export function classifyZeroTokenEmail(
@@ -257,7 +375,7 @@ export function classifyZeroTokenEmail(
   const reincidence = reincidenceCount || 1;
 
   // 1. CUADRANTE 4: SPAM Y PROMOCIONES COMERCIALES (🟣 0 Tokens - EVALUACIÓN PRIORITARIA SUPREMA)
-  // Ningún correo comercial, membresía o publicidad debe llegar al CEO, sin importar quién lo reenvíe.
+  // Ningún correo comercial, membresía o publicidad debe llegar a la Dirección General escolar.
   const spamAndMarketingSenders = [
     'gamma.app', 'hello@gamma.app', 'cinepolis', 'cinépolis', 'primeopinion', 'prime opinion',
     'play.google', 'googleplay', 'chicv', 'chicv technology', 'mercadolibre', 'mercado libre',
@@ -313,6 +431,9 @@ export function classifyZeroTokenEmail(
     'asm careers', 'asm career connections', 'apply for open jobs', 'bolsa de trabajo externa',
     'postúlate a esta vacante', 'vacantes abiertas', 'job alerts',
 
+    // Spam comercial escolar no solicitado (mobiliario, editoriales privadas no oficiales, viajes comerciales)
+    ...MEXICAN_SEP_REGULATORY_DICTIONARY.schoolCommercialSpam,
+
     // Spam clásico y fraudes
     'viagra', 'casino', 'préstamo inmediato', 'sin buró', 'ganaste un premio',
     'herencia millonaria', 'click here to claim', 'tarifa promocional no solicitada'
@@ -345,25 +466,36 @@ export function classifyZeroTokenEmail(
   }
 
   // 2. CUADRANTE 1: ATENCIÓN INMEDIATA CEO (🔴 0 Tokens)
-  // Mandatorio: Supervisión SEP, CTE urgente, incidentes médicos graves, acoso/riesgo legal,
-  // y MUY ESPECIALMENTE inquietudes de padres de familia sobre bienestar del alumno y sobrecarga académica
-  const isRoutineDocTramite = fullText.includes('boleta') || fullText.includes('kardex') || fullText.includes('constancia de estudio') || fullText.includes('certificado escolar');
-  const isMandatorySepInspection = !isRoutineDocTramite && (
-    /\b(sep|supervision|supervisión|zona escolar|inspector sep|inspección sep|queja sep|auditoría sep|multa sep)\b/i.test(fullText) ||
-    fullText.includes('supervisi') ||
-    fullText.includes('supervisió') ||
-    fullText.includes('secretaría de educación') ||
-    sFromEmail.includes('sep.gob.mx')
+  // Gobernanza y Marco Normativo SEP / Salvaguarda de Menores (LGDNNA / SIPINNA) / Urgencias Médicas y Protección Civil
+  const isRoutineDocTramite = (
+    fullText.includes('boleta') || fullText.includes('kardex') || fullText.includes('constancia de estudio') || fullText.includes('certificado escolar')
+  ) && !fullText.includes('supervis') && !fullText.includes('inspecc') && !fullText.includes('rvoe') && !fullText.includes('cct') && !fullText.includes('aefcm') && !fullText.includes('retenci') && !fullText.includes('oficio');
+
+  const isScholarshipTramite = (
+    fullText.includes('beca') || fullText.includes('solicitud de beca')
+  ) && !fullText.includes('inspecc') && !fullText.includes('apercibimiento') && !fullText.includes('auditoría') && !fullText.includes('auditoria') && !fullText.includes('revocación') && !fullText.includes('revocacion') && !sFromEmail.includes('sep.gob.mx') && !sFromEmail.includes('aefcm.gob.mx');
+
+  // A. Supervisión Oficial SEP, AEFCM, Jefatura de Sector, CCT y RVOE
+  const isMandatorySepInspection = !isRoutineDocTramite && !isScholarshipTramite && (
+    MEXICAN_SEP_REGULATORY_DICTIONARY.authorities.some(auth => fullText.includes(auth)) ||
+    MEXICAN_SEP_REGULATORY_DICTIONARY.rvoeAndCct.some(term => fullText.includes(term)) ||
+    sFromEmail.includes('sep.gob.mx') ||
+    sFromEmail.includes('aefcm.gob.mx') ||
+    sFromEmail.includes('edomex.gob.mx') ||
+    sFromEmail.includes('.gob.mx') ||
+    /\b(sep|aefcm|supervision|supervisión|zona escolar|inspector sep|inspección sep|queja sep|auditoría sep|multa sep|rvoe|cct)\b/i.test(fullText)
   );
 
-  const isCteEmergency = /\bcte\b/i.test(fullText) || fullText.includes('consejo técnico escolar') || fullText.includes('consejo tecnico escolar');
-  const isInjuryEmergency = fullText.includes('accidente') || fullText.includes('herido') || fullText.includes('alumno herido') || fullText.includes('estudiante herido') || fullText.includes('lesión') || fullText.includes('lesion') || fullText.includes('accidente grave') || fullText.includes('fractura') || fullText.includes('ambulancia');
-  const isSevereConflictOrLegal = [
-    'acoso', 'bullying', 'demanda', 'abogado', 'urgente dirección', 'agresión física',
-    'negligencia grave', 'denuncia ante autoridades', 'amenaza', 'profeco', 'citatorio legal'
-  ].some(sig => fullText.includes(sig));
+  // B. Salvaguarda de Menores, Protocolos de Prevención de Violencia Escolar (LGDNNA / SIPINNA / ASI / MP / Restricción Judicial)
+  const isChildProtectionOrLegalEmergency = MEXICAN_SEP_REGULATORY_DICTIONARY.childProtectionAndLegal.some(sig => fullText.includes(sig));
 
-  // Inquietud de padres sobre bienestar del alumno, carga académica excesiva y salud socioemocional
+  // C. Emergencias Médicas, Seguro Escolar contra Accidentes y Protección Civil
+  const isCivilProtectionOrMedicalEmergency = MEXICAN_SEP_REGULATORY_DICTIONARY.civilProtectionAndMedical.some(sig => fullText.includes(sig));
+
+  // D. Consejo Técnico Escolar (CTE Ordinario / Extraordinario / Fase Intensiva)
+  const isCteEmergency = MEXICAN_SEP_REGULATORY_DICTIONARY.cteAndGovernance.some(sig => fullText.includes(sig)) || /\bcte\b/i.test(fullText);
+
+  // E. Inquietudes Críticas de Padres de Familia (Bienestar Socioemocional, Sobrecarga de Tareas, Salud o Riesgo)
   const isStudentWellbeingOrWorkloadConcern = [
     'bienestar general de nuestro hijo',
     'bienestar de nuestro hijo',
@@ -426,7 +558,7 @@ export function classifyZeroTokenEmail(
     'no hemos recibido una solución clara',
     'no hemos recibido una solucion clara',
     'equilibrar las responsabilidades escolares',
-    // Inquietudes críticas sobre intoxicación, malestar estomacal o alergias alimentarias en el colegio
+    // Inquietudes críticas sobre intoxicación o higiene en comedor escolar
     'malestar estomacal',
     'intoxicación',
     'intoxicacion',
@@ -452,40 +584,40 @@ export function classifyZeroTokenEmail(
     (fullText.includes('malestar') || fullText.includes('estómac') || fullText.includes('estomac') || fullText.includes('intoxicaci') || fullText.includes('alergia') || fullText.includes('enfermedad') || fullText.includes('descompuest') || fullText.includes('descomposici') || fullText.includes('bacteri') || fullText.includes('higiene') || fullText.includes('queja grave') || fullText.includes('dañino') || fullText.includes('dañó'))
   );
 
-  const isCeoCritical = isMandatorySepInspection || isCteEmergency || isInjuryEmergency || isSevereConflictOrLegal || isStudentWellbeingOrWorkloadConcern || reincidence >= 3;
+  const isCeoCritical = isMandatorySepInspection || isChildProtectionOrLegalEmergency || isCivilProtectionOrMedicalEmergency || isCteEmergency || isStudentWellbeingOrWorkloadConcern || reincidence >= 3;
 
   if (isCeoCritical) {
     let cat = 'Atención Inmediata CEO';
-    let why = 'Asunto con implicación de gobernanza o riesgo normativo que requiere criterio ético y resolución directa de Dirección.';
+    let why = 'Asunto con implicación de gobernanza o riesgo normativo que requiere criterio ético y resolución directa de Dirección General.';
     let action = 'Atención directa inmediata de Dirección General / CEO.';
 
-    if (isStudentWellbeingOrWorkloadConcern) {
+    if (isChildProtectionOrLegalEmergency) {
+      cat = 'Salvaguarda y Protección de Menores / Protocolo SEP & LGDNNA';
+      why = 'Activación prioritaria de Protocolo Oficial de Prevención, Detección y Actuación (LGDNNA / SIPINNA / Maltrato / Acoso Grave / Orden Judicial de Custodia / Riesgo Legal). Asunto legal supremo de salvaguarda que compete exclusivamente a Dirección General.';
+      action = 'Activar de inmediato el Protocolo Oficial de Salvaguarda de la SEP, salvaguardar la integridad del menor, levantar acta circunstanciada de hechos y notificar a la autoridad competente.';
+    } else if (isCivilProtectionOrMedicalEmergency) {
+      cat = 'Accidente Escolar & Protección Civil / Protocolo de Urgencia';
+      why = 'Emergencia médica o contingencia de Protección Civil con riesgo para la comunidad escolar (alumno herido / fractura / ambulancia / póliza de seguro escolar / contingencia estructural). Requiere mando ejecutivo directo de Dirección General.';
+      action = 'Activar de inmediato el protocolo de urgencias médicas escolares y la póliza de Seguro Escolar contra accidentes, dar aviso prioritario a tutores legales y resguardar el plantel.';
+    } else if (isCteEmergency) {
+      cat = 'Gobernanza Institucional / Consejo Técnico Escolar (CTE)';
+      why = 'Convocatoria oficial a sesión de Consejo Técnico Escolar (CTE) o validación de Programa Analítico / PMC. Por mandato institucional requiere atención y coordinación directa del titular de Dirección.';
+      action = 'Confirmar agenda de Dirección General, coordinar concentrados de evaluación pedagógica y girar instrucción ejecutiva docente.';
+    } else if (isMandatorySepInspection) {
+      cat = 'Supervisión Oficial SEP / Requerimiento Regulatorio';
+      why = 'Comunicación o requerimiento oficial vinculado a la Autoridad Educativa (SEP / AEFCM / Supervisión de Zona / Inspección RVOE / Estatus de CCT). Requiere intervención y desahogo directo e indelegable de Dirección General.';
+      action = 'Atención directa inmediata de Dirección General: Revisar expediente, instruir integración de evidencias y desahogar requerimiento dentro del término oficial estipulado.';
+    } else if (isStudentWellbeingOrWorkloadConcern) {
       cat = 'Atención Inmediata CEO / Bienestar del Estudiante y Carga Académica';
       why = 'Inquietud formal de padre de familia sobre bienestar socioemocional, descanso y sobrecarga de tareas escolares del estudiante. Asunto de gobernanza escolar y atención directiva indelegable.';
       action = 'Atención directa inmediata de Dirección General / CEO: Revisar carga de tareas con docentes y responder formalmente a la familia.';
-    } else if (isCteEmergency) {
-      cat = 'Gobernanza Institucional / Consejo Técnico Escolar (CTE)';
-      why = 'Convocatoria oficial urgente a sesión de Consejo Técnico Escolar (CTE). Por mandato institucional requiere atención y confirmación directa del CEO.';
-      action = 'Confirmar agenda de Dirección General, coordinar concentrados de evaluación y girar instrucción ejecutiva.';
-    } else if (isMandatorySepInspection) {
-      cat = 'Supervisión Oficial SEP / Asunto Regulatorio';
-      why = 'Comunicación o requerimiento oficial vinculado a Supervisión Escolar / SEP. Requiere intervención y resolución directa e indelegable de Dirección General / CEO.';
-      action = 'Atención directa inmediata de Dirección General / CEO y desahogo de requerimiento ante la autoridad educativa.';
-    } else if (isInjuryEmergency) {
-      cat = 'Accidente Escolar / Salvaguarda y Seguridad de Alumnos';
-      why = 'Incidencia crítica de salvaguarda y protección física escolar: Reporte de alumno herido en instalaciones. Requiere activación inmediata del protocolo de urgencias médicas escolares.';
-      action = 'Activar protocolo de urgencias médicas escolares de inmediato, resguardar al alumno y contactar a tutores legales para notificación oficial.';
-    } else if (isSevereConflictOrLegal) {
-      cat = 'Convivencia / Caso Crítico Nivel 3';
-      why = 'Asunto con implicación de gobernanza o riesgo normativo que requiere criterio ético y resolución directa de Dirección.';
-      action = 'Convocar de inmediato a mesa de mediación presencial y activar el protocolo correspondiente.';
     } else if (reincidence >= 3) {
       cat = 'Reincidencia Directiva';
       why = `Alerta de reincidencia elevada: La familia o remitente acumula ${reincidence} comunicaciones sobre este caso sin resolución conforme.`;
       action = 'Atención directa y prioritaria del CEO para cierre definitivo del caso.';
     }
 
-    const urgency = (reincidence >= 3 && !isMandatorySepInspection && !isCteEmergency && !isInjuryEmergency && !isSevereConflictOrLegal) ? 'ALTA' : 'CRITICA';
+    const urgency = (reincidence >= 3 && !isMandatorySepInspection && !isChildProtectionOrLegalEmergency && !isCivilProtectionOrMedicalEmergency && !isCteEmergency) ? 'ALTA' : 'CRITICA';
 
     return {
       quadrant: 'ATENCION_CEO',
@@ -497,8 +629,8 @@ export function classifyZeroTokenEmail(
         color: 'bg-red-50 text-red-700 border-red-200'
       },
       gmailCategory: 'principal',
-      assigned_department: 'Dirección General / CEO',
-      assigned_role: 'Dirección General / CEO',
+      assigned_department: 'Dirección General / Supervisión Escolar',
+      assigned_role: 'Dirección General / Representante Legal',
       sla_hours: 12,
       why_shown_to_director: why,
       recommended_action: action
@@ -553,19 +685,63 @@ export function classifyZeroTokenEmail(
     };
   }
 
+  // 5. CUADRANTE 2: DELEGADO OPERATIVO (🟡 0 Tokens)
+  // Procedimientos departamentales con SLA: Control Escolar SEP, Becas RVOE, Facturación Fiscal SAT, etc.
 
-  // 4. CUADRANTE 2: DELEGADO OPERATIVO (🟡 0 Tokens)
-  // Trámites departamentales de cobranza, control escolar, rutas de transporte, enfermería de rutina
-  const isFinance = fullText.includes('factura') || fullText.includes('cfdi') || fullText.includes('colegiatura') || fullText.includes('recargo') || fullText.includes('adeudo') || fullText.includes('descuento de hermanos') || fullText.includes('pago de colegiatura');
+  // A. Becas SEP por Incorporación RVOE y Participación Social (CEPS / APF)
+  const isBecasSepOrCommunity = MEXICAN_SEP_REGULATORY_DICTIONARY.scholarshipsAndCommunity.some(sig => fullText.includes(sig));
+  if (isBecasSepOrCommunity) {
+    return {
+      quadrant: 'DELEGADO_CON_SLA',
+      urgency: 'MEDIA',
+      category: 'Becas SEP e Incorporación RVOE / Participación Social',
+      badge: {
+        quadrant: 'DELEGADO_CON_SLA',
+        label: '🟡 DELEGADO OPERATIVO',
+        color: 'bg-amber-50 text-amber-700 border-amber-200'
+      },
+      gmailCategory: 'actualizaciones',
+      assigned_department: 'Comité de Becas e Incorporación RVOE',
+      assigned_role: 'Comité de Becas SEP',
+      sla_hours: 48,
+      why_shown_to_director: 'Trámite de convocatoria o solicitud de Beca por Incorporación SEP (exención del 5% de matrícula RVOE) o gestión ordinaria de CEPS/APF turnada a coordinación.',
+      recommended_action: 'Turnar al Comité de Becas para evaluación socioeconómica y dictamen conforme al calendario oficial de becas SEP.'
+    };
+  }
+
+  // B. Control Escolar Oficial SEP (SIGED / SINCE / Boletas QR / Certificados Electrónicos / Constancias con CCT)
+  const isControlEscolar = MEXICAN_SEP_REGULATORY_DICTIONARY.controlEscolarSep.some(sig => fullText.includes(sig)) || isRoutineDocTramite;
+  if (isControlEscolar) {
+    return {
+      quadrant: 'DELEGADO_CON_SLA',
+      urgency: 'MEDIA',
+      category: 'Control Escolar Oficial SEP',
+      badge: {
+        quadrant: 'DELEGADO_CON_SLA',
+        label: '🟡 DELEGADO OPERATIVO',
+        color: 'bg-amber-50 text-amber-700 border-amber-200'
+      },
+      gmailCategory: 'actualizaciones',
+      assigned_department: 'Departamento de Control Escolar y Secretaría Oficial',
+      assigned_role: 'Control Escolar Oficial (SIGED / SEP)',
+      sla_hours: 48,
+      why_shown_to_director: 'Solicitud documental o trámite de certificación oficial (SIGED / SINCE / Boleta SEP / Certificado QR / Equivalencia DGAIR) derivado a Control Escolar con SLA de 48h.',
+      recommended_action: 'Canalizar a Control Escolar para cotejo en plataforma oficial SEP, validación de CCT y emisión del documento con sello y firma autorizada.'
+    };
+  }
+
+  // C. Tesorería, Facturación Fiscal SAT (CFDI con Complemento Educativo IEDU)
+  const isFinance = MEXICAN_SEP_REGULATORY_DICTIONARY.fiscalSat.some(sig => fullText.includes(sig)) ||
+    fullText.includes('factura') || fullText.includes('cfdi') || fullText.includes('colegiatura') || fullText.includes('recargo') || fullText.includes('adeudo') || fullText.includes('descuento de hermanos') || fullText.includes('pago de colegiatura');
   if (isFinance) {
     const delCobranza = CeoEmailSettingsService.getDelegate(tId, 'cobranza');
-    const role = delCobranza?.delegateName || 'Tesorería y Facturación';
+    const role = delCobranza?.delegateName || 'Tesorería y Facturación Fiscal (SAT)';
     const emailDel = delCobranza?.delegateEmail || `finanzas@${schoolDomain}`;
     const sla = delCobranza?.slaHours ?? 24;
     return {
       quadrant: 'DELEGADO_CON_SLA',
       urgency: 'MEDIA',
-      category: 'Cobranza y Facturación',
+      category: 'Tesorería & Facturación CFDI (SAT)',
       badge: {
         quadrant: 'DELEGADO_CON_SLA',
         label: '🟡 DELEGADO OPERATIVO',
@@ -576,52 +752,13 @@ export function classifyZeroTokenEmail(
       assigned_role: role,
       delegate_email: emailDel,
       sla_hours: sla,
-      why_shown_to_director: `Trámite financiero o aclaración derivado al área de Cobranza con SLA de ${sla}h.`,
+      why_shown_to_director: `Trámite financiero, prórroga o facturación CFDI con complemento educativo IEDU derivado a Cobranza con SLA de ${sla}h.`,
       recommended_action: `Canalizar a ${role} (${emailDel}) para emisión de comprobante y timbrado SAT.`
     };
   }
 
-  const isControlEscolar = fullText.includes('boleta') || fullText.includes('kardex') || fullText.includes('constancia de estudio') || fullText.includes('certificado escolar') || fullText.includes('revalidación') || fullText.includes('inscripción') || fullText.includes('reinscripción');
-  if (isControlEscolar) {
-    return {
-      quadrant: 'DELEGADO_CON_SLA',
-      urgency: 'MEDIA',
-      category: 'Control Escolar y Trámites',
-      badge: {
-        quadrant: 'DELEGADO_CON_SLA',
-        label: '🟡 DELEGADO OPERATIVO',
-        color: 'bg-amber-50 text-amber-700 border-amber-200'
-      },
-      gmailCategory: 'actualizaciones',
-      assigned_department: 'Control Escolar y Secretaría',
-      assigned_role: 'Control Escolar',
-      sla_hours: 48,
-      why_shown_to_director: 'Solicitud documental que compete a los procedimientos de Control Escolar.',
-      recommended_action: 'Canalizar a Control Escolar para cotejo de expediente y emisión oficial.'
-    };
-  }
-
-  const isTransport = fullText.includes('transporte') || fullText.includes('ruta 4') || fullText.includes('ruta escolar') || fullText.includes('camión') || fullText.includes('chofer') || fullText.includes('parada del autobús');
-  if (isTransport) {
-    return {
-      quadrant: 'DELEGADO_CON_SLA',
-      urgency: 'MEDIA',
-      category: 'Logística y Transporte',
-      badge: {
-        quadrant: 'DELEGADO_CON_SLA',
-        label: '🟡 DELEGADO OPERATIVO',
-        color: 'bg-amber-50 text-amber-700 border-amber-200'
-      },
-      gmailCategory: 'actualizaciones',
-      assigned_department: 'Coordinación de Logística y Prefectura',
-      assigned_role: 'Transporte y Prefectura',
-      sla_hours: 24,
-      why_shown_to_director: 'Incidencia operativa de logística o servicio de transporte canalizada a Coordinación de Logística y Prefectura.',
-      recommended_action: 'Auditar tiempos de recorrido y canalizar con Coordinación de Logística para resolución oficial en 24h.'
-    };
-  }
-
-  const isRoutineHealth = fullText.includes('enfermería') || fullText.includes('enfermeria') || fullText.includes('receta médica') || fullText.includes('justificante médico') || fullText.includes('alergia escolar') || fullText.includes('medicamento');
+  // D. Servicio Médico Escolar (Justificantes médicos IMSS/ISSSTE, prescripciones en horario escolar)
+  const isRoutineHealth = fullText.includes('enfermería') || fullText.includes('enfermeria') || fullText.includes('receta médica') || fullText.includes('receta medica') || fullText.includes('justificante médico') || fullText.includes('justificante medico') || fullText.includes('alergia escolar') || fullText.includes('medicamento') || fullText.includes('incapacidad imss') || fullText.includes('incapacidad issste');
   if (isRoutineHealth) {
     return {
       quadrant: 'DELEGADO_CON_SLA',
@@ -636,11 +773,33 @@ export function classifyZeroTokenEmail(
       assigned_department: 'Servicio Médico Escolar',
       assigned_role: 'Médico Escolar',
       sla_hours: 24,
-      why_shown_to_director: 'Notificación clínica o seguimiento de salud escolar asignado a enfermería.',
-      recommended_action: 'Registro en expediente clínico escolar y seguimiento de prescripción médica.'
+      why_shown_to_director: 'Notificación clínica, justificante médico o administración de prescripción médica asignada a enfermería.',
+      recommended_action: 'Registro en expediente clínico escolar y seguimiento de prescripción médica en plantel.'
     };
   }
 
+  // E. Rutas de Transporte Escolar y Prefectura
+  const isTransport = fullText.includes('transporte') || fullText.includes('ruta 4') || fullText.includes('ruta escolar') || fullText.includes('camión') || fullText.includes('camion') || fullText.includes('chofer') || fullText.includes('parada del autobús') || fullText.includes('parada del autobus');
+  if (isTransport) {
+    return {
+      quadrant: 'DELEGADO_CON_SLA',
+      urgency: 'MEDIA',
+      category: 'Logística y Transporte Escolar',
+      badge: {
+        quadrant: 'DELEGADO_CON_SLA',
+        label: '🟡 DELEGADO OPERATIVO',
+        color: 'bg-amber-50 text-amber-700 border-amber-200'
+      },
+      gmailCategory: 'actualizaciones',
+      assigned_department: 'Coordinación de Logística y Prefectura',
+      assigned_role: 'Transporte y Prefectura',
+      sla_hours: 24,
+      why_shown_to_director: 'Incidencia operativa de logística o servicio de transporte canalizada a Coordinación de Logística y Prefectura.',
+      recommended_action: 'Auditar tiempos de recorrido y canalizar con Coordinación de Logística para resolución oficial en 24h.'
+    };
+  }
+
+  // F. Recursos Humanos, Nómina Docente y Prestaciones Laborales
   const isHRorPayroll = 
     fullText.includes('prima vacacional') || 
     fullText.includes('prima') || 
@@ -665,7 +824,7 @@ export function classifyZeroTokenEmail(
     return {
       quadrant: 'DELEGADO_CON_SLA',
       urgency: 'MEDIA',
-      category: 'Recursos Humanos & Nómina',
+      category: 'Recursos Humanos & Nómina Docente',
       badge: {
         quadrant: 'DELEGADO_CON_SLA',
         label: '🟡 DELEGADO OPERATIVO',
@@ -676,12 +835,12 @@ export function classifyZeroTokenEmail(
       assigned_role: 'Coordinación de Personal y Nómina',
       delegate_email: 'recursos.humanos@ibime.edu.mx',
       sla_hours: 24,
-      why_shown_to_director: 'Trámite laboral o consulta de personal y prestaciones derivado a Recursos Humanos con SLA de 24h.',
+      why_shown_to_director: 'Trámite laboral o consulta de personal docente y prestaciones derivado a Recursos Humanos con SLA de 24h.',
       recommended_action: 'Canalizar a Recursos Humanos y Nómina para cálculo de prestaciones y respuesta formal.'
     };
   }
 
-  // Comedor escolar, nutrición, menús infantiles y alimentos ordinarios (sin intoxicación ni queja grave de salud)
+  // G. Comedor Escolar y Nutrición Infantil
   const isCafeteriaAndMenu = 
     fullText.includes('menú infantil') ||
     fullText.includes('menu infantil') ||
@@ -727,7 +886,7 @@ export function classifyZeroTokenEmail(
     };
   }
 
-  // Actividades extracurriculares, talleres, deportes y academias vespertinas
+  // H. Actividades Extracurriculares, Talleres y Deportes Vespertinos
   const isExtracurricular =
     fullText.includes('taller') ||
     fullText.includes('talleres') ||
@@ -768,7 +927,7 @@ export function classifyZeroTokenEmail(
     };
   }
 
-  // Uniformes, credenciales, libros, útiles y materiales escolares
+  // I. Uniformes Oficiales, Credenciales y Paquetes de Útiles
   const isUniformsAndSupplies =
     fullText.includes('uniforme') ||
     fullText.includes('uniformes') ||
@@ -810,7 +969,7 @@ export function classifyZeroTokenEmail(
     };
   }
 
-  // Dudas ordinarias de clase, avisos de inasistencia justificada o citas con docentes
+  // J. Coordinación Académica de Nivel (Citas ordinarias con docentes, temarios de clase)
   const isAcademicCoordination =
     fullText.includes('aviso de inasistencia') ||
     fullText.includes('justificante de inasistencia') ||
@@ -842,7 +1001,7 @@ export function classifyZeroTokenEmail(
     };
   }
 
-  // Soporte técnico, contraseñas y accesos a plataformas escolares
+  // K. Soporte Técnico y Plataformas Educativas
   const isITSupport =
     fullText.includes('contraseña') ||
     fullText.includes('contrasena') ||
@@ -873,17 +1032,30 @@ export function classifyZeroTokenEmail(
     };
   }
 
-  // 5. CUADRANTE 3: INFORMATIVO (🔵 0 Tokens)
-  // Webinars, confirmaciones de asistencia/registro, trámites de servicio social concluidos, avisos de términos técnicos
+  // 6. CUADRANTE 3: INFORMATIVO (🔵 0 Tokens)
+  // Vida Cívica Escolar, Nueva Escuela Mexicana (NEM), Efemérides SEP, Festivales, Webinars y Liberación de Servicio Social
+  const isNemOrCivicLife = MEXICAN_SEP_REGULATORY_DICTIONARY.nemAndCivicLife.some(sig => fullText.includes(sig));
   const isWebinarOrConference = fullText.includes('webinar') || fullText.includes('webinars') || fullText.includes('conferencia') || fullText.includes('festivalciberlatam') || fullText.includes('jmbe live') || fullText.includes('zoom');
   const isConfirmationOrReceipt = fullText.includes('confirmation') || fullText.includes('confirmación') || fullText.includes('thank you for registering') || fullText.includes('gracias por registrarte') || fullText.includes('registro confirmado');
   const isSocialServiceNotice = fullText.includes('tramites.ss') || fullText.includes('trámites ss') || fullText.includes('servicio social') || fullText.includes('constancia de liberacion') || fullText.includes('constancia de liberación') || fullText.includes('acatlan.unam.mx');
   const isServiceTermsUpdate = fullText.includes('condiciones del servicio') || fullText.includes('dropbox') || fullText.includes('términos del servicio') || fullText.includes('aviso de privacidad');
 
   let informativeCat = 'Comunicación Institucional / Informativo';
-  if (isWebinarOrConference || isConfirmationOrReceipt) informativeCat = 'Webinars & Confirmaciones de Registro';
-  else if (isSocialServiceNotice) informativeCat = 'Servicio Social & Constancias Informativas';
-  else if (isServiceTermsUpdate) informativeCat = 'Actualización de Términos y Plataformas';
+  let informativeWhy = 'Comunicado general, felicitación o notificación que no requiere gestión ejecutiva de Dirección.';
+
+  if (isNemOrCivicLife) {
+    informativeCat = 'Nueva Escuela Mexicana (NEM) & Vida Cívica Escolar';
+    informativeWhy = 'Aviso de acto cívico, conmemoración de efeméride oficial SEP o avance de proyectos formativos de la Nueva Escuela Mexicana.';
+  } else if (isWebinarOrConference || isConfirmationOrReceipt) {
+    informativeCat = 'Webinars & Confirmaciones de Registro';
+    informativeWhy = 'Confirmación de registro o invitación a conferencia/webinar de formación complementaria.';
+  } else if (isSocialServiceNotice) {
+    informativeCat = 'Servicio Social & Constancias Informativas';
+    informativeWhy = 'Notificación formal de trámite concluido o liberación de servicio social universitario.';
+  } else if (isServiceTermsUpdate) {
+    informativeCat = 'Actualización de Términos y Plataformas';
+    informativeWhy = 'Aviso informativo sobre actualización de políticas de privacidad o términos de herramientas externas.';
+  }
 
   return {
     quadrant: 'INFORMATIVO',
@@ -895,8 +1067,8 @@ export function classifyZeroTokenEmail(
       color: 'bg-blue-50 text-blue-700 border-blue-200'
     },
     gmailCategory: 'actualizaciones',
-    why_shown_to_director: 'Comunicado general, felicitación o notificación que no requiere gestión ejecutiva.',
-    recommended_action: 'Archivar con acuse de recibo estandarizado.'
+    why_shown_to_director: informativeWhy,
+    recommended_action: 'Archivar en repositorio documental escolar con acuse de recibo estandarizado.'
   };
 }
 

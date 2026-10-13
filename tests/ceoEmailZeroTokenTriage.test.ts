@@ -227,4 +227,196 @@ describe('🎯 TRIAGE ZERO-TOKENS (4 CUADRANTES CANÓNICOS & APRENDIZAJE ADAPTAT
       expect(result.badge.label).toBe('🔴 ATENCIÓN INMEDIATA CEO');
     });
   });
+
+  describe('5. Triage Profundo Especializado en Normativa Escolar Mexicana (SEP, AEFCM, LGDNNA, RVOE, SAT)', () => {
+    it('debe clasificar oficios con emplazamiento de Supervisión de Zona / AEFCM sobre RVOE y CCT como ATENCION_CEO', () => {
+      const result = classifyZeroTokenEmail(
+        'OFICIO URGENTE: Apercibimiento y revisión de RVOE en CCT 15PJN0421Z',
+        'Se notifica a la Dirección Técnica que la AEFCM y la Supervisión de Zona han programado visita de inspección extraordinaria de RVOE.',
+        'supervision.zona@aefcm.gob.mx',
+        'Supervisión Escolar AEFCM',
+        undefined,
+        tenantId
+      );
+
+      expect(result.quadrant).toBe('ATENCION_CEO');
+      expect(result.badge.label).toBe('🔴 ATENCIÓN INMEDIATA CEO');
+      expect(result.urgency).toBe('CRITICA');
+      expect(result.category).toContain('Supervisión Oficial SEP');
+      expect(result.assigned_department).toBe('Dirección General / Supervisión Escolar');
+    });
+
+    it('debe clasificar reportes de salvaguarda de menores bajo LGDNNA / SIPINNA / presunto maltrato como ATENCION_CEO', () => {
+      const result = classifyZeroTokenEmail(
+        'Activación urgente: Protocolo de prevención y actuación LGDNNA / SIPINNA',
+        'Notificación de presunto maltrato infantil y vulneración al interés superior de la niñez para intervención inmediata.',
+        'trabajo.social@ibime.edu.mx',
+        'Trabajo Social',
+        undefined,
+        tenantId
+      );
+
+      expect(result.quadrant).toBe('ATENCION_CEO');
+      expect(result.badge.label).toBe('🔴 ATENCIÓN INMEDIATA CEO');
+      expect(result.urgency).toBe('CRITICA');
+      expect(result.category).toContain('Salvaguarda y Protección de Menores');
+      expect(result.recommended_action).toContain('Protocolo Oficial de Salvaguarda de la SEP');
+    });
+
+    it('debe clasificar órdenes judiciales de juzgado familiar sobre restricción de custodia como ATENCION_CEO', () => {
+      const result = classifyZeroTokenEmail(
+        'Notificación Juzgado Familiar: Medida cautelar de custodia y orden de restricción',
+        'Se adjunta resolución del juzgado familiar sobre guarda y custodia con prohibición de entrega de menor a progenitor no custodio.',
+        'notificaciones@tribunal.gob.mx',
+        'Juzgado Familiar',
+        undefined,
+        tenantId
+      );
+
+      expect(result.quadrant).toBe('ATENCION_CEO');
+      expect(result.badge.label).toBe('🔴 ATENCIÓN INMEDIATA CEO');
+      expect(result.urgency).toBe('CRITICA');
+    });
+
+    it('debe clasificar alertas de reclamación PROFECO por presunta retención de documentos (Art. 149 LGE) como ATENCION_CEO', () => {
+      const result = classifyZeroTokenEmail(
+        'Notificación de queja PROFECO por retención de documentos oficiales',
+        'Reclamación formal de tutor por presunta retención de boleta oficial contraviniendo el artículo 149 de la Ley General de Educación.',
+        'quejas@profeco.gob.mx',
+        'PROFECO',
+        undefined,
+        tenantId
+      );
+
+      expect(result.quadrant).toBe('ATENCION_CEO');
+      expect(result.badge.label).toBe('🔴 ATENCIÓN INMEDIATA CEO');
+      expect(result.urgency).toBe('CRITICA');
+    });
+
+    it('debe clasificar accidentes graves con ambulancia y póliza de seguro escolar como ATENCION_CEO', () => {
+      const result = classifyZeroTokenEmail(
+        'Urgencia Médica: Alumno herido con fractura en patio central',
+        'Se solicitó ambulancia de la Cruz Roja y se activó la póliza de seguro escolar contra accidentes para traslado hospitalario.',
+        'enfermeria@ibime.edu.mx',
+        'Servicio Médico',
+        undefined,
+        tenantId
+      );
+
+      expect(result.quadrant).toBe('ATENCION_CEO');
+      expect(result.badge.label).toBe('🔴 ATENCIÓN INMEDIATA CEO');
+      expect(result.urgency).toBe('CRITICA');
+      expect(result.category).toContain('Accidente Escolar');
+    });
+
+    it('debe clasificar convocatorias al Consejo Técnico Escolar (CTE) y Programa Analítico como ATENCION_CEO', () => {
+      const result = classifyZeroTokenEmail(
+        'Convocatoria: Sesión ordinaria de Consejo Técnico Escolar (CTE) y codiseño curricular',
+        'Agenda para la sesión de CTE de fin de mes, revisión del Programa Analítico y acuerdos de la Nueva Escuela Mexicana.',
+        'supervision.pedagogica@edomex.gob.mx',
+        'Supervisión Escolar',
+        undefined,
+        tenantId
+      );
+
+      expect(result.quadrant).toBe('ATENCION_CEO');
+      expect(result.badge.label).toBe('🔴 ATENCIÓN INMEDIATA CEO');
+      expect(result.category).toContain('Consejo Técnico Escolar');
+    });
+
+    it('debe clasificar trámites de certificación oficial SEP (SIGED, SINCE, certificados QR, kardex) como DELEGADO_CON_SLA (Control Escolar)', () => {
+      const result = classifyZeroTokenEmail(
+        'Solicitud de Certificado Oficial Electrónico con Folio Digital QR',
+        'Solicito la emisión de duplicado de certificado escolar y validación de historial académico en plataforma SIGED / SINCE.',
+        'tutor.familia@gmail.com',
+        'Padre de Familia',
+        undefined,
+        tenantId
+      );
+
+      expect(result.quadrant).toBe('DELEGADO_CON_SLA');
+      expect(result.badge.label).toBe('🟡 DELEGADO OPERATIVO');
+      expect(result.assigned_department).toBe('Departamento de Control Escolar y Secretaría Oficial');
+      expect(result.assigned_role).toBe('Control Escolar Oficial (SIGED / SEP)');
+      expect(result.sla_hours).toBe(48);
+    });
+
+    it('debe clasificar trámites de Becas SEP por incorporación RVOE (5%) como DELEGADO_CON_SLA (Comité de Becas)', () => {
+      const result = classifyZeroTokenEmail(
+        'Convocatoria y Solicitud de Beca SEP por Incorporación RVOE',
+        'Presento solicitud de beca por incorporación a la SEP correspondiente al porcentaje de exención del 5% establecido por la normativa.',
+        'solicitud.beca@gmail.com',
+        'Tutor Solicitante',
+        undefined,
+        tenantId
+      );
+
+      expect(result.quadrant).toBe('DELEGADO_CON_SLA');
+      expect(result.badge.label).toBe('🟡 DELEGADO OPERATIVO');
+      expect(result.assigned_department).toBe('Comité de Becas e Incorporación RVOE');
+      expect(result.assigned_role).toBe('Comité de Becas SEP');
+      expect(result.sla_hours).toBe(48);
+    });
+
+    it('debe clasificar solicitudes de facturas CFDI con complemento educativo IEDU (SAT) como DELEGADO_CON_SLA (Tesorería)', () => {
+      const result = classifyZeroTokenEmail(
+        'Solicitud de CFDI con complemento educativo IEDU para el SAT',
+        'Requiero factura de colegiatura con el complemento educativo IEDU para deducción personal en el SAT.',
+        'padre.factura@gmail.com',
+        'Contador de Familia',
+        undefined,
+        tenantId
+      );
+
+      expect(result.quadrant).toBe('DELEGADO_CON_SLA');
+      expect(result.badge.label).toBe('🟡 DELEGADO OPERATIVO');
+      expect(result.category).toContain('Facturación CFDI');
+    });
+
+    it('debe clasificar justificantes médicos con receta o incapacidad IMSS como DELEGADO_CON_SLA (Servicio Médico)', () => {
+      const result = classifyZeroTokenEmail(
+        'Justificante médico e incapacidad IMSS de alumno',
+        'Adjunto receta médica y justificante médico por reposo prescrito para el alumno.',
+        'familia.enfermedad@gmail.com',
+        'Madre de Familia',
+        undefined,
+        tenantId
+      );
+
+      expect(result.quadrant).toBe('DELEGADO_CON_SLA');
+      expect(result.badge.label).toBe('🟡 DELEGADO OPERATIVO');
+      expect(result.assigned_department).toBe('Servicio Médico Escolar');
+      expect(result.assigned_role).toBe('Médico Escolar');
+    });
+
+    it('debe clasificar circulares cívicas y efemérides SEP (honores a la bandera, 20 de noviembre, NEM) como INFORMATIVO', () => {
+      const result = classifyZeroTokenEmail(
+        'Circular de Acto Cívico: Honores a la bandera y conmemoración del 20 de noviembre',
+        'Aviso de desfile cívico y participación de la escolta escolar en la conmemoración de la Revolución Mexicana dentro de los proyectos de la Nueva Escuela Mexicana (NEM).',
+        'comunicacion@ibime.edu.mx',
+        'Comunicación Institucional',
+        undefined,
+        tenantId
+      );
+
+      expect(result.quadrant).toBe('INFORMATIVO');
+      expect(result.badge.label).toBe('🔵 INFORMATIVO');
+      expect(result.category).toBe('Nueva Escuela Mexicana (NEM) & Vida Cívica Escolar');
+    });
+
+    it('debe clasificar ofertas de proveedores de mobiliario y butacas escolares como SPAM_DESCARTADO', () => {
+      const result = classifyZeroTokenEmail(
+        'Catálogo de butacas escolares y mobiliario escolar con descuento',
+        'Le enviamos cotización especial en butacas escolares, pizarrones interactivos en oferta y lockers para su colegio.',
+        'ventas@mobiliario-escolar-mexico.com',
+        'Mobiliario Escolar',
+        undefined,
+        tenantId
+      );
+
+      expect(result.quadrant).toBe('SPAM_DESCARTADO');
+      expect(result.badge.label).toBe('🟣 SPAM / PROMOCIÓN');
+      expect(result.gmailCategory).toBe('promociones');
+    });
+  });
 });
