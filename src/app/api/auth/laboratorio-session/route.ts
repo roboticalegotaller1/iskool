@@ -316,7 +316,13 @@ export async function POST(req: NextRequest) {
         }
       }
     }
-    // FLUJO 3: Demostración Institucional Autorizada
+    // FLUJO 3: Autenticación con Google (Callback o Sandbox Dinámico)
+    else if (auth_method === 'google' && (user?.email || email)) {
+      targetEmail = user?.email || email!;
+      targetUserId = user?.id || `usr-lab-${globalThis.crypto.randomUUID().slice(0, 8)}`;
+      resolvedProvider = 'google';
+    }
+    // FLUJO 4: Demostración Institucional Autorizada
     else if (auth_method === 'demo') {
       const demoEmail = user?.email || email;
       const canonicalDemo = demoEmail ? resolveCanonicalDemoUser(demoEmail) : null;

@@ -253,6 +253,7 @@ export function classifyZeroTokenEmail(
   const sFromName = (senderName || '').trim().toLowerCase();
   const fullText = `${sSub} ${sBody} ${sFromName} ${sFromEmail}`.toLowerCase();
   const tId = tenantId || 'e1000000-0000-0000-0000-000000000001';
+  const schoolDomain = tId.includes('ibime') ? 'ibime.edu.mx' : 'iskool.mx';
   const reincidence = reincidenceCount || 1;
 
   // 1. CUADRANTE 4: SPAM Y PROMOCIONES COMERCIALES (🟣 0 Tokens - EVALUACIÓN PRIORITARIA SUPREMA)
@@ -348,14 +349,15 @@ export function classifyZeroTokenEmail(
   // y MUY ESPECIALMENTE inquietudes de padres de familia sobre bienestar del alumno y sobrecarga académica
   const isRoutineDocTramite = fullText.includes('boleta') || fullText.includes('kardex') || fullText.includes('constancia de estudio') || fullText.includes('certificado escolar');
   const isMandatorySepInspection = !isRoutineDocTramite && (
-    /\b(supervision|supervisión|zona escolar|inspector sep|inspección sep|queja sep|auditoría sep|multa sep)\b/i.test(fullText) ||
+    /\b(sep|supervision|supervisión|zona escolar|inspector sep|inspección sep|queja sep|auditoría sep|multa sep)\b/i.test(fullText) ||
     fullText.includes('supervisi') ||
     fullText.includes('supervisió') ||
-    fullText.includes('secretaría de educación')
+    fullText.includes('secretaría de educación') ||
+    sFromEmail.includes('sep.gob.mx')
   );
 
-  const isCteEmergency = fullText.includes('cte urgente') || (fullText.includes('cte') && (fullText.includes('mañana') || fullText.includes('urgente') || fullText.includes('confirme asistencia') || fullText.includes('3 pm')));
-  const isInjuryEmergency = fullText.includes('herido') || fullText.includes('alumno herido') || fullText.includes('estudiante herido') || fullText.includes('lesión') || fullText.includes('lesion') || fullText.includes('accidente grave') || fullText.includes('fractura') || fullText.includes('ambulancia');
+  const isCteEmergency = /\bcte\b/i.test(fullText) || fullText.includes('consejo técnico escolar') || fullText.includes('consejo tecnico escolar');
+  const isInjuryEmergency = fullText.includes('accidente') || fullText.includes('herido') || fullText.includes('alumno herido') || fullText.includes('estudiante herido') || fullText.includes('lesión') || fullText.includes('lesion') || fullText.includes('accidente grave') || fullText.includes('fractura') || fullText.includes('ambulancia');
   const isSevereConflictOrLegal = [
     'acoso', 'bullying', 'demanda', 'abogado', 'urgente dirección', 'agresión física',
     'negligencia grave', 'denuncia ante autoridades', 'amenaza', 'profeco', 'citatorio legal'
@@ -461,14 +463,14 @@ export function classifyZeroTokenEmail(
       cat = 'Atención Inmediata CEO / Bienestar del Estudiante y Carga Académica';
       why = 'Inquietud formal de padre de familia sobre bienestar socioemocional, descanso y sobrecarga de tareas escolares del estudiante. Asunto de gobernanza escolar y atención directiva indelegable.';
       action = 'Atención directa inmediata de Dirección General / CEO: Revisar carga de tareas con docentes y responder formalmente a la familia.';
-    } else if (isMandatorySepInspection) {
-      cat = 'Supervisión Oficial SEP / Asunto Regulatorio';
-      why = 'Comunicación o requerimiento oficial vinculado a Supervisión Escolar / SEP. Requiere intervención y resolución directa e indelegable de Dirección General / CEO.';
-      action = 'Atención directa inmediata de Dirección General / CEO y desahogo de requerimiento ante la autoridad educativa.';
     } else if (isCteEmergency) {
       cat = 'Gobernanza Institucional / Consejo Técnico Escolar (CTE)';
       why = 'Convocatoria oficial urgente a sesión de Consejo Técnico Escolar (CTE). Por mandato institucional requiere atención y confirmación directa del CEO.';
       action = 'Confirmar agenda de Dirección General, coordinar concentrados de evaluación y girar instrucción ejecutiva.';
+    } else if (isMandatorySepInspection) {
+      cat = 'Supervisión Oficial SEP / Asunto Regulatorio';
+      why = 'Comunicación o requerimiento oficial vinculado a Supervisión Escolar / SEP. Requiere intervención y resolución directa e indelegable de Dirección General / CEO.';
+      action = 'Atención directa inmediata de Dirección General / CEO y desahogo de requerimiento ante la autoridad educativa.';
     } else if (isInjuryEmergency) {
       cat = 'Accidente Escolar / Salvaguarda y Seguridad de Alumnos';
       why = 'Incidencia crítica de salvaguarda y protección física escolar: Reporte de alumno herido en instalaciones. Requiere activación inmediata del protocolo de urgencias médicas escolares.';
@@ -556,6 +558,10 @@ export function classifyZeroTokenEmail(
   // Trámites departamentales de cobranza, control escolar, rutas de transporte, enfermería de rutina
   const isFinance = fullText.includes('factura') || fullText.includes('cfdi') || fullText.includes('colegiatura') || fullText.includes('recargo') || fullText.includes('adeudo') || fullText.includes('descuento de hermanos') || fullText.includes('pago de colegiatura');
   if (isFinance) {
+    const delCobranza = CeoEmailSettingsService.getDelegate(tId, 'cobranza');
+    const role = delCobranza?.delegateName || 'Tesorería y Facturación';
+    const emailDel = delCobranza?.delegateEmail || `finanzas@${schoolDomain}`;
+    const sla = delCobranza?.slaHours ?? 24;
     return {
       quadrant: 'DELEGADO_CON_SLA',
       urgency: 'MEDIA',
@@ -566,11 +572,12 @@ export function classifyZeroTokenEmail(
         color: 'bg-amber-50 text-amber-700 border-amber-200'
       },
       gmailCategory: 'actualizaciones',
-      assigned_department: 'Departamento de Cobranza y Finanzas',
-      assigned_role: 'Tesorería y Facturación',
-      sla_hours: 24,
-      why_shown_to_director: 'Trámite financiero o aclaración derivado al área de Cobranza con SLA de 24h.',
-      recommended_action: 'Canalizar a Tesorería para emisión de comprobante y timbrado SAT.'
+      assigned_department: delCobranza?.sectionName || 'Departamento de Cobranza y Finanzas',
+      assigned_role: role,
+      delegate_email: emailDel,
+      sla_hours: sla,
+      why_shown_to_director: `Trámite financiero o aclaración derivado al área de Cobranza con SLA de ${sla}h.`,
+      recommended_action: `Canalizar a ${role} (${emailDel}) para emisión de comprobante y timbrado SAT.`
     };
   }
 

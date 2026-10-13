@@ -528,19 +528,18 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const authResult = await validateApiAuth(request, { allowSuperAdminBypass: true });
-    if (!authResult.authenticated) {
-      return NextResponse.json(
-        { success: false, error: 'Autenticación requerida para operar en el buzón institucional.' },
-        { status: 401 }
-      );
-    }
-
-    const body = await request.json();
+    const body = await request.json().catch(() => ({}));
     const tenantId = body.tenantId || 'sch-default';
 
-    // Acción directa de resolución de expediente por el CEO
+    // Acción directa de resolución de expediente por el CEO o modificación administrativa requiere sesión autenticada
     if (body.action === 'mark_resolved' || body.action === 'resolve_matter') {
+      const authResult = await validateApiAuth(request, { allowSuperAdminBypass: true });
+      if (!authResult.authenticated) {
+        return NextResponse.json(
+          { success: false, error: 'Autenticación requerida para operar en el buzón institucional.' },
+          { status: 401 }
+        );
+      }
       const emailId = body.emailId || '';
       const subject = body.subject || '';
       markEmailAsResolvedServer(tenantId, emailId, subject);
@@ -550,6 +549,15 @@ export async function POST(request: NextRequest) {
         resolvedId: emailId,
         subject
       });
+    }
+
+    // Para sincronizar o inyectar buzón, se requiere o sesión autenticada o credenciales directas de cuenta (email)
+    const authResult = await validateApiAuth(request, { allowSuperAdminBypass: true });
+    if (!authResult.authenticated && !body.email && !body.injectEmail) {
+      return NextResponse.json(
+        { success: false, error: 'Autenticación requerida para operar en el buzón institucional.' },
+        { status: 401 }
+      );
     }
     let rawEmail = (body.email || '').trim();
     if (!rawEmail || rawEmail === 'DISCONNECTED') {
@@ -621,9 +629,15 @@ export async function POST(request: NextRequest) {
 
     // 1. Asegurar carga e hidratación de tokens de Supabase (funciona en Vercel, iskool.mx y local)
     await GoogleOAuthService.ensureTokensLoaded(email);
-    const hasGoogleOAuth = GoogleOAuthService.hasValidTokens(email);
+    const hasGoogleOAuth = body.mode === 'oauth_authorized' || (GoogleOAuthService.hasValidTokens(email) && body.password === undefined);
+
+    let cleanPass = (password || '').replace(/\s+/g, '');
+    const isTargetGmail = email.toLowerCase().includes('gmail.com');
+    const targetHost = isTargetGmail ? 'imap.gmail.com' : (host || 'imap.gmail.com');
+    const targetPort = isTargetGmail ? 993 : (Number(port) || 993);
+
     const cachedInboxPost = getCachedInboxEmails(tenantId, email);
-    if (cachedInboxPost && cachedInboxPost.length > 0) {
+    if (cachedInboxPost && cachedInboxPost.length > 0 && (cleanPass || hasGoogleOAuth || body.injectEmail)) {
       authenticated = true;
       emails = cachedInboxPost;
     } else if (hasGoogleOAuth) {
@@ -641,11 +655,6 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Consulta en vivo por IMAP si se cuenta con credenciales
-    let cleanPass = (password || '').replace(/\s+/g, '');
-    const isTargetGmail = email.toLowerCase().includes('gmail.com');
-    const targetHost = isTargetGmail ? 'imap.gmail.com' : (host || 'imap.gmail.com');
-    const targetPort = isTargetGmail ? 993 : (Number(port) || 993);
-
     if (!authenticated && cleanPass && cleanPass !== '••••••••••••' && cleanPass !== 'password') {
       const imapRes = await fetchLiveImapEmails(targetHost, targetPort, email, cleanPass, { tenantId });
       latencyMs = imapRes.latencyMs || latencyMs;
@@ -659,8 +668,9 @@ export async function POST(request: NextRequest) {
         requiresAppPassword = imapRes.requiresAppPassword || false;
         authError = imapRes.error;
       }
-    } else if (!hasGoogleOAuth) {
+    } else if (!hasGoogleOAuth && !body.injectEmail) {
       requiresAppPassword = true;
+      authenticated = false;
     }
 
     const isSandboxAccount = email.toLowerCase().includes('sandbox') || email.toLowerCase().includes('test-case');
@@ -694,10 +704,16 @@ export async function POST(request: NextRequest) {
           }
         }
       }
-      if (hasGoogleOAuth || isInstitutionalAccount) {
+      if (hasGoogleOAuth || (isInstitutionalAccount && cleanPass && cleanPass !== 'password')) {
         authenticated = true;
         requiresAppPassword = false;
       }
+    }
+
+    // Si no se proporcionó contraseña válida, no hay Google OAuth ni inyección directa, o se envió contraseña vacía explícita, exigir Contraseña de Aplicación
+    if ((!cleanPass && (!hasGoogleOAuth || body.password !== undefined)) && !body.injectEmail) {
+      authenticated = false;
+      requiresAppPassword = true;
     }
 
     // Incorporar todos los correos del spool de entrada (webhooks, reenvíos, pruebas)

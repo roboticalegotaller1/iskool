@@ -199,6 +199,14 @@ export const CeoEmailSettingsService = {
   },
 
   /**
+   * Obtiene el delegado configurado para una sección clave
+   */
+  getDelegate(tenantId: string, sectionKey: string): SectionDelegateConfig | undefined {
+    const settings = this.getSettings(tenantId);
+    return settings.delegates.find(d => d.sectionKey === sectionKey || d.id === sectionKey);
+  },
+
+  /**
    * Encuentra el delegado correspondiente para un asunto o texto dado
    */
   resolveDelegateForText(tenantId: string, text: string): SectionDelegateConfig | undefined {

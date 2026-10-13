@@ -331,10 +331,6 @@ export class GoogleOAuthService {
 
     const tokens = tokenStore.get(effectiveEmail) || tokenStore.get(clean);
     if (!tokens) {
-      // Las cuentas institucionales ya sincronizadas en la base de datos son válidas
-      if (effectiveEmail === 'roboticalegotaller1@gmail.com' || effectiveEmail === 'israell35mac@gmail.com') {
-        return true;
-      }
       return false;
     }
     return !!tokens.refreshToken || tokens.expiresAt > Date.now();

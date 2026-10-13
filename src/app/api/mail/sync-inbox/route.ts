@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
     // PASO 1: Ingesta directa de correo enviado manualmente (si aplica, prioridad de prueba y despacho)
     if (manualEmail && manualEmail.subject) {
       const normManual = manualEmail.subject.trim().toLowerCase();
-      if (!existingTitles.includes(normManual) && !isMatterResolved(undefined, manualEmail.subject)) {
+      if (!existingTitles.includes(normManual)) {
         const emailDto: InboundEmailDTO = {
           sender_name: manualEmail.sender_name || 'Remitente Institucional',
           sender_email: manualEmail.sender_email || email || 'contacto@gmail.com',
@@ -193,9 +193,8 @@ export async function POST(req: NextRequest) {
 
       const triageResult = await HermeticEmailBrainService.processInboundEmail(emailDto, authSession);
 
-      // REGLA OBLIGATORIA: En Bandeja Inteligente SOLO deben aparecer correos de "Atención Inmediata CEO".
-      // Los informativos, delegados y spam permanecen en Bandeja de Entrada (raw-inbox) pero NUNCA en Bandeja Inteligente.
-      const isIntelligentInboxCandidate = triageResult.quadrant === 'ATENCION_CEO' && !isSpamCommercial(emailDto.subject, emailDto.body_text);
+      // En Bandeja Inteligente se despliegan asuntos de Atención Inmediata CEO y Delegados con SLA para supervisión directiva
+      const isIntelligentInboxCandidate = (triageResult.quadrant === 'ATENCION_CEO' || triageResult.quadrant === 'DELEGADO_CON_SLA') && !isSpamCommercial(emailDto.subject, emailDto.body_text);
 
       if (isIntelligentInboxCandidate) {
         newMatters.push({
@@ -205,7 +204,7 @@ export async function POST(req: NextRequest) {
           summary: triageResult.why_shown_to_director || emailDto.body_text.slice(0, 140) + '...',
           category: triageResult.category || 'Atención Inmediata CEO',
           urgency: triageResult.urgency,
-          destination: 'ATENCION_CEO',
+          destination: triageResult.quadrant,
           why_shown: triageResult.why_shown_to_director,
           reincidence_count: emailDto.reincidence_count || 1,
           recommended_action: triageResult.recommended_action,

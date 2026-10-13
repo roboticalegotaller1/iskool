@@ -466,6 +466,7 @@ export function CEOEmailCommunicationsModal({
   const mailVerifiedStorageKey = `iskool_mail_verified_${currentTenantId}`;
   const mailConfigStorageKey = `iskool_mail_config_${currentTenantId}`;
   const rawEmailsStorageKey = `iskool_raw_emails_v3_${currentTenantId}`;
+  const legacyMattersKey = `iskool_matters_${currentTenantId}`;
   const mattersStorageKey = `iskool_matters_v3_${currentTenantId}`;
   const resolvedMattersStorageKey = `iskool_resolved_matters_v3_${currentTenantId}`;
   const logsStorageKey = `iskool_ceo_logs_${currentTenantId}`;
@@ -1509,7 +1510,8 @@ export function CEOEmailCommunicationsModal({
       });
       setSelectedRawEmailId(targetEmail.id);
       setEmailReaderReturnTab('inbox');
-      setActiveTab('raw_inbox');
+      const directInboxTab: 'raw_inbox' = 'raw_inbox';
+      setActiveTab(directInboxTab);
     }
   };
 
