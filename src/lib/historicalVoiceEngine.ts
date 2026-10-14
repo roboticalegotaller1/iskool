@@ -1284,19 +1284,450 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // Fallback seguro centrado adaptado a proporciones 3D
+  // =========================================================================
+  // CATÁLOGO COMPLETO DE PERSONAJES HISTÓRICOS MEXICANOS E HISPANOS (CALIBRACIÓN MILIMÉTRICA)
+  // =========================================================================
+
+  // 10. EMILIANO ZAPATA (public/images/history/emiliano_zapata_avatar.png)
+  // Bigote revolucionario pronunciado: comisuras x1: 478, x2: 546, stoma cy: 372
+  if (norm.includes('zapata') || norm.includes('emiliano') || norm.includes('anenecuilco')) {
+    return {
+      x1: 478,
+      y1: 372,
+      cx: 512,
+      cy: 372,
+      x2: 546,
+      y2: 372,
+      maxOpening: 12,
+      cavityDarkColor: '#0e0204',
+      cavityMidColor: '#26050a',
+      cavityRimColor: '#440d14',
+      lowerLipRimColor: 'rgba(152, 62, 54, 0.92)',
+      teethColor: '#ede4d6',
+      mustacheCover: true
+    };
+  }
+
+  // 11. BENITO JUÁREZ (public/images/history/benito_juarez_avatar.png)
+  // Mandíbula y labio republicano: cx: 502, cy: 344, x1: 468, x2: 536
+  if (norm.includes('juarez') || norm.includes('benito') || norm.includes('guelatao') || norm.includes('benemerito')) {
+    return {
+      x1: 468,
+      y1: 344,
+      cx: 502,
+      cy: 344,
+      x2: 536,
+      y2: 344,
+      maxOpening: 12,
+      cavityDarkColor: '#160406',
+      cavityMidColor: '#320a10',
+      cavityRimColor: '#52131a',
+      lowerLipRimColor: 'rgba(168, 76, 70, 0.90)',
+      teethColor: '#eee4d8'
+    };
+  }
+
+  // 12. SOR JUANA INÉS DE LA CRUZ (public/images/history/sor_juana_avatar.png)
+  // Fisonomía virreinal con toca: cx: 506, cy: 366, x1: 472, x2: 540
+  if (norm.includes('sor juana') || norm.includes('juana ines') || norm.includes('asbaje') || norm.includes('decima musa') || norm.includes('nepantla')) {
+    return {
+      x1: 472,
+      y1: 366,
+      cx: 506,
+      cy: 366,
+      x2: 540,
+      y2: 366,
+      maxOpening: 13,
+      cavityDarkColor: '#1c0409',
+      cavityMidColor: '#3e0c16',
+      cavityRimColor: '#641624',
+      lowerLipRimColor: 'rgba(202, 88, 98, 0.94)',
+      teethColor: '#fff5ec'
+    };
+  }
+
+  // 13. JOSÉ MARÍA MORELOS Y PAVÓN (public/images/history/morelos_avatar.png)
+  // Con paliacate insurgente: cx: 504, cy: 333, x1: 470, x2: 538
+  if (norm.includes('morelos') || norm.includes('siervo de la nacion') || norm.includes('apatzingan') || norm.includes('cuautla')) {
+    return {
+      x1: 470,
+      y1: 333,
+      cx: 504,
+      cy: 333,
+      x2: 538,
+      y2: 333,
+      maxOpening: 13,
+      cavityDarkColor: '#100305',
+      cavityMidColor: '#2a070c',
+      cavityRimColor: '#480e14',
+      lowerLipRimColor: 'rgba(160, 70, 65, 0.90)',
+      teethColor: '#ede4d6'
+    };
+  }
+
+  // 14. CUAUHTÉMOC (public/images/history/cuauhtemoc_avatar.png)
+  // Guerrero y tlatoani mexica con penacho: cx: 500, cy: 340, x1: 466, x2: 534
+  if (norm.includes('cuauhtemoc') || norm.includes('cuauhtemotzin') || norm.includes('tlatoani') || norm.includes('joven abuelo')) {
+    return {
+      x1: 466,
+      y1: 340,
+      cx: 500,
+      cy: 340,
+      x2: 534,
+      y2: 340,
+      maxOpening: 14,
+      cavityDarkColor: '#140305',
+      cavityMidColor: '#30080e',
+      cavityRimColor: '#501117',
+      lowerLipRimColor: 'rgba(172, 78, 68, 0.92)',
+      teethColor: '#f2eae0'
+    };
+  }
+
+  // 15. IGNACIO ALLENDE (public/images/history/ignacio_allende_avatar.png)
+  // Uniforme de dragones insurgente: cx: 510, cy: 338, x1: 476, x2: 544
+  if (norm.includes('allende') || norm.includes('ignacio allende') || norm.includes('san miguel')) {
+    return {
+      x1: 476,
+      y1: 338,
+      cx: 510,
+      cy: 338,
+      x2: 544,
+      y2: 338,
+      maxOpening: 13,
+      cavityDarkColor: '#140407',
+      cavityMidColor: '#2e0910',
+      cavityRimColor: '#4c1219',
+      lowerLipRimColor: 'rgba(175, 78, 75, 0.90)',
+      teethColor: '#f0e6da'
+    };
+  }
+
+  // 16. CARMEN SERDÁN ALATRISTE (public/images/history/carmen_serdan_avatar.png)
+  // Heroína de Puebla: cx: 504, cy: 372, x1: 470, x2: 538
+  if (norm.includes('carmen serdan') || (norm.includes('serdan') && (norm.includes('carmen') || norm.includes('alatriste')))) {
+    return {
+      x1: 470,
+      y1: 372,
+      cx: 504,
+      cy: 372,
+      x2: 538,
+      y2: 372,
+      maxOpening: 12,
+      cavityDarkColor: '#1a0408',
+      cavityMidColor: '#380a14',
+      cavityRimColor: '#5e1420',
+      lowerLipRimColor: 'rgba(195, 84, 92, 0.92)',
+      teethColor: '#fdf3ea'
+    };
+  }
+
+  // 17. AQUILES SERDÁN (public/images/history/aquiles_serdan_avatar.png)
+  // Mártir de Santa Clara con bigote: cx: 508, cy: 370, x1: 474, x2: 542
+  if (norm.includes('aquiles serdan') || norm.includes('aquiles')) {
+    return {
+      x1: 474,
+      y1: 370,
+      cx: 508,
+      cy: 370,
+      x2: 542,
+      y2: 370,
+      maxOpening: 12,
+      cavityDarkColor: '#120406',
+      cavityMidColor: '#28080d',
+      cavityRimColor: '#461016',
+      lowerLipRimColor: 'rgba(165, 72, 68, 0.90)',
+      teethColor: '#ede4d8',
+      mustacheCover: true
+    };
+  }
+
+  // 18. FRANCISCO I. MADERO (public/images/history/madero_avatar.png)
+  // Apóstol de la Democracia con barba/bigote: cx: 506, cy: 338, x1: 472, x2: 540
+  if (norm.includes('madero') || norm.includes('francisco i madero') || norm.includes('apostol')) {
+    return {
+      x1: 472,
+      y1: 338,
+      cx: 506,
+      cy: 338,
+      x2: 540,
+      y2: 338,
+      maxOpening: 12,
+      cavityDarkColor: '#120406',
+      cavityMidColor: '#28080d',
+      cavityRimColor: '#461016',
+      lowerLipRimColor: 'rgba(168, 76, 72, 0.90)',
+      teethColor: '#ede4d8',
+      mustacheCover: true
+    };
+  }
+
+  // 19. LÁZARO CÁRDENAS DEL RÍO (public/images/history/lazaro_cardenas_avatar.png)
+  // Estadista patriótico: cx: 508, cy: 362, x1: 474, x2: 542
+  if (norm.includes('cardenas') || norm.includes('lazaro') || norm.includes('expropiacion')) {
+    return {
+      x1: 474,
+      y1: 362,
+      cx: 508,
+      cy: 362,
+      x2: 542,
+      y2: 362,
+      maxOpening: 13,
+      cavityDarkColor: '#140407',
+      cavityMidColor: '#2e0a10',
+      cavityRimColor: '#4c131a',
+      lowerLipRimColor: 'rgba(170, 76, 72, 0.90)',
+      teethColor: '#eee5d8'
+    };
+  }
+
+  // 20. PLUTARCO ELÍAS CALLES (public/images/history/plutarco_elias_calles_avatar.png)
+  // Bigote sobrio institucional: cx: 508, cy: 360, x1: 474, x2: 542
+  if (norm.includes('calles') || norm.includes('plutarco')) {
+    return {
+      x1: 474,
+      y1: 360,
+      cx: 508,
+      cy: 360,
+      x2: 542,
+      y2: 360,
+      maxOpening: 12,
+      cavityDarkColor: '#100305',
+      cavityMidColor: '#26070b',
+      cavityRimColor: '#420e14',
+      lowerLipRimColor: 'rgba(158, 68, 62, 0.90)',
+      teethColor: '#ece2d4',
+      mustacheCover: true
+    };
+  }
+
+  // 21. RICARDO FLORES MAGÓN (public/images/history/ricardo_flores_magon_avatar.png)
+  // Bigote y anteojos precursores: cx: 508, cy: 368, x1: 474, x2: 542
+  if (norm.includes('magon') || norm.includes('flores magon') || norm.includes('regeneracion')) {
+    return {
+      x1: 474,
+      y1: 368,
+      cx: 508,
+      cy: 368,
+      x2: 542,
+      y2: 368,
+      maxOpening: 12,
+      cavityDarkColor: '#120406',
+      cavityMidColor: '#2a090e',
+      cavityRimColor: '#481218',
+      lowerLipRimColor: 'rgba(162, 72, 68, 0.90)',
+      teethColor: '#eee4d6',
+      mustacheCover: true
+    };
+  }
+
+  // 22. GUADALUPE VICTORIA (public/images/history/guadalupe_victoria_avatar.png)
+  // Primer Presidente de México: cx: 502, cy: 318, x1: 468, x2: 536
+  if (norm.includes('guadalupe victoria') || (norm.includes('victoria') && !norm.includes('victor'))) {
+    return {
+      x1: 468,
+      y1: 318,
+      cx: 502,
+      cy: 318,
+      x2: 536,
+      y2: 318,
+      maxOpening: 13,
+      cavityDarkColor: '#120406',
+      cavityMidColor: '#2a080d',
+      cavityRimColor: '#461117',
+      lowerLipRimColor: 'rgba(168, 76, 72, 0.90)',
+      teethColor: '#ede4d6'
+    };
+  }
+
+  // 23. ANDRÉS QUINTANA ROO (public/images/history/andres_quintana_roo_avatar.png)
+  // Prócer jurista insurgente: cx: 506, cy: 358, x1: 472, x2: 540
+  if (norm.includes('quintana roo') || norm.includes('andres quintana')) {
+    return {
+      x1: 472,
+      y1: 358,
+      cx: 506,
+      cy: 358,
+      x2: 540,
+      y2: 358,
+      maxOpening: 13,
+      cavityDarkColor: '#140407',
+      cavityMidColor: '#2c090f',
+      cavityRimColor: '#4a1218',
+      lowerLipRimColor: 'rgba(168, 76, 72, 0.90)',
+      teethColor: '#ede5d8'
+    };
+  }
+
+  // 24. BELISARIO DOMÍNGUEZ (public/images/history/belisario_dominguez_avatar.png)
+  // Senador mártir de la libertad de expresión: cx: 506, cy: 344, x1: 472, x2: 540
+  if (norm.includes('belisario') || norm.includes('dominguez')) {
+    return {
+      x1: 472,
+      y1: 344,
+      cx: 506,
+      cy: 344,
+      x2: 540,
+      y2: 344,
+      maxOpening: 12,
+      cavityDarkColor: '#100305',
+      cavityMidColor: '#26070b',
+      cavityRimColor: '#420e14',
+      lowerLipRimColor: 'rgba(156, 68, 62, 0.90)',
+      teethColor: '#eae1d2',
+      mustacheCover: true
+    };
+  }
+
+  // 25. GENERAL FELIPE ÁNGELES (public/images/history/felipe_angeles_avatar.png)
+  // Militar leal humanista con bigote: cx: 506, cy: 360, x1: 472, x2: 540
+  if (norm.includes('angeles') || norm.includes('felipe angeles')) {
+    return {
+      x1: 472,
+      y1: 360,
+      cx: 506,
+      cy: 360,
+      x2: 540,
+      y2: 360,
+      maxOpening: 12,
+      cavityDarkColor: '#120406',
+      cavityMidColor: '#2a080d',
+      cavityRimColor: '#461117',
+      lowerLipRimColor: 'rgba(164, 74, 70, 0.90)',
+      teethColor: '#eee5d8',
+      mustacheCover: true
+    };
+  }
+
+  // 26. GUSTAVO DÍAZ ORDAZ (public/images/history/gustavo_diaz_ordaz_avatar.png)
+  // Mandíbula y labio característico: cx: 506, cy: 350, x1: 472, x2: 540
+  if (norm.includes('diaz ordaz') || norm.includes('ordaz')) {
+    return {
+      x1: 472,
+      y1: 350,
+      cx: 506,
+      cy: 350,
+      x2: 540,
+      y2: 350,
+      maxOpening: 14,
+      cavityDarkColor: '#140407',
+      cavityMidColor: '#2e0a10',
+      cavityRimColor: '#4c131a',
+      lowerLipRimColor: 'rgba(164, 74, 70, 0.90)',
+      teethColor: '#eee5d8'
+    };
+  }
+
+  // 27. JOSÉ GUADALUPE POSADA (public/images/history/jose_guadalupe_posada_avatar.png)
+  // Grabador y creador de la Calavera Garbancera con bigote: cx: 510, cy: 326, x1: 476, x2: 544
+  if (norm.includes('posada') || norm.includes('guadalupe posada')) {
+    return {
+      x1: 476,
+      y1: 326,
+      cx: 510,
+      cy: 326,
+      x2: 544,
+      y2: 326,
+      maxOpening: 13,
+      cavityDarkColor: '#0e0204',
+      cavityMidColor: '#240509',
+      cavityRimColor: '#400c12',
+      lowerLipRimColor: 'rgba(152, 64, 58, 0.90)',
+      teethColor: '#ede4d6',
+      mustacheCover: true
+    };
+  }
+
+  // 28. FRANCISCO VILLA (public/images/history/francisco_villa_avatar.png)
+  // Centauro del Norte con bigote ancho: cx: 516, cy: 342, x1: 490, x2: 542
+  if (norm.includes('villa') || norm.includes('doroteo') || norm.includes('arango') || norm.includes('centauro')) {
+    return {
+      x1: 490,
+      y1: 342,
+      cx: 516,
+      cy: 342,
+      x2: 542,
+      y2: 342,
+      maxOpening: 11,
+      cavityDarkColor: '#080102',
+      cavityMidColor: '#1f0306',
+      cavityRimColor: '#3d0b11',
+      lowerLipRimColor: 'rgba(145, 60, 50, 0.92)',
+      teethColor: '#ede5d8',
+      mustacheCover: true
+    };
+  }
+
+  // 29. JOSEFA ORTIZ DE DOMÍNGUEZ (public/images/history/josefa_ortiz_avatar.png)
+  // Perfil insurgente y tocado virreinal: cx: 491, cy: 372, x1: 457, x2: 525
+  if (norm.includes('josefa') || norm.includes('corregidora') || norm.includes('ortiz de dominguez')) {
+    return {
+      x1: 457,
+      y1: 372,
+      cx: 491,
+      cy: 372,
+      x2: 525,
+      y2: 372,
+      maxOpening: 12.5,
+      cavityDarkColor: '#0a0102',
+      cavityMidColor: '#240407',
+      cavityRimColor: '#450d13',
+      lowerLipRimColor: 'rgba(150, 48, 54, 0.92)',
+      teethColor: '#f2ede4'
+    };
+  }
+
+  // 30. DON MIGUEL HIDALGO Y COSTILLA (public/images/history/hidalgo_avatar.png)
+  // Padre de la Patria: cx: 500, cy: 356, x1: 466, x2: 534
+  if (norm.includes('hidalgo') || norm.includes('cura hidalgo') || norm.includes('costilla') || norm.includes('padre de la patria')) {
+    return {
+      x1: 466,
+      y1: 356,
+      cx: 500,
+      cy: 356,
+      x2: 534,
+      y2: 356,
+      maxOpening: 13.5,
+      cavityDarkColor: '#090203',
+      cavityMidColor: '#210508',
+      cavityRimColor: '#3c0f14',
+      lowerLipRimColor: 'rgba(165, 80, 75, 0.88)',
+      teethColor: '#eee6da'
+    };
+  }
+
+  // 31. LEONA VICARIO
+  // Benemérita y Dulcísima Madre de la Patria: cx: 504, cy: 368, x1: 470, x2: 538
+  if (norm.includes('leona') || norm.includes('vicario')) {
+    return {
+      x1: 470,
+      y1: 368,
+      cx: 504,
+      cy: 368,
+      x2: 538,
+      y2: 368,
+      maxOpening: 12,
+      cavityDarkColor: '#160408',
+      cavityMidColor: '#340810',
+      cavityRimColor: '#54101a',
+      lowerLipRimColor: 'rgba(195, 84, 92, 0.92)',
+      teethColor: '#fcf3eb'
+    };
+  }
+
+  // Fallback seguro centrado adaptado a proporciones 3D y retratos históricos canónicos
   return {
-    x1: 450,
-    y1: 380,
+    x1: 466,
+    y1: 360,
     cx: 500,
-    cy: 380,
-    x2: 550,
-    y2: 380,
-    maxOpening: 15,
+    cy: 360,
+    x2: 534,
+    y2: 360,
+    maxOpening: 13,
     cavityDarkColor: '#140306',
     cavityMidColor: '#2d0910',
     cavityRimColor: '#50121a',
-    lowerLipRimColor: 'rgba(185, 80, 85, 0.90)',
+    lowerLipRimColor: 'rgba(180, 76, 78, 0.90)',
     teethColor: '#f2eae0'
   };
 }

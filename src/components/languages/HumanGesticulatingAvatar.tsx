@@ -541,12 +541,15 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
               const teethHalfWidth = halfMouthWidth * 0.62;
               const teethHeight = Math.min(verticalDrop * 0.45, 5.0);
               const lipThickness = Math.min(4.0, 2.0 + verticalDrop * 0.2);
+              const upperArchY = mouthCfg.mustacheCover 
+                ? mouthCfg.cy 
+                : mouthCfg.cy - mouthOpenRatio * 1.5;
 
               return (
                 <g filter={`url(#avatarFeather_${avatarDisplayTitle.replace(/[^a-zA-Z0-9]/g, '_')})`}>
                   {/* 1. Cavidad Bucal Anatómica Profunda */}
                   <path 
-                    d={`M ${effX1} ${mouthCfg.y1} Q ${mouthCfg.cx} ${mouthCfg.cy - mouthOpenRatio * 1.5} ${effX2} ${mouthCfg.y2} Q ${mouthCfg.cx} ${mouthCfg.cy + verticalDrop} ${effX1} ${mouthCfg.y1} Z`} 
+                    d={`M ${effX1} ${mouthCfg.y1} Q ${mouthCfg.cx} ${upperArchY} ${effX2} ${mouthCfg.y2} Q ${mouthCfg.cx} ${mouthCfg.cy + verticalDrop} ${effX1} ${mouthCfg.y1} Z`} 
                     fill={`url(#avatarCavity_${avatarDisplayTitle.replace(/[^a-zA-Z0-9]/g, '_')})`} 
                   />
 

@@ -29,89 +29,11 @@ import {
   generateHistoricalSSML, 
   getPersonaProfile,
   calculateAgeAtDeathFromDates,
-  normalizeLatinHistoricalPhonetics
+  normalizeLatinHistoricalPhonetics,
+  getHistoricalMouthConfig,
+  CharacterAnatomicalMouth
 } from '@/lib/historicalVoiceEngine';
 
-interface CharacterAnatomicalMouth {
-  x1: number;         // Comisura izquierda en espacio 1024
-  y1: number;
-  cx: number;         // Centro anatómico
-  cy: number;
-  x2: number;         // Comisura derecha en espacio 1024
-  y2: number;
-  maxOpening: number; // Apertura vertical máxima en px
-  cavityDarkColor: string;
-  cavityMidColor: string;
-  cavityRimColor: string;
-  lowerLipRimColor: string;
-  teethColor: string;
-}
-
-function getCharacterMouthConfig(name: string): CharacterAnatomicalMouth {
-  const norm = (name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  if (norm.includes('josefa') || norm.includes('corregidora')) {
-    return {
-      x1: 454,
-      y1: 374,
-      cx: 491,
-      cy: 374,
-      x2: 528,
-      y2: 373,
-      maxOpening: 12.5,
-      cavityDarkColor: '#0a0102',
-      cavityMidColor: '#240407',
-      cavityRimColor: '#450d13',
-      lowerLipRimColor: 'rgba(150, 48, 54, 0.92)',
-      teethColor: '#f2ede4'
-    };
-  }
-  if (norm.includes('villa') || norm.includes('doroteo') || norm.includes('arango') || norm.includes('centauro')) {
-    return {
-      x1: 490,
-      y1: 343,
-      cx: 516,
-      cy: 343,
-      x2: 542,
-      y2: 343,
-      maxOpening: 11,
-      cavityDarkColor: '#080102',
-      cavityMidColor: '#1f0306',
-      cavityRimColor: '#3d0b11',
-      lowerLipRimColor: 'rgba(145, 60, 50, 0.92)',
-      teethColor: '#ede5d8'
-    };
-  }
-  if (norm.includes('hidalgo')) {
-    return {
-      x1: 456,
-      y1: 358,
-      cx: 500,
-      cy: 358,
-      x2: 544,
-      y2: 358,
-      maxOpening: 13.5,
-      cavityDarkColor: '#090203',
-      cavityMidColor: '#210508',
-      cavityRimColor: '#3c0f14',
-      lowerLipRimColor: 'rgba(165, 80, 75, 0.88)',
-      teethColor: '#eee6da'
-    };
-  }
-  return {
-    x1: 460,
-    y1: 370,
-    cx: 500,
-    cy: 370,
-    x2: 540,
-    y2: 370,
-    maxOpening: 13,
-    cavityDarkColor: '#0a0102',
-    cavityMidColor: '#240407',
-    cavityRimColor: '#450d13',
-    lowerLipRimColor: 'rgba(160, 60, 65, 0.88)',
-    teethColor: '#f0ece2'
-  };
-}
 
 /**
  * Generador procedural de respuesta al impulso de sala histórica (RT60: ~0.42s).
@@ -365,7 +287,7 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
     setIsKeyModalOpen(false);
   };
 
-  const mouthCfg = getCharacterMouthConfig(characterName);
+  const mouthCfg = useMemo(() => getHistoricalMouthConfig(characterName || slug || avatarImageUrl || ''), [characterName, slug, avatarImageUrl]);
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -1238,60 +1160,77 @@ export const HistoricalLivingAvatar: React.FC<HistoricalLivingAvatarProps> = ({
               className="absolute inset-0 w-full h-full pointer-events-none select-none"
             >
               <defs>
-                <radialGradient id={`avatarCavity_${(characterName || 'char').replace(/\s+/g, '_')}`} cx="48%" cy="30%" r="65%">
+                <filter 
+                  id={`avatarFeather_${(characterName || 'char').replace(/[^a-zA-Z0-9]/g, '_')}`} 
+                  x="-20%" 
+                  y="-20%" 
+                  width="140%" 
+                  height="140%"
+                >
+                  <feGaussianBlur stdDeviation="0.9" />
+                </filter>
+                <radialGradient id={`avatarCavity_${(characterName || 'char').replace(/[^a-zA-Z0-9]/g, '_')}`} cx="48%" cy="30%" r="65%">
                   <stop offset="0%" stopColor={mouthCfg.cavityDarkColor} />
                   <stop offset="55%" stopColor={mouthCfg.cavityMidColor} />
                   <stop offset="100%" stopColor={mouthCfg.cavityRimColor} />
                 </radialGradient>
-                <linearGradient id={`avatarTeeth_${(characterName || 'char').replace(/\s+/g, '_')}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor={mouthCfg.teethColor} stopOpacity="0.95" />
-                  <stop offset="70%" stopColor="#ded4c3" stopOpacity="0.85" />
-                  <stop offset="100%" stopColor="#aa9680" stopOpacity="0.1" />
+                <linearGradient id={`avatarTeeth_${(characterName || 'char').replace(/[^a-zA-Z0-9]/g, '_')}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor={mouthCfg.teethColor} stopOpacity="0.96" />
+                  <stop offset="70%" stopColor="#ded4c3" stopOpacity="0.88" />
+                  <stop offset="100%" stopColor="#aa9680" stopOpacity="0.10" />
                 </linearGradient>
-                <linearGradient id={`avatarLowerLip_${(characterName || 'char').replace(/\s+/g, '_')}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                <linearGradient id={`avatarLowerLip_${(characterName || 'char').replace(/[^a-zA-Z0-9]/g, '_')}`} x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="0%" stopColor={mouthCfg.lowerLipRimColor} />
-                  <stop offset="60%" stopColor="rgba(185, 78, 80, 0.65)" />
+                  <stop offset="60%" stopColor="rgba(185, 78, 80, 0.70)" />
                   <stop offset="100%" stopColor="rgba(210, 110, 105, 0.15)" />
                 </linearGradient>
               </defs>
 
               {isSpeaking && mouthOpenRatio > 0.04 && (() => {
                 // Cálculo dinámico bifactorial F1/F2 (Apertura vertical + Extensión de comisuras)
-                const widthOffset = (mouthWidthRatio - 0.5) * 10;
+                const widthOffset = (mouthWidthRatio - 0.5) * 6;
                 const effX1 = mouthCfg.x1 - widthOffset;
                 const effX2 = mouthCfg.x2 + widthOffset;
+                const verticalDrop = mouthOpenRatio * mouthCfg.maxOpening;
+                const halfMouthWidth = (effX2 - effX1) / 2;
+                const teethHalfWidth = halfMouthWidth * 0.62;
+                const teethHeight = Math.min(verticalDrop * 0.45, 5.0);
+                const lipThickness = Math.min(4.0, 2.0 + verticalDrop * 0.2);
+                const upperArchY = mouthCfg.mustacheCover 
+                  ? mouthCfg.cy 
+                  : mouthCfg.cy - mouthOpenRatio * 1.5;
 
                 return (
-                  <g>
-                    {/* Cavidad bucal anatómica (sombra interior de boca abierta modulada por F1 y F2) */}
+                  <g filter={`url(#avatarFeather_${(characterName || 'char').replace(/[^a-zA-Z0-9]/g, '_')})`}>
+                    {/* 1. Cavidad bucal anatómica profunda */}
                     <path 
-                      d={`M ${effX1} ${mouthCfg.y1} Q ${mouthCfg.cx} ${mouthCfg.cy - mouthOpenRatio * 1.5} ${effX2} ${mouthCfg.y2} Q ${mouthCfg.cx} ${mouthCfg.cy + mouthOpenRatio * mouthCfg.maxOpening} ${effX1} ${mouthCfg.y1} Z`} 
-                      fill={`url(#avatarCavity_${(characterName || 'char').replace(/\s+/g, '_')})`} 
+                      d={`M ${effX1} ${mouthCfg.y1} Q ${mouthCfg.cx} ${upperArchY} ${effX2} ${mouthCfg.y2} Q ${mouthCfg.cx} ${mouthCfg.cy + verticalDrop} ${effX1} ${mouthCfg.y1} Z`} 
+                      fill={`url(#avatarCavity_${(characterName || 'char').replace(/[^a-zA-Z0-9]/g, '_')})`} 
                     />
                     
-                    {/* Fila superior de dientes naturales nacarados con ajuste de sonrisa F2 */}
+                    {/* 2. Fila superior de dientes naturales nacarados con ajuste anatómico */}
                     <path 
-                      d={`M ${mouthCfg.cx - 18 - widthOffset * 0.4} ${mouthCfg.cy - 1} Q ${mouthCfg.cx} ${mouthCfg.cy - 2.2} ${mouthCfg.cx + 18 + widthOffset * 0.4} ${mouthCfg.cy - 1.5} Q ${mouthCfg.cx + 18 + widthOffset * 0.4} ${mouthCfg.cy - 1 + Math.min(mouthOpenRatio * mouthCfg.maxOpening * 0.45, 5)} Q ${mouthCfg.cx} ${mouthCfg.cy + Math.min(mouthOpenRatio * mouthCfg.maxOpening * 0.45, 5)} ${mouthCfg.cx - 18 - widthOffset * 0.4} ${mouthCfg.cy - 1 + Math.min(mouthOpenRatio * mouthCfg.maxOpening * 0.45, 5)} Z`} 
-                      fill={`url(#avatarTeeth_${(characterName || 'char').replace(/\s+/g, '_')})`} 
+                      d={`M ${mouthCfg.cx - teethHalfWidth} ${mouthCfg.cy - 0.8} Q ${mouthCfg.cx} ${mouthCfg.cy - 1.8} ${mouthCfg.cx + teethHalfWidth} ${mouthCfg.cy - 1.0} Q ${mouthCfg.cx + teethHalfWidth} ${mouthCfg.cy - 0.8 + teethHeight} Q ${mouthCfg.cx} ${mouthCfg.cy + teethHeight} ${mouthCfg.cx - teethHalfWidth} ${mouthCfg.cy - 0.8 + teethHeight} Z`} 
+                      fill={`url(#avatarTeeth_${(characterName || 'char').replace(/[^a-zA-Z0-9]/g, '_')})`} 
                     />
                     
-                    {/* Sombra de lengua / fondo bucal para fonemas abiertos */}
-                    {mouthOpenRatio > 0.45 && (
+                    {/* 3. Sombra de lengua / fondo bucal para fonemas abiertos */}
+                    {mouthOpenRatio > 0.35 && (
                       <ellipse 
                         cx={mouthCfg.cx} 
-                        cy={mouthCfg.cy + mouthOpenRatio * mouthCfg.maxOpening * 0.75} 
-                        rx={10 + mouthOpenRatio * 4 + widthOffset * 0.3} 
-                        ry={1.5 + mouthOpenRatio * 1.5} 
-                        fill="#54141b" 
-                        opacity={0.85} 
+                        cy={mouthCfg.cy + verticalDrop * 0.70} 
+                        rx={halfMouthWidth * 0.46} 
+                        ry={Math.min(verticalDrop * 0.35, 3.2)} 
+                        fill="#3d0a10" 
+                        opacity={0.88} 
                       />
                     )}
                     
-                    {/* Reborde carnoso y textura del labio inferior descendiendo de forma natural con la mandíbula */}
+                    {/* 4. Reborde carnoso y textura del labio inferior descendiendo con la mandíbula */}
                     <path 
-                      d={`M ${effX1 + 2} ${mouthCfg.y1 + 0.5} Q ${mouthCfg.cx} ${mouthCfg.cy + mouthOpenRatio * mouthCfg.maxOpening} ${effX2 - 2} ${mouthCfg.y2 + 0.5} Q ${mouthCfg.cx} ${mouthCfg.cy + mouthOpenRatio * mouthCfg.maxOpening + 3} ${effX1 + 2} ${mouthCfg.y1 + 0.5} Z`} 
-                      fill={`url(#avatarLowerLip_${(characterName || 'char').replace(/\s+/g, '_')})`} 
-                      opacity={0.88} 
+                      d={`M ${effX1 + 1.2} ${mouthCfg.y1 + 0.3} Q ${mouthCfg.cx} ${mouthCfg.cy + verticalDrop} ${effX2 - 1.2} ${mouthCfg.y2 + 0.3} Q ${mouthCfg.cx} ${mouthCfg.cy + verticalDrop + lipThickness} ${effX1 + 1.2} ${mouthCfg.y1 + 0.3} Z`} 
+                      fill={`url(#avatarLowerLip_${(characterName || 'char').replace(/[^a-zA-Z0-9]/g, '_')})`} 
+                      opacity={0.92} 
                     />
                   </g>
                 );

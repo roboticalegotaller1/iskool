@@ -15,6 +15,7 @@ import { HardwareAudioTester } from '@/components/languages/HardwareAudioTester'
 import { LanguageAnalyticsCharts } from '@/components/languages/LanguageAnalyticsCharts';
 import { Curriculum12PhasesExplorer } from '@/components/languages/Curriculum12PhasesExplorer';
 import { BackButton } from '@/components/navigation/BackButton';
+import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { 
   MULTILINGUAL_HISTORICAL_FIGURES, 
   MultilingualHistoricalFigure,
@@ -214,9 +215,49 @@ export default function TeacherIdiomasPage() {
     return lessons.find(l => l.id === activeLessonId) || lessons[0];
   }, [lessons, activeLessonId]);
 
+  const adminSchools = useSchoolAdminStore(s => s.institutionsList);
+  const adminCampuses = useSchoolAdminStore(s => s.campusesList);
+
+  // Mapeo dinámico multi-colegio de planteles para escuelas creadas o futuras
+  const allAvailableCampuses = useMemo(() => {
+    const list: { id: string; name: string; shortName: string; schoolName: string; badge: string; cct: string; levelInfo: string }[] = [];
+
+    // Planteles canónicos IBIME
+    IBIME_CAMPUSES.forEach(c => {
+      list.push({
+        id: c.id,
+        name: c.name,
+        shortName: c.shortName,
+        schoolName: 'Instituto Bilingüe (IBIME)',
+        badge: c.badge,
+        cct: c.cct,
+        levelInfo: c.levelInfo
+      });
+    });
+
+    // Planteles de cualquier colegio registrado (Montessori, Rousseau, escuelas creadas o futuras)
+    (adminCampuses || []).forEach(ac => {
+      const parentSchool = (adminSchools || []).find(s => s.id === ac.school_id);
+      const sName = parentSchool?.name || 'Colegio Registrado';
+      if (!list.some(item => item.id === ac.id)) {
+        list.push({
+          id: ac.id,
+          name: `${ac.name} (${sName})`,
+          shortName: ac.name,
+          schoolName: sName,
+          badge: sName,
+          cct: (ac as any).cct || '15PPR3322G',
+          levelInfo: 'Comunidad Educativa'
+        });
+      }
+    });
+
+    return list;
+  }, [adminSchools, adminCampuses]);
+
   const selectedCampus = useMemo(() => {
-    return IBIME_CAMPUSES.find(c => c.id === selectedCampusId) || IBIME_CAMPUSES[0];
-  }, [selectedCampusId]);
+    return allAvailableCampuses.find(c => c.id === selectedCampusId) || allAvailableCampuses[0];
+  }, [allAvailableCampuses, selectedCampusId]);
 
   const activeCertification = useMemo(() => {
     return CEFR_CERTIFICATIONS[activeLesson.level] || CEFR_CERTIFICATIONS['B1'];
@@ -721,7 +762,17 @@ export default function TeacherIdiomasPage() {
               )}
             </button>
 
-            {/* Selector de Campus IBIME */}
+            {/* Acceso Directo al Writing Engine para Todas las Escuelas */}
+            <Link
+              href="/teacher/idiomas/writing"
+              className="px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-teal-500 hover:from-indigo-500 hover:to-teal-400 text-white font-bold text-xs shadow-md shadow-indigo-600/25 transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+              title="Supervisión analítica de redacción Cambridge/DELF y evaluación en 0 tokens"
+            >
+              <PenTool className="w-3.5 h-3.5 text-indigo-200" />
+              <span>Writing Engine</span>
+            </Link>
+
+            {/* Selector de Plantel Multi-Colegio */}
             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-2xl border shadow-xs text-xs ${
               isLightMode ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-900/90 border-slate-800 text-slate-200'
             }`}>
@@ -737,7 +788,7 @@ export default function TeacherIdiomasPage() {
                   isLightMode ? 'text-slate-800' : 'text-slate-200'
                 }`}
               >
-                {IBIME_CAMPUSES.map(campus => (
+                {allAvailableCampuses.map(campus => (
                   <option key={campus.id} value={campus.id} className={isLightMode ? 'bg-white text-slate-900' : 'bg-slate-900 text-white'}>
                     {campus.name}
                   </option>

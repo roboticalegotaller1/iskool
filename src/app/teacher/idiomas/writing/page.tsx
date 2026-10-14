@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { BackButton } from '@/components/navigation/BackButton';
 import { useWritingEngineStore } from '@/store/useWritingEngineStore';
+import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { AutonomousWritingEngineService } from '@/services/writingEngineService';
 import {
   WritingLanguage,
@@ -30,7 +31,8 @@ import {
   BookOpen,
   Calendar,
   Send,
-  Zap
+  Zap,
+  Building2
 } from 'lucide-react';
 
 export default function TeacherWritingDashboardPage() {
@@ -42,6 +44,49 @@ export default function TeacherWritingDashboardPage() {
     generateNewPrompt,
     addTeacherEvaluation
   } = useWritingEngineStore();
+
+  const schools = useSchoolAdminStore(state => state.institutionsList);
+  const campuses = useSchoolAdminStore(state => state.campusesList);
+  const groups = useSchoolAdminStore(state => state.groupsList);
+
+  // Mapeo dinámico multi-colegio para escuelas creadas o futuras
+  const cohortsBySchool = useMemo(() => {
+    const result: Record<string, { id: string; label: string }[]> = {
+      'Instituto Bilingüe (IBIME)': [
+        { id: 'Grupo B2 Avanzado - Sede Montes (Bachillerato)', label: 'Grupo B2 Avanzado · Sede Montes' },
+        { id: 'Grupo B1 Intermedio - Sede San Cristóbal', label: 'Grupo B1 Intermedio · Sede San Cristóbal' },
+        { id: 'Grupo DELF B2 Français - Campus Lagos', label: 'Grupo DELF B2 Français · Campus Lagos' },
+        { id: 'Grupo A2 Key Flyers - Campus Coacalco', label: 'Grupo A2 Key Flyers · Campus Coacalco' }
+      ],
+      'Colegio Montessori del Valle': [
+        { id: 'Taller Cambridge B1 - Primaria Montessori', label: '1ºA Primaria · Taller Cambridge B1' },
+        { id: 'Atelier DELF A2 - Secundaria Montessori', label: '1ºA Secundaria · Atelier DELF A2' }
+      ],
+      'Colegio Jean-Jacques Rousseau': [
+        { id: 'Laboratorio Bilingüe A2 - Primaria Jardines', label: 'Primaria Jardines · Lab Bilingüe A2' },
+        { id: 'Cambridge First B2 - Secundaria Torres', label: 'Secundaria Torres · Cambridge B2' }
+      ]
+    };
+
+    // Añadir grupos registrados en useSchoolAdminStore (cualquier colegio creado o futuro)
+    (groups || []).forEach((g: any) => {
+      const parentSchool = (schools || []).find((s: any) => s.id === g.school_id);
+      const parentCampus = (campuses || []).find((c: any) => c.id === g.campus_id);
+      const schoolName = parentSchool?.name || 'Colegio Registrado';
+      const campusName = parentCampus?.name || g.campus_name || 'Plantel Matriz';
+      const groupLabel = `${g.name} (${campusName})`;
+      const fullId = `${g.name} - ${campusName} (${schoolName})`;
+
+      if (!result[schoolName]) {
+        result[schoolName] = [];
+      }
+      if (!result[schoolName].some(c => c.id === fullId || c.label === groupLabel)) {
+        result[schoolName].push({ id: fullId, label: groupLabel });
+      }
+    });
+
+    return result;
+  }, [schools, campuses, groups]);
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'consignas' | 'inspeccion' | 'consola'>('dashboard');
   const [selectedStudentEval, setSelectedStudentEval] = useState<FinalEvaluationOutput | null>(null);
@@ -175,10 +220,15 @@ export default function TeacherWritingDashboardPage() {
               onChange={(e) => setSelectedCohortGroup(e.target.value)}
               className="bg-transparent text-xs font-bold text-slate-200 focus:outline-none pr-4 cursor-pointer"
             >
-              <option value="Grupo B2 Avanzado - Sede Montes (Bachillerato)">Grupo B2 Avanzado · Sede Montes</option>
-              <option value="Grupo B1 Intermedio - Sede San Cristóbal">Grupo B1 Intermedio · Sede San Cristóbal</option>
-              <option value="Grupo DELF B2 Français - Campus Lagos">Grupo DELF B2 Français · Campus Lagos</option>
-              <option value="Grupo A2 Key Flyers - Campus Coacalco">Grupo A2 Key Flyers · Campus Coacalco</option>
+              {Object.entries(cohortsBySchool).map(([schoolName, cohortList]) => (
+                <optgroup key={schoolName} label={`🏫 ${schoolName}`} className="bg-slate-900 text-indigo-300 font-bold">
+                  {cohortList.map(c => (
+                    <option key={c.id} value={c.id} className="bg-slate-900 text-white font-normal">
+                      {c.label}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
             </select>
           </div>
         </div>

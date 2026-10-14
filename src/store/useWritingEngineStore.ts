@@ -15,6 +15,8 @@ import {
   TeacherCohortDashboardOutput
 } from '@/types/writingEngine';
 import { AutonomousWritingEngineService } from '@/services/writingEngineService';
+import { useStudentStore } from './useStudentStore';
+import { useSchoolAdminStore } from './useSchoolAdminStore';
 
 interface WritingEngineState {
   // Estado Estudiante Studio
@@ -192,13 +194,30 @@ export const useWritingEngineStore = create<WritingEngineState>()(
         const { selectedLanguage, selectedLevel, activePrompt, currentDraft, allEvaluations, selectedCohortGroup } = get();
         set({ isSubmitting: true });
 
+        // Identificación dinámica multi-colegio del alumno activo (escuelas actuales o futuras)
+        let currentStudentId = 'std-santi';
+        let currentStudentName = 'Santiago Morales';
+        try {
+          const studentState = useStudentStore.getState();
+          const adminState = useSchoolAdminStore.getState();
+          if (studentState?.activeStudentId) {
+            currentStudentId = studentState.activeStudentId;
+            const detailed = adminState?.detailedStudents?.find((s: any) => s.id === currentStudentId);
+            if (detailed) {
+              currentStudentName = `${detailed.first_name || ''} ${detailed.last_name_1 || ''}`.trim() || 'Estudiante iSkool';
+            }
+          }
+        } catch {
+          // Fallback seguro en entornos sin hidratación completa
+        }
+
         const evaluation = AutonomousWritingEngineService.evaluarTextoFinal({
           idioma: selectedLanguage,
           nivel: selectedLevel,
           consigna: activePrompt.consignaOficial,
           texto_final: currentDraft,
-          studentId: 'std-alumno-activo',
-          studentName: 'Alumno en Práctica iSkool'
+          studentId: currentStudentId,
+          studentName: currentStudentName
         });
 
         const updatedAll = [evaluation, ...allEvaluations];
@@ -206,6 +225,13 @@ export const useWritingEngineStore = create<WritingEngineState>()(
           grupo: selectedCohortGroup,
           evaluaciones: updatedAll
         });
+
+        // Recompensa gamificada por entrega de redacción certificada (+80 XP y +25 Monedas)
+        try {
+          useStudentStore.getState().addXpAndCoins(currentStudentId, 80, 25);
+        } catch {
+          // Ignorar si el store no está montado
+        }
 
         set(state => ({
           latestEvaluation: evaluation,
