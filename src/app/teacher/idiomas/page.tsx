@@ -180,6 +180,7 @@ export default function TeacherIdiomasPage() {
   // Estado Institucional IBIME y Sedes
   const [selectedCampusId, setSelectedCampusId] = useState<string>('montes');
   const [isIbimePresentationMode, setIsIbimePresentationMode] = useState<boolean>(true);
+  const [isLightMode, setIsLightMode] = useState<boolean>(true); // Rediseño en Colores Claros (Light Mode)
 
   // Estado de reproducción y prueba auditiva de la voz
   const [isPlayingPreview, setIsPlayingPreview] = useState<boolean>(false);
@@ -486,7 +487,9 @@ export default function TeacherIdiomasPage() {
   }, [studentReports]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col overflow-x-hidden">
+    <div className={`min-h-screen transition-colors duration-300 flex flex-col overflow-x-hidden ${
+      isLightMode ? 'bg-[#F8FAFC] text-slate-900' : 'bg-slate-950 text-slate-100'
+    }`}>
       <main className="flex-1 max-w-7xl w-full mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-x-hidden">
         
         {/* Barra Superior con Control de Retroceso Inteligente y Selector Institucional */}
@@ -498,18 +501,48 @@ export default function TeacherIdiomasPage() {
           />
 
           <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+            {/* Alternador de Modo Claro / Modo Oscuro */}
+            <button
+              type="button"
+              onClick={() => setIsLightMode(!isLightMode)}
+              className={`px-3 py-1.5 rounded-2xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer border ${
+                isLightMode
+                  ? 'bg-amber-50/90 border-amber-300/80 text-amber-900 shadow-xs hover:bg-amber-100'
+                  : 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white'
+              }`}
+              title={isLightMode ? "Cambiar a Modo Oscuro" : "Cambiar a Modo Claro"}
+            >
+              {isLightMode ? (
+                <>
+                  <span className="text-amber-500 text-sm">☀️</span>
+                  <span>Modo Claro</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-indigo-400 text-sm">🌙</span>
+                  <span>Modo Oscuro</span>
+                </>
+              )}
+            </button>
+
             {/* Selector de Campus IBIME */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-sm text-xs">
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-2xl border shadow-xs text-xs ${
+              isLightMode ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-900/90 border-slate-800 text-slate-200'
+            }`}>
               <Building2 className="w-3.5 h-3.5 text-red-500 shrink-0" />
-              <label htmlFor="campus-select" className="text-slate-400 font-bold hidden sm:inline">Plantel:</label>
+              <label htmlFor="campus-select" className={`font-bold hidden sm:inline ${
+                isLightMode ? 'text-slate-600' : 'text-slate-400'
+              }`}>Plantel:</label>
               <select
                 id="campus-select"
                 value={selectedCampusId}
                 onChange={(e) => setSelectedCampusId(e.target.value)}
-                className="bg-transparent text-slate-200 font-bold focus:outline-hidden cursor-pointer"
+                className={`bg-transparent font-bold focus:outline-hidden cursor-pointer ${
+                  isLightMode ? 'text-slate-800' : 'text-slate-200'
+                }`}
               >
                 {IBIME_CAMPUSES.map(campus => (
-                  <option key={campus.id} value={campus.id} className="bg-slate-900 text-white">
+                  <option key={campus.id} value={campus.id} className={isLightMode ? 'bg-white text-slate-900' : 'bg-slate-900 text-white'}>
                     {campus.name}
                   </option>
                 ))}
@@ -522,12 +555,12 @@ export default function TeacherIdiomasPage() {
               onClick={() => setIsIbimePresentationMode(!isIbimePresentationMode)}
               className={`px-3 py-1.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer border ${
                 isIbimePresentationMode
-                  ? 'bg-red-600/20 border-red-500/50 text-red-300 shadow-sm shadow-red-900/20'
-                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                  ? 'bg-red-600/10 border-red-500/40 text-red-600 shadow-xs'
+                  : (isLightMode ? 'bg-white border-slate-200 text-slate-700 hover:text-slate-900' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white')
               }`}
               title="Alternar entre presentación institucional IBIME y visualización general"
             >
-              <div className={`w-2 h-2 rounded-full ${isIbimePresentationMode ? 'bg-[#E41B14] shadow-sm shadow-red-500 animate-pulse' : 'bg-slate-500'}`} />
+              <div className={`w-2 h-2 rounded-full ${isIbimePresentationMode ? 'bg-[#E41B14] shadow-xs shadow-red-500 animate-pulse' : 'bg-slate-400'}`} />
               <span>{isIbimePresentationMode ? 'Presentación IBIME Activa' : 'Modo General'}</span>
             </button>
           </div>
@@ -536,36 +569,46 @@ export default function TeacherIdiomasPage() {
         {/* =========================================================================
             ENCABEZADO INSTITUCIONAL DEL CENTRO DE IDIOMAS (12 FASES · ESL & FLE)
             ========================================================================= */}
-        <div className={`flex flex-wrap items-center justify-between gap-6 p-6 sm:p-7 rounded-3xl transition-all shadow-2xl ${
-          isIbimePresentationMode
-            ? 'bg-gradient-to-r from-[#0B132B] via-[#0F172A] to-[#1a0808] border border-[#E41B14]/40 shadow-red-950/20'
-            : 'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/30'
+        <div className={`flex flex-wrap items-center justify-between gap-6 p-6 sm:p-7 rounded-3xl transition-all ${
+          isLightMode
+            ? 'bg-white border border-slate-200/90 shadow-sm'
+            : (isIbimePresentationMode
+                ? 'bg-gradient-to-r from-[#0B132B] via-[#0F172A] to-[#1a0808] border border-[#E41B14]/40 shadow-2xl shadow-red-950/20'
+                : 'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/30 shadow-2xl')
         }`}>
           <div className="space-y-2 flex-1 min-w-0">
             {/* Fila de Insignias y CCT */}
             <div className="flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-wider">
               {isIbimePresentationMode ? (
                 <>
-                  <span className="px-2.5 py-0.5 rounded-md bg-[#E41B14]/20 border border-[#E41B14]/40 text-red-300 flex items-center gap-1.5">
+                  <span className={`px-2.5 py-0.5 rounded-md border flex items-center gap-1.5 ${
+                    isLightMode 
+                      ? 'bg-red-50 border-red-200 text-red-700' 
+                      : 'bg-[#E41B14]/20 border-[#E41B14]/40 text-red-300'
+                  }`}>
                     <span className="w-1.5 h-1.5 rounded-full bg-[#E41B14] animate-pulse" />
                     Instituto Bilingüe IBIME S.C.
                   </span>
-                  <span className="text-slate-600">·</span>
-                  <span className="text-amber-400 font-mono">CCT {selectedCampus.cct}</span>
-                  <span className="text-slate-600">·</span>
-                  <span className="text-cyan-300 font-mono">{selectedCampus.shortName}</span>
-                  <span className="text-slate-600">·</span>
-                  <span className="text-slate-300">Cambridge & DELF Preparation Centre</span>
+                  <span className="text-slate-400">·</span>
+                  <span className={`font-mono ${isLightMode ? 'text-amber-700' : 'text-amber-400'}`}>CCT {selectedCampus.cct}</span>
+                  <span className="text-slate-400">·</span>
+                  <span className={`font-mono ${isLightMode ? 'text-indigo-700' : 'text-cyan-300'}`}>{selectedCampus.shortName}</span>
+                  <span className="text-slate-400">·</span>
+                  <span className={isLightMode ? 'text-slate-600' : 'text-slate-300'}>Cambridge & DELF Preparation Centre</span>
                 </>
               ) : (
                 <>
-                  <span className="px-2.5 py-0.5 rounded-md bg-indigo-500/20 border border-indigo-500/40 text-indigo-300">
+                  <span className={`px-2.5 py-0.5 rounded-md border ${
+                    isLightMode 
+                      ? 'bg-indigo-50 border-indigo-200 text-indigo-700' 
+                      : 'bg-indigo-500/20 border border-indigo-500/40 text-indigo-300'
+                  }`}>
                     Centro de Idiomas Profesional ISkool
                   </span>
-                  <span className="text-slate-500">·</span>
-                  <span className="text-cyan-300 font-mono">12 Fases Curriculares Oficiales</span>
-                  <span className="text-slate-500">·</span>
-                  <span className="text-teal-300">SEP CENNI (1-20) & DELF/DALF</span>
+                  <span className="text-slate-400">·</span>
+                  <span className={`font-mono ${isLightMode ? 'text-indigo-700' : 'text-cyan-300'}`}>12 Fases Curriculares Oficiales</span>
+                  <span className="text-slate-400">·</span>
+                  <span className={isLightMode ? 'text-teal-700' : 'text-teal-300'}>SEP CENNI (1-20) & DELF/DALF</span>
                 </>
               )}
             </div>
@@ -573,16 +616,22 @@ export default function TeacherIdiomasPage() {
             {/* Título y Logo */}
             <div className="flex items-center gap-4 pt-1">
               {isIbimePresentationMode ? (
-                <div className="p-2 rounded-2xl bg-slate-900/90 border border-slate-700/60 shadow-lg shrink-0">
+                <div className={`p-2 rounded-2xl border shadow-xs shrink-0 ${
+                  isLightMode ? 'bg-slate-50 border-slate-200' : 'bg-slate-900/90 border-slate-700/60'
+                }`}>
                   <IbimeOfficialLogo variant="shield_only" size={50} />
                 </div>
               ) : (
-                <div className="p-2.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 text-cyan-400 shrink-0">
+                <div className={`p-2.5 rounded-2xl border shrink-0 ${
+                  isLightMode ? 'bg-indigo-50 border-indigo-200 text-indigo-600' : 'bg-indigo-500/10 border-indigo-500/30 text-cyan-400'
+                }`}>
                   <Globe2 className="w-9 h-9" />
                 </div>
               )}
               <div>
-                <h1 className="text-2xl sm:text-3xl font-black text-white flex flex-wrap items-center gap-2">
+                <h1 className={`text-2xl sm:text-3xl font-black flex flex-wrap items-center gap-2 ${
+                  isLightMode ? 'text-slate-900' : 'text-white'
+                }`}>
                   <span>Centro de Idiomas & Fonética Avanzada</span>
                   {isIbimePresentationMode && (
                     <span className="text-[11px] font-black px-2 py-0.5 rounded-md bg-[#E41B14] text-white tracking-widest uppercase shadow-sm">
@@ -590,7 +639,9 @@ export default function TeacherIdiomasPage() {
                     </span>
                   )}
                 </h1>
-                <p className="text-xs sm:text-sm text-slate-300 font-medium">
+                <p className={`text-xs sm:text-sm font-medium ${
+                  isLightMode ? 'text-slate-600' : 'text-slate-300'
+                }`}>
                   {isIbimePresentationMode
                     ? 'Red Bilingüe IBIME · Gestión integral de inmersión oral en Inglés (ESL) y Francés (FLE) con acreditación internacional.'
                     : 'Consola docente de gestión integral de lenguas extranjeras en Inglés (ESL) y Francés (FLE).'}
@@ -598,14 +649,18 @@ export default function TeacherIdiomasPage() {
               </div>
             </div>
             
-            <p className="text-xs text-slate-400 max-w-3xl leading-relaxed pt-1">
+            <p className={`text-xs max-w-3xl leading-relaxed pt-1 ${
+              isLightMode ? 'text-slate-600' : 'text-slate-400'
+            }`}>
               Mentores conversacionales gesticulantes, personajes históricos en primera persona, reconocimiento de fonemas en tiempo real, radares CEFR y vinculación con la <strong>Bóveda Curricular</strong> institucional.
             </p>
           </div>
 
           {/* Selector de Idioma Rápido */}
           <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
-            <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-950/80 border border-slate-800 shadow-inner">
+            <div className={`flex items-center gap-2 p-1.5 rounded-2xl border shadow-inner ${
+              isLightMode ? 'bg-slate-100 border-slate-200' : 'bg-slate-950/80 border-slate-800'
+            }`}>
               <button
                 type="button"
                 onClick={() => {
@@ -618,8 +673,8 @@ export default function TeacherIdiomasPage() {
                 }}
                 className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
                   activeLesson.language === 'en'
-                    ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-lg shadow-red-700/40 ring-1 ring-red-400' : 'bg-cyan-600 text-white shadow-md')
-                    : 'text-slate-400 hover:text-white'
+                    ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md ring-1 ring-red-400' : 'bg-indigo-600 text-white shadow-md')
+                    : (isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white')
                 }`}
               >
                 <span className="text-base leading-none">🇬🇧</span>
@@ -638,8 +693,8 @@ export default function TeacherIdiomasPage() {
                 }}
                 className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
                   activeLesson.language === 'fr'
-                    ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-lg shadow-red-700/40 ring-1 ring-red-400' : 'bg-indigo-600 text-white shadow-md')
-                    : 'text-slate-400 hover:text-white'
+                    ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md ring-1 ring-red-400' : 'bg-blue-600 text-white shadow-md')
+                    : (isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white')
                 }`}
               >
                 <span className="text-base leading-none">🇫🇷</span>
@@ -652,14 +707,16 @@ export default function TeacherIdiomasPage() {
         {/* =========================================================================
             BARRA DE NAVEGACIÓN POR PESTAÑAS (UTILIDAD & FUNCIONALIDAD DOCENTE)
             ========================================================================= */}
-        <div className="flex items-center gap-2 pb-2 border-b border-slate-800 overflow-x-auto no-scrollbar scroll-smooth">
+        <div className={`flex items-center gap-2 pb-2 border-b overflow-x-auto no-scrollbar scroll-smooth ${
+          isLightMode ? 'border-slate-200' : 'border-slate-800'
+        }`}>
           <button
             type="button"
             onClick={() => setActiveTab('editor')}
             className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'editor'
-                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30 ring-1 ring-red-400/40' : 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20')
-                : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'
+                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30' : 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20')
+                : (isLightMode ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800')
             }`}
           >
             <Edit3 className="w-4 h-4" />
@@ -671,8 +728,8 @@ export default function TeacherIdiomasPage() {
             onClick={() => setActiveTab('analytics')}
             className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'analytics'
-                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30 ring-1 ring-red-400/40' : 'bg-teal-600 text-white shadow-md shadow-teal-600/20')
-                : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'
+                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30' : 'bg-teal-600 text-white shadow-md shadow-teal-600/20')
+                : (isLightMode ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800')
             }`}
           >
             <BarChart3 className="w-4 h-4" />
@@ -684,8 +741,8 @@ export default function TeacherIdiomasPage() {
             onClick={() => setActiveTab('curriculum')}
             className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'curriculum'
-                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30 ring-1 ring-red-400/40' : 'bg-purple-600 text-white shadow-md shadow-purple-600/20')
-                : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'
+                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30' : 'bg-purple-600 text-white shadow-md shadow-purple-600/20')
+                : (isLightMode ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800')
             }`}
           >
             <Layers className="w-4 h-4" />
@@ -697,8 +754,8 @@ export default function TeacherIdiomasPage() {
             onClick={() => setActiveTab('hardware')}
             className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'hardware'
-                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30 ring-1 ring-red-400/40' : 'bg-cyan-600 text-white shadow-md shadow-cyan-600/20')
-                : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'
+                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30' : 'bg-cyan-600 text-white shadow-md shadow-cyan-600/20')
+                : (isLightMode ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800')
             }`}
           >
             <Activity className="w-4 h-4" />
@@ -710,8 +767,8 @@ export default function TeacherIdiomasPage() {
             onClick={() => setActiveTab('reports')}
             className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 relative ${
               activeTab === 'reports'
-                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30 ring-1 ring-red-400/40' : 'bg-rose-600 text-white shadow-md shadow-rose-600/20')
-                : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800'
+                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30' : 'bg-rose-600 text-white shadow-md shadow-rose-600/20')
+                : (isLightMode ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800')
             }`}
           >
             <Users className="w-4 h-4" />
@@ -723,7 +780,7 @@ export default function TeacherIdiomasPage() {
 
           <Link
             href="/teacher/idiomas/writing"
-            className="px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 bg-gradient-to-r from-indigo-600 to-teal-500 hover:from-indigo-500 hover:to-teal-400 text-white shadow-md shadow-indigo-600/30"
+            className="px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 bg-gradient-to-r from-indigo-600 to-teal-500 hover:from-indigo-500 hover:to-teal-400 text-white shadow-md shadow-indigo-600/20"
           >
             <PenTool className="w-4 h-4" />
             <span>Writing Engine Autónomo (Cambridge / DELF)</span>
@@ -734,9 +791,11 @@ export default function TeacherIdiomasPage() {
             FRANJA INSTITUCIONAL DE ACREDITACIÓN CEFR & CERTIFICACIONES OFICIALES
             ========================================================================= */}
         <div className={`p-4 rounded-2xl border transition-all flex flex-wrap items-center justify-between gap-3 text-xs ${
-          isIbimePresentationMode
-            ? 'bg-slate-900/90 border-[#E41B14]/30 shadow-lg shadow-red-950/20'
-            : 'bg-slate-900/60 border-slate-800'
+          isLightMode 
+            ? 'bg-white border-slate-200/90 text-slate-800 shadow-xs' 
+            : (isIbimePresentationMode
+                ? 'bg-slate-900/90 border-[#E41B14]/30 shadow-lg shadow-red-950/20'
+                : 'bg-slate-900/60 border-slate-800')
         }`}>
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-red-600/20 border border-red-500/40 text-red-300 font-black">
@@ -778,11 +837,17 @@ export default function TeacherIdiomasPage() {
           <div className="space-y-6">
             
             {/* Barra de Gestión de Lecciones y Modo Vista Previa */}
-            <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
+            <div className={`flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl border transition-all ${
+              isLightMode 
+                ? 'bg-white border-slate-200/90 shadow-xs' 
+                : 'bg-slate-900/80 border-slate-800'
+            }`}>
               
               {/* Selector de Lección Activa */}
               <div className="flex flex-wrap items-center gap-2 py-1">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider shrink-0">
+                <span className={`text-xs font-bold uppercase tracking-wider shrink-0 ${
+                  isLightMode ? 'text-slate-500' : 'text-slate-400'
+                }`}>
                   Lección:
                 </span>
                 {lessons.map(lesson => (
@@ -796,7 +861,9 @@ export default function TeacherIdiomasPage() {
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
                       lesson.id === activeLesson.id
                         ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md border border-red-400' : 'bg-indigo-600 text-white shadow-md border border-indigo-400')
-                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
+                        : (isLightMode 
+                            ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200' 
+                            : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700')
                     }`}
                   >
                     <span>{lesson.language === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
@@ -807,7 +874,7 @@ export default function TeacherIdiomasPage() {
                 <button
                   type="button"
                   onClick={handleCreateNewLesson}
-                  className="px-3 py-1.5 rounded-xl bg-teal-700/80 hover:bg-teal-600 text-white text-xs font-bold flex items-center gap-1 transition-all cursor-pointer shrink-0"
+                  className="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold flex items-center gap-1 transition-all cursor-pointer shrink-0 shadow-xs"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Nueva Lección</span>
@@ -818,10 +885,10 @@ export default function TeacherIdiomasPage() {
               <button
                 type="button"
                 onClick={() => setIsPreviewMode(!isPreviewMode)}
-                className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer shadow-lg ${
+                className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer shadow-md ${
                   isPreviewMode
                     ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black scale-105'
-                    : 'bg-cyan-600 hover:bg-cyan-500 text-white'
+                    : 'bg-indigo-600 hover:bg-indigo-500 text-white'
                 }`}
               >
                 <Eye className="w-4 h-4" />
@@ -873,22 +940,38 @@ export default function TeacherIdiomasPage() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
                 {/* Lado Izquierdo: Configuración del Mentor & Personajes Históricos */}
-                <div className="lg:col-span-4 p-5 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-5 shadow-xl">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <h3 className="text-sm font-black text-white flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-cyan-400" />
+                <div className={`lg:col-span-4 p-5 rounded-3xl border space-y-5 transition-all ${
+                  isLightMode 
+                    ? 'bg-white border-slate-200/90 shadow-sm text-slate-900' 
+                    : 'bg-slate-900/90 border-slate-800 shadow-xl text-white'
+                }`}>
+                  <div className={`flex items-center justify-between border-b pb-3 ${
+                    isLightMode ? 'border-slate-100' : 'border-slate-800'
+                  }`}>
+                    <h3 className={`text-sm font-black flex items-center gap-2 ${
+                      isLightMode ? 'text-slate-900' : 'text-white'
+                    }`}>
+                      <Sparkles className="w-4 h-4 text-cyan-500" />
                       <span>Mentor & Voz Neural</span>
                     </h3>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase">
+                    <span className={`text-[10px] font-bold uppercase ${
+                      isLightMode ? 'text-slate-500' : 'text-slate-400'
+                    }`}>
                       Parámetros
                     </span>
                   </div>
 
                   {/* Selector Personaje Histórico vs Avatar Estándar */}
-                  <div className="p-3 rounded-2xl bg-indigo-950/40 border border-indigo-700/50 space-y-2">
+                  <div className={`p-3.5 rounded-2xl border space-y-2 transition-all ${
+                    isLightMode 
+                      ? 'bg-indigo-50/70 border-indigo-200 text-indigo-950' 
+                      : 'bg-indigo-950/40 border-indigo-700/50 text-indigo-300'
+                  }`}>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
-                        <Landmark className="w-3.5 h-3.5 text-amber-400" />
+                      <span className={`text-xs font-bold flex items-center gap-1.5 ${
+                        isLightMode ? 'text-indigo-900' : 'text-indigo-300'
+                      }`}>
+                        <Landmark className="w-3.5 h-3.5 text-amber-500" />
                         <span>Personaje Histórico Vivo</span>
                       </span>
                       <input
@@ -918,7 +1001,9 @@ export default function TeacherIdiomasPage() {
                         className="rounded accent-amber-500 cursor-pointer w-4 h-4"
                       />
                     </div>
-                    <p className="text-[10px] text-slate-400 leading-tight">
+                    <p className={`text-[10px] leading-tight ${
+                      isLightMode ? 'text-slate-600' : 'text-slate-400'
+                    }`}>
                       Activa próceres en primera persona estricta (Shakespeare, Lincoln, Napoleón, Curie) con sus voces de época.
                     </p>
                   </div>
@@ -926,9 +1011,11 @@ export default function TeacherIdiomasPage() {
                   {useHistoricalFigure ? (
                     /* LISTA DE PERSONAJES HISTÓRICOS DISPONIBLES */
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-amber-300 flex items-center justify-between">
+                      <label className={`text-xs font-bold flex items-center justify-between ${
+                        isLightMode ? 'text-amber-800' : 'text-amber-300'
+                      }`}>
                         <span>Elegir Personaje Histórico ({activeLesson.language === 'fr' ? 'Francés' : 'Inglés'}):</span>
-                        <span className="text-[10px] text-amber-400 font-mono font-bold">1ª Persona Estricta</span>
+                        <span className="text-[10px] text-amber-600 dark:text-amber-400 font-mono font-bold">1ª Persona Estricta</span>
                       </label>
                       <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                         {availableHistoricalFigures.map(fig => (
@@ -940,12 +1027,16 @@ export default function TeacherIdiomasPage() {
                             }}
                             className={`p-2.5 rounded-2xl border text-xs cursor-pointer transition-all flex items-center justify-between ${
                               activeLesson.avatarName === fig.name || activeLesson.historicalFigureId === fig.id
-                                ? 'bg-amber-500/20 border-amber-400 text-white font-bold shadow-md shadow-amber-500/10'
-                                : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-amber-500/40 hover:bg-slate-900'
+                                ? (isLightMode 
+                                    ? 'bg-amber-50 border-amber-400 text-slate-900 font-bold shadow-xs' 
+                                    : 'bg-amber-500/20 border-amber-400 text-white font-bold shadow-md shadow-amber-500/10')
+                                : (isLightMode 
+                                    ? 'bg-slate-50 border-slate-200 text-slate-700 hover:border-amber-300 hover:bg-slate-100' 
+                                    : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-amber-500/40 hover:bg-slate-900')
                             }`}
                           >
                             <div className="flex items-center gap-3">
-                              <div className="relative w-10 h-10 rounded-xl overflow-hidden border-2 border-amber-500/60 shrink-0 shadow-md">
+                              <div className="relative w-10 h-10 rounded-xl overflow-hidden border-2 border-amber-500/60 shrink-0 shadow-xs">
                                 <img 
                                   src={fig.avatarImage} 
                                   alt={fig.name} 
@@ -953,15 +1044,25 @@ export default function TeacherIdiomasPage() {
                                 />
                               </div>
                               <div>
-                                <span className="block font-bold text-white text-xs">{fig.name}</span>
-                                <span className="text-[10px] text-amber-300/80">{fig.era}</span>
+                                <span className={`block font-bold text-xs ${
+                                  isLightMode ? 'text-slate-900' : 'text-white'
+                                }`}>{fig.name}</span>
+                                <span className={`text-[10px] ${
+                                  isLightMode ? 'text-amber-700' : 'text-amber-300/80'
+                                }`}>{fig.era}</span>
                               </div>
                             </div>
                             <div className="flex flex-col items-end gap-1">
-                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-950/80 border border-amber-500/40 text-amber-300 font-mono font-bold">
+                              <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold border ${
+                                isLightMode 
+                                  ? 'bg-amber-100 border-amber-300 text-amber-900' 
+                                  : 'bg-amber-950/80 border-amber-500/40 text-amber-300'
+                              }`}>
                                 1ª Persona
                               </span>
-                              <span className="text-[9px] text-slate-400">
+                              <span className={`text-[9px] ${
+                                isLightMode ? 'text-slate-500' : 'text-slate-400'
+                              }`}>
                                 {fig.gender === 'female' ? '👩' : '👨'} {fig.country}
                               </span>
                             </div>
@@ -974,7 +1075,9 @@ export default function TeacherIdiomasPage() {
                     <>
                       {/* Género del Avatar */}
                       <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-slate-300">Género del Avatar:</label>
+                        <label className={`text-xs font-bold ${
+                          isLightMode ? 'text-slate-700' : 'text-slate-300'
+                        }`}>Género del Avatar:</label>
                         <div className="grid grid-cols-2 gap-2">
                           <button
                             type="button"
@@ -989,8 +1092,12 @@ export default function TeacherIdiomasPage() {
                             }}
                             className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                               activeLesson.avatarGender === 'female'
-                                ? 'bg-indigo-600/30 border-indigo-400 text-white shadow-md'
-                                : 'bg-slate-800 border-slate-700 text-slate-400'
+                                ? (isLightMode 
+                                    ? 'bg-indigo-50 border-indigo-400 text-indigo-900 shadow-xs' 
+                                    : 'bg-indigo-600/30 border-indigo-400 text-white shadow-md')
+                                : (isLightMode 
+                                    ? 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200' 
+                                    : 'bg-slate-800 border-slate-700 text-slate-400')
                             }`}
                           >
                             <span>👩‍🏫</span>
@@ -1010,8 +1117,12 @@ export default function TeacherIdiomasPage() {
                             }}
                             className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                               activeLesson.avatarGender === 'male'
-                                ? 'bg-indigo-600/30 border-indigo-400 text-white shadow-md'
-                                : 'bg-slate-800 border-slate-700 text-slate-400'
+                                ? (isLightMode 
+                                    ? 'bg-indigo-50 border-indigo-400 text-indigo-900 shadow-xs' 
+                                    : 'bg-indigo-600/30 border-indigo-400 text-white shadow-md')
+                                : (isLightMode 
+                                    ? 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200' 
+                                    : 'bg-slate-800 border-slate-700 text-slate-400')
                             }`}
                           >
                             <span>👨‍🏫</span>
@@ -1022,11 +1133,17 @@ export default function TeacherIdiomasPage() {
 
                       {/* Selector de Voz Neural */}
                       <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-slate-300">Voz Neural Calibrada:</label>
+                        <label className={`text-xs font-bold ${
+                          isLightMode ? 'text-slate-700' : 'text-slate-300'
+                        }`}>Voz Neural Calibrada:</label>
                         <select
                           value={activeLesson.avatarVoice}
                           onChange={(e) => updateLesson(activeLesson.id, { avatarVoice: e.target.value })}
-                          className="w-full p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-white"
+                          className={`w-full p-2.5 rounded-xl border text-xs font-bold transition-all ${
+                            isLightMode 
+                              ? 'bg-slate-50 border-slate-200 text-slate-900 focus:border-indigo-500' 
+                              : 'bg-slate-800 border-slate-700 text-white'
+                          }`}
                         >
                           {availableVoices.map(v => (
                             <option key={v.id} value={v.id}>{v.label}</option>
@@ -1039,8 +1156,8 @@ export default function TeacherIdiomasPage() {
                   {/* Velocidad Predeterminada */}
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs font-bold">
-                      <span className="text-slate-300">Velocidad de Dicción:</span>
-                      <span className="text-cyan-400 font-mono">{activeLesson.defaultSpeed}x</span>
+                      <span className={isLightMode ? 'text-slate-700' : 'text-slate-300'}>Velocidad de Dicción:</span>
+                      <span className="text-cyan-600 dark:text-cyan-400 font-mono font-black">{activeLesson.defaultSpeed}x</span>
                     </div>
                     <input
                       type="range"
@@ -1049,9 +1166,11 @@ export default function TeacherIdiomasPage() {
                       step="0.05"
                       value={activeLesson.defaultSpeed}
                       onChange={(e) => updateLesson(activeLesson.id, { defaultSpeed: parseFloat(e.target.value) })}
-                      className="w-full accent-cyan-400 cursor-pointer"
+                      className="w-full accent-indigo-600 cursor-pointer"
                     />
-                    <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
+                    <div className={`flex justify-between text-[10px] font-semibold ${
+                      isLightMode ? 'text-slate-500' : 'text-slate-400'
+                    }`}>
                       <span>0.6x (Rezagados)</span>
                       <span>1.0x (Nativo)</span>
                       <span>1.2x (Avanzado)</span>
@@ -1063,7 +1182,7 @@ export default function TeacherIdiomasPage() {
                     <button
                       type="button"
                       onClick={() => handlePlayAudioSample()}
-                      className={`w-full py-2.5 px-3 rounded-2xl text-xs font-black flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer ${
+                      className={`w-full py-2.5 px-3 rounded-2xl text-xs font-black flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer ${
                         isPlayingPreview
                           ? 'bg-rose-600 hover:bg-rose-500 text-white animate-pulse'
                           : 'bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white'
@@ -1077,7 +1196,7 @@ export default function TeacherIdiomasPage() {
                         </>
                       ) : (
                         <>
-                          <Volume2 className="w-4 h-4 text-cyan-300" />
+                          <Volume2 className="w-4 h-4 text-cyan-200" />
                           <span>Escuchar Muestra ({activeLesson.language === 'fr' ? 'Prononciation Française' : 'English Accent'})</span>
                         </>
                       )}
@@ -1085,7 +1204,9 @@ export default function TeacherIdiomasPage() {
                   </div>
 
                   {/* Vista en Miniatura del Avatar Configurado */}
-                  <div className="pt-2 flex justify-center">
+                  <div className={`pt-3 pb-1 flex justify-center rounded-2xl border ${
+                    isLightMode ? 'bg-slate-50/80 border-slate-200/80' : 'bg-slate-950/40 border-slate-800/60'
+                  }`}>
                     <HumanGesticulatingAvatar
                       gender={activeLesson.avatarGender}
                       name={activeLesson.avatarName}
@@ -1113,21 +1234,31 @@ export default function TeacherIdiomasPage() {
                 <div className="lg:col-span-8 space-y-6">
                   
                   {/* SECCIÓN 1: LÍNEAS DE DIÁLOGO DE LA CONVERSACIÓN */}
-                  <div className="p-5 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-4 shadow-xl">
-                    <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div className={`p-5 rounded-3xl border space-y-4 transition-all ${
+                    isLightMode 
+                      ? 'bg-white border-slate-200/90 shadow-sm text-slate-900' 
+                      : 'bg-slate-900/90 border-slate-800 shadow-xl text-white'
+                  }`}>
+                    <div className={`flex items-center justify-between border-b pb-3 ${
+                      isLightMode ? 'border-slate-100' : 'border-slate-800'
+                    }`}>
                       <div>
-                        <h3 className="text-sm font-black text-white flex items-center gap-2">
-                          <MessageSquare className="w-4 h-4 text-cyan-400" />
+                        <h3 className={`text-sm font-black flex items-center gap-2 ${
+                          isLightMode ? 'text-slate-900' : 'text-white'
+                        }`}>
+                          <MessageSquare className="w-4 h-4 text-indigo-600 dark:text-cyan-400" />
                           <span>Guion de Diálogo Interactivo</span>
                         </h3>
-                        <p className="text-[11px] text-slate-400">
+                        <p className={`text-[11px] ${
+                          isLightMode ? 'text-slate-600' : 'text-slate-400'
+                        }`}>
                           Redacta la interacción entre el mentor ({activeLesson.avatarName}) y el estudiante. El avatar hablará con gesticulación real.
                         </p>
                       </div>
                       <button
                         type="button"
                         onClick={handleAddDialogueLine}
-                        className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md"
+                        className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>Añadir Línea</span>
@@ -1136,16 +1267,28 @@ export default function TeacherIdiomasPage() {
 
                     <div className="space-y-3">
                       {activeLesson.dialogue.map((line, idx) => (
-                        <div key={line.id} className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5">
+                        <div key={line.id} className={`p-3.5 rounded-2xl border space-y-2.5 transition-all ${
+                          isLightMode 
+                            ? 'bg-slate-50/90 border-slate-200/80 text-slate-900' 
+                            : 'bg-slate-950 border-slate-800 text-white'
+                        }`}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-black px-2 py-0.5 rounded-md bg-indigo-950 text-indigo-300 border border-indigo-800">
+                              <span className={`text-xs font-black px-2 py-0.5 rounded-md border ${
+                                isLightMode 
+                                  ? 'bg-indigo-50 text-indigo-700 border-indigo-200' 
+                                  : 'bg-indigo-950 text-indigo-300 border border-indigo-800'
+                              }`}>
                                 {idx + 1}
                               </span>
                               <select
                                 value={line.speaker}
                                 onChange={(e) => handleUpdateDialogueLine(idx, { speaker: e.target.value as any })}
-                                className="px-2 py-1 rounded-lg bg-slate-800 text-xs font-bold text-white border border-slate-700"
+                                className={`px-2 py-1 rounded-lg text-xs font-bold border transition-all ${
+                                  isLightMode 
+                                    ? 'bg-white border-slate-200 text-slate-800' 
+                                    : 'bg-slate-800 text-white border-slate-700'
+                                }`}
                               >
                                 <option value="avatar">Mentor ({activeLesson.avatarName})</option>
                                 <option value="student">Alumno (Respuesta Oral)</option>
@@ -1159,17 +1302,19 @@ export default function TeacherIdiomasPage() {
                                 className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
                                   activePlayingLineId === line.id
                                     ? 'bg-rose-600 text-white animate-pulse'
-                                    : 'bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white'
+                                    : (isLightMode 
+                                        ? 'bg-slate-200/80 hover:bg-indigo-600 text-slate-700 hover:text-white' 
+                                        : 'bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white')
                                 }`}
                                 title="Escuchar locución de esta línea con voz del avatar"
                               >
-                                {activePlayingLineId === line.id ? <Pause className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-cyan-400" />}
+                                {activePlayingLineId === line.id ? <Pause className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-indigo-600 dark:text-cyan-400" />}
                                 <span className="text-[10px] hidden sm:inline">{activePlayingLineId === line.id ? 'Detener' : 'Escuchar'}</span>
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleDeleteDialogueLine(idx)}
-                                className="text-slate-500 hover:text-rose-400 p-1 cursor-pointer transition-colors"
+                                className="text-slate-400 hover:text-rose-500 p-1 cursor-pointer transition-colors"
                                 title="Eliminar línea"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -1183,14 +1328,22 @@ export default function TeacherIdiomasPage() {
                               value={line.text}
                               onChange={(e) => handleUpdateDialogueLine(idx, { text: e.target.value })}
                               placeholder={`Texto en ${activeLesson.language === 'en' ? 'Inglés' : 'Francés'}...`}
-                              className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:border-cyan-400 focus:outline-hidden"
+                              className={`w-full p-2.5 rounded-xl border text-xs focus:outline-hidden transition-all ${
+                                isLightMode 
+                                  ? 'bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:border-indigo-500 shadow-xs' 
+                                  : 'bg-slate-900 border-slate-700 text-white focus:border-cyan-400'
+                              }`}
                             />
                             <input
                               type="text"
                               value={line.translationEs}
                               onChange={(e) => handleUpdateDialogueLine(idx, { translationEs: e.target.value })}
                               placeholder="Traducción al Español para soporte del alumno..."
-                              className="w-full p-2 rounded-lg bg-slate-900/60 border border-slate-800 text-[11px] text-slate-300"
+                              className={`w-full p-2 rounded-lg border text-[11px] transition-all ${
+                                isLightMode 
+                                  ? 'bg-white border-slate-200 text-slate-800 placeholder-slate-400' 
+                                  : 'bg-slate-900/60 border-slate-800 text-slate-300'
+                              }`}
                             />
                           </div>
                         </div>
@@ -1199,21 +1352,31 @@ export default function TeacherIdiomasPage() {
                   </div>
 
                   {/* SECCIÓN 2: FRASES DE RETO PARA EL KARAOKE FONÉTICO */}
-                  <div className="p-5 rounded-3xl bg-slate-900/90 border border-slate-800 space-y-4 shadow-xl">
-                    <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div className={`p-5 rounded-3xl border space-y-4 transition-all ${
+                    isLightMode 
+                      ? 'bg-white border-slate-200/90 shadow-sm text-slate-900' 
+                      : 'bg-slate-900/90 border-slate-800 shadow-xl text-white'
+                  }`}>
+                    <div className={`flex items-center justify-between border-b pb-3 ${
+                      isLightMode ? 'border-slate-100' : 'border-slate-800'
+                    }`}>
                       <div>
-                        <h3 className="text-sm font-black text-white flex items-center gap-2">
-                          <Mic className="w-4 h-4 text-teal-400" />
+                        <h3 className={`text-sm font-black flex items-center gap-2 ${
+                          isLightMode ? 'text-slate-900' : 'text-white'
+                        }`}>
+                          <Mic className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                           <span>Frases Guiadas para Karaoke de Pronunciación</span>
                         </h3>
-                        <p className="text-[11px] text-slate-400">
+                        <p className={`text-[11px] ${
+                          isLightMode ? 'text-slate-600' : 'text-slate-400'
+                        }`}>
                           El alumno grabará estas oraciones con su micrófono. El sistema resaltará en verde las palabras correctas en tiempo real.
                         </p>
                       </div>
                       <button
                         type="button"
                         onClick={handleAddKaraokePhrase}
-                        className="px-3 py-1.5 rounded-xl bg-teal-700 hover:bg-teal-600 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md"
+                        className="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>Añadir Frase Karaoke</span>
@@ -1222,9 +1385,15 @@ export default function TeacherIdiomasPage() {
 
                     <div className="space-y-3">
                       {activeLesson.karaokePhrases.map((phrase, idx) => (
-                        <div key={phrase.id} className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+                        <div key={phrase.id} className={`p-3.5 rounded-2xl border space-y-2 transition-all ${
+                          isLightMode 
+                            ? 'bg-slate-50/90 border-slate-200/80 text-slate-900' 
+                            : 'bg-slate-950 border-slate-800 text-white'
+                        }`}>
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-black text-teal-400">
+                            <span className={`text-xs font-black ${
+                              isLightMode ? 'text-teal-700' : 'text-teal-400'
+                            }`}>
                               Frase {idx + 1} ({phrase.difficulty})
                             </span>
                             <div className="flex items-center gap-1.5">
@@ -1235,11 +1404,13 @@ export default function TeacherIdiomasPage() {
                                 className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
                                   activePlayingLineId === phrase.id
                                     ? 'bg-rose-600 text-white animate-pulse'
-                                    : 'bg-slate-800 hover:bg-teal-600 text-slate-300 hover:text-white'
+                                    : (isLightMode 
+                                        ? 'bg-slate-200/80 hover:bg-teal-600 text-slate-700 hover:text-white' 
+                                        : 'bg-slate-800 hover:bg-teal-600 text-slate-300 hover:text-white')
                                 }`}
                                 title="Escuchar pronunciación modelo"
                               >
-                                {activePlayingLineId === phrase.id ? <Pause className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-teal-400" />}
+                                {activePlayingLineId === phrase.id ? <Pause className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />}
                                 <span className="text-[10px] hidden sm:inline">{activePlayingLineId === phrase.id ? 'Detener' : 'Escuchar Modelo'}</span>
                               </button>
                               <button
@@ -1248,7 +1419,7 @@ export default function TeacherIdiomasPage() {
                                   const updated = activeLesson.karaokePhrases.filter((_, i) => i !== idx);
                                   updateLesson(activeLesson.id, { karaokePhrases: updated });
                                 }}
-                                className="text-slate-500 hover:text-rose-400 p-1 cursor-pointer transition-colors"
+                                className="text-slate-400 hover:text-rose-500 p-1 cursor-pointer transition-colors"
                                 title="Eliminar frase"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -1265,7 +1436,11 @@ export default function TeacherIdiomasPage() {
                               updateLesson(activeLesson.id, { karaokePhrases: updated });
                             }}
                             placeholder="Oración exacta que el alumno pronunciará..."
-                            className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-bold text-white focus:border-teal-400 focus:outline-hidden"
+                            className={`w-full p-2.5 rounded-xl border text-xs font-bold focus:outline-hidden transition-all ${
+                              isLightMode 
+                                ? 'bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:border-teal-500 shadow-xs' 
+                                : 'bg-slate-900 border-slate-700 text-white focus:border-teal-400'
+                            }`}
                           />
 
                           <input
@@ -1277,7 +1452,11 @@ export default function TeacherIdiomasPage() {
                               updateLesson(activeLesson.id, { karaokePhrases: updated });
                             }}
                             placeholder="Significado en español..."
-                            className="w-full p-2 rounded-lg bg-slate-900/60 border border-slate-800 text-[11px] text-slate-400"
+                            className={`w-full p-2 rounded-lg border text-[11px] transition-all ${
+                              isLightMode 
+                                ? 'bg-white border-slate-200 text-slate-700 placeholder-slate-400' 
+                                : 'bg-slate-900/60 border-slate-800 text-slate-400'
+                            }`}
                           />
                         </div>
                       ))}
@@ -1296,7 +1475,7 @@ export default function TeacherIdiomasPage() {
             PESTAÑA 2: ANALÍTICA GRÁFICA & RADAR CEFR / SEP CENNI
             ========================================================================= */}
         {activeTab === 'analytics' && (
-          <LanguageAnalyticsCharts language={activeLesson.language} />
+          <LanguageAnalyticsCharts language={activeLesson.language} isLightMode={isLightMode} />
         )}
 
         {/* =========================================================================
@@ -1305,6 +1484,7 @@ export default function TeacherIdiomasPage() {
         {activeTab === 'curriculum' && (
           <Curriculum12PhasesExplorer 
             language={activeLesson.language}
+            isLightMode={isLightMode}
             onSelectLessonTemplate={handleLoadCurriculumTemplate}
           />
         )}
@@ -1313,7 +1493,7 @@ export default function TeacherIdiomasPage() {
             PESTAÑA 4: DIAGNÓSTICO DE HARDWARE, MICRÓFONO & AUDIO
             ========================================================================= */}
         {activeTab === 'hardware' && (
-          <HardwareAudioTester language={activeLesson.language} />
+          <HardwareAudioTester language={activeLesson.language} isLightMode={isLightMode} />
         )}
 
         {/* =========================================================================
@@ -1324,30 +1504,54 @@ export default function TeacherIdiomasPage() {
             
             {/* Tarjetas de Resumen General */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 space-y-1">
-                <span className="text-xs font-bold text-slate-400 uppercase">Prácticas Evaluadas</span>
-                <div className="text-2xl sm:text-3xl font-black text-white flex items-center gap-2">
-                  <Users className="w-6 h-6 text-cyan-400" />
+              <div className={`p-5 rounded-3xl border space-y-1 transition-all ${
+                isLightMode ? 'bg-white border-slate-200/90 shadow-sm text-slate-900' : 'bg-slate-900 border-slate-800 text-white'
+              }`}>
+                <span className={`text-xs font-bold uppercase ${
+                  isLightMode ? 'text-slate-500' : 'text-slate-400'
+                }`}>Prácticas Evaluadas</span>
+                <div className={`text-2xl sm:text-3xl font-black flex items-center gap-2 ${
+                  isLightMode ? 'text-slate-900' : 'text-white'
+                }`}>
+                  <Users className="w-6 h-6 text-indigo-600 dark:text-cyan-400" />
                   <span>{stats.total}</span>
                 </div>
-                <p className="text-[11px] text-slate-400">Enviadas en tiempo real desde el karaoke</p>
+                <p className={`text-[11px] ${isLightMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                  Enviadas en tiempo real desde el karaoke
+                </p>
               </div>
 
-              <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 space-y-1">
-                <span className="text-xs font-bold text-slate-400 uppercase">Precisión Promedio Grupal</span>
-                <div className="text-2xl sm:text-3xl font-black text-teal-300 flex items-center gap-2">
-                  <Trophy className="w-6 h-6 text-amber-400" />
+              <div className={`p-5 rounded-3xl border space-y-1 transition-all ${
+                isLightMode ? 'bg-white border-slate-200/90 shadow-sm text-slate-900' : 'bg-slate-900 border-slate-800 text-white'
+              }`}>
+                <span className={`text-xs font-bold uppercase ${
+                  isLightMode ? 'text-slate-500' : 'text-slate-400'
+                }`}>Precisión Promedio Grupal</span>
+                <div className={`text-2xl sm:text-3xl font-black flex items-center gap-2 ${
+                  isLightMode ? 'text-teal-700' : 'text-teal-300'
+                }`}>
+                  <Trophy className="w-6 h-6 text-amber-500" />
                   <span>{stats.avgAccuracy}%</span>
                 </div>
-                <p className="text-[11px] text-slate-400">Porcentaje de palabras acertadas</p>
+                <p className={`text-[11px] ${isLightMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                  Porcentaje de palabras acertadas
+                </p>
               </div>
 
-              <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 space-y-1">
-                <span className="text-xs font-bold text-slate-400 uppercase">Palabras Más Complejas</span>
+              <div className={`p-5 rounded-3xl border space-y-1 transition-all ${
+                isLightMode ? 'bg-white border-slate-200/90 shadow-sm text-slate-900' : 'bg-slate-900 border-slate-800 text-white'
+              }`}>
+                <span className={`text-xs font-bold uppercase ${
+                  isLightMode ? 'text-slate-500' : 'text-slate-400'
+                }`}>Palabras Más Complejas</span>
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {stats.commonErrors.length > 0 ? (
                     stats.commonErrors.map(([word, count]) => (
-                      <span key={word} className="px-2 py-0.5 rounded-md bg-rose-950/80 border border-rose-700 text-rose-300 font-mono text-[11px] font-bold">
+                      <span key={word} className={`px-2 py-0.5 rounded-md border font-mono text-[11px] font-bold ${
+                        isLightMode 
+                          ? 'bg-rose-50 border-rose-200 text-rose-700' 
+                          : 'bg-rose-950/80 border-rose-700 text-rose-300'
+                      }`}>
                         {word} ({count})
                       </span>
                     ))
@@ -1359,7 +1563,9 @@ export default function TeacherIdiomasPage() {
             </div>
 
             {/* Barra de Búsqueda y Filtros de Reporte */}
-            <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900 border border-slate-800">
+            <div className={`flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl border transition-all ${
+              isLightMode ? 'bg-white border-slate-200/90 shadow-xs' : 'bg-slate-900 border-slate-800'
+            }`}>
               <div className="relative flex-1 max-w-md">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
@@ -1367,7 +1573,11 @@ export default function TeacherIdiomasPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Buscar alumno, palabra con error o frase..."
-                  className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-hidden focus:border-cyan-400"
+                  className={`w-full pl-9 pr-3 py-2 rounded-xl border text-xs focus:outline-hidden transition-all ${
+                    isLightMode 
+                      ? 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-indigo-500' 
+                      : 'bg-slate-950 border-slate-700 text-white focus:border-cyan-400'
+                  }`}
                 />
               </div>
 
@@ -1375,8 +1585,10 @@ export default function TeacherIdiomasPage() {
                 <button
                   type="button"
                   onClick={() => setReportFilter('all')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${
-                    reportFilter === 'all' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400'
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all ${
+                    reportFilter === 'all' 
+                      ? 'bg-indigo-600 text-white shadow-xs' 
+                      : (isLightMode ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200' : 'bg-slate-800 text-slate-400')
                   }`}
                 >
                   Todas ({studentReports.length})
@@ -1384,8 +1596,10 @@ export default function TeacherIdiomasPage() {
                 <button
                   type="button"
                   onClick={() => setReportFilter('unreviewed')}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer ${
-                    reportFilter === 'unreviewed' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400'
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold cursor-pointer transition-all ${
+                    reportFilter === 'unreviewed' 
+                      ? 'bg-indigo-600 text-white shadow-xs' 
+                      : (isLightMode ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200' : 'bg-slate-800 text-slate-400')
                   }`}
                 >
                   Pendientes ({studentReports.filter(r => !r.reviewedByTeacher).length})
@@ -1396,7 +1610,9 @@ export default function TeacherIdiomasPage() {
             {/* Lista Detallada de Reportes de Alumnos en Tiempo Real */}
             <div className="space-y-4">
               {filteredReports.length === 0 ? (
-                <div className="p-8 text-center rounded-3xl bg-slate-900/60 border border-slate-800 text-slate-400 text-xs">
+                <div className={`p-8 text-center rounded-3xl border text-xs ${
+                  isLightMode ? 'bg-white border-slate-200 text-slate-600' : 'bg-slate-900/60 border-slate-800 text-slate-400'
+                }`}>
                   No hay reportes de pronunciación con los filtros seleccionados.
                 </div>
               ) : (
@@ -1405,15 +1621,17 @@ export default function TeacherIdiomasPage() {
                     key={report.id}
                     className={`p-5 rounded-3xl border transition-all space-y-3 ${
                       report.reviewedByTeacher
-                        ? 'bg-slate-900/60 border-slate-800 opacity-80'
-                        : 'bg-slate-900 border-indigo-700/60 shadow-xl'
+                        ? (isLightMode ? 'bg-white border-slate-200/80 shadow-xs opacity-90' : 'bg-slate-900/60 border-slate-800 opacity-80')
+                        : (isLightMode ? 'bg-white border-indigo-200 shadow-sm ring-1 ring-indigo-500/20' : 'bg-slate-900 border-indigo-700/60 shadow-xl')
                     }`}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       
                       {/* Alumno y Datos */}
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-2xl overflow-hidden bg-slate-800 border border-slate-700 flex items-center justify-center font-black text-sm text-cyan-300">
+                        <div className={`w-10 h-10 rounded-2xl overflow-hidden border flex items-center justify-center font-black text-sm ${
+                          isLightMode ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-slate-800 border-slate-700 text-cyan-300'
+                        }`}>
                           {report.studentAvatar ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={report.studentAvatar} alt={report.studentName} className="w-full h-full object-cover" />
@@ -1422,14 +1640,20 @@ export default function TeacherIdiomasPage() {
                           )}
                         </div>
                         <div>
-                          <h4 className="text-sm font-black text-white flex items-center gap-2">
+                          <h4 className={`text-sm font-black flex items-center gap-2 ${
+                            isLightMode ? 'text-slate-900' : 'text-white'
+                          }`}>
                             <span>{report.studentName}</span>
-                            <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-300">
+                            <span className={`text-[10px] px-2 py-0.5 rounded-md border ${
+                              isLightMode ? 'bg-slate-100 border-slate-200 text-slate-700' : 'bg-slate-800 text-slate-300'
+                            }`}>
                               {report.language === 'fr' ? '🇫🇷 Francés' : '🇬🇧 Inglés'}
                             </span>
                           </h4>
-                          <span className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
-                            <Clock className="w-3 h-3 text-slate-500" />
+                          <span className={`text-[11px] flex items-center gap-1.5 mt-0.5 ${
+                            isLightMode ? 'text-slate-500' : 'text-slate-400'
+                          }`}>
+                            <Clock className="w-3 h-3 text-slate-400" />
                             {new Date(report.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · Lección: {report.lessonTitle}
                           </span>
                         </div>
@@ -1438,13 +1662,15 @@ export default function TeacherIdiomasPage() {
                       {/* Calificación y Estado de Revisión */}
                       <div className="flex items-center gap-3">
                         <div className="flex flex-col text-right">
-                          <span className="text-[10px] uppercase font-bold text-slate-400">Precisión Fonética</span>
+                          <span className={`text-[10px] uppercase font-bold ${
+                            isLightMode ? 'text-slate-500' : 'text-slate-400'
+                          }`}>Precisión Fonética</span>
                           <span className={`text-base font-black font-mono ${
                             report.overallAccuracy >= 85 
-                              ? 'text-emerald-400' 
+                              ? (isLightMode ? 'text-emerald-600' : 'text-emerald-400') 
                               : report.overallAccuracy >= 70 
-                                ? 'text-amber-400' 
-                                : 'text-rose-400'
+                                ? (isLightMode ? 'text-amber-600' : 'text-amber-400') 
+                                : (isLightMode ? 'text-rose-600' : 'text-rose-400')
                           }`}>
                             {report.overallAccuracy}%
                           </span>
@@ -1454,7 +1680,7 @@ export default function TeacherIdiomasPage() {
                           <button
                             type="button"
                             onClick={() => markReportAsReviewed(report.id)}
-                            className="px-3 py-1.5 rounded-xl bg-teal-800/80 hover:bg-teal-700 text-teal-100 text-xs font-bold flex items-center gap-1 cursor-pointer transition-all"
+                            className="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold flex items-center gap-1 cursor-pointer transition-all shadow-xs"
                             title="Marcar como revisado"
                           >
                             <CheckCheck className="w-3.5 h-3.5" />
@@ -1465,32 +1691,48 @@ export default function TeacherIdiomasPage() {
                     </div>
 
                     {/* Frase Evaluada */}
-                    <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1.5">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Frase Asignada:</span>
-                      <p className="text-xs text-slate-200 font-medium leading-relaxed">
+                    <div className={`p-3 rounded-2xl border space-y-1.5 ${
+                      isLightMode ? 'bg-slate-50/90 border-slate-200 text-slate-900' : 'bg-slate-950/80 border-slate-800 text-slate-200'
+                    }`}>
+                      <span className={`text-[10px] uppercase font-bold block ${
+                        isLightMode ? 'text-slate-500' : 'text-slate-400'
+                      }`}>Frase Asignada:</span>
+                      <p className={`text-xs font-medium leading-relaxed ${
+                        isLightMode ? 'text-slate-800' : 'text-slate-200'
+                      }`}>
                         &ldquo;{report.targetPhrase}&rdquo;
                       </p>
                     </div>
 
                     {/* DESGLOSE EN TIEMPO REAL: PALABRAS CON ERROR */}
                     <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
-                      <span className="font-bold text-slate-400 text-[11px]">
+                      <span className={`font-bold text-[11px] ${
+                        isLightMode ? 'text-slate-600' : 'text-slate-400'
+                      }`}>
                         Diagnóstico para el docente:
                       </span>
                       {report.mispronouncedWords.length > 0 ? (
                         <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="text-[11px] text-rose-400 font-bold">Palabras a reforzar en clase:</span>
+                          <span className={`text-[11px] font-bold ${
+                            isLightMode ? 'text-rose-600' : 'text-rose-400'
+                          }`}>Palabras a reforzar en clase:</span>
                           {report.mispronouncedWords.map((word, idx) => (
                             <span 
                               key={idx}
-                              className="px-2 py-0.5 rounded-md bg-rose-500/20 border border-rose-500/60 text-rose-300 font-bold font-mono text-[11px]"
+                              className={`px-2 py-0.5 rounded-md border font-bold font-mono text-[11px] ${
+                                isLightMode 
+                                  ? 'bg-rose-50 border-rose-200 text-rose-700' 
+                                  : 'bg-rose-500/20 border-rose-500/60 text-rose-300'
+                              }`}
                             >
                               ❌ {word}
                             </span>
                           ))}
                         </div>
                       ) : (
-                        <span className="text-[11px] text-emerald-400 font-bold flex items-center gap-1">
+                        <span className={`text-[11px] font-bold flex items-center gap-1 ${
+                          isLightMode ? 'text-emerald-700' : 'text-emerald-400'
+                        }`}>
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           Excelente entonación y dicción completada.
                         </span>
@@ -1499,11 +1741,19 @@ export default function TeacherIdiomasPage() {
 
                     {/* Recomendación Pedagógica Entregada al Alumno */}
                     {report.pedagogicalAdvice && (
-                      <div className="p-3 rounded-2xl bg-amber-950/30 border border-amber-600/40 text-xs text-amber-200 space-y-1">
-                        <span className="text-[10px] font-bold uppercase text-amber-400 flex items-center gap-1.5">
+                      <div className={`p-3 rounded-2xl border text-xs space-y-1 ${
+                        isLightMode 
+                          ? 'bg-amber-50/80 border-amber-200 text-amber-900' 
+                          : 'bg-amber-950/30 border-amber-600/40 text-amber-200'
+                      }`}>
+                        <span className={`text-[10px] font-bold uppercase flex items-center gap-1.5 ${
+                          isLightMode ? 'text-amber-800' : 'text-amber-400'
+                        }`}>
                           <span>💡 Recomendación asignada al alumno:</span>
                         </span>
-                        <p className="text-[11px] leading-relaxed">
+                        <p className={`text-[11px] leading-relaxed ${
+                          isLightMode ? 'text-amber-900' : 'text-amber-200'
+                        }`}>
                           {report.pedagogicalAdvice}
                         </p>
                       </div>

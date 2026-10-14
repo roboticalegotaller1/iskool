@@ -19,11 +19,13 @@ import {
 
 interface HardwareAudioTesterProps {
   language?: 'en' | 'fr';
+  isLightMode?: boolean;
   onDiagnosticComplete?: (result: { micOk: boolean; speakerOk: boolean; latencyMs: number }) => void;
 }
 
 export const HardwareAudioTester: React.FC<HardwareAudioTesterProps> = ({ 
   language = 'en',
+  isLightMode = true,
   onDiagnosticComplete 
 }) => {
   // Estados de micrófono
@@ -274,25 +276,33 @@ export const HardwareAudioTester: React.FC<HardwareAudioTesterProps> = ({
   }, []);
 
   return (
-    <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 text-slate-100 space-y-6 shadow-2xl">
+    <div className={`p-6 rounded-3xl border space-y-6 transition-all ${
+      isLightMode 
+        ? 'bg-white border-slate-200/90 shadow-sm text-slate-900' 
+        : 'bg-slate-900 border-slate-800 text-slate-100 shadow-2xl'
+    }`}>
       {/* Encabezado */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-800">
+      <div className={`flex flex-wrap items-center justify-between gap-3 pb-4 border-b ${
+        isLightMode ? 'border-slate-100' : 'border-slate-800'
+      }`}>
         <div>
-          <span className="text-[10px] font-black uppercase text-teal-400 tracking-wider block">
+          <span className="text-[10px] font-black uppercase text-teal-600 dark:text-teal-400 tracking-wider block">
             Diagnóstico de Hardware & Audio (Web Audio API)
           </span>
-          <h3 className="text-lg font-black text-white flex items-center gap-2">
-            <Activity className="w-5 h-5 text-cyan-400" />
+          <h3 className={`text-lg font-black flex items-center gap-2 ${
+            isLightMode ? 'text-slate-900' : 'text-white'
+          }`}>
+            <Activity className="w-5 h-5 text-indigo-600 dark:text-cyan-400" />
             <span>Comprobación de Micrófono & Altavoces del Centro de Idiomas</span>
           </h3>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`px-2.5 py-1 rounded-full text-xs font-black flex items-center gap-1.5 ${
+          <span className={`px-2.5 py-1 rounded-full text-xs font-black flex items-center gap-1.5 border ${
             micPermission === 'granted'
-              ? 'bg-emerald-950 border border-emerald-600 text-emerald-300'
+              ? (isLightMode ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-emerald-950 border-emerald-600 text-emerald-300')
               : micPermission === 'denied'
-                ? 'bg-rose-950 border border-rose-600 text-rose-300'
-                : 'bg-slate-800 border border-slate-700 text-slate-400'
+                ? (isLightMode ? 'bg-rose-50 border-rose-200 text-rose-800' : 'bg-rose-950 border-rose-600 text-rose-300')
+                : (isLightMode ? 'bg-slate-100 border-slate-200 text-slate-600' : 'bg-slate-800 border-slate-700 text-slate-400')
           }`}>
             {micPermission === 'granted' && <CheckCircle2 className="w-3.5 h-3.5" />}
             {micPermission === 'denied' && <AlertCircle className="w-3.5 h-3.5" />}
@@ -303,19 +313,27 @@ export const HardwareAudioTester: React.FC<HardwareAudioTesterProps> = ({
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Columna Izquierda: Prueba y Visualización del Micrófono */}
-        <div className="lg:col-span-7 space-y-4 p-5 rounded-2xl bg-slate-950/70 border border-slate-800">
+        <div className={`lg:col-span-7 space-y-4 p-5 rounded-2xl border transition-all ${
+          isLightMode ? 'bg-slate-50/90 border-slate-200/80' : 'bg-slate-950/70 border-slate-800'
+        }`}>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black text-white flex items-center gap-2">
-              <Mic className="w-4 h-4 text-cyan-400" />
+            <span className={`text-xs font-black flex items-center gap-2 ${
+              isLightMode ? 'text-slate-900' : 'text-white'
+            }`}>
+              <Mic className="w-4 h-4 text-indigo-600 dark:text-cyan-400" />
               <span>Sensibilidad & Espectro Vocal</span>
             </span>
-            <span className="text-xs font-mono font-bold text-slate-400">
+            <span className={`text-xs font-mono font-bold ${
+              isLightMode ? 'text-slate-600' : 'text-slate-400'
+            }`}>
               {decibels} dBFS ({audioLevel}%)
             </span>
           </div>
 
           {/* Canvas de Espectrograma en Tiempo Real */}
-          <div className="rounded-xl overflow-hidden border border-slate-800 bg-slate-950 relative h-28 flex items-center justify-center">
+          <div className={`rounded-xl overflow-hidden border relative h-28 flex items-center justify-center ${
+            isLightMode ? 'bg-slate-100 border-slate-200' : 'bg-slate-950 border-slate-800'
+          }`}>
             <canvas 
               ref={canvasRef} 
               width={400} 
@@ -323,8 +341,10 @@ export const HardwareAudioTester: React.FC<HardwareAudioTesterProps> = ({
               className="w-full h-full object-cover"
             />
             {!isListening && (
-              <div className="absolute inset-0 bg-slate-950/80 flex flex-col items-center justify-center gap-2 text-slate-400">
-                <MicOff className="w-6 h-6 text-slate-500" />
+              <div className={`absolute inset-0 flex flex-col items-center justify-center gap-2 ${
+                isLightMode ? 'bg-slate-100/90 text-slate-500' : 'bg-slate-950/80 text-slate-400'
+              }`}>
+                <MicOff className="w-6 h-6 text-slate-400" />
                 <span className="text-xs font-bold">Haz clic en Iniciar Prueba para captar tu voz</span>
               </div>
             )}
@@ -332,19 +352,23 @@ export const HardwareAudioTester: React.FC<HardwareAudioTesterProps> = ({
 
           {/* Medidor VU en Barra Horizontal */}
           <div className="space-y-1">
-            <div className="h-3 rounded-full bg-slate-800 overflow-hidden flex p-0.5 gap-0.5">
+            <div className={`h-3 rounded-full overflow-hidden flex p-0.5 gap-0.5 ${
+              isLightMode ? 'bg-slate-200' : 'bg-slate-800'
+            }`}>
               <div 
                 className={`h-full rounded-full transition-all duration-75 ${
                   audioLevel > 80 
                     ? 'bg-rose-500' 
                     : audioLevel > 50 
                       ? 'bg-amber-400' 
-                      : 'bg-emerald-400'
+                      : 'bg-emerald-500'
                 }`}
                 style={{ width: `${audioLevel}%` }}
               />
             </div>
-            <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+            <div className={`flex justify-between text-[10px] font-mono ${
+              isLightMode ? 'text-slate-500' : 'text-slate-500'
+            }`}>
               <span>-60 dB (Silencio)</span>
               <span>-24 dB (Óptimo)</span>
               <span>0 dB (Saturado)</span>
@@ -352,11 +376,17 @@ export const HardwareAudioTester: React.FC<HardwareAudioTesterProps> = ({
           </div>
 
           {/* Transcripción de Prueba en Vivo */}
-          <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">
+          <div className={`p-3 rounded-xl border text-xs space-y-1 ${
+            isLightMode ? 'bg-white border-slate-200 text-slate-900 shadow-xs' : 'bg-slate-900 border-slate-800 text-white'
+          }`}>
+            <span className={`text-[10px] font-bold uppercase block ${
+              isLightMode ? 'text-slate-500' : 'text-slate-400'
+            }`}>
               Detección de voz en vivo ({language === 'fr' ? 'Francés' : 'Inglés'}):
             </span>
-            <p className="text-slate-200 italic font-medium min-h-[1.5rem]">
+            <p className={`italic font-medium min-h-[1.5rem] ${
+              isLightMode ? 'text-slate-800' : 'text-slate-200'
+            }`}>
               {detectedVoiceText ? `“${detectedVoiceText}”` : 'Di algo frente al micrófono (ej. "Hello ISkool" o "Bonjour")...'}
             </p>
           </div>
@@ -368,7 +398,7 @@ export const HardwareAudioTester: React.FC<HardwareAudioTesterProps> = ({
             className={`w-full py-2.5 px-4 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md ${
               isListening
                 ? 'bg-rose-600 hover:bg-rose-700 text-white'
-                : 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-slate-950 font-black'
+                : 'bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-500 hover:to-indigo-500 text-white'
             }`}
           >
             {isListening ? (
@@ -388,13 +418,19 @@ export const HardwareAudioTester: React.FC<HardwareAudioTesterProps> = ({
         {/* Columna Derecha: Prueba de Altavoz y Métricas de Diagnóstico */}
         <div className="lg:col-span-5 space-y-4">
           {/* Tarjeta de Prueba de Altavoz */}
-          <div className="p-5 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-3.5">
-            <span className="text-xs font-black text-white flex items-center gap-2">
-              <Volume2 className="w-4 h-4 text-indigo-400" />
+          <div className={`p-5 rounded-2xl border space-y-3.5 transition-all ${
+            isLightMode ? 'bg-slate-50/90 border-slate-200/80 text-slate-900' : 'bg-slate-950/70 border-slate-800 text-white'
+          }`}>
+            <span className={`text-xs font-black flex items-center gap-2 ${
+              isLightMode ? 'text-slate-900' : 'text-white'
+            }`}>
+              <Volume2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               <span>Verificación de Altavoces / Salida</span>
             </span>
 
-            <p className="text-[11px] text-slate-400 leading-relaxed">
+            <p className={`text-[11px] leading-relaxed ${
+              isLightMode ? 'text-slate-600' : 'text-slate-400'
+            }`}>
               Verifica que el sonido de los avatares históricos y la guía del karaoke se escuchen nítidos y sin distorsión.
             </p>
 
@@ -403,9 +439,13 @@ export const HardwareAudioTester: React.FC<HardwareAudioTesterProps> = ({
                 type="button"
                 onClick={playTestTone}
                 disabled={isPlayingTestTone}
-                className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer text-slate-200"
+                className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  isLightMode 
+                    ? 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700 shadow-xs' 
+                    : 'bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-200'
+                }`}
               >
-                <Zap className="w-3.5 h-3.5 text-amber-400" />
+                <Zap className="w-3.5 h-3.5 text-amber-500" />
                 <span>{isPlayingTestTone ? 'Emitiendo...' : 'Tono 440 Hz'}</span>
               </button>
 
@@ -413,7 +453,7 @@ export const HardwareAudioTester: React.FC<HardwareAudioTesterProps> = ({
                 type="button"
                 onClick={playVoiceSample}
                 disabled={isPlayingVoiceSample}
-                className="p-2.5 rounded-xl bg-indigo-600/80 hover:bg-indigo-500 border border-indigo-500 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer text-white shadow-md"
+                className="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 border border-indigo-500 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer text-white shadow-xs"
               >
                 <Play className="w-3.5 h-3.5" />
                 <span>{isPlayingVoiceSample ? 'Hablando...' : `Frase en ${language === 'fr' ? 'FR' : 'EN'}`}</span>
@@ -421,7 +461,7 @@ export const HardwareAudioTester: React.FC<HardwareAudioTesterProps> = ({
             </div>
 
             {speakerVerified && (
-              <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-bold">
+              <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span>Salida de audio verificada con éxito.</span>
               </div>
@@ -429,21 +469,33 @@ export const HardwareAudioTester: React.FC<HardwareAudioTesterProps> = ({
           </div>
 
           {/* Tarjeta de Especificaciones Técnicas */}
-          <div className="p-4 rounded-2xl bg-slate-950/50 border border-slate-800 text-xs space-y-2 font-mono">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+          <div className={`p-4 rounded-2xl border text-xs space-y-2 font-mono ${
+            isLightMode 
+              ? 'bg-slate-50/70 border-slate-200/80 text-slate-700' 
+              : 'bg-slate-950/50 border-slate-800 text-slate-300'
+          }`}>
+            <span className={`text-[10px] uppercase font-bold block tracking-wider ${
+              isLightMode ? 'text-slate-500' : 'text-slate-400'
+            }`}>
               Telemetría de la Interfaz:
             </span>
-            <div className="flex justify-between py-1 border-b border-slate-900 text-slate-300">
+            <div className={`flex justify-between py-1 border-b ${
+              isLightMode ? 'border-slate-200 text-slate-700' : 'border-slate-900 text-slate-300'
+            }`}>
               <span>Frecuencia de Muestreo:</span>
-              <span className="text-cyan-400 font-bold">{sampleRate ? `${sampleRate / 1000} kHz` : 'Detectando...'}</span>
+              <span className="text-cyan-600 dark:text-cyan-400 font-bold">{sampleRate ? `${sampleRate / 1000} kHz` : 'Detectando...'}</span>
             </div>
-            <div className="flex justify-between py-1 border-b border-slate-900 text-slate-300">
+            <div className={`flex justify-between py-1 border-b ${
+              isLightMode ? 'border-slate-200 text-slate-700' : 'border-slate-900 text-slate-300'
+            }`}>
               <span>Latencia Vocal:</span>
-              <span className="text-teal-400 font-bold">{measuredLatencyMs ? `${measuredLatencyMs} ms` : '< 150 ms'}</span>
+              <span className="text-teal-600 dark:text-teal-400 font-bold">{measuredLatencyMs ? `${measuredLatencyMs} ms` : '< 150 ms'}</span>
             </div>
-            <div className="flex justify-between py-1 text-slate-300">
+            <div className={`flex justify-between py-1 ${
+              isLightMode ? 'text-slate-700' : 'text-slate-300'
+            }`}>
               <span>Filtros DSP:</span>
-              <span className="text-indigo-400 font-bold">AEC + AGC + NS (Activos)</span>
+              <span className="text-indigo-600 dark:text-indigo-400 font-bold">AEC + AGC + NS (Activos)</span>
             </div>
           </div>
         </div>

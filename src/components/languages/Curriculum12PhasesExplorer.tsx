@@ -30,6 +30,7 @@ import { CurricularWeek, CurricularLesson } from './data/curriculumTypes';
 
 interface Curriculum12PhasesExplorerProps {
   language: 'en' | 'fr';
+  isLightMode?: boolean;
   onSelectLessonTemplate?: (template: {
     title: string;
     topic: string;
@@ -42,6 +43,7 @@ interface Curriculum12PhasesExplorerProps {
 
 export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProps> = ({ 
   language,
+  isLightMode = true,
   onSelectLessonTemplate 
 }) => {
   const [selectedPhase, setSelectedPhase] = useState<number>(6); // Por defecto Fase 6 (Planeación 40 Semanas)
@@ -192,18 +194,30 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
   return (
     <div className="space-y-6">
       {/* Selector de las 12 Fases */}
-      <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 space-y-4 shadow-xl">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
+      <div className={`p-5 rounded-3xl border space-y-4 transition-all ${
+        isLightMode 
+          ? 'bg-white border-slate-200/90 shadow-sm text-slate-900' 
+          : 'bg-slate-900 border-slate-800 shadow-xl text-slate-100'
+      }`}>
+        <div className={`flex flex-wrap items-center justify-between gap-3 border-b pb-3 ${
+          isLightMode ? 'border-slate-100' : 'border-slate-800'
+        }`}>
           <div>
-            <span className="text-[10px] font-black uppercase text-indigo-400 tracking-wider block">
+            <span className="text-[10px] font-black uppercase text-indigo-600 dark:text-indigo-400 tracking-wider block">
               Ecosistema Integral ISkool (12 Fases)
             </span>
-            <h3 className="text-base font-black text-white flex items-center gap-2">
-              <Layers className="w-5 h-5 text-indigo-400" />
+            <h3 className={`text-base font-black flex items-center gap-2 ${
+              isLightMode ? 'text-slate-900' : 'text-white'
+            }`}>
+              <Layers className="w-5 h-5 text-indigo-600" />
               <span>Arquitectura Curricular de 12 Fases ({language === 'fr' ? 'Francés FLE' : 'Inglés ESL'})</span>
             </h3>
           </div>
-          <span className="px-3 py-1 rounded-full bg-indigo-950 border border-indigo-700 text-xs font-black text-indigo-300">
+          <span className={`px-3 py-1 rounded-full text-xs font-black border ${
+            isLightMode 
+              ? 'bg-indigo-50 border-indigo-200 text-indigo-700' 
+              : 'bg-indigo-950 border-indigo-700 text-indigo-300'
+          }`}>
             {language === 'fr' ? '🇫🇷 Français Langue Étrangère' : '🇬🇧 English as a Second Language'}
           </span>
         </div>
@@ -219,24 +233,34 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
                 onClick={() => setSelectedPhase(phase.id)}
                 className={`p-3 rounded-2xl text-left border transition-all cursor-pointer flex flex-col justify-between space-y-2 ${
                   isSelected
-                    ? 'bg-gradient-to-b from-indigo-900/80 to-purple-950/80 border-indigo-500 shadow-md shadow-indigo-500/20 scale-[1.02]'
-                    : 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white'
+                    ? (isLightMode 
+                        ? 'bg-gradient-to-b from-indigo-50 to-indigo-100/90 border-indigo-500 shadow-md shadow-indigo-500/10 scale-[1.02]' 
+                        : 'bg-gradient-to-b from-indigo-900/80 to-purple-950/80 border-indigo-500 shadow-md shadow-indigo-500/20 scale-[1.02]')
+                    : (isLightMode 
+                        ? 'bg-slate-50 border-slate-200/80 hover:border-slate-300 text-slate-700 hover:bg-slate-100/80' 
+                        : 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-400 hover:text-white')
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${
-                    isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400'
+                    isSelected 
+                      ? 'bg-indigo-600 text-white' 
+                      : (isLightMode ? 'bg-slate-200 text-slate-700' : 'bg-slate-800 text-slate-400')
                   }`}>
                     Fase {phase.id}
                   </span>
-                  {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400" />}
+                  {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />}
                 </div>
 
                 <div>
-                  <h5 className="text-[11px] font-black text-white line-clamp-1">
+                  <h5 className={`text-[11px] font-black line-clamp-1 ${
+                    isLightMode ? 'text-slate-900' : 'text-white'
+                  }`}>
                     {phase.name.replace(/^Fase \d+: /, '')}
                   </h5>
-                  <span className="text-[9px] text-indigo-300 block font-bold truncate">
+                  <span className={`text-[9px] block font-bold truncate ${
+                    isLightMode ? 'text-indigo-600' : 'text-indigo-300'
+                  }`}>
                     {phase.metric}
                   </span>
                 </div>
@@ -247,17 +271,27 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
 
         {/* Detalle de la Fase Seleccionada */}
         {selectedPhase && (
-          <div className="p-4 rounded-2xl bg-indigo-950/30 border border-indigo-700/40 text-xs space-y-2">
+          <div className={`p-4 rounded-2xl border text-xs space-y-2 ${
+            isLightMode 
+              ? 'bg-indigo-50/70 border-indigo-200 text-slate-800' 
+              : 'bg-indigo-950/30 border-indigo-700/40 text-slate-300'
+          }`}>
             <div className="flex items-center justify-between">
-              <span className="font-black text-indigo-300 flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-cyan-400" />
+              <span className={`font-black flex items-center gap-1.5 ${
+                isLightMode ? 'text-indigo-900' : 'text-indigo-300'
+              }`}>
+                <Sparkles className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                 <span>{phases[selectedPhase - 1]?.name}: {phases[selectedPhase - 1]?.tag}</span>
               </span>
-              <span className="text-[10px] font-mono text-cyan-300 font-bold">
+              <span className={`text-[10px] font-mono font-bold ${
+                isLightMode ? 'text-cyan-700' : 'text-cyan-300'
+              }`}>
                 {phases[selectedPhase - 1]?.metric}
               </span>
             </div>
-            <p className="text-slate-300 leading-relaxed text-[11px]">
+            <p className={`leading-relaxed text-[11px] ${
+              isLightMode ? 'text-slate-700' : 'text-slate-300'
+            }`}>
               {phases[selectedPhase - 1]?.desc}
             </p>
           </div>
@@ -265,47 +299,75 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
       </div>
 
       {/* Explorador de Semanas del Curso (Fase 6: Course Planning Layer - 40 Semanas Completas) */}
-      <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 space-y-5 shadow-xl">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
+      <div className={`p-5 rounded-3xl border space-y-5 transition-all ${
+        isLightMode 
+          ? 'bg-white border-slate-200/90 shadow-sm text-slate-900' 
+          : 'bg-slate-900 border-slate-800 shadow-xl text-slate-100'
+      }`}>
+        <div className={`flex flex-wrap items-center justify-between gap-3 border-b pb-4 ${
+          isLightMode ? 'border-slate-100' : 'border-slate-800'
+        }`}>
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full bg-teal-950 border border-teal-600/40 text-[10px] font-black text-teal-300 uppercase tracking-wider">
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                isLightMode 
+                  ? 'bg-teal-50 border-teal-200 text-teal-800' 
+                  : 'bg-teal-950 border-teal-600/40 text-teal-300'
+              }`}>
                 Planificación Completa de 40 Semanas
               </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-purple-950 border border-purple-600/40 text-[10px] font-black text-purple-300">
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black border ${
+                isLightMode 
+                  ? 'bg-purple-50 border-purple-200 text-purple-800' 
+                  : 'bg-purple-950 border-purple-600/40 text-purple-300'
+              }`}>
                 {language === 'fr' ? 'DELF Prim/Junior A1-B2 & CENNI 1-14' : 'Cambridge Starters/Key/PET/FCE & CENNI 1-14'}
               </span>
             </div>
-            <h4 className="text-base font-black text-white flex items-center gap-2 mt-1">
-              <Calendar className="w-5 h-5 text-teal-400" />
+            <h4 className={`text-base font-black flex items-center gap-2 mt-1 ${
+              isLightMode ? 'text-slate-900' : 'text-white'
+            }`}>
+              <Calendar className="w-5 h-5 text-teal-600 dark:text-teal-400" />
               <span>Banco de 40 Semanas Lectivas y Unidades Didácticas (160 Lecciones)</span>
             </h4>
-            <p className="text-[12px] text-slate-400">
+            <p className={`text-[12px] ${
+              isLightMode ? 'text-slate-600' : 'text-slate-400'
+            }`}>
               Trayecto curricular continuo sin omisiones intermedias para el aprendizaje y certificación internacional en {language === 'fr' ? 'francés' : 'inglés'}.
             </p>
           </div>
           
           <div className="text-right">
-            <span className="text-xs text-teal-400 font-mono font-bold block">
+            <span className={`text-xs font-mono font-bold block ${
+              isLightMode ? 'text-teal-700' : 'text-teal-400'
+            }`}>
               {totalLessonsInView} / 160 Lecciones {filteredWeeks.length < 40 ? 'Filtradas' : 'Disponibles'}
             </span>
-            <span className="text-[10px] text-slate-500 font-medium">
+            <span className={`text-[10px] font-medium ${
+              isLightMode ? 'text-slate-500' : 'text-slate-500'
+            }`}>
               40 Semanas Formales (4 lecciones por semana)
             </span>
           </div>
         </div>
 
         {/* Barra de Filtros: Trimestres, Niveles y Buscador en Tiempo Real */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800">
+        <div className={`grid grid-cols-1 md:grid-cols-12 gap-3 p-3.5 rounded-2xl border ${
+          isLightMode 
+            ? 'bg-slate-50/90 border-slate-200' 
+            : 'bg-slate-950/80 border-slate-800'
+        }`}>
           {/* Selector de Trimestre */}
-          <div className="md:col-span-4 flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 text-[11px]">
+          <div className={`md:col-span-4 flex items-center gap-1 p-1 rounded-xl border text-[11px] ${
+            isLightMode ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'
+          }`}>
             <button
               type="button"
               onClick={() => setSelectedTrimester('all')}
               className={`flex-1 py-1.5 px-2 rounded-lg font-bold transition-all text-center ${
                 selectedTrimester === 'all'
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-indigo-600 text-white shadow-xs'
+                  : (isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white')
               }`}
             >
               Todas (1-40)
@@ -315,8 +377,8 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
               onClick={() => setSelectedTrimester(1)}
               className={`flex-1 py-1.5 px-2 rounded-lg font-bold transition-all text-center ${
                 selectedTrimester === 1
-                  ? 'bg-teal-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-teal-600 text-white shadow-xs'
+                  : (isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white')
               }`}
               title="Semanas 1 a 13: Fundamentos A1/A1+"
             >
@@ -327,8 +389,8 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
               onClick={() => setSelectedTrimester(2)}
               className={`flex-1 py-1.5 px-2 rounded-lg font-bold transition-all text-center ${
                 selectedTrimester === 2
-                  ? 'bg-sky-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-sky-600 text-white shadow-xs'
+                  : (isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white')
               }`}
               title="Semanas 14 a 26: Consolidación A2/A2+"
             >
@@ -339,8 +401,8 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
               onClick={() => setSelectedTrimester(3)}
               className={`flex-1 py-1.5 px-2 rounded-lg font-bold transition-all text-center ${
                 selectedTrimester === 3
-                  ? 'bg-purple-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-purple-600 text-white shadow-xs'
+                  : (isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white')
               }`}
               title="Semanas 27 a 40: Autonomía & Certificación B1/B2"
             >
@@ -349,12 +411,16 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
           </div>
 
           {/* Selector de Nivel CEFR */}
-          <div className="md:col-span-3 flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 text-[11px]">
+          <div className={`md:col-span-3 flex items-center gap-1 p-1 rounded-xl border text-[11px] ${
+            isLightMode ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'
+          }`}>
             <button
               type="button"
               onClick={() => setSelectedLevel('all')}
               className={`flex-1 py-1.5 px-1.5 rounded-lg font-bold transition-all text-center ${
-                selectedLevel === 'all' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'
+                selectedLevel === 'all' 
+                  ? (isLightMode ? 'bg-slate-200 text-slate-900' : 'bg-slate-700 text-white')
+                  : (isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white')
               }`}
             >
               Niveles
@@ -363,7 +429,9 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
               type="button"
               onClick={() => setSelectedLevel('A1')}
               className={`flex-1 py-1.5 px-1.5 rounded-lg font-bold transition-all text-center ${
-                selectedLevel === 'A1' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-emerald-300'
+                selectedLevel === 'A1' 
+                  ? 'bg-emerald-600 text-white' 
+                  : (isLightMode ? 'text-slate-600 hover:text-emerald-700' : 'text-slate-400 hover:text-emerald-300')
               }`}
             >
               A1
@@ -372,7 +440,9 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
               type="button"
               onClick={() => setSelectedLevel('A2')}
               className={`flex-1 py-1.5 px-1.5 rounded-lg font-bold transition-all text-center ${
-                selectedLevel === 'A2' ? 'bg-sky-600 text-white' : 'text-slate-400 hover:text-sky-300'
+                selectedLevel === 'A2' 
+                  ? 'bg-sky-600 text-white' 
+                  : (isLightMode ? 'text-slate-600 hover:text-sky-700' : 'text-slate-400 hover:text-sky-300')
               }`}
             >
               A2
@@ -381,7 +451,9 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
               type="button"
               onClick={() => setSelectedLevel('B1')}
               className={`flex-1 py-1.5 px-1.5 rounded-lg font-bold transition-all text-center ${
-                selectedLevel === 'B1' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-indigo-300'
+                selectedLevel === 'B1' 
+                  ? 'bg-indigo-600 text-white' 
+                  : (isLightMode ? 'text-slate-600 hover:text-indigo-700' : 'text-slate-400 hover:text-indigo-300')
               }`}
             >
               B1
@@ -390,7 +462,9 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
               type="button"
               onClick={() => setSelectedLevel('B2')}
               className={`flex-1 py-1.5 px-1.5 rounded-lg font-bold transition-all text-center ${
-                selectedLevel === 'B2' ? 'bg-purple-600 text-white' : 'text-slate-400 hover:text-purple-300'
+                selectedLevel === 'B2' 
+                  ? 'bg-purple-600 text-white' 
+                  : (isLightMode ? 'text-slate-600 hover:text-purple-700' : 'text-slate-400 hover:text-purple-300')
               }`}
             >
               B2
@@ -399,19 +473,25 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
 
           {/* Buscador de Lecciones o Temas */}
           <div className="md:col-span-5 relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${
+              isLightMode ? 'text-slate-400' : 'text-slate-400'
+            }`} />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={language === 'fr' ? 'Filtrer par semaine, objectif ou phonétique...' : 'Search week, grammar, phonetics or PDA...'}
-              className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+              className={`w-full pl-9 pr-8 py-2 rounded-xl border text-xs focus:outline-none focus:border-indigo-500 transition-colors ${
+                isLightMode 
+                  ? 'bg-white border-slate-200 text-slate-900 placeholder-slate-400 shadow-xs' 
+                  : 'bg-slate-900 border-slate-800 text-white placeholder-slate-500'
+              }`}
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-bold"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-xs font-bold"
               >
                 ✕
               </button>
@@ -421,27 +501,33 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
 
         {/* Selector de Salto Rápido a Semanas (S1 a S40) */}
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-[11px] text-slate-400 px-1">
-            <span className="flex items-center gap-1 font-bold text-slate-300">
-              <Compass className="w-3.5 h-3.5 text-indigo-400" />
+          <div className={`flex items-center justify-between text-[11px] px-1 ${
+            isLightMode ? 'text-slate-600' : 'text-slate-400'
+          }`}>
+            <span className={`flex items-center gap-1 font-bold ${
+              isLightMode ? 'text-slate-800' : 'text-slate-300'
+            }`}>
+              <Compass className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               <span>Navegación Rápida por Semanas (1 - 40):</span>
             </span>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setExpandedWeek(expandedWeek === null ? 1 : null)}
-                className="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold underline"
+                className="text-[10px] text-indigo-600 hover:text-indigo-800 font-bold underline cursor-pointer"
               >
                 {expandedWeek === null ? 'Expandir primera' : 'Colapsar activa'}
               </button>
             </div>
           </div>
           
-          <div className="flex items-center gap-1 overflow-x-auto pb-1.5 scrollbar-thin scrollbar-thumb-slate-800">
+          <div className="flex items-center gap-1 overflow-x-auto pb-1.5 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-800">
             {Array.from({ length: 40 }, (_, i) => i + 1).map((weekNum) => {
               const isSelected = expandedWeek === weekNum;
               const weekData = allWeeks.find((w) => w.weekNumber === weekNum);
-              const trimesterColor = weekNum <= 13 ? 'border-teal-800/60' : (weekNum <= 26 ? 'border-sky-800/60' : 'border-purple-800/60');
+              const trimesterBorder = isLightMode 
+                ? (weekNum <= 13 ? 'border-teal-200' : (weekNum <= 26 ? 'border-sky-200' : 'border-purple-200'))
+                : (weekNum <= 13 ? 'border-teal-800/60' : (weekNum <= 26 ? 'border-sky-800/60' : 'border-purple-800/60'));
               
               return (
                 <button
@@ -449,7 +535,6 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
                   type="button"
                   onClick={() => {
                     setExpandedWeek(weekNum);
-                    // Si la semana pertenece a un trimestre filtrado que no está activo, activarlo
                     if (selectedTrimester !== 'all') {
                       const weekTrimester = weekNum <= 13 ? 1 : (weekNum <= 26 ? 2 : 3);
                       if (selectedTrimester !== weekTrimester) {
@@ -458,10 +543,12 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
                     }
                   }}
                   title={weekData ? `${weekData.title} (${weekData.level})` : `Semana ${weekNum}`}
-                  className={`flex-shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-black transition-all border ${
+                  className={`flex-shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-black transition-all border cursor-pointer ${
                     isSelected
                       ? 'bg-indigo-600 text-white border-indigo-400 shadow-md shadow-indigo-600/30 scale-105'
-                      : `bg-slate-950 text-slate-400 hover:text-white hover:bg-slate-800 ${trimesterColor}`
+                      : (isLightMode 
+                          ? `bg-slate-100 text-slate-700 hover:text-slate-900 hover:bg-slate-200 ${trimesterBorder}` 
+                          : `bg-slate-950 text-slate-400 hover:text-white hover:bg-slate-800 ${trimesterBorder}`)
                   }`}
                 >
                   S{weekNum}
@@ -474,9 +561,13 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
         {/* Lista de las 40 Semanas */}
         <div className="space-y-3">
           {filteredWeeks.length === 0 ? (
-            <div className="p-8 text-center rounded-2xl bg-slate-950 border border-slate-800 text-slate-400 space-y-2">
-              <Search className="w-8 h-8 text-slate-600 mx-auto" />
-              <p className="text-sm font-bold text-white">No se encontraron semanas con los criterios actuales</p>
+            <div className={`p-8 text-center rounded-2xl border space-y-2 ${
+              isLightMode ? 'bg-slate-50 border-slate-200 text-slate-600' : 'bg-slate-950 border-slate-800 text-slate-400'
+            }`}>
+              <Search className="w-8 h-8 text-slate-400 mx-auto" />
+              <p className={`text-sm font-bold ${isLightMode ? 'text-slate-800' : 'text-white'}`}>
+                No se encontraron semanas con los criterios actuales
+              </p>
               <p className="text-xs text-slate-500">Prueba ajustando los filtros de trimestre o buscando con otro término.</p>
               <button
                 type="button"
@@ -496,13 +587,21 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
               const isCapstoneWeek = week.weekNumber === 13 || week.weekNumber === 26 || week.weekNumber === 40;
 
               // Colorimetría por nivel CEFR
-              const levelBadgeStyle = week.cefr.startsWith('A1')
-                ? 'bg-emerald-950 text-emerald-300 border-emerald-800/80'
-                : (week.cefr.startsWith('A2')
-                  ? 'bg-sky-950 text-sky-300 border-sky-800/80'
-                  : (week.cefr.startsWith('B1')
-                    ? 'bg-indigo-950 text-indigo-300 border-indigo-800/80'
-                    : 'bg-purple-950 text-purple-300 border-purple-800/80'));
+              const levelBadgeStyle = isLightMode
+                ? (week.cefr.startsWith('A1')
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                  : (week.cefr.startsWith('A2')
+                    ? 'bg-sky-50 text-sky-800 border-sky-200'
+                    : (week.cefr.startsWith('B1')
+                      ? 'bg-indigo-50 text-indigo-800 border-indigo-200'
+                      : 'bg-purple-50 text-purple-800 border-purple-200')))
+                : (week.cefr.startsWith('A1')
+                  ? 'bg-emerald-950 text-emerald-300 border-emerald-800/80'
+                  : (week.cefr.startsWith('A2')
+                    ? 'bg-sky-950 text-sky-300 border-sky-800/80'
+                    : (week.cefr.startsWith('B1')
+                      ? 'bg-indigo-950 text-indigo-300 border-indigo-800/80'
+                      : 'bg-purple-950 text-purple-300 border-purple-800/80')));
 
               return (
                 <div
@@ -510,82 +609,124 @@ export const Curriculum12PhasesExplorer: React.FC<Curriculum12PhasesExplorerProp
                   id={`week-${week.weekNumber}`}
                   className={`rounded-2xl border transition-all overflow-hidden ${
                     isCapstoneWeek
-                      ? 'border-amber-600/40 bg-gradient-to-r from-slate-950 via-amber-950/10 to-slate-950 shadow-md shadow-amber-900/10'
-                      : 'border-slate-800 bg-slate-950'
+                      ? (isLightMode 
+                          ? 'border-amber-300 bg-gradient-to-r from-amber-50/40 via-white to-amber-50/40 shadow-xs' 
+                          : 'border-amber-600/40 bg-gradient-to-r from-slate-950 via-amber-950/10 to-slate-950 shadow-md shadow-amber-900/10')
+                      : (isLightMode 
+                          ? 'border-slate-200/90 bg-white hover:border-slate-300 shadow-xs' 
+                          : 'border-slate-800 bg-slate-950')
                   }`}
                 >
                   <div
                     onClick={() => setExpandedWeek(isExpanded ? null : week.weekNumber)}
-                    className="p-4 flex items-center justify-between cursor-pointer hover:bg-slate-900/60 transition-colors"
+                    className={`p-4 flex items-center justify-between cursor-pointer transition-colors ${
+                      isLightMode ? 'hover:bg-slate-50/80' : 'hover:bg-slate-900/60'
+                    }`}
                   >
                     <div className="flex items-start sm:items-center gap-3">
                       <span className={`w-9 h-9 rounded-xl font-black text-xs flex items-center justify-center flex-shrink-0 border ${
                         isCapstoneWeek
-                          ? 'bg-amber-900/60 border-amber-500 text-amber-200'
-                          : (week.trimester === 1
-                            ? 'bg-teal-950 border-teal-700/60 text-teal-300'
-                            : (week.trimester === 2
-                              ? 'bg-sky-950 border-sky-700/60 text-sky-300'
-                              : 'bg-purple-950 border-purple-700/60 text-purple-300'))
+                          ? (isLightMode ? 'bg-amber-100 border-amber-300 text-amber-800' : 'bg-amber-900/60 border-amber-500 text-amber-200')
+                          : (isLightMode 
+                              ? (week.trimester === 1
+                                ? 'bg-teal-50 border-teal-200 text-teal-800'
+                                : (week.trimester === 2
+                                  ? 'bg-sky-50 border-sky-200 text-sky-800'
+                                  : 'bg-purple-50 border-purple-200 text-purple-800'))
+                              : (week.trimester === 1
+                                ? 'bg-teal-950 border-teal-700/60 text-teal-300'
+                                : (week.trimester === 2
+                                  ? 'bg-sky-950 border-sky-700/60 text-sky-300'
+                                  : 'bg-purple-950 border-purple-700/60 text-purple-300')))
                       }`}>
                         S{week.weekNumber}
                       </span>
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <h5 className="text-xs sm:text-sm font-black text-white">
+                          <h5 className={`text-xs sm:text-sm font-black ${
+                            isLightMode ? 'text-slate-900' : 'text-white'
+                          }`}>
                             {week.title}
                           </h5>
                           <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${levelBadgeStyle}`}>
                             {week.level}
                           </span>
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-300 flex items-center gap-1">
-                            <Award className="w-3 h-3 text-amber-400" />
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1 ${
+                            isLightMode 
+                              ? 'bg-amber-50 border border-amber-200 text-amber-800' 
+                              : 'bg-slate-800 text-slate-300'
+                          }`}>
+                            <Award className="w-3 h-3 text-amber-500" />
                             <span>{week.certificationTarget}</span>
                           </span>
                         </div>
-                        <span className="text-[11px] text-slate-400 block mt-1 leading-snug">
-                          <strong className="text-slate-300">PDA SEP:</strong> {week.pda}
+                        <span className={`text-[11px] block mt-1 leading-snug ${
+                          isLightMode ? 'text-slate-600' : 'text-slate-400'
+                        }`}>
+                          <strong className={isLightMode ? 'text-slate-800' : 'text-slate-300'}>PDA SEP:</strong> {week.pda}
                         </span>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                      <span className="text-[10px] text-slate-400 font-bold hidden md:inline">
+                      <span className={`text-[10px] font-bold hidden md:inline ${
+                        isLightMode ? 'text-slate-500' : 'text-slate-400'
+                      }`}>
                         {week.lessons.length} Lecciones
                       </span>
                       {isExpanded ? (
-                        <ChevronDown className="w-4 h-4 text-slate-400" />
+                        <ChevronDown className={`w-4 h-4 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`} />
                       ) : (
-                        <ChevronRight className="w-4 h-4 text-slate-400" />
+                        <ChevronRight className={`w-4 h-4 ${isLightMode ? 'text-slate-600' : 'text-slate-400'}`} />
                       )}
                     </div>
                   </div>
 
                   {/* Lista de las 4 Lecciones de la Semana */}
                   {isExpanded && (
-                    <div className="p-4 pt-1 border-t border-slate-900 bg-slate-950/80 space-y-2.5">
+                    <div className={`p-4 pt-1 border-t space-y-2.5 ${
+                      isLightMode 
+                        ? 'border-slate-100 bg-slate-50/50' 
+                        : 'border-slate-900 bg-slate-950/80'
+                    }`}>
                       {week.lessons.map((lesson, idx) => (
                         <div
                           key={lesson.id}
-                          className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-wrap lg:flex-nowrap items-center justify-between gap-3 text-xs hover:border-slate-700 transition-colors"
+                          className={`p-3.5 rounded-xl border flex flex-wrap lg:flex-nowrap items-center justify-between gap-3 text-xs transition-colors ${
+                            isLightMode 
+                              ? 'bg-white border-slate-200/90 shadow-xs hover:border-slate-300' 
+                              : 'bg-slate-900/80 border-slate-800 hover:border-slate-700'
+                          }`}
                         >
                           <div className="flex items-start gap-3 flex-1 min-w-[280px]">
-                            <span className="w-6 h-6 rounded-lg bg-slate-800 text-slate-400 text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span className={`w-6 h-6 rounded-lg text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                              isLightMode ? 'bg-slate-100 text-slate-600 border border-slate-200' : 'bg-slate-800 text-slate-400'
+                            }`}>
                               #{idx + 1}
                             </span>
                             <div className="space-y-1">
-                              <span className="font-bold text-white block text-xs sm:text-sm">
+                              <span className={`font-bold block text-xs sm:text-sm ${
+                                isLightMode ? 'text-slate-900' : 'text-white'
+                              }`}>
                                 {lesson.title}
                               </span>
-                              <div className="text-[12px] text-cyan-300 font-medium flex items-center gap-1.5 flex-wrap">
-                                <Volume2 className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+                              <div className={`text-[12px] font-medium flex items-center gap-1.5 flex-wrap ${
+                                isLightMode ? 'text-indigo-900' : 'text-cyan-300'
+                              }`}>
+                                <Volume2 className="w-3.5 h-3.5 text-indigo-600 dark:text-cyan-400 flex-shrink-0" />
                                 <span>&ldquo;{lesson.target}&rdquo;</span>
                               </div>
-                              <span className="text-[11px] text-slate-400 block italic">
+                              <span className={`text-[11px] block italic ${
+                                isLightMode ? 'text-slate-600' : 'text-slate-400'
+                              }`}>
                                 Soporte: {lesson.translationEs}
                               </span>
                               {lesson.phoneticTip && (
-                                <div className="text-[10px] text-indigo-300 bg-indigo-950/40 border border-indigo-800/40 px-2 py-1 rounded-md inline-block mt-1">
+                                <div className={`text-[10px] px-2 py-1 rounded-md inline-block mt-1 border ${
+                                  isLightMode 
+                                    ? 'bg-indigo-50 border-indigo-200 text-indigo-800' 
+                                    : 'bg-indigo-950/40 border-indigo-800/40 text-indigo-300'
+                                }`}>
                                   <strong>Guía Fonética:</strong> {lesson.phoneticTip}
                                 </div>
                               )}
