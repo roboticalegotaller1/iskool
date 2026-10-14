@@ -353,12 +353,82 @@ export const MEXICAN_SEP_REGULATORY_DICTIONARY = {
   ]
 };
 
+// =========================================================================
+// OPTIMIZACIÓN DE ALTO RENDIMIENTO: COMPILACIÓN V8 Y CACHÉ LRU
+// =========================================================================
+function compileFastMatcher(keywords: readonly string[]): RegExp {
+  const sorted = [...keywords].sort((a, b) => b.length - a.length);
+  const pattern = sorted
+    .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('|');
+  return new RegExp(pattern, 'i');
+}
+
+const REGEX_DICT = {
+  authorities: compileFastMatcher(MEXICAN_SEP_REGULATORY_DICTIONARY.authorities),
+  rvoeAndCct: compileFastMatcher(MEXICAN_SEP_REGULATORY_DICTIONARY.rvoeAndCct),
+  childProtectionAndLegal: compileFastMatcher(MEXICAN_SEP_REGULATORY_DICTIONARY.childProtectionAndLegal),
+  civilProtectionAndMedical: compileFastMatcher(MEXICAN_SEP_REGULATORY_DICTIONARY.civilProtectionAndMedical),
+  cteAndGovernance: compileFastMatcher(MEXICAN_SEP_REGULATORY_DICTIONARY.cteAndGovernance),
+  controlEscolarSep: compileFastMatcher(MEXICAN_SEP_REGULATORY_DICTIONARY.controlEscolarSep),
+  scholarshipsAndCommunity: compileFastMatcher(MEXICAN_SEP_REGULATORY_DICTIONARY.scholarshipsAndCommunity),
+  fiscalSat: compileFastMatcher(MEXICAN_SEP_REGULATORY_DICTIONARY.fiscalSat),
+  nemAndCivicLife: compileFastMatcher(MEXICAN_SEP_REGULATORY_DICTIONARY.nemAndCivicLife),
+  schoolCommercialSpam: compileFastMatcher(MEXICAN_SEP_REGULATORY_DICTIONARY.schoolCommercialSpam),
+};
+
+const triageFastLruCache = new Map<string, ZeroTokenTriageResult>();
+const MAX_TRIAGE_CACHE_SIZE = 1000;
+
 /**
  * MOTOR DE TRIAGE ZERO-TOKENS CON APRENDIZAJE HEURÍSTICO LOCAL (100% GRATUITO Y DETERMINISTA)
  * Especializado en Normativa Escolar Mexicana (SEP / AEFCM / LGDNNA / SAT).
  * Clasifica cualquier correo en 4 cuadrantes canónicos sin consumir tokens de IA.
+ * Optimizado con Caché LRU de microsegundos y compilación RegExp V8.
  */
 export function classifyZeroTokenEmail(
+  subject: string,
+  bodyText: string,
+  senderEmail?: string,
+  senderName?: string,
+  vipRules?: { email: string; contactName?: string; enabled?: boolean }[],
+  tenantId?: string,
+  reincidenceCount?: number
+): ZeroTokenTriageResult {
+  const tId = tenantId || 'e1000000-0000-0000-0000-000000000001';
+  const reincidence = reincidenceCount || 1;
+  const sSub = (subject || '').trim();
+  const sBody = (bodyText || '').trim();
+  const sFromEmail = (senderEmail || '').trim().toLowerCase();
+
+  const cacheKey = `${tId}:${reincidence}:${sFromEmail}:${sSub}:${sBody.slice(0, 300)}`;
+  if (!vipRules || vipRules.length === 0) {
+    const cached = triageFastLruCache.get(cacheKey);
+    if (cached) return cached;
+  }
+
+  const result = runZeroTokenTriageEngine(
+    subject,
+    bodyText,
+    senderEmail,
+    senderName,
+    vipRules,
+    tenantId,
+    reincidenceCount
+  );
+
+  if (!vipRules || vipRules.length === 0) {
+    if (triageFastLruCache.size >= MAX_TRIAGE_CACHE_SIZE) {
+      const oldestKey = triageFastLruCache.keys().next().value;
+      if (oldestKey) triageFastLruCache.delete(oldestKey);
+    }
+    triageFastLruCache.set(cacheKey, result);
+  }
+
+  return result;
+}
+
+function runZeroTokenTriageEngine(
   subject: string,
   bodyText: string,
   senderEmail?: string,
@@ -509,8 +579,8 @@ export function classifyZeroTokenEmail(
 
   // A. Supervisión Oficial SEP, AEFCM, Jefatura de Sector, CCT y RVOE
   const isMandatorySepInspection = !isRoutineDocTramite && !isScholarshipTramite && (
-    MEXICAN_SEP_REGULATORY_DICTIONARY.authorities.some(auth => fullText.includes(auth)) ||
-    MEXICAN_SEP_REGULATORY_DICTIONARY.rvoeAndCct.some(term => fullText.includes(term)) ||
+    REGEX_DICT.authorities.test(fullText) ||
+    REGEX_DICT.rvoeAndCct.test(fullText) ||
     sFromEmail.includes('sep.gob.mx') ||
     sFromEmail.includes('aefcm.gob.mx') ||
     sFromEmail.includes('edomex.gob.mx') ||
@@ -524,13 +594,13 @@ export function classifyZeroTokenEmail(
     'negligencia grave', 'denuncia ante autoridades', 'amenaza', 'profeco', 'citatorio legal', 'protocolo de seguridad'
   ].some(sig => fullText.includes(sig));
 
-  const isChildProtectionOrLegalEmergency = isSevereConflictOrLegal || MEXICAN_SEP_REGULATORY_DICTIONARY.childProtectionAndLegal.some(sig => fullText.includes(sig));
+  const isChildProtectionOrLegalEmergency = isSevereConflictOrLegal || REGEX_DICT.childProtectionAndLegal.test(fullText);
 
   // C. Emergencias Médicas, Seguro Escolar contra Accidentes y Protección Civil
-  const isCivilProtectionOrMedicalEmergency = MEXICAN_SEP_REGULATORY_DICTIONARY.civilProtectionAndMedical.some(sig => fullText.includes(sig));
+  const isCivilProtectionOrMedicalEmergency = REGEX_DICT.civilProtectionAndMedical.test(fullText);
 
   // D. Consejo Técnico Escolar (CTE Ordinario / Extraordinario / Fase Intensiva)
-  const isCteEmergency = MEXICAN_SEP_REGULATORY_DICTIONARY.cteAndGovernance.some(sig => fullText.includes(sig)) || /\bcte\b/i.test(fullText);
+  const isCteEmergency = REGEX_DICT.cteAndGovernance.test(fullText) || /\bcte\b/i.test(fullText);
 
   // E. Inquietudes Críticas de Padres de Familia (Bienestar Socioemocional, Sobrecarga de Tareas, Salud o Riesgo)
   const isStudentWellbeingOrWorkloadConcern = [
@@ -698,7 +768,7 @@ export function classifyZeroTokenEmail(
   // Procedimientos departamentales con SLA: Control Escolar SEP, Becas RVOE, Facturación Fiscal SAT, etc.
 
   // A. Becas SEP por Incorporación RVOE y Participación Social (CEPS / APF)
-  const isBecasSepOrCommunity = MEXICAN_SEP_REGULATORY_DICTIONARY.scholarshipsAndCommunity.some(sig => fullText.includes(sig));
+  const isBecasSepOrCommunity = REGEX_DICT.scholarshipsAndCommunity.test(fullText);
   if (isBecasSepOrCommunity) {
     return {
       quadrant: 'DELEGADO_CON_SLA',
@@ -719,7 +789,7 @@ export function classifyZeroTokenEmail(
   }
 
   // B. Control Escolar Oficial SEP (SIGED / SINCE / Boletas QR / Certificados Electrónicos / Constancias con CCT)
-  const isSepControlEscolarStrict = MEXICAN_SEP_REGULATORY_DICTIONARY.controlEscolarSep.some(sig => fullText.includes(sig));
+  const isSepControlEscolarStrict = REGEX_DICT.controlEscolarSep.test(fullText);
   const isControlEscolar = isSepControlEscolarStrict || isRoutineDocTramite;
   if (isControlEscolar) {
     return {
@@ -741,7 +811,7 @@ export function classifyZeroTokenEmail(
   }
 
   // C. Tesorería, Facturación Fiscal SAT (CFDI con Complemento Educativo IEDU)
-  const isFinance = MEXICAN_SEP_REGULATORY_DICTIONARY.fiscalSat.some(sig => fullText.includes(sig)) ||
+  const isFinance = REGEX_DICT.fiscalSat.test(fullText) ||
     fullText.includes('factura') || fullText.includes('cfdi') || fullText.includes('colegiatura') || fullText.includes('recargo') || fullText.includes('adeudo') || fullText.includes('descuento de hermanos') || fullText.includes('pago de colegiatura');
   if (isFinance) {
     const delCobranza = CeoEmailSettingsService.getDelegate(tId, 'cobranza');
@@ -1044,7 +1114,7 @@ export function classifyZeroTokenEmail(
 
   // 6. CUADRANTE 3: INFORMATIVO (🔵 0 Tokens)
   // Vida Cívica Escolar, Nueva Escuela Mexicana (NEM), Efemérides SEP, Festivales, Webinars y Liberación de Servicio Social
-  const isNemOrCivicLife = MEXICAN_SEP_REGULATORY_DICTIONARY.nemAndCivicLife.some(sig => fullText.includes(sig));
+  const isNemOrCivicLife = REGEX_DICT.nemAndCivicLife.test(fullText);
   const isWebinarOrConference = fullText.includes('webinar') || fullText.includes('webinars') || fullText.includes('conferencia') || fullText.includes('festivalciberlatam') || fullText.includes('jmbe live') || fullText.includes('zoom');
   const isConfirmationOrReceipt = fullText.includes('confirmation') || fullText.includes('confirmación') || fullText.includes('thank you for registering') || fullText.includes('gracias por registrarte') || fullText.includes('registro confirmado');
   const isSocialServiceNotice = fullText.includes('tramites.ss') || fullText.includes('trámites ss') || fullText.includes('servicio social') || fullText.includes('constancia de liberacion') || fullText.includes('constancia de liberación') || fullText.includes('acatlan.unam.mx');

@@ -31,7 +31,9 @@ const nextConfig: NextConfig = {
       "@dnd-kit/utilities",
       "zustand",
       "marked",
-      "isomorphic-dompurify"
+      "isomorphic-dompurify",
+      "zod",
+      "gray-matter"
     ],
   },
   // Optimización de imágenes de alto rendimiento
@@ -49,6 +51,15 @@ const nextConfig: NextConfig = {
   // Cabeceras de Seguridad Estrictas OWASP Top 10 y Política de Protección Perimetral
   async headers() {
     return [
+      {
+        source: "/(images|brand|icons)/(.*)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
+          },
+        ],
+      },
       {
         source: "/(.*)",
         headers: [

@@ -330,6 +330,6 @@ export const config = {
      * - favicon.ico, sitemap.xml, robots.txt
      * - assets estáticos institucionales (brand/, .svg, .png, etc.)
      */
-    '/((?!_next/static|_next/image|_next/data|_next/|favicon\\.ico|404|not-found|brand/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!_next/static|_next/image|_next/data|_next/|favicon\\.ico|404|not-found|brand/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot|mp4|webm|wav|mp3|pdf|txt)$).*)',
   ]
 };

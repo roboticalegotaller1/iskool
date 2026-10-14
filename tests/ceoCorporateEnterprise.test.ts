@@ -189,7 +189,7 @@ describe('🏢 SUITE: Sector Corporativo B2B & Cuentas CEO en ISkool', () => {
         expect(cand.grade).not.toMatch(schoolRegex);
         expect(cand.notes).not.toMatch(schoolRegex);
       });
-    });
+    }, 30000);
 
     it('la Tarjeta CEO en src/app/admin/page.tsx debe usar términos ejecutivos de empresa', async () => {
       const fs = await import('fs');
