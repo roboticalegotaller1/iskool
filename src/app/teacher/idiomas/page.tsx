@@ -56,10 +56,14 @@ import {
   GraduationCap,
   Check,
   School,
-  PenTool
+  PenTool,
+  Star
 } from 'lucide-react';
 import Link from 'next/link';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
+import { english40WeeksCurriculum } from '@/components/languages/data/english40WeeksCurriculum';
+import { french40WeeksCurriculum } from '@/components/languages/data/french40WeeksCurriculum';
+import { CurricularWeek } from '@/components/languages/data/curriculumTypes';
 
 interface IbimeCampus {
   id: string;
@@ -187,6 +191,12 @@ export default function TeacherIdiomasPage() {
   const [activePlayingLineId, setActivePlayingLineId] = useState<string | null>(null);
   const audioControllerRef = useRef<any>(null);
 
+  // Estado de vista del panel derecho del taller (Plan de 40 Semanas vs Editor de Guion)
+  const [workshopRightView, setWorkshopRightView] = useState<'curriculum' | 'script'>('curriculum');
+  const [curriculumTrimester, setCurriculumTrimester] = useState<1 | 2 | 3>(1);
+  const [curriculumSearch, setCurriculumSearch] = useState<string>('');
+  const [showDialogueTranslation, setShowDialogueTranslation] = useState<boolean>(true);
+
   const activeLesson = useMemo(() => {
     return lessons.find(l => l.id === activeLessonId) || lessons[0];
   }, [lessons, activeLessonId]);
@@ -198,6 +208,112 @@ export default function TeacherIdiomasPage() {
   const activeCertification = useMemo(() => {
     return CEFR_CERTIFICATIONS[activeLesson.level] || CEFR_CERTIFICATIONS['B1'];
   }, [activeLesson.level]);
+
+  // Resolución infalible de imagen 3D de alta fidelidad (ignora rutas obsoletas de localStorage)
+  const resolvedAvatar3dSrc = useMemo(() => {
+    // 1. Si está activo el modo prócer histórico o la lección tiene historicalFigureId
+    if (useHistoricalFigure || activeLesson.historicalFigureId) {
+      const histId = selectedHistoricalId || activeLesson.historicalFigureId;
+      const histFig = MULTILINGUAL_HISTORICAL_FIGURES.find(f => f.id === histId || f.name === activeLesson.avatarName);
+      if (histFig?.avatarImage && histFig.avatarImage.includes('/3d/')) {
+        return histFig.avatarImage;
+      }
+      if (histId === 'shakespeare') return '/images/languages/3d/shakespeare_3d.webp';
+      if (histId === 'ada_lovelace') return '/images/languages/3d/ada_lovelace_3d.webp';
+      if (histId === 'abraham_lincoln') return '/images/languages/3d/abraham_lincoln_3d.webp';
+      if (histId === 'marie_curie') return '/images/languages/3d/marie_curie_3d.webp';
+      if (histId === 'napoleon') return '/images/languages/3d/napoleon_3d.webp';
+    }
+
+    // 2. Si la lección ya tiene una ruta 3D explícita válida
+    if (activeLesson.avatarImage && activeLesson.avatarImage.includes('/3d/')) {
+      return activeLesson.avatarImage;
+    }
+
+    // 3. Fallback inteligente según género o nombre del mentor estándar
+    if (
+      activeLesson.avatarGender === 'female' ||
+      activeLesson.avatarName?.toLowerCase().includes('claire') ||
+      activeLesson.avatarName?.toLowerCase().includes('sophie')
+    ) {
+      return '/images/languages/3d/mentor_female_3d.webp';
+    }
+    return '/images/languages/3d/mentor_male_3d_v2.webp';
+  }, [useHistoricalFigure, selectedHistoricalId, activeLesson.historicalFigureId, activeLesson.avatarImage, activeLesson.avatarGender, activeLesson.avatarName]);
+
+  // Base curricular de 40 semanas según el idioma activo
+  const current40Weeks: CurricularWeek[] = useMemo(() => {
+    return activeLesson.language === 'fr' ? french40WeeksCurriculum : english40WeeksCurriculum;
+  }, [activeLesson.language]);
+
+  // Filtrado de semanas por trimestre y búsqueda
+  const filteredCurriculumWeeks = useMemo(() => {
+    return current40Weeks.filter(w => {
+      if (!curriculumSearch.trim() && w.trimester !== curriculumTrimester) return false;
+      if (!curriculumSearch.trim()) return true;
+      const q = curriculumSearch.toLowerCase();
+      return (
+        w.title.toLowerCase().includes(q) ||
+        w.level.toLowerCase().includes(q) ||
+        w.certificationTarget.toLowerCase().includes(q) ||
+        w.lessons.some(l => l.target.toLowerCase().includes(q) || l.title.toLowerCase().includes(q))
+      );
+    });
+  }, [current40Weeks, curriculumTrimester, curriculumSearch]);
+
+  // Carga instantánea de una semana curricular completa al taller docente
+  const handleLoadWeekIntoWorkshop = (week: CurricularWeek) => {
+    const isFr = activeLesson.language === 'fr';
+    const firstLesson = week.lessons[0] || {
+      id: `w${week.weekNumber}-1`,
+      title: week.title,
+      target: isFr ? "Bonjour! Pratiquons notre prononciation aujourd'hui." : "Hello! Let us practice our pronunciation today.",
+      translationEs: "¡Hola! Practiquemos nuestra pronunciación hoy.",
+      phoneticTip: "Articula con claridad y ritmo constante."
+    };
+
+    const dialogueLines: DialogueLine[] = [
+      {
+        id: `d-${Date.now()}-1`,
+        speaker: 'avatar',
+        text: firstLesson.target,
+        translationEs: firstLesson.translationEs,
+        phoneticTip: firstLesson.phoneticTip
+      },
+      ...(week.lessons[1] ? [{
+        id: `d-${Date.now()}-2`,
+        speaker: 'student' as const,
+        text: week.lessons[1].target,
+        translationEs: week.lessons[1].translationEs
+      }] : [])
+    ];
+
+    const karaokePhrases: KaraokePhrase[] = week.lessons.map((l, idx) => ({
+      id: `k-${Date.now()}-${idx}`,
+      targetText: l.target,
+      translationEs: l.translationEs,
+      difficulty: (week.cefr === 'A1' ? 'beginner' : week.cefr === 'A2' ? 'intermediate' : 'advanced') as any,
+      phoneticGuide: l.phoneticTip
+    }));
+
+    const cleanTitle = week.title.replace(/^Week \d+:\s*/, '').replace(/^Semaine \d+:\s*/, '');
+    const newId = addLesson({
+      title: `Semana ${week.weekNumber}: ${cleanTitle}`,
+      topic: week.title,
+      language: activeLesson.language,
+      level: week.cefr.startsWith('B') ? 'B1' : week.cefr.startsWith('A2') ? 'A2' : 'A1',
+      avatarGender: activeLesson.avatarGender,
+      avatarName: activeLesson.avatarName,
+      avatarVoice: activeLesson.avatarVoice,
+      avatarImage: resolvedAvatar3dSrc,
+      historicalFigureId: activeLesson.historicalFigureId,
+      defaultSpeed: activeLesson.defaultSpeed,
+      dialogue: dialogueLines,
+      karaokePhrases: karaokePhrases
+    });
+
+    setActiveLessonId(newId);
+  };
 
   // Personajes históricos filtrados por el idioma de la lección
   const availableHistoricalFigures = useMemo(() => {
@@ -713,10 +829,10 @@ export default function TeacherIdiomasPage() {
           <button
             type="button"
             onClick={() => setActiveTab('editor')}
-            className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+            className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'editor'
-                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30' : 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20')
-                : (isLightMode ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800')
+                ? (isLightMode ? 'bg-[#D9E2EC] text-slate-900 border border-slate-300 font-extrabold shadow-2xs' : 'bg-indigo-600 text-white shadow-md')
+                : (isLightMode ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-2xs' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800')
             }`}
           >
             <Edit3 className="w-4 h-4" />
@@ -726,49 +842,49 @@ export default function TeacherIdiomasPage() {
           <button
             type="button"
             onClick={() => setActiveTab('analytics')}
-            className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+            className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'analytics'
-                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30' : 'bg-teal-600 text-white shadow-md shadow-teal-600/20')
-                : (isLightMode ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800')
+                ? (isLightMode ? 'bg-[#D9E2EC] text-slate-900 border border-slate-300 font-extrabold shadow-2xs' : 'bg-teal-600 text-white shadow-md')
+                : (isLightMode ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-2xs' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800')
             }`}
           >
             <BarChart3 className="w-4 h-4" />
-            <span>Analítica Gráfica & Radar CEFR</span>
+            <span>Analítica Gráfica CEFR</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('curriculum')}
-            className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+            className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'curriculum'
-                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30' : 'bg-purple-600 text-white shadow-md shadow-purple-600/20')
-                : (isLightMode ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800')
+                ? (isLightMode ? 'bg-[#D9E2EC] text-slate-900 border border-slate-300 font-extrabold shadow-2xs' : 'bg-purple-600 text-white shadow-md')
+                : (isLightMode ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-2xs' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800')
             }`}
           >
             <Layers className="w-4 h-4" />
-            <span>Ecosistema de 12 Fases (40 Semanas)</span>
+            <span>Ecosistema de 40 Semanas</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('hardware')}
-            className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+            className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
               activeTab === 'hardware'
-                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30' : 'bg-cyan-600 text-white shadow-md shadow-cyan-600/20')
-                : (isLightMode ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800')
+                ? (isLightMode ? 'bg-[#D9E2EC] text-slate-900 border border-slate-300 font-extrabold shadow-2xs' : 'bg-cyan-600 text-white shadow-md')
+                : (isLightMode ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-2xs' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800')
             }`}
           >
             <Activity className="w-4 h-4" />
-            <span>Diagnóstico de Micrófono & Audio</span>
+            <span>Diagnóstico de Audio</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('reports')}
-            className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0 relative ${
+            className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shrink-0 relative ${
               activeTab === 'reports'
-                ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md shadow-red-600/30' : 'bg-rose-600 text-white shadow-md shadow-rose-600/20')
-                : (isLightMode ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-xs' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800')
+                ? (isLightMode ? 'bg-[#D9E2EC] text-slate-900 border border-slate-300 font-extrabold shadow-2xs' : 'bg-rose-600 text-white shadow-md')
+                : (isLightMode ? 'bg-white text-slate-700 hover:text-slate-900 border border-slate-200 shadow-2xs' : 'bg-slate-900/60 text-slate-400 hover:text-white border border-slate-800')
             }`}
           >
             <Users className="w-4 h-4" />
@@ -927,7 +1043,7 @@ export default function TeacherIdiomasPage() {
                     avatarGender={activeLesson.avatarGender}
                     avatarVoice={activeLesson.avatarVoice}
                     avatarName={activeLesson.avatarName}
-                    avatarImage={activeLesson.avatarImage}
+                    avatarImage={resolvedAvatar3dSrc}
                     historicalFigureId={activeLesson.historicalFigureId}
                     lessonId={activeLesson.id}
                     lessonTitle={activeLesson.title}
@@ -936,532 +1052,715 @@ export default function TeacherIdiomasPage() {
                 )}
               </div>
             ) : (
-              /* MODO EDITOR Y CONFIGURACIÓN DOCENTE */
+              /* MODO REDISEÑADO CONVERSATIONAL AVATAR STUDIO & COURSE PLANNING (IMAGEN 1) */
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
-                {/* Lado Izquierdo: Configuración del Mentor & Personajes Históricos */}
-                <div className={`lg:col-span-4 p-5 rounded-3xl border space-y-5 transition-all ${
-                  isLightMode 
-                    ? 'bg-white border-slate-200/90 shadow-sm text-slate-900' 
-                    : 'bg-slate-900/90 border-slate-800 shadow-xl text-white'
-                }`}>
-                  <div className={`flex items-center justify-between border-b pb-3 ${
-                    isLightMode ? 'border-slate-100' : 'border-slate-800'
-                  }`}>
-                    <h3 className={`text-sm font-black flex items-center gap-2 ${
+                {/* =====================================================================
+                    COLUMNA IZQUIERDA (5 cols): Conversational Avatar Studio
+                    ===================================================================== */}
+                <div className="lg:col-span-5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className={`text-xl font-black tracking-tight ${
                       isLightMode ? 'text-slate-900' : 'text-white'
                     }`}>
-                      <Sparkles className="w-4 h-4 text-cyan-500" />
-                      <span>Mentor & Voz Neural</span>
-                    </h3>
-                    <span className={`text-[10px] font-bold uppercase ${
-                      isLightMode ? 'text-slate-500' : 'text-slate-400'
-                    }`}>
-                      Parámetros
+                      Conversational Avatar Studio
+                    </h2>
+                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 shadow-2xs">
+                      {useHistoricalFigure ? '3D Prócer Vivo' : '3D Neural Avatar'}
                     </span>
                   </div>
 
-                  {/* Selector Personaje Histórico vs Avatar Estándar */}
-                  <div className={`p-3.5 rounded-2xl border space-y-2 transition-all ${
-                    isLightMode 
-                      ? 'bg-indigo-50/70 border-indigo-200 text-indigo-950' 
-                      : 'bg-indigo-950/40 border-indigo-700/50 text-indigo-300'
+                  {/* Tarjeta Principal del Avatar Studio */}
+                  <div className={`p-5 rounded-3xl border shadow-sm space-y-4 transition-all ${
+                    isLightMode ? 'bg-white border-slate-200/90 text-slate-900' : 'bg-slate-900 border-slate-800 text-white'
                   }`}>
-                    <div className="flex items-center justify-between">
-                      <span className={`text-xs font-bold flex items-center gap-1.5 ${
-                        isLightMode ? 'text-indigo-900' : 'text-indigo-300'
-                      }`}>
-                        <Landmark className="w-3.5 h-3.5 text-amber-500" />
-                        <span>Personaje Histórico Vivo</span>
-                      </span>
-                      <input
-                        type="checkbox"
-                        checked={useHistoricalFigure}
-                        onChange={(e) => {
-                          const isChecked = e.target.checked;
-                          setUseHistoricalFigure(isChecked);
-                          if (isChecked) {
-                            const figToApply = availableHistoricalFigures.find(f => f.id === selectedHistoricalId) || availableHistoricalFigures[0];
-                            if (figToApply) {
-                              setSelectedHistoricalId(figToApply.id);
-                              handleApplyHistoricalFigure(figToApply);
-                            }
-                          } else {
-                            const defaultVoice = activeLesson.language === 'en' ? 'en-US-JennyNeural' : 'fr-FR-VivienneMultilingualNeural';
-                            const defaultName = activeLesson.language === 'en' ? 'Claire' : 'Sophie';
-                            updateLesson(activeLesson.id, {
-                              avatarName: defaultName,
-                              avatarVoice: defaultVoice,
-                              avatarGender: 'female',
-                              avatarImage: undefined,
-                              historicalFigureId: undefined
-                            });
-                          }
-                        }}
-                        className="rounded accent-amber-500 cursor-pointer w-4 h-4"
-                      />
-                    </div>
-                    <p className={`text-[10px] leading-tight ${
-                      isLightMode ? 'text-slate-600' : 'text-slate-400'
+                    
+                    {/* Escenario del Avatar 3D con Burbujas de Diálogo Flotantes (Exacto a Imagen 1) */}
+                    <div className={`relative rounded-2xl overflow-hidden border min-h-[380px] flex items-end justify-between p-4 transition-all ${
+                      isLightMode 
+                        ? 'bg-gradient-to-b from-[#F1F5F9] via-[#F8FAFC] to-[#FFFFFF] border-slate-200/80 shadow-inner' 
+                        : 'bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border-slate-800 shadow-inner'
                     }`}>
-                      Activa próceres en primera persona estricta (Shakespeare, Lincoln, Napoleón, Curie) con sus voces de época.
-                    </p>
-                  </div>
+                      {/* Personaje 3D Renderizado en Mitad Izquierda */}
+                      <div className="relative w-[65%] max-w-[320px] h-[360px] flex items-end justify-start pointer-events-none -ml-2">
+                        <img
+                          src={resolvedAvatar3dSrc}
+                          alt={activeLesson.avatarName}
+                          className="w-full h-full object-contain object-bottom drop-shadow-2xl select-none transition-transform duration-500 hover:scale-102 filter contrast-102"
+                        />
+                      </div>
 
-                  {useHistoricalFigure ? (
-                    /* LISTA DE PERSONAJES HISTÓRICOS DISPONIBLES */
-                    <div className="space-y-2">
-                      <label className={`text-xs font-bold flex items-center justify-between ${
-                        isLightMode ? 'text-amber-800' : 'text-amber-300'
-                      }`}>
-                        <span>Elegir Personaje Histórico ({activeLesson.language === 'fr' ? 'Francés' : 'Inglés'}):</span>
-                        <span className="text-[10px] text-amber-600 dark:text-amber-400 font-mono font-bold">1ª Persona Estricta</span>
-                      </label>
-                      <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                        {availableHistoricalFigures.map(fig => (
-                          <div
-                            key={fig.id}
-                            onClick={() => {
-                              setSelectedHistoricalId(fig.id);
-                              handleApplyHistoricalFigure(fig);
-                            }}
-                            className={`p-2.5 rounded-2xl border text-xs cursor-pointer transition-all flex items-center justify-between ${
-                              activeLesson.avatarName === fig.name || activeLesson.historicalFigureId === fig.id
-                                ? (isLightMode 
-                                    ? 'bg-amber-50 border-amber-400 text-slate-900 font-bold shadow-xs' 
-                                    : 'bg-amber-500/20 border-amber-400 text-white font-bold shadow-md shadow-amber-500/10')
-                                : (isLightMode 
-                                    ? 'bg-slate-50 border-slate-200 text-slate-700 hover:border-amber-300 hover:bg-slate-100' 
-                                    : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-amber-500/40 hover:bg-slate-900')
+                      {/* Burbujas de Diálogo Flotantes en la esquina superior derecha (Exacto a Imagen 1) */}
+                      <div className="absolute top-4 right-3 max-w-[210px] sm:max-w-[220px] flex flex-col space-y-2 pointer-events-auto z-10">
+                        {/* Burbuja Superior: Diálogo del Mentor con cola apuntando al avatar */}
+                        <div className={`relative p-3.5 rounded-2xl border shadow-md text-xs font-semibold leading-relaxed transition-all ${
+                          isLightMode 
+                            ? 'bg-white text-slate-800 border-slate-200/90 shadow-slate-200/60' 
+                            : 'bg-slate-900/95 text-slate-100 border-slate-700 shadow-black/50'
+                        }`}>
+                          <div className={`absolute -left-2 top-5 w-0 h-0 border-y-6 border-y-transparent border-r-8 ${
+                            isLightMode ? 'border-r-white' : 'border-r-slate-900'
+                          }`} />
+                          <p className="line-clamp-3">
+                            {activeLesson.dialogue[0]?.text || "Lis a sophisticated gesticulating pedagogical mentor avatar."}
+                          </p>
+                        </div>
+
+                        {/* Burbuja Inferior con Pastel Accent y Toggle Switch (Imagen 1) */}
+                        <div className={`p-2.5 rounded-2xl border shadow-md text-[11px] flex items-center justify-between gap-2 transition-all ${
+                          isLightMode
+                            ? 'bg-[#F0FDF4]/95 text-emerald-950 border-emerald-200/90 shadow-emerald-500/10'
+                            : 'bg-emerald-950/80 text-emerald-200 border-emerald-800 shadow-black/40'
+                        }`}>
+                          <span className="font-medium leading-tight line-clamp-2 pr-1">
+                            {showDialogueTranslation 
+                              ? (activeLesson.dialogue[0]?.translationEs || "Real-time dialogue speech bubbs to pastel accent.")
+                              : (activeLesson.dialogue[0]?.phoneticTip || "Dicción y modulación nativa en tiempo real.")}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setShowDialogueTranslation(!showDialogueTranslation)}
+                            className={`w-8 h-4 rounded-full p-0.5 transition-colors cursor-pointer shrink-0 flex items-center ${
+                              showDialogueTranslation ? 'bg-emerald-400' : 'bg-slate-300'
                             }`}
+                            title="Alternar entre traducción en español y tip fonético"
                           >
-                            <div className="flex items-center gap-3">
-                              <div className="relative w-10 h-10 rounded-xl overflow-hidden border-2 border-amber-500/60 shrink-0 shadow-xs">
-                                <img 
-                                  src={fig.avatarImage} 
-                                  alt={fig.name} 
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                              <div>
-                                <span className={`block font-bold text-xs ${
-                                  isLightMode ? 'text-slate-900' : 'text-white'
-                                }`}>{fig.name}</span>
-                                <span className={`text-[10px] ${
-                                  isLightMode ? 'text-amber-700' : 'text-amber-300/80'
-                                }`}>{fig.era}</span>
-                              </div>
-                            </div>
-                            <div className="flex flex-col items-end gap-1">
-                              <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold border ${
-                                isLightMode 
-                                  ? 'bg-amber-100 border-amber-300 text-amber-900' 
-                                  : 'bg-amber-950/80 border-amber-500/40 text-amber-300'
-                              }`}>
-                                1ª Persona
-                              </span>
-                              <span className={`text-[9px] ${
-                                isLightMode ? 'text-slate-500' : 'text-slate-400'
-                              }`}>
-                                {fig.gender === 'female' ? '👩' : '👨'} {fig.country}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
+                            <span className={`w-3 h-3 rounded-full bg-white shadow-xs transition-transform ${showDialogueTranslation ? 'translate-x-4' : 'translate-x-0'}`} />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  ) : (
-                    /* SELECTORES DEL AVATAR ESTÁNDAR */
-                    <>
-                      {/* Género del Avatar */}
-                      <div className="space-y-1.5">
-                        <label className={`text-xs font-bold ${
-                          isLightMode ? 'text-slate-700' : 'text-slate-300'
-                        }`}>Género del Avatar:</label>
-                        <div className="grid grid-cols-2 gap-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newVoice = activeLesson.language === 'en' ? 'en-US-JennyNeural' : 'fr-FR-VivienneMultilingualNeural';
-                              const newName = activeLesson.language === 'en' ? 'Claire' : 'Sophie';
-                              updateLesson(activeLesson.id, { 
-                                avatarGender: 'female', 
-                                avatarVoice: newVoice,
-                                avatarName: newName
-                              });
-                            }}
-                            className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                              activeLesson.avatarGender === 'female'
-                                ? (isLightMode 
-                                    ? 'bg-indigo-50 border-indigo-400 text-indigo-900 shadow-xs' 
-                                    : 'bg-indigo-600/30 border-indigo-400 text-white shadow-md')
-                                : (isLightMode 
-                                    ? 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200' 
-                                    : 'bg-slate-800 border-slate-700 text-slate-400')
-                            }`}
-                          >
-                            <span>👩‍🏫</span>
-                            <span>Mujer ({activeLesson.language === 'en' ? 'Claire' : 'Sophie'})</span>
-                          </button>
 
+                    {/* Fila de Diagnóstico: Phonetic Wave & Pitch Accuracy (Exacto a Imagen 1) */}
+                    <div className="grid grid-cols-12 gap-3 pt-1">
+                      
+                      {/* Widget: Phonetic Wave (8 cols) */}
+                      <div className={`col-span-7 sm:col-span-8 p-3 rounded-2xl border shadow-xs flex flex-col justify-between ${
+                        isLightMode ? 'bg-white border-slate-200' : 'bg-slate-900/90 border-slate-800'
+                      }`}>
+                        <div className="flex items-center justify-between text-xs font-bold">
+                          <span className={isLightMode ? 'text-slate-900' : 'text-white'}>Phonetic Wave</span>
+                          <div className="flex items-center gap-1.5 text-[11px] text-teal-600 font-bold">
+                            <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+                            <span>Baro</span>
+                          </div>
+                        </div>
+
+                        {/* Barras de Onda Fonética en Gradiente */}
+                        <div className="flex items-end justify-between gap-1 h-9 pt-2">
+                          {[30, 60, 85, 45, 95, 100, 65, 80, 50, 70, 95, 60, 85, 40, 65, 90, 75, 50, 30].map((h, i) => (
+                            <span
+                              key={i}
+                              className="flex-1 rounded-full bg-gradient-to-t from-indigo-500 via-purple-500 to-teal-400 transition-all duration-150"
+                              style={{
+                                height: isPlayingPreview 
+                                  ? `${Math.min(100, Math.max(18, h * (0.35 + Math.random() * 0.7)))}%` 
+                                  : `${Math.max(12, h * 0.45)}%`
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Widget: Pitch Accuracy (4 cols) */}
+                      <div className={`col-span-5 sm:col-span-4 p-3 rounded-2xl border shadow-xs flex flex-col justify-between ${
+                        isLightMode ? 'bg-white border-slate-200' : 'bg-slate-900/90 border-slate-800'
+                      }`}>
+                        <div className={`text-xs font-bold truncate ${
+                          isLightMode ? 'text-slate-900' : 'text-white'
+                        }`}>
+                          Pitch Accuracy
+                        </div>
+                        <div className="flex items-center justify-center gap-2 pt-1">
+                          {/* Medidor Radial */}
+                          <div className="relative w-11 h-11 flex items-center justify-center">
+                            <svg className="w-11 h-11 -rotate-90" viewBox="0 0 36 36">
+                              <path
+                                className={isLightMode ? 'text-slate-100' : 'text-slate-800'}
+                                strokeWidth="3.5"
+                                stroke="currentColor"
+                                fill="none"
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                              />
+                              <path
+                                className="text-teal-600"
+                                strokeDasharray="98, 100"
+                                strokeWidth="3.5"
+                                strokeLinecap="round"
+                                stroke="currentColor"
+                                fill="none"
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                              />
+                            </svg>
+                            <span className={`absolute text-xs font-black ${
+                              isLightMode ? 'text-slate-900' : 'text-white'
+                            }`}>98%</span>
+                          </div>
+                          <Mic className="w-4 h-4 text-teal-600 shrink-0" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Toolbar de Selección Rápida de Avatares 3D y Controles de Voz */}
+                    <div className={`p-3.5 rounded-2xl border space-y-3 transition-all ${
+                      isLightMode ? 'bg-slate-50/80 border-slate-200/90' : 'bg-slate-950/60 border-slate-800'
+                    }`}>
+                      <div>
+                        <span className={`text-[11px] font-bold block mb-1.5 uppercase tracking-wide ${
+                          isLightMode ? 'text-slate-600' : 'text-slate-400'
+                        }`}>
+                          Avatares 3D Disponibles ({activeLesson.language === 'fr' ? 'Francés' : 'Inglés'}):
+                        </span>
+                        
+                        <div className="flex flex-wrap gap-1.5">
+                          {/* Mentores Estándar 3D */}
                           <button
                             type="button"
                             onClick={() => {
-                              const newVoice = activeLesson.language === 'en' ? 'en-US-GuyNeural' : 'fr-FR-HenriNeural';
-                              const newName = activeLesson.language === 'en' ? 'Arthur' : 'Henri';
-                              updateLesson(activeLesson.id, { 
-                                avatarGender: 'male', 
-                                avatarVoice: newVoice,
-                                avatarName: newName
+                              const isFr = activeLesson.language === 'fr';
+                              setUseHistoricalFigure(false);
+                              setSelectedHistoricalId('');
+                              updateLesson(activeLesson.id, {
+                                avatarGender: 'male',
+                                avatarName: isFr ? 'Henri' : 'Arthur',
+                                avatarVoice: isFr ? 'fr-FR-HenriNeural' : 'en-US-GuyNeural',
+                                avatarImage: '/images/languages/3d/mentor_male_3d_v2.webp',
+                                historicalFigureId: undefined
                               });
                             }}
-                            className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                              activeLesson.avatarGender === 'male'
-                                ? (isLightMode 
-                                    ? 'bg-indigo-50 border-indigo-400 text-indigo-900 shadow-xs' 
-                                    : 'bg-indigo-600/30 border-indigo-400 text-white shadow-md')
-                                : (isLightMode 
-                                    ? 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-200' 
-                                    : 'bg-slate-800 border-slate-700 text-slate-400')
+                            className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${
+                              !useHistoricalFigure && activeLesson.avatarGender === 'male'
+                                ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                                : (isLightMode ? 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800')
                             }`}
                           >
                             <span>👨‍🏫</span>
-                            <span>Hombre ({activeLesson.language === 'en' ? 'Arthur' : 'Henri'})</span>
+                            <span>{activeLesson.language === 'fr' ? 'Prof. Henri (3D)' : 'Prof. Arthur (3D)'}</span>
                           </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const isFr = activeLesson.language === 'fr';
+                              setUseHistoricalFigure(false);
+                              setSelectedHistoricalId('');
+                              updateLesson(activeLesson.id, {
+                                avatarGender: 'female',
+                                avatarName: isFr ? 'Sophie' : 'Claire',
+                                avatarVoice: isFr ? 'fr-FR-VivienneMultilingualNeural' : 'en-US-JennyNeural',
+                                avatarImage: '/images/languages/3d/mentor_female_3d.webp',
+                                historicalFigureId: undefined
+                              });
+                            }}
+                            className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${
+                              !useHistoricalFigure && activeLesson.avatarGender === 'female'
+                                ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                                : (isLightMode ? 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100' : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800')
+                            }`}
+                          >
+                            <span>👩‍🏫</span>
+                            <span>{activeLesson.language === 'fr' ? 'Mme. Sophie (3D)' : 'Prof. Claire (3D)'}</span>
+                          </button>
+
+                          {/* Próceres Históricos 3D */}
+                          {availableHistoricalFigures.map(fig => (
+                            <button
+                              key={fig.id}
+                              type="button"
+                              onClick={() => {
+                                setUseHistoricalFigure(true);
+                                setSelectedHistoricalId(fig.id);
+                                handleApplyHistoricalFigure(fig);
+                              }}
+                              className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${
+                                activeLesson.avatarName === fig.name || activeLesson.historicalFigureId === fig.id
+                                  ? 'bg-amber-500 text-slate-950 font-black border-amber-500 shadow-xs'
+                                  : (isLightMode ? 'bg-white text-slate-700 border-slate-200 hover:border-amber-300 hover:bg-amber-50/50' : 'bg-slate-900 text-slate-300 border-slate-800 hover:border-amber-500/40')
+                              }`}
+                            >
+                              <span>{fig.avatarEmoji}</span>
+                              <span>{fig.name} (3D)</span>
+                            </button>
+                          ))}
                         </div>
                       </div>
 
-                      {/* Selector de Voz Neural */}
-                      <div className="space-y-1.5">
-                        <label className={`text-xs font-bold ${
-                          isLightMode ? 'text-slate-700' : 'text-slate-300'
-                        }`}>Voz Neural Calibrada:</label>
-                        <select
-                          value={activeLesson.avatarVoice}
-                          onChange={(e) => updateLesson(activeLesson.id, { avatarVoice: e.target.value })}
-                          className={`w-full p-2.5 rounded-xl border text-xs font-bold transition-all ${
-                            isLightMode 
-                              ? 'bg-slate-50 border-slate-200 text-slate-900 focus:border-indigo-500' 
-                              : 'bg-slate-800 border-slate-700 text-white'
+                      {/* Fila de Velocidad y Reproducción de Audio */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200/80">
+                        <div className="flex items-center gap-1">
+                          <span className={`text-[11px] font-bold mr-1 ${
+                            isLightMode ? 'text-slate-500' : 'text-slate-400'
+                          }`}>Velocidad:</span>
+                          {[0.8, 1.0, 1.2].map(speed => (
+                            <button
+                              key={speed}
+                              type="button"
+                              onClick={() => updateLesson(activeLesson.id, { defaultSpeed: speed })}
+                              className={`px-2 py-0.5 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer ${
+                                Math.abs(activeLesson.defaultSpeed - speed) < 0.05
+                                  ? 'bg-indigo-600 text-white font-black'
+                                  : (isLightMode ? 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100' : 'bg-slate-900 text-slate-300 border border-slate-800')
+                              }`}
+                            >
+                              {speed}x
+                            </button>
+                          ))}
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handlePlayAudioSample()}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs ${
+                            isPlayingPreview
+                              ? 'bg-rose-600 text-white animate-pulse'
+                              : 'bg-indigo-600 hover:bg-indigo-500 text-white'
                           }`}
                         >
-                          {availableVoices.map(v => (
-                            <option key={v.id} value={v.id}>{v.label}</option>
-                          ))}
-                        </select>
+                          {isPlayingPreview ? <Pause className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                          <span>{isPlayingPreview ? 'Detener' : 'Escuchar Muestra'}</span>
+                        </button>
                       </div>
-                    </>
-                  )}
-
-                  {/* Velocidad Predeterminada */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-xs font-bold">
-                      <span className={isLightMode ? 'text-slate-700' : 'text-slate-300'}>Velocidad de Dicción:</span>
-                      <span className="text-cyan-600 dark:text-cyan-400 font-mono font-black">{activeLesson.defaultSpeed}x</span>
                     </div>
-                    <input
-                      type="range"
-                      min="0.6"
-                      max="1.2"
-                      step="0.05"
-                      value={activeLesson.defaultSpeed}
-                      onChange={(e) => updateLesson(activeLesson.id, { defaultSpeed: parseFloat(e.target.value) })}
-                      className="w-full accent-indigo-600 cursor-pointer"
-                    />
-                    <div className={`flex justify-between text-[10px] font-semibold ${
-                      isLightMode ? 'text-slate-500' : 'text-slate-400'
-                    }`}>
-                      <span>0.6x (Rezagados)</span>
-                      <span>1.0x (Nativo)</span>
-                      <span>1.2x (Avanzado)</span>
-                    </div>
-                  </div>
 
-                  {/* Botón de Auditoría y Prueba de Pronunciación en Vivo */}
-                  <div className="pt-1">
-                    <button
-                      type="button"
-                      onClick={() => handlePlayAudioSample()}
-                      className={`w-full py-2.5 px-3 rounded-2xl text-xs font-black flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer ${
-                        isPlayingPreview
-                          ? 'bg-rose-600 hover:bg-rose-500 text-white animate-pulse'
-                          : 'bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white'
-                      }`}
-                      title="Escuchar locución de la voz seleccionada con dicción nativa calibrada"
-                    >
-                      {isPlayingPreview ? (
-                        <>
-                          <Pause className="w-4 h-4" />
-                          <span>Detener Muestra Fonética</span>
-                        </>
-                      ) : (
-                        <>
-                          <Volume2 className="w-4 h-4 text-cyan-200" />
-                          <span>Escuchar Muestra ({activeLesson.language === 'fr' ? 'Prononciation Française' : 'English Accent'})</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Vista en Miniatura del Avatar Configurado */}
-                  <div className={`pt-3 pb-1 flex justify-center rounded-2xl border ${
-                    isLightMode ? 'bg-slate-50/80 border-slate-200/80' : 'bg-slate-950/40 border-slate-800/60'
-                  }`}>
-                    <HumanGesticulatingAvatar
-                      gender={activeLesson.avatarGender}
-                      name={activeLesson.avatarName}
-                      language={activeLesson.language}
-                      voiceId={activeLesson.avatarVoice}
-                      avatarImage={activeLesson.avatarImage}
-                      historicalFigureId={activeLesson.historicalFigureId || (useHistoricalFigure ? selectedHistoricalId : undefined)}
-                      speechRate={activeLesson.defaultSpeed}
-                      onSpeechRateChange={(rate) => updateLesson(activeLesson.id, { defaultSpeed: rate })}
-                      isPlaying={isPlayingPreview}
-                      onRepeat={() => handlePlayAudioSample(activeLesson.dialogue[0]?.text)}
-                      onStop={() => {
-                        stopAllIskoolAudio();
-                        audioControllerRef.current?.stop();
-                        setIsPlayingPreview(false);
-                        setActivePlayingLineId(null);
-                      }}
-                      currentText={activeLesson.dialogue[0]?.text || (activeLesson.language === 'fr' ? "Prêt pour la leçon de prononciation française." : "Ready for the English pronunciation lesson.")}
-                      className="scale-90"
-                    />
                   </div>
                 </div>
 
-                {/* Lado Derecho: Editor de Diálogos & Frases para Karaoke */}
-                <div className="lg:col-span-8 space-y-6">
-                  
-                  {/* SECCIÓN 1: LÍNEAS DE DIÁLOGO DE LA CONVERSACIÓN */}
-                  <div className={`p-5 rounded-3xl border space-y-4 transition-all ${
-                    isLightMode 
-                      ? 'bg-white border-slate-200/90 shadow-sm text-slate-900' 
-                      : 'bg-slate-900/90 border-slate-800 shadow-xl text-white'
-                  }`}>
-                    <div className={`flex items-center justify-between border-b pb-3 ${
-                      isLightMode ? 'border-slate-100' : 'border-slate-800'
+                {/* =====================================================================
+                    COLUMNA DERECHA (7 cols): Course Planning & 40-Week Curriculum Layer
+                    ===================================================================== */}
+                <div className="lg:col-span-7 space-y-4">
+                  {/* Encabezado con Switch de Vista (Plan de 40 Semanas vs Editor de Guion) */}
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <h2 className={`text-xl font-black tracking-tight ${
+                      isLightMode ? 'text-slate-900' : 'text-white'
                     }`}>
-                      <div>
-                        <h3 className={`text-sm font-black flex items-center gap-2 ${
-                          isLightMode ? 'text-slate-900' : 'text-white'
-                        }`}>
-                          <MessageSquare className="w-4 h-4 text-indigo-600 dark:text-cyan-400" />
-                          <span>Guion de Diálogo Interactivo</span>
-                        </h3>
-                        <p className={`text-[11px] ${
-                          isLightMode ? 'text-slate-600' : 'text-slate-400'
-                        }`}>
-                          Redacta la interacción entre el mentor ({activeLesson.avatarName}) y el estudiante. El avatar hablará con gesticulación real.
-                        </p>
-                      </div>
+                      {workshopRightView === 'curriculum'
+                        ? 'Course Planning & 40-Week Curriculum Layer'
+                        : 'Editor de Guion & Karaoke Fonético'}
+                    </h2>
+
+                    {/* Selector de Modo (Plan Curricular vs Editor de Guion) */}
+                    <div className={`flex items-center p-1 rounded-2xl border shadow-xs text-xs font-bold ${
+                      isLightMode ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'
+                    }`}>
                       <button
                         type="button"
-                        onClick={handleAddDialogueLine}
-                        className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+                        onClick={() => setWorkshopRightView('curriculum')}
+                        className={`px-3 py-1 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
+                          workshopRightView === 'curriculum'
+                            ? 'bg-indigo-600 text-white shadow-xs font-black'
+                            : (isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white')
+                        }`}
                       >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Añadir Línea</span>
+                        <BookOpen className="w-3.5 h-3.5" />
+                        <span>Plan de 40 Semanas</span>
                       </button>
-                    </div>
 
-                    <div className="space-y-3">
-                      {activeLesson.dialogue.map((line, idx) => (
-                        <div key={line.id} className={`p-3.5 rounded-2xl border space-y-2.5 transition-all ${
-                          isLightMode 
-                            ? 'bg-slate-50/90 border-slate-200/80 text-slate-900' 
-                            : 'bg-slate-950 border-slate-800 text-white'
-                        }`}>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className={`text-xs font-black px-2 py-0.5 rounded-md border ${
-                                isLightMode 
-                                  ? 'bg-indigo-50 text-indigo-700 border-indigo-200' 
-                                  : 'bg-indigo-950 text-indigo-300 border border-indigo-800'
-                              }`}>
-                                {idx + 1}
-                              </span>
-                              <select
-                                value={line.speaker}
-                                onChange={(e) => handleUpdateDialogueLine(idx, { speaker: e.target.value as any })}
-                                className={`px-2 py-1 rounded-lg text-xs font-bold border transition-all ${
-                                  isLightMode 
-                                    ? 'bg-white border-slate-200 text-slate-800' 
-                                    : 'bg-slate-800 text-white border-slate-700'
-                                }`}
-                              >
-                                <option value="avatar">Mentor ({activeLesson.avatarName})</option>
-                                <option value="student">Alumno (Respuesta Oral)</option>
-                              </select>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <button
-                                type="button"
-                                onClick={() => handlePlayAudioSample(line.text, line.id)}
-                                disabled={!line.text.trim()}
-                                className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
-                                  activePlayingLineId === line.id
-                                    ? 'bg-rose-600 text-white animate-pulse'
-                                    : (isLightMode 
-                                        ? 'bg-slate-200/80 hover:bg-indigo-600 text-slate-700 hover:text-white' 
-                                        : 'bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white')
-                                }`}
-                                title="Escuchar locución de esta línea con voz del avatar"
-                              >
-                                {activePlayingLineId === line.id ? <Pause className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-indigo-600 dark:text-cyan-400" />}
-                                <span className="text-[10px] hidden sm:inline">{activePlayingLineId === line.id ? 'Detener' : 'Escuchar'}</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteDialogueLine(idx)}
-                                className="text-slate-400 hover:text-rose-500 p-1 cursor-pointer transition-colors"
-                                title="Eliminar línea"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <textarea
-                              rows={2}
-                              value={line.text}
-                              onChange={(e) => handleUpdateDialogueLine(idx, { text: e.target.value })}
-                              placeholder={`Texto en ${activeLesson.language === 'en' ? 'Inglés' : 'Francés'}...`}
-                              className={`w-full p-2.5 rounded-xl border text-xs focus:outline-hidden transition-all ${
-                                isLightMode 
-                                  ? 'bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:border-indigo-500 shadow-xs' 
-                                  : 'bg-slate-900 border-slate-700 text-white focus:border-cyan-400'
-                              }`}
-                            />
-                            <input
-                              type="text"
-                              value={line.translationEs}
-                              onChange={(e) => handleUpdateDialogueLine(idx, { translationEs: e.target.value })}
-                              placeholder="Traducción al Español para soporte del alumno..."
-                              className={`w-full p-2 rounded-lg border text-[11px] transition-all ${
-                                isLightMode 
-                                  ? 'bg-white border-slate-200 text-slate-800 placeholder-slate-400' 
-                                  : 'bg-slate-900/60 border-slate-800 text-slate-300'
-                              }`}
-                            />
-                          </div>
-                        </div>
-                      ))}
+                      <button
+                        type="button"
+                        onClick={() => setWorkshopRightView('script')}
+                        className={`px-3 py-1 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
+                          workshopRightView === 'script'
+                            ? 'bg-indigo-600 text-white shadow-xs font-black'
+                            : (isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white')
+                        }`}
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>Editor de Guion & Frases</span>
+                      </button>
                     </div>
                   </div>
 
-                  {/* SECCIÓN 2: FRASES DE RETO PARA EL KARAOKE FONÉTICO */}
-                  <div className={`p-5 rounded-3xl border space-y-4 transition-all ${
-                    isLightMode 
-                      ? 'bg-white border-slate-200/90 shadow-sm text-slate-900' 
-                      : 'bg-slate-900/90 border-slate-800 shadow-xl text-white'
-                  }`}>
-                    <div className={`flex items-center justify-between border-b pb-3 ${
-                      isLightMode ? 'border-slate-100' : 'border-slate-800'
-                    }`}>
-                      <div>
-                        <h3 className={`text-sm font-black flex items-center gap-2 ${
-                          isLightMode ? 'text-slate-900' : 'text-white'
-                        }`}>
-                          <Mic className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-                          <span>Frases Guiadas para Karaoke de Pronunciación</span>
-                        </h3>
-                        <p className={`text-[11px] ${
-                          isLightMode ? 'text-slate-600' : 'text-slate-400'
-                        }`}>
-                          El alumno grabará estas oraciones con su micrófono. El sistema resaltará en verde las palabras correctas en tiempo real.
-                        </p>
+                  {/* VISTA 1: Plan de 40 Semanas (Idéntica a Imagen 1) */}
+                  {workshopRightView === 'curriculum' ? (
+                    <div className="space-y-4">
+                      {/* Barra de Búsqueda */}
+                      <div className="relative">
+                        <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          value={curriculumSearch}
+                          onChange={(e) => setCurriculumSearch(e.target.value)}
+                          placeholder="Search..."
+                          className={`w-full pl-10 pr-4 py-2.5 rounded-2xl border text-xs sm:text-sm focus:outline-hidden transition-all shadow-xs ${
+                            isLightMode 
+                              ? 'bg-white border-slate-200 text-slate-800 placeholder-slate-400 focus:border-indigo-500' 
+                              : 'bg-slate-900 border-slate-800 text-white placeholder-slate-500 focus:border-indigo-400'
+                          }`}
+                        />
                       </div>
-                      <button
-                        type="button"
-                        onClick={handleAddKaraokePhrase}
-                        className="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Añadir Frase Karaoke</span>
-                      </button>
-                    </div>
 
-                    <div className="space-y-3">
-                      {activeLesson.karaokePhrases.map((phrase, idx) => (
-                        <div key={phrase.id} className={`p-3.5 rounded-2xl border space-y-2 transition-all ${
-                          isLightMode 
-                            ? 'bg-slate-50/90 border-slate-200/80 text-slate-900' 
-                            : 'bg-slate-950 border-slate-800 text-white'
+                      {/* Pestañas de Trimestre */}
+                      <div className={`flex items-center border-b gap-4 sm:gap-6 text-xs sm:text-sm font-bold ${
+                        isLightMode ? 'border-slate-200' : 'border-slate-800'
+                      }`}>
+                        <button
+                          type="button"
+                          onClick={() => setCurriculumTrimester(1)}
+                          className={`pb-2.5 transition-all cursor-pointer relative ${
+                            curriculumTrimester === 1
+                              ? 'text-indigo-600 font-black'
+                              : (isLightMode ? 'text-slate-500 hover:text-slate-800' : 'text-slate-400 hover:text-white')
+                          }`}
+                        >
+                          <span>Trimestre 1 (A1/A1+)</span>
+                          {curriculumTrimester === 1 && (
+                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-full" />
+                          )}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setCurriculumTrimester(2)}
+                          className={`pb-2.5 transition-all cursor-pointer relative ${
+                            curriculumTrimester === 2
+                              ? 'text-indigo-600 font-black'
+                              : (isLightMode ? 'text-slate-500 hover:text-slate-800' : 'text-slate-400 hover:text-white')
+                          }`}
+                        >
+                          <span>Trimestre 2 (A2/A2+)</span>
+                          {curriculumTrimester === 2 && (
+                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-full" />
+                          )}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setCurriculumTrimester(3)}
+                          className={`pb-2.5 transition-all cursor-pointer relative ${
+                            curriculumTrimester === 3
+                              ? 'text-indigo-600 font-black'
+                              : (isLightMode ? 'text-slate-500 hover:text-slate-800' : 'text-slate-400 hover:text-white')
+                          }`}
+                        >
+                          <span>Trimestre 3 (B1/B2)</span>
+                          {curriculumTrimester === 3 && (
+                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 rounded-full" />
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Rejilla de Tarjetas Semanales de 2 Columnas (Idéntica a Imagen 1) */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {filteredCurriculumWeeks.map(week => {
+                          const hasMilestoneStar = week.weekNumber === 2 || week.weekNumber === 30 || week.weekNumber % 10 === 0;
+                          return (
+                            <div
+                              key={week.weekNumber}
+                              className={`p-4 rounded-2xl border shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-3 ${
+                                isLightMode ? 'bg-white border-slate-200/90' : 'bg-slate-900 border-slate-800'
+                              }`}
+                            >
+                              {/* Cabecera de la Semana con Insignias */}
+                              <div>
+                                <div className="flex items-center justify-between">
+                                  <span className={`text-xs font-bold ${
+                                    isLightMode ? 'text-slate-500' : 'text-slate-400'
+                                  }`}>
+                                    Week {week.weekNumber}
+                                  </span>
+                                  <div className="flex items-center gap-1.5">
+                                    {/* Checkmark Verde */}
+                                    <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px] shadow-2xs font-bold">
+                                      ✓
+                                    </span>
+                                    {/* Estrella Dorada para Milestones */}
+                                    {hasMilestoneStar && (
+                                      <span className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] shadow-2xs font-bold">
+                                        ★
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Título de la Semana */}
+                                <h3 className={`text-base font-extrabold tracking-tight mt-1 line-clamp-1 ${
+                                  isLightMode ? 'text-slate-900' : 'text-white'
+                                }`}>
+                                  {week.title.replace(/^Week \d+:\s*/, '').replace(/^Semaine \d+:\s*/, '')}
+                                </h3>
+                              </div>
+
+                              {/* Insignias de Acreditación (A1/B2, CENNI, Cambridge / DELF) */}
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between gap-2 flex-wrap">
+                                  <div className="flex items-center gap-1.5">
+                                    {/* Nivel CEFR */}
+                                    <span className={`px-2 py-0.5 rounded-md text-[11px] font-black border ${
+                                      week.cefr.startsWith('B')
+                                        ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                        : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                    }`}>
+                                      {week.cefr}
+                                    </span>
+
+                                    {/* Nivel CENNI */}
+                                    <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-200">
+                                      {week.level.includes('CENNI') ? week.level.replace(/^[^(]*\(/, '').replace(/\)/, '') : `CENNI ${week.weekNumber <= 14 ? '3' : week.weekNumber <= 27 ? '7' : '13'}`}
+                                    </span>
+                                  </div>
+
+                                  {/* Escudo Cambridge & DELF */}
+                                  <div className="flex items-center gap-1 text-[10px] font-extrabold text-slate-600">
+                                    <IbimeOfficialLogo variant="shield_only" size={16} />
+                                    <span>CAMBRIDGE & DELF</span>
+                                  </div>
+                                </div>
+
+                                {/* Botón: Cargar en Taller */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleLoadWeekIntoWorkshop(week)}
+                                  className={`w-full py-2.5 rounded-xl border font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs ${
+                                    isLightMode
+                                      ? 'border-indigo-300/80 bg-white hover:bg-slate-50 text-slate-800 hover:text-indigo-600'
+                                      : 'border-indigo-800 bg-indigo-950/40 hover:bg-indigo-900/60 text-indigo-300'
+                                  }`}
+                                >
+                                  <span>Cargar en Taller</span>
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    /* VISTA 2: Editor de Guion & Frases de Karaoke (Funcionalidad Completa) */
+                    <div className="space-y-6">
+                      
+                      {/* SECCIÓN 1: LÍNEAS DE DIÁLOGO DE LA CONVERSACIÓN */}
+                      <div className={`p-5 rounded-3xl border space-y-4 transition-all ${
+                        isLightMode 
+                          ? 'bg-white border-slate-200/90 shadow-sm text-slate-900' 
+                          : 'bg-slate-900/90 border-slate-800 shadow-xl text-white'
+                      }`}>
+                        <div className={`flex items-center justify-between border-b pb-3 ${
+                          isLightMode ? 'border-slate-100' : 'border-slate-800'
                         }`}>
-                          <div className="flex items-center justify-between">
-                            <span className={`text-xs font-black ${
-                              isLightMode ? 'text-teal-700' : 'text-teal-400'
+                          <div>
+                            <h3 className={`text-sm font-black flex items-center gap-2 ${
+                              isLightMode ? 'text-slate-900' : 'text-white'
                             }`}>
-                              Frase {idx + 1} ({phrase.difficulty})
-                            </span>
-                            <div className="flex items-center gap-1.5">
-                              <button
-                                type="button"
-                                onClick={() => handlePlayAudioSample(phrase.targetText, phrase.id)}
-                                disabled={!phrase.targetText.trim()}
-                                className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
-                                  activePlayingLineId === phrase.id
-                                    ? 'bg-rose-600 text-white animate-pulse'
-                                    : (isLightMode 
-                                        ? 'bg-slate-200/80 hover:bg-teal-600 text-slate-700 hover:text-white' 
-                                        : 'bg-slate-800 hover:bg-teal-600 text-slate-300 hover:text-white')
-                                }`}
-                                title="Escuchar pronunciación modelo"
-                              >
-                                {activePlayingLineId === phrase.id ? <Pause className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />}
-                                <span className="text-[10px] hidden sm:inline">{activePlayingLineId === phrase.id ? 'Detener' : 'Escuchar Modelo'}</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const updated = activeLesson.karaokePhrases.filter((_, i) => i !== idx);
+                              <MessageSquare className="w-4 h-4 text-indigo-600 dark:text-cyan-400" />
+                              <span>Guion de Diálogo Interactivo</span>
+                            </h3>
+                            <p className={`text-[11px] ${
+                              isLightMode ? 'text-slate-600' : 'text-slate-400'
+                            }`}>
+                              Redacta la interacción entre el mentor ({activeLesson.avatarName}) y el estudiante. El avatar hablará con gesticulación real.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleAddDialogueLine}
+                            className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Añadir Línea</span>
+                          </button>
+                        </div>
+
+                        <div className="space-y-3">
+                          {activeLesson.dialogue.map((line, idx) => (
+                            <div key={line.id} className={`p-3.5 rounded-2xl border space-y-2.5 transition-all ${
+                              isLightMode 
+                                ? 'bg-slate-50/90 border-slate-200/80 text-slate-900' 
+                                : 'bg-slate-950 border-slate-800 text-white'
+                            }`}>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <span className={`text-xs font-black px-2 py-0.5 rounded-md border ${
+                                    isLightMode 
+                                      ? 'bg-indigo-50 text-indigo-700 border-indigo-200' 
+                                      : 'bg-indigo-950 text-indigo-300 border border-indigo-800'
+                                  }`}>
+                                    {idx + 1}
+                                  </span>
+                                  <select
+                                    value={line.speaker}
+                                    onChange={(e) => handleUpdateDialogueLine(idx, { speaker: e.target.value as any })}
+                                    className={`px-2 py-1 rounded-lg text-xs font-bold border transition-all ${
+                                      isLightMode 
+                                        ? 'bg-white border-slate-200 text-slate-800' 
+                                        : 'bg-slate-800 text-white border-slate-700'
+                                    }`}
+                                  >
+                                    <option value="avatar">Mentor ({activeLesson.avatarName})</option>
+                                    <option value="student">Alumno (Respuesta Oral)</option>
+                                  </select>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => handlePlayAudioSample(line.text, line.id)}
+                                    disabled={!line.text.trim()}
+                                    className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                                      activePlayingLineId === line.id
+                                        ? 'bg-rose-600 text-white animate-pulse'
+                                        : (isLightMode 
+                                            ? 'bg-slate-200/80 hover:bg-indigo-600 text-slate-700 hover:text-white' 
+                                            : 'bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white')
+                                    }`}
+                                    title="Escuchar locución de esta línea con voz del avatar"
+                                  >
+                                    {activePlayingLineId === line.id ? <Pause className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-indigo-600 dark:text-cyan-400" />}
+                                    <span className="text-[10px] hidden sm:inline">{activePlayingLineId === line.id ? 'Detener' : 'Escuchar'}</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteDialogueLine(idx)}
+                                    className="text-slate-400 hover:text-rose-500 p-1 cursor-pointer transition-colors"
+                                    title="Eliminar línea"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div className="space-y-1.5">
+                                <textarea
+                                  rows={2}
+                                  value={line.text}
+                                  onChange={(e) => handleUpdateDialogueLine(idx, { text: e.target.value })}
+                                  placeholder={`Texto en ${activeLesson.language === 'en' ? 'Inglés' : 'Francés'}...`}
+                                  className={`w-full p-2.5 rounded-xl border text-xs focus:outline-hidden transition-all ${
+                                    isLightMode 
+                                      ? 'bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:border-indigo-500 shadow-xs' 
+                                      : 'bg-slate-900 border-slate-700 text-white focus:border-cyan-400'
+                                  }`}
+                                />
+                                <input
+                                  type="text"
+                                  value={line.translationEs}
+                                  onChange={(e) => handleUpdateDialogueLine(idx, { translationEs: e.target.value })}
+                                  placeholder="Traducción al Español para soporte del alumno..."
+                                  className={`w-full p-2 rounded-lg border text-[11px] transition-all ${
+                                    isLightMode 
+                                      ? 'bg-white border-slate-200 text-slate-800 placeholder-slate-400' 
+                                      : 'bg-slate-900/60 border-slate-800 text-slate-300'
+                                  }`}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* SECCIÓN 2: FRASES DE RETO PARA EL KARAOKE FONÉTICO */}
+                      <div className={`p-5 rounded-3xl border space-y-4 transition-all ${
+                        isLightMode 
+                          ? 'bg-white border-slate-200/90 shadow-sm text-slate-900' 
+                          : 'bg-slate-900/90 border-slate-800 shadow-xl text-white'
+                      }`}>
+                        <div className={`flex items-center justify-between border-b pb-3 ${
+                          isLightMode ? 'border-slate-100' : 'border-slate-800'
+                        }`}>
+                          <div>
+                            <h3 className={`text-sm font-black flex items-center gap-2 ${
+                              isLightMode ? 'text-slate-900' : 'text-white'
+                            }`}>
+                              <Mic className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                              <span>Frases Guiadas para Karaoke de Pronunciación</span>
+                            </h3>
+                            <p className={`text-[11px] ${
+                              isLightMode ? 'text-slate-600' : 'text-slate-400'
+                            }`}>
+                              El alumno grabará estas oraciones con su micrófono. El sistema resaltará en verde las palabras correctas en tiempo real.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleAddKaraokePhrase}
+                            className="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Añadir Frase Karaoke</span>
+                          </button>
+                        </div>
+
+                        <div className="space-y-3">
+                          {activeLesson.karaokePhrases.map((phrase, idx) => (
+                            <div key={phrase.id} className={`p-3.5 rounded-2xl border space-y-2 transition-all ${
+                              isLightMode 
+                                ? 'bg-slate-50/90 border-slate-200/80 text-slate-900' 
+                                : 'bg-slate-950 border-slate-800 text-white'
+                            }`}>
+                              <div className="flex items-center justify-between">
+                                <span className={`text-xs font-black ${
+                                  isLightMode ? 'text-teal-700' : 'text-teal-400'
+                                }`}>
+                                  Frase {idx + 1} ({phrase.difficulty})
+                                </span>
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => handlePlayAudioSample(phrase.targetText, phrase.id)}
+                                    disabled={!phrase.targetText.trim()}
+                                    className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                                      activePlayingLineId === phrase.id
+                                        ? 'bg-rose-600 text-white animate-pulse'
+                                        : (isLightMode 
+                                            ? 'bg-slate-200/80 hover:bg-teal-600 text-slate-700 hover:text-white' 
+                                            : 'bg-slate-800 hover:bg-teal-600 text-slate-300 hover:text-white')
+                                    }`}
+                                    title="Escuchar pronunciación modelo"
+                                  >
+                                    {activePlayingLineId === phrase.id ? <Pause className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />}
+                                    <span className="text-[10px] hidden sm:inline">{activePlayingLineId === phrase.id ? 'Detener' : 'Escuchar Modelo'}</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const updated = activeLesson.karaokePhrases.filter((_, i) => i !== idx);
+                                      updateLesson(activeLesson.id, { karaokePhrases: updated });
+                                    }}
+                                    className="text-slate-400 hover:text-rose-500 p-1 cursor-pointer transition-colors"
+                                    title="Eliminar frase"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+
+                              <input
+                                type="text"
+                                value={phrase.targetText}
+                                onChange={(e) => {
+                                  const updated = [...activeLesson.karaokePhrases];
+                                  updated[idx].targetText = e.target.value;
                                   updateLesson(activeLesson.id, { karaokePhrases: updated });
                                 }}
-                                className="text-slate-400 hover:text-rose-500 p-1 cursor-pointer transition-colors"
-                                title="Eliminar frase"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                                placeholder="Oración exacta que el alumno pronunciará..."
+                                className={`w-full p-2.5 rounded-xl border text-xs font-bold focus:outline-hidden transition-all ${
+                                  isLightMode 
+                                    ? 'bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:border-teal-500 shadow-xs' 
+                                    : 'bg-slate-900 border-slate-700 text-white focus:border-teal-400'
+                                }`}
+                              />
+
+                              <input
+                                type="text"
+                                value={phrase.translationEs}
+                                onChange={(e) => {
+                                  const updated = [...activeLesson.karaokePhrases];
+                                  updated[idx].translationEs = e.target.value;
+                                  updateLesson(activeLesson.id, { karaokePhrases: updated });
+                                }}
+                                placeholder="Significado en español..."
+                                className={`w-full p-2 rounded-lg border text-[11px] transition-all ${
+                                  isLightMode 
+                                    ? 'bg-white border-slate-200 text-slate-700 placeholder-slate-400' 
+                                    : 'bg-slate-900/60 border-slate-800 text-slate-400'
+                                }`}
+                              />
                             </div>
-                          </div>
-
-                          <input
-                            type="text"
-                            value={phrase.targetText}
-                            onChange={(e) => {
-                              const updated = [...activeLesson.karaokePhrases];
-                              updated[idx].targetText = e.target.value;
-                              updateLesson(activeLesson.id, { karaokePhrases: updated });
-                            }}
-                            placeholder="Oración exacta que el alumno pronunciará..."
-                            className={`w-full p-2.5 rounded-xl border text-xs font-bold focus:outline-hidden transition-all ${
-                              isLightMode 
-                                ? 'bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:border-teal-500 shadow-xs' 
-                                : 'bg-slate-900 border-slate-700 text-white focus:border-teal-400'
-                            }`}
-                          />
-
-                          <input
-                            type="text"
-                            value={phrase.translationEs}
-                            onChange={(e) => {
-                              const updated = [...activeLesson.karaokePhrases];
-                              updated[idx].translationEs = e.target.value;
-                              updateLesson(activeLesson.id, { karaokePhrases: updated });
-                            }}
-                            placeholder="Significado en español..."
-                            className={`w-full p-2 rounded-lg border text-[11px] transition-all ${
-                              isLightMode 
-                                ? 'bg-white border-slate-200 text-slate-700 placeholder-slate-400' 
-                                : 'bg-slate-900/60 border-slate-800 text-slate-400'
-                            }`}
-                          />
+                          ))}
                         </div>
-                      ))}
+                      </div>
+
                     </div>
-                  </div>
+                  )}
 
                 </div>
 

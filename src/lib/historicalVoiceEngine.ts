@@ -1333,7 +1333,7 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     era: 'Elizabethan Era (1564 - 1616)',
     country: 'England',
     avatarEmoji: '📜',
-    avatarImage: '/images/languages/historical/shakespeare.jpg',
+    avatarImage: '/images/languages/3d/shakespeare_3d.webp',
     canonicalIntro: 'I am William Shakespeare. I was born in Stratford-upon-Avon, and upon the boards of the Globe Theatre in London, I crafted the tragedies of Hamlet and Macbeth.',
     pdaRelevance: 'Fluidez auditiva poética, figuras retóricas y riqueza léxica renacentista en lengua inglesa.',
     sampleQuestions: [
@@ -1352,7 +1352,7 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     era: 'Victorian Scientific Era (1815 - 1852)',
     country: 'United Kingdom',
     avatarEmoji: '⚙️',
-    avatarImage: '/images/languages/historical/ada_lovelace.jpg',
+    avatarImage: '/images/languages/3d/ada_lovelace_3d.webp',
     canonicalIntro: 'I am Ada Lovelace. In 1843, I authored the very first computer algorithm for Charles Babbage\'s Analytical Engine, foreseeing that machines would manipulate symbols and compose music.',
     pdaRelevance: 'Léxico científico de vanguardia, argumentación lógica y pensamiento computacional bilingüe.',
     sampleQuestions: [
@@ -1371,7 +1371,7 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     era: 'American Civil War (1809 - 1865)',
     country: 'United States',
     avatarEmoji: '🏛️',
-    avatarImage: '/images/languages/historical/abraham_lincoln.jpg',
+    avatarImage: '/images/languages/3d/abraham_lincoln_3d.webp',
     canonicalIntro: 'I am Abraham Lincoln, 16th President of the United States. In 1863, amidst our nation\'s trial at Gettysburg, I proclaimed that government of the people, by the people, for the people, shall not perish from the earth.',
     pdaRelevance: 'Oratoria formal, estructuras de discurso cívico y argumentación republicana en inglés estadounidense.',
     sampleQuestions: [
@@ -1390,7 +1390,7 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     era: 'Premier Empire Français (1769 - 1821)',
     country: 'France',
     avatarEmoji: '⚔️',
-    avatarImage: '/images/languages/historical/napoleon.jpg',
+    avatarImage: '/images/languages/3d/napoleon_3d.webp',
     canonicalIntro: 'Je suis Napoléon Bonaparte, né à Ajaccio en Corse. J\'ai réorganisé l\'administration, promulgué le Code Civil et conduit les armées de la République avant de ceindre la couronne impériale.',
     pdaRelevance: 'Conectores argumentativos solemnes, léxico institucional civil y retórica histórica francesa.',
     sampleQuestions: [
@@ -1409,7 +1409,7 @@ export const MULTILINGUAL_HISTORICAL_FIGURES: MultilingualHistoricalFigure[] = [
     era: 'Révolution Scientifique (1867 - 1934)',
     country: 'France / Pologne',
     avatarEmoji: '🔬',
-    avatarImage: '/images/languages/historical/marie_curie.jpg',
+    avatarImage: '/images/languages/3d/marie_curie_3d.webp',
     canonicalIntro: 'Je suis Marie Curie. Avec Pierre Curie, j\'ai isolé le polonium et le radium dans mon modeste hangar de la rue Lhomond à Paris, devenant la première lauréate de deux Prix Nobel.',
     pdaRelevance: 'Vocabulario científico riguroso, enunciados descriptivos y argumentación empírica en lengua francesa.',
     sampleQuestions: [

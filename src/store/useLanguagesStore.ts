@@ -87,6 +87,7 @@ const INITIAL_LESSONS: LanguageLesson[] = [
     avatarGender: 'female',
     avatarName: 'Claire',
     avatarVoice: 'en-US-JennyNeural',
+    avatarImage: '/images/languages/3d/mentor_female_3d.webp',
     defaultSpeed: 0.85,
     dialogue: [
       {
@@ -151,6 +152,7 @@ const INITIAL_LESSONS: LanguageLesson[] = [
     avatarGender: 'female',
     avatarName: 'Sophie',
     avatarVoice: 'fr-FR-DeniseNeural',
+    avatarImage: '/images/languages/3d/mentor_female_3d.webp',
     defaultSpeed: 0.85,
     dialogue: [
       {
@@ -202,6 +204,7 @@ const INITIAL_LESSONS: LanguageLesson[] = [
     avatarGender: 'male',
     avatarName: 'Arthur',
     avatarVoice: 'en-US-GuyNeural',
+    avatarImage: '/images/languages/3d/mentor_male_3d.webp',
     defaultSpeed: 0.9,
     dialogue: [
       {
@@ -238,7 +241,7 @@ const INITIAL_LESSONS: LanguageLesson[] = [
     avatarGender: 'male',
     avatarName: 'William Shakespeare',
     avatarVoice: 'en-GB-RyanNeural',
-    avatarImage: '/images/languages/historical/shakespeare.jpg',
+    avatarImage: '/images/languages/3d/shakespeare_3d.webp',
     historicalFigureId: 'shakespeare',
     defaultSpeed: 0.88,
     dialogue: [
@@ -283,7 +286,7 @@ const INITIAL_LESSONS: LanguageLesson[] = [
     avatarGender: 'male',
     avatarName: 'Napoléon Bonaparte',
     avatarVoice: 'fr-FR-HenriNeural',
-    avatarImage: '/images/languages/historical/napoleon.jpg',
+    avatarImage: '/images/languages/3d/napoleon_3d.webp',
     historicalFigureId: 'napoleon',
     defaultSpeed: 0.88,
     dialogue: [

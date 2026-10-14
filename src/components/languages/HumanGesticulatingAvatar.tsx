@@ -114,14 +114,30 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
     return getHistoricalMouthConfig(matchedFigure?.id || name);
   }, [matchedFigure, name]);
 
-  // Resolución de la imagen del avatar
+  // Resolución infalible de la imagen del avatar en 3D
   const avatarImageSrc = useMemo(() => {
-    if (avatarImage) return avatarImage;
-    if (matchedFigure?.avatarImage) return matchedFigure.avatarImage;
+    // Si matchedFigure tiene avatarImage en 3d, priorizarla
+    if (matchedFigure?.avatarImage && matchedFigure.avatarImage.includes('/3d/')) {
+      return matchedFigure.avatarImage;
+    }
+    // Si viene avatarImage y ya es 3D
+    if (avatarImage && avatarImage.includes('/3d/')) {
+      return avatarImage;
+    }
+    // Si es un personaje histórico por ID o nombre conocido
+    const figureId = matchedFigure?.id || historicalFigureId;
+    if (figureId === 'shakespeare') return '/images/languages/3d/shakespeare_3d.webp';
+    if (figureId === 'ada_lovelace') return '/images/languages/3d/ada_lovelace_3d.webp';
+    if (figureId === 'abraham_lincoln') return '/images/languages/3d/abraham_lincoln_3d.webp';
+    if (figureId === 'marie_curie') return '/images/languages/3d/marie_curie_3d.webp';
+    if (figureId === 'napoleon') return '/images/languages/3d/napoleon_3d.webp';
+
+    if (avatarImage && !avatarImage.includes('/historical/')) return avatarImage;
+
     return gender === 'female' 
-      ? '/images/languages/mentor_female.jpg' 
-      : '/images/languages/mentor_male.jpg';
-  }, [avatarImage, matchedFigure, gender]);
+      ? '/images/languages/3d/mentor_female_3d.webp' 
+      : '/images/languages/3d/mentor_male_3d.webp';
+  }, [avatarImage, matchedFigure, historicalFigureId, gender]);
 
   const avatarDisplayTitle = useMemo(() => {
     if (matchedFigure?.name) return matchedFigure.name;
@@ -445,7 +461,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
                 ? '/images/languages/mentor_female.jpg' 
                 : '/images/languages/mentor_male.jpg';
             }}
-            className="w-full h-full object-cover object-center absolute inset-0 select-none pointer-events-none filter contrast-105 brightness-95"
+            className="w-full h-full object-cover object-center absolute inset-0 select-none pointer-events-none filter contrast-102 brightness-100 transition-all duration-300"
           />
 
           {/* Capa de Párpados / Pestañeo Realista Natural */}
@@ -550,8 +566,8 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
             })()}
           </svg>
 
-          {/* Velo Dramático y Textura de Retrato Clásico */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/25 pointer-events-none" />
+          {/* Sombra de Suavizado Inferior para Contraste de Texto */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
 
           {/* Celebración / Logro Gamificado */}
           {avatarMood === 'celebrating' && (
