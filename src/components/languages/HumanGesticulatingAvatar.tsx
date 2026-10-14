@@ -7,8 +7,7 @@ import {
   Sparkles, 
   Mic, 
   Gauge, 
-  Pause,
-  Award
+  Pause
 } from 'lucide-react';
 import { 
   playUniversalIskoolVoice, 
@@ -43,16 +42,18 @@ interface Props {
 interface Character3DRig {
   id: string;
   idle: string;
+  talkMovie: string;
   talkFrames: string[];
 }
 
 // =========================================================================
-// REGISTRO DE FRAMES 3D REALES RENDERIZADOS CON GESTICULACIÓN Y BOCAS NATURALES
+// REGISTRO DE MINIPELÍCULAS Y FRAMES 3D INTERPOLADOS A 24 FPS
 // =========================================================================
 const CHARACTER_3D_RIGS: Record<string, Character3DRig> = {
   claire: {
     id: 'claire',
     idle: '/images/languages/3d/mentor_female_3d.webp',
+    talkMovie: '/images/languages/3d/movies/mentor_female_talk.mp4',
     talkFrames: [
       '/images/languages/3d/mentor_female_3d_talk_a.webp',
       '/images/languages/3d/mentor_female_3d_talk_b.webp',
@@ -62,6 +63,7 @@ const CHARACTER_3D_RIGS: Record<string, Character3DRig> = {
   arthur: {
     id: 'arthur',
     idle: '/images/languages/3d/mentor_male_3d_v2.webp',
+    talkMovie: '/images/languages/3d/movies/mentor_male_talk.mp4',
     talkFrames: [
       '/images/languages/3d/mentor_male_3d_talk_a.webp',
       '/images/languages/3d/mentor_male_3d_talk_b.webp',
@@ -71,6 +73,7 @@ const CHARACTER_3D_RIGS: Record<string, Character3DRig> = {
   shakespeare: {
     id: 'shakespeare',
     idle: '/images/languages/3d/shakespeare_3d.webp',
+    talkMovie: '/images/languages/3d/movies/shakespeare_talk.mp4',
     talkFrames: [
       '/images/languages/3d/shakespeare_3d_talk.webp',
       '/images/languages/3d/shakespeare_3d_talk_b.webp'
@@ -79,6 +82,7 @@ const CHARACTER_3D_RIGS: Record<string, Character3DRig> = {
   ada_lovelace: {
     id: 'ada_lovelace',
     idle: '/images/languages/3d/ada_lovelace_3d.webp',
+    talkMovie: '/images/languages/3d/movies/ada_lovelace_talk.mp4',
     talkFrames: [
       '/images/languages/3d/ada_lovelace_3d_talk.webp',
       '/images/languages/3d/ada_lovelace_3d_talk_b.webp'
@@ -87,6 +91,7 @@ const CHARACTER_3D_RIGS: Record<string, Character3DRig> = {
   abraham_lincoln: {
     id: 'abraham_lincoln',
     idle: '/images/languages/3d/abraham_lincoln_3d.webp',
+    talkMovie: '/images/languages/3d/movies/abraham_lincoln_talk.mp4',
     talkFrames: [
       '/images/languages/3d/abraham_lincoln_3d_talk.webp',
       '/images/languages/3d/abraham_lincoln_3d_talk_b.webp'
@@ -95,6 +100,7 @@ const CHARACTER_3D_RIGS: Record<string, Character3DRig> = {
   napoleon: {
     id: 'napoleon',
     idle: '/images/languages/3d/napoleon_3d.webp',
+    talkMovie: '/images/languages/3d/movies/napoleon_talk.mp4',
     talkFrames: [
       '/images/languages/3d/napoleon_3d_talk.webp',
       '/images/languages/3d/napoleon_3d_talk_b.webp'
@@ -103,6 +109,7 @@ const CHARACTER_3D_RIGS: Record<string, Character3DRig> = {
   marie_curie: {
     id: 'marie_curie',
     idle: '/images/languages/3d/marie_curie_3d.webp',
+    talkMovie: '/images/languages/3d/movies/marie_curie_talk.mp4',
     talkFrames: [
       '/images/languages/3d/marie_curie_3d_talk.webp'
     ]
@@ -168,7 +175,9 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
   const [showTranslation, setShowTranslation] = useState<boolean>(false);
   const [audioEnergy, setAudioEnergy] = useState<number>(0);
   const [breathPhase, setBreathPhase] = useState<number>(0);
+  const [videoError, setVideoError] = useState<boolean>(false);
 
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null);
@@ -190,17 +199,17 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
 
   const isHistorical = Boolean(matchedFigure || avatarImage?.includes('/historical/'));
 
-  // 2. Resolver Rig 3D del personaje con poses reales
+  // 2. Resolver Rig 3D del personaje con poses reales y minipelícula
   const characterRig: Character3DRig = useMemo(() => {
     return resolveCharacter3DRig(matchedFigure?.id || historicalFigureId, name, gender, avatarImage);
   }, [matchedFigure, historicalFigureId, name, gender, avatarImage]);
 
-  // Lista de todos los frames (0: idle, 1+: talk frames)
+  // Lista de todos los frames como respaldo
   const allFrames = useMemo(() => {
     return [characterRig.idle, ...characterRig.talkFrames];
   }, [characterRig]);
 
-  // Precarga de todos los frames 3D para evitar parpadeos o pantallas en blanco
+  // Precarga de todos los frames 3D para evitar parpadeos
   useEffect(() => {
     if (typeof window !== 'undefined') {
       allFrames.forEach(src => {
@@ -209,6 +218,23 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
       });
     }
   }, [allFrames]);
+
+  // Sincronización precisa de reproducción de video a 24 fps con la tasa de velocidad pedagógica
+  useEffect(() => {
+    if (!videoRef.current) return;
+    try {
+      videoRef.current.playbackRate = Math.max(0.5, Math.min(2.0, speechRate));
+      if (isPlaying) {
+        videoRef.current.currentTime = 0;
+        const playPromise = videoRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {});
+        }
+      } else {
+        videoRef.current.pause();
+      }
+    } catch {}
+  }, [isPlaying, speechRate, characterRig]);
 
   const avatarDisplayTitle = useMemo(() => {
     if (matchedFigure?.name) return matchedFigure.name;
@@ -282,12 +308,10 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
     }
   }, [audioElement]);
 
-  // =========================================================================
-  // MOTOR DE SECUENCIACIÓN DE POSES Y GESTOS 3D (MOVIMIENTO FLUIDO Y NATURAL)
-  // =========================================================================
+  // Fallback de secuenciación de frames si el video no estuviese disponible
   useEffect(() => {
     if (!isPlaying) {
-      setActiveFrameIndex(0); // Volver al frame Idle
+      setActiveFrameIndex(0);
       return;
     }
 
@@ -298,13 +322,9 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
     }
 
     let currentTalkIndex = 0;
-    // Seleccionar de inmediato el primer frame de gesticulación para reaccionar al habla
     setActiveFrameIndex(1);
 
-    // Intervalo de cadencia oratoria natural: cambia entre poses de gesticulación
-    // aproximadamente cada 550ms a 750ms modulado por la velocidad del habla
     const baseCadence = Math.max(380, Math.min(850, Math.floor(620 / speechRate)));
-
     const gestureInterval = setInterval(() => {
       currentTalkIndex = (currentTalkIndex + 1) % talkFrameCount;
       setActiveFrameIndex(1 + currentTalkIndex);
@@ -362,18 +382,60 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
   const breathY = Math.sin(breathPhase) * 1.5;
   const breathScale = 1.0 + Math.sin(breathPhase) * 0.003;
 
-  // Renderizador del Personaje 3D con Transición Suave de Fotogramas (Cross-Fade Fluid)
+  // Renderizador del Personaje 3D con Minipelícula de Movimiento Fluido a 24 FPS
   const renderLivingPuppet = () => {
     return (
       <div className="relative w-full h-full flex items-end justify-center overflow-hidden">
-        {allFrames.map((frameSrc, idx) => {
-          const isActive = idx === activeFrameIndex;
+        {/* 1. Capa Base de Reposo: Imagen 3D estática de alta fidelidad con micro-respiración */}
+        <div 
+          className={`absolute inset-0 w-full h-full flex items-end justify-center pointer-events-none transition-opacity duration-300 ease-in-out ${
+            isPlaying && !videoError ? 'opacity-0 z-0' : 'opacity-100 z-10'
+          }`}
+          style={{
+            transform: `translate3d(0, ${breathY}px, 0) scale(${breathScale})`,
+            transformOrigin: '50% 90%'
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={characterRig.idle}
+            alt={avatarDisplayTitle}
+            className="w-full h-full object-contain object-bottom select-none pointer-events-none drop-shadow-2xl"
+          />
+        </div>
 
+        {/* 2. Capa Minipelícula 3D Cinematográfica: Interpolación a 24 FPS de fotogramas intermedios */}
+        {!videoError && characterRig.talkMovie && (
+          <div
+            className={`absolute inset-0 w-full h-full flex items-end justify-center pointer-events-none transition-opacity duration-300 ease-in-out ${
+              isPlaying ? 'opacity-100 z-20' : 'opacity-0 z-0'
+            }`}
+            style={{
+              transform: `translate3d(0, ${breathY}px, 0) scale(${breathScale})`,
+              transformOrigin: '50% 90%'
+            }}
+          >
+            <video
+              ref={videoRef}
+              src={characterRig.talkMovie}
+              autoPlay
+              loop
+              muted
+              playsInline
+              onError={() => setVideoError(true)}
+              className="w-full h-full object-contain object-bottom select-none pointer-events-none drop-shadow-2xl"
+            />
+          </div>
+        )}
+
+        {/* 3. Fallback de fotogramas si el navegador bloquease reproducción de video */}
+        {videoError && isPlaying && allFrames.map((frameSrc, idx) => {
+          const isActive = idx === activeFrameIndex;
           return (
             <div
               key={frameSrc}
               className={`absolute inset-0 w-full h-full flex items-end justify-center pointer-events-none transition-opacity duration-240 ease-in-out ${
-                isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                isActive ? 'opacity-100 z-20' : 'opacity-0 z-0'
               }`}
               style={{
                 transform: `translate3d(0, ${breathY}px, 0) scale(${breathScale})`,
@@ -383,7 +445,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={frameSrc}
-                alt={avatarDisplayTitle}
+                alt=""
                 className="w-full h-full object-contain object-bottom select-none pointer-events-none drop-shadow-2xl"
               />
             </div>
@@ -409,7 +471,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
   // =========================================================================
   return (
     <div className={`relative flex flex-col items-center select-none ${className}`}>
-      {/* Marco Principal Gamificado del Avatar (Totalmente Fijo, sin sacudidas) */}
+      {/* Marco Principal Gamificado del Avatar (Totalmente Fijo, sin oscilación de tarjeta) */}
       <div className={`relative w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 rounded-3xl overflow-hidden shadow-2xl border-4 ${
         isHistorical ? 'border-amber-500/50 shadow-amber-500/20' : 'border-indigo-500/40 shadow-indigo-500/20'
       } bg-gradient-to-b from-slate-900 via-slate-950 to-black group`}>
@@ -427,11 +489,11 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
           }`}
         />
 
-        {/* Contenedor del Personaje Articulado 3D */}
+        {/* Contenedor de la Minipelícula / Personaje 3D */}
         {renderLivingPuppet()}
 
         {/* Badge Superior: Personaje, Época y Bandera */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-20">
+        <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-30">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/75 backdrop-blur-md border border-white/15 text-white shadow-xl max-w-[65%]">
             <span className="text-base shrink-0">{matchedFigure?.avatarEmoji || languageFlag}</span>
             <div className="flex flex-col truncate">
@@ -479,7 +541,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
 
         {/* Ondas Sonoras Visuales mientras habla */}
         {isPlaying && (
-          <div className="absolute bottom-3 left-4 right-4 flex items-end justify-center gap-1.5 h-7 pointer-events-none z-20">
+          <div className="absolute bottom-3 left-4 right-4 flex items-end justify-center gap-1.5 h-7 pointer-events-none z-30">
             {[45, 80, 100, 65, 90, 100, 75, 95, 55].map((heightPct, idx) => (
               <span
                 key={idx}
