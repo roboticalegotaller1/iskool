@@ -30,11 +30,14 @@ export interface OfficialTemplateConfig {
   lastModifiedAt?: string;
 }
 
+export type CeoThemeMode = 'ivory' | 'slate' | 'navy' | 'emerald';
+
 export interface CeoEmailSettings {
   tenantId: string;
   vipEmails: VipEmailRule[];
   delegates: SectionDelegateConfig[];
   templates: OfficialTemplateConfig[];
+  themeMode?: CeoThemeMode;
   updatedAt: string;
 }
 
@@ -238,6 +241,7 @@ export function getDefaultSettings(tenantId: string): CeoEmailSettings {
     vipEmails: getDefaultVipRules(cleanId),
     delegates: getDefaultDelegates(cleanId),
     templates: getDefaultOfficialTemplates(cleanId),
+    themeMode: 'ivory',
     updatedAt: new Date().toISOString()
   };
 }

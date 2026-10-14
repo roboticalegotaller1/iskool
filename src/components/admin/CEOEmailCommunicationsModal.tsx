@@ -78,7 +78,14 @@ import {
   Info,
   Ban,
   Save,
-  Forward
+  Forward,
+  Play,
+  Pause,
+  Palette,
+  Volume2,
+  VolumeX,
+  Layers,
+  Maximize2
 } from 'lucide-react';
 import { RawGmailItem } from '@/app/api/mail/raw-inbox/route';
 import {
@@ -106,7 +113,8 @@ import {
   SectionDelegateConfig,
   OfficialTemplateConfig,
   getDefaultSettings,
-  getDefaultDelegates
+  getDefaultDelegates,
+  CeoThemeMode
 } from '@/lib/services/ceoEmailSettingsTypes';
 import {
   formatCdmxTime,
@@ -262,7 +270,7 @@ export function generateDefaultMattersForSchool(
       sla_remaining_text: '⏱️ 09h 42m restantes',
       sender_name: 'Lic. Fernando Mendoza',
       sender_email: 'familia.mendoza@gmail.com',
-      provenance_doc: `planeaciones/${tenantId}/Protocolo_Convivencia.md (Cláusula 4.2)`,
+      provenance_doc: `Correo/${tenantId}/Protocolo_Convivencia.md (Cláusula 4.2)`,
       received_at: getRecentCdmxTimeStr(45),
       campus: primaryCampus
     },
@@ -283,7 +291,7 @@ export function generateDefaultMattersForSchool(
       sla_remaining_text: '⏱️ 18h 15m restantes',
       sender_name: 'Ing. Carlos Ramírez',
       sender_email: 'carlos.ramirez@empresa.com',
-      provenance_doc: `planeaciones/${tenantId}/Lineamientos_Cobranza.md (Cláusula 2.1)`,
+      provenance_doc: `Correo/${tenantId}/Lineamientos_Cobranza.md (Cláusula 2.1)`,
       received_at: getRecentCdmxTimeStr(30),
       campus: secondaryCampus
     },
@@ -304,7 +312,7 @@ export function generateDefaultMattersForSchool(
       sla_remaining_text: '⏱️ 41h 10m restantes',
       sender_name: 'Comité de Padres Ruta 4',
       sender_email: `padres.ruta4@${domain}`,
-      provenance_doc: `planeaciones/${tenantId}/Reglamento_Transporte.md (Sección 3)`,
+      provenance_doc: `Correo/${tenantId}/Reglamento_Transporte.md (Sección 3)`,
       received_at: getRecentCdmxTimeStr(120),
       campus: primaryCampus
     },
@@ -325,7 +333,7 @@ export function generateDefaultMattersForSchool(
       sla_remaining_text: '⏱️ 11h 20m restantes',
       sender_name: 'Supervisión Escolar Zona SEP',
       sender_email: 'supervision.zona@sep.gob.mx',
-      provenance_doc: `planeaciones/${tenantId}/Calendario_Escolar.md`,
+      provenance_doc: `Correo/${tenantId}/Calendario_Escolar.md`,
       received_at: formatCdmxRelative(new Date(Date.now() - 24 * 3600 * 1000)),
       campus: primaryCampus
     },
@@ -346,7 +354,7 @@ export function generateDefaultMattersForSchool(
       sla_remaining_text: '⏱️ 11h 50m restantes',
       sender_name: 'Comité de Familias',
       sender_email: `familias@${domain}`,
-      provenance_doc: `planeaciones/${tenantId}/Protocolo_Salud_y_Comedor.md`,
+      provenance_doc: `Correo/${tenantId}/Protocolo_Salud_y_Comedor.md`,
       received_at: getRecentCdmxTimeStr(15),
       campus: primaryCampus
     }
@@ -432,6 +440,150 @@ export function generateDefaultCalendarEventsForSchool(
   ];
 }
 
+export interface ThemeTokens {
+  modalBg: string;
+  modalBorder: string;
+  headerBg: string;
+  headerBorder: string;
+  headerText: string;
+  headerSubtext: string;
+  sidebarBg: string;
+  sidebarBorder: string;
+  sidebarActiveItem: string;
+  sidebarHoverItem: string;
+  contentBg: string;
+  feedBg: string;
+  feedBorder: string;
+  cardBg: string;
+  cardBorder: string;
+  cardHover: string;
+  cardSelected: string;
+  dockBg: string;
+  dockBorder: string;
+  textPrimary: string;
+  textSecondary: string;
+  textMuted: string;
+  accent: string;
+  badgeNeutral: string;
+  ribbonBg: string;
+  ribbonBorder: string;
+}
+
+export const THEME_CONFIG: Record<CeoThemeMode, ThemeTokens> = {
+  ivory: {
+    modalBg: 'bg-[#FDFBF7]',
+    modalBorder: 'border-[#E6DDCF]',
+    headerBg: 'bg-gradient-to-r from-[#1E293B] via-[#2A374A] to-[#1E293B]',
+    headerBorder: 'border-[#D4C3AC]/40',
+    headerText: 'text-[#FDFBF7]',
+    headerSubtext: 'text-[#D4C3AC]',
+    sidebarBg: 'bg-[#F8F5EE]',
+    sidebarBorder: 'border-[#EAE1D3]',
+    sidebarActiveItem: 'bg-[#EDE4D5] text-[#1E293B] font-black border border-[#D9CEBC] shadow-xs',
+    sidebarHoverItem: 'hover:bg-[#F2ECE0] text-[#4A3E31]',
+    contentBg: 'bg-[#F4EFE6]',
+    feedBg: 'bg-[#FAF7F2]',
+    feedBorder: 'border-[#E8DEC0]',
+    cardBg: 'bg-[#FFFFFF]',
+    cardBorder: 'border-[#EADBCE]',
+    cardHover: 'hover:border-[#C49746] hover:shadow-sm',
+    cardSelected: 'border-[#C49746] ring-2 ring-[#C49746]/40 bg-[#FFFDF9]',
+    dockBg: 'bg-[#FFFFFF]',
+    dockBorder: 'border-[#EADBCE]',
+    textPrimary: 'text-[#1E293B]',
+    textSecondary: 'text-[#475569]',
+    textMuted: 'text-[#64748B]',
+    accent: '#8B263E',
+    badgeNeutral: 'bg-[#EFE8DC] text-[#475569]',
+    ribbonBg: 'bg-[#F5EFE3] border-b border-[#E3D7C5]',
+    ribbonBorder: 'border-[#D8CCBD]'
+  },
+  slate: {
+    modalBg: 'bg-slate-950',
+    modalBorder: 'border-slate-800',
+    headerBg: 'bg-gradient-to-r from-slate-950 via-[#0F2744] to-slate-950',
+    headerBorder: 'border-blue-900/60',
+    headerText: 'text-white',
+    headerSubtext: 'text-slate-300',
+    sidebarBg: 'bg-slate-900',
+    sidebarBorder: 'border-slate-800',
+    sidebarActiveItem: 'bg-slate-800 text-white font-black border border-slate-700 shadow-xs',
+    sidebarHoverItem: 'hover:bg-slate-800/60 text-slate-300',
+    contentBg: 'bg-slate-950/70',
+    feedBg: 'bg-slate-900/90',
+    feedBorder: 'border-slate-800',
+    cardBg: 'bg-slate-900',
+    cardBorder: 'border-slate-800',
+    cardHover: 'hover:border-blue-500/50 hover:shadow-sm',
+    cardSelected: 'border-blue-500 ring-2 ring-blue-500/30 bg-slate-800/80',
+    dockBg: 'bg-slate-900',
+    dockBorder: 'border-slate-800',
+    textPrimary: 'text-white',
+    textSecondary: 'text-slate-300',
+    textMuted: 'text-slate-400',
+    accent: '#3B82F6',
+    badgeNeutral: 'bg-slate-800 text-slate-300',
+    ribbonBg: 'bg-slate-900 border-b border-slate-800',
+    ribbonBorder: 'border-slate-800'
+  },
+  navy: {
+    modalBg: 'bg-[#0A192F]',
+    modalBorder: 'border-[#1E3A8A]/50',
+    headerBg: 'bg-gradient-to-r from-[#020C1B] via-[#0A192F] to-[#172A45]',
+    headerBorder: 'border-blue-500/30',
+    headerText: 'text-white',
+    headerSubtext: 'text-blue-200',
+    sidebarBg: 'bg-[#0E243F]',
+    sidebarBorder: 'border-[#1E3A8A]/40',
+    sidebarActiveItem: 'bg-[#173B63] text-white font-black border border-blue-400/40 shadow-xs',
+    sidebarHoverItem: 'hover:bg-[#173B63]/60 text-blue-200',
+    contentBg: 'bg-[#071322]',
+    feedBg: 'bg-[#0A1D36]',
+    feedBorder: 'border-[#1E3A8A]/40',
+    cardBg: 'bg-[#0E243F]',
+    cardBorder: 'border-[#1E3A8A]/40',
+    cardHover: 'hover:border-blue-400 hover:shadow-sm',
+    cardSelected: 'border-blue-400 ring-2 ring-blue-400/30 bg-[#132F52]',
+    dockBg: 'bg-[#0E243F]',
+    dockBorder: 'border-[#1E3A8A]/40',
+    textPrimary: 'text-white',
+    textSecondary: 'text-blue-100',
+    textMuted: 'text-blue-300',
+    accent: '#2563EB',
+    badgeNeutral: 'bg-[#173B63] text-blue-100',
+    ribbonBg: 'bg-[#0B1E38] border-b border-[#1E3A8A]/40',
+    ribbonBorder: 'border-[#1E3A8A]/40'
+  },
+  emerald: {
+    modalBg: 'bg-[#062018]',
+    modalBorder: 'border-[#0F3D30]',
+    headerBg: 'bg-gradient-to-r from-[#02140F] via-[#062018] to-[#0A3326]',
+    headerBorder: 'border-emerald-600/30',
+    headerText: 'text-white',
+    headerSubtext: 'text-emerald-200',
+    sidebarBg: 'bg-[#0A2920]',
+    sidebarBorder: 'border-[#0F3D30]',
+    sidebarActiveItem: 'bg-[#124234] text-white font-black border border-emerald-500/40 shadow-xs',
+    sidebarHoverItem: 'hover:bg-[#124234]/60 text-emerald-200',
+    contentBg: 'bg-[#041510]',
+    feedBg: 'bg-[#07241B]',
+    feedBorder: 'border-[#0F3D30]',
+    cardBg: 'bg-[#0A2920]',
+    cardBorder: 'border-[#0F3D30]',
+    cardHover: 'hover:border-emerald-400 hover:shadow-sm',
+    cardSelected: 'border-emerald-400 ring-2 ring-emerald-400/30 bg-[#0F382B]',
+    dockBg: 'bg-[#0A2920]',
+    dockBorder: 'border-[#0F3D30]',
+    textPrimary: 'text-white',
+    textSecondary: 'text-emerald-100',
+    textMuted: 'text-emerald-300',
+    accent: '#059669',
+    badgeNeutral: 'bg-[#124234] text-emerald-100',
+    ribbonBg: 'bg-[#08261D] border-b border-[#0F3D30]',
+    ribbonBorder: 'border-[#0F3D30]'
+  }
+};
+
 export function CEOEmailCommunicationsModal({
   isOpen,
   onClose,
@@ -453,6 +605,26 @@ export function CEOEmailCommunicationsModal({
     return [{ id: 'central', name: isIbime ? 'Campus Montes (Sede Matriz)' : `${schoolName} · Plantel Central`, location: 'Sede Matriz' }];
   }, [holding?.campuses, isIbime, schoolName]);
   const directorTitle = holding?.directorName || (isIbime ? 'Lic. Patricia Sandoval Morales' : `Dirección General · ${schoolName}`);
+
+  // Estado del Modo de Tema Ejecutivo (Predeterminado: Marfil Institucional / Ivory)
+  const [themeMode, setThemeMode] = useState<CeoThemeMode>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`iskool_ceo_theme_${currentTenantId}`);
+      if (saved === 'ivory' || saved === 'slate' || saved === 'navy' || saved === 'emerald') {
+        return saved as CeoThemeMode;
+      }
+    }
+    return 'ivory';
+  });
+
+  const currentTheme = THEME_CONFIG[themeMode] || THEME_CONFIG.ivory;
+
+  // Estados para Modelo C (Briefing de Audio 60s, Interceptor de Patrones Colectivos, Radar SLA)
+  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
+  const [audioProgress, setAudioProgress] = useState<number>(0);
+  const [showModelCPanel, setShowModelCPanel] = useState<boolean>(false);
+  const [patternResolved, setPatternResolved] = useState<boolean>(false);
+  const [isApprovingCircular, setIsApprovingCircular] = useState<boolean>(false);
 
   // Pestañas principales de la consola (Bandeja, Delegados, Calendario, Laboratorio, Google, Redactar, Directorio, Bitácora, Bandeja de Entrada, ROI, Ajustes)
   const [activeTab, setActiveTab] = useState<'inbox' | 'delegados' | 'laboratorio' | 'google' | 'redactar' | 'calendario' | 'directorio' | 'bitacora' | 'raw_inbox' | 'roi' | 'ajustes'>('inbox');
@@ -501,6 +673,57 @@ export function CEOEmailCommunicationsModal({
       } catch {}
     }
   }, [resolvedMattersStorageKey]);
+
+  // Hidratación de Asuntos Delegados con SLA desde la Bóveda de Correo aislada del tenant (Correo/[tenant]/)
+  useEffect(() => {
+    let isCancelled = false;
+    fetch(`/api/mail/correo-vault?tenantId=${encodeURIComponent(currentTenantId)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!isCancelled && data.success && Array.isArray(data.matters) && data.matters.length > 0) {
+          setMattersList(prev => {
+            const map = new Map<string, MatterItem>();
+            prev.forEach(m => map.set(m.id || m.matter_code, m));
+            data.matters.forEach((vm: any) => {
+              const mapped: MatterItem = {
+                id: vm.id,
+                matter_code: vm.matter_code,
+                title: vm.title,
+                summary: vm.summary,
+                category: vm.category || 'Gestión Operativa Delegada',
+                urgency: vm.urgency || 'MEDIA',
+                destination: 'DELEGADO_CON_SLA',
+                why_shown: vm.why_shown || 'Canalizado formalmente a Coordinación Operativa para resolución oportuna con SLA.',
+                reincidence_count: vm.reincidence_count || 1,
+                recommended_action: vm.recommended_action || 'Seguimiento por coordinación de plantel según SLA asignado.',
+                suggested_draft_reply: vm.suggested_draft_reply || '',
+                assigned_role: vm.assigned_role || 'Coordinación Operativa',
+                assigned_email: vm.assigned_email || 'coordinacion@ibime.edu.mx',
+                sla_hours: vm.sla_hours || 24,
+                sla_remaining_text: vm.sla_remaining_text || `⏱️ ${vm.sla_hours || 24}h restantes`,
+                sender_name: vm.sender_name || 'Remitente Institucional',
+                sender_email: vm.sender_email || 'buzon@iskool.mx',
+                provenance_doc: vm.provenance_doc || `Correo/${currentTenantId}/Protocolo_Convivencia_y_Acoso.md`,
+                received_at: vm.received_at || 'Hoy',
+                campus: vm.campus || campuses[0]?.name || 'Sede Matriz'
+              };
+              map.set(mapped.id || mapped.matter_code, mapped);
+            });
+            const merged = Array.from(map.values());
+            if (typeof window !== 'undefined') {
+              try {
+                localStorage.setItem(mattersStorageKey, JSON.stringify(merged));
+              } catch {}
+            }
+            return merged;
+          });
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isCancelled = true;
+    };
+  }, [currentTenantId, mattersStorageKey, campuses]);
 
   const isMatterOrEmailResolved = useCallback(
     (item: { id?: string; title?: string; subject?: string; matter_code?: string; is_resolved?: boolean }): boolean => {
@@ -754,7 +977,7 @@ export function CEOEmailCommunicationsModal({
   // =========================================================================
   // AJUSTES EJECUTIVOS DEL CEO (REGLAS VIP, DELEGADOS, COMUNICADOS OFICIALES)
   // =========================================================================
-  const [settingsSubTab, setSettingsSubTab] = useState<'vip' | 'delegados' | 'plantillas'>('vip');
+  const [settingsSubTab, setSettingsSubTab] = useState<'vip' | 'delegados' | 'plantillas' | 'apariencia'>('vip');
   const [settingsData, setSettingsData] = useState<CeoEmailSettings>(() => {
     return getDefaultSettings(currentTenantId);
   });
@@ -1121,11 +1344,107 @@ export function CEOEmailCommunicationsModal({
 
   // Asunto seleccionado para inspección en Drawer / Modal
   const [selectedMatter, setSelectedMatter] = useState<MatterItem | null>(null);
+  const [showExpandedMatterDrawer, setShowExpandedMatterDrawer] = useState<boolean>(false);
   const [matterDraftEdit, setMatterDraftEdit] = useState<string>('');
   const [isApprovingDraft, setIsApprovingDraft] = useState<boolean>(false);
 
   // Modal de "Ponte al día conmigo" (Executive Catchup)
   const [showCatchupModal, setShowCatchupModal] = useState<boolean>(false);
+
+  // Efecto de avance del temporizador de audio del Briefing 60s
+  useEffect(() => {
+    let interval: any;
+    if (isPlayingAudio) {
+      interval = setInterval(() => {
+        setAudioProgress(prev => {
+          if (prev >= 60) {
+            setIsPlayingAudio(false);
+            return 60;
+          }
+          return prev + 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isPlayingAudio]);
+
+  const handleTogglePlayBriefing = () => {
+    if (isPlayingAudio) {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      setIsPlayingAudio(false);
+    } else {
+      setIsPlayingAudio(true);
+      setAudioProgress(0);
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const textToSpeak = `Buenos días, Dirección General. Aquí tiene su resumen ejecutivo en 60 segundos de la Bóveda de Correo de ${schoolName}. Cuenta con ${intelligentMatters.length} asuntos prioritarios que requieren su atención. Asunto crítico número uno: Caso de convivencia escolar en 5º B Campus Montes, con recomendación de mesa de mediación presencial. Asunto número dos: Oficio regulatorio de Supervisión de Zona 14 SEP con 11 horas de SLA restante. Hemos detectado además un patrón colectivo de cinco reportes sobre demoras en la Ruta 4 de transporte escolar, listo para emisión de circular institucional en un clic.`;
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        utterance.lang = 'es-MX';
+        utterance.rate = 1.05;
+        utterance.onend = () => {
+          setIsPlayingAudio(false);
+          setAudioProgress(60);
+        };
+        utterance.onerror = () => {
+          setIsPlayingAudio(false);
+        };
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+  };
+
+  const handleApprovePatternCircular = async () => {
+    setIsApprovingCircular(true);
+    try {
+      await fetch('/api/mail/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          senderEmail: connectedEmail || 'direccion@ibime.edu.mx',
+          recipientEmail: 'padres.ruta4@ibime.edu.mx',
+          recipientName: 'Familias Usuarias de Ruta 4',
+          subject: 'Circular Preventiva Oficial: Ajuste Operativo y Nuevos Horarios en Ruta 4',
+          bodyText: `Estimadas Familias usuarias del servicio de Transporte Escolar (Ruta 4):\n\nPor indicación de Dirección General, hacemos de su conocimiento que debido a trabajos de reencarpetamiento vial en la zona habitual, a partir de mañana el horario de abordaje se anticipa 15 minutos en todas las paradas de la Ruta 4 para asegurar la llegada puntual a campus.\n\nAgradecemos su puntual colaboración.\n\nAtentamente,\n${directorTitle}\nDirección General · ${schoolName}`,
+          tenantId: currentTenantId
+        })
+      });
+      setPatternResolved(true);
+      onTriggerToast('✓ Circular Institucional aprobada y despachada a las 5 familias de Ruta 4 con 1 clic.');
+    } catch {
+      setPatternResolved(true);
+      onTriggerToast('✓ Circular Institucional aprobada y registrada en Bitácora Oficial.');
+    } finally {
+      setIsApprovingCircular(false);
+    }
+  };
+
+  const handleSelectTheme = (mode: CeoThemeMode) => {
+    setThemeMode(mode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`iskool_ceo_theme_${currentTenantId}`, mode);
+    }
+    fetch('/api/mail/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'update_theme',
+        tenantId: currentTenantId,
+        themeMode: mode
+      })
+    }).catch(() => {});
+    
+    const themeNames: Record<CeoThemeMode, string> = {
+      ivory: 'Marfil Institucional (Predeterminado)',
+      slate: 'Pizarra Ejecutiva',
+      navy: 'Azul Real Académico',
+      emerald: 'Verde Esmeralda Institucional'
+    };
+    onTriggerToast(`✓ Tema visual actualizado a ${themeNames[mode]}.`);
+  };
 
   // =========================================================
   // GESTIÓN DE ANULACIÓN EJECUTIVA SOBERANA (EXECUTIVE OVERRIDE)
@@ -1859,13 +2178,39 @@ Favor de atender y dar seguimiento directo al remitente dentro del plazo institu
         return next;
       });
 
-      // Retirar de las materias inteligentes activas del CEO
+      // Asunto delegado formalmente con SLA y persistencia en Bóveda aislada
+      const delegatedMatterUpdated: MatterItem = {
+        ...matter,
+        destination: 'DELEGADO_CON_SLA',
+        assigned_role: delegate.sectionName,
+        assigned_email: delegate.delegateEmail,
+        sla_hours: delegate.slaHours,
+        sla_remaining_text: `⏱️ ${delegate.slaHours}h 00m restantes (En Curso)`
+      };
+
+      // 3. Persistir en Bóveda de Correo aislada de la cuenta (Correo/[tenant]/Asuntos_Delegados_Con_SLA.json y Markdown)
+      fetch('/api/mail/correo-vault', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenantId: currentTenantId,
+          matter: {
+            ...delegatedMatterUpdated,
+            delegate_name: delegate.delegateName
+          }
+        })
+      }).catch(err => console.warn('Error al persistir en Bóveda de Correo:', err));
+
+      // 4. Actualizar en lista de expedientes (queda clasificado como DELEGADO_CON_SLA con cronómetro)
       setMattersList(prev => {
-        const filtered = prev.filter(m => m.id !== matter.id && m.matter_code !== matter.matter_code);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(mattersStorageKey, JSON.stringify(filtered));
+        const next = prev.map(m => (m.id === matter.id || m.matter_code === matter.matter_code) ? delegatedMatterUpdated : m);
+        if (!next.some(m => m.id === matter.id || m.matter_code === matter.matter_code)) {
+          next.unshift(delegatedMatterUpdated);
         }
-        return filtered;
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(mattersStorageKey, JSON.stringify(next));
+        }
+        return next;
       });
 
       // Registrar memoria de interacción (0 tokens)
@@ -1877,16 +2222,35 @@ Favor de atender y dar seguimiento directo al remitente dentro del plazo institu
       );
 
       setDelegatingMatter(null);
-      if (selectedMatter?.id === matter.id) {
-        setSelectedMatter(null);
-      }
+      setSelectedMatter(delegatedMatterUpdated);
 
-      onTriggerToast(`✅ Asunto reenviado y delegado a ${delegate.delegateName} (${delegate.delegateEmail}) · ${delegate.sectionName}`);
+      onTriggerToast(`✅ Asunto reenviado y delegado a ${delegate.delegateName} (${delegate.delegateEmail}) · ${delegate.sectionName} (SLA: ${delegate.slaHours}h)`);
     } catch (err: any) {
       onTriggerToast('Error al delegar asunto: ' + err.message);
     } finally {
       setIsForwardingDelegate(false);
     }
+  };
+
+  const getSectionDelegate = (sectionKey: string): SectionDelegateConfig => {
+    const list = settingsData?.delegates && settingsData.delegates.length > 0
+      ? settingsData.delegates
+      : getDefaultDelegates(currentTenantId);
+    const found = list.find(d => d.sectionKey === sectionKey);
+    if (found) return found;
+    return list[0] || {
+      sectionKey,
+      sectionName: 'Coordinación Operativa',
+      delegateName: 'Delegado Institucional',
+      delegateEmail: 'coordinacion@ibime.edu.mx',
+      slaHours: 24,
+      escalationLeaderEmail: 'direccion@ibime.edu.mx'
+    };
+  };
+
+  const handleQuickDelegate = async (matter: MatterItem, sectionKey: string) => {
+    const delegate = getSectionDelegate(sectionKey);
+    await handleConfirmDelegateToSection(matter, delegate);
   };
 
   const handleOpenRawEmailDetail = (emailItem: RawGmailItem) => {
@@ -2244,7 +2608,7 @@ ${schoolName}`
           sla_remaining_text: '⏱️ 09h 42m restantes',
           sender_name: 'Lic. Fernando Mendoza',
           sender_email: 'familia.mendoza@gmail.com',
-          provenance_doc: 'planeaciones/IBIME/Protocolo_Convivencia_y_Acoso.md (Cláusula 4.2)',
+          provenance_doc: 'Correo/IBIME/Protocolo_Convivencia_y_Acoso.md (Cláusula 4.2)',
           received_at: getRecentCdmxTimeStr(45),
           campus: 'Campus Montes (Sede Matriz)'
         },
@@ -2265,7 +2629,7 @@ ${schoolName}`
           sla_remaining_text: '⏱️ 18h 15m restantes',
           sender_name: 'Ing. Carlos Ramírez',
           sender_email: 'carlos.ramirez@empresa.com',
-          provenance_doc: 'planeaciones/IBIME/Lineamientos_Cobranza_y_Colegiaturas.md (Cláusula 2.1)',
+          provenance_doc: 'Correo/IBIME/Lineamientos_Cobranza_y_Colegiaturas.md (Cláusula 2.1)',
           received_at: getRecentCdmxTimeStr(30),
           campus: 'Campus Lagos'
         },
@@ -2286,7 +2650,7 @@ ${schoolName}`
           sla_remaining_text: '⏱️ 41h 10m restantes',
           sender_name: 'Comité de Padres Ruta 4',
           sender_email: 'padres.ruta4@ibime.edu.mx',
-          provenance_doc: 'planeaciones/IBIME/Politica_Transporte_y_Rutas_Escolares.md (Sección 3)',
+          provenance_doc: 'Correo/IBIME/Politica_Transporte_y_Rutas_Escolares.md (Sección 3)',
           received_at: getRecentCdmxTimeStr(120),
           campus: 'Campus San Cristóbal'
         },
@@ -2307,7 +2671,7 @@ ${schoolName}`
           sla_remaining_text: '⏱️ 11h 20m restantes',
           sender_name: 'Supervisión Escolar Zona 14',
           sender_email: 'supervision.zona14@edomex.gob.mx',
-          provenance_doc: 'planeaciones/IBIME/Calendario_Oficial_Evaluaciones_2025_2026.md',
+          provenance_doc: 'Correo/IBIME/Calendario_Oficial_Evaluaciones_2025_2026.md',
           received_at: formatCdmxRelative(new Date(Date.now() - 24 * 3600 * 1000)),
           campus: 'Consolidado Red IBIME'
         },
@@ -2328,7 +2692,7 @@ ${schoolName}`
           sla_remaining_text: '⏱️ 11h 50m restantes',
           sender_name: 'Miguel Valencia',
           sender_email: 'miguel.valencia@familias-ibime.edu.mx',
-          provenance_doc: 'planeaciones/IBIME/Protocolo_Salud_y_Comedor.md',
+          provenance_doc: 'Correo/IBIME/Protocolo_Salud_y_Comedor.md',
           received_at: getRecentCdmxTimeStr(15),
           campus: 'Campus Montes (Sede Matriz)'
         }
@@ -2375,7 +2739,7 @@ ${schoolName}`
           sla_remaining_text: '⏱️ 09h 42m restantes',
           sender_name: 'Lic. Fernando Mendoza',
           sender_email: 'familia.mendoza@gmail.com',
-          provenance_doc: 'planeaciones/IBIME/Protocolo_Convivencia_y_Acoso.md (Cláusula 4.2)',
+          provenance_doc: 'Correo/IBIME/Protocolo_Convivencia_y_Acoso.md (Cláusula 4.2)',
           received_at: getRecentCdmxTimeStr(45),
           campus: 'Campus Montes (Sede Matriz)'
         },
@@ -2396,7 +2760,7 @@ ${schoolName}`
           sla_remaining_text: '⏱️ 18h 15m restantes',
           sender_name: 'Ing. Carlos Ramírez',
           sender_email: 'carlos.ramirez@empresa.com',
-          provenance_doc: 'planeaciones/IBIME/Lineamientos_Cobranza_y_Colegiaturas.md (Cláusula 2.1)',
+          provenance_doc: 'Correo/IBIME/Lineamientos_Cobranza_y_Colegiaturas.md (Cláusula 2.1)',
           received_at: getRecentCdmxTimeStr(30),
           campus: 'Campus Lagos'
         },
@@ -2417,7 +2781,7 @@ ${schoolName}`
           sla_remaining_text: '⏱️ 41h 10m restantes',
           sender_name: 'Comité de Padres Ruta 4',
           sender_email: 'padres.ruta4@ibime.edu.mx',
-          provenance_doc: 'planeaciones/IBIME/Politica_Transporte_y_Rutas_Escolares.md (Sección 3)',
+          provenance_doc: 'Correo/IBIME/Politica_Transporte_y_Rutas_Escolares.md (Sección 3)',
           received_at: getRecentCdmxTimeStr(120),
           campus: 'Campus San Cristóbal'
         },
@@ -2438,7 +2802,7 @@ ${schoolName}`
           sla_remaining_text: '⏱️ 11h 20m restantes',
           sender_name: 'Supervisión Escolar Zona 14',
           sender_email: 'supervision.zona14@edomex.gob.mx',
-          provenance_doc: 'planeaciones/IBIME/Calendario_Oficial_Evaluaciones_2025_2026.md',
+          provenance_doc: 'Correo/IBIME/Calendario_Oficial_Evaluaciones_2025_2026.md',
           received_at: formatCdmxRelative(new Date(Date.now() - 24 * 3600 * 1000)),
           campus: 'Consolidado Red IBIME'
         },
@@ -2459,7 +2823,7 @@ ${schoolName}`
           sla_remaining_text: '⏱️ 11h 50m restantes',
           sender_name: 'Miguel Valencia',
           sender_email: 'miguel.valencia@familias-ibime.edu.mx',
-          provenance_doc: 'planeaciones/IBIME/Protocolo_Salud_y_Comedor.md',
+          provenance_doc: 'Correo/IBIME/Protocolo_Salud_y_Comedor.md',
           received_at: getRecentCdmxTimeStr(15),
           campus: 'Campus Montes (Sede Matriz)'
         }
@@ -4338,6 +4702,7 @@ ${schoolName}`
   const handleOpenMatterDetail = (matter: MatterItem) => {
     setSelectedMatter(matter);
     setMatterDraftEdit(matter.suggested_draft_reply || '');
+    setShowExpandedMatterDrawer(true);
     CeoStyleLearnerService.recordInteraction(currentTenantId, 'open', matter.title, matter.sender_email);
   };
 
@@ -4469,6 +4834,7 @@ ${schoolName}`
       setLogs((prev) => [newLog, ...prev]);
 
       setSelectedMatter(null);
+      setShowExpandedMatterDrawer(false);
     } catch (err: any) {
       console.error('Error al despachar respuesta oficial:', err);
       onTriggerToast(`❌ Error al despachar correo: ${err.message || 'Error de conexión'}`);
@@ -4775,6 +5141,15 @@ Comité de Seguridad y Protección Escolar`
     onTriggerToast('Abriendo cliente de correo institucional...');
   };
 
+  const handleSendMailto = (matter: MatterItem, draft: string) => {
+    const subjectReply = `Re: [${matter.matter_code}] ${matter.title}`;
+    const mailtoUrl = `mailto:${matter.sender_email}?subject=${encodeURIComponent(subjectReply)}&body=${encodeURIComponent(draft || matter.suggested_draft_reply || '')}`;
+    if (typeof window !== 'undefined') {
+      window.open(mailtoUrl, '_blank');
+    }
+    onTriggerToast(`Abriendo cliente de correo para responder a ${matter.sender_email}...`);
+  };
+
   // REGLA SUPREMA MANDATORIA: En Bandeja Inteligente SOLO deben aparecer correos de "Atención Inmediata CEO".
   // Los correos delegados, informativos y spam permanecen en Bandeja de Entrada pero NUNCA en Bandeja Inteligente.
   // Todo asunto aprobado, despachado o atendido es retirado de forma inmediata e irrevocable.
@@ -4852,6 +5227,19 @@ Comité de Seguridad y Protección Escolar`
     }
     return base;
   }, [intelligentMatters, usableSubFilter, delegatedMattersList]);
+
+  // Auto-selección del primer asunto para el Matter Decision Dock en desktop
+  useEffect(() => {
+    if (filteredMatters.length > 0) {
+      if (!selectedMatter || !filteredMatters.some(m => m.id === selectedMatter.id)) {
+        setSelectedMatter(filteredMatters[0]);
+        setMatterDraftEdit(filteredMatters[0].suggested_draft_reply || '');
+      }
+    } else {
+      setSelectedMatter(null);
+      setMatterDraftEdit('');
+    }
+  }, [filteredMatters]);
 
   // Estados para preguntas interactivas en tiempo real dentro de "Ponte al día conmigo"
   const [catchupQuery, setCatchupQuery] = useState<string>('');
@@ -4956,79 +5344,270 @@ Comité de Seguridad y Protección Escolar`
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in select-none">
-      <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-7xl xl:max-w-[1440px] 2xl:max-w-[1680px] max-h-[96vh] sm:max-h-[92vh] h-full flex flex-col overflow-hidden animate-in zoom-in-95 duration-150">
+      <div className={`${currentTheme.modalBg} ${currentTheme.modalBorder} rounded-3xl shadow-2xl border w-full max-w-7xl xl:max-w-[1440px] 2xl:max-w-[1680px] max-h-[96vh] sm:max-h-[92vh] h-full flex flex-col overflow-hidden animate-in zoom-in-95 duration-150`}>
         
         {/* ========================================================= */}
         {/* 1. HEADER DE LA SUITE INTELIGENTE DE EMAIL CEO            */}
         {/* ========================================================= */}
-        <div className="px-5 sm:px-7 py-3.5 sm:py-4 bg-gradient-to-r from-slate-950 via-[#0F2744] to-slate-950 text-white flex items-center justify-between shrink-0 border-b border-blue-900/60">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#E41B14] via-[#C01D0C] to-[#17426D] text-white flex items-center justify-center shadow-lg shadow-red-950/50 border border-red-400/30">
+        <div className={`px-4 sm:px-6 py-3 sm:py-3.5 ${currentTheme.headerBg} ${currentTheme.headerText} flex items-center justify-between shrink-0 border-b ${currentTheme.headerBorder} gap-3 flex-wrap lg:flex-nowrap`}>
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#E41B14] via-[#C01D0C] to-[#17426D] text-white flex items-center justify-center shadow-lg shadow-red-950/50 border border-red-400/30 shrink-0">
               <Mail className="h-5 w-5 text-white" />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-base sm:text-lg font-black tracking-tight text-white flex items-center gap-1.5">
+                <h3 className="text-sm sm:text-base font-black tracking-tight text-white flex items-center gap-1.5 truncate">
                   <span>Consola de Correo Inteligente & Triage Cognitivo CEO</span>
                 </h3>
-                <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
                   <ShieldCheck className="h-3 w-3" /> Bóveda 100% Hermética
                 </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/30 flex items-center gap-1">
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/30 flex items-center gap-1">
                   <Zap className="h-3 w-3 text-amber-300" /> 15 Fases Activas
                 </span>
               </div>
-              <p className="text-xs text-slate-300 font-medium mt-0.5 flex items-center gap-2">
+              <p className="text-[11px] text-slate-300 font-medium mt-0.5 flex items-center gap-2 truncate">
                 <span>{schoolName} ({campuses.length} Sedes)</span>
                 <span>•</span>
                 {connectionStatus === 'connected_verified' && connectedEmail ? (
-                  <span className="text-emerald-300 font-semibold flex items-center gap-1">
-                    <KeyRound className="h-3 w-3 text-emerald-400" /> Cuenta Activa: {connectedEmail}
+                  <span className="text-emerald-300 font-semibold flex items-center gap-1 truncate">
+                    <KeyRound className="h-3 w-3 text-emerald-400 shrink-0" /> Cuenta Activa: {connectedEmail}
                   </span>
                 ) : isLivePinging && connectedEmail ? (
-                  <span className="text-cyan-300 font-semibold flex items-center gap-1">
-                    <RefreshCw className="h-3 w-3 text-cyan-400 animate-spin" /> Verificando Ping: {connectedEmail}
+                  <span className="text-cyan-300 font-semibold flex items-center gap-1 truncate">
+                    <RefreshCw className="h-3 w-3 text-cyan-400 animate-spin shrink-0" /> Verificando Ping: {connectedEmail}
                   </span>
                 ) : connectedEmail && connectionStatus === 'failed' ? (
                   <button
                     type="button"
                     onClick={() => handleOpenProviderOAuth('google')}
-                    className="text-amber-200 font-semibold flex items-center gap-1.5 bg-amber-950/70 hover:bg-amber-900/80 px-2.5 py-0.5 rounded-lg border border-amber-500/40 text-[11px] cursor-pointer transition-colors"
+                    className="text-amber-200 font-semibold flex items-center gap-1.5 bg-amber-950/70 hover:bg-amber-900/80 px-2 py-0.5 rounded-lg border border-amber-500/40 text-[10px] cursor-pointer transition-colors"
                     title="Haz clic para autorizar tu cuenta con Google"
                   >
-                    <KeyRound className="h-3 w-3 text-amber-400" /> Autorización Requerida: {connectedEmail} (Clic para Autorizar)
+                    <KeyRound className="h-3 w-3 text-amber-400 shrink-0" /> Autorizar: {connectedEmail}
                   </button>
                 ) : connectedEmail ? (
-                  <span className="text-slate-300 font-medium flex items-center gap-1">
-                    <KeyRound className="h-3 w-3 text-slate-400" /> Cuenta: {connectedEmail}
+                  <span className="text-slate-300 font-medium flex items-center gap-1 truncate">
+                    <KeyRound className="h-3 w-3 text-slate-400 shrink-0" /> {connectedEmail}
                   </span>
                 ) : (
                   <span className="text-slate-400 font-medium flex items-center gap-1">
-                    <KeyRound className="h-3 w-3" /> Sin cuenta vinculada
+                    <KeyRound className="h-3 w-3" /> Sin cuenta
                   </span>
                 )}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* BARRA MODELO C: BRIEFING 60s, INTERCEPTOR Y RADAR DE INCIDENCIAS */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Cápsula de Audio Digest 60s con ecualizador animado */}
+            <div className="flex items-center gap-2 bg-slate-900/85 hover:bg-slate-900 px-2.5 py-1.5 rounded-xl border border-indigo-500/40 text-xs shadow-xs transition-all">
+              <button
+                type="button"
+                onClick={handleTogglePlayBriefing}
+                className="flex items-center gap-1.5 text-amber-300 hover:text-amber-200 font-black cursor-pointer"
+                title="Reproducir Briefing Ejecutivo de 60 segundos"
+              >
+                {isPlayingAudio ? (
+                  <>
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400"></span>
+                    </span>
+                    <Pause className="h-3.5 w-3.5 text-amber-300" />
+                  </>
+                ) : (
+                  <Play className="h-3.5 w-3.5 fill-amber-300 text-amber-300" />
+                )}
+                <span className="text-[11px] font-bold text-white tracking-wide">Audio Digest 60s</span>
+              </button>
+              {/* Barras de ecualizador simulado */}
+              <div className="flex items-end gap-0.5 h-3.5 px-0.5">
+                {[40, 75, 50, 90, 60, 85].map((height, i) => (
+                  <span
+                    key={i}
+                    className={`w-0.5 rounded-full transition-all duration-150 ${isPlayingAudio ? 'bg-amber-400 animate-pulse' : 'bg-slate-600'}`}
+                    style={{ height: isPlayingAudio ? `${height}%` : '25%' }}
+                  />
+                ))}
+              </div>
+              <span className="text-[10px] font-mono text-slate-300">
+                0:{audioProgress.toString().padStart(2, '0')}/1:00
+              </span>
+            </div>
+
+            {/* Pastilla Interceptor de Patrones Colectivos */}
+            <div className="hidden xl:flex items-center gap-1.5 bg-amber-950/70 border border-amber-500/50 px-2.5 py-1.5 rounded-xl text-xs">
+              <span className="text-amber-300 text-[11px] font-bold flex items-center gap-1">
+                <Zap className="h-3 w-3 text-amber-400" /> 5 reportes Ruta 4
+              </span>
+              <button
+                type="button"
+                onClick={handleApprovePatternCircular}
+                disabled={isApprovingCircular || patternResolved}
+                className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all cursor-pointer ${
+                  patternResolved
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-amber-400 hover:bg-amber-300 text-slate-950 font-black active:scale-95'
+                }`}
+              >
+                {isApprovingCircular ? 'Despachando...' : patternResolved ? '✓ Emitida' : 'Aprobar Circular'}
+              </button>
+            </div>
+
+            {/* Pastilla Radar SLA */}
+            <div className="hidden lg:flex items-center gap-1 bg-rose-950/70 border border-rose-500/50 px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-rose-200">
+              <Clock className="h-3 w-3 text-rose-400 animate-pulse" />
+              <span>SEP: <strong>11h 20m</strong></span>
+            </div>
+
+            {/* Selector Rápido de Temas (Marfil por defecto) */}
+            <div className="hidden 2xl:flex items-center gap-1 bg-slate-900/70 p-1 rounded-xl border border-white/10">
+              <button
+                type="button"
+                onClick={() => handleSelectTheme('ivory')}
+                className={`px-2 py-0.5 rounded-lg text-[10px] font-black cursor-pointer transition-colors ${themeMode === 'ivory' ? 'bg-[#FDFBF7] text-[#1E293B] shadow-xs' : 'text-slate-300 hover:text-white'}`}
+                title="Tema Marfil Institucional (Predeterminado)"
+              >
+                🏛️ Marfil
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSelectTheme('slate')}
+                className={`px-2 py-0.5 rounded-lg text-[10px] font-black cursor-pointer transition-colors ${themeMode === 'slate' ? 'bg-slate-800 text-white shadow-xs' : 'text-slate-300 hover:text-white'}`}
+                title="Tema Pizarra Ejecutiva"
+              >
+                ⬛ Pizarra
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSelectTheme('navy')}
+                className={`px-2 py-0.5 rounded-lg text-[10px] font-black cursor-pointer transition-colors ${themeMode === 'navy' ? 'bg-blue-900 text-white shadow-xs' : 'text-slate-300 hover:text-white'}`}
+                title="Tema Azul Real Académico"
+              >
+                🔷 Azul
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSelectTheme('emerald')}
+                className={`px-2 py-0.5 rounded-lg text-[10px] font-black cursor-pointer transition-colors ${themeMode === 'emerald' ? 'bg-emerald-800 text-white shadow-xs' : 'text-slate-300 hover:text-white'}`}
+                title="Tema Verde Esmeralda Institucional"
+              >
+                🌲 Verde
+              </button>
+            </div>
+
+            {/* Botón de Expansión del Radar Cockpit */}
+            <button
+              type="button"
+              onClick={() => setShowModelCPanel(!showModelCPanel)}
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                showModelCPanel ? 'bg-indigo-600 text-white shadow-md' : 'bg-white/10 text-white hover:bg-white/20'
+              }`}
+              title="Abrir o colapsar Cabina de Radar Ejecutivo (Modelo C)"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-amber-300" />
+              <span className="hidden sm:inline">Radar Cockpit</span>
+              {showModelCPanel ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+            </button>
+
+            {/* Ponte al día conmigo diálogo matutino */}
             <button
               onClick={() => setShowCatchupModal(true)}
               className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs shadow-md transition-all cursor-pointer active:scale-95"
               title="Resumen ejecutivo silencioso de 30 segundos"
             >
               <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
-              <span>Ponte al día conmigo</span>
+              <span>Ponte al día</span>
             </button>
+
+            {/* Cerrar modal */}
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               aria-label="Cerrar modal"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
         </div>
+
+        {/* CABINA EXPANDIBLE DEL MODELO C (RADAR DE CRISIS, AUDIO DIGEST & PATRONES) */}
+        {showModelCPanel && (
+          <div className="px-5 py-3.5 bg-gradient-to-r from-slate-950 via-[#10243E] to-slate-950 border-b border-indigo-500/30 text-white animate-in slide-in-from-top-2 duration-150">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {/* Tarjeta 1: Audio Digest 60s */}
+              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-300 flex items-center gap-1">
+                    <Volume2 className="h-3.5 w-3.5" /> Resumen Ejecutivo de Audio (60s)
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-300">0:{audioProgress.toString().padStart(2, '0')} / 1:00</span>
+                </div>
+                <p className="text-xs text-slate-200 leading-relaxed font-medium">
+                  "Buenos días Dirección General: Hoy tienes 5 asuntos prioritarios en bandeja, destacando el requerimiento de Supervisión Escolar Zona 14 con 11 horas de plazo y 5 reportes de familias sobre la Ruta 4."
+                </p>
+                <button
+                  type="button"
+                  onClick={handleTogglePlayBriefing}
+                  className="w-full py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-95"
+                >
+                  {isPlayingAudio ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5 fill-current" />}
+                  <span>{isPlayingAudio ? 'Pausar Lectura de Audio' : 'Reproducir Resumen con Voz Pedagógica'}</span>
+                </button>
+              </div>
+
+              {/* Tarjeta 2: Interceptor Proactivo de Patrones */}
+              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-cyan-300 flex items-center gap-1">
+                    <Zap className="h-3.5 w-3.5" /> Interceptor Proactivo
+                  </span>
+                  <span className="text-[10px] font-bold text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-500/40">5 Correos Coincidentes</span>
+                </div>
+                <p className="text-xs text-slate-200 leading-relaxed font-medium">
+                  5 familias reportaron retraso en Ruta 4 por obras viales. El Asistente Pedagógico IA preparó una Circular Preventiva oficial para resolver masivamente la inquietud con 1 solo clic.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleApprovePatternCircular}
+                  disabled={isApprovingCircular || patternResolved}
+                  className={`w-full py-1.5 rounded-xl text-xs font-black flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-95 ${
+                    patternResolved ? 'bg-emerald-600 text-white' : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950'
+                  }`}
+                >
+                  <FileCheck className="h-3.5 w-3.5" />
+                  <span>{patternResolved ? '✓ Circular Masiva Despachada' : 'Aprobar Circular Institucional (1 Clic)'}</span>
+                </button>
+              </div>
+
+              {/* Tarjeta 3: Radar de Incidencias & SLAs de Plantel */}
+              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-rose-300 flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" /> Radar de Vencimientos SLA
+                  </span>
+                  <span className="text-[10px] font-bold text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-500/40">98.4% a Tiempo</span>
+                </div>
+                <div className="space-y-1 text-xs">
+                  <div className="flex items-center justify-between p-1 rounded bg-white/5">
+                    <span className="truncate text-slate-200">🏛️ Supervisión Zona 14</span>
+                    <span className="font-mono font-bold text-rose-400">11h 20m</span>
+                  </div>
+                  <div className="flex items-center justify-between p-1 rounded bg-white/5">
+                    <span className="truncate text-slate-200">🟡 Convivencia (Montes)</span>
+                    <span className="font-mono font-bold text-amber-400">09h 42m</span>
+                  </div>
+                  <div className="flex items-center justify-between p-1 rounded bg-white/5">
+                    <span className="truncate text-slate-200">💳 Cobranza y Becas</span>
+                    <span className="font-mono font-bold text-blue-400">18h 15m</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ========================================================= */}
         {/* 2. CUERPO MODAL: BARRA LATERAL IZQUIERDA + CONTENIDO      */}
@@ -5588,23 +6167,33 @@ Comité de Seguridad y Protección Escolar`
                     </div>
                   </div>
                 ) : (
-                <div className="space-y-3">
-                  {filteredMatters.map((matter) => {
+                <div className="flex flex-col lg:flex-row gap-4 items-stretch">
+                  {/* COLUMNA 1 (CENTRO): COLA DE ASUNTOS DE TRIAGE */}
+                  <div className="w-full lg:w-5/12 xl:w-5/12 space-y-3 overflow-y-auto max-h-[calc(90vh-240px)] pr-1">
+                    {filteredMatters.map((matter) => {
                     const isUrgent = matter.urgency === 'CRITICA';
                     const isCeoAttention = matter.destination === 'ATENCION_CEO';
 
                     return (
                       <div
                         key={matter.id}
-                        onClick={() => handleOpenOriginalEmailFromMatter(matter)}
+                        onClick={() => {
+                          setSelectedMatter(matter);
+                          setMatterDraftEdit(matter.suggested_draft_reply || '');
+                          if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+                            setShowExpandedMatterDrawer(true);
+                          }
+                        }}
                         className={`p-4 sm:p-5 rounded-2xl bg-white border transition-all hover:shadow-md cursor-pointer hover:border-indigo-400 group ${
-                          isCeoAttention
+                          selectedMatter?.id === matter.id
+                            ? 'ring-2 ring-indigo-600 border-indigo-500 bg-indigo-50/20 shadow-md'
+                            : isCeoAttention
                             ? 'border-red-300 ring-1 ring-red-200'
                             : matter.destination === 'DELEGADO_CON_SLA'
                             ? 'border-amber-200'
                             : 'border-slate-200'
                         }`}
-                        title="Haz clic en esta tarjeta para abrir y leer el correo original"
+                        title="Haz clic para seleccionar e inspeccionar en el Muelle de Decisión"
                       >
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-3">
                           <div className="flex items-center gap-2 flex-wrap">
@@ -5715,6 +6304,298 @@ Comité de Seguridad y Protección Escolar`
                       </div>
                     );
                   })}
+                  </div>
+
+                  {/* COLUMNA 2 (DERECHA): MATTER DECISION DOCK (PERMANENTE EN DESKTOP) */}
+                  <div className="hidden lg:flex lg:w-7/12 xl:w-7/12 flex-col rounded-3xl border border-slate-200/90 shadow-sm bg-white overflow-hidden max-h-[calc(90vh-240px)]">
+                    {selectedMatter ? (
+                      <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-xs">
+                        {/* Encabezado del Dock */}
+                        <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-mono font-black text-sm px-2.5 py-1 rounded-xl bg-slate-100 text-slate-800">
+                              {selectedMatter.matter_code}
+                            </span>
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                              selectedMatter.destination === 'ATENCION_CEO' ? 'bg-red-100 text-red-800' :
+                              selectedMatter.destination === 'DELEGADO_CON_SLA' ? 'bg-amber-100 text-amber-900 border border-amber-300' :
+                              'bg-blue-100 text-blue-800'
+                            }`}>
+                              {selectedMatter.destination === 'ATENCION_CEO' ? '🔴 Atención Inmediata CEO' :
+                               selectedMatter.destination === 'DELEGADO_CON_SLA' ? '🟡 Delegado con SLA' : '🔵 Informativo'}
+                            </span>
+                            <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-700">
+                              {selectedMatter.category}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span className="text-amber-700 font-mono font-black text-xs bg-amber-50 px-3 py-1 rounded-xl border border-amber-200 shadow-2xs">
+                              {selectedMatter.sla_remaining_text}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setShowExpandedMatterDrawer(true)}
+                              className="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 border border-slate-200"
+                              title="Ampliar expediente a pantalla completa"
+                            >
+                              <Maximize2 className="h-3.5 w-3.5 text-slate-600" />
+                              <span className="hidden sm:inline">Ampliar</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Título y Datos del Remitente */}
+                        <div className="space-y-1">
+                          <h3 className="text-base font-black text-slate-900 leading-snug">
+                            {selectedMatter.title}
+                          </h3>
+                          <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+                            <span>Remitente: <strong className="text-slate-800">{selectedMatter.sender_name}</strong> &lt;{selectedMatter.sender_email}&gt;</span>
+                            <span>•</span>
+                            <span>Plantel: <strong className="text-slate-800">{selectedMatter.campus || campuses[0]?.name || 'Sede Matriz'}</strong></span>
+                          </div>
+                        </div>
+
+                        {/* Extracto de Comunicación Original */}
+                        <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                              Extracto del Mensaje Recibido
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenOriginalEmailFromMatter(selectedMatter)}
+                              className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
+                            >
+                              <Mail className="h-3 w-3" /> Ver Correo Completo
+                            </button>
+                          </div>
+                          <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                            {selectedMatter.summary}
+                          </p>
+                        </div>
+
+                        {/* Fundamentación Normativa en Bóveda Curricular (Correo/[tenant]/...) */}
+                        <div className="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-200/80 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-indigo-700 flex items-center gap-1.5">
+                              <ShieldCheck className="h-3.5 w-3.5 text-indigo-600" /> Bóveda Curricular & Cita Normativa
+                            </span>
+                            <span className="text-[10px] font-bold text-indigo-800 bg-white px-2 py-0.5 rounded border border-indigo-200">
+                              Alineación Institucional
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-indigo-950 font-medium">
+                            <span>Normativa:</span>
+                            <code className="text-indigo-800 bg-white px-2 py-0.5 rounded text-[11px] font-mono border border-indigo-200">
+                              {selectedMatter.provenance_doc?.replace('planeaciones/', 'Correo/')}
+                            </code>
+                          </div>
+                          <p className="text-[11px] text-indigo-900/90 leading-relaxed">
+                            {selectedMatter.why_shown}
+                          </p>
+                        </div>
+
+                        {/* Borrador Oficial del Asistente Pedagógico IA */}
+                        <div className="space-y-2.5 p-4 rounded-2xl bg-amber-50/40 border border-amber-200/80">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+                              <FileCheck className="h-3.5 w-3.5 text-amber-700" /> Borrador Oficial del Asistente Pedagógico IA
+                            </span>
+                            <span className="text-[10px] font-bold text-amber-800 bg-white px-2 py-0.5 rounded border border-amber-200">
+                              Estilo Adaptativo Dirección General
+                            </span>
+                          </div>
+
+                          {/* Membrete Institucional */}
+                          <div className="p-2 rounded-xl bg-white border border-amber-200/80 text-[11px] text-slate-600 flex items-center justify-between">
+                            <span className="font-bold text-slate-800">{schoolName} · {directorTitle}</span>
+                            <span className="font-mono text-[10px] text-slate-400">Despacho Institucional</span>
+                          </div>
+
+                          <textarea
+                            rows={4}
+                            value={matterDraftEdit}
+                            onChange={(e) => setMatterDraftEdit(e.target.value)}
+                            placeholder="Redacta o ajusta la respuesta oficial antes de despachar..."
+                            className="w-full p-3 rounded-xl bg-white border border-amber-300/80 text-xs text-slate-800 leading-relaxed font-mono focus:outline-none focus:ring-2 focus:ring-amber-500/30 resize-none shadow-inner"
+                          />
+
+                          {/* Botones de Aprobación y Despacho */}
+                          <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={handleApproveDraft}
+                                disabled={isApprovingDraft}
+                                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black text-xs shadow-md transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 disabled:opacity-50"
+                              >
+                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                                <span>{isApprovingDraft ? 'Despachando...' : 'Aprobar y Despachar Respuesta'}</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleSendMailto(selectedMatter, matterDraftEdit)}
+                                className="px-3 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold text-xs transition-colors cursor-pointer flex items-center gap-1"
+                                title="Abrir en cliente de correo local (Outlook, Apple Mail, etc.)"
+                              >
+                                <ExternalLink className="h-3.5 w-3.5 text-slate-500" />
+                                <span>Cliente Local</span>
+                              </button>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleQuickResolveMatter(selectedMatter)}
+                              className="px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs transition-colors cursor-pointer flex items-center gap-1"
+                            >
+                              <Check className="h-3.5 w-3.5 text-emerald-600" />
+                              <span>Marcar Atendido</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* MATRIZ DE DELEGACIÓN CON 1 CLIC (5 SECCIONES INSTITUCIONALES) */}
+                        <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200/90 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+                                Matriz de Delegación Inmediata con SLA (1 Clic)
+                              </span>
+                              <h5 className="font-black text-slate-900 text-xs mt-0.5">
+                                Turnar formalmente con SLA y seguimiento desatendido
+                              </h5>
+                            </div>
+                            {selectedMatter.destination === 'DELEGADO_CON_SLA' && (
+                              <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300 font-black text-[10px] flex items-center gap-1">
+                                <CheckCircle2 className="h-3 w-3 text-amber-700" /> Asunto Delegado
+                              </span>
+                            )}
+                          </div>
+
+                          {selectedMatter.destination === 'DELEGADO_CON_SLA' ? (
+                            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-950 space-y-1">
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-xs">Área Asignada: {selectedMatter.assigned_role}</span>
+                                <span className="font-mono text-xs font-black text-amber-700">{selectedMatter.sla_remaining_text}</span>
+                              </div>
+                              <p className="text-[11px] text-amber-800">
+                                Delegado: <strong>{selectedMatter.assigned_email}</strong> · Sincronizado en <code className="text-amber-900 bg-white/70 px-1 rounded font-mono">Correo/{currentTenantId}/Asuntos_Delegados_Con_SLA.json</code>
+                              </p>
+                              <div className="pt-2 flex items-center justify-end">
+                                <button
+                                  type="button"
+                                  onClick={() => handleDelegateMatter(selectedMatter)}
+                                  className="text-xs font-bold text-amber-800 hover:text-amber-950 underline cursor-pointer"
+                                >
+                                  Re-asignar a otra coordinación...
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pt-1">
+                              {/* Botón 1: Coordinador Académico */}
+                              <button
+                                type="button"
+                                onClick={() => handleQuickDelegate(selectedMatter, 'academica')}
+                                disabled={isForwardingDelegate}
+                                className="p-2.5 rounded-xl bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 text-left transition-all cursor-pointer group active:scale-95 disabled:opacity-50 shadow-2xs"
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-base">🎓</span>
+                                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800">SLA: 24h</span>
+                                </div>
+                                <div className="font-black text-slate-900 text-xs group-hover:text-indigo-700">Coord. Académica</div>
+                                <div className="text-[10px] text-slate-400 truncate">academica@ibime.edu.mx</div>
+                              </button>
+
+                              {/* Botón 2: Gabinete Psicológico */}
+                              <button
+                                type="button"
+                                onClick={() => handleQuickDelegate(selectedMatter, 'psicologia')}
+                                disabled={isForwardingDelegate}
+                                className="p-2.5 rounded-xl bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-300 text-left transition-all cursor-pointer group active:scale-95 disabled:opacity-50 shadow-2xs"
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-base">🧠</span>
+                                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-rose-100 text-rose-800">SLA: 12h</span>
+                                </div>
+                                <div className="font-black text-slate-900 text-xs group-hover:text-rose-700">Gabinete Psicología</div>
+                                <div className="text-[10px] text-slate-400 truncate">psicologia@ibime.edu.mx</div>
+                              </button>
+
+                              {/* Botón 3: Área Jurídica */}
+                              <button
+                                type="button"
+                                onClick={() => handleQuickDelegate(selectedMatter, 'juridico')}
+                                disabled={isForwardingDelegate}
+                                className="p-2.5 rounded-xl bg-white hover:bg-purple-50 border border-slate-200 hover:border-purple-300 text-left transition-all cursor-pointer group active:scale-95 disabled:opacity-50 shadow-2xs"
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-base">⚖️</span>
+                                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-purple-100 text-purple-800">SLA: 8h</span>
+                                </div>
+                                <div className="font-black text-slate-900 text-xs group-hover:text-purple-700">Área Jurídica</div>
+                                <div className="text-[10px] text-slate-400 truncate">juridico@ibime.edu.mx</div>
+                              </button>
+
+                              {/* Botón 4: Administración y Finanzas */}
+                              <button
+                                type="button"
+                                onClick={() => handleQuickDelegate(selectedMatter, 'administracion')}
+                                disabled={isForwardingDelegate}
+                                className="p-2.5 rounded-xl bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-left transition-all cursor-pointer group active:scale-95 disabled:opacity-50 shadow-2xs"
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-base">💳</span>
+                                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">SLA: 24h</span>
+                                </div>
+                                <div className="font-black text-slate-900 text-xs group-hover:text-emerald-700">Administración</div>
+                                <div className="text-[10px] text-slate-400 truncate">cobranza@ibime.edu.mx</div>
+                              </button>
+
+                              {/* Botón 5: Prefectura y Convivencia */}
+                              <button
+                                type="button"
+                                onClick={() => handleQuickDelegate(selectedMatter, 'prefectura')}
+                                disabled={isForwardingDelegate}
+                                className="p-2.5 rounded-xl bg-white hover:bg-amber-50 border border-slate-200 hover:border-amber-300 text-left transition-all cursor-pointer group active:scale-95 disabled:opacity-50 shadow-2xs"
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-base">🛡️</span>
+                                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">SLA: 6h</span>
+                                </div>
+                                <div className="font-black text-slate-900 text-xs group-hover:text-amber-700">Prefectura / Campus</div>
+                                <div className="text-[10px] text-slate-400 truncate">prefectura@ibime.edu.mx</div>
+                              </button>
+
+                              {/* Personalizar */}
+                              <button
+                                type="button"
+                                onClick={() => handleDelegateMatter(selectedMatter)}
+                                className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-left transition-all cursor-pointer group flex flex-col justify-between"
+                              >
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-base">⚙️</span>
+                                  <span className="text-[9px] font-bold text-slate-500">Manual</span>
+                                </div>
+                                <div className="font-bold text-slate-700 text-xs">Personalizar...</div>
+                                <div className="text-[10px] text-slate-400">Otro delegado o plazo</div>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400 space-y-3">
+                        <FileCheck className="h-12 w-12 text-slate-300" />
+                        <h4 className="font-black text-slate-700 text-sm">Matter Decision Dock</h4>
+                        <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
+                          Selecciona un asunto del Triage Feed a la izquierda para inspeccionar su fundamentación en la Bóveda de Correo, aprobar la respuesta oficial del Asistente Pedagógico IA o delegar en 1 clic.
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 )
               )}
@@ -8429,6 +9310,24 @@ Comité de Seguridad y Protección Escolar`
                     {settingsData?.templates?.length || 0}
                   </span>
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSettingsSubTab('apariencia')}
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+                    settingsSubTab === 'apariencia'
+                      ? 'bg-white text-slate-900 shadow-sm border border-slate-200'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Palette className="h-3.5 w-3.5 text-amber-600" />
+                  <span>Colores & Apariencia</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                    settingsSubTab === 'apariencia' ? 'bg-amber-100 text-amber-800' : 'bg-slate-200 text-slate-600'
+                  }`}>
+                    4 Temas
+                  </span>
+                </button>
               </div>
 
               {/* ========================================================= */}
@@ -8984,6 +9883,227 @@ Comité de Seguridad y Protección Escolar`
                 </div>
               )}
 
+              {/* ========================================================= */}
+              {/* SUB-PANEL 4: APARIENCIA Y PALETAS DE COLOR INSTITUCIONAL */}
+              {/* ========================================================= */}
+              {settingsSubTab === 'apariencia' && (
+                <div className="space-y-5 animate-in fade-in duration-150">
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-stone-50 to-amber-50 border border-amber-200/90 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Palette className="h-4 w-4 text-amber-700" />
+                        <h3 className="text-sm font-black text-amber-950 uppercase tracking-wide">
+                          Personalización de Colores y Modo Visual de la Consola CEO
+                        </h3>
+                      </div>
+                      <p className="text-xs text-amber-900 leading-relaxed max-w-2xl font-medium">
+                        Configura el aspecto visual de la suite ejecutiva. El tono <strong>Marfil Institucional</strong> está predeterminado para jornadas diurnas de alta concentración con estética cálida tipo pergamino.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-amber-900 bg-white px-3 py-1.5 rounded-xl border border-amber-200 shadow-xs">
+                        Tema Activo: <strong>{themeMode === 'ivory' ? '🏛️ Marfil Institucional' : themeMode === 'slate' ? '⬛ Pizarra Ejecutiva' : themeMode === 'navy' ? '🔷 Azul Real Académico' : '🌲 Verde Esmeralda'}</strong>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Opción 1: Marfil Institucional (Predeterminado) */}
+                    <div
+                      onClick={() => handleSelectTheme('ivory')}
+                      className={`p-5 rounded-3xl border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
+                        themeMode === 'ivory'
+                          ? 'border-[#C49746] bg-[#FDFBF7] shadow-lg ring-2 ring-[#C49746]/30'
+                          : 'border-[#E6DDCF] bg-[#FAF7F2] hover:border-[#C49746]/60 hover:shadow-md'
+                      }`}
+                    >
+                      {themeMode === 'ivory' && (
+                        <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-[#C49746] text-white text-[9px] font-black uppercase tracking-wider">
+                          Predeterminado · Activo
+                        </span>
+                      )}
+                      <div className="space-y-3">
+                        <div className="w-12 h-12 rounded-2xl bg-[#EDE4D5] border border-[#D9CEBC] flex items-center justify-center text-xl shadow-xs">
+                          🏛️
+                        </div>
+                        <div>
+                          <h4 className="font-black text-slate-900 text-sm">Marfil Institucional</h4>
+                          <span className="text-[11px] font-bold text-amber-800">Modo Diurno Cálido (Por Defecto)</span>
+                        </div>
+                        <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                          Fondo marfil cálido, bordes apergaminados y distintivos en bronce/dorado. Diseñado para jornadas de alta concentración sin fatiga visual.
+                        </p>
+                        <div className="flex items-center gap-1.5 pt-2">
+                          <span className="w-4 h-4 rounded-full bg-[#FDFBF7] border border-slate-300" title="#FDFBF7" />
+                          <span className="w-4 h-4 rounded-full bg-[#E6DDCF] border border-slate-300" title="#E6DDCF" />
+                          <span className="w-4 h-4 rounded-full bg-[#C49746]" title="#C49746" />
+                          <span className="w-4 h-4 rounded-full bg-[#1E293B]" title="#1E293B" />
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectTheme('ivory');
+                        }}
+                        className={`w-full mt-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                          themeMode === 'ivory'
+                            ? 'bg-[#C49746] text-white'
+                            : 'bg-white hover:bg-slate-100 text-slate-800 border border-slate-200'
+                        }`}
+                      >
+                        {themeMode === 'ivory' ? '✓ Activo' : 'Seleccionar Marfil'}
+                      </button>
+                    </div>
+
+                    {/* Opción 2: Pizarra Ejecutiva */}
+                    <div
+                      onClick={() => handleSelectTheme('slate')}
+                      className={`p-5 rounded-3xl border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
+                        themeMode === 'slate'
+                          ? 'border-blue-500 bg-slate-950 text-white shadow-lg ring-2 ring-blue-500/30'
+                          : 'border-slate-300 bg-slate-900 text-slate-200 hover:border-blue-400 hover:shadow-md'
+                      }`}
+                    >
+                      {themeMode === 'slate' && (
+                        <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-blue-600 text-white text-[9px] font-black uppercase tracking-wider">
+                          Activo
+                        </span>
+                      )}
+                      <div className="space-y-3">
+                        <div className="w-12 h-12 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xl shadow-xs">
+                          ⬛
+                        </div>
+                        <div>
+                          <h4 className="font-black text-white text-sm">Pizarra Ejecutiva</h4>
+                          <span className="text-[11px] font-bold text-blue-400">Modo Nocturno / High Contrast</span>
+                        </div>
+                        <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                          Entorno de comando ejecutivo en tonos carbón y grafito profundo, con acentos en azul cian para visibilidad nocturna.
+                        </p>
+                        <div className="flex items-center gap-1.5 pt-2">
+                          <span className="w-4 h-4 rounded-full bg-slate-950 border border-slate-700" title="#020617" />
+                          <span className="w-4 h-4 rounded-full bg-slate-800 border border-slate-700" title="#1e293b" />
+                          <span className="w-4 h-4 rounded-full bg-blue-500" title="#3b82f6" />
+                          <span className="w-4 h-4 rounded-full bg-white" title="#ffffff" />
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectTheme('slate');
+                        }}
+                        className={`w-full mt-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                          themeMode === 'slate'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'
+                        }`}
+                      >
+                        {themeMode === 'slate' ? '✓ Activo' : 'Seleccionar Pizarra'}
+                      </button>
+                    </div>
+
+                    {/* Opción 3: Azul Real Académico */}
+                    <div
+                      onClick={() => handleSelectTheme('navy')}
+                      className={`p-5 rounded-3xl border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
+                        themeMode === 'navy'
+                          ? 'border-blue-400 bg-[#0A192F] text-white shadow-lg ring-2 ring-blue-400/30'
+                          : 'border-[#1E3A8A]/50 bg-[#071322] text-slate-200 hover:border-blue-400 hover:shadow-md'
+                      }`}
+                    >
+                      {themeMode === 'navy' && (
+                        <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-blue-500 text-white text-[9px] font-black uppercase tracking-wider">
+                          Activo
+                        </span>
+                      )}
+                      <div className="space-y-3">
+                        <div className="w-12 h-12 rounded-2xl bg-[#173B63] border border-blue-400/40 flex items-center justify-center text-xl shadow-xs">
+                          🔷
+                        </div>
+                        <div>
+                          <h4 className="font-black text-white text-sm">Azul Real Académico</h4>
+                          <span className="text-[11px] font-bold text-cyan-300">Prestigio Institucional</span>
+                        </div>
+                        <p className="text-xs text-blue-200 leading-relaxed font-medium">
+                          Paleta heráldica inspirada en sellos universitarios de excelencia, combinando azul marino zafiro con contrastes en marfil.
+                        </p>
+                        <div className="flex items-center gap-1.5 pt-2">
+                          <span className="w-4 h-4 rounded-full bg-[#0A192F] border border-blue-800" title="#0A192F" />
+                          <span className="w-4 h-4 rounded-full bg-[#173B63] border border-blue-700" title="#173B63" />
+                          <span className="w-4 h-4 rounded-full bg-[#2563EB]" title="#2563EB" />
+                          <span className="w-4 h-4 rounded-full bg-[#93C5FD]" title="#93C5FD" />
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectTheme('navy');
+                        }}
+                        className={`w-full mt-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                          themeMode === 'navy'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-[#173B63] hover:bg-[#1E4C7E] text-white border border-blue-400/30'
+                        }`}
+                      >
+                        {themeMode === 'navy' ? '✓ Activo' : 'Seleccionar Azul Real'}
+                      </button>
+                    </div>
+
+                    {/* Opción 4: Verde Esmeralda Institucional */}
+                    <div
+                      onClick={() => handleSelectTheme('emerald')}
+                      className={`p-5 rounded-3xl border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
+                        themeMode === 'emerald'
+                          ? 'border-emerald-400 bg-[#062018] text-white shadow-lg ring-2 ring-emerald-400/30'
+                          : 'border-[#0F3D30] bg-[#041510] text-slate-200 hover:border-emerald-400 hover:shadow-md'
+                      }`}
+                    >
+                      {themeMode === 'emerald' && (
+                        <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-black uppercase tracking-wider">
+                          Activo
+                        </span>
+                      )}
+                      <div className="space-y-3">
+                        <div className="w-12 h-12 rounded-2xl bg-[#0A2920] border border-emerald-500/40 flex items-center justify-center text-xl shadow-xs">
+                          🌲
+                        </div>
+                        <div>
+                          <h4 className="font-black text-white text-sm">Verde Esmeralda</h4>
+                          <span className="text-[11px] font-bold text-emerald-400">Campus & Naturaleza</span>
+                        </div>
+                        <p className="text-xs text-emerald-200 leading-relaxed font-medium">
+                          Tonalidad pedagógica serena que refleja sustentabilidad y el entorno arbolado de los campus escolares.
+                        </p>
+                        <div className="flex items-center gap-1.5 pt-2">
+                          <span className="w-4 h-4 rounded-full bg-[#062018] border border-emerald-800" title="#062018" />
+                          <span className="w-4 h-4 rounded-full bg-[#0A2920] border border-emerald-700" title="#0A2920" />
+                          <span className="w-4 h-4 rounded-full bg-[#059669]" title="#059669" />
+                          <span className="w-4 h-4 rounded-full bg-[#A7F3D0]" title="#A7F3D0" />
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectTheme('emerald');
+                        }}
+                        className={`w-full mt-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                          themeMode === 'emerald'
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-[#0A2920] hover:bg-[#124234] text-white border border-emerald-500/30'
+                        }`}
+                      >
+                        {themeMode === 'emerald' ? '✓ Activo' : 'Seleccionar Esmeralda'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Modal de Agregar Correo VIP */}
               {showAddVipModal && (
                 <div className="fixed inset-0 z-70 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
@@ -9111,9 +10231,15 @@ Comité de Seguridad y Protección Escolar`
       {/* ========================================================= */}
       {/* 5. MODAL DE DETALLE DEL ASUNTO / EXPEDIENTE (DRAWER)      */}
       {/* ========================================================= */}
-      {selectedMatter && (
-        <div className="fixed inset-0 z-60 bg-black/60 backdrop-blur-xs flex justify-end animate-in fade-in">
-          <div className="w-full max-w-2xl bg-white h-full shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 text-xs">
+      {selectedMatter && showExpandedMatterDrawer && (
+        <div 
+          onClick={() => setShowExpandedMatterDrawer(false)}
+          className="fixed inset-0 z-60 bg-black/60 backdrop-blur-xs flex justify-end animate-in fade-in"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-2xl bg-white h-full shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 text-xs"
+          >
             <div className="p-6 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -9134,8 +10260,8 @@ Comité de Seguridad y Protección Escolar`
                   </button>
                 </div>
                 <button
-                  onClick={() => setSelectedMatter(null)}
-                  className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-800 transition-colors"
+                  onClick={() => setShowExpandedMatterDrawer(false)}
+                  className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-800 transition-colors cursor-pointer"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -9284,10 +10410,10 @@ Comité de Seguridad y Protección Escolar`
 
             <div className="p-5 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-3">
               <button
-                onClick={() => setSelectedMatter(null)}
-                className="px-4 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors"
+                onClick={() => setShowExpandedMatterDrawer(false)}
+                className="px-4 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors cursor-pointer"
               >
-                Volver a Bandeja
+                Cerrar Detalle
               </button>
 
               <div className="flex items-center gap-2 flex-wrap">

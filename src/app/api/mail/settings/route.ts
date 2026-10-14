@@ -98,6 +98,12 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: !!reset, reset, settings: CeoEmailSettingsService.getSettings(tenantId) });
       }
 
+      case 'update_theme': {
+        const { themeMode } = body;
+        const updated = CeoEmailSettingsService.updateSettings(tenantId, { themeMode });
+        return NextResponse.json({ success: true, settings: updated });
+      }
+
       case 'save_all': {
         const { settings } = body;
         if (!settings) {

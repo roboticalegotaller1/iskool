@@ -103,7 +103,7 @@ const ISOLATED_TENANT_KNOWLEDGE: Record<string, CatalogDoc[]> = {
     {
       tenant_id: 'e1000000-0000-0000-0000-000000000001',
       document_title: 'Protocolo de Convivencia y Prevención de Violencia Escolar',
-      source_path: 'planeaciones/IBIME/Protocolo_Convivencia_y_Acoso.md',
+      source_path: 'Correo/IBIME/Protocolo_Convivencia_y_Acoso.md',
       category: 'Convivencia y Mediación',
       content: 'Cualquier reporte de acoso, violencia física o verbal activa inmediatamente el Protocolo Nivel 3. La Dirección General convoca a reunión presencial con ambas familias dentro de un plazo estricto no mayor a 12 horas. Coordinación emite el informe inicial y se designa tutoría de acompañamiento socioemocional.',
       keywords: ['acoso', 'bullying', 'agresión', 'pelea', 'insulto', 'convivencia', 'reunión', 'demanda', 'violencia']
@@ -111,7 +111,7 @@ const ISOLATED_TENANT_KNOWLEDGE: Record<string, CatalogDoc[]> = {
     {
       tenant_id: 'e1000000-0000-0000-0000-000000000001',
       document_title: 'Reglamento del Servicio de Transporte Escolar Bicultural',
-      source_path: 'planeaciones/IBIME/Politica_Transporte_y_Rutas_Escolares.md',
+      source_path: 'Correo/IBIME/Politica_Transporte_y_Rutas_Escolares.md',
       category: 'Transporte y Prefectura',
       content: 'El servicio de Transporte Escolar de IBIME (Rutas 1 a 6) opera con monitoreo telemático. El tiempo máximo de tolerancia en paradas matutinas es de 5 minutos. Ante retrasos imputables al tránsito vehicular mayores a 15 minutos, la Coordinación de Logística emite aviso vía mensaje institucional a los tutores.',
       keywords: ['transporte', 'ruta 4', 'ruta', 'camión', 'chofer', 'retraso', 'parada', 'demora']
@@ -119,7 +119,7 @@ const ISOLATED_TENANT_KNOWLEDGE: Record<string, CatalogDoc[]> = {
     {
       tenant_id: 'e1000000-0000-0000-0000-000000000001',
       document_title: 'Manual de Cobranza, Facturación y Becas Académicas',
-      source_path: 'planeaciones/IBIME/Lineamientos_Cobranza_y_Colegiaturas.md',
+      source_path: 'Correo/IBIME/Lineamientos_Cobranza_y_Colegiaturas.md',
       category: 'Administración y Cobranza',
       content: 'Las colegiaturas vencen el día 10 natural de cada mes. Para solicitud de prórroga o factura fiscal CFDI con complemento educativo, el tutor debe remitir solicitud a administracion@ibime.edu.mx. Las solicitudes se resuelven en un plazo de 24 horas hábiles.',
       keywords: ['colegiatura', 'pago', 'factura', 'cfdi', 'recargo', 'adeudo', 'beca', 'cobranza', 'prórroga']
@@ -127,7 +127,7 @@ const ISOLATED_TENANT_KNOWLEDGE: Record<string, CatalogDoc[]> = {
     {
       tenant_id: 'e1000000-0000-0000-0000-000000000001',
       document_title: 'Calendario Oficial Escolar y Evaluaciones Trimestrales',
-      source_path: 'planeaciones/IBIME/Calendario_Oficial_Evaluaciones_2025_2026.md',
+      source_path: 'Correo/IBIME/Calendario_Oficial_Evaluaciones_2025_2026.md',
       category: 'Control Escolar y Secretaría',
       content: 'La entrega de boletas oficiales y kardex SEP se realiza en la tercera semana de noviembre para el primer periodo. Las constancias de estudio con sello oficial se expiden en un periodo de 48 horas tras solicitud formal.',
       keywords: ['boleta', 'kardex', 'constancia', 'calificaciones', 'certificado', 'examen', 'evaluación', 'horario']
@@ -139,7 +139,7 @@ const ISOLATED_TENANT_KNOWLEDGE: Record<string, CatalogDoc[]> = {
     {
       tenant_id: 'e2000000-0000-0000-0000-000000000002',
       document_title: 'Lineamientos de Gobernanza y Convivencia Escolar iSkool',
-      source_path: 'planeaciones/iSkool/Lineamientos_Gobernanza_iSkool.md',
+      source_path: 'Correo/iSkool/Lineamientos_Gobernanza_iSkool.md',
       category: 'Gobernanza Institucional',
       content: 'Incidencias críticas de convivencia escolar son escaladas a Dirección Ejecutiva. Las mesas de diálogo se programan en menos de 12 horas hábiles con acta firmada por las partes.',
       keywords: ['acoso', 'bullying', 'conflicto', 'legal', 'dirección', 'reunión', 'demanda']
@@ -147,7 +147,7 @@ const ISOLATED_TENANT_KNOWLEDGE: Record<string, CatalogDoc[]> = {
     {
       tenant_id: 'e2000000-0000-0000-0000-000000000002',
       document_title: 'Reglamento de Operaciones, Horarios y Logística',
-      source_path: 'planeaciones/iSkool/Calendario_Operativo_iSkool.md',
+      source_path: 'Correo/iSkool/Calendario_Operativo_iSkool.md',
       category: 'Operaciones',
       content: 'Horario regular de ingreso: 07:45 hrs. Salida ordinaria: 14:15 hrs. En días de festival o asambleas generales, la salida escalonada es a las 13:00 hrs.',
       keywords: ['horario', 'festival', 'salida', 'entrada', 'asamblea', 'evento']
@@ -1308,7 +1308,7 @@ export class HermeticEmailBrainService {
         {
           tenant_id: currentTenantId,
           document_title: `Protocolo de Convivencia y Prevención de Violencia Escolar (${institutionName})`,
-          source_path: `planeaciones/${folder}/Protocolo_Convivencia.md`,
+          source_path: `Correo/${folder}/Protocolo_Convivencia.md`,
           category: 'Convivencia y Mediación',
           content: `Cualquier reporte de acoso, violencia física o verbal en ${institutionName} activa inmediatamente el Protocolo Nivel 3. La Dirección General convoca a reunión presencial con ambas familias dentro de un plazo estricto no mayor a 12 horas. Coordinación emite el informe inicial y se designa tutoría de acompañamiento socioemocional.`,
           keywords: ['acoso', 'bullying', 'agresión', 'pelea', 'insulto', 'convivencia', 'reunión', 'demanda', 'violencia', 'urgente']
@@ -1316,7 +1316,7 @@ export class HermeticEmailBrainService {
         {
           tenant_id: currentTenantId,
           document_title: `Manual de Cobranza, Facturación y Becas Académicas (${institutionName})`,
-          source_path: `planeaciones/${folder}/Lineamientos_Cobranza.md`,
+          source_path: `Correo/${folder}/Lineamientos_Cobranza.md`,
           category: 'Administración y Cobranza',
           content: `Lineamientos de cobranza y facturación de ${institutionName}. Para solicitud de prórroga o factura fiscal CFDI con complemento educativo IEDU, la solicitud se turna a Tesorería y se resuelve en un plazo de 24 horas hábiles.`,
           keywords: ['colegiatura', 'pago', 'factura', 'cfdi', 'recargo', 'adeudo', 'beca', 'cobranza', 'prórroga']
@@ -1324,7 +1324,7 @@ export class HermeticEmailBrainService {
         {
           tenant_id: currentTenantId,
           document_title: `Reglamento de Transporte y Logística Escolar (${institutionName})`,
-          source_path: `planeaciones/${folder}/Reglamento_Transporte.md`,
+          source_path: `Correo/${folder}/Reglamento_Transporte.md`,
           category: 'Transporte y Logística',
           content: `Normativa de transporte de ${institutionName}. Ante demoras en rutas escolares imputables al tránsito vehicular mayores a 15 minutos, la Coordinación de Logística emite aviso oficial y canaliza el reporte en un plazo máximo de 48 horas.`,
           keywords: ['transporte', 'ruta 4', 'ruta', 'camión', 'chofer', 'retraso', 'parada', 'demora']
@@ -1332,7 +1332,7 @@ export class HermeticEmailBrainService {
         {
           tenant_id: currentTenantId,
           document_title: `Calendario Oficial Escolar y Trámites SEP (${institutionName})`,
-          source_path: `planeaciones/${folder}/Calendario_Escolar.md`,
+          source_path: `Correo/${folder}/Calendario_Escolar.md`,
           category: 'Control Escolar y Secretaría',
           content: `Calendario oficial de ${institutionName}. La entrega de boletas y constancias de estudio oficiales con validez SEP se tramita con Control Escolar en un lapso de 48 horas. Los horarios especiales de eventos o festivales son notificados con antelación por Dirección.`,
           keywords: ['boleta', 'kardex', 'constancia', 'calificaciones', 'certificado', 'examen', 'evaluación', 'horario', 'festival', 'salida', 'evento']
