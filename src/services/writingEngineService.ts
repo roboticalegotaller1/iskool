@@ -782,6 +782,61 @@ export class AutonomousWritingEngineService {
         });
       }
 
+      // Participios pasados irregulares tras auxiliar have/has/had (e.g. have went -> have gone)
+      const pastParticipleErrors = [
+        { pattern: /\b(have|has|had)\s+went\b/gi, fix: '$1 gone', orig: 'went', sug: 'gone' },
+        { pattern: /\b(have|has|had)\s+saw\b/gi, fix: '$1 seen', orig: 'saw', sug: 'seen' },
+        { pattern: /\b(have|has|had)\s+did\b/gi, fix: '$1 done', orig: 'did', sug: 'done' },
+        { pattern: /\b(have|has|had)\s+wrote\b/gi, fix: '$1 written', orig: 'wrote', sug: 'written' },
+        { pattern: /\b(have|has|had)\s+ate\b/gi, fix: '$1 eaten', orig: 'ate', sug: 'eaten' },
+        { pattern: /\b(have|has|had)\s+took\b/gi, fix: '$1 taken', orig: 'took', sug: 'taken' },
+      ];
+      for (const item of pastParticipleErrors) {
+        if (item.pattern.test(current)) {
+          details.push({
+            category: 'verb_tense',
+            categoryLabel: 'Tiempo Verbal (Past Participle)',
+            original: item.orig,
+            suggested: item.sug,
+            pedagogicalRule: `Tras los auxiliares "have/has/had", se debe emplear el Past Participle ("${item.sug}"), nunca la forma de Past Simple.`,
+            examTip: 'Punto crítico evaluado en Grammatical Accuracy en Cambridge B1-B2.'
+          });
+          current = current.replace(item.pattern, item.fix);
+        }
+      }
+
+      // Estructura epistolar Cambridge: look forward to + V-ing
+      if (/\blook\s+forward\s+to\s+(hear|see|meet)\b/gi.test(current)) {
+        current = current.replace(/\blook\s+forward\s+to\s+(hear|see|meet)\b/gi, (m, verb) => {
+          const ing = verb === 'hear' ? 'hearing' : verb === 'see' ? 'seeing' : 'meeting';
+          details.push({
+            category: 'verb_tense',
+            categoryLabel: 'Fórmula Epistolar (Gerundio tras Preposición)',
+            original: `look forward to ${verb}`,
+            suggested: `look forward to ${ing}`,
+            pedagogicalRule: 'En la locución de cortesía "look forward to", "to" actúa como preposición, por lo que exige gerundio (-ing).',
+            examTip: 'Fórmula canónica obligatoria en tareas de Email/Letter de Cambridge B1 y B2.'
+          });
+          return `look forward to ${ing}`;
+        });
+      }
+
+      // Modales seguidos indebidamente de -s: can plays -> can play
+      if (/\b(can|could|will|would|should|must)\s+([a-z]+)s\b/gi.test(current)) {
+        current = current.replace(/\b(can|could|will|would|should|must)\s+(plays|goes|sees|takes|makes|comes|writes)\b/gi, (m, mod, v) => {
+          const base = v === 'goes' ? 'go' : v.replace(/s$/, '');
+          details.push({
+            category: 'verb_tense',
+            categoryLabel: 'Verbo Modal (Forma Base Sin -s)',
+            original: `${mod} ${v}`,
+            suggested: `${mod} ${base}`,
+            pedagogicalRule: 'Los verbos que siguen a un modal jamás añaden la "-s" de tercera persona; siempre permanecen en su forma base.',
+            examTip: 'Regla morfosintáctica básica de Cambridge Movers a First.'
+          });
+          return `${mod} ${base}`;
+        });
+      }
+
       // --- 2. CONCORDANCIA Y PERSONA (PERSON AGREEMENT) ---
       // 3ª Persona singular en presente
       const thirdPersonSingularVerbs = [
@@ -927,6 +982,10 @@ export class AutonomousWritingEngineService {
         { pattern: /\bbien\s+que\s+(ils|elles)\s+sont\b/gi, fix: 'bien qu\'$1 soient', orig: 'bien que ils sont', sug: 'bien qu\'ils soient' },
         { pattern: /\bpour\s+que\s+(il|elle|on)\s+est\b/gi, fix: 'pour qu\'$1 soit', orig: 'pour que il est', sug: 'pour qu\'il soit' },
         { pattern: /\bavant\s+que\s+(il|elle|on)\s+est\b/gi, fix: 'avant qu\'$1 soit', orig: 'avant que il est', sug: 'avant qu\'il soit' },
+        { pattern: /\bil\s+faut\s+que\s+(il|elle|on)\s+est\b/gi, fix: 'il faut qu\'$1 soit', orig: 'il faut que il est', sug: 'il faut qu\'il soit' },
+        { pattern: /\bil\s+faut\s+que\s+(il|elle|on)\s+a\b/gi, fix: 'il faut qu\'$1 ait', orig: 'il faut que il a', sug: 'il faut qu\'il ait' },
+        { pattern: /\bil\s+faut\s+que\s+(il|elle|on)\s+fait\b/gi, fix: 'il faut qu\'$1 fasse', orig: 'il faut que il fait', sug: 'il faut qu\'il fasse' },
+        { pattern: /\bil\s+faut\s+que\s+(il|elle|on)\s+va\b/gi, fix: 'il faut qu\'$1 aille', orig: 'il faut que il va', sug: 'il faut qu\'il aille' },
       ];
 
       for (const item of subjunctiveRules) {
@@ -999,6 +1058,8 @@ export class AutonomousWritingEngineService {
         { pattern: /\bpasser\s+un\s+bon\s+temps\b/gi, fix: 'passer un bon moment', orig: 'passer un bon temps', sug: 'passer un bon moment', rule: 'Pour exprimer le plaisir d\'un moment partagé, on dit "passer un bon moment".' },
         { pattern: /\bà\s+le\s+([a-zÀ-ÿ]+)\b/gi, fix: 'au $1', orig: 'à le', sug: 'au', rule: 'Contraction obligatoire de la préposition "à" avec l\'article défini masculin : "à + le = au".' },
         { pattern: /\bde\s+le\s+([a-zÀ-ÿ]+)\b/gi, fix: 'du $1', orig: 'de le', sug: 'du', rule: 'Contraction obligatoire de la préposition "de" avec l\'article défini masculin : "de + le = du".' },
+        { pattern: /\b(la|une)\s+problème\b/gi, fix: 'le problème', orig: 'la problème', sug: 'le problème', rule: 'En français, "problème" est un nom masculin d\'origine grecque : on dit "le problème" / "un problème".' },
+        { pattern: /\b(la|une)\s+système\b/gi, fix: 'le système', orig: 'la système', sug: 'le système', rule: 'Le nom "système" est rigoureusement masculin en français : "le système".' },
       ];
 
       for (const item of frenchLexical) {
