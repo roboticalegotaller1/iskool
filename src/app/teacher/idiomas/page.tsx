@@ -160,6 +160,16 @@ const CEFR_CERTIFICATIONS: Record<string, {
   }
 };
 
+const HISTORICAL_TRANSLATIONS: Record<string, string> = {
+  shakespeare: 'Soy William Shakespeare. Nací en Stratford-upon-Avon, y sobre las tablas del Teatro Globe en Londres, forjé las tragedias de Hamlet y Macbeth.',
+  ada_lovelace: 'Soy Ada Lovelace. En 1843, escribí el primer algoritmo computacional para la Máquina Analítica de Charles Babbage, vislumbrando que las máquinas manipularían símbolos y compondrían música.',
+  abraham_lincoln: 'Soy Abraham Lincoln, 16º presidente de los Estados Unidos. En 1863, proclamé que el gobierno del pueblo, por el pueblo y para el pueblo, no perecerá de la tierra.',
+  napoleon: 'Soy Napoleón Bonaparte, nacido en Ajaccio en Córcega. Reorganicé la administración, promulgué el Código Civil y conduje los ejércitos de la República.',
+  marie_curie: 'Soy Marie Curie. Junto a Pierre Curie, aislé el polonio y el radio en mi modesto laboratorio de París, convirtiéndome en la primera laureada con dos Premios Nobel.',
+  victor_hugo: 'Soy Victor Hugo. Escribí Los Miserables y Nuestra Señora de París para dar voz a los humildes y defender la dignidad humana contra toda opresión.',
+  jeanne_darc: 'Soy Juana de Arco, la Doncella de Orleans. A los diecisiete años, guiada por mi fe, levanté el sitio de Orleans y conduje al delfín Carlos a su coronación en Reims.'
+};
+
 export default function TeacherIdiomasPage() {
   const { 
     lessons, 
@@ -240,6 +250,22 @@ export default function TeacherIdiomasPage() {
     }
     return '/images/languages/3d/mentor_male_3d_v2.webp';
   }, [useHistoricalFigure, selectedHistoricalId, activeLesson.historicalFigureId, activeLesson.avatarImage, activeLesson.avatarGender, activeLesson.avatarName]);
+
+  // Soporte pedagógico y traducción dinámicamente resuelta (evita directivas internas)
+  const resolvedTranslationText = useMemo(() => {
+    if (showDialogueTranslation) {
+      const raw = activeLesson.dialogue[0]?.translationEs;
+      // Si el texto en base de datos es una directiva interna o está vacío, sustituir por la traducción real
+      if (!raw || raw.toLowerCase().includes('primera persona') || raw.toLowerCase().includes('obligatoria') || raw.toLowerCase().includes('presentación en')) {
+        const histId = selectedHistoricalId || activeLesson.historicalFigureId;
+        if (histId && HISTORICAL_TRANSLATIONS[histId]) {
+          return HISTORICAL_TRANSLATIONS[histId];
+        }
+      }
+      return raw || "Traducción en tiempo real de la frase modelo.";
+    }
+    return activeLesson.dialogue[0]?.phoneticTip || "Dicción y modulación nativa en tiempo real.";
+  }, [showDialogueTranslation, activeLesson.dialogue, selectedHistoricalId, activeLesson.historicalFigureId]);
 
   // Base curricular de 40 semanas según el idioma activo
   const current40Weeks: CurricularWeek[] = useMemo(() => {
@@ -437,6 +463,7 @@ export default function TeacherIdiomasPage() {
 
   // Asignar personaje histórico seleccionado
   const handleApplyHistoricalFigure = (figure: MultilingualHistoricalFigure) => {
+    const spanishIntro = HISTORICAL_TRANSLATIONS[figure.id] || 'Presentación canónica del personaje histórico.';
     updateLesson(activeLesson.id, {
       avatarName: figure.name,
       avatarVoice: figure.voiceId,
@@ -449,7 +476,7 @@ export default function TeacherIdiomasPage() {
           id: `d-${Date.now()}-intro`,
           speaker: 'avatar',
           text: figure.canonicalIntro,
-          translationEs: 'Presentación en primera persona histórica obligatoria.',
+          translationEs: spanishIntro,
           phoneticTip: 'Dicción solemne y articulación nativa de época'
         },
         {
@@ -463,7 +490,7 @@ export default function TeacherIdiomasPage() {
         {
           id: `k-${Date.now()}-hist`,
           targetText: figure.canonicalIntro.split('.')[0] + '.',
-          translationEs: 'Oración canónica en primera persona',
+          translationEs: spanishIntro.split('.')[0] + '.',
           difficulty: 'intermediate'
         }
       ]
@@ -1090,9 +1117,8 @@ export default function TeacherIdiomasPage() {
                         />
                       </div>
 
-                      {/* Burbujas de Diálogo Flotantes en la esquina superior derecha (Exacto a Imagen 1) */}
-                      <div className="absolute top-4 right-3 max-w-[210px] sm:max-w-[220px] flex flex-col space-y-2 pointer-events-auto z-10">
-                        {/* Burbuja Superior: Diálogo del Mentor con cola apuntando al avatar */}
+                      {/* Burbuja de Diálogo Principal Flotante en la esquina superior derecha */}
+                      <div className="absolute top-4 right-3 max-w-[210px] sm:max-w-[230px] pointer-events-auto z-10">
                         <div className={`relative p-3.5 rounded-2xl border shadow-md text-xs font-semibold leading-relaxed transition-all ${
                           isLightMode 
                             ? 'bg-white text-slate-800 border-slate-200/90 shadow-slate-200/60' 
@@ -1101,33 +1127,60 @@ export default function TeacherIdiomasPage() {
                           <div className={`absolute -left-2 top-5 w-0 h-0 border-y-6 border-y-transparent border-r-8 ${
                             isLightMode ? 'border-r-white' : 'border-r-slate-900'
                           }`} />
-                          <p className="line-clamp-3">
+                          <p className="line-clamp-4">
                             {activeLesson.dialogue[0]?.text || "Lis a sophisticated gesticulating pedagogical mentor avatar."}
                           </p>
                         </div>
+                      </div>
+                    </div>
 
-                        {/* Burbuja Inferior con Pastel Accent y Toggle Switch (Imagen 1) */}
-                        <div className={`p-2.5 rounded-2xl border shadow-md text-[11px] flex items-center justify-between gap-2 transition-all ${
-                          isLightMode
-                            ? 'bg-[#F0FDF4]/95 text-emerald-950 border-emerald-200/90 shadow-emerald-500/10'
-                            : 'bg-emerald-950/80 text-emerald-200 border-emerald-800 shadow-black/40'
+                    {/* Cinta Dedicada de Subtítulo en Español y Guía Fonética (Colocada FUERA del avatar para 100% de legibilidad) */}
+                    <div className={`p-3.5 rounded-2xl border shadow-xs transition-all flex items-center justify-between gap-3 ${
+                      isLightMode
+                        ? 'bg-gradient-to-r from-emerald-50/90 via-teal-50/50 to-white border-emerald-200/90 text-emerald-950 shadow-emerald-500/5'
+                        : 'bg-gradient-to-r from-emerald-950/80 via-slate-900 to-slate-900 border-emerald-800/80 text-emerald-200 shadow-black/40'
+                    }`}>
+                      <div className="flex items-start gap-2.5 min-w-0">
+                        <span className={`p-1.5 rounded-xl shrink-0 mt-0.5 ${
+                          isLightMode ? 'bg-emerald-100 text-emerald-800' : 'bg-emerald-900 text-emerald-300'
                         }`}>
-                          <span className="font-medium leading-tight line-clamp-2 pr-1">
-                            {showDialogueTranslation 
-                              ? (activeLesson.dialogue[0]?.translationEs || "Real-time dialogue speech bubbs to pastel accent.")
-                              : (activeLesson.dialogue[0]?.phoneticTip || "Dicción y modulación nativa en tiempo real.")}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => setShowDialogueTranslation(!showDialogueTranslation)}
-                            className={`w-8 h-4 rounded-full p-0.5 transition-colors cursor-pointer shrink-0 flex items-center ${
-                              showDialogueTranslation ? 'bg-emerald-400' : 'bg-slate-300'
-                            }`}
-                            title="Alternar entre traducción en español y tip fonético"
-                          >
-                            <span className={`w-3 h-3 rounded-full bg-white shadow-xs transition-transform ${showDialogueTranslation ? 'translate-x-4' : 'translate-x-0'}`} />
-                          </button>
+                          {showDialogueTranslation ? <Languages className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+                        </span>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[10px] font-extrabold uppercase tracking-wider ${
+                              isLightMode ? 'text-emerald-800' : 'text-emerald-400'
+                            }`}>
+                              {showDialogueTranslation ? 'Subtítulo en Español:' : 'Tip Fonético de Pronunciación:'}
+                            </span>
+                          </div>
+                          <p className={`text-xs font-semibold leading-snug pt-0.5 ${
+                            isLightMode ? 'text-slate-800' : 'text-slate-200'
+                          }`}>
+                            {resolvedTranslationText}
+                          </p>
                         </div>
+                      </div>
+
+                      {/* Switch interactivo con etiqueta clara */}
+                      <div className="flex items-center gap-2 shrink-0 pl-2 border-l border-emerald-200/80 dark:border-emerald-800/80">
+                        <span className={`text-[10px] font-bold hidden sm:inline ${
+                          isLightMode ? 'text-slate-500' : 'text-slate-400'
+                        }`}>
+                          {showDialogueTranslation ? 'Español' : 'Fonética'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setShowDialogueTranslation(!showDialogueTranslation)}
+                          className={`w-9 h-5 rounded-full p-0.5 transition-colors cursor-pointer shrink-0 flex items-center ${
+                            showDialogueTranslation ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'
+                          }`}
+                          title="Alternar entre traducción al español y guía fonética"
+                        >
+                          <span className={`w-4 h-4 rounded-full bg-white shadow-xs transition-transform ${
+                            showDialogueTranslation ? 'translate-x-4' : 'translate-x-0'
+                          }`} />
+                        </button>
                       </div>
                     </div>
 
