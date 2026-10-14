@@ -39,6 +39,7 @@ interface WritingEngineState {
   setActivePrompt: (prompt: TaskPrompt) => void;
   generateNewPrompt: (lang?: WritingLanguage, level?: LanguageLevel, tema?: string) => void;
   updateDraft: (text: string) => void;
+  applyLiveCorrection: (correctedText: string) => void;
   unlockHintLevel: (itemId: string, level: number) => void;
   submitFinalEvaluation: () => FinalEvaluationOutput;
   resetDraft: () => void;
@@ -172,6 +173,10 @@ export const useWritingEngineStore = create<WritingEngineState>()(
           currentDraft: text,
           analysisOutput: analysis
         });
+      },
+
+      applyLiveCorrection: (correctedText) => {
+        get().updateDraft(correctedText);
       },
 
       unlockHintLevel: (itemId, level) => {

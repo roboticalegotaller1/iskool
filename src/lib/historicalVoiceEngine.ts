@@ -1114,16 +1114,16 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   const norm = (idOrName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   
   // 1. NAPOLÉON BONAPARTE (3D: public/images/languages/3d/napoleon_3d.webp)
-  // Labios 3D exactos: cx = 579, cy = 420, x1: 539, x2: 619, apertura natural
+  // Labios 3D exactos verificados: cx = 520, cy = 278, x1: 474, x2: 566
   if (norm.includes('napoleon') || norm.includes('bonaparte')) {
     return {
-      x1: 539,
-      y1: 420,
-      cx: 579,
-      cy: 420,
-      x2: 619,
-      y2: 420,
-      maxOpening: 15,
+      x1: 474,
+      y1: 278,
+      cx: 520,
+      cy: 278,
+      x2: 566,
+      y2: 278,
+      maxOpening: 14,
       cavityDarkColor: '#180407',
       cavityMidColor: '#330a10',
       cavityRimColor: '#58141d',
@@ -1133,15 +1133,15 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   }
 
   // 2. WILLIAM SHAKESPEARE (3D: public/images/languages/3d/shakespeare_3d.webp)
-  // Labios 3D exactos bajo bigote: cx = 506, cy = 298, x1: 443, x2: 569
+  // Labios 3D exactos bajo bigote verificados: cx = 510, cy = 324, x1: 464, x2: 556
   if (norm.includes('shakespeare')) {
     return {
-      x1: 443,
-      y1: 298,
-      cx: 506,
-      cy: 298,
-      x2: 569,
-      y2: 298,
+      x1: 464,
+      y1: 324,
+      cx: 510,
+      cy: 324,
+      x2: 556,
+      y2: 324,
       maxOpening: 14,
       cavityDarkColor: '#140507',
       cavityMidColor: '#2e0d11',
@@ -1153,16 +1153,16 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   }
 
   // 3. ABRAHAM LINCOLN (3D: public/images/languages/3d/abraham_lincoln_3d.webp)
-  // Labios 3D exactos: cx = 512, cy = 262, x1: 460, x2: 565
+  // Labios 3D exactos verificados: cx = 512, cy = 272, x1: 468, x2: 556
   if (norm.includes('lincoln') || norm.includes('abraham')) {
     return {
-      x1: 460,
-      y1: 262,
+      x1: 468,
+      y1: 272,
       cx: 512,
-      cy: 262,
-      x2: 565,
-      y2: 262,
-      maxOpening: 14,
+      cy: 272,
+      x2: 556,
+      y2: 272,
+      maxOpening: 13,
       cavityDarkColor: '#120406',
       cavityMidColor: '#2b0b0e',
       cavityRimColor: '#4a1419',
@@ -1172,15 +1172,15 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   }
 
   // 4. ADA LOVELACE (3D: public/images/languages/3d/ada_lovelace_3d.webp)
-  // Labios 3D exactos: cx = 501, cy = 381, x1: 450, x2: 551
+  // Labios 3D exactos verificados: cx = 501, cy = 395, x1: 451, x2: 551
   if (norm.includes('ada') || norm.includes('lovelace')) {
     return {
-      x1: 450,
-      y1: 381,
+      x1: 451,
+      y1: 395,
       cx: 501,
-      cy: 381,
+      cy: 395,
       x2: 551,
-      y2: 381,
+      y2: 395,
       maxOpening: 16,
       cavityDarkColor: '#1a0408',
       cavityMidColor: '#380a12',
@@ -1191,15 +1191,15 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   }
 
   // 5. MARIE CURIE (3D: public/images/languages/3d/marie_curie_3d.webp)
-  // Labios 3D exactos: cx = 551, cy = 266, x1: 506, x2: 596
+  // Labios 3D exactos verificados: cx = 525, cy = 246, x1: 480, x2: 570
   if (norm.includes('curie') || norm.includes('marie')) {
     return {
-      x1: 506,
-      y1: 266,
-      cx: 551,
-      cy: 266,
-      x2: 596,
-      y2: 266,
+      x1: 480,
+      y1: 246,
+      cx: 525,
+      cy: 246,
+      x2: 570,
+      y2: 246,
       maxOpening: 13,
       cavityDarkColor: '#1c050a',
       cavityMidColor: '#3a0e16',
@@ -1247,15 +1247,15 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   }
 
   // 8. MENTOR FEMENINO 3D (public/images/languages/3d/mentor_female_3d.webp)
-  // Labios 3D exactos: cx = 618, cy = 574, x1: 558, x2: 679
-  if (norm.includes('female') || norm.includes('claire') || norm.includes('sophie') || norm.includes('elara') || norm.includes('fem') || norm.includes('mme')) {
+  // Labios 3D exactos verificados: cx = 525, cy = 385, x1: 475, x2: 575
+  if (norm.includes('female') || norm.includes('claire') || norm.includes('sophie') || norm.includes('elara') || norm.includes('fem') || norm.includes('mme') || norm.includes('mentor_female')) {
     return {
-      x1: 558,
-      y1: 574,
-      cx: 618,
-      cy: 574,
-      x2: 679,
-      y2: 574,
+      x1: 475,
+      y1: 385,
+      cx: 525,
+      cy: 385,
+      x2: 575,
+      y2: 385,
       maxOpening: 16,
       cavityDarkColor: '#1e0409',
       cavityMidColor: '#3e0c15',
@@ -1266,16 +1266,16 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
   }
 
   // 9. MENTOR MASCULINO 3D (public/images/languages/3d/mentor_male_3d.webp)
-  // Labios 3D exactos: cx = 503, cy = 266, x1: 445, x2: 560
-  if (norm.includes('male') || norm.includes('arthur') || norm.includes('henri') || norm.includes('prof')) {
+  // Labios 3D exactos verificados: cx = 445, cy = 302, x1: 405, x2: 485, y1/y2: 298
+  if (norm.includes('male') || norm.includes('arthur') || norm.includes('henri') || norm.includes('prof') || norm.includes('mentor_male')) {
     return {
-      x1: 445,
-      y1: 266,
-      cx: 503,
-      cy: 266,
-      x2: 560,
-      y2: 266,
-      maxOpening: 15,
+      x1: 405,
+      y1: 298,
+      cx: 445,
+      cy: 302,
+      x2: 485,
+      y2: 298,
+      maxOpening: 14,
       cavityDarkColor: '#160406',
       cavityMidColor: '#300a0e',
       cavityRimColor: '#521319',

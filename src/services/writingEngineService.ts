@@ -19,7 +19,10 @@ import {
   AcademicDensity,
   TrafficLightStatus,
   RecurringErrorPattern,
-  TeacherStudentSummary
+  TeacherStudentSummary,
+  LiveSentenceCorrection,
+  LiveCorrectionToken,
+  LiveCorrectionDetail
 } from '@/types/writingEngine';
 
 // ============================================================================
@@ -621,6 +624,13 @@ export class AutonomousWritingEngineService {
       });
     }
 
+    // 5. Corrección Lingüística en Tiempo Real (Motor de IA Pedagógica de Alta Fidelidad - Argon)
+    const liveCorrection = AutonomousWritingEngineService.generarCorreccionEnTiempoReal({
+      texto: text,
+      idioma: input.idioma,
+      nivel: input.nivel
+    });
+
     return {
       conteo_palabras: wordCount,
       rango_esperado: `${spec.minWords} - ${spec.maxWords} palabras`,
@@ -632,7 +642,446 @@ export class AutonomousWritingEngineService {
         densidad_academica: densidadAcademica,
         promedio_palabras_por_oracion: avgWordsPerSentence
       },
-      progreso_porcentaje: progresoPorcentaje
+      progreso_porcentaje: progresoPorcentaje,
+      correccion_en_tiempo_real: liveCorrection
+    };
+  }
+
+  /**
+   * [MOTOR DE IA PEDAGÓGICA - ARGON / TIEMPO REAL]
+   * Genera la versión corregida palabra por palabra, analizando:
+   * 1. Tiempos verbales y aspectos (Past Simple, Present Perfect, Condicionales, Subjuntivo).
+   * 2. Concordancia gramatical de persona y sujeto-verbo (3ª persona -s, plurales colectivos).
+   * 3. Conectores discursivos requeridos para la banda MCER (Cambridge B2/C1 / DELF B2/C1).
+   * 4. Léxico, colocaciones y falsos amigos de transferencia L1 (español).
+   */
+  public static generarCorreccionEnTiempoReal(input: {
+    texto: string;
+    idioma: WritingLanguage;
+    nivel: LanguageLevel;
+  }): LiveSentenceCorrection {
+    const raw = (input.texto || '').trim();
+    if (!raw) {
+      return {
+        originalText: '',
+        correctedText: '',
+        hasErrors: false,
+        tokens: [],
+        categoryCounts: {
+          verbTenses: 0,
+          personAgreement: 0,
+          connectors: 0,
+          vocabulary: 0,
+          spelling: 0
+        },
+        details: []
+      };
+    }
+
+    let current = raw;
+    const details: LiveCorrectionDetail[] = [];
+
+    // REGLAS ESPECÍFICAS DE INGLÉS (CAMBRIDGE)
+    if (input.idioma === 'en') {
+      // --- 1. TIEMPOS VERBALES (VERB TENSES) ---
+      const pastTimeWithPresentVerbs: Array<{
+        pattern: RegExp;
+        fix: string;
+        verbOriginal: string;
+        verbFixed: string;
+      }> = [
+        { pattern: /\b(yesterday|last\s+(?:night|week|month|year)|in\s+20\d\d|\d+\s+years?\s+ago)\s+(i|we|they|he|she)\s+go\b/gi, fix: '$1 $2 went', verbOriginal: 'go', verbFixed: 'went' },
+        { pattern: /\b(yesterday|last\s+(?:night|week|month|year)|in\s+20\d\d|\d+\s+years?\s+ago)\s+(i|we|they|he|she)\s+see\b/gi, fix: '$1 $2 saw', verbOriginal: 'see', verbFixed: 'saw' },
+        { pattern: /\b(yesterday|last\s+(?:night|week|month|year)|in\s+20\d\d|\d+\s+years?\s+ago)\s+(i|we|they|he|she)\s+come\b/gi, fix: '$1 $2 came', verbOriginal: 'come', verbFixed: 'came' },
+        { pattern: /\b(yesterday|last\s+(?:night|week|month|year)|in\s+20\d\d|\d+\s+years?\s+ago)\s+(i|we|they|he|she)\s+buy\b/gi, fix: '$1 $2 bought', verbOriginal: 'buy', verbFixed: 'bought' },
+        { pattern: /\b(yesterday|last\s+(?:night|week|month|year)|in\s+20\d\d|\d+\s+years?\s+ago)\s+(i|we|they|he|she)\s+take\b/gi, fix: '$1 $2 took', verbOriginal: 'take', verbFixed: 'took' },
+        { pattern: /\b(yesterday|last\s+(?:night|week|month|year)|in\s+20\d\d|\d+\s+years?\s+ago)\s+(i|we|they|he|she)\s+make\b/gi, fix: '$1 $2 made', verbOriginal: 'make', verbFixed: 'made' },
+        { pattern: /\b(yesterday|last\s+(?:night|week|month|year))\s+i\s+am\b/gi, fix: '$1 I was', verbOriginal: 'am', verbFixed: 'was' },
+        { pattern: /\b(yesterday|last\s+(?:night|week|month|year))\s+(we|they)\s+are\b/gi, fix: '$1 $2 were', verbOriginal: 'are', verbFixed: 'were' },
+        { pattern: /\b(yesterday|last\s+(?:night|week|month|year))\s+(he|she|it)\s+is\b/gi, fix: '$1 $2 was', verbOriginal: 'is', verbFixed: 'was' },
+      ];
+
+      for (const item of pastTimeWithPresentVerbs) {
+        if (item.pattern.test(current)) {
+          details.push({
+            category: 'verb_tense',
+            categoryLabel: 'Tiempo Verbal (Past Simple)',
+            original: item.verbOriginal,
+            suggested: item.verbFixed,
+            pedagogicalRule: `Con marcadores temporales pasados concluidos (yesterday, last week, ago), el inglés exige Past Simple ("${item.verbFixed}"), nunca presente ni infinitivo.`,
+            examTip: 'Cambridge evalúa rigurosamente el control de tiempos narrativos en los criterios de Language.'
+          });
+          current = current.replace(item.pattern, item.fix);
+        }
+      }
+
+      // Auxiliar negativo doble pasado: didn't went -> didn't go
+      const doublePastAuxiliaries = [
+        { regex: /\bdid(?:n't|\s+not)\s+went\b/gi, fix: "didn't go", orig: "didn't went" },
+        { regex: /\bdid(?:n't|\s+not)\s+saw\b/gi, fix: "didn't see", orig: "didn't saw" },
+        { regex: /\bdid(?:n't|\s+not)\s+bought\b/gi, fix: "didn't buy", orig: "didn't bought" },
+        { regex: /\bdid(?:n't|\s+not)\s+came\b/gi, fix: "didn't come", orig: "didn't came" },
+        { regex: /\bdid(?:n't|\s+not)\s+took\b/gi, fix: "didn't take", orig: "didn't took" },
+      ];
+      for (const item of doublePastAuxiliaries) {
+        if (item.regex.test(current)) {
+          details.push({
+            category: 'verb_tense',
+            categoryLabel: 'Tiempo Verbal (Auxiliar Did)',
+            original: item.orig,
+            suggested: item.fix,
+            pedagogicalRule: 'Tras el auxiliar en pasado "didn\'t" o "did not", el verbo principal debe permanecer en su forma base (infinitivo sin to).',
+            examTip: 'Error de alta penalización en B1 Preliminary y B2 First.'
+          });
+          current = current.replace(item.regex, item.fix);
+        }
+      }
+
+      // Modales con to: should to go -> should go
+      if (/\b(can|could|should|would|must|might)\s+to\s+([a-z]+)\b/gi.test(current)) {
+        current = current.replace(/\b(can|could|should|would|must|might)\s+to\s+([a-z]+)\b/gi, (m, mod, v) => {
+          details.push({
+            category: 'verb_tense',
+            categoryLabel: 'Verbos Modales (Bare Infinitive)',
+            original: `${mod} to ${v}`,
+            suggested: `${mod} ${v}`,
+            pedagogicalRule: `Los verbos modales ingleses (${mod}) se construyen con infinitivo directo sin "to".`,
+            examTip: 'Criterio Grammatical Accuracy de Cambridge B1-B2.'
+          });
+          return `${mod} ${v}`;
+        });
+      }
+
+      // Present continuous para duración continuada: I am living here since 5 years -> I have lived here for 5 years
+      if (/\b(i|we|they)\s+am\s+living\s+here\s+(since|for)\b/gi.test(current)) {
+        current = current.replace(/\b(i|we|they)\s+am\s+living\s+here\s+(since|for)\b/gi, (m, subj, prep) => {
+          details.push({
+            category: 'verb_tense',
+            categoryLabel: 'Aspecto Verbal (Present Perfect)',
+            original: `${subj} am living here ${prep}`,
+            suggested: `${subj} have lived here for`,
+            pedagogicalRule: 'Para acciones que comenzaron en el pasado y continúan en el presente con indicación de duración, se debe emplear Present Perfect ("have lived / have been living").',
+            examTip: 'Diferenciador clave entre bandas B1 y B2 en Cambridge.'
+          });
+          return `${subj} have lived here for`;
+        });
+      }
+
+      // Tercer condicional con would en cláusula if: If I would have -> If I had
+      if (/\bif\s+(i|he|she|we|they)\s+would\s+have\b/gi.test(current)) {
+        current = current.replace(/\bif\s+(i|he|she|we|they)\s+would\s+have\b/gi, (m, subj) => {
+          details.push({
+            category: 'verb_tense',
+            categoryLabel: 'Estructura Condicional (Third Conditional)',
+            original: `if ${subj} would have`,
+            suggested: `if ${subj} had`,
+            pedagogicalRule: 'En las oraciones condicionales en inglés, la cláusula con "if" nunca lleva "would have", sino Past Perfect ("had + participio").',
+            examTip: 'Estructura exigida en el descriptor de C1 Advanced y B2 First.'
+          });
+          return `if ${subj} had`;
+        });
+      }
+
+      // --- 2. CONCORDANCIA Y PERSONA (PERSON AGREEMENT) ---
+      // 3ª Persona singular en presente
+      const thirdPersonSingularVerbs = [
+        { pattern: /\b(he|she|it)\s+don't\b/gi, fix: '$1 doesn\'t', orig: "don't", sug: "doesn't" },
+        { pattern: /\b(he|she|it)\s+have\b(?!\s+been\s+to)/gi, fix: '$1 has', orig: 'have', sug: 'has' },
+        { pattern: /\b(he|she|it)\s+do\b(?!\s+not)/gi, fix: '$1 does', orig: 'do', sug: 'does' },
+        { pattern: /\b(he|she|it)\s+go\b/gi, fix: '$1 goes', orig: 'go', sug: 'goes' },
+        { pattern: /\b(he|she|it)\s+say\b/gi, fix: '$1 says', orig: 'say', sug: 'says' },
+        { pattern: /\b(he|she|it)\s+make\b/gi, fix: '$1 makes', orig: 'make', sug: 'makes' },
+        { pattern: /\b(he|she|it)\s+think\b/gi, fix: '$1 thinks', orig: 'think', sug: 'thinks' },
+        { pattern: /\b(he|she|it)\s+want\b/gi, fix: '$1 wants', orig: 'want', sug: 'wants' },
+        { pattern: /\b(he|she|it)\s+need\b/gi, fix: '$1 needs', orig: 'need', sug: 'needs' },
+        { pattern: /\b(he|she|it)\s+like\b/gi, fix: '$1 likes', orig: 'like', sug: 'likes' },
+      ];
+
+      for (const item of thirdPersonSingularVerbs) {
+        if (item.pattern.test(current)) {
+          details.push({
+            category: 'person_agreement',
+            categoryLabel: 'Concordancia de Persona (3ª Singular -s)',
+            original: item.orig,
+            suggested: item.sug,
+            pedagogicalRule: `La 3ª persona del singular (he, she, it) exige la terminación "-s/-es" en Present Simple ("${item.sug}").`,
+            examTip: 'La falta de concordancia en 3ª persona degrada la nota de Language en cualquier examen oficial.'
+          });
+          current = current.replace(item.pattern, item.fix);
+        }
+      }
+
+      // Sujeto plural con verbo singular: they is -> they are, we was -> we were
+      const pluralAgreementRules = [
+        { pattern: /\b(they|we|you)\s+is\b/gi, fix: '$1 are', orig: 'is', sug: 'are' },
+        { pattern: /\b(they|we|you)\s+was\b/gi, fix: '$1 were', orig: 'was', sug: 'were' },
+        { pattern: /\b(they|we)\s+has\b/gi, fix: '$1 have', orig: 'has', sug: 'have' },
+        { pattern: /\bpeople\s+is\b/gi, fix: 'people are', orig: 'people is', sug: 'people are' },
+        { pattern: /\bpeople\s+was\b/gi, fix: 'people were', orig: 'people was', sug: 'people were' },
+        { pattern: /\bchildren\s+is\b/gi, fix: 'children are', orig: 'children is', sug: 'children are' },
+        { pattern: /\bchildren\s+was\b/gi, fix: 'children were', orig: 'children was', sug: 'children were' },
+        { pattern: /\b(everyone|everybody|someone|somebody|nobody)\s+are\b/gi, fix: '$1 is', orig: 'are', sug: 'is' },
+        { pattern: /\b(everyone|everybody|someone|somebody|nobody)\s+were\b/gi, fix: '$1 was', orig: 'were', sug: 'was' },
+        { pattern: /\b(everyone|everybody|someone|somebody|nobody)\s+have\b/gi, fix: '$1 has', orig: 'have', sug: 'has' },
+      ];
+
+      for (const item of pluralAgreementRules) {
+        if (item.pattern.test(current)) {
+          details.push({
+            category: 'person_agreement',
+            categoryLabel: 'Concordancia Sujeto-Verbo',
+            original: item.orig,
+            suggested: item.sug,
+            pedagogicalRule: `El sujeto plural exige la forma plural "${item.sug}". En sustantivos colectivos como "people" o pronombres indefinidos como "everyone", el inglés aplica concordancia estricta.`,
+            examTip: 'Un dominio impecable de la concordancia es indispensable para certificaciones B2 y C1.'
+          });
+          current = current.replace(item.pattern, item.fix);
+        }
+      }
+
+      // --- 3. CONECTORES DISCURSIVOS (DISCOURSE CONNECTORS) ---
+      const connectorUpgrades = [
+        { pattern: /\bfor\s+one\s+hand\b/gi, fix: 'On the one hand', orig: 'for one hand', sug: 'On the one hand' },
+        { pattern: /\bin\s+the\s+other\s+hand\b/gi, fix: 'On the other hand', orig: 'in the other hand', sug: 'On the other hand' },
+        { pattern: /\band\s+also\b/gi, fix: 'Furthermore,', orig: 'and also', sug: 'Furthermore' },
+        { pattern: /\bto\s+finish\b/gi, fix: 'In conclusion,', orig: 'to finish', sug: 'In conclusion' },
+        { pattern: /\bbecause\s+of\s+this\b/gi, fix: 'Consequently,', orig: 'because of this', sug: 'Consequently' },
+      ];
+
+      for (const item of connectorUpgrades) {
+        if (item.pattern.test(current)) {
+          details.push({
+            category: 'connector',
+            categoryLabel: 'Conector Discursivo (Cohesión)',
+            original: item.orig,
+            suggested: item.sug,
+            pedagogicalRule: `Sustituir enlaces informales por conectores de nivel académico ("${item.sug}") estructura el texto y eleva la banda de Organisation.`,
+            examTip: 'Cambridge evalúa Cohesive Devices en el criterio de Organización con un peso del 25%.'
+          });
+          current = current.replace(item.pattern, item.fix);
+        }
+      }
+
+      // --- 4. LÉXICO Y FALSOS AMIGOS (VOCABULARY & L1 TRANSFER) ---
+      const lexicalRules = [
+        { pattern: /\bdepends?\s+of\b/gi, fix: 'depends on', orig: 'depend of', sug: 'depend on', rule: 'En inglés el verbo "depend" se rige obligatoriamente por la preposición "on", nunca "of".' },
+        { pattern: /\b(i|we)\s+am\s+agree\b/gi, fix: '$1 agree', orig: 'am agree', sug: 'agree', rule: '"Agree" es un verbo principal activo ("I agree"). No se utiliza con el verbo "to be".' },
+        { pattern: /\bexplain\s+me\b/gi, fix: 'explain to me', orig: 'explain me', sug: 'explain to me', rule: '"Explain" requiere preposición "to" ante el pronombre de persona ("explain to me").' },
+        { pattern: /\bmake\s+(?:an?\s+)?exam\b/gi, fix: 'take an exam', orig: 'make an exam', sug: 'take an exam', rule: 'En colocaciones oficiales en inglés se dice "take / sit an exam", nunca "make".' },
+        { pattern: /\bmake\s+(?:a\s+)?question\b/gi, fix: 'ask a question', orig: 'make a question', sug: 'ask a question', rule: 'En inglés se "hacen preguntas" mediante el verbo "ask a question".' },
+        { pattern: /\bactually\b(?!\s+(?:did|was|is|happened))/gi, fix: 'currently', orig: 'actually', sug: 'currently', rule: 'Falso amigo con el español: "actually" significa "en realidad / de hecho". Para decir "en la actualidad", usa "currently" o "nowadays".' },
+        { pattern: /\bassist\s+to\s+(?:the\s+)?(class|school|meeting|conference)\b/gi, fix: 'attend the $1', orig: 'assist to', sug: 'attend', rule: 'Falso amigo: "assist" significa ayudar. Para asistir físicamente a un lugar o clase se usa "attend".' },
+        { pattern: /\bdiscuss\s+about\b/gi, fix: 'discuss', orig: 'discuss about', sug: 'discuss', rule: 'El verbo "discuss" es transitivo directo y no acepta la preposición "about".' },
+        { pattern: /\blose\s+time\b/gi, fix: 'waste time', orig: 'lose time', sug: 'waste time', rule: 'La pérdida de tiempo o procrastinación se expresa mediante la colocación "waste time".' },
+        { pattern: /\b(i|he|she|we|they)\s+have\s+(\d+|[a-z]+)\s+years(\s+old)?\b/gi, fix: '$1 is $2 years old', orig: 'have X years', sug: 'be X years old', rule: 'En inglés la edad es un estado de ser expresado con el verbo "to be" ("I am 16 years old"), no una posesión con "have".' }
+      ];
+
+      for (const item of lexicalRules) {
+        if (item.pattern.test(current)) {
+          details.push({
+            category: 'vocabulary',
+            categoryLabel: 'Léxico y Colocaciones',
+            original: item.orig,
+            suggested: item.sug,
+            pedagogicalRule: item.rule,
+            examTip: 'Previene penalizaciones por calcos literales del español en Cambridge Writing.'
+          });
+          current = current.replace(item.pattern, item.fix);
+        }
+      }
+    }
+
+    // REGLAS ESPECÍFICAS DE FRANCÉS (DELF-DALF)
+    if (input.idioma === 'fr') {
+      // --- 1. TIEMPOS VERBALES Y MODOS ---
+      // Verbos de movimiento con être en Passé Composé: j'ai allé -> je suis allé(e)
+      const frenchVandertramp = [
+        { pattern: /\bj'ai\s+allé\b/gi, fix: 'je suis allé(e)', orig: "j'ai allé", sug: 'je suis allé(e)' },
+        { pattern: /\btu\s+as\s+allé\b/gi, fix: 'tu es allé(e)', orig: 'tu as allé', sug: 'tu es allé(e)' },
+        { pattern: /\bil\s+a\s+allé\b/gi, fix: 'il est allé', orig: 'il a allé', sug: 'il est allé' },
+        { pattern: /\belle\s+a\s+allé\b/gi, fix: 'elle est allée', orig: 'elle a allé', sug: 'elle est allée' },
+        { pattern: /\bnous\s+avons\s+allé\b/gi, fix: 'nous sommes allés', orig: 'nous avons allé', sug: 'nous sommes allés' },
+        { pattern: /\bvous\s+avez\s+allé\b/gi, fix: 'vous êtes allé(s)', orig: 'vous avez allé', sug: 'vous êtes allé(s)' },
+        { pattern: /\bils\s+ont\s+allé\b/gi, fix: 'ils sont allés', orig: 'ils ont allé', sug: 'ils sont allés' },
+        { pattern: /\belles\s+ont\s+allé\b/gi, fix: 'elles sont allées', orig: 'elles ont allé', sug: 'elles sont allées' },
+      ];
+
+      for (const item of frenchVandertramp) {
+        if (item.pattern.test(current)) {
+          details.push({
+            category: 'verb_tense',
+            categoryLabel: 'Temps Verbal (Auxiliaire Être)',
+            original: item.orig,
+            suggested: item.sug,
+            pedagogicalRule: 'Les verbes de déplacement (aller, venir, partir, arriver...) se conjuguent impérativement avec l\'auxiliaire "être" au passé composé, avec accord du participe passé.',
+            examTip: 'Critère Morphosyntaxe du DELF A2/B1.'
+          });
+          current = current.replace(item.pattern, item.fix);
+        }
+      }
+
+      // Subjonctif obligatoire après "bien que" / "pour que"
+      const subjunctiveRules = [
+        { pattern: /\bbien\s+que\s+(il|elle|on)\s+est\b/gi, fix: 'bien qu\'$1 soit', orig: 'bien que il est', sug: 'bien qu\'il soit' },
+        { pattern: /\bbien\s+que\s+(il|elle|on)\s+a\b/gi, fix: 'bien qu\'$1 ait', orig: 'bien que il a', sug: 'bien qu\'il ait' },
+        { pattern: /\bbien\s+que\s+(ils|elles)\s+sont\b/gi, fix: 'bien qu\'$1 soient', orig: 'bien que ils sont', sug: 'bien qu\'ils soient' },
+        { pattern: /\bpour\s+que\s+(il|elle|on)\s+est\b/gi, fix: 'pour qu\'$1 soit', orig: 'pour que il est', sug: 'pour qu\'il soit' },
+        { pattern: /\bavant\s+que\s+(il|elle|on)\s+est\b/gi, fix: 'avant qu\'$1 soit', orig: 'avant que il est', sug: 'avant qu\'il soit' },
+      ];
+
+      for (const item of subjunctiveRules) {
+        if (item.pattern.test(current)) {
+          details.push({
+            category: 'verb_tense',
+            categoryLabel: 'Mode Verbal (Subjonctif Présent)',
+            original: item.orig,
+            suggested: item.sug,
+            pedagogicalRule: 'La locution concessive "bien que" et la finale "pour que" exigent obligatoirement le mode subjonctif en français soutenu.',
+            examTip: 'Exigence clé pour décrocher le niveau DELF B1/B2.'
+          });
+          current = current.replace(item.pattern, item.fix);
+        }
+      }
+
+      // --- 2. CONCORDANCE ET PERSONNE ---
+      const frenchAgreement = [
+        { pattern: /\b(ils|elles)\s+est\b/gi, fix: '$1 sont', orig: 'est', sug: 'sont' },
+        { pattern: /\b(ils|elles)\s+a\b/gi, fix: '$1 ont', orig: 'a', sug: 'ont' },
+        { pattern: /\b(ils|elles)\s+va\b/gi, fix: '$1 vont', orig: 'va', sug: 'vont' },
+        { pattern: /\btout\s+le\s+monde\s+(sont|ont|font|vont)\b/gi, fix: 'tout le monde est', orig: 'tout le monde sont', sug: 'tout le monde est' },
+        { pattern: /\bnous\s+(?:suis|es|est)\b/gi, fix: 'nous sommes', orig: 'nous est', sug: 'nous sommes' },
+        { pattern: /\bvous\s+(?:est|sont)\b/gi, fix: 'vous êtes', orig: 'vous est', sug: 'vous êtes' },
+      ];
+
+      for (const item of frenchAgreement) {
+        if (item.pattern.test(current)) {
+          details.push({
+            category: 'person_agreement',
+            categoryLabel: 'Accord Sujet-Verbe',
+            original: item.orig,
+            suggested: item.sug,
+            pedagogicalRule: `L'accord de la personne doit respecter le pluriel grammatical ("${item.sug}"). Notez que "tout le monde" est rigoureusement singulier en français.`,
+            examTip: 'Pondération majeure dans l\'évaluation DELF.'
+          });
+          current = current.replace(item.pattern, item.fix);
+        }
+      }
+
+      // --- 3. CONNECTEURS DISCURSIFS ---
+      const frenchConnectors = [
+        { pattern: /\bet\s+aussi\b/gi, fix: 'En outre,', orig: 'et aussi', sug: 'En outre' },
+        { pattern: /\bpour\s+finir\b/gi, fix: 'En conclusion,', orig: 'pour finir', sug: 'En conclusion' },
+        { pattern: /\bd'un\s+côté\b/gi, fix: 'D\'une part,', orig: "d'un côté", sug: "D'une part" },
+        { pattern: /\bde\s+l'autre\s+côté\b/gi, fix: 'D\'autre part,', orig: "de l'autre côté", sug: "D'autre part" },
+      ];
+
+      for (const item of frenchConnectors) {
+        if (item.pattern.test(current)) {
+          details.push({
+            category: 'connector',
+            categoryLabel: 'Connecteur Logique (Cohésion)',
+            original: item.orig,
+            suggested: item.sug,
+            pedagogicalRule: `Les connecteurs formels ("${item.sug}") structurent l'argumentation et évitent les maladresses d'expression écrite.`,
+            examTip: 'Compétence Cohérence & Cohésion du DELF B1-B2.'
+          });
+          current = current.replace(item.pattern, item.fix);
+        }
+      }
+
+      // --- 4. LÉXIQUE ET INTERFÉRENCES L1 ---
+      const frenchLexical = [
+        { pattern: /\bje\s+suis\s+(\d+|[a-z]+)\s+ans\b/gi, fix: 'j\'ai $1 ans', orig: 'je suis X ans', sug: 'j\'ai X ans', rule: 'En français l\'âge s\'exprime avec le verbe "avoir" ("J\'ai 16 ans"), jamais avec "être".' },
+        { pattern: /\bvisiter\s+à\s+(mes|ses|nos|les|un|une)\b/gi, fix: 'rendre visite à $1', orig: 'visiter à', sug: 'rendre visite à', rule: 'On visite un lieu ou une ville, mais on "rend visite à" une personne.' },
+        { pattern: /\bfaire\s+attention\s+de\b/gi, fix: 'faire attention à', orig: 'faire attention de', sug: 'faire attention à', rule: 'La locution française est "faire attention À", non "de".' },
+        { pattern: /\bbeaucoup\s+des\b/gi, fix: 'beaucoup de', orig: 'beaucoup des', sug: 'beaucoup de', rule: 'Les adverbes de quantité (beaucoup, peu, trop) sont suivis de la préposition simple "de".' },
+        { pattern: /\bdemander\s+une\s+question\b/gi, fix: 'poser une question', orig: 'demander une question', sug: 'poser une question', rule: 'Calque erroné de l\'anglais ou de l\'espagnol : en français, on "pose une question".' },
+        { pattern: /\bpasser\s+un\s+bon\s+temps\b/gi, fix: 'passer un bon moment', orig: 'passer un bon temps', sug: 'passer un bon moment', rule: 'Pour exprimer le plaisir d\'un moment partagé, on dit "passer un bon moment".' },
+        { pattern: /\bà\s+le\s+([a-zÀ-ÿ]+)\b/gi, fix: 'au $1', orig: 'à le', sug: 'au', rule: 'Contraction obligatoire de la préposition "à" avec l\'article défini masculin : "à + le = au".' },
+        { pattern: /\bde\s+le\s+([a-zÀ-ÿ]+)\b/gi, fix: 'du $1', orig: 'de le', sug: 'du', rule: 'Contraction obligatoire de la préposition "de" avec l\'article défini masculin : "de + le = du".' },
+      ];
+
+      for (const item of frenchLexical) {
+        if (item.pattern.test(current)) {
+          details.push({
+            category: 'vocabulary',
+            categoryLabel: 'Lexique et Tournures Fautes',
+            original: item.orig,
+            suggested: item.sug,
+            pedagogicalRule: item.rule,
+            examTip: 'Élimine les calques de l\'espagnol dans le lexique du DELF.'
+          });
+          current = current.replace(item.pattern, item.fix);
+        }
+      }
+    }
+
+    // CONSTRUCCIÓN DE TOKENS DIFERENCIALES EN TIEMPO REAL
+    const origWords = raw.split(/(\s+|[.,!?;:()"]+)/).filter(Boolean);
+    const corrWords = current.split(/(\s+|[.,!?;:()"]+)/).filter(Boolean);
+    const tokens: LiveCorrectionToken[] = [];
+
+    // Emparejar y etiquetar tokens
+    const maxLen = Math.max(origWords.length, corrWords.length);
+    let iOrig = 0;
+    let iCorr = 0;
+
+    while (iCorr < corrWords.length) {
+      const cWord = corrWords[iCorr];
+      const oWord = iOrig < origWords.length ? origWords[iOrig] : undefined;
+
+      if (oWord !== undefined && oWord.toLowerCase() === cWord.toLowerCase()) {
+        tokens.push({
+          type: 'unchanged',
+          corrected: cWord
+        });
+        iOrig++;
+        iCorr++;
+      } else {
+        // Encontrar si este cambio pertenece a algún detalle registrado
+        const matchedDetail = details.find(d => 
+          cWord.toLowerCase().includes(d.suggested.toLowerCase().split(/\s+/)[0] || '') ||
+          d.suggested.toLowerCase().includes(cWord.toLowerCase())
+        );
+
+        const category = matchedDetail?.category || 'vocabulary';
+        const typeToken = category === 'verb_tense' 
+          ? 'tense' 
+          : category === 'person_agreement' 
+            ? 'person' 
+            : category === 'connector' 
+              ? 'connector' 
+              : 'lexical';
+
+        tokens.push({
+          type: typeToken,
+          original: oWord || '',
+          corrected: cWord,
+          explanation: matchedDetail?.pedagogicalRule || 'Ajuste morfosintáctico oficial de concordancia y registro.',
+          category: category
+        });
+
+        iOrig++;
+        iCorr++;
+      }
+    }
+
+    // Métricas por categoría
+    const counts = {
+      verbTenses: details.filter(d => d.category === 'verb_tense').length,
+      personAgreement: details.filter(d => d.category === 'person_agreement').length,
+      connectors: details.filter(d => d.category === 'connector').length,
+      vocabulary: details.filter(d => d.category === 'vocabulary').length,
+      spelling: details.filter(d => d.category === 'spelling').length
+    };
+
+    return {
+      originalText: raw,
+      correctedText: current,
+      hasErrors: details.length > 0,
+      tokens: tokens,
+      categoryCounts: counts,
+      details: details
     };
   }
 

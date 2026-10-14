@@ -113,9 +113,9 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
   const isHistorical = Boolean(matchedFigure || avatarImage?.includes('/historical/'));
 
   const mouthCfg: CharacterAnatomicalMouth = useMemo(() => {
-    const targetKey = matchedFigure?.id || historicalFigureId || name || (gender === 'female' ? 'female' : 'male');
+    const targetKey = matchedFigure?.id || historicalFigureId || name || avatarImage || (gender === 'female' ? 'female' : 'male');
     return getHistoricalMouthConfig(targetKey);
-  }, [matchedFigure, historicalFigureId, name, gender]);
+  }, [matchedFigure, historicalFigureId, name, avatarImage, gender]);
 
   // Resolución infalible de la imagen del avatar en 3D
   const avatarImageSrc = useMemo(() => {

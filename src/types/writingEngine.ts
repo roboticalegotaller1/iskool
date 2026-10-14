@@ -233,6 +233,38 @@ export interface RealTimeMetrics {
   promedio_palabras_por_oracion: number;
 }
 
+export interface LiveCorrectionToken {
+  type: 'unchanged' | 'replaced' | 'added' | 'connector' | 'tense' | 'person' | 'lexical';
+  original?: string;
+  corrected: string;
+  explanation?: string;
+  category?: 'verb_tense' | 'person_agreement' | 'connector' | 'vocabulary' | 'spelling';
+}
+
+export interface LiveCorrectionDetail {
+  category: 'verb_tense' | 'person_agreement' | 'connector' | 'vocabulary' | 'spelling';
+  categoryLabel: string;
+  original: string;
+  suggested: string;
+  pedagogicalRule: string;
+  examTip: string;
+}
+
+export interface LiveSentenceCorrection {
+  originalText: string;
+  correctedText: string;
+  hasErrors: boolean;
+  tokens: LiveCorrectionToken[];
+  categoryCounts: {
+    verbTenses: number;
+    personAgreement: number;
+    connectors: number;
+    vocabulary: number;
+    spelling: number;
+  };
+  details: LiveCorrectionDetail[];
+}
+
 export interface DraftAnalysisOutput {
   conteo_palabras: number;
   rango_esperado: string;
@@ -240,6 +272,7 @@ export interface DraftAnalysisOutput {
   diagnosticos_detectados: DiagnosticItem[];
   metricas_tiempo_real: RealTimeMetrics;
   progreso_porcentaje: number;
+  correccion_en_tiempo_real?: LiveSentenceCorrection;
 }
 
 // ============================================================================
