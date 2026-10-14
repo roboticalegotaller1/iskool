@@ -176,6 +176,19 @@ export default function SuperUserAdminPage() {
     }
   }, [authLoading, user, isSuperUser, activeSchoolId, selectSchool]);
 
+  // Para Super Usuario: al iniciar sesión o ingresar a /admin, asegurar que muestre de inmediato el Directorio Institucional de Colegios
+  useEffect(() => {
+    if (!authLoading && isSuperUser) {
+      if (typeof window !== 'undefined') {
+        const justLoggedIn = sessionStorage.getItem('iskool_super_just_logged_in');
+        if (justLoggedIn) {
+          sessionStorage.removeItem('iskool_super_just_logged_in');
+          selectSchool(null);
+        }
+      }
+    }
+  }, [authLoading, isSuperUser, selectSchool]);
+
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [overviewMode, setOverviewMode] = useState<'executive' | 'classic'>('executive');
   const [selectedCampus, setSelectedCampus] = useState<string>('all');

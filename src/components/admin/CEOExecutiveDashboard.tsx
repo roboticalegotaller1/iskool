@@ -7,6 +7,7 @@ import {
   Users,
   GraduationCap,
   FileText,
+  FileSpreadsheet,
   DollarSign,
   AlertTriangle,
   UserCheck,
@@ -1002,6 +1003,8 @@ export default function CEOExecutiveDashboard({
   const [selectedCampusId, setSelectedCampusId] = useState<string>('all');
   const [timeFilter, setTimeFilter] = useState<'semana' | 'mes' | 'bimestre' | 'ciclo'>('semana');
   const [activeTab, setActiveTab] = useState<string>('inicio');
+  const [financeSubTab, setFinanceSubTab] = useState<'ebitda' | 'sat' | 'operacion' | 'reportes'>('ebitda');
+  const [academicSubTab, setAcademicSubTab] = useState<'radar' | 'comunidad' | 'gamificacion'>('radar');
   const [admissionsViewMode, setAdmissionsViewMode] = useState<'bento_kanban' | 'crm_studio'>('bento_kanban');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
@@ -1871,12 +1874,29 @@ export default function CEOExecutiveDashboard({
 
   // Navegación fluida con cambio instantáneo de vista y cierre de drawer móvil
   const handleNavClick = (tabId: string) => {
-    setActiveTab(tabId);
+    let effectiveTab = tabId;
+    if (tabId === 'colegios') {
+      effectiveTab = 'inicio';
+    } else if (tabId === 'personas') {
+      effectiveTab = 'academico';
+      setAcademicSubTab('comunidad');
+    } else if (tabId === 'vision') {
+      effectiveTab = 'finanzas';
+      setFinanceSubTab('ebitda');
+    } else if (tabId === 'operacion') {
+      effectiveTab = 'finanzas';
+      setFinanceSubTab('operacion');
+    } else if (tabId === 'reportes') {
+      effectiveTab = 'finanzas';
+      setFinanceSubTab('reportes');
+    }
+
+    setActiveTab(effectiveTab);
     setIsMobileMenuOpen(false);
     if (tabId === 'cerebro') {
       setIsBrainModalOpen(true);
     }
-    if (onNavigateTab) onNavigateTab(tabId);
+    if (onNavigateTab) onNavigateTab(effectiveTab);
   };
 
   // Navegación a Portales Académicos por Colegio
@@ -1910,17 +1930,31 @@ export default function CEOExecutiveDashboard({
     setIsAcademicPortalModalOpen(false);
   };
 
-  const navMenuItems = [
-    { id: 'inicio', label: 'Inicio', icon: Building2, desc: isCorporate ? 'Consolidado Consorcio' : 'Consolidado Holding' },
-    { id: 'vision', label: 'Visión Ejecutiva', icon: TrendingUp, desc: 'EBITDA & Simulador' },
-    { id: 'colegios', label: isCorporate ? 'Empresas & Plantas' : 'Colegios', icon: School, desc: isCorporate ? 'Benchmark Empresas' : 'Benchmark 5 Sedes' },
-    { id: 'personas', label: isCorporate ? 'Capital Humano' : 'Personas', icon: Users, desc: isCorporate ? 'Colaboradores 360' : 'Talento & Alumno 360' },
-    { id: 'academico', label: isCorporate ? 'Competencias Técnicas' : 'Académico (NEM)', icon: GraduationCap, desc: isCorporate ? 'Horas & Certificaciones' : 'SEP Fases & XP' },
-    { id: 'admisiones', label: isCorporate ? 'Reclutamiento & Onboarding' : 'Admisiones', icon: UserCheck, desc: isCorporate ? 'Pipeline de Talento' : 'Embudo & Conversión' },
-    { id: 'finanzas', label: 'Finanzas', icon: DollarSign, desc: isCorporate ? 'CFDI 4.0 Facturación B2B' : 'CFDI 4.0 IEDU SAT' },
-    { id: 'operacion', label: 'Operación', icon: SlidersHorizontal, desc: 'Automatizaciones' },
-    { id: 'reportes', label: 'Reportes BI', icon: BarChart3, desc: 'Estudio Analítico & BI' },
-    { id: 'cerebro', label: `Cerebro ${holding.name}`, icon: Network, desc: 'Cerebro Institucional', highlight: true },
+  const navMenuItems: Array<{ id: string; label: string; icon: any; desc: string; highlight?: boolean }> = [
+    { 
+      id: 'inicio', 
+      label: '1. Síntesis & Holding', 
+      icon: Building2, 
+      desc: isCorporate ? 'Consolidado & Benchmark' : 'Telemetría & Benchmark' 
+    },
+    { 
+      id: 'admisiones', 
+      label: isCorporate ? '2. Reclutamiento & Talento' : '2. Admisiones & Crecimiento', 
+      icon: UserCheck, 
+      desc: isCorporate ? 'Pipeline B2B & Conversión' : 'Embudo 360° & Matrícula' 
+    },
+    { 
+      id: 'academico', 
+      label: isCorporate ? '3. Competencias & Capital' : '3. Calidad Académica & Talento', 
+      icon: GraduationCap, 
+      desc: isCorporate ? 'Ejes STPS & Capacitación' : 'SEP NEM 2024 & Docentes' 
+    },
+    { 
+      id: 'finanzas', 
+      label: '4. Finanzas & Operación', 
+      icon: DollarSign, 
+      desc: isCorporate ? 'EBITDA, SAT CFDI & Control' : 'Simulador, SAT & Operación' 
+    },
   ];
 
   return (
@@ -2531,8 +2565,8 @@ export default function CEOExecutiveDashboard({
                 </div>
               </div>
 
-              {/* 5 TARJETAS DE KPIS */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3.5 sm:gap-4">
+              {/* 4 MACRO-KPIS EJECUTIVOS (C-SUITE HIGH-DENSITY COCKPIT) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                 {/* KPI 1: Alumnos / Colaboradores */}
                 <div 
                   onClick={() => setActiveKPIDrawer({
@@ -2557,115 +2591,68 @@ export default function CEOExecutiveDashboard({
                   <div className="text-2xl font-black text-slate-900 tracking-tight">
                     {metrics.totalStudents.toLocaleString()}
                   </div>
-                  <div className="text-xs font-medium text-slate-500 mt-0.5">{isCorporate ? 'Colaboradores' : 'Alumnos'}</div>
+                  <div className="text-xs font-medium text-slate-500 mt-0.5">
+                    {isCorporate ? `Colaboradores · ${metrics.totalTeachers} instructores` : `Alumnos · ${metrics.totalTeachers} docentes (1:14)`}
+                  </div>
                   <div className="text-[11px] text-slate-400 mt-2 flex items-center justify-between">
                     <span>vs. periodo anterior</span>
-                    <span className="text-teal-600 font-bold group-hover:underline">Ver detalle →</span>
+                    <span className="text-teal-600 font-bold group-hover:underline">Expediente 360 →</span>
                   </div>
                 </div>
 
-                {/* KPI 2: Docentes / Instructores */}
+                {/* KPI 2: Cobertura Curricular / Competencias */}
                 <div 
-                  onClick={() => setActiveKPIDrawer({
-                    metricKey: 'teachers',
-                    title: isCorporate ? 'Cuerpo de Instructores & Líderes Técnicos' : 'Cuerpo Docente y Asignaciones',
-                    description: isCorporate
-                      ? 'Plantilla de instructores especializados y facilitadores técnicos.'
-                      : 'Plantilla de maestros titulares y adjuntos con ratio de 1:14.4.',
-                    targetValue: `${metrics.totalTeachers.toLocaleString()}`,
-                    unit: isCorporate ? 'Instructores activos' : 'Docentes activos'
-                  })}
-                  className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-300 transition-all cursor-pointer group active:scale-98"
+                  onClick={() => handleNavClick('academico')}
+                  className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-emerald-300 transition-all cursor-pointer group active:scale-98"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <Briefcase size={20} />
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <Target size={20} />
                     </div>
                     <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
-                      {metrics.deltas.teachers}
+                      Meta {curriculumThreshold}%
                     </span>
                   </div>
                   <div className="text-2xl font-black text-slate-900 tracking-tight">
-                    {metrics.totalTeachers.toLocaleString()}
+                    {metrics.avgCurriculum}%
                   </div>
-                  <div className="text-xs font-medium text-slate-500 mt-0.5">{isCorporate ? 'Instructores' : 'Docentes'}</div>
+                  <div className="text-xs font-medium text-slate-500 mt-0.5">
+                    {isCorporate ? 'Competencias Técnicas ISO/STPS' : 'Cobertura Curricular SEP NEM'}
+                  </div>
                   <div className="text-[11px] text-slate-400 mt-2 flex items-center justify-between">
-                    <span>vs. periodo anterior</span>
-                    <span className="text-blue-600 font-bold group-hover:underline">Ver detalle →</span>
+                    <span>{holding.campuses.length} {isCorporate ? 'plantas auditadas' : 'sedes auditadas'}</span>
+                    <span className="text-emerald-600 font-bold group-hover:underline">Radar Diamante →</span>
                   </div>
                 </div>
 
-                {/* KPI 3: Colegios / Empresas */}
+                {/* KPI 3: Admisiones / Pipeline */}
                 <div 
-                  onClick={() => setActiveKPIDrawer({
-                    metricKey: 'campuses',
-                    title: isCorporate ? 'Empresas y Plantas Operativas' : 'Sedes y Planteles Operativos',
-                    description: isCorporate
-                      ? 'Consorcio empresarial con cobertura multirregional y control de plantas.'
-                      : 'Red escolar con cobertura multirregional y sincronización de estándares de calidad.',
-                    targetValue: `${metrics.totalCampuses}`,
-                    unit: isCorporate ? 'Empresas activas' : 'Colegios activos'
-                  })}
-                  className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer group active:scale-98"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <Building2 size={20} />
-                    </div>
-                    <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
-                      Activos
-                    </span>
-                  </div>
-                  <div className="text-2xl font-black text-slate-900 tracking-tight">
-                    {metrics.totalCampuses}
-                  </div>
-                  <div className="text-xs font-medium text-slate-500 mt-0.5">{isCorporate ? 'Empresas' : 'Colegios'}</div>
-                  <div className="text-[11px] text-slate-400 mt-2 flex items-center justify-between">
-                    <span>3 regiones clave</span>
-                    <span className="text-indigo-600 font-bold group-hover:underline">Ver detalle →</span>
-                  </div>
-                </div>
-
-                {/* KPI 4: Admisiones / Reclutamiento */}
-                <div 
-                  onClick={() => setActiveKPIDrawer({
-                    metricKey: 'admissions',
-                    title: isCorporate ? 'Pipeline de Reclutamiento & Onboarding' : 'Pipeline de Admisiones y Matrícula',
-                    description: isCorporate
-                      ? 'Candidatos en proceso de selección, inducción corporativa y contratación.'
-                      : 'Prospectos con diagnóstico psicopedagógico completado y entrevistas agendadas.',
-                    targetValue: `${metrics.totalAdmissions}`,
-                    unit: isCorporate ? 'Candidatos en pipeline' : 'Prospectos en proceso'
-                  })}
+                  onClick={() => handleNavClick('admisiones')}
                   className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-purple-300 transition-all cursor-pointer group active:scale-98"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <FileText size={20} />
+                      <UserCheck size={20} />
                     </div>
-                    <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+                    <span className="text-xs font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md">
                       {metrics.deltas.admissions}
                     </span>
                   </div>
                   <div className="text-2xl font-black text-slate-900 tracking-tight">
                     {metrics.totalAdmissions}
                   </div>
-                  <div className="text-xs font-medium text-slate-500 mt-0.5">{isCorporate ? 'Candidatos en pipeline' : 'Admisiones en proceso'}</div>
+                  <div className="text-xs font-medium text-slate-500 mt-0.5">
+                    {isCorporate ? 'Candidatos en Pipeline B2B' : 'Admisiones Activas en Proceso'}
+                  </div>
                   <div className="text-[11px] text-slate-400 mt-2 flex items-center justify-between">
-                    <span>vs. mismo periodo</span>
-                    <span className="text-purple-600 font-bold group-hover:underline">Ver detalle →</span>
+                    <span>Embudo y CRM 360°</span>
+                    <span className="text-purple-600 font-bold group-hover:underline">Ver Pipeline →</span>
                   </div>
                 </div>
 
-                {/* KPI 5: Cobranza */}
+                {/* KPI 4: Cobranza & EBITDA */}
                 <div 
-                  onClick={() => setActiveKPIDrawer({
-                    metricKey: 'collection',
-                    title: isCorporate ? 'Recuperación de Facturación B2B & Liquidez' : 'Cobranza Consolidada y Eficiencia Financiera',
-                    description: isCorporate ? 'Porcentaje de recuperación de facturación B2B frente al umbral objetivo.' : 'Porcentaje de recuperación de colegiaturas frente al umbral objetivo institucional.',
-                    targetValue: `${metrics.avgCollection}%`,
-                    unit: isCorporate ? 'Facturación B2B' : 'Cobranza global'
-                  })}
+                  onClick={() => handleNavClick('finanzas')}
                   className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-amber-300 transition-all cursor-pointer group active:scale-98"
                 >
                   <div className="flex items-center justify-between mb-3">
@@ -2681,15 +2668,17 @@ export default function CEOExecutiveDashboard({
                   <div className="text-2xl font-black text-slate-900 tracking-tight">
                     {metrics.avgCollection}%
                   </div>
-                  <div className="text-xs font-medium text-slate-500 mt-0.5">Cobranza Global</div>
+                  <div className="text-xs font-medium text-slate-500 mt-0.5">
+                    {isCorporate ? 'Recuperación B2B & Margen EBITDA' : 'Cobranza Consolidada & EBITDA'}
+                  </div>
                   <div className="text-[11px] text-slate-400 mt-2 flex items-center justify-between">
                     <span>Ledger inmutable SAT</span>
-                    <span className="text-amber-600 font-bold group-hover:underline">Ver detalle →</span>
+                    <span className="text-amber-600 font-bold group-hover:underline">Simulador & SAT →</span>
                   </div>
                 </div>
               </div>
 
-              {/* FOCOS + AVANCE + MIS ACCESOS */}
+              {/* FOCOS + AVANCE EN BENTO GRID (5 COLS + 7 COLS) */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
                 {/* Focos de Atención (5 cols) */}
@@ -2832,27 +2821,35 @@ export default function CEOExecutiveDashboard({
                   </div>
                 </div>
 
-                {/* Avance por Colegio / Empresa (4 cols) */}
-                <div className="lg:col-span-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+                {/* Avance por Colegio / Empresa (7 cols en Bento Grid) */}
+                <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-5">
                       <div>
-                        <h2 className="font-bold text-slate-900 text-base">{isCorporate ? 'Desempeño por empresa y planta' : 'Avance por colegio'}</h2>
-                        <span className="text-[11px] text-slate-400">{isCorporate ? 'Eficiencia Ponderada Consorcio' : 'Eficiencia Ponderada Holding'}</span>
+                        <div className="flex items-center gap-2">
+                          <h2 className="font-bold text-slate-900 text-base">{isCorporate ? 'Desempeño por empresa y planta' : 'Avance por colegio'}</h2>
+                          <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200/60">
+                            {isCorporate ? 'Consorcio Empresarial' : 'Holding Educativo'}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-slate-400">{isCorporate ? 'Eficiencia Ponderada Consorcio · 1 Clic para enfocar planta' : 'Eficiencia Ponderada Holding · 1 Clic para enfocar plantel'}</span>
                       </div>
-                      <button 
-                        onClick={() => setIsComparativeMatrixOpen(prev => !prev)}
-                        className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors cursor-pointer"
-                      >
-                        {isComparativeMatrixOpen ? 'Ver barras' : 'Ver detalle'} <ChevronRight size={14} />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => setIsComparativeMatrixOpen(prev => !prev)}
+                          className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-xl border border-indigo-200 flex items-center gap-1 transition-all cursor-pointer"
+                        >
+                          {isComparativeMatrixOpen ? 'Ver barras de progreso' : 'Ver matriz comparativa'} <ChevronRight size={14} />
+                        </button>
+                      </div>
                     </div>
 
                     {!isComparativeMatrixOpen ? (
-                      <div className="space-y-4">
+                      <div className="space-y-3.5">
                         {metrics.filteredCampuses.map((campus) => {
                           const isWarning = campus.collectionRate < 90;
                           const isDanger = campus.collectionRate < 85;
+                          const occRate = Math.round((campus.students / Math.max(1, campus.students * 1.2)) * 100);
                           return (
                             <div 
                               key={campus.id} 
@@ -2860,21 +2857,47 @@ export default function CEOExecutiveDashboard({
                                 setSelectedCampusId(campus.id);
                                 triggerToast(`Filtrado a ${campus.name}`);
                               }}
-                              className="space-y-1.5 cursor-pointer p-1.5 rounded-lg hover:bg-slate-50 transition-colors"
+                              className="p-3 rounded-xl border border-slate-100 hover:border-indigo-200 hover:bg-slate-50/80 transition-all cursor-pointer space-y-2 group"
                             >
-                              <div className="flex justify-between text-xs font-semibold">
-                                <span className="text-slate-700">{campus.name}</span>
-                                <span className={isDanger ? 'text-rose-600 font-bold' : isWarning ? 'text-amber-600 font-bold' : 'text-slate-600'}>
-                                  {campus.collectionRate}%
-                                </span>
+                              <div className="flex justify-between items-center text-xs font-semibold">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-slate-800 font-bold group-hover:text-indigo-600 transition-colors">{campus.name}</span>
+                                  <span className="text-[10px] text-slate-400 font-mono">({campus.students.toLocaleString()} {isCorporate ? 'colaboradores' : 'alumnos'})</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-[11px] text-slate-500">SEP NEM: <strong className="text-indigo-600 font-mono">{campus.curriculumCoverage || 94}%</strong></span>
+                                  <span className={`font-mono font-bold ${isDanger ? 'text-rose-600' : isWarning ? 'text-amber-600' : 'text-emerald-600'}`}>
+                                    {campus.collectionRate}% cobranza
+                                  </span>
+                                </div>
                               </div>
-                              <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                                <div
-                                  className={`h-full rounded-full transition-all duration-300 ${
-                                    isDanger ? 'bg-rose-500' : isWarning ? 'bg-amber-500' : 'bg-emerald-500'
-                                  }`}
-                                  style={{ width: `${campus.collectionRate}%` }}
-                                />
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                  <div className="flex justify-between text-[10px] text-slate-400">
+                                    <span>Cobranza vs. Meta</span>
+                                    <span>{campus.collectionRate}%</span>
+                                  </div>
+                                  <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div
+                                      className={`h-full rounded-full transition-all duration-300 ${
+                                        isDanger ? 'bg-rose-500' : isWarning ? 'bg-amber-500' : 'bg-emerald-500'
+                                      }`}
+                                      style={{ width: `${campus.collectionRate}%` }}
+                                    />
+                                  </div>
+                                </div>
+                                <div className="space-y-1">
+                                  <div className="flex justify-between text-[10px] text-slate-400">
+                                    <span>Ocupación de Cupo</span>
+                                    <span>{occRate}%</span>
+                                  </div>
+                                  <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div
+                                      className="h-full bg-slate-800 rounded-full transition-all duration-300"
+                                      style={{ width: `${occRate}%` }}
+                                    />
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           );
@@ -2885,26 +2908,36 @@ export default function CEOExecutiveDashboard({
                         <table className="w-full text-left text-xs">
                           <thead>
                             <tr className="border-b border-slate-200 text-slate-400 font-semibold">
-                              <th className="pb-2">Sede</th>
-                              <th className="pb-2 text-right">{isCorporate ? 'Colaboradores' : 'Alumnos'}</th>
-                              <th className="pb-2 text-right">Cobranza</th>
-                              <th className="pb-2 text-right">Cobertura</th>
+                              <th className="pb-2.5">Sede / Planta</th>
+                              <th className="pb-2.5 text-right">{isCorporate ? 'Colaboradores' : 'Alumnos'}</th>
+                              <th className="pb-2.5 text-right">{isCorporate ? 'Instructores' : 'Docentes'}</th>
+                              <th className="pb-2.5 text-right">Cobranza</th>
+                              <th className="pb-2.5 text-right">Cobertura</th>
+                              <th className="pb-2.5 text-right">Acción</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100">
                             {metrics.filteredCampuses.map(campus => (
                               <tr 
                                 key={campus.id} 
-                                onClick={() => {
-                                  setSelectedCampusId(campus.id);
-                                  triggerToast(`Tablero enfocado en: ${campus.name}`);
-                                }}
-                                className="hover:bg-slate-50 transition-colors cursor-pointer"
+                                className="hover:bg-indigo-50/40 transition-colors"
                               >
-                                <td className="py-2 font-medium text-slate-800">{campus.name.split('(')[0]}</td>
-                                <td className="py-2 text-right font-mono text-slate-600">{campus.students.toLocaleString()}</td>
-                                <td className="py-2 text-right font-bold text-emerald-600">{campus.collectionRate}%</td>
-                                <td className="py-2 text-right font-semibold text-indigo-600">{campus.curriculumCoverage || 94}%</td>
+                                <td className="py-2.5 font-bold text-slate-800">{campus.name.split('(')[0]}</td>
+                                <td className="py-2.5 text-right font-mono text-slate-600">{campus.students.toLocaleString()}</td>
+                                <td className="py-2.5 text-right font-mono text-slate-600">{campus.teachers}</td>
+                                <td className="py-2.5 text-right font-bold text-emerald-600">{campus.collectionRate}%</td>
+                                <td className="py-2.5 text-right font-semibold text-indigo-600">{campus.curriculumCoverage || 94}%</td>
+                                <td className="py-2.5 text-right">
+                                  <button
+                                    onClick={() => {
+                                      setSelectedCampusId(campus.id);
+                                      triggerToast(`Tablero enfocado en: ${campus.name}`);
+                                    }}
+                                    className="px-2.5 py-1 text-[11px] font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg cursor-pointer"
+                                  >
+                                    Enfocar
+                                  </button>
+                                </td>
                               </tr>
                             ))}
                           </tbody>
@@ -2913,139 +2946,64 @@ export default function CEOExecutiveDashboard({
                     )}
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Óptimo (&gt;90%)</span>
-                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500" /> Alerta (&lt;90%)</span>
-                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500" /> Crítico (&lt;85%)</span>
-                  </div>
-                </div>
-
-                {/* Mis Accesos & Actividad (3 cols) */}
-                <div className="lg:col-span-3 space-y-6">
-                  <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
-                    <h3 className="font-bold text-slate-900 text-sm mb-4">Mis accesos</h3>
-                    <div className="space-y-2.5">
-                      {[
-                        { id: 'cerebro', title: `Cerebro ${holding.name}`, desc: 'Todo el conocimiento de red', icon: Network, action: () => setIsBrainModalOpen(true) },
-                        { id: 'reportes', title: 'Reportes ejecutivos (BI)', desc: 'Balances analíticos en tiempo real', icon: BarChart3, action: () => handleNavClick('reportes') },
-                        { id: 'okrs', title: 'Plan estratégico', desc: 'Simulador y OKRs 2026-2027', icon: Target, action: () => handleNavClick('vision') },
-                        { id: 'automatizaciones', title: 'Automatizaciones', desc: 'Flujos operativos inteligentes', icon: Zap, action: () => handleNavClick('operacion') },
-                      ].map((item, idx) => {
-                        const Icon = item.icon;
-                        return (
-                          <button
-                            key={idx}
-                            onClick={item.action}
-                            className="w-full flex items-start gap-3 p-2.5 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all text-left group cursor-pointer active:scale-98"
-                          >
-                            <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 group-hover:bg-slate-900 group-hover:text-white transition-colors">
-                              <Icon size={16} />
-                            </div>
-                            <div>
-                              <div className="text-xs font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">
-                                {item.title}
-                              </div>
-                              <div className="text-[11px] text-slate-400 mt-0.5 leading-snug">
-                                {item.desc}
-                              </div>
-                            </div>
-                          </button>
-                        );
-                      })}
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-slate-400">
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Óptimo (&gt;90%)</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500" /> Alerta (&lt;90%)</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500" /> Crítico (&lt;85%)</span>
                     </div>
-                  </div>
-
-                  {/* Actividad reciente resumida */}
-                  <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-bold text-slate-900 text-sm">Actividad reciente</h3>
-                    </div>
-                    <div className="space-y-3 text-xs">
-                      {[
-                        { title: 'Auditoría curricular completada', campus: 'Campus Montes', time: 'hace 2 hrs', icon: FileText, color: 'text-blue-500' },
-                        { title: 'Prospecto nuevo en CRM', campus: 'Campus San Cristóbal', time: 'hace 4 hrs', icon: UserCheck, color: 'text-teal-500' },
-                        { title: 'Cobranza preventiva 142 folios', campus: 'Red IBIME Central', time: 'hace 1 día', icon: Zap, color: 'text-purple-500' },
-                      ].map((act, i) => {
-                        const Icon = act.icon;
-                        return (
-                          <div key={i} className="flex items-start gap-2.5 p-1 rounded-lg">
-                            <Icon size={14} className={`${act.color} shrink-0 mt-0.5`} />
-                            <div className="flex-1 min-w-0">
-                              <div className="font-semibold text-slate-800 truncate">{act.title}</div>
-                              <div className="text-[11px] text-slate-400">{act.campus}</div>
-                            </div>
-                            <span className="text-[10px] text-slate-400 shrink-0">{act.time}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <button 
+                    <button
                       onClick={() => setIsAllActivityOpen(true)}
-                      className="w-full text-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 mt-4 pt-3 border-t border-slate-100 flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                      className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
                     >
-                      Ver bitácora completa <ChevronRight size={13} />
+                      <span>Ver bitácora de actividad reciente (3 eventos)</span>
+                      <ChevronRight size={13} />
                     </button>
                   </div>
                 </div>
 
               </div>
 
-              {/* BANNER CEREBRO INFERIOR */}
-              <div className="relative rounded-3xl bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 p-8 text-white overflow-hidden shadow-xl border border-slate-800">
-                <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-                  <div className="w-full lg:w-1/3 flex items-center justify-center p-2">
-                    <div className="relative w-72 h-44 border border-indigo-500/30 rounded-2xl bg-slate-900/70 p-4 flex flex-col justify-between backdrop-blur-xs">
-                      <div className="flex justify-between items-center text-[10px] text-indigo-300 font-mono">
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                          RED NEURONAL VIVA
-                        </span>
-                        <span>{metrics.totalCampuses}/{metrics.totalCampuses} SEDES</span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2 my-auto text-center text-[11px] font-semibold">
-                        {[(isCorporate ? 'Colaboradores' : 'Alumnos'), holding.name.split(' ')[0], 'Procesos', 'Personas', (isCorporate ? 'Plantas' : 'Sedes'), 'SOPs'].map((node, idx) => (
-                          <div 
-                            key={idx}
-                            onClick={() => {
-                              setRagQuery(node);
-                              handleExecuteRAGQuery(node);
-                              setIsBrainModalOpen(true);
-                            }}
-                            className="p-1.5 rounded-lg bg-indigo-950/80 border border-indigo-500/40 text-indigo-200 hover:bg-indigo-900 cursor-pointer transition-colors"
-                          >
-                            {node}
-                          </div>
-                        ))}
-                      </div>
-                      <div className="text-center text-[10px] text-slate-400">
-                        +1,420 documentos y aprendizajes sincronizados
-                      </div>
-                    </div>
+              {/* BÓVEDA CENTRAL DE CONOCIMIENTO (LIGHT MODE EXECUTIVE CARD) */}
+              <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="space-y-1.5 max-w-2xl">
+                  <div className="flex items-center gap-2 text-indigo-600 text-xs font-bold uppercase tracking-wider">
+                    <Network size={16} />
+                    <span>{isCorporate ? `Bóveda Corporativa · ${holding.name}` : `Bóveda Curricular Central · ${holding.name}`}</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-200/60">
+                      0 Tokens · Respuestas Inmutables
+                    </span>
                   </div>
-
-                  <div className="w-full lg:w-2/3 space-y-3">
-                    <div className="flex items-center gap-2 text-indigo-400 text-xs font-bold uppercase tracking-wider">
-                      <Network size={16} />
-                      <span>{isCorporate ? `Bóveda Corporativa ${holding.name}` : `Cerebro Institucional ${holding.name}`}</span>
-                    </div>
-                    <h3 className="text-2xl font-black text-white tracking-tight">
-                      {isCorporate ? 'Todo el conocimiento corporativo y operativo, conectado y siempre vivo.' : 'Todo el conocimiento de nuestra red, conectado y siempre vivo.'}
-                    </h3>
-                    <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
-                      {isCorporate 
-                        ? `Documentos, normativas ISO, matrices de capacitación y procesos operativos de todas nuestras plantas y empresas, en un solo lugar. Propiedad intelectual exclusiva de ${holding.name}.`
-                        : `Documentos, procesos, experiencias pedagógicas y aprendizajes de todos nuestros colegios, en un solo lugar. Propiedad intelectual exclusiva de ${holding.name}.`}
-                    </p>
-                    <div className="pt-2 flex flex-wrap items-center gap-4">
+                  <h3 className="text-lg font-black text-slate-900 tracking-tight">
+                    {isCorporate ? 'Todo el conocimiento corporativo, normativas STPS e ISO a 1 clic.' : 'Todo el conocimiento de la red, acuerdos SEP y normativas a 1 clic.'}
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Consulta protocolos de emergencia, lineamientos de cobranza, matrices curriculares y bitácoras institucionales sin consumo de IA.
+                  </p>
+                  <div className="pt-2 flex flex-wrap items-center gap-2">
+                    {[(isCorporate ? 'Seguridad Industrial' : 'Protocolo Médico'), (isCorporate ? 'Certificaciones ISO' : 'SEP NEM 2024'), (isCorporate ? 'Facturación B2B' : 'CFDI SAT 4.0'), (isCorporate ? 'Evacuación de Naves' : 'Sismo y Evacuación')].map((node, idx) => (
                       <button
-                        onClick={() => setIsBrainModalOpen(true)}
-                        className="bg-white hover:bg-slate-100 text-slate-950 font-bold text-sm px-6 py-3 rounded-xl transition-all shadow-lg flex items-center gap-2 cursor-pointer active:scale-95"
+                        key={idx}
+                        onClick={() => {
+                          setRagQuery(node);
+                          handleExecuteRAGQuery(node);
+                          setIsBrainModalOpen(true);
+                        }}
+                        className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 border border-slate-200 hover:border-indigo-300 transition-all cursor-pointer active:scale-95"
                       >
-                        <span>Explorar cerebro {holding.name}</span>
-                        <ChevronRight size={16} />
+                        ⚡ {node}
                       </button>
-                    </div>
+                    ))}
                   </div>
+                </div>
+                <div className="shrink-0 flex items-center gap-3">
+                  <button
+                    onClick={() => setIsBrainModalOpen(true)}
+                    className="px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-md shadow-indigo-600/20 hover:shadow-indigo-600/30 transition-all cursor-pointer flex items-center gap-2 active:scale-95"
+                  >
+                    <span>Abrir Bóveda Completa</span>
+                    <ChevronRight size={16} />
+                  </button>
                 </div>
               </div>
             </div>
@@ -3054,8 +3012,38 @@ export default function CEOExecutiveDashboard({
           {/* ======================================================= */}
           {/* MÓDULO 2: VISIÓN EJECUTIVA (EBITDA & SIMULADOR WHAT-IF) */}
           {/* ======================================================= */}
-          {activeTab === 'vision' && (
+          {(activeTab === 'vision' || (activeTab === 'finanzas' && financeSubTab === 'ebitda')) && (
             <div className="space-y-6 animate-in fade-in duration-100">
+              {/* Segmented Sub-Cabina Controller (EBITDA / SAT / Operación / Reportes) */}
+              <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/80 w-fit">
+                {[
+                  { id: 'ebitda', label: 'EBITDA & Simulador What-If', icon: Calculator },
+                  { id: 'sat', label: isCorporate ? 'Facturación B2B & SAT' : 'CFDI 4.0 & Complemento IEDU', icon: Receipt },
+                  { id: 'operacion', label: 'Operación & Automatizaciones', icon: SlidersHorizontal },
+                  { id: 'reportes', label: 'Reportes BI en Vivo', icon: BarChart3 },
+                ].map((sub) => {
+                  const Icon = sub.icon;
+                  const isCurrent = (activeTab === 'finanzas' && financeSubTab === sub.id) || (activeTab === 'vision' && sub.id === 'ebitda');
+                  return (
+                    <button
+                      key={sub.id}
+                      onClick={() => {
+                        setActiveTab('finanzas');
+                        setFinanceSubTab(sub.id as any);
+                      }}
+                      className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        isCurrent
+                          ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                      }`}
+                    >
+                      <Icon size={15} className={isCurrent ? 'text-indigo-600' : 'text-slate-500'} />
+                      <span>{sub.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded inline-block">
@@ -3432,8 +3420,35 @@ export default function CEOExecutiveDashboard({
           {/* ======================================================= */}
           {/* MÓDULO 4: PERSONAS (TALENTO & EXPEDIENTE 360)           */}
           {/* ======================================================= */}
-          {activeTab === 'personas' && (
+          {(activeTab === 'personas' || (activeTab === 'academico' && academicSubTab === 'comunidad')) && (
             <div className="space-y-6 animate-in fade-in duration-100">
+              {/* Segmented Sub-Cabina Controller (Radar / Talento & Comunidad / Gamificación) */}
+              <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/80 w-fit no-print">
+                {[
+                  { id: 'radar', label: isCorporate ? '1. Radar STPS & Competencias' : '1. Radar SEP NEM 2024 & Fases', icon: Target },
+                  { id: 'comunidad', label: isCorporate ? '2. Fuerza Laboral & Expediente 360' : '2. Talento Docente & Expediente 360', icon: Users },
+                  { id: 'gamificacion', label: isCorporate ? '3. Productividad & Acreditación' : '3. Gamificación & Maestría (XP)', icon: Gamepad2 }
+                ].map((sub) => {
+                  const isCurrent = (activeTab === 'academico' && academicSubTab === sub.id) || (activeTab === 'personas' && sub.id === 'comunidad');
+                  return (
+                    <button
+                      key={sub.id}
+                      onClick={() => {
+                        setActiveTab('academico');
+                        setAcademicSubTab(sub.id as any);
+                      }}
+                      className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        isCurrent
+                          ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                      }`}
+                    >
+                      <sub.icon size={15} className={isCurrent ? 'text-indigo-600' : 'text-slate-500'} />
+                      <span>{sub.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded inline-block">
@@ -3518,15 +3533,45 @@ export default function CEOExecutiveDashboard({
           {/* ======================================================= */}
           {/* MÓDULO 5: ACADÉMICO (NEM 2024 & DIFERENCIADOR GAMIFICADO)*/}
           {/* ======================================================= */}
-          {activeTab === 'academico' && (
+          {(activeTab === 'academico' && academicSubTab !== 'comunidad') && (
             <div className="space-y-6 animate-in fade-in duration-100">
+              {/* Segmented Sub-Cabina Controller (Radar / Talento & Comunidad / Gamificación) */}
+              <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/80 w-fit no-print">
+                {[
+                  { id: 'radar', label: isCorporate ? '1. Radar STPS & Competencias' : '1. Radar SEP NEM 2024 & Fases', icon: Target },
+                  { id: 'comunidad', label: isCorporate ? '2. Fuerza Laboral & Expediente 360' : '2. Talento Docente & Expediente 360', icon: Users },
+                  { id: 'gamificacion', label: isCorporate ? '3. Productividad & Acreditación' : '3. Gamificación & Maestría (XP)', icon: Gamepad2 }
+                ].map((sub) => {
+                  const isCurrent = (activeTab === 'academico' && academicSubTab === sub.id);
+                  return (
+                    <button
+                      key={sub.id}
+                      onClick={() => {
+                        setActiveTab('academico');
+                        setAcademicSubTab(sub.id as any);
+                      }}
+                      className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        isCurrent
+                          ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                      }`}
+                    >
+                      <sub.icon size={15} className={isCurrent ? 'text-indigo-600' : 'text-slate-500'} />
+                      <span>{sub.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded inline-block">
                     {isCorporate ? 'Matriz de Competencias Laborales B2B' : 'Diferenciador Pedagógico Exclusivo iSkool'}
                   </div>
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight mt-1">
-                    {isCorporate ? 'Matriz de Competencias Laborales & Certificaciones Técnicas' : 'Auditoría Curricular NEM 2024 & Maestría Gamificada'}
+                    {academicSubTab === 'gamificacion' 
+                      ? (isCorporate ? 'Métricas de Capacitación & Productividad' : 'Diferenciador Pedagógico Gamificado & XP')
+                      : (isCorporate ? 'Matriz de Competencias Laborales & Certificaciones Técnicas' : 'Auditoría Curricular NEM 2024 & Radar Diamante')}
                   </h2>
                   <p className="text-xs text-slate-500">
                     {isCorporate 
@@ -3544,6 +3589,7 @@ export default function CEOExecutiveDashboard({
               </div>
 
               {/* COBERTURA POR FASES NEM 2024 / NIVELES DE COMPETENCIA TÉCNICA */}
+              {academicSubTab === 'radar' && (
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
@@ -3606,8 +3652,10 @@ export default function CEOExecutiveDashboard({
                   ))}
                 </div>
               </div>
+              )}
 
               {/* DIFERENCIADOR DE GAMIFICACIÓN / CAPACITACIÓN B2B */}
+              {academicSubTab === 'gamificacion' && (
               <div className="bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 p-6 rounded-3xl text-white shadow-lg border border-purple-500/30 space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-purple-600/40 text-purple-300 flex items-center justify-center border border-purple-500/40">
@@ -3700,8 +3748,10 @@ export default function CEOExecutiveDashboard({
                   </div>
                 </div>
               </div>
+              )}
 
               {/* LOS 4 CAMPOS FORMATIVOS OFICIALES DE LA SEP NEM 2024: RADAR DIAMANTE & DIALES DE ARCO */}
+              {academicSubTab === 'radar' && (
               <div className="space-y-4">
                 {/* HEADER DE CONTROL DEL MÓDULO */}
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -4321,6 +4371,7 @@ export default function CEOExecutiveDashboard({
                   );
                 })()}
               </div>
+              )}
             </div>
           )}
 
@@ -4331,22 +4382,22 @@ export default function CEOExecutiveDashboard({
             <div className="space-y-6 animate-in fade-in duration-100">
               {!isCorporate && admissionsViewMode === 'crm_studio' ? (
                 <div className="space-y-4">
-                  {/* BARRA DIRECTIVA DE INTEGRACIÓN CRM 360° */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 p-4 rounded-3xl text-white shadow-md border border-purple-500/20">
+                  {/* BARRA DIRECTIVA DE INTEGRACIÓN CRM 360° (MODO CLARO) */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-3xl text-slate-900 shadow-sm border border-slate-200">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-xl shrink-0">
+                      <div className="w-10 h-10 rounded-2xl bg-purple-50 border border-purple-200 text-purple-600 flex items-center justify-center text-xl shrink-0 shadow-2xs">
                         📋
                       </div>
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="text-sm font-black text-white tracking-wide">
+                          <h3 className="text-sm font-black text-slate-900 tracking-wide">
                             CRM Unificado 360° • Admisiones & Captación Institucional
                           </h3>
-                          <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-2 py-0.5 rounded-full">
+                          <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
                             Sede: {selectedCampusName}
                           </span>
                         </div>
-                        <p className="text-xs text-purple-200/80 mt-0.5">
+                        <p className="text-xs text-slate-500 mt-0.5">
                           Kanban ágil, expediente familiar 1:N (apellidos SEP), WhatsApp directo, y corresponsabilidad de 5 departamentos escolares.
                         </p>
                       </div>
@@ -4354,16 +4405,16 @@ export default function CEOExecutiveDashboard({
                     <div className="flex items-center gap-2 shrink-0">
                       <button
                         onClick={() => setAdmissionsViewMode('bento_kanban')}
-                        className="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-xl border border-white/20 transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                        className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 transition-all active:scale-95 cursor-pointer flex items-center gap-1.5 shadow-2xs"
                         title="Volver a la vista Bento ejecutiva con Kanban integrado"
                       >
-                        <Layers size={13} />
+                        <Layers size={13} className="text-purple-600" />
                         Tablero Bento Directivo
                       </button>
                       <Link
                         href="/admin/crm"
                         target="_blank"
-                        className="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl transition-all shadow-xs active:scale-95 flex items-center gap-1.5"
+                        className="px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl transition-all shadow-xs active:scale-95 flex items-center gap-1.5"
                         title="Abrir CRM en pantalla completa independiente"
                       >
                         <ExternalLink size={13} />
@@ -4431,9 +4482,9 @@ export default function CEOExecutiveDashboard({
                       setProspectFilterCampus(selectedCampusId);
                       setIsAdmissionsPipelineOpen(true);
                     }}
-                    className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer shadow-sm transition-all active:scale-95"
+                    className="px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer shadow-xs border border-slate-200 transition-all active:scale-95"
                   >
-                    <ClipboardList size={16} />
+                    <ClipboardList size={16} className="text-slate-500" />
                     {isCorporate ? `Directorio de Candidatos (${prospectsList.length})` : `Directorio del Pipeline (${prospectsList.length} Familias)`}
                   </button>
 
@@ -4455,29 +4506,29 @@ export default function CEOExecutiveDashboard({
                 </div>
               </div>
 
-              {/* TELEMETRÍA EN VIVO DE OCUPACIÓN Y META DE ASIENTOS CONTRATADOS (IBIME 2026-2027) */}
+              {/* TELEMETRÍA EN VIVO DE OCUPACIÓN Y META DE ASIENTOS CONTRATADOS (IBIME 2026-2027) (MODO CLARO) */}
               {!isCorporate && livePipelineMetrics && (
-                <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-indigo-950 p-6 rounded-3xl text-white border border-emerald-500/30 shadow-lg space-y-4">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-700/60 pb-3">
+                <div className="bg-white p-6 rounded-3xl text-slate-900 border border-slate-200 shadow-sm space-y-4">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-3">
                     <div>
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                         🎯 Meta de Matrícula 2026-2027
                       </div>
-                      <h3 className="text-base font-black text-white mt-1">
+                      <h3 className="text-base font-black text-slate-900 mt-1">
                         Proyección de Ocupación: {livePipelineMetrics.capacity.currentOccupiedSeats.toLocaleString('es-MX')} / {livePipelineMetrics.capacity.totalPhysicalSeats.toLocaleString('es-MX')} Asientos
                       </h3>
-                      <p className="text-xs text-slate-300 mt-0.5">
-                        Meta Estratégica: <strong className="text-emerald-300">{livePipelineMetrics.capacity.targetSeats.toLocaleString('es-MX')} Asientos</strong> ({livePipelineMetrics.capacity.targetProgressPercent}% alcanzado) • Sede: <strong>{livePipelineMetrics.campusName}</strong>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Meta Estratégica: <strong className="text-emerald-700">{livePipelineMetrics.capacity.targetSeats.toLocaleString('es-MX')} Asientos</strong> ({livePipelineMetrics.capacity.targetProgressPercent}% alcanzado) • Sede: <strong>{livePipelineMetrics.campusName}</strong>
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="text-right">
-                        <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Brecha a la Meta</span>
-                        <span className="text-lg font-black text-amber-300 font-mono">
+                        <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Brecha a la Meta</span>
+                        <span className="text-lg font-black text-amber-700 font-mono">
                           {livePipelineMetrics.capacity.seatsRemainingToTarget > 0 ? `${livePipelineMetrics.capacity.seatsRemainingToTarget} asientos` : 'Meta Lograda ✓'}
                         </span>
                       </div>
-                      <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-xl shrink-0 font-mono font-black text-emerald-300">
+                      <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-xl shrink-0 font-mono font-black text-emerald-700 shadow-xs">
                         {livePipelineMetrics.capacity.occupancyPercent}%
                       </div>
                     </div>
@@ -4485,17 +4536,17 @@ export default function CEOExecutiveDashboard({
 
                   {/* Barra de Progreso de Ocupación */}
                   <div className="space-y-1.5">
-                    <div className="flex justify-between text-xs text-slate-300">
+                    <div className="flex justify-between text-xs text-slate-600">
                       <span>Ocupación Física Total: {livePipelineMetrics.capacity.occupancyPercent}%</span>
                       <span>Capacidad Total: {livePipelineMetrics.capacity.totalPhysicalSeats.toLocaleString('es-MX')} asientos</span>
                     </div>
-                    <div className="w-full bg-slate-800 rounded-full h-3 p-0.5 overflow-hidden border border-slate-700">
+                    <div className="w-full bg-slate-100 rounded-full h-3 p-0.5 overflow-hidden border border-slate-200">
                       <div 
                         className="bg-gradient-to-r from-emerald-500 to-indigo-500 h-full rounded-full transition-all duration-500" 
                         style={{ width: `${Math.min(100, livePipelineMetrics.capacity.occupancyPercent)}%` }}
                       />
                     </div>
-                    <div className="flex justify-between text-[11px] text-slate-400">
+                    <div className="flex justify-between text-[11px] text-slate-500">
                       <span>Reinscritos Base: {livePipelineMetrics.capacity.baseEnrolledSeats.toLocaleString('es-MX')}</span>
                       <span>Nuevo Ingreso CRM (Fase 5): +{livePipelineMetrics.capacity.newlyEnrolledFromCrm}</span>
                       <span>Meta Anual: {livePipelineMetrics.capacity.targetSeats.toLocaleString('es-MX')} (3,740 IBIME)</span>
@@ -4504,25 +4555,25 @@ export default function CEOExecutiveDashboard({
                 </div>
               )}
 
-              {/* ARQUITECTURA DE DATOS: ¿QUIÉN ALIMENTA Y REPORTA CADA ETAPA? */}
-              <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 p-6 rounded-3xl text-white border border-indigo-500/20 shadow-lg space-y-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-700/60 pb-3">
+              {/* ARQUITECTURA DE DATOS: ¿QUIÉN ALIMENTA Y REPORTA CADA ETAPA? (MODO CLARO EJECUTIVO) */}
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-3">
                   <div>
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
                       <Layers size={12} />
                       {isCorporate ? 'Flujo de Atracción y Talento' : 'Flujo Operativo Institucional'}
                     </div>
-                    <h3 className="text-base font-black text-white mt-1">
+                    <h3 className="text-base font-black text-slate-900 mt-1">
                       {isCorporate ? '¿Dónde se registra esta información y qué área es responsable?' : '¿Dónde se llena esta información y quién es responsable de reportarla?'}
                     </h3>
-                    <p className="text-xs text-slate-300 mt-0.5">
+                    <p className="text-xs text-slate-500 mt-0.5">
                       {isCorporate 
                         ? 'El embudo no se captura manualmente: es el resultado de 5 departamentos corporativos:'
                         : 'El embudo no se captura manualmente de manera aislada: es el resultado sincronizado de 5 departamentos escolares:'}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-indigo-300 bg-indigo-900/60 border border-indigo-700/50 px-3 py-1.5 rounded-xl">
+                    <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-xl shadow-2xs">
                       ⚡ Sincronización Automática
                     </span>
                   </div>
@@ -4530,150 +4581,150 @@ export default function CEOExecutiveDashboard({
 
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                   {/* FASE 1 */}
-                  <div className="p-3.5 bg-slate-900/80 rounded-2xl border border-purple-500/30 flex flex-col justify-between space-y-2">
+                  <div className="p-3.5 bg-gradient-to-b from-purple-50/70 to-white rounded-2xl border border-purple-200/80 shadow-xs flex flex-col justify-between space-y-2.5">
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-purple-300 uppercase">
+                        <span className="text-[10px] font-black text-purple-700 uppercase">
                           {isCorporate ? 'Fase 1 · Vacante' : 'Fase 1 · Lead'}
                         </span>
-                        <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+                        <span className="w-2 h-2 rounded-full bg-purple-600 animate-pulse" />
                       </div>
-                      <h4 className="text-xs font-bold text-white mt-1">
+                      <h4 className="text-xs font-bold text-slate-900 mt-1">
                         {isCorporate ? 'Atracción & Headhunting' : 'Captación & CRM'}
                       </h4>
-                      <p className="text-[11px] text-slate-300 mt-1 leading-snug">
+                      <p className="text-[11px] text-slate-600 mt-1 leading-snug">
                         {isCorporate 
                           ? 'Postulación de candidato, canal de origen y datos de contacto profesional.'
                           : 'Registro del aspirante, canal de origen y datos de contacto del tutor.'}
                       </p>
                     </div>
-                    <div className="pt-2 border-t border-purple-500/20 space-y-1">
-                      <div className="text-[10px] text-purple-300 font-semibold">¿Quién reporta?</div>
-                      <div className="text-[11px] text-white font-medium">
+                    <div className="pt-2 border-t border-purple-100 space-y-1">
+                      <div className="text-[10px] text-slate-500 font-semibold">¿Quién reporta?</div>
+                      <div className="text-[11px] text-slate-900 font-bold">
                         {isCorporate ? 'Reclutamiento & Talento' : 'Admisiones & Marketing'}
                       </div>
-                      <div className="text-[10px] text-slate-400 font-semibold mt-1">¿Dónde se llena?</div>
-                      <div className="text-[10px] text-slate-300 bg-purple-950/60 p-1.5 rounded border border-purple-800/40">
+                      <div className="text-[10px] text-slate-500 font-semibold mt-1">¿Dónde se llena?</div>
+                      <div className="text-[10px] text-purple-950 bg-purple-50/90 p-1.5 rounded-lg border border-purple-200/80 font-medium">
                         {isCorporate ? 'Portal de Empleo, LinkedIn o botón "+ Registrar Candidato"' : 'Landing Web, Ferias o botón "+ Registrar Aspirante"'}
                       </div>
                     </div>
                   </div>
 
                   {/* FASE 2 */}
-                  <div className="p-3.5 bg-slate-900/80 rounded-2xl border border-indigo-500/30 flex flex-col justify-between space-y-2">
+                  <div className="p-3.5 bg-gradient-to-b from-indigo-50/70 to-white rounded-2xl border border-indigo-200/80 shadow-xs flex flex-col justify-between space-y-2.5">
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-indigo-300 uppercase">
+                        <span className="text-[10px] font-black text-indigo-700 uppercase">
                           {isCorporate ? 'Fase 2 · Entrevista' : 'Fase 2 · Visita'}
                         </span>
-                        <span className="w-2 h-2 rounded-full bg-indigo-400" />
+                        <span className="w-2 h-2 rounded-full bg-indigo-600" />
                       </div>
-                      <h4 className="text-xs font-bold text-white mt-1">
+                      <h4 className="text-xs font-bold text-slate-900 mt-1">
                         {isCorporate ? 'Entrevista Inicial' : 'Tours de Campus'}
                       </h4>
-                      <p className="text-[11px] text-slate-300 mt-1 leading-snug">
+                      <p className="text-[11px] text-slate-600 mt-1 leading-snug">
                         {isCorporate 
                           ? 'Filtro inicial, revisión de perfil y visita a instalaciones operativas.'
                           : 'Asistencia y recorrido presencial de aulas STEAM, laboratorios y canchas.'}
                       </p>
                     </div>
-                    <div className="pt-2 border-t border-indigo-500/20 space-y-1">
-                      <div className="text-[10px] text-indigo-300 font-semibold">¿Quién reporta?</div>
-                      <div className="text-[11px] text-white font-medium">
+                    <div className="pt-2 border-t border-indigo-100 space-y-1">
+                      <div className="text-[10px] text-slate-500 font-semibold">¿Quién reporta?</div>
+                      <div className="text-[11px] text-slate-900 font-bold">
                         {isCorporate ? 'Capital Humano & Operaciones' : 'Dirección de Campus & RRPP'}
                       </div>
-                      <div className="text-[10px] text-slate-400 font-semibold mt-1">¿Dónde se llena?</div>
-                      <div className="text-[10px] text-slate-300 bg-indigo-950/60 p-1.5 rounded border border-indigo-800/40">
+                      <div className="text-[10px] text-slate-500 font-semibold mt-1">¿Dónde se llena?</div>
+                      <div className="text-[10px] text-indigo-950 bg-indigo-50/90 p-1.5 rounded-lg border border-indigo-200/80 font-medium">
                         {isCorporate ? 'Agenda de Entrevistas / Directorio de Talento' : 'Agenda de Visitas / Directorio de Pipeline'}
                       </div>
                     </div>
                   </div>
 
                   {/* FASE 3 */}
-                  <div className="p-3.5 bg-slate-900/80 rounded-2xl border border-blue-500/30 flex flex-col justify-between space-y-2">
+                  <div className="p-3.5 bg-gradient-to-b from-sky-50/70 to-white rounded-2xl border border-sky-200/80 shadow-xs flex flex-col justify-between space-y-2.5">
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-blue-300 uppercase">
+                        <span className="text-[10px] font-black text-sky-700 uppercase">
                           {isCorporate ? 'Fase 3 · Evaluación' : 'Fase 3 · Evaluación'}
                         </span>
-                        <span className="w-2 h-2 rounded-full bg-blue-400" />
+                        <span className="w-2 h-2 rounded-full bg-sky-600" />
                       </div>
-                      <h4 className="text-xs font-bold text-white mt-1">
+                      <h4 className="text-xs font-bold text-slate-900 mt-1">
                         {isCorporate ? 'Pruebas Técnicas' : 'Diagnóstico'}
                       </h4>
-                      <p className="text-[11px] text-slate-300 mt-1 leading-snug">
+                      <p className="text-[11px] text-slate-600 mt-1 leading-snug">
                         {isCorporate 
                           ? 'Evaluación técnica por puesto, psicometría y verificación de referencias.'
                           : 'Evaluación cognitiva, socioemocional y entrevista familiar de admisión.'}
                       </p>
                     </div>
-                    <div className="pt-2 border-t border-blue-500/20 space-y-1">
-                      <div className="text-[10px] text-blue-300 font-semibold">¿Quién reporta?</div>
-                      <div className="text-[11px] text-white font-medium">
+                    <div className="pt-2 border-t border-sky-100 space-y-1">
+                      <div className="text-[10px] text-slate-500 font-semibold">¿Quién reporta?</div>
+                      <div className="text-[11px] text-slate-900 font-bold">
                         {isCorporate ? 'Líderes de Área / Especialistas' : 'Gabinete Psicopedagógico'}
                       </div>
-                      <div className="text-[10px] text-slate-400 font-semibold mt-1">¿Dónde se llena?</div>
-                      <div className="text-[10px] text-slate-300 bg-blue-950/60 p-1.5 rounded border border-blue-800/40">
+                      <div className="text-[10px] text-slate-500 font-semibold mt-1">¿Dónde se llena?</div>
+                      <div className="text-[10px] text-sky-950 bg-sky-50/90 p-1.5 rounded-lg border border-sky-200/80 font-medium">
                         {isCorporate ? 'Expediente de Evaluación Técnica y Psicométrica' : 'Expediente Diagnóstico Psicopedagógico'}
                       </div>
                     </div>
                   </div>
 
                   {/* FASE 4 */}
-                  <div className="p-3.5 bg-slate-900/80 rounded-2xl border border-teal-500/30 flex flex-col justify-between space-y-2">
+                  <div className="p-3.5 bg-gradient-to-b from-teal-50/70 to-white rounded-2xl border border-teal-200/80 shadow-xs flex flex-col justify-between space-y-2.5">
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-teal-300 uppercase">
+                        <span className="text-[10px] font-black text-teal-700 uppercase">
                           {isCorporate ? 'Fase 4 · Oferta' : 'Fase 4 · Reserva'}
                         </span>
-                        <span className="w-2 h-2 rounded-full bg-teal-400" />
+                        <span className="w-2 h-2 rounded-full bg-teal-600" />
                       </div>
-                      <h4 className="text-xs font-bold text-white mt-1">
+                      <h4 className="text-xs font-bold text-slate-900 mt-1">
                         {isCorporate ? 'Propuesta Económica' : 'Carta de Asignación'}
                       </h4>
-                      <p className="text-[11px] text-slate-300 mt-1 leading-snug">
+                      <p className="text-[11px] text-slate-600 mt-1 leading-snug">
                         {isCorporate 
                           ? 'Carta oferta formal con sueldo, prestaciones y fecha de ingreso.'
                           : 'Reserva formal de cupo en grado y grupo escolar con vigencia estipulada.'}
                       </p>
                     </div>
-                    <div className="pt-2 border-t border-teal-500/20 space-y-1">
-                      <div className="text-[10px] text-teal-300 font-semibold">¿Quién reporta?</div>
-                      <div className="text-[11px] text-white font-medium">
+                    <div className="pt-2 border-t border-teal-100 space-y-1">
+                      <div className="text-[10px] text-slate-500 font-semibold">¿Quién reporta?</div>
+                      <div className="text-[11px] text-slate-900 font-bold">
                         {isCorporate ? 'Dirección de Operaciones / Finanzas' : 'Dirección Académica'}
                       </div>
-                      <div className="text-[10px] text-slate-400 font-semibold mt-1">¿Dónde se llena?</div>
-                      <div className="text-[10px] text-slate-300 bg-teal-950/60 p-1.5 rounded border border-teal-800/40">
+                      <div className="text-[10px] text-slate-500 font-semibold mt-1">¿Dónde se llena?</div>
+                      <div className="text-[10px] text-teal-950 bg-teal-50/90 p-1.5 rounded-lg border border-teal-200/80 font-medium">
                         {isCorporate ? 'Comité Directivo de Contratación' : 'Comité Directivo de Asignación Escolar'}
                       </div>
                     </div>
                   </div>
 
                   {/* FASE 5 */}
-                  <div className="p-3.5 bg-slate-900/80 rounded-2xl border border-emerald-500/30 flex flex-col justify-between space-y-2">
+                  <div className="p-3.5 bg-gradient-to-b from-emerald-50/70 to-white rounded-2xl border border-emerald-200/80 shadow-xs flex flex-col justify-between space-y-2.5">
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-emerald-300 uppercase">
+                        <span className="text-[10px] font-black text-emerald-700 uppercase">
                           {isCorporate ? 'Fase 5 · Contratado' : 'Fase 5 · Matrícula'}
                         </span>
-                        <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                        <span className="w-2 h-2 rounded-full bg-emerald-600" />
                       </div>
-                      <h4 className="text-xs font-bold text-white mt-1">
+                      <h4 className="text-xs font-bold text-slate-900 mt-1">
                         {isCorporate ? 'Alta & Onboarding' : 'Inscripción Pagada'}
                       </h4>
-                      <p className="text-[11px] text-slate-300 mt-1 leading-snug">
+                      <p className="text-[11px] text-slate-600 mt-1 leading-snug">
                         {isCorporate 
                           ? 'Firma de contrato, alta IMSS/SAT, entrega de equipo y onboarding.'
                           : 'Conciliación de pago, CFDI 4.0 IEDU SAT y alta en matrícula SEP.'}
                       </p>
                     </div>
-                    <div className="pt-2 border-t border-emerald-500/20 space-y-1">
-                      <div className="text-[10px] text-emerald-300 font-semibold">¿Quién reporta?</div>
-                      <div className="text-[11px] text-white font-medium">
+                    <div className="pt-2 border-t border-emerald-100 space-y-1">
+                      <div className="text-[10px] text-slate-500 font-semibold">¿Quién reporta?</div>
+                      <div className="text-[11px] text-slate-900 font-bold">
                         {isCorporate ? 'Recursos Humanos & Nóminas' : 'Caja, Tesorería & Control Escolar'}
                       </div>
-                      <div className="text-[10px] text-slate-400 font-semibold mt-1">¿Dónde se llena?</div>
-                      <div className="text-[10px] text-slate-300 bg-emerald-950/60 p-1.5 rounded border border-emerald-800/40">
+                      <div className="text-[10px] text-slate-500 font-semibold mt-1">¿Dónde se llena?</div>
+                      <div className="text-[10px] text-emerald-950 bg-emerald-50/90 p-1.5 rounded-lg border border-emerald-200/80 font-medium">
                         {isCorporate ? 'Módulo de Facturación B2B + Padrón de Colaboradores Activos' : 'Módulo Cobranza SPEI + Padrón de Alumnos'}
                       </div>
                     </div>
@@ -4902,8 +4953,36 @@ export default function CEOExecutiveDashboard({
           {/* ======================================================= */}
           {/* MÓDULO 7: FINANZAS (CFDI 4.0 IEDU SAT & AGING BUCKETS)   */}
           {/* ======================================================= */}
-          {activeTab === 'finanzas' && (
+          {(activeTab === 'sat' || (activeTab === 'finanzas' && financeSubTab === 'sat')) && (
             <div className="space-y-6 animate-in fade-in duration-100">
+              {/* Segmented Sub-Cabina Controller (EBITDA / SAT / Operación / Reportes) */}
+              <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/80 w-fit no-print">
+                {[
+                  { id: 'ebitda', label: '1. EBITDA & Proyecciones', icon: TrendingUp },
+                  { id: 'sat', label: isCorporate ? '2. Cobranza & Facturación B2B' : '2. Cobranza CFDI 4.0 SAT', icon: FileSpreadsheet },
+                  { id: 'operacion', label: isCorporate ? '3. Operación de Plantas' : '3. Operación de Colegios', icon: School },
+                  { id: 'reportes', label: '4. Reportes & Auditoría C-Suite', icon: FileText }
+                ].map((sub) => {
+                  const isCurrent = (activeTab as string === 'finanzas' && financeSubTab === sub.id) || (activeTab as string === sub.id) || (activeTab as string === 'vision' && sub.id === 'ebitda');
+                  return (
+                    <button
+                      key={sub.id}
+                      onClick={() => {
+                        setActiveTab('finanzas');
+                        setFinanceSubTab(sub.id as any);
+                      }}
+                      className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        isCurrent
+                          ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                      }`}
+                    >
+                      <sub.icon size={15} className={isCurrent ? 'text-indigo-600' : 'text-slate-500'} />
+                      <span>{sub.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <div className="text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded inline-block">
@@ -5045,31 +5124,89 @@ export default function CEOExecutiveDashboard({
           {/* ======================================================= */}
           {/* MÓDULO 8: OPERACIÓN & TRAZABILIDAD MULTIRROL EN VIVO     */}
           {/* ======================================================= */}
-          {activeTab === 'operacion' && (
-            <OperationalEcosystemControl
-              holdingName={holding.name}
-              campusCount={metrics.totalCampuses}
-              totalStudents={metrics.totalStudents}
-              totalTeachers={metrics.totalTeachers}
-              collectionRate={metrics.avgCollection}
-              curriculumCoverage={metrics.avgCurriculum}
-              isCorporate={isCorporate}
-              onTriggerToast={triggerToast}
-              onNavigateTab={handleNavClick}
-            />
+          {(activeTab === 'operacion' || (activeTab === 'finanzas' && financeSubTab === 'operacion')) && (
+            <div className="space-y-6 animate-in fade-in duration-100">
+              {/* Segmented Sub-Cabina Controller (EBITDA / SAT / Operación / Reportes) */}
+              <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/80 w-fit no-print">
+                {[
+                  { id: 'ebitda', label: '1. EBITDA & Proyecciones', icon: TrendingUp },
+                  { id: 'sat', label: isCorporate ? '2. Cobranza & Facturación B2B' : '2. Cobranza CFDI 4.0 SAT', icon: FileSpreadsheet },
+                  { id: 'operacion', label: isCorporate ? '3. Operación de Plantas' : '3. Operación de Colegios', icon: School },
+                  { id: 'reportes', label: '4. Reportes & Auditoría C-Suite', icon: FileText }
+                ].map((sub) => {
+                  const isCurrent = (activeTab as string === 'finanzas' && financeSubTab === sub.id) || (activeTab as string === sub.id) || (activeTab as string === 'vision' && sub.id === 'ebitda');
+                  return (
+                    <button
+                      key={sub.id}
+                      onClick={() => {
+                        setActiveTab('finanzas');
+                        setFinanceSubTab(sub.id as any);
+                      }}
+                      className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        isCurrent
+                          ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                      }`}
+                    >
+                      <sub.icon size={15} className={isCurrent ? 'text-indigo-600' : 'text-slate-500'} />
+                      <span>{sub.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <OperationalEcosystemControl
+                holdingName={holding.name}
+                campusCount={metrics.totalCampuses}
+                totalStudents={metrics.totalStudents}
+                totalTeachers={metrics.totalTeachers}
+                collectionRate={metrics.avgCollection}
+                curriculumCoverage={metrics.avgCurriculum}
+                isCorporate={isCorporate}
+                onTriggerToast={triggerToast}
+                onNavigateTab={handleNavClick}
+              />
+            </div>
           )}
 
           {/* ======================================================= */}
           {/* MÓDULO 9: REPORTES BI (ESTUDIO ANALÍTICO FORENSE 0 TOKENS) */}
           {/* ======================================================= */}
-          {activeTab === 'reportes' && (
-            <div className="animate-in fade-in duration-100 print:h-auto print:overflow-visible print:block print:p-0 print:m-0">
+          {(activeTab === 'reportes' || (activeTab === 'finanzas' && financeSubTab === 'reportes')) && (
+            <div className="space-y-6 animate-in fade-in duration-100 print:h-auto print:overflow-visible print:block print:p-0 print:m-0">
+              {/* Segmented Sub-Cabina Controller (EBITDA / SAT / Operación / Reportes) */}
+              <div className="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/80 w-fit no-print">
+                {[
+                  { id: 'ebitda', label: '1. EBITDA & Proyecciones', icon: TrendingUp },
+                  { id: 'sat', label: isCorporate ? '2. Cobranza & Facturación B2B' : '2. Cobranza CFDI 4.0 SAT', icon: FileSpreadsheet },
+                  { id: 'operacion', label: isCorporate ? '3. Operación de Plantas' : '3. Operación de Colegios', icon: School },
+                  { id: 'reportes', label: '4. Reportes & Auditoría C-Suite', icon: FileText }
+                ].map((sub) => {
+                  const isCurrent = (activeTab as string === 'finanzas' && financeSubTab === sub.id) || (activeTab as string === sub.id) || (activeTab as string === 'vision' && sub.id === 'ebitda');
+                  return (
+                    <button
+                      key={sub.id}
+                      onClick={() => {
+                        setActiveTab('finanzas');
+                        setFinanceSubTab(sub.id as any);
+                      }}
+                      className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        isCurrent
+                          ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                      }`}
+                    >
+                      <sub.icon size={15} className={isCurrent ? 'text-indigo-600' : 'text-slate-500'} />
+                      <span>{sub.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
               <ExecutiveBiCommandCenter
                 isEmbeddedView={true}
                 schoolId={schoolId || activeSchoolId || currentInstitution?.id || (selectedCampusId !== 'all' ? selectedCampusId : undefined)}
                 holdingName={holding.name}
                 initialQuery={activeReportQuery || 'Estudiantes con adeudo activo por nivel y monto pendiente'}
-                onBack={() => handleNavClick('overview')}
+                onBack={() => handleNavClick('inicio')}
                 onNavigateTab={handleNavClick}
               />
             </div>

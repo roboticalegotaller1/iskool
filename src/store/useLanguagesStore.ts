@@ -69,6 +69,7 @@ interface LanguagesState {
   addLesson: (lesson: Omit<LanguageLesson, 'id' | 'createdAt' | 'updatedAt'>) => string;
   updateLesson: (id: string, updates: Partial<LanguageLesson>) => void;
   deleteLesson: (id: string) => void;
+  deduplicateLessons: () => void;
   
   // Reportes en tiempo real del alumno al profesor
   submitStudentReport: (report: Omit<StudentPronunciationReport, 'id' | 'timestamp'>) => void;
@@ -378,6 +379,18 @@ export const useLanguagesStore = create<LanguagesState>()(
       setActiveLessonId: (id: string) => set({ activeLessonId: id }),
 
       addLesson: (lessonData) => {
+        const normalizedTitle = lessonData.title.trim().toLowerCase();
+        const existing = get().lessons.find(l => 
+          l.title.trim().toLowerCase() === normalizedTitle &&
+          l.language === lessonData.language
+        );
+
+        if (existing) {
+          get().updateLesson(existing.id, lessonData);
+          set({ activeLessonId: existing.id });
+          return existing.id;
+        }
+
         const id = `lesson-${Date.now()}`;
         const newLesson: LanguageLesson = {
           ...lessonData,
@@ -405,10 +418,35 @@ export const useLanguagesStore = create<LanguagesState>()(
       deleteLesson: (id: string) => {
         set(state => {
           const filtered = state.lessons.filter(l => l.id !== id);
-          const nextActive = filtered[0]?.id || '';
+          const finalLessons = filtered.length > 0 ? filtered : [INITIAL_LESSONS[0]];
+          const nextActive = finalLessons.some(l => l.id === state.activeLessonId)
+            ? state.activeLessonId
+            : finalLessons[0].id;
           return {
-            lessons: filtered,
-            activeLessonId: state.activeLessonId === id ? nextActive : state.activeLessonId
+            lessons: finalLessons,
+            activeLessonId: nextActive
+          };
+        });
+      },
+
+      deduplicateLessons: () => {
+        set(state => {
+          const seen = new Set<string>();
+          const deduped: LanguageLesson[] = [];
+          for (const l of state.lessons) {
+            const key = `${l.language}-${l.title.trim().toLowerCase()}`;
+            if (!seen.has(key)) {
+              seen.add(key);
+              deduped.push(l);
+            }
+          }
+          const finalLessons = deduped.length > 0 ? deduped : [INITIAL_LESSONS[0]];
+          const nextActive = finalLessons.some(l => l.id === state.activeLessonId)
+            ? state.activeLessonId
+            : finalLessons[0].id;
+          return {
+            lessons: finalLessons,
+            activeLessonId: nextActive
           };
         });
       },
@@ -446,7 +484,26 @@ export const useLanguagesStore = create<LanguagesState>()(
         lessons: state.lessons,
         studentReports: state.studentReports,
         activeLessonId: state.activeLessonId
-      })
+      }),
+      onRehydrateStorage: () => (state) => {
+        if (state && Array.isArray(state.lessons)) {
+          const seen = new Set<string>();
+          const deduped: LanguageLesson[] = [];
+          for (const l of state.lessons) {
+            const key = `${l.language}-${l.title.trim().toLowerCase()}`;
+            if (!seen.has(key)) {
+              seen.add(key);
+              deduped.push(l);
+            }
+          }
+          if (deduped.length > 0 && deduped.length !== state.lessons.length) {
+            state.lessons = deduped;
+            if (!deduped.some(l => l.id === state.activeLessonId)) {
+              state.activeLessonId = deduped[0].id;
+            }
+          }
+        }
+      }
     }
   )
 );

@@ -201,6 +201,11 @@ export function TeacherNavbar() {
           {isManagementRole && (
             <Link
               href={isIbime ? '/ibime/portal' : '/admin'}
+              onClick={() => {
+                if (isSuperUser) {
+                  useSchoolAdminStore.getState().selectSchool(null as any);
+                }
+              }}
               className={`h-9 px-3 rounded-xl text-xs font-bold transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-98 shrink-0 leading-none ${
                 isIbime
                   ? 'bg-[#17426D] hover:bg-[#1E5285] text-white border border-blue-700/80'
@@ -345,7 +350,12 @@ export function TeacherNavbar() {
           {isManagementRole && (
             <Link
               href={isIbime ? '/ibime/portal' : '/admin'}
-              onClick={() => setIsMobileOpen(false)}
+              onClick={() => {
+                setIsMobileOpen(false);
+                if (isSuperUser) {
+                  useSchoolAdminStore.getState().selectSchool(null as any);
+                }
+              }}
               className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold ${
                 isIbime
                   ? 'text-white bg-[#17426D] border border-blue-700'

@@ -60,7 +60,10 @@ import {
   PenTool,
   Star,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  X,
+  ListFilter,
+  Filter
 } from 'lucide-react';
 import Link from 'next/link';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
@@ -181,9 +184,67 @@ export default function TeacherIdiomasPage() {
     addLesson, 
     updateLesson, 
     deleteLesson, 
+    deduplicateLessons,
     studentReports,
     markReportAsReviewed 
   } = useLanguagesStore();
+
+  // Estados para gestión retráctil y eliminación de lecciones
+  const [isLessonListRetracted, setIsLessonListRetracted] = useState<boolean>(true);
+  const [lessonSearchQuery, setLessonSearchQuery] = useState<string>('');
+  const [lessonToDelete, setLessonToDelete] = useState<LanguageLesson | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const triggerToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Limpieza automática y deduplicación persistente al montar
+  useEffect(() => {
+    deduplicateLessons();
+  }, [deduplicateLessons]);
+
+  // Lista estricta sin duplicados garantizada en memoria
+  const cleanLessons = useMemo(() => {
+    const seen = new Set<string>();
+    const result: LanguageLesson[] = [];
+    for (const l of lessons) {
+      const key = `${l.language}-${l.title.trim().toLowerCase()}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push(l);
+      }
+    }
+    return result.length > 0 ? result : lessons;
+  }, [lessons]);
+
+  const filteredLessons = useMemo(() => {
+    if (!lessonSearchQuery.trim()) return cleanLessons;
+    const q = lessonSearchQuery.toLowerCase().trim();
+    return cleanLessons.filter(l => 
+      l.title.toLowerCase().includes(q) || 
+      (l.topic && l.topic.toLowerCase().includes(q)) ||
+      l.level.toLowerCase().includes(q)
+    );
+  }, [cleanLessons, lessonSearchQuery]);
+
+  const handleDeleteLessonRequest = (lesson: LanguageLesson, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (cleanLessons.length <= 1) {
+      triggerToast('⚠️ Debe mantenerse al menos una lección activa en el Centro de Idiomas');
+      return;
+    }
+    setLessonToDelete(lesson);
+  };
+
+  const executeDeleteLesson = () => {
+    if (!lessonToDelete) return;
+    const targetTitle = lessonToDelete.title;
+    deleteLesson(lessonToDelete.id);
+    setLessonToDelete(null);
+    triggerToast(`✓ Lección "${targetTitle}" eliminada del catálogo`);
+  };
 
   // Pestañas del Centro de Idiomas
   const [activeTab, setActiveTab] = useState<'editor' | 'analytics' | 'curriculum' | 'hardware' | 'reports'>('editor');
@@ -212,8 +273,8 @@ export default function TeacherIdiomasPage() {
   const [expandedWeekNumber, setExpandedWeekNumber] = useState<number | null>(null);
 
   const activeLesson = useMemo(() => {
-    return lessons.find(l => l.id === activeLessonId) || lessons[0];
-  }, [lessons, activeLessonId]);
+    return cleanLessons.find(l => l.id === activeLessonId) || cleanLessons[0] || lessons[0];
+  }, [cleanLessons, lessons, activeLessonId]);
 
   const adminSchools = useSchoolAdminStore(s => s.institutionsList);
   const adminCampuses = useSchoolAdminStore(s => s.campusesList);
@@ -490,8 +551,16 @@ export default function TeacherIdiomasPage() {
   // Crear nueva lección rápida
   const handleCreateNewLesson = () => {
     const isFr = activeLesson.language === 'fr';
+    const baseTitle = isFr ? 'Nouvelle Conversation Guidée' : 'New Guided Conversation';
+    let uniqueTitle = baseTitle;
+    let counter = 1;
+    while (cleanLessons.some(l => l.language === activeLesson.language && l.title.trim().toLowerCase() === uniqueTitle.trim().toLowerCase())) {
+      counter++;
+      uniqueTitle = `${baseTitle} ${counter}`;
+    }
+
     const id = addLesson({
-      title: isFr ? 'Nouvelle Conversation Guidée' : 'New Guided Conversation',
+      title: uniqueTitle,
       topic: isFr ? 'Communication Quotidienne' : 'Essential Communication',
       language: activeLesson.language,
       level: 'A1',
@@ -526,6 +595,7 @@ export default function TeacherIdiomasPage() {
     });
     setActiveLessonId(id);
     setIsPreviewMode(false);
+    triggerToast(`✓ Lección "${uniqueTitle}" creada exitosamente`);
   };
 
   // Cargar plantilla desde las 12 Fases curriculares
@@ -1084,63 +1154,272 @@ export default function TeacherIdiomasPage() {
           <div className="space-y-6">
             
             {/* Barra de Gestión de Lecciones y Modo Vista Previa */}
-            <div className={`flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl border transition-all ${
+            <div className={`p-4 rounded-2xl border transition-all space-y-3 ${
               isLightMode 
                 ? 'bg-white border-slate-200/90 shadow-xs' 
                 : 'bg-slate-900/80 border-slate-800'
             }`}>
               
-              {/* Selector de Lección Activa */}
-              <div className="flex flex-wrap items-center gap-2 py-1">
-                <span className={`text-xs font-bold uppercase tracking-wider shrink-0 ${
-                  isLightMode ? 'text-slate-500' : 'text-slate-400'
-                }`}>
-                  Lección:
-                </span>
-                {lessons.map(lesson => (
-                  <button
-                    key={lesson.id}
-                    type="button"
-                    onClick={() => {
-                      setActiveLessonId(lesson.id);
-                      setIsPreviewMode(false);
-                    }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
-                      lesson.id === activeLesson.id
-                        ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md border border-red-400' : 'bg-indigo-600 text-white shadow-md border border-indigo-400')
-                        : (isLightMode 
-                            ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200' 
-                            : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700')
-                    }`}
-                  >
-                    <span>{lesson.language === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
-                    <span>{lesson.title}</span>
-                  </button>
-                ))}
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                {/* Selector de Lecciones (<= 5 lecciones: Pills directas; > 5 lecciones: Control Retráctil) */}
+                {cleanLessons.length <= 5 ? (
+                  <div className="flex flex-wrap items-center gap-2 py-1">
+                    <span className={`text-xs font-bold uppercase tracking-wider shrink-0 ${
+                      isLightMode ? 'text-slate-500' : 'text-slate-400'
+                    }`}>
+                      Lección:
+                    </span>
+                    {cleanLessons.map(lesson => {
+                      const isActive = lesson.id === activeLesson.id;
+                      return (
+                        <div
+                          key={lesson.id}
+                          className={`flex items-center rounded-xl text-xs font-bold transition-all shrink-0 ${
+                            isActive
+                              ? (isIbimePresentationMode ? 'bg-[#E41B14] text-white shadow-md border border-red-400' : 'bg-indigo-600 text-white shadow-md border border-indigo-400')
+                              : (isLightMode 
+                                  ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200' 
+                                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700')
+                          }`}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveLessonId(lesson.id);
+                              setIsPreviewMode(false);
+                            }}
+                            className="px-3 py-1.5 flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <span>{lesson.language === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
+                            <span className="max-w-[200px] truncate">{lesson.title}</span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
+                              isActive ? 'bg-white/20 text-white' : 'bg-slate-200/60 text-slate-600'
+                            }`}>
+                              {lesson.level}
+                            </span>
+                          </button>
 
+                          {cleanLessons.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={(e) => handleDeleteLessonRequest(lesson, e)}
+                              title={`Eliminar lección "${lesson.title}"`}
+                              className={`mr-1.5 p-1 rounded-lg transition-colors cursor-pointer ${
+                                isActive
+                                  ? 'hover:bg-red-700/60 text-white/80 hover:text-white'
+                                  : 'hover:bg-red-100 text-slate-400 hover:text-red-600'
+                              }`}
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+
+                    <button
+                      type="button"
+                      onClick={handleCreateNewLesson}
+                      className="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold flex items-center gap-1 transition-all cursor-pointer shrink-0 shadow-xs"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Nueva Lección</span>
+                    </button>
+                  </div>
+                ) : (
+                  /* Modo Retráctil (> 5 lecciones para evitar saturación del sistema) */
+                  <div className="flex flex-wrap items-center gap-2.5 py-1">
+                    <span className={`text-xs font-bold uppercase tracking-wider shrink-0 ${
+                      isLightMode ? 'text-slate-500' : 'text-slate-400'
+                    }`}>
+                      Lección:
+                    </span>
+
+                    {/* Badge destacado de la Lección Activa */}
+                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border shadow-xs ${
+                      isIbimePresentationMode 
+                        ? 'bg-[#E41B14] text-white border-red-500' 
+                        : 'bg-indigo-600 text-white border-indigo-500'
+                    }`}>
+                      <span>{activeLesson.language === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
+                      <span className="max-w-[220px] truncate">{activeLesson.title}</span>
+                      <span className="px-1.5 py-0.5 rounded bg-white/20 text-[10px] font-mono">
+                        {activeLesson.level}
+                      </span>
+                      {cleanLessons.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleDeleteLessonRequest(activeLesson, e)}
+                          title={`Eliminar lección activa "${activeLesson.title}"`}
+                          className="p-1 rounded-lg hover:bg-white/20 text-white/80 hover:text-white transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Botón Retráctil con Contador */}
+                    <button
+                      type="button"
+                      onClick={() => setIsLessonListRetracted(!isLessonListRetracted)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 border shadow-xs ${
+                        !isLessonListRetracted
+                          ? 'bg-slate-900 text-white border-slate-900 ring-2 ring-indigo-500/20'
+                          : isLightMode
+                            ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200'
+                            : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                      }`}
+                    >
+                      <ListFilter className="w-3.5 h-3.5 text-indigo-500" />
+                      <span>
+                        {isLessonListRetracted ? `Ver Catálogo (${cleanLessons.length})` : `Ocultar Catálogo`}
+                      </span>
+                      {isLessonListRetracted ? (
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                      ) : (
+                        <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
+                      )}
+                    </button>
+
+                    {/* Botón Nueva Lección */}
+                    <button
+                      type="button"
+                      onClick={handleCreateNewLesson}
+                      className="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold flex items-center gap-1 transition-all cursor-pointer shrink-0 shadow-xs"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Nueva Lección</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Interruptor de Vista Previa del Alumno */}
                 <button
                   type="button"
-                  onClick={handleCreateNewLesson}
-                  className="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold flex items-center gap-1 transition-all cursor-pointer shrink-0 shadow-xs"
+                  onClick={() => setIsPreviewMode(!isPreviewMode)}
+                  className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer shadow-md ${
+                    isPreviewMode
+                      ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black scale-105'
+                      : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                  }`}
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Nueva Lección</span>
+                  <Eye className="w-4 h-4" />
+                  <span>{isPreviewMode ? '✏️ Volver al Taller Docente' : '👁️ Demostración Alumno (Gamificada)'}</span>
                 </button>
               </div>
 
-              {/* Interruptor de Vista Previa del Alumno */}
-              <button
-                type="button"
-                onClick={() => setIsPreviewMode(!isPreviewMode)}
-                className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer shadow-md ${
-                  isPreviewMode
-                    ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black scale-105'
-                    : 'bg-indigo-600 hover:bg-indigo-500 text-white'
-                }`}
-              >
-                <Eye className="w-4 h-4" />
-                <span>{isPreviewMode ? '✏️ Volver al Taller Docente' : '👁️ Demostración Alumno (Gamificada)'}</span>
-              </button>
+              {/* Panel Desplegable Retráctil para > 5 lecciones */}
+              {cleanLessons.length > 5 && !isLessonListRetracted && (
+                <div className={`p-4 rounded-2xl border transition-all animate-fade-in ${
+                  isLightMode 
+                    ? 'bg-slate-50/90 border-slate-200' 
+                    : 'bg-slate-800/80 border-slate-700'
+                }`}>
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-3 pb-2 border-b border-slate-200/80">
+                    <div className="flex items-center gap-2">
+                      <ListFilter className="w-4 h-4 text-indigo-600" />
+                      <span className="text-xs font-bold text-slate-800">
+                        Catálogo Retráctil de Lecciones ({cleanLessons.length})
+                      </span>
+                      <span className="text-[11px] text-slate-500">
+                        · Sin duplicados · Selección y eliminación rápida
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                          type="text"
+                          value={lessonSearchQuery}
+                          onChange={(e) => setLessonSearchQuery(e.target.value)}
+                          placeholder="Buscar lección..."
+                          className="pl-8 pr-3 py-1 text-xs rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 w-44"
+                        />
+                        {lessonSearchQuery && (
+                          <button
+                            type="button"
+                            onClick={() => setLessonSearchQuery('')}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setIsLessonListRetracted(true)}
+                        className="text-xs font-bold px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition-colors flex items-center gap-1 cursor-pointer"
+                      >
+                        <ChevronUp className="w-3.5 h-3.5" />
+                        <span>Contraer</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Listado en cuadrícula responsiva */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-64 overflow-y-auto pr-1">
+                    {filteredLessons.map(lesson => {
+                      const isActive = lesson.id === activeLesson.id;
+                      return (
+                        <div
+                          key={lesson.id}
+                          onClick={() => {
+                            setActiveLessonId(lesson.id);
+                            setIsPreviewMode(false);
+                          }}
+                          className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2 text-xs ${
+                            isActive
+                              ? (isIbimePresentationMode 
+                                  ? 'bg-red-50/80 border-red-300 ring-1 ring-red-400' 
+                                  : 'bg-indigo-50 border-indigo-300 ring-1 ring-indigo-400')
+                              : (isLightMode 
+                                  ? 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700' 
+                                  : 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-300')
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-base shrink-0">{lesson.language === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
+                            <div className="min-w-0">
+                              <p className={`font-bold truncate ${isActive ? (isIbimePresentationMode ? 'text-red-700' : 'text-indigo-700') : 'text-slate-800'}`}>
+                                {lesson.title}
+                              </p>
+                              <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
+                                <span className="px-1.5 py-0.2 rounded bg-slate-100 font-mono font-bold text-slate-700 border border-slate-200">
+                                  {lesson.level}
+                                </span>
+                                {isActive && (
+                                  <span className={`font-bold ${isIbimePresentationMode ? 'text-red-600' : 'text-indigo-600'}`}>
+                                    ● Activa
+                                  </span>
+                                )}
+                                {lesson.topic && (
+                                  <span className="truncate max-w-[120px]">
+                                    · {lesson.topic}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Botón eliminar */}
+                          {cleanLessons.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={(e) => handleDeleteLessonRequest(lesson, e)}
+                              title={`Eliminar lección "${lesson.title}"`}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors shrink-0 cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* MODO VISTA PREVIA INTERACTIVA (GAMIFICACIÓN DEL ALUMNO) */}
@@ -2416,6 +2695,63 @@ export default function TeacherIdiomasPage() {
               )}
             </div>
 
+          </div>
+        )}
+
+        {/* Modal de Confirmación de Eliminación de Lección */}
+        {lessonToDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-xs p-4 animate-fade-in">
+            <div className="bg-white rounded-3xl p-6 max-w-md w-full border border-slate-200 shadow-2xl space-y-4">
+              <div className="flex items-center gap-3 text-red-600">
+                <div className="p-3 bg-red-100 rounded-2xl">
+                  <Trash2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900">¿Eliminar lección del catálogo?</h3>
+                  <p className="text-xs text-slate-500">Esta acción removerá la lección seleccionada.</p>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                  <span>{lessonToDelete.language === 'fr' ? '🇫🇷 Francés' : '🇬🇧 Inglés'}</span>
+                  <span>·</span>
+                  <span className="px-1.5 py-0.5 rounded bg-slate-200 font-mono text-[10px]">{lessonToDelete.level}</span>
+                </div>
+                <p className="text-xs font-semibold text-slate-900 truncate">
+                  "{lessonToDelete.title}"
+                </p>
+                {lessonToDelete.topic && (
+                  <p className="text-[11px] text-slate-500">Tema: {lessonToDelete.topic}</p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setLessonToDelete(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={executeDeleteLesson}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-red-600 hover:bg-red-500 text-white transition-colors cursor-pointer shadow-md flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Confirmar Eliminación</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Notificación Toast Flotante */}
+        {toastMessage && (
+          <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 text-xs font-bold border border-slate-700 animate-slide-up">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>{toastMessage}</span>
           </div>
         )}
 

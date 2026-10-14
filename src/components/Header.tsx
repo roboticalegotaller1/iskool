@@ -27,6 +27,7 @@ export const Header: React.FC = () => {
   const activeSchoolId = useSchoolAdminStore(state => state.activeSchoolId);
   const institutionsList = useSchoolAdminStore(state => state.institutionsList);
   const rawSchoolSettings = useSchoolAdminStore(state => state.schoolSettings);
+  const selectSchool = useSchoolAdminStore(state => state.selectSchool);
 
   // Marca Blanca Dinámica (Zustand)
   const whiteLabelLogo = useWhiteLabelStore(state => state.logoUrl);
@@ -217,6 +218,11 @@ export const Header: React.FC = () => {
           )}
           <Link 
             href={getHomeHref()} 
+            onClick={() => {
+              if (isSuperUser) {
+                selectSchool(null);
+              }
+            }}
             aria-label="Página de inicio institucional"
             className="flex items-center gap-2.5 group hover:opacity-90 transition-opacity"
           >
@@ -254,6 +260,11 @@ export const Header: React.FC = () => {
               <Link
                 key={link.href}
                 href={link.href}
+                onClick={() => {
+                  if (isSuperUser && link.href === '/admin') {
+                    selectSchool(null);
+                  }
+                }}
                 className={`text-xs xl:text-sm font-semibold transition-all px-2.5 xl:px-3 py-1.5 rounded-xl flex items-center gap-1.5 ${
                   isActive
                     ? 'bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800/70 shadow-xs'
@@ -367,6 +378,9 @@ export const Header: React.FC = () => {
               {canSwitchRoles && (
                 <Link
                   href="/admin"
+                  onClick={() => {
+                    selectSchool(null);
+                  }}
                   aria-label="Directorio Central de Colegios"
                   className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${
                     pathname.startsWith('/admin')
@@ -388,8 +402,10 @@ export const Header: React.FC = () => {
                 aria-label="Cambiar rol en móvil"
                 onChange={(e) => {
                   const val = e.target.value;
-                  if (val === 'admin') window.location.href = '/admin';
-                  else if (val !== 'none') window.location.href = `/${val}`;
+                  if (val === 'admin') {
+                    selectSchool(null);
+                    window.location.href = '/admin';
+                  } else if (val !== 'none') window.location.href = `/${val}`;
                 }}
                 className="bg-zinc-100 dark:bg-zinc-900 text-[11px] font-semibold text-zinc-800 dark:text-zinc-200 py-1 px-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 focus:outline-none"
               >
@@ -480,7 +496,12 @@ export const Header: React.FC = () => {
                 <Link
                   key={link.href}
                   href={link.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    if (isSuperUser && link.href === '/admin') {
+                      selectSchool(null);
+                    }
+                  }}
                   className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                     isActive
                       ? 'bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shadow-xs'

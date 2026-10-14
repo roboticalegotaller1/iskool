@@ -28,6 +28,7 @@ import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useNavigationStore } from '@/store/useNavigationStore';
 import { supabase } from '@/lib/supabaseClient';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
+import { isPlatformSuperUser } from '@/types';
 
 export type LoginMode = 'public' | 'full_demo' | 'ibime_demo';
 
@@ -131,6 +132,12 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
           created_at: currentSession.user.created_at,
           updated_at: new Date().toISOString()
         };
+        if (isPlatformSuperUser(userProfile)) {
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('iskool_super_just_logged_in', 'true');
+          }
+          useSchoolAdminStore.getState().selectSchool(null as any);
+        }
         await routeUserByRole(userProfile);
       }
     });
@@ -215,8 +222,14 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
           targetPath = '/admin/ceo';
           break;
         case 'owner':
+          targetPath = '/admin';
+          break;
         case 'admin':
         case 'superadmin':
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('iskool_super_just_logged_in', 'true');
+          }
+          useSchoolAdminStore.getState().selectSchool(null as any);
           targetPath = '/admin';
           break;
         case 'director':
@@ -262,6 +275,12 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
     try {
       const result = await login(email.trim(), password);
       if (result.success && result.user) {
+        if (isPlatformSuperUser(result.user)) {
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('iskool_super_just_logged_in', 'true');
+          }
+          useSchoolAdminStore.getState().selectSchool(null as any);
+        }
         await routeUserByRole(result.user);
       } else {
         setErrorMsg(
@@ -307,6 +326,12 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
     try {
       const result = await login(demo.email, pass);
       if (result.success && result.user) {
+        if (isPlatformSuperUser(result.user)) {
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('iskool_super_just_logged_in', 'true');
+          }
+          useSchoolAdminStore.getState().selectSchool(null as any);
+        }
         await routeUserByRole(result.user);
       } else {
         setErrorMsg(result.error || 'No fue posible acceder con este perfil de prueba.');
@@ -526,7 +551,15 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
               <div className="flex items-center gap-2 pt-1 border-t border-indigo-100 dark:border-indigo-800/40">
                 <button
                   type="button"
-                  onClick={() => routeUserByRole(user)}
+                  onClick={() => {
+                    if (isPlatformSuperUser(user)) {
+                      if (typeof window !== 'undefined') {
+                        sessionStorage.setItem('iskool_super_just_logged_in', 'true');
+                      }
+                      useSchoolAdminStore.getState().selectSchool(null as any);
+                    }
+                    routeUserByRole(user);
+                  }}
                   className="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                 >
                   <span>Ir a mi portal ({user.role})</span>

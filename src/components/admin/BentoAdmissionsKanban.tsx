@@ -70,11 +70,11 @@ const INSTITUTIONAL_PHASES: PhaseConfig[] = [
     primaryDropStage: 'registered',
     nextStage: 'tour_scheduled',
     colorName: 'purple',
-    accentBorder: 'border-purple-500/30 hover:border-purple-500/60',
-    badgeBg: 'bg-purple-500/15',
-    badgeText: 'text-purple-300 border-purple-500/30',
-    dotColor: 'bg-purple-400',
-    glowColor: 'from-purple-500/10 to-transparent'
+    accentBorder: 'border-purple-200 hover:border-purple-400',
+    badgeBg: 'bg-purple-50',
+    badgeText: 'text-purple-700 border-purple-200',
+    dotColor: 'bg-purple-600',
+    glowColor: 'from-purple-50/70 to-transparent'
   },
   {
     num: 2,
@@ -87,11 +87,11 @@ const INSTITUTIONAL_PHASES: PhaseConfig[] = [
     primaryDropStage: 'tour_scheduled',
     nextStage: 'evaluation',
     colorName: 'indigo',
-    accentBorder: 'border-indigo-500/30 hover:border-indigo-500/60',
-    badgeBg: 'bg-indigo-500/15',
-    badgeText: 'text-indigo-300 border-indigo-500/30',
-    dotColor: 'bg-indigo-400',
-    glowColor: 'from-indigo-500/10 to-transparent'
+    accentBorder: 'border-indigo-200 hover:border-indigo-400',
+    badgeBg: 'bg-indigo-50',
+    badgeText: 'text-indigo-700 border-indigo-200',
+    dotColor: 'bg-indigo-600',
+    glowColor: 'from-indigo-50/70 to-transparent'
   },
   {
     num: 3,
@@ -104,11 +104,11 @@ const INSTITUTIONAL_PHASES: PhaseConfig[] = [
     primaryDropStage: 'evaluation',
     nextStage: 'reservation',
     colorName: 'blue',
-    accentBorder: 'border-blue-500/30 hover:border-blue-500/60',
-    badgeBg: 'bg-blue-500/15',
-    badgeText: 'text-blue-300 border-blue-500/30',
-    dotColor: 'bg-blue-400',
-    glowColor: 'from-blue-500/10 to-transparent'
+    accentBorder: 'border-sky-200 hover:border-sky-400',
+    badgeBg: 'bg-sky-50',
+    badgeText: 'text-sky-700 border-sky-200',
+    dotColor: 'bg-sky-600',
+    glowColor: 'from-sky-50/70 to-transparent'
   },
   {
     num: 4,
@@ -121,11 +121,11 @@ const INSTITUTIONAL_PHASES: PhaseConfig[] = [
     primaryDropStage: 'reservation',
     nextStage: 'enrolled',
     colorName: 'teal',
-    accentBorder: 'border-teal-500/30 hover:border-teal-500/60',
-    badgeBg: 'bg-teal-500/15',
-    badgeText: 'text-teal-300 border-teal-500/30',
-    dotColor: 'bg-teal-400',
-    glowColor: 'from-teal-500/10 to-transparent'
+    accentBorder: 'border-teal-200 hover:border-teal-400',
+    badgeBg: 'bg-teal-50',
+    badgeText: 'text-teal-700 border-teal-200',
+    dotColor: 'bg-teal-600',
+    glowColor: 'from-teal-50/70 to-transparent'
   },
   {
     num: 5,
@@ -138,11 +138,11 @@ const INSTITUTIONAL_PHASES: PhaseConfig[] = [
     primaryDropStage: 'enrolled',
     nextStage: null,
     colorName: 'emerald',
-    accentBorder: 'border-emerald-500/30 hover:border-emerald-500/60',
-    badgeBg: 'bg-emerald-500/15',
-    badgeText: 'text-emerald-300 border-emerald-500/30',
-    dotColor: 'bg-emerald-400',
-    glowColor: 'from-emerald-500/10 to-transparent'
+    accentBorder: 'border-emerald-200 hover:border-emerald-400',
+    badgeBg: 'bg-emerald-50',
+    badgeText: 'text-emerald-700 border-emerald-200',
+    dotColor: 'bg-emerald-600',
+    glowColor: 'from-emerald-50/70 to-transparent'
   }
 ];
 
@@ -161,11 +161,11 @@ const CORPORATE_RECRUITMENT_PHASES: PhaseConfig[] = [
     primaryDropStage: 'registered',
     nextStage: 'tour_scheduled',
     colorName: 'purple',
-    accentBorder: 'border-purple-500/30 hover:border-purple-500/60',
-    badgeBg: 'bg-purple-500/15',
-    badgeText: 'text-purple-300 border-purple-500/30',
-    dotColor: 'bg-purple-400',
-    glowColor: 'from-purple-500/10 to-transparent'
+    accentBorder: 'border-purple-200 hover:border-purple-400',
+    badgeBg: 'bg-purple-50',
+    badgeText: 'text-purple-700 border-purple-200',
+    dotColor: 'bg-purple-600',
+    glowColor: 'from-purple-50/70 to-transparent'
   },
   {
     num: 2,
@@ -178,11 +178,11 @@ const CORPORATE_RECRUITMENT_PHASES: PhaseConfig[] = [
     primaryDropStage: 'tour_scheduled',
     nextStage: 'evaluation',
     colorName: 'indigo',
-    accentBorder: 'border-indigo-500/30 hover:border-indigo-500/60',
-    badgeBg: 'bg-indigo-500/15',
-    badgeText: 'text-indigo-300 border-indigo-500/30',
-    dotColor: 'bg-indigo-400',
-    glowColor: 'from-indigo-500/10 to-transparent'
+    accentBorder: 'border-indigo-200 hover:border-indigo-400',
+    badgeBg: 'bg-indigo-50',
+    badgeText: 'text-indigo-700 border-indigo-200',
+    dotColor: 'bg-indigo-600',
+    glowColor: 'from-indigo-50/70 to-transparent'
   },
   {
     num: 3,
@@ -195,11 +195,11 @@ const CORPORATE_RECRUITMENT_PHASES: PhaseConfig[] = [
     primaryDropStage: 'evaluation',
     nextStage: 'reservation',
     colorName: 'blue',
-    accentBorder: 'border-blue-500/30 hover:border-blue-500/60',
-    badgeBg: 'bg-blue-500/15',
-    badgeText: 'text-blue-300 border-blue-500/30',
-    dotColor: 'bg-blue-400',
-    glowColor: 'from-blue-500/10 to-transparent'
+    accentBorder: 'border-sky-200 hover:border-sky-400',
+    badgeBg: 'bg-sky-50',
+    badgeText: 'text-sky-700 border-sky-200',
+    dotColor: 'bg-sky-600',
+    glowColor: 'from-sky-50/70 to-transparent'
   },
   {
     num: 4,
@@ -212,11 +212,11 @@ const CORPORATE_RECRUITMENT_PHASES: PhaseConfig[] = [
     primaryDropStage: 'reservation',
     nextStage: 'enrolled',
     colorName: 'teal',
-    accentBorder: 'border-teal-500/30 hover:border-teal-500/60',
-    badgeBg: 'bg-teal-500/15',
-    badgeText: 'text-teal-300 border-teal-500/30',
-    dotColor: 'bg-teal-400',
-    glowColor: 'from-teal-500/10 to-transparent'
+    accentBorder: 'border-teal-200 hover:border-teal-400',
+    badgeBg: 'bg-teal-50',
+    badgeText: 'text-teal-700 border-teal-200',
+    dotColor: 'bg-teal-600',
+    glowColor: 'from-teal-50/70 to-transparent'
   },
   {
     num: 5,
@@ -229,11 +229,11 @@ const CORPORATE_RECRUITMENT_PHASES: PhaseConfig[] = [
     primaryDropStage: 'enrolled',
     nextStage: null,
     colorName: 'emerald',
-    accentBorder: 'border-emerald-500/30 hover:border-emerald-500/60',
-    badgeBg: 'bg-emerald-500/15',
-    badgeText: 'text-emerald-300 border-emerald-500/30',
-    dotColor: 'bg-emerald-400',
-    glowColor: 'from-emerald-500/10 to-transparent'
+    accentBorder: 'border-emerald-200 hover:border-emerald-400',
+    badgeBg: 'bg-emerald-50',
+    badgeText: 'text-emerald-700 border-emerald-200',
+    dotColor: 'bg-emerald-600',
+    glowColor: 'from-emerald-50/70 to-transparent'
   }
 ];
 
@@ -422,26 +422,26 @@ export default function BentoAdmissionsKanban({
 
   return (
     <div className="space-y-4">
-      {/* BARRA SUPERIOR DE HERRAMIENTAS DEL KANBAN */}
-      <div className="bg-slate-900/90 backdrop-blur-md p-4 rounded-3xl border border-slate-800 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-3 text-white">
+      {/* BARRA SUPERIOR DE HERRAMIENTAS DEL KANBAN (MODO CLARO LUMÍNICO) */}
+      <div className="bg-white/95 backdrop-blur-md p-4 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 text-slate-900">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-2xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-300">
+          <div className="w-9 h-9 rounded-2xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 shadow-xs">
             {isCorporate ? <Briefcase size={18} /> : <Layers size={18} />}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-black text-white tracking-wide">
+              <h3 className="text-sm font-black text-slate-900 tracking-wide">
                 {isCorporate
                   ? 'Tablero Ágil de Reclutamiento & Onboarding Corporativo'
                   : 'Tablero Kanban Ágil de 5 Fases Corresponsables'}
               </h3>
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-full shadow-2xs">
                 {filteredLeads.length} {isCorporate ? 'Candidatos en Pipeline' : 'Aspirantes en Pipeline'}
               </span>
             </div>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-slate-500">
               {isCorporate ? 'Planta / Sede activa:' : 'Sede activa:'}{' '}
-              <strong className="text-purple-300">{selectedCampusName}</strong> • Arrastra las tarjetas o pulsa "Avanzar" para transiciones de fase atómicas.
+              <strong className="text-purple-700">{selectedCampusName}</strong> • Arrastra las tarjetas o pulsa "Avanzar" para transiciones de fase atómicas.
             </p>
           </div>
         </div>
@@ -455,20 +455,20 @@ export default function BentoAdmissionsKanban({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={isCorporate ? "Buscar candidato, puesto o tel..." : "Buscar aspirante, tutor o tel..."}
-              className="pl-8 pr-3 py-1.5 bg-slate-950/80 border border-slate-700 rounded-xl text-white text-xs placeholder-slate-500 focus:outline-none focus:border-purple-400 w-44 sm:w-56"
+              className="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-white focus:ring-2 focus:ring-purple-100 transition-all w-44 sm:w-56 shadow-2xs"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
                 <X size={12} />
               </button>
             )}
           </div>
 
-          <div className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-700">
-            <span className="text-[10px] text-slate-400 px-1.5 font-bold uppercase">Prioridad:</span>
+          <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200">
+            <span className="text-[10px] text-slate-500 px-1.5 font-bold uppercase">Prioridad:</span>
             {(['all', 'hot', 'warm', 'normal'] as const).map(p => (
               <button
                 key={p}
@@ -476,7 +476,7 @@ export default function BentoAdmissionsKanban({
                 className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${
                   priorityFilter === p
                     ? 'bg-purple-600 text-white shadow-xs'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
                 }`}
               >
                 {p === 'all' ? 'Todas' : p === 'hot' ? '🔴 Caliente' : p === 'warm' ? '🟡 Tibio' : '🔵 Normal'}
@@ -495,7 +495,7 @@ export default function BentoAdmissionsKanban({
         </div>
       </div>
 
-      {/* REJILLA DE 5 COLUMNAS KANBAN (BENTO GRID CON ESTILO OSCURO) */}
+      {/* REJILLA DE 5 COLUMNAS KANBAN (BENTO GRID EN MODO CLARO) */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-3.5 items-start">
         {activePhases.map((phase) => {
           const stageLeads = leadsByPhase.get(phase.num) || [];
@@ -509,29 +509,29 @@ export default function BentoAdmissionsKanban({
               onDrop={(e) => handleDrop(e, phase.num)}
               className={`rounded-3xl border transition-all duration-200 flex flex-col min-h-[580px] max-h-[820px] overflow-hidden ${
                 isDropActive
-                  ? 'bg-slate-800/90 border-purple-400 ring-2 ring-purple-500/50 shadow-2xl scale-[1.01]'
-                  : 'bg-slate-900/80 border-slate-800/90 shadow-lg'
+                  ? 'bg-purple-50/70 border-purple-400 ring-2 ring-purple-400/40 shadow-xl scale-[1.01]'
+                  : 'bg-slate-50/70 border-slate-200/80 shadow-xs hover:border-slate-300'
               }`}
             >
               {/* CABECERA DE LA COLUMNA BENTO */}
-              <div className={`p-4 border-b border-slate-800/80 bg-gradient-to-b ${phase.glowColor}`}>
+              <div className={`p-4 border-b border-slate-200/80 bg-gradient-to-b ${phase.glowColor}`}>
                 <div className="flex items-center justify-between gap-1 mb-1.5">
-                  <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${phase.badgeBg} ${phase.badgeText}`}>
+                  <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${phase.badgeBg} ${phase.badgeText} shadow-2xs`}>
                     {phase.phaseLabel}
                   </span>
-                  <span className="w-6 h-6 rounded-full bg-slate-800 border border-slate-700 text-white font-mono font-black text-xs flex items-center justify-center">
+                  <span className="w-6 h-6 rounded-full bg-white border border-slate-200 text-slate-700 font-mono font-black text-xs flex items-center justify-center shadow-xs">
                     {stageLeads.length}
                   </span>
                 </div>
 
-                <h4 className="text-sm font-black text-white tracking-tight flex items-center gap-1.5">
+                <h4 className="text-sm font-black text-slate-900 tracking-tight flex items-center gap-1.5">
                   <span className={`w-2 h-2 rounded-full ${phase.dotColor}`} />
                   {phase.title}
                 </h4>
 
-                <div className="mt-1 text-[10px] text-slate-400 flex flex-col gap-0.5">
-                  <span className="text-slate-300 font-semibold">{phase.dept}</span>
-                  <span className="text-slate-500 truncate" title={phase.location}>📍 {phase.location}</span>
+                <div className="mt-1 text-[10px] text-slate-500 flex flex-col gap-0.5">
+                  <span className="text-slate-700 font-semibold">{phase.dept}</span>
+                  <span className="text-slate-400 truncate" title={phase.location}>📍 {phase.location}</span>
                 </div>
               </div>
 
@@ -557,14 +557,14 @@ export default function BentoAdmissionsKanban({
                       draggable
                       onDragStart={(e) => handleDragStart(e, lead.id)}
                       onClick={() => setSelectedDetailLead(lead)}
-                      className="bg-slate-950/90 rounded-2xl border border-slate-800/80 p-3.5 space-y-2.5 cursor-grab active:cursor-grabbing hover:border-purple-400/60 hover:shadow-xl hover:shadow-purple-950/20 transition-all text-white group select-none relative overflow-hidden"
+                      className="bg-white rounded-2xl border border-slate-200/90 p-3.5 space-y-2.5 cursor-grab active:cursor-grabbing hover:border-purple-300 hover:shadow-md transition-all text-slate-900 group select-none relative overflow-hidden shadow-xs"
                     >
                       {/* Borde sutil lateral de prioridad */}
                       <div
                         className={`absolute left-0 top-0 bottom-0 w-1 ${
                           lead.priority === 'hot' ? 'bg-red-500' :
                           lead.priority === 'warm' ? 'bg-amber-400' :
-                          lead.priority === 'cold' ? 'bg-slate-500' : 'bg-blue-500'
+                          lead.priority === 'cold' ? 'bg-slate-300' : 'bg-blue-500'
                         }`}
                       />
 
@@ -574,11 +574,11 @@ export default function BentoAdmissionsKanban({
                           <select
                             value={lead.priority}
                             onChange={(e) => handlePriorityChange(lead.id, formatTutorName(lead), e.target.value as LeadPriority)}
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-md border cursor-pointer focus:outline-none transition-all ${
-                              lead.priority === 'hot' ? 'bg-red-950/80 text-red-300 border-red-500/40 hover:bg-red-900/60' :
-                              lead.priority === 'warm' ? 'bg-amber-950/80 text-amber-300 border-amber-500/40 hover:bg-amber-900/60' :
-                              lead.priority === 'cold' ? 'bg-slate-900 text-slate-400 border-slate-700 hover:bg-slate-800' :
-                              'bg-blue-950/80 text-blue-300 border-blue-500/40 hover:bg-blue-900/60'
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-md border cursor-pointer focus:outline-none transition-all shadow-2xs ${
+                              lead.priority === 'hot' ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' :
+                              lead.priority === 'warm' ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' :
+                              lead.priority === 'cold' ? 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100' :
+                              'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
                             }`}
                             title="Cambiar prioridad"
                           >
@@ -591,7 +591,7 @@ export default function BentoAdmissionsKanban({
 
                         <span
                           className={`text-[11px] font-mono flex items-center gap-1 ${
-                            isStalled ? 'text-red-400 font-bold' : 'text-slate-400'
+                            isStalled ? 'text-red-600 font-bold' : 'text-slate-400'
                           }`}
                           title={`Lleva ${daysInStage} días en esta etapa`}
                         >
@@ -606,19 +606,19 @@ export default function BentoAdmissionsKanban({
                           <>
                             {/* Insignia del puesto corporativo */}
                             <div className="mb-1">
-                              <span className="inline-block px-2 py-0.5 bg-blue-950/70 border border-blue-500/30 text-blue-300 text-[10px] font-black rounded-md tracking-tight truncate max-w-full">
+                              <span className="inline-block px-2 py-0.5 bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-black rounded-md tracking-tight truncate max-w-full">
                                 {firstCand?.position_title || lead.department || 'Puesto Técnico Solicitado'}
                               </span>
                             </div>
-                            <h5 className="text-xs font-black text-white group-hover:text-purple-300 transition-colors truncate">
+                            <h5 className="text-xs font-black text-slate-900 group-hover:text-purple-600 transition-colors truncate">
                               {formatTutorName(lead)}
                             </h5>
                             <div className="flex items-center justify-between gap-1.5 mt-1">
-                              <span className="text-[10px] text-slate-400 truncate max-w-[130px]" title={lead.campus_name}>
+                              <span className="text-[10px] text-slate-500 truncate max-w-[130px]" title={lead.campus_name}>
                                 📍 {lead.campus_name?.replace('Planta ', '').replace('CEDIS ', '').replace('Corporativo ', '') || 'Sede'}
                               </span>
                               {(lead.proposed_salary || firstCand?.proposed_salary) && (
-                                <span className="px-1.5 py-0.2 bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 rounded font-mono text-[9px] font-bold">
+                                <span className="px-1.5 py-0.2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-mono text-[9px] font-bold">
                                   {lead.proposed_salary || firstCand?.proposed_salary}
                                 </span>
                               )}
@@ -627,17 +627,17 @@ export default function BentoAdmissionsKanban({
                         ) : (
                           <>
                             <div className="flex items-center justify-between gap-1">
-                              <h5 className="text-xs font-black text-white group-hover:text-purple-300 transition-colors truncate">
+                              <h5 className="text-xs font-black text-slate-900 group-hover:text-purple-600 transition-colors truncate">
                                 {firstCand ? formatCandidateName(firstCand) : (lead.notes?.slice(0, 24) || 'Aspirante IBIME')}
                               </h5>
                               {leadCandidates.length > 1 && (
-                                <span className="text-[9px] bg-purple-500/20 text-purple-300 border border-purple-500/30 px-1.5 py-0.2 rounded-full font-bold">
+                                <span className="text-[9px] bg-purple-50 text-purple-700 border border-purple-200 px-1.5 py-0.2 rounded-full font-bold">
                                   +{leadCandidates.length - 1} hnos
                                 </span>
                               )}
                             </div>
                             <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="px-1.5 py-0.2 bg-slate-800 text-slate-300 rounded text-[10px] font-semibold">
+                              <span className="px-1.5 py-0.2 bg-slate-100 text-slate-700 border border-slate-200/60 rounded text-[10px] font-semibold">
                                 {firstCand ? `${firstCand.target_level} ${firstCand.target_grade}` : 'Grado Solicitado'}
                               </span>
                               {lead.campus_name && (
@@ -651,8 +651,8 @@ export default function BentoAdmissionsKanban({
                       </div>
 
                       {/* Contacto / Reclutador & WhatsApp */}
-                      <div className="pt-2 border-t border-slate-800/80 text-[11px] space-y-1 pl-1">
-                        <div className="text-slate-300 font-medium flex items-center justify-between">
+                      <div className="pt-2 border-t border-slate-100 text-[11px] space-y-1 pl-1">
+                        <div className="text-slate-700 font-medium flex items-center justify-between">
                           <span className="truncate text-[10px]">
                             {isCorporate ? (
                               lead.recruiter_name ? `HR: ${lead.recruiter_name.split(' ')[0]} ${lead.recruiter_name.split(' ')[1] || ''}` : 'HR Industrial'
@@ -661,19 +661,19 @@ export default function BentoAdmissionsKanban({
                             )}
                           </span>
                           {isCorporate ? (
-                            <span className="text-[9px] text-cyan-400 font-mono">
+                            <span className="text-[9px] text-cyan-600 font-mono font-bold">
                               {firstCand?.technical_score ? `Score: ${firstCand.technical_score}/100` : 'Score: Pend.'}
                             </span>
                           ) : (
                             lead.tutor_relationship && (
-                              <span className="text-[9px] text-slate-500 uppercase">{lead.tutor_relationship}</span>
+                              <span className="text-[9px] text-slate-400 uppercase font-semibold">{lead.tutor_relationship}</span>
                             )
                           )}
                         </div>
 
-                        <div className="flex items-center justify-between text-slate-400 text-[10px]">
+                        <div className="flex items-center justify-between text-slate-500 text-[10px]">
                           <span className="flex items-center gap-1">
-                            <Phone size={11} className="text-slate-500" />
+                            <Phone size={11} className="text-slate-400" />
                             {lead.tutor_phone || 'Sin tel.'}
                           </span>
                           {cleanPhone && (
@@ -682,7 +682,7 @@ export default function BentoAdmissionsKanban({
                               target="_blank"
                               rel="noreferrer"
                               onClick={e => e.stopPropagation()}
-                              className="text-emerald-400 hover:text-emerald-300 flex items-center gap-1 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-500/30"
+                              className="text-emerald-700 hover:text-emerald-800 flex items-center gap-1 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 font-semibold"
                               title="Contactar vía WhatsApp Directo"
                             >
                               <MessageCircle size={10} />
@@ -693,11 +693,11 @@ export default function BentoAdmissionsKanban({
                       </div>
 
                       {/* Canal de Origen y Lead Score */}
-                      <div className="pt-1.5 flex items-center justify-between text-[10px] text-slate-400 pl-1">
-                        <span className="text-purple-300 truncate max-w-[130px]" title={sourceChannel?.label}>
+                      <div className="pt-1.5 flex items-center justify-between text-[10px] text-slate-500 pl-1">
+                        <span className="text-purple-700 font-medium truncate max-w-[130px]" title={sourceChannel?.label}>
                           {sourceChannel?.icon} {sourceChannel?.label || lead.source_channel}
                         </span>
-                        <span className="font-mono text-slate-300 font-bold">
+                        <span className="font-mono text-slate-700 font-bold">
                           {lead.lead_score || 5} pts
                         </span>
                       </div>
@@ -707,13 +707,13 @@ export default function BentoAdmissionsKanban({
                         {phase.nextStage ? (
                           <button
                             onClick={() => handleQuickAdvance(lead, phase.num)}
-                            className="w-full py-1.5 bg-slate-800/90 hover:bg-purple-600 text-slate-300 hover:text-white rounded-xl font-bold text-[10px] flex items-center justify-center gap-1 transition-all active:scale-95 border border-slate-700/80 cursor-pointer shadow-xs"
+                            className="w-full py-1.5 bg-slate-100 hover:bg-purple-600 text-slate-700 hover:text-white rounded-xl font-bold text-[10px] flex items-center justify-center gap-1 transition-all active:scale-95 border border-slate-200 cursor-pointer shadow-2xs"
                           >
                             <span>Avanzar a Fase {phase.num + 1}</span>
                             <ArrowRight size={11} />
                           </button>
                         ) : (
-                          <div className="w-full py-1.5 bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 rounded-xl font-black text-[10px] flex items-center justify-center gap-1">
+                          <div className="w-full py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-black text-[10px] flex items-center justify-center gap-1">
                             <CheckCircle2 size={12} />
                             <span>{isCorporate ? '✓ Alta IMSS & Contratado' : '✓ Matrícula Pagada'}</span>
                           </div>
@@ -725,10 +725,10 @@ export default function BentoAdmissionsKanban({
 
                 {/* Estado Vacío de la Columna */}
                 {stageLeads.length === 0 && (
-                  <div className="h-32 border border-dashed border-slate-800 rounded-2xl flex flex-col items-center justify-center p-3 text-center text-slate-500 text-[11px] space-y-1">
+                  <div className="h-32 border border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center p-3 text-center text-slate-400 text-[11px] space-y-1 bg-white/60">
                     <span className="text-xl opacity-60">📥</span>
-                    <span>{isCorporate ? 'Sin candidatos en esta fase' : 'Sin aspirantes en esta fase'}</span>
-                    <span className="text-[10px] text-slate-600">Arrastra una tarjeta aquí</span>
+                    <span className="text-slate-500">{isCorporate ? 'Sin candidatos en esta fase' : 'Sin aspirantes en esta fase'}</span>
+                    <span className="text-[10px] text-slate-400">Arrastra una tarjeta aquí</span>
                   </div>
                 )}
               </div>
@@ -737,31 +737,31 @@ export default function BentoAdmissionsKanban({
         })}
       </div>
 
-      {/* DRAWER / MODAL DE DETALLE DEL EXPEDIENTE DIGITAL */}
+      {/* DRAWER / MODAL DE DETALLE DEL EXPEDIENTE DIGITAL (MODO CLARO) */}
       {selectedDetailLead && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-2xl w-full shadow-2xl text-white overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white border border-slate-200 rounded-3xl max-w-2xl w-full shadow-2xl text-slate-900 overflow-hidden">
             {/* Header del Drawer */}
-            <div className="p-6 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+            <div className="p-6 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-purple-600/20 border border-purple-500/40 text-purple-300 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-purple-50 border border-purple-200 text-purple-600 flex items-center justify-center shadow-xs">
                   {isCorporate ? <Briefcase size={20} /> : <Users size={20} />}
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-white">
+                  <h3 className="text-base font-black text-slate-900">
                     {isCorporate
                       ? `Expediente Profesional & Selección 360° • ${formatTutorName(selectedDetailLead)}`
                       : `Expediente Familiar 360° • ${formatTutorName(selectedDetailLead)}`}
                   </h3>
-                  <p className="text-xs text-slate-400">
-                    Folio: <span className="font-mono text-purple-300">{selectedDetailLead.id}</span> •{' '}
+                  <p className="text-xs text-slate-500">
+                    Folio: <span className="font-mono text-purple-700 font-bold">{selectedDetailLead.id}</span> •{' '}
                     {isCorporate ? 'Planta/Sede' : 'Sede'}: {selectedDetailLead.campus_name || selectedCampusName}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedDetailLead(null)}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-200/60 transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -770,60 +770,60 @@ export default function BentoAdmissionsKanban({
             {/* Contenido del Drawer */}
             <div className="p-6 space-y-4 text-xs max-h-[75vh] overflow-y-auto">
               {/* Información Personal o Corporativa */}
-              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-purple-300 block">
+              <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200 space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 block">
                   {isCorporate ? 'Datos del Candidato & Puesto de Interés' : 'Datos del Tutor Principal'}
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <span className="text-slate-400 text-[10px] block">
+                    <span className="text-slate-500 text-[10px] block">
                       {isCorporate ? 'Candidato:' : 'Nombre Completo:'}
                     </span>
-                    <strong className="text-white text-xs">{formatTutorName(selectedDetailLead)}</strong>
+                    <strong className="text-slate-900 text-xs">{formatTutorName(selectedDetailLead)}</strong>
                   </div>
                   <div>
-                    <span className="text-slate-400 text-[10px] block">
+                    <span className="text-slate-500 text-[10px] block">
                       {isCorporate ? 'Departamento / Área:' : 'Parentesco:'}
                     </span>
-                    <strong className="text-white text-xs">
+                    <strong className="text-slate-900 text-xs">
                       {selectedDetailLead.department || (isCorporate ? 'Operaciones Técnicas' : (selectedDetailLead.tutor_relationship || 'Tutor'))}
                     </strong>
                   </div>
                   <div>
-                    <span className="text-slate-400 text-[10px] block">Teléfono / WhatsApp:</span>
-                    <strong className="text-white text-xs">{selectedDetailLead.tutor_phone || 'Sin registrar'}</strong>
+                    <span className="text-slate-500 text-[10px] block">Teléfono / WhatsApp:</span>
+                    <strong className="text-slate-900 text-xs">{selectedDetailLead.tutor_phone || 'Sin registrar'}</strong>
                   </div>
                 </div>
               </div>
 
               {/* Aspirantes / Hijos Asociados o Perfil Técnico del Candidato */}
-              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-purple-300 block">
+              <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200 space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 block">
                   {isCorporate
                     ? 'Evaluación Técnica, Salario & Competencias'
                     : `Aspirantes Registrados (${getLeadCandidates(candidates, selectedDetailLead.id).length})`}
                 </span>
                 <div className="space-y-2">
                   {getLeadCandidates(candidates, selectedDetailLead.id).map(cand => (
-                    <div key={cand.id} className="p-3 bg-slate-900 rounded-xl border border-slate-700/80 space-y-2">
+                    <div key={cand.id} className="p-3 bg-white rounded-xl border border-slate-200 space-y-2 shadow-2xs">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                         <div>
-                          <strong className="text-white text-xs block">
+                          <strong className="text-slate-900 text-xs block">
                             {isCorporate ? (cand.position_title || formatCandidateName(cand)) : formatCandidateName(cand)}
                           </strong>
-                          <span className="text-[11px] text-slate-400">
+                          <span className="text-[11px] text-slate-500">
                             {isCorporate ? (
                               <>
-                                Salario Propuesto: <strong className="text-emerald-400 font-mono">{cand.proposed_salary || selectedDetailLead.proposed_salary || '$45,000 MXN / mes'}</strong> • Nivel: {cand.target_grade || 'Senior'}
+                                Salario Propuesto: <strong className="text-emerald-600 font-mono">{cand.proposed_salary || selectedDetailLead.proposed_salary || '$45,000 MXN / mes'}</strong> • Nivel: {cand.target_grade || 'Senior'}
                               </>
                             ) : (
                               <>
-                                Grado Solicitado: <strong className="text-purple-300">{cand.target_level} {cand.target_grade}</strong> • Ciclo: {selectedDetailLead.target_academic_year || '2026-2027'}
+                                Grado Solicitado: <strong className="text-purple-700">{cand.target_level} {cand.target_grade}</strong> • Ciclo: {selectedDetailLead.target_academic_year || '2026-2027'}
                               </>
                             )}
                           </span>
                         </div>
-                        <span className="px-2 py-1 bg-purple-950 text-purple-300 border border-purple-800/60 rounded-lg text-[10px] font-bold self-start sm:self-auto">
+                        <span className="px-2 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-lg text-[10px] font-bold self-start sm:self-auto">
                           {isCorporate
                             ? (cand.technical_score ? `Score Técnico: ${cand.technical_score}/100` : cand.evaluation_status === 'approved' ? 'Aprobado ✓' : 'En Evaluación')
                             : (cand.evaluation_result ? `Dictamen: ${cand.evaluation_result}` : cand.evaluation_status === 'approved' ? 'Aprobado ✓' : 'En Diagnóstico')}
@@ -832,10 +832,10 @@ export default function BentoAdmissionsKanban({
 
                       {/* Certificaciones técnicas en modo corporativo */}
                       {isCorporate && cand.certifications && cand.certifications.length > 0 && (
-                        <div className="pt-2 border-t border-slate-800 flex flex-wrap gap-1.5">
+                        <div className="pt-2 border-t border-slate-100 flex flex-wrap gap-1.5">
                           {cand.certifications.map((cert, cidx) => (
-                            <span key={cidx} className="px-2 py-0.5 bg-blue-950/80 text-blue-300 border border-blue-500/30 rounded text-[9px] font-semibold flex items-center gap-1">
-                              <BadgeCheck size={10} className="text-blue-400" />
+                            <span key={cidx} className="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[9px] font-semibold flex items-center gap-1">
+                              <BadgeCheck size={10} className="text-blue-500" />
                               {cert}
                             </span>
                           ))}
@@ -844,7 +844,7 @@ export default function BentoAdmissionsKanban({
 
                       {/* Dictamen del evaluador */}
                       {cand.evaluation_result && (
-                        <p className="text-[11px] text-slate-300 italic bg-slate-950/50 p-2 rounded border border-slate-800/60">
+                        <p className="text-[11px] text-slate-600 italic bg-slate-50 p-2 rounded border border-slate-200">
                           "{cand.evaluation_result}"
                         </p>
                       )}
@@ -852,7 +852,7 @@ export default function BentoAdmissionsKanban({
                   ))}
 
                   {getLeadCandidates(candidates, selectedDetailLead.id).length === 0 && (
-                    <div className="text-slate-500 text-[11px] italic">
+                    <div className="text-slate-400 text-[11px] italic">
                       {isCorporate ? 'Perfil técnico en proceso de carga.' : 'Aspirante en proceso de perfilado inicial.'}
                     </div>
                   )}
@@ -860,20 +860,20 @@ export default function BentoAdmissionsKanban({
               </div>
 
               {/* Bitácora y Observaciones */}
-              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-purple-300 block">
+              <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200 space-y-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 block">
                   Notas y Bitácora del Caso
                 </span>
-                <p className="text-slate-300 text-xs bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                <p className="text-slate-700 text-xs bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
                   {selectedDetailLead.notes || 'Sin observaciones registradas.'}
                 </p>
               </div>
             </div>
 
             {/* Footer con Acciones */}
-            <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-xs">
-              <span className="text-slate-400 text-[11px]">
-                Prioridad actual: <strong className="text-white">{PRIORITY_CONFIG[selectedDetailLead.priority].label}</strong>
+            <div className="p-4 bg-slate-50/80 border-t border-slate-200 flex items-center justify-between text-xs">
+              <span className="text-slate-500 text-[11px]">
+                Prioridad actual: <strong className="text-slate-900">{PRIORITY_CONFIG[selectedDetailLead.priority].label}</strong>
               </span>
               <div className="flex items-center gap-2">
                 {isCorporate && selectedDetailLead.stage !== 'enrolled' && (
@@ -892,7 +892,7 @@ export default function BentoAdmissionsKanban({
                 )}
                 <button
                   onClick={() => setSelectedDetailLead(null)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl cursor-pointer"
                 >
                   Cerrar Expediente
                 </button>

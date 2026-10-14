@@ -1014,7 +1014,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // No bloquear la interfaz ante latencia de red secundaria
       }
     }
-    useSchoolAdminStore.getState().syncUserSchool(finalUser);
+    if (isPlatformSuperUser(finalUser)) {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('iskool_super_just_logged_in', 'true');
+      }
+      useSchoolAdminStore.getState().selectSchool(null as any);
+    } else {
+      useSchoolAdminStore.getState().syncUserSchool(finalUser);
+    }
 
     setLoading(false);
     return { success: true, user: finalUser };
@@ -1030,7 +1037,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (typeof window !== 'undefined') {
       localStorage.removeItem('iskool_session_user');
       localStorage.removeItem('auth_current_user');
+      sessionStorage.removeItem('iskool_super_just_logged_in');
     }
+    useSchoolAdminStore.getState().selectSchool(null as any);
     useSchoolAdminStore.getState().syncUserSchool(null);
     setSession(null);
     setUser(null);

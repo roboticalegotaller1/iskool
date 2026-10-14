@@ -188,6 +188,11 @@ export function StudentHUD() {
           {isManagementRole && (
             <Link
               href={isIbime ? '/ibime/portal' : '/admin'}
+              onClick={() => {
+                if (isSuperUser) {
+                  useSchoolAdminStore.getState().selectSchool(null as any);
+                }
+              }}
               className="hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-indigo-500/40 text-indigo-300 text-xs font-bold transition-all shadow-xs"
               title="Volver al Portal Administrativo"
             >
@@ -258,7 +263,12 @@ export function StudentHUD() {
           {isManagementRole && (
             <Link
               href={isIbime ? '/ibime/portal' : '/admin'}
-              onClick={() => setIsMenuOpen(false)}
+              onClick={() => {
+                setIsMenuOpen(false);
+                if (isSuperUser) {
+                  useSchoolAdminStore.getState().selectSchool(null as any);
+                }
+              }}
               className="flex items-center justify-between p-3 rounded-2xl text-xs font-bold text-indigo-300 bg-indigo-950/40 border border-indigo-500/40"
             >
               <div className="flex items-center gap-2">
