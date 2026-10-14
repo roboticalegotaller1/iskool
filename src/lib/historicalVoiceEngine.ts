@@ -1026,36 +1026,150 @@ export async function playUniversalIskoolVoice(options: UniversalVoicePlayOption
 
     try {
       window.speechSynthesis.cancel();
-      const pipeline = getLanguagePipeline(voiceId || effectiveLang);
-      const speechText = pipeline.applyPhonetics(pipeline.normalizeText(cleanText), 'plain');
-      const utterance = new SpeechSynthesisUtterance(speechText);
 
-      if (pipeline.language === 'fr') {
-        utterance.lang = pipeline.locale;
-        utterance.rate = rate * 0.95;
-        utterance.pitch = pitch;
-        const voices = window.speechSynthesis.getVoices();
-        const frenchVoice = voices.find(v => v.lang.toLowerCase().replace('_', '-').startsWith(pipeline.locale.toLowerCase()) && !v.name.toLowerCase().includes('desktop'))
-          || voices.find(v => v.lang.toLowerCase().startsWith('fr') && !v.name.toLowerCase().includes('desktop'));
-        if (frenchVoice) utterance.voice = frenchVoice;
-      } else if (pipeline.language === 'en') {
-        utterance.lang = pipeline.locale;
-        utterance.rate = rate * 0.95;
-        utterance.pitch = pitch;
-        const voices = window.speechSynthesis.getVoices();
-        const englishVoice = voices.find(v => v.lang.toLowerCase().replace('_', '-').startsWith(pipeline.locale.toLowerCase()) && !v.name.toLowerCase().includes('desktop'))
-          || voices.find(v => v.lang.toLowerCase().startsWith('en') && !v.name.toLowerCase().includes('desktop'));
-        if (englishVoice) utterance.voice = englishVoice;
+      // 1. Preprocesamiento humano: pausas orgánicas y expansión de abreviaturas
+      const humanizedText = cleanText
+        .replace(/([,;:.?!])/g, '$1 ')
+        .replace(/\s+/g, ' ')
+        .replace(/\bProf\.\s*/gi, 'Professor ')
+        .replace(/\bDr\.\s*/gi, 'Doctor ')
+        .replace(/\bMr\.\s*/gi, 'Mister ')
+        .replace(/\bMrs\.\s*/gi, 'Missus ')
+        .replace(/\bMs\.\s*/gi, 'Miss ')
+        .replace(/\bMme\.\s*/gi, 'Madame ')
+        .replace(/\bM\.\s*/gi, 'Monsieur ')
+        .replace(/\betc\./gi, 'et cetera')
+        .replace(/\be\.g\./gi, 'for example')
+        .replace(/\bi\.e\./gi, 'that is')
+        .replace(/\bCafé\b/g, 'Cafe')
+        .replace(/\bNo\.\s*/gi, 'Number ')
+        .trim();
+
+      const pipeline = getLanguagePipeline(voiceId || effectiveLang);
+      const speechText = pipeline.applyPhonetics(pipeline.normalizeText(humanizedText), 'plain');
+      const utterance = new SpeechSynthesisUtterance(speechText);
+      const voices = window.speechSynthesis.getVoices();
+
+      // 2. Detección exhaustiva de género biológico para separación de voces Arthur vs Claire
+      const voiceIdLower = (voiceId || '').toLowerCase();
+      const nameLower = (characterName || '').toLowerCase();
+      const isExplicitMale = effectiveGender === 'male' || 
+                             nameLower.includes('arthur') || 
+                             nameLower.includes('henri') || 
+                             nameLower.includes('shakespeare') || 
+                             nameLower.includes('lincoln') || 
+                             nameLower.includes('napoleon') ||
+                             voiceIdLower.includes('guy') || 
+                             voiceIdLower.includes('male') || 
+                             voiceIdLower.includes('ryan') || 
+                             voiceIdLower.includes('jean');
+      const isExplicitFemale = effectiveGender === 'female' || 
+                               nameLower.includes('claire') || 
+                               nameLower.includes('sophie') || 
+                               nameLower.includes('ada') || 
+                               nameLower.includes('curie') ||
+                               voiceIdLower.includes('jenny') || 
+                               voiceIdLower.includes('female') || 
+                               voiceIdLower.includes('sonia') || 
+                               voiceIdLower.includes('vivienne') ||
+                               voiceIdLower.includes('denise');
+      const isMale = isExplicitMale && !isExplicitFemale;
+
+      if (pipeline.language === 'en') {
+        utterance.lang = pipeline.locale || 'en-US';
+        const englishVoices = voices.filter(v => 
+          v.lang.toLowerCase().replace('_', '-').startsWith('en')
+        );
+
+        if (isMale) {
+          // Arthur, Shakespeare, Lincoln (Voz Masculina)
+          const maleVoice = englishVoices.find(v => {
+            const n = v.name.toLowerCase();
+            const isKnownFemale = n.includes('zira') || n.includes('jenny') || n.includes('aria') || 
+                                  n.includes('sonia') || n.includes('samantha') || n.includes('victoria') || 
+                                  n.includes('claire') || n.includes('hazel') || n.includes('female') || 
+                                  n.includes('karen') || n.includes('susan') || n.includes('female');
+            if (isKnownFemale) return false;
+            return n.includes('david') || n.includes('guy') || n.includes('mark') || 
+                   n.includes('george') || n.includes('ryan') || n.includes('arthur') || 
+                   n.includes('richard') || n.includes('daniel') || n.includes('male') || 
+                   n.includes('james') || n.includes('steven') || n.includes('google us english') ||
+                   (n.includes('natural') && !n.includes('female'));
+          });
+
+          if (maleVoice) {
+            utterance.voice = maleVoice;
+            utterance.pitch = pitch * 0.86; // Tono barítono masculino cálido
+            utterance.rate = rate * 0.90;   // Cadencia reflexiva y académica masculina
+          } else {
+            // Calibración acústica profunda para sistemas con solo una voz instalada (e.g. Zira en Windows)
+            if (englishVoices.length > 0) utterance.voice = englishVoices[0];
+            utterance.pitch = pitch * 0.68; // Descenso formántico profundo a barítono masculino inconfundible
+            utterance.rate = rate * 0.88;   // Cadencia reflexiva y académica
+          }
+        } else {
+          // Claire, Ada Lovelace (Voz Femenina)
+          const femaleVoice = englishVoices.find(v => {
+            const n = v.name.toLowerCase();
+            return n.includes('zira') || n.includes('jenny') || n.includes('aria') || 
+                   n.includes('sonia') || n.includes('samantha') || n.includes('victoria') || 
+                   n.includes('claire') || n.includes('hazel') || n.includes('female') || 
+                   n.includes('karen') || n.includes('susan') || n.includes('google uk english female');
+          }) || englishVoices[0];
+
+          if (femaleVoice) utterance.voice = femaleVoice;
+          utterance.pitch = pitch * 1.15; // Tono cálido, melódico y pedagógico femenino
+          utterance.rate = rate * 0.92;   // Articulación pedagógica clara
+        }
+      } else if (pipeline.language === 'fr') {
+        utterance.lang = pipeline.locale || 'fr-FR';
+        const frenchVoices = voices.filter(v => 
+          v.lang.toLowerCase().replace('_', '-').startsWith('fr')
+        );
+
+        if (isMale) {
+          // Henri, Napoléon, Victor Hugo (Voz Masculina)
+          const maleVoice = frenchVoices.find(v => {
+            const n = v.name.toLowerCase();
+            const isKnownFemale = n.includes('julie') || n.includes('hortense') || n.includes('denise') || 
+                                  n.includes('vivienne') || n.includes('sylvie') || n.includes('eloise') || 
+                                  n.includes('femme') || n.includes('female');
+            if (isKnownFemale) return false;
+            return n.includes('paul') || n.includes('henri') || n.includes('antoine') || 
+                   n.includes('jean') || n.includes('remy') || n.includes('claude') || 
+                   n.includes('homme') || n.includes('male');
+          });
+
+          if (maleVoice) {
+            utterance.voice = maleVoice;
+            utterance.pitch = pitch * 0.86;
+            utterance.rate = rate * 0.90;
+          } else {
+            if (frenchVoices.length > 0) utterance.voice = frenchVoices[0];
+            utterance.pitch = pitch * 0.70;
+            utterance.rate = rate * 0.88;
+          }
+        } else {
+          // Sophie, Marie Curie, Jeanne d'Arc (Voz Femenina)
+          const femaleVoice = frenchVoices.find(v => {
+            const n = v.name.toLowerCase();
+            return n.includes('julie') || n.includes('hortense') || n.includes('denise') || 
+                   n.includes('vivienne') || n.includes('sylvie') || n.includes('eloise') || 
+                   n.includes('femme') || n.includes('female');
+          }) || frenchVoices[0];
+
+          if (femaleVoice) utterance.voice = femaleVoice;
+          utterance.pitch = pitch * 1.14;
+          utterance.rate = rate * 0.92;
+        }
       } else if (characterName) {
         configureHistoricalUtterance(utterance, characterName, historicalAge);
       } else {
         const localVoice = selectHistoricalSpeechVoice(effectiveGender);
-        if (localVoice) {
-          utterance.voice = localVoice;
-        }
+        if (localVoice) utterance.voice = localVoice;
         utterance.lang = 'es-MX';
-        utterance.rate = rate * (effectiveGender === 'female' ? 0.94 : 0.92);
-        utterance.pitch = pitch * (effectiveGender === 'female' ? 0.95 : 0.92);
+        utterance.rate = rate * (effectiveGender === 'female' ? 0.93 : 0.89);
+        utterance.pitch = pitch * (effectiveGender === 'female' ? 1.08 : 0.82);
       }
 
       utterance.onstart = () => {

@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { AvatarGender, LanguageCode } from '@/store/useLanguagesStore';
 import { 
   Volume2, 
@@ -9,15 +8,8 @@ import {
   Sparkles, 
   Mic, 
   Gauge, 
-  RotateCcw, 
-  Play, 
   Pause,
-  Award,
-  BookOpen,
-  Crown,
-  Scroll,
-  Shield,
-  Compass
+  Award
 } from 'lucide-react';
 import { 
   playUniversalIskoolVoice, 
@@ -48,9 +40,91 @@ interface Props {
   historicalFigureId?: string;
   historicalEra?: string;
   isLightMode?: boolean;
+  variant?: 'card' | 'stage';
 }
 
 type IdleGesture = 'breathe' | 'look_left' | 'look_right' | 'subtle_nod' | 'brow_focus' | 'attentive_lean';
+
+interface AvatarKineticRig {
+  head: { cx: number; cy: number; rx: number; ry: number; pivotX: number; pivotY: number };
+  leftHand: { cx: number; cy: number; rx: number; ry: number; pivotX: number; pivotY: number };
+  rightHand: { cx: number; cy: number; rx: number; ry: number; pivotX: number; pivotY: number };
+  eyes: { cx: number; cy: number; rx: number; ry: number };
+}
+
+function getAvatarKineticRig(key?: string): AvatarKineticRig {
+  const norm = (key || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  if (norm.includes('arthur') || (norm.includes('male') && !norm.includes('ada') && !norm.includes('claire') && !norm.includes('female'))) {
+    return {
+      head: { cx: 45, cy: 23, rx: 19, ry: 21, pivotX: 45, pivotY: 38 },
+      leftHand: { cx: 36, cy: 69, rx: 16, ry: 16, pivotX: 30, pivotY: 74 },
+      rightHand: { cx: 80, cy: 56, rx: 18, ry: 18, pivotX: 74, pivotY: 66 },
+      eyes: { cx: 45, cy: 21, rx: 16, ry: 6 }
+    };
+  }
+
+  if (norm.includes('claire') || norm.includes('sophie') || norm.includes('female')) {
+    return {
+      head: { cx: 52, cy: 25, rx: 21, ry: 23, pivotX: 52, pivotY: 42 },
+      leftHand: { cx: 14, cy: 67, rx: 16, ry: 16, pivotX: 20, pivotY: 74 },
+      rightHand: { cx: 84, cy: 64, rx: 16, ry: 16, pivotX: 78, pivotY: 74 },
+      eyes: { cx: 52, cy: 26, rx: 18, ry: 7 }
+    };
+  }
+
+  if (norm.includes('shakespeare')) {
+    return {
+      head: { cx: 51, cy: 22, rx: 20, ry: 22, pivotX: 51, pivotY: 37 },
+      leftHand: { cx: 16, cy: 58, rx: 16, ry: 16, pivotX: 20, pivotY: 68 },
+      rightHand: { cx: 76, cy: 66, rx: 20, ry: 22, pivotX: 70, pivotY: 74 },
+      eyes: { cx: 51, cy: 22, rx: 16, ry: 6 }
+    };
+  }
+
+  if (norm.includes('ada') || norm.includes('lovelace')) {
+    return {
+      head: { cx: 50, cy: 24, rx: 21, ry: 23, pivotX: 50, pivotY: 40 },
+      leftHand: { cx: 18, cy: 68, rx: 16, ry: 16, pivotX: 24, pivotY: 76 },
+      rightHand: { cx: 82, cy: 74, rx: 18, ry: 20, pivotX: 76, pivotY: 80 },
+      eyes: { cx: 50, cy: 27, rx: 18, ry: 6 }
+    };
+  }
+
+  if (norm.includes('lincoln') || norm.includes('abraham')) {
+    return {
+      head: { cx: 51, cy: 20, rx: 18, ry: 21, pivotX: 51, pivotY: 36 },
+      leftHand: { cx: 24, cy: 68, rx: 16, ry: 16, pivotX: 28, pivotY: 75 },
+      rightHand: { cx: 78, cy: 64, rx: 18, ry: 18, pivotX: 74, pivotY: 72 },
+      eyes: { cx: 51, cy: 20, rx: 16, ry: 6 }
+    };
+  }
+
+  if (norm.includes('napoleon')) {
+    return {
+      head: { cx: 50, cy: 24, rx: 21, ry: 22, pivotX: 50, pivotY: 38 },
+      leftHand: { cx: 28, cy: 70, rx: 16, ry: 16, pivotX: 32, pivotY: 76 },
+      rightHand: { cx: 78, cy: 60, rx: 18, ry: 18, pivotX: 72, pivotY: 68 },
+      eyes: { cx: 50, cy: 24, rx: 16, ry: 6 }
+    };
+  }
+
+  if (norm.includes('curie') || norm.includes('marie')) {
+    return {
+      head: { cx: 52, cy: 19, rx: 20, ry: 21, pivotX: 52, pivotY: 32 },
+      leftHand: { cx: 40, cy: 68, rx: 16, ry: 16, pivotX: 42, pivotY: 74 },
+      rightHand: { cx: 62, cy: 68, rx: 16, ry: 16, pivotX: 60, pivotY: 74 },
+      eyes: { cx: 52, cy: 19, rx: 16, ry: 6 }
+    };
+  }
+
+  return {
+    head: { cx: 50, cy: 24, rx: 20, ry: 22, pivotX: 50, pivotY: 38 },
+    leftHand: { cx: 22, cy: 68, rx: 16, ry: 16, pivotX: 25, pivotY: 74 },
+    rightHand: { cx: 78, cy: 64, rx: 18, ry: 18, pivotX: 75, pivotY: 70 },
+    eyes: { cx: 50, cy: 22, rx: 16, ry: 6 }
+  };
+}
 
 export const HumanGesticulatingAvatar: React.FC<Props> = ({
   gender,
@@ -72,24 +146,28 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
   avatarImage,
   historicalFigureId,
   historicalEra,
-  isLightMode = false
+  isLightMode = false,
+  variant = 'card'
 }) => {
   const [internalPlaying, setInternalPlaying] = useState<boolean>(false);
   const [internalSpeechRate, setInternalSpeechRate] = useState<number>(externalSpeechRate);
   const isPlaying = externalIsPlaying || internalPlaying;
   const speechRate = externalSpeechRate ?? internalSpeechRate;
 
-  // Estados de articulación anatómica labial
-  const [mouthOpenRatio, setMouthOpenRatio] = useState<number>(0); // 0 a 1
-  const [mouthWidthRatio, setMouthWidthRatio] = useState<number>(0.5); // F2 formants / smile
+  // Estados de animación biológica y cinemática en tiempo real
+  const [mouthOpenRatio, setMouthOpenRatio] = useState<number>(0);
+  const [mouthWidthRatio, setMouthWidthRatio] = useState<number>(0.5);
   const [isBlinking, setIsBlinking] = useState<boolean>(false);
   const [showTranslation, setShowTranslation] = useState<boolean>(false);
 
-  // Estados de gesticulación en reposo / tiempos de espera (idle)
+  // Estados dinámicos de gesticulación: Cabeza, Manos y Tórax
+  const [chestElevation, setChestElevation] = useState<number>(0);
+  const [chestScale, setChestScale] = useState<number>(1.0);
+  const [headMotion, setHeadMotion] = useState<{ pitch: number; roll: number; yaw: number; y: number }>({ pitch: 0, roll: 0, yaw: 0, y: 0 });
+  const [leftHandMotion, setLeftHandMotion] = useState<{ x: number; y: number; rot: number; scale: number }>({ x: 0, y: 0, rot: 0, scale: 1 });
+  const [rightHandMotion, setRightHandMotion] = useState<{ x: number; y: number; rot: number; scale: number }>({ x: 0, y: 0, rot: 0, scale: 1 });
+
   const [activeGesture, setActiveGesture] = useState<IdleGesture | null>(null);
-  const [chestElevation, setChestElevation] = useState<number>(0); // Micro-respiración sinusoidal
-  const [headTilt, setHeadTilt] = useState<number>(0);
-  const [headYaw, setHeadYaw] = useState<number>(0);
 
   const animationFrameRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -117,17 +195,19 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
     return getHistoricalMouthConfig(targetKey);
   }, [matchedFigure, historicalFigureId, name, avatarImage, gender]);
 
-  // Resolución infalible de la imagen del avatar en 3D
+  const avatarKineticRig: AvatarKineticRig = useMemo(() => {
+    const targetKey = matchedFigure?.id || historicalFigureId || name || avatarImage || (gender === 'female' ? 'claire' : 'arthur');
+    return getAvatarKineticRig(targetKey);
+  }, [matchedFigure, historicalFigureId, name, avatarImage, gender]);
+
+  // Resolución de la imagen del avatar en 3D
   const avatarImageSrc = useMemo(() => {
-    // Si matchedFigure tiene avatarImage en 3d, priorizarla
     if (matchedFigure?.avatarImage && matchedFigure.avatarImage.includes('/3d/')) {
       return matchedFigure.avatarImage;
     }
-    // Si viene avatarImage y ya es 3D
     if (avatarImage && avatarImage.includes('/3d/')) {
       return avatarImage;
     }
-    // Si es un personaje histórico por ID o nombre conocido
     const figureId = matchedFigure?.id || historicalFigureId;
     if (figureId === 'shakespeare') return '/images/languages/3d/shakespeare_3d.webp';
     if (figureId === 'ada_lovelace') return '/images/languages/3d/ada_lovelace_3d.webp';
@@ -139,7 +219,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
 
     return gender === 'female' 
       ? '/images/languages/3d/mentor_female_3d.webp' 
-      : '/images/languages/3d/mentor_male_3d.webp';
+      : '/images/languages/3d/mentor_male_3d_v2.webp';
   }, [avatarImage, matchedFigure, historicalFigureId, gender]);
 
   const avatarDisplayTitle = useMemo(() => {
@@ -153,15 +233,13 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
 
   const displayedEra = matchedFigure?.era || historicalEra || (language === 'fr' ? 'Atelier de Français' : 'English Masterclass');
 
-  // Control de audio
+  // Control de reproducción de voz para modo tarjeta
   const handlePlayVoiceSample = async () => {
     if (isPlaying) {
       stopAllIskoolAudio();
       audioControllerRef.current?.stop();
       setInternalPlaying(false);
-      if (onStop) {
-        onStop();
-      }
+      onStop?.();
       return;
     }
     if (onRepeat) {
@@ -187,31 +265,13 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
     }
   };
 
-  // 2. Loop de Micro-Respiración Pulmonar y Tiempos de Espera (Idle)
-  useEffect(() => {
-    let breathTime = 0;
-    let breathFrame: number;
-
-    const animateBreathing = () => {
-      breathTime += 0.035;
-      // Ondulación sinusoidal orgánica de pecho/clavícula (~14 respiraciones por minuto)
-      const sinVal = Math.sin(breathTime);
-      setChestElevation(sinVal * 1.5);
-
-      breathFrame = requestAnimationFrame(animateBreathing);
-    };
-
-    breathFrame = requestAnimationFrame(animateBreathing);
-    return () => cancelAnimationFrame(breathFrame);
-  }, []);
-
-  // 3. Parpadeo Espontáneo Humano (Reflejo biológico cada 3.2s a 5.4s)
+  // Parpadeo espontáneo biológico (cada 3.2s a 5.2s)
   useEffect(() => {
     let blinkTimer: NodeJS.Timeout;
     let isSubscribed = true;
 
     const scheduleNextBlink = () => {
-      const interval = 3200 + Math.random() * 2200;
+      const interval = 3200 + Math.random() * 2000;
       blinkTimer = setTimeout(() => {
         if (!isSubscribed) return;
         setIsBlinking(true);
@@ -219,7 +279,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
           if (!isSubscribed) return;
           setIsBlinking(false);
           scheduleNextBlink();
-        }, 140);
+        }, 130);
       }, interval);
     };
 
@@ -230,7 +290,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
     };
   }, []);
 
-  // 4. Micro-Gesticulaciones Ocasionales en Reposo (Saccades & Micro-Tilts en Tiempos de Espera)
+  // Micro-gestos en reposo (mirada, asentimiento sutil, inclinación atenta)
   useEffect(() => {
     if (isPlaying) {
       setActiveGesture(null);
@@ -239,7 +299,6 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
 
     let gestureTimer: NodeJS.Timeout;
     let isSubscribed = true;
-
     const idleGestures: IdleGesture[] = ['look_left', 'look_right', 'subtle_nod', 'brow_focus'];
 
     const scheduleNextGesture = () => {
@@ -249,7 +308,6 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
         const chosen = idleGestures[Math.floor(Math.random() * idleGestures.length)];
         setActiveGesture(chosen);
 
-        // Desvanecimiento natural del micro-gesto
         setTimeout(() => {
           if (!isSubscribed) return;
           setActiveGesture(null);
@@ -265,7 +323,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
     };
   }, [isPlaying]);
 
-  // 5. Analizador Espectral DSP con Web Audio API para F1 / F2 Formants
+  // Analizador Espectral DSP con Web Audio API (F1 y F2 Formants)
   useEffect(() => {
     if (!audioElement || typeof window === 'undefined') return;
 
@@ -286,7 +344,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
           sourceNodeRef.current.connect(analyserRef.current);
           analyserRef.current.connect(audioContextRef.current.destination);
         } catch {
-          // El nodo ya pudo haber sido enlazado
+          // Nodo ya conectado
         }
       }
     } catch (e) {
@@ -294,129 +352,178 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
     }
   }, [audioElement]);
 
-  // 6. Loop de Lip-Sync de Alta Precisión (F1 Apertura + F2 Comisuras + Inercia IIR)
+  // =========================================================================
+  // MOTOR KINÉTICO INTEGRAL: MANOS, CABEZA, GESTOS Y LIP-SYNC EN 60 FPS
+  // =========================================================================
   useEffect(() => {
     let phase = 0;
     let smoothedF1 = 0;
     let smoothedF2 = 0.5;
 
-    const updateLipSync = () => {
-      if (isPlaying) {
-        let f1Energy = 0;
-        let f2Energy = 0;
+    let curHeadPitch = 0;
+    let curHeadRoll = 0;
+    let curHeadYaw = 0;
+    let curHeadY = 0;
 
-        if (analyserRef.current) {
-          const bufferLength = analyserRef.current.frequencyBinCount;
-          const dataArray = new Uint8Array(bufferLength);
-          analyserRef.current.getByteFrequencyData(dataArray);
+    let curLeftHandX = 0;
+    let curLeftHandY = 0;
+    let curLeftHandRot = 0;
+    let curLeftHandScale = 1;
 
-          // F1: Formante Mandibular (bins 4 a 14 ~ 300Hz - 900Hz)
-          let f1Sum = 0;
-          let f1Count = 0;
-          for (let i = 4; i <= Math.min(14, bufferLength - 1); i++) {
-            f1Sum += dataArray[i];
-            f1Count++;
-          }
-          f1Energy = f1Count > 0 ? f1Sum / f1Count : 0;
+    let curRightHandX = 0;
+    let curRightHandY = 0;
+    let curRightHandRot = 0;
+    let curRightHandScale = 1;
 
-          // F2: Formante de Sonrisa / Comisura (bins 16 a 34 ~ 1200Hz - 2800Hz)
-          let f2Sum = 0;
-          let f2Count = 0;
-          for (let i = 16; i <= Math.min(34, bufferLength - 1); i++) {
-            f2Sum += dataArray[i];
-            f2Count++;
-          }
-          f2Energy = f2Count > 0 ? f2Sum / f2Count : 0;
+    const updateKineticPuppetry = () => {
+      phase += isPlaying ? (0.16 * speechRate) : 0.035;
+
+      // 1. Respiración pulmonar sinusoidal continua
+      const breathSin = Math.sin(phase * 0.7);
+      const targetChestY = breathSin * 2.2;
+      const targetChestScale = 1.0 + breathSin * 0.005;
+      setChestElevation(targetChestY);
+      setChestScale(targetChestScale);
+
+      // 2. Modulación Fonética y Formantes
+      let f1Energy = 0;
+      let f2Energy = 0;
+
+      if (analyserRef.current) {
+        const bufferLength = analyserRef.current.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        analyserRef.current.getByteFrequencyData(dataArray);
+
+        let f1Sum = 0; let f1Count = 0;
+        for (let i = 4; i <= Math.min(14, bufferLength - 1); i++) {
+          f1Sum += dataArray[i]; f1Count++;
         }
+        f1Energy = f1Count > 0 ? f1Sum / f1Count : 0;
 
-        // Síntesis fonética armónica complementaria para cadencia natural humana
-        phase += 0.24 * speechRate;
-        const acousticOsc1 = Math.sin(phase) * 0.45 + 0.5;
-        const acousticOsc2 = Math.sin(phase * 1.8 + 0.6) * 0.28;
-        const organicEnergy = Math.max(0.08, Math.min(0.92, acousticOsc1 + acousticOsc2));
+        let f2Sum = 0; let f2Count = 0;
+        for (let i = 16; i <= Math.min(34, bufferLength - 1); i++) {
+          f2Sum += dataArray[i]; f2Count++;
+        }
+        f2Energy = f2Count > 0 ? f2Sum / f2Count : 0;
+      }
 
-        const rawF1 = f1Energy > 10 
-          ? Math.min(1, Math.max(0, (f1Energy - 10) / 45))
-          : organicEnergy;
+      // Síntesis orgánica de amplitud fonética en habla
+      const oscA = Math.sin(phase * 1.5) * 0.45 + 0.5;
+      const oscB = Math.sin(phase * 2.8 + 0.6) * 0.25;
+      const speechPulse = isPlaying ? Math.max(0.12, Math.min(0.96, oscA + oscB)) : 0;
+      const rawF1 = f1Energy > 10 ? Math.min(1, Math.max(0, (f1Energy - 10) / 45)) : speechPulse;
+      const rawF2 = f1Energy > 10 ? Math.min(1, Math.max(0.1, (f2Energy / (f1Energy + 0.1)) * 0.95)) : (0.5 + Math.sin(phase * 0.8) * 0.2);
 
-        const rawF2 = f1Energy > 10 
-          ? Math.min(1, Math.max(0.1, (f2Energy / (f1Energy + 0.1)) * 0.95))
-          : 0.5 + Math.sin(phase * 0.8) * 0.2;
+      smoothedF1 = smoothedF1 * 0.68 + rawF1 * 0.32;
+      smoothedF2 = smoothedF2 * 0.75 + rawF2 * 0.25;
 
-        // Inercia IIR orgánica (simula masa muscular de la mandíbula y labios)
-        smoothedF1 = smoothedF1 * 0.68 + rawF1 * 0.32;
-        smoothedF2 = smoothedF2 * 0.75 + rawF2 * 0.25;
+      setMouthOpenRatio(smoothedF1);
+      setMouthWidthRatio(smoothedF2);
 
-        setMouthOpenRatio(smoothedF1);
-        setMouthWidthRatio(smoothedF2);
+      // 3. Articulación Dinámica de la Cabeza
+      let targetHeadPitch = 0;
+      let targetHeadRoll = 0;
+      let targetHeadYaw = 0;
+      let targetHeadY = targetChestY * 0.5;
 
-        // Micro-inclinación de cabeza conversacional
-        setHeadTilt(Math.sin(phase * 0.5) * 1.6);
-        setHeadYaw(Math.cos(phase * 0.35) * 1.2);
+      if (isPlaying) {
+        // Asentimiento rítmico, inclinación didáctica y sutil giro en 3D
+        targetHeadPitch = Math.sin(phase * 2.2) * 3.6 + Math.cos(phase * 3.8) * 1.4;
+        targetHeadRoll = Math.sin(phase * 0.9) * 2.8;
+        targetHeadYaw = Math.cos(phase * 0.6) * 3.2;
+        targetHeadY += Math.sin(phase * 2.2) * 1.6;
+      } else if (isListening) {
+        targetHeadRoll = 2.4;
+        targetHeadPitch = 2.0;
+        targetHeadY -= 1.5;
+      } else if (activeGesture === 'look_left') {
+        targetHeadYaw = -4.5;
+        targetHeadRoll = -1.2;
+      } else if (activeGesture === 'look_right') {
+        targetHeadYaw = 4.5;
+        targetHeadRoll = 1.2;
+      } else if (activeGesture === 'subtle_nod') {
+        targetHeadPitch = 4.0;
+        targetHeadY += 2.0;
+      } else if (activeGesture === 'brow_focus') {
+        targetHeadPitch = -2.5;
+        targetHeadY -= 1.5;
+      }
+
+      // 4. Gesticulación Dinámica de Manos (Izquierda y Derecha)
+      let targetLeftHandY = targetChestY;
+      let targetLeftHandX = 0;
+      let targetLeftHandRot = 0;
+      let targetLeftHandScale = 1.0;
+
+      let targetRightHandY = targetChestY;
+      let targetRightHandX = 0;
+      let targetRightHandRot = 0;
+      let targetRightHandScale = 1.0;
+
+      if (isPlaying) {
+        // Mano izquierda (pantalla): elevación y barrido en cadencia oratoria
+        targetLeftHandY = -8 - Math.sin(phase * 1.6) * 14 - smoothedF1 * 8;
+        targetLeftHandX = Math.cos(phase * 1.2) * 5;
+        targetLeftHandRot = -3 + Math.sin(phase * 1.6) * 7;
+        targetLeftHandScale = 1.02 + smoothedF1 * 0.03;
+
+        // Mano derecha (pantalla): palma abierta acogedora / énfasis
+        targetRightHandY = -12 - Math.cos(phase * 1.4 + 0.5) * 16 - smoothedF1 * 10;
+        targetRightHandX = 4 + Math.sin(phase * 1.4) * 6;
+        targetRightHandRot = 4 + Math.cos(phase * 1.4) * 8;
+        targetRightHandScale = 1.03 + smoothedF1 * 0.04;
       } else {
-        // En reposo regresa suavemente a labios sellados naturales
-        setMouthOpenRatio(prev => Math.max(0, prev - 0.18));
-        setMouthWidthRatio(prev => prev + (0.5 - prev) * 0.2);
-        setHeadTilt(prev => prev * 0.85);
-        setHeadYaw(prev => prev * 0.85);
+        // En reposo: micro-ondulación flotante acompasada con la respiración
+        targetLeftHandY = targetChestY * 1.2;
+        targetRightHandY = targetChestY * 1.2;
       }
 
-      animationFrameRef.current = requestAnimationFrame(updateLipSync);
+      // 5. Inercia IIR Orgánica (Filtro Suavizador de Masa Muscular)
+      curHeadPitch = curHeadPitch * 0.72 + targetHeadPitch * 0.28;
+      curHeadRoll = curHeadRoll * 0.72 + targetHeadRoll * 0.28;
+      curHeadYaw = curHeadYaw * 0.72 + targetHeadYaw * 0.28;
+      curHeadY = curHeadY * 0.72 + targetHeadY * 0.28;
+
+      curLeftHandX = curLeftHandX * 0.75 + targetLeftHandX * 0.25;
+      curLeftHandY = curLeftHandY * 0.75 + targetLeftHandY * 0.25;
+      curLeftHandRot = curLeftHandRot * 0.75 + targetLeftHandRot * 0.25;
+      curLeftHandScale = curLeftHandScale * 0.75 + targetLeftHandScale * 0.25;
+
+      curRightHandX = curRightHandX * 0.75 + targetRightHandX * 0.25;
+      curRightHandY = curRightHandY * 0.75 + targetRightHandY * 0.25;
+      curRightHandRot = curRightHandRot * 0.75 + targetRightHandRot * 0.25;
+      curRightHandScale = curRightHandScale * 0.75 + targetRightHandScale * 0.25;
+
+      setHeadMotion({
+        pitch: curHeadPitch,
+        roll: curHeadRoll,
+        yaw: curHeadYaw,
+        y: curHeadY
+      });
+
+      setLeftHandMotion({
+        x: curLeftHandX,
+        y: curLeftHandY,
+        rot: curLeftHandRot,
+        scale: curLeftHandScale
+      });
+
+      setRightHandMotion({
+        x: curRightHandX,
+        y: curRightHandY,
+        rot: curRightHandRot,
+        scale: curRightHandScale
+      });
+
+      animationFrameRef.current = requestAnimationFrame(updateKineticPuppetry);
     };
 
-    animationFrameRef.current = requestAnimationFrame(updateLipSync);
+    animationFrameRef.current = requestAnimationFrame(updateKineticPuppetry);
     return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [isPlaying, speechRate]);
-
-  // 7. Transformaciones cinemáticas compuestas del avatar
-  const getAvatarMotionStyle = () => {
-    let tx = 0;
-    let ty = chestElevation; // Respiración continua
-    let rZ = headTilt;
-    let rY = headYaw;
-    let rX = 0;
-    let scale = 1 + (chestElevation * 0.003);
-
-    // Ajustes por gestos de espera
-    if (activeGesture === 'look_left') {
-      rY -= 4;
-      tx -= 3;
-      rZ -= 0.8;
-    } else if (activeGesture === 'look_right') {
-      rY += 4;
-      tx += 3;
-      rZ += 0.8;
-    } else if (activeGesture === 'subtle_nod') {
-      rX += 4;
-      ty += 2;
-    } else if (activeGesture === 'brow_focus') {
-      scale += 0.012;
-      ty -= 1.5;
-      rX -= 2;
-    }
-
-    // Si el alumno está hablando / grabando, inclinación de escucha atenta
-    if (isListening) {
-      rZ = 2.4;
-      rX = 2;
-      ty -= 2;
-      scale = 1.018;
-    }
-
-    // Si el avatar está hablando, ligero ritmo oratorio
-    if (isPlaying) {
-      ty += mouthOpenRatio * 1.5;
-    }
-
-    return {
-      transform: `perspective(600px) translate3d(${tx}px, ${ty}px, 0px) rotateX(${rX}deg) rotateY(${rY}deg) rotateZ(${rZ}deg) scale(${scale})`,
-      transition: isPlaying ? 'transform 75ms ease-out' : 'transform 260ms cubic-bezier(0.25, 1, 0.5, 1)'
-    };
-  };
+  }, [isPlaying, isListening, activeGesture, speechRate]);
 
   const languageLabel = language === 'fr' ? 'Français' : 'English';
   const languageFlag = language === 'fr' ? '🇫🇷' : '🇬🇧';
@@ -429,59 +536,111 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
     { value: 1.2, label: '1.2x Fluido' }
   ];
 
-  return (
-    <div className={`relative flex flex-col items-center select-none ${className}`}>
-      {/* Marco Principal Gamificado del Avatar */}
-      <div className={`relative w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 rounded-3xl overflow-hidden shadow-2xl border-4 ${
-        isHistorical ? 'border-amber-500/50 shadow-amber-500/20' : 'border-indigo-500/40 shadow-indigo-500/20'
-      } bg-gradient-to-b from-slate-900 via-slate-950 to-black group`}>
-        
-        {/* Halo de luz ambiental reactivo */}
-        <div 
-          className={`absolute -inset-4 rounded-full blur-3xl transition-opacity duration-700 pointer-events-none ${
-            isPlaying 
-              ? (isHistorical ? 'bg-amber-500/35 opacity-100 animate-pulse' : 'bg-cyan-500/35 opacity-100 animate-pulse')
-              : isListening 
-                ? 'bg-emerald-500/40 opacity-100 animate-pulse' 
-                : avatarMood === 'celebrating'
-                  ? 'bg-yellow-400/45 opacity-100'
-                  : (isHistorical ? 'bg-amber-600/20 opacity-60' : 'bg-indigo-600/20 opacity-60')
-          }`}
-        />
+  // Componente interno del Personaje Articulado (utilizado en ambos modos)
+  const renderLivingPuppet = () => {
+    const rig = avatarKineticRig;
 
-        {/* Contenedor Anatómico Cinético */}
+    return (
+      <div className="relative w-full h-full flex items-end justify-center overflow-hidden">
+        {/* 1. Capa Base: Torso y Cuerpo (Respiración diafragmática) */}
         <div 
-          className="relative w-full h-full flex items-center justify-center overflow-hidden"
-          style={getAvatarMotionStyle()}
+          className="absolute inset-0 w-full h-full flex items-end justify-center pointer-events-none"
+          style={{
+            transform: `translate3d(0, ${chestElevation}px, 0) scale(${chestScale})`,
+            transformOrigin: '50% 88%',
+            transition: 'transform 80ms ease-out'
+          }}
         >
-          {/* Retrato Base del Personaje Histórico o Mentor */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={avatarImageSrc}
             alt={avatarDisplayTitle}
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = gender === 'female' 
-                ? '/images/languages/mentor_female.jpg' 
-                : '/images/languages/mentor_male.jpg';
-            }}
-            className="w-full h-full object-cover object-center absolute inset-0 select-none pointer-events-none filter contrast-102 brightness-100 transition-all duration-300"
+            className="w-full h-full object-contain object-bottom select-none pointer-events-none drop-shadow-2xl"
           />
+        </div>
 
-          {/* Capa de Párpados / Pestañeo Realista Natural */}
-          <div 
-            className="absolute inset-0 bg-slate-950/75 mix-blend-multiply pointer-events-none transition-opacity duration-100 ease-in-out"
-            style={{
-              opacity: isBlinking ? 0.94 : 0
-            }}
+        {/* 2. Capa Cinética de Cabeza y Cuello (Asentimientos 3D, inclinación didáctica y sutil giro) */}
+        <div
+          className="absolute inset-0 w-full h-full flex items-end justify-center pointer-events-none"
+          style={{
+            maskImage: `radial-gradient(ellipse ${rig.head.rx}% ${rig.head.ry}% at ${rig.head.cx}% ${rig.head.cy}%, black 65%, transparent 100%)`,
+            WebkitMaskImage: `radial-gradient(ellipse ${rig.head.rx}% ${rig.head.ry}% at ${rig.head.cx}% ${rig.head.cy}%, black 65%, transparent 100%)`,
+            transform: `perspective(650px) translate3d(0, ${headMotion.y}px, 0) rotateX(${headMotion.pitch}deg) rotateY(${headMotion.yaw}deg) rotateZ(${headMotion.roll}deg)`,
+            transformOrigin: `${rig.head.pivotX}% ${rig.head.pivotY}%`,
+            transition: 'transform 60ms ease-out'
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={avatarImageSrc}
+            alt=""
+            className="w-full h-full object-contain object-bottom select-none pointer-events-none"
           />
+        </div>
 
-          {/* =========================================================================
-              LIP-SYNC ANATÓMICO SVG DE ALTA PRECISIÓN (Espacio 1024x1024)
-              Modulación F1 (Apertura Mandibular) + F2 (Comisuras y Sonrisa)
-              ========================================================================= */}
+        {/* 3. Capa Cinética de Mano Izquierda (Gesticulación oratoria, elevación y muñeca) */}
+        <div
+          className="absolute inset-0 w-full h-full flex items-end justify-center pointer-events-none"
+          style={{
+            maskImage: `radial-gradient(ellipse ${rig.leftHand.rx}% ${rig.leftHand.ry}% at ${rig.leftHand.cx}% ${rig.leftHand.cy}%, black 60%, transparent 100%)`,
+            WebkitMaskImage: `radial-gradient(ellipse ${rig.leftHand.rx}% ${rig.leftHand.ry}% at ${rig.leftHand.cx}% ${rig.leftHand.cy}%, black 60%, transparent 100%)`,
+            transform: `translate3d(${leftHandMotion.x}px, ${leftHandMotion.y}px, 0) rotate(${leftHandMotion.rot}deg) scale(${leftHandMotion.scale})`,
+            transformOrigin: `${rig.leftHand.pivotX}% ${rig.leftHand.pivotY}%`,
+            transition: 'transform 65ms ease-out'
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={avatarImageSrc}
+            alt=""
+            className="w-full h-full object-contain object-bottom select-none pointer-events-none"
+          />
+        </div>
+
+        {/* 4. Capa Cinética de Mano Derecha (Gesticulación abierta, barrido y énfasis) */}
+        <div
+          className="absolute inset-0 w-full h-full flex items-end justify-center pointer-events-none"
+          style={{
+            maskImage: `radial-gradient(ellipse ${rig.rightHand.rx}% ${rig.rightHand.ry}% at ${rig.rightHand.cx}% ${rig.rightHand.cy}%, black 60%, transparent 100%)`,
+            WebkitMaskImage: `radial-gradient(ellipse ${rig.rightHand.rx}% ${rig.rightHand.ry}% at ${rig.rightHand.cx}% ${rig.rightHand.cy}%, black 60%, transparent 100%)`,
+            transform: `translate3d(${rightHandMotion.x}px, ${rightHandMotion.y}px, 0) rotate(${rightHandMotion.rot}deg) scale(${rightHandMotion.scale})`,
+            transformOrigin: `${rig.rightHand.pivotX}% ${rig.rightHand.pivotY}%`,
+            transition: 'transform 65ms ease-out'
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={avatarImageSrc}
+            alt=""
+            className="w-full h-full object-contain object-bottom select-none pointer-events-none"
+          />
+        </div>
+
+        {/* 5. Capa de Pestañeo Realista Natural */}
+        <div 
+          className="absolute inset-0 pointer-events-none transition-opacity duration-120 ease-in-out"
+          style={{
+            opacity: isBlinking ? 0.95 : 0,
+            maskImage: `radial-gradient(ellipse ${rig.eyes.rx}% ${rig.eyes.ry}% at ${rig.eyes.cx}% ${rig.eyes.cy}%, black 50%, transparent 100%)`,
+            WebkitMaskImage: `radial-gradient(ellipse ${rig.eyes.rx}% ${rig.eyes.ry}% at ${rig.eyes.cx}% ${rig.eyes.cy}%, black 50%, transparent 100%)`,
+            backgroundColor: 'rgba(30, 20, 25, 0.88)',
+            transform: `perspective(650px) translate3d(0, ${headMotion.y}px, 0) rotateX(${headMotion.pitch}deg) rotateY(${headMotion.yaw}deg) rotateZ(${headMotion.roll}deg)`,
+            transformOrigin: `${rig.head.pivotX}% ${rig.head.pivotY}%`
+          }}
+        />
+
+        {/* 6. LIP-SYNC ANATÓMICO SVG DE ALTA PRECISIÓN (Espacio 1024x1024) */}
+        <div
+          className="absolute inset-0 w-full h-full pointer-events-none select-none z-10"
+          style={{
+            transform: `perspective(650px) translate3d(0, ${headMotion.y}px, 0) rotateX(${headMotion.pitch}deg) rotateY(${headMotion.yaw}deg) rotateZ(${headMotion.roll}deg)`,
+            transformOrigin: `${rig.head.pivotX}% ${rig.head.pivotY}%`,
+            transition: 'transform 60ms ease-out'
+          }}
+        >
           <svg 
             viewBox="0 0 1024 1024" 
-            className="absolute inset-0 w-full h-full pointer-events-none select-none z-10"
+            className="w-full h-full pointer-events-none select-none"
           >
             <defs>
               <filter 
@@ -531,7 +690,6 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
             </defs>
 
             {isPlaying && mouthOpenRatio > 0.05 && (() => {
-              // Cálculo dinámico bifactorial F1/F2
               const widthOffset = (mouthWidthRatio - 0.5) * 6;
               const effX1 = mouthCfg.x1 - widthOffset;
               const effX2 = mouthCfg.x2 + widthOffset;
@@ -547,19 +705,19 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
 
               return (
                 <g filter={`url(#avatarFeather_${avatarDisplayTitle.replace(/[^a-zA-Z0-9]/g, '_')})`}>
-                  {/* 1. Cavidad Bucal Anatómica Profunda */}
+                  {/* 1. Cavidad Bucal Profunda */}
                   <path 
                     d={`M ${effX1} ${mouthCfg.y1} Q ${mouthCfg.cx} ${upperArchY} ${effX2} ${mouthCfg.y2} Q ${mouthCfg.cx} ${mouthCfg.cy + verticalDrop} ${effX1} ${mouthCfg.y1} Z`} 
                     fill={`url(#avatarCavity_${avatarDisplayTitle.replace(/[^a-zA-Z0-9]/g, '_')})`} 
                   />
 
-                  {/* 2. Fila Superior de Dientes Naturales Nacardados Proporcionales */}
+                  {/* 2. Dientes Superiores Naturales */}
                   <path 
                     d={`M ${mouthCfg.cx - teethHalfWidth} ${mouthCfg.cy - 0.8} Q ${mouthCfg.cx} ${mouthCfg.cy - 1.8} ${mouthCfg.cx + teethHalfWidth} ${mouthCfg.cy - 1.0} Q ${mouthCfg.cx + teethHalfWidth} ${mouthCfg.cy - 0.8 + teethHeight} Q ${mouthCfg.cx} ${mouthCfg.cy + teethHeight} ${mouthCfg.cx - teethHalfWidth} ${mouthCfg.cy - 0.8 + teethHeight} Z`} 
                     fill={`url(#avatarTeeth_${avatarDisplayTitle.replace(/[^a-zA-Z0-9]/g, '_')})`} 
                   />
 
-                  {/* 3. Sombra de Lengua Interior en Fonemas Abiertos */}
+                  {/* 3. Sombra de Lengua Interior */}
                   {mouthOpenRatio > 0.32 && (
                     <ellipse 
                       cx={mouthCfg.cx} 
@@ -571,7 +729,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
                     />
                   )}
 
-                  {/* 4. Labio Inferior Carnoso Acompañando el Descenso Mandibular */}
+                  {/* 4. Labio Inferior Acompañando el Descenso Mandibular */}
                   <path 
                     d={`M ${effX1 + 1.2} ${mouthCfg.y1 + 0.3} Q ${mouthCfg.cx} ${mouthCfg.cy + verticalDrop} ${effX2 - 1.2} ${mouthCfg.y2 + 0.3} Q ${mouthCfg.cx} ${mouthCfg.cy + verticalDrop + lipThickness} ${effX1 + 1.2} ${mouthCfg.y1 + 0.3} Z`} 
                     fill={`url(#avatarLowerLip_${avatarDisplayTitle.replace(/[^a-zA-Z0-9]/g, '_')})`} 
@@ -581,18 +739,48 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
               );
             })()}
           </svg>
-
-          {/* Sombra de Suavizado Inferior para Contraste de Texto */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-
-          {/* Celebración / Logro Gamificado */}
-          {avatarMood === 'celebrating' && (
-            <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-20">
-              <Sparkles className="w-16 h-16 text-amber-300 animate-ping absolute" />
-              <Award className="w-14 h-14 text-yellow-400 animate-bounce absolute" />
-            </div>
-          )}
         </div>
+      </div>
+    );
+  };
+
+  // =========================================================================
+  // MODO 1: ESCENARIO DEL STUDIO (variant === 'stage')
+  // Se inserta limpiamente en el panel del taller pedagógico
+  // =========================================================================
+  if (variant === 'stage') {
+    return (
+      <div className={`relative w-full h-full flex items-end justify-start select-none ${className}`}>
+        {renderLivingPuppet()}
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // MODO 2: TARJETA COMPLETA GAMIFICADA (variant === 'card')
+  // =========================================================================
+  return (
+    <div className={`relative flex flex-col items-center select-none ${className}`}>
+      {/* Marco Principal Gamificado del Avatar */}
+      <div className={`relative w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 rounded-3xl overflow-hidden shadow-2xl border-4 ${
+        isHistorical ? 'border-amber-500/50 shadow-amber-500/20' : 'border-indigo-500/40 shadow-indigo-500/20'
+      } bg-gradient-to-b from-slate-900 via-slate-950 to-black group`}>
+        
+        {/* Halo de luz ambiental reactivo */}
+        <div 
+          className={`absolute -inset-4 rounded-full blur-3xl transition-opacity duration-700 pointer-events-none ${
+            isPlaying 
+              ? (isHistorical ? 'bg-amber-500/35 opacity-100 animate-pulse' : 'bg-cyan-500/35 opacity-100 animate-pulse')
+              : isListening 
+                ? 'bg-emerald-500/40 opacity-100 animate-pulse' 
+                : avatarMood === 'celebrating'
+                  ? 'bg-yellow-400/45 opacity-100'
+                  : (isHistorical ? 'bg-amber-600/20 opacity-60' : 'bg-indigo-600/20 opacity-60')
+          }`}
+        />
+
+        {/* Contenedor del Personaje Articulado */}
+        {renderLivingPuppet()}
 
         {/* Badge Superior: Personaje, Época y Bandera */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-20">
@@ -641,7 +829,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Ondas Sonoras Visuales en Tiempo Real mientras habla */}
+        {/* Ondas Sonoras Visuales mientras habla */}
         {isPlaying && (
           <div className="absolute bottom-3 left-4 right-4 flex items-end justify-center gap-1.5 h-7 pointer-events-none z-20">
             {[45, 80, 100, 65, 90, 100, 75, 95, 55].map((heightPct, idx) => (
@@ -672,7 +860,6 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
           <span>Velocidad:</span>
         </div>
 
-        {/* Selector de Velocidad */}
         <div className="flex items-center gap-1 py-0.5">
           {SPEED_OPTIONS.map(opt => (
             <button
@@ -680,9 +867,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
               type="button"
               onClick={() => {
                 setInternalSpeechRate(opt.value);
-                if (onSpeechRateChange) {
-                  onSpeechRateChange(opt.value);
-                }
+                onSpeechRateChange?.(opt.value);
               }}
               className={`px-2 py-1 rounded-lg font-mono font-bold text-[10px] transition-all cursor-pointer ${
                 Math.abs(speechRate - opt.value) < 0.05
@@ -698,7 +883,6 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
           ))}
         </div>
 
-        {/* Botón de Reproducción / Repetición */}
         <button
           type="button"
           onClick={handlePlayVoiceSample}
@@ -714,7 +898,7 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
         </button>
       </div>
 
-      {/* Globo de Diálogo / Subtítulo con Traducción Desplegable */}
+      {/* Globo de Diálogo / Subtítulo con Traducción */}
       {currentText && (
         <div className={`mt-3 w-full max-w-lg p-4 rounded-2xl border shadow-xl space-y-2 backdrop-blur-md transition-colors ${
           isLightMode

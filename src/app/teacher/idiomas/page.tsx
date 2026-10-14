@@ -692,6 +692,7 @@ export default function TeacherIdiomasPage() {
     try {
       audioControllerRef.current = await playUniversalIskoolVoice({
         text: sampleText,
+        characterName: activeLesson.avatarName,
         voiceId: activeLesson.avatarVoice,
         language: activeLesson.language,
         gender: activeLesson.avatarGender,
@@ -1502,12 +1503,20 @@ export default function TeacherIdiomasPage() {
                         ? 'bg-gradient-to-b from-[#F1F5F9] via-[#F8FAFC] to-[#FFFFFF] border-slate-200/80 shadow-inner' 
                         : 'bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 border-slate-800 shadow-inner'
                     }`}>
-                      {/* Personaje 3D Renderizado en Mitad Izquierda */}
+                      {/* Personaje 3D Articulado con Gesticulación Natural y Movimiento de Manos y Cabeza */}
                       <div className="relative w-[65%] max-w-[320px] h-[360px] flex items-end justify-start pointer-events-none -ml-2">
-                        <img
-                          src={resolvedAvatar3dSrc}
-                          alt={activeLesson.avatarName}
-                          className="w-full h-full object-contain object-bottom drop-shadow-2xl select-none transition-transform duration-500 hover:scale-102 filter contrast-102"
+                        <HumanGesticulatingAvatar
+                          variant="stage"
+                          gender={activeLesson.avatarGender}
+                          name={activeLesson.avatarName}
+                          language={activeLesson.language}
+                          voiceId={activeLesson.avatarVoice}
+                          avatarImage={resolvedAvatar3dSrc}
+                          historicalFigureId={selectedHistoricalId || activeLesson.historicalFigureId}
+                          isPlaying={isPlayingPreview || Boolean(activePlayingLineId)}
+                          speechRate={activeLesson.defaultSpeed}
+                          isLightMode={isLightMode}
+                          className="w-full h-full"
                         />
                       </div>
 
