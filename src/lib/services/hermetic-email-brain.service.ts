@@ -270,9 +270,11 @@ export const MEXICAN_SEP_REGULATORY_DICTIONARY = {
     'lgdnna', 'ley general de los derechos de niñas', 'ley general de los derechos de ninas',
     'sipinna', 'interés superior de la niñez', 'interes superior de la ninez', 'interés superior del menor',
     'protocolo de prevención, detección y actuación', 'protocolo de actuación ante situaciones de violencia',
-    'abuso sexual infantil', 'asi', 'presunto abuso', 'tocamiento indebido',
-    'acoso escolar', 'bullying', 'violencia escolar', 'maltrato infantil', 'castigo corporal',
-    'agresión física entre alumnos', 'agresion fisica', 'riña grave', 'arma en el plantel', 'sustancia prohibida',
+    'protocolo de seguridad', 'abuso sexual infantil', 'presunto abuso', 'tocamiento indebido',
+    'acoso escolar', 'acoso', 'bullying', 'violencia escolar', 'maltrato infantil', 'castigo corporal',
+    'agresión física', 'agresion fisica', 'riña grave', 'arma en el plantel', 'sustancia prohibida',
+    'demanda', 'abogado', 'urgente dirección', 'urgente direccion', 'negligencia grave',
+    'denuncia ante autoridades', 'amenaza', 'citatorio legal',
     'dif', 'procuraduría de protección', 'procuraduria de proteccion', 'procuraduría de la defensa del menor',
     'orden de restricción', 'orden de restriccion', 'patria potestad', 'guarda y custodia', 'sustracción de menor', 'sustraccion de menor',
     'juzgado familiar', 'medida cautelar judicial', 'prohibición de entrega de menor',
@@ -283,10 +285,10 @@ export const MEXICAN_SEP_REGULATORY_DICTIONARY = {
 
   // 4. Emergencias Médicas, Protección Civil y Accidentes Escolares
   civilProtectionAndMedical: [
-    'accidente grave', 'alumno herido', 'estudiante herido', 'fractura',
+    'accidente', 'accidente grave', 'alumno herido', 'estudiante herido', 'herido', 'lesión', 'lesion', 'fractura',
     'traumatismo craneoencefálico', 'pérdida de conocimiento', 'perdida de conocimiento',
     'ambulancia', 'paramédicos', 'paramedicos', 'cruz roja', 'urgencias médicas', 'urgencias medicas',
-    'seguro escolar contra accidentes', 'póliza de seguro escolar', 'poliza de seguro escolar', 'reporte de siniestro escolar',
+    'seguro escolar contra accidentes', 'seguro escolar', 'póliza de seguro escolar', 'poliza de seguro escolar', 'reporte de siniestro escolar',
     'protección civil', 'proteccion civil', 'simulacro escolar', 'evacuación del plantel', 'evacuacion del plantel',
     'fuga de gas', 'conato de incendio', 'sismo', 'daño estructural', 'dano estructural',
     'contingencia ambiental', 'suspensión oficial de clases', 'suspension oficial de clases',
@@ -465,7 +467,37 @@ export function classifyZeroTokenEmail(
     };
   }
 
-  // 2. CUADRANTE 1: ATENCIÓN INMEDIATA CEO (🔴 0 Tokens)
+  // 2. REGLA SUPREMA VIP: Remitentes prioritarios registrados por el CEO en Ajustes
+  let matchingVip: any = null;
+  if (sFromEmail) {
+    if (vipRules && vipRules.length > 0) {
+      matchingVip = vipRules.find(v => v.enabled !== false && v.email && sFromEmail.includes(v.email.toLowerCase().trim()));
+    }
+    if (!matchingVip) {
+      matchingVip = CeoEmailSettingsService.getMatchingVipRule(tId, sFromEmail);
+    }
+  }
+  if (matchingVip) {
+    return {
+      quadrant: 'ATENCION_CEO',
+      urgency: 'CRITICA',
+      category: `Regla VIP / ${matchingVip.contactName || 'Alta Importancia'}`,
+      badge: {
+        quadrant: 'ATENCION_CEO',
+        label: '🔴 ATENCIÓN INMEDIATA CEO',
+        color: 'bg-red-50 text-red-700 border-red-200'
+      },
+      gmailCategory: 'principal',
+      assigned_department: 'Dirección General / CEO',
+      assigned_role: 'Dirección General / CEO',
+      delegate_email: sFromEmail,
+      sla_hours: 12,
+      why_shown_to_director: `Remitente prioritario registrado en Reglas VIP de Dirección General (${matchingVip.email}${matchingVip.organization ? ' - ' + matchingVip.organization : ''}): ${matchingVip.reason || 'Atención prioritaria obligatoria e indelegable.'}`,
+      recommended_action: 'Atención prioritaria e inmediata de Dirección General / CEO. Dar seguimiento directo y personalizado sin intermediación.'
+    };
+  }
+
+  // 3. CUADRANTE 1: ATENCIÓN INMEDIATA CEO (🔴 0 Tokens)
   // Gobernanza y Marco Normativo SEP / Salvaguarda de Menores (LGDNNA / SIPINNA) / Urgencias Médicas y Protección Civil
   const isRoutineDocTramite = (
     fullText.includes('boleta') || fullText.includes('kardex') || fullText.includes('constancia de estudio') || fullText.includes('certificado escolar')
@@ -487,7 +519,12 @@ export function classifyZeroTokenEmail(
   );
 
   // B. Salvaguarda de Menores, Protocolos de Prevención de Violencia Escolar (LGDNNA / SIPINNA / ASI / MP / Restricción Judicial)
-  const isChildProtectionOrLegalEmergency = MEXICAN_SEP_REGULATORY_DICTIONARY.childProtectionAndLegal.some(sig => fullText.includes(sig));
+  const isSevereConflictOrLegal = [
+    'acoso', 'bullying', 'demanda', 'abogado', 'urgente dirección', 'urgente direccion', 'agresión física', 'agresion fisica',
+    'negligencia grave', 'denuncia ante autoridades', 'amenaza', 'profeco', 'citatorio legal', 'protocolo de seguridad'
+  ].some(sig => fullText.includes(sig));
+
+  const isChildProtectionOrLegalEmergency = isSevereConflictOrLegal || MEXICAN_SEP_REGULATORY_DICTIONARY.childProtectionAndLegal.some(sig => fullText.includes(sig));
 
   // C. Emergencias Médicas, Seguro Escolar contra Accidentes y Protección Civil
   const isCivilProtectionOrMedicalEmergency = MEXICAN_SEP_REGULATORY_DICTIONARY.civilProtectionAndMedical.some(sig => fullText.includes(sig));
@@ -588,25 +625,27 @@ export function classifyZeroTokenEmail(
 
   if (isCeoCritical) {
     let cat = 'Atención Inmediata CEO';
-    let why = 'Asunto con implicación de gobernanza o riesgo normativo que requiere criterio ético y resolución directa de Dirección General.';
+    let why = 'Asunto con implicación de gobernanza o riesgo normativo que requiere criterio ético y resolución directa de Dirección.';
     let action = 'Atención directa inmediata de Dirección General / CEO.';
+    let assignedDept = 'Dirección General / CEO';
 
     if (isChildProtectionOrLegalEmergency) {
-      cat = 'Salvaguarda y Protección de Menores / Protocolo SEP & LGDNNA';
-      why = 'Activación prioritaria de Protocolo Oficial de Prevención, Detección y Actuación (LGDNNA / SIPINNA / Maltrato / Acoso Grave / Orden Judicial de Custodia / Riesgo Legal). Asunto legal supremo de salvaguarda que compete exclusivamente a Dirección General.';
-      action = 'Activar de inmediato el Protocolo Oficial de Salvaguarda de la SEP, salvaguardar la integridad del menor, levantar acta circunstanciada de hechos y notificar a la autoridad competente.';
+      cat = isSevereConflictOrLegal ? 'Convivencia / Caso Crítico Nivel 3' : 'Salvaguarda y Protección de Menores / Protocolo SEP & LGDNNA';
+      why = 'Asunto con implicación de gobernanza o riesgo normativo que requiere criterio ético y resolución directa de Dirección.';
+      action = 'Protocolo Oficial de Salvaguarda de la SEP: Convocar de inmediato a mesa de mediación presencial y activar el protocolo correspondiente.';
     } else if (isCivilProtectionOrMedicalEmergency) {
-      cat = 'Accidente Escolar & Protección Civil / Protocolo de Urgencia';
-      why = 'Emergencia médica o contingencia de Protección Civil con riesgo para la comunidad escolar (alumno herido / fractura / ambulancia / póliza de seguro escolar / contingencia estructural). Requiere mando ejecutivo directo de Dirección General.';
-      action = 'Activar de inmediato el protocolo de urgencias médicas escolares y la póliza de Seguro Escolar contra accidentes, dar aviso prioritario a tutores legales y resguardar el plantel.';
+      cat = 'Accidente Escolar / Salvaguarda y Seguridad de Alumnos';
+      why = 'Incidencia crítica de salvaguarda y protección física escolar: Reporte de accidente o alumno herido en instalaciones. Requiere activación inmediata del protocolo de urgencias médicas escolares.';
+      action = 'Activar de inmediato el protocolo de urgencias médicas escolares y la póliza de Seguro Escolar contra accidentes, resguardar al alumno y dar aviso prioritario a tutores legales.';
     } else if (isCteEmergency) {
       cat = 'Gobernanza Institucional / Consejo Técnico Escolar (CTE)';
-      why = 'Convocatoria oficial a sesión de Consejo Técnico Escolar (CTE) o validación de Programa Analítico / PMC. Por mandato institucional requiere atención y coordinación directa del titular de Dirección.';
+      why = 'Convocatoria oficial a sesión de Consejo Técnico Escolar (CTE) o validación de Programa Analítico / PMC. Por mandato institucional requiere atención y confirmación directa del CEO.';
       action = 'Confirmar agenda de Dirección General, coordinar concentrados de evaluación pedagógica y girar instrucción ejecutiva docente.';
     } else if (isMandatorySepInspection) {
       cat = 'Supervisión Oficial SEP / Requerimiento Regulatorio';
-      why = 'Comunicación o requerimiento oficial vinculado a la Autoridad Educativa (SEP / AEFCM / Supervisión de Zona / Inspección RVOE / Estatus de CCT). Requiere intervención y desahogo directo e indelegable de Dirección General.';
-      action = 'Atención directa inmediata de Dirección General: Revisar expediente, instruir integración de evidencias y desahogar requerimiento dentro del término oficial estipulado.';
+      why = 'Comunicación o requerimiento oficial vinculado a la Autoridad Educativa (SEP / AEFCM / Supervisión de Zona / Inspección RVOE / Estatus de CCT). Requiere intervención y desahogo directo e indelegable de Dirección General / CEO.';
+      action = 'Atención directa inmediata de Dirección General / CEO y desahogo de requerimiento ante la autoridad educativa.';
+      assignedDept = 'Dirección General / Supervisión Escolar';
     } else if (isStudentWellbeingOrWorkloadConcern) {
       cat = 'Atención Inmediata CEO / Bienestar del Estudiante y Carga Académica';
       why = 'Inquietud formal de padre de familia sobre bienestar socioemocional, descanso y sobrecarga de tareas escolares del estudiante. Asunto de gobernanza escolar y atención directiva indelegable.';
@@ -629,15 +668,15 @@ export function classifyZeroTokenEmail(
         color: 'bg-red-50 text-red-700 border-red-200'
       },
       gmailCategory: 'principal',
-      assigned_department: 'Dirección General / Supervisión Escolar',
-      assigned_role: 'Dirección General / Representante Legal',
+      assigned_department: assignedDept,
+      assigned_role: 'Dirección General / CEO',
       sla_hours: 12,
       why_shown_to_director: why,
       recommended_action: action
     };
   }
 
-  // 3. APRENDIZAJE ADAPTATIVO ZERO-TOKENS: Reglas memorizadas por retroalimentación directiva
+  // 4. APRENDIZAJE ADAPTATIVO ZERO-TOKENS: Reglas memorizadas por retroalimentación directiva
   const learnedRules = LearnedTriageMemoryService.getRules(tId);
   for (const lr of learnedRules) {
     const val = lr.patternValue.toLowerCase().trim();
@@ -653,36 +692,6 @@ export function classifyZeroTokenEmail(
       }
       return buildZeroTokenResult(lr.targetQuadrant, 'Regla de Aprendizaje / Patrón', lr.reason || 'Patrón aprendido en triage.');
     }
-  }
-
-  // 4. REGLA SUPREMA VIP: Remitentes prioritarios registrados por el CEO en Ajustes
-  let matchingVip: any = null;
-  if (sFromEmail) {
-    if (vipRules && vipRules.length > 0) {
-      matchingVip = vipRules.find(v => v.enabled !== false && v.email && sFromEmail.includes(v.email.toLowerCase().trim()));
-    }
-    if (!matchingVip) {
-      matchingVip = CeoEmailSettingsService.getMatchingVipRule(tId, sFromEmail);
-    }
-  }
-  if (matchingVip) {
-    return {
-      quadrant: 'ATENCION_CEO',
-      urgency: 'CRITICA',
-      category: `Regla VIP / ${matchingVip.contactName || 'Alta Importancia'}`,
-      badge: {
-        quadrant: 'ATENCION_CEO',
-        label: '🔴 ATENCIÓN INMEDIATA CEO',
-        color: 'bg-red-50 text-red-700 border-red-200'
-      },
-      gmailCategory: 'principal',
-      assigned_department: 'Dirección General / CEO',
-      assigned_role: 'Dirección General / CEO',
-      delegate_email: sFromEmail,
-      sla_hours: 12,
-      why_shown_to_director: `Remitente prioritario registrado en Reglas VIP de Dirección General (${matchingVip.email}${matchingVip.organization ? ' - ' + matchingVip.organization : ''}): ${matchingVip.reason || 'Atención prioritaria obligatoria e indelegable.'}`,
-      recommended_action: 'Atención prioritaria e inmediata de Dirección General / CEO. Dar seguimiento directo y personalizado sin intermediación.'
-    };
   }
 
   // 5. CUADRANTE 2: DELEGADO OPERATIVO (🟡 0 Tokens)
@@ -710,23 +719,24 @@ export function classifyZeroTokenEmail(
   }
 
   // B. Control Escolar Oficial SEP (SIGED / SINCE / Boletas QR / Certificados Electrónicos / Constancias con CCT)
-  const isControlEscolar = MEXICAN_SEP_REGULATORY_DICTIONARY.controlEscolarSep.some(sig => fullText.includes(sig)) || isRoutineDocTramite;
+  const isSepControlEscolarStrict = MEXICAN_SEP_REGULATORY_DICTIONARY.controlEscolarSep.some(sig => fullText.includes(sig));
+  const isControlEscolar = isSepControlEscolarStrict || isRoutineDocTramite;
   if (isControlEscolar) {
     return {
       quadrant: 'DELEGADO_CON_SLA',
       urgency: 'MEDIA',
-      category: 'Control Escolar Oficial SEP',
+      category: 'Control Escolar y Trámites',
       badge: {
         quadrant: 'DELEGADO_CON_SLA',
         label: '🟡 DELEGADO OPERATIVO',
         color: 'bg-amber-50 text-amber-700 border-amber-200'
       },
       gmailCategory: 'actualizaciones',
-      assigned_department: 'Departamento de Control Escolar y Secretaría Oficial',
-      assigned_role: 'Control Escolar Oficial (SIGED / SEP)',
+      assigned_department: isSepControlEscolarStrict ? 'Departamento de Control Escolar y Secretaría Oficial' : 'Control Escolar y Secretaría',
+      assigned_role: isSepControlEscolarStrict ? 'Control Escolar Oficial (SIGED / SEP)' : 'Control Escolar',
       sla_hours: 48,
-      why_shown_to_director: 'Solicitud documental o trámite de certificación oficial (SIGED / SINCE / Boleta SEP / Certificado QR / Equivalencia DGAIR) derivado a Control Escolar con SLA de 48h.',
-      recommended_action: 'Canalizar a Control Escolar para cotejo en plataforma oficial SEP, validación de CCT y emisión del documento con sello y firma autorizada.'
+      why_shown_to_director: 'Solicitud documental que compete a los procedimientos de Control Escolar.',
+      recommended_action: 'Canalizar a Control Escolar para cotejo de expediente y emisión oficial.'
     };
   }
 
@@ -735,13 +745,13 @@ export function classifyZeroTokenEmail(
     fullText.includes('factura') || fullText.includes('cfdi') || fullText.includes('colegiatura') || fullText.includes('recargo') || fullText.includes('adeudo') || fullText.includes('descuento de hermanos') || fullText.includes('pago de colegiatura');
   if (isFinance) {
     const delCobranza = CeoEmailSettingsService.getDelegate(tId, 'cobranza');
-    const role = delCobranza?.delegateName || 'Tesorería y Facturación Fiscal (SAT)';
+    const role = delCobranza?.delegateName || 'Tesorería y Facturación';
     const emailDel = delCobranza?.delegateEmail || `finanzas@${schoolDomain}`;
     const sla = delCobranza?.slaHours ?? 24;
     return {
       quadrant: 'DELEGADO_CON_SLA',
       urgency: 'MEDIA',
-      category: 'Tesorería & Facturación CFDI (SAT)',
+      category: 'Cobranza y Facturación',
       badge: {
         quadrant: 'DELEGADO_CON_SLA',
         label: '🟡 DELEGADO OPERATIVO',
@@ -752,7 +762,7 @@ export function classifyZeroTokenEmail(
       assigned_role: role,
       delegate_email: emailDel,
       sla_hours: sla,
-      why_shown_to_director: `Trámite financiero, prórroga o facturación CFDI con complemento educativo IEDU derivado a Cobranza con SLA de ${sla}h.`,
+      why_shown_to_director: `Trámite financiero o aclaración derivado al área de Cobranza con SLA de ${sla}h.`,
       recommended_action: `Canalizar a ${role} (${emailDel}) para emisión de comprobante y timbrado SAT.`
     };
   }
@@ -773,8 +783,8 @@ export function classifyZeroTokenEmail(
       assigned_department: 'Servicio Médico Escolar',
       assigned_role: 'Médico Escolar',
       sla_hours: 24,
-      why_shown_to_director: 'Notificación clínica, justificante médico o administración de prescripción médica asignada a enfermería.',
-      recommended_action: 'Registro en expediente clínico escolar y seguimiento de prescripción médica en plantel.'
+      why_shown_to_director: 'Notificación clínica o seguimiento de salud escolar asignado a enfermería.',
+      recommended_action: 'Registro en expediente clínico escolar y seguimiento de prescripción médica.'
     };
   }
 
@@ -784,7 +794,7 @@ export function classifyZeroTokenEmail(
     return {
       quadrant: 'DELEGADO_CON_SLA',
       urgency: 'MEDIA',
-      category: 'Logística y Transporte Escolar',
+      category: 'Logística y Transporte',
       badge: {
         quadrant: 'DELEGADO_CON_SLA',
         label: '🟡 DELEGADO OPERATIVO',
@@ -1045,16 +1055,16 @@ export function classifyZeroTokenEmail(
 
   if (isNemOrCivicLife) {
     informativeCat = 'Nueva Escuela Mexicana (NEM) & Vida Cívica Escolar';
-    informativeWhy = 'Aviso de acto cívico, conmemoración de efeméride oficial SEP o avance de proyectos formativos de la Nueva Escuela Mexicana.';
+    informativeWhy = 'Aviso de acto cívico, conmemoración de efeméride oficial SEP o avance de proyectos formativos de la Nueva Escuela Mexicana (no requiere gestión ejecutiva).';
   } else if (isWebinarOrConference || isConfirmationOrReceipt) {
     informativeCat = 'Webinars & Confirmaciones de Registro';
-    informativeWhy = 'Confirmación de registro o invitación a conferencia/webinar de formación complementaria.';
+    informativeWhy = 'Confirmación de registro o invitación a conferencia/webinar de formación complementaria (no requiere gestión ejecutiva).';
   } else if (isSocialServiceNotice) {
     informativeCat = 'Servicio Social & Constancias Informativas';
-    informativeWhy = 'Notificación formal de trámite concluido o liberación de servicio social universitario.';
+    informativeWhy = 'Notificación formal de trámite concluido o liberación de servicio social universitario (no requiere gestión ejecutiva).';
   } else if (isServiceTermsUpdate) {
     informativeCat = 'Actualización de Términos y Plataformas';
-    informativeWhy = 'Aviso informativo sobre actualización de políticas de privacidad o términos de herramientas externas.';
+    informativeWhy = 'Aviso informativo sobre actualización de políticas de privacidad o términos de herramientas externas (no requiere gestión ejecutiva).';
   }
 
   return {

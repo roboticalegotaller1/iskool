@@ -255,14 +255,13 @@ ${questionAnalysis.isNegated ? '⚠️ REGLA CRÍTICA DE POLARIDAD: La pregunta 
         ];
 
         for (const ep of endpoints) {
+          const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+          const timeoutId = controller ? setTimeout(() => controller.abort(), 5000) : null;
           try {
-            const signal = typeof process !== 'undefined' && process.env.NODE_ENV === 'test'
-              ? undefined
-              : (typeof AbortSignal !== 'undefined' && 'timeout' in AbortSignal ? AbortSignal.timeout(9000) : undefined);
             const aiRes = await fetch(`${ep}?key=${googleApiKey}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              ...(signal ? { signal } : {}),
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                ...(controller ? { signal: controller.signal } : {}),
               body: JSON.stringify({
                 contents: [
                   {
@@ -308,6 +307,8 @@ ${questionAnalysis.isNegated ? '⚠️ REGLA CRÍTICA DE POLARIDAD: La pregunta 
             }
           } catch (e) {
             console.warn('Intento con endpoint de IA Pedagógica:', e);
+          } finally {
+            if (timeoutId) clearTimeout(timeoutId);
           }
         }
       }

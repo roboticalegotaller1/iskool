@@ -370,7 +370,7 @@ describe('🎯 TRIAGE ZERO-TOKENS (4 CUADRANTES CANÓNICOS & APRENDIZAJE ADAPTAT
 
       expect(result.quadrant).toBe('DELEGADO_CON_SLA');
       expect(result.badge.label).toBe('🟡 DELEGADO OPERATIVO');
-      expect(result.category).toContain('Facturación CFDI');
+      expect(result.category).toContain('Cobranza y Facturación');
     });
 
     it('debe clasificar justificantes médicos con receta o incapacidad IMSS como DELEGADO_CON_SLA (Servicio Médico)', () => {
