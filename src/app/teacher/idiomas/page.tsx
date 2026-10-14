@@ -353,7 +353,7 @@ export default function TeacherIdiomasPage() {
     ) {
       return '/images/languages/3d/mentor_female_3d.webp';
     }
-    return '/images/languages/3d/mentor_male_3d.webp';
+    return '/images/languages/3d/mentor_male_3d_v2.webp';
   }, [useHistoricalFigure, selectedHistoricalId, activeLesson.historicalFigureId, activeLesson.avatarImage, activeLesson.avatarGender, activeLesson.avatarName]);
 
   // Soporte pedagógico y traducción dinámicamente resuelta (evita directivas internas)
