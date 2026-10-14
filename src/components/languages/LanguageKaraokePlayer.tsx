@@ -63,6 +63,7 @@ interface Props {
   lessonTitle: string;
   onComplete?: (stats: { accuracy: number; correctCount: number; errorWords: string[] }) => void;
   className?: string;
+  isLightMode?: boolean;
 }
 
 export const LanguageKaraokePlayer: React.FC<Props> = ({
@@ -77,7 +78,8 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
   lessonId,
   lessonTitle,
   onComplete,
-  className = ''
+  className = '',
+  isLightMode = true
 }) => {
   const { submitStudentReport } = useLanguagesStore();
 
@@ -1467,47 +1469,66 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
           phoneticTip={phrase.phoneticGuide}
           onRepeat={() => playModelVoice(phrase.targetText, speechRate)}
           audioElement={audioRef.current}
+          isLightMode={isLightMode}
         />
       </div>
 
       {/* 2. ESTUDIO INTERACTIVO DE KARAOKE FONÉTICO */}
-      <div className="w-full max-w-2xl flex flex-col space-y-5 bg-slate-900/95 border-2 border-indigo-500/40 p-5 sm:p-7 rounded-3xl shadow-2xl backdrop-blur-md">
+      <div className={`w-full max-w-2xl flex flex-col space-y-5 p-5 sm:p-7 rounded-3xl shadow-2xl backdrop-blur-md transition-all ${
+        isLightMode 
+          ? 'bg-white border-2 border-slate-200 shadow-slate-200/60 text-slate-800' 
+          : 'bg-slate-900/95 border-2 border-indigo-500/40 text-white'
+      }`}>
         
         {/* Encabezado del Reto de Pronunciación */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-indigo-800/40 pb-4">
+        <div className={`flex flex-wrap items-center justify-between gap-3 pb-4 border-b ${
+          isLightMode ? 'border-slate-200' : 'border-indigo-800/40'
+        }`}>
           <div className="space-y-0.5">
-            <span className="text-[10px] font-black uppercase tracking-widest text-cyan-400 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            <span className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 ${
+              isLightMode ? 'text-indigo-600' : 'text-cyan-400'
+            }`}>
+              <Sparkles className={`w-3.5 h-3.5 ${isLightMode ? 'text-indigo-600' : 'text-cyan-400'}`} />
               Reto de Pronunciación · Motor de Voz Autónomo Local
             </span>
-            <h3 className="text-lg font-black text-white">
+            <h3 className={`text-lg font-black ${isLightMode ? 'text-slate-900' : 'text-white'}`}>
               Karaoke de Fluidez Fonética
             </h3>
           </div>
 
           {/* Medidor de Precisión / Fluency Meter */}
-          <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-indigo-950/80 border border-indigo-700/60 shadow-inner">
+          <div className={`flex items-center gap-3 px-4 py-2 rounded-2xl border shadow-inner ${
+            isLightMode 
+              ? 'bg-slate-50 border-slate-200' 
+              : 'bg-indigo-950/80 border-indigo-700/60'
+          }`}>
             <div className="flex flex-col text-right">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Precisión</span>
-              <span className="text-lg font-black font-mono text-cyan-300">
+              <span className={`text-[10px] uppercase font-bold ${isLightMode ? 'text-slate-500' : 'text-slate-400'}`}>Precisión</span>
+              <span className={`text-lg font-black font-mono ${isLightMode ? 'text-indigo-700' : 'text-cyan-300'}`}>
                 {isCompleted ? `${accuracyScore}%` : isRecording ? `${Math.round((completedIndices.length / targetWords.length) * 100)}%` : '0%'}
               </span>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold ${
+              isLightMode ? 'bg-indigo-100 text-indigo-700' : 'bg-cyan-500/20 text-cyan-400'
+            }`}>
               {accuracyScore >= 85 ? '🌟' : accuracyScore >= 60 ? '✨' : accuracyScore > 0 ? '🎯' : '⚠️'}
             </div>
           </div>
         </div>
 
         {/* BARRA DE ESTADO DEL MICRÓFONO & SELECTOR DE HARDWARE & AUDITORÍA */}
-        <div className="p-3.5 rounded-2xl bg-slate-950/90 border border-indigo-900/60 space-y-3 text-xs">
+        <div className={`p-3.5 rounded-2xl space-y-3 text-xs border ${
+          isLightMode 
+            ? 'bg-slate-50/90 border-slate-200 text-slate-800' 
+            : 'bg-slate-950/90 border-indigo-900/60 text-slate-200'
+        }`}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="relative flex h-3 w-3">
                 <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isRecording || isTestingMicLive ? 'bg-rose-400' : 'bg-emerald-400'}`} />
                 <span className={`relative inline-flex rounded-full h-3 w-3 ${isRecording || isTestingMicLive ? 'bg-rose-500' : 'bg-emerald-500'}`} />
               </span>
-              <span className="font-bold text-slate-200">
+              <span className={`font-bold ${isLightMode ? 'text-slate-900' : 'text-slate-200'}`}>
                 {isRecording 
                   ? karaokeMode === 'interactive'
                     ? '✨ Modo Guiado Asistido (Sesión Activa)'
@@ -1543,14 +1564,16 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
             </div>
 
             {/* Selector de Modo: Micrófono Físico vs Modo Guiado */}
-            <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-indigo-700/60">
+            <div className={`flex items-center gap-1 p-1 rounded-xl border ${
+              isLightMode ? 'bg-white border-slate-200 shadow-2xs' : 'bg-slate-900 border-indigo-700/60'
+            }`}>
               <button
                 type="button"
                 onClick={() => setKaraokeMode('mic')}
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
                   karaokeMode === 'mic'
-                    ? 'bg-cyan-500 text-slate-950 shadow-sm font-black'
-                    : 'text-slate-400 hover:text-white'
+                    ? (isLightMode ? 'bg-indigo-600 text-white shadow-xs font-black' : 'bg-cyan-500 text-slate-950 shadow-sm font-black')
+                    : (isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white')
                 }`}
                 title="Captura tu voz con el micrófono físico de tu equipo"
               >
@@ -1561,8 +1584,8 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                 onClick={() => setKaraokeMode('interactive')}
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
                   karaokeMode === 'interactive'
-                    ? 'bg-emerald-400 text-slate-950 shadow-sm font-black'
-                    : 'text-slate-400 hover:text-white'
+                    ? (isLightMode ? 'bg-emerald-600 text-white shadow-xs font-black' : 'bg-emerald-400 text-slate-950 shadow-sm font-black')
+                    : (isLightMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white')
                 }`}
                 title="Avanza tu práctica tocando las palabras o pulsando la barra espaciadora"
               >
@@ -1628,16 +1651,20 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
 
               {/* Selector de Dispositivo Hardware */}
               {availableMics.length > 0 && (
-                <div className="flex items-center gap-1.5 bg-slate-900 px-2 py-1 rounded-xl border border-indigo-700/60 shadow-xs">
-                  <Headphones className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                <div className={`flex items-center gap-1.5 px-2 py-1 rounded-xl border shadow-xs ${
+                  isLightMode ? 'bg-white border-slate-200' : 'bg-slate-900 border-indigo-700/60'
+                }`}>
+                  <Headphones className={`w-3.5 h-3.5 shrink-0 ${isLightMode ? 'text-indigo-600' : 'text-cyan-400'}`} />
                   <select
                     value={selectedMicId}
                     onChange={(e) => handleMicDeviceChange(e.target.value)}
-                    className="bg-transparent text-[11px] text-slate-200 font-bold focus:outline-none cursor-pointer max-w-[170px] sm:max-w-[210px] truncate"
+                    className={`bg-transparent text-[11px] font-bold focus:outline-none cursor-pointer max-w-[170px] sm:max-w-[210px] truncate ${
+                      isLightMode ? 'text-slate-800' : 'text-slate-200'
+                    }`}
                     title="Selecciona el micrófono que estás utilizando físicamente"
                   >
                     {availableMics.map((mic, idx) => (
-                      <option key={mic.deviceId || idx} value={mic.deviceId} className="bg-slate-900 text-white">
+                      <option key={mic.deviceId || idx} value={mic.deviceId} className={isLightMode ? 'bg-white text-slate-900' : 'bg-slate-900 text-white'}>
                         {mic.label || `Micrófono ${idx + 1}`}
                       </option>
                     ))}
@@ -1646,8 +1673,10 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
               )}
 
               {/* Selector de Ganancia / Amplificación */}
-              <div className="flex items-center gap-1 bg-slate-900 px-2 py-1 rounded-xl border border-indigo-700/60 text-[10px] font-bold">
-                <span className="text-slate-400">Ganancia:</span>
+              <div className={`flex items-center gap-1 px-2 py-1 rounded-xl border text-[10px] font-bold ${
+                isLightMode ? 'bg-white border-slate-200' : 'bg-slate-900 border-indigo-700/60'
+              }`}>
+                <span className={isLightMode ? 'text-slate-500' : 'text-slate-400'}>Ganancia:</span>
                 <button
                   type="button"
                   onClick={() => {
@@ -1655,7 +1684,9 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                     setMicGainValue(nextGain);
                     if (gainNodeRef.current) gainNodeRef.current.gain.value = nextGain;
                   }}
-                  className="px-1.5 py-0.5 rounded bg-indigo-950 hover:bg-indigo-900 text-cyan-300 font-black cursor-pointer"
+                  className={`px-1.5 py-0.5 rounded font-black cursor-pointer ${
+                    isLightMode ? 'bg-indigo-100 hover:bg-indigo-200 text-indigo-800' : 'bg-indigo-950 hover:bg-indigo-900 text-cyan-300'
+                  }`}
                   title="Toca para alternar la sensibilidad y amplificación de tu micrófono"
                 >
                   {micGainValue}x
@@ -1668,12 +1699,12 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                 onClick={() => setShowHardwareDiagnostics(!showHardwareDiagnostics)}
                 className={`px-2.5 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-sm ${
                   showHardwareDiagnostics
-                    ? 'bg-cyan-500 text-slate-950 font-black'
-                    : 'bg-indigo-950 hover:bg-indigo-900 text-slate-300 border border-indigo-700/60'
+                    ? (isLightMode ? 'bg-indigo-600 text-white font-black' : 'bg-cyan-500 text-slate-950 font-black')
+                    : (isLightMode ? 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200' : 'bg-indigo-950 hover:bg-indigo-900 text-slate-300 border border-indigo-700/60')
                 }`}
                 title="Inspecciona telemetría en tiempo real: decibeles (dBFS), latencia (ms), frecuencia y códec universal"
               >
-                <Sliders className="w-3.5 h-3.5 text-cyan-400" />
+                <Sliders className={`w-3.5 h-3.5 ${isLightMode ? 'text-indigo-600' : 'text-cyan-400'}`} />
                 <span>Auditoría</span>
               </button>
 
@@ -1684,7 +1715,9 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                 className={`px-3 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-sm ${
                   isTestingMicLive
                     ? 'bg-rose-600 hover:bg-rose-700 text-white animate-pulse'
-                    : 'bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-black'
+                    : (isLightMode 
+                        ? 'bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-500 hover:to-teal-500 text-white font-black' 
+                        : 'bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-black')
                 }`}
                 title="Prueba en tiempo real si tu micrófono capta tu voz"
               >
@@ -2071,10 +2104,18 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
         </div>
 
         {/* ÁREA PRINCIPAL DE LECTURA TIPO KARAOKE */}
-        <div className="p-6 rounded-2xl bg-slate-950/90 border border-slate-800 shadow-inner space-y-4">
-          <div className="flex items-center justify-between text-xs text-slate-400 font-semibold">
+        <div className={`p-6 rounded-2xl border shadow-inner space-y-4 transition-colors ${
+          isLightMode 
+            ? 'bg-slate-50/70 border-slate-200/90' 
+            : 'bg-slate-950/90 border-slate-800'
+        }`}>
+          <div className={`flex items-center justify-between text-xs font-semibold ${
+            isLightMode ? 'text-slate-600' : 'text-slate-400'
+          }`}>
             <span>Pronuncia cada palabra en voz alta, pulsa espacio o tócala para avanzar:</span>
-            <span className="text-teal-400 flex items-center gap-1 text-[11px]">
+            <span className={`flex items-center gap-1 text-[11px] font-bold ${
+              isLightMode ? 'text-teal-700' : 'text-teal-400'
+            }`}>
               <Volume2 className="w-3.5 h-3.5" />
               Toca una palabra roja para escucharla despacio
             </span>
@@ -2082,14 +2123,18 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
 
           {/* AVISO DISCRETO Y AMIGABLE DE HARDWARE / PERMISOS */}
           {permissionBlocked && (
-            <div className="p-3.5 rounded-2xl bg-amber-950/70 border border-amber-500/60 text-amber-200 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in shadow-lg">
+            <div className={`p-3.5 rounded-2xl border text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in shadow-lg ${
+              isLightMode
+                ? 'bg-amber-50 border-amber-300 text-amber-900'
+                : 'bg-amber-950/70 border-amber-500/60 text-amber-200'
+            }`}>
               <div className="flex items-center gap-2.5">
-                <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                <AlertCircle className={`w-4 h-4 shrink-0 ${isLightMode ? 'text-amber-600' : 'text-amber-400'}`} />
                 <div className="space-y-0.5">
-                  <span className="font-bold text-amber-300 block">
+                  <span className={`font-bold block ${isLightMode ? 'text-amber-950' : 'text-amber-300'}`}>
                     Micrófono en espera o uso exclusivo:
                   </span>
-                  <span className="text-[11px] text-slate-300 block">
+                  <span className={`text-[11px] block ${isLightMode ? 'text-slate-700' : 'text-slate-300'}`}>
                     Cierra la ventana del candado de Chrome haciendo clic en la página. También puedes practicar de inmediato tocando las palabras.
                   </span>
                 </div>
@@ -2102,7 +2147,7 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                     setPermissionBlocked(false);
                     if (!isRecording) startRecording();
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95"
+                  className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-black text-xs flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>✨ Modo Táctil / Guiado</span>
@@ -2113,7 +2158,11 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                     setPermissionBlocked(false);
                     toggleTestMicrophone();
                   }}
-                  className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs cursor-pointer border border-slate-600 active:scale-95"
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer border active:scale-95 ${
+                    isLightMode
+                      ? 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300'
+                      : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-600'
+                  }`}
                   title="Reintentar conexión con el micrófono"
                 >
                   🔄 Reintentar
@@ -2147,12 +2196,20 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                   }}
                   className={`px-3.5 py-2 rounded-2xl transition-all duration-200 text-left select-none cursor-pointer hover:scale-105 active:scale-95 ${
                     isWordError
-                      ? 'bg-rose-500/25 text-rose-300 border-2 border-rose-500 underline decoration-rose-400 decoration-2 shadow-lg shadow-rose-950'
+                      ? (isLightMode
+                          ? 'bg-rose-50 text-rose-800 border-2 border-rose-500 underline decoration-rose-500 decoration-2 shadow-md shadow-rose-100'
+                          : 'bg-rose-500/25 text-rose-300 border-2 border-rose-500 underline decoration-rose-400 decoration-2 shadow-lg shadow-rose-950')
                       : isWordCompleted
-                        ? 'bg-emerald-500/25 text-emerald-300 border-2 border-emerald-400 shadow-lg shadow-emerald-950 scale-105'
+                        ? (isLightMode
+                            ? 'bg-emerald-50 text-emerald-800 border-2 border-emerald-500 shadow-md shadow-emerald-100 scale-105'
+                            : 'bg-emerald-500/25 text-emerald-300 border-2 border-emerald-400 shadow-lg shadow-emerald-950 scale-105')
                         : isCurrentAwaiting
-                          ? 'bg-cyan-500/30 text-cyan-200 border-2 border-cyan-400 scale-110 shadow-cyan-500/30 shadow-lg animate-pulse'
-                          : 'bg-slate-800/60 text-slate-400 border border-slate-700/60 hover:border-cyan-500/50'
+                          ? (isLightMode
+                              ? 'bg-indigo-50 text-indigo-900 border-2 border-indigo-600 scale-110 shadow-lg shadow-indigo-100 animate-pulse'
+                              : 'bg-cyan-500/30 text-cyan-200 border-2 border-cyan-400 scale-110 shadow-cyan-500/30 shadow-lg animate-pulse')
+                          : (isLightMode
+                              ? 'bg-white text-slate-700 border-2 border-slate-200 shadow-2xs hover:border-indigo-400 hover:text-slate-900'
+                              : 'bg-slate-800/60 text-slate-400 border border-slate-700/60 hover:border-cyan-500/50')
                   }`}
                   title={
                     isNeWord
@@ -2321,16 +2378,20 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
           <button
             type="button"
             onClick={() => playModelVoice(phrase.targetText, speechRate)}
-            className="px-4 py-2.5 rounded-2xl bg-indigo-900/60 hover:bg-indigo-800 border border-indigo-600/50 text-indigo-200 font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-md active:scale-95"
+            className={`px-4 py-2.5 rounded-2xl border font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-xs active:scale-95 ${
+              isLightMode
+                ? 'bg-indigo-50 hover:bg-indigo-100 border-indigo-200 text-indigo-700'
+                : 'bg-indigo-900/60 hover:bg-indigo-800 border-indigo-600/50 text-indigo-200'
+            }`}
           >
             {isPlayingModelVoice ? (
               <>
-                <Pause className="w-4 h-4 text-amber-400" />
+                <Pause className="w-4 h-4 text-amber-500" />
                 <span>Pausar Mentor</span>
               </>
             ) : (
               <>
-                <Volume2 className="w-4 h-4 text-cyan-300" />
+                <Volume2 className={`w-4 h-4 ${isLightMode ? 'text-indigo-600' : 'text-cyan-300'}`} />
                 <span>Escuchar Mentor ({speechRate}x)</span>
               </>
             )}
@@ -2361,17 +2422,19 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
               type="button"
               disabled={isAnalyzingAudioBlob}
               onClick={isRecording ? () => completeEvaluation() : startRecording}
-              className={`px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-wider flex items-center gap-3 transition-all cursor-pointer shadow-2xl active:scale-95 disabled:opacity-75 ${
+              className={`px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-wider flex items-center gap-3 transition-all cursor-pointer shadow-xl active:scale-95 disabled:opacity-75 ${
                 isAnalyzingAudioBlob
-                  ? 'bg-slate-800 text-cyan-300 border-2 border-cyan-500/50 animate-pulse'
+                  ? (isLightMode ? 'bg-slate-100 text-indigo-600 border-2 border-indigo-300 animate-pulse' : 'bg-slate-800 text-cyan-300 border-2 border-cyan-500/50 animate-pulse')
                   : isRecording
-                    ? 'bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white border-2 border-rose-300'
-                    : 'bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-400 hover:from-teal-300 hover:to-cyan-300 text-slate-950 font-black shadow-emerald-500/40 border-2 border-emerald-200 scale-105'
+                    ? 'bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white border-2 border-rose-300 shadow-rose-500/30'
+                    : (isLightMode
+                        ? 'bg-gradient-to-r from-teal-500 via-emerald-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white shadow-emerald-500/25 border-2 border-emerald-300 scale-105'
+                        : 'bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-400 hover:from-teal-300 hover:to-cyan-300 text-slate-950 font-black shadow-emerald-500/40 border-2 border-emerald-200 scale-105')
               }`}
             >
               {isAnalyzingAudioBlob ? (
                 <>
-                  <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />
+                  <Loader2 className={`w-5 h-5 animate-spin ${isLightMode ? 'text-indigo-600' : 'text-cyan-400'}`} />
                   <span>ANALIZANDO CON IA...</span>
                 </>
               ) : isRecording ? (
@@ -2382,9 +2445,9 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
               ) : (
                 <>
                   {karaokeMode === 'interactive' ? (
-                    <Sparkles className="w-5 h-5 text-slate-950" />
+                    <Sparkles className={`w-5 h-5 ${isLightMode ? 'text-white' : 'text-slate-950'}`} />
                   ) : (
-                    <Mic className="w-5 h-5 text-slate-950" />
+                    <Mic className={`w-5 h-5 ${isLightMode ? 'text-white' : 'text-slate-950'}`} />
                   )}
                   <span>
                     {isCompleted 
@@ -2400,16 +2463,22 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
         </div>
 
         {/* ACCIONES DE SIMULACIÓN DIDÁCTICA (MODO AUDITORÍA DOCENTE) */}
-        <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-indigo-900/60 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <span className="text-slate-300 font-bold flex items-center gap-1.5">
-            <Sliders className="w-4 h-4 text-cyan-400" />
+        <div className={`p-3.5 rounded-2xl border flex flex-wrap items-center justify-between gap-3 text-xs ${
+          isLightMode ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-slate-950/80 border-indigo-900/60 text-slate-200'
+        }`}>
+          <span className={`font-bold flex items-center gap-1.5 ${isLightMode ? 'text-slate-800' : 'text-slate-300'}`}>
+            <Sliders className={`w-4 h-4 ${isLightMode ? 'text-indigo-600' : 'text-cyan-400'}`} />
             <span>Simulación Didáctica (Auditoría Docente):</span>
           </span>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => completeEvaluation(100, [])}
-              className="px-3.5 py-1.5 rounded-xl bg-emerald-950 hover:bg-emerald-900 border border-emerald-500/70 text-emerald-300 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-md"
+              className={`px-3.5 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-xs ${
+                isLightMode 
+                  ? 'bg-emerald-50 hover:bg-emerald-100 border-emerald-300 text-emerald-800' 
+                  : 'bg-emerald-950 hover:bg-emerald-900 border-emerald-500/70 text-emerald-300'
+              }`}
               title="Simula 100% de aciertos para verificar felicitación y reporte"
             >
               <span>🌟 Simular 100% (Verde)</span>
@@ -2421,7 +2490,11 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
                 const sampleErrors = targetWords.slice(-errorCount);
                 completeEvaluation(Math.round(((targetWords.length - errorCount) / targetWords.length) * 100), sampleErrors);
               }}
-              className="px-3.5 py-1.5 rounded-xl bg-rose-950 hover:bg-rose-900 border border-rose-500/70 text-rose-300 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-md"
+              className={`px-3.5 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-xs ${
+                isLightMode 
+                  ? 'bg-rose-50 hover:bg-rose-100 border-rose-300 text-rose-800' 
+                  : 'bg-rose-950 hover:bg-rose-900 border-rose-500/70 text-rose-300'
+              }`}
               title="Simula errores para probar palabras rojas y consejos"
             >
               <span>🎯 Simular Errores (Rojo & Tips)</span>
@@ -2429,7 +2502,11 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
             <button
               type="button"
               onClick={() => completeEvaluation(0, targetWords)}
-              className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-400 hover:text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-md"
+              className={`px-3.5 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-xs ${
+                isLightMode 
+                  ? 'bg-white hover:bg-slate-100 border-slate-300 text-slate-700' 
+                  : 'bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+              }`}
               title="Simula silencio o fallo total sin pronunciación"
             >
               <span>💨 Simular Silencio (0%)</span>
@@ -2439,13 +2516,19 @@ export const LanguageKaraokePlayer: React.FC<Props> = ({
 
         {/* RESUMEN POST-PRÁCTICA Y RECOMENDACIÓN PEDAGÓGICA AL ALUMNO */}
         {isCompleted && (
-          <div className="mt-4 p-5 rounded-3xl bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 border-2 border-cyan-500/50 space-y-4 animate-fade-in shadow-2xl">
+          <div className={`mt-4 p-5 rounded-3xl border-2 space-y-4 animate-fade-in shadow-xl ${
+            isLightMode 
+              ? 'bg-gradient-to-br from-emerald-50 via-teal-50/50 to-white border-emerald-300 text-slate-800' 
+              : 'bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 border-cyan-500/50 text-white'
+          }`}>
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-cyan-300 font-black text-sm">
-                <Trophy className="w-5 h-5 text-amber-400" />
+              <div className={`flex items-center gap-2 font-black text-sm ${isLightMode ? 'text-emerald-900' : 'text-cyan-300'}`}>
+                <Trophy className="w-5 h-5 text-amber-500" />
                 <span>Evaluación Fonética Registrada</span>
               </div>
-              <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-[11px] font-mono font-bold">
+              <span className={`px-2.5 py-0.5 rounded-full border text-[11px] font-mono font-bold ${
+                isLightMode ? 'bg-emerald-100 border-emerald-300 text-emerald-800' : 'bg-cyan-500/20 border-cyan-400/40 text-cyan-300'
+              }`}>
                 Nota enviada en tiempo real al profesor
               </span>
             </div>

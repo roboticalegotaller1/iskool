@@ -57,13 +57,15 @@ import {
   Check,
   School,
   PenTool,
-  Star
+  Star,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import Link from 'next/link';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { english40WeeksCurriculum } from '@/components/languages/data/english40WeeksCurriculum';
 import { french40WeeksCurriculum } from '@/components/languages/data/french40WeeksCurriculum';
-import { CurricularWeek } from '@/components/languages/data/curriculumTypes';
+import { CurricularWeek, CurricularLesson } from '@/components/languages/data/curriculumTypes';
 
 interface IbimeCampus {
   id: string;
@@ -206,6 +208,7 @@ export default function TeacherIdiomasPage() {
   const [curriculumTrimester, setCurriculumTrimester] = useState<1 | 2 | 3>(1);
   const [curriculumSearch, setCurriculumSearch] = useState<string>('');
   const [showDialogueTranslation, setShowDialogueTranslation] = useState<boolean>(true);
+  const [expandedWeekNumber, setExpandedWeekNumber] = useState<number | null>(null);
 
   const activeLesson = useMemo(() => {
     return lessons.find(l => l.id === activeLessonId) || lessons[0];
@@ -326,6 +329,56 @@ export default function TeacherIdiomasPage() {
     const newId = addLesson({
       title: `Semana ${week.weekNumber}: ${cleanTitle}`,
       topic: week.title,
+      language: activeLesson.language,
+      level: week.cefr.startsWith('B') ? 'B1' : week.cefr.startsWith('A2') ? 'A2' : 'A1',
+      avatarGender: activeLesson.avatarGender,
+      avatarName: activeLesson.avatarName,
+      avatarVoice: activeLesson.avatarVoice,
+      avatarImage: resolvedAvatar3dSrc,
+      historicalFigureId: activeLesson.historicalFigureId,
+      defaultSpeed: activeLesson.defaultSpeed,
+      dialogue: dialogueLines,
+      karaokePhrases: karaokePhrases
+    });
+
+    setActiveLessonId(newId);
+  };
+
+  // Carga instantánea de una lección curricular específica al taller docente
+  const handleLoadSingleLessonIntoWorkshop = (week: CurricularWeek, lesson: CurricularLesson) => {
+    const dialogueLines: DialogueLine[] = [
+      {
+        id: `d-${Date.now()}-1`,
+        speaker: 'avatar',
+        text: lesson.target,
+        translationEs: lesson.translationEs,
+        phoneticTip: lesson.phoneticTip
+      }
+    ];
+
+    const karaokePhrases: KaraokePhrase[] = [
+      {
+        id: `k-${Date.now()}-0`,
+        targetText: lesson.target,
+        translationEs: lesson.translationEs,
+        difficulty: (week.cefr === 'A1' ? 'beginner' : week.cefr === 'A2' ? 'intermediate' : 'advanced') as any,
+        phoneticGuide: lesson.phoneticTip
+      },
+      ...week.lessons
+        .filter(l => l.id !== lesson.id)
+        .map((l, idx) => ({
+          id: `k-${Date.now()}-${idx + 1}`,
+          targetText: l.target,
+          translationEs: l.translationEs,
+          difficulty: (week.cefr === 'A1' ? 'beginner' : week.cefr === 'A2' ? 'intermediate' : 'advanced') as any,
+          phoneticGuide: l.phoneticTip
+        }))
+    ];
+
+    const cleanWeekTitle = week.title.replace(/^Week \d+:\s*/, '').replace(/^Semaine \d+:\s*/, '');
+    const newId = addLesson({
+      title: `${cleanWeekTitle} · ${lesson.title}`,
+      topic: `${week.title} - ${lesson.title}`,
       language: activeLesson.language,
       level: week.cefr.startsWith('B') ? 'B1' : week.cefr.startsWith('A2') ? 'A2' : 'A1',
       avatarGender: activeLesson.avatarGender,
@@ -1041,18 +1094,28 @@ export default function TeacherIdiomasPage() {
 
             {/* MODO VISTA PREVIA INTERACTIVA (GAMIFICACIÓN DEL ALUMNO) */}
             {isPreviewMode ? (
-              <div className="p-6 rounded-3xl bg-slate-900 border-2 border-amber-500/50 shadow-2xl space-y-6 animate-fade-in">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                  <div className="flex items-center gap-2 text-amber-400 font-black text-sm">
-                    <Sparkles className="w-4 h-4" />
+              <div className={`p-6 rounded-3xl border-2 shadow-2xl space-y-6 animate-fade-in ${
+                isLightMode ? 'bg-white border-amber-400 shadow-amber-500/10 text-slate-900' : 'bg-slate-900 border-amber-500/50 text-white'
+              }`}>
+                <div className={`flex items-center justify-between pb-3 border-b ${
+                  isLightMode ? 'border-slate-200' : 'border-slate-800'
+                }`}>
+                  <div className={`flex items-center gap-2 font-black text-sm ${
+                    isLightMode ? 'text-amber-800' : 'text-amber-400'
+                  }`}>
+                    <Sparkles className="w-4 h-4 text-amber-500" />
                     <span>Entorno Gamificado del Alumno · Avatar Parlante & Karaoke de Precisión</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-400">Frase activa:</span>
+                    <span className={`text-xs ${isLightMode ? 'text-slate-500' : 'text-slate-400'}`}>Frase activa:</span>
                     <select
                       value={selectedKaraokeIndex}
                       onChange={(e) => setSelectedKaraokeIndex(Number(e.target.value))}
-                      className="px-3 py-1 rounded-xl bg-slate-800 text-xs font-bold text-white border border-slate-700"
+                      className={`px-3 py-1 rounded-xl text-xs font-bold border ${
+                        isLightMode 
+                          ? 'bg-slate-50 text-slate-800 border-slate-300' 
+                          : 'bg-slate-800 text-white border-slate-700'
+                      }`}
                     >
                       {activeLesson.karaokePhrases.map((phrase, idx) => (
                         <option key={phrase.id} value={idx}>
@@ -1075,6 +1138,7 @@ export default function TeacherIdiomasPage() {
                     lessonId={activeLesson.id}
                     lessonTitle={activeLesson.title}
                     studentName="Docente (Modo Simulación)"
+                    isLightMode={isLightMode}
                   />
                 )}
               </div>
@@ -1493,45 +1557,89 @@ export default function TeacherIdiomasPage() {
                         </button>
                       </div>
 
-                      {/* Rejilla de Tarjetas Semanales de 2 Columnas (Idéntica a Imagen 1) */}
+                      {/* Rejilla de Tarjetas Semanales de 2 Columnas (Expandible al Desplegar Lecciones) */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {filteredCurriculumWeeks.map(week => {
                           const hasMilestoneStar = week.weekNumber === 2 || week.weekNumber === 30 || week.weekNumber % 10 === 0;
+                          const isExpanded = expandedWeekNumber === week.weekNumber;
+                          const cleanWeekTitle = week.title.replace(/^Week \d+:\s*/, '').replace(/^Semaine \d+:\s*/, '');
+
                           return (
                             <div
                               key={week.weekNumber}
-                              className={`p-4 rounded-2xl border shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-3 ${
-                                isLightMode ? 'bg-white border-slate-200/90' : 'bg-slate-900 border-slate-800'
+                              className={`p-4 rounded-2xl border transition-all flex flex-col justify-between space-y-3 ${
+                                isExpanded 
+                                  ? (isLightMode ? 'sm:col-span-2 bg-white border-indigo-400 ring-2 ring-indigo-400/30 shadow-xl' : 'sm:col-span-2 bg-slate-900 border-indigo-600 ring-2 ring-indigo-500/40 shadow-2xl')
+                                  : (isLightMode ? 'bg-white border-slate-200/90 shadow-xs hover:shadow-md hover:border-slate-300' : 'bg-slate-900 border-slate-800 hover:border-slate-700 shadow-xs')
                               }`}
                             >
-                              {/* Cabecera de la Semana con Insignias */}
+                              {/* Cabecera Interactiva: Al pulsar en Week o en el Título se despliegan las lecciones */}
                               <div>
                                 <div className="flex items-center justify-between">
-                                  <span className={`text-xs font-bold ${
-                                    isLightMode ? 'text-slate-500' : 'text-slate-400'
-                                  }`}>
-                                    Week {week.weekNumber}
-                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setExpandedWeekNumber(isExpanded ? null : week.weekNumber)}
+                                    className="flex items-center gap-2 cursor-pointer group/wbtn text-left"
+                                    title="Pulsar para desplegar o contraer las lecciones de la semana"
+                                  >
+                                    <span className={`text-xs font-black group-hover/wbtn:underline ${
+                                      isLightMode ? 'text-indigo-600' : 'text-indigo-400'
+                                    }`}>
+                                      Week {week.weekNumber}
+                                    </span>
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border transition-colors ${
+                                      isExpanded
+                                        ? 'bg-indigo-600 text-white border-indigo-600'
+                                        : (isLightMode ? 'bg-indigo-50 text-indigo-700 border-indigo-200 group-hover/wbtn:bg-indigo-100' : 'bg-indigo-950 text-indigo-300 border-indigo-800')
+                                    }`}>
+                                      {week.lessons.length} Lecciones
+                                    </span>
+                                  </button>
+
                                   <div className="flex items-center gap-1.5">
                                     {/* Checkmark Verde */}
-                                    <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px] shadow-2xs font-bold">
+                                    <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px] shadow-2xs font-bold" title="Contenido curricular verificado">
                                       ✓
                                     </span>
                                     {/* Estrella Dorada para Milestones */}
                                     {hasMilestoneStar && (
-                                      <span className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] shadow-2xs font-bold">
+                                      <span className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] shadow-2xs font-bold" title="Hito Curricular">
                                         ★
                                       </span>
                                     )}
+                                    {/* Botón Flecha Desplegable */}
+                                    <button
+                                      type="button"
+                                      onClick={() => setExpandedWeekNumber(isExpanded ? null : week.weekNumber)}
+                                      className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                                        isExpanded 
+                                          ? 'bg-indigo-600 text-white rotate-180' 
+                                          : (isLightMode ? 'bg-slate-100 hover:bg-slate-200 text-slate-600' : 'bg-slate-800 hover:bg-slate-700 text-slate-300')
+                                      }`}
+                                      title={isExpanded ? "Contraer lecciones" : "Desplegar 4 lecciones"}
+                                    >
+                                      <ChevronDown className="w-3.5 h-3.5" />
+                                    </button>
                                   </div>
                                 </div>
 
-                                {/* Título de la Semana */}
-                                <h3 className={`text-base font-extrabold tracking-tight mt-1 line-clamp-1 ${
-                                  isLightMode ? 'text-slate-900' : 'text-white'
-                                }`}>
-                                  {week.title.replace(/^Week \d+:\s*/, '').replace(/^Semaine \d+:\s*/, '')}
-                                </h3>
+                                {/* Botón / Título de la Semana (ej. Week 1 Social Greetings & Personal Identity) */}
+                                <button
+                                  type="button"
+                                  onClick={() => setExpandedWeekNumber(isExpanded ? null : week.weekNumber)}
+                                  className="w-full text-left cursor-pointer group/title mt-1.5"
+                                >
+                                  <h3 className={`text-base font-extrabold tracking-tight transition-colors line-clamp-1 group-hover/title:text-indigo-600 ${
+                                    isLightMode ? 'text-slate-900' : 'text-white'
+                                  }`}>
+                                    {cleanWeekTitle}
+                                  </h3>
+                                  <p className={`text-[11px] mt-0.5 line-clamp-1 ${
+                                    isLightMode ? 'text-slate-500' : 'text-slate-400'
+                                  }`}>
+                                    {week.pda}
+                                  </p>
+                                </button>
                               </div>
 
                               {/* Insignias de Acreditación (A1/B2, CENNI, Cambridge / DELF) */}
@@ -1560,18 +1668,160 @@ export default function TeacherIdiomasPage() {
                                   </div>
                                 </div>
 
-                                {/* Botón: Cargar en Taller */}
-                                <button
-                                  type="button"
-                                  onClick={() => handleLoadWeekIntoWorkshop(week)}
-                                  className={`w-full py-2.5 rounded-xl border font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs ${
-                                    isLightMode
-                                      ? 'border-indigo-300/80 bg-white hover:bg-slate-50 text-slate-800 hover:text-indigo-600'
-                                      : 'border-indigo-800 bg-indigo-950/40 hover:bg-indigo-900/60 text-indigo-300'
-                                  }`}
-                                >
-                                  <span>Cargar en Taller</span>
-                                </button>
+                                {/* Barra de Acciones de la Tarjeta */}
+                                {!isExpanded ? (
+                                  <div className="grid grid-cols-2 gap-2 pt-1">
+                                    {/* Botón 1: Desplegar Lecciones */}
+                                    <button
+                                      type="button"
+                                      onClick={() => setExpandedWeekNumber(week.weekNumber)}
+                                      className={`py-2 px-3 rounded-xl border font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs ${
+                                        isLightMode
+                                          ? 'border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100 text-indigo-700'
+                                          : 'border-indigo-800 bg-indigo-950/60 hover:bg-indigo-900 text-indigo-300'
+                                      }`}
+                                    >
+                                      <BookOpen className="w-3.5 h-3.5" />
+                                      <span>Ver Lecciones</span>
+                                      <ChevronDown className="w-3.5 h-3.5" />
+                                    </button>
+
+                                    {/* Botón 2: Cargar en Taller */}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleLoadWeekIntoWorkshop(week)}
+                                      className={`py-2 px-3 rounded-xl border font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs ${
+                                        isLightMode
+                                          ? 'border-slate-200 bg-white hover:bg-slate-50 text-slate-800 hover:text-indigo-600'
+                                          : 'border-slate-700 bg-slate-800/80 hover:bg-slate-800 text-white'
+                                      }`}
+                                    >
+                                      <span>Cargar en Taller</span>
+                                    </button>
+                                  </div>
+                                ) : (
+                                  /* VISTA DESPLEGADA DE LAS 4 LECCIONES */
+                                  <div className={`mt-3 pt-3 border-t space-y-3 animate-fade-in ${
+                                    isLightMode ? 'border-indigo-100' : 'border-slate-800'
+                                  }`}>
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-2">
+                                        <BookOpen className="w-4 h-4 text-indigo-600" />
+                                        <span className={`text-xs font-black uppercase tracking-wider ${
+                                          isLightMode ? 'text-slate-800' : 'text-slate-200'
+                                        }`}>
+                                          Lecciones Planificadas de la Semana {week.weekNumber} (Elige una para el taller):
+                                        </span>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => setExpandedWeekNumber(null)}
+                                        className="text-xs font-bold text-slate-500 hover:text-slate-800 cursor-pointer flex items-center gap-1"
+                                      >
+                                        <span>Contraer</span>
+                                        <ChevronUp className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+
+                                    {/* Rejilla de 4 Lecciones */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                      {week.lessons.map((lesson, lIdx) => (
+                                        <div
+                                          key={lesson.id}
+                                          className={`p-3.5 rounded-xl border transition-all text-xs flex flex-col justify-between space-y-2.5 ${
+                                            isLightMode
+                                              ? 'bg-slate-50/90 hover:bg-indigo-50/40 border-slate-200/90 hover:border-indigo-300 shadow-2xs'
+                                              : 'bg-slate-950/80 hover:bg-indigo-950/40 border-slate-800 hover:border-indigo-700'
+                                          }`}
+                                        >
+                                          <div className="space-y-1.5">
+                                            <div className="flex items-center justify-between gap-2">
+                                              <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${
+                                                isLightMode
+                                                  ? 'bg-indigo-100 text-indigo-800 border-indigo-200'
+                                                  : 'bg-indigo-950 text-indigo-300 border-indigo-800'
+                                              }`}>
+                                                Lección {week.weekNumber}.{lIdx + 1}
+                                              </span>
+
+                                              {/* Botón Elegir esta lección */}
+                                              <button
+                                                type="button"
+                                                onClick={() => handleLoadSingleLessonIntoWorkshop(week, lesson)}
+                                                className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[11px] cursor-pointer shadow-xs transition-transform active:scale-95 flex items-center gap-1"
+                                                title="Cargar esta lección específica al taller docente"
+                                              >
+                                                <span>Elegir</span>
+                                                <span>→</span>
+                                              </button>
+                                            </div>
+
+                                            {/* Título de la lección */}
+                                            <h4 className={`font-extrabold text-xs ${
+                                              isLightMode ? 'text-slate-900' : 'text-white'
+                                            }`}>
+                                              {lesson.title}
+                                            </h4>
+
+                                            {/* Frase Modelo Target */}
+                                            <div className={`p-2.5 rounded-lg border font-medium ${
+                                              isLightMode
+                                                ? 'bg-white border-slate-200 text-slate-900'
+                                                : 'bg-slate-900 border-slate-800 text-slate-100'
+                                            }`}>
+                                              <p className="font-bold text-indigo-600 dark:text-cyan-400">
+                                                &ldquo;{lesson.target}&rdquo;
+                                              </p>
+                                              <p className={`text-[11px] mt-1 italic ${
+                                                isLightMode ? 'text-slate-600' : 'text-slate-400'
+                                              }`}>
+                                                {lesson.translationEs}
+                                              </p>
+                                            </div>
+
+                                            {/* Tip Fonético */}
+                                            {lesson.phoneticTip && (
+                                              <div className={`p-2 rounded-lg border flex items-start gap-1.5 text-[10px] ${
+                                                isLightMode
+                                                  ? 'bg-amber-50/70 border-amber-200 text-amber-900'
+                                                  : 'bg-amber-950/30 border-amber-800/40 text-amber-300'
+                                              }`}>
+                                                <Sparkles className="w-3 h-3 text-amber-500 shrink-0 mt-0.5" />
+                                                <span className="font-medium">
+                                                  <strong>Tip Fonético:</strong> {lesson.phoneticTip}
+                                                </span>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+
+                                    {/* Barra Inferior del Cajón Desplegado */}
+                                    <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-dashed border-slate-200 dark:border-slate-800">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleLoadWeekIntoWorkshop(week)}
+                                        className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-teal-600 hover:from-indigo-500 hover:to-teal-500 text-white font-black text-xs shadow-md cursor-pointer transition-all flex items-center gap-1.5"
+                                      >
+                                        <Sparkles className="w-3.5 h-3.5" />
+                                        <span>Cargar Semana Completa (4 Lecciones) en Taller</span>
+                                      </button>
+
+                                      <button
+                                        type="button"
+                                        onClick={() => setExpandedWeekNumber(null)}
+                                        className={`py-2 px-3.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
+                                          isLightMode
+                                            ? 'border-slate-200 text-slate-600 hover:bg-slate-100'
+                                            : 'border-slate-700 text-slate-300 hover:bg-slate-800'
+                                        }`}
+                                      >
+                                        Contraer Lecciones
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           );

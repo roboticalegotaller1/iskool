@@ -47,6 +47,7 @@ interface Props {
   avatarImage?: string;
   historicalFigureId?: string;
   historicalEra?: string;
+  isLightMode?: boolean;
 }
 
 type IdleGesture = 'breathe' | 'look_left' | 'look_right' | 'subtle_nod' | 'brow_focus' | 'attentive_lean';
@@ -70,7 +71,8 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
   className = '',
   avatarImage,
   historicalFigureId,
-  historicalEra
+  historicalEra,
+  isLightMode = false
 }) => {
   const [internalPlaying, setInternalPlaying] = useState<boolean>(false);
   const [internalSpeechRate, setInternalSpeechRate] = useState<number>(externalSpeechRate);
@@ -111,8 +113,9 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
   const isHistorical = Boolean(matchedFigure || avatarImage?.includes('/historical/'));
 
   const mouthCfg: CharacterAnatomicalMouth = useMemo(() => {
-    return getHistoricalMouthConfig(matchedFigure?.id || name);
-  }, [matchedFigure, name]);
+    const targetKey = matchedFigure?.id || historicalFigureId || name || (gender === 'female' ? 'female' : 'male');
+    return getHistoricalMouthConfig(targetKey);
+  }, [matchedFigure, historicalFigureId, name, gender]);
 
   // Resolución infalible de la imagen del avatar en 3D
   const avatarImageSrc = useMemo(() => {
@@ -481,14 +484,24 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
             className="absolute inset-0 w-full h-full pointer-events-none select-none z-10"
           >
             <defs>
+              <filter 
+                id={`avatarFeather_${avatarDisplayTitle.replace(/[^a-zA-Z0-9]/g, '_')}`} 
+                x="-20%" 
+                y="-20%" 
+                width="140%" 
+                height="140%"
+              >
+                <feGaussianBlur stdDeviation="0.9" />
+              </filter>
+
               <radialGradient 
                 id={`avatarCavity_${avatarDisplayTitle.replace(/[^a-zA-Z0-9]/g, '_')}`} 
                 cx="50%" 
-                cy="30%" 
+                cy="35%" 
                 r="65%"
               >
                 <stop offset="0%" stopColor={mouthCfg.cavityDarkColor} />
-                <stop offset="55%" stopColor={mouthCfg.cavityMidColor} />
+                <stop offset="65%" stopColor={mouthCfg.cavityMidColor} />
                 <stop offset="100%" stopColor={mouthCfg.cavityRimColor} />
               </radialGradient>
 
@@ -499,9 +512,9 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
                 x2="0%" 
                 y2="100%"
               >
-                <stop offset="0%" stopColor={mouthCfg.teethColor} stopOpacity="0.95" />
-                <stop offset="65%" stopColor="#ded5c4" stopOpacity="0.85" />
-                <stop offset="100%" stopColor="#9e8d78" stopOpacity="0.15" />
+                <stop offset="0%" stopColor={mouthCfg.teethColor} stopOpacity="0.96" />
+                <stop offset="70%" stopColor="#ded5c4" stopOpacity="0.88" />
+                <stop offset="100%" stopColor="#8a7864" stopOpacity="0.10" />
               </linearGradient>
 
               <linearGradient 
@@ -512,28 +525,28 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
                 y2="100%"
               >
                 <stop offset="0%" stopColor={mouthCfg.lowerLipRimColor} />
-                <stop offset="60%" stopColor="rgba(180, 75, 75, 0.65)" />
-                <stop offset="100%" stopColor="rgba(205, 105, 100, 0.15)" />
+                <stop offset="65%" stopColor="rgba(190, 80, 85, 0.70)" />
+                <stop offset="100%" stopColor="rgba(215, 110, 105, 0.15)" />
               </linearGradient>
             </defs>
 
-            {isPlaying && mouthOpenRatio > 0.06 && (() => {
+            {isPlaying && mouthOpenRatio > 0.05 && (() => {
               // Cálculo dinámico bifactorial F1/F2
-              const widthOffset = (mouthWidthRatio - 0.5) * 8;
+              const widthOffset = (mouthWidthRatio - 0.5) * 6;
               const effX1 = mouthCfg.x1 - widthOffset;
               const effX2 = mouthCfg.x2 + widthOffset;
               const verticalDrop = mouthOpenRatio * mouthCfg.maxOpening;
 
               const halfMouthWidth = (effX2 - effX1) / 2;
-              const teethHalfWidth = halfMouthWidth * 0.58;
-              const teethHeight = Math.min(verticalDrop * 0.44, 4.2);
-              const lipThickness = Math.min(3.2, 1.8 + verticalDrop * 0.18);
+              const teethHalfWidth = halfMouthWidth * 0.62;
+              const teethHeight = Math.min(verticalDrop * 0.45, 5.0);
+              const lipThickness = Math.min(4.0, 2.0 + verticalDrop * 0.2);
 
               return (
-                <g>
+                <g filter={`url(#avatarFeather_${avatarDisplayTitle.replace(/[^a-zA-Z0-9]/g, '_')})`}>
                   {/* 1. Cavidad Bucal Anatómica Profunda */}
                   <path 
-                    d={`M ${effX1} ${mouthCfg.y1} Q ${mouthCfg.cx} ${mouthCfg.cy - mouthOpenRatio * 1.4} ${effX2} ${mouthCfg.y2} Q ${mouthCfg.cx} ${mouthCfg.cy + verticalDrop} ${effX1} ${mouthCfg.y1} Z`} 
+                    d={`M ${effX1} ${mouthCfg.y1} Q ${mouthCfg.cx} ${mouthCfg.cy - mouthOpenRatio * 1.5} ${effX2} ${mouthCfg.y2} Q ${mouthCfg.cx} ${mouthCfg.cy + verticalDrop} ${effX1} ${mouthCfg.y1} Z`} 
                     fill={`url(#avatarCavity_${avatarDisplayTitle.replace(/[^a-zA-Z0-9]/g, '_')})`} 
                   />
 
@@ -544,22 +557,22 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
                   />
 
                   {/* 3. Sombra de Lengua Interior en Fonemas Abiertos */}
-                  {mouthOpenRatio > 0.35 && (
+                  {mouthOpenRatio > 0.32 && (
                     <ellipse 
                       cx={mouthCfg.cx} 
-                      cy={mouthCfg.cy + verticalDrop * 0.7} 
-                      rx={halfMouthWidth * 0.44} 
-                      ry={Math.min(verticalDrop * 0.32, 2.8)} 
-                      fill="#481015" 
-                      opacity={0.88} 
+                      cy={mouthCfg.cy + verticalDrop * 0.68} 
+                      rx={halfMouthWidth * 0.46} 
+                      ry={Math.min(verticalDrop * 0.35, 3.2)} 
+                      fill="#3d0a10" 
+                      opacity={0.90} 
                     />
                   )}
 
                   {/* 4. Labio Inferior Carnoso Acompañando el Descenso Mandibular */}
                   <path 
-                    d={`M ${effX1 + 1.5} ${mouthCfg.y1 + 0.4} Q ${mouthCfg.cx} ${mouthCfg.cy + verticalDrop} ${effX2 - 1.5} ${mouthCfg.y2 + 0.4} Q ${mouthCfg.cx} ${mouthCfg.cy + verticalDrop + lipThickness} ${effX1 + 1.5} ${mouthCfg.y1 + 0.4} Z`} 
+                    d={`M ${effX1 + 1.2} ${mouthCfg.y1 + 0.3} Q ${mouthCfg.cx} ${mouthCfg.cy + verticalDrop} ${effX2 - 1.2} ${mouthCfg.y2 + 0.3} Q ${mouthCfg.cx} ${mouthCfg.cy + verticalDrop + lipThickness} ${effX1 + 1.2} ${mouthCfg.y1 + 0.3} Z`} 
                     fill={`url(#avatarLowerLip_${avatarDisplayTitle.replace(/[^a-zA-Z0-9]/g, '_')})`} 
-                    opacity={0.94} 
+                    opacity={0.95} 
                   />
                 </g>
               );
@@ -646,9 +659,13 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
       </div>
 
       {/* Barra de Control de Velocidad y Accesibilidad Didáctica */}
-      <div className="mt-3.5 w-full max-w-sm flex items-center justify-between gap-2 px-3 py-2 rounded-2xl bg-slate-900/90 border border-slate-700/60 shadow-lg text-xs">
-        <div className="flex items-center gap-1.5 text-amber-400 font-bold shrink-0">
-          <Gauge className="w-4 h-4 text-amber-400" />
+      <div className={`mt-3.5 w-full max-w-sm flex items-center justify-between gap-2 px-3 py-2 rounded-2xl border shadow-md text-xs transition-colors ${
+        isLightMode 
+          ? 'bg-white border-slate-200 text-slate-800' 
+          : 'bg-slate-900/90 border-slate-700/60 text-slate-200'
+      }`}>
+        <div className={`flex items-center gap-1.5 font-bold shrink-0 ${isLightMode ? 'text-amber-600' : 'text-amber-400'}`}>
+          <Gauge className="w-4 h-4" />
           <span>Velocidad:</span>
         </div>
 
@@ -667,7 +684,9 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
               className={`px-2 py-1 rounded-lg font-mono font-bold text-[10px] transition-all cursor-pointer ${
                 Math.abs(speechRate - opt.value) < 0.05
                   ? (isHistorical ? 'bg-amber-500 text-slate-950 shadow-md font-black scale-105' : 'bg-cyan-500 text-slate-950 shadow-md font-black scale-105')
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  : (isLightMode 
+                      ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' 
+                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700')
               }`}
               title={opt.label}
             >
@@ -680,10 +699,10 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
         <button
           type="button"
           onClick={handlePlayVoiceSample}
-          className={`p-1.5 rounded-xl text-white transition-all cursor-pointer shadow-xs shrink-0 flex items-center gap-1 ${
+          className={`p-1.5 rounded-xl transition-all cursor-pointer shadow-xs shrink-0 flex items-center gap-1 ${
             isPlaying 
-              ? 'bg-rose-600 hover:bg-rose-500 animate-pulse' 
-              : (isHistorical ? 'bg-amber-600 hover:bg-amber-500 text-slate-950 font-black' : 'bg-indigo-600/80 hover:bg-indigo-500')
+              ? 'bg-rose-600 hover:bg-rose-500 text-white animate-pulse' 
+              : (isHistorical ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black' : 'bg-indigo-600 hover:bg-indigo-500 text-white')
           }`}
           title={isPlaying ? "Detener locución" : "Escuchar pronunciación del personaje"}
         >
@@ -694,18 +713,26 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
 
       {/* Globo de Diálogo / Subtítulo con Traducción Desplegable */}
       {currentText && (
-        <div className={`mt-3 w-full max-w-lg p-4 rounded-2xl bg-slate-900/95 border ${
-          isHistorical ? 'border-amber-500/40 shadow-amber-500/10' : 'border-indigo-700/50 shadow-xl'
-        } shadow-xl space-y-2 backdrop-blur-md`}>
+        <div className={`mt-3 w-full max-w-lg p-4 rounded-2xl border shadow-xl space-y-2 backdrop-blur-md transition-colors ${
+          isLightMode
+            ? 'bg-white border-slate-200 text-slate-900 shadow-slate-200/50'
+            : (isHistorical ? 'bg-slate-900/95 border-amber-500/40 shadow-amber-500/10' : 'bg-slate-900/95 border-indigo-700/50')
+        }`}>
           <div className="flex items-start justify-between gap-3">
-            <p className="text-sm sm:text-base font-medium text-white leading-relaxed font-serif">
+            <p className={`text-sm sm:text-base font-medium leading-relaxed font-serif ${
+              isLightMode ? 'text-slate-800' : 'text-white'
+            }`}>
               &ldquo;{currentText}&rdquo;
             </p>
             {translationText && (
               <button
                 type="button"
                 onClick={() => setShowTranslation(!showTranslation)}
-                className="text-[11px] px-2 py-0.5 rounded-md bg-indigo-950 border border-indigo-700/60 text-indigo-300 hover:text-white shrink-0 cursor-pointer font-bold"
+                className={`text-[11px] px-2 py-0.5 rounded-md border shrink-0 cursor-pointer font-bold transition-colors ${
+                  isLightMode
+                    ? 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
+                    : 'bg-indigo-950 border-indigo-700/60 text-indigo-300 hover:text-white'
+                }`}
               >
                 {showTranslation ? 'Ocultar' : 'Traducir'}
               </button>
@@ -713,14 +740,20 @@ export const HumanGesticulatingAvatar: React.FC<Props> = ({
           </div>
 
           {showTranslation && translationText && (
-            <p className="text-xs text-teal-300 font-serif italic border-t border-indigo-900/60 pt-2">
+            <p className={`text-xs font-serif italic border-t pt-2 ${
+              isLightMode ? 'text-teal-700 border-slate-200' : 'text-teal-300 border-indigo-900/60'
+            }`}>
               Traducción: {translationText}
             </p>
           )}
 
           {phoneticTip && (
-            <div className="text-[11px] text-amber-300/90 font-mono bg-amber-950/30 border border-amber-800/40 p-2 rounded-xl flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <div className={`text-[11px] font-mono p-2 rounded-xl flex items-center gap-1.5 border ${
+              isLightMode
+                ? 'bg-amber-50 border-amber-200 text-amber-800'
+                : 'bg-amber-950/30 border-amber-800/40 text-amber-300/90'
+            }`}>
+              <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
               <span>Tip fonético: {phoneticTip}</span>
             </div>
           )}

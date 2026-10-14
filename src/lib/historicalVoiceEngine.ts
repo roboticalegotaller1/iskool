@@ -1113,104 +1113,103 @@ export interface CharacterAnatomicalMouth {
 export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalMouth {
   const norm = (idOrName || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   
-  // 1. NAPOLÉON BONAPARTE (public/images/languages/historical/napoleon.jpg)
-  // Labios reales: centro y = 375, cx = 484, comisuras x1: 454, x2: 514
+  // 1. NAPOLÉON BONAPARTE (3D: public/images/languages/3d/napoleon_3d.webp)
+  // Labios 3D exactos: cx = 579, cy = 420, x1: 539, x2: 619, apertura natural
   if (norm.includes('napoleon') || norm.includes('bonaparte')) {
     return {
-      x1: 454,
-      y1: 375,
-      cx: 484,
-      cy: 375,
-      x2: 514,
-      y2: 375,
-      maxOpening: 9.5,
-      cavityDarkColor: '#120304',
-      cavityMidColor: '#28060a',
-      cavityRimColor: '#421015',
-      lowerLipRimColor: 'rgba(175, 95, 85, 0.92)',
-      teethColor: '#eee7db'
+      x1: 539,
+      y1: 420,
+      cx: 579,
+      cy: 420,
+      x2: 619,
+      y2: 420,
+      maxOpening: 15,
+      cavityDarkColor: '#180407',
+      cavityMidColor: '#330a10',
+      cavityRimColor: '#58141d',
+      lowerLipRimColor: 'rgba(185, 88, 82, 0.92)',
+      teethColor: '#eee3d6'
     };
   }
 
-  // 2. WILLIAM SHAKESPEARE (public/images/languages/historical/shakespeare.jpg)
-  // Labios reales bajo bigote: centro y = 472, cx = 460 (cabeza a 3/4), comisuras x1: 428, x2: 492
+  // 2. WILLIAM SHAKESPEARE (3D: public/images/languages/3d/shakespeare_3d.webp)
+  // Labios 3D exactos bajo bigote: cx = 506, cy = 298, x1: 443, x2: 569
   if (norm.includes('shakespeare')) {
     return {
-      x1: 428,
-      y1: 472,
-      cx: 460,
-      cy: 472,
-      x2: 492,
-      y2: 472,
-      maxOpening: 10,
-      cavityDarkColor: '#0e0203',
-      cavityMidColor: '#240508',
-      cavityRimColor: '#400e12',
-      lowerLipRimColor: 'rgba(165, 80, 75, 0.92)',
-      teethColor: '#ece4d6',
+      x1: 443,
+      y1: 298,
+      cx: 506,
+      cy: 298,
+      x2: 569,
+      y2: 298,
+      maxOpening: 14,
+      cavityDarkColor: '#140507',
+      cavityMidColor: '#2e0d11',
+      cavityRimColor: '#4e171e',
+      lowerLipRimColor: 'rgba(180, 85, 78, 0.92)',
+      teethColor: '#f0e5d8',
       mustacheCover: true
     };
   }
 
-  // 3. ABRAHAM LINCOLN (public/images/languages/historical/abraham_lincoln.jpg)
-  // Labios reales: centro y = 458, cx = 490, comisuras x1: 452, x2: 528
+  // 3. ABRAHAM LINCOLN (3D: public/images/languages/3d/abraham_lincoln_3d.webp)
+  // Labios 3D exactos: cx = 512, cy = 262, x1: 460, x2: 565
   if (norm.includes('lincoln') || norm.includes('abraham')) {
     return {
-      x1: 452,
-      y1: 458,
-      cx: 490,
-      cy: 458,
-      x2: 528,
-      y2: 458,
-      maxOpening: 10.5,
-      cavityDarkColor: '#0a0203',
-      cavityMidColor: '#220407',
-      cavityRimColor: '#3e0c12',
-      lowerLipRimColor: 'rgba(160, 85, 78, 0.90)',
-      teethColor: '#eae1d2'
+      x1: 460,
+      y1: 262,
+      cx: 512,
+      cy: 262,
+      x2: 565,
+      y2: 262,
+      maxOpening: 14,
+      cavityDarkColor: '#120406',
+      cavityMidColor: '#2b0b0e',
+      cavityRimColor: '#4a1419',
+      lowerLipRimColor: 'rgba(170, 80, 75, 0.90)',
+      teethColor: '#ebe0d2'
     };
   }
 
-  // 4. ADA LOVELACE (public/images/languages/historical/ada_lovelace.jpg)
-  // Labios reales: centro y = 338, cx = 494, comisuras x1: 470, x2: 518
+  // 4. ADA LOVELACE (3D: public/images/languages/3d/ada_lovelace_3d.webp)
+  // Labios 3D exactos: cx = 501, cy = 381, x1: 450, x2: 551
   if (norm.includes('ada') || norm.includes('lovelace')) {
     return {
-      x1: 470,
-      y1: 340,
-      cx: 494,
-      cy: 338,
-      x2: 518,
-      y2: 340,
-      maxOpening: 8.5,
-      cavityDarkColor: '#140305',
-      cavityMidColor: '#2d070c',
-      cavityRimColor: '#4a1218',
-      lowerLipRimColor: 'rgba(195, 90, 95, 0.92)',
-      teethColor: '#f5efe6'
+      x1: 450,
+      y1: 381,
+      cx: 501,
+      cy: 381,
+      x2: 551,
+      y2: 381,
+      maxOpening: 16,
+      cavityDarkColor: '#1a0408',
+      cavityMidColor: '#380a12',
+      cavityRimColor: '#5e121e',
+      lowerLipRimColor: 'rgba(210, 90, 105, 0.94)',
+      teethColor: '#fff6ed'
     };
   }
 
-  // 5. MARIE CURIE (public/images/languages/historical/marie_curie.jpg)
-  // Labios reales: centro y = 440, cx = 490, comisuras x1: 456, x2: 524
+  // 5. MARIE CURIE (3D: public/images/languages/3d/marie_curie_3d.webp)
+  // Labios 3D exactos: cx = 551, cy = 266, x1: 506, x2: 596
   if (norm.includes('curie') || norm.includes('marie')) {
     return {
-      x1: 456,
-      y1: 440,
-      cx: 490,
-      cy: 440,
-      x2: 524,
-      y2: 440,
-      maxOpening: 9.5,
-      cavityDarkColor: '#100203',
-      cavityMidColor: '#260509',
-      cavityRimColor: '#441016',
-      lowerLipRimColor: 'rgba(168, 82, 80, 0.90)',
-      teethColor: '#eee5d8'
+      x1: 506,
+      y1: 266,
+      cx: 551,
+      cy: 266,
+      x2: 596,
+      y2: 266,
+      maxOpening: 13,
+      cavityDarkColor: '#1c050a',
+      cavityMidColor: '#3a0e16',
+      cavityRimColor: '#601924',
+      lowerLipRimColor: 'rgba(195, 92, 100, 0.92)',
+      teethColor: '#f6efe6'
     };
   }
 
-  // 6. VICTOR HUGO (public/images/languages/historical/victor_hugo.jpg)
-  // Labios reales bajo bigote: centro y = 394, cx = 504, comisuras x1: 476, x2: 534
+  // 6. VICTOR HUGO
   if (norm.includes('victor') || norm.includes('hugo')) {
     return {
       x1: 476,
@@ -1219,7 +1218,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       cy: 394,
       x2: 534,
       y2: 394,
-      maxOpening: 9.5,
+      maxOpening: 12,
       cavityDarkColor: '#0c0203',
       cavityMidColor: '#240407',
       cavityRimColor: '#400e12',
@@ -1229,8 +1228,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // 7. JEANNE D'ARC (public/images/languages/historical/jeanne_darc.jpg)
-  // Labios reales: centro y = 382, cx = 500, comisuras x1: 472, x2: 528
+  // 7. JEANNE D'ARC
   if (norm.includes('jeanne') || norm.includes('darc') || norm.includes('arc')) {
     return {
       x1: 472,
@@ -1239,7 +1237,7 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
       cy: 382,
       x2: 528,
       y2: 382,
-      maxOpening: 9.0,
+      maxOpening: 12,
       cavityDarkColor: '#120305',
       cavityMidColor: '#2a060b',
       cavityRimColor: '#461117',
@@ -1248,58 +1246,58 @@ export function getHistoricalMouthConfig(idOrName: string): CharacterAnatomicalM
     };
   }
 
-  // MENTORES ESTÁNDAR
-  // Mentor Femenino: public/images/languages/mentor_female.jpg (y = 545, cx = 508, x1: 430, x2: 586)
-  if (norm.includes('female') || norm.includes('claire') || norm.includes('sophie') || norm.includes('elara') || norm.includes('fem')) {
+  // 8. MENTOR FEMENINO 3D (public/images/languages/3d/mentor_female_3d.webp)
+  // Labios 3D exactos: cx = 618, cy = 574, x1: 558, x2: 679
+  if (norm.includes('female') || norm.includes('claire') || norm.includes('sophie') || norm.includes('elara') || norm.includes('fem') || norm.includes('mme')) {
     return {
-      x1: 430,
-      y1: 538,
-      cx: 508,
-      cy: 545,
-      x2: 586,
-      y2: 538,
-      maxOpening: 12,
-      cavityDarkColor: '#0a0102',
-      cavityMidColor: '#240407',
-      cavityRimColor: '#450d13',
-      lowerLipRimColor: 'rgba(190, 85, 90, 0.92)',
-      teethColor: '#f4ede6'
+      x1: 558,
+      y1: 574,
+      cx: 618,
+      cy: 574,
+      x2: 679,
+      y2: 574,
+      maxOpening: 16,
+      cavityDarkColor: '#1e0409',
+      cavityMidColor: '#3e0c15',
+      cavityRimColor: '#681622',
+      lowerLipRimColor: 'rgba(215, 92, 105, 0.94)',
+      teethColor: '#fff7f0'
     };
   }
 
-  // Mentor Masculino: public/images/languages/mentor_male.jpg (y = 502, cx = 500, x1: 440, x2: 560)
-  if (norm.includes('male') || norm.includes('arthur') || norm.includes('henri')) {
+  // 9. MENTOR MASCULINO 3D (public/images/languages/3d/mentor_male_3d.webp)
+  // Labios 3D exactos: cx = 503, cy = 266, x1: 445, x2: 560
+  if (norm.includes('male') || norm.includes('arthur') || norm.includes('henri') || norm.includes('prof')) {
     return {
-      x1: 440,
-      y1: 502,
-      cx: 500,
-      cy: 502,
+      x1: 445,
+      y1: 266,
+      cx: 503,
+      cy: 266,
       x2: 560,
-      y2: 502,
-      maxOpening: 11,
-      cavityDarkColor: '#080102',
-      cavityMidColor: '#200306',
-      cavityRimColor: '#3e0c12',
-      lowerLipRimColor: 'rgba(165, 80, 75, 0.90)',
-      teethColor: '#ede4d6',
-      mustacheCover: true
+      y2: 266,
+      maxOpening: 15,
+      cavityDarkColor: '#160406',
+      cavityMidColor: '#300a0e',
+      cavityRimColor: '#521319',
+      lowerLipRimColor: 'rgba(178, 82, 75, 0.90)',
+      teethColor: '#eee4d6'
     };
   }
 
-  // Fallback seguro centrado
+  // Fallback seguro centrado adaptado a proporciones 3D
   return {
-    x1: 460,
-    y1: 440,
+    x1: 450,
+    y1: 380,
     cx: 500,
-    cy: 440,
-    x2: 540,
-    y2: 440,
-    maxOpening: 10,
-    cavityDarkColor: '#0a0102',
-    cavityMidColor: '#240407',
-    cavityRimColor: '#450d13',
-    lowerLipRimColor: 'rgba(160, 60, 65, 0.88)',
-    teethColor: '#f0ece2'
+    cy: 380,
+    x2: 550,
+    y2: 380,
+    maxOpening: 15,
+    cavityDarkColor: '#140306',
+    cavityMidColor: '#2d0910',
+    cavityRimColor: '#50121a',
+    lowerLipRimColor: 'rgba(185, 80, 85, 0.90)',
+    teethColor: '#f2eae0'
   };
 }
 
