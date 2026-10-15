@@ -85,8 +85,13 @@ import {
   Volume2,
   VolumeX,
   Layers,
-  Maximize2
+  Maximize2,
+  Menu
 } from 'lucide-react';
+import {
+  playUniversalIskoolVoice,
+  stopAllIskoolAudio
+} from '@/lib/historicalVoiceEngine';
 import { RawGmailItem } from '@/app/api/mail/raw-inbox/route';
 import {
   GoogleOfficialLogo,
@@ -467,6 +472,7 @@ export interface ThemeTokens {
   badgeNeutral: string;
   ribbonBg: string;
   ribbonBorder: string;
+  isDark: boolean;
 }
 
 export const THEME_CONFIG: Record<CeoThemeMode, ThemeTokens> = {
@@ -496,93 +502,165 @@ export const THEME_CONFIG: Record<CeoThemeMode, ThemeTokens> = {
     accent: '#8B263E',
     badgeNeutral: 'bg-[#EFE8DC] text-[#475569]',
     ribbonBg: 'bg-[#F5EFE3] border-b border-[#E3D7C5]',
-    ribbonBorder: 'border-[#D8CCBD]'
+    ribbonBorder: 'border-[#D8CCBD]',
+    isDark: false
   },
   slate: {
-    modalBg: 'bg-slate-950',
-    modalBorder: 'border-slate-800',
-    headerBg: 'bg-gradient-to-r from-slate-950 via-[#0F2744] to-slate-950',
+    modalBg: 'bg-[#0B0F19]',
+    modalBorder: 'border-[#1E293B]',
+    headerBg: 'bg-gradient-to-r from-[#0B0F19] via-[#111C2E] to-[#0B0F19]',
     headerBorder: 'border-blue-900/60',
     headerText: 'text-white',
     headerSubtext: 'text-slate-300',
-    sidebarBg: 'bg-slate-900',
-    sidebarBorder: 'border-slate-800',
-    sidebarActiveItem: 'bg-slate-800 text-white font-black border border-slate-700 shadow-xs',
-    sidebarHoverItem: 'hover:bg-slate-800/60 text-slate-300',
-    contentBg: 'bg-slate-950/70',
-    feedBg: 'bg-slate-900/90',
-    feedBorder: 'border-slate-800',
-    cardBg: 'bg-slate-900',
-    cardBorder: 'border-slate-800',
-    cardHover: 'hover:border-blue-500/50 hover:shadow-sm',
-    cardSelected: 'border-blue-500 ring-2 ring-blue-500/30 bg-slate-800/80',
-    dockBg: 'bg-slate-900',
-    dockBorder: 'border-slate-800',
-    textPrimary: 'text-white',
+    sidebarBg: 'bg-[#0F172A]',
+    sidebarBorder: 'border-[#1E293B]',
+    sidebarActiveItem: 'bg-[#1E293B] text-white font-black border border-slate-700 shadow-xs',
+    sidebarHoverItem: 'hover:bg-[#1E293B]/70 text-slate-300',
+    contentBg: 'bg-[#080E1A]',
+    feedBg: 'bg-[#080E1A]',
+    feedBorder: 'border-[#1E293B]',
+    cardBg: 'bg-[#111C2E]',
+    cardBorder: 'border-[#1E293B]',
+    cardHover: 'hover:border-blue-500/60 hover:shadow-sm',
+    cardSelected: 'border-blue-500 ring-2 ring-blue-500/40 bg-[#16253C]',
+    dockBg: 'bg-[#111C2E]',
+    dockBorder: 'border-[#1E293B]',
+    textPrimary: 'text-slate-100',
     textSecondary: 'text-slate-300',
     textMuted: 'text-slate-400',
     accent: '#3B82F6',
-    badgeNeutral: 'bg-slate-800 text-slate-300',
-    ribbonBg: 'bg-slate-900 border-b border-slate-800',
-    ribbonBorder: 'border-slate-800'
+    badgeNeutral: 'bg-slate-800 text-slate-200',
+    ribbonBg: 'bg-[#0F172A] border-b border-[#1E293B]',
+    ribbonBorder: 'border-[#1E293B]',
+    isDark: true
   },
   navy: {
-    modalBg: 'bg-[#0A192F]',
+    modalBg: 'bg-[#061224]',
     modalBorder: 'border-[#1E3A8A]/50',
     headerBg: 'bg-gradient-to-r from-[#020C1B] via-[#0A192F] to-[#172A45]',
     headerBorder: 'border-blue-500/30',
     headerText: 'text-white',
     headerSubtext: 'text-blue-200',
-    sidebarBg: 'bg-[#0E243F]',
-    sidebarBorder: 'border-[#1E3A8A]/40',
+    sidebarBg: 'bg-[#091B33]',
+    sidebarBorder: 'border-[#13325B]',
     sidebarActiveItem: 'bg-[#173B63] text-white font-black border border-blue-400/40 shadow-xs',
     sidebarHoverItem: 'hover:bg-[#173B63]/60 text-blue-200',
-    contentBg: 'bg-[#071322]',
-    feedBg: 'bg-[#0A1D36]',
-    feedBorder: 'border-[#1E3A8A]/40',
-    cardBg: 'bg-[#0E243F]',
-    cardBorder: 'border-[#1E3A8A]/40',
+    contentBg: 'bg-[#040C1A]',
+    feedBg: 'bg-[#040C1A]',
+    feedBorder: 'border-[#13325B]',
+    cardBg: 'bg-[#0B203E]',
+    cardBorder: 'border-[#163866]',
     cardHover: 'hover:border-blue-400 hover:shadow-sm',
     cardSelected: 'border-blue-400 ring-2 ring-blue-400/30 bg-[#132F52]',
-    dockBg: 'bg-[#0E243F]',
-    dockBorder: 'border-[#1E3A8A]/40',
+    dockBg: 'bg-[#0B203E]',
+    dockBorder: 'border-[#163866]',
     textPrimary: 'text-white',
     textSecondary: 'text-blue-100',
     textMuted: 'text-blue-300',
     accent: '#2563EB',
     badgeNeutral: 'bg-[#173B63] text-blue-100',
-    ribbonBg: 'bg-[#0B1E38] border-b border-[#1E3A8A]/40',
-    ribbonBorder: 'border-[#1E3A8A]/40'
+    ribbonBg: 'bg-[#091B33] border-b border-[#13325B]',
+    ribbonBorder: 'border-[#13325B]',
+    isDark: true
   },
   emerald: {
-    modalBg: 'bg-[#062018]',
+    modalBg: 'bg-[#041A14]',
     modalBorder: 'border-[#0F3D30]',
     headerBg: 'bg-gradient-to-r from-[#02140F] via-[#062018] to-[#0A3326]',
     headerBorder: 'border-emerald-600/30',
     headerText: 'text-white',
     headerSubtext: 'text-emerald-200',
-    sidebarBg: 'bg-[#0A2920]',
-    sidebarBorder: 'border-[#0F3D30]',
+    sidebarBg: 'bg-[#06241C]',
+    sidebarBorder: 'border-[#0E3D30]',
     sidebarActiveItem: 'bg-[#124234] text-white font-black border border-emerald-500/40 shadow-xs',
     sidebarHoverItem: 'hover:bg-[#124234]/60 text-emerald-200',
-    contentBg: 'bg-[#041510]',
-    feedBg: 'bg-[#07241B]',
-    feedBorder: 'border-[#0F3D30]',
-    cardBg: 'bg-[#0A2920]',
-    cardBorder: 'border-[#0F3D30]',
+    contentBg: 'bg-[#03140F]',
+    feedBg: 'bg-[#03140F]',
+    feedBorder: 'border-[#0E3D30]',
+    cardBg: 'bg-[#072C22]',
+    cardBorder: 'border-[#0F4738]',
     cardHover: 'hover:border-emerald-400 hover:shadow-sm',
     cardSelected: 'border-emerald-400 ring-2 ring-emerald-400/30 bg-[#0F382B]',
-    dockBg: 'bg-[#0A2920]',
-    dockBorder: 'border-[#0F3D30]',
+    dockBg: 'bg-[#072C22]',
+    dockBorder: 'border-[#0F4738]',
     textPrimary: 'text-white',
     textSecondary: 'text-emerald-100',
     textMuted: 'text-emerald-300',
     accent: '#059669',
     badgeNeutral: 'bg-[#124234] text-emerald-100',
-    ribbonBg: 'bg-[#08261D] border-b border-[#0F3D30]',
-    ribbonBorder: 'border-[#0F3D30]'
+    ribbonBg: 'bg-[#06241C] border-b border-[#0E3D30]',
+    ribbonBorder: 'border-[#0E3D30]',
+    isDark: true
   }
 };
+
+export interface CeoVoiceProfileOption {
+  id: string;
+  name: string;
+  personaLabel: string;
+  gender: 'female' | 'male';
+  characterName?: string;
+  narratorMode?: 'wisdom_guide' | 'epic_chronist' | 'time_chrononaut';
+  description: string;
+  sampleQuote: string;
+}
+
+export const CEO_VOICE_OPTIONS: CeoVoiceProfileOption[] = [
+  {
+    id: 'wisdom_guide',
+    name: 'La Guía del Saber (Sor Juana Inés de la Cruz)',
+    personaLabel: 'Voz Narradora Institucional / Femenina',
+    gender: 'female',
+    narratorMode: 'wisdom_guide',
+    description: 'Timbre sabio, cálido, sereno y didáctico con oratoria pedagógica de alta fidelidad.',
+    sampleQuote: 'Buenos días, Dirección General. Aquí tiene su resumen ejecutivo en 60 segundos...'
+  },
+  {
+    id: 'miguel_hidalgo',
+    name: 'Don Miguel Hidalgo y Costilla',
+    personaLabel: 'Voz Histórica Republicana / Masculina',
+    gender: 'male',
+    characterName: 'Miguel Hidalgo',
+    description: 'Timbre maduro y elocuente de oratoria republicana, voz grave y de solemne liderazgo.',
+    sampleQuote: 'Dirección General: Les presento el estado prioritario de nuestros planteles y deberes normativos...'
+  },
+  {
+    id: 'josefa_ortiz',
+    name: 'Doña Josefa Ortiz de Domínguez',
+    personaLabel: 'Voz Insurgente y Heroica / Femenina',
+    gender: 'female',
+    characterName: 'Josefa Ortiz de Domínguez',
+    description: 'Timbre firme, noble, enérgico y reflexivo para momentos de alta resolución institucional.',
+    sampleQuote: 'Atención a la Dirección: Hemos detectado asuntos críticos que exigen pronta respuesta institucional...'
+  },
+  {
+    id: 'benito_juarez',
+    name: 'Don Benito Juárez',
+    personaLabel: 'Voz de Máxima Autoridad Civil / Masculina',
+    gender: 'male',
+    characterName: 'Benito Juárez',
+    description: 'Timbre sobrio, reflexivo y de máxima autoridad legal y republicana para supervisión y normativas.',
+    sampleQuote: 'Dirección General: El cumplimiento estricto de los lineamientos oficiales y acuerdos de la comunidad...'
+  },
+  {
+    id: 'epic_chronist',
+    name: 'El Cronista Épico (Cecilio)',
+    personaLabel: 'Voz Cinemática / Masculina',
+    gender: 'male',
+    narratorMode: 'epic_chronist',
+    description: 'Relato apasionado estilo cinemática o tráiler histórico de batallas, retos y gloria formativa.',
+    sampleQuote: 'Informe matutino: 5 asuntos prioritarios demandan acción estratégica en este momento...'
+  },
+  {
+    id: 'time_chrononaut',
+    name: 'El Crononauta / Investigador de Archivo',
+    personaLabel: 'Voz Analítica & Datos / Masculina',
+    gender: 'male',
+    narratorMode: 'time_chrononaut',
+    description: 'Misterio, datos analíticos y rigor técnico que despiertan la atención de la directiva.',
+    sampleQuote: 'Análisis cognitivo completado: Patrones detectados y radar de tiempos en seguimiento activo...'
+  }
+];
 
 export function CEOEmailCommunicationsModal({
   isOpen,
@@ -625,6 +703,24 @@ export function CEOEmailCommunicationsModal({
   const [showModelCPanel, setShowModelCPanel] = useState<boolean>(false);
   const [patternResolved, setPatternResolved] = useState<boolean>(false);
   const [isApprovingCircular, setIsApprovingCircular] = useState<boolean>(false);
+
+  // Perfil de Voz Histórica Narradora para Audio Briefing y Alertas (6 Figuras Históricas)
+  const [selectedVoiceProfile, setSelectedVoiceProfile] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`iskool_ceo_voice_profile_${currentTenantId}`);
+      if (saved && CEO_VOICE_OPTIONS.some(v => v.id === saved)) {
+        return saved;
+      }
+    }
+    return 'wisdom_guide';
+  });
+  const [previewingVoiceId, setPreviewingVoiceId] = useState<string | null>(null);
+
+  // Estado de Colapso/Expansión Quirúrgica de Tarjetas de Triage (Imagen 4: compactas por defecto)
+  const [expandedCardIds, setExpandedCardIds] = useState<Record<string, boolean>>({});
+
+  // Control responsivo de Barra Lateral en dispositivos móviles y tabletas
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState<boolean>(false);
 
   // Pestañas principales de la consola (Bandeja, Delegados, Calendario, Laboratorio, Google, Redactar, Directorio, Bitácora, Bandeja de Entrada, ROI, Ajustes)
   const [activeTab, setActiveTab] = useState<'inbox' | 'delegados' | 'laboratorio' | 'google' | 'redactar' | 'calendario' | 'directorio' | 'bitacora' | 'raw_inbox' | 'roi' | 'ajustes'>('inbox');
@@ -1372,28 +1468,31 @@ export function CEOEmailCommunicationsModal({
 
   const handleTogglePlayBriefing = () => {
     if (isPlayingAudio) {
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-      }
+      stopAllIskoolAudio();
       setIsPlayingAudio(false);
     } else {
       setIsPlayingAudio(true);
       setAudioProgress(0);
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const textToSpeak = `Buenos días, Dirección General. Aquí tiene su resumen ejecutivo en 60 segundos de la Bóveda de Correo de ${schoolName}. Cuenta con ${intelligentMatters.length} asuntos prioritarios que requieren su atención. Asunto crítico número uno: Caso de convivencia escolar en 5º B Campus Montes, con recomendación de mesa de mediación presencial. Asunto número dos: Oficio regulatorio de Supervisión de Zona 14 SEP con 11 horas de SLA restante. Hemos detectado además un patrón colectivo de cinco reportes sobre demoras en la Ruta 4 de transporte escolar, listo para emisión de circular institucional en un clic.`;
-        const utterance = new SpeechSynthesisUtterance(textToSpeak);
-        utterance.lang = 'es-MX';
-        utterance.rate = 1.05;
-        utterance.onend = () => {
+      const activeVoice = CEO_VOICE_OPTIONS.find(v => v.id === selectedVoiceProfile) || CEO_VOICE_OPTIONS[0];
+      const textToSpeak = `Buenos días, Dirección General. Aquí tiene su resumen ejecutivo en sesenta segundos de la Bóveda de Correo de ${schoolName}. Cuenta con ${intelligentMatters.length} asuntos prioritarios que requieren su atención. Asunto prioritario número uno: Caso de convivencia escolar en Campus Montes, con recomendación de mesa de mediación presencial. Asunto número dos: Oficio regulatorio de Supervisión de Zona 14 de la Secretaría de Educación Pública con once horas de plazo restante. Hemos detectado además un patrón colectivo de cinco reportes sobre demoras en la Ruta 4 de transporte escolar, listo para emisión de circular institucional en un clic.`;
+      
+      playUniversalIskoolVoice({
+        text: textToSpeak,
+        characterName: activeVoice.characterName,
+        narratorMode: activeVoice.narratorMode,
+        role: activeVoice.characterName ? 'character' : 'narrator',
+        gender: activeVoice.gender,
+        onStart: () => {
+          setIsPlayingAudio(true);
+        },
+        onEnd: () => {
           setIsPlayingAudio(false);
           setAudioProgress(60);
-        };
-        utterance.onerror = () => {
+        },
+        onError: () => {
           setIsPlayingAudio(false);
-        };
-        window.speechSynthesis.speak(utterance);
-      }
+        }
+      });
     }
   };
 
@@ -1444,6 +1543,56 @@ export function CEOEmailCommunicationsModal({
       emerald: 'Verde Esmeralda Institucional'
     };
     onTriggerToast(`✓ Tema visual actualizado a ${themeNames[mode]}.`);
+  };
+
+  const handleSelectVoiceProfile = (voiceId: string) => {
+    setSelectedVoiceProfile(voiceId);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`iskool_ceo_voice_profile_${currentTenantId}`, voiceId);
+    }
+    const opt = CEO_VOICE_OPTIONS.find(v => v.id === voiceId);
+    onTriggerToast(`✓ Voz narradora actualizada: ${opt?.name || voiceId}`);
+  };
+
+  const handlePreviewVoice = (voiceOpt: CeoVoiceProfileOption) => {
+    if (previewingVoiceId === voiceOpt.id) {
+      stopAllIskoolAudio();
+      setPreviewingVoiceId(null);
+      return;
+    }
+    stopAllIskoolAudio();
+    setPreviewingVoiceId(voiceOpt.id);
+    
+    playUniversalIskoolVoice({
+      text: voiceOpt.sampleQuote,
+      characterName: voiceOpt.characterName,
+      narratorMode: voiceOpt.narratorMode,
+      role: voiceOpt.characterName ? 'character' : 'narrator',
+      gender: voiceOpt.gender,
+      onStart: () => {},
+      onEnd: () => setPreviewingVoiceId(null),
+      onError: () => setPreviewingVoiceId(null)
+    });
+  };
+
+  const toggleCardExpand = (id: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setExpandedCardIds(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
+  const expandAllCards = () => {
+    const all: Record<string, boolean> = {};
+    mattersList.forEach(m => { all[m.id] = true; });
+    setExpandedCardIds(all);
+    onTriggerToast('✓ Todas las tarjetas expandidas para inspección detallada.');
+  };
+
+  const collapseAllCards = () => {
+    setExpandedCardIds({});
+    onTriggerToast('✓ Vista compacta activada: Máxima densidad visual ejecutiva.');
   };
 
   // =========================================================
@@ -5343,16 +5492,26 @@ Comité de Seguridad y Protección Escolar`
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in select-none">
-      <div className={`${currentTheme.modalBg} ${currentTheme.modalBorder} rounded-3xl shadow-2xl border w-full max-w-7xl xl:max-w-[1440px] 2xl:max-w-[1680px] max-h-[96vh] sm:max-h-[92vh] h-full flex flex-col overflow-hidden animate-in zoom-in-95 duration-150`}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-1 sm:p-3 lg:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in select-none">
+      <div className={`${currentTheme.modalBg} ${currentTheme.modalBorder} rounded-3xl shadow-2xl border w-full max-w-[98vw] 2xl:max-w-[1980px] max-h-[97vh] sm:max-h-[94vh] h-[95vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150`}>
         
         {/* ========================================================= */}
         {/* 1. HEADER DE LA SUITE INTELIGENTE DE EMAIL CEO            */}
         {/* ========================================================= */}
-        <div className={`px-4 sm:px-6 py-3 sm:py-3.5 ${currentTheme.headerBg} ${currentTheme.headerText} flex items-center justify-between shrink-0 border-b ${currentTheme.headerBorder} gap-3 flex-wrap lg:flex-nowrap`}>
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#E41B14] via-[#C01D0C] to-[#17426D] text-white flex items-center justify-center shadow-lg shadow-red-950/50 border border-red-400/30 shrink-0">
-              <Mail className="h-5 w-5 text-white" />
+        <div className={`px-3 sm:px-6 py-2.5 sm:py-3.5 ${currentTheme.headerBg} ${currentTheme.headerText} flex items-center justify-between shrink-0 border-b ${currentTheme.headerBorder} gap-3 flex-wrap lg:flex-nowrap`}>
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            {/* Botón de Menú Móvil para Desplegar Módulos Ejecutivos */}
+            <button
+              type="button"
+              onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+              className="md:hidden p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer shrink-0"
+              aria-label="Abrir módulos ejecutivos"
+              title="Módulos Ejecutivos"
+            >
+              <Menu className="h-4 w-4" />
+            </button>
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-[#E41B14] via-[#C01D0C] to-[#17426D] text-white flex items-center justify-center shadow-lg shadow-red-950/50 border border-red-400/30 shrink-0">
+              <Mail className="h-4.5 w-4.5 sm:h-5 sm:w-5 text-white" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
@@ -5612,18 +5771,39 @@ Comité de Seguridad y Protección Escolar`
         {/* ========================================================= */}
         {/* 2. CUERPO MODAL: BARRA LATERAL IZQUIERDA + CONTENIDO      */}
         {/* ========================================================= */}
-        <div className="flex-1 flex flex-row min-h-0 overflow-hidden bg-slate-100/60">
+        <div className={`flex-1 flex flex-row min-h-0 overflow-hidden ${currentTheme.contentBg} relative`}>
+
+          {/* Backdrop móvil para cerrar la barra lateral al hacer tap fuera */}
+          {mobileSidebarOpen && (
+            <div
+              onClick={() => setMobileSidebarOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 md:hidden animate-in fade-in duration-150"
+              aria-hidden="true"
+            />
+          )}
 
           {/* BARRA LATERAL IZQUIERDA: PESTAÑAS VERTICALES DE ARRIBA A ABAJO */}
-          <aside className="w-64 sm:w-72 bg-white border-r border-slate-200/90 flex flex-col justify-between shrink-0 overflow-y-auto shadow-xs z-10">
+          <aside className={`w-64 sm:w-72 ${currentTheme.sidebarBg} border-r ${currentTheme.sidebarBorder} flex flex-col justify-between shrink-0 overflow-y-auto ${
+            mobileSidebarOpen ? 'fixed inset-y-0 left-0 z-50 shadow-2xl flex' : 'hidden md:flex'
+          } md:relative md:shadow-none`}>
             <div className="p-3 sm:p-3.5 space-y-1.5">
               <div className="px-3 py-1.5 mb-0.5 flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                <span className={`text-[10px] font-black uppercase tracking-wider ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-400'}`}>
                   Módulos Ejecutivos
                 </span>
-                <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 uppercase">
-                  CEO Suite
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase ${currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-500'}`}>
+                    CEO Suite
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setMobileSidebarOpen(false)}
+                    className="md:hidden p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-white/10"
+                    aria-label="Cerrar barra lateral"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
 
               {/* 1. Bandeja Inteligente */}
@@ -5634,19 +5814,20 @@ Comité de Seguridad y Protección Escolar`
                   if (usableSubFilter === 'DELEGADOS') {
                     setUsableSubFilter('ALL');
                   }
+                  setMobileSidebarOpen(false);
                 }}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS'
-                    ? 'bg-red-50 text-[#E41B14] shadow-xs border border-red-200/80 font-black'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'
+                    ? 'bg-red-500/15 text-red-600 dark:text-red-400 shadow-xs border border-red-500/30 font-black'
+                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <Inbox className={`h-4 w-4 shrink-0 ${activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS' ? 'text-[#E41B14]' : 'text-slate-400'}`} />
+                  <Inbox className={`h-4 w-4 shrink-0 ${activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS' ? 'text-red-500' : 'text-slate-400'}`} />
                   <span className="truncate">Bandeja Inteligente</span>
                 </div>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
-                  activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS' ? 'bg-[#E41B14] text-white' : 'bg-slate-100 text-slate-600'
+                  activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS' ? 'bg-[#E41B14] text-white' : currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'
                 }`}>
                   {intelligentMatters.length}
                 </span>
@@ -5660,19 +5841,20 @@ Comité de Seguridad y Protección Escolar`
                   setInboxFilter('USABLE');
                   setUsableSubFilter('DELEGADOS');
                   setSelectedRawEmailId(null);
+                  setMobileSidebarOpen(false);
                 }}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'inbox' && usableSubFilter === 'DELEGADOS'
-                    ? 'bg-amber-50 text-amber-950 shadow-xs border border-amber-300 font-black'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'
+                    ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 shadow-xs border border-amber-500/30 font-black'
+                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <Forward className={`h-4 w-4 shrink-0 ${activeTab === 'inbox' && usableSubFilter === 'DELEGADOS' ? 'text-amber-600' : 'text-slate-400'}`} />
+                  <Forward className={`h-4 w-4 shrink-0 ${activeTab === 'inbox' && usableSubFilter === 'DELEGADOS' ? 'text-amber-500' : 'text-slate-400'}`} />
                   <span className="truncate">Asuntos Delegados</span>
                 </div>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
-                  activeTab === 'inbox' && usableSubFilter === 'DELEGADOS' ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-600'
+                  activeTab === 'inbox' && usableSubFilter === 'DELEGADOS' ? 'bg-amber-500 text-white' : currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'
                 }`}>
                   {delegatedMattersList.length}
                 </span>
@@ -5681,19 +5863,22 @@ Comité de Seguridad y Protección Escolar`
               {/* 2. Calendario Escolar */}
               <button
                 type="button"
-                onClick={() => setActiveTab('calendario')}
+                onClick={() => {
+                  setActiveTab('calendario');
+                  setMobileSidebarOpen(false);
+                }}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'calendario'
-                    ? 'bg-indigo-50 text-indigo-700 shadow-xs border border-indigo-200/80 font-black'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'
+                    ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shadow-xs border border-indigo-500/30 font-black'
+                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <Calendar className={`h-4 w-4 shrink-0 ${activeTab === 'calendario' ? 'text-indigo-600' : 'text-slate-400'}`} />
+                  <Calendar className={`h-4 w-4 shrink-0 ${activeTab === 'calendario' ? 'text-indigo-500' : 'text-slate-400'}`} />
                   <span className="truncate">Calendario Escolar</span>
                 </div>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
-                  activeTab === 'calendario' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'
+                  activeTab === 'calendario' ? 'bg-indigo-600 text-white' : currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'
                 }`}>
                   {calendarEvents.length}
                 </span>
@@ -5702,11 +5887,14 @@ Comité de Seguridad y Protección Escolar`
               {/* 3. Redactar Comunicado */}
               <button
                 type="button"
-                onClick={() => setActiveTab('redactar')}
+                onClick={() => {
+                  setActiveTab('redactar');
+                  setMobileSidebarOpen(false);
+                }}
                 className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'redactar'
-                    ? 'bg-blue-50 text-[#5448f7] shadow-xs border border-blue-200/80 font-black'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'
+                    ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 shadow-xs border border-blue-500/30 font-black'
+                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
                 }`}
               >
                 <Send className={`h-4 w-4 shrink-0 ${activeTab === 'redactar' ? 'text-[#5448f7]' : 'text-slate-400'}`} />
@@ -5716,15 +5904,18 @@ Comité de Seguridad y Protección Escolar`
               {/* 4. Conexión POP / IMAP & Google Workspace */}
               <button
                 type="button"
-                onClick={() => setActiveTab('google')}
+                onClick={() => {
+                  setActiveTab('google');
+                  setMobileSidebarOpen(false);
+                }}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'google'
-                    ? 'bg-blue-50 text-blue-700 shadow-xs border border-blue-200/80 font-black'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'
+                    ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 shadow-xs border border-blue-500/30 font-black'
+                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <Globe2 className={`h-4 w-4 shrink-0 ${activeTab === 'google' ? 'text-blue-600' : 'text-slate-400'}`} />
+                  <Globe2 className={`h-4 w-4 shrink-0 ${activeTab === 'google' ? 'text-blue-500' : 'text-slate-400'}`} />
                   <span className="truncate">Conexión POP / IMAP</span>
                 </div>
                 <span className={`w-2 h-2 rounded-full shrink-0 ${
@@ -5738,43 +5929,52 @@ Comité de Seguridad y Protección Escolar`
               {/* 5. Laboratorio de Ingesta & Test Cases */}
               <button
                 type="button"
-                onClick={() => setActiveTab('laboratorio')}
+                onClick={() => {
+                  setActiveTab('laboratorio');
+                  setMobileSidebarOpen(false);
+                }}
                 className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'laboratorio'
-                    ? 'bg-amber-50 text-amber-800 shadow-xs border border-amber-200/80 font-black'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'
+                    ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 shadow-xs border border-amber-500/30 font-black'
+                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
                 }`}
               >
-                <Zap className={`h-4 w-4 shrink-0 ${activeTab === 'laboratorio' ? 'text-amber-600' : 'text-slate-400'}`} />
+                <Zap className={`h-4 w-4 shrink-0 ${activeTab === 'laboratorio' ? 'text-amber-500' : 'text-slate-400'}`} />
                 <span className="truncate">Laboratorio de Ingesta</span>
               </button>
 
               {/* 6. Directorio Oficial */}
               <button
                 type="button"
-                onClick={() => setActiveTab('directorio')}
+                onClick={() => {
+                  setActiveTab('directorio');
+                  setMobileSidebarOpen(false);
+                }}
                 className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'directorio'
-                    ? 'bg-purple-50 text-purple-700 shadow-xs border border-purple-200/80 font-black'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'
+                    ? 'bg-purple-500/15 text-purple-600 dark:text-purple-400 shadow-xs border border-purple-500/30 font-black'
+                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
                 }`}
               >
-                <Users className={`h-4 w-4 shrink-0 ${activeTab === 'directorio' ? 'text-purple-600' : 'text-slate-400'}`} />
+                <Users className={`h-4 w-4 shrink-0 ${activeTab === 'directorio' ? 'text-purple-500' : 'text-slate-400'}`} />
                 <span className="truncate">Directorio Oficial</span>
               </button>
 
               {/* 7. Bitácora */}
               <button
                 type="button"
-                onClick={() => setActiveTab('bitacora')}
+                onClick={() => {
+                  setActiveTab('bitacora');
+                  setMobileSidebarOpen(false);
+                }}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'bitacora'
-                    ? 'bg-slate-100 text-slate-900 shadow-xs border border-slate-300 font-black'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'
+                    ? 'bg-slate-500/15 text-slate-800 dark:text-slate-200 shadow-xs border border-slate-500/30 font-black'
+                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <Clock className={`h-4 w-4 shrink-0 ${activeTab === 'bitacora' ? 'text-slate-900' : 'text-slate-400'}`} />
+                  <Clock className={`h-4 w-4 shrink-0 ${activeTab === 'bitacora' ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`} />
                   <span className="truncate">Bitácora</span>
                 </div>
                 <span className="text-[10px] font-bold text-slate-500 shrink-0">
@@ -5788,11 +5988,12 @@ Comité de Seguridad y Protección Escolar`
                 onClick={() => {
                   setActiveTab('raw_inbox');
                   setSelectedRawEmailId(null);
+                  setMobileSidebarOpen(false);
                 }}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'raw_inbox'
-                    ? 'bg-red-50 text-[#EA4335] shadow-xs border border-red-200/90 font-black'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'
+                    ? 'bg-red-500/15 text-[#EA4335] shadow-xs border border-red-500/30 font-black'
+                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
@@ -5804,7 +6005,7 @@ Comité de Seguridad y Protección Escolar`
                     <span className="w-2 h-2 rounded-full bg-[#EA4335] animate-pulse" title="Correos sin leer" />
                   )}
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                    activeTab === 'raw_inbox' ? 'bg-[#EA4335] text-white' : 'bg-slate-100 text-slate-600'
+                    activeTab === 'raw_inbox' ? 'bg-[#EA4335] text-white' : currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'
                   }`}>
                     {rawEmailsList.length}
                   </span>
@@ -5814,14 +6015,17 @@ Comité de Seguridad y Protección Escolar`
               {/* 8. ROI & Telemetría */}
               <button
                 type="button"
-                onClick={() => setActiveTab('roi')}
+                onClick={() => {
+                  setActiveTab('roi');
+                  setMobileSidebarOpen(false);
+                }}
                 className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'roi'
-                    ? 'bg-emerald-50 text-emerald-800 shadow-xs border border-emerald-200/80 font-black'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'
+                    ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 shadow-xs border border-emerald-500/30 font-black'
+                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
                 }`}
               >
-                <BarChart3 className={`h-4 w-4 shrink-0 ${activeTab === 'roi' ? 'text-emerald-600' : 'text-slate-400'}`} />
+                <BarChart3 className={`h-4 w-4 shrink-0 ${activeTab === 'roi' ? 'text-emerald-500' : 'text-slate-400'}`} />
                 <span className="truncate">ROI & Telemetría</span>
               </button>
 
@@ -5829,22 +6033,25 @@ Comité de Seguridad y Protección Escolar`
               <button
                 type="button"
                 id="ceo-settings-nav-btn"
-                onClick={() => setActiveTab('ajustes')}
+                onClick={() => {
+                  setActiveTab('ajustes');
+                  setMobileSidebarOpen(false);
+                }}
                 className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'ajustes'
-                    ? 'bg-indigo-50 text-indigo-900 shadow-xs border border-indigo-200/80 font-black'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 border border-transparent'
+                    ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shadow-xs border border-indigo-500/30 font-black'
+                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
                 }`}
               >
-                <Sliders className={`h-4 w-4 shrink-0 ${activeTab === 'ajustes' ? 'text-indigo-600' : 'text-slate-400'}`} />
+                <Sliders className={`h-4 w-4 shrink-0 ${activeTab === 'ajustes' ? 'text-indigo-500' : 'text-slate-400'}`} />
                 <span className="truncate">Ajustes</span>
               </button>
             </div>
 
             {/* Pie de la barra lateral con Estado de Sincronización y Cuenta */}
-            <div className="p-3 border-t border-slate-200/80 bg-slate-50/70">
-              <div className="p-2.5 rounded-xl bg-white border border-slate-200 shadow-xs">
-                <div className="flex items-center gap-2 text-[11px] font-bold text-slate-700">
+            <div className={`p-3 border-t ${currentTheme.sidebarBorder} ${currentTheme.isDark ? 'bg-black/25' : 'bg-slate-50/70'}`}>
+              <div className={`p-2.5 rounded-xl border shadow-xs ${currentTheme.isDark ? 'bg-white/5 border-white/10 text-slate-200' : 'bg-white border-slate-200 text-slate-700'}`}>
+                <div className="flex items-center gap-2 text-[11px] font-bold">
                   <span className="relative flex h-2 w-2">
                     <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${
                       connectionStatus === 'connected_verified' ? 'bg-emerald-400 opacity-75' : 'bg-transparent'
@@ -5859,19 +6066,19 @@ Comité de Seguridad y Protección Escolar`
                     {connectionStatus === 'connected_verified' ? 'Google API: En Línea' : 'Google API: Por Vincular'}
                   </span>
                 </div>
-                <p className="text-[10px] text-slate-400 mt-1 truncate">
-                  Sinc: <span className="font-semibold text-slate-600">{lastSyncTime}</span>
+                <p className={`text-[10px] mt-1 truncate ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-400'}`}>
+                  Sinc: <span className={`font-semibold ${currentTheme.isDark ? 'text-slate-200' : 'text-slate-600'}`}>{lastSyncTime}</span>
                 </p>
-                <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px]">
-                  <span className="text-slate-400 font-medium">Auto-Sync</span>
-                  <span className="text-indigo-600 font-bold">{isAutoSyncActive ? `${autoSyncCountdown}s` : 'Pausado'}</span>
+                <div className={`mt-2 pt-2 border-t ${currentTheme.isDark ? 'border-white/10' : 'border-slate-100'} flex items-center justify-between text-[10px]`}>
+                  <span className={currentTheme.isDark ? 'text-slate-400' : 'text-slate-400'}>Auto-Sync</span>
+                  <span className="text-indigo-500 font-bold">{isAutoSyncActive ? `${autoSyncCountdown}s` : 'Pausado'}</span>
                 </div>
               </div>
             </div>
           </aside>
 
           {/* ÁREA DE CONTENIDO PRINCIPAL A LA DERECHA */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-100/60">
+          <div className={`flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 ${currentTheme.contentBg}`}>
 
           {/* ------------------------------------------------------- */}
           {/* TAB 1: BANDEJA INTELIGENTE & CORREOS USABLES VS NO USABLES */}
@@ -6041,14 +6248,19 @@ Comité de Seguridad y Protección Escolar`
               </div>
 
               {/* Segmented Control & Acciones de Bandeja */}
-              <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs space-y-2.5">
+              <div className={`p-3 rounded-2xl border shadow-xs space-y-2.5 ${currentTheme.cardBg} ${currentTheme.cardBorder}`}>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div className="flex items-center p-1 bg-slate-100 rounded-xl">
+                  <div className={`flex items-center p-1 rounded-xl ${currentTheme.isDark ? 'bg-white/5 border border-white/10' : 'bg-slate-100'}`}>
                     <button
+                      type="button"
                       onClick={() => setInboxFilter('USABLE')}
                       className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                         inboxFilter === 'USABLE'
-                          ? 'bg-white text-emerald-800 shadow-xs'
+                          ? currentTheme.isDark
+                            ? 'bg-white/15 text-emerald-300 shadow-xs'
+                            : 'bg-white text-emerald-800 shadow-xs'
+                          : currentTheme.isDark
+                          ? 'text-slate-400 hover:text-white'
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
@@ -6057,10 +6269,15 @@ Comité de Seguridad y Protección Escolar`
                     </button>
 
                     <button
+                      type="button"
                       onClick={() => setInboxFilter('DISCARDED')}
                       className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                         inboxFilter === 'DISCARDED'
-                          ? 'bg-white text-slate-800 shadow-xs'
+                          ? currentTheme.isDark
+                            ? 'bg-white/15 text-slate-200 shadow-xs'
+                            : 'bg-white text-slate-800 shadow-xs'
+                          : currentTheme.isDark
+                          ? 'text-slate-400 hover:text-white'
                           : 'text-slate-500 hover:text-slate-800'
                       }`}
                     >
@@ -6095,17 +6312,23 @@ Comité de Seguridad y Protección Escolar`
 
                 {/* Subfiltro de Usables (Segunda Fila, Limpia y Sin Scroll Horizontal) */}
                 {inboxFilter === 'USABLE' && (
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
+                  <div className={`pt-2 border-t flex items-center justify-between gap-2 flex-wrap ${currentTheme.isDark ? 'border-white/10' : 'border-slate-100'}`}>
                     <div className="flex items-center gap-2 flex-wrap">
                       <button
+                        type="button"
                         onClick={() => setUsableSubFilter('ALL')}
                         className={`px-3 py-1.5 rounded-xl text-[11px] font-bold cursor-pointer transition-colors ${
-                          usableSubFilter === 'ALL' ? 'bg-slate-900 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          usableSubFilter === 'ALL'
+                            ? 'bg-slate-900 text-white shadow-xs'
+                            : currentTheme.isDark
+                            ? 'bg-white/10 text-slate-300 hover:bg-white/20'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                         }`}
                       >
                         Todos Atención CEO ({intelligentMatters.length})
                       </button>
                       <button
+                        type="button"
                         onClick={() => setUsableSubFilter('CRITICA')}
                         className={`px-3 py-1.5 rounded-xl text-[11px] font-bold cursor-pointer transition-colors flex items-center gap-1.5 ${
                           usableSubFilter === 'CRITICA' ? 'bg-red-600 text-white shadow-xs' : 'bg-red-50 text-red-700 hover:bg-red-100'
@@ -6114,6 +6337,7 @@ Comité de Seguridad y Protección Escolar`
                         <span>🔴 Crítica / Urgente ({intelligentMatters.filter(m => m.urgency === 'CRITICA').length})</span>
                       </button>
                       <button
+                        type="button"
                         onClick={() => setUsableSubFilter('SEP')}
                         className={`px-3 py-1.5 rounded-xl text-[11px] font-bold cursor-pointer transition-colors flex items-center gap-1.5 ${
                           usableSubFilter === 'SEP' ? 'bg-indigo-600 text-white shadow-xs' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
@@ -6122,6 +6346,7 @@ Comité de Seguridad y Protección Escolar`
                         <span>🏛️ Supervisión SEP ({intelligentMatters.filter(m => m.category.toLowerCase().includes('sep') || m.category.toLowerCase().includes('supervis') || m.title.toLowerCase().includes('sep')).length})</span>
                       </button>
                       <button
+                        type="button"
                         onClick={() => setUsableSubFilter('DELEGADOS')}
                         className={`px-3 py-1.5 rounded-xl text-[11px] font-bold cursor-pointer transition-colors flex items-center gap-1.5 ${
                           usableSubFilter === 'DELEGADOS' ? 'bg-amber-500 text-white shadow-xs' : 'bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-200'
@@ -6133,8 +6358,10 @@ Comité de Seguridad y Protección Escolar`
                       </button>
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/80">
-                      <ShieldCheck className="h-3 w-3 text-emerald-600" />
+                    <div className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-lg border ${
+                      currentTheme.isDark ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-slate-50 border-slate-200/80 text-slate-500'
+                    }`}>
+                      <ShieldCheck className="h-3 w-3 text-emerald-500" />
                       <span>{usableSubFilter === 'DELEGADOS' ? 'Control de Asuntos Delegados a Secciones con SLA' : 'Filtro Rector: Asuntos Prioritarios y Gestión Delegada de Plantel'}</span>
                     </div>
                   </div>
@@ -6169,145 +6396,215 @@ Comité de Seguridad y Protección Escolar`
                 ) : (
                 <div className="flex flex-col lg:flex-row gap-4 items-stretch">
                   {/* COLUMNA 1 (CENTRO): COLA DE ASUNTOS DE TRIAGE */}
-                  <div className="w-full lg:w-5/12 xl:w-5/12 space-y-3 overflow-y-auto max-h-[calc(90vh-240px)] pr-1">
-                    {filteredMatters.map((matter) => {
-                    const isUrgent = matter.urgency === 'CRITICA';
-                    const isCeoAttention = matter.destination === 'ATENCION_CEO';
+                  <div className="w-full lg:w-5/12 xl:w-5/12 space-y-2.5 overflow-y-auto max-h-[calc(90vh-240px)] pr-1">
+                    {/* Barra de Control de Densidad Visual */}
+                    <div className="flex items-center justify-between px-1 pb-1">
+                      <span className={`text-[11px] font-bold ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {filteredMatters.length} Asunto(s) · Vista Compacta
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={expandAllCards}
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-colors cursor-pointer ${
+                            currentTheme.isDark ? 'bg-white/5 border-white/10 text-slate-300 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900'
+                          }`}
+                          title="Expandir todas las tarjetas"
+                        >
+                          Expandir Todo
+                        </button>
+                        <button
+                          type="button"
+                          onClick={collapseAllCards}
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-colors cursor-pointer ${
+                            currentTheme.isDark ? 'bg-white/5 border-white/10 text-slate-300 hover:text-white' : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900'
+                          }`}
+                          title="Colapsar a vista compacta de alta densidad"
+                        >
+                          Vista Compacta
+                        </button>
+                      </div>
+                    </div>
 
-                    return (
-                      <div
-                        key={matter.id}
-                        onClick={() => {
-                          setSelectedMatter(matter);
-                          setMatterDraftEdit(matter.suggested_draft_reply || '');
-                          if (typeof window !== 'undefined' && window.innerWidth < 1024) {
-                            setShowExpandedMatterDrawer(true);
-                          }
-                        }}
-                        className={`p-4 sm:p-5 rounded-2xl bg-white border transition-all hover:shadow-md cursor-pointer hover:border-indigo-400 group ${
-                          selectedMatter?.id === matter.id
-                            ? 'ring-2 ring-indigo-600 border-indigo-500 bg-indigo-50/20 shadow-md'
-                            : isCeoAttention
-                            ? 'border-red-300 ring-1 ring-red-200'
-                            : matter.destination === 'DELEGADO_CON_SLA'
-                            ? 'border-amber-200'
-                            : 'border-slate-200'
-                        }`}
-                        title="Haz clic para seleccionar e inspeccionar en el Muelle de Decisión"
-                      >
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-3">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-mono text-xs font-black px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
-                              {matter.matter_code}
-                            </span>
-                            <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
-                              isCeoAttention ? 'bg-red-100 text-red-800 border border-red-200' :
-                              matter.destination === 'DELEGADO_CON_SLA' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
-                              'bg-blue-100 text-blue-800 border border-blue-200'
+                    {filteredMatters.map((matter) => {
+                      const isUrgent = matter.urgency === 'CRITICA';
+                      const isCeoAttention = matter.destination === 'ATENCION_CEO';
+                      const isExpanded = !!expandedCardIds[matter.id];
+
+                      return (
+                        <div
+                          key={matter.id}
+                          onClick={() => {
+                            setSelectedMatter(matter);
+                            setMatterDraftEdit(matter.suggested_draft_reply || '');
+                            if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+                              setShowExpandedMatterDrawer(true);
+                            }
+                          }}
+                          className={`p-3 sm:p-3.5 rounded-2xl transition-all cursor-pointer group relative border ${
+                            selectedMatter?.id === matter.id
+                              ? `${currentTheme.cardSelected} shadow-md`
+                              : isCeoAttention
+                              ? currentTheme.isDark
+                                ? 'border-red-500/50 bg-[#160A0D] hover:border-red-400'
+                                : 'border-red-200 bg-white hover:border-red-300'
+                              : matter.destination === 'DELEGADO_CON_SLA'
+                              ? currentTheme.isDark
+                                ? 'border-amber-500/40 bg-[#171207] hover:border-amber-400'
+                                : 'border-amber-200 bg-white hover:border-amber-300'
+                              : `${currentTheme.cardBg} ${currentTheme.cardBorder} ${currentTheme.cardHover}`
+                          }`}
+                          title="Haz clic para seleccionar e inspeccionar en el Muelle de Decisión"
+                        >
+                          {/* FILA SUPERIOR COMPACTA (EXACTO A IMAGEN 4) */}
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                              <span className={`font-mono text-[10px] sm:text-[11px] font-black px-2 py-0.5 rounded-md ${
+                                currentTheme.isDark ? 'bg-white/10 text-slate-200' : 'bg-slate-100 text-slate-700'
+                              }`}>
+                                {matter.matter_code}
+                              </span>
+                              <span className={`text-[9px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                                isCeoAttention ? 'bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30' :
+                                matter.destination === 'DELEGADO_CON_SLA' ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30' :
+                                'bg-blue-500/15 text-blue-600 dark:text-blue-300 border border-blue-500/30'
+                              }`}>
+                                {isCeoAttention ? '🔴 ATENCIÓN INMEDIATA CEO' :
+                                 matter.destination === 'DELEGADO_CON_SLA' ? '🟡 DELEGADO CON SLA' :
+                                 '🔵 INFORMATIVO'}
+                              </span>
+                              <span className={`text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-md border truncate max-w-[130px] sm:max-w-none ${
+                                currentTheme.isDark ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-600'
+                              }`}>
+                                {matter.category}
+                              </span>
+                              {matter.reincidence_count > 1 && (
+                                <span className="text-[9px] font-black text-rose-600 bg-rose-500/15 px-1.5 py-0.5 rounded-md border border-rose-500/30 flex items-center gap-0.5">
+                                  <AlertTriangle className="h-2.5 w-2.5" /> {matter.reincidence_count}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0 text-[10px] sm:text-[11px] font-bold">
+                              <span className="text-amber-600 dark:text-amber-400 font-mono font-black flex items-center gap-1">
+                                ⏱️ {matter.sla_remaining_text}
+                              </span>
+                              <span className={currentTheme.isDark ? 'text-slate-500' : 'text-slate-400'}>•</span>
+                              <span className={currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}>{matter.received_at}</span>
+                              <button
+                                type="button"
+                                onClick={(e) => toggleCardExpand(matter.id, e)}
+                                className={`p-1 rounded-lg transition-colors cursor-pointer ${
+                                  currentTheme.isDark ? 'hover:bg-white/10 text-slate-400' : 'hover:bg-slate-100 text-slate-500'
+                                }`}
+                                title={isExpanded ? 'Colapsar detalles' : 'Expandir todos los detalles'}
+                                aria-label={isExpanded ? 'Colapsar' : 'Expandir'}
+                              >
+                                <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-indigo-500' : ''}`} />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* FILA INFERIOR COMPACTA: TÍTULO Y SNIPPET DE 1 LÍNEA */}
+                          <div className="mt-1.5 flex items-baseline justify-between gap-2">
+                            <h4 className={`text-xs sm:text-sm font-black truncate group-hover:text-indigo-500 transition-colors ${
+                              currentTheme.isDark ? 'text-white' : 'text-slate-900'
                             }`}>
-                              {isCeoAttention ? '🔴 Atención Inmediata CEO' :
-                               matter.destination === 'DELEGADO_CON_SLA' ? '🟡 Delegado con SLA (24-48h)' :
-                               '🔵 Informativo'}
-                            </span>
-                            <span className="text-[10px] font-bold text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200">
-                              {matter.category}
-                            </span>
-                            {matter.reincidence_count > 1 && (
-                              <span className="text-[10px] font-black text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200 flex items-center gap-1">
-                                <AlertTriangle className="h-3 w-3" /> Reincidencia ({matter.reincidence_count} correos)
+                              {matter.title}
+                            </h4>
+                            {!isExpanded && (
+                              <span className={`text-[10px] sm:text-[11px] font-medium truncate max-w-[160px] sm:max-w-xs shrink-0 ${
+                                currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'
+                              }`}>
+                                {matter.sender_name} · {matter.summary}
                               </span>
                             )}
                           </div>
 
-                          <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-                            <span className="text-amber-600 font-mono font-black">{matter.sla_remaining_text}</span>
-                            <span>•</span>
-                            <span>{matter.received_at}</span>
-                          </div>
-                        </div>
+                          {/* SECCIÓN EXPANDIBLE (SE DESPLIEGA AL HACER CLIC EN EL CHEVRON O EN LA TARJETA) */}
+                          {isExpanded && (
+                            <div className={`mt-3 pt-3 border-t space-y-2.5 animate-in fade-in duration-150 ${currentTheme.isDark ? 'border-white/10' : 'border-slate-100'}`}>
+                              <p className={`text-xs leading-relaxed font-medium ${
+                                currentTheme.isDark ? 'text-slate-300' : 'text-slate-600'
+                              }`}>
+                                {matter.summary}
+                              </p>
 
-                        <div className="mt-3 space-y-2">
-                          <h4 className="text-sm sm:text-base font-black text-slate-900 leading-snug group-hover:text-indigo-600 transition-colors">
-                            {matter.title}
-                          </h4>
-                          <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                            {matter.summary}
-                          </p>
+                              {/* Explicabilidad Causal: ¿Por qué te lo muestro? */}
+                              <div className={`p-2.5 rounded-xl border text-xs flex items-start gap-2 ${
+                                currentTheme.isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200/80'
+                              }`}>
+                                <span className="font-bold text-indigo-500 shrink-0">¿Por qué te lo muestro?</span>
+                                <span className={currentTheme.isDark ? 'text-slate-300' : 'text-slate-600'}>{matter.why_shown}</span>
+                              </div>
 
-                          {/* Explicabilidad Causal: ¿Por qué te lo muestro? */}
-                          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs flex items-start gap-2">
-                            <span className="font-bold text-indigo-700 shrink-0">¿Por qué te lo muestro?</span>
-                            <span className="text-slate-600">{matter.why_shown}</span>
-                          </div>
+                              {/* Cláusula de procedencia Bóveda Curricular */}
+                              {matter.provenance_doc && (
+                                <div className={`text-[11px] flex items-center gap-1.5 font-medium ${
+                                  currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'
+                                }`}>
+                                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+                                  <span>Procedencia Bóveda Curricular:</span>
+                                  <code className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${
+                                    currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-700'
+                                  }`}>{matter.provenance_doc}</code>
+                                </div>
+                              )}
 
-                          {/* Cláusula de procedencia Bóveda IBIME */}
-                          {matter.provenance_doc && (
-                            <div className="text-[11px] text-slate-500 flex items-center gap-1.5 font-medium">
-                              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                              <span>Procedencia Bóveda Curricular:</span>
-                              <code className="text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-mono">{matter.provenance_doc}</code>
+                              {/* Remitente y Botones de Acción */}
+                              <div className={`pt-2 border-t flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 ${currentTheme.isDark ? 'border-white/10' : 'border-slate-100'}`}>
+                                <div className={`text-xs ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                                  <span>Remitente: <strong className={currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'}>{matter.sender_name}</strong> ({matter.sender_email})</span>
+                                </div>
+
+                                <div className="flex items-center gap-1.5 flex-wrap w-full sm:w-auto justify-end">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleOpenOriginalEmailFromMatter(matter);
+                                    }}
+                                    className="px-2.5 py-1.5 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs transition-all cursor-pointer flex items-center gap-1 active:scale-95"
+                                    title="Abrir y leer el correo original completo"
+                                  >
+                                    <Mail className="h-3 w-3" />
+                                    <span>Leer Original</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDelegateMatter(matter);
+                                    }}
+                                    className="px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 border border-amber-500/30 font-bold text-xs transition-all cursor-pointer flex items-center gap-1 active:scale-95"
+                                    title="Delegar este asunto a Coordinación Operativa de Plantel"
+                                  >
+                                    <Forward className="h-3 w-3" />
+                                    <span>Delegar</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleQuickResolveMatter(matter);
+                                    }}
+                                    className="px-2.5 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-bold text-xs transition-all cursor-pointer flex items-center gap-1 active:scale-95"
+                                    title="Marcar expediente como atendido y retirarlo de la bandeja inteligente"
+                                  >
+                                    <CheckCircle2 className="h-3 w-3" />
+                                    <span>Atendido</span>
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                           )}
                         </div>
-
-                        <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                          <div className="text-xs text-slate-500">
-                            <span>Remitente: <strong>{matter.sender_name}</strong> ({matter.sender_email})</span>
-                          </div>
-
-                          <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenOriginalEmailFromMatter(matter);
-                              }}
-                              className="px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
-                              title="Abrir y leer el correo original completo"
-                            >
-                              <Mail className="h-3.5 w-3.5 text-indigo-600" />
-                              <span>Leer Correo Original</span>
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelegateMatter(matter);
-                              }}
-                              className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
-                              title="Delegar este asunto a Coordinación Operativa de Plantel"
-                            >
-                              <Forward className="h-3.5 w-3.5 text-amber-600" />
-                              <span>Delegar</span>
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleQuickResolveMatter(matter);
-                              }}
-                              className="px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
-                              title="Marcar expediente como atendido y retirarlo de la bandeja inteligente"
-                            >
-                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                              <span>Atendido</span>
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleOpenMatterDetail(matter);
-                              }}
-                              className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                            >
-                              <FileCheck className="h-3.5 w-3.5 text-amber-300" />
-                              <span>Revisar Expediente & Borrador IA</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                   </div>
 
                   {/* COLUMNA 2 (DERECHA): MATTER DECISION DOCK (PERMANENTE EN DESKTOP) */}
-                  <div className="hidden lg:flex lg:w-7/12 xl:w-7/12 flex-col rounded-3xl border border-slate-200/90 shadow-sm bg-white overflow-hidden max-h-[calc(90vh-240px)]">
+                  <div className={`hidden lg:flex lg:w-7/12 xl:w-7/12 flex-col rounded-3xl border ${currentTheme.dockBg} ${currentTheme.dockBorder} shadow-sm overflow-hidden max-h-[calc(90vh-240px)]`}>
                     {selectedMatter ? (
                       <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-xs">
                         {/* Encabezado del Dock */}
@@ -6347,71 +6644,79 @@ Comité de Seguridad y Protección Escolar`
 
                         {/* Título y Datos del Remitente */}
                         <div className="space-y-1">
-                          <h3 className="text-base font-black text-slate-900 leading-snug">
+                          <h3 className={`text-base font-black leading-snug ${currentTheme.isDark ? 'text-white' : 'text-slate-900'}`}>
                             {selectedMatter.title}
                           </h3>
-                          <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
-                            <span>Remitente: <strong className="text-slate-800">{selectedMatter.sender_name}</strong> &lt;{selectedMatter.sender_email}&gt;</span>
+                          <div className={`flex items-center gap-2 text-[11px] font-medium ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                            <span>Remitente: <strong className={currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'}>{selectedMatter.sender_name}</strong> &lt;{selectedMatter.sender_email}&gt;</span>
                             <span>•</span>
-                            <span>Plantel: <strong className="text-slate-800">{selectedMatter.campus || campuses[0]?.name || 'Sede Matriz'}</strong></span>
+                            <span>Plantel: <strong className={currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'}>{selectedMatter.campus || campuses[0]?.name || 'Sede Matriz'}</strong></span>
                           </div>
                         </div>
 
                         {/* Extracto de Comunicación Original */}
-                        <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-1.5">
+                        <div className={`p-3.5 rounded-2xl border space-y-1.5 ${currentTheme.isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-slate-200/90'}`}>
                           <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                            <span className={`text-[10px] font-black uppercase tracking-wider ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                               Extracto del Mensaje Recibido
                             </span>
                             <button
                               type="button"
                               onClick={() => handleOpenOriginalEmailFromMatter(selectedMatter)}
-                              className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
+                              className="text-[11px] font-bold text-indigo-500 hover:text-indigo-400 flex items-center gap-1 cursor-pointer"
                             >
                               <Mail className="h-3 w-3" /> Ver Correo Completo
                             </button>
                           </div>
-                          <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                          <p className={`text-xs leading-relaxed font-medium ${currentTheme.isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                             {selectedMatter.summary}
                           </p>
                         </div>
 
                         {/* Fundamentación Normativa en Bóveda Curricular (Correo/[tenant]/...) */}
-                        <div className="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-200/80 space-y-2">
+                        <div className={`p-3.5 rounded-2xl border space-y-2 ${currentTheme.isDark ? 'bg-indigo-950/30 border-indigo-500/30 text-indigo-200' : 'bg-indigo-50/70 border-indigo-200/80 text-indigo-950'}`}>
                           <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-indigo-700 flex items-center gap-1.5">
-                              <ShieldCheck className="h-3.5 w-3.5 text-indigo-600" /> Bóveda Curricular & Cita Normativa
+                            <span className="text-[10px] font-black uppercase tracking-wider text-indigo-500 dark:text-indigo-300 flex items-center gap-1.5">
+                              <ShieldCheck className="h-3.5 w-3.5 text-indigo-500" /> Bóveda Curricular & Cita Normativa
                             </span>
-                            <span className="text-[10px] font-bold text-indigo-800 bg-white px-2 py-0.5 rounded border border-indigo-200">
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                              currentTheme.isDark ? 'bg-indigo-900/60 text-indigo-200 border-indigo-700/50' : 'bg-white text-indigo-800 border-indigo-200'
+                            }`}>
                               Alineación Institucional
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 text-xs text-indigo-950 font-medium">
-                            <span>Normativa:</span>
-                            <code className="text-indigo-800 bg-white px-2 py-0.5 rounded text-[11px] font-mono border border-indigo-200">
+                          <div className="flex items-center gap-2 text-xs font-medium">
+                            <span className={currentTheme.isDark ? 'text-indigo-300' : 'text-indigo-950'}>Normativa:</span>
+                            <code className={`px-2 py-0.5 rounded text-[11px] font-mono border ${
+                              currentTheme.isDark ? 'bg-slate-900 text-indigo-300 border-indigo-700/40' : 'bg-white text-indigo-800 border-indigo-200'
+                            }`}>
                               {selectedMatter.provenance_doc?.replace('planeaciones/', 'Correo/')}
                             </code>
                           </div>
-                          <p className="text-[11px] text-indigo-900/90 leading-relaxed">
+                          <p className={`text-[11px] leading-relaxed ${currentTheme.isDark ? 'text-indigo-200/90' : 'text-indigo-900/90'}`}>
                             {selectedMatter.why_shown}
                           </p>
                         </div>
 
                         {/* Borrador Oficial del Asistente Pedagógico IA */}
-                        <div className="space-y-2.5 p-4 rounded-2xl bg-amber-50/40 border border-amber-200/80">
+                        <div className={`space-y-2.5 p-4 rounded-2xl border ${currentTheme.isDark ? 'bg-amber-950/20 border-amber-500/30 text-amber-200' : 'bg-amber-50/40 border-amber-200/80 text-amber-900'}`}>
                           <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
-                              <FileCheck className="h-3.5 w-3.5 text-amber-700" /> Borrador Oficial del Asistente Pedagógico IA
+                            <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                              <FileCheck className="h-3.5 w-3.5 text-amber-500" /> Borrador Oficial del Asistente Pedagógico IA
                             </span>
-                            <span className="text-[10px] font-bold text-amber-800 bg-white px-2 py-0.5 rounded border border-amber-200">
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                              currentTheme.isDark ? 'bg-amber-900/40 text-amber-200 border-amber-700/50' : 'bg-white text-amber-800 border-amber-200'
+                            }`}>
                               Estilo Adaptativo Dirección General
                             </span>
                           </div>
 
                           {/* Membrete Institucional */}
-                          <div className="p-2 rounded-xl bg-white border border-amber-200/80 text-[11px] text-slate-600 flex items-center justify-between">
-                            <span className="font-bold text-slate-800">{schoolName} · {directorTitle}</span>
-                            <span className="font-mono text-[10px] text-slate-400">Despacho Institucional</span>
+                          <div className={`p-2 rounded-xl border text-[11px] flex items-center justify-between ${
+                            currentTheme.isDark ? 'bg-white/5 border-white/10 text-slate-300' : 'bg-white border-amber-200/80 text-slate-600'
+                          }`}>
+                            <span className={`font-bold ${currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'}`}>{schoolName} · {directorTitle}</span>
+                            <span className={`font-mono text-[10px] ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-400'}`}>Despacho Institucional</span>
                           </div>
 
                           <textarea
@@ -6419,7 +6724,9 @@ Comité de Seguridad y Protección Escolar`
                             value={matterDraftEdit}
                             onChange={(e) => setMatterDraftEdit(e.target.value)}
                             placeholder="Redacta o ajusta la respuesta oficial antes de despachar..."
-                            className="w-full p-3 rounded-xl bg-white border border-amber-300/80 text-xs text-slate-800 leading-relaxed font-mono focus:outline-none focus:ring-2 focus:ring-amber-500/30 resize-none shadow-inner"
+                            className={`w-full p-3 rounded-xl border text-xs leading-relaxed font-mono focus:outline-none focus:ring-2 focus:ring-amber-500/30 resize-none shadow-inner ${
+                              currentTheme.isDark ? 'bg-slate-900/90 border-amber-500/40 text-slate-100 placeholder-slate-500' : 'bg-white border-amber-300/80 text-slate-800'
+                            }`}
                           />
 
                           {/* Botones de Aprobación y Despacho */}
@@ -10099,6 +10406,118 @@ Comité de Seguridad y Protección Escolar`
                       >
                         {themeMode === 'emerald' ? '✓ Activo' : 'Seleccionar Esmeralda'}
                       </button>
+                    </div>
+                  </div>
+
+                  {/* ========================================================= */}
+                  {/* SELECTOR DE VOZ HISTÓRICA / NARRADOR DEL RESUMEN CEO      */}
+                  {/* ========================================================= */}
+                  <div className={`p-5 rounded-3xl border ${currentTheme.isDark ? 'bg-white/5 border-white/10' : 'bg-indigo-50/60 border-indigo-200/90'} space-y-4`}>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Volume2 className="h-4 w-4 text-indigo-600" />
+                          <h3 className={`text-sm font-black uppercase tracking-wide ${currentTheme.isDark ? 'text-indigo-300' : 'text-indigo-950'}`}>
+                            Voz Narradora Institucional del Asistente Pedagógico IA (Figuras Históricas)
+                          </h3>
+                        </div>
+                        <p className={`text-xs leading-relaxed max-w-2xl font-medium ${currentTheme.isDark ? 'text-slate-300' : 'text-indigo-900'}`}>
+                          Configura el timbre, entonación y personalidad oratoria para los resúmenes ejecutivos matutinos (Audio Digest de 60 segundos) y lecturas de expedientes. Selección inspirada en próceres y narradores formativos.
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-bold px-3 py-1.5 rounded-xl border shadow-xs ${
+                          currentTheme.isDark ? 'bg-slate-900 border-indigo-500/40 text-indigo-300' : 'bg-white border-indigo-200 text-indigo-900'
+                        }`}>
+                          Voz Activa: <strong>{CEO_VOICE_OPTIONS.find(v => v.id === selectedVoiceProfile)?.name.split(' (')[0] || 'La Guía del Saber'}</strong>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                      {CEO_VOICE_OPTIONS.map((voice) => {
+                        const isSelected = selectedVoiceProfile === voice.id;
+                        const isPreviewing = previewingVoiceId === voice.id;
+
+                        return (
+                          <div
+                            key={voice.id}
+                            onClick={() => handleSelectVoiceProfile(voice.id)}
+                            className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
+                              isSelected
+                                ? 'border-indigo-500 bg-indigo-500/10 shadow-md ring-2 ring-indigo-500/20'
+                                : currentTheme.isDark
+                                ? 'border-slate-800 bg-slate-900/60 hover:border-slate-700'
+                                : 'border-slate-200 bg-white hover:border-indigo-300 shadow-2xs'
+                            }`}
+                          >
+                            {isSelected && (
+                              <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[9px] font-black uppercase tracking-wider">
+                                En Uso
+                              </span>
+                            )}
+
+                            <div className="space-y-2.5">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/80 border border-indigo-300 dark:border-indigo-700/50 flex items-center justify-center text-lg shrink-0">
+                                  {voice.gender === 'female' ? '👩‍🏫' : '👨‍🏫'}
+                                </div>
+                                <div className="min-w-0 pr-12">
+                                  <h4 className={`font-black text-xs sm:text-sm truncate ${currentTheme.isDark ? 'text-white' : 'text-slate-900'}`}>
+                                    {voice.name}
+                                  </h4>
+                                  <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 block truncate">
+                                    {voice.personaLabel}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <p className={`text-[11px] leading-relaxed line-clamp-2 font-medium ${
+                                currentTheme.isDark ? 'text-slate-300' : 'text-slate-600'
+                              }`}>
+                                {voice.description}
+                              </p>
+                            </div>
+
+                            <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-white/10 flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handlePreviewVoice(voice);
+                                }}
+                                className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                                  isPreviewing
+                                    ? 'bg-amber-500 text-slate-950 font-black animate-pulse'
+                                    : currentTheme.isDark
+                                    ? 'bg-white/10 hover:bg-white/20 text-slate-200'
+                                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                                }`}
+                                title="Escuchar muestra de voz con texto histórico pedagógico"
+                              >
+                                {isPreviewing ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3 fill-current" />}
+                                <span>{isPreviewing ? 'Detener' : 'Probar Voz'}</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSelectVoiceProfile(voice.id);
+                                }}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-indigo-600 text-white shadow-xs'
+                                    : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200'
+                                }`}
+                              >
+                                {isSelected ? '✓ Activa' : 'Elegir'}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
