@@ -50,7 +50,11 @@ import {
   Wand2,
   ShieldAlert,
   Settings,
-  Copy
+  Copy,
+  Database,
+  Coins,
+  History,
+  BookOpen
 } from 'lucide-react';
 
 interface WorkOsBoardProps {
@@ -98,10 +102,79 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
   const [autoEscalateCeo, setAutoEscalateCeo] = useState<boolean>(true);
   const [notifySeedDelegates, setNotifySeedDelegates] = useState<boolean>(true);
 
-  // Simulador de borrador generado
+  // Simulador de borrador generado con Tokens Reales y Bóveda Curricular
   const [simulatedDraftSubject, setSimulatedDraftSubject] = useState('');
   const [simulatedDraftOutput, setSimulatedDraftOutput] = useState('');
   const [isGeneratingDraft, setIsGeneratingDraft] = useState(false);
+  const [isCheckingVault, setIsCheckingVault] = useState(false);
+  const [vaultDraftMatch, setVaultDraftMatch] = useState<{
+    id: string;
+    folio: string;
+    subject: string;
+    content: string;
+    tokensUsed: any;
+    model: string;
+    createdAt: string;
+    similarityScore?: number;
+  } | null>(null);
+  const [lastDraftMetadata, setLastDraftMetadata] = useState<{
+    fromVault: boolean;
+    folio?: string;
+    tokensUsed?: {
+      promptTokens: number;
+      candidatesTokens: number;
+      totalTokens: number;
+      savedTokens?: number;
+      costMxn: number;
+    };
+    model?: string;
+    createdAt?: string;
+  } | null>(null);
+  const [vaultDraftsList, setVaultDraftsList] = useState<any[]>([]);
+  const [showVaultListModal, setShowVaultListModal] = useState(false);
+
+  // Consulta proactiva en Bóveda Curricular ante cambios en el asunto (Vault-First / Cache-First)
+  useEffect(() => {
+    const q = simulatedDraftSubject.trim();
+    if (!q || q.length < 3) {
+      setVaultDraftMatch(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        setIsCheckingVault(true);
+        const res = await fetch(`/api/admin/workos/draft?q=${encodeURIComponent(q)}&tenantId=${encodeURIComponent(tenantId)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.found && data.match) {
+            setVaultDraftMatch(data.match);
+          } else {
+            setVaultDraftMatch(null);
+          }
+        }
+      } catch {
+        // Silencioso
+      } finally {
+        setIsCheckingVault(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [simulatedDraftSubject, tenantId]);
+
+  // Cargar lista completa de borradores de la Bóveda Curricular
+  const fetchVaultDrafts = async () => {
+    try {
+      const res = await fetch(`/api/admin/workos/draft?all=true&tenantId=${encodeURIComponent(tenantId)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setVaultDraftsList(data.drafts || []);
+      }
+    } catch {
+      // Silencioso
+    }
+  };
 
   // Cargar configuraciones guardadas en localStorage
   useEffect(() => {
@@ -167,41 +240,83 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
     }
   };
 
-  const handleSimulateDraft = () => {
-    setIsGeneratingDraft(true);
-    setTimeout(() => {
-      const toneLabel = 
-        draftingTone === 'formal_empathetic' ? 'Formal y Empático' :
-        draftingTone === 'resolutive_concise' ? 'Resolutivo y Conciso' :
-        draftingTone === 'urgent_firm' ? 'Urgente y Asertivo' : 'Pedagógico y de Acompañamiento';
-      const audienceLabel =
-        draftingAudience === 'parents' ? 'Padres y Tutores de Familia' :
-        draftingAudience === 'students' ? 'Comunidad Estudiantil' :
-        draftingAudience === 'teachers' ? 'Cuerpo Docente y Coordinadores' : 'Autoridad de Supervisión SEP';
-      
-      const subject = simulatedDraftSubject.trim() || 'Atención prioritaria y seguimiento de caso escolar';
-      setSimulatedDraftOutput(
-`Asunto: [COMUNICADO OFICIAL] ${subject}
-Audiencia: ${audienceLabel} · Tono: ${toneLabel}
-
-Estimada Comunidad Escolar:
-
-Por medio de la presente, extendemos un cordial saludo institucional. En relación al expediente sobre "${subject}", confirmamos que el caso ha sido ingresado en nuestro Ecosistema de Trabajo Colaborativo bajo supervisión pedagógica continua.
-
-1. Se ha instruido al área correspondiente la revisión inmediata de acuerdos y bitácora escolar.
-2. Mantenemos el seguimiento puntual con un tiempo de resolución acorde a nuestro estándar institucional.
-3. Este canal permanece activo para el resguardo de la trazabilidad y la debida atención formativa.
-
-Agradecemos profundamente su corresponsabilidad y colaboración formativa.
-
-Atentamente,
-Dirección General & Comité Institucional
-Folio de Trazabilidad: TRZ-${Math.floor(100000 + Math.random() * 900000)} · Bóveda Curricular`
-      );
-      setIsGeneratingDraft(false);
-      onTriggerToast('Borrador pedagógico generado con los parámetros configurados.');
-    }, 450);
+  // Carga instantánea de borrador existente desde la Bóveda Curricular (0 tokens extra)
+  const handleLoadFromVault = (matchToLoad?: any) => {
+    const target = matchToLoad || vaultDraftMatch;
+    if (!target) return;
+    setSimulatedDraftSubject(target.subject);
+    setSimulatedDraftOutput(target.content);
+    setLastDraftMetadata({
+      fromVault: true,
+      folio: target.folio,
+      tokensUsed: {
+        promptTokens: 0,
+        candidatesTokens: 0,
+        totalTokens: 0,
+        savedTokens: target.tokensUsed?.totalTokens || 450,
+        costMxn: 0
+      },
+      model: target.model || 'Bóveda Curricular',
+      createdAt: target.createdAt
+    });
+    onTriggerToast(`Borrador [${target.folio}] recuperado de la Bóveda Curricular (0 tokens consumidos).`);
   };
+
+  // Generación con Tokens Reales en el Motor de Inteligencia Artificial Pedagógica
+  const handleGenerateDraftWithTokens = async (forceRegenerate: boolean = false) => {
+    const subject = simulatedDraftSubject.trim() || 'Atención prioritaria y seguimiento de caso escolar';
+    setIsGeneratingDraft(true);
+    try {
+      const res = await fetch('/api/admin/workos/draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject,
+          tone: draftingTone,
+          audience: draftingAudience,
+          whiteLabelShield,
+          autoIncludeSignature,
+          tenantId,
+          forceRegenerate
+        })
+      });
+
+      if (!res.ok) {
+        throw new Error(`Error en servidor (${res.status})`);
+      }
+
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Error al generar borrador');
+      }
+
+      setSimulatedDraftOutput(data.draft.content);
+      setLastDraftMetadata({
+        fromVault: data.fromVault,
+        folio: data.draft.folio,
+        tokensUsed: data.tokensUsed,
+        model: data.draft.model,
+        createdAt: data.draft.createdAt
+      });
+
+      if (data.fromVault) {
+        onTriggerToast('Borrador pedagógico recuperado de la Bóveda Curricular (0 tokens consumidos).');
+      } else {
+        const tokensCount = data.tokensUsed?.totalTokens || 0;
+        const costMxn = data.tokensUsed?.costMxn || 0;
+        onTriggerToast(`Borrador generado con ${tokensCount} tokens reales (~$${costMxn} MXN) y guardado en Bóveda.`);
+        setVaultDraftMatch(data.draft);
+      }
+    } catch (err: any) {
+      console.error('Error generando borrador:', err);
+      onTriggerToast(`Fallo en generación: ${err.message}`);
+    } finally {
+      setIsGeneratingDraft(false);
+    }
+  };
+
+  // Alias retrocompatible
+  const handleSimulateDraft = () => handleGenerateDraftWithTokens(true);
 
   // Conmutador de Rol (Permite al CEO simular lo que ve un delegado asignado)
   const [simulatedRole, setSimulatedRole] = useState<'ceo' | 'finanzas' | 'transporte' | 'control_escolar' | 'medico' | 'academico'>('ceo');
@@ -1667,7 +1782,7 @@ Folio de Trazabilidad: TRZ-${Math.floor(100000 + Math.random() * 900000)} · Bó
                         </div>
                       </div>
 
-                      {/* Columna Derecha: Probador / Simulador en Vivo */}
+                      {/* Columna Derecha: Probador / Simulador en Vivo con Tokens Reales y Bóveda */}
                       <div className="p-4 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3 flex flex-col justify-between">
                         <div>
                           <div className="flex items-center justify-between mb-2">
@@ -1675,38 +1790,127 @@ Folio de Trazabilidad: TRZ-${Math.floor(100000 + Math.random() * 900000)} · Bó
                               <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
                               Simulador en Vivo de Redacción
                             </span>
-                            <span className="text-[10px] text-slate-400">Prueba cómo redactará el motor</span>
+                            <div className="flex items-center gap-2">
+                              {isCheckingVault && (
+                                <span className="text-[10px] text-amber-500 flex items-center gap-1">
+                                  <RefreshCw className="h-2.5 w-2.5 animate-spin" />
+                                  Bóveda...
+                                </span>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  fetchVaultDrafts();
+                                  setShowVaultListModal(true);
+                                }}
+                                className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 flex items-center gap-1 transition-colors cursor-pointer"
+                                title="Ver todos los borradores almacenados en la Bóveda Curricular"
+                              >
+                                <History className="h-3 w-3" />
+                                <span>Ver Bóveda</span>
+                              </button>
+                            </div>
                           </div>
 
-                          <input
-                            type="text"
-                            value={simulatedDraftSubject}
-                            onChange={(e) => setSimulatedDraftSubject(e.target.value)}
-                            placeholder="Ej. Inquietud sobre el menú del comedor o cambio de taller..."
-                            className="w-full text-xs px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                          />
+                          <div className="space-y-2">
+                            <input
+                              type="text"
+                              value={simulatedDraftSubject}
+                              onChange={(e) => setSimulatedDraftSubject(e.target.value)}
+                              placeholder="Ej. Voluntarios para festival de navidad..."
+                              className="w-full text-xs px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+
+                            {/* Alerta Proactiva: Consulta similar en Bóveda Curricular (Vault-First) */}
+                            {vaultDraftMatch && (
+                              <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-2 animate-in fade-in slide-in-from-top-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-black text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5 text-[11px]">
+                                    <Database className="h-3.5 w-3.5 text-emerald-600" />
+                                    Borrador similar en Bóveda Curricular
+                                  </span>
+                                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-600/20 text-emerald-800 dark:text-emerald-200 font-bold">
+                                    {vaultDraftMatch.folio}
+                                  </span>
+                                </div>
+                                <div className="text-[11px] text-slate-700 dark:text-slate-300 line-clamp-1 italic">
+                                  "{vaultDraftMatch.subject}"
+                                </div>
+                                <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-emerald-500/20">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleLoadFromVault()}
+                                    className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                                  >
+                                    <Zap className="h-3 w-3" />
+                                    <span>Cargar de Bóveda (0 Tokens)</span>
+                                  </button>
+                                  <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                                    Ahorro de ~{vaultDraftMatch.tokensUsed?.totalTokens || 450} tokens
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
 
                           <div className="mt-3">
                             <button
                               type="button"
                               id="btn-simulate-draft"
-                              onClick={handleSimulateDraft}
+                              onClick={() => handleGenerateDraftWithTokens(true)}
                               disabled={isGeneratingDraft}
                               className="w-full py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                             >
                               {isGeneratingDraft ? (
                                 <>
                                   <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                                  <span>Generando borrador con IA...</span>
+                                  <span>Conectando con Motor IA (Tokens Reales)...</span>
                                 </>
                               ) : (
                                 <>
-                                  <Wand2 className="h-3.5 w-3.5" />
-                                  <span>Generar Borrador de Prueba</span>
+                                  <Coins className="h-3.5 w-3.5 text-amber-300" />
+                                  <span>{vaultDraftMatch ? 'Regenerar con IA (Tokens Reales)' : 'Generar con IA (Tokens Reales)'}</span>
                                 </>
                               )}
                             </button>
                           </div>
+
+                          {/* Telemetría y Badge de Consumo de Tokens */}
+                          {lastDraftMetadata && (
+                            <div className="mt-2.5 animate-in fade-in">
+                              {lastDraftMetadata.fromVault ? (
+                                <div className="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-xs font-mono space-y-1">
+                                  <div className="flex items-center justify-between text-emerald-800 dark:text-emerald-300 font-bold">
+                                    <span className="flex items-center gap-1.5">
+                                      <Zap className="h-3.5 w-3.5 text-emerald-600" />
+                                      Recuperado de Bóveda Curricular
+                                    </span>
+                                    <span>0 Tokens Consumidos</span>
+                                  </div>
+                                  <div className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
+                                    <span>Ahorro efectivo: ~{lastDraftMetadata.tokensUsed?.savedTokens || 450} tokens</span>
+                                    <span className="font-bold text-emerald-700 dark:text-emerald-400">{lastDraftMetadata.folio}</span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-xs font-mono space-y-1">
+                                  <div className="flex items-center justify-between text-indigo-900 dark:text-indigo-200 font-bold">
+                                    <span className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
+                                      <Coins className="h-3.5 w-3.5 text-amber-500" />
+                                      Tokens Reales: {lastDraftMetadata.tokensUsed?.totalTokens}
+                                    </span>
+                                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+                                      ≈ ${lastDraftMetadata.tokensUsed?.costMxn} MXN
+                                    </span>
+                                  </div>
+                                  <div className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
+                                    <span>In: {lastDraftMetadata.tokensUsed?.promptTokens} | Out: {lastDraftMetadata.tokensUsed?.candidatesTokens}</span>
+                                    <span className="font-bold text-emerald-700 dark:text-emerald-300">🏛️ Bóveda: {lastDraftMetadata.folio}</span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
 
                           {simulatedDraftOutput && (
                             <div className="mt-3 relative">
@@ -2099,14 +2303,117 @@ Folio de Trazabilidad: TRZ-${Math.floor(100000 + Math.random() * 900000)} · Bó
         />
       )}
 
-      {/* Pop-up Modal de Reasignación Obligatoria al mover de Urgente/No Atendido a Recién Delegados */}
-      {reassigningTask && (
-        <ReassignDelegationModal
-          task={reassigningTask}
-          seedAccounts={seedAccounts}
-          onConfirm={handleConfirmReassign}
-          onClose={() => setReassigningTask(null)}
-        />
+      {/* Modal de Historial de Borradores de la Bóveda Curricular */}
+      {showVaultListModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            {/* Cabecera */}
+            <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/40">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+                  <Database className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                    Bóveda Curricular: Borradores Institucionales
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-bold font-mono">
+                      {vaultDraftsList.length} guardados
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Borradores generados con tokens reales y persistidos en el Segundo Cerebro institucional.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowVaultListModal(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Lista de borradores */}
+            <div className="p-5 overflow-y-auto space-y-3 flex-1">
+              {vaultDraftsList.length === 0 ? (
+                <div className="py-12 text-center text-slate-400 space-y-2">
+                  <BookOpen className="h-8 w-8 mx-auto opacity-40 text-slate-400" />
+                  <p className="text-xs">No hay borradores almacenados aún en la Bóveda Curricular.</p>
+                  <p className="text-[11px] text-slate-500">
+                    Genera borradores en el simulador para que queden disponibles con 0 tokens en futuras consultas.
+                  </p>
+                </div>
+              ) : (
+                vaultDraftsList.map((d: any) => (
+                  <div
+                    key={d.id || d.folio}
+                    className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 hover:border-indigo-400 transition-all space-y-2.5"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-black text-xs text-slate-900 dark:text-white line-clamp-1">
+                        {d.subject}
+                      </span>
+                      <div className="flex items-center gap-2 font-mono text-[10px]">
+                        <span className="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800">
+                          {d.folio}
+                        </span>
+                        <span className="text-slate-400">
+                          {d.createdAt ? new Date(d.createdAt).toLocaleDateString() : 'Bóveda'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
+                      <span>Audiencia: <strong className="text-slate-700 dark:text-slate-300">{d.audienceLabel || d.audience}</strong></span>
+                      <span>·</span>
+                      <span>Tono: <strong className="text-slate-700 dark:text-slate-300">{d.toneLabel || d.tone}</strong></span>
+                      <span>·</span>
+                      <span className="font-mono text-emerald-600 dark:text-emerald-400">
+                        {d.tokensUsed?.totalTokens || 0} tokens reales (~${d.tokensUsed?.costMxn || '0.00'} MXN)
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 italic bg-white dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                      {d.content?.slice(0, 180)}...
+                    </p>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-[10px] text-slate-400 font-mono">
+                        Modelo: {d.model || 'Motor IA'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleLoadFromVault(d);
+                          setShowVaultListModal(false);
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                      >
+                        <Zap className="h-3 w-3" />
+                        <span>Cargar al Simulador (0 Tokens)</span>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Pie del modal */}
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/40 text-xs text-slate-500">
+              <span className="text-[11px]">
+                💡 Cada borrador reutilizado ahorra 100% de tokens de inferencia.
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowVaultListModal(false)}
+                className="px-4 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-800 dark:text-slate-200 font-bold transition-all cursor-pointer"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>
