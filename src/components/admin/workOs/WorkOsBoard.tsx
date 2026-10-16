@@ -11,6 +11,7 @@ import {
 import { WorkOsService } from '@/lib/services/workOs/workOsService';
 import { TaskResolutionModal } from './TaskResolutionModal';
 import { SeedAccountsConfigPanel } from './SeedAccountsConfigPanel';
+import { ReassignDelegationModal } from './ReassignDelegationModal';
 import {
   Layers,
   Table,
@@ -40,7 +41,10 @@ import {
   ChevronDown,
   Info,
   SlidersHorizontal,
-  Bot
+  Bot,
+  GripVertical,
+  ArrowRight,
+  UserCheck
 } from 'lucide-react';
 
 interface WorkOsBoardProps {
@@ -70,6 +74,14 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
 
   // Sub-pestaña para configuración de Seeds o Bóveda
   const [showSeedConfig, setShowSeedConfig] = useState(false);
+
+  // Estados de Drag & Drop para Tablero Kanban
+  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [dragOverColId, setDragOverColId] = useState<string | null>(null);
+  const [reassigningTask, setReassigningTask] = useState<WorkOsTask | null>(null);
+
+  // Semillas departamentales
+  const seedAccounts = useMemo(() => WorkOsService.getSeedAccounts(tenantId, schoolDomain), [tenantId, schoolDomain]);
 
   // Carga inicial y auditoría automática de no atendidos
   useEffect(() => {
@@ -136,6 +148,108 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
   const handleOpenTask = (task: WorkOsTask) => {
     WorkOsService.markTaskOpened(tenantId, task.id, simulatedRole === 'ceo' ? 'Dirección General' : task.primaryAssignee.name);
     setSelectedTaskForModal(task);
+  };
+
+  // Drag and Drop en Tablero Kanban
+  const handleDragStart = (e: React.DragEvent, task: WorkOsTask) => {
+    e.dataTransfer.setData('text/plain', task.id);
+    e.dataTransfer.effectAllowed = 'move';
+    setDraggedTaskId(task.id);
+  };
+
+  const handleDragOver = (e: React.DragEvent, colId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverColId !== colId) {
+      setDragOverColId(colId);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent, colId: string) => {
+    if (e.currentTarget === e.target && dragOverColId === colId) {
+      setDragOverColId(null);
+    }
+  };
+
+  const handleDropOnColumn = (
+    e: React.DragEvent,
+    targetColId: 'URGENTE' | 'PENDIENTE' | 'EN_PROCESO' | 'ESCALADO_CEO' | 'RESUELTO',
+    colLabel: string
+  ) => {
+    e.preventDefault();
+    setDragOverColId(null);
+
+    const taskId = e.dataTransfer.getData('text/plain') || draggedTaskId;
+    setDraggedTaskId(null);
+
+    if (!taskId) return;
+
+    const target = tasks.find(t => t.id === taskId);
+    if (!target) return;
+
+    // Verificar si ya se encuentra en este segmento
+    const colDefinition = [
+      { id: 'URGENTE', matchStatus: ['URGENTE', 'NO_ATENDIDO'] },
+      { id: 'PENDIENTE', matchStatus: ['PENDIENTE'] },
+      { id: 'EN_PROCESO', matchStatus: ['EN_PROCESO'] },
+      { id: 'ESCALADO_CEO', matchStatus: ['ESCALADO_CEO'] },
+      { id: 'RESUELTO', matchStatus: ['RESUELTO'] }
+    ].find(c => c.id === targetColId);
+
+    if (colDefinition && colDefinition.matchStatus.includes(target.status)) {
+      return;
+    }
+
+    // Regla obligatoria: si se pasa de Urgente o No Atendido a Recién Delegados,
+    // se debe abrir el pop-up que pide a quién debe ser delegado
+    if (targetColId === 'PENDIENTE' && (target.status === 'URGENTE' || target.status === 'NO_ATENDIDO')) {
+      setReassigningTask(target);
+      return;
+    }
+
+    // Mover expediente y actualizar porcentaje automáticamente
+    const res = WorkOsService.moveTaskKanbanSegment(
+      tenantId,
+      taskId,
+      targetColId,
+      simulatedRole === 'ceo' ? 'Dirección General / CEO' : target.primaryAssignee.name,
+      currentUserEmail || 'direccion@ibime.edu.mx'
+    );
+
+    if (res.success && res.task) {
+      const updated = res.task;
+      setTasks(prev => prev.map(t => t.id === updated.id ? updated : t));
+      onTriggerToast(`✅ Expediente ${updated.matterCode} movido a ${colLabel} · Avance ajustado al ${updated.progressPercent}%.`);
+    } else if (res.requiresReassignmentModal && res.task) {
+      setReassigningTask(res.task);
+    }
+  };
+
+  // Confirmar reasignación desde el pop-up modal
+  const handleConfirmReassign = (params: {
+    newAssigneeName: string;
+    newAssigneeEmail: string;
+    newAssigneeRole: string;
+    sectionKey: string;
+    sectionName: string;
+    slaHours: number;
+    delegationNotes?: string;
+  }) => {
+    if (!reassigningTask) return;
+
+    const res = WorkOsService.reassignTask(tenantId, reassigningTask.id, {
+      ...params,
+      reassignedByName: simulatedRole === 'ceo' ? 'Dirección General / CEO' : 'Coordinación',
+      reassignedByEmail: currentUserEmail || 'direccion@ibime.edu.mx'
+    });
+
+    if (res.success && res.task) {
+      const updated = res.task;
+      setTasks(prev => prev.map(t => t.id === updated.id ? updated : t));
+      onTriggerToast(`✅ Expediente ${updated.matterCode} reasignado a ${params.newAssigneeName} (${params.sectionName}) y transferido a Recién Delegados (0%).`);
+    }
+
+    setReassigningTask(null);
   };
 
   // Todas las evidencias recopiladas (Bóveda Central de Evidencias)
@@ -480,7 +594,7 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
           )}
 
           {/* ========================================================= */}
-          {/* 5. VISTA 2: TABLERO KANBAN DE FLUJO                       */}
+          {/* 5. VISTA 2: TABLERO KANBAN DE FLUJO INTERACTIVO CON D&D   */}
           {/* ========================================================= */}
           {viewMode === 'kanban' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -492,9 +606,20 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                 { id: 'RESUELTO', label: '✅ Resueltos (100%)', matchStatus: ['RESUELTO'], headerBg: 'bg-emerald-50 text-emerald-900 border-emerald-200' }
               ].map((col) => {
                 const colTasks = filteredTasks.filter(t => col.matchStatus.includes(t.status));
+                const isDragTarget = dragOverColId === col.id;
 
                 return (
-                  <div key={col.id} className="flex flex-col rounded-3xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 p-3 space-y-3 min-h-[500px]">
+                  <div
+                    key={col.id}
+                    onDragOver={(e) => handleDragOver(e, col.id)}
+                    onDragLeave={(e) => handleDragLeave(e, col.id)}
+                    onDrop={(e) => handleDropOnColumn(e, col.id as any, col.label)}
+                    className={`flex flex-col rounded-3xl bg-slate-50/80 dark:bg-slate-900/60 border p-3 space-y-3 min-h-[520px] transition-all duration-200 ${
+                      isDragTarget
+                        ? 'border-indigo-500 ring-2 ring-indigo-500/40 bg-indigo-50/40 dark:bg-indigo-950/30 scale-[1.01]'
+                        : 'border-slate-200 dark:border-slate-800'
+                    }`}
+                  >
                     <div className={`p-2.5 rounded-2xl border font-black text-xs flex items-center justify-between ${col.headerBg}`}>
                       <span>{col.label}</span>
                       <span className="px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 text-[10px]">
@@ -503,21 +628,46 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                     </div>
 
                     <div className="flex-1 space-y-2.5 overflow-y-auto">
+                      {colTasks.length === 0 && (
+                        <div className={`h-36 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center p-3 text-center transition-colors ${
+                          isDragTarget
+                            ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-600 font-bold text-xs animate-pulse'
+                            : 'border-slate-200/80 dark:border-slate-800 text-slate-400 text-xs font-medium'
+                        }`}>
+                          <p>{isDragTarget ? 'Soltar tarjeta aquí' : 'Sin expedientes en este segmento'}</p>
+                          <p className="text-[10px] text-slate-400 mt-1">Arrastre una tarjeta aquí para cambiar estado y porcentaje.</p>
+                        </div>
+                      )}
+
                       {colTasks.map((t) => {
                         const countdown = WorkOsService.getSlaCountdown(t);
                         const pStyle = WorkOsService.getProgressColor(t.progressPercent);
+                        const isBeingDragged = draggedTaskId === t.id;
 
                         return (
                           <div
                             key={t.id}
+                            draggable={true}
+                            onDragStart={(e) => handleDragStart(e, t)}
+                            onDragEnd={() => {
+                              setDraggedTaskId(null);
+                              setDragOverColId(null);
+                            }}
                             onClick={() => handleOpenTask(t)}
-                            className="p-3.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs hover:shadow-md transition-all cursor-pointer space-y-2 group"
+                            className={`p-3.5 rounded-2xl bg-white dark:bg-slate-800 border shadow-xs hover:shadow-md transition-all cursor-grab active:cursor-grabbing space-y-2 group select-none ${
+                              isBeingDragged
+                                ? 'opacity-40 scale-95 border-2 border-dashed border-indigo-500 bg-indigo-50/30'
+                                : 'border-slate-200 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500 hover:scale-[1.01]'
+                            }`}
                           >
                             <div className="flex items-center justify-between text-[10px]">
-                              <span className="font-mono font-black text-indigo-600 dark:text-indigo-400">
-                                {t.matterCode}
-                              </span>
-                              <span className="font-mono font-bold text-slate-500">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <GripVertical className="h-3.5 w-3.5 text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 transition-colors shrink-0" />
+                                <span className="font-mono font-black text-indigo-600 dark:text-indigo-400 truncate">
+                                  {t.matterCode}
+                                </span>
+                              </div>
+                              <span className="font-mono font-bold text-slate-500 shrink-0">
                                 {countdown.remainingFormatted}
                               </span>
                             </div>
@@ -525,6 +675,14 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                             <h4 className="font-bold text-xs line-clamp-2 text-slate-800 dark:text-slate-100 group-hover:text-indigo-600">
                               {t.title}
                             </h4>
+
+                            {/* Barra de progreso rápida */}
+                            <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-slate-700/80 overflow-hidden">
+                              <div
+                                className={`h-full ${pStyle.bgClass} transition-all duration-300`}
+                                style={{ width: `${t.progressPercent}%` }}
+                              />
+                            </div>
 
                             <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-100 dark:border-slate-700/60">
                               <span className="text-slate-500 truncate max-w-[120px]">
@@ -534,6 +692,71 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                                 ({t.progressPercent}%)
                               </span>
                             </div>
+
+                            {/* Selector rápido para transferir o mover */}
+                            <div
+                              onClick={(e) => e.stopPropagation()}
+                              className="pt-1 flex items-center justify-between gap-1 text-[10px]"
+                            >
+                              <span className="text-slate-400 font-semibold flex items-center gap-0.5">
+                                <ArrowRight className="h-3 w-3 text-slate-400" /> Mover:
+                              </span>
+                              <select
+                                value=""
+                                onChange={(e) => {
+                                  const targetSegment = e.target.value as any;
+                                  if (!targetSegment) return;
+                                  const colNames: Record<string, string> = {
+                                    URGENTE: '🔥 Urgentes & No Atendidos',
+                                    PENDIENTE: '⏳ Recién Delegados',
+                                    EN_PROCESO: '🔄 En Proceso Activo',
+                                    ESCALADO_CEO: '🚨 Escalados a CEO',
+                                    RESUELTO: '✅ Resueltos (100%)'
+                                  };
+                                  if (targetSegment === 'PENDIENTE' && (t.status === 'URGENTE' || t.status === 'NO_ATENDIDO')) {
+                                    setReassigningTask(t);
+                                    return;
+                                  }
+                                  const res = WorkOsService.moveTaskKanbanSegment(
+                                    tenantId,
+                                    t.id,
+                                    targetSegment,
+                                    simulatedRole === 'ceo' ? 'Dirección General / CEO' : t.primaryAssignee.name,
+                                    currentUserEmail || 'direccion@ibime.edu.mx'
+                                  );
+                                  if (res.success && res.task) {
+                                    const updated = res.task;
+                                    setTasks(prev => prev.map(item => item.id === updated.id ? updated : item));
+                                    onTriggerToast(`✅ Expediente ${updated.matterCode} movido a ${colNames[targetSegment]} · Avance: ${updated.progressPercent}%.`);
+                                  } else if (res.requiresReassignmentModal && res.task) {
+                                    setReassigningTask(res.task);
+                                  }
+                                }}
+                                className="px-1.5 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold border border-slate-200 dark:border-slate-600 cursor-pointer text-[10px]"
+                              >
+                                <option value="">Transferir a...</option>
+                                <option value="URGENTE">🔥 Urgentes</option>
+                                <option value="PENDIENTE">⏳ Recién Delegados</option>
+                                <option value="EN_PROCESO">🔄 En Proceso (50%)</option>
+                                <option value="ESCALADO_CEO">🚨 Escalar a CEO</option>
+                                <option value="RESUELTO">✅ Resuelto (100%)</option>
+                              </select>
+                            </div>
+
+                            {/* Botón directo de reasignación con pop-up si es caso Urgente o No Atendido */}
+                            {(t.status === 'URGENTE' || t.status === 'NO_ATENDIDO') && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setReassigningTask(t);
+                                }}
+                                className="w-full mt-1.5 px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 text-[11px] font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
+                              >
+                                <UserCheck className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                                <span>Reasignar a Recién Delegados</span>
+                              </button>
+                            )}
                           </div>
                         );
                       })}
@@ -862,6 +1085,16 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
           currentUserEmail={simulatedRole === 'ceo' ? 'direccion@ibime.edu.mx' : selectedTaskForModal.primaryAssignee.email}
           onTaskUpdated={handleTaskUpdated}
           onTriggerToast={onTriggerToast}
+        />
+      )}
+
+      {/* Pop-up Modal de Reasignación Obligatoria al mover de Urgente/No Atendido a Recién Delegados */}
+      {reassigningTask && (
+        <ReassignDelegationModal
+          task={reassigningTask}
+          seedAccounts={seedAccounts}
+          onConfirm={handleConfirmReassign}
+          onClose={() => setReassigningTask(null)}
         />
       )}
 

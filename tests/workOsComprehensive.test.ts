@@ -372,4 +372,106 @@ describe('🚀 SUITE INTEGRAL DE WORK OS INSTITUCIONAL (ISKOOL)', () => {
       expect(metrics.tasksPerSeed).toBeDefined();
     });
   });
+
+  describe('8. Arrastre Manual en Kanban (Drag & Drop), Cambio Automático de Porcentaje y Reasignación', () => {
+    it('al arrastrar a En Proceso Activo debe cambiar automáticamente el estado y establecer el porcentaje al 50%', () => {
+      const task = WorkOsService.createTask(TEST_TENANT, {
+        title: 'Mantenimiento preventivo de transformador eléctrico',
+        sectionKey: 'transporte',
+        status: 'PENDIENTE',
+        progressPercent: 0,
+        primaryAssignee: {
+          name: 'Ing. Carlos Ortiz',
+          email: 'transporte@ibime.edu.mx',
+          role: 'Logística'
+        }
+      });
+
+      const res = WorkOsService.moveTaskKanbanSegment(TEST_TENANT, task.id, 'EN_PROCESO');
+      expect(res.success).toBe(true);
+      expect(res.task!.status).toBe('EN_PROCESO');
+      expect(res.task!.progressPercent).toBe(50); // Ajuste automático de porcentaje
+      expect(res.task!.auditTrail[0].action).toContain('Transición a En Proceso Activo');
+    });
+
+    it('al arrastrar a Resueltos (100%) debe cambiar automáticamente el estado a RESUELTO y el porcentaje al 100%', () => {
+      const task = WorkOsService.createTask(TEST_TENANT, {
+        title: 'Entrega de credencial reexpedida',
+        sectionKey: 'control_escolar',
+        status: 'EN_PROCESO',
+        progressPercent: 60,
+        primaryAssignee: {
+          name: 'Lic. Mariana Valdez',
+          email: 'controlescolar@ibime.edu.mx',
+          role: 'Control Escolar'
+        }
+      });
+
+      const res = WorkOsService.moveTaskKanbanSegment(TEST_TENANT, task.id, 'RESUELTO');
+      expect(res.success).toBe(true);
+      expect(res.task!.status).toBe('RESUELTO');
+      expect(res.task!.progressPercent).toBe(100); // 100% verde
+      expect(res.task!.resolvedAt).toBeDefined();
+    });
+
+    it('si se pasa de URGENTE o NO_ATENDIDO a Recién Delegados, DEBE requerir el pop-up de reasignación y no mover directamente', () => {
+      const task = WorkOsService.createTask(TEST_TENANT, {
+        title: 'Accidente en patio escolar - Traslado urgente',
+        sectionKey: 'servicio_medico',
+        status: 'URGENTE',
+        priority: 'CRITICA',
+        progressPercent: 15,
+        primaryAssignee: {
+          name: 'Dra. Gabriela Fuentes',
+          email: 'enfermeria@ibime.edu.mx',
+          role: 'Servicio Médico'
+        }
+      });
+
+      const res = WorkOsService.moveTaskKanbanSegment(TEST_TENANT, task.id, 'PENDIENTE');
+      // Debe rechazar el movimiento directo y exigir el pop-up
+      expect(res.success).toBe(false);
+      expect(res.requiresReassignmentModal).toBe(true);
+      expect(res.task!.id).toBe(task.id);
+    });
+
+    it('debe reasignar formalmente el caso mediante reassignTask, actualizando responsable, SLA y reiniciando porcentaje al 0%', () => {
+      const task = WorkOsService.createTask(TEST_TENANT, {
+        title: 'Caso reincidente de convivencia en secundaria',
+        sectionKey: 'convivencia',
+        status: 'URGENTE',
+        priority: 'CRITICA',
+        progressPercent: 20,
+        primaryAssignee: {
+          name: 'Mtra. Sofía Altamirano',
+          email: 'academica@ibime.edu.mx',
+          role: 'Coordinación'
+        },
+        slaHours: 4
+      });
+
+      const reassignRes = WorkOsService.reassignTask(TEST_TENANT, task.id, {
+        newAssigneeName: 'Lic. Rebeca Sánchez',
+        newAssigneeEmail: 'control.escolar@ibime.edu.mx',
+        newAssigneeRole: 'Secretaría / Control Escolar',
+        sectionKey: 'control_escolar',
+        sectionName: 'Secretaría / Control Escolar',
+        slaHours: 24,
+        delegationNotes: 'Transferencia para citar a tutores y formalizar acta administrativa SEP.',
+        reassignedByName: 'Dirección General / CEO',
+        reassignedByEmail: 'direccion@ibime.edu.mx'
+      });
+
+      expect(reassignRes.success).toBe(true);
+      const updated = reassignRes.task!;
+      expect(updated.status).toBe('PENDIENTE');
+      expect(updated.progressPercent).toBe(0); // Reiniciado al 0%
+      expect(updated.primaryAssignee.name).toBe('Lic. Rebeca Sánchez');
+      expect(updated.primaryAssignee.email).toBe('control.escolar@ibime.edu.mx');
+      expect(updated.sectionKey).toBe('control_escolar');
+      expect(updated.slaHours).toBe(24);
+      expect(updated.firstOpenedAt).toBeUndefined(); // Reinicia el temporizador
+      expect(updated.auditTrail[0].action).toContain('Reasignación y nueva delegación');
+    });
+  });
 });

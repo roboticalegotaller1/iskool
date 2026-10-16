@@ -578,6 +578,187 @@ export class WorkOsService {
   }
 
   // ==========================================================================
+  // 6.B REASIGNACIÓN DE CASOS Y TRASLADOS EN TABLERO KANBAN
+  // ==========================================================================
+
+  /**
+   * Reasigna formalmente una tarea a un nuevo responsable o departamento
+   * (Requerido cuando un caso Urgente / No Atendido se mueve a Recién Delegados)
+   */
+  public static reassignTask(
+    tenantId: string,
+    taskId: string,
+    params: {
+      newAssigneeName: string;
+      newAssigneeEmail: string;
+      newAssigneeRole: string;
+      sectionKey: string;
+      sectionName: string;
+      slaHours: number;
+      delegationNotes?: string;
+      reassignedByName?: string;
+      reassignedByEmail?: string;
+    }
+  ): { success: boolean; task?: WorkOsTask; error?: string } {
+    const tasks = this.getTasks(tenantId);
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return { success: false, error: 'Expediente no encontrado.' };
+
+    const now = new Date().toISOString();
+    const newDeadline = new Date(Date.now() + params.slaHours * 3600 * 1000).toISOString();
+
+    task.sectionKey = params.sectionKey;
+    task.sectionName = params.sectionName;
+    task.primaryAssignee = {
+      name: params.newAssigneeName.trim(),
+      email: params.newAssigneeEmail.trim(),
+      role: params.newAssigneeRole.trim()
+    };
+    task.slaHours = params.slaHours;
+    task.slaDeadline = newDeadline;
+    task.status = 'PENDIENTE';
+    task.priority = 'ALTA';
+    task.progressPercent = 0; // Se reinicia el porcentaje automáticamente
+    task.firstOpenedAt = undefined;
+    task.isNeglected = false;
+    task.isOverdue = false;
+
+    task.auditTrail.unshift({
+      id: `aud-${Date.now()}`,
+      timestamp: now,
+      authorName: params.reassignedByName || 'Dirección General / CEO',
+      authorEmail: params.reassignedByEmail || 'direccion@ibime.edu.mx',
+      action: `Reasignación y nueva delegación (${params.sectionName})`,
+      type: 'status_change',
+      details: `Expediente reasignado formalmente a ${params.newAssigneeName} (${params.newAssigneeEmail}) con nuevo SLA de ${params.slaHours}h. Notas de transferencia: ${params.delegationNotes?.trim() || 'Sin notas adicionales'}. Progreso reiniciado al 0%.`
+    });
+
+    this.saveTasks(tenantId, tasks);
+    return { success: true, task };
+  }
+
+  /**
+   * Mueve una tarjeta de segmento en el Tablero Kanban y actualiza
+   * automáticamente el porcentaje de avance según la columna de destino
+   */
+  public static moveTaskKanbanSegment(
+    tenantId: string,
+    taskId: string,
+    targetSegment: 'URGENTE' | 'PENDIENTE' | 'EN_PROCESO' | 'ESCALADO_CEO' | 'RESUELTO',
+    authorName = 'Dirección General / CEO',
+    authorEmail = 'direccion@ibime.edu.mx'
+  ): { success: boolean; task?: WorkOsTask; requiresReassignmentModal?: boolean; error?: string } {
+    const tasks = this.getTasks(tenantId);
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return { success: false, error: 'Expediente no encontrado.' };
+
+    // Regla Mandatoria: si viene de Urgentes o No Atendidos hacia Recién Delegados,
+    // requiere pop-up para definir el nuevo delegado responsable
+    if (targetSegment === 'PENDIENTE' && (task.status === 'URGENTE' || task.status === 'NO_ATENDIDO')) {
+      return { success: false, requiresReassignmentModal: true, task };
+    }
+
+    const now = new Date().toISOString();
+
+    switch (targetSegment) {
+      case 'PENDIENTE':
+        task.status = 'PENDIENTE';
+        task.progressPercent = 0; // Cambio automático al 0%
+        task.firstOpenedAt = undefined;
+        task.isNeglected = false;
+        task.auditTrail.unshift({
+          id: `aud-${Date.now()}`,
+          timestamp: now,
+          authorName,
+          authorEmail,
+          action: 'Transferencia a Recién Delegados (Kanban)',
+          type: 'status_change',
+          details: 'Expediente transferido a la columna de Recién Delegados. Porcentaje de avance ajustado automáticamente al 0%.'
+        });
+        break;
+
+      case 'EN_PROCESO':
+        task.status = 'EN_PROCESO';
+        // Cambio automático de porcentaje: si estaba en < 30%, se fija al 50% (nivel intermedio naranja)
+        if (task.progressPercent < 30) {
+          task.progressPercent = 50;
+        } else if (task.progressPercent >= 100) {
+          task.progressPercent = 85;
+        }
+        task.isNeglected = false;
+        task.auditTrail.unshift({
+          id: `aud-${Date.now()}`,
+          timestamp: now,
+          authorName,
+          authorEmail,
+          action: `Transición a En Proceso Activo (${task.progressPercent}%)`,
+          type: 'progress_update',
+          details: `Expediente movido a En Proceso Activo en Kanban. Porcentaje actualizado automáticamente a ${task.progressPercent}%.`
+        });
+        break;
+
+      case 'RESUELTO':
+        task.status = 'RESUELTO';
+        task.progressPercent = 100; // Cambio automático al 100% (Verde)
+        task.resolvedAt = now;
+        task.isNeglected = false;
+        task.isOverdue = false;
+        if (!task.resolutionSummary) {
+          task.resolutionSummary = 'Caso validado y resuelto directamente en el tablero Kanban institucional.';
+        }
+        task.checklist = task.checklist.map(c => ({ ...c, completed: true, completedAt: now }));
+        task.auditTrail.unshift({
+          id: `aud-${Date.now()}`,
+          timestamp: now,
+          authorName,
+          authorEmail,
+          action: 'Resolución manual desde Kanban (100%)',
+          type: 'resolved',
+          details: 'Expediente marcado como RESUELTO al 100% mediante arrastre manual en Kanban.'
+        });
+        break;
+
+      case 'URGENTE':
+        task.status = 'URGENTE';
+        task.priority = 'CRITICA';
+        if (task.progressPercent >= 100) {
+          task.progressPercent = 20; // Reabierto o crítico
+        }
+        task.auditTrail.unshift({
+          id: `aud-${Date.now()}`,
+          timestamp: now,
+          authorName,
+          authorEmail,
+          action: 'Elevación a Urgentes & No Atendidos',
+          type: 'status_change',
+          details: `Expediente clasificado como Urgente de atención inmediata desde el tablero Kanban. Progreso: ${task.progressPercent}%.`
+        });
+        break;
+
+      case 'ESCALADO_CEO':
+        task.status = 'ESCALADO_CEO';
+        task.isEscalatedToCeo = true;
+        task.priority = 'CRITICA';
+        if (!task.escalationReason) {
+          task.escalationReason = 'Escalamiento manual solicitado mediante arrastre directo a Dirección General en Kanban.';
+        }
+        task.auditTrail.unshift({
+          id: `aud-${Date.now()}`,
+          timestamp: now,
+          authorName,
+          authorEmail,
+          action: 'Escalamiento a Dirección General (CEO)',
+          type: 'escalated',
+          details: 'Expediente arrastrado a la columna de Escalados a CEO.'
+        });
+        break;
+    }
+
+    this.saveTasks(tenantId, tasks);
+    return { success: true, task };
+  }
+
+  // ==========================================================================
   // 7. CÁLCULO DE SLA, TIEMPOS, ESTADOS NO ATENDIDOS Y COLORES
   // ==========================================================================
 
