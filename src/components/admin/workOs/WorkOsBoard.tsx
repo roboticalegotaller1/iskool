@@ -54,7 +54,8 @@ import {
   Database,
   Coins,
   History,
-  BookOpen
+  BookOpen,
+  Send
 } from 'lucide-react';
 
 interface WorkOsBoardProps {
@@ -63,7 +64,10 @@ interface WorkOsBoardProps {
   currentUserEmail?: string;
   schoolDomain?: string;
   onTriggerToast: (msg: string) => void;
-  onNavigateTab?: (tab: 'inbox' | 'work_os' | 'delegados' | 'laboratorio' | 'google' | 'redactar' | 'calendario' | 'directorio' | 'bitacora' | 'raw_inbox' | 'roi' | 'ajustes') => void;
+  onNavigateTab?: (
+    tab: 'inbox' | 'work_os' | 'delegados' | 'laboratorio' | 'google' | 'redactar' | 'calendario' | 'directorio' | 'bitacora' | 'raw_inbox' | 'roi' | 'ajustes',
+    draftData?: { subject?: string; content?: string; recipient?: string }
+  ) => void;
 }
 
 export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
@@ -317,6 +321,57 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
 
   // Alias retrocompatible
   const handleSimulateDraft = () => handleGenerateDraftWithTokens(true);
+
+  // Transferir borrador actual al Redactor Oficial para modificación y posterior envío
+  const handleGoToRedactor = (specificDraft?: { subject?: string; content?: string }) => {
+    const rawSubject = specificDraft?.subject || simulatedDraftSubject.trim();
+    let finalContent = specificDraft?.content || simulatedDraftOutput;
+
+    let finalSubject = rawSubject;
+    if (finalSubject && !finalSubject.toLowerCase().startsWith('asunto:') && !finalSubject.toLowerCase().startsWith('[comunicado')) {
+      finalSubject = `[COMUNICADO OFICIAL] ${finalSubject}`;
+    } else if (!finalSubject) {
+      finalSubject = 'Comunicado Oficial Institucional';
+    }
+
+    // Si aún no se generó texto pero hay un tema, proporcionar estructura inicial
+    if (!finalContent && rawSubject) {
+      finalContent = `Estimada Comunidad Escolar,\n\nEn relación a "${rawSubject}", compartimos la siguiente información oficial...\n\nAtentamente,\nDirección General`;
+    }
+
+    const recipientMap: Record<string, string> = {
+      parents: 'parents',
+      teachers: 'teachers',
+      students: 'all-network',
+      authorities: 'directors'
+    };
+    const finalRecipient = recipientMap[draftingAudience] || 'parents';
+
+    // 1. Copiar al portapapeles para conveniencia inmediata
+    if (finalContent) {
+      try {
+        navigator.clipboard.writeText(finalContent);
+      } catch {}
+    }
+
+    // 2. Persistir en localStorage como puente confiable
+    try {
+      localStorage.setItem('iskool_pending_redactor_subject', finalSubject);
+      localStorage.setItem('iskool_pending_redactor_content', finalContent || '');
+      localStorage.setItem('iskool_pending_redactor_recipient', finalRecipient);
+    } catch {}
+
+    // 3. Notificar y navegar
+    if (onNavigateTab) {
+      onNavigateTab('redactar', {
+        subject: finalSubject,
+        content: finalContent || '',
+        recipient: finalRecipient
+      });
+    }
+
+    onTriggerToast('Texto transferido al Redactor Oficial para su edición y posterior envío.');
+  };
 
   // Conmutador de Rol (Permite al CEO simular lo que ve un delegado asignado)
   const [simulatedRole, setSimulatedRole] = useState<'ceo' | 'finanzas' | 'transporte' | 'control_escolar' | 'medico' | 'academico'>('ceo');
@@ -1461,15 +1516,12 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                       id="btn-goto-redactar"
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (onNavigateTab) {
-                          onNavigateTab('redactar');
-                        } else {
-                          onTriggerToast('Navegando a Redactar Comunicado...');
-                        }
+                        handleGoToRedactor();
                       }}
-                      className="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-600 hover:text-white text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition-all flex items-center gap-1 cursor-pointer"
-                      title="Abrir Redactor Oficial de Comunicados"
+                      className="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-600 hover:text-white text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition-all flex items-center gap-1.5 cursor-pointer"
+                      title="Abrir Redactor Oficial de Comunicados con este borrador"
                     >
+                      <Send className="h-3 w-3" />
                       <span>Ir a Redactor</span>
                       <ArrowRight className="h-3 w-3" />
                     </button>
@@ -1913,21 +1965,49 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                           )}
 
                           {simulatedDraftOutput && (
-                            <div className="mt-3 relative">
-                              <pre className="p-3 rounded-xl bg-slate-900 text-indigo-200 text-[11px] leading-relaxed font-mono whitespace-pre-wrap max-h-48 overflow-y-auto border border-indigo-950">
-                                {simulatedDraftOutput}
-                              </pre>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  navigator.clipboard.writeText(simulatedDraftOutput);
-                                  onTriggerToast('Borrador copiado al portapapeles.');
-                                }}
-                                className="absolute top-2 right-2 p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
-                                title="Copiar borrador"
-                              >
-                                <Copy className="h-3 w-3" />
-                              </button>
+                            <div className="mt-3 space-y-2">
+                              <div className="relative">
+                                <pre className="p-3 rounded-xl bg-slate-900 text-indigo-200 text-[11px] leading-relaxed font-mono whitespace-pre-wrap max-h-48 overflow-y-auto border border-indigo-950">
+                                  {simulatedDraftOutput}
+                                </pre>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(simulatedDraftOutput);
+                                    onTriggerToast('Borrador copiado al portapapeles.');
+                                  }}
+                                  className="absolute top-2 right-2 p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+                                  title="Copiar borrador"
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </button>
+                              </div>
+
+                              <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(simulatedDraftOutput);
+                                    onTriggerToast('Borrador copiado al portapapeles.');
+                                  }}
+                                  className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold text-[11px] flex items-center gap-1.5 transition-all cursor-pointer"
+                                >
+                                  <Copy className="h-3 w-3" />
+                                  <span>Copiar Texto</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  id="btn-transfer-to-redactor"
+                                  onClick={() => handleGoToRedactor()}
+                                  className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer animate-in fade-in"
+                                  title="Copiar y abrir en el Redactor Oficial para modificar y despachar"
+                                >
+                                  <Send className="h-3.5 w-3.5" />
+                                  <span>Abrir en Redactor para Enviar</span>
+                                  <ArrowRight className="h-3 w-3" />
+                                </button>
+                              </div>
                             </div>
                           )}
                         </div>
@@ -1947,12 +2027,12 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                           <div className="flex items-center gap-2">
                             <button
                               type="button"
-                              onClick={() => {
-                                if (onNavigateTab) onNavigateTab('redactar');
-                                else onTriggerToast('Abriendo Redactor...');
-                              }}
-                              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-200 transition-all flex items-center gap-1 cursor-pointer"
+                              id="btn-goto-redactar-bottom"
+                              onClick={() => handleGoToRedactor()}
+                              className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                              title="Copiar texto al Redactor Oficial para modificar y enviar"
                             >
+                              <Send className="h-3 w-3" />
                               <span>Ir a Redactar</span>
                               <ArrowRight className="h-3 w-3" />
                             </button>
@@ -2382,17 +2462,31 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                       <span className="text-[10px] text-slate-400 font-mono">
                         Modelo: {d.model || 'Motor IA'}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleLoadFromVault(d);
-                          setShowVaultListModal(false);
-                        }}
-                        className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
-                      >
-                        <Zap className="h-3 w-3" />
-                        <span>Cargar al Simulador (0 Tokens)</span>
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleLoadFromVault(d);
+                            setShowVaultListModal(false);
+                          }}
+                          className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                        >
+                          <Zap className="h-3 w-3 text-emerald-500" />
+                          <span>Simulador (0 Tokens)</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleGoToRedactor({ subject: d.subject, content: d.content });
+                            setShowVaultListModal(false);
+                          }}
+                          className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                        >
+                          <Send className="h-3 w-3" />
+                          <span>Abrir en Redactor</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))

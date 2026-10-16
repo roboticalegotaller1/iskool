@@ -1,5 +1,97 @@
 [
   {
+    "id": "DRAFT-e1000000-1792185096194",
+    "folio": "TRZ-714986",
+    "subject": "voluntarios para festival navideño",
+    "normalizedSubject": "voluntarios para festival navideno",
+    "keywords": [
+      "voluntarios",
+      "festival",
+      "navideno"
+    ],
+    "tone": "formal_empathetic",
+    "toneLabel": "Formal y Empático",
+    "audience": "parents",
+    "audienceLabel": "Padres y Tutores de Familia",
+    "whiteLabelShield": true,
+    "autoIncludeSignature": true,
+    "content": "**COMUNICADO OFICIAL**\n\n**Asunto:** Convocatoria abierta para la integración de voluntarios en el Festival Navideño institucional.  \n**Audiencia Destino:** Padres, Madres de Familia y Tutores Legales.  \n**Tono Institucional:** Formal y Empático.\n\nEstimadas familias de nuestra comunidad educativa:\n\nReciban un cordial y afectuoso saludo con el respeto formativo que caracteriza a nuestro Ecosistema Institucional. Esperamos que este periodo esté lleno de bienestar y unidad en sus hogares.\n\nComo parte integral de la Bóveda Curricular y en concordancia con los principios rectores de la Nueva Escuela Mexicana (SEP), promovemos el desarrollo de experiencias de aprendizaje vivenciales que fortalezcan el tejido social, la empatía y la colaboración comunitaria. El próximo Festival Navideño no es únicamente una muestra artística, sino un espacio pedagógico fundamental para consolidar los vínculos entre la escuela y el hogar, fomentando en las y los estudiantes valores de solidaridad, pertenencia e identidad cultural.\n\nPara garantizar el éxito operativo y formativo de este magno evento, la Dirección General convoca respetuosamente a las madres, padres y tutores interesados en sumarse como voluntarios en las distintas comisiones de apoyo. \n\nA continuación, se detallan los acuerdos y acciones operativas:\n\n1. **Inscripción al Voluntariado:** Los interesados en participar podrán registrarse a través de los canales de comunicación oficiales de la institución a partir de la emisión del presente documento y **hasta el próximo viernes 24 de noviembre**.\n2. **Reunión de Organización Operativa:** Se llevará a cabo una sesión informativa presencial el **lunes 27 de noviembre a las 08:30 horas** en el auditorio escolar, con el fin de definir comisiones (logística, ambientación, recepción y seguridad) y asignar responsabilidades de manera transparente.\n3. **Ensayos y Apoyo en Campo:** Las actividades de colaboración se realizarán conforme al cronograma específico que cada comisión establezca, procurando no interferir con las dinámicas laborales de los participantes pero garantizando el acompañamiento adecuado para las y los alumnos.\n4. **Criterio de Participación:** Toda la labor voluntaria se regirá bajo los principios de respeto, inclusión y corresponsabilidad, salvaguardando en todo momento el interés superior de la niñez.\n\nLa suma de voluntades y el compromiso compartido son los pilares que permiten transformar nuestra labor educativa en momentos memorables para la comunidad. Agradecemos de antemano su invaluable disposición para enriquecer este proyecto formativo.\n\nAtentamente,\n\n**Dirección General**  \n**Comité de Gobernanza Institucional**\n\n---\n**Folio de Trazabilidad:** TRZ-714986  \n*Documento oficial emitido bajo los estándares normativos del Ecosistema Institucional y la Nueva Escuela Mexicana.*",
+    "tokensUsed": {
+      "promptTokens": 292,
+      "candidatesTokens": 611,
+      "totalTokens": 903,
+      "thoughtsTokens": 0,
+      "costUsd": 0.0002052,
+      "costMxn": 0.004104
+    },
+    "model": "gemini-flash-lite-latest",
+    "fromVault": false,
+    "createdAt": "2026-10-16T21:11:36.194Z",
+    "tenantId": "e1000000-0000-0000-0000-000000000001"
+  },
+  {
+    "id": "DRAFT-e1000000-1792185092559",
+    "folio": "TRZ-552362",
+    "subject": "Voluntarios de padres de familia para festival navideño escolar 2026",
+    "normalizedSubject": "voluntarios de padres de familia para festival navideno escolar 2026",
+    "keywords": [
+      "voluntarios",
+      "padres",
+      "familia",
+      "festival",
+      "navideno",
+      "escolar",
+      "2026"
+    ],
+    "tone": "formal_empathetic",
+    "toneLabel": "Formal y Empático",
+    "audience": "parents",
+    "audienceLabel": "Padres y Tutores de Familia",
+    "whiteLabelShield": true,
+    "autoIncludeSignature": true,
+    "content": "**ASUNTO:** Convocatoria para la integración de brigadas de voluntariado de padres de familia en el Festival Navideño Escolar 2026.  \n**AUDIENCIA DESTINO:** Padres, Madres de Familia y Tutores Legales.  \n**TONO INSTITUCIONAL:** Formal y Empático.  \n\n---\n\nEstimadas familias de nuestra comunidad escolar:\n\nReciban un cordial saludo institucional, impregnado del compromiso ético y humanista que nos caracteriza. Esperamos que este mensaje encuentre a cada uno de ustedes en óptimo bienestar, consolidando los lazos de corresponsabilidad que sostienen el trayecto formativo de nuestras niñas, niños y adolescentes.\n\nEn congruencia con los principios rectores de la Nueva Escuela Mexicana, que priorizan la construcción de una comunidad de aprendizaje basada en el diálogo, la inclusión y la participación democrática, nos dirigimos a ustedes con el fin de consolidar los preparativos para nuestro próximo Festival Navideño Escolar 2026. Esta celebración representa un espacio pedagógico fundamental para el fortalecimiento de la convivencia armónica, la expresión artística y el rescate de nuestras tradiciones culturales, donde la familia juega un rol activo como coeducadora.\n\nPara garantizar el éxito operativo y formativo de este magno evento, la Dirección General y el Comité de Gobernanza convocan formalmente a la integración de las comisiones de voluntarios. Su participación enriquece directamente la gestión escolar y fomenta en el estudiantado valores esenciales como la solidaridad, el trabajo colaborativo y el sentido de pertenencia comunitaria.\n\nA fin de asegurar una organización transparente y eficiente, se establecen los siguientes acuerdos y acciones operativas:\n\n1. **Registro de Voluntariado:** Los tutores interesados en sumarse a las distintas comisiones de apoyo (logística, ambientación, acomodo y seguridad) podrán manifestar su participación mediante el formato oficial disponible en las oficinas de administración escolar.  \n   * **Plazo:** Del 16 al 27 de noviembre de 2026.  \n   * **Responsable:** Subdirección de Gestión Escolar en coordinación con el Comité de Gobernanza.\n\n2. **Reunión Informativa y de Asignación de Tareas:** Se llevará a cabo un encuentro presencial para definir las comisiones específicas de trabajo, coordinar los tiempos de participación y establecer los protocolos de seguridad institucional.  \n   * **Fecha:** 2 de diciembre de 2026, a las 09:00 horas, en el auditorio del plantel.  \n   * **Responsable:** Comité de Gobernanza y Enlace de Participación Social.\n\n3. **Ejecución y Acompañamiento:** Las actividades de montaje y apoyo operativo se realizarán conforme al cronograma establecido para el día del evento, garantizando en todo momento el resguardo del interés superior de la niñez y el respeto al calendario escolar oficial.  \n   * **Fecha del Festival:** 18 de diciembre de 2026.  \n   * **Responsable:** Toda la comunidad educativa bajo la supervisión de la Dirección General.\n\nAgradecemos profundamente su disposición, tiempo y entrega generosa. Estamos convencidos de que, mediante el trabajo en equipo entre escuela y hogar, seguiremos construyendo experiencias significativas que fortalezcan el tejido social y el desarrollo integral de nuestras y nuestros estudiantes.\n\nCon distinguida consideración y espíritu de servicio comunitario, atentamente:\n\n**Dirección General**  \n**Comité de Gobernanza**  \nEcosistema Institucional de Educación Básica  \n\n---\n**Folio de Trazabilidad:** TRZ-552362  \n*Documento oficial validado conforme a los lineamientos de la Nueva Escuela Mexicana. Para verificación, cite el folio único en cualquier trámite o aclaración ante la Dirección General.*",
+    "tokensUsed": {
+      "promptTokens": 302,
+      "candidatesTokens": 809,
+      "totalTokens": 1111,
+      "thoughtsTokens": 0,
+      "costUsd": 0.00026535,
+      "costMxn": 0.005307
+    },
+    "model": "gemini-flash-lite-latest",
+    "fromVault": false,
+    "createdAt": "2026-10-16T21:11:32.559Z",
+    "tenantId": "e1000000-0000-0000-0000-000000000001"
+  },
+  {
+    "id": "DRAFT-e1000000-1792184128666",
+    "folio": "TRZ-835872",
+    "subject": "PASTORELA",
+    "normalizedSubject": "pastorela",
+    "keywords": [
+      "pastorela"
+    ],
+    "tone": "formal_empathetic",
+    "toneLabel": "Formal y Empático",
+    "audience": "parents",
+    "audienceLabel": "Padres y Tutores de Familia",
+    "whiteLabelShield": true,
+    "autoIncludeSignature": true,
+    "content": "**DIRECCIÓN GENERAL**\n**COMITÉ DE GOBERNANZA**\n\n---\n\n**1. ENCABEZADO OFICIAL**\n* **Asunto:** Celebración de la Pastorela Navideña y Fomento de la Tradición Comunitaria.\n* **Audiencia Destino:** Estimadas Madres, Padres y Tutores de Familia.\n* **Tono Institucional:** Formal y Empático.\n\n**2. SALUDO INSTITUCIONAL**\nEstimada comunidad de madres, padres y tutores de familia:\n\nReciban un cordial y afectuoso saludo por parte del equipo directivo y docente que integra este Ecosistema Institucional. Esperamos que este periodo se encuentre lleno de bienestar para cada uno de sus hogares. Reconocemos y valoramos profundamente su participación activa en el proceso formativo de las y los estudiantes, pilares fundamentales para el éxito de nuestra labor educativa.\n\n**3. EXPOSICIÓN CLARA DEL ASUNTO**\nEn concordancia con los principios rectores de la Nueva Escuela Mexicana (NEM), los cuales priorizan el fortalecimiento de la identidad cultural, la convivencia armónica y el desarrollo integral de las niñas, niños y adolescentes, nos complace anunciar la realización de nuestra tradicional **Pastorela Navideña**. \n\nEsta actividad no es únicamente un evento conmemorativo, sino una experiencia de aprendizaje situada dentro de la Bóveda Curricular. A través de las artes escénicas, la expresión oral y corporal, y el trabajo colaborativo, fomentamos en el alumnado los valores comunitarios, el respeto a nuestras tradiciones y la empatía social, alejándonos de cualquier mercantilización y centrando el esfuerzo en la vivencia de la comunidad escolar como un espacio de paz y fraternidad.\n\n**4. ACUERDOS Y ACCIONES NUMERADAS**\nPara garantizar el óptimo desarrollo de este evento pedagógico y salvaguardar la seguridad de la comunidad escolar, se establecen los siguientes acuerdos y acciones:\n\n1. **Ensayo General y Preparativos (Responsabilidad: Cuerpo Docente y Alumnado):** Las prácticas escénicas se realizarán exclusivamente dentro del horario escolar regular, sin afectar los tiempos de aprendizaje formal establecidos en el plan de estudios, con fecha límite al **15 de diciembre**.\n2. **Vestuario y Utilería Sostenible (Responsabilidad: Padres, Tutores y Alumnado):** Con el objetivo de evitar cargas económicas a la economía familiar y fomentar la creatividad, el vestuario deberá elaborarse con materiales reciclados, reutilizables o prendas de uso cotidiano, priorizando la austeridad republicana y el cuidado ambiental.\n3. **Asistencia y Registro a la Presentación (Responsabilidad: Padres y Tutores):** La representación abierta a la comunidad se llevará a cabo el próximo **19 de diciembre** en las instalaciones del plantel. El acceso dará inicio a las 09:00 horas, solicitando su puntualidad y registro en el filtro de entrada para mantener un aforo controlado y seguro.\n4. **Prohibición de Elementos Ajenos a la Normativa (Responsabilidad General):** Queda estrictamente prohibido el uso de pirotecnia, así como la introducción o consumo de sustancias ajenas al entorno escolar, garantizando un espacio libre de riesgos y totalmente formativo.\n\n**5. CIERRE COLABORATIVO**\nLa escuela y el hogar forman el binomio perfecto para la transformación social. Su presencia, apoyo y entusiasmo son el motor que impulsa el desarrollo de nuestras niñas, niños y jóvenes. Agradecemos de antemano su valiosa colaboración para hacer de este evento un espacio memorable de convivencia y aprendizaje significativo.\n\n---\n\n**6. FOLIO DE TRAZABILIDAD Y PIE INSTITUCIONAL**\n\n* **Folio de Trazabilidad:** TRZ-835872\n* **Fecha de Emisión:** Ciclo Escolar Vigente.\n\nAtentamente,\n\n**Dirección General**  \n**Comité de Gobernanza**  \n*Ecosistema Institucional y Normativa de la Nueva Escuela Mexicana*",
+    "tokensUsed": {
+      "promptTokens": 288,
+      "candidatesTokens": 860,
+      "totalTokens": 1148,
+      "thoughtsTokens": 0,
+      "costUsd": 0.0002796,
+      "costMxn": 0.005592
+    },
+    "model": "gemini-flash-lite-latest",
+    "fromVault": false,
+    "createdAt": "2026-10-16T20:55:28.666Z",
+    "tenantId": "e1000000-0000-0000-0000-000000000001"
+  },
+  {
     "id": "DRAFT-e1000000-1792180001730",
     "folio": "TRZ-411750",
     "subject": "voluntarios para festival navideño",

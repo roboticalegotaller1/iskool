@@ -3299,6 +3299,25 @@ ${schoolName}`
   const [copiedMessage, setCopiedMessage] = useState<boolean>(false);
   const [isSending, setIsSending] = useState<boolean>(false);
 
+  // Sincronización automática de borrador transferido desde Work OS / Bóveda Curricular
+  useEffect(() => {
+    if (activeTab === 'redactar') {
+      try {
+        const pendingSub = localStorage.getItem('iskool_pending_redactor_subject');
+        const pendingCont = localStorage.getItem('iskool_pending_redactor_content');
+        const pendingRec = localStorage.getItem('iskool_pending_redactor_recipient');
+        if (pendingCont) {
+          setContent(pendingCont);
+          if (pendingSub) setSubject(pendingSub);
+          if (pendingRec) setSelectedRecipient(pendingRec);
+          localStorage.removeItem('iskool_pending_redactor_subject');
+          localStorage.removeItem('iskool_pending_redactor_content');
+          localStorage.removeItem('iskool_pending_redactor_recipient');
+        }
+      } catch {}
+    }
+  }, [activeTab]);
+
   // Historial de correos despachados
   const [logs, setLogs] = useState<OutgoingEmailLog[]>([
     {
@@ -7148,8 +7167,15 @@ Comité de Seguridad y Protección Escolar`
                 isCeo={isPlatformSuperUser(user) || user?.role === 'director' || user?.role === 'owner' || user?.role === 'admin' || user?.role === 'ceo'}
                 currentUserEmail={user?.email}
                 schoolDomain={isIbime ? 'ibime.edu.mx' : 'colegio.edu.mx'}
+                onNavigateTab={(tab, draftData) => {
+                  if (draftData) {
+                    if (draftData.subject) setSubject(draftData.subject);
+                    if (draftData.content) setContent(draftData.content);
+                    if (draftData.recipient) setSelectedRecipient(draftData.recipient);
+                  }
+                  setActiveTab(tab);
+                }}
                 onTriggerToast={onTriggerToast}
-                onNavigateTab={(tab) => setActiveTab(tab)}
               />
             </div>
           )}
@@ -9619,14 +9645,27 @@ Comité de Seguridad y Protección Escolar`
               </div>
 
               {/* Formulario de Redacción */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 space-y-4 shadow-xs text-xs">
+              <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 space-y-4 shadow-xs text-xs">
+                {/* Banner informativo de edición de borrador */}
+                {content && content.length > 30 && (
+                  <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-xs text-indigo-900 dark:text-indigo-200 flex items-center justify-between animate-in fade-in">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                      <span>Borrador institucional listo. Puedes modificar cualquier sección antes de su envío.</span>
+                    </div>
+                    <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300">
+                      Edición Habilitada
+                    </span>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">Destinatarios / Alcance:</label>
+                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Destinatarios / Alcance:</label>
                     <select
                       value={selectedRecipient}
                       onChange={(e) => setSelectedRecipient(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:border-indigo-500"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
                       <option value="all-network">Toda la Red (4 Sedes · 3,740 Familias)</option>
                       <option value="directors">Directores de Campus & Coordinadores (4 sedes)</option>
@@ -9636,26 +9675,27 @@ Comité de Seguridad y Protección Escolar`
                   </div>
 
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">Asunto del Correo:</label>
+                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Asunto del Correo:</label>
                     <input
                       type="text"
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:border-indigo-500"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="font-bold text-slate-700">Cuerpo del Comunicado:</label>
-                    <span className="text-[11px] text-slate-400">{content.length} caracteres</span>
+                    <label className="font-bold text-slate-700 dark:text-slate-300">Cuerpo del Comunicado (Editable):</label>
+                    <span className="text-[11px] text-slate-400 font-mono">{content.length} caracteres</span>
                   </div>
                   <textarea
-                    rows={8}
+                    rows={14}
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-normal leading-relaxed focus:outline-none focus:border-indigo-500 resize-none font-mono text-xs"
+                    placeholder="Escribe o edita el cuerpo del comunicado institucional antes de su envío..."
+                    className="w-full p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-normal leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y font-mono text-xs min-h-[300px]"
                   />
                 </div>
 

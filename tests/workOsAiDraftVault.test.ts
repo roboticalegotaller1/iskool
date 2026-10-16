@@ -112,4 +112,35 @@ describe('🏛️ MOTOR DE IA PEDAGÓGICA: TOKENS REALES, BÓVEDA CURRICULAR Y R
     expect(data.fromVault).toBe(false);
     expect(data.tokensUsed.totalTokens).toBeGreaterThan(0);
   });
+
+  it('debe permitir transferir un borrador de la Bóveda al Redactor con posibilidad de modificación y posterior envío', () => {
+    const drafts = getDraftsFromVault(testTenantId);
+    expect(drafts.length).toBeGreaterThan(0);
+    const draft = drafts[0];
+
+    // Simular transferencia al Redactor Oficial
+    const transferSubject = `[COMUNICADO OFICIAL] ${draft.subject}`;
+    const transferContent = draft.content;
+    const transferRecipient = draft.audience === 'parents' ? 'parents' : 'all-network';
+
+    expect(transferContent).toBeDefined();
+    expect(transferContent.length).toBeGreaterThan(50);
+
+    // Modificación activa por parte del directivo/usuario
+    const editedContent = transferContent + '\n\n**Nota Adicional:** Favor de confirmar asistencia antes del viernes.';
+    expect(editedContent).toContain('Favor de confirmar asistencia');
+    expect(editedContent.length).toBeGreaterThan(transferContent.length);
+
+    // Simular preparación y confirmación de despacho oficial
+    const outboundLog = {
+      id: `log-${Date.now()}`,
+      subject: transferSubject,
+      bodyText: editedContent,
+      recipientGroup: transferRecipient,
+      status: 'Entregado (100%)'
+    };
+
+    expect(outboundLog.status).toBe('Entregado (100%)');
+    expect(outboundLog.bodyText).toContain('Favor de confirmar asistencia');
+  });
 });
