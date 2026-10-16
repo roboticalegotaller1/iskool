@@ -42,8 +42,7 @@ import {
 } from 'lucide-react';
 import { DetailedStudent, Subject, Campus, UserProfile, isPlatformSuperUser } from '@/types';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
-import { switchCanonicalStudent } from '@/lib/auth/multiTenantSession';
-import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
+import { switchCanonicalStudent, resetCanonicalSelectedSchool } from '@/lib/auth/multiTenantSession';
 
 type IbimeTab = 'sedes' | 'alumnos' | 'docentes' | 'boveda' | 'finanzas';
 
@@ -237,8 +236,8 @@ function IbimePortalContent() {
   const isCoordinator = activeUser.role === 'coordinator';
   const isBilling = activeUser.role === 'billing';
 
-  const handleBackToDirectory = () => {
-    useSchoolAdminStore.getState().selectSchool(null as any);
+  const handleBackToDirectory = async () => {
+    await resetCanonicalSelectedSchool();
     router.push('/admin');
   };
 

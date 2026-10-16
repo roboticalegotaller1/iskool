@@ -419,3 +419,27 @@ export async function switchCanonicalStudent(studentId: string): Promise<void> {
     }
   }
 }
+
+/**
+ * Restablece la selección de colegio para retornar al directorio institucional de superusuario
+ * de forma canónica y hermética.
+ */
+export async function resetCanonicalSelectedSchool(): Promise<void> {
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem('iskool_school_admin_store');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.state) {
+          parsed.state.selectedSchool = null;
+          localStorage.setItem('iskool_school_admin_store', JSON.stringify(parsed));
+        }
+      }
+      const { useSchoolAdminStore } = await import('@/store/useSchoolAdminStore');
+      useSchoolAdminStore.getState().selectSchool(null as any);
+    } catch (err) {
+      console.warn('[Session] Error restableciendo selección canónica de colegio:', err);
+    }
+  }
+}
+
