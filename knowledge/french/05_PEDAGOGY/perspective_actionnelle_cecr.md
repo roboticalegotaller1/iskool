@@ -4,9 +4,18 @@ title: La Perspective Actionnelle et la Pédagogie par Tâches dans iSkool
 type: pedagogical_model
 language: french
 school_stage:
-  - all
+  - primary
+  - secondary
+  - high_school
 grades:
-  - all
+  - primary_5
+  - primary_6
+  - secondary_1
+  - secondary_2
+  - secondary_3
+  - high_school_1
+  - high_school_2
+  - high_school_3
 cefr:
   - A1
   - A2

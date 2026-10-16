@@ -346,9 +346,14 @@ export class KnowledgeVaultValidator {
     // 3. Regla institucional: Validación de fuentes registradas (source_ids deben existir en 99_SOURCES o catálogo)
     const registeredSourceIds = new Set<string>();
     for (const doc of docs) {
-      const isSource = doc.relativePath.includes('99_SOURCES') || doc.frontmatter.type === 'source_spec';
+      const isSource = doc.relativePath.includes('99_SOURCES') || doc.frontmatter.type === 'source_spec' || doc.frontmatter.type === 'source_index';
       if (isSource && doc.documentId) {
         registeredSourceIds.add(doc.documentId);
+      }
+      if (isSource && Array.isArray(doc.frontmatter.source_ids)) {
+        for (const sid of doc.frontmatter.source_ids) {
+          registeredSourceIds.add(sid);
+        }
       }
     }
     const allKnownIds = new Set<string>(docs.map(d => d.documentId).filter(Boolean));

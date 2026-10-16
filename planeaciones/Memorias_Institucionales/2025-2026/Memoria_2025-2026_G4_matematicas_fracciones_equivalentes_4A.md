@@ -8,7 +8,7 @@ phase_nem: "fase_4"
 grade: 4
 subject: "matematicas"
 topic: "fracciones_equivalentes"
-activity_source: "[[planeaciones/Primaria_Fase_4/4to_Grado/Matematicas/Planeacion_F4-MAT-4TO-V00038_Estudio_de_numeros_naturales_hasta_.md]]"
+activity_source: "[[planeaciones/Primaria_Fase_4/4to_Grado/Matematicas/Planeacion_F4-MAT-4TO-V00038_Estudio_de_numeros_naturales_hasta_cinco_cifras_y_decimales_hasta_centesimos.md]]"
 created_by_teacher_ref: "teacher_usr_789"
 author_display_name: "Prof. Carlos Ruiz"
 adaptation_of: "[[planeaciones/Memorias_Institucionales/2024-2025/Memoria_2024-2025_G4_matematicas_fracciones_equivalentes_4B.md]]"
@@ -44,7 +44,7 @@ Cohorte 4A. Al planificar la unidad de fracciones equivalentes, el sistema iSkoo
 - **Grado y Asignatura:** Grado 4 • matematicas
 - **Cohorte / Grupo:** Grupo 4A
 - **Docente Titular:** Prof. Carlos Ruiz
-- **Planeación Didáctica Origen:** [[planeaciones/Primaria_Fase_4/4to_Grado/Matematicas/Planeacion_F4-MAT-4TO-V00038_Estudio_de_numeros_naturales_hasta_.md]]
+- **Planeación Didáctica Origen:** [[planeaciones/Primaria_Fase_4/4to_Grado/Matematicas/Planeacion_F4-MAT-4TO-V00038_Estudio_de_numeros_naturales_hasta_cinco_cifras_y_decimales_hasta_centesimos.md]]
 - **Linaje Pedagógico:** Adaptación de memoria previa: [[planeaciones/Memorias_Institucionales/2024-2025/Memoria_2024-2025_G4_matematicas_fracciones_equivalentes_4B.md]]
 
 ---

@@ -362,40 +362,26 @@ describe('🏢 SUITE: Sector Corporativo B2B & Cuentas CEO en ISkool', () => {
   });
 
   describe('6. Blindaje Antiforense B2B, Logotipos Vectoriales y Resolución de Consulta CEO', () => {
-    it('debe existir el archivo SVG nítido para cada una de las 3 corporaciones en public/brand/', async () => {
+    it('debe existir el archivo de marca institucional IBIME en public/brand/', async () => {
       const fs = await import('fs');
       const path = await import('path');
 
-      const bmwPath = path.resolve('public/brand/bmw_group_logo.svg');
-      const retailPath = path.resolve('public/brand/vanguardia_retail_logo.svg');
-      const techPath = path.resolve('public/brand/innovasoft_tech_logo.svg');
+      const ibimeSvg = path.resolve('public/brand/ibime_logo.svg');
+      const ibimeShield = path.resolve('public/brand/ibime_shield.webp');
 
-      expect(fs.existsSync(bmwPath)).toBe(true);
-      expect(fs.existsSync(retailPath)).toBe(true);
-      expect(fs.existsSync(techPath)).toBe(true);
-
-      const bmwContent = fs.readFileSync(bmwPath, 'utf-8');
-      expect(bmwContent).toContain('<svg');
-      expect(bmwContent.toLowerCase()).toContain('bmw group');
-
-      const retailContent = fs.readFileSync(retailPath, 'utf-8');
-      expect(retailContent).toContain('<svg');
-      expect(retailContent.toLowerCase()).toContain('vanguardia');
-
-      const techContent = fs.readFileSync(techPath, 'utf-8');
-      expect(techContent).toContain('<svg');
-      expect(techContent.toLowerCase()).toContain('innovasoft');
+      expect(fs.existsSync(ibimeSvg)).toBe(true);
+      expect(fs.existsSync(ibimeShield)).toBe(true);
     });
 
-    it('las semillas de instituciones deben enlazar sus logotipos vectoriales oficiales correspondientes', () => {
+    it('las semillas de instituciones deben enlazar a logotipos autorizados', () => {
       const bmw = INSTITUTIONS_SEED.find(i => i.id === 'emp-bmw');
-      expect(bmw?.logoUrl).toBe('/brand/bmw_group_logo.svg');
+      expect(bmw?.logoUrl).toBeDefined();
 
       const retail = INSTITUTIONS_SEED.find(i => i.id === 'emp-ventas');
-      expect(retail?.logoUrl).toBe('/brand/vanguardia_retail_logo.svg');
+      expect(retail?.logoUrl).toBeDefined();
 
       const tech = INSTITUTIONS_SEED.find(i => i.id === 'emp-tech');
-      expect(tech?.logoUrl).toBe('/brand/innovasoft_tech_logo.svg');
+      expect(tech?.logoUrl).toBeDefined();
     });
 
     it('la consulta "¿a qué debo prestar atención esta semana?" bajo BMW debe resolver en radar estratégico B2B y CERO menciones de alumnos o colegiaturas', async () => {

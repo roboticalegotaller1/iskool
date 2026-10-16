@@ -99,8 +99,11 @@ export async function POST(req: NextRequest) {
       }
 
       case 'update_theme': {
-        const { themeMode } = body;
-        const updated = CeoEmailSettingsService.updateSettings(tenantId, { themeMode });
+        const { themeMode, customThemeConfig } = body;
+        const updated = CeoEmailSettingsService.updateSettings(tenantId, { 
+          themeMode,
+          ...(customThemeConfig ? { customThemeConfig } : {})
+        });
         return NextResponse.json({ success: true, settings: updated });
       }
 

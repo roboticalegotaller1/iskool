@@ -9,7 +9,7 @@ campo_formativo: "Lenguajes"
 tema: "� Proyecto de Codiseño Comunitario: Experimentación con elementos visuales y sonoros en producciones colectivas"
 duracion: "10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)"
 ejes_articuladores: ["Pensamiento Crítico", "Inclusión", "Vida Saludable", "Apropiación de las Culturas a través de la Lectura y la Escritura"]
-producto_integrador: "Montaje de la "Galería Escolar de Artes Plásticas" en los pasillos de la escuela, con cédulas de autor, cuadros en diversas técnicas (óleo pastel, acuarela, modelado) y recorrido guiado para las familias."
+producto_integrador: "Montaje de la 'Galería Escolar de Artes Plásticas' en los pasillos de la escuela, con cédulas de autor, cuadros en diversas técnicas (óleo pastel, acuarela, modelado) y recorrido guiado para las familias."
 fecha_elaboracion: "2 de septiembre de 2026"
 created_at: "2 de septiembre de 2026"
 updated_at: "2 de septiembre de 2026"

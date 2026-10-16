@@ -412,9 +412,7 @@ export default function ExecutiveAnalyticsStudio({
   const isRetail = isCorporate && ((activeInstitution?.id === 'emp-ventas') || (selectedSchoolFilter === 'emp-ventas') || (currentReport?.schoolId === 'emp-ventas') || (activeInstitution?.name || '').toLowerCase().includes('vanguardia') || (currentReport?.schoolName || '').toLowerCase().includes('vanguardia'));
   const isTech = isCorporate && ((activeInstitution?.id === 'emp-tech') || (selectedSchoolFilter === 'emp-tech') || (currentReport?.schoolId === 'emp-tech') || (activeInstitution?.name || '').toLowerCase().includes('innovasoft') || (currentReport?.schoolName || '').toLowerCase().includes('innovasoft'));
 
-  const corporateLogoUrl = isBmw 
-    ? '/brand/bmw_group_logo.svg' 
-    : (isRetail ? '/brand/vanguardia_retail_logo.svg' : '/brand/innovasoft_tech_logo.svg');
+  const corporateLogoUrl = '/brand/ibime_logo.svg';
 
   // Pool maestro unificado de colaboradores / estudiantes (aislamiento estricto para corporate)
   const masterStudentsPool: DetailedStudent[] = useMemo(() => {

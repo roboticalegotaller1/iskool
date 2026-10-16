@@ -9,7 +9,7 @@ campo_formativo: "Lenguajes"
 tema: "� Proyecto de Codiseño Comunitario: Reconocimiento y reflexión sobre elementos de los lenguajes artísticos"
 duracion: "10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)"
 ejes_articuladores: ["Pensamiento Crítico", "Inclusión", "Vida Saludable", "Apropiación de las Culturas a través de la Lectura y la Escritura"]
-producto_integrador: "Montaje del "Buzón Postal Comunitario" en el aula y patio escolar, con sobres decorados a mano, estampillas postales diseñadas por los alumnos y jornada de entrega postal en la comunidad escolar."
+producto_integrador: "Montaje del 'Buzón Postal Comunitario' en el aula y patio escolar, con sobres decorados a mano, estampillas postales diseñadas por los alumnos y jornada de entrega postal en la comunidad escolar."
 fecha_elaboracion: "2 de septiembre de 2026"
 created_at: "2 de septiembre de 2026"
 updated_at: "2 de septiembre de 2026"

@@ -391,132 +391,132 @@ Este nodo actúa como el **Centro de Enlace (Map of Content - MOC)** y Segundo C
 - [[Planeacion_F3-ESP-2DO-V00013_Uso_de_signos_de_puntuacion_punto_coma_interrogacion_y_mayusculas|Uso de signos de puntuación (punto, coma, interrogación) y mayúsculas (2º de Primaria)]] — *Espanol (2º de Primaria)*
 - [[Planeacion_F3-MAT-2DO-V00003_Estudio_de_los_numeros_hasta_1000_y_valor_posicional_C_D_U_|Estudio de los números hasta 1000 y valor posicional (C, D, U) (2º de Primaria)]] — *Matematicas (2º de Primaria)*
 - [[Planeacion_F3-MAT-2DO-V00004_Figuras_geometricas_compuestas_simetria_y_cuerpos_geometricos|Figuras Geométricas y Cuerpos del Entorno]] — *Matematicas (2º de Primaria)*
-- [[Planeacion_F4-ART-3ER-V00011_Reconocimiento_y_reflexion_sobre_el|Reconocimiento y reflexión sobre elementos de los lenguajes artísticos]] — *Artes (3º de Primaria)*
-- [[Planeacion_F4-ART-3ER-V00012_Lectura_y_creacion_de_poemas_cancio|Lectura y creación de poemas, canciones y juegos de palabras]] — *Artes (3º de Primaria)*
+- [[Planeacion_F4-ART-3ER-V00011_Reconocimiento_y_reflexion_sobre_elementos_de_los_lenguajes_artisticos|Reconocimiento y reflexión sobre elementos de los lenguajes artísticos]] — *Artes (3º de Primaria)*
+- [[Planeacion_F4-ART-3ER-V00012_Lectura_y_creacion_de_poemas_canciones_y_juegos_de_palabras|Lectura y creación de poemas, canciones y juegos de palabras]] — *Artes (3º de Primaria)*
 - [[Planeacion_SERIE2-F4-ART-3ER-V10009_Reconocimiento_y_reflexion_sobre|� Proyecto de Codiseño Comunitario: Reconocimiento y reflexión sobre elementos de los lenguajes artísticos]] — *Artes (3º de Primaria)*
 - [[Planeacion_F4-CIE-3ER-V00021_Estructura_y_funcionamiento_del_cue|El Plato del Bien Comer y Hábitos Saludables]] — *Ciencias_Naturales (3º de Primaria)*
 - [[Planeacion_F4-CIE-3ER-V00022_Alimentacion_saludable_Plato_del_Bi|El Plato del Bien Comer y Hábitos Saludables]] — *Ciencias_Naturales (3º de Primaria)*
 - [[Planeacion_F4-CIE-3ER-V00023_Interacciones_entre_plantas_animale|El Plato del Bien Comer y Hábitos Saludables]] — *Ciencias_Naturales (3º de Primaria)*
-- [[Planeacion_F4-CIE-3ER-V00024_Propiedades_de_los_materiales_masa_|Propiedades de los materiales: masa y longitud; relación con temperatura]] — *Ciencias_Naturales (3º de Primaria)*
+- [[Planeacion_F4-CIE-3ER-V00024_Propiedades_de_los_materiales_masa_y_longitud_relacion_con_temperatura|Propiedades de los materiales: masa y longitud; relación con temperatura]] — *Ciencias_Naturales (3º de Primaria)*
 - [[Planeacion_F4-CIE-3ER-V00077_Formacion_de_mezclas_y_propiedades_|Cuidado y Filtración del Agua]] — *Ciencias_Naturales (3º de Primaria)*
 - [[Planeacion_F4-CIE-3ER-V00078_Sistema_Tierra-Luna-Sol_movimientos|Sistema Tierra-Luna-Sol: movimientos de rotación y traslación]] — *Ciencias_Naturales (3º de Primaria)*
 - [[Planeacion_SERIE2-F4-CIE-3ER-V10011_Estructura_y_funcionamiento_del_|El Plato del Bien Comer y Hábitos Saludables]] — *Ciencias_Naturales (3º de Primaria)*
 - [[Plan_61_El_Corazon_del_Barrio|Derechos de la Niñez y Convivencia Pacífica]] — *Educación Socioemocional (3º de Primaria)*
-- [[Plan_62_El_Arbol_de_los_Valores|El Árbol de los Valores: Cuidados Afectivos y Tradición Familiar]] — *Educación Socioemocional (3º de Primaria)*
-- [[Plan_63_El_Espejo_Magico|El Espejo Mágico: Autoconocimiento, Singularidad y Autoestima Positiva]] — *Educación Socioemocional (3º de Primaria)*
+- [[Plan_62_El_Arbol_de_los_Valores_Cuidados_Afectivos_y_Tradicion_Familiar|El Árbol de los Valores: Cuidados Afectivos y Tradición Familiar]] — *Educación Socioemocional (3º de Primaria)*
+- [[Plan_63_El_Espejo_Magico_Autoconocimiento_Singularidad_y_Autoestima_Positiva|El Espejo Mágico: Autoconocimiento, Singularidad y Autoestima Positiva]] — *Educación Socioemocional (3º de Primaria)*
 - [[Plan_72_En_los_Zapatos_del_Otro|Derechos de la Niñez y Convivencia Pacífica]] — *Educación Socioemocional (3º de Primaria)*
-- [[Plan_77_El_Mosaico_del_Aula|El Mosaico del Aula: Reconocimiento Mutuo, Necesidades Especiales y Solidaridad]] — *Educación Socioemocional (3º de Primaria)*
-- [[Plan_69_Lonchera_Sana|Lonchera Sana: Hidratación Inteligente, Frutas de Temporada y Cero Azúcares]] — *Vida Saludable (3º de Primaria)*
-- [[Plan_73_Salon_Seguro|Salón Seguro: Prevención de la Violencia, Cuidado del Mobiliario y Respeto]] — *Vida Saludable (3º de Primaria)*
-- [[Planeacion_F4-EDU-3ER-V00049_Capacidades_y_habilidades_motrices_|Capacidades y habilidades motrices en situaciones de juego]] — *Educacion_Fisica_Vida_Saludable (3º de Primaria)*
+- [[Plan_77_El_Mosaico_del_Aula_Reconocimiento_Mutuo_Necesidades_Especiales_y_Solidaridad|El Mosaico del Aula: Reconocimiento Mutuo, Necesidades Especiales y Solidaridad]] — *Educación Socioemocional (3º de Primaria)*
+- [[Plan_69_Lonchera_Sana_Hidratacion_Inteligente_Frutas_de_Temporada_y_Cero_Azucares|Lonchera Sana: Hidratación Inteligente, Frutas de Temporada y Cero Azúcares]] — *Vida Saludable (3º de Primaria)*
+- [[Plan_73_Salon_Seguro_Prevencion_de_la_Violencia_Cuidado_del_Mobiliario_y_Respeto|Salón Seguro: Prevención de la Violencia, Cuidado del Mobiliario y Respeto]] — *Vida Saludable (3º de Primaria)*
+- [[Planeacion_F4-EDU-3ER-V00049_Capacidades_y_habilidades_motrices_en_situaciones_de_juego|Capacidades y habilidades motrices en situaciones de juego]] — *Educacion_Fisica_Vida_Saludable (3º de Primaria)*
 - [[Planeacion_SERIE2-F4-EDU-3ER-V10023_Capacidades_y_habilidades_motric|� Proyecto de Codiseño Comunitario: Capacidades y habilidades motrices en situaciones de juego]] — *Educacion_Fisica_Vida_Saludable (3º de Primaria)*
-- [[Planeacion_F4-ESP-3ER-V00001_Narracion_de_sucesos_del_pasado_y_d|Narración de sucesos del pasado y del presente]] — *Español (3º de Primaria)*
-- [[Planeacion_F4-ESP-3ER-V00002_Descripcion_de_personas_lugares_hec|Descripción de personas, lugares, hechos y procesos]] — *Español (3º de Primaria)*
+- [[Planeacion_F4-ESP-3ER-V00001_Narracion_de_sucesos_del_pasado_y_del_presente|Narración de sucesos del pasado y del presente]] — *Español (3º de Primaria)*
+- [[Planeacion_F4-ESP-3ER-V00002_Descripcion_de_personas_lugares_hechos_y_procesos|Descripción de personas, lugares, hechos y procesos]] — *Español (3º de Primaria)*
 - [[Planeacion_F4-ESP-3ER-V00003_Dialogo_para_la_toma_de_acuerdos_y_|Derechos de la Niñez y Convivencia Pacífica]] — *Español (3º de Primaria)*
-- [[Planeacion_F4-ESP-3ER-V00004_Comprension_y_produccion_de_textos_|Comprensión y producción de textos expositivos (problema-solución, comparación-contraste, causa-consecuencia)]] — *Español (3º de Primaria)*
-- [[Planeacion_F4-ESP-3ER-V00007_Comprension_y_produccion_de_resumen|Comprensión y producción de resúmenes]] — *Español (3º de Primaria)*
-- [[Planeacion_F4-ESP-3ER-V00008_Textos_instructivos_para_realizar_a|Textos instructivos para realizar actividades escolares y juegos]] — *Español (3º de Primaria)*
+- [[Planeacion_F4-ESP-3ER-V00004_Comprension_y_produccion_de_textos_expositivos_problemasolucion_comparacioncontraste_causaconsecuencia|Comprensión y producción de textos expositivos (problema-solución, comparación-contraste, causa-consecuencia)]] — *Español (3º de Primaria)*
+- [[Planeacion_F4-ESP-3ER-V00007_Comprension_y_produccion_de_resumenes|Comprensión y producción de resúmenes]] — *Español (3º de Primaria)*
+- [[Planeacion_F4-ESP-3ER-V00008_Textos_instructivos_para_realizar_actividades_escolares_y_juegos|Textos instructivos para realizar actividades escolares y juegos]] — *Español (3º de Primaria)*
 - [[Planeacion_F4-ESP-3ER-V00009_Exposicion_sobre_temas_diversos|Exposición sobre temas diversos]] — *Español (3º de Primaria)*
-- [[Planeacion_F4-ESP-3ER-V00010_Indagacion_sobre_la_diversidad_ling|Indagación sobre la diversidad lingüística en su comunidad y país]] — *Español (3º de Primaria)*
-- [[Planeacion_F4-ESP-3ER-V00057_Busqueda_y_manejo_reflexivo_de_info|Búsqueda y manejo reflexivo de información]] — *Español (3º de Primaria)*
+- [[Planeacion_F4-ESP-3ER-V00010_Indagacion_sobre_la_diversidad_linguistica_en_su_comunidad_y_pais|Indagación sobre la diversidad lingüística en su comunidad y país]] — *Español (3º de Primaria)*
+- [[Planeacion_F4-ESP-3ER-V00057_Busqueda_y_manejo_reflexivo_de_informacion|Búsqueda y manejo reflexivo de información]] — *Español (3º de Primaria)*
 - [[Planeacion_SERIE2-F4-ESP-3ER-V10001_Narracion_de_sucesos_del_pasado_|� Proyecto de Codiseño Comunitario: Narración de sucesos del pasado y del presente]] — *Español (3º de Primaria)*
-- [[Plan_43_La_Sabiduria_de_la_Tierra|La Sabiduría de la Tierra: Cosmovisión Indígena, Respeto a la Naturaleza y la Milpa]] — *Formación Cívica y Ética (3º de Primaria)*
+- [[Plan_43_La_Sabiduria_de_la_Tierra_Cosmovision_Indigena_Respeto_a_la_Naturaleza_y_la_Milpa|La Sabiduría de la Tierra: Cosmovisión Indígena, Respeto a la Naturaleza y la Milpa]] — *Formación Cívica y Ética (3º de Primaria)*
 - [[Plan_49_Escudo_Protector|Derechos de la Niñez y Convivencia Pacífica]] — *Formación Cívica y Ética (3º de Primaria)*
-- [[Plan_51_Mano_Vuelta|Mano Vuelta: El Tequio, la Faena y el Trabajo Solidario Comunitario]] — *Formación Cívica y Ética (3º de Primaria)*
+- [[Plan_51_Mano_Vuelta_El_Tequio_la_Faena_y_el_Trabajo_Solidario_Comunitario|Mano Vuelta: El Tequio, la Faena y el Trabajo Solidario Comunitario]] — *Formación Cívica y Ética (3º de Primaria)*
 - [[Plan_53_Vida_Digna|Derechos de la Niñez y Convivencia Pacífica]] — *Formación Cívica y Ética (3º de Primaria)*
 - [[Plan_57_Igualdad_en_el_Hogar_y_la_Escuela|Derechos de la Niñez y Convivencia Pacífica]] — *Formación Cívica y Ética (3º de Primaria)*
 - [[Plan_41_Cartografia_Viva|Ecosistemas y Conservación de la Biodiversidad]] — *Geografía (3º de Primaria)*
 - [[Planeacion_F4-FOR-3ER-V00097_Derechos_humanos_y_proteccion_de_la|Derechos de la Niñez y Convivencia Pacífica]] — *Formacion_Civica (3º de Primaria)*
 - [[Planeacion_F4-GEO-3ER-V00042_Representaciones_cartograficas_de_l|Ecosistemas y Conservación de la Biodiversidad]] — *Geografia_Historia (3º de Primaria)*
-- [[Planeacion_F4-GEO-3ER-V00043_Interculturalidad_y_sustentabilidad|Interculturalidad y sustentabilidad en pueblos originarios]] — *Geografia_Historia (3º de Primaria)*
-- [[Planeacion_F4-GEO-3ER-V00044_Pueblos_originarios_antes_de_la_lle|Pueblos originarios antes de la llegada de los españoles]] — *Geografia_Historia (3º de Primaria)*
+- [[Planeacion_F4-GEO-3ER-V00043_Interculturalidad_y_sustentabilidad_en_pueblos_originarios|Interculturalidad y sustentabilidad en pueblos originarios]] — *Geografia_Historia (3º de Primaria)*
+- [[Planeacion_F4-GEO-3ER-V00044_Pueblos_originarios_antes_de_la_llegada_de_los_espanoles|Pueblos originarios antes de la llegada de los españoles]] — *Geografia_Historia (3º de Primaria)*
 - [[Planeacion_SERIE2-F4-GEO-3ER-V10021_Representaciones_cartograficas_d|Ecosistemas y Conservación de la Biodiversidad]] — *Geografia_Historia (3º de Primaria)*
 - [[Plan_01_El_Baul_de_los_Cuentacuentos|Lectura y Creación de Cuentos Colectivos]] — *Español (3º de Primaria)*
-- [[Plan_02_Retratos_Vivos|Retratos Vivos: Adjetivos, Adverbios y Paisajes de Mi Localidad]] — *Español (3º de Primaria)*
-- [[Plan_03_La_Asamblea_Infantil|La Asamblea Infantil: El Bastón de la Palabra y la Escucha Activa]] — *Español (3º de Primaria)*
+- [[Plan_02_Retratos_Vivos_Adjetivos_Adverbios_y_Paisajes_de_Mi_Localidad|Retratos Vivos: Adjetivos, Adverbios y Paisajes de Mi Localidad]] — *Español (3º de Primaria)*
+- [[Plan_03_La_Asamblea_Infantil_El_Baston_de_la_Palabra_y_la_Escucha_Activa|La Asamblea Infantil: El Bastón de la Palabra y la Escucha Activa]] — *Español (3º de Primaria)*
 - [[Plan_04_El_Taller_de_los_Instructivos|El Plato del Bien Comer y Hábitos Saludables]] — *Español (3º de Primaria)*
 - [[Plan_11_El_Correo_Escolar|Producción de Textos Epistolares (La Carta)]] — *Español (3º de Primaria)*
-- [[Plan_12_Consumidores_Criticos|Consumidores Críticos: Sellos de Advertencia y Contra-Publicidad]] — *Español (3º de Primaria)*
-- [[Plan_13_La_Gaceta_Escolar|La Gaceta Escolar: Hechos, Opiniones y Estructura de la Noticia]] — *Español (3º de Primaria)*
-- [[Plan_14_Identidad_Ciudadana|Identidad Ciudadana: Actas de Nacimiento, CURP y Formularios Escolares]] — *Español (3º de Primaria)*
+- [[Plan_12_Consumidores_Criticos_Sellos_de_Advertencia_y_ContraPublicidad|Consumidores Críticos: Sellos de Advertencia y Contra-Publicidad]] — *Español (3º de Primaria)*
+- [[Plan_13_La_Gaceta_Escolar_Hechos_Opiniones_y_Estructura_de_la_Noticia|La Gaceta Escolar: Hechos, Opiniones y Estructura de la Noticia]] — *Español (3º de Primaria)*
+- [[Plan_14_Identidad_Ciudadana_Actas_de_Nacimiento_CURP_y_Formularios_Escolares|Identidad Ciudadana: Actas de Nacimiento, CURP y Formularios Escolares]] — *Español (3º de Primaria)*
 - [[Planeacion_F4-MAT-3ER-V00027_Estudio_de_los_numeros_naturales_y_|Fracciones y Reparto Equitativo]] — *Matematicas (3º de Primaria)*
-- [[Planeacion_F4-MAT-3ER-V00028_Suma_y_resta_su_relacion_como_opera|Suma y resta, su relación como operaciones inversas]] — *Matematicas (3º de Primaria)*
+- [[Planeacion_F4-MAT-3ER-V00028_Suma_y_resta_su_relacion_como_operaciones_inversas|Suma y resta, su relación como operaciones inversas]] — *Matematicas (3º de Primaria)*
 - [[Planeacion_F4-MAT-3ER-V00029_Multiplicacion_y_division_como_oper|Multiplicación y Tablas Numéricas]] — *Matematicas (3º de Primaria)*
 - [[Planeacion_F4-MAT-3ER-V00030_Cuerpos_y_figuras_geometricas_simet|Figuras Geométricas y Cuerpos del Entorno]] — *Matematicas (3º de Primaria)*
-- [[Planeacion_F4-MAT-3ER-V00031_Medicion_de_tiempo_longitud_masa_y_|Medición de tiempo, longitud, masa y capacidad]] — *Matematicas (3º de Primaria)*
+- [[Planeacion_F4-MAT-3ER-V00031_Medicion_de_tiempo_longitud_masa_y_capacidad|Medición de tiempo, longitud, masa y capacidad]] — *Matematicas (3º de Primaria)*
 - [[Planeacion_SERIE2-F4-MAT-3ER-V10017_Estudio_de_los_numeros_naturales|Fracciones y Reparto Equitativo]] — *Matematicas (3º de Primaria)*
 - [[Plan_21_El_Esqueleto_Movil|El Plato del Bien Comer y Hábitos Saludables]] — *Ciencias Naturales (3º de Primaria)*
 - [[Plan_23_El_Semaforo_de_la_Salud|Cuidado y Filtración del Agua]] — *Ciencias Naturales (3º de Primaria)*
 - [[Plan_27_Mundo_Mezclas|Cuidado y Filtración del Agua]] — *Ciencias Naturales (3º de Primaria)*
 - [[Plan_30_El_Muro_Fraccionario|Fracciones y Reparto Equitativo]] — *Matemáticas (3º de Primaria)*
-- [[Plan_32_Cajeros_Expertos|Cajeros Expertos: Suma, Resta con Transformación y Cálculo Mental]] — *Matemáticas (3º de Primaria)*
+- [[Plan_32_Cajeros_Expertos_Suma_Resta_con_Transformacion_y_Calculo_Mental|Cajeros Expertos: Suma, Resta con Transformación y Cálculo Mental]] — *Matemáticas (3º de Primaria)*
 - [[Plan_34_La_Tabla_Pitagorica|Multiplicación y Tablas Numéricas]] — *Matemáticas (3º de Primaria)*
-- [[Planeacion_F4-SOC-3ER-V00050_Los_afectos_y_su_influencia_en_el_b|Los afectos y su influencia en el bienestar y la convivencia]] — *Socioemocional (3º de Primaria)*
-- [[Planeacion_F4-ART-4TO-V00019_Experimentacion_con_elementos_visua|Experimentación con elementos visuales y sonoros en producciones colectivas]] — *Artes (4º de Primaria)*
-- [[Planeacion_F4-ART-4TO-V00020_Lectura_dramatizada_y_representacio|Lectura dramatizada y representación teatral]] — *Artes (4º de Primaria)*
+- [[Planeacion_F4-SOC-3ER-V00050_Los_afectos_y_su_influencia_en_el_bienestar_y_la_convivencia|Los afectos y su influencia en el bienestar y la convivencia]] — *Socioemocional (3º de Primaria)*
+- [[Planeacion_F4-ART-4TO-V00019_Experimentacion_con_elementos_visuales_y_sonoros_en_producciones_colectivas|Experimentación con elementos visuales y sonoros en producciones colectivas]] — *Artes (4º de Primaria)*
+- [[Planeacion_F4-ART-4TO-V00020_Lectura_dramatizada_y_representacion_teatral|Lectura dramatizada y representación teatral]] — *Artes (4º de Primaria)*
 - [[Planeacion_SERIE2-F4-ART-4TO-V10010_Experimentacion_con_elementos_vi|� Proyecto de Codiseño Comunitario: Experimentación con elementos visuales y sonoros en producciones colectivas]] — *Artes (4º de Primaria)*
-- [[Planeacion_F4-CIE-4TO-V00032_Estructura_del_sistema_digestivo_y_|Estructura del sistema digestivo y su relación con el circulatorio]] — *Ciencias_Naturales (4º de Primaria)*
-- [[Planeacion_F4-CIE-4TO-V00033_Caracteres_sexuales_primarios_y_sec|Caracteres sexuales primarios y secundarios en pubertad]] — *Ciencias_Naturales (4º de Primaria)*
+- [[Planeacion_F4-CIE-4TO-V00032_Estructura_del_sistema_digestivo_y_su_relacion_con_el_circulatorio|Estructura del sistema digestivo y su relación con el circulatorio]] — *Ciencias_Naturales (4º de Primaria)*
+- [[Planeacion_F4-CIE-4TO-V00033_Caracteres_sexuales_primarios_y_secundarios_en_pubertad|Caracteres sexuales primarios y secundarios en pubertad]] — *Ciencias_Naturales (4º de Primaria)*
 - [[Planeacion_F4-CIE-4TO-V00034_Nutricion_de_plantas_cadenas_alimen|Ecosistemas y Conservación de la Biodiversidad]] — *Ciencias_Naturales (4º de Primaria)*
-- [[Planeacion_F4-CIE-4TO-V00037_Eclipses_solares_y_lunares_en_el_Si|Eclipses solares y lunares en el Sistema Tierra-Luna-Sol]] — *Ciencias_Naturales (4º de Primaria)*
+- [[Planeacion_F4-CIE-4TO-V00037_Eclipses_solares_y_lunares_en_el_Sistema_TierraLunaSol|Eclipses solares y lunares en el Sistema Tierra-Luna-Sol]] — *Ciencias_Naturales (4º de Primaria)*
 - [[Planeacion_F4-CIE-4TO-V00087_Ciclo_del_agua_cambios_de_estado_y_|Cuidado y Filtración del Agua]] — *Ciencias_Naturales (4º de Primaria)*
-- [[Planeacion_F4-CIE-4TO-V00088_Efectos_del_calor_y_la_friccion_sob|Efectos del calor y la fricción sobre los objetos]] — *Ciencias_Naturales (4º de Primaria)*
+- [[Planeacion_F4-CIE-4TO-V00088_Efectos_del_calor_y_la_friccion_sobre_los_objetos|Efectos del calor y la fricción sobre los objetos]] — *Ciencias_Naturales (4º de Primaria)*
 - [[Planeacion_SERIE2-F4-CIE-4TO-V10014_Estructura_del_sistema_digestivo|Ecosistemas y Conservación de la Biodiversidad]] — *Ciencias_Naturales (4º de Primaria)*
-- [[Plan_67_Estrategas_en_la_Cancha|Estrategas en la Cancha: Juegos Modificados, Tácticas de Equipo y Creatividad]] — *Educación Física (4º de Primaria)*
-- [[Plan_68_Fuerza_Colectiva|Fuerza Colectiva: Juegos de Cooperación-Oposición y Sinergia de Grupo]] — *Educación Física (4º de Primaria)*
-- [[Plan_64_Mi_Mapa_del_Tesoro|Mi Mapa del Tesoro: Proyecto de Vida, Metas a Corto Plazo y Perseverancia]] — *Educación Socioemocional (4º de Primaria)*
-- [[Plan_71_El_Termostato_Emocional|El Termostato Emocional: Autorregulación, Técnica del Semáforo y Asertividad]] — *Educación Socioemocional (4º de Primaria)*
-- [[Plan_78_Cronistas_de_Mi_Pueblo|Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario]] — *Educación Socioemocional (4º de Primaria)*
+- [[Plan_67_Estrategas_en_la_Cancha_Juegos_Modificados_Tacticas_de_Equipo_y_Creatividad|Estrategas en la Cancha: Juegos Modificados, Tácticas de Equipo y Creatividad]] — *Educación Física (4º de Primaria)*
+- [[Plan_68_Fuerza_Colectiva_Juegos_de_CooperacionOposicion_y_Sinergia_de_Grupo|Fuerza Colectiva: Juegos de Cooperación-Oposición y Sinergia de Grupo]] — *Educación Física (4º de Primaria)*
+- [[Plan_64_Mi_Mapa_del_Tesoro_Proyecto_de_Vida_Metas_a_Corto_Plazo_y_Perseverancia|Mi Mapa del Tesoro: Proyecto de Vida, Metas a Corto Plazo y Perseverancia]] — *Educación Socioemocional (4º de Primaria)*
+- [[Plan_71_El_Termostato_Emocional_Autorregulacion_Tecnica_del_Semaforo_y_Asertividad|El Termostato Emocional: Autorregulación, Técnica del Semáforo y Asertividad]] — *Educación Socioemocional (4º de Primaria)*
+- [[Plan_78_Cronistas_de_Mi_Pueblo_Historia_Oral_Tradiciones_Vivas_y_Arbol_Comunitario|Cronistas de Mi Pueblo: Historia Oral, Tradiciones Vivas y Árbol Comunitario]] — *Educación Socioemocional (4º de Primaria)*
 - [[Plan_79_Transformaciones_Vivas|El Plato del Bien Comer y Hábitos Saludables]] — *Educación Socioemocional (4º de Primaria)*
-- [[Plan_80_Consejo_Infantil_de_Aula|Consejo Infantil de Aula: Ciudadanía Activa, Co-gestión Escolar y Bienestar Común]] — *Educación Socioemocional (4º de Primaria)*
-- [[Plan_70_Escuadron_de_la_Higiene|Escuadrón de la Higiene: El Lavado Clínico de Manos y el Cuidado del Entorno Escolar]] — *Vida Saludable (4º de Primaria)*
+- [[Plan_80_Consejo_Infantil_de_Aula_Ciudadania_Activa_Cogestion_Escolar_y_Bienestar_Comun|Consejo Infantil de Aula: Ciudadanía Activa, Co-gestión Escolar y Bienestar Común]] — *Educación Socioemocional (4º de Primaria)*
+- [[Plan_70_Escuadron_de_la_Higiene_El_Lavado_Clinico_de_Manos_y_el_Cuidado_del_Entorno_Escolar|Escuadrón de la Higiene: El Lavado Clínico de Manos y el Cuidado del Entorno Escolar]] — *Vida Saludable (4º de Primaria)*
 - [[Plan_74_Decisiones_Libres|El Plato del Bien Comer y Hábitos Saludables]] — *Vida Saludable (4º de Primaria)*
 - [[Planeacion_F4-EDU-4TO-V00051_Estilos_de_vida_activos_y_habitos_s|El Plato del Bien Comer y Hábitos Saludables]] — *Educacion_Fisica_Vida_Saludable (4º de Primaria)*
-- [[Planeacion_F4-ESP-4TO-V00013_Narracion_de_sucesos_del_pasado_y_d|Narración de sucesos del pasado y del presente]] — *Español (4º de Primaria)*
-- [[Planeacion_F4-ESP-4TO-V00014_Descripcion_de_personas_lugares_hec|Descripción de personas, lugares, hechos y procesos]] — *Español (4º de Primaria)*
-- [[Planeacion_F4-ESP-4TO-V00017_Comprension_y_produccion_de_resumen|Comprensión y producción de resúmenes]] — *Español (4º de Primaria)*
-- [[Planeacion_F4-ESP-4TO-V00018_Analisis_e_intercambio_de_comentari|Análisis e intercambio de comentarios sobre empaques y anuncios publicitarios]] — *Español (4º de Primaria)*
-- [[Planeacion_F4-ESP-4TO-V00067_Comprension_y_produccion_de_textos_|Comprensión y producción de textos expositivos]] — *Español (4º de Primaria)*
-- [[Planeacion_F4-ESP-4TO-V00068_Busqueda_y_manejo_reflexivo_de_info|Búsqueda y manejo reflexivo de información]] — *Español (4º de Primaria)*
+- [[Planeacion_F4-ESP-4TO-V00013_Narracion_de_sucesos_del_pasado_y_del_presente|Narración de sucesos del pasado y del presente]] — *Español (4º de Primaria)*
+- [[Planeacion_F4-ESP-4TO-V00014_Descripcion_de_personas_lugares_hechos_y_procesos|Descripción de personas, lugares, hechos y procesos]] — *Español (4º de Primaria)*
+- [[Planeacion_F4-ESP-4TO-V00017_Comprension_y_produccion_de_resumenes|Comprensión y producción de resúmenes]] — *Español (4º de Primaria)*
+- [[Planeacion_F4-ESP-4TO-V00018_Analisis_e_intercambio_de_comentarios_sobre_empaques_y_anuncios_publicitarios|Análisis e intercambio de comentarios sobre empaques y anuncios publicitarios]] — *Español (4º de Primaria)*
+- [[Planeacion_F4-ESP-4TO-V00067_Comprension_y_produccion_de_textos_expositivos|Comprensión y producción de textos expositivos]] — *Español (4º de Primaria)*
+- [[Planeacion_F4-ESP-4TO-V00068_Busqueda_y_manejo_reflexivo_de_informacion|Búsqueda y manejo reflexivo de información]] — *Español (4º de Primaria)*
 - [[Planeacion_SERIE2-F4-ESP-4TO-V10007_Descripcion_de_personas_lugares_|� Proyecto de Codiseño Comunitario: Descripción de personas, lugares, hechos y procesos]] — *Español (4º de Primaria)*
 - [[Plan_44_Guardianas_del_Ecosistema|Ecosistemas y Conservación de la Biodiversidad]] — *Formación Cívica y Ética (4º de Primaria)*
-- [[Plan_48_Emblemas_de_Libertad|Emblemas de Libertad: Bandera, Escudo, Himno Nacional y Diversidad Cultural]] — *Formación Cívica y Ética (4º de Primaria)*
-- [[Plan_50_Ciudadanos_en_Construccion|Ciudadanos en Construcción: Reglas Justas, Asambleas y Elección Democrática]] — *Formación Cívica y Ética (4º de Primaria)*
-- [[Plan_52_Cero_Discriminacion|Cero Discriminación: Respeto a la Diversidad Étnica, Lingüística y de Género]] — *Formación Cívica y Ética (4º de Primaria)*
+- [[Plan_48_Emblemas_de_Libertad_Bandera_Escudo_Himno_Nacional_y_Diversidad_Cultural|Emblemas de Libertad: Bandera, Escudo, Himno Nacional y Diversidad Cultural]] — *Formación Cívica y Ética (4º de Primaria)*
+- [[Plan_50_Ciudadanos_en_Construccion_Reglas_Justas_Asambleas_y_Eleccion_Democratica|Ciudadanos en Construcción: Reglas Justas, Asambleas y Elección Democrática]] — *Formación Cívica y Ética (4º de Primaria)*
+- [[Plan_52_Cero_Discriminacion_Respeto_a_la_Diversidad_Etnica_Linguistica_y_de_Genero|Cero Discriminación: Respeto a la Diversidad Étnica, Lingüística y de Género]] — *Formación Cívica y Ética (4º de Primaria)*
 - [[Plan_54_Embajadores_de_Paz|Derechos de la Niñez y Convivencia Pacífica]] — *Formación Cívica y Ética (4º de Primaria)*
-- [[Plan_58_Mujeres_Transformadoras|Mujeres Transformadoras: Historia de la Lucha por la Educación y el Voto Femenino en México]] — *Formación Cívica y Ética (4º de Primaria)*
-- [[Plan_60_Mexico_Plural|México Plural: 68 Lenguas Originarias, Pueblos Afromexicanos y Garantías Constitucionales]] — *Formación Cívica y Ética (4º de Primaria)*
-- [[Plan_42_Mexico_Megadiverso|México Megadiverso: Relieve, Climas, Fronteras y Regiones Naturales]] — *Geografía (4º de Primaria)*
-- [[Plan_59_Fronteras_en_Movimiento|Fronteras en Movimiento: Transformaciones Territoriales y Pérdidas de México en el Siglo XIX]] — *Geografía / Historia (4º de Primaria)*
-- [[Plan_47_Memoria_y_Resistencia|Memoria y Resistencia: La Conquista, el Virreinato y el Sistema de Castas]] — *Historia (4º de Primaria)*
+- [[Plan_58_Mujeres_Transformadoras_Historia_de_la_Lucha_por_la_Educacion_y_el_Voto_Femenino_en_Mexico|Mujeres Transformadoras: Historia de la Lucha por la Educación y el Voto Femenino en México]] — *Formación Cívica y Ética (4º de Primaria)*
+- [[Plan_60_Mexico_Plural_68_Lenguas_Originarias_Pueblos_Afromexicanos_y_Garantias_Constitucionales|México Plural: 68 Lenguas Originarias, Pueblos Afromexicanos y Garantías Constitucionales]] — *Formación Cívica y Ética (4º de Primaria)*
+- [[Plan_42_Mexico_Megadiverso_Relieve_Climas_Fronteras_y_Regiones_Naturales|México Megadiverso: Relieve, Climas, Fronteras y Regiones Naturales]] — *Geografía (4º de Primaria)*
+- [[Plan_59_Fronteras_en_Movimiento_Transformaciones_Territoriales_y_Perdidas_de_Mexico_en_el_Siglo_XIX|Fronteras en Movimiento: Transformaciones Territoriales y Pérdidas de México en el Siglo XIX]] — *Geografía / Historia (4º de Primaria)*
+- [[Plan_47_Memoria_y_Resistencia_La_Conquista_el_Virreinato_y_el_Sistema_de_Castas|Memoria y Resistencia: La Conquista, el Virreinato y el Sistema de Castas]] — *Historia (4º de Primaria)*
 - [[Planeacion_F4-FOR-4TO-V00048_Construccion_colectiva_de_la_paz_y_|Derechos de la Niñez y Convivencia Pacífica]] — *Formacion_Civica (4º de Primaria)*
-- [[Planeacion_F4-GEO-4TO-V00047_La_vida_cotidiana_en_el_Mexico_Colo|La vida cotidiana en el México Colonial y el sistema de castas]] — *Geografia_Historia (4º de Primaria)*
-- [[Planeacion_F4-GEO-4TO-V00098_Caracterizacion_y_localizacion_del_|Caracterización y localización del territorio de México]] — *Geografia_Historia (4º de Primaria)*
+- [[Planeacion_F4-GEO-4TO-V00047_La_vida_cotidiana_en_el_Mexico_Colonial_y_el_sistema_de_castas|La vida cotidiana en el México Colonial y el sistema de castas]] — *Geografia_Historia (4º de Primaria)*
+- [[Planeacion_F4-GEO-4TO-V00098_Caracterizacion_y_localizacion_del_territorio_de_Mexico|Caracterización y localización del territorio de México]] — *Geografia_Historia (4º de Primaria)*
 - [[Planeacion_SERIE2-F4-GEO-4TO-V10022_Caracterizacion_y_localizacion_d|Ecosistemas y Conservación de la Biodiversidad]] — *Geografia_Historia (4º de Primaria)*
-- [[Plan_10_Sombras_Legendarias|Sombras Legendarias: Teatro de Sombras y Lectura Dramatizada de Mitos]] — *Artes / Español (4º de Primaria)*
-- [[Plan_17_Colores_y_Texturas_de_Mexico|Colores y Texturas de México: Apreciación Estética y Danzas Tradicionales]] — *Artes (4º de Primaria)*
-- [[Plan_18_Urbanismo_Ludico|Urbanismo Lúdico: Maquetas e Intervenciones Artísticas en el Patio Escolar]] — *Artes (4º de Primaria)*
-- [[Plan_19_El_Cuaderno_Magico|El Cuaderno Mágico: Animación Cuadro por Cuadro y Folioscopio (Flipbook)]] — *Artes / Español (4º de Primaria)*
-- [[Plan_07_El_Arte_de_la_Sintesis|El Arte de la Síntesis: Ideas Principales, Paráfrasis y Gráficos Informativos]] — *Español (4º de Primaria)*
-- [[Plan_08_Microfono_Abierto|Micrófono Abierto: Planificación, Preguntas Abiertas y Reporte de Entrevista Testimonial]] — *Español (4º de Primaria)*
-- [[Plan_09_Juglares_y_Poetas|Juglares y Poetas: Rima, Aliteración, Metáforas y Cancionero Tradicional]] — *Español (4º de Primaria)*
-- [[Plan_20_Escritores_Fantasticos|Escritores Fantásticos: El Pretérito, el Copretérito y los Diálogos Directos]] — *Español (4º de Primaria)*
-- [[Planeacion_F4-MAT-4TO-V00038_Estudio_de_numeros_naturales_hasta_|Estudio de números naturales hasta cinco cifras y decimales hasta centésimos]] — *Matematicas (4º de Primaria)*
+- [[Plan_10_Sombras_Legendarias_Teatro_de_Sombras_y_Lectura_Dramatizada_de_Mitos|Sombras Legendarias: Teatro de Sombras y Lectura Dramatizada de Mitos]] — *Artes / Español (4º de Primaria)*
+- [[Plan_17_Colores_y_Texturas_de_Mexico_Apreciacion_Estetica_y_Danzas_Tradicionales|Colores y Texturas de México: Apreciación Estética y Danzas Tradicionales]] — *Artes (4º de Primaria)*
+- [[Plan_18_Urbanismo_Ludico_Maquetas_e_Intervenciones_Artisticas_en_el_Patio_Escolar|Urbanismo Lúdico: Maquetas e Intervenciones Artísticas en el Patio Escolar]] — *Artes (4º de Primaria)*
+- [[Plan_19_El_Cuaderno_Magico_Animacion_Cuadro_por_Cuadro_y_Folioscopio_Flipbook|El Cuaderno Mágico: Animación Cuadro por Cuadro y Folioscopio (Flipbook)]] — *Artes / Español (4º de Primaria)*
+- [[Plan_07_El_Arte_de_la_Sintesis_Ideas_Principales_Parafrasis_y_Graficos_Informativos|El Arte de la Síntesis: Ideas Principales, Paráfrasis y Gráficos Informativos]] — *Español (4º de Primaria)*
+- [[Plan_08_Microfono_Abierto_Planificacion_Preguntas_Abiertas_y_Reporte_de_Entrevista_Testimonial|Micrófono Abierto: Planificación, Preguntas Abiertas y Reporte de Entrevista Testimonial]] — *Español (4º de Primaria)*
+- [[Plan_09_Juglares_y_Poetas_Rima_Aliteracion_Metaforas_y_Cancionero_Tradicional|Juglares y Poetas: Rima, Aliteración, Metáforas y Cancionero Tradicional]] — *Español (4º de Primaria)*
+- [[Plan_20_Escritores_Fantasticos_El_Preterito_el_Copreterito_y_los_Dialogos_Directos|Escritores Fantásticos: El Pretérito, el Copretérito y los Diálogos Directos]] — *Español (4º de Primaria)*
+- [[Planeacion_F4-MAT-4TO-V00038_Estudio_de_numeros_naturales_hasta_cinco_cifras_y_decimales_hasta_centesimos|Estudio de números naturales hasta cinco cifras y decimales hasta centésimos]] — *Matematicas (4º de Primaria)*
 - [[Planeacion_F4-MAT-4TO-V00039_Suma_y_resta_con_numeros_decimales_|Fracciones y Reparto Equitativo]] — *Matematicas (4º de Primaria)*
 - [[Planeacion_F4-MAT-4TO-V00040_Multiplicacion_y_division_con_algor|Multiplicación y Tablas Numéricas]] — *Matematicas (4º de Primaria)*
-- [[Planeacion_F4-MAT-4TO-V00041_Calculo_de_perimetro_y_area_con_ret|Cálculo de perímetro y área con retículas cuadradas]] — *Matematicas (4º de Primaria)*
+- [[Planeacion_F4-MAT-4TO-V00041_Calculo_de_perimetro_y_area_con_reticulas_cuadradas|Cálculo de perímetro y área con retículas cuadradas]] — *Matematicas (4º de Primaria)*
 - [[Planeacion_SERIE2-F4-MAT-4TO-V10019_Estudio_de_numeros_naturales_has|� Proyecto de Codiseño Comunitario: Estudio de números naturales hasta cinco cifras y decimales hasta centésimos]] — *Matematicas (4º de Primaria)*
-- [[Plan_22_El_Viaje_del_Alimento|El Viaje del Alimento: Ingestión, Digestión, Absorción y Jugos Gástricos]] — *Ciencias Naturales (4º de Primaria)*
-- [[Plan_24_Guardianes_de_la_Red_Trofica|Guardianes de la Red Trófica: Productores, Consumidores y Fotosíntesis]] — *Ciencias Naturales (4º de Primaria)*
-- [[Plan_28_Calor_y_Movimiento|Calor y Movimiento: Fricción, Conducción Térmica y el Molinete de Calor]] — *Ciencias Naturales (4º de Primaria)*
-- [[Plan_29_Astronomia_en_Caja|Astronomía en Caja: Simulador de Eclipses, Fases Lunares y Sombras Espaciales]] — *Ciencias Naturales (4º de Primaria)*
-- [[Plan_31_El_Mosaico_Decimal|El Mosaico Decimal: Decenas de Millar, Décimos y Centésimos en el Comercio]] — *Matemáticas (4º de Primaria)*
+- [[Plan_22_El_Viaje_del_Alimento_Ingestion_Digestion_Absorcion_y_Jugos_Gastricos|El Viaje del Alimento: Ingestión, Digestión, Absorción y Jugos Gástricos]] — *Ciencias Naturales (4º de Primaria)*
+- [[Plan_24_Guardianes_de_la_Red_Trofica_Productores_Consumidores_y_Fotosintesis|Guardianes de la Red Trófica: Productores, Consumidores y Fotosíntesis]] — *Ciencias Naturales (4º de Primaria)*
+- [[Plan_28_Calor_y_Movimiento_Friccion_Conduccion_Termica_y_el_Molinete_de_Calor|Calor y Movimiento: Fricción, Conducción Térmica y el Molinete de Calor]] — *Ciencias Naturales (4º de Primaria)*
+- [[Plan_29_Astronomia_en_Caja_Simulador_de_Eclipses_Fases_Lunares_y_Sombras_Espaciales|Astronomía en Caja: Simulador de Eclipses, Fases Lunares y Sombras Espaciales]] — *Ciencias Naturales (4º de Primaria)*
+- [[Plan_31_El_Mosaico_Decimal_Decenas_de_Millar_Decimos_y_Centesimos_en_el_Comercio|El Mosaico Decimal: Decenas de Millar, Décimos y Centésimos en el Comercio]] — *Matemáticas (4º de Primaria)*
 - [[Plan_33_Finanzas_Claras|Fracciones y Reparto Equitativo]] — *Matemáticas (4º de Primaria)*
-- [[Plan_37_Arquitectos_del_Espacio|Arquitectos del Espacio: Prismas Rectos, Cuadriláteros y el Cubo Desplegado]] — *Matemáticas (4º de Primaria)*
-- [[Plan_38_Disenadores_de_Planos|Diseñadores de Planos: Perímetro (Contorno) vs Área (Superficie) en Cuadrículas]] — *Matemáticas (4º de Primaria)*
-- [[Plan_39_Lineas_del_Tiempo|Líneas del Tiempo: Segundos, Horas, Lustros, Décadas y Siglos en la Historia]] — *Matemáticas (4º de Primaria)*
+- [[Plan_37_Arquitectos_del_Espacio_Prismas_Rectos_Cuadrilateros_y_el_Cubo_Desplegado|Arquitectos del Espacio: Prismas Rectos, Cuadriláteros y el Cubo Desplegado]] — *Matemáticas (4º de Primaria)*
+- [[Plan_38_Disenadores_de_Planos_Perimetro_Contorno_vs_Area_Superficie_en_Cuadriculas|Diseñadores de Planos: Perímetro (Contorno) vs Área (Superficie) en Cuadrículas]] — *Matemáticas (4º de Primaria)*
+- [[Plan_39_Lineas_del_Tiempo_Segundos_Horas_Lustros_Decadas_y_Siglos_en_la_Historia|Líneas del Tiempo: Segundos, Horas, Lustros, Décadas y Siglos en la Historia]] — *Matemáticas (4º de Primaria)*
 - [[Plan_40_Censo_Escolar|Multiplicación y Tablas Numéricas]] — *Matemáticas (4º de Primaria)*
-- [[Planeacion_F4-SOC-4TO-V00052_Construccion_del_proyecto_de_vida_y|Construcción del proyecto de vida y toma de decisiones asertivas]] — *Socioemocional (4º de Primaria)*
+- [[Planeacion_F4-SOC-4TO-V00052_Construccion_del_proyecto_de_vida_y_toma_de_decisiones_asertivas|Construcción del proyecto de vida y toma de decisiones asertivas]] — *Socioemocional (4º de Primaria)*
 - [[Planeacion_SERIE2-F4-SOC-4TO-V10024_Construccion_del_proyecto_de_vid|� Proyecto de Codiseño Comunitario: Construcción del proyecto de vida y toma de decisiones asertivas]] — *Socioemocional (4º de Primaria)*
 - [[Planeacion_Proyecto_didáctico_El_Codice_del_Guardian_Ancestral_Primaria_Media_Fase_4_3_y_4_Grado_1787862841176|El Codice del Guardian Ancestral]] — *Español / Lenguajes (3º y 4º Grado) (asignatura:)*
 - [[Planeacion_Proyecto_didáctico_Fracciones_y_reparto_Primaria_Media_Fase_4_3_y_4_Grado_1788219050492|Fracciones y Reparto Equitativo]] — *Matemáticas (3º y 4º Grado) (asignatura:)*
@@ -565,172 +565,172 @@ Este nodo actúa como el **Centro de Enlace (Map of Content - MOC)** y Segundo C
 - [[Planeacion_F3-CON-2DO-V00006_Propiedades_de_los_materiales_y_estados_fisicos_del_agua|Cuidado y Filtración del Agua]] — *Conocimiento_del_Medio (2º de Primaria)*
 - [[Planeacion_F3-FOR-2DO-V00016_Cambios_en_la_comunidad_a_traves_del_tiempo_oficios_y_tradiciones|Cambios en la comunidad a través del tiempo, oficios y tradiciones (2º de Primaria)]] — *Formacion_Civica_y_Etica (2º de Primaria)*
 - [[Planeacion_F3-MAT-2DO-V00005_Medicion_de_tiempo_con_reloj_y_calendario_y_longitud_con_el_metro|Medición de tiempo con reloj y calendario, y longitud con el metro (2º de Primaria)]] — *Matematicas (2º de Primaria)*
-- [[Planeacion_F4-ART-3ER-V00115_Reconocimiento_y_reflexion_sobre_el|Reconocimiento y reflexión sobre elementos de los lenguajes artísticos]] — *Artes (3º de Primaria)*
-- [[Planeacion_F4-ART-3ER-V00116_Lectura_y_creacion_de_poemas_cancio|Lectura y creación de poemas, canciones y juegos de palabras]] — *Artes (3º de Primaria)*
+- [[Planeacion_F4-ART-3ER-V00115_Reconocimiento_y_reflexion_sobre_elementos_de_los_lenguajes_artisticos|Reconocimiento y reflexión sobre elementos de los lenguajes artísticos]] — *Artes (3º de Primaria)*
+- [[Planeacion_F4-ART-3ER-V00116_Lectura_y_creacion_de_poemas_canciones_y_juegos_de_palabras|Lectura y creación de poemas, canciones y juegos de palabras]] — *Artes (3º de Primaria)*
 - [[Planeacion_SERIE2-F4-ART-3ER-V10105_Reconocimiento_y_reflexion_sobre|� Proyecto de Codiseño Comunitario: Reconocimiento y reflexión sobre elementos de los lenguajes artísticos]] — *Artes (3º de Primaria)*
 - [[Planeacion_F4-CIE-3ER-V00025_Formacion_de_mezclas_y_propiedades_|Cuidado y Filtración del Agua]] — *Ciencias_Naturales (3º de Primaria)*
 - [[Planeacion_F4-CIE-3ER-V00026_Sistema_Tierra-Luna-Sol_movimientos|Sistema Tierra-Luna-Sol: movimientos de rotación y traslación]] — *Ciencias_Naturales (3º de Primaria)*
 - [[Planeacion_F4-CIE-3ER-V00075_Interacciones_entre_plantas_animale|El Plato del Bien Comer y Hábitos Saludables]] — *Ciencias_Naturales (3º de Primaria)*
-- [[Planeacion_F4-CIE-3ER-V00076_Propiedades_de_los_materiales_masa_|Propiedades de los materiales: masa y longitud; relación con temperatura]] — *Ciencias_Naturales (3º de Primaria)*
+- [[Planeacion_F4-CIE-3ER-V00076_Propiedades_de_los_materiales_masa_y_longitud_relacion_con_temperatura|Propiedades de los materiales: masa y longitud; relación con temperatura]] — *Ciencias_Naturales (3º de Primaria)*
 - [[Planeacion_F4-CIE-3ER-V00125_Estructura_y_funcionamiento_del_cue|El Plato del Bien Comer y Hábitos Saludables]] — *Ciencias_Naturales (3º de Primaria)*
 - [[Planeacion_F4-CIE-3ER-V00126_Alimentacion_saludable_Plato_del_Bi|El Plato del Bien Comer y Hábitos Saludables]] — *Ciencias_Naturales (3º de Primaria)*
 - [[Planeacion_SERIE2-F4-CIE-3ER-V10035_Estructura_y_funcionamiento_del_|El Plato del Bien Comer y Hábitos Saludables]] — *Ciencias_Naturales (3º de Primaria)*
-- [[Plan_66_El_Circuito_de_los_Desafios|El Circuito de los Desafíos: Coordinación, Agilidad y Equilibrio Dinámico]] — *Educación Física (3º de Primaria)*
+- [[Plan_66_El_Circuito_de_los_Desafios_Coordinacion_Agilidad_y_Equilibrio_Dinamico|El Circuito de los Desafíos: Coordinación, Agilidad y Equilibrio Dinámico]] — *Educación Física (3º de Primaria)*
 - [[Plan_75_Cuerpo_en_Movimiento|El Plato del Bien Comer y Hábitos Saludables]] — *Educación Física (3º de Primaria)*
-- [[Planeacion_F4-EDU-3ER-V00205_Capacidades_y_habilidades_motrices_|Capacidades y habilidades motrices en situaciones de juego]] — *Educacion_Fisica_Vida_Saludable (3º de Primaria)*
+- [[Planeacion_F4-EDU-3ER-V00205_Capacidades_y_habilidades_motrices_en_situaciones_de_juego|Capacidades y habilidades motrices en situaciones de juego]] — *Educacion_Fisica_Vida_Saludable (3º de Primaria)*
 - [[Planeacion_SERIE2-F4-EDU-3ER-V10095_Capacidades_y_habilidades_motric|� Proyecto de Codiseño Comunitario: Capacidades y habilidades motrices en situaciones de juego]] — *Educacion_Fisica_Vida_Saludable (3º de Primaria)*
-- [[Planeacion_F4-ESP-3ER-V00005_Busqueda_y_manejo_reflexivo_de_info|Búsqueda y manejo reflexivo de información]] — *Español (3º de Primaria)*
-- [[Planeacion_F4-ESP-3ER-V00006_Comprension_y_produccion_de_textos_|Comprensión y producción de textos discontinuos para organizar información]] — *Español (3º de Primaria)*
+- [[Planeacion_F4-ESP-3ER-V00005_Busqueda_y_manejo_reflexivo_de_informacion|Búsqueda y manejo reflexivo de información]] — *Español (3º de Primaria)*
+- [[Planeacion_F4-ESP-3ER-V00006_Comprension_y_produccion_de_textos_discontinuos_para_organizar_informacion|Comprensión y producción de textos discontinuos para organizar información]] — *Español (3º de Primaria)*
 - [[Planeacion_F4-ESP-3ER-V00055_Dialogo_para_la_toma_de_acuerdos_y_|Derechos de la Niñez y Convivencia Pacífica]] — *Español (3º de Primaria)*
-- [[Planeacion_F4-ESP-3ER-V00105_Narracion_de_sucesos_del_pasado_y_d|Narración de sucesos del pasado y del presente]] — *Español (3º de Primaria)*
-- [[Planeacion_F4-ESP-3ER-V00106_Descripcion_de_personas_lugares_hec|Descripción de personas, lugares, hechos y procesos]] — *Español (3º de Primaria)*
+- [[Planeacion_F4-ESP-3ER-V00105_Narracion_de_sucesos_del_pasado_y_del_presente|Narración de sucesos del pasado y del presente]] — *Español (3º de Primaria)*
+- [[Planeacion_F4-ESP-3ER-V00106_Descripcion_de_personas_lugares_hechos_y_procesos|Descripción de personas, lugares, hechos y procesos]] — *Español (3º de Primaria)*
 - [[Planeacion_F4-ESP-3ER-V00165_Exposicion_sobre_temas_diversos|Exposición sobre temas diversos]] — *Español (3º de Primaria)*
-- [[Planeacion_F4-ESP-3ER-V00166_Indagacion_sobre_la_diversidad_ling|Indagación sobre la diversidad lingüística en su comunidad y país]] — *Español (3º de Primaria)*
-- [[Planeacion_F4-ESP-3ER-V00215_Comprension_y_produccion_de_resumen|Comprensión y producción de resúmenes]] — *Español (3º de Primaria)*
-- [[Planeacion_F4-ESP-3ER-V00216_Textos_instructivos_para_realizar_a|Textos instructivos para realizar actividades escolares y juegos]] — *Español (3º de Primaria)*
+- [[Planeacion_F4-ESP-3ER-V00166_Indagacion_sobre_la_diversidad_linguistica_en_su_comunidad_y_pais|Indagación sobre la diversidad lingüística en su comunidad y país]] — *Español (3º de Primaria)*
+- [[Planeacion_F4-ESP-3ER-V00215_Comprension_y_produccion_de_resumenes|Comprensión y producción de resúmenes]] — *Español (3º de Primaria)*
+- [[Planeacion_F4-ESP-3ER-V00216_Textos_instructivos_para_realizar_actividades_escolares_y_juegos|Textos instructivos para realizar actividades escolares y juegos]] — *Español (3º de Primaria)*
 - [[Planeacion_SERIE2-F4-ESP-3ER-V10005_Busqueda_y_manejo_reflexivo_de_i|� Proyecto de Codiseño Comunitario: Búsqueda y manejo reflexivo de información]] — *Español (3º de Primaria)*
-- [[Plan_45_Brigadistas_Infantiles|Brigadistas Infantiles: Cultura de Prevención, Rutas de Evacuación y Mochila de Emergencia]] — *Formación Cívica y Ética (3º de Primaria)*
-- [[Plan_56_La_Brujula_de_las_Decisiones|La Brújula de las Decisiones: Consecuencias, Responsabilidad y Dignidad]] — *Formación Cívica y Ética (3º de Primaria)*
-- [[Plan_46_Grandes_Civilizaciones|Grandes Civilizaciones: Olmecas, Mayas, Zapotecas y Mexicas en el México Antiguo]] — *Historia (3º de Primaria)*
+- [[Plan_45_Brigadistas_Infantiles_Cultura_de_Prevencion_Rutas_de_Evacuacion_y_Mochila_de_Emergencia|Brigadistas Infantiles: Cultura de Prevención, Rutas de Evacuación y Mochila de Emergencia]] — *Formación Cívica y Ética (3º de Primaria)*
+- [[Plan_56_La_Brujula_de_las_Decisiones_Consecuencias_Responsabilidad_y_Dignidad|La Brújula de las Decisiones: Consecuencias, Responsabilidad y Dignidad]] — *Formación Cívica y Ética (3º de Primaria)*
+- [[Plan_46_Grandes_Civilizaciones_Olmecas_Mayas_Zapotecas_y_Mexicas_en_el_Mexico_Antiguo|Grandes Civilizaciones: Olmecas, Mayas, Zapotecas y Mexicas en el México Antiguo]] — *Historia (3º de Primaria)*
 - [[Planeacion_F4-FOR-3ER-V00045_Derechos_humanos_y_proteccion_de_la|Derechos de la Niñez y Convivencia Pacífica]] — *Formacion_Civica (3º de Primaria)*
-- [[Planeacion_F4-GEO-3ER-V00095_Interculturalidad_y_sustentabilidad|Interculturalidad y sustentabilidad en pueblos originarios]] — *Geografia_Historia (3º de Primaria)*
-- [[Planeacion_F4-GEO-3ER-V00096_Pueblos_originarios_antes_de_la_lle|Pueblos originarios antes de la llegada de los españoles]] — *Geografia_Historia (3º de Primaria)*
+- [[Planeacion_F4-GEO-3ER-V00095_Interculturalidad_y_sustentabilidad_en_pueblos_originarios|Interculturalidad y sustentabilidad en pueblos originarios]] — *Geografia_Historia (3º de Primaria)*
+- [[Planeacion_F4-GEO-3ER-V00096_Pueblos_originarios_antes_de_la_llegada_de_los_espanoles|Pueblos originarios antes de la llegada de los españoles]] — *Geografia_Historia (3º de Primaria)*
 - [[Planeacion_F4-GEO-3ER-V00146_Representaciones_cartograficas_de_l|Ecosistemas y Conservación de la Biodiversidad]] — *Geografia_Historia (3º de Primaria)*
 - [[Planeacion_SERIE2-F4-GEO-3ER-V10045_Representaciones_cartograficas_d|Ecosistemas y Conservación de la Biodiversidad]] — *Geografia_Historia (3º de Primaria)*
-- [[Plan_05_Detectives_del_Saber|Detectives del Saber: El Diccionario, Signos de Interrogación y Fuentes Vivas]] — *Español (3º de Primaria)*
-- [[Plan_15_Raices_Vivas|Raíces Vivas: Toponimias Indígenas y Palabras de Origen Originario]] — *Español (3º de Primaria)*
-- [[Plan_16_Mi_Barrio_en_un_Plano|Mi Barrio en un Plano: Croquis, Puntos Cardinales y Rutas Seguras]] — *Español / Geografía (3º de Primaria)*
-- [[Planeacion_F4-MAT-3ER-V00135_Medicion_de_tiempo_longitud_masa_y_|Medición de tiempo, longitud, masa y capacidad]] — *Matematicas (3º de Primaria)*
+- [[Plan_05_Detectives_del_Saber_El_Diccionario_Signos_de_Interrogacion_y_Fuentes_Vivas|Detectives del Saber: El Diccionario, Signos de Interrogación y Fuentes Vivas]] — *Español (3º de Primaria)*
+- [[Plan_15_Raices_Vivas_Toponimias_Indigenas_y_Palabras_de_Origen_Originario|Raíces Vivas: Toponimias Indígenas y Palabras de Origen Originario]] — *Español (3º de Primaria)*
+- [[Plan_16_Mi_Barrio_en_un_Plano_Croquis_Puntos_Cardinales_y_Rutas_Seguras|Mi Barrio en un Plano: Croquis, Puntos Cardinales y Rutas Seguras]] — *Español / Geografía (3º de Primaria)*
+- [[Planeacion_F4-MAT-3ER-V00135_Medicion_de_tiempo_longitud_masa_y_capacidad|Medición de tiempo, longitud, masa y capacidad]] — *Matematicas (3º de Primaria)*
 - [[Planeacion_F4-MAT-3ER-V00185_Multiplicacion_y_division_como_oper|Multiplicación y Tablas Numéricas]] — *Matematicas (3º de Primaria)*
 - [[Planeacion_F4-MAT-3ER-V00186_Cuerpos_y_figuras_geometricas_simet|Figuras Geométricas y Cuerpos del Entorno]] — *Matematicas (3º de Primaria)*
 - [[Planeacion_F4-MAT-3ER-V00235_Estudio_de_los_numeros_naturales_y_|Fracciones y Reparto Equitativo]] — *Matematicas (3º de Primaria)*
-- [[Planeacion_F4-MAT-3ER-V00236_Suma_y_resta_su_relacion_como_opera|Suma y resta, su relación como operaciones inversas]] — *Matematicas (3º de Primaria)*
+- [[Planeacion_F4-MAT-3ER-V00236_Suma_y_resta_su_relacion_como_operaciones_inversas|Suma y resta, su relación como operaciones inversas]] — *Matematicas (3º de Primaria)*
 - [[Planeacion_SERIE2-F4-MAT-3ER-V10065_Estudio_de_los_numeros_naturales|Fracciones y Reparto Equitativo]] — *Matematicas (3º de Primaria)*
-- [[Plan_25_La_Balanza_del_Aula|La Balanza del Aula: Medición de Masa con el Kilogramo y Longitud con el Metro]] — *Ciencias Naturales (3º de Primaria)*
+- [[Plan_25_La_Balanza_del_Aula_Medicion_de_Masa_con_el_Kilogramo_y_Longitud_con_el_Metro|La Balanza del Aula: Medición de Masa con el Kilogramo y Longitud con el Metro]] — *Ciencias Naturales (3º de Primaria)*
 - [[Plan_36_Geometria_en_Accion|Figuras Geométricas y Cuerpos del Entorno]] — *Matemáticas (3º de Primaria)*
-- [[Planeacion_F4-SOC-3ER-V00206_Los_afectos_y_su_influencia_en_el_b|Los afectos y su influencia en el bienestar y la convivencia]] — *Socioemocional (3º de Primaria)*
-- [[Planeacion_F4-ART-4TO-V00175_Experimentacion_con_elementos_visua|Experimentación con elementos visuales y sonoros en producciones colectivas]] — *Artes (4º de Primaria)*
-- [[Planeacion_F4-ART-4TO-V00176_Lectura_dramatizada_y_representacio|Lectura dramatizada y representación teatral]] — *Artes (4º de Primaria)*
+- [[Planeacion_F4-SOC-3ER-V00206_Los_afectos_y_su_influencia_en_el_bienestar_y_la_convivencia|Los afectos y su influencia en el bienestar y la convivencia]] — *Socioemocional (3º de Primaria)*
+- [[Planeacion_F4-ART-4TO-V00175_Experimentacion_con_elementos_visuales_y_sonoros_en_producciones_colectivas|Experimentación con elementos visuales y sonoros en producciones colectivas]] — *Artes (4º de Primaria)*
+- [[Planeacion_F4-ART-4TO-V00176_Lectura_dramatizada_y_representacion_teatral|Lectura dramatizada y representación teatral]] — *Artes (4º de Primaria)*
 - [[Planeacion_SERIE2-F4-ART-4TO-V10106_Experimentacion_con_elementos_vi|� Proyecto de Codiseño Comunitario: Experimentación con elementos visuales y sonoros en producciones colectivas]] — *Artes (4º de Primaria)*
 - [[Planeacion_F4-CIE-4TO-V00035_Ciclo_del_agua_cambios_de_estado_y_|Cuidado y Filtración del Agua]] — *Ciencias_Naturales (4º de Primaria)*
-- [[Planeacion_F4-CIE-4TO-V00036_Efectos_del_calor_y_la_friccion_sob|Efectos del calor y la fricción sobre los objetos]] — *Ciencias_Naturales (4º de Primaria)*
-- [[Planeacion_F4-CIE-4TO-V00085_Caracteres_sexuales_primarios_y_sec|Caracteres sexuales primarios y secundarios en pubertad]] — *Ciencias_Naturales (4º de Primaria)*
+- [[Planeacion_F4-CIE-4TO-V00036_Efectos_del_calor_y_la_friccion_sobre_los_objetos|Efectos del calor y la fricción sobre los objetos]] — *Ciencias_Naturales (4º de Primaria)*
+- [[Planeacion_F4-CIE-4TO-V00085_Caracteres_sexuales_primarios_y_secundarios_en_pubertad|Caracteres sexuales primarios y secundarios en pubertad]] — *Ciencias_Naturales (4º de Primaria)*
 - [[Planeacion_F4-CIE-4TO-V00086_Nutricion_de_plantas_cadenas_alimen|Ecosistemas y Conservación de la Biodiversidad]] — *Ciencias_Naturales (4º de Primaria)*
-- [[Planeacion_F4-CIE-4TO-V00136_Estructura_del_sistema_digestivo_y_|Estructura del sistema digestivo y su relación con el circulatorio]] — *Ciencias_Naturales (4º de Primaria)*
-- [[Planeacion_F4-CIE-4TO-V00245_Eclipses_solares_y_lunares_en_el_Si|Eclipses solares y lunares en el Sistema Tierra-Luna-Sol]] — *Ciencias_Naturales (4º de Primaria)*
+- [[Planeacion_F4-CIE-4TO-V00136_Estructura_del_sistema_digestivo_y_su_relacion_con_el_circulatorio|Estructura del sistema digestivo y su relación con el circulatorio]] — *Ciencias_Naturales (4º de Primaria)*
+- [[Planeacion_F4-CIE-4TO-V00245_Eclipses_solares_y_lunares_en_el_Sistema_TierraLunaSol|Eclipses solares y lunares en el Sistema Tierra-Luna-Sol]] — *Ciencias_Naturales (4º de Primaria)*
 - [[Planeacion_SERIE2-F4-CIE-4TO-V10015_Caracteres_sexuales_primarios_y_|� Proyecto de Codiseño Comunitario: Caracteres sexuales primarios y secundarios en pubertad]] — *Ciencias_Naturales (4º de Primaria)*
 - [[Plan_76_Rumbo_al_Torneo_Escolar|El Plato del Bien Comer y Hábitos Saludables]] — *Educación Física (4º de Primaria)*
 - [[Plan_65_Mi_Cuerpo_es_Mi_Territorio|El Plato del Bien Comer y Hábitos Saludables]] — *Educación Socioemocional (4º de Primaria)*
 - [[Planeacion_F4-EDU-4TO-V00155_Estilos_de_vida_activos_y_habitos_s|El Plato del Bien Comer y Hábitos Saludables]] — *Educacion_Fisica_Vida_Saludable (4º de Primaria)*
-- [[Planeacion_F4-ESP-4TO-V00015_Comprension_y_produccion_de_textos_|Comprensión y producción de textos expositivos]] — *Español (4º de Primaria)*
-- [[Planeacion_F4-ESP-4TO-V00016_Busqueda_y_manejo_reflexivo_de_info|Búsqueda y manejo reflexivo de información]] — *Español (4º de Primaria)*
-- [[Planeacion_F4-ESP-4TO-V00065_Narracion_de_sucesos_del_pasado_y_d|Narración de sucesos del pasado y del presente]] — *Español (4º de Primaria)*
-- [[Planeacion_F4-ESP-4TO-V00066_Descripcion_de_personas_lugares_hec|Descripción de personas, lugares, hechos y procesos]] — *Español (4º de Primaria)*
-- [[Planeacion_F4-ESP-4TO-V00225_Comprension_y_produccion_de_resumen|Comprensión y producción de resúmenes]] — *Español (4º de Primaria)*
-- [[Planeacion_F4-ESP-4TO-V00226_Analisis_e_intercambio_de_comentari|Análisis e intercambio de comentarios sobre empaques y anuncios publicitarios]] — *Español (4º de Primaria)*
+- [[Planeacion_F4-ESP-4TO-V00015_Comprension_y_produccion_de_textos_expositivos|Comprensión y producción de textos expositivos]] — *Español (4º de Primaria)*
+- [[Planeacion_F4-ESP-4TO-V00016_Busqueda_y_manejo_reflexivo_de_informacion|Búsqueda y manejo reflexivo de información]] — *Español (4º de Primaria)*
+- [[Planeacion_F4-ESP-4TO-V00065_Narracion_de_sucesos_del_pasado_y_del_presente|Narración de sucesos del pasado y del presente]] — *Español (4º de Primaria)*
+- [[Planeacion_F4-ESP-4TO-V00066_Descripcion_de_personas_lugares_hechos_y_procesos|Descripción de personas, lugares, hechos y procesos]] — *Español (4º de Primaria)*
+- [[Planeacion_F4-ESP-4TO-V00225_Comprension_y_produccion_de_resumenes|Comprensión y producción de resúmenes]] — *Español (4º de Primaria)*
+- [[Planeacion_F4-ESP-4TO-V00226_Analisis_e_intercambio_de_comentarios_sobre_empaques_y_anuncios_publicitarios|Análisis e intercambio de comentarios sobre empaques y anuncios publicitarios]] — *Español (4º de Primaria)*
 - [[Planeacion_SERIE2-F4-ESP-4TO-V10006_Narracion_de_sucesos_del_pasado_|Ecosistemas y Conservación de la Biodiversidad]] — *Español (4º de Primaria)*
-- [[Plan_55_De_Reyes_a_Ciudadanos|De Reyes a Ciudadanos: La Monarquía Virreinal y el Nacimiento de la República Democrática]] — *Historia / Cívica (4º de Primaria)*
+- [[Plan_55_De_Reyes_a_Ciudadanos_La_Monarquia_Virreinal_y_el_Nacimiento_de_la_Republica_Democratica|De Reyes a Ciudadanos: La Monarquía Virreinal y el Nacimiento de la República Democrática]] — *Historia / Cívica (4º de Primaria)*
 - [[Planeacion_F4-FOR-4TO-V00256_Construccion_colectiva_de_la_paz_y_|Derechos de la Niñez y Convivencia Pacífica]] — *Formacion_Civica (4º de Primaria)*
-- [[Planeacion_F4-GEO-4TO-V00046_Caracterizacion_y_localizacion_del_|Caracterización y localización del territorio de México]] — *Geografia_Historia (4º de Primaria)*
-- [[Planeacion_F4-GEO-4TO-V00255_La_vida_cotidiana_en_el_Mexico_Colo|La vida cotidiana en el México Colonial y el sistema de castas]] — *Geografia_Historia (4º de Primaria)*
+- [[Planeacion_F4-GEO-4TO-V00046_Caracterizacion_y_localizacion_del_territorio_de_Mexico|Caracterización y localización del territorio de México]] — *Geografia_Historia (4º de Primaria)*
+- [[Planeacion_F4-GEO-4TO-V00255_La_vida_cotidiana_en_el_Mexico_Colonial_y_el_sistema_de_castas|La vida cotidiana en el México Colonial y el sistema de castas]] — *Geografia_Historia (4º de Primaria)*
 - [[Planeacion_SERIE2-F4-GEO-4TO-V10046_Caracterizacion_y_localizacion_d|Ecosistemas y Conservación de la Biodiversidad]] — *Geografia_Historia (4º de Primaria)*
 - [[Plan_06_Eco-Periodistas|Eco-Periodistas: Textos Expositivos de Problema-Solución en la Escuela]] — *Español (4º de Primaria)*
-- [[Planeacion_F4-MAT-4TO-V00145_Calculo_de_perimetro_y_area_con_ret|Cálculo de perímetro y área con retículas cuadradas]] — *Matematicas (4º de Primaria)*
+- [[Planeacion_F4-MAT-4TO-V00145_Calculo_de_perimetro_y_area_con_reticulas_cuadradas|Cálculo de perímetro y área con retículas cuadradas]] — *Matematicas (4º de Primaria)*
 - [[Planeacion_F4-MAT-4TO-V00195_Suma_y_resta_con_numeros_decimales_|Fracciones y Reparto Equitativo]] — *Matematicas (4º de Primaria)*
 - [[Planeacion_F4-MAT-4TO-V00196_Multiplicacion_y_division_con_algor|Multiplicación y Tablas Numéricas]] — *Matematicas (4º de Primaria)*
-- [[Planeacion_F4-MAT-4TO-V00246_Estudio_de_numeros_naturales_hasta_|Estudio de números naturales hasta cinco cifras y decimales hasta centésimos]] — *Matematicas (4º de Primaria)*
+- [[Planeacion_F4-MAT-4TO-V00246_Estudio_de_numeros_naturales_hasta_cinco_cifras_y_decimales_hasta_centesimos|Estudio de números naturales hasta cinco cifras y decimales hasta centésimos]] — *Matematicas (4º de Primaria)*
 - [[Planeacion_SERIE2-F4-MAT-4TO-V10115_Estudio_de_numeros_naturales_has|� Proyecto de Codiseño Comunitario: Estudio de números naturales hasta cinco cifras y decimales hasta centésimos]] — *Matematicas (4º de Primaria)*
 - [[Plan_26_El_Laboratorio_del_Agua|Cuidado y Filtración del Agua]] — *Ciencias Naturales (4º de Primaria)*
 - [[Plan_35_Algoritmos_de_Precision|Multiplicación y Tablas Numéricas]] — *Matemáticas (4º de Primaria)*
-- [[Planeacion_F4-SOC-4TO-V00156_Construccion_del_proyecto_de_vida_y|Construcción del proyecto de vida y toma de decisiones asertivas]] — *Socioemocional (4º de Primaria)*
+- [[Planeacion_F4-SOC-4TO-V00156_Construccion_del_proyecto_de_vida_y_toma_de_decisiones_asertivas|Construcción del proyecto de vida y toma de decisiones asertivas]] — *Socioemocional (4º de Primaria)*
 - [[Planeacion_SERIE2-F4-SOC-4TO-V10096_Construccion_del_proyecto_de_vid|� Proyecto de Codiseño Comunitario: Construcción del proyecto de vida y toma de decisiones asertivas]] — *Socioemocional (4º de Primaria)*
-- [[Planeacion_F5-ART-5TO-V00011_Apropiacion_e_intervencion_artistic|Apropiación e intervención artística en el espacio comunitario]] — *Artes (5º de Primaria)*
+- [[Planeacion_F5-ART-5TO-V00011_Apropiacion_e_intervencion_artistica_en_el_espacio_comunitario|Apropiación e intervención artística en el espacio comunitario]] — *Artes (5º de Primaria)*
 - [[Planeacion_SERIE2-F5-ART-5TO-V10006_Apropiacion_e_intervencion_artis|Ecosistemas y Conservación de la Biodiversidad]] — *Artes (5º de Primaria)*
 - [[Planeacion_F5-CIE-5TO-V00013_Sistemas_circulatorio_respiratorio_|El Plato del Bien Comer y Hábitos Saludables]] — *Ciencias_Naturales (5º de Primaria)*
-- [[Planeacion_F5-CIE-5TO-V00014_Reproduccion_humana_fecundacion_emb|Reproducción humana: fecundación, embarazo y parto responsable]] — *Ciencias_Naturales (5º de Primaria)*
+- [[Planeacion_F5-CIE-5TO-V00014_Reproduccion_humana_fecundacion_embarazo_y_parto_responsable|Reproducción humana: fecundación, embarazo y parto responsable]] — *Ciencias_Naturales (5º de Primaria)*
 - [[Planeacion_F5-CIE-5TO-V00015_Alimentacion_sustentable_riesgos_de|Cuidado y Filtración del Agua]] — *Ciencias_Naturales (5º de Primaria)*
-- [[Planeacion_F5-CIE-5TO-V00016_Propiedades_de_los_materiales_durez|Propiedades de los materiales: dureza, flexibilidad y permeabilidad]] — *Ciencias_Naturales (5º de Primaria)*
-- [[Planeacion_F5-CIE-5TO-V00017_Transferencia_de_energia_termica_co|Transferencia de energía térmica: conducción y convección]] — *Ciencias_Naturales (5º de Primaria)*
+- [[Planeacion_F5-CIE-5TO-V00016_Propiedades_de_los_materiales_dureza_flexibilidad_y_permeabilidad|Propiedades de los materiales: dureza, flexibilidad y permeabilidad]] — *Ciencias_Naturales (5º de Primaria)*
+- [[Planeacion_F5-CIE-5TO-V00017_Transferencia_de_energia_termica_conduccion_y_conveccion|Transferencia de energía térmica: conducción y convección]] — *Ciencias_Naturales (5º de Primaria)*
 - [[Planeacion_SERIE2-F5-CIE-5TO-V10008_Sistemas_circulatorio_respirator|El Plato del Bien Comer y Hábitos Saludables]] — *Ciencias_Naturales (5º de Primaria)*
-- [[Plan_33_Reto_Cooperativo|Reto Cooperativo: Circuitos Motrices, Coordinación y Estrategia Lúdica en Equipo]] — *Educación Física (5º de Primaria)*
-- [[Plan_31_Arbol_de_la_Convivencia|Árbol de la Convivencia: Tradiciones, Vínculos Familiares y Sentido de Pertenencia]] — *Educación Socioemocional (5º de Primaria)*
+- [[Plan_33_Reto_Cooperativo_Circuitos_Motrices_Coordinacion_y_Estrategia_Ludica_en_Equipo|Reto Cooperativo: Circuitos Motrices, Coordinación y Estrategia Lúdica en Equipo]] — *Educación Física (5º de Primaria)*
+- [[Plan_31_Arbol_de_la_Convivencia_Tradiciones_Vinculos_Familiares_y_Sentido_de_Pertenencia|Árbol de la Convivencia: Tradiciones, Vínculos Familiares y Sentido de Pertenencia]] — *Educación Socioemocional (5º de Primaria)*
 - [[Plan_32_Mesa_de_Mediacion_y_Dialogo|Derechos de la Niñez y Convivencia Pacífica]] — *Educación Socioemocional (5º de Primaria)*
-- [[Planeacion_F5-EDU-5TO-V00038_Capacidades_motrices_juego_estrateg|Capacidades motrices, juego estratégico y trabajo colaborativo]] — *Educacion_Fisica_Vida_Saludable (5º de Primaria)*
+- [[Planeacion_F5-EDU-5TO-V00038_Capacidades_motrices_juego_estrategico_y_trabajo_colaborativo|Capacidades motrices, juego estratégico y trabajo colaborativo]] — *Educacion_Fisica_Vida_Saludable (5º de Primaria)*
 - [[Planeacion_SERIE2-F5-EDU-5TO-V10019_Capacidades_motrices_juego_estra|� Proyecto de Codiseño Comunitario: Capacidades motrices, juego estratégico y trabajo colaborativo]] — *Educacion_Fisica_Vida_Saludable (5º de Primaria)*
-- [[Planeacion_F5-ESP-5TO-V00001_Narracion_de_sucesos_autobiografico|Narración de sucesos autobiográficos]] — *Español (5º de Primaria)*
-- [[Planeacion_F5-ESP-5TO-V00002_Comprension_y_produccion_de_textos_|Comprensión y producción de textos explicativos]] — *Español (5º de Primaria)*
-- [[Planeacion_F5-ESP-5TO-V00003_Participacion_en_debates_sobre_tema|Participación en debates sobre temas de interés común]] — *Español (5º de Primaria)*
-- [[Planeacion_F5-ESP-5TO-V00006_Elaboracion_de_un_triptico_sobre_pr|Elaboración de un tríptico sobre prevención de problemas colectivos]] — *Español (5º de Primaria)*
+- [[Planeacion_F5-ESP-5TO-V00001_Narracion_de_sucesos_autobiograficos|Narración de sucesos autobiográficos]] — *Español (5º de Primaria)*
+- [[Planeacion_F5-ESP-5TO-V00002_Comprension_y_produccion_de_textos_explicativos|Comprensión y producción de textos explicativos]] — *Español (5º de Primaria)*
+- [[Planeacion_F5-ESP-5TO-V00003_Participacion_en_debates_sobre_temas_de_interes_comun|Participación en debates sobre temas de interés común]] — *Español (5º de Primaria)*
+- [[Planeacion_F5-ESP-5TO-V00006_Elaboracion_de_un_triptico_sobre_prevencion_de_problemas_colectivos|Elaboración de un tríptico sobre prevención de problemas colectivos]] — *Español (5º de Primaria)*
 - [[Planeacion_SERIE2-F5-ESP-5TO-V10001_Narracion_de_sucesos_autobiograf|� Proyecto de Codiseño Comunitario: Narración de sucesos autobiográficos]] — *Español (5º de Primaria)*
 - [[Plan_25_Mexico_Megadiverso|Ecosistemas y Conservación de la Biodiversidad]] — *Geografía / Formación Cívica (5º de Primaria)*
-- [[Plan_26_Rutas_de_Libertad|Rutas de Libertad: Protagonistas, Ideales y Héroes Invisibilizados de la Independencia]] — *Historia (5º de Primaria)*
+- [[Plan_26_Rutas_de_Libertad_Protagonistas_Ideales_y_Heroes_Invisibilizados_de_la_Independencia|Rutas de Libertad: Protagonistas, Ideales y Héroes Invisibilizados de la Independencia]] — *Historia (5º de Primaria)*
 - [[Plan_27_Defensa_de_la_Soberania_y_el_Estado_Laic|Defensa de la Soberanía y el Estado Laico: De las Intervenciones Extranjeras a las Leyes de Reforma]] — *Historia / Formación Cívica (5º de Primaria)*
 - [[Planeacion_F5-FOR-5TO-V00036_Cultura_de_paz_derechos_humanos_y_n|Derechos de la Niñez y Convivencia Pacífica]] — *Formacion_Civica (5º de Primaria)*
-- [[Planeacion_F5-GEO-5TO-V00030_Megadiversidad_mexicana_y_patrimoni|Megadiversidad mexicana y patrimonio biocultural]] — *Geografia_Historia (5º de Primaria)*
-- [[Planeacion_F5-GEO-5TO-V00031_Movimiento_de_Independencia_de_Mexi|Movimiento de Independencia de México (1810-1821)]] — *Geografia_Historia (5º de Primaria)*
-- [[Planeacion_F5-GEO-5TO-V00032_Mexico_Independiente_intervenciones|México Independiente, intervenciones extranjeras y Leyes de Reforma]] — *Geografia_Historia (5º de Primaria)*
+- [[Planeacion_F5-GEO-5TO-V00030_Megadiversidad_mexicana_y_patrimonio_biocultural|Megadiversidad mexicana y patrimonio biocultural]] — *Geografia_Historia (5º de Primaria)*
+- [[Planeacion_F5-GEO-5TO-V00031_Movimiento_de_Independencia_de_Mexico_18101821|Movimiento de Independencia de México (1810-1821)]] — *Geografia_Historia (5º de Primaria)*
+- [[Planeacion_F5-GEO-5TO-V00032_Mexico_Independiente_intervenciones_extranjeras_y_Leyes_de_Reforma|México Independiente, intervenciones extranjeras y Leyes de Reforma]] — *Geografia_Historia (5º de Primaria)*
 - [[Planeacion_SERIE2-F5-GEO-5TO-V10016_Megadiversidad_mexicana_y_patrim|� Proyecto de Codiseño Comunitario: Megadiversidad mexicana y patrimonio biocultural]] — *Geografia_Historia (5º de Primaria)*
-- [[Plan_01_El_Libro_de_Mi_Vida|El Libro de Mi Vida: Crónicas, Emociones y Memorias de la Infancia]] — *Español (5º de Primaria)*
-- [[Plan_02_Pequenos_Divulgadores_Cientificos|Pequeños Divulgadores Científicos: ¿Por Qué Ocurren los Fenómenos de la Naturaleza?]] — *Español (5º de Primaria)*
-- [[Plan_03_El_Agora_Escolar|El Ágora Escolar: Diálogo, Argumentación y Consensos en Debate Democrático]] — *Español (5º de Primaria)*
-- [[Plan_07_Palabras_con_Raiz|Palabras con Raíz: El Legado de las Lenguas Originarias en el Español Mexicano]] — *Español (5º de Primaria)*
+- [[Plan_01_El_Libro_de_Mi_Vida_Cronicas_Emociones_y_Memorias_de_la_Infancia|El Libro de Mi Vida: Crónicas, Emociones y Memorias de la Infancia]] — *Español (5º de Primaria)*
+- [[Plan_02_Pequenos_Divulgadores_Cientificos_Por_Que_Ocurren_los_Fenomenos_de_la_Naturaleza|Pequeños Divulgadores Científicos: ¿Por Qué Ocurren los Fenómenos de la Naturaleza?]] — *Español (5º de Primaria)*
+- [[Plan_03_El_Agora_Escolar_Dialogo_Argumentacion_y_Consensos_en_Debate_Democratico|El Ágora Escolar: Diálogo, Argumentación y Consensos en Debate Democrático]] — *Español (5º de Primaria)*
+- [[Plan_07_Palabras_con_Raiz_El_Legado_de_las_Lenguas_Originarias_en_el_Espanol_Mexicano|Palabras con Raíz: El Legado de las Lenguas Originarias en el Español Mexicano]] — *Español (5º de Primaria)*
 - [[Plan_08_Cafe_Literario_Escolar|Lectura y Creación de Cuentos Colectivos]] — *Español (5º de Primaria)*
 - [[Plan_09_Misterios_del_Mayab_y_Anahuac|Lectura y Creación de Cuentos Colectivos]] — *Español (5º de Primaria)*
 - [[Planeacion_F5-MAT-5TO-V00023_Estudio_de_numeros_naturales_hasta_|Fracciones y Reparto Equitativo]] — *Matematicas (5º de Primaria)*
-- [[Planeacion_F5-MAT-5TO-V00024_Proporcionalidad_y_porcentajes_50_2|Proporcionalidad y porcentajes (50%, 25%, 20%, 10%)]] — *Matematicas (5º de Primaria)*
-- [[Planeacion_F5-MAT-5TO-V00025_Perimetro_area_de_poligonos_y_volum|Perímetro, área de polígonos y volumen de prismas rectos]] — *Matematicas (5º de Primaria)*
+- [[Planeacion_F5-MAT-5TO-V00024_Proporcionalidad_y_porcentajes_50_25_20_10|Proporcionalidad y porcentajes (50%, 25%, 20%, 10%)]] — *Matematicas (5º de Primaria)*
+- [[Planeacion_F5-MAT-5TO-V00025_Perimetro_area_de_poligonos_y_volumen_de_prismas_rectos|Perímetro, área de polígonos y volumen de prismas rectos]] — *Matematicas (5º de Primaria)*
 - [[Planeacion_SERIE2-F5-MAT-5TO-V10012_Estudio_de_numeros_naturales_has|Fracciones y Reparto Equitativo]] — *Matematicas (5º de Primaria)*
-- [[Plan_13_El_Motor_de_la_Vida|El Motor de la Vida: Modelando el Pulso Cardíaco y la Respiración Celular]] — *Ciencias Naturales (5º de Primaria)*
+- [[Plan_13_El_Motor_de_la_Vida_Modelando_el_Pulso_Cardiaco_y_la_Respiracion_Celular|El Motor de la Vida: Modelando el Pulso Cardíaco y la Respiración Celular]] — *Ciencias Naturales (5º de Primaria)*
 - [[Plan_14_El_Plato_del_Buen_Comer_y_la_Dieta_de_la|El Plato del Bien Comer y Hábitos Saludables]] — *Ciencias Naturales (5º de Primaria)*
-- [[Plan_15_Laboratorio_de_Materia|Laboratorio de Materia: Dureza, Flexibilidad y Permeabilidad en la Vida Cotidiana]] — *Ciencias Naturales (5º de Primaria)*
+- [[Plan_15_Laboratorio_de_Materia_Dureza_Flexibilidad_y_Permeabilidad_en_la_Vida_Cotidiana|Laboratorio de Materia: Dureza, Flexibilidad y Permeabilidad en la Vida Cotidiana]] — *Ciencias Naturales (5º de Primaria)*
 - [[Plan_19_El_Imperio_de_los_Numeros|Fracciones y Reparto Equitativo]] — *Matemáticas (5º de Primaria)*
 - [[Plan_20_El_Gran_Chef_Matematico|Fracciones y Reparto Equitativo]] — *Matemáticas (5º de Primaria)*
-- [[Plan_21_Arquitectos_del_Futuro|Arquitectos del Futuro: Prismas, Pirámides y Fórmulas de Área y Perímetro]] — *Matemáticas (5º de Primaria)*
-- [[Planeacion_F5-SOC-5TO-V00039_Gestion_emocional_autoconcepto_y_to|Gestión emocional, autoconcepto y toma de decisiones éticas]] — *Socioemocional (5º de Primaria)*
-- [[Planeacion_F5-ART-6TO-V00012_Combinacion_de_lenguajes_visuales_s|Combinación de lenguajes visuales, sonoros y teatrales]] — *Artes (6º de Primaria)*
+- [[Plan_21_Arquitectos_del_Futuro_Prismas_Piramides_y_Formulas_de_Area_y_Perimetro|Arquitectos del Futuro: Prismas, Pirámides y Fórmulas de Área y Perímetro]] — *Matemáticas (5º de Primaria)*
+- [[Planeacion_F5-SOC-5TO-V00039_Gestion_emocional_autoconcepto_y_toma_de_decisiones_eticas|Gestión emocional, autoconcepto y toma de decisiones éticas]] — *Socioemocional (5º de Primaria)*
+- [[Planeacion_F5-ART-6TO-V00012_Combinacion_de_lenguajes_visuales_sonoros_y_teatrales|Combinación de lenguajes visuales, sonoros y teatrales]] — *Artes (6º de Primaria)*
 - [[Planeacion_SERIE2-F5-ART-6TO-V10007_Combinacion_de_lenguajes_visuale|� Proyecto de Codiseño Comunitario: Combinación de lenguajes visuales, sonoros y teatrales]] — *Artes (6º de Primaria)*
-- [[Planeacion_F5-CIE-6TO-V00018_Sistema_inmunologico_vacunas_y_prev|Sistema inmunológico, vacunas y prevención epidemiológica]] — *Ciencias_Naturales (6º de Primaria)*
-- [[Planeacion_F5-CIE-6TO-V00019_Fosiles_extincion_de_especies_y_evo|Fósiles, extinción de especies y evolución de seres vivos]] — *Ciencias_Naturales (6º de Primaria)*
-- [[Planeacion_F5-CIE-6TO-V00020_Efecto_invernadero_gases_contaminan|Efecto invernadero, gases contaminantes y cambio climático global]] — *Ciencias_Naturales (6º de Primaria)*
-- [[Planeacion_F5-CIE-6TO-V00021_Electricidad_estatica_circuitos_ele|Electricidad estática, circuitos eléctricos y conductores]] — *Ciencias_Naturales (6º de Primaria)*
-- [[Planeacion_F5-CIE-6TO-V00022_El_Universo_y_la_Via_Lactea_compone|El Universo y la Vía Láctea: componentes astronómicos y telescopios]] — *Ciencias_Naturales (6º de Primaria)*
+- [[Planeacion_F5-CIE-6TO-V00018_Sistema_inmunologico_vacunas_y_prevencion_epidemiologica|Sistema inmunológico, vacunas y prevención epidemiológica]] — *Ciencias_Naturales (6º de Primaria)*
+- [[Planeacion_F5-CIE-6TO-V00019_Fosiles_extincion_de_especies_y_evolucion_de_seres_vivos|Fósiles, extinción de especies y evolución de seres vivos]] — *Ciencias_Naturales (6º de Primaria)*
+- [[Planeacion_F5-CIE-6TO-V00020_Efecto_invernadero_gases_contaminantes_y_cambio_climatico_global|Efecto invernadero, gases contaminantes y cambio climático global]] — *Ciencias_Naturales (6º de Primaria)*
+- [[Planeacion_F5-CIE-6TO-V00021_Electricidad_estatica_circuitos_electricos_y_conductores|Electricidad estática, circuitos eléctricos y conductores]] — *Ciencias_Naturales (6º de Primaria)*
+- [[Planeacion_F5-CIE-6TO-V00022_El_Universo_y_la_Via_Lactea_componentes_astronomicos_y_telescopios|El Universo y la Vía Láctea: componentes astronómicos y telescopios]] — *Ciencias_Naturales (6º de Primaria)*
 - [[Planeacion_SERIE2-F5-CIE-6TO-V10010_Sistema_inmunologico_vacunas_y_p|� Proyecto de Codiseño Comunitario: Sistema inmunológico, vacunas y prevención epidemiológica]] — *Ciencias_Naturales (6º de Primaria)*
-- [[Plan_36_El_Semaforo_de_las_Emociones|El Semáforo de las Emociones: Autorregulación, Empatía y Comunicación Asertiva]] — *Educación Socioemocional (6º de Primaria)*
-- [[Plan_34_Mi_Brujula_de_Vida|Mi Brújula de Vida: Autoconcepto, Metas a Futuro y Transición Exitosa a la Secundaria]] — *Tutoría / Socioemocional (6º de Primaria)*
-- [[Plan_35_Circuito_Vital|Circuito Vital: Activación Física Diaria, Higiene Sostenible y Prevención del Sedentarismo]] — *Vida Saludable / Cívica (6º de Primaria)*
+- [[Plan_36_El_Semaforo_de_las_Emociones_Autorregulacion_Empatia_y_Comunicacion_Asertiva|El Semáforo de las Emociones: Autorregulación, Empatía y Comunicación Asertiva]] — *Educación Socioemocional (6º de Primaria)*
+- [[Plan_34_Mi_Brujula_de_Vida_Autoconcepto_Metas_a_Futuro_y_Transicion_Exitosa_a_la_Secundaria|Mi Brújula de Vida: Autoconcepto, Metas a Futuro y Transición Exitosa a la Secundaria]] — *Tutoría / Socioemocional (6º de Primaria)*
+- [[Plan_35_Circuito_Vital_Activacion_Fisica_Diaria_Higiene_Sostenible_y_Prevencion_del_Sedentarismo|Circuito Vital: Activación Física Diaria, Higiene Sostenible y Prevención del Sedentarismo]] — *Vida Saludable / Cívica (6º de Primaria)*
 - [[Planeacion_F5-EDU-6TO-V00040_Estilos_de_vida_saludables_y_preven|El Plato del Bien Comer y Hábitos Saludables]] — *Educacion_Fisica_Vida_Saludable (6º de Primaria)*
-- [[Planeacion_F5-ESP-6TO-V00007_Narracion_de_sucesos_autobiografico|Narración de sucesos autobiográficos y memoria colectiva]] — *Español (6º de Primaria)*
-- [[Planeacion_F5-ESP-6TO-V00008_Comprension_y_produccion_de_textos_|Comprensión y producción de textos explicativos avanzados]] — *Español (6º de Primaria)*
-- [[Planeacion_F5-ESP-6TO-V00009_Debates_estructurados_y_textos_argu|Debates estructurados y textos argumentativos con rigor crítico]] — *Español (6º de Primaria)*
-- [[Planeacion_F5-ESP-6TO-V00010_Seguimiento_critico_de_noticias_en_|Seguimiento crítico de noticias en diversos medios de comunicación]] — *Español (6º de Primaria)*
+- [[Planeacion_F5-ESP-6TO-V00007_Narracion_de_sucesos_autobiograficos_y_memoria_colectiva|Narración de sucesos autobiográficos y memoria colectiva]] — *Español (6º de Primaria)*
+- [[Planeacion_F5-ESP-6TO-V00008_Comprension_y_produccion_de_textos_explicativos_avanzados|Comprensión y producción de textos explicativos avanzados]] — *Español (6º de Primaria)*
+- [[Planeacion_F5-ESP-6TO-V00009_Debates_estructurados_y_textos_argumentativos_con_rigor_critico|Debates estructurados y textos argumentativos con rigor crítico]] — *Español (6º de Primaria)*
+- [[Planeacion_F5-ESP-6TO-V00010_Seguimiento_critico_de_noticias_en_diversos_medios_de_comunicacion|Seguimiento crítico de noticias en diversos medios de comunicación]] — *Español (6º de Primaria)*
 - [[Planeacion_SERIE2-F5-ESP-6TO-V10004_Narracion_de_sucesos_autobiograf|� Proyecto de Codiseño Comunitario: Narración de sucesos autobiográficos y memoria colectiva]] — *Español (6º de Primaria)*
 - [[Plan_30_Caminos_de_Esperanza|Derechos de la Niñez y Convivencia Pacífica]] — *Geografía / Formación Cívica (6º de Primaria)*
 - [[Plan_28_Tierra_y_Libertad|Revolución Mexicana]] — *Historia / Formación Cívica (6º de Primaria)*
-- [[Plan_29_El_Mexico_de_los_Campesinos|El México de los Campesinos: Escuela Rural, Cardenismo y la Soberanía del Petróleo]] — *Historia / Formación Cívica (6º de Primaria)*
-- [[Planeacion_F5-FOR-6TO-V00037_Democracia_transparencia_y_rendicio|Democracia, transparencia y rendición de cuentas en servicios públicos]] — *Formacion_Civica (6º de Primaria)*
+- [[Plan_29_El_Mexico_de_los_Campesinos_Escuela_Rural_Cardenismo_y_la_Soberania_del_Petroleo|El México de los Campesinos: Escuela Rural, Cardenismo y la Soberanía del Petróleo]] — *Historia / Formación Cívica (6º de Primaria)*
+- [[Planeacion_F5-FOR-6TO-V00037_Democracia_transparencia_y_rendicion_de_cuentas_en_servicios_publicos|Democracia, transparencia y rendición de cuentas en servicios públicos]] — *Formacion_Civica (6º de Primaria)*
 - [[Planeacion_SERIE2-F5-FOR-6TO-V10018_Democracia_transparencia_y_rendi|� Proyecto de Codiseño Comunitario: Democracia, transparencia y rendición de cuentas en servicios públicos]] — *Formacion_Civica (6º de Primaria)*
 - [[Planeacion_F5-GEO-6TO-V00033_Revolucion_Mexicana_de_1910_y_Const|Revolución Mexicana]] — *Geografia_Historia (6º de Primaria)*
-- [[Planeacion_F5-GEO-6TO-V00034_Mexico_Posrevolucionario_Cardenismo|México Posrevolucionario, Cardenismo y voto de las mujeres en 1953]] — *Geografia_Historia (6º de Primaria)*
+- [[Planeacion_F5-GEO-6TO-V00034_Mexico_Posrevolucionario_Cardenismo_y_voto_de_las_mujeres_en_1953|México Posrevolucionario, Cardenismo y voto de las mujeres en 1953]] — *Geografia_Historia (6º de Primaria)*
 - [[Planeacion_F5-GEO-6TO-V00035_Migracion_mundial_y_nacional_derech|Derechos de la Niñez y Convivencia Pacífica]] — *Geografia_Historia (6º de Primaria)*
 - [[Planeacion_SERIE2-F5-GEO-6TO-V10017_Revolucion_Mexicana_de_1910_y_Co|Revolución Mexicana]] — *Geografia_Historia (6º de Primaria)*
-- [[Plan_10_Telon_Abierto|Telón Abierto: Montaje, Acotaciones y Escenificación de Teatro Escolar]] — *Español / Artes (6º de Primaria)*
-- [[Plan_11_Murales_y_Espacios_Vivos|Murales y Espacios Vivos: Arte Urbano Transformador para el Bienestar Escolar]] — *Artes (6º de Primaria)*
-- [[Plan_12_Galeria_de_Identidades|Galería de Identidades: Simbolismo, Rituales y Significado en el Arte Popular Mexicano]] — *Artes / Español (6º de Primaria)*
-- [[Plan_04_Detectives_de_la_Informacion|Detectives de la Información: Análisis Crítico de Medios, Sesgos y Fake News]] — *Español (6º de Primaria)*
+- [[Plan_10_Telon_Abierto_Montaje_Acotaciones_y_Escenificacion_de_Teatro_Escolar|Telón Abierto: Montaje, Acotaciones y Escenificación de Teatro Escolar]] — *Español / Artes (6º de Primaria)*
+- [[Plan_11_Murales_y_Espacios_Vivos_Arte_Urbano_Transformador_para_el_Bienestar_Escolar|Murales y Espacios Vivos: Arte Urbano Transformador para el Bienestar Escolar]] — *Artes (6º de Primaria)*
+- [[Plan_12_Galeria_de_Identidades_Simbolismo_Rituales_y_Significado_en_el_Arte_Popular_Mexicano|Galería de Identidades: Simbolismo, Rituales y Significado en el Arte Popular Mexicano]] — *Artes / Español (6º de Primaria)*
+- [[Plan_04_Detectives_de_la_Informacion_Analisis_Critico_de_Medios_Sesgos_y_Fake_News|Detectives de la Información: Análisis Crítico de Medios, Sesgos y Fake News]] — *Español (6º de Primaria)*
 - [[Plan_05_Brigada_Comunitaria_de_Informacion|El Plato del Bien Comer y Hábitos Saludables]] — *Español (6º de Primaria)*
-- [[Plan_06_Infografias_y_Organizadores_Graficos|Infografías y Organizadores Gráficos: El Poder Visual de la Síntesis del Conocimiento]] — *Español (6º de Primaria)*
-- [[Planeacion_F5-MAT-6TO-V00026_Numeros_naturales_hasta_billones_nu|Números naturales hasta billones, números romanos y mayas]] — *Matematicas (6º de Primaria)*
+- [[Plan_06_Infografias_y_Organizadores_Graficos_El_Poder_Visual_de_la_Sintesis_del_Conocimiento|Infografías y Organizadores Gráficos: El Poder Visual de la Síntesis del Conocimiento]] — *Español (6º de Primaria)*
+- [[Planeacion_F5-MAT-6TO-V00026_Numeros_naturales_hasta_billones_numeros_romanos_y_mayas|Números naturales hasta billones, números romanos y mayas]] — *Matematicas (6º de Primaria)*
 - [[Planeacion_F5-MAT-6TO-V00027_Operaciones_con_decimales_y_fraccio|Fracciones y Reparto Equitativo]] — *Matematicas (6º de Primaria)*
 - [[Planeacion_F5-MAT-6TO-V00028_Geometria_circular_valor_aproximado|Figuras Geométricas y Cuerpos del Entorno]] — *Matematicas (6º de Primaria)*
-- [[Planeacion_F5-MAT-6TO-V00029_Estadistica_media_aritmetica_median|Estadística: media aritmética, mediana, moda y probabilidad teórica]] — *Matematicas (6º de Primaria)*
+- [[Planeacion_F5-MAT-6TO-V00029_Estadistica_media_aritmetica_mediana_moda_y_probabilidad_teorica|Estadística: media aritmética, mediana, moda y probabilidad teórica]] — *Matematicas (6º de Primaria)*
 - [[Planeacion_SERIE2-F5-MAT-6TO-V10014_Operaciones_con_decimales_y_frac|Fracciones y Reparto Equitativo]] — *Matematicas (6º de Primaria)*
-- [[Plan_16_Escudo_Inmunologico|Escudo Inmunológico: La Ciencia de los Glóbulos Blancos, las Vacunas y la Cartilla Nacional]] — *Ciencias Naturales (6º de Primaria)*
-- [[Plan_17_Guardianes_del_Clima|Guardianes del Clima: Efecto Invernadero, Huella de Carbono y Restauración Ecológica]] — *Ciencias Naturales (6º de Primaria)*
-- [[Plan_18_Energia_en_Movimiento|Energía en Movimiento: Circuitos Eléctricos, Cargas y Conductores en la Vida Tecnológica]] — *Ciencias Naturales (6º de Primaria)*
+- [[Plan_16_Escudo_Inmunologico_La_Ciencia_de_los_Globulos_Blancos_las_Vacunas_y_la_Cartilla_Nacional|Escudo Inmunológico: La Ciencia de los Glóbulos Blancos, las Vacunas y la Cartilla Nacional]] — *Ciencias Naturales (6º de Primaria)*
+- [[Plan_17_Guardianes_del_Clima_Efecto_Invernadero_Huella_de_Carbono_y_Restauracion_Ecologica|Guardianes del Clima: Efecto Invernadero, Huella de Carbono y Restauración Ecológica]] — *Ciencias Naturales (6º de Primaria)*
+- [[Plan_18_Energia_en_Movimiento_Circuitos_Electricos_Cargas_y_Conductores_en_la_Vida_Tecnologica|Energía en Movimiento: Circuitos Eléctricos, Cargas y Conductores en la Vida Tecnológica]] — *Ciencias Naturales (6º de Primaria)*
 - [[Plan_22_Reparto_Proporcional_y_Division_Fraccion|Fracciones y Reparto Equitativo]] — *Matemáticas (6º de Primaria)*
 - [[Plan_23_Feria_Comercial_y_Porcentajes|La Tiendita Escolar y el Uso de Monedas]] — *Matemáticas (6º de Primaria)*
 - [[Plan_24_El_Enigma_de_Pi_y_el_Volumen_Tridimensio|Figuras Geométricas y Cuerpos del Entorno]] — *Matemáticas (6º de Primaria)*
-- [[Planeacion_F5-SOC-6TO-V00041_Construccion_del_proyecto_de_vida_y|Construcción del proyecto de vida y transición a la secundaria]] — *Socioemocional (6º de Primaria)*
+- [[Planeacion_F5-SOC-6TO-V00041_Construccion_del_proyecto_de_vida_y_transicion_a_la_secundaria|Construcción del proyecto de vida y transición a la secundaria]] — *Socioemocional (6º de Primaria)*
 - [[Planeacion_SERIE2-F5-SOC-6TO-V10020_Construccion_del_proyecto_de_vid|� Proyecto de Codiseño Comunitario: Construcción del proyecto de vida y transición a la secundaria]] — *Socioemocional (6º de Primaria)*
 
 

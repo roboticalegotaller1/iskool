@@ -409,122 +409,152 @@ export const getDemoUser = (email: string): UserProfile => {
   }
 
   // ==========================================
-  // RESOLUTORES OFICIALES SECTOR CORPORATIVO / CEO (B2B)
+  // ALIAS GENÉRICOS DE ROLES MAPEADOS A IBIME
   // ==========================================
   if (
-    emailLower === 'ceo@bmw-corp.mx' ||
-    emailLower === 'usr-ceo-bmw' ||
-    emailLower === 'ceo.bmw'
-  ) {
-    return {
-      id: 'usr-ceo-bmw',
-      school_id: 'emp-bmw',
-      campus_id: 'cmp-bmw-slp',
-      campus_name: 'Planta San Luis Potosí (EV Hub)',
-      first_name: 'Hans',
-      last_name: 'Weber Schmidt (CEO & VP Manufacturing)',
-      role: 'ceo',
-      email: 'ceo@bmw-corp.mx',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-  }
-
-  if (
-    emailLower === 'ceo@vanguardia-retail.mx' ||
-    emailLower === 'usr-ceo-ventas' ||
-    emailLower === 'ceo.ventas'
-  ) {
-    return {
-      id: 'usr-ceo-ventas',
-      school_id: 'emp-ventas',
-      campus_id: 'cmp-ventas-mty',
-      campus_name: 'CEDIS Monterrey & Oficinas Corporativas',
-      first_name: 'Rodrigo',
-      last_name: 'Morales Vega (CEO Retail)',
-      role: 'ceo',
-      email: 'ceo@vanguardia-retail.mx',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-  }
-
-  if (
-    emailLower === 'ceo@innovasoft-tech.com' ||
-    emailLower === 'usr-ceo-tech' ||
-    emailLower === 'ceo.tech'
-  ) {
-    return {
-      id: 'usr-ceo-tech',
-      school_id: 'emp-tech',
-      campus_id: 'cmp-tech-gdl',
-      campus_name: 'Innovation Tech Hub Guadalajara',
-      first_name: 'Sebastian',
-      last_name: 'Cruz Beltrán (CEO & Founder)',
-      role: 'ceo',
-      email: 'ceo@innovasoft-tech.com',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-  }
-
-  // 4. Director Demo (Coincidencia exacta)
-  if (
     emailLower === 'director' ||
-    emailLower === 'director@iskool.edu.mx' ||
-    emailLower === 'director.garza@jjrosseau.edu.mx' ||
-    emailLower === 'director.demo@iskool.edu.mx'
+    emailLower === 'directora' ||
+    emailLower === 'director@ibime.edu.mx' ||
+    emailLower === 'directora@ibime.edu.mx'
   ) {
     return {
-      id: 'usr-dir-1',
-      school_id: 'sch-jjrosseau',
-      first_name: 'Roberto',
-      last_name: 'Garza Hernández (Dirección)',
+      id: 'usr-dir-ibime-montes',
+      school_id: 'sch-ibime',
+      campus_id: 'cmp-ibime-montes',
+      campus_name: 'Campus Montes (Sede Matriz & CCH)',
+      first_name: 'Patricia',
+      last_name: 'Sandoval Morales (Dirección General)',
       role: 'director',
-      email: 'director@iskool.edu.mx',
+      email: 'directora.general@ibime.edu.mx',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
   }
 
-  // 5. Cobranza Demo (Coincidencia exacta)
+  if (
+    emailLower === 'coordinacion' ||
+    emailLower === 'coordinacion@ibime.edu.mx' ||
+    emailLower === 'coord@ibime.edu.mx'
+  ) {
+    return {
+      id: 'usr-coord-ibime',
+      school_id: 'sch-ibime',
+      campus_id: 'cmp-ibime-montes',
+      campus_name: 'Campus Montes (Sede Matriz & CCH)',
+      first_name: 'Marco Antonio',
+      last_name: 'Ruiz Peralta (Coordinación)',
+      role: 'coordinator',
+      email: 'coordinacion.academica@ibime.edu.mx',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
   if (
     emailLower === 'cobranza' ||
-    emailLower === 'cobranza@iskool.edu.mx' ||
-    emailLower === 'finanzas@iskool.edu.mx'
+    emailLower === 'finanzas' ||
+    emailLower === 'cobranza@ibime.edu.mx' ||
+    emailLower === 'finanzas@ibime.edu.mx'
   ) {
     return {
-      id: 'usr-billing-1',
-      school_id: 'sch-test-case',
-      first_name: 'Mónica',
-      last_name: 'Suárez Pérez (Cobranza)',
+      id: 'usr-billing-ibime',
+      school_id: 'sch-ibime',
+      campus_id: 'cmp-ibime-montes',
+      campus_name: 'Sede Corporativa IBIME',
+      first_name: 'Mariana',
+      last_name: 'Rivas Corona (Tesorería & Facturación)',
       role: 'billing',
-      email: 'cobranza@iskool.edu.mx',
+      email: 'finanzas@ibime.edu.mx',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
   }
 
-  // 6. Dueño de Empresa / Presidencia Demo (Coincidencia exacta)
   if (
     emailLower === 'dueno' ||
     emailLower === 'owner' ||
-    emailLower === 'dueno@jjrosseau.edu.mx' ||
-    emailLower === 'dueno@iskool.edu.mx'
+    emailLower === 'dueno@ibime.edu.mx'
   ) {
     return {
-      id: 'usr-owner-1',
-      school_id: 'sch-jjrosseau',
-      first_name: 'Don Alejandro',
-      last_name: 'Vargas Robles (Dueño de Plantel UP)',
+      id: 'usr-owner-ibime',
+      school_id: 'sch-ibime',
+      campus_id: 'cmp-ibime-montes',
+      campus_name: 'Red 4 Planteles IBIME',
+      first_name: 'Don Guillermo',
+      last_name: 'Valdés Montes (Dirección Corporativa)',
       role: 'owner',
-      email: 'dueno@jjrosseau.edu.mx',
+      email: 'dueno@ibime.edu.mx',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
   }
 
-  // 7. Cuentas Maestras de Super Usuario ISkool (Únicamente 3 Directivos de la Plataforma)
+  if (
+    emailLower === 'profesor' ||
+    emailLower === 'profesora' ||
+    emailLower === 'docente' ||
+    emailLower === 'teacher' ||
+    emailLower === 'profesor@ibime.edu.mx'
+  ) {
+    return {
+      id: 'usr-teacher-ibime-1',
+      school_id: 'sch-ibime',
+      campus_id: 'cmp-ibime-montes',
+      campus_name: 'Campus Montes (Sede Matriz & CCH)',
+      first_name: 'Alejandro',
+      last_name: 'Mendoza Peña (Docente Bilingüe)',
+      role: 'teacher',
+      email: 'alejandro.mendoza@ibime.edu.mx',
+      assigned_subjects: ['Biología CCH UNAM', 'Robótica STEAM'],
+      assigned_groups: ['5ºA Primaria', '2º Secundaria CCH'],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
+    emailLower === 'estudiante' ||
+    emailLower === 'alumno' ||
+    emailLower === 'student' ||
+    emailLower === 'alumno@ibime.edu.mx'
+  ) {
+    return {
+      id: 'std-ibime-montes-01',
+      school_id: 'sch-ibime',
+      campus_id: 'cmp-ibime-montes',
+      campus_name: 'Campus Montes (Sede Matriz & CCH)',
+      first_name: 'Iker Santiago',
+      last_name: 'Morales Peña',
+      role: 'student',
+      email: 'iker.morales@ibime.edu.mx',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  if (
+    emailLower === 'tutor' ||
+    emailLower === 'padre' ||
+    emailLower === 'parent' ||
+    emailLower === 'padre@ibime.edu.mx'
+  ) {
+    return {
+      id: 'usr-parent-ibime-01',
+      school_id: 'sch-ibime',
+      campus_id: 'cmp-ibime-montes',
+      campus_name: 'Campus Montes',
+      first_name: 'Familia',
+      last_name: 'Morales Peña (Tutor IBIME)',
+      role: 'parent',
+      email: 'familia.morales@ibime.edu.mx',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  // ==========================================
+  // SUPER USUARIOS GLOBALES DE PLATAFORMA ISKOOL
+  // ==========================================
   const matchedSuperUser = SUPER_USERS_ISKOOL_SEED.find(su => 
     su.email.toLowerCase() === emailLower ||
     su.id.toLowerCase() === emailLower
@@ -558,161 +588,19 @@ export const getDemoUser = (email: string): UserProfile => {
     return SUPER_USERS_ISKOOL_SEED[2]; // Dirección Pedagógica ISkool
   }
 
-  // 4. Coordinación Demo (Coincidencia exacta)
-  if (
-    emailLower === 'beatriz.morales@iskool.edu.mx' ||
-    emailLower === 'coordinacion@iskool.edu.mx' ||
-    emailLower === 'coord@iskool.edu.mx'
-  ) {
-    return {
-      id: 'usr-coord-1',
-      school_id: 'sch-test-case',
-      first_name: 'Beatriz',
-      last_name: 'Morales (Coordinación)',
-      role: 'coordinator',
-      email: 'beatriz.morales@iskool.edu.mx',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-  }
-
-  // 5. Profesor Demo (Coincidencia exacta)
-  if (
-    emailLower === TEACHER_SEED.email.toLowerCase() || 
-    emailLower === 'israel.lopez@sandbox.iskool.edu.mx' ||
-    emailLower === 'israel.lopez@iskool.edu.mx' ||
-    emailLower === 'israel.lopez@jjrosseau.edu.mx' ||
-    emailLower === 'profesor@iskool.edu.mx' ||
-    emailLower === 'usr-teacher-1'
-  ) {
-    const liveTeacher = (useSchoolAdminStore.getState().teachersList || []).find(t => t.id === 'usr-teacher-1') || TEACHER_SEED;
-    return {
-      ...liveTeacher,
-      first_name: 'Israel',
-      last_name: 'López Ángeles (Demo)',
-      email: 'israel.lopez@sandbox.iskool.edu.mx',
-      school_id: liveTeacher.school_id || 'sch-test-case',
-      campus_id: liveTeacher.campus_id || 'cmp-test-pri',
-      campus_name: liveTeacher.campus_name || 'Primaria Laboratorio Demo',
-      assigned_subjects: liveTeacher.assigned_subjects || ['Matemáticas', 'Robótica'],
-      assigned_groups: liveTeacher.assigned_groups || ['1ºA Primaria Demo', '4ºA Primaria Demo']
-    };
-  }
-
-  // 6. Tutor / Padre Demo (Coincidencia exacta)
-  if (emailLower === 'israel.lopez@ejemplo.com' || emailLower === 'usr-parent-001') {
-    return {
-      id: 'usr-parent-001',
-      first_name: 'Familia',
-      last_name: 'López Mendoza (Tutor)',
-      role: 'parent',
-      email: 'israel.lopez@ejemplo.com',
-      school_id: 'sch-test-case',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-  }
-
-  if (
-    emailLower === PARENT_SEED.email.toLowerCase() ||
-    emailLower === 'tutor@iskool.edu.mx' ||
-    emailLower === 'padre@iskool.edu.mx'
-  ) {
-    return {
-      ...PARENT_SEED,
-      school_id: 'sch-test-case'
-    };
-  }
-
-  // 7. Alumnos Demo Específicos por Identificador o Correo (Asignados a su Laboratorio Pedagógico sch-test-case)
-  if (emailLower === 'lucas@iskool.edu.mx' || emailLower === 'lucas.skywalker@iskool.edu.mx' || emailLower === 'std-pa') {
-    const seed = STUDENTS_LIST_SEED.find(s => s.id === 'std-pa');
-    return {
-      ...(seed || {
-        id: 'std-pa',
-        first_name: 'Lucas',
-        last_name: 'Skywalker',
-        role: 'student',
-        email: 'lucas@iskool.edu.mx',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }),
-      school_id: 'sch-test-case'
-    };
-  }
-
-  if (emailLower === 'elena@iskool.edu.mx' || emailLower === 'elena.rostova@iskool.edu.mx' || emailLower === 'std-sec') {
-    const seed = STUDENTS_LIST_SEED.find(s => s.id === 'std-sec');
-    return {
-      ...(seed || {
-        id: 'std-sec',
-        first_name: 'Elena',
-        last_name: 'Rostova',
-        role: 'student',
-        email: 'elena@iskool.edu.mx',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }),
-      school_id: 'sch-test-case'
-    };
-  }
-
-  if (emailLower === 'santi@iskool.edu.mx' || emailLower === 'santi.gómez@iskool.edu.mx' || emailLower === 'santi.gomez@iskool.edu.mx' || emailLower === 'std-pb') {
-    const seed = STUDENTS_LIST_SEED.find(s => s.id === 'std-pb');
-    return {
-      ...(seed || {
-        id: 'std-pb',
-        first_name: 'Santi',
-        last_name: 'Gómez',
-        role: 'student',
-        email: 'santi@iskool.edu.mx',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }),
-      school_id: 'sch-test-case'
-    };
-  }
-
-  if (emailLower === 'mateo@iskool.edu.mx' || emailLower === 'mateo.díaz@iskool.edu.mx' || emailLower === 'mateo.diaz@iskool.edu.mx' || emailLower === 'std-prep') {
-    const seed = STUDENTS_LIST_SEED.find(s => s.id === 'std-prep');
-    return {
-      ...(seed || {
-        id: 'std-prep',
-        first_name: 'Mateo',
-        last_name: 'Díaz',
-        role: 'student',
-        email: 'mateo@iskool.edu.mx',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }),
-      school_id: 'sch-test-case'
-    };
-  }
-
-  // 8. Alumnos Demo de semillas (Coincidencia general)
-  const matchedSeedStudent = STUDENTS_LIST_SEED.find(s => 
-    s.email.toLowerCase() === emailLower || 
-    s.id.toLowerCase() === emailLower
-  );
-  if (matchedSeedStudent) {
-    return {
-      ...matchedSeedStudent,
-      school_id: matchedSeedStudent.school_id || 'sch-test-case'
-    };
-  }
-
-  // 9. Fallback para nuevo alumno con correo personalizado
+  // Fallback seguro: exclusivamente asignado al tenant IBIME
   const nameParts = emailLower.split('@')[0].split('.');
   const firstName = nameParts[0] ? nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1) : 'Usuario';
-  const lastName = nameParts[1] ? nameParts[1].charAt(0).toUpperCase() + nameParts[1].slice(1) : 'Escolar';
+  const lastName = nameParts[1] ? nameParts[1].charAt(0).toUpperCase() + nameParts[1].slice(1) : 'IBIME';
 
   return {
-    id: `usr-demo-${Date.now()}`,
-    school_id: 'sch-test-case',
+    id: `usr-ibime-${Date.now()}`,
+    school_id: 'sch-ibime',
+    campus_name: 'Campus Montes',
     first_name: firstName,
     last_name: lastName,
     role: 'student',
-    email: emailLower,
+    email: emailLower.includes('@') ? emailLower : `${emailLower}@ibime.edu.mx`,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   };

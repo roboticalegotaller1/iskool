@@ -58,6 +58,7 @@ high_tech_raw*.webm
 # Knowledge vault workspace files
 .obsidian/
 *.canvas
+.cache/
 
 # Cognitive AI email triage telemetry and cache
 .gemini-evaluated-emails.json
@@ -73,3 +74,5 @@ forensic_audit_results.json
 /scratch/
 /.data/
 /scripts/screenshots/
+.generations/
+*.jsonl

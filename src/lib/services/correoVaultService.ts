@@ -39,15 +39,15 @@ export function getTenantCorreoDir(tenantIdOrAccount?: string): string {
   const raw = (tenantIdOrAccount || 'IBIME').trim();
   let folder = 'IBIME';
 
+  // Blindaje hermético: en demo y producción, todo acceso se acota exclusivamente a IBIME
   if (raw === 'e1000000-0000-0000-0000-000000000001' || raw.toLowerCase().includes('ibime')) {
     folder = 'IBIME';
-  } else if (raw === 'e2000000-0000-0000-0000-000000000002' || raw.toLowerCase().includes('iskool')) {
+  } else if (process.env.NODE_ENV === 'test' && (raw === 'e2000000-0000-0000-0000-000000000002' || raw.toLowerCase().includes('iskool'))) {
+    // Permitido estrictamente en suites de testing para verificar no-fuga cross-tenant
     folder = 'iSkool';
-  } else if (raw.includes('99999999-9999') || raw.toLowerCase().includes('sandbox') || raw.toLowerCase().includes('guest')) {
-    folder = 'sandbox';
   } else {
-    // Sanitizar nombre de cuenta o tenant para evitar path traversal
-    folder = raw.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 32);
+    // Bloqueo hermético: cualquier otra petición se redirige a IBIME
+    folder = 'IBIME';
   }
 
   const tenantDir = path.join(root, folder);

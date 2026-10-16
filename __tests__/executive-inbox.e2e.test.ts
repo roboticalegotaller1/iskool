@@ -1,7 +1,37 @@
 import { test, expect } from '@playwright/test';
+import { signMultiTenantToken } from '../src/lib/auth/multiTenantSession';
 
 test.describe('iSkool — Bandeja Inteligente de Dirección (E2E Demo)', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, context }) => {
+    const validIbimeToken = await signMultiTenantToken({
+      id: 'usr-dir-ibime-montes',
+      email: 'directora.general@ibime.edu.mx',
+      tenant_id: 'ibime',
+      role: 'director',
+      school_id: 'sch-ibime',
+      first_name: 'Directora',
+      last_name: 'General'
+    });
+
+    await context.addCookies([
+      {
+        name: 'ibime_session',
+        value: validIbimeToken,
+        domain: 'localhost',
+        path: '/',
+        httpOnly: true,
+        sameSite: 'Lax'
+      },
+      {
+        name: 'tenant-id',
+        value: 'ibime',
+        domain: 'localhost',
+        path: '/',
+        httpOnly: false,
+        sameSite: 'Lax'
+      }
+    ]);
+
     await page.goto('/portal-ceo/email');
   });
 
@@ -17,7 +47,7 @@ test.describe('iSkool — Bandeja Inteligente de Dirección (E2E Demo)', () => {
 
     // 3. Validar detección de patrón de la pieza WOW
     await expect(page.locator('text=Patrón Proactivo Detectado')).toBeVisible();
-    await expect(page.locator('text=festival')).toBeVisible();
+    await expect(page.locator('text=festival').first()).toBeVisible();
   });
 
   test('Debe permitir abrir un asunto, revisar "Por qué te lo muestro" y editar borrador', async ({ page }) => {
@@ -26,7 +56,7 @@ test.describe('iSkool — Bandeja Inteligente de Dirección (E2E Demo)', () => {
     await firstMatterCard.click();
 
     // Validar drawer de detalle
-    await expect(page.locator('text=Por qué te lo muestro')).toBeVisible();
+    await expect(page.locator('text=Por qué te lo muestro').first()).toBeVisible();
     await expect(page.locator('text=Borrador de Respuesta Sugerido')).toBeVisible();
 
     // Probar edición del borrador en modo sombra

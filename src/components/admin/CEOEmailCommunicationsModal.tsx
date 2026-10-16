@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { OrganizationHolding } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { 
@@ -18,6 +18,7 @@ import {
   Users,
   Building2,
   CheckCircle2,
+  Loader2,
   Copy,
   ExternalLink,
   FileText,
@@ -86,7 +87,10 @@ import {
   VolumeX,
   Layers,
   Maximize2,
-  Menu
+  Menu,
+  RotateCcw,
+  Sun,
+  Moon
 } from 'lucide-react';
 import {
   playUniversalIskoolVoice,
@@ -119,7 +123,9 @@ import {
   OfficialTemplateConfig,
   getDefaultSettings,
   getDefaultDelegates,
-  CeoThemeMode
+  CeoThemeMode,
+  CustomCeoTheme,
+  DEFAULT_CUSTOM_THEME
 } from '@/lib/services/ceoEmailSettingsTypes';
 import {
   formatCdmxTime,
@@ -591,18 +597,406 @@ export const THEME_CONFIG: Record<CeoThemeMode, ThemeTokens> = {
     ribbonBg: 'bg-[#06241C] border-b border-[#0E3D30]',
     ribbonBorder: 'border-[#0E3D30]',
     isDark: true
+  },
+  burgundy: {
+    modalBg: 'bg-[#18080E]',
+    modalBorder: 'border-[#38101C]',
+    headerBg: 'bg-gradient-to-r from-[#14060B] via-[#2A0C16] to-[#14060B]',
+    headerBorder: 'border-[#D4AF37]/30',
+    headerText: 'text-white',
+    headerSubtext: 'text-[#E5C97E]',
+    sidebarBg: 'bg-[#1E0911]',
+    sidebarBorder: 'border-[#38101C]',
+    sidebarActiveItem: 'bg-[#8B1E3F] text-white font-black border border-[#D4AF37]/40 shadow-xs',
+    sidebarHoverItem: 'hover:bg-[#2A0C16] text-[#E5C97E]',
+    contentBg: 'bg-[#12050A]',
+    feedBg: 'bg-[#12050A]',
+    feedBorder: 'border-[#38101C]',
+    cardBg: 'bg-[#220B14]',
+    cardBorder: 'border-[#421321]',
+    cardHover: 'hover:border-[#D4AF37] hover:shadow-md',
+    cardSelected: 'border-[#D4AF37] ring-2 ring-[#D4AF37]/30 bg-[#2C0E1A]',
+    dockBg: 'bg-[#220B14]',
+    dockBorder: 'border-[#421321]',
+    textPrimary: 'text-white',
+    textSecondary: 'text-[#E2C4B8]',
+    textMuted: 'text-[#B08996]',
+    accent: '#8B1E3F',
+    badgeNeutral: 'bg-[#34101E] text-[#E5C97E]',
+    ribbonBg: 'bg-[#1E0911] border-b border-[#38101C]',
+    ribbonBorder: 'border-[#38101C]',
+    isDark: true
+  },
+  cyber: {
+    modalBg: 'bg-[#030712]',
+    modalBorder: 'border-[#0E2F44]',
+    headerBg: 'bg-gradient-to-r from-[#020617] via-[#081B2E] to-[#020617]',
+    headerBorder: 'border-[#06B6D4]/40',
+    headerText: 'text-white',
+    headerSubtext: 'text-cyan-300',
+    sidebarBg: 'bg-[#050D1A]',
+    sidebarBorder: 'border-[#0E2F44]',
+    sidebarActiveItem: 'bg-[#0891B2] text-white font-black border border-cyan-400 shadow-xs',
+    sidebarHoverItem: 'hover:bg-[#081B2E] text-cyan-200',
+    contentBg: 'bg-[#020617]',
+    feedBg: 'bg-[#020617]',
+    feedBorder: 'border-[#0E2F44]',
+    cardBg: 'bg-[#091528]',
+    cardBorder: 'border-[#0E2F44]',
+    cardHover: 'hover:border-cyan-400 hover:shadow-md',
+    cardSelected: 'border-cyan-400 ring-2 ring-cyan-400/30 bg-[#0C1E3A]',
+    dockBg: 'bg-[#091528]',
+    dockBorder: 'border-[#0E2F44]',
+    textPrimary: 'text-white',
+    textSecondary: 'text-cyan-100',
+    textMuted: 'text-cyan-400/70',
+    accent: '#06B6D4',
+    badgeNeutral: 'bg-[#0E2F44] text-cyan-200',
+    ribbonBg: 'bg-[#050D1A] border-b border-[#0E2F44]',
+    ribbonBorder: 'border-[#0E2F44]',
+    isDark: true
+  },
+  amethyst: {
+    modalBg: 'bg-[#0E061A]',
+    modalBorder: 'border-[#2A134D]',
+    headerBg: 'bg-gradient-to-r from-[#0B0414] via-[#1B0B33] to-[#0B0414]',
+    headerBorder: 'border-[#A855F7]/30',
+    headerText: 'text-white',
+    headerSubtext: 'text-purple-200',
+    sidebarBg: 'bg-[#130824]',
+    sidebarBorder: 'border-[#2A134D]',
+    sidebarActiveItem: 'bg-[#7C3AED] text-white font-black border border-purple-400 shadow-xs',
+    sidebarHoverItem: 'hover:bg-[#200D3D] text-purple-200',
+    contentBg: 'bg-[#0A0413]',
+    feedBg: 'bg-[#0A0413]',
+    feedBorder: 'border-[#2A134D]',
+    cardBg: 'bg-[#190B2E]',
+    cardBorder: 'border-[#2E1554]',
+    cardHover: 'hover:border-purple-400 hover:shadow-md',
+    cardSelected: 'border-purple-400 ring-2 ring-purple-400/30 bg-[#220F3E]',
+    dockBg: 'bg-[#190B2E]',
+    dockBorder: 'border-[#2E1554]',
+    textPrimary: 'text-white',
+    textSecondary: 'text-purple-100',
+    textMuted: 'text-purple-300',
+    accent: '#7C3AED',
+    badgeNeutral: 'bg-[#250E45] text-purple-200',
+    ribbonBg: 'bg-[#130824] border-b border-[#2A134D]',
+    ribbonBorder: 'border-[#2A134D]',
+    isDark: true
+  },
+  titanium: {
+    modalBg: 'bg-[#F1F5F9]',
+    modalBorder: 'border-[#CBD5E1]',
+    headerBg: 'bg-gradient-to-r from-[#1E293B] via-[#334155] to-[#1E293B]',
+    headerBorder: 'border-slate-400/40',
+    headerText: 'text-white',
+    headerSubtext: 'text-slate-300',
+    sidebarBg: 'bg-[#E2E8F0]',
+    sidebarBorder: 'border-[#CBD5E1]',
+    sidebarActiveItem: 'bg-[#2563EB] text-white font-black shadow-xs',
+    sidebarHoverItem: 'hover:bg-[#CBD5E1] text-slate-800',
+    contentBg: 'bg-[#F8FAFC]',
+    feedBg: 'bg-[#FFFFFF]',
+    feedBorder: 'border-[#E2E8F0]',
+    cardBg: 'bg-[#FFFFFF]',
+    cardBorder: 'border-[#E2E8F0]',
+    cardHover: 'hover:border-blue-500 hover:shadow-md',
+    cardSelected: 'border-blue-500 ring-2 ring-blue-500/30 bg-blue-50/30',
+    dockBg: 'bg-[#FFFFFF]',
+    dockBorder: 'border-[#E2E8F0]',
+    textPrimary: 'text-slate-900',
+    textSecondary: 'text-slate-600',
+    textMuted: 'text-slate-500',
+    accent: '#2563EB',
+    badgeNeutral: 'bg-slate-200 text-slate-700',
+    ribbonBg: 'bg-[#E2E8F0] border-b border-[#CBD5E1]',
+    ribbonBorder: 'border-[#CBD5E1]',
+    isDark: false
+  },
+  custom: {
+    modalBg: 'bg-slate-950',
+    modalBorder: 'border-slate-800',
+    headerBg: 'bg-slate-900',
+    headerBorder: 'border-slate-700',
+    headerText: 'text-white',
+    headerSubtext: 'text-slate-300',
+    sidebarBg: 'bg-slate-900/90',
+    sidebarBorder: 'border-slate-800',
+    sidebarActiveItem: 'bg-indigo-600 text-white font-black shadow-xs',
+    sidebarHoverItem: 'hover:bg-white/10 text-slate-200',
+    contentBg: 'bg-slate-950',
+    feedBg: 'bg-slate-950',
+    feedBorder: 'border-slate-800',
+    cardBg: 'bg-slate-900/80',
+    cardBorder: 'border-slate-800',
+    cardHover: 'hover:border-indigo-400 hover:shadow-md',
+    cardSelected: 'border-indigo-500 ring-2 ring-indigo-500/30',
+    dockBg: 'bg-slate-900',
+    dockBorder: 'border-slate-800',
+    textPrimary: 'text-white',
+    textSecondary: 'text-slate-300',
+    textMuted: 'text-slate-400',
+    accent: '#4F46E5',
+    badgeNeutral: 'bg-white/10 text-slate-200',
+    ribbonBg: 'bg-slate-900 border-b border-slate-800',
+    ribbonBorder: 'border-slate-800',
+    isDark: true
   }
 };
+
+// Paleta cromática exhaustiva para personalización milimétrica en tiempo real
+export const EXECUTIVE_COLOR_PALETTES = {
+  backgrounds: [
+    { label: 'Ónix Negro', hex: '#050811' },
+    { label: 'Pizarra Grafito', hex: '#0B0F19' },
+    { label: 'Azul Medianoche', hex: '#061224' },
+    { label: 'Verde Bosque', hex: '#041A14' },
+    { label: 'Borgoña Noche', hex: '#18080E' },
+    { label: 'Amatista Oscuro', hex: '#0E061A' },
+    { label: 'Carbón Zinc', hex: '#18181B' },
+    { label: 'Azul Pizarra', hex: '#0F172A' },
+    { label: 'Marfil Cálido', hex: '#FDFBF7' },
+    { label: 'Platino Neutro', hex: '#F1F5F9' },
+    { label: 'Arena Clásica', hex: '#F5EBE1' },
+    { label: 'Gris Perla', hex: '#E2E8F0' }
+  ],
+  buttons: [
+    { label: 'Índigo Real', hex: '#4F46E5' },
+    { label: 'Zafiro Académico', hex: '#2563EB' },
+    { label: 'Esmeralda Directivo', hex: '#059669' },
+    { label: 'Rubí / Carmín', hex: '#E11D48' },
+    { label: 'Oro / Bronce', hex: '#C49746' },
+    { label: 'Ámbar Soberano', hex: '#D97706' },
+    { label: 'Cian Neón', hex: '#06B6D4' },
+    { label: 'Púrpura Imperial', hex: '#7C3AED' },
+    { label: 'Vino Tinto', hex: '#8B1E3F' },
+    { label: 'Rosa Directivo', hex: '#DB2777' },
+    { label: 'Teal Elegante', hex: '#0D9488' },
+    { label: 'Naranja Fuego', hex: '#EA580C' }
+  ],
+  signals: [
+    { label: 'Ámbar Precaución', hex: '#F59E0B' },
+    { label: 'Rojo Escarlata Urgente', hex: '#EF4444' },
+    { label: 'Esmeralda Operativo', hex: '#10B981' },
+    { label: 'Cian Radar', hex: '#06B6D4' },
+    { label: 'Naranja Incidencia', hex: '#F97316' },
+    { label: 'Rosa Notificación', hex: '#EC4899' },
+    { label: 'Violeta Radar', hex: '#8B5CF6' },
+    { label: 'Amarillo Cautela', hex: '#EAB308' }
+  ],
+  cards: [
+    { label: 'Azul Carbón', hex: '#111A2E' },
+    { label: 'Ónix Mate', hex: '#090D16' },
+    { label: 'Noche Marina', hex: '#0B203E' },
+    { label: 'Verde Noche', hex: '#072C22' },
+    { label: 'Vino Sombra', hex: '#220B14' },
+    { label: 'Amatista Card', hex: '#190B2E' },
+    { label: 'Blanco Puro', hex: '#FFFFFF' },
+    { label: 'Marfil Suave', hex: '#FAF7F2' }
+  ],
+  headers: [
+    { label: 'Ónix Header', hex: '#050811' },
+    { label: 'Pizarra Header', hex: '#0F172A' },
+    { label: 'Navy Header', hex: '#0A192F' },
+    { label: 'Esmeralda Header', hex: '#062018' },
+    { label: 'Vino Header', hex: '#1E0911' },
+    { label: 'Marfil Header', hex: '#1E293B' }
+  ]
+};
+
+export const PRESET_THEME_COLORS: Record<Exclude<CeoThemeMode, 'custom'>, CustomCeoTheme> = {
+  ivory: {
+    name: 'Marfil Institucional',
+    isCustom: false,
+    backgroundColor: '#FDFBF7',
+    headerColor: '#1E293B',
+    sidebarColor: '#F8F5EE',
+    cardColor: '#FFFFFF',
+    cardBorderColor: '#EADBCE',
+    buttonColor: '#C49746',
+    signalColor: '#F59E0B',
+    textColor: '#1E293B',
+    isDark: false
+  },
+  slate: {
+    name: 'Pizarra Ejecutiva',
+    isCustom: false,
+    backgroundColor: '#080E1A',
+    headerColor: '#0B0F19',
+    sidebarColor: '#0F172A',
+    cardColor: '#111C2E',
+    cardBorderColor: '#1E293B',
+    buttonColor: '#3B82F6',
+    signalColor: '#06B6D4',
+    textColor: '#F8FAFC',
+    isDark: true
+  },
+  navy: {
+    name: 'Azul Real Académico',
+    isCustom: false,
+    backgroundColor: '#040C1A',
+    headerColor: '#0A192F',
+    sidebarColor: '#091B33',
+    cardColor: '#0B203E',
+    cardBorderColor: '#163866',
+    buttonColor: '#2563EB',
+    signalColor: '#38BDF8',
+    textColor: '#F8FAFC',
+    isDark: true
+  },
+  emerald: {
+    name: 'Verde Esmeralda',
+    isCustom: false,
+    backgroundColor: '#03140F',
+    headerColor: '#062018',
+    sidebarColor: '#06241C',
+    cardColor: '#072C22',
+    cardBorderColor: '#0F4738',
+    buttonColor: '#059669',
+    signalColor: '#10B981',
+    textColor: '#F8FAFC',
+    isDark: true
+  },
+  burgundy: {
+    name: 'Borgoña Soberano',
+    isCustom: false,
+    backgroundColor: '#12050A',
+    headerColor: '#1E0911',
+    sidebarColor: '#18080E',
+    cardColor: '#220B14',
+    cardBorderColor: '#421321',
+    buttonColor: '#8B1E3F',
+    signalColor: '#D4AF37',
+    textColor: '#FDFBF7',
+    isDark: true
+  },
+  cyber: {
+    name: 'Ciber Ónix',
+    isCustom: false,
+    backgroundColor: '#020617',
+    headerColor: '#050D1A',
+    sidebarColor: '#030712',
+    cardColor: '#091528',
+    cardBorderColor: '#0E2F44',
+    buttonColor: '#0891B2',
+    signalColor: '#06B6D4',
+    textColor: '#F8FAFC',
+    isDark: true
+  },
+  amethyst: {
+    name: 'Amatista Rectoral',
+    isCustom: false,
+    backgroundColor: '#0A0413',
+    headerColor: '#130824',
+    sidebarColor: '#0E061A',
+    cardColor: '#190B2E',
+    cardBorderColor: '#2E1554',
+    buttonColor: '#7C3AED',
+    signalColor: '#A855F7',
+    textColor: '#F8FAFC',
+    isDark: true
+  },
+  titanium: {
+    name: 'Platino Minimal',
+    isCustom: false,
+    backgroundColor: '#F1F5F9',
+    headerColor: '#1E293B',
+    sidebarColor: '#E2E8F0',
+    cardColor: '#FFFFFF',
+    cardBorderColor: '#CBD5E1',
+    buttonColor: '#2563EB',
+    signalColor: '#F59E0B',
+    textColor: '#0F172A',
+    isDark: false
+  }
+};
+
+/**
+ * Determina si un color hexadecimal es perceptualmente claro.
+ * Aplica el cálculo de luminosidad estándar WCAG / YIQ.
+ */
+export function isColorLight(hex?: string): boolean {
+  if (!hex || typeof hex !== 'string') return false;
+  let clean = hex.replace('#', '').trim();
+  if (clean.length === 3) {
+    clean = clean.split('').map(c => c + c).join('');
+  }
+  if (clean.length !== 6) return false;
+  const r = parseInt(clean.substring(0, 2), 16);
+  const g = parseInt(clean.substring(2, 4), 16);
+  const b = parseInt(clean.substring(4, 6), 16);
+  if (isNaN(r) || isNaN(g) || isNaN(b)) return false;
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 135;
+}
+
+export function getContrastTextColor(bgHex?: string, darkText = '#0F172A', lightText = '#F8FAFC'): string {
+  return isColorLight(bgHex) ? darkText : lightText;
+}
+
+export function getContrastSubtextColor(bgHex?: string, darkSub = '#334155', lightSub = '#CBD5E1'): string {
+  return isColorLight(bgHex) ? darkSub : lightSub;
+}
+
+export function getContrastMutedColor(bgHex?: string, darkMuted = '#64748B', lightMuted = '#94A3B8'): string {
+  return isColorLight(bgHex) ? darkMuted : lightMuted;
+}
+
+export function buildCustomThemeTokens(custom: CustomCeoTheme): ThemeTokens {
+  const bgIsLight = isColorLight(custom.backgroundColor);
+  const cardIsLight = isColorLight(custom.cardColor);
+  const headerIsLight = isColorLight(custom.headerColor);
+  const sidebarIsLight = isColorLight(custom.sidebarColor);
+  const btnIsLight = isColorLight(custom.buttonColor);
+  const isDark = custom.isDark !== undefined ? custom.isDark : !bgIsLight;
+
+  return {
+    modalBg: bgIsLight ? 'bg-[#FAF7F2]' : (isDark ? 'bg-slate-950' : 'bg-slate-50'),
+    modalBorder: bgIsLight ? 'border-slate-300' : (isDark ? 'border-slate-800' : 'border-slate-200'),
+    headerBg: headerIsLight ? 'bg-slate-100 text-slate-900' : (isDark ? 'bg-slate-900' : 'bg-slate-800'),
+    headerBorder: headerIsLight ? 'border-slate-300' : (isDark ? 'border-slate-700' : 'border-slate-300'),
+    headerText: headerIsLight ? 'text-slate-900' : 'text-white',
+    headerSubtext: headerIsLight ? 'text-slate-600' : (isDark ? 'text-slate-300' : 'text-slate-200'),
+    sidebarBg: sidebarIsLight ? 'bg-slate-100' : (isDark ? 'bg-slate-900/90' : 'bg-slate-100'),
+    sidebarBorder: sidebarIsLight ? 'border-slate-300' : (isDark ? 'border-slate-800' : 'border-slate-300'),
+    sidebarActiveItem: btnIsLight ? 'text-slate-900 font-black shadow-xs' : 'text-white font-black shadow-xs',
+    sidebarHoverItem: isDark ? 'hover:bg-white/10 text-slate-200' : 'hover:bg-slate-200 text-slate-700',
+    contentBg: bgIsLight ? 'bg-[#FAF7F2]' : (isDark ? 'bg-slate-950' : 'bg-slate-100'),
+    feedBg: cardIsLight ? 'bg-white' : (isDark ? 'bg-slate-950' : 'bg-white'),
+    feedBorder: cardIsLight ? 'border-slate-200' : (isDark ? 'border-slate-800' : 'border-slate-200'),
+    cardBg: cardIsLight ? 'bg-white' : (isDark ? 'bg-slate-900/80' : 'bg-white'),
+    cardBorder: cardIsLight ? 'border-slate-200' : (isDark ? 'border-slate-800' : 'border-slate-200'),
+    cardHover: 'hover:shadow-md',
+    cardSelected: 'ring-2 ring-indigo-500/30',
+    dockBg: isDark ? 'bg-slate-900' : 'bg-white',
+    dockBorder: isDark ? 'border-slate-800' : 'border-slate-200',
+    textPrimary: cardIsLight ? 'text-slate-900' : (isDark ? 'text-white' : 'text-slate-900'),
+    textSecondary: cardIsLight ? 'text-slate-700' : (isDark ? 'text-slate-300' : 'text-slate-600'),
+    textMuted: cardIsLight ? 'text-slate-500' : (isDark ? 'text-slate-400' : 'text-slate-500'),
+    accent: custom.buttonColor || '#4F46E5',
+    badgeNeutral: isDark ? 'bg-white/10 text-slate-200' : 'bg-slate-100 text-slate-700',
+    ribbonBg: isDark ? 'bg-slate-900 border-b border-slate-800' : 'bg-slate-200 border-b border-slate-300',
+    ribbonBorder: isDark ? 'border-slate-800' : 'border-slate-300',
+    isDark
+  };
+}
 
 export interface CeoVoiceProfileOption {
   id: string;
   name: string;
   personaLabel: string;
   gender: 'female' | 'male';
+  voiceId?: string;
+  rate?: number;
+  pitch?: number;
+  rateStr?: string;
+  pitchStr?: string;
   characterName?: string;
   narratorMode?: 'wisdom_guide' | 'epic_chronist' | 'time_chrononaut';
   description: string;
   sampleQuote: string;
+  avatarEmoji?: string;
 }
 
 export const CEO_VOICE_OPTIONS: CeoVoiceProfileOption[] = [
@@ -611,56 +1005,146 @@ export const CEO_VOICE_OPTIONS: CeoVoiceProfileOption[] = [
     name: 'La Guía del Saber (Sor Juana Inés de la Cruz)',
     personaLabel: 'Voz Narradora Institucional / Femenina',
     gender: 'female',
+    voiceId: 'es-MX-DaliaNeural',
+    rate: 0.97,
+    pitch: 1.0,
+    rateStr: '-3%',
+    pitchStr: '+0Hz',
+    characterName: 'Sor Juana Inés de la Cruz',
     narratorMode: 'wisdom_guide',
+    avatarEmoji: '👩‍🏫',
     description: 'Timbre sabio, cálido, sereno y didáctico con oratoria pedagógica de alta fidelidad.',
-    sampleQuote: 'Buenos días, Dirección General. Aquí tiene su resumen ejecutivo en 60 segundos...'
+    sampleQuote: 'Buenos días, Dirección General. Pongo a su disposición su resumen ejecutivo en sesenta segundos con las prioridades de la jornada.'
   },
   {
     id: 'miguel_hidalgo',
     name: 'Don Miguel Hidalgo y Costilla',
     personaLabel: 'Voz Histórica Republicana / Masculina',
     gender: 'male',
+    voiceId: 'es-MX-JorgeNeural',
+    rate: 0.95,
+    pitch: 1.0,
+    rateStr: '-5%',
+    pitchStr: '-2Hz',
     characterName: 'Miguel Hidalgo',
+    avatarEmoji: '👨‍🏫',
     description: 'Timbre maduro y elocuente de oratoria republicana, voz grave y de solemne liderazgo.',
-    sampleQuote: 'Dirección General: Les presento el estado prioritario de nuestros planteles y deberes normativos...'
+    sampleQuote: 'Dirección General: Pongo ante su vista el estado prioritario de nuestros planteles y la marcha firme del deber formativo.'
   },
   {
     id: 'josefa_ortiz',
     name: 'Doña Josefa Ortiz de Domínguez',
     personaLabel: 'Voz Insurgente y Heroica / Femenina',
     gender: 'female',
+    voiceId: 'es-US-PalomaNeural',
+    rate: 0.98,
+    pitch: 1.0,
+    rateStr: '-2%',
+    pitchStr: '+1Hz',
     characterName: 'Josefa Ortiz de Domínguez',
+    avatarEmoji: '👩‍🏫',
     description: 'Timbre firme, noble, enérgico y reflexivo para momentos de alta resolución institucional.',
-    sampleQuote: 'Atención a la Dirección: Hemos detectado asuntos críticos que exigen pronta respuesta institucional...'
+    sampleQuote: 'Atención a la Dirección: Les alerto con determinación sobre los asuntos que demandan prontitud y templanza en nuestra comunidad.'
   },
   {
     id: 'benito_juarez',
     name: 'Don Benito Juárez',
     personaLabel: 'Voz de Máxima Autoridad Civil / Masculina',
     gender: 'male',
+    voiceId: 'es-MX-JorgeNeural',
+    rate: 0.94,
+    pitch: 1.0,
+    rateStr: '-6%',
+    pitchStr: '-3Hz',
     characterName: 'Benito Juárez',
+    avatarEmoji: '👨‍🏫',
     description: 'Timbre sobrio, reflexivo y de máxima autoridad legal y republicana para supervisión y normativas.',
-    sampleQuote: 'Dirección General: El cumplimiento estricto de los lineamientos oficiales y acuerdos de la comunidad...'
+    sampleQuote: 'Dirección General: Hago constar las resoluciones prioritarias para mantener la legalidad, el orden y la armonía escolar.'
   },
   {
     id: 'epic_chronist',
     name: 'El Cronista Épico (Cecilio)',
     personaLabel: 'Voz Cinemática / Masculina',
     gender: 'male',
+    voiceId: 'es-PE-AlexNeural',
+    rate: 1.02,
+    pitch: 1.0,
+    rateStr: '+2%',
+    pitchStr: '+1Hz',
     narratorMode: 'epic_chronist',
+    avatarEmoji: '📜',
     description: 'Relato apasionado estilo cinemática o tráiler histórico de batallas, retos y gloria formativa.',
-    sampleQuote: 'Informe matutino: 5 asuntos prioritarios demandan acción estratégica en este momento...'
+    sampleQuote: '¡Alerta matutina! La jornada convoca nuestro liderazgo ante los retos prioritarios de los planteles.'
   },
   {
     id: 'time_chrononaut',
     name: 'El Crononauta / Investigador de Archivo',
     personaLabel: 'Voz Analítica & Datos / Masculina',
     gender: 'male',
+    voiceId: 'es-CO-GonzaloNeural',
+    rate: 0.98,
+    pitch: 1.0,
+    rateStr: '-1%',
+    pitchStr: '-1Hz',
     narratorMode: 'time_chrononaut',
+    avatarEmoji: '⏱️',
     description: 'Misterio, datos analíticos y rigor técnico que despiertan la atención de la directiva.',
-    sampleQuote: 'Análisis cognitivo completado: Patrones detectados y radar de tiempos en seguimiento activo...'
+    sampleQuote: 'Registro analítico activo: He consolidado las métricas, patrones y tiempos de atención de la bóveda escolar.'
   }
 ];
+
+export function buildDynamicAudioDigestText(
+  matters: MatterItem[],
+  schoolName: string,
+  directorTitle: string,
+  voiceOption?: CeoVoiceProfileOption,
+  hasPattern: boolean = false
+): string {
+  const parts: string[] = [];
+  const voiceId = voiceOption?.id || 'wisdom_guide';
+
+  if (voiceId === 'miguel_hidalgo') {
+    parts.push(`Dirección General: Pongo ante su vista el estado prioritario de la Bóveda Institucional de ${schoolName}.`);
+  } else if (voiceId === 'josefa_ortiz') {
+    parts.push(`Atención a la Dirección General de ${schoolName}: Les alerto con determinación sobre las prioridades de nuestra comunidad.`);
+  } else if (voiceId === 'benito_juarez') {
+    parts.push(`Dirección General: Registro oficial de prioridades ejecutivas y normativas en ${schoolName}.`);
+  } else if (voiceId === 'epic_chronist') {
+    parts.push(`¡Alerta estratégica matutina para Dirección General! Resumen ejecutivo en sesenta segundos de ${schoolName}.`);
+  } else if (voiceId === 'time_chrononaut') {
+    parts.push(`Análisis cognitivo y radar temporal de la Bóveda de ${schoolName} para Dirección General.`);
+  } else {
+    parts.push(`Buenos días, Dirección General. Aquí tiene su resumen ejecutivo en sesenta segundos de la Bóveda de Correo de ${schoolName}.`);
+  }
+
+  if (matters.length === 0) {
+    parts.push('Bandeja de entrada al día. No tiene asuntos críticos pendientes de resolución inmediata en este momento.');
+  } else {
+    const countText = matters.length === 1 ? 'un asunto prioritario que requiere' : `${matters.length} asuntos prioritarios que requieren`;
+    parts.push(`Cuenta actualmente con ${countText} su atención ejecutiva.`);
+
+    const topMatters = matters.slice(0, 3);
+    const ordinales = ['Primer asunto prioritario', 'Segundo asunto prioritario', 'Tercer asunto prioritario'];
+    topMatters.forEach((m, idx) => {
+      const cleanTitle = (m.title || 'Asunto escolar').replace(/^(re:|fwd:)\s*/i, '').trim();
+      const campusInfo = m.campus ? ` en ${m.campus}` : '';
+      const summaryClean = (m.summary || '').replace(/\s+/g, ' ').trim().slice(0, 140);
+      const actionClean = m.recommended_action ? `. Acción sugerida: ${m.recommended_action}` : '';
+      parts.push(`${ordinales[idx] || 'Siguiente asunto'}: ${cleanTitle}${campusInfo}. ${summaryClean}${actionClean}`);
+    });
+
+    if (matters.length > 3) {
+      parts.push(`Y ${matters.length - 3} asunto(s) adicional(es) en espera de revisión en el panel.`);
+    }
+  }
+
+  if (hasPattern) {
+    parts.push('Patrón colectivo detectado: Se identificaron reportes concurrentes sobre horarios de salida en Campus Montes, con circular lista para emisión masiva en un solo clic.');
+  }
+
+  parts.push('Bóveda curricular sincronizada y bajo control.');
+  return parts.join('\n\n');
+}
 
 export function CEOEmailCommunicationsModal({
   isOpen,
@@ -688,14 +1172,58 @@ export function CEOEmailCommunicationsModal({
   const [themeMode, setThemeMode] = useState<CeoThemeMode>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(`iskool_ceo_theme_${currentTenantId}`);
-      if (saved === 'ivory' || saved === 'slate' || saved === 'navy' || saved === 'emerald') {
+      if (saved && (
+        saved === 'ivory' || saved === 'slate' || saved === 'navy' || saved === 'emerald' ||
+        saved === 'burgundy' || saved === 'cyber' || saved === 'amethyst' || saved === 'titanium' || saved === 'custom'
+      )) {
         return saved as CeoThemeMode;
       }
     }
     return 'ivory';
   });
 
-  const currentTheme = THEME_CONFIG[themeMode] || THEME_CONFIG.ivory;
+  // Configuración de Paleta Personalizada en Tiempo Real (Bespoke CEO)
+  const [customTheme, setCustomTheme] = useState<CustomCeoTheme>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`iskool_ceo_custom_theme_${currentTenantId}`);
+      if (saved) {
+        try {
+          return { ...DEFAULT_CUSTOM_THEME, ...JSON.parse(saved) };
+        } catch {}
+      }
+    }
+    return DEFAULT_CUSTOM_THEME;
+  });
+
+  // Sub-vista de Apariencia: 'custom' (Estudio Libre) vs 'presets' (Catálogo de 8 Temas)
+  const [appearanceSubView, setAppearanceSubView] = useState<'custom' | 'presets'>('custom');
+
+  // Estados para guardado asíncrono y feedback visual del Estudio de Color
+  const [isSavingCustomTheme, setIsSavingCustomTheme] = useState<boolean>(false);
+  const [saveCustomSuccess, setSaveCustomSuccess] = useState<boolean>(false);
+  const [hasPendingColorChanges, setHasPendingColorChanges] = useState<boolean>(false);
+  const [lastSavedThemeAt, setLastSavedThemeAt] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(`iskool_ceo_custom_theme_saved_at_${currentTenantId}`) || null;
+    }
+    return null;
+  });
+  const [inModalToast, setInModalToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+  const triggerInModalToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setInModalToast({ message, type });
+    setTimeout(() => {
+      setInModalToast(prev => prev?.message === message ? null : prev);
+    }, 4500);
+  };
+
+  // Tokens del tema computados en tiempo real con 0ms de latencia
+  const currentTheme = useMemo<ThemeTokens>(() => {
+    if (themeMode === 'custom') {
+      return buildCustomThemeTokens(customTheme);
+    }
+    return THEME_CONFIG[themeMode] || THEME_CONFIG.ivory;
+  }, [themeMode, customTheme]);
 
   // Estados para Modelo C (Briefing de Audio 60s, Interceptor de Patrones Colectivos, Radar SLA)
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
@@ -715,6 +1243,15 @@ export function CEOEmailCommunicationsModal({
     return 'wisdom_guide';
   });
   const [previewingVoiceId, setPreviewingVoiceId] = useState<string | null>(null);
+
+  // Estado del catálogo retráctil de voces (Imagen 3: colapsado por defecto)
+  const [isVoiceListExpanded, setIsVoiceListExpanded] = useState<boolean>(false);
+
+  // Estados de Audio Digest dinámico y reactivo a nuevos correos (revisión cada 30 segundos)
+  const [audioDigestText, setAudioDigestText] = useState<string>('');
+  const lastDigestHashRef = useRef<string>('');
+  const [isAudioDigestFresh, setIsAudioDigestFresh] = useState<boolean>(false);
+  const [lastAudioUpdateTime, setLastAudioUpdateTime] = useState<string>('');
 
   // Estado de Colapso/Expansión Quirúrgica de Tarjetas de Triage (Imagen 4: compactas por defecto)
   const [expandedCardIds, setExpandedCardIds] = useState<Record<string, boolean>>({});
@@ -1128,6 +1665,24 @@ export function CEOEmailCommunicationsModal({
         const json = await res.json();
         if (json.success && json.settings) {
           setSettingsData(json.settings);
+          if (json.settings.themeMode) {
+            setThemeMode(json.settings.themeMode);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(`iskool_ceo_theme_${currentTenantId}`, json.settings.themeMode);
+            }
+          }
+          if (json.settings.customThemeConfig) {
+            setCustomTheme(json.settings.customThemeConfig);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(`iskool_ceo_custom_theme_${currentTenantId}`, JSON.stringify(json.settings.customThemeConfig));
+            }
+          }
+          if (json.settings.updatedAt) {
+            try {
+              const formattedTime = new Date(json.settings.updatedAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+              setLastSavedThemeAt(formattedTime);
+            } catch {}
+          }
         }
       }
     } catch (e) {
@@ -1466,36 +2021,6 @@ export function CEOEmailCommunicationsModal({
     };
   }, [isPlayingAudio]);
 
-  const handleTogglePlayBriefing = () => {
-    if (isPlayingAudio) {
-      stopAllIskoolAudio();
-      setIsPlayingAudio(false);
-    } else {
-      setIsPlayingAudio(true);
-      setAudioProgress(0);
-      const activeVoice = CEO_VOICE_OPTIONS.find(v => v.id === selectedVoiceProfile) || CEO_VOICE_OPTIONS[0];
-      const textToSpeak = `Buenos días, Dirección General. Aquí tiene su resumen ejecutivo en sesenta segundos de la Bóveda de Correo de ${schoolName}. Cuenta con ${intelligentMatters.length} asuntos prioritarios que requieren su atención. Asunto prioritario número uno: Caso de convivencia escolar en Campus Montes, con recomendación de mesa de mediación presencial. Asunto número dos: Oficio regulatorio de Supervisión de Zona 14 de la Secretaría de Educación Pública con once horas de plazo restante. Hemos detectado además un patrón colectivo de cinco reportes sobre demoras en la Ruta 4 de transporte escolar, listo para emisión de circular institucional en un clic.`;
-      
-      playUniversalIskoolVoice({
-        text: textToSpeak,
-        characterName: activeVoice.characterName,
-        narratorMode: activeVoice.narratorMode,
-        role: activeVoice.characterName ? 'character' : 'narrator',
-        gender: activeVoice.gender,
-        onStart: () => {
-          setIsPlayingAudio(true);
-        },
-        onEnd: () => {
-          setIsPlayingAudio(false);
-          setAudioProgress(60);
-        },
-        onError: () => {
-          setIsPlayingAudio(false);
-        }
-      });
-    }
-  };
-
   const handleApprovePatternCircular = async () => {
     setIsApprovingCircular(true);
     try {
@@ -1521,10 +2046,20 @@ export function CEOEmailCommunicationsModal({
     }
   };
 
-  const handleSelectTheme = (mode: CeoThemeMode) => {
+  const handleSelectTheme = (mode: CeoThemeMode, customConfig?: CustomCeoTheme) => {
     setThemeMode(mode);
+    if (customConfig) {
+      setCustomTheme(customConfig);
+    } else if (mode !== 'custom' && PRESET_THEME_COLORS[mode]) {
+      setCustomTheme(PRESET_THEME_COLORS[mode]);
+    }
     if (typeof window !== 'undefined') {
       localStorage.setItem(`iskool_ceo_theme_${currentTenantId}`, mode);
+      if (customConfig) {
+        localStorage.setItem(`iskool_ceo_custom_theme_${currentTenantId}`, JSON.stringify(customConfig));
+      } else if (mode !== 'custom' && PRESET_THEME_COLORS[mode]) {
+        localStorage.setItem(`iskool_ceo_custom_theme_${currentTenantId}`, JSON.stringify(PRESET_THEME_COLORS[mode]));
+      }
     }
     fetch('/api/mail/settings', {
       method: 'POST',
@@ -1532,7 +2067,8 @@ export function CEOEmailCommunicationsModal({
       body: JSON.stringify({
         action: 'update_theme',
         tenantId: currentTenantId,
-        themeMode: mode
+        themeMode: mode,
+        ...(customConfig ? { customThemeConfig: customConfig } : {})
       })
     }).catch(() => {});
     
@@ -1540,9 +2076,154 @@ export function CEOEmailCommunicationsModal({
       ivory: 'Marfil Institucional (Predeterminado)',
       slate: 'Pizarra Ejecutiva',
       navy: 'Azul Real Académico',
-      emerald: 'Verde Esmeralda Institucional'
+      emerald: 'Verde Esmeralda Institucional',
+      burgundy: 'Borgoña & Granate Soberano',
+      cyber: 'Ciber Ónix & Neón Cian',
+      amethyst: 'Amatista Rectoral',
+      titanium: 'Platino Minimal',
+      custom: 'Estudio Personalizado Bespoke'
     };
-    onTriggerToast(`✓ Tema visual actualizado a ${themeNames[mode]}.`);
+    onTriggerToast(`✓ Tema visual actualizado a ${themeNames[mode] || mode}.`);
+  };
+
+  // Modificación inmediata de colores con reflejo en tiempo real y calibración inteligente de contraste tipográfico
+  const handleUpdateCustomColor = (key: keyof CustomCeoTheme, value: any) => {
+    const updated: CustomCeoTheme = {
+      ...customTheme,
+      [key]: value,
+      isCustom: true
+    };
+
+    // Calibración automática de contraste tipográfico según luminancia del elemento seleccionado
+    if (key === 'backgroundColor') {
+      const isBgLight = isColorLight(value);
+      updated.isDark = !isBgLight;
+      updated.textColor = isBgLight ? '#0F172A' : '#F8FAFC';
+    } else if (key === 'cardColor') {
+      const isCardLight = isColorLight(value);
+      if (isCardLight && isColorLight(customTheme.backgroundColor)) {
+        updated.isDark = false;
+        updated.textColor = '#0F172A';
+      }
+    }
+
+    setCustomTheme(updated);
+    setHasPendingColorChanges(true);
+    setSaveCustomSuccess(false);
+
+    if (themeMode !== 'custom') {
+      setThemeMode('custom');
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`iskool_ceo_custom_theme_${currentTenantId}`, JSON.stringify(updated));
+      localStorage.setItem(`iskool_ceo_theme_${currentTenantId}`, 'custom');
+    }
+  };
+
+  // Guardado persistente del tema personalizado en el servidor y almacenamiento local con feedback visual
+  const handleSaveCustomTheme = async () => {
+    setIsSavingCustomTheme(true);
+    setSaveCustomSuccess(false);
+
+    try {
+      // 1. Asegurar persistencia local inmediata y modo custom activo
+      setThemeMode('custom');
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`iskool_ceo_custom_theme_${currentTenantId}`, JSON.stringify(customTheme));
+        localStorage.setItem(`iskool_ceo_theme_${currentTenantId}`, 'custom');
+      }
+
+      // 2. Persistencia remota en el servidor institucional
+      const res = await fetch('/api/mail/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_theme',
+          tenantId: currentTenantId,
+          themeMode: 'custom',
+          customThemeConfig: customTheme
+        })
+      });
+
+      // Garantizar que la animación de guardado sea perceptible (mínimo 450ms para ver el spinner)
+      await new Promise(r => setTimeout(r, 450));
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+
+      const json = await res.json();
+      if (!json.success) {
+        throw new Error(json.error || 'Error al persistir en el servidor');
+      }
+
+      if (json.settings) {
+        setSettingsData(json.settings);
+      }
+
+      setSaveCustomSuccess(true);
+      setHasPendingColorChanges(false);
+      const nowFormatted = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      setLastSavedThemeAt(nowFormatted);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`iskool_ceo_custom_theme_saved_at_${currentTenantId}`, nowFormatted);
+      }
+
+      triggerInModalToast('✓ ¡Personalización guardada con éxito en el servidor y aplicada en tiempo real!');
+      setTimeout(() => setSaveCustomSuccess(false), 5000);
+      onTriggerToast('✓ Paleta de colores ejecutiva guardada y activa en tiempo real.');
+    } catch (err: any) {
+      console.error('Error al guardar personalización en el servidor:', err);
+      triggerInModalToast('❌ Error al guardar en el servidor: ' + (err.message || 'Verifica la conexión'), 'error');
+      onTriggerToast('Error al guardar tema: ' + err.message);
+    } finally {
+      setIsSavingCustomTheme(false);
+    }
+  };
+
+  // Restablecimiento a valores de fábrica
+  const handleResetToDefaultTheme = () => {
+    handleSelectTheme('ivory');
+    setCustomTheme(DEFAULT_CUSTOM_THEME);
+    setHasPendingColorChanges(true);
+    setSaveCustomSuccess(false);
+    triggerInModalToast('✓ Tema restablecido a Marfil Institucional.');
+    onTriggerToast('✓ Tema restablecido a Marfil Institucional.');
+  };
+
+  // Estilos adaptativos de alta fidelidad para la navegación de la barra lateral (Sidebar)
+  const getSidebarItemStyle = (isActive: boolean): React.CSSProperties | undefined => {
+    if (themeMode !== 'custom') return undefined;
+    const isSidebarLight = isColorLight(customTheme.sidebarColor);
+    const btnColor = customTheme.buttonColor || '#4F46E5';
+    if (isActive) {
+      return {
+        backgroundColor: `${btnColor}25`,
+        borderColor: `${btnColor}60`,
+        color: isSidebarLight 
+          ? (isColorLight(btnColor) ? '#0F172A' : btnColor)
+          : (isColorLight(btnColor) ? btnColor : '#FFFFFF')
+      };
+    }
+    return {
+      color: getContrastSubtextColor(customTheme.sidebarColor)
+    };
+  };
+
+  const getSidebarBadgeStyle = (isActive: boolean): React.CSSProperties | undefined => {
+    if (themeMode !== 'custom') return undefined;
+    const isSidebarLight = isColorLight(customTheme.sidebarColor);
+    const btnColor = customTheme.buttonColor || '#4F46E5';
+    if (isActive) {
+      return {
+        backgroundColor: btnColor,
+        color: isColorLight(btnColor) ? '#0F172A' : '#FFFFFF'
+      };
+    }
+    return {
+      backgroundColor: isSidebarLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)',
+      color: getContrastSubtextColor(customTheme.sidebarColor)
+    };
   };
 
   const handleSelectVoiceProfile = (voiceId: string) => {
@@ -1565,6 +2246,9 @@ export function CEOEmailCommunicationsModal({
     
     playUniversalIskoolVoice({
       text: voiceOpt.sampleQuote,
+      voiceId: voiceOpt.voiceId,
+      rate: voiceOpt.rate || 1.0,
+      pitch: 1.0,
       characterName: voiceOpt.characterName,
       narratorMode: voiceOpt.narratorMode,
       role: voiceOpt.characterName ? 'character' : 'narrator',
@@ -5308,6 +5992,85 @@ Comité de Seguridad y Protección Escolar`
     );
   }, [mattersList, isMatterOrEmailResolved]);
 
+  // Efecto reactivo con revisión periódica cada 30 segundos:
+  // Si llegan nuevos correos o hay cambios en los asuntos, regenera el Audio Digest dinámicamente;
+  // en caso contrario, lo deja intacto sin invalidar el audio ni la caché.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const evaluateAndSyncDigest = () => {
+      const activeVoice = CEO_VOICE_OPTIONS.find(v => v.id === selectedVoiceProfile) || CEO_VOICE_OPTIONS[0];
+      const mattersDigestKey = intelligentMatters
+        .map(m => `${m.id}::${m.title}::${m.received_at}`)
+        .join('||');
+      const currentHash = `${selectedVoiceProfile}::${intelligentMatters.length}::${mattersDigestKey}::${patternResolved ? '0' : '1'}`;
+
+      if (currentHash !== lastDigestHashRef.current) {
+        const newDigestText = buildDynamicAudioDigestText(
+          intelligentMatters,
+          schoolName,
+          directorTitle,
+          activeVoice,
+          !patternResolved
+        );
+        setAudioDigestText(newDigestText);
+        lastDigestHashRef.current = currentHash;
+        setIsAudioDigestFresh(true);
+        setLastAudioUpdateTime(formatCdmxTime(new Date(), true));
+      }
+      // En caso contrario: dejarlo exactamente como está, sin recalcular ni alterar el audio
+    };
+
+    // Evaluación inmediata
+    evaluateAndSyncDigest();
+
+    // Verificación periódica cada 30 segundos
+    const periodicTimer = setInterval(() => {
+      evaluateAndSyncDigest();
+    }, 30000);
+
+    return () => clearInterval(periodicTimer);
+  }, [isOpen, intelligentMatters, selectedVoiceProfile, patternResolved, schoolName, directorTitle]);
+
+  const handleTogglePlayBriefing = () => {
+    if (isPlayingAudio) {
+      stopAllIskoolAudio();
+      setIsPlayingAudio(false);
+    } else {
+      setIsPlayingAudio(true);
+      setAudioProgress(0);
+      const activeVoice = CEO_VOICE_OPTIONS.find(v => v.id === selectedVoiceProfile) || CEO_VOICE_OPTIONS[0];
+      const textToSpeak = audioDigestText || buildDynamicAudioDigestText(
+        intelligentMatters,
+        schoolName,
+        directorTitle,
+        activeVoice,
+        !patternResolved
+      );
+      
+      playUniversalIskoolVoice({
+        text: textToSpeak,
+        voiceId: activeVoice.voiceId,
+        rate: activeVoice.rate || 0.98,
+        pitch: 1.0,
+        characterName: activeVoice.characterName,
+        narratorMode: activeVoice.narratorMode,
+        role: activeVoice.characterName ? 'character' : 'narrator',
+        gender: activeVoice.gender,
+        onStart: () => {
+          setIsPlayingAudio(true);
+        },
+        onEnd: () => {
+          setIsPlayingAudio(false);
+          setAudioProgress(60);
+        },
+        onError: () => {
+          setIsPlayingAudio(false);
+        }
+      });
+    }
+  };
+
   // Asuntos y correos delegados a Coordinaciones y Secciones de Plantel con SLA
   const delegatedMattersList = useMemo(() => {
     // 1. Asuntos explícitamente marcados como delegados en mattersList
@@ -5493,12 +6256,44 @@ Comité de Seguridad y Protección Escolar`
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-1 sm:p-3 lg:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in select-none">
-      <div className={`${currentTheme.modalBg} ${currentTheme.modalBorder} rounded-3xl shadow-2xl border w-full max-w-[98vw] 2xl:max-w-[1980px] max-h-[97vh] sm:max-h-[94vh] h-[95vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150`}>
+      <div 
+        className={`${currentTheme.modalBg} ${currentTheme.modalBorder} rounded-3xl shadow-2xl border w-full max-w-[98vw] 2xl:max-w-[1980px] max-h-[97vh] sm:max-h-[94vh] h-[95vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 relative`}
+        style={themeMode === 'custom' ? {
+          backgroundColor: customTheme.backgroundColor,
+          borderColor: customTheme.cardBorderColor || (isColorLight(customTheme.backgroundColor) ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)'),
+          color: customTheme.textColor || (isColorLight(customTheme.backgroundColor) ? '#0F172A' : '#F8FAFC')
+        } : undefined}
+      >
+        {/* BANNER NOTIFICACIÓN FLOTANTE EN TIEMPO REAL DENTRO DEL MODAL */}
+        {inModalToast && (
+          <div className={`fixed top-12 left-1/2 -translate-x-1/2 z-[1000] px-5 py-3 rounded-2xl text-white font-black text-xs shadow-2xl backdrop-blur-md flex items-center gap-2.5 animate-in slide-in-from-top-4 duration-200 border ${
+            inModalToast.type === 'error'
+              ? 'bg-red-600/95 border-red-400 shadow-red-950/50'
+              : inModalToast.type === 'info'
+              ? 'bg-blue-600/95 border-blue-400 shadow-blue-950/50'
+              : 'bg-emerald-600/95 border-emerald-400 shadow-emerald-950/50'
+          }`}>
+            {inModalToast.type === 'error' ? (
+              <AlertTriangle className="h-4 w-4 text-white shrink-0" />
+            ) : inModalToast.type === 'info' ? (
+              <Info className="h-4 w-4 text-white shrink-0" />
+            ) : (
+              <CheckCircle2 className="h-4 w-4 text-white shrink-0" />
+            )}
+            <span>{inModalToast.message}</span>
+          </div>
+        )}
         
         {/* ========================================================= */}
         {/* 1. HEADER DE LA SUITE INTELIGENTE DE EMAIL CEO            */}
         {/* ========================================================= */}
-        <div className={`px-3 sm:px-6 py-2.5 sm:py-3.5 ${currentTheme.headerBg} ${currentTheme.headerText} flex items-center justify-between shrink-0 border-b ${currentTheme.headerBorder} gap-3 flex-wrap lg:flex-nowrap`}>
+        <div 
+          className={`px-3 sm:px-6 py-2.5 sm:py-3.5 ${currentTheme.headerBg} ${currentTheme.headerText} flex items-center justify-between shrink-0 border-b ${currentTheme.headerBorder} gap-3 flex-wrap lg:flex-nowrap`}
+          style={themeMode === 'custom' && customTheme.headerColor ? { 
+            backgroundColor: customTheme.headerColor,
+            borderColor: isColorLight(customTheme.headerColor) ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)'
+          } : undefined}
+        >
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             {/* Botón de Menú Móvil para Desplegar Módulos Ejecutivos */}
             <button
@@ -5515,7 +6310,10 @@ Comité de Seguridad y Protección Escolar`
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-sm sm:text-base font-black tracking-tight text-white flex items-center gap-1.5 truncate">
+                <h3 
+                  className="text-sm sm:text-base font-black tracking-tight flex items-center gap-1.5 truncate"
+                  style={themeMode === 'custom' && customTheme.headerColor ? { color: getContrastTextColor(customTheme.headerColor) } : { color: '#FFFFFF' }}
+                >
                   <span>Consola de Correo Inteligente & Triage Cognitivo CEO</span>
                 </h3>
                 <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
@@ -5525,7 +6323,10 @@ Comité de Seguridad y Protección Escolar`
                   <Zap className="h-3 w-3 text-amber-300" /> 15 Fases Activas
                 </span>
               </div>
-              <p className="text-[11px] text-slate-300 font-medium mt-0.5 flex items-center gap-2 truncate">
+              <p 
+                className="text-[11px] font-medium mt-0.5 flex items-center gap-2 truncate"
+                style={themeMode === 'custom' && customTheme.headerColor ? { color: getContrastSubtextColor(customTheme.headerColor) } : { color: '#CBD5E1' }}
+              >
                 <span>{schoolName} ({campuses.length} Sedes)</span>
                 <span>•</span>
                 {connectionStatus === 'connected_verified' && connectedEmail ? (
@@ -5561,12 +6362,12 @@ Comité de Seguridad y Protección Escolar`
           {/* BARRA MODELO C: BRIEFING 60s, INTERCEPTOR Y RADAR DE INCIDENCIAS */}
           <div className="flex items-center gap-2 flex-wrap">
             {/* Cápsula de Audio Digest 60s con ecualizador animado */}
-            <div className="flex items-center gap-2 bg-slate-900/85 hover:bg-slate-900 px-2.5 py-1.5 rounded-xl border border-indigo-500/40 text-xs shadow-xs transition-all">
+            <div className="flex items-center gap-2 bg-slate-900/85 hover:bg-slate-900 px-2.5 py-1.5 rounded-xl border border-indigo-500/40 text-xs shadow-xs transition-all relative group">
               <button
                 type="button"
                 onClick={handleTogglePlayBriefing}
                 className="flex items-center gap-1.5 text-amber-300 hover:text-amber-200 font-black cursor-pointer"
-                title="Reproducir Briefing Ejecutivo de 60 segundos"
+                title={isAudioDigestFresh ? `Audio Digest al día (${lastAudioUpdateTime || 'revisión cada 30s'}). Clic para reproducir.` : "Reproducir Briefing Ejecutivo de 60 segundos"}
               >
                 {isPlayingAudio ? (
                   <>
@@ -5577,7 +6378,12 @@ Comité de Seguridad y Protección Escolar`
                     <Pause className="h-3.5 w-3.5 text-amber-300" />
                   </>
                 ) : (
-                  <Play className="h-3.5 w-3.5 fill-amber-300 text-amber-300" />
+                  <>
+                    <span className="relative flex h-2 w-2" title="Sincronizado cada 30 segundos con nuevos correos">
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                    </span>
+                    <Play className="h-3.5 w-3.5 fill-amber-300 text-amber-300" />
+                  </>
                 )}
                 <span className="text-[11px] font-bold text-white tracking-wide">Audio Digest 60s</span>
               </button>
@@ -5616,12 +6422,18 @@ Comité de Seguridad y Protección Escolar`
             </div>
 
             {/* Pastilla Radar SLA */}
-            <div className="hidden lg:flex items-center gap-1 bg-rose-950/70 border border-rose-500/50 px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-rose-200">
-              <Clock className="h-3 w-3 text-rose-400 animate-pulse" />
+            <div 
+              className="hidden lg:flex items-center gap-1 bg-rose-950/70 border border-rose-500/50 px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-rose-200"
+              style={themeMode === 'custom' && customTheme.signalColor ? { borderColor: `${customTheme.signalColor}80` } : undefined}
+            >
+              <Clock 
+                className="h-3 w-3 animate-pulse" 
+                style={{ color: themeMode === 'custom' && customTheme.signalColor ? customTheme.signalColor : '#FB7185' }} 
+              />
               <span>SEP: <strong>11h 20m</strong></span>
             </div>
 
-            {/* Selector Rápido de Temas (Marfil por defecto) */}
+            {/* Selector Rápido de Temas Ejecutivos */}
             <div className="hidden 2xl:flex items-center gap-1 bg-slate-900/70 p-1 rounded-xl border border-white/10">
               <button
                 type="button"
@@ -5655,6 +6467,32 @@ Comité de Seguridad y Protección Escolar`
               >
                 🌲 Verde
               </button>
+              <button
+                type="button"
+                onClick={() => handleSelectTheme('burgundy')}
+                className={`px-2 py-0.5 rounded-lg text-[10px] font-black cursor-pointer transition-colors ${themeMode === 'burgundy' ? 'bg-[#8B1E3F] text-white shadow-xs' : 'text-slate-300 hover:text-white'}`}
+                title="Tema Borgoña Soberano"
+              >
+                🍷 Borgoña
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const targetTab: typeof activeTab = 'ajustes';
+                  setActiveTab(targetTab);
+                  setSettingsSubTab('apariencia');
+                  setAppearanceSubView('custom');
+                }}
+                className={`px-2 py-0.5 rounded-lg text-[10px] font-black cursor-pointer transition-all flex items-center gap-1 ${
+                  themeMode === 'custom'
+                    ? 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-xs ring-1 ring-amber-300'
+                    : 'text-slate-300 hover:text-white hover:bg-white/10'
+                }`}
+                title="Abrir Estudio de Personalización Libre"
+              >
+                <Palette className="h-3 w-3 text-amber-300" />
+                <span>Estudio</span>
+              </button>
             </div>
 
             {/* Botón de Expansión del Radar Cockpit */}
@@ -5674,7 +6512,12 @@ Comité de Seguridad y Protección Escolar`
             {/* Ponte al día conmigo diálogo matutino */}
             <button
               onClick={() => setShowCatchupModal(true)}
-              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs shadow-md transition-all cursor-pointer active:scale-95"
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white font-bold text-xs shadow-md transition-all cursor-pointer active:scale-95 border"
+              style={{
+                background: themeMode === 'custom' && customTheme.buttonColor ? customTheme.buttonColor : 'linear-gradient(to right, #4F46E5, #9333EA)',
+                borderColor: themeMode === 'custom' && customTheme.buttonColor ? `${customTheme.buttonColor}99` : 'rgba(255,255,255,0.2)',
+                color: themeMode === 'custom' && customTheme.buttonColor ? (isColorLight(customTheme.buttonColor) ? '#0F172A' : '#FFFFFF') : '#FFFFFF'
+              }}
               title="Resumen ejecutivo silencioso de 30 segundos"
             >
               <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
@@ -5702,10 +6545,19 @@ Comité de Seguridad y Protección Escolar`
                   <span className="text-[10px] font-black uppercase tracking-wider text-amber-300 flex items-center gap-1">
                     <Volume2 className="h-3.5 w-3.5" /> Resumen Ejecutivo de Audio (60s)
                   </span>
-                  <span className="text-[10px] font-mono text-slate-300">0:{audioProgress.toString().padStart(2, '0')} / 1:00</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${
+                      isAudioDigestFresh
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                        : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                    }`}>
+                      {isAudioDigestFresh && lastAudioUpdateTime ? `Actualizado ${lastAudioUpdateTime}` : 'Revisión cada 30s'}
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-300">0:{audioProgress.toString().padStart(2, '0')} / 1:00</span>
+                  </div>
                 </div>
-                <p className="text-xs text-slate-200 leading-relaxed font-medium">
-                  "Buenos días Dirección General: Hoy tienes 5 asuntos prioritarios en bandeja, destacando el requerimiento de Supervisión Escolar Zona 14 con 11 horas de plazo y 5 reportes de familias sobre la Ruta 4."
+                <p className="text-xs text-slate-200 leading-relaxed font-medium line-clamp-3" title={audioDigestText}>
+                  "{audioDigestText || 'Generando síntesis ejecutiva de audio basada en los asuntos vigentes de la Bóveda Curricular...'}"
                 </p>
                 <button
                   type="button"
@@ -5771,7 +6623,10 @@ Comité de Seguridad y Protección Escolar`
         {/* ========================================================= */}
         {/* 2. CUERPO MODAL: BARRA LATERAL IZQUIERDA + CONTENIDO      */}
         {/* ========================================================= */}
-        <div className={`flex-1 flex flex-row min-h-0 overflow-hidden ${currentTheme.contentBg} relative`}>
+        <div 
+          className={`flex-1 flex flex-row min-h-0 overflow-hidden ${currentTheme.contentBg} relative`}
+          style={themeMode === 'custom' && customTheme.backgroundColor ? { backgroundColor: customTheme.backgroundColor } : undefined}
+        >
 
           {/* Backdrop móvil para cerrar la barra lateral al hacer tap fuera */}
           {mobileSidebarOpen && (
@@ -5783,9 +6638,15 @@ Comité de Seguridad y Protección Escolar`
           )}
 
           {/* BARRA LATERAL IZQUIERDA: PESTAÑAS VERTICALES DE ARRIBA A ABAJO */}
-          <aside className={`w-64 sm:w-72 ${currentTheme.sidebarBg} border-r ${currentTheme.sidebarBorder} flex flex-col justify-between shrink-0 overflow-y-auto ${
-            mobileSidebarOpen ? 'fixed inset-y-0 left-0 z-50 shadow-2xl flex' : 'hidden md:flex'
-          } md:relative md:shadow-none`}>
+          <aside 
+            className={`w-64 sm:w-72 ${currentTheme.sidebarBg} border-r ${currentTheme.sidebarBorder} flex flex-col justify-between shrink-0 overflow-y-auto ${
+              mobileSidebarOpen ? 'fixed inset-y-0 left-0 z-50 shadow-2xl flex' : 'hidden md:flex'
+            } md:relative md:shadow-none`}
+            style={themeMode === 'custom' && customTheme.sidebarColor ? { 
+              backgroundColor: customTheme.sidebarColor,
+              borderColor: isColorLight(customTheme.sidebarColor) ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.12)'
+            } : undefined}
+          >
             <div className="p-3 sm:p-3.5 space-y-1.5">
               <div className="px-3 py-1.5 mb-0.5 flex items-center justify-between">
                 <span className={`text-[10px] font-black uppercase tracking-wider ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-400'}`}>
@@ -5816,6 +6677,7 @@ Comité de Seguridad y Protección Escolar`
                   }
                   setMobileSidebarOpen(false);
                 }}
+                style={getSidebarItemStyle(activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS')}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS'
                     ? 'bg-red-500/15 text-red-600 dark:text-red-400 shadow-xs border border-red-500/30 font-black'
@@ -5823,12 +6685,18 @@ Comité de Seguridad y Protección Escolar`
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <Inbox className={`h-4 w-4 shrink-0 ${activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS' ? 'text-red-500' : 'text-slate-400'}`} />
+                  <Inbox 
+                    className={`h-4 w-4 shrink-0 ${activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS' ? 'text-red-500' : 'text-slate-400'}`} 
+                    style={themeMode === 'custom' && (activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS') && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
+                  />
                   <span className="truncate">Bandeja Inteligente</span>
                 </div>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
-                  activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS' ? 'bg-[#E41B14] text-white' : currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'
-                }`}>
+                <span 
+                  style={getSidebarBadgeStyle(activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS')}
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
+                    activeTab === 'inbox' && usableSubFilter !== 'DELEGADOS' ? 'bg-[#E41B14] text-white' : currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'
+                  }`}
+                >
                   {intelligentMatters.length}
                 </span>
               </button>
@@ -5843,6 +6711,7 @@ Comité de Seguridad y Protección Escolar`
                   setSelectedRawEmailId(null);
                   setMobileSidebarOpen(false);
                 }}
+                style={getSidebarItemStyle(activeTab === 'inbox' && usableSubFilter === 'DELEGADOS')}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'inbox' && usableSubFilter === 'DELEGADOS'
                     ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 shadow-xs border border-amber-500/30 font-black'
@@ -5850,12 +6719,18 @@ Comité de Seguridad y Protección Escolar`
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <Forward className={`h-4 w-4 shrink-0 ${activeTab === 'inbox' && usableSubFilter === 'DELEGADOS' ? 'text-amber-500' : 'text-slate-400'}`} />
+                  <Forward 
+                    className={`h-4 w-4 shrink-0 ${activeTab === 'inbox' && usableSubFilter === 'DELEGADOS' ? 'text-amber-500' : 'text-slate-400'}`} 
+                    style={themeMode === 'custom' && (activeTab === 'inbox' && usableSubFilter === 'DELEGADOS') && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
+                  />
                   <span className="truncate">Asuntos Delegados</span>
                 </div>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
-                  activeTab === 'inbox' && usableSubFilter === 'DELEGADOS' ? 'bg-amber-500 text-white' : currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'
-                }`}>
+                <span 
+                  style={getSidebarBadgeStyle(activeTab === 'inbox' && usableSubFilter === 'DELEGADOS')}
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
+                    activeTab === 'inbox' && usableSubFilter === 'DELEGADOS' ? 'bg-amber-500 text-white' : currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'
+                  }`}
+                >
                   {delegatedMattersList.length}
                 </span>
               </button>
@@ -5867,6 +6742,7 @@ Comité de Seguridad y Protección Escolar`
                   setActiveTab('calendario');
                   setMobileSidebarOpen(false);
                 }}
+                style={getSidebarItemStyle(activeTab === 'calendario')}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'calendario'
                     ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shadow-xs border border-indigo-500/30 font-black'
@@ -5874,12 +6750,18 @@ Comité de Seguridad y Protección Escolar`
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <Calendar className={`h-4 w-4 shrink-0 ${activeTab === 'calendario' ? 'text-indigo-500' : 'text-slate-400'}`} />
+                  <Calendar 
+                    className={`h-4 w-4 shrink-0 ${activeTab === 'calendario' ? 'text-indigo-500' : 'text-slate-400'}`} 
+                    style={themeMode === 'custom' && activeTab === 'calendario' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
+                  />
                   <span className="truncate">Calendario Escolar</span>
                 </div>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
-                  activeTab === 'calendario' ? 'bg-indigo-600 text-white' : currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'
-                }`}>
+                <span 
+                  style={getSidebarBadgeStyle(activeTab === 'calendario')}
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
+                    activeTab === 'calendario' ? 'bg-indigo-600 text-white' : currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'
+                  }`}
+                >
                   {calendarEvents.length}
                 </span>
               </button>
@@ -5891,13 +6773,17 @@ Comité de Seguridad y Protección Escolar`
                   setActiveTab('redactar');
                   setMobileSidebarOpen(false);
                 }}
+                style={getSidebarItemStyle(activeTab === 'redactar')}
                 className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'redactar'
                     ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 shadow-xs border border-blue-500/30 font-black'
                     : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
                 }`}
               >
-                <Send className={`h-4 w-4 shrink-0 ${activeTab === 'redactar' ? 'text-[#5448f7]' : 'text-slate-400'}`} />
+                <Send 
+                  className={`h-4 w-4 shrink-0 ${activeTab === 'redactar' ? 'text-[#5448f7]' : 'text-slate-400'}`} 
+                  style={themeMode === 'custom' && activeTab === 'redactar' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
+                />
                 <span className="truncate">Redactar Comunicado</span>
               </button>
 
@@ -5908,6 +6794,7 @@ Comité de Seguridad y Protección Escolar`
                   setActiveTab('google');
                   setMobileSidebarOpen(false);
                 }}
+                style={getSidebarItemStyle(activeTab === 'google')}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'google'
                     ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 shadow-xs border border-blue-500/30 font-black'
@@ -5915,7 +6802,10 @@ Comité de Seguridad y Protección Escolar`
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <Globe2 className={`h-4 w-4 shrink-0 ${activeTab === 'google' ? 'text-blue-500' : 'text-slate-400'}`} />
+                  <Globe2 
+                    className={`h-4 w-4 shrink-0 ${activeTab === 'google' ? 'text-blue-500' : 'text-slate-400'}`} 
+                    style={themeMode === 'custom' && activeTab === 'google' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
+                  />
                   <span className="truncate">Conexión POP / IMAP</span>
                 </div>
                 <span className={`w-2 h-2 rounded-full shrink-0 ${
@@ -5933,13 +6823,17 @@ Comité de Seguridad y Protección Escolar`
                   setActiveTab('laboratorio');
                   setMobileSidebarOpen(false);
                 }}
+                style={getSidebarItemStyle(activeTab === 'laboratorio')}
                 className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'laboratorio'
                     ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 shadow-xs border border-amber-500/30 font-black'
                     : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
                 }`}
               >
-                <Zap className={`h-4 w-4 shrink-0 ${activeTab === 'laboratorio' ? 'text-amber-500' : 'text-slate-400'}`} />
+                <Zap 
+                  className={`h-4 w-4 shrink-0 ${activeTab === 'laboratorio' ? 'text-amber-500' : 'text-slate-400'}`} 
+                  style={themeMode === 'custom' && activeTab === 'laboratorio' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
+                />
                 <span className="truncate">Laboratorio de Ingesta</span>
               </button>
 
@@ -5950,13 +6844,17 @@ Comité de Seguridad y Protección Escolar`
                   setActiveTab('directorio');
                   setMobileSidebarOpen(false);
                 }}
+                style={getSidebarItemStyle(activeTab === 'directorio')}
                 className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'directorio'
                     ? 'bg-purple-500/15 text-purple-600 dark:text-purple-400 shadow-xs border border-purple-500/30 font-black'
                     : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
                 }`}
               >
-                <Users className={`h-4 w-4 shrink-0 ${activeTab === 'directorio' ? 'text-purple-500' : 'text-slate-400'}`} />
+                <Users 
+                  className={`h-4 w-4 shrink-0 ${activeTab === 'directorio' ? 'text-purple-500' : 'text-slate-400'}`} 
+                  style={themeMode === 'custom' && activeTab === 'directorio' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
+                />
                 <span className="truncate">Directorio Oficial</span>
               </button>
 
@@ -5967,6 +6865,7 @@ Comité de Seguridad y Protección Escolar`
                   setActiveTab('bitacora');
                   setMobileSidebarOpen(false);
                 }}
+                style={getSidebarItemStyle(activeTab === 'bitacora')}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'bitacora'
                     ? 'bg-slate-500/15 text-slate-800 dark:text-slate-200 shadow-xs border border-slate-500/30 font-black'
@@ -5974,10 +6873,16 @@ Comité de Seguridad y Protección Escolar`
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <Clock className={`h-4 w-4 shrink-0 ${activeTab === 'bitacora' ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`} />
+                  <Clock 
+                    className={`h-4 w-4 shrink-0 ${activeTab === 'bitacora' ? 'text-slate-900 dark:text-white' : 'text-slate-400'}`} 
+                    style={themeMode === 'custom' && activeTab === 'bitacora' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
+                  />
                   <span className="truncate">Bitácora</span>
                 </div>
-                <span className="text-[10px] font-bold text-slate-500 shrink-0">
+                <span 
+                  style={getSidebarBadgeStyle(activeTab === 'bitacora')}
+                  className="text-[10px] font-bold text-slate-500 shrink-0"
+                >
                   {logs.length}
                 </span>
               </button>
@@ -5990,6 +6895,7 @@ Comité de Seguridad y Protección Escolar`
                   setSelectedRawEmailId(null);
                   setMobileSidebarOpen(false);
                 }}
+                style={getSidebarItemStyle(activeTab === 'raw_inbox')}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'raw_inbox'
                     ? 'bg-red-500/15 text-[#EA4335] shadow-xs border border-red-500/30 font-black'
@@ -5997,16 +6903,22 @@ Comité de Seguridad y Protección Escolar`
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <Mail className={`h-4 w-4 shrink-0 ${activeTab === 'raw_inbox' ? 'text-[#EA4335]' : 'text-slate-400'}`} />
+                  <Mail 
+                    className={`h-4 w-4 shrink-0 ${activeTab === 'raw_inbox' ? 'text-[#EA4335]' : 'text-slate-400'}`} 
+                    style={themeMode === 'custom' && activeTab === 'raw_inbox' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
+                  />
                   <span className="truncate">Bandeja de Entrada</span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   {rawEmailsList.some(e => e.is_unread) && (
                     <span className="w-2 h-2 rounded-full bg-[#EA4335] animate-pulse" title="Correos sin leer" />
                   )}
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                    activeTab === 'raw_inbox' ? 'bg-[#EA4335] text-white' : currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'
-                  }`}>
+                  <span 
+                    style={getSidebarBadgeStyle(activeTab === 'raw_inbox')}
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                      activeTab === 'raw_inbox' ? 'bg-[#EA4335] text-white' : currentTheme.isDark ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
                     {rawEmailsList.length}
                   </span>
                 </div>
@@ -6019,13 +6931,17 @@ Comité de Seguridad y Protección Escolar`
                   setActiveTab('roi');
                   setMobileSidebarOpen(false);
                 }}
+                style={getSidebarItemStyle(activeTab === 'roi')}
                 className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'roi'
                     ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 shadow-xs border border-emerald-500/30 font-black'
                     : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
                 }`}
               >
-                <BarChart3 className={`h-4 w-4 shrink-0 ${activeTab === 'roi' ? 'text-emerald-500' : 'text-slate-400'}`} />
+                <BarChart3 
+                  className={`h-4 w-4 shrink-0 ${activeTab === 'roi' ? 'text-emerald-500' : 'text-slate-400'}`} 
+                  style={themeMode === 'custom' && activeTab === 'roi' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
+                />
                 <span className="truncate">ROI & Telemetría</span>
               </button>
 
@@ -6037,20 +6953,37 @@ Comité de Seguridad y Protección Escolar`
                   setActiveTab('ajustes');
                   setMobileSidebarOpen(false);
                 }}
+                style={getSidebarItemStyle(activeTab === 'ajustes')}
                 className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
                   activeTab === 'ajustes'
                     ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shadow-xs border border-indigo-500/30 font-black'
                     : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
                 }`}
               >
-                <Sliders className={`h-4 w-4 shrink-0 ${activeTab === 'ajustes' ? 'text-indigo-500' : 'text-slate-400'}`} />
+                <Sliders 
+                  className={`h-4 w-4 shrink-0 ${activeTab === 'ajustes' ? 'text-indigo-500' : 'text-slate-400'}`} 
+                  style={themeMode === 'custom' && activeTab === 'ajustes' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
+                />
                 <span className="truncate">Ajustes</span>
               </button>
             </div>
 
             {/* Pie de la barra lateral con Estado de Sincronización y Cuenta */}
-            <div className={`p-3 border-t ${currentTheme.sidebarBorder} ${currentTheme.isDark ? 'bg-black/25' : 'bg-slate-50/70'}`}>
-              <div className={`p-2.5 rounded-xl border shadow-xs ${currentTheme.isDark ? 'bg-white/5 border-white/10 text-slate-200' : 'bg-white border-slate-200 text-slate-700'}`}>
+            <div 
+              className={`p-3 border-t ${currentTheme.sidebarBorder} ${currentTheme.isDark ? 'bg-black/25' : 'bg-slate-50/70'}`}
+              style={themeMode === 'custom' && customTheme.sidebarColor ? {
+                backgroundColor: isColorLight(customTheme.sidebarColor) ? 'rgba(0,0,0,0.03)' : 'rgba(0,0,0,0.25)',
+                borderColor: isColorLight(customTheme.sidebarColor) ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)'
+              } : undefined}
+            >
+              <div 
+                className={`p-2.5 rounded-xl border shadow-xs ${currentTheme.isDark ? 'bg-white/5 border-white/10 text-slate-200' : 'bg-white border-slate-200 text-slate-700'}`}
+                style={themeMode === 'custom' && customTheme.sidebarColor ? {
+                  backgroundColor: isColorLight(customTheme.sidebarColor) ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.06)',
+                  borderColor: isColorLight(customTheme.sidebarColor) ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+                  color: getContrastTextColor(customTheme.sidebarColor)
+                } : undefined}
+              >
                 <div className="flex items-center gap-2 text-[11px] font-bold">
                   <span className="relative flex h-2 w-2">
                     <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${
@@ -6066,19 +6999,38 @@ Comité de Seguridad y Protección Escolar`
                     {connectionStatus === 'connected_verified' ? 'Google API: En Línea' : 'Google API: Por Vincular'}
                   </span>
                 </div>
-                <p className={`text-[10px] mt-1 truncate ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-400'}`}>
-                  Sinc: <span className={`font-semibold ${currentTheme.isDark ? 'text-slate-200' : 'text-slate-600'}`}>{lastSyncTime}</span>
+                <p 
+                  className={`text-[10px] mt-1 truncate ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-400'}`}
+                  style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.sidebarColor) } : undefined}
+                >
+                  Sinc: <span className={`font-semibold ${currentTheme.isDark ? 'text-slate-200' : 'text-slate-600'}`} style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.sidebarColor) } : undefined}>{lastSyncTime}</span>
                 </p>
-                <div className={`mt-2 pt-2 border-t ${currentTheme.isDark ? 'border-white/10' : 'border-slate-100'} flex items-center justify-between text-[10px]`}>
-                  <span className={currentTheme.isDark ? 'text-slate-400' : 'text-slate-400'}>Auto-Sync</span>
-                  <span className="text-indigo-500 font-bold">{isAutoSyncActive ? `${autoSyncCountdown}s` : 'Pausado'}</span>
+                <div 
+                  className={`mt-2 pt-2 border-t ${currentTheme.isDark ? 'border-white/10' : 'border-slate-100'} flex items-center justify-between text-[10px]`}
+                  style={themeMode === 'custom' ? { borderColor: isColorLight(customTheme.sidebarColor) ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)' } : undefined}
+                >
+                  <span 
+                    className={currentTheme.isDark ? 'text-slate-400' : 'text-slate-400'}
+                    style={themeMode === 'custom' ? { color: getContrastMutedColor(customTheme.sidebarColor) } : undefined}
+                  >
+                    Auto-Sync
+                  </span>
+                  <span 
+                    className="font-bold"
+                    style={{ color: themeMode === 'custom' && customTheme.buttonColor ? customTheme.buttonColor : '#6366F1' }}
+                  >
+                    {isAutoSyncActive ? `${autoSyncCountdown}s` : 'Pausado'}
+                  </span>
                 </div>
               </div>
             </div>
           </aside>
 
           {/* ÁREA DE CONTENIDO PRINCIPAL A LA DERECHA */}
-          <div className={`flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 ${currentTheme.contentBg}`}>
+          <div 
+            className={`flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 ${currentTheme.contentBg}`}
+            style={themeMode === 'custom' && customTheme.backgroundColor ? { backgroundColor: customTheme.backgroundColor } : undefined}
+          >
 
           {/* ------------------------------------------------------- */}
           {/* TAB 1: BANDEJA INTELIGENTE & CORREOS USABLES VS NO USABLES */}
@@ -6095,40 +7047,148 @@ Comité de Seguridad y Protección Escolar`
 
                 return (
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                    <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Volumen Bruto Hoy</span>
+                    <div 
+                      className="p-3.5 rounded-2xl border shadow-xs transition-colors"
+                      style={themeMode === 'custom' && customTheme.cardColor ? {
+                        backgroundColor: customTheme.cardColor,
+                        borderColor: customTheme.cardBorderColor || (isColorLight(customTheme.cardColor) ? '#E2E8F0' : '#334155'),
+                        color: getContrastTextColor(customTheme.cardColor)
+                      } : undefined}
+                    >
+                      <span 
+                        className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block"
+                        style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}
+                      >
+                        Volumen Bruto Hoy
+                      </span>
                       <div className="flex items-baseline gap-2 mt-1">
-                        <span className="text-2xl font-black text-slate-900">{totalGrossVolume}</span>
-                        <span className="text-xs font-bold text-slate-500">correos recibidos</span>
+                        <span 
+                          className="text-2xl font-black text-slate-900"
+                          style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}
+                        >
+                          {totalGrossVolume}
+                        </span>
+                        <span 
+                          className="text-xs font-bold text-slate-500"
+                          style={themeMode === 'custom' ? { color: getContrastMutedColor(customTheme.cardColor) } : undefined}
+                        >
+                          correos recibidos
+                        </span>
                       </div>
-                      <span className="text-[10px] text-slate-400 font-medium">Bandeja general en Google Cloud</span>
+                      <span 
+                        className="text-[10px] text-slate-400 font-medium"
+                        style={themeMode === 'custom' ? { color: getContrastMutedColor(customTheme.cardColor) } : undefined}
+                      >
+                        Bandeja general en Google Cloud
+                      </span>
                     </div>
 
-                    <div className="p-3.5 rounded-2xl bg-emerald-50/80 border border-emerald-200 shadow-xs">
-                      <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider block">Correos Usables</span>
+                    <div 
+                      className="p-3.5 rounded-2xl border shadow-xs transition-colors"
+                      style={themeMode === 'custom' && customTheme.cardColor ? {
+                        backgroundColor: customTheme.cardColor,
+                        borderColor: customTheme.buttonColor ? `${customTheme.buttonColor}40` : '#A7F3D0',
+                        color: getContrastTextColor(customTheme.cardColor)
+                      } : undefined}
+                    >
+                      <span 
+                        className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider block"
+                        style={themeMode === 'custom' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
+                      >
+                        Correos Usables
+                      </span>
                       <div className="flex items-baseline gap-2 mt-1">
-                        <span className="text-2xl font-black text-emerald-700">{usableEmailsCount}</span>
-                        <span className="text-xs font-bold text-emerald-600">({usablePercent}%)</span>
+                        <span 
+                          className="text-2xl font-black text-emerald-700"
+                          style={themeMode === 'custom' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
+                        >
+                          {usableEmailsCount}
+                        </span>
+                        <span 
+                          className="text-xs font-bold text-emerald-600"
+                          style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}
+                        >
+                          ({usablePercent}%)
+                        </span>
                       </div>
-                      <span className="text-[10px] text-emerald-600 font-medium">Consolidados en {mattersList.length} Asuntos</span>
+                      <span 
+                        className="text-[10px] text-emerald-600 font-medium"
+                        style={themeMode === 'custom' ? { color: getContrastMutedColor(customTheme.cardColor) } : undefined}
+                      >
+                        Consolidados en {mattersList.length} Asuntos
+                      </span>
                     </div>
 
-                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-300 shadow-xs">
-                      <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider block">No Usables / Descartados</span>
+                    <div 
+                      className="p-3.5 rounded-2xl border shadow-xs transition-colors"
+                      style={themeMode === 'custom' && customTheme.cardColor ? {
+                        backgroundColor: customTheme.cardColor,
+                        borderColor: customTheme.cardBorderColor || (isColorLight(customTheme.cardColor) ? '#E2E8F0' : '#334155'),
+                        color: getContrastTextColor(customTheme.cardColor)
+                      } : undefined}
+                    >
+                      <span 
+                        className="text-[11px] font-bold text-slate-600 uppercase tracking-wider block"
+                        style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}
+                      >
+                        No Usables / Descartados
+                      </span>
                       <div className="flex items-baseline gap-2 mt-1">
-                        <span className="text-2xl font-black text-slate-700">{discardedEmailsCount}</span>
-                        <span className="text-xs font-bold text-slate-500">({discardedPercent}%)</span>
+                        <span 
+                          className="text-2xl font-black text-slate-700"
+                          style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}
+                        >
+                          {discardedEmailsCount}
+                        </span>
+                        <span 
+                          className="text-xs font-bold text-slate-500"
+                          style={themeMode === 'custom' ? { color: getContrastMutedColor(customTheme.cardColor) } : undefined}
+                        >
+                          ({discardedPercent}%)
+                        </span>
                       </div>
-                      <span className="text-[10px] text-slate-500 font-medium">Spam y publicidad filtrada</span>
+                      <span 
+                        className="text-[10px] text-slate-500 font-medium"
+                        style={themeMode === 'custom' ? { color: getContrastMutedColor(customTheme.cardColor) } : undefined}
+                      >
+                        Spam y publicidad filtrada
+                      </span>
                     </div>
 
-                    <div className="p-3.5 rounded-2xl bg-indigo-50/80 border border-indigo-200 shadow-xs">
-                      <span className="text-[11px] font-bold text-indigo-800 uppercase tracking-wider block">Atención Salvada CEO</span>
+                    <div 
+                      className="p-3.5 rounded-2xl border shadow-xs transition-colors"
+                      style={themeMode === 'custom' && customTheme.cardColor ? {
+                        backgroundColor: customTheme.cardColor,
+                        borderColor: customTheme.signalColor ? `${customTheme.signalColor}40` : '#C7D2FE',
+                        color: getContrastTextColor(customTheme.cardColor)
+                      } : undefined}
+                    >
+                      <span 
+                        className="text-[11px] font-bold text-indigo-800 uppercase tracking-wider block"
+                        style={themeMode === 'custom' && customTheme.signalColor ? { color: customTheme.signalColor } : undefined}
+                      >
+                        Atención Salvada CEO
+                      </span>
                       <div className="flex items-baseline gap-2 mt-1">
-                        <span className="text-2xl font-black text-indigo-700">3.8 hrs</span>
-                        <span className="text-xs font-bold text-indigo-600">hoy</span>
+                        <span 
+                          className="text-2xl font-black text-indigo-700"
+                          style={themeMode === 'custom' && customTheme.signalColor ? { color: customTheme.signalColor } : undefined}
+                        >
+                          3.8 hrs
+                        </span>
+                        <span 
+                          className="text-xs font-bold text-indigo-600"
+                          style={themeMode === 'custom' ? { color: getContrastMutedColor(customTheme.cardColor) } : undefined}
+                        >
+                          hoy
+                        </span>
                       </div>
-                      <span className="text-[10px] text-indigo-600 font-medium">Cero interrupciones operativas</span>
+                      <span 
+                        className="text-[10px] text-indigo-600 font-medium"
+                        style={themeMode === 'custom' ? { color: getContrastMutedColor(customTheme.cardColor) } : undefined}
+                      >
+                        Cero interrupciones operativas
+                      </span>
                     </div>
                   </div>
                 );
@@ -6248,7 +7308,14 @@ Comité de Seguridad y Protección Escolar`
               </div>
 
               {/* Segmented Control & Acciones de Bandeja */}
-              <div className={`p-3 rounded-2xl border shadow-xs space-y-2.5 ${currentTheme.cardBg} ${currentTheme.cardBorder}`}>
+              <div 
+                className={`p-3 rounded-2xl border shadow-xs space-y-2.5 ${currentTheme.cardBg} ${currentTheme.cardBorder}`}
+                style={themeMode === 'custom' && customTheme.cardColor ? {
+                  backgroundColor: customTheme.cardColor,
+                  borderColor: customTheme.cardBorderColor || (isColorLight(customTheme.cardColor) ? '#E2E8F0' : '#334155'),
+                  color: getContrastTextColor(customTheme.cardColor)
+                } : undefined}
+              >
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div className={`flex items-center p-1 rounded-xl ${currentTheme.isDark ? 'bg-white/5 border border-white/10' : 'bg-slate-100'}`}>
                     <button
@@ -6291,7 +7358,12 @@ Comité de Seguridad y Protección Escolar`
                     <button
                       type="button"
                       onClick={() => setShowManualIngestModal(true)}
-                      className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                      className="px-3 py-1.5 rounded-xl text-white font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 border"
+                      style={{
+                        background: themeMode === 'custom' && customTheme.buttonColor ? customTheme.buttonColor : 'linear-gradient(to right, #059669, #0D9488)',
+                        borderColor: themeMode === 'custom' && customTheme.buttonColor ? `${customTheme.buttonColor}99` : 'rgba(16, 185, 129, 0.4)',
+                        color: themeMode === 'custom' && customTheme.buttonColor ? (isColorLight(customTheme.buttonColor) ? '#0F172A' : '#FFFFFF') : '#FFFFFF'
+                      }}
                       title="Ingestar y clasificar un correo de prueba o el que acabas de enviar"
                     >
                       <Plus className="h-3.5 w-3.5" />
@@ -6454,6 +7526,19 @@ Comité de Seguridad y Protección Escolar`
                                 : 'border-amber-200 bg-white hover:border-amber-300'
                               : `${currentTheme.cardBg} ${currentTheme.cardBorder} ${currentTheme.cardHover}`
                           }`}
+                          style={themeMode === 'custom' && customTheme.cardColor ? {
+                            backgroundColor: selectedMatter?.id === matter.id
+                              ? (isColorLight(customTheme.cardColor) ? '#FFFFFF' : '#1E293B')
+                              : isCeoAttention
+                              ? (isColorLight(customTheme.cardColor) ? '#FFF5F5' : '#1C0D12')
+                              : customTheme.cardColor,
+                            borderColor: selectedMatter?.id === matter.id
+                              ? customTheme.buttonColor || '#6366F1'
+                              : isCeoAttention
+                              ? (customTheme.signalColor || '#EF4444')
+                              : customTheme.cardBorderColor || (isColorLight(customTheme.cardColor) ? '#E2E8F0' : '#334155'),
+                            color: getContrastTextColor(customTheme.cardColor)
+                          } : undefined}
                           title="Haz clic para seleccionar e inspeccionar en el Muelle de Decisión"
                         >
                           {/* FILA SUPERIOR COMPACTA (EXACTO A IMAGEN 4) */}
@@ -6486,7 +7571,10 @@ Comité de Seguridad y Protección Escolar`
                             </div>
 
                             <div className="flex items-center gap-2 shrink-0 text-[10px] sm:text-[11px] font-bold">
-                              <span className="text-amber-600 dark:text-amber-400 font-mono font-black flex items-center gap-1">
+                              <span 
+                                className="font-mono font-black flex items-center gap-1"
+                                style={themeMode === 'custom' && customTheme.signalColor ? { color: customTheme.signalColor } : undefined}
+                              >
                                 ⏱️ {matter.sla_remaining_text}
                               </span>
                               <span className={currentTheme.isDark ? 'text-slate-500' : 'text-slate-400'}>•</span>
@@ -6507,15 +7595,21 @@ Comité de Seguridad y Protección Escolar`
 
                           {/* FILA INFERIOR COMPACTA: TÍTULO Y SNIPPET DE 1 LÍNEA */}
                           <div className="mt-1.5 flex items-baseline justify-between gap-2">
-                            <h4 className={`text-xs sm:text-sm font-black truncate group-hover:text-indigo-500 transition-colors ${
-                              currentTheme.isDark ? 'text-white' : 'text-slate-900'
-                            }`}>
+                            <h4 
+                              className={`text-xs sm:text-sm font-black truncate group-hover:text-indigo-500 transition-colors ${
+                                currentTheme.isDark ? 'text-white' : 'text-slate-900'
+                              }`}
+                              style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}
+                            >
                               {matter.title}
                             </h4>
                             {!isExpanded && (
-                              <span className={`text-[10px] sm:text-[11px] font-medium truncate max-w-[160px] sm:max-w-xs shrink-0 ${
-                                currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'
-                              }`}>
+                              <span 
+                                className={`text-[10px] sm:text-[11px] font-medium truncate max-w-[160px] sm:max-w-xs shrink-0 ${
+                                  currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'
+                                }`}
+                                style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}
+                              >
                                 {matter.sender_name} · {matter.summary}
                               </span>
                             )}
@@ -6604,11 +7698,18 @@ Comité de Seguridad y Protección Escolar`
                   </div>
 
                   {/* COLUMNA 2 (DERECHA): MATTER DECISION DOCK (PERMANENTE EN DESKTOP) */}
-                  <div className={`hidden lg:flex lg:w-7/12 xl:w-7/12 flex-col rounded-3xl border ${currentTheme.dockBg} ${currentTheme.dockBorder} shadow-sm overflow-hidden max-h-[calc(90vh-240px)]`}>
+                  <div 
+                    className={`hidden lg:flex lg:w-7/12 xl:w-7/12 flex-col rounded-3xl border ${currentTheme.dockBg} ${currentTheme.dockBorder} shadow-sm overflow-hidden max-h-[calc(90vh-240px)]`}
+                    style={themeMode === 'custom' && customTheme.cardColor ? {
+                      backgroundColor: customTheme.cardColor,
+                      borderColor: customTheme.cardBorderColor || (isColorLight(customTheme.cardColor) ? '#E2E8F0' : '#334155'),
+                      color: getContrastTextColor(customTheme.cardColor)
+                    } : undefined}
+                  >
                     {selectedMatter ? (
                       <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-xs">
                         {/* Encabezado del Dock */}
-                        <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                        <div className="flex items-center justify-between border-b border-slate-200 pb-3" style={themeMode === 'custom' ? { borderColor: isColorLight(customTheme.cardColor) ? '#E2E8F0' : '#334155' } : undefined}>
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-mono font-black text-sm px-2.5 py-1 rounded-xl bg-slate-100 text-slate-800">
                               {selectedMatter.matter_code}
@@ -6644,13 +7745,19 @@ Comité de Seguridad y Protección Escolar`
 
                         {/* Título y Datos del Remitente */}
                         <div className="space-y-1">
-                          <h3 className={`text-base font-black leading-snug ${currentTheme.isDark ? 'text-white' : 'text-slate-900'}`}>
+                          <h3 
+                            className={`text-base font-black leading-snug ${currentTheme.isDark ? 'text-white' : 'text-slate-900'}`}
+                            style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}
+                          >
                             {selectedMatter.title}
                           </h3>
-                          <div className={`flex items-center gap-2 text-[11px] font-medium ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                            <span>Remitente: <strong className={currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'}>{selectedMatter.sender_name}</strong> &lt;{selectedMatter.sender_email}&gt;</span>
+                          <div 
+                            className={`flex items-center gap-2 text-[11px] font-medium ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                            style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}
+                          >
+                            <span>Remitente: <strong className={currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'} style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}>{selectedMatter.sender_name}</strong> &lt;{selectedMatter.sender_email}&gt;</span>
                             <span>•</span>
-                            <span>Plantel: <strong className={currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'}>{selectedMatter.campus || campuses[0]?.name || 'Sede Matriz'}</strong></span>
+                            <span>Plantel: <strong className={currentTheme.isDark ? 'text-slate-200' : 'text-slate-800'} style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}>{selectedMatter.campus || campuses[0]?.name || 'Sede Matriz'}</strong></span>
                           </div>
                         </div>
 
@@ -6736,6 +7843,11 @@ Comité de Seguridad y Protección Escolar`
                                 type="button"
                                 onClick={handleApproveDraft}
                                 disabled={isApprovingDraft}
+                                style={themeMode === 'custom' && customTheme.buttonColor ? {
+                                  backgroundColor: customTheme.buttonColor,
+                                  color: isColorLight(customTheme.buttonColor) ? '#0F172A' : '#FFFFFF',
+                                  borderColor: `${customTheme.buttonColor}99`
+                                } : undefined}
                                 className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black text-xs shadow-md transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 disabled:opacity-50"
                               >
                                 <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
@@ -10194,223 +11306,828 @@ Comité de Seguridad y Protección Escolar`
               {/* SUB-PANEL 4: APARIENCIA Y PALETAS DE COLOR INSTITUCIONAL */}
               {/* ========================================================= */}
               {settingsSubTab === 'apariencia' && (
-                <div className="space-y-5 animate-in fade-in duration-150">
-                  <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-stone-50 to-amber-50 border border-amber-200/90 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Palette className="h-4 w-4 text-amber-700" />
-                        <h3 className="text-sm font-black text-amber-950 uppercase tracking-wide">
-                          Personalización de Colores y Modo Visual de la Consola CEO
-                        </h3>
+                <div className="space-y-6 animate-in fade-in duration-150">
+                  {/* Encabezado Superior del Estudio de Color */}
+                  <div 
+                    className={`p-4 sm:p-5 rounded-3xl border shadow-sm transition-all ${
+                      currentTheme.isDark 
+                        ? 'bg-slate-900/90 border-slate-700/80 text-white' 
+                        : 'bg-gradient-to-r from-amber-50/80 via-stone-50 to-amber-50/80 border-amber-200/90 text-amber-950'
+                    }`}
+                    style={themeMode === 'custom' ? {
+                      backgroundColor: customTheme.cardColor,
+                      borderColor: isColorLight(customTheme.cardColor) ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.12)',
+                      color: getContrastTextColor(customTheme.cardColor)
+                    } : undefined}
+                  >
+                    <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                      <div className="space-y-1.5 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-amber-500 flex items-center justify-center text-white shadow-xs">
+                            <Palette className="h-4 w-4" />
+                          </div>
+                          <h3 className="text-sm sm:text-base font-black uppercase tracking-wide">
+                            Estudio de Color & Distintivos Ejecutivos del CEO
+                          </h3>
+                          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                            <Zap className="h-3 w-3" /> Tiempo Real (0ms)
+                          </span>
+                        </div>
+                        <p 
+                          className={`text-xs leading-relaxed max-w-2xl font-medium ${currentTheme.isDark ? 'text-slate-300' : 'text-amber-900'}`}
+                          style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}
+                        >
+                          Control total y soberano sobre los distintivos cromáticos de la consola: personaliza el color de fondo general, botones de acción, señalización de radar, superficies de tarjetas y modo de contraste con previsualización inmediata.
+                        </p>
                       </div>
-                      <p className="text-xs text-amber-900 leading-relaxed max-w-2xl font-medium">
-                        Configura el aspecto visual de la suite ejecutiva. El tono <strong>Marfil Institucional</strong> está predeterminado para jornadas diurnas de alta concentración con estética cálida tipo pergamino.
-                      </p>
+
+                      {/* Botones de Acción Primaria: Guardar y Restablecer */}
+                      <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                        {/* Indicador de Estado de Sincronización Superior */}
+                        {(lastSavedThemeAt || hasPendingColorChanges) && (
+                          <div 
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-all ${
+                              hasPendingColorChanges 
+                                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30' 
+                                : 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
+                            }`}
+                          >
+                            {hasPendingColorChanges ? (
+                              <>
+                                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                                <span>Cambios sin guardar</span>
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                                <span>Sincronizado {lastSavedThemeAt} hrs</span>
+                              </>
+                            )}
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={handleResetToDefaultTheme}
+                          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                            currentTheme.isDark 
+                              ? 'bg-white/5 hover:bg-white/10 text-slate-300 border-white/10' 
+                              : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
+                          }`}
+                          title="Restablecer tema al Marfil Institucional predeterminado"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5 text-amber-500" />
+                          <span>Restablecer</span>
+                        </button>
+                        <button
+                          id="btn-guardar-personalizacion-top"
+                          type="button"
+                          onClick={handleSaveCustomTheme}
+                          disabled={isSavingCustomTheme}
+                          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black shadow-md cursor-pointer transition-all active:scale-95 disabled:opacity-75"
+                          style={{
+                            background: saveCustomSuccess 
+                              ? 'linear-gradient(to right, #059669, #0D9488)' 
+                              : (customTheme.buttonColor || '#059669'),
+                            border: saveCustomSuccess 
+                              ? '1px solid #34D399' 
+                              : `1px solid ${customTheme.buttonColor ? `${customTheme.buttonColor}99` : '#10B981'}`,
+                            color: isColorLight(saveCustomSuccess ? '#059669' : (customTheme.buttonColor || '#059669')) ? '#0F172A' : '#FFFFFF',
+                            boxShadow: saveCustomSuccess 
+                              ? '0 4px 14px rgba(5, 150, 105, 0.4)' 
+                              : `0 4px 14px ${customTheme.buttonColor ? `${customTheme.buttonColor}40` : 'rgba(5, 150, 105, 0.3)'}`
+                          }}
+                          title="Guardar y aplicar permanentemente la paleta ejecutiva"
+                        >
+                          {isSavingCustomTheme ? (
+                            <>
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              <span>Guardando...</span>
+                            </>
+                          ) : saveCustomSuccess ? (
+                            <>
+                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-200" />
+                              <span>✓ ¡Guardado en Servidor!</span>
+                            </>
+                          ) : hasPendingColorChanges ? (
+                            <>
+                              <Save className="h-3.5 w-3.5" />
+                              <span>Guardar Cambios en el Servidor</span>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              <span>✓ Guardado en Servidor (Activo)</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-amber-900 bg-white px-3 py-1.5 rounded-xl border border-amber-200 shadow-xs">
-                        Tema Activo: <strong>{themeMode === 'ivory' ? '🏛️ Marfil Institucional' : themeMode === 'slate' ? '⬛ Pizarra Ejecutiva' : themeMode === 'navy' ? '🔷 Azul Real Académico' : '🌲 Verde Esmeralda'}</strong>
-                      </span>
+                    {/* Selector de Modo de Navegación de Apariencia: Estudio Libre vs Temas Maestros */}
+                    <div className="mt-4 pt-3 border-t border-slate-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-1.5 bg-black/20 p-1 rounded-2xl border border-white/10">
+                        <button
+                          type="button"
+                          onClick={() => setAppearanceSubView('custom')}
+                          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                            appearanceSubView === 'custom'
+                              ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-xs'
+                              : 'text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          <Sliders className="h-3.5 w-3.5" />
+                          <span>🎨 Estudio de Color Libre (Personalizado)</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAppearanceSubView('presets')}
+                          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                            appearanceSubView === 'presets'
+                              ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-xs'
+                              : 'text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          <Landmark className="h-3.5 w-3.5" />
+                          <span>🏛️ Catálogo de 8 Temas Maestros</span>
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-xs font-bold">
+                        <span className={currentTheme.isDark ? 'text-slate-300' : 'text-slate-700'}>
+                          Tema Actual:
+                        </span>
+                        <span className="px-2.5 py-1 rounded-xl bg-white/10 border border-white/20 text-white font-mono text-[11px] flex items-center gap-1.5">
+                          <span 
+                            className="w-2.5 h-2.5 rounded-full ring-1 ring-white/30" 
+                            style={{ backgroundColor: customTheme.buttonColor || '#4F46E5' }} 
+                          />
+                          <span>{themeMode === 'custom' ? '🎨 Personalizado' : customTheme.name || themeMode}</span>
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {/* Opción 1: Marfil Institucional (Predeterminado) */}
-                    <div
-                      onClick={() => handleSelectTheme('ivory')}
-                      className={`p-5 rounded-3xl border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
-                        themeMode === 'ivory'
-                          ? 'border-[#C49746] bg-[#FDFBF7] shadow-lg ring-2 ring-[#C49746]/30'
-                          : 'border-[#E6DDCF] bg-[#FAF7F2] hover:border-[#C49746]/60 hover:shadow-md'
-                      }`}
-                    >
-                      {themeMode === 'ivory' && (
-                        <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-[#C49746] text-white text-[9px] font-black uppercase tracking-wider">
-                          Predeterminado · Activo
-                        </span>
-                      )}
-                      <div className="space-y-3">
-                        <div className="w-12 h-12 rounded-2xl bg-[#EDE4D5] border border-[#D9CEBC] flex items-center justify-center text-xl shadow-xs">
-                          🏛️
+                  {/* VISTA 1: ESTUDIO DE COLOR LIBRE */}
+                  {appearanceSubView === 'custom' && (
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 animate-in fade-in duration-150">
+                      {/* Columna Izquierda: Controladores Granulares de Distintivos (7 cols) */}
+                      <div className="lg:col-span-7 space-y-4">
+                        {/* Selector de Modo de Contraste Diurno / Nocturno */}
+                        <div 
+                          className={`p-4 rounded-2xl border transition-all ${
+                            currentTheme.isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-slate-200 text-slate-800'
+                          }`}
+                          style={themeMode === 'custom' ? {
+                            backgroundColor: customTheme.cardColor,
+                            borderColor: isColorLight(customTheme.cardColor) ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.12)',
+                            color: getContrastTextColor(customTheme.cardColor)
+                          } : undefined}
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="space-y-0.5">
+                              <span className="text-xs font-black uppercase tracking-wider block">
+                                Modo de Contraste & Fondo General
+                              </span>
+                              <span className={`text-[11px] block ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                                Ajusta automáticamente contraste de fuentes, bordes y microiconos para jornadas diurnas o nocturnas.
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1 bg-black/20 p-1 rounded-xl border border-white/10">
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateCustomColor('isDark', true)}
+                                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-all ${
+                                  customTheme.isDark ? 'bg-slate-800 text-white shadow-xs' : 'text-slate-400 hover:text-white'
+                                }`}
+                              >
+                                <Moon className="h-3 w-3 text-cyan-400" />
+                                <span>Nocturno</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateCustomColor('isDark', false)}
+                                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-all ${
+                                  !customTheme.isDark ? 'bg-amber-100 text-amber-900 shadow-xs' : 'text-slate-400 hover:text-white'
+                                }`}
+                              >
+                                <Sun className="h-3 w-3 text-amber-500" />
+                                <span>Diurno</span>
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="font-black text-slate-900 text-sm">Marfil Institucional</h4>
-                          <span className="text-[11px] font-bold text-amber-800">Modo Diurno Cálido (Por Defecto)</span>
-                        </div>
-                        <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                          Fondo marfil cálido, bordes apergaminados y distintivos en bronce/dorado. Diseñado para jornadas de alta concentración sin fatiga visual.
-                        </p>
-                        <div className="flex items-center gap-1.5 pt-2">
-                          <span className="w-4 h-4 rounded-full bg-[#FDFBF7] border border-slate-300" title="#FDFBF7" />
-                          <span className="w-4 h-4 rounded-full bg-[#E6DDCF] border border-slate-300" title="#E6DDCF" />
-                          <span className="w-4 h-4 rounded-full bg-[#C49746]" title="#C49746" />
-                          <span className="w-4 h-4 rounded-full bg-[#1E293B]" title="#1E293B" />
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectTheme('ivory');
-                        }}
-                        className={`w-full mt-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
-                          themeMode === 'ivory'
-                            ? 'bg-[#C49746] text-white'
-                            : 'bg-white hover:bg-slate-100 text-slate-800 border border-slate-200'
-                        }`}
-                      >
-                        {themeMode === 'ivory' ? '✓ Activo' : 'Seleccionar Marfil'}
-                      </button>
-                    </div>
 
-                    {/* Opción 2: Pizarra Ejecutiva */}
-                    <div
-                      onClick={() => handleSelectTheme('slate')}
-                      className={`p-5 rounded-3xl border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
-                        themeMode === 'slate'
-                          ? 'border-blue-500 bg-slate-950 text-white shadow-lg ring-2 ring-blue-500/30'
-                          : 'border-slate-300 bg-slate-900 text-slate-200 hover:border-blue-400 hover:shadow-md'
-                      }`}
-                    >
-                      {themeMode === 'slate' && (
-                        <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-blue-600 text-white text-[9px] font-black uppercase tracking-wider">
-                          Activo
-                        </span>
-                      )}
-                      <div className="space-y-3">
-                        <div className="w-12 h-12 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xl shadow-xs">
-                          ⬛
-                        </div>
-                        <div>
-                          <h4 className="font-black text-white text-sm">Pizarra Ejecutiva</h4>
-                          <span className="text-[11px] font-bold text-blue-400">Modo Nocturno / High Contrast</span>
-                        </div>
-                        <p className="text-xs text-slate-300 leading-relaxed font-medium">
-                          Entorno de comando ejecutivo en tonos carbón y grafito profundo, con acentos en azul cian para visibilidad nocturna.
-                        </p>
-                        <div className="flex items-center gap-1.5 pt-2">
-                          <span className="w-4 h-4 rounded-full bg-slate-950 border border-slate-700" title="#020617" />
-                          <span className="w-4 h-4 rounded-full bg-slate-800 border border-slate-700" title="#1e293b" />
-                          <span className="w-4 h-4 rounded-full bg-blue-500" title="#3b82f6" />
-                          <span className="w-4 h-4 rounded-full bg-white" title="#ffffff" />
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectTheme('slate');
-                        }}
-                        className={`w-full mt-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
-                          themeMode === 'slate'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'
-                        }`}
-                      >
-                        {themeMode === 'slate' ? '✓ Activo' : 'Seleccionar Pizarra'}
-                      </button>
-                    </div>
+                        {/* LISTADO DE LOS 6 DISTINTIVOS CROMÁTICOS GRANULARES */}
+                        {[
+                          {
+                            key: 'buttonColor' as keyof CustomCeoTheme,
+                            title: 'Color de Botones de Acción & Acentos',
+                            desc: 'Aplica a botones primarios, llamadas de acción, bordes activos y toggles ejecutivos.',
+                            value: customTheme.buttonColor || '#4F46E5',
+                            swatches: EXECUTIVE_COLOR_PALETTES.buttons
+                          },
+                          {
+                            key: 'backgroundColor' as keyof CustomCeoTheme,
+                            title: 'Color de Fondo General (Canvas)',
+                            desc: 'Lienzo de fondo principal de la suite ejecutiva y áreas de lectura de expedientes.',
+                            value: customTheme.backgroundColor || '#0A0F1D',
+                            swatches: EXECUTIVE_COLOR_PALETTES.backgrounds
+                          },
+                          {
+                            key: 'signalColor' as keyof CustomCeoTheme,
+                            title: 'Color de Señalización & Radar SLA',
+                            desc: 'Pings de radar, alertas críticas de atención inmediata, badges de SLA e indicadores de urgencia.',
+                            value: customTheme.signalColor || '#F59E0B',
+                            swatches: EXECUTIVE_COLOR_PALETTES.signals
+                          },
+                          {
+                            key: 'cardColor' as keyof CustomCeoTheme,
+                            title: 'Color de Superficie de Tarjetas & Paneles',
+                            desc: 'Superficie de expedientes, tarjetas de triage cognitivo y cajas métricas elevadas.',
+                            value: customTheme.cardColor || '#111A2E',
+                            swatches: EXECUTIVE_COLOR_PALETTES.cards
+                          },
+                          {
+                            key: 'headerColor' as keyof CustomCeoTheme,
+                            title: 'Color de Encabezado Superior (Header)',
+                            desc: 'Barra de comando institucional superior donde residen las credenciales y el radar.',
+                            value: customTheme.headerColor || '#050811',
+                            swatches: EXECUTIVE_COLOR_PALETTES.headers
+                          },
+                          {
+                            key: 'sidebarColor' as keyof CustomCeoTheme,
+                            title: 'Color de Barra Lateral (Sidebar)',
+                            desc: 'Panel vertical izquierdo que contiene los 10 módulos ejecutivos del CEO.',
+                            value: customTheme.sidebarColor || '#0C1322',
+                            swatches: EXECUTIVE_COLOR_PALETTES.headers
+                          }
+                        ].map((control) => (
+                          <div 
+                            key={control.key}
+                            className={`p-4 rounded-2xl border transition-all ${
+                              currentTheme.isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'
+                            }`}
+                            style={themeMode === 'custom' ? {
+                              backgroundColor: customTheme.cardColor,
+                              borderColor: isColorLight(customTheme.cardColor) ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.12)',
+                              color: getContrastTextColor(customTheme.cardColor)
+                            } : undefined}
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                              <div className="space-y-0.5 min-w-0">
+                                <span 
+                                  className={`text-xs font-black uppercase tracking-wider block ${currentTheme.isDark ? 'text-white' : 'text-slate-900'}`}
+                                  style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}
+                                >
+                                  {control.title}
+                                </span>
+                                <span 
+                                  className={`text-[11px] block truncate ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}
+                                  style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}
+                                >
+                                  {control.desc}
+                                </span>
+                              </div>
 
-                    {/* Opción 3: Azul Real Académico */}
-                    <div
-                      onClick={() => handleSelectTheme('navy')}
-                      className={`p-5 rounded-3xl border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
-                        themeMode === 'navy'
-                          ? 'border-blue-400 bg-[#0A192F] text-white shadow-lg ring-2 ring-blue-400/30'
-                          : 'border-[#1E3A8A]/50 bg-[#071322] text-slate-200 hover:border-blue-400 hover:shadow-md'
-                      }`}
-                    >
-                      {themeMode === 'navy' && (
-                        <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-blue-500 text-white text-[9px] font-black uppercase tracking-wider">
-                          Activo
-                        </span>
-                      )}
-                      <div className="space-y-3">
-                        <div className="w-12 h-12 rounded-2xl bg-[#173B63] border border-blue-400/40 flex items-center justify-center text-xl shadow-xs">
-                          🔷
-                        </div>
-                        <div>
-                          <h4 className="font-black text-white text-sm">Azul Real Académico</h4>
-                          <span className="text-[11px] font-bold text-cyan-300">Prestigio Institucional</span>
-                        </div>
-                        <p className="text-xs text-blue-200 leading-relaxed font-medium">
-                          Paleta heráldica inspirada en sellos universitarios de excelencia, combinando azul marino zafiro con contrastes en marfil.
-                        </p>
-                        <div className="flex items-center gap-1.5 pt-2">
-                          <span className="w-4 h-4 rounded-full bg-[#0A192F] border border-blue-800" title="#0A192F" />
-                          <span className="w-4 h-4 rounded-full bg-[#173B63] border border-blue-700" title="#173B63" />
-                          <span className="w-4 h-4 rounded-full bg-[#2563EB]" title="#2563EB" />
-                          <span className="w-4 h-4 rounded-full bg-[#93C5FD]" title="#93C5FD" />
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectTheme('navy');
-                        }}
-                        className={`w-full mt-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
-                          themeMode === 'navy'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-[#173B63] hover:bg-[#1E4C7E] text-white border border-blue-400/30'
-                        }`}
-                      >
-                        {themeMode === 'navy' ? '✓ Activo' : 'Seleccionar Azul Real'}
-                      </button>
-                    </div>
+                              {/* Input Color Dropper + Text Input HEX */}
+                              <div className="flex items-center gap-2 shrink-0">
+                                <div className="relative flex items-center justify-center">
+                                  <input
+                                    type="color"
+                                    value={control.value}
+                                    onChange={(e) => handleUpdateCustomColor(control.key, e.target.value)}
+                                    className="w-9 h-9 rounded-xl border border-white/20 cursor-pointer overflow-hidden p-0 bg-transparent"
+                                    title="Abrir selector de color con espectro completo (16.7 millones de colores)"
+                                  />
+                                </div>
+                                <div 
+                                  className="flex items-center border rounded-xl px-2 py-1 transition-colors"
+                                  style={{
+                                    backgroundColor: isColorLight(customTheme.cardColor) ? 'rgba(0,0,0,0.06)' : 'rgba(0,0,0,0.3)',
+                                    borderColor: isColorLight(customTheme.cardColor) ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)'
+                                  }}
+                                >
+                                  <span 
+                                    className="text-[11px] font-mono font-bold mr-0.5"
+                                    style={{ color: isColorLight(customTheme.cardColor) ? '#64748B' : '#94A3B8' }}
+                                  >
+                                    #
+                                  </span>
+                                  <input
+                                    type="text"
+                                    maxLength={7}
+                                    value={control.value.replace('#', '')}
+                                    onChange={(e) => {
+                                      const hex = `#${e.target.value.replace(/[^0-9A-Fa-f]/g, '').slice(0, 6)}`;
+                                      handleUpdateCustomColor(control.key, hex);
+                                    }}
+                                    className="w-16 bg-transparent text-xs font-mono font-bold focus:outline-hidden uppercase"
+                                    style={{ color: isColorLight(customTheme.cardColor) ? '#0F172A' : '#FFFFFF' }}
+                                    placeholder="FFFFFF"
+                                    title="Código Hexadecimal directo"
+                                  />
+                                </div>
+                              </div>
+                            </div>
 
-                    {/* Opción 4: Verde Esmeralda Institucional */}
-                    <div
-                      onClick={() => handleSelectTheme('emerald')}
-                      className={`p-5 rounded-3xl border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
-                        themeMode === 'emerald'
-                          ? 'border-emerald-400 bg-[#062018] text-white shadow-lg ring-2 ring-emerald-400/30'
-                          : 'border-[#0F3D30] bg-[#041510] text-slate-200 hover:border-emerald-400 hover:shadow-md'
-                      }`}
-                    >
-                      {themeMode === 'emerald' && (
-                        <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-black uppercase tracking-wider">
-                          Activo
-                        </span>
-                      )}
-                      <div className="space-y-3">
-                        <div className="w-12 h-12 rounded-2xl bg-[#0A2920] border border-emerald-500/40 flex items-center justify-center text-xl shadow-xs">
-                          🌲
-                        </div>
-                        <div>
-                          <h4 className="font-black text-white text-sm">Verde Esmeralda</h4>
-                          <span className="text-[11px] font-bold text-emerald-400">Campus & Naturaleza</span>
-                        </div>
-                        <p className="text-xs text-emerald-200 leading-relaxed font-medium">
-                          Tonalidad pedagógica serena que refleja sustentabilidad y el entorno arbolado de los campus escolares.
-                        </p>
-                        <div className="flex items-center gap-1.5 pt-2">
-                          <span className="w-4 h-4 rounded-full bg-[#062018] border border-emerald-800" title="#062018" />
-                          <span className="w-4 h-4 rounded-full bg-[#0A2920] border border-emerald-700" title="#0A2920" />
-                          <span className="w-4 h-4 rounded-full bg-[#059669]" title="#059669" />
-                          <span className="w-4 h-4 rounded-full bg-[#A7F3D0]" title="#A7F3D0" />
+                            {/* Fila compacta de Chips de Muestra Rápida (Swatches) */}
+                            <div 
+                              className="mt-3 pt-2.5 border-t flex items-center gap-1.5 flex-wrap"
+                              style={{ borderColor: isColorLight(customTheme.cardColor) ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)' }}
+                            >
+                              <span 
+                                className="text-[10px] font-bold uppercase tracking-wider mr-1"
+                                style={themeMode === 'custom' ? { color: getContrastMutedColor(customTheme.cardColor) } : undefined}
+                              >
+                                Muestras:
+                              </span>
+                              {control.swatches.map((swatch, idx) => {
+                                const isSelected = control.value.toLowerCase() === swatch.hex.toLowerCase();
+                                const isCardBgLight = themeMode === 'custom' 
+                                  ? isColorLight(customTheme.cardColor) 
+                                  : !currentTheme.isDark;
+                                
+                                const swatchBtnBg = isCardBgLight 
+                                  ? (isSelected ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.03)') 
+                                  : (isSelected ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)');
+                                  
+                                const swatchTextColor = isCardBgLight
+                                  ? (isSelected ? '#0F172A' : '#334155')
+                                  : (isSelected ? '#FFFFFF' : '#CBD5E1');
+
+                                const swatchBorderColor = isSelected
+                                  ? (isCardBgLight ? '#4F46E5' : '#818CF8')
+                                  : (isCardBgLight ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.12)');
+
+                                return (
+                                  <button
+                                    key={idx}
+                                    type="button"
+                                    onClick={() => handleUpdateCustomColor(control.key, swatch.hex)}
+                                    className={`group relative flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
+                                      isSelected ? 'ring-2 ring-indigo-500/40 font-black shadow-2xs' : 'hover:border-indigo-400'
+                                    }`}
+                                    style={{
+                                      backgroundColor: swatchBtnBg,
+                                      borderColor: swatchBorderColor,
+                                      color: swatchTextColor
+                                    }}
+                                    title={`${swatch.label} (${swatch.hex})`}
+                                  >
+                                    <span
+                                      className="w-3 h-3 rounded-full shrink-0 border"
+                                      style={{ 
+                                        backgroundColor: swatch.hex,
+                                        borderColor: isColorLight(swatch.hex) ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)'
+                                      }}
+                                    />
+                                    <span className="hidden sm:inline truncate max-w-[85px]">{swatch.label}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Columna Derecha: Cabina de Previsualización en Tiempo Real (5 cols) */}
+                      <div className="lg:col-span-5 space-y-4">
+                        <div 
+                          className={`sticky top-2 p-5 rounded-3xl border shadow-lg space-y-4 transition-all ${
+                            currentTheme.isDark ? 'bg-slate-900/90 border-slate-700/80 text-white' : 'bg-white border-slate-300 text-slate-900'
+                          }`}
+                          style={themeMode === 'custom' ? {
+                            backgroundColor: customTheme.cardColor,
+                            borderColor: isColorLight(customTheme.cardColor) ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.12)',
+                            color: getContrastTextColor(customTheme.cardColor)
+                          } : undefined}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Sparkles className="h-4 w-4 text-amber-400" />
+                              <h4 className="text-xs font-black uppercase tracking-wider">
+                                Previsualización en Vivo de la Consola CEO
+                              </h4>
+                            </div>
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold">
+                              En Vivo
+                            </span>
+                          </div>
+
+                          {/* Simulación en Miniatura de la Consola con los colores actuales */}
+                          <div 
+                            className="rounded-2xl border overflow-hidden shadow-inner transition-all flex flex-col"
+                            style={{
+                              backgroundColor: customTheme.backgroundColor,
+                              borderColor: customTheme.cardBorderColor || '#334155'
+                            }}
+                          >
+                            {/* Mini Header */}
+                            {(() => {
+                              const headerIsLight = isColorLight(customTheme.headerColor);
+                              const headerTextColor = headerIsLight ? '#0F172A' : '#FFFFFF';
+                              return (
+                                <div 
+                                  className="px-3 py-2 flex items-center justify-between border-b transition-colors"
+                                  style={{
+                                    backgroundColor: customTheme.headerColor,
+                                    borderColor: customTheme.cardBorderColor || (headerIsLight ? '#CBD5E1' : '#334155')
+                                  }}
+                                >
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                                    <span className="text-[10px] font-black ml-1 transition-colors" style={{ color: headerTextColor }}>Consola CEO</span>
+                                  </div>
+                                  <div 
+                                    className="px-2 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1 border transition-colors"
+                                    style={{
+                                      backgroundColor: `${customTheme.signalColor}25`,
+                                      color: (headerIsLight && isColorLight(customTheme.signalColor)) ? '#B45309' : customTheme.signalColor,
+                                      borderColor: `${customTheme.signalColor}50`
+                                    }}
+                                  >
+                                    <Clock className="h-2.5 w-2.5 animate-pulse" />
+                                    <span>Radar SEP: 11h 20m</span>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+
+                            {/* Mini Layout Interior */}
+                            <div className="p-3 flex gap-2.5">
+                              {/* Mini Sidebar */}
+                              {(() => {
+                                const sidebarIsLight = isColorLight(customTheme.sidebarColor);
+                                const btnIsLight = isColorLight(customTheme.buttonColor);
+                                return (
+                                  <div 
+                                    className="w-20 p-2 rounded-xl border flex flex-col gap-1.5 shrink-0 transition-colors"
+                                    style={{
+                                      backgroundColor: customTheme.sidebarColor,
+                                      borderColor: customTheme.cardBorderColor || (sidebarIsLight ? '#CBD5E1' : '#334155')
+                                    }}
+                                  >
+                                    <div className="h-2 w-12 rounded" style={{ backgroundColor: sidebarIsLight ? '#CBD5E1' : 'rgba(255,255,255,0.2)' }} />
+                                    <div 
+                                      className="h-4 rounded px-1 flex items-center text-[8px] font-black transition-colors"
+                                      style={{ 
+                                        backgroundColor: customTheme.buttonColor,
+                                        color: btnIsLight ? '#0F172A' : '#FFFFFF'
+                                      }}
+                                    >
+                                      Bandeja
+                                    </div>
+                                    <div className="h-2 w-10 rounded" style={{ backgroundColor: sidebarIsLight ? '#E2E8F0' : 'rgba(255,255,255,0.1)' }} />
+                                    <div className="h-2 w-14 rounded" style={{ backgroundColor: sidebarIsLight ? '#E2E8F0' : 'rgba(255,255,255,0.1)' }} />
+                                    <div className="h-2 w-11 rounded" style={{ backgroundColor: sidebarIsLight ? '#E2E8F0' : 'rgba(255,255,255,0.1)' }} />
+                                  </div>
+                                );
+                              })()}
+
+                              {/* Mini Content Card */}
+                              {(() => {
+                                const cardIsLight = isColorLight(customTheme.cardColor);
+                                const cardTextColor = cardIsLight ? '#0F172A' : '#F8FAFC';
+                                const cardSubtextColor = cardIsLight ? '#334155' : '#CBD5E1';
+                                const cardMutedColor = cardIsLight ? '#64748B' : '#94A3B8';
+                                const btnIsLight = isColorLight(customTheme.buttonColor);
+                                const btnTextColor = btnIsLight ? '#0F172A' : '#FFFFFF';
+                                const signalIsLight = isColorLight(customTheme.signalColor);
+                                const badgeTextColor = (cardIsLight && signalIsLight) ? '#B45309' : customTheme.signalColor;
+
+                                return (
+                                  <div 
+                                    className="flex-1 p-3 rounded-xl border shadow-xs space-y-2 transition-colors"
+                                    style={{
+                                      backgroundColor: customTheme.cardColor,
+                                      borderColor: customTheme.cardBorderColor || (cardIsLight ? '#CBD5E1' : '#334155'),
+                                      color: cardTextColor
+                                    }}
+                                  >
+                                    <div className="flex items-center justify-between">
+                                      <span 
+                                        className="text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wide border transition-colors"
+                                        style={{
+                                          backgroundColor: `${customTheme.signalColor}25`,
+                                          color: badgeTextColor,
+                                          borderColor: `${customTheme.signalColor}60`
+                                        }}
+                                      >
+                                        Atención Inmediata CEO
+                                      </span>
+                                      <span className="text-[9px] font-semibold" style={{ color: cardMutedColor }}>Hoy 08:30</span>
+                                    </div>
+
+                                    <div className="space-y-1">
+                                      <h5 className="text-[11px] font-black leading-tight truncate transition-colors" style={{ color: cardTextColor }}>
+                                        Inspección de Supervisión SEP Zona 14
+                                      </h5>
+                                      <p className="text-[10px] font-medium line-clamp-2 leading-relaxed transition-colors" style={{ color: cardSubtextColor }}>
+                                        Se requiere visto bueno del Director General para el protocolo de seguridad escolar y expediente de acreditación.
+                                      </p>
+                                    </div>
+
+                                    <div className="pt-2 flex items-center justify-between gap-2">
+                                      <button
+                                        type="button"
+                                        className="px-2.5 py-1 rounded-lg text-[10px] font-black shadow-xs transition-all active:scale-95 cursor-pointer"
+                                        style={{ 
+                                          backgroundColor: customTheme.buttonColor,
+                                          color: btnTextColor
+                                        }}
+                                      >
+                                        Aprobar con 1 Clic
+                                      </button>
+                                      <span className="text-[9px] font-bold" style={{ color: cardMutedColor }}>SLA: 24h</span>
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                          </div>
+
+                          {/* Resumen de Valores HEX Activos */}
+                          <div 
+                            className={`p-3 rounded-2xl border text-xs font-mono space-y-2 ${
+                              currentTheme.isDark ? 'bg-black/30 border-white/10' : 'bg-slate-50 border-slate-200'
+                            }`}
+                            style={themeMode === 'custom' ? {
+                              backgroundColor: isColorLight(customTheme.cardColor) ? 'rgba(0,0,0,0.04)' : 'rgba(0,0,0,0.3)',
+                              borderColor: isColorLight(customTheme.cardColor) ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)'
+                            } : undefined}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span 
+                                className="text-[10px] font-black uppercase tracking-wider text-slate-400 font-sans"
+                                style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}
+                              >
+                                Valores HEX Aplicados
+                              </span>
+                              <span className="text-[10px] font-black font-sans px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                                <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+                                {isColorLight(customTheme.cardColor) ? 'Texto Oscuro Calibrado' : 'Texto Claro Calibrado'}
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-1.5 text-[11px]">
+                              <div><span className="opacity-60" style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}>Botón:</span> <strong style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}>{customTheme.buttonColor}</strong></div>
+                              <div><span className="opacity-60" style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}>Fondo:</span> <strong style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}>{customTheme.backgroundColor}</strong></div>
+                              <div><span className="opacity-60" style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}>Señal:</span> <strong style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}>{customTheme.signalColor}</strong></div>
+                              <div><span className="opacity-60" style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}>Tarjeta:</span> <strong style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}>{customTheme.cardColor}</strong></div>
+                              <div><span className="opacity-60" style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}>Header:</span> <strong style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}>{customTheme.headerColor}</strong></div>
+                              <div><span className="opacity-60" style={themeMode === 'custom' ? { color: getContrastSubtextColor(customTheme.cardColor) } : undefined}>Sidebar:</span> <strong style={themeMode === 'custom' ? { color: getContrastTextColor(customTheme.cardColor) } : undefined}>{customTheme.sidebarColor}</strong></div>
+                            </div>
+                          </div>
+
+                          {/* Estado de Sincronización Permanente en Cabina */}
+                          <div 
+                            className={`p-3 rounded-2xl border flex items-center justify-between gap-2.5 transition-all ${
+                              hasPendingColorChanges 
+                                ? 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300' 
+                                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              {hasPendingColorChanges ? (
+                                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                              ) : (
+                                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                              )}
+                              <div className="min-w-0">
+                                <span className="text-[11px] font-black block truncate">
+                                  {hasPendingColorChanges 
+                                    ? 'Cambios sin guardar en el servidor' 
+                                    : 'Personalización sincronizada'}
+                                </span>
+                                <span className="text-[10px] opacity-75 block truncate">
+                                  {hasPendingColorChanges 
+                                    ? 'Pulsa guardar para persistir tus ajustes' 
+                                    : lastSavedThemeAt 
+                                      ? `Persistido en servidor: ${lastSavedThemeAt} hrs` 
+                                      : 'Persistido y activo en tiempo real'}
+                                </span>
+                              </div>
+                            </div>
+                            <span 
+                              className={`text-[10px] font-mono font-black uppercase px-2 py-0.5 rounded-md shrink-0 border ${
+                                hasPendingColorChanges 
+                                  ? 'bg-amber-500/20 text-amber-600 border-amber-500/30' 
+                                  : 'bg-emerald-500/20 text-emerald-600 border-emerald-500/30'
+                              }`}
+                            >
+                              {hasPendingColorChanges ? 'Pendiente' : 'Activo'}
+                            </span>
+                          </div>
+
+                          {/* Botón de Guardado Directo desde la Cabina */}
+                          <button
+                            id="btn-guardar-personalizacion-ceo"
+                            type="button"
+                            onClick={handleSaveCustomTheme}
+                            disabled={isSavingCustomTheme}
+                            className="w-full py-2.5 rounded-2xl text-xs font-black shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
+                            style={{
+                              background: saveCustomSuccess 
+                                ? 'linear-gradient(to right, #059669, #0D9488)' 
+                                : (customTheme.buttonColor || '#4F46E5'),
+                              border: saveCustomSuccess 
+                                ? '1px solid #34D399' 
+                                : `1px solid ${customTheme.buttonColor ? `${customTheme.buttonColor}99` : '#6366F1'}`,
+                              color: saveCustomSuccess 
+                                ? '#FFFFFF' 
+                                : (isColorLight(customTheme.buttonColor) ? '#0F172A' : '#FFFFFF'),
+                              boxShadow: saveCustomSuccess 
+                                ? '0 4px 14px rgba(5, 150, 105, 0.4)' 
+                                : `0 4px 14px ${customTheme.buttonColor ? `${customTheme.buttonColor}40` : 'rgba(79, 70, 229, 0.3)'}`
+                            }}
+                          >
+                            {isSavingCustomTheme ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin text-white" />
+                                <span className="text-white">Guardando en el Servidor...</span>
+                              </>
+                            ) : saveCustomSuccess ? (
+                              <>
+                                <CheckCircle2 className="h-4 w-4 text-emerald-200" />
+                                <span className="text-white">✓ ¡Personalización Guardada y Activa!</span>
+                              </>
+                            ) : hasPendingColorChanges ? (
+                              <>
+                                <Save className="h-4 w-4" />
+                                <span>Guardar Personalización en el Servidor</span>
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle2 className="h-4 w-4" />
+                                <span>✓ Guardado en Servidor (Activo)</span>
+                              </>
+                            )}
+                          </button>
                         </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectTheme('emerald');
-                        }}
-                        className={`w-full mt-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
-                          themeMode === 'emerald'
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-[#0A2920] hover:bg-[#124234] text-white border border-emerald-500/30'
-                        }`}
-                      >
-                        {themeMode === 'emerald' ? '✓ Activo' : 'Seleccionar Esmeralda'}
-                      </button>
                     </div>
-                  </div>
+                  )}
+
+                  {/* VISTA 2: CATÁLOGO DE 8 TEMAS MAESTROS */}
+                  {appearanceSubView === 'presets' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in duration-150">
+                      {[
+                        {
+                          id: 'ivory' as CeoThemeMode,
+                          emoji: '🏛️',
+                          title: 'Marfil Institucional',
+                          subtitle: 'Modo Diurno Cálido (Predeterminado)',
+                          desc: 'Fondo marfil cálido, bordes apergaminados y distintivos en bronce/dorado. Diseñado para jornadas de alta concentración sin fatiga visual.',
+                          colors: ['#FDFBF7', '#E6DDCF', '#C49746', '#1E293B']
+                        },
+                        {
+                          id: 'slate' as CeoThemeMode,
+                          emoji: '⬛',
+                          title: 'Pizarra Ejecutiva',
+                          subtitle: 'Modo Nocturno / High Contrast',
+                          desc: 'Entorno de comando ejecutivo en tonos carbón y grafito profundo, con acentos en azul cian para visibilidad nocturna.',
+                          colors: ['#020617', '#1E293B', '#3B82F6', '#FFFFFF']
+                        },
+                        {
+                          id: 'navy' as CeoThemeMode,
+                          emoji: '🔷',
+                          title: 'Azul Real Académico',
+                          subtitle: 'Prestigio Institucional',
+                          desc: 'Paleta heráldica inspirada en sellos universitarios de excelencia, combinando azul marino zafiro con contrastes en marfil.',
+                          colors: ['#0A192F', '#173B63', '#2563EB', '#93C5FD']
+                        },
+                        {
+                          id: 'emerald' as CeoThemeMode,
+                          emoji: '🌲',
+                          title: 'Verde Esmeralda',
+                          subtitle: 'Campus & Sustentabilidad',
+                          desc: 'Tonalidad pedagógica serena que refleja sustentabilidad y el entorno arbolado de los campus escolares.',
+                          colors: ['#062018', '#0A2920', '#059669', '#A7F3D0']
+                        },
+                        {
+                          id: 'burgundy' as CeoThemeMode,
+                          emoji: '🍷',
+                          title: 'Borgoña Soberano',
+                          subtitle: 'Elegancia & Nobleza',
+                          desc: 'Gama inspirada en sellos notariales y togas rectorales, con fondos en vino tinto profundo y detalles en oro.',
+                          colors: ['#12050A', '#220B14', '#8B1E3F', '#D4AF37']
+                        },
+                        {
+                          id: 'cyber' as CeoThemeMode,
+                          emoji: '🌌',
+                          title: 'Ciber Ónix',
+                          subtitle: 'Cockpit & Alta Tecnología',
+                          desc: 'Estética futurista de comando táctico con fondo negro puro y señalización en azul neón de alta luminiscencia.',
+                          colors: ['#020617', '#091528', '#0891B2', '#06B6D4']
+                        },
+                        {
+                          id: 'amethyst' as CeoThemeMode,
+                          emoji: '🔮',
+                          title: 'Amatista Rectoral',
+                          subtitle: 'Honores & Sabiduría',
+                          desc: 'Tonos púrpura, lavanda y violeta imperial, diseñados para eventos de premiación y alta distinción académica.',
+                          colors: ['#0A0413', '#190B2E', '#7C3AED', '#A855F7']
+                        },
+                        {
+                          id: 'titanium' as CeoThemeMode,
+                          emoji: '🛡️',
+                          title: 'Platino Minimal',
+                          subtitle: 'Arquitectura Escandinava',
+                          desc: 'Modo claro minimalista en tonos gris perla, acero titanio y acentos en cobalto para máxima claridad.',
+                          colors: ['#F1F5F9', '#CBD5E1', '#2563EB', '#0F172A']
+                        }
+                      ].map((preset) => {
+                        const isSelected = themeMode === preset.id;
+                        return (
+                          <div
+                            key={preset.id}
+                            onClick={() => handleSelectTheme(preset.id)}
+                            className={`p-5 rounded-3xl border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
+                              isSelected
+                                ? 'border-indigo-500 bg-white/10 shadow-xl ring-2 ring-indigo-500/40'
+                                : currentTheme.isDark
+                                  ? 'border-white/10 bg-white/5 hover:border-white/20 hover:shadow-md'
+                                  : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:shadow-md'
+                            }`}
+                          >
+                            {isSelected && (
+                              <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[9px] font-black uppercase tracking-wider shadow-xs">
+                                Activo
+                              </span>
+                            )}
+
+                            <div className="space-y-3">
+                              <div className="w-12 h-12 rounded-2xl bg-black/20 border border-white/10 flex items-center justify-center text-xl shadow-xs">
+                                {preset.emoji}
+                              </div>
+                              <div>
+                                <h4 className={`font-black text-sm ${currentTheme.isDark ? 'text-white' : 'text-slate-900'}`}>
+                                  {preset.title}
+                                </h4>
+                                <span className="text-[11px] font-bold text-indigo-400 block mt-0.5">
+                                  {preset.subtitle}
+                                </span>
+                              </div>
+                              <p className={`text-xs leading-relaxed font-medium ${currentTheme.isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                                {preset.desc}
+                              </p>
+                              <div className="flex items-center gap-1.5 pt-2">
+                                {preset.colors.map((c, i) => (
+                                  <span
+                                    key={i}
+                                    className="w-4 h-4 rounded-full border border-black/30"
+                                    style={{ backgroundColor: c }}
+                                    title={c}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="mt-4 pt-3 border-t border-white/10 space-y-2">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSelectTheme(preset.id);
+                                }}
+                                className={`w-full py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-indigo-600 text-white shadow-xs'
+                                    : currentTheme.isDark
+                                      ? 'bg-white/10 hover:bg-white/20 text-white border border-white/10'
+                                      : 'bg-white hover:bg-slate-100 text-slate-800 border border-slate-200'
+                                }`}
+                              >
+                                {isSelected ? '✓ Tema Activo' : 'Seleccionar Tema'}
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const presetTheme = (PRESET_THEME_COLORS as any)[preset.id];
+                                  if (presetTheme) {
+                                    setCustomTheme({ ...presetTheme, isCustom: true });
+                                    setThemeMode('custom');
+                                    setAppearanceSubView('custom');
+                                    onTriggerToast(`🎨 Tema ${preset.title} cargado en el Estudio Libre para personalización.`);
+                                  }
+                                }}
+                                className="w-full py-1.5 rounded-xl text-[11px] font-bold text-indigo-400 hover:text-indigo-300 hover:bg-white/5 transition-all cursor-pointer flex items-center justify-center gap-1"
+                              >
+                                <Sliders className="h-3 w-3" />
+                                <span>Personalizar a partir de este</span>
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
 
                   {/* ========================================================= */}
-                  {/* SELECTOR DE VOZ HISTÓRICA / NARRADOR DEL RESUMEN CEO      */}
+                  {/* SELECTOR DE VOZ HISTÓRICA RETRÁCTIL (CATÁLOGO DESPLEGABLE) */}
                   {/* ========================================================= */}
                   <div className={`p-5 rounded-3xl border ${currentTheme.isDark ? 'bg-white/5 border-white/10' : 'bg-indigo-50/60 border-indigo-200/90'} space-y-4`}>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -10422,103 +12139,197 @@ Comité de Seguridad y Protección Escolar`
                           </h3>
                         </div>
                         <p className={`text-xs leading-relaxed max-w-2xl font-medium ${currentTheme.isDark ? 'text-slate-300' : 'text-indigo-900'}`}>
-                          Configura el timbre, entonación y personalidad oratoria para los resúmenes ejecutivos matutinos (Audio Digest de 60 segundos) y lecturas de expedientes. Selección inspirada en próceres y narradores formativos.
+                          Configura el timbre, entonación y personalidad oratoria para los resúmenes ejecutivos matutinos (Audio Digest de 60 segundos) y lecturas de expedientes. Calibración oratoria inspirada en próceres de la patria.
                         </p>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs font-bold px-3 py-1.5 rounded-xl border shadow-xs ${
-                          currentTheme.isDark ? 'bg-slate-900 border-indigo-500/40 text-indigo-300' : 'bg-white border-indigo-200 text-indigo-900'
-                        }`}>
-                          Voz Activa: <strong>{CEO_VOICE_OPTIONS.find(v => v.id === selectedVoiceProfile)?.name.split(' (')[0] || 'La Guía del Saber'}</strong>
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setIsVoiceListExpanded(!isVoiceListExpanded)}
+                          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold text-xs bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs transition-all cursor-pointer active:scale-95"
+                        >
+                          <span>{isVoiceListExpanded ? 'Contraer Lista de Voces' : 'Desplegar Catálogo (6)'}</span>
+                          {isVoiceListExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                        </button>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                      {CEO_VOICE_OPTIONS.map((voice) => {
-                        const isSelected = selectedVoiceProfile === voice.id;
-                        const isPreviewing = previewingVoiceId === voice.id;
-
-                        return (
-                          <div
-                            key={voice.id}
-                            onClick={() => handleSelectVoiceProfile(voice.id)}
-                            className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
-                              isSelected
-                                ? 'border-indigo-500 bg-indigo-500/10 shadow-md ring-2 ring-indigo-500/20'
-                                : currentTheme.isDark
-                                ? 'border-slate-800 bg-slate-900/60 hover:border-slate-700'
-                                : 'border-slate-200 bg-white hover:border-indigo-300 shadow-2xs'
-                            }`}
-                          >
-                            {isSelected && (
-                              <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[9px] font-black uppercase tracking-wider">
-                                En Uso
-                              </span>
-                            )}
-
-                            <div className="space-y-2.5">
-                              <div className="flex items-center gap-2.5">
-                                <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/80 border border-indigo-300 dark:border-indigo-700/50 flex items-center justify-center text-lg shrink-0">
-                                  {voice.gender === 'female' ? '👩‍🏫' : '👨‍🏫'}
-                                </div>
-                                <div className="min-w-0 pr-12">
-                                  <h4 className={`font-black text-xs sm:text-sm truncate ${currentTheme.isDark ? 'text-white' : 'text-slate-900'}`}>
-                                    {voice.name}
-                                  </h4>
-                                  <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 block truncate">
-                                    {voice.personaLabel}
-                                  </span>
-                                </div>
-                              </div>
-
-                              <p className={`text-[11px] leading-relaxed line-clamp-2 font-medium ${
-                                currentTheme.isDark ? 'text-slate-300' : 'text-slate-600'
-                              }`}>
-                                {voice.description}
-                              </p>
+                    {/* Tarjeta de Resumen Compacto de la Voz Activa */}
+                    {(() => {
+                      const activeVoice = CEO_VOICE_OPTIONS.find(v => v.id === selectedVoiceProfile) || CEO_VOICE_OPTIONS[0];
+                      const isPreviewingActive = previewingVoiceId === activeVoice.id;
+                      return (
+                        <div className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+                          currentTheme.isDark ? 'bg-slate-900/80 border-indigo-500/40 shadow-sm' : 'bg-white border-indigo-200 shadow-xs'
+                        }`}>
+                          <div className="flex items-center gap-3">
+                            <div className="w-11 h-11 rounded-xl bg-indigo-100 dark:bg-indigo-950/80 border border-indigo-300 dark:border-indigo-700/50 flex items-center justify-center text-xl shrink-0 shadow-2xs">
+                              {activeVoice.avatarEmoji || (activeVoice.gender === 'female' ? '👩‍🏫' : '👨‍🏫')}
                             </div>
-
-                            <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-white/10 flex items-center gap-2">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handlePreviewVoice(voice);
-                                }}
-                                className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                                  isPreviewing
-                                    ? 'bg-amber-500 text-slate-950 font-black animate-pulse'
-                                    : currentTheme.isDark
-                                    ? 'bg-white/10 hover:bg-white/20 text-slate-200'
-                                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                                }`}
-                                title="Escuchar muestra de voz con texto histórico pedagógico"
-                              >
-                                {isPreviewing ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3 fill-current" />}
-                                <span>{isPreviewing ? 'Detener' : 'Probar Voz'}</span>
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleSelectVoiceProfile(voice.id);
-                                }}
-                                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
-                                  isSelected
-                                    ? 'bg-indigo-600 text-white shadow-xs'
-                                    : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200'
-                                }`}
-                              >
-                                {isSelected ? '✓ Activa' : 'Elegir'}
-                              </button>
+                            <div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h4 className={`font-black text-sm ${currentTheme.isDark ? 'text-white' : 'text-slate-900'}`}>
+                                  {activeVoice.name}
+                                </h4>
+                                <span className="px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[9px] font-black uppercase tracking-wider">
+                                  ✓ En Uso
+                                </span>
+                              </div>
+                              <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 block">
+                                {activeVoice.personaLabel} • Cadencia oratoria calibrada ({activeVoice.rateStr || '-3%'})
+                              </span>
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
+
+                          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                            <button
+                              type="button"
+                              onClick={() => handlePreviewVoice(activeVoice)}
+                              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                                isPreviewingActive
+                                  ? 'bg-amber-500 text-slate-950 font-black animate-pulse'
+                                  : currentTheme.isDark
+                                  ? 'bg-white/10 hover:bg-white/20 text-slate-200'
+                                  : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200'
+                              }`}
+                              title="Escuchar muestra de voz en alta fidelidad"
+                            >
+                              {isPreviewingActive ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5 fill-current" />}
+                              <span>{isPreviewingActive ? 'Detener' : 'Probar Voz Activa'}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setIsVoiceListExpanded(!isVoiceListExpanded)}
+                              className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                                isVoiceListExpanded
+                                  ? 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                                  : 'bg-slate-900 hover:bg-slate-800 text-white dark:bg-white/10 dark:hover:bg-white/20'
+                              }`}
+                            >
+                              <span>{isVoiceListExpanded ? 'Ocultar catálogo' : 'Cambiar voz'}</span>
+                              {isVoiceListExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* LISTADO RETRÁCTIL DE TODAS LAS VOCES NARRADORAS */}
+                    {isVoiceListExpanded && (
+                      <div className="space-y-3 pt-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="flex items-center justify-between pb-1 px-1 border-b border-indigo-100 dark:border-white/10">
+                          <span className="text-[11px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                            Catálogo Completo de Voces Históricas (6 Disponibles)
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setIsVoiceListExpanded(false)}
+                            className="text-[11px] font-bold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-white flex items-center gap-1 cursor-pointer"
+                          >
+                            <span>Contraer catálogo</span>
+                            <ChevronUp className="h-3 w-3" />
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {CEO_VOICE_OPTIONS.map((voice) => {
+                            const isSelected = selectedVoiceProfile === voice.id;
+                            const isPreviewing = previewingVoiceId === voice.id;
+
+                            return (
+                              <div
+                                key={voice.id}
+                                onClick={() => handleSelectVoiceProfile(voice.id)}
+                                className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
+                                  isSelected
+                                    ? 'border-indigo-500 bg-indigo-500/10 shadow-md ring-2 ring-indigo-500/20'
+                                    : currentTheme.isDark
+                                    ? 'border-slate-800 bg-slate-900/60 hover:border-slate-700'
+                                    : 'border-slate-200 bg-white hover:border-indigo-300 shadow-2xs'
+                                }`}
+                              >
+                                {isSelected && (
+                                  <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[9px] font-black uppercase tracking-wider">
+                                    En Uso
+                                  </span>
+                                )}
+
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/80 border border-indigo-300 dark:border-indigo-700/50 flex items-center justify-center text-lg shrink-0">
+                                      {voice.avatarEmoji || (voice.gender === 'female' ? '👩‍🏫' : '👨‍🏫')}
+                                    </div>
+                                    <div className="min-w-0 pr-12">
+                                      <h4 className={`font-black text-xs sm:text-sm truncate ${currentTheme.isDark ? 'text-white' : 'text-slate-900'}`}>
+                                        {voice.name}
+                                      </h4>
+                                      <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 block truncate">
+                                        {voice.personaLabel}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <p className={`text-[11px] leading-relaxed line-clamp-2 font-medium ${
+                                    currentTheme.isDark ? 'text-slate-300' : 'text-slate-600'
+                                  }`}>
+                                    {voice.description}
+                                  </p>
+                                </div>
+
+                                <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-white/10 flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handlePreviewVoice(voice);
+                                    }}
+                                    className={`flex-1 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                                      isPreviewing
+                                        ? 'bg-amber-500 text-slate-950 font-black animate-pulse'
+                                        : currentTheme.isDark
+                                        ? 'bg-white/10 hover:bg-white/20 text-slate-200'
+                                        : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                                    }`}
+                                    title="Escuchar muestra de voz con calibración oratoria"
+                                  >
+                                    {isPreviewing ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3 fill-current" />}
+                                    <span>{isPreviewing ? 'Detener' : 'Probar Voz'}</span>
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleSelectVoiceProfile(voice.id);
+                                    }}
+                                    className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                                      isSelected
+                                        ? 'bg-indigo-600 text-white shadow-xs'
+                                        : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200'
+                                    }`}
+                                  >
+                                    {isSelected ? '✓ Activa' : 'Elegir'}
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        <div className="pt-2 flex justify-center">
+                          <button
+                            type="button"
+                            onClick={() => setIsVoiceListExpanded(false)}
+                            className="px-4 py-1.5 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center gap-1.5 cursor-pointer transition-all"
+                          >
+                            <ChevronUp className="h-3.5 w-3.5" />
+                            <span>Contraer catálogo de voces</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

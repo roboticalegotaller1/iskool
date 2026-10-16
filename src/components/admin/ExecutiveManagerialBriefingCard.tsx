@@ -54,9 +54,7 @@ export const ExecutiveManagerialBriefingCard: React.FC<ExecutiveManagerialBriefi
   const isRetail = isCorporate && (report.schoolId === 'emp-ventas' || report.schoolName?.toLowerCase().includes('vanguardia') || report.schoolName?.toLowerCase().includes('retail'));
   const isTech = isCorporate && (report.schoolId === 'emp-tech' || report.schoolName?.toLowerCase().includes('innovasoft'));
 
-  const corpLogoUrl = isBmw 
-    ? '/brand/bmw_group_logo.svg' 
-    : (isRetail ? '/brand/vanguardia_retail_logo.svg' : '/brand/innovasoft_tech_logo.svg');
+  const corpLogoUrl = '/brand/ibime_logo.svg';
 
   // Si es entorno corporativo, renderizar la suite de dirección ejecutiva B2B sin nada de gamificación ni términos escolares
   if (isCorporate) {

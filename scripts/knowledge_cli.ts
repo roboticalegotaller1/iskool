@@ -22,14 +22,25 @@ async function main() {
 
   switch (command) {
     case 'validate':
-    case 'knowledge:validate':
-      await runValidate();
+    case 'knowledge:validate': {
+      const isFrench = args.includes('--french') || args.includes('french') || args.some(a => a.includes('french'));
+      await runValidate(isFrench ? 'french' : 'english');
       break;
+    }
 
     case 'sync':
-    case 'knowledge:sync':
-      await runSync(args.includes('--force'));
+    case 'knowledge:sync': {
+      const isFrench = args.includes('--french') || args.includes('french');
+      const isAll = args.includes('--all') || (!isFrench && !args.includes('--english'));
+      const isForce = args.includes('--force');
+      if (isAll) {
+        await runSync(isForce, 'english');
+        await runSync(isForce, 'french');
+      } else {
+        await runSync(isForce, isFrench ? 'french' : 'english');
+      }
       break;
+    }
 
     case 'stats':
     case 'knowledge:stats':
@@ -80,16 +91,16 @@ async function main() {
   }
 }
 
-async function runValidate() {
+async function runValidate(language: 'english' | 'french' = 'english') {
   console.log(`\n================================================================`);
-  console.log(`🔍 VALIDACIÓN DE BÓVEDA CURRICULAR (iSchool English Knowledge Vault)`);
+  console.log(`🔍 VALIDACIÓN DE BÓVEDA CURRICULAR (iSchool ${language.toUpperCase()} Knowledge Vault)`);
   console.log(`================================================================\n`);
 
-  const docs = KnowledgeVaultLoader.loadAll();
+  const docs = KnowledgeVaultLoader.loadAll(undefined, language);
   console.log(`📂 Archivos encontrados: ${docs.length}\n`);
 
   if (docs.length === 0) {
-    console.warn(`⚠️ No se encontraron archivos .md en knowledge/english/`);
+    console.warn(`⚠️ No se encontraron archivos .md en knowledge/${language}/`);
     process.exit(0);
   }
 
@@ -124,16 +135,16 @@ async function runValidate() {
   }
 }
 
-async function runSync(force: boolean = false) {
+async function runSync(force: boolean = false, language: 'english' | 'french' = 'english') {
   console.log(`\n================================================================`);
-  console.log(`🚀 SINCRONIZACIÓN DE BÓVEDA CURRICULAR`);
+  console.log(`🚀 SINCRONIZACIÓN DE BÓVEDA CURRICULAR (${language.toUpperCase()})`);
   console.log(`================================================================\n`);
 
-  console.log(`Iniciando sincronización ${force ? '(Modo Forzado: sobreescribiendo checksums)' : 'incremental con checksums'}...`);
+  console.log(`Iniciando sincronización ${language} ${force ? '(Modo Forzado: sobreescribiendo checksums)' : 'incremental con checksums'}...`);
 
-  const report = await KnowledgeVaultSyncService.sync({ force });
+  const report = await KnowledgeVaultSyncService.sync({ force, language, skipDatabase: true });
 
-  console.log(`\nResultados de Sincronización:`);
+  console.log(`\nResultados de Sincronización (${language}):`);
   console.log(`  ➕ Creados:     ${report.createdCount}`);
   console.log(`  🔄 Actualizados: ${report.updatedCount}`);
   console.log(`  ⏸️  Sin cambios:  ${report.unchangedCount}`);
@@ -141,11 +152,10 @@ async function runSync(force: boolean = false) {
   console.log(`  ❌ Errores:      ${report.errorCount}`);
 
   if (report.errorCount > 0) {
-    console.error(`\n⚠️ Se detectaron ${report.errorCount} documentos con errores que no pudieron sincronizarse.`);
+    console.error(`\n⚠️ Se detectaron ${report.errorCount} documentos con errores que no pudieron sincronizarse en ${language}.`);
     process.exit(1);
   } else {
-    console.log(`\n🎉 Sincronización exitosa.`);
-    process.exit(0);
+    console.log(`\n🎉 Sincronización de ${language} exitosa.`);
   }
 }
 

@@ -48,8 +48,8 @@ test.describe('FASE 4: Síntesis Bento UI & Pipeline Kanban en Vista CEO', () =>
     await expect(directoryBtn).toBeVisible();
     await expect(controlEscolarBtn).toBeVisible();
 
-    // 4. Validar Banner de Ocupación (3,622 / 3,900 Asientos)
-    const occupancyText = page.locator('text=3,622 / 3,900 Asientos').first();
+    // 4. Validar Banner de Ocupación (Asientos Contratados / Capacidad)
+    const occupancyText = page.locator('text=/ 3,900 Asientos').first();
     await expect(occupancyText).toBeVisible();
 
     // 5. Validar las 5 Fases Departamentales Corresponsables

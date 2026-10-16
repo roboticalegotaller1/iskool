@@ -9,7 +9,7 @@ campo_formativo: "Saberes y Pensamiento Científico"
 tema: "Figuras Geométricas y Cuerpos del Entorno"
 duracion: "10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)"
 ejes_articuladores: ["Pensamiento Crítico", "Inclusión", "Vida Saludable", "Apropiación de las Culturas a través de la Lectura y la Escritura"]
-producto_integrador: "Exposición interactiva "Geometría en Nuestra Escuela" con maquetas a escala, cuerpos geométricos elaborados con desarrollos planos, planos arquitectónicos del salón y catálogo de polígonos del entorno."
+producto_integrador: "Exposición interactiva 'Geometría en Nuestra Escuela' con maquetas a escala, cuerpos geométricos elaborados con desarrollos planos, planos arquitectónicos del salón y catálogo de polígonos del entorno."
 fecha_elaboracion: "2 de septiembre de 2026"
 created_at: "2 de septiembre de 2026"
 updated_at: "2 de septiembre de 2026"

@@ -39,8 +39,8 @@ export class KnowledgeVaultSyncService {
   /**
    * Ruta del archivo de índice local para resiliencia offline y pruebas.
    */
-  static getLocalIndexFilePath(): string {
-    const dir = path.join(process.cwd(), 'knowledge', 'english', '.index');
+  static getLocalIndexFilePath(language: 'english' | 'french' = 'english'): string {
+    const dir = path.join(process.cwd(), 'knowledge', language, '.index');
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
@@ -50,8 +50,8 @@ export class KnowledgeVaultSyncService {
   /**
    * Lee el índice persistido local.
    */
-  static loadLocalIndex(): Map<string, PersistedKnowledgeDocRecord> {
-    const indexPath = this.getLocalIndexFilePath();
+  static loadLocalIndex(language: 'english' | 'french' = 'english'): Map<string, PersistedKnowledgeDocRecord> {
+    const indexPath = this.getLocalIndexFilePath(language);
     if (!fs.existsSync(indexPath)) {
       return new Map();
     }
@@ -72,8 +72,8 @@ export class KnowledgeVaultSyncService {
   /**
    * Guarda el índice persistido localmente.
    */
-  static saveLocalIndex(records: PersistedKnowledgeDocRecord[]): void {
-    const indexPath = this.getLocalIndexFilePath();
+  static saveLocalIndex(records: PersistedKnowledgeDocRecord[], language: 'english' | 'french' = 'english'): void {
+    const indexPath = this.getLocalIndexFilePath(language);
     fs.writeFileSync(indexPath, JSON.stringify(records, null, 2), 'utf8');
   }
 
@@ -84,9 +84,11 @@ export class KnowledgeVaultSyncService {
     vaultPath?: string;
     force?: boolean;
     skipDatabase?: boolean;
+    language?: 'english' | 'french';
   } = {}): Promise<SyncOperationReport> {
-    const docs = KnowledgeVaultLoader.loadAll(options.vaultPath);
-    const existingIndex = this.loadLocalIndex();
+    const lang = options.language || 'english';
+    const docs = KnowledgeVaultLoader.loadAll(options.vaultPath, lang);
+    const existingIndex = this.loadLocalIndex(lang);
 
     let createdCount = 0;
     let updatedCount = 0;
@@ -233,7 +235,7 @@ export class KnowledgeVaultSyncService {
     }
 
     // Guardar el índice persistente local
-    this.saveLocalIndex(updatedRecords);
+    this.saveLocalIndex(updatedRecords, lang);
 
     return {
       createdCount,

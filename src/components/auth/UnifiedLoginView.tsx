@@ -119,7 +119,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
           last_name: matchedDemo.name.split(' ').slice(1).join(' '),
           role: matchedDemo.role as any,
           email: matchedDemo.email,
-          school_id: isIbimeMode ? 'sch-ibime' : 'sch-test-case',
+          school_id: 'sch-ibime',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         } : {
@@ -128,7 +128,7 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
           last_name: currentSession.user.user_metadata?.last_name || currentSession.user.user_metadata?.family_name || '',
           role: (currentSession.user.user_metadata?.role || (userEmail.includes('docente') || userEmail.includes('profesor') ? 'teacher' : 'student')) as any,
           email: userEmail,
-          school_id: isIbimeMode ? 'sch-ibime' : 'sch-test-case',
+          school_id: 'sch-ibime',
           created_at: currentSession.user.created_at,
           updated_at: new Date().toISOString()
         };

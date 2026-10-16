@@ -145,8 +145,8 @@ export const NARRATOR_VOICE_PROFILES: Record<NarratorMode, NarratorVoiceProfile>
   epic_chronist: {
     id: 'epic_chronist',
     name: 'El Cronista Épico',
-    voiceId: 'es-MX-GerardoNeural',
-    prosodyRate: '+4%',
+    voiceId: 'es-PE-AlexNeural',
+    prosodyRate: '+2%',
     prosodyPitch: '+1Hz',
     pauseMs: 220,
     description: 'Relato apasionado estilo cinemática o tráiler histórico de batallas y gloria',
@@ -155,9 +155,9 @@ export const NARRATOR_VOICE_PROFILES: Record<NarratorMode, NarratorVoiceProfile>
   wisdom_guide: {
     id: 'wisdom_guide',
     name: 'La Guía del Saber',
-    voiceId: 'es-MX-BeatrizNeural',
-    prosodyRate: '+2%',
-    prosodyPitch: '+1Hz',
+    voiceId: 'es-MX-DaliaNeural',
+    prosodyRate: '-2%',
+    prosodyPitch: '+0Hz',
     pauseMs: 250,
     description: 'Retroalimentación de misiones, logros pedagógicos y explicaciones didácticas',
     roleTag: 'Misiones / Desafíos / Logros Gamificados'
@@ -165,7 +165,7 @@ export const NARRATOR_VOICE_PROFILES: Record<NarratorMode, NarratorVoiceProfile>
   time_chrononaut: {
     id: 'time_chrononaut',
     name: 'El Crononauta / Investigador del Tiempo',
-    voiceId: 'es-MX-LibertoNeural',
+    voiceId: 'es-CO-GonzaloNeural',
     prosodyRate: '-2%',
     prosodyPitch: '-1Hz',
     pauseMs: 320,
@@ -952,6 +952,7 @@ export async function playUniversalIskoolVoice(options: UniversalVoicePlayOption
       const response = await fetch('/api/ai/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           text: cleanText,
           characterName,

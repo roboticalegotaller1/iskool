@@ -27,3 +27,5 @@ temp_frames/
 .env*
 .DS_Store
 Thumbs.db
+.generations/
+*.jsonl

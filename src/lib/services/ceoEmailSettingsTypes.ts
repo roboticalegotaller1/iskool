@@ -30,7 +30,44 @@ export interface OfficialTemplateConfig {
   lastModifiedAt?: string;
 }
 
-export type CeoThemeMode = 'ivory' | 'slate' | 'navy' | 'emerald';
+export interface CustomCeoTheme {
+  name: string;
+  isCustom: boolean;
+  backgroundColor: string; // Color de fondo principal de la suite ejecutiva
+  headerColor: string;     // Color del encabezado y barra de navegación superior
+  sidebarColor: string;    // Color de la barra lateral de navegación
+  cardColor: string;       // Color de superficie de tarjetas, expedientes y paneles
+  cardBorderColor: string; // Color de los bordes y separadores de tarjetas
+  buttonColor: string;     // Color de botones de acción principal, acentos y selecciones activas
+  signalColor: string;     // Color de distintivos de señalización, alertas críticas y pings de radar
+  textColor: string;       // Color de texto principal
+  isDark: boolean;         // Indicador de contraste para textos y microiconos (oscuro vs claro)
+}
+
+export const DEFAULT_CUSTOM_THEME: CustomCeoTheme = {
+  name: 'Personalizado',
+  isCustom: true,
+  backgroundColor: '#0A0F1D',
+  headerColor: '#050811',
+  sidebarColor: '#0C1322',
+  cardColor: '#111A2E',
+  cardBorderColor: '#1E2C48',
+  buttonColor: '#4F46E5',
+  signalColor: '#F59E0B',
+  textColor: '#F8FAFC',
+  isDark: true
+};
+
+export type CeoThemeMode = 
+  | 'ivory' 
+  | 'slate' 
+  | 'navy' 
+  | 'emerald' 
+  | 'burgundy' 
+  | 'cyber' 
+  | 'amethyst' 
+  | 'titanium' 
+  | 'custom';
 
 export interface CeoEmailSettings {
   tenantId: string;
@@ -38,6 +75,7 @@ export interface CeoEmailSettings {
   delegates: SectionDelegateConfig[];
   templates: OfficialTemplateConfig[];
   themeMode?: CeoThemeMode;
+  customThemeConfig?: CustomCeoTheme;
   updatedAt: string;
 }
 

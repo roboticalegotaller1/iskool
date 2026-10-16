@@ -1,7 +1,7 @@
 [
   {
-    "id": "7e26b1b8-ab07-4041-9b68-d5677b7b4b88",
-    "document_id": "content_guidelines",
+    "id": "680cf155-bf4d-4aae-a4df-f167867355e4",
+    "document_id": "00_system_content_guidelines",
     "path": "knowledge/english/00_SYSTEM/Content_Guidelines.md",
     "title": "Content_Guidelines",
     "document_type": "unclassified",
@@ -10,7 +10,7 @@
     "cefr": [],
     "skills": [],
     "metadata": {
-      "id": "content_guidelines",
+      "id": "00_system_content_guidelines",
       "title": "Content_Guidelines",
       "type": "unclassified",
       "school_stage": [],
@@ -30,12 +30,12 @@
     "status": "draft",
     "version": 1,
     "checksum": "dd9feeacf6c0a1f6146c8389b06c4d57e6529707eef88fc51817ff5d4b25e7f5",
-    "indexed_at": "2026-09-24T06:30:45.207Z",
+    "indexed_at": "2026-10-16T01:19:02.511Z",
     "missing_on_disk": false
   },
   {
-    "id": "4c2c03b7-5810-49b6-99ad-f764774e2ff3",
-    "document_id": "frontmatter_schema",
+    "id": "1c27a49e-eaa8-40c8-bb17-5cfbb67f1cf2",
+    "document_id": "00_system_frontmatter_schema",
     "path": "knowledge/english/00_SYSTEM/Frontmatter_Schema.md",
     "title": "Frontmatter_Schema",
     "document_type": "unclassified",
@@ -44,7 +44,7 @@
     "cefr": [],
     "skills": [],
     "metadata": {
-      "id": "frontmatter_schema",
+      "id": "00_system_frontmatter_schema",
       "title": "Frontmatter_Schema",
       "type": "unclassified",
       "school_stage": [],
@@ -62,12 +62,12 @@
     "status": "draft",
     "version": 1,
     "checksum": "6a8445b891248e19ff143b356dd8a31b743fbc0a85dfce8c7f5d2a0a38367796",
-    "indexed_at": "2026-09-24T06:30:45.208Z",
+    "indexed_at": "2026-10-16T01:19:02.512Z",
     "missing_on_disk": false
   },
   {
-    "id": "57b2e2bf-730c-4b01-9c29-8ac494882f5b",
-    "document_id": "generation_rules",
+    "id": "42b90f2d-b03b-4d52-9bbe-1df8ca856719",
+    "document_id": "00_system_generation_rules",
     "path": "knowledge/english/00_SYSTEM/Generation_Rules.md",
     "title": "Generation_Rules",
     "document_type": "unclassified",
@@ -76,7 +76,7 @@
     "cefr": [],
     "skills": [],
     "metadata": {
-      "id": "generation_rules",
+      "id": "00_system_generation_rules",
       "title": "Generation_Rules",
       "type": "unclassified",
       "school_stage": [],
@@ -94,13 +94,13 @@
     "status": "draft",
     "version": 1,
     "checksum": "7cf95569a9269065d9534499c85e22053c5680815ae68d7b277782bfd7a6f726",
-    "indexed_at": "2026-09-24T06:30:45.208Z",
+    "indexed_at": "2026-10-16T01:19:02.512Z",
     "missing_on_disk": false
   },
   {
-    "id": "6528a220-2c46-4122-8ab2-3e158eef9e19",
-    "document_id": "readme",
-    "path": "knowledge/english/99_SOURCES/README.md",
+    "id": "260092b8-6d92-483b-8961-9db617a84952",
+    "document_id": "00_system_readme",
+    "path": "knowledge/english/00_SYSTEM/README.md",
     "title": "README",
     "document_type": "unclassified",
     "school_stage": [],
@@ -108,7 +108,7 @@
     "cefr": [],
     "skills": [],
     "metadata": {
-      "id": "readme",
+      "id": "00_system_readme",
       "title": "README",
       "type": "unclassified",
       "school_stage": [],
@@ -121,17 +121,17 @@
       "_has_frontmatter": false,
       "wikiLinks": []
     },
-    "content": "# Registro Oficial de Fuentes y Procedencia (99_SOURCES)\n\nEste directorio documenta el registro maestro de identificadores de procedencia (`source_ids`) autorizados para el sustento curricular de iSchool.\n\n## Fuentes Registradas\n\n### 1. `cefr_companion_volume_2020`\n- **Título Oficial:** *Common European Framework of Reference for Languages: Learning, teaching, assessment – Companion volume*\n- **Entidad Emisora:** Council of Europe (Consejo de Europa)\n- **Año:** 2020\n- **Uso:** Descriptores oficiales Can-Do, escalas ilustrativas y mediación lingüística.\n\n### 2. `sep_nem_lenguajes_2024`\n- **Título Oficial:** *Programas de Estudio de la Nueva Escuela Mexicana - Campo Formativo Lenguajes*\n- **Entidad Emisora:** Secretaría de Educación Pública (SEP), México\n- **Año:** 2024\n- **Uso:** Procesos de Desarrollo de Aprendizaje (PDA), fases formativas y articulación comunitaria.\n\n### 3. `cambridge_english_handbooks_public`\n- **Título Oficial:** *Cambridge English Qualifications: Handbooks for Teachers (Public Specifications)*\n- **Entidad Emisora:** Cambridge Assessment English\n- **Año:** 2020-2024\n- **Uso:** Especificaciones públicas de niveles de logro y delimitación léxica de referencia.\n\n### 4. `iskool_curriculum_core`\n- **Título Oficial:** *Marco Curricular Institucional y Sistema de Aprendizaje Gamificado iSchool*\n- **Entidad Emisora:** Comité Académico de iSchool\n- **Año:** 2025-2026\n- **Uso:** Dinámicas RPG pedagógicas, rúbricas institucionales y secuencias de aula.",
+    "content": "# iSchool English Knowledge Vault (Bóveda Curricular de Inglés)\n\nBienvenido a la **Bóveda Curricular de Inglés de iSchool**, el cerebro académico estructurado y propietario diseñado para sustentar todas las experiencias de aprendizaje de la lengua inglesa en la plataforma institucional.\n\n## 1. Propósito Institucional\n\nA diferencia de modelos improvisados donde se alimentan archivos PDF o textos arbitrarios al motor de inferencia, la Bóveda Curricular de Inglés de iSchool constituye una base de conocimiento pedagógica rigurosa, estructurada y gobernada bajo estándares internacionales y oficiales:\n\n- **Marco Común Europeo de Referencia para las Lenguas (MCER / CEFR)** (Foundation, Pre-A1 a C2).\n- **Alineaciones Curriculares Cambridge English** (Starters a Proficiency) como referencia comparativa y no reproductiva.\n- **Objetivos curriculares y formativos por edad y grado escolar** (desde Preescolar hasta Preparatoria).\n- **Habilidades lingüísticas y subhabilidades específicas**.\n- **Progresiones gramaticales y léxicas graduadas**.\n- **Funciones comunicativas del lenguaje en contexto real**.\n- **Patrones pedagógicos y tipologías de actividades interactivas**.\n- **Criterios de evaluación formativa y rúbricas analíticas**.\n\n## 2. Principio Arquitectónico\n\n```text\nFuentes Académicas Oficiales \n       ↓ \nConocimiento Estructurado Markdown (.md + Frontmatter YAML) \n       ↓ \nMotor de Bóveda Curricular (Loader, Parser, Validator, SyncService, QueryService) \n       ↓ \nMotor de Inteligencia Artificial Pedagógica \n       ↓ \nExperiencias y Contenidos de Aprendizaje iSchool\n```\n\nCada actividad o lección generada por el sistema es capaz de justificar pedagógicamente:\n- ¿Para qué grado y etapa escolar fue diseñada?\n- ¿A qué nivel CEFR corresponde?\n- ¿Qué habilidad y subhabilidad desarrolla?\n- ¿Qué vocabulario y estructura gramatical practica?\n- ¿Qué función comunicativa ejercita?\n- ¿Cuál es su nivel de dificultad y duración sugerida?\n- ¿Qué fuentes o estándares oficiales respaldan dicha decisión formativa?\n\n## 3. Estructura de Directorios\n\n- `00_SYSTEM/`: Taxonomía, esquemas, reglas de generación y políticas de fuentes.\n- `01_FRAMEWORKS/`: Estándares internacionales (CEFR, Cambridge) y matrices de correspondencia.\n- `02_GRADE_MAP/`: Descriptores curriculares detallados de Preescolar a Preparatoria.\n- `03_SKILLS/`: Nodos de habilidades (Listening, Speaking, Reading, Writing, Grammar, Vocabulary, Pronunciation).\n- `04_TOPICS/`: Ejes temáticos contextualizados por edad e interés.\n- `05_PEDAGOGY/`: Modelos de enseñanza (PBL, TBL, Gamificación pedagógica, Enfoque comunicativo).\n- `06_ACTIVITY_PATTERNS/`: Patrones de diseño para lecciones, retos y proyectos interactivos.\n- `07_ASSESSMENT/`: Rúbricas formativas, descriptores de logro y reactivos de evaluación.\n- `99_SOURCES/`: Registro de procedencia bibliográfica y autorizaciones institucionales.\n\n## 4. Gobernanza del Contenido\n\nTodo nodo curricular debe cumplir con el esquema YAML obligatorio definido en `Frontmatter_Schema.md` y pertenecer a la taxonomía centralizada en `Taxonomy.md`. Por seguridad académica, **únicamente los documentos con estado `status: approved` son consumidos automáticamente en entornos de producción**.",
     "source_ids": [],
     "status": "draft",
     "version": 1,
-    "checksum": "59bd7d98c41572a8ce5b96e2dc99365f1974132374775aafa9ebbf92d8170f78",
-    "indexed_at": "2026-09-24T06:30:45.213Z",
+    "checksum": "f03856352e912d5cd43a86c03c7fcaf93f2542ffef8249edef5eea57dcade547",
+    "indexed_at": "2026-10-16T01:19:02.512Z",
     "missing_on_disk": false
   },
   {
-    "id": "2c37b965-845b-4c97-ac9c-63a7ceb385b0",
-    "document_id": "source_policy",
+    "id": "1291c3ab-2a7c-4e93-b287-946d525d1ffa",
+    "document_id": "00_system_source_policy",
     "path": "knowledge/english/00_SYSTEM/Source_Policy.md",
     "title": "Source_Policy",
     "document_type": "unclassified",
@@ -140,7 +140,7 @@
     "cefr": [],
     "skills": [],
     "metadata": {
-      "id": "source_policy",
+      "id": "00_system_source_policy",
       "title": "Source_Policy",
       "type": "unclassified",
       "school_stage": [],
@@ -158,12 +158,12 @@
     "status": "draft",
     "version": 1,
     "checksum": "d8c6e4a3fd54c65c64a7065892a95a5fa229f6177f0af240578f60a77e3f0aa9",
-    "indexed_at": "2026-09-24T06:30:45.208Z",
+    "indexed_at": "2026-10-16T01:19:02.512Z",
     "missing_on_disk": false
   },
   {
-    "id": "40188253-ac2b-4dbe-8f46-11bf265e3bfa",
-    "document_id": "taxonomy",
+    "id": "058e3395-1cae-4ad2-9dd5-689b023b8821",
+    "document_id": "00_system_taxonomy",
     "path": "knowledge/english/00_SYSTEM/Taxonomy.md",
     "title": "Taxonomy",
     "document_type": "unclassified",
@@ -172,7 +172,7 @@
     "cefr": [],
     "skills": [],
     "metadata": {
-      "id": "taxonomy",
+      "id": "00_system_taxonomy",
       "title": "Taxonomy",
       "type": "unclassified",
       "school_stage": [],
@@ -190,7 +190,7 @@
     "status": "draft",
     "version": 1,
     "checksum": "fff28929895d2424f1bb035d50847a50cf5686d462e44b4a51968f7e535be035",
-    "indexed_at": "2026-09-24T06:30:45.208Z",
+    "indexed_at": "2026-10-16T01:19:02.512Z",
     "missing_on_disk": false
   },
   {
@@ -21543,6 +21543,306 @@
     "missing_on_disk": false
   },
   {
+    "id": "144dcd8c-8962-4dca-a604-49e20ce67f61",
+    "document_id": "en_topic_environment_sustainability_b1_b2",
+    "path": "knowledge/english/04_TOPICS/en_topic_environment_sustainability_b1_b2.md",
+    "title": "Environment, Ecological Transition, and Sustainable Development",
+    "document_type": "thematic_module",
+    "school_stage": [
+      "high_school"
+    ],
+    "grades": [
+      "high_school_1"
+    ],
+    "cefr": [
+      "B1",
+      "B2"
+    ],
+    "skills": [
+      "vocabulary",
+      "reading",
+      "speaking",
+      "writing"
+    ],
+    "metadata": {
+      "id": "en_topic_environment_sustainability_b1_b2",
+      "title": "Environment, Ecological Transition, and Sustainable Development",
+      "type": "thematic_module",
+      "school_stage": [
+        "high_school"
+      ],
+      "grades": [
+        "high_school_1"
+      ],
+      "age_band": [],
+      "cefr": [
+        "B1",
+        "B2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "vocabulary",
+        "reading",
+        "speaking",
+        "writing"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [
+        "environment",
+        "ecology",
+        "sustainability"
+      ],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "cefr_companion_volume_2020",
+        "cambridge_english_b2_first_handbook"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "english",
+      "prerequisites": [
+        "en_topic_identity_family_relationships_a1_a2"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Environment, Ecological Transition, and Sustainable Development\n\n## 1. Core Thematic Module for Cambridge B1/B2 Assessments\nUrban ecology, renewable energy sources, waste management, circular economy, and carbon footprint reduction representing key argumentative writing and speaking tasks in international assessments.",
+    "source_ids": [
+      "cefr_companion_volume_2020",
+      "cambridge_english_b2_first_handbook"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "847636e19a7bad7d15e95ab907dda7542e523a6f76e9cff0068c3cbbacdb2f9f",
+    "indexed_at": "2026-10-16T01:19:02.515Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "667edbc1-1ea8-4870-8481-5c1363918fbd",
+    "document_id": "en_topic_identity_family_relationships_a1_a2",
+    "path": "knowledge/english/04_TOPICS/en_topic_identity_family_relationships_a1_a2.md",
+    "title": "Personal Identity, Family, Social Relationships, and Cultural Diversity",
+    "document_type": "thematic_module",
+    "school_stage": [
+      "secondary"
+    ],
+    "grades": [
+      "secondary_1",
+      "secondary_2"
+    ],
+    "cefr": [
+      "A1",
+      "A2"
+    ],
+    "skills": [
+      "vocabulary",
+      "speaking",
+      "writing"
+    ],
+    "metadata": {
+      "id": "en_topic_identity_family_relationships_a1_a2",
+      "title": "Personal Identity, Family, Social Relationships, and Cultural Diversity",
+      "type": "thematic_module",
+      "school_stage": [
+        "secondary"
+      ],
+      "grades": [
+        "secondary_1",
+        "secondary_2"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A1",
+        "A2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "vocabulary",
+        "speaking",
+        "writing"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [
+        "identity",
+        "family",
+        "daily_life"
+      ],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "cefr_companion_volume_2020",
+        "sep_nem_lenguajes_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "english",
+      "prerequisites": [],
+      "wikiLinks": []
+    },
+    "content": "# Personal Identity, Family, Social Relationships, and Cultural Diversity\n\n## 1. Lexical Fields and Speech Acts\nVocabulary of family ties, personal character traits, emotions, and formal and informal greetings across anglophone and multicultural school contexts.",
+    "source_ids": [
+      "cefr_companion_volume_2020",
+      "sep_nem_lenguajes_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "e6a16cf64739bd7882f0efc0cc005d93cf8c61a45ce7fd79da82cf800564b207",
+    "indexed_at": "2026-10-16T01:19:02.516Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "3545d707-d688-41da-a75a-f4002991ee0d",
+    "document_id": "en_topic_workplace_careers_higher_education_b1_b2",
+    "path": "knowledge/english/04_TOPICS/en_topic_workplace_careers_higher_education_b1_b2.md",
+    "title": "Professional Workplace, Higher Education, and Future Careers",
+    "document_type": "thematic_module",
+    "school_stage": [
+      "high_school"
+    ],
+    "grades": [
+      "high_school_1",
+      "high_school_2"
+    ],
+    "cefr": [
+      "B1",
+      "B2"
+    ],
+    "skills": [
+      "vocabulary",
+      "writing",
+      "speaking"
+    ],
+    "metadata": {
+      "id": "en_topic_workplace_careers_higher_education_b1_b2",
+      "title": "Professional Workplace, Higher Education, and Future Careers",
+      "type": "thematic_module",
+      "school_stage": [
+        "high_school"
+      ],
+      "grades": [
+        "high_school_1",
+        "high_school_2"
+      ],
+      "age_band": [],
+      "cefr": [
+        "B1",
+        "B2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "vocabulary",
+        "writing",
+        "speaking"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [
+        "work",
+        "careers",
+        "education"
+      ],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "cefr_companion_volume_2020",
+        "cambridge_english_c1_advanced_handbook"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "english",
+      "prerequisites": [],
+      "wikiLinks": []
+    },
+    "content": "# Professional Workplace, Higher Education, and Future Careers\n\n## 1. Academic Mobility and Career Readiness\nResume / CV writing in international format, cover letter drafting for bilingual university programs and scholarship opportunities, and mock job/admissions interview simulations.",
+    "source_ids": [
+      "cefr_companion_volume_2020",
+      "cambridge_english_c1_advanced_handbook"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "b9f06007b95b97210807de7138b868ad775a47c0707b2a825f9f7cabb8f04849",
+    "indexed_at": "2026-10-16T01:19:02.516Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "4e001828-dedc-4801-9885-6f6757147904",
+    "document_id": "04_topics_readme",
+    "path": "knowledge/english/04_TOPICS/README.md",
+    "title": "README",
+    "document_type": "unclassified",
+    "school_stage": [],
+    "grades": [],
+    "cefr": [],
+    "skills": [],
+    "metadata": {
+      "id": "04_topics_readme",
+      "title": "README",
+      "type": "unclassified",
+      "school_stage": [],
+      "grades": [],
+      "cefr": [],
+      "skills": [],
+      "source_ids": [],
+      "status": "draft",
+      "version": 1,
+      "_has_frontmatter": false,
+      "wikiLinks": []
+    },
+    "content": "# Ejes Temáticos Curriculares (04_TOPICS)\n\nEste directorio alberga las fichas descriptivas de los ejes temáticos transversales utilizados para contextualizar las actividades de inglés en iSchool.\n\n## Dimensiones de Temas Principales\n- `personal_identity`: Autodescripción, emociones, relaciones familiares y amistades.\n- `school_life`: Asignaturas, rutinas del colegio, convivencia e interacción escolar.\n- `nature_and_environment`: Ecosistemas, fauna, flora, sostenibilidad y cambio climático.\n- `health_and_wellbeing`: Hábitos saludables, nutrición, deportes y autocuidado.\n- `science_and_technology`: Innovación digital, robótica, inteligencia artificial y descubrimientos científicos.\n- `arts_and_creativity`: Música, literatura, artes visuales y expresiones culturales.\n- `society_and_civics`: Derechos comunitarios, diversidad, historia compartida y valores democráticos.\n- `global_citizenship`: Cooperación internacional, movilidad cultural y empatía global.",
+    "source_ids": [],
+    "status": "draft",
+    "version": 1,
+    "checksum": "b884785283a16ed5f3645bc86e02bde9e64a55ab51d2ee3acebc18039a784a4e",
+    "indexed_at": "2026-10-16T01:19:02.516Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "b1ae6147-4164-4b99-ad7c-79b560f7752c",
+    "document_id": "05_pedagogy_readme",
+    "path": "knowledge/english/05_PEDAGOGY/README.md",
+    "title": "README",
+    "document_type": "unclassified",
+    "school_stage": [],
+    "grades": [],
+    "cefr": [],
+    "skills": [],
+    "metadata": {
+      "id": "05_pedagogy_readme",
+      "title": "README",
+      "type": "unclassified",
+      "school_stage": [],
+      "grades": [],
+      "cefr": [],
+      "skills": [],
+      "source_ids": [],
+      "status": "draft",
+      "version": 1,
+      "_has_frontmatter": false,
+      "wikiLinks": []
+    },
+    "content": "# Modelos y Enfoques Pedagógicos (05_PEDAGOGY)\n\nEste directorio define los marcos metodológicos aplicados para la enseñanza del inglés en iSchool.\n\n## Enfoques Metodológicos\n1. **Communicative Language Teaching (CLT):** Prioridad a la interacción significativa y fluidez comunicativa por encima de la instrucción gramatical abstracta.\n2. **Task-Based Learning (TBL):** Aprendizaje estructurado en tres fases: *Pre-task*, *Task cycle* y *Language focus*.\n3. **Total Physical Response (TPR):** Fundamental para preescolar y primaria baja, vinculando el aparato motriz y la memoria auditiva.\n4. **Project-Based Learning (PBL):** Desarrollo de entregables tangibles sociocomunitarios vinculados con los campos formativos de la NEM 2024.\n5. **Gamified Pedagogical Loops:** Integración con la economía de experiencia (XP), niveles y narrativa RPG formativa de iSchool.",
+    "source_ids": [],
+    "status": "draft",
+    "version": 1,
+    "checksum": "1961008e5a656113f7ae5124059ecfd58ed5274f0a2a2c288556ca768d053c5b",
+    "indexed_at": "2026-10-16T01:19:02.516Z",
+    "missing_on_disk": false
+  },
+  {
     "id": "c4013041-5923-46e0-bde6-4fb23e8749f8",
     "document_id": "pattern_debate",
     "path": "knowledge/english/06_ACTIVITY_PATTERNS/debate.md",
@@ -22321,6 +22621,38 @@
     "missing_on_disk": false
   },
   {
+    "id": "ee2bfd2c-cf84-4862-83ce-a4eb285870b5",
+    "document_id": "06_activity_patterns_readme",
+    "path": "knowledge/english/06_ACTIVITY_PATTERNS/README.md",
+    "title": "README",
+    "document_type": "unclassified",
+    "school_stage": [],
+    "grades": [],
+    "cefr": [],
+    "skills": [],
+    "metadata": {
+      "id": "06_activity_patterns_readme",
+      "title": "README",
+      "type": "unclassified",
+      "school_stage": [],
+      "grades": [],
+      "cefr": [],
+      "skills": [],
+      "source_ids": [],
+      "status": "draft",
+      "version": 1,
+      "_has_frontmatter": false,
+      "wikiLinks": []
+    },
+    "content": "# Patrones de Actividades Interactivas (06_ACTIVITY_PATTERNS)\n\nEste directorio cataloga las estructuras y recetas interactivas que el Motor de Inteligencia Artificial Pedagógica utiliza para armar desafíos, lecciones y reactivos.\n\n## Patrones Catalogados\n- `listen_and_point`: Selección visual guiada por audio para Pre-A1 / A1.\n- `information_gap`: Actividad en parejas donde cada participante posee información complementaria.\n- `guided_debate`: Estructura argumentativa por roles para niveles B1 a C1.\n- `storyboard_creation`: Secuenciación narrativa con viñetas y descripciones escritas.\n- `roleplay_dialogue`: Simulaciones situacionales (compras, viajes, resolución de conflictos).\n- `gamified_quest_challenge`: Misión interactiva con recompensas de XP y monedas en el estudio de actividades.",
+    "source_ids": [],
+    "status": "draft",
+    "version": 1,
+    "checksum": "e64d039c6457a895cc78a0e4b16eec0dafee894554edfe19dffee859c6f36c8e",
+    "indexed_at": "2026-10-16T01:19:02.516Z",
+    "missing_on_disk": false
+  },
+  {
     "id": "40d167fe-a267-48b0-9e55-de772212c032",
     "document_id": "pattern_role_play",
     "path": "knowledge/english/06_ACTIVITY_PATTERNS/role_play.md",
@@ -22458,6 +22790,38 @@
     "version": 1,
     "checksum": "314c8778bdc3a30b610ed43256266954c503a16a632548804fcf7174d044ffa6",
     "indexed_at": "2026-09-24T06:30:45.213Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "f0ac0026-aaaa-467c-bcd7-efc1c4192fdc",
+    "document_id": "07_assessment_readme",
+    "path": "knowledge/english/07_ASSESSMENT/README.md",
+    "title": "README",
+    "document_type": "unclassified",
+    "school_stage": [],
+    "grades": [],
+    "cefr": [],
+    "skills": [],
+    "metadata": {
+      "id": "07_assessment_readme",
+      "title": "README",
+      "type": "unclassified",
+      "school_stage": [],
+      "grades": [],
+      "cefr": [],
+      "skills": [],
+      "source_ids": [],
+      "status": "draft",
+      "version": 1,
+      "_has_frontmatter": false,
+      "wikiLinks": []
+    },
+    "content": "# Evaluación Formativa y Rúbricas (07_ASSESSMENT)\n\nEste directorio alberga los criterios analíticos, listas de cotejo y escalas de valoración formativa para el aprendizaje del inglés en iSchool.\n\n## Instrumentos de Evaluación\n- `oral_production_rubric`: Evaluación de pronunciación, fluidez, rango léxico y precisión gramatical en producción hablada.\n- `writing_analytic_rubric`: Evaluación de adecuación a la tarea, coherencia y cohesión, riqueza de vocabulario y corrección sintáctica.\n- `formative_observation`: Guía de observación docente en el aula para educación temprana.\n- `peer_review_checklist`: Pautas de coevaluación entre pares para proyectos colaborativos.\n- `portfolio_evidence`: Criterios para el portafolio digital de evidencias de aprendizaje.",
+    "source_ids": [],
+    "status": "draft",
+    "version": 1,
+    "checksum": "80179dab5f810a4664076d43ddc265161dcfaaa291c501c6eda2f0070a0ad1cd",
+    "indexed_at": "2026-10-16T01:19:02.516Z",
     "missing_on_disk": false
   },
   {
@@ -23552,6 +23916,38 @@
     "missing_on_disk": false
   },
   {
+    "id": "004d48d9-4495-4b66-a5d5-c322d456b29e",
+    "document_id": "99_sources_readme",
+    "path": "knowledge/english/99_SOURCES/README.md",
+    "title": "README",
+    "document_type": "unclassified",
+    "school_stage": [],
+    "grades": [],
+    "cefr": [],
+    "skills": [],
+    "metadata": {
+      "id": "99_sources_readme",
+      "title": "README",
+      "type": "unclassified",
+      "school_stage": [],
+      "grades": [],
+      "cefr": [],
+      "skills": [],
+      "source_ids": [],
+      "status": "draft",
+      "version": 1,
+      "_has_frontmatter": false,
+      "wikiLinks": []
+    },
+    "content": "# Registro Oficial de Fuentes y Procedencia (99_SOURCES)\n\nEste directorio documenta el registro maestro de identificadores de procedencia (`source_ids`) autorizados para el sustento curricular de iSchool.\n\n## Fuentes Registradas\n\n### 1. `cefr_companion_volume_2020`\n- **Título Oficial:** *Common European Framework of Reference for Languages: Learning, teaching, assessment – Companion volume*\n- **Entidad Emisora:** Council of Europe (Consejo de Europa)\n- **Año:** 2020\n- **Uso:** Descriptores oficiales Can-Do, escalas ilustrativas y mediación lingüística.\n\n### 2. `sep_nem_lenguajes_2024`\n- **Título Oficial:** *Programas de Estudio de la Nueva Escuela Mexicana - Campo Formativo Lenguajes*\n- **Entidad Emisora:** Secretaría de Educación Pública (SEP), México\n- **Año:** 2024\n- **Uso:** Procesos de Desarrollo de Aprendizaje (PDA), fases formativas y articulación comunitaria.\n\n### 3. `cambridge_english_handbooks_public`\n- **Título Oficial:** *Cambridge English Qualifications: Handbooks for Teachers (Public Specifications)*\n- **Entidad Emisora:** Cambridge Assessment English\n- **Año:** 2020-2024\n- **Uso:** Especificaciones públicas de niveles de logro y delimitación léxica de referencia.\n\n### 4. `iskool_curriculum_core`\n- **Título Oficial:** *Marco Curricular Institucional y Sistema de Aprendizaje Gamificado iSchool*\n- **Entidad Emisora:** Comité Académico de iSchool\n- **Año:** 2025-2026\n- **Uso:** Dinámicas RPG pedagógicas, rúbricas institucionales y secuencias de aula.",
+    "source_ids": [],
+    "status": "draft",
+    "version": 1,
+    "checksum": "59bd7d98c41572a8ce5b96e2dc99365f1974132374775aafa9ebbf92d8170f78",
+    "indexed_at": "2026-10-16T01:19:02.516Z",
+    "missing_on_disk": false
+  },
+  {
     "id": "9ce6e59c-4803-47db-9f58-f780ac5b4e13",
     "document_id": "sep_nem_lenguajes_2024",
     "path": "knowledge/english/99_SOURCES/sep_nem_lenguajes_2024.md",
@@ -23594,6 +23990,200 @@
     "checksum": "0ec4b3ea55ed0cb40d9192ed10192d528ee35d3c7d4d223298f461a4aa1bff8f",
     "indexed_at": "2026-09-24T06:30:45.213Z",
     "missing_on_disk": false
+  },
+  {
+    "id": "7e26b1b8-ab07-4041-9b68-d5677b7b4b88",
+    "document_id": "content_guidelines",
+    "path": "knowledge/english/00_SYSTEM/Content_Guidelines.md",
+    "title": "Content_Guidelines",
+    "document_type": "unclassified",
+    "school_stage": [],
+    "grades": [],
+    "cefr": [],
+    "skills": [],
+    "metadata": {
+      "id": "content_guidelines",
+      "title": "Content_Guidelines",
+      "type": "unclassified",
+      "school_stage": [],
+      "grades": [],
+      "cefr": [],
+      "skills": [],
+      "source_ids": [],
+      "status": "draft",
+      "version": 1,
+      "_has_frontmatter": false,
+      "wikiLinks": [
+        "NombreDelNodo"
+      ]
+    },
+    "content": "# Guías de Creación de Contenido - Bóveda Curricular de Inglés\n\nEste documento establece los principios de calidad, diseño pedagógico y redacción para cualquier nodo que se incorpore a la **Bóveda Curricular de Inglés de iSchool**.\n\n---\n\n## 1. Principio de Autenticidad Pedagógica\n\n1. **Enfoque en Comunicación Real:**\n   El contenido debe fomentar el uso funcional de la lengua en contextos auténticos acordes a la edad del estudiante, no la memorización mecánica de reglas descontextualizadas.\n2. **Gradualidad y Andamiaje (Scaffolding):**\n   Toda progresión debe respetar el nivel de entrada del alumno. Las instrucciones para niveles elementales (Pre-A1 a A2) deben ser breves, directas y con apoyo visual o modelado explícito.\n3. **Inclusión y Respeto Cultural:**\n   El idioma inglés se enseña como vehículo de comunicación global intercultural, promoviendo la empatía, la diversidad y la perspectiva comunitaria.\n\n---\n\n## 2. Redacción de Nodos Curriculares\n\nCada archivo de la Bóveda Curricular debe seguir la estructura:\n1. **Frontmatter YAML:** Metadatos completos y validados según la taxonomía.\n2. **Título y Propósito Pedagógico:** Declaración clara del objetivo formativo (Can-Do statement del CEFR).\n3. **Descriptores Oficiales:** Alineación textual con descriptores CEFR y SEP/NEM.\n4. **Vocabulario y Estructuras Clave:** Lista delimitada de léxico y patrones sintácticos.\n5. **Momentos Didácticos Sugeridos:**\n   - *Warm-up / Activation* (Activación previa y motivación).\n   - *Core Task / Guided Practice* (Práctica guiada y producción).\n   - *Wrap-up / Assessment* (Cierre reflexivo y verificación formativa).\n6. **Enlaces Bidireccionales:** Conexiones con otros nodos relevantes utilizando el formato `[[NombreDelNodo]]`.\n\n---\n\n## 3. Prohibición de Material Copiado\n\nQueda terminantemente prohibido transcribir textualmente páginas de libros de texto comerciales, cuadernos de ejercicios de editoriales o material con derechos de autor sin licencia. Se deben extraer los conceptos, objetivos y patrones, reescribiéndolos con la voz pedagógica e identidad de iSchool.",
+    "source_ids": [],
+    "status": "deprecated",
+    "version": 1,
+    "checksum": "dd9feeacf6c0a1f6146c8389b06c4d57e6529707eef88fc51817ff5d4b25e7f5",
+    "indexed_at": "2026-10-16T01:22:27.090Z",
+    "missing_on_disk": true
+  },
+  {
+    "id": "4c2c03b7-5810-49b6-99ad-f764774e2ff3",
+    "document_id": "frontmatter_schema",
+    "path": "knowledge/english/00_SYSTEM/Frontmatter_Schema.md",
+    "title": "Frontmatter_Schema",
+    "document_type": "unclassified",
+    "school_stage": [],
+    "grades": [],
+    "cefr": [],
+    "skills": [],
+    "metadata": {
+      "id": "frontmatter_schema",
+      "title": "Frontmatter_Schema",
+      "type": "unclassified",
+      "school_stage": [],
+      "grades": [],
+      "cefr": [],
+      "skills": [],
+      "source_ids": [],
+      "status": "draft",
+      "version": 1,
+      "_has_frontmatter": false,
+      "wikiLinks": []
+    },
+    "content": "# Esquema Frontmatter YAML - Bóveda Curricular de Inglés\n\nTodos los archivos `.md` de la **Bóveda Curricular de Inglés de iSchool** deben incluir un bloque de metadatos YAML delimitado por `---` al inicio del documento.\n\n---\n\n## 1. Especificación de Campos\n\n| Campo | Tipo | Obligatorio | Descripción / Valores Admitidos |\n|---|---|:---:|---|\n| `id` | `string` | **Sí** | Identificador kebab_case o snake_case único institucional (ej: `speaking_expressing_opinions_b1`). |\n| `title` | `string` | **Sí** | Título pedagógico descriptivo en inglés o español. |\n| `type` | `string` | **Sí** | Tipo de nodo: `skill_node`, `grammar_rule`, `vocabulary_set`, `language_function`, `activity_pattern`, `framework_spec`, `grade_profile`. |\n| `school_stage` | `array[string]` | **Sí** | Uno o más de: `preschool`, `primary`, `secondary`, `high_school`, `advanced`. |\n| `grades` | `array[string]` | **Sí** | Grados escolares aplicables (ej: `[secondary_3, high_school_1]`). |\n| `age_band` | `array[string]` | No | Franja de edad sugerida (ej: `[14-15, 15-16]`). |\n| `cefr` | `array[string]` | **Sí** | Uno o más niveles CEFR válidos: `Foundation`, `Pre-A1`, `A1`, `A2`, `B1`, `B2`, `C1`, `C2`. |\n| `cambridge_alignment` | `array[string]` | No | Alineación de referencia: `Pre-A1 Starters`, `A1 Movers`, `A2 Flyers`, `A2 Key`, `B1 Preliminary`, `B2 First`, `C1 Advanced`, `C2 Proficiency`. |\n| `skills` | `array[string]` | **Sí** | Habilidades principales: `listening`, `speaking`, `reading`, `writing`, `grammar`, `vocabulary`, `pronunciation`. |\n| `subskills` | `array[string]` | No | Subhabilidades específicas (ej: `[expressing_opinion, agreeing, disagreeing]`). |\n| `language_functions` | `array[string]` | No | Funciones comunicativas (ej: `[stating_viewpoint, polite_disagreement]`). |\n| `grammar` | `array[string]` | No | Estructuras gramaticales objetivo (ej: `[opinion_phrases, modal_verbs]`). |\n| `vocabulary` | `array[string]` | No | Campos léxicos o términos clave. |\n| `topics` | `array[string]` | No | Ejes temáticos (ej: `[technology, education]`). |\n| `pedagogy` | `array[string]` | No | Enfoques didácticos (ej: `[task_based_learning, communicative_language_teaching]`). |\n| `activity_patterns` | `array[string]` | No | Patrones de actividad (ej: `[guided_debate, roleplay_dialogue]`). |\n| `difficulty` | `string` | No | `beginner`, `elementary`, `pre_intermediate`, `intermediate`, `upper_intermediate`, `advanced`, `mastery`. |\n| `duration_minutes` | `integer` | No | Duración recomendada de la sesión en minutos (ej: `45`). |\n| `assessment` | `array[string]` | No | Métodos e instrumentos de evaluación (ej: `[oral_production_rubric]`). |\n| `source_ids` | `array[string]` | **Sí** | Fuentes de referencia en `99_SOURCES/` (ej: `[cefr_companion_volume_2020]`). |\n| `status` | `string` | **Sí** | Estado del ciclo de vida: `draft`, `review`, `approved`, `deprecated`. |\n| `version` | `integer` | **Sí** | Versión numérica entera del documento (ej: `1`). |\n\n---\n\n## 2. Ejemplo Canónico\n\n```yaml\n---\nid: speaking_expressing_opinions_b1\ntitle: Expressing Opinions and Polite Disagreement\ntype: language_function\nschool_stage:\n  - secondary\n  - high_school\ngrades:\n  - secondary_3\n  - high_school_1\nage_band:\n  - 14-16\ncefr:\n  - B1\n  - B2\ncambridge_alignment:\n  - B1 Preliminary\nskills:\n  - speaking\nsubskills:\n  - expressing_opinion\n  - agreeing\n  - disagreeing\nlanguage_functions:\n  - stating_viewpoint\n  - polite_disagreement\ngrammar:\n  - opinion_phrases\n  - modal_verbs\nvocabulary:\n  - technology_descriptors\n  - conversational_connectors\ntopics:\n  - technology\n  - education\npedagogy:\n  - task_based_learning\nactivity_patterns:\n  - guided_debate\ndifficulty: intermediate\nduration_minutes: 45\nassessment:\n  - oral_production_rubric\nsource_ids:\n  - cefr_companion_volume_2020\nstatus: approved\nversion: 1\n---\n\n# Expressing Opinions and Polite Disagreement\n\n## Pedagogical Overview\nStudents develop communicative confidence in articulating their perspectives on contemporary issues...\n```",
+    "source_ids": [],
+    "status": "deprecated",
+    "version": 1,
+    "checksum": "6a8445b891248e19ff143b356dd8a31b743fbc0a85dfce8c7f5d2a0a38367796",
+    "indexed_at": "2026-10-16T01:22:27.091Z",
+    "missing_on_disk": true
+  },
+  {
+    "id": "57b2e2bf-730c-4b01-9c29-8ac494882f5b",
+    "document_id": "generation_rules",
+    "path": "knowledge/english/00_SYSTEM/Generation_Rules.md",
+    "title": "Generation_Rules",
+    "document_type": "unclassified",
+    "school_stage": [],
+    "grades": [],
+    "cefr": [],
+    "skills": [],
+    "metadata": {
+      "id": "generation_rules",
+      "title": "Generation_Rules",
+      "type": "unclassified",
+      "school_stage": [],
+      "grades": [],
+      "cefr": [],
+      "skills": [],
+      "source_ids": [],
+      "status": "draft",
+      "version": 1,
+      "_has_frontmatter": false,
+      "wikiLinks": []
+    },
+    "content": "# Reglas de Generación de Actividades con Inteligencia Artificial Pedagógica\n\nEste documento rige cómo el **Motor de Inteligencia Artificial Pedagógica** de iSchool debe consultar y transformar el conocimiento de la Bóveda Curricular en actividades dinámicas, ejercicios, desafíos gamificados y rúbricas.\n\n---\n\n## 1. Consulta Prioritaria en Bóveda Curricular (Vault-First)\n\n1. Antes de componer cualquier experiencia educativa, el motor solicita al servicio de consulta (`KnowledgeVaultQueryService`) los nodos aprobados (`status: approved`) para el grado, nivel CEFR, habilidad y tema especificados.\n2. Si existen nodos aprobados, la IA utiliza dichos metadatos y estructuras como **contexto restrictivo y delimitador (Grounding)**. La IA **no debe improvisar** vocabulario o tiempos verbales por encima o por debajo del nivel CEFR asignado.\n3. Si un nodo contiene vocabulario delimitado (ej. 8 palabras para Pre-A1), la actividad generada debe centrarse exclusivamente en ese repertorio para no sobrecargar cognitivamente al estudiante.\n\n---\n\n## 2. Filtro Estricto de Estado (`status: approved`)\n\n1. El entorno de producción únicamente alimenta al generador con nodos en estado `approved`.\n2. Nodos en estado `draft` o `review` sólo pueden ser previsualizados en entornos de prueba docente o laboratorios pedagógicos internos.\n3. Nodos en estado `deprecated` son omitidos en las consultas automáticas de generación.\n\n---\n\n## 3. Principio de Prohibición de Alucinación Curricular\n\nToda actividad generada debe poder emitir su ficha de procedencia pedagógica:\n- ¿Qué nodo de la Bóveda Curricular le dio origen?\n- ¿Qué identificador de fuente (`source_ids`) respalda la estructura?\n- ¿Qué descriptor de competencia (\"Can-Do\") evalúa?\n\nCualquier generación que no pueda trazar su origen a la Bóveda Curricular es clasificada como inválida.",
+    "source_ids": [],
+    "status": "deprecated",
+    "version": 1,
+    "checksum": "7cf95569a9269065d9534499c85e22053c5680815ae68d7b277782bfd7a6f726",
+    "indexed_at": "2026-10-16T01:22:27.091Z",
+    "missing_on_disk": true
+  },
+  {
+    "id": "6528a220-2c46-4122-8ab2-3e158eef9e19",
+    "document_id": "readme",
+    "path": "knowledge/english/99_SOURCES/README.md",
+    "title": "README",
+    "document_type": "unclassified",
+    "school_stage": [],
+    "grades": [],
+    "cefr": [],
+    "skills": [],
+    "metadata": {
+      "id": "readme",
+      "title": "README",
+      "type": "unclassified",
+      "school_stage": [],
+      "grades": [],
+      "cefr": [],
+      "skills": [],
+      "source_ids": [],
+      "status": "draft",
+      "version": 1,
+      "_has_frontmatter": false,
+      "wikiLinks": []
+    },
+    "content": "# Registro Oficial de Fuentes y Procedencia (99_SOURCES)\n\nEste directorio documenta el registro maestro de identificadores de procedencia (`source_ids`) autorizados para el sustento curricular de iSchool.\n\n## Fuentes Registradas\n\n### 1. `cefr_companion_volume_2020`\n- **Título Oficial:** *Common European Framework of Reference for Languages: Learning, teaching, assessment – Companion volume*\n- **Entidad Emisora:** Council of Europe (Consejo de Europa)\n- **Año:** 2020\n- **Uso:** Descriptores oficiales Can-Do, escalas ilustrativas y mediación lingüística.\n\n### 2. `sep_nem_lenguajes_2024`\n- **Título Oficial:** *Programas de Estudio de la Nueva Escuela Mexicana - Campo Formativo Lenguajes*\n- **Entidad Emisora:** Secretaría de Educación Pública (SEP), México\n- **Año:** 2024\n- **Uso:** Procesos de Desarrollo de Aprendizaje (PDA), fases formativas y articulación comunitaria.\n\n### 3. `cambridge_english_handbooks_public`\n- **Título Oficial:** *Cambridge English Qualifications: Handbooks for Teachers (Public Specifications)*\n- **Entidad Emisora:** Cambridge Assessment English\n- **Año:** 2020-2024\n- **Uso:** Especificaciones públicas de niveles de logro y delimitación léxica de referencia.\n\n### 4. `iskool_curriculum_core`\n- **Título Oficial:** *Marco Curricular Institucional y Sistema de Aprendizaje Gamificado iSchool*\n- **Entidad Emisora:** Comité Académico de iSchool\n- **Año:** 2025-2026\n- **Uso:** Dinámicas RPG pedagógicas, rúbricas institucionales y secuencias de aula.",
+    "source_ids": [],
+    "status": "deprecated",
+    "version": 1,
+    "checksum": "59bd7d98c41572a8ce5b96e2dc99365f1974132374775aafa9ebbf92d8170f78",
+    "indexed_at": "2026-10-16T01:22:27.091Z",
+    "missing_on_disk": true
+  },
+  {
+    "id": "2c37b965-845b-4c97-ac9c-63a7ceb385b0",
+    "document_id": "source_policy",
+    "path": "knowledge/english/00_SYSTEM/Source_Policy.md",
+    "title": "Source_Policy",
+    "document_type": "unclassified",
+    "school_stage": [],
+    "grades": [],
+    "cefr": [],
+    "skills": [],
+    "metadata": {
+      "id": "source_policy",
+      "title": "Source_Policy",
+      "type": "unclassified",
+      "school_stage": [],
+      "grades": [],
+      "cefr": [],
+      "skills": [],
+      "source_ids": [],
+      "status": "draft",
+      "version": 1,
+      "_has_frontmatter": false,
+      "wikiLinks": []
+    },
+    "content": "# Política de Fuentes y Propiedad Intelectual\n\nEste documento regula el uso, procedencia y salvaguarda de propiedad intelectual dentro de la **Bóveda Curricular de Inglés de iSchool**.\n\n---\n\n## 1. Naturaleza del Conocimiento Curricular\n\niSchool construye su propia base de conocimiento pedagógico independiente. No se trata de un repositorio de libros escaneados ni de copias literales de editoriales comerciales.\n\nLas fuentes admitidas se restringen a:\n1. **Marcos y Documentos Oficiales de Dominio Público:**\n   - Council of Europe: *Common European Framework of Reference for Languages: Learning, teaching, assessment – Companion volume* (CEFR 2020).\n   - Secretaría de Educación Pública (SEP): Programas de Estudio, Campos Formativos y Procesos de Desarrollo de Aprendizaje (PDA) de la Nueva Escuela Mexicana (NEM 2024).\n2. **Especificaciones y Guías Públicas de Cambridge Assessment English:**\n   - Handbook for Teachers y listas de vocabulario de uso libre docente publicadas para propósitos de alineación formativa (Starters, Movers, Flyers, A2 Key, B1 Preliminary, B2 First, C1 Advanced).\n3. **Producción Pedagógica Original de iSchool:**\n   - Secuencias didácticas, dinámicas gamificadas, proyectos socioproductivos y reactivos diseñados por el claustro docente de iSchool.\n\n---\n\n## 2. Registro Obligatorio de Procedencia (`source_ids`)\n\nCada nodo curricular debe especificar explícitamente en su frontmatter el arreglo `source_ids`, apuntando a registros documentados en el directorio `99_SOURCES/`.\n\nEjemplo:\n```yaml\nsource_ids:\n  - cefr_companion_volume_2020\n  - sep_nem_lenguajes_2024\n```\n\n---\n\n## 3. Auditoría de Derechos y Originalidad\n\nPeriódicamente se ejecuta una auditoría curricular automatizada para certificar que ningún nodo contenga fragmentos de texto con derechos comerciales de terceros.",
+    "source_ids": [],
+    "status": "deprecated",
+    "version": 1,
+    "checksum": "d8c6e4a3fd54c65c64a7065892a95a5fa229f6177f0af240578f60a77e3f0aa9",
+    "indexed_at": "2026-10-16T01:22:27.091Z",
+    "missing_on_disk": true
+  },
+  {
+    "id": "40188253-ac2b-4dbe-8f46-11bf265e3bfa",
+    "document_id": "taxonomy",
+    "path": "knowledge/english/00_SYSTEM/Taxonomy.md",
+    "title": "Taxonomy",
+    "document_type": "unclassified",
+    "school_stage": [],
+    "grades": [],
+    "cefr": [],
+    "skills": [],
+    "metadata": {
+      "id": "taxonomy",
+      "title": "Taxonomy",
+      "type": "unclassified",
+      "school_stage": [],
+      "grades": [],
+      "cefr": [],
+      "skills": [],
+      "source_ids": [],
+      "status": "draft",
+      "version": 1,
+      "_has_frontmatter": false,
+      "wikiLinks": []
+    },
+    "content": "# Taxonomía Curricular de Inglés - iSchool\n\nEste documento define la taxonomía multidimensional canónica de la **Bóveda Curricular de Inglés de iSchool**. Representa la fuente única de verdad para la validación, clasificación y recuperación cruzada de conocimiento pedagógico.\n\n---\n\n## 1. Etapas Escolares (`school_stage`)\n\nValores admitidos:\n- `preschool`: Educación inicial y preescolar (3 a 5 años).\n- `primary`: Educación primaria (6 a 11 años).\n- `secondary`: Educación secundaria (12 a 14 años).\n- `high_school`: Educación media superior / preparatoria (15 a 18 años).\n- `advanced`: Formación avanzada y preuniversitaria especializada.\n\n---\n\n## 2. Grados Escolares (`grades`)\n\nValores admitidos:\n- **Preescolar:** `preschool_1`, `preschool_2`, `preschool_3`\n- **Primaria:** `primary_1`, `primary_2`, `primary_3`, `primary_4`, `primary_5`, `primary_6`\n- **Secundaria:** `secondary_1`, `secondary_2`, `secondary_3`\n- **Preparatoria:** `high_school_1`, `high_school_2`, `high_school_3`\n- **Avanzado:** `advanced_specialized`\n\n---\n\n## 3. Franjas de Edad (`age_band`)\n\nValores admitidos:\n- `3-4`, `4-5`, `5-6` (Preescolar)\n- `6-7`, `7-8`, `8-9`, `9-10`, `10-11`, `11-12` (Primaria)\n- `12-13`, `13-14`, `14-15` (Secundaria)\n- `15-16`, `16-17`, `17-18` (Preparatoria)\n- `18+` (Avanzado)\n\n---\n\n## 4. Niveles CEFR / MCER (`cefr`)\n\nValores estrictamente admitidos (cualquier otro valor como `B7` o `X1` debe ser rechazado por el validador):\n- `Foundation`: Fase previa de aproximación receptiva y discriminación fonética.\n- `Pre-A1`: Reconocimiento de palabras aisladas, comandos breves y saludos.\n- `A1`: Acceso básico, comunicación elemental en situaciones de necesidad inmediata.\n- `A2`: Nivel plataforma, intercambios sencillos sobre temas habituales y cotidianos.\n- `B1`: Nivel umbral, autonomía comunicativa en contextos familiares y de estudio.\n- `B2`: Nivel avanzado / independiente, comprensión de textos complejos y fluidez espontánea.\n- `C1`: Dominio operativo eficaz, uso flexible del idioma con fines sociales y académicos.\n- `C2`: Maestría, precisión total, matices sutiles y comprensión de textos altamente complejos.\n\n---\n\n## 5. Alineación Curricular Cambridge (`cambridge_alignment`)\n\nAlineaciones de referencia curricular institucional:\n- `Pre-A1 Starters`\n- `A1 Movers`\n- `A2 Flyers`\n- `A2 Key`\n- `B1 Preliminary`\n- `B2 First`\n- `C1 Advanced`\n- `C2 Proficiency`\n\n---\n\n## 6. Habilidades Lingüísticas (`skills`)\n\n- `listening`: Comprensión auditiva en diversos registros y velocidades.\n- `speaking`: Producción e interacción oral, fluidez y coherencia.\n- `reading`: Comprensión lectora de textos descriptivos, narrativos y argumentativos.\n- `writing`: Expresión escrita, estructura de párrafos, precisión sintáctica y estilo.\n- `grammar`: Competencia estructural, reglas y patrones morfosintácticos.\n- `vocabulary`: Adquisición léxica, campos semánticos y colocaciones.\n- `pronunciation`: Fonética, entonación, ritmo, acentuación y discriminación de fonemas.\n\n---\n\n## 7. Subhabilidades (`subskills`)\n\nEjemplos clasificados:\n- **Listening:** `gist_listening`, `detail_listening`, `inferring_attitude`, `sound_discrimination`, `following_directions`.\n- **Speaking:** `asking_information`, `expressing_opinion`, `agreeing`, `disagreeing`, `storytelling`, `clarification_requests`.\n- **Reading:** `skimming`, `scanning`, `reading_for_detail`, `contextual_deduction`, `identifying_text_structure`.\n- **Writing:** `sentence_formation`, `paragraph_cohesion`, `essay_organization`, `informal_messaging`, `formal_correspondence`.\n- **Grammar:** `form_recognition`, `accuracy_drill`, `contextual_use`, `error_correction`.\n- **Vocabulary:** `lexical_sets`, `synonyms_antonyms`, `collocations`, `idiomatic_phrases`.\n- **Pronunciation:** `minimal_pairs`, `word_stress`, `sentence_stress`, `linking_sounds`, `intonation_patterns`.\n\n---\n\n## 8. Funciones Comunicativas (`language_functions`)\n\n- `greetings_and_introductions`\n- `giving_personal_information`\n- `describing_routines_and_habits`\n- `expressing_likes_and_preferences`\n- `giving_and_following_instructions`\n- `asking_for_permission`\n- `making_requests_and_offers`\n- `expressing_opinions_and_feelings`\n- `agreeing_and_disagreeing`\n- `narrating_past_events`\n- `making_predictions_and_plans`\n- `giving_advice_and_recommendations`\n- `evaluating_arguments_and_critiquing`\n- `synthesizing_complex_information`\n\n---\n\n## 9. Progresión Gramatical (`grammar`)\n\nCategorías modulares:\n- `present_simple`, `present_continuous`, `past_simple`, `past_continuous`, `present_perfect`, `past_perfect`\n- `future_will`, `future_going_to`, `future_continuous`\n- `modal_verbs_ability`, `modal_verbs_obligation`, `modal_verbs_deduction`\n- `conditionals_zero`, `conditionals_first`, `conditionals_second`, `conditionals_third`, `mixed_conditionals`\n- `passive_voice_basic`, `passive_voice_advanced`\n- `reported_speech`, `relative_clauses_defining`, `relative_clauses_non_defining`\n- `gerunds_and_infinitives`, `prepositions_time_place`, `comparatives_and_superlatives`\n\n---\n\n## 10. Campos Vocabulares (`vocabulary`)\n\n- `colors_and_shapes`, `family_and_friends`, `school_objects`, `food_and_nutrition`\n- `animals_and_habitats`, `community_helpers_and_jobs`, `daily_routines`, `clothes_and_weather`\n- `sports_and_hobbies`, `technology_and_digital_life`, `travel_and_geography`\n- `environment_and_sustainability`, `art_and_culture`, `science_and_discovery`\n- `academic_research`, `global_issues_and_ethics`\n\n---\n\n## 11. Ejes Temáticos Transversales (`topics`)\n\n- `personal_identity`, `school_life`, `nature_and_environment`, `health_and_wellbeing`\n- `science_and_technology`, `arts_and_creativity`, `society_and_civics`, `global_citizenship`\n- `future_careers_and_skills`, `history_and_traditions`\n\n---\n\n## 12. Enfoques Pedagógicos (`pedagogy`)\n\n- `communicative_language_teaching` (CLT)\n- `task_based_learning` (TBL)\n- `project_based_learning` (PBL)\n- `content_and_language_integrated_learning` (CLIL)\n- `gamified_pedagogical_loops`\n- `total_physical_response` (TPR)\n- `flipped_classroom`\n- `spaced_repetition`\n\n---\n\n## 13. Patrones de Actividad (`activity_patterns`)\n\n- `listen_and_point`, `listen_and_repeat`, `information_gap`, `roleplay_dialogue`\n- `guided_debate`, `storyboard_creation`, `fill_in_the_blanks`, `reading_comprehension_quiz`\n- `writing_guided_draft`, `writing_free_essay`, `interactive_flashcards`, `gamified_quest_challenge`\n\n---\n\n## 14. Dificultad (`difficulty`)\n\n- `beginner` (Pre-A1)\n- `elementary` (A1)\n- `pre_intermediate` (A2)\n- `intermediate` (B1)\n- `upper_intermediate` (B2)\n- `advanced` (C1)\n- `mastery` (C2)\n\n---\n\n## 15. Duración de Sesión (`duration_minutes`)\n\nEntero positivo indicando la duración pedagógica recomendada en minutos (ej. `15`, `30`, `45`, `60`, `90`).\n\n---\n\n## 16. Tipología de Evaluación (`assessment`)\n\n- `formative_observation`\n- `oral_production_rubric`\n- `reading_comprehension_metrics`\n- `writing_analytic_rubric`\n- `peer_review_checklist`\n- `summative_checkpoint_quiz`\n- `portfolio_evidence`\n\n---\n\n## 17. Fuentes y Procedencia (`source_ids`, `provenance`)\n\nIdentificadores formales registrados en `99_SOURCES/` que acreditan la legitimidad curricular:\n- `cefr_companion_volume_2020`\n- `sep_nem_lenguajes_2024`\n- `cambridge_english_handbooks_public`\n- `iskool_curriculum_core`\n\n---\n\n## 18. Estados del Ciclo de Vida (`status`)\n\n- `draft`: Borrador curricular en desarrollo o revisión preliminar.\n- `review`: En proceso de arbitraje pedagógico y validación de estándares.\n- `approved`: Aprobado institucionalmente y habilitado para consumo del Motor de Inteligencia Artificial Pedagógica.\n- `deprecated`: Obsoleto o reemplazado por una versión más reciente; conservado para trazabilidad histórica sin borrado destructivo.",
+    "source_ids": [],
+    "status": "deprecated",
+    "version": 1,
+    "checksum": "fff28929895d2424f1bb035d50847a50cf5686d462e44b4a51968f7e535be035",
+    "indexed_at": "2026-10-16T01:22:27.091Z",
+    "missing_on_disk": true
   },
   {
     "id": "6dd581e5-ac3e-4fea-ad0f-554f931352e8",
@@ -23720,7 +24310,7 @@
     "status": "deprecated",
     "version": 1,
     "checksum": "f0165abb098399436d5295c258cd4937d13fa30ee6a53d193d4c9d20ade2d305",
-    "indexed_at": "2026-09-24T06:30:45.254Z",
+    "indexed_at": "2026-10-16T01:22:27.091Z",
     "missing_on_disk": true
   }
 ]

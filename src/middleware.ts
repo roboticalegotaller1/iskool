@@ -104,7 +104,7 @@ export async function middleware(request: NextRequest) {
 
   const querySchoolId = request.nextUrl.searchParams.get('school_id') || request.nextUrl.searchParams.get('schoolId');
   const isIbimeSchool = querySchoolId === 'sch-ibime' || querySchoolId === 'ibime';
-  const isSharedAcademicPath = pathname.startsWith('/teacher') || pathname.startsWith('/student') || pathname.startsWith('/parent') || pathname.startsWith('/planeaciones');
+  const isSharedAcademicPath = pathname.startsWith('/teacher') || pathname.startsWith('/student') || pathname.startsWith('/parent') || pathname.startsWith('/planeaciones') || pathname.startsWith('/portal-ceo');
   const isIbimeCookieActive = Boolean(ibimeCookie && !iskoolCookie);
 
   const isIbimeHost = host.startsWith('ibime.') || host.includes('ibime');

@@ -31,22 +31,22 @@ Este nodo actúa como el **Centro de Enlace Maestro (Map of Content - MOC)** y S
 
 ### 📖 Español
 
-- **5º de Primaria:** [[Plan_01_El_Libro_de_Mi_Vida|El Libro de Mi Vida: Crónicas, Emociones y Memorias de la Infancia]]
+- **5º de Primaria:** [[Plan_01_El_Libro_de_Mi_Vida_Cronicas_Emociones_y_Memorias_de_la_Infancia|El Libro de Mi Vida: Crónicas, Emociones y Memorias de la Infancia]]
   - *Tema:* Narración de sucesos autobiográficos
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (5º Primaria) - Lee textos autobiográficos y reflexiona sobre las razones por las que suelen estar narr...`
 
-- **5º de Primaria:** [[Plan_02_Pequenos_Divulgadores_Cientificos|Pequeños Divulgadores Científicos: ¿Por Qué Ocurren los Fenómenos de la Naturaleza?]]
+- **5º de Primaria:** [[Plan_02_Pequenos_Divulgadores_Cientificos_Por_Que_Ocurren_los_Fenomenos_de_la_Naturaleza|Pequeños Divulgadores Científicos: ¿Por Qué Ocurren los Fenómenos de la Naturaleza?]]
   - *Tema:* Comprensión y producción de textos explicativos
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (5º Primaria) - Lee distintos tipos de textos explicativos y reflexiona sobre sus características y fun...`
 
-- **5º de Primaria:** [[Plan_03_El_Agora_Escolar|El Ágora Escolar: Diálogo, Argumentación y Consensos en Debate Democrático]]
+- **5º de Primaria:** [[Plan_03_El_Agora_Escolar_Dialogo_Argumentacion_y_Consensos_en_Debate_Democratico|El Ágora Escolar: Diálogo, Argumentación y Consensos en Debate Democrático]]
   - *Tema:* Participación en debates sobre temas de interés común
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (5º Primaria) - Reconoce que hay temas donde las opiniones se dividen, y es necesario sustentar las pro...`
 
-- **5º de Primaria:** [[Plan_07_Palabras_con_Raiz|Palabras con Raíz: El Legado de las Lenguas Originarias en el Español Mexicano]]
+- **5º de Primaria:** [[Plan_07_Palabras_con_Raiz_El_Legado_de_las_Lenguas_Originarias_en_el_Espanol_Mexicano|Palabras con Raíz: El Legado de las Lenguas Originarias en el Español Mexicano]]
   - *Tema:* Reconocimiento de la diversidad lingüística de México
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (5º Primaria) - Investiga en fuentes impresas y/o electrónicas sobre la diversidad lingüística en Méxic...`
@@ -61,7 +61,7 @@ Este nodo actúa como el **Centro de Enlace Maestro (Map of Content - MOC)** y S
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (5º Primaria) - Lee mitos y leyendas de México e identifica las características y funciones de cada tip...`
 
-- **6º de Primaria:** [[Plan_04_Detectives_de_la_Informacion|Detectives de la Información: Análisis Crítico de Medios, Sesgos y Fake News]]
+- **6º de Primaria:** [[Plan_04_Detectives_de_la_Informacion_Analisis_Critico_de_Medios_Sesgos_y_Fake_News|Detectives de la Información: Análisis Crítico de Medios, Sesgos y Fake News]]
   - *Tema:* Seguimiento crítico de noticias en diferentes medios de comunicación escrita
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (6º Primaria) - Consulta distintos medios de comunicación escrita y selecciona noticias de su interés, ...`
@@ -71,28 +71,28 @@ Este nodo actúa como el **Centro de Enlace Maestro (Map of Content - MOC)** y S
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (6º Primaria) - Indaga y reflexiona sobre las características y funciones de los trípticos informativos...`
 
-- **6º de Primaria:** [[Plan_06_Infografias_y_Organizadores_Graficos|Infografías y Organizadores Gráficos: El Poder Visual de la Síntesis del Conocimiento]]
+- **6º de Primaria:** [[Plan_06_Infografias_y_Organizadores_Graficos_El_Poder_Visual_de_la_Sintesis_del_Conocimiento|Infografías y Organizadores Gráficos: El Poder Visual de la Síntesis del Conocimiento]]
   - *Tema:* Comprensión y producción de textos discontinuos (gráficas, cuadros sinópticos y mapas conceptuales)
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (6º Primaria) - Reconoce, mediante el análisis, las características y funciones de los textos discontin...`
 
 ### 📖 Español / Artes
 
-- **6º de Primaria:** [[Plan_10_Telon_Abierto|Telón Abierto: Montaje, Acotaciones y Escenificación de Teatro Escolar]]
+- **6º de Primaria:** [[Plan_10_Telon_Abierto_Montaje_Acotaciones_y_Escenificacion_de_Teatro_Escolar|Telón Abierto: Montaje, Acotaciones y Escenificación de Teatro Escolar]]
   - *Tema:* Análisis y representación de guiones teatrales
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (6º Primaria) - Formula comentarios críticos respecto de un guion teatral de su elección, para expresar...`
 
 ### 📖 Artes
 
-- **6º de Primaria:** [[Plan_11_Murales_y_Espacios_Vivos|Murales y Espacios Vivos: Arte Urbano Transformador para el Bienestar Escolar]]
+- **6º de Primaria:** [[Plan_11_Murales_y_Espacios_Vivos_Arte_Urbano_Transformador_para_el_Bienestar_Escolar|Murales y Espacios Vivos: Arte Urbano Transformador para el Bienestar Escolar]]
   - *Tema:* Apropiación e intervención artística en el espacio comunitario
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (6º Primaria) - Reflexiona en colectivo acerca de las maneras en que un espacio puede ser mejorado, y l...`
 
 ### 📖 Artes / Español
 
-- **6º de Primaria:** [[Plan_12_Galeria_de_Identidades|Galería de Identidades: Simbolismo, Rituales y Significado en el Arte Popular Mexicano]]
+- **6º de Primaria:** [[Plan_12_Galeria_de_Identidades_Simbolismo_Rituales_y_Significado_en_el_Arte_Popular_Mexicano|Galería de Identidades: Simbolismo, Rituales y Significado en el Arte Popular Mexicano]]
   - *Tema:* Interpretación y valoración de manifestaciones culturales y artísticas
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (6º Primaria) - Reconoce ideales y temáticas sociales que se imprimieron en ciertas manifestaciones cul...`
@@ -102,7 +102,7 @@ Este nodo actúa como el **Centro de Enlace Maestro (Map of Content - MOC)** y S
 
 ### 📖 Ciencias Naturales
 
-- **5º de Primaria:** [[Plan_13_El_Motor_de_la_Vida|El Motor de la Vida: Modelando el Pulso Cardíaco y la Respiración Celular]]
+- **5º de Primaria:** [[Plan_13_El_Motor_de_la_Vida_Modelando_el_Pulso_Cardiaco_y_la_Respiracion_Celular|El Motor de la Vida: Modelando el Pulso Cardíaco y la Respiración Celular]]
   - *Tema:* Estructura y funcionamiento del cuerpo humano: sistemas circulatorio y respiratorio
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (5º Primaria) - Describe y representa mediante modelos, la relación de la nariz, tráquea y pulmones, co...`
@@ -112,22 +112,22 @@ Este nodo actúa como el **Centro de Enlace Maestro (Map of Content - MOC)** y S
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (5º Primaria) - Explica las características de la dieta correcta: variada, completa, equilibrada, inocu...`
 
-- **5º de Primaria:** [[Plan_15_Laboratorio_de_Materia|Laboratorio de Materia: Dureza, Flexibilidad y Permeabilidad en la Vida Cotidiana]]
+- **5º de Primaria:** [[Plan_15_Laboratorio_de_Materia_Dureza_Flexibilidad_y_Permeabilidad_en_la_Vida_Cotidiana|Laboratorio de Materia: Dureza, Flexibilidad y Permeabilidad en la Vida Cotidiana]]
   - *Tema:* Propiedades de los materiales: dureza, flexibilidad, permeabilidad y caracterización de gases
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (5º Primaria) - Experimenta con diversos materiales las propiedades de dureza -resistencia que tiene al...`
 
-- **6º de Primaria:** [[Plan_16_Escudo_Inmunologico|Escudo Inmunológico: La Ciencia de los Glóbulos Blancos, las Vacunas y la Cartilla Nacional]]
+- **6º de Primaria:** [[Plan_16_Escudo_Inmunologico_La_Ciencia_de_los_Globulos_Blancos_las_Vacunas_y_la_Cartilla_Nacional|Escudo Inmunológico: La Ciencia de los Glóbulos Blancos, las Vacunas y la Cartilla Nacional]]
   - *Tema:* Sistema inmunológico, vacunas y prevención de enfermedades transmisibles
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (6º Primaria) - Explica la participación del sistema inmunológico en la defensa y protección del cuerpo...`
 
-- **6º de Primaria:** [[Plan_17_Guardianes_del_Clima|Guardianes del Clima: Efecto Invernadero, Huella de Carbono y Restauración Ecológica]]
+- **6º de Primaria:** [[Plan_17_Guardianes_del_Clima_Efecto_Invernadero_Huella_de_Carbono_y_Restauracion_Ecologica|Guardianes del Clima: Efecto Invernadero, Huella de Carbono y Restauración Ecológica]]
   - *Tema:* Biodiversidad, problemas medioambientales y efecto invernadero
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (6º Primaria) - Comprende que el medio ambiente es el conjunto de componentes naturales en interacción ...`
 
-- **6º de Primaria:** [[Plan_18_Energia_en_Movimiento|Energía en Movimiento: Circuitos Eléctricos, Cargas y Conductores en la Vida Tecnológica]]
+- **6º de Primaria:** [[Plan_18_Energia_en_Movimiento_Circuitos_Electricos_Cargas_y_Conductores_en_la_Vida_Tecnologica|Energía en Movimiento: Circuitos Eléctricos, Cargas y Conductores en la Vida Tecnológica]]
   - *Tema:* Transformaciones de la energía eléctrica y circuitos térmicos
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (6º Primaria) - Comprende que la electricidad es una forma de energía que se caracteriza por el movimie...`
@@ -144,7 +144,7 @@ Este nodo actúa como el **Centro de Enlace Maestro (Map of Content - MOC)** y S
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (5º Primaria) - Propone y resuelve situaciones problemáticas que implican sumas y restas con números de...`
 
-- **5º de Primaria:** [[Plan_21_Arquitectos_del_Futuro|Arquitectos del Futuro: Prismas, Pirámides y Fórmulas de Área y Perímetro]]
+- **5º de Primaria:** [[Plan_21_Arquitectos_del_Futuro_Prismas_Piramides_y_Formulas_de_Area_y_Perimetro|Arquitectos del Futuro: Prismas, Pirámides y Fórmulas de Área y Perímetro]]
   - *Tema:* Cuerpos geométricos (prismas y pirámides) y cálculo de perímetro y área
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (5º Primaria) - Reconoce y describe semejanzas y diferencias entre un prisma y una pirámide; propone de...`
@@ -181,7 +181,7 @@ Este nodo actúa como el **Centro de Enlace Maestro (Map of Content - MOC)** y S
 
 ### 📖 Historia
 
-- **5º de Primaria:** [[Plan_26_Rutas_de_Libertad|Rutas de Libertad: Protagonistas, Ideales y Héroes Invisibilizados de la Independencia]]
+- **5º de Primaria:** [[Plan_26_Rutas_de_Libertad_Protagonistas_Ideales_y_Heroes_Invisibilizados_de_la_Independencia|Rutas de Libertad: Protagonistas, Ideales y Héroes Invisibilizados de la Independencia]]
   - *Tema:* Movimientos sociales en el México del siglo XIX: La Independencia de México
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (5º Primaria) - Indaga en fuentes bibliográficas, hemerográficas, digitales y fotográficas, las causas ...`
@@ -198,7 +198,7 @@ Este nodo actúa como el **Centro de Enlace Maestro (Map of Content - MOC)** y S
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (6º Primaria) - Indaga acerca de las causas que dieron origen al movimiento revolucionario de 1910: des...`
 
-- **6º de Primaria:** [[Plan_29_El_Mexico_de_los_Campesinos|El México de los Campesinos: Escuela Rural, Cardenismo y la Soberanía del Petróleo]]
+- **6º de Primaria:** [[Plan_29_El_Mexico_de_los_Campesinos_Escuela_Rural_Cardenismo_y_la_Soberania_del_Petroleo|El México de los Campesinos: Escuela Rural, Cardenismo y la Soberanía del Petróleo]]
   - *Tema:* México posrevolucionario (1917-1940), Escuela Rural Mexicana, Cardenismo y Expropiación Petrolera
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (6º Primaria) - Indaga en fuentes históricas la vida cotidiana en el México posrevolucionario (1917-194...`
@@ -208,14 +208,14 @@ Este nodo actúa como el **Centro de Enlace Maestro (Map of Content - MOC)** y S
 
 ### 📖 Educación Física
 
-- **5º de Primaria:** [[Plan_33_Reto_Cooperativo|Reto Cooperativo: Circuitos Motrices, Coordinación y Estrategia Lúdica en Equipo]]
+- **5º de Primaria:** [[Plan_33_Reto_Cooperativo_Circuitos_Motrices_Coordinacion_y_Estrategia_Ludica_en_Equipo|Reto Cooperativo: Circuitos Motrices, Coordinación y Estrategia Lúdica en Equipo]]
   - *Tema:* Capacidades, habilidades y destrezas motrices mediante juegos cooperativos
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (5º Primaria) - Reconoce posibilidades y límites al participar en situaciones de juego e iniciación dep...`
 
 ### 📖 Educación Socioemocional
 
-- **5º de Primaria:** [[Plan_31_Arbol_de_la_Convivencia|Árbol de la Convivencia: Tradiciones, Vínculos Familiares y Sentido de Pertenencia]]
+- **5º de Primaria:** [[Plan_31_Arbol_de_la_Convivencia_Tradiciones_Vinculos_Familiares_y_Sentido_de_Pertenencia|Árbol de la Convivencia: Tradiciones, Vínculos Familiares y Sentido de Pertenencia]]
   - *Tema:* Las familias como espacio para el desarrollo del sentido de pertenencia y convivencia
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (5º Primaria) - Participa en distintas formas de convivencia en la familia, para fortalecer su sentido ...`
@@ -225,21 +225,21 @@ Este nodo actúa como el **Centro de Enlace Maestro (Map of Content - MOC)** y S
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (5º Primaria) - Reflexiona sobre los conflictos que tiene en la escuela y la familia, para valorar las ...`
 
-- **6º de Primaria:** [[Plan_36_El_Semaforo_de_las_Emociones|El Semáforo de las Emociones: Autorregulación, Empatía y Comunicación Asertiva]]
+- **6º de Primaria:** [[Plan_36_El_Semaforo_de_las_Emociones_Autorregulacion_Empatia_y_Comunicacion_Asertiva|El Semáforo de las Emociones: Autorregulación, Empatía y Comunicación Asertiva]]
   - *Tema:* Los afectos, gestión emocional, autorregulación y asertividad
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (6º Primaria) - Reflexiona sobre hábitos que afectan positiva o negativamente en el estado de ánimo par...`
 
 ### 📖 Tutoría / Socioemocional
 
-- **6º de Primaria:** [[Plan_34_Mi_Brujula_de_Vida|Mi Brújula de Vida: Autoconcepto, Metas a Futuro y Transición Exitosa a la Secundaria]]
+- **6º de Primaria:** [[Plan_34_Mi_Brujula_de_Vida_Autoconcepto_Metas_a_Futuro_y_Transicion_Exitosa_a_la_Secundaria|Mi Brújula de Vida: Autoconcepto, Metas a Futuro y Transición Exitosa a la Secundaria]]
   - *Tema:* Construcción del proyecto de vida y autoevaluación de metas
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (6º Primaria) - Valora sus logros y retos afrontados en la historia personal para definir aspiraciones ...`
 
 ### 📖 Vida Saludable / Cívica
 
-- **6º de Primaria:** [[Plan_35_Circuito_Vital|Circuito Vital: Activación Física Diaria, Higiene Sostenible y Prevención del Sedentarismo]]
+- **6º de Primaria:** [[Plan_35_Circuito_Vital_Activacion_Fisica_Diaria_Higiene_Sostenible_y_Prevencion_del_Sedentarismo|Circuito Vital: Activación Física Diaria, Higiene Sostenible y Prevención del Sedentarismo]]
   - *Tema:* Estilos de vida activos, saludables y hábitos alimentarios sostenibles
   - *Duración:* 2 sesiones de 50 minutos (Total: 100 min)
   - *PDA:* `Fase 5 (6º Primaria) - Evalúa los factores que limitan la práctica constante de actividades físicas, para impl...`

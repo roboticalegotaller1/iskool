@@ -2,37 +2,37 @@
 id: "ibime-overlay-plan-nem-f4-g4-cie-001"
 tenant_id: "ibime"
 parent_plan_id: "plan-nem-f4-g4-cie-001"
-docente_autor: "Prof. Gabriela Morales"
-docente_email: "gaby.morales@ibime.edu.mx"
+docente_autor: "Docente Titular"
+docente_email: "academics@ibime.edu.mx"
 institucion_cct: "09PPR1492Z"
 asignatura: "ciencias"
 grado: "4"
 fase: "4"
 marco_curricular: "BICULTURAL_IBIME"
-pda_code: "PDA-CIE-F4-4TO-035"
-signature_sha256: "847b7aee46bd3fcfff3ae014175a18a36e9d9f7ba0d786f1c9cad9ced41f7c91"
-created_at: "2026-10-14T19:28:42.231Z"
+pda_code: ""
+signature_sha256: "5de6d136ab43d35e37f5e7fc3054c7caa74f8c34059043e1dd076ec37325cf3c"
+created_at: "2026-10-16T01:36:33.285Z"
 ---
 
-# 📚 Water Filtration and Eco-Engineering (IBIME Sovereign Overlay)
+# 📚 Water Engineering and Filtration (E2E IBIME Bicultural)
 
-> **Docente Titular:** [[Prof. Gabriela Morales]]  
+> **Docente Titular:** [[Docente Titular]]  
 > **Institución:** IBIME (CCT: 09PPR1492Z)  
 > **Asignatura y Grado:** CIENCIAS • Grado 4  
 > **Marco Curricular:** BICULTURAL_IBIME  
 
 ## 🎯 I. Propósito Didáctico y PDA Oficial
-* **PDA Oficial:** Indaga el ciclo hidrológico con vocabulario bilingüe y ecotecnias escolares.
-* **Intención Didáctica:** Enfoque de pensamiento crítico bilingüe CLIL.
+* **PDA Oficial:** Indaga el ciclo hidrológico con andamiaje en inglés.
+* **Intención Didáctica:** Enfoque bilingüe interdisciplinario.
 
 ## ⏱️ II. Sesiones Didácticas Cronometradas
 ### Sesión 1 (50 min)
-- **Inicio:** Inquiry starter in English: water reservoirs
-- **Desarrollo:** Laboratory distillation experiment
-- **Cierre:** Bilingual summary canvas
+- **Inicio:** Warm-up inquiry in English
+- **Desarrollo:** Lab experiments on condensation
+- **Cierre:** Exit ticket
 
 ## 📊 III. Rúbrica Analítica de Evaluación
-### Criterio: Inquiry and CLIL mastery (Ponderación: 100%)
-- **Sobresaliente:** High scientific precision
-- **Satisfactorio:** Good participation
-- **En Proceso:** Developing
+### Criterio: Bilingual Scientific Inquiry (Ponderación: 100%)
+- **Sobresaliente:** Fluent and rigorous
+- **Satisfactorio:** Adequate inquiry
+- **En Proceso:** Needs support

@@ -9,7 +9,7 @@ campo_formativo: "Saberes y Pensamiento Científico"
 tema: "La Tiendita Escolar y el Uso de Monedas"
 duracion: "10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)"
 ejes_articuladores: ["Pensamiento Crítico", "Inclusión", "Vida Saludable", "Apropiación de las Culturas a través de la Lectura y la Escritura"]
-producto_integrador: "Simulación del "Mercado Cooperativo Escolar" con puestos de productos, lista de precios calculada por los alumnos, billetes y monedas didácticas, libro de contabilidad escolar y guía de compra inteligente para las familias."
+producto_integrador: "Simulación del 'Mercado Cooperativo Escolar' con puestos de productos, lista de precios calculada por los alumnos, billetes y monedas didácticas, libro de contabilidad escolar y guía de compra inteligente para las familias."
 fecha_elaboracion: "2 de septiembre de 2026"
 created_at: "2 de septiembre de 2026"
 updated_at: "2 de septiembre de 2026"

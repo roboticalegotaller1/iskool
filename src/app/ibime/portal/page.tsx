@@ -253,8 +253,8 @@ function IbimePortalContent() {
                   </span>
                   <span 
                     data-testid="institutional-badge" 
-                    style={{ color: '#E41B14' }}
-                    className="hidden md:inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-50 text-[#E41B14] border border-red-300 shadow-xs whitespace-nowrap"
+                    style={{ color: '#047857' }}
+                    className="hidden md:inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-[#047857] border border-emerald-300 shadow-xs whitespace-nowrap"
                   >
                     IBIME Bicultural Hub
                   </span>
@@ -347,8 +347,8 @@ function IbimePortalContent() {
                 </span>
                 <span 
                   data-testid="institutional-badge" 
-                  style={{ color: '#E41B14' }}
-                  className="hidden md:inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-50 text-[#E41B14] border border-red-300 shadow-xs whitespace-nowrap"
+                  style={{ color: '#047857' }}
+                  className="hidden md:inline-block px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-[#047857] border border-emerald-300 shadow-xs whitespace-nowrap"
                 >
                   IBIME Bicultural Hub
                 </span>

@@ -9,7 +9,7 @@ campo_formativo: "De lo Humano y lo Comunitario"
 tema: "� Proyecto de Codiseño Comunitario: Construcción del proyecto de vida y transición a la secundaria"
 duracion: "10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)"
 ejes_articuladores: ["Pensamiento Crítico", "Inclusión", "Vida Saludable", "Apropiación de las Culturas a través de la Lectura y la Escritura"]
-producto_integrador: "Montaje del "Museo Viviente y Galería Histórica de � Proyecto de Codiseño Comunitario: Construcción del proyecto de vida y transición a la secundaria" en el patio escolar, con módulos atendidos por alumnos caracterizados, líneas de tiempo ilustradas, mapas de batallas o rutas y periódico facsimilar de época."
+producto_integrador: "Montaje del 'Museo Viviente y Galería Histórica de � Proyecto de Codiseño Comunitario: Construcción del proyecto de vida y transición a la secundaria' en el patio escolar, con módulos atendidos por alumnos caracterizados, líneas de tiempo ilustradas, mapas de batallas o rutas y periódico facsimilar de época."
 fecha_elaboracion: "2 de septiembre de 2026"
 created_at: "2 de septiembre de 2026"
 updated_at: "2 de septiembre de 2026"

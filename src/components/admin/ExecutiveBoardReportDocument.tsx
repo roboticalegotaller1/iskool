@@ -125,9 +125,7 @@ export const ExecutiveBoardReportDocument: React.FC<ExecutiveBoardReportDocument
   const isRetail = isCorporate && ((report.schoolId === 'emp-ventas') || (report.schoolName?.toLowerCase().includes('vanguardia') || (institution?.name || '').toLowerCase().includes('vanguardia')));
   const isTech = isCorporate && ((report.schoolId === 'emp-tech') || (report.schoolName?.toLowerCase().includes('innovasoft') || (institution?.name || '').toLowerCase().includes('innovasoft')));
 
-  const corporateLogo = isBmw 
-    ? '/brand/bmw_group_logo.svg' 
-    : (isRetail ? '/brand/vanguardia_retail_logo.svg' : '/brand/innovasoft_tech_logo.svg');
+  const corporateLogo = '/brand/ibime_logo.svg';
 
   const schoolName = isIbime 
     ? 'INSTITUTO BILINGÜE IBIME' 

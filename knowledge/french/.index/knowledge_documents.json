@@ -1,0 +1,3023 @@
+[
+  {
+    "id": "67ba0fb1-1fc5-4883-a128-58daedfe7769",
+    "document_id": "fr_phonetics_system_guide",
+    "path": "knowledge/french/00_SYSTEM/french_phonetic_system_guide.md",
+    "title": "Guide du Système Phonétique et Prosodique du Français",
+    "document_type": "pedagogical_guide",
+    "school_stage": [
+      "secondary",
+      "high_school"
+    ],
+    "grades": [
+      "secondary_1",
+      "secondary_2",
+      "secondary_3",
+      "high_school_1"
+    ],
+    "cefr": [
+      "A1",
+      "A2",
+      "B1"
+    ],
+    "skills": [
+      "pronunciation",
+      "speaking",
+      "listening"
+    ],
+    "metadata": {
+      "id": "fr_phonetics_system_guide",
+      "title": "Guide du Système Phonétique et Prosodique du Français",
+      "type": "pedagogical_guide",
+      "school_stage": [
+        "secondary",
+        "high_school"
+      ],
+      "grades": [
+        "secondary_1",
+        "secondary_2",
+        "secondary_3",
+        "high_school_1"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A1",
+        "A2",
+        "B1"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "pronunciation",
+        "speaking",
+        "listening"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "cecr_volume_complementaire_2020"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "prerequisites": null,
+      "related_to": [
+        "fr_phon_nasales_intro_a1",
+        "fr_phon_liaisons_fondamentales_a2"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Guide du Système Phonétique et Prosodique du Français\n\n## 1. Spécificités Phonologiques pour Hispanophones\nPour les apprenants hispanophones mexicains, les défis majeurs résident dans:\n1. Les voyelles nasales ([ɑ̃], [ɛ̃], [ɔ̃], [œ̃]).\n2. Les voyelles antérieures arrondies ([y], [ø], [œ]).\n3. Le phénomène de la liaison et de l'enchaînement vocalique/consonantique.\n4. L'accent tonique final de groupe rythmique.",
+    "source_ids": [
+      "cecr_volume_complementaire_2020"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "f8dd0d8d91bb40adbee928da9bcb709e9d512ea7240ebb0b24d5198cf489bbed",
+    "indexed_at": "2026-10-16T01:19:02.573Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "a40520ae-1904-4504-8cc6-06b8d8547809",
+    "document_id": "fr_00_system_readme",
+    "path": "knowledge/french/00_SYSTEM/README.md",
+    "title": "Architecture du Référentiel Pédagogique Français iSkool",
+    "document_type": "system_index",
+    "school_stage": [
+      "primary",
+      "secondary",
+      "high_school",
+      "advanced"
+    ],
+    "grades": [
+      "all"
+    ],
+    "cefr": [
+      "A1",
+      "A2",
+      "B1",
+      "B2",
+      "C1"
+    ],
+    "skills": [
+      "grammar",
+      "vocabulary",
+      "listening",
+      "speaking",
+      "reading",
+      "writing",
+      "pronunciation"
+    ],
+    "metadata": {
+      "id": "fr_00_system_readme",
+      "title": "Architecture du Référentiel Pédagogique Français iSkool",
+      "type": "system_index",
+      "school_stage": [
+        "primary",
+        "secondary",
+        "high_school",
+        "advanced"
+      ],
+      "grades": [
+        "all"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A1",
+        "A2",
+        "B1",
+        "B2",
+        "C1"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "grammar",
+        "vocabulary",
+        "listening",
+        "speaking",
+        "reading",
+        "writing",
+        "pronunciation"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024",
+        "cecr_volume_complementaire_2020",
+        "sep_cenni_mexico"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Prim A1",
+        "DELF Junior A1",
+        "DELF Junior A2",
+        "DELF Junior B1",
+        "DELF Junior B2",
+        "DALF C1"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Architecture du Référentiel Pédagogique Français iSkool\n\n## 1. Vision et Mission Pédagogique\nLe référentiel pédagogique de langue française d'iSkool est structuré selon la perspective actionnelle du CECRL (Cadre européen commun de référence pour les langues). Il prépare les apprenants à l'acquisition d'une compétence communicative opérationnelle et à l'obtention des certifications officielles DELF/DALF de France Éducation International et de la certification CENNI de la SEP au Mexique.\n\n## 2. Structure des Dossiers\n- `01_FRAMEWORKS/`: Référentiels DELF/DALF et matrice de correspondance CENNI SEP.\n- `02_GRADE_MAP/`: Cartographie d'articulation scolaire (Primaire, Secondaire, Lycée/Bachillerato).\n- `03_SKILLS/`: Modules par compétence langagière (Grammaire, Phonétique, Compréhension, Production).\n- `04_TOPICS/`: Domaines thématiques et actes de parole.\n- `05_PEDAGOGY/`: Fondements méthodologiques actionnels et médiation socratique.\n- `06_ACTIVITY_PATTERNS/`: Modèles d'activités communicatives et tâches authentiques.\n- `07_ASSESSMENT/`: Grilles d'évaluation critériées et barèmes officiels DELF.\n- `99_SOURCES/`: Documents cadres et sources institutionnelles.",
+    "source_ids": [
+      "france_education_international_2024",
+      "cecr_volume_complementaire_2020",
+      "sep_cenni_mexico"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "635e7d1083fea654d745a85cf8e2d1b0f8bf22aad60a51e840c9c0c3581e1fdf",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "d985c413-8080-4a13-9dc8-9907ca052fda",
+    "document_id": "fr_framework_delf_dalf_matrix",
+    "path": "knowledge/french/01_FRAMEWORKS/delf_dalf_cecr_matrix.md",
+    "title": "Matrice Officielle DELF-DALF et Niveaux CECRL",
+    "document_type": "curriculum_framework",
+    "school_stage": [
+      "primary",
+      "secondary",
+      "high_school",
+      "advanced"
+    ],
+    "grades": [
+      "primary_5",
+      "primary_6",
+      "secondary_1",
+      "secondary_2",
+      "secondary_3",
+      "high_school_1",
+      "high_school_2",
+      "high_school_3",
+      "advanced_specialized"
+    ],
+    "cefr": [
+      "A1",
+      "A2",
+      "B1",
+      "B2",
+      "C1"
+    ],
+    "skills": [
+      "listening",
+      "speaking",
+      "reading",
+      "writing"
+    ],
+    "metadata": {
+      "id": "fr_framework_delf_dalf_matrix",
+      "title": "Matrice Officielle DELF-DALF et Niveaux CECRL",
+      "type": "curriculum_framework",
+      "school_stage": [
+        "primary",
+        "secondary",
+        "high_school",
+        "advanced"
+      ],
+      "grades": [
+        "primary_5",
+        "primary_6",
+        "secondary_1",
+        "secondary_2",
+        "secondary_3",
+        "high_school_1",
+        "high_school_2",
+        "high_school_3",
+        "advanced_specialized"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A1",
+        "A2",
+        "B1",
+        "B2",
+        "C1"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "listening",
+        "speaking",
+        "reading",
+        "writing"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Prim A1",
+        "DELF Junior A1",
+        "DELF Junior A2",
+        "DELF Junior B1",
+        "DELF Junior B2",
+        "DALF C1"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Matrice Officielle DELF-DALF et Niveaux CECRL\n\n## 1. Épreuves et Pondération DELF (Sur 100 points)\nChaque examen DELF (A1, A2, B1, B2) est composé de 4 épreuves valant 25 points chacune:\n- Compréhension de l'oral (CO) : 25 points\n- Compréhension des écrits (CE) : 25 points\n- Production écrite (PE) : 25 points\n- Production orale (PO) : 25 points\nSeuil de réussite: 50/100, avec une note minimale éliminatoire de 5/25 par épreuve.",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "dc577351617aef69b5c74421011ff5425cf1396fcc65e261db923c7d590a6b75",
+    "indexed_at": "2026-10-16T01:22:27.131Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "354701bf-a486-4073-88ef-6594d1b76a80",
+    "document_id": "fr_framework_cenni_sep_matrix",
+    "path": "knowledge/french/01_FRAMEWORKS/sep_cenni_mexico_equivalence.md",
+    "title": "Cadre de Correspondance SEP CENNI pour la Langue Française au Mexique",
+    "document_type": "curriculum_framework",
+    "school_stage": [
+      "secondary",
+      "high_school",
+      "advanced"
+    ],
+    "grades": [
+      "secondary_1",
+      "secondary_2",
+      "secondary_3",
+      "high_school_1",
+      "high_school_2",
+      "high_school_3",
+      "advanced_specialized"
+    ],
+    "cefr": [
+      "A1",
+      "A2",
+      "B1",
+      "B2",
+      "C1"
+    ],
+    "skills": [
+      "listening",
+      "speaking",
+      "reading",
+      "writing"
+    ],
+    "metadata": {
+      "id": "fr_framework_cenni_sep_matrix",
+      "title": "Cadre de Correspondance SEP CENNI pour la Langue Française au Mexique",
+      "type": "curriculum_framework",
+      "school_stage": [
+        "secondary",
+        "high_school",
+        "advanced"
+      ],
+      "grades": [
+        "secondary_1",
+        "secondary_2",
+        "secondary_3",
+        "high_school_1",
+        "high_school_2",
+        "high_school_3",
+        "advanced_specialized"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A1",
+        "A2",
+        "B1",
+        "B2",
+        "C1"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "listening",
+        "speaking",
+        "reading",
+        "writing"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "sep_cenni_mexico",
+        "dgb_sep_frances_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "cenni_alignment": [
+        "CENNI Nivel 5-7 (A1)",
+        "CENNI Nivel 8-10 (A2)",
+        "CENNI Nivel 11-13 (B1)",
+        "CENNI Nivel 14-16 (B2)",
+        "CENNI Nivel 17-19 (C1)"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Cadre de Correspondance SEP CENNI pour la Langue Française au Mexique\n\n## 1. Équivalences Officielles SEP CENNI / DELF\nAu Mexique, la Direction Générale de l'Accréditation, de l'Incorporation et de la Révalidation (DGAIR) de la SEP établit les correspondances suivantes:\n- DELF A1 certifie le niveau CENNI 5 à 7.\n- DELF A2 certifie le niveau CENNI 8 à 10 (Seuil requis en fin de Secondaire / Secundaria).\n- DELF B1 certifie le niveau CENNI 11 à 13 (Profil cible Bachillerato / Preparatoria).\n- DELF B2 certifie le niveau CENNI 14 à 16 (Exigence d'accès universitaire international et bilingue).\n- DALF C1 certifie le niveau CENNI 17 à 19 (Maîtrise professionnelle et académique supérieure).",
+    "source_ids": [
+      "sep_cenni_mexico",
+      "dgb_sep_frances_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "d162655d315d159e02209d967a96cb7a84eb63ae8f4fc48334dbf9246a17189f",
+    "indexed_at": "2026-10-16T01:22:27.132Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "20f224c9-b677-4607-a460-e2fe0cf6541f",
+    "document_id": "fr_grade_map_high_school",
+    "path": "knowledge/french/02_GRADE_MAP/high_school_grade_map_french.md",
+    "title": "Cartographie Curriculaire Lycée / Bachillerato - Français B1 vers B2",
+    "document_type": "grade_map",
+    "school_stage": [
+      "high_school"
+    ],
+    "grades": [
+      "high_school_1",
+      "high_school_2",
+      "high_school_3"
+    ],
+    "cefr": [
+      "B1",
+      "B2"
+    ],
+    "skills": [
+      "listening",
+      "speaking",
+      "reading",
+      "writing",
+      "grammar"
+    ],
+    "metadata": {
+      "id": "fr_grade_map_high_school",
+      "title": "Cartographie Curriculaire Lycée / Bachillerato - Français B1 vers B2",
+      "type": "grade_map",
+      "school_stage": [
+        "high_school"
+      ],
+      "grades": [
+        "high_school_1",
+        "high_school_2",
+        "high_school_3"
+      ],
+      "age_band": [],
+      "cefr": [
+        "B1",
+        "B2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "listening",
+        "speaking",
+        "reading",
+        "writing",
+        "grammar"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "dgb_sep_frances_2024",
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior B1",
+        "DELF Junior B2",
+        "DELF Tout Public B1",
+        "DELF Tout Public B2"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Cartographie Curriculaire Lycée / Bachillerato - Français B1 vers B2\n\n## 1. Objectifs de Cycle Bachillerato (Lycée)\n- Lycée 1 (40 semaines) : Consolidation B1 et amorce B2 (DELF B1 / CENNI 12-13). Argumentation simple, compte-rendu, lettre formelle.\n- Lycée 2-3 : Maîtrise B2 complète (DELF B2 / CENNI 15-16). Débat citoyen, analyse de presse, synthèse documentaire.",
+    "source_ids": [
+      "dgb_sep_frances_2024",
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "19fee169c5d97d4cacfde3388f6cab147f986a3f02df7dbf47ac2c1349b099bb",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "b88e61a6-4f10-4f59-b68f-1613323e99dd",
+    "document_id": "fr_grade_map_secondary",
+    "path": "knowledge/french/02_GRADE_MAP/secondary_grade_map_french.md",
+    "title": "Cartographie Curriculaire Secondaire (Secundaria) - Français Débutant A1 vers A2",
+    "document_type": "grade_map",
+    "school_stage": [
+      "secondary"
+    ],
+    "grades": [
+      "secondary_1",
+      "secondary_2",
+      "secondary_3"
+    ],
+    "cefr": [
+      "A1",
+      "A2"
+    ],
+    "skills": [
+      "listening",
+      "speaking",
+      "reading",
+      "writing",
+      "grammar"
+    ],
+    "metadata": {
+      "id": "fr_grade_map_secondary",
+      "title": "Cartographie Curriculaire Secondaire (Secundaria) - Français Débutant A1 vers A2",
+      "type": "grade_map",
+      "school_stage": [
+        "secondary"
+      ],
+      "grades": [
+        "secondary_1",
+        "secondary_2",
+        "secondary_3"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A1",
+        "A2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "listening",
+        "speaking",
+        "reading",
+        "writing",
+        "grammar"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "sep_nem_lenguajes_2024",
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior A1",
+        "DELF Junior A2"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Cartographie Curriculaire Secondaire (Secundaria) - Français Débutant A1 vers A2\n\n## 1. Objectifs de Cycle Secondaire\n- Secondaire 1: Découverte phonologique, salutations, se présenter, univers de l'école (A1.1).\n- Secondaire 2: Vie quotidienne, famille, loisirs, passé composé de base (A1 vers A2).\n- Secondaire 3: Consolidation A2 (DELF Junior A2 / CENNI 9-10). Raconter un voyage, exprimer des projets.",
+    "source_ids": [
+      "sep_nem_lenguajes_2024",
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "73585d6366ce54b0e134fdecfeb78f6109a43276ee774346888b4cdf63274df7",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "1b18f351-4f92-4ae2-a569-b408c698ce08",
+    "document_id": "fr_ce_presse_articles_opinions_b1_b2",
+    "path": "knowledge/french/03_SKILLS/ComprehensionEcrite/fr_ce_presse_articles_opinions_b1_b2.md",
+    "title": "Compréhension Écrite : Articles de Presse, Éditoriaux et Textes d'Opinion",
+    "document_type": "receptive_skill",
+    "school_stage": [
+      "high_school"
+    ],
+    "grades": [
+      "high_school_1"
+    ],
+    "cefr": [
+      "B1",
+      "B2"
+    ],
+    "skills": [
+      "reading"
+    ],
+    "metadata": {
+      "id": "fr_ce_presse_articles_opinions_b1_b2",
+      "title": "Compréhension Écrite : Articles de Presse, Éditoriaux et Textes d'Opinion",
+      "type": "receptive_skill",
+      "school_stage": [
+        "high_school"
+      ],
+      "grades": [
+        "high_school_1"
+      ],
+      "age_band": [],
+      "cefr": [
+        "B1",
+        "B2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "reading"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior B1",
+        "DELF Junior B2"
+      ],
+      "prerequisites": [
+        "fr_ce_textes_pratiques_courriers_a1_a2"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Compréhension Écrite : Articles de Presse, Éditoriaux et Textes d'Opinion\n\n## 1. Descripteur CE B1/B2\nDégager la thèse de l'auteur, les arguments en faveur ou défaveur, et distinguer fait objectif et point de vue subjectif.",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "8fdee39739bd43437f50d7336d34f57b376d1c1e3cb61de4be3bd14b60c7ae1e",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "a7f1b207-e6d0-47a8-a681-576af1819a9c",
+    "document_id": "fr_ce_textes_pratiques_courriers_a1_a2",
+    "path": "knowledge/french/03_SKILLS/ComprehensionEcrite/fr_ce_textes_pratiques_courriers_a1_a2.md",
+    "title": "Compréhension Écrite : Textes Informatifs Simples, Menus et Horaires",
+    "document_type": "receptive_skill",
+    "school_stage": [
+      "secondary"
+    ],
+    "grades": [
+      "secondary_1",
+      "secondary_2"
+    ],
+    "cefr": [
+      "A1",
+      "A2"
+    ],
+    "skills": [
+      "reading"
+    ],
+    "metadata": {
+      "id": "fr_ce_textes_pratiques_courriers_a1_a2",
+      "title": "Compréhension Écrite : Textes Informatifs Simples, Menus et Horaires",
+      "type": "receptive_skill",
+      "school_stage": [
+        "secondary"
+      ],
+      "grades": [
+        "secondary_1",
+        "secondary_2"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A1",
+        "A2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "reading"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior A1",
+        "DELF Junior A2"
+      ],
+      "prerequisites": null,
+      "wikiLinks": []
+    },
+    "content": "# Compréhension Écrite : Textes Informatifs Simples, Menus et Horaires\n\n## 1. Descripteur CE A1/A2\nRepérer des données précises (heures, dates, prix, lieux) dans des documents de la vie quotidienne.",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "1dfe30be022080ba36adaa1848814084fd9153970cdca0f39ab1703eb6312a2b",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "6740223e-4638-4f53-bafc-531adae257d5",
+    "document_id": "fr_co_annonces_instructions_courtes_a1",
+    "path": "knowledge/french/03_SKILLS/ComprehensionOrale/fr_co_annonces_instructions_courtes_a1.md",
+    "title": "Compréhension Orale : Annonces Publiques et Instructions Courtes",
+    "document_type": "receptive_skill",
+    "school_stage": [
+      "secondary"
+    ],
+    "grades": [
+      "secondary_1"
+    ],
+    "cefr": [
+      "A1"
+    ],
+    "skills": [
+      "listening"
+    ],
+    "metadata": {
+      "id": "fr_co_annonces_instructions_courtes_a1",
+      "title": "Compréhension Orale : Annonces Publiques et Instructions Courtes",
+      "type": "receptive_skill",
+      "school_stage": [
+        "secondary"
+      ],
+      "grades": [
+        "secondary_1"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A1"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "listening"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior A1"
+      ],
+      "prerequisites": null,
+      "wikiLinks": []
+    },
+    "content": "# Compréhension Orale : Annonces Publiques et Instructions Courtes\n\n## 1. Descripteur de Compétence\nComprendre des messages simples et des instructions courantes (gares, aéroports, magasins, école) énoncés lentement et distinctement.",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "a29391e66e351027824a8a2780844f5156b56b331a57e300f32820eadbe94b72",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "1c66ba5c-cf2a-4ccd-88cd-9d6e08fc3a7d",
+    "document_id": "fr_co_conferences_debats_nuances_b2",
+    "path": "knowledge/french/03_SKILLS/ComprehensionOrale/fr_co_conferences_debats_nuances_b2.md",
+    "title": "Compréhension Orale : Débats d'Idées, Conférences et Nuances d'Opinion",
+    "document_type": "receptive_skill",
+    "school_stage": [
+      "high_school"
+    ],
+    "grades": [
+      "high_school_1",
+      "high_school_2"
+    ],
+    "cefr": [
+      "B2"
+    ],
+    "skills": [
+      "listening"
+    ],
+    "metadata": {
+      "id": "fr_co_conferences_debats_nuances_b2",
+      "title": "Compréhension Orale : Débats d'Idées, Conférences et Nuances d'Opinion",
+      "type": "receptive_skill",
+      "school_stage": [
+        "high_school"
+      ],
+      "grades": [
+        "high_school_1",
+        "high_school_2"
+      ],
+      "age_band": [],
+      "cefr": [
+        "B2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "listening"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior B2",
+        "DELF Tout Public B2"
+      ],
+      "prerequisites": [
+        "fr_co_emissions_radio_points_de_vue_b1"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Compréhension Orale : Débats d'Idées, Conférences et Nuances d'Opinion\n\n## 1. Objectif DELF B2\nSuivre une argumentation complexe, identifier les attitudes implicites des intervenants, l'humour, l'ironie et les prises de position divergentes.",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "47aea7d2bfde72f026d8bf87d9351b20976f26524136c9ba2201ea0c15c8f0da",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "f007a686-4ace-4fe3-8dd5-fd3922ec0b4c",
+    "document_id": "fr_co_dialogues_quotidiens_a2",
+    "path": "knowledge/french/03_SKILLS/ComprehensionOrale/fr_co_dialogues_quotidiens_a2.md",
+    "title": "Compréhension Orale : Échanges Quotidiens et Situations Pratiques",
+    "document_type": "receptive_skill",
+    "school_stage": [
+      "secondary"
+    ],
+    "grades": [
+      "secondary_2",
+      "secondary_3"
+    ],
+    "cefr": [
+      "A2"
+    ],
+    "skills": [
+      "listening"
+    ],
+    "metadata": {
+      "id": "fr_co_dialogues_quotidiens_a2",
+      "title": "Compréhension Orale : Échanges Quotidiens et Situations Pratiques",
+      "type": "receptive_skill",
+      "school_stage": [
+        "secondary"
+      ],
+      "grades": [
+        "secondary_2",
+        "secondary_3"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "listening"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior A2"
+      ],
+      "prerequisites": [
+        "fr_co_annonces_instructions_courtes_a1"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Compréhension Orale : Échanges Quotidiens et Situations Pratiques\n\n## 1. Objectif DELF A2\nIdentifier le sujet d'une conversation entre locuteurs natifs portant sur la vie quotidienne (achats, rendez-vous, transports).",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "33e80b0884deaf70332fcb79cad65739400dd4e4fe1f0d6247cb47f14ebbd58d",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "73855c8e-0731-4847-9111-3b79f42957f2",
+    "document_id": "fr_co_emissions_radio_points_de_vue_b1",
+    "path": "knowledge/french/03_SKILLS/ComprehensionOrale/fr_co_emissions_radio_points_de_vue_b1.md",
+    "title": "Compréhension Orale : Extraits Radiophoniques et Prises de Position",
+    "document_type": "receptive_skill",
+    "school_stage": [
+      "high_school"
+    ],
+    "grades": [
+      "high_school_1"
+    ],
+    "cefr": [
+      "B1"
+    ],
+    "skills": [
+      "listening"
+    ],
+    "metadata": {
+      "id": "fr_co_emissions_radio_points_de_vue_b1",
+      "title": "Compréhension Orale : Extraits Radiophoniques et Prises de Position",
+      "type": "receptive_skill",
+      "school_stage": [
+        "high_school"
+      ],
+      "grades": [
+        "high_school_1"
+      ],
+      "age_band": [],
+      "cefr": [
+        "B1"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "listening"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior B1",
+        "DELF Tout Public B1"
+      ],
+      "prerequisites": [
+        "fr_co_dialogues_quotidiens_a2"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Compréhension Orale : Extraits Radiophoniques et Prises de Position\n\n## 1. Objectif DELF B1\nComprendre les points principaux d'une intervention radiophonique standard (bulletins d'information, interviews) sur des sujets familiers ou d'actualité.",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "29655fd484f0daed849d77d5c080e29357413642933b85778bb489dfd46c60ca",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "a9f296b3-3cdc-4790-bc46-9db14f7b362e",
+    "document_id": "fr_gram_articles_definis_indefinis_a1",
+    "path": "knowledge/french/03_SKILLS/Grammaire/fr_gram_articles_definis_indefinis_a1.md",
+    "title": "Les Articles Définis, Indéfinis et Partitifs",
+    "document_type": "grammar_rule",
+    "school_stage": [
+      "secondary"
+    ],
+    "grades": [
+      "secondary_1"
+    ],
+    "cefr": [
+      "A1"
+    ],
+    "skills": [
+      "grammar",
+      "writing"
+    ],
+    "metadata": {
+      "id": "fr_gram_articles_definis_indefinis_a1",
+      "title": "Les Articles Définis, Indéfinis et Partitifs",
+      "type": "grammar_rule",
+      "school_stage": [
+        "secondary"
+      ],
+      "grades": [
+        "secondary_1"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A1"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "grammar",
+        "writing"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [
+        "articles_definis",
+        "articles_indefinis",
+        "articles_partitifs"
+      ],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "prerequisites": null,
+      "wikiLinks": []
+    },
+    "content": "# Les Articles Définis, Indéfinis et Partitifs\n\n## 1. Usage Communicatif\nDifférencier la désignation générale (le, la, les), l'unité dénombrable (un, une, des) et la quantité non comptable (du, de la, de l', des).",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "7c696843f88594fd172f459166ed32858dac066d220e6d2fbab35e20b447fa6d",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "ddcdba1a-e97e-4a76-9288-e949cf8277b0",
+    "document_id": "fr_gram_connecteurs_logiques_argumentation_b2",
+    "path": "knowledge/french/03_SKILLS/Grammaire/fr_gram_connecteurs_logiques_argumentation_b2.md",
+    "title": "Connecteurs Logiques et Articulateurs du Discours Argumentatif",
+    "document_type": "grammar_rule",
+    "school_stage": [
+      "high_school"
+    ],
+    "grades": [
+      "high_school_1",
+      "high_school_2",
+      "high_school_3"
+    ],
+    "cefr": [
+      "B2",
+      "C1"
+    ],
+    "skills": [
+      "grammar",
+      "writing",
+      "speaking"
+    ],
+    "metadata": {
+      "id": "fr_gram_connecteurs_logiques_argumentation_b2",
+      "title": "Connecteurs Logiques et Articulateurs du Discours Argumentatif",
+      "type": "grammar_rule",
+      "school_stage": [
+        "high_school"
+      ],
+      "grades": [
+        "high_school_1",
+        "high_school_2",
+        "high_school_3"
+      ],
+      "age_band": [],
+      "cefr": [
+        "B2",
+        "C1"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "grammar",
+        "writing",
+        "speaking"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior B2",
+        "DELF Tout Public B2",
+        "DALF C1"
+      ],
+      "prerequisites": [
+        "fr_gram_subjonctif_present_b1_b2"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Connecteurs Logiques et Articulateurs du Discours Argumentatif\n\n## 1. Typologie des Articulateurs B2\nCause (*En raison de, étant donné que*), Conséquence (*Par conséquent, d'où*), Opposition/Concession (*Cependant, bien que + subj, malgré*), But (*Afin que + subj, en vue de*).",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "715fbbf8dc471f1980ae276ea5712f3eb8438efb93e4a7373cb2bb7dbe19ad03",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "9b04cf51-ed97-4545-8c6e-83f0b9996275",
+    "document_id": "fr_gram_futur_simple_et_conditionnel_b1",
+    "path": "knowledge/french/03_SKILLS/Grammaire/fr_gram_futur_simple_et_conditionnel_b1.md",
+    "title": "Futur Simple et Conditionnel Présent : Projets et Politesse",
+    "document_type": "grammar_rule",
+    "school_stage": [
+      "high_school"
+    ],
+    "grades": [
+      "high_school_1"
+    ],
+    "cefr": [
+      "B1"
+    ],
+    "skills": [
+      "grammar",
+      "speaking",
+      "writing"
+    ],
+    "metadata": {
+      "id": "fr_gram_futur_simple_et_conditionnel_b1",
+      "title": "Futur Simple et Conditionnel Présent : Projets et Politesse",
+      "type": "grammar_rule",
+      "school_stage": [
+        "high_school"
+      ],
+      "grades": [
+        "high_school_1"
+      ],
+      "age_band": [],
+      "cefr": [
+        "B1"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "grammar",
+        "speaking",
+        "writing"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior B1"
+      ],
+      "prerequisites": [
+        "fr_gram_present_indicatif_a1"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Futur Simple et Conditionnel Présent : Projets et Politesse\n\n## 1. Valeurs Modales\n- Futur simple : engagement, programme, prédiction avec certitude.\n- Conditionnel présent : atténuation de politesse (*Je voudrais...*), conseil (*Tu devrais...*), souhait (*J'aimerais visiter...*).",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "97f32f225cbe235c340406dff94db9c4a620da310e91b1543cffd261ea76775c",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "00064fa2-cb9e-4418-aa05-1d335c6888c0",
+    "document_id": "fr_gram_hypothese_si_b1_b2",
+    "path": "knowledge/french/03_SKILLS/Grammaire/fr_gram_hypothese_si_b1_b2.md",
+    "title": "Le Système des Hypothèses avec SI : Réel, Potentiel et Irréel du Présent",
+    "document_type": "grammar_rule",
+    "school_stage": [
+      "high_school"
+    ],
+    "grades": [
+      "high_school_1",
+      "high_school_2"
+    ],
+    "cefr": [
+      "B1",
+      "B2"
+    ],
+    "skills": [
+      "grammar",
+      "writing",
+      "speaking"
+    ],
+    "metadata": {
+      "id": "fr_gram_hypothese_si_b1_b2",
+      "title": "Le Système des Hypothèses avec SI : Réel, Potentiel et Irréel du Présent",
+      "type": "grammar_rule",
+      "school_stage": [
+        "high_school"
+      ],
+      "grades": [
+        "high_school_1",
+        "high_school_2"
+      ],
+      "age_band": [],
+      "cefr": [
+        "B1",
+        "B2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "grammar",
+        "writing",
+        "speaking"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior B1",
+        "DELF Junior B2"
+      ],
+      "prerequisites": [
+        "fr_gram_futur_simple_et_conditionnel_b1",
+        "fr_gram_passe_compose_vs_imparfait_a2_b1"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Le Système des Hypothèses avec SI : Réel, Potentiel et Irréel du Présent\n\n## 1. Structures Canoniques\n1. Si + présent -> futur simple (certitude/réalité).\n2. Si + imparfait -> conditionnel présent (hypothèse imaginaire ou conseil).\n3. Si + plus-que-parfait -> conditionnel passé (regret sur le passé).",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "569a264e9963f5474b7be6755452306edd7e2c2d5903c9fa863ca8ad44adf461",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "143d4f98-a264-4b42-b86a-911732f03144",
+    "document_id": "fr_gram_negation_simple_complexe_a2",
+    "path": "knowledge/french/03_SKILLS/Grammaire/fr_gram_negation_simple_complexe_a2.md",
+    "title": "La Négation en Français : de Ne... Pas à Ne... Plus, Jamais, Rien",
+    "document_type": "grammar_rule",
+    "school_stage": [
+      "secondary"
+    ],
+    "grades": [
+      "secondary_2"
+    ],
+    "cefr": [
+      "A2"
+    ],
+    "skills": [
+      "grammar",
+      "speaking",
+      "writing"
+    ],
+    "metadata": {
+      "id": "fr_gram_negation_simple_complexe_a2",
+      "title": "La Négation en Français : de Ne... Pas à Ne... Plus, Jamais, Rien",
+      "type": "grammar_rule",
+      "school_stage": [
+        "secondary"
+      ],
+      "grades": [
+        "secondary_2"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "grammar",
+        "speaking",
+        "writing"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior A2"
+      ],
+      "prerequisites": [
+        "fr_gram_present_indicatif_a1"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# La Négation en Français : de Ne... Pas à Ne... Plus, Jamais, Rien\n\n## 1. Évolution de la Structure Négative\nÀ partir du niveau A2, l'élève maîtrise l'encadrement verbal : *ne + verbe + pas/plus/jamais/rien/personne*. Attention à la disparition de l'article partitif au profit de *de* (Je ne mange pas de viande).",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "46fb74a7b7a755596658e5ef87991dba2af157640bcf416fd0ceab2c125dfec5",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "5dab3394-0b23-4ac5-affe-26e72d318834",
+    "document_id": "fr_gram_passe_compose_vs_imparfait_a2_b1",
+    "path": "knowledge/french/03_SKILLS/Grammaire/fr_gram_passe_compose_vs_imparfait_a2_b1.md",
+    "title": "L'Alternance Passé Composé vs Imparfait dans le Récit",
+    "document_type": "grammar_rule",
+    "school_stage": [
+      "secondary",
+      "high_school"
+    ],
+    "grades": [
+      "secondary_3",
+      "high_school_1"
+    ],
+    "cefr": [
+      "A2",
+      "B1"
+    ],
+    "skills": [
+      "grammar",
+      "writing",
+      "reading"
+    ],
+    "metadata": {
+      "id": "fr_gram_passe_compose_vs_imparfait_a2_b1",
+      "title": "L'Alternance Passé Composé vs Imparfait dans le Récit",
+      "type": "grammar_rule",
+      "school_stage": [
+        "secondary",
+        "high_school"
+      ],
+      "grades": [
+        "secondary_3",
+        "high_school_1"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A2",
+        "B1"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "grammar",
+        "writing",
+        "reading"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [
+        "passe_compose",
+        "imparfait",
+        "narration_passe"
+      ],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024",
+        "dgb_sep_frances_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior A2",
+        "DELF Junior B1"
+      ],
+      "prerequisites": [
+        "fr_gram_present_indicatif_a1"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# L'Alternance Passé Composé vs Imparfait dans le Récit\n\n## 1. Règle Majeure de la Narration au Passé\n- **L'imparfait** peint le décor, les descriptions, les états d'esprit et les actions habituelles ou en cours.\n- **Le passé composé** marque la rupture, les événements ponctuels, délimités et successifs qui font progresser l'histoire.",
+    "source_ids": [
+      "france_education_international_2024",
+      "dgb_sep_frances_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "5af9a742ceedfa29744b1413ba955b8132402013e64f4534986fff919891aa94",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "3f1d3d69-d84a-4c88-8c55-556c148cc9a6",
+    "document_id": "fr_gram_present_indicatif_a1",
+    "path": "knowledge/french/03_SKILLS/Grammaire/fr_gram_present_indicatif_a1.md",
+    "title": "Le Présent de l'Indicatif des Verbes Réguliers et Usuels",
+    "document_type": "grammar_rule",
+    "school_stage": [
+      "secondary",
+      "primary"
+    ],
+    "grades": [
+      "secondary_1"
+    ],
+    "cefr": [
+      "A1"
+    ],
+    "skills": [
+      "grammar",
+      "writing",
+      "speaking"
+    ],
+    "metadata": {
+      "id": "fr_gram_present_indicatif_a1",
+      "title": "Le Présent de l'Indicatif des Verbes Réguliers et Usuels",
+      "type": "grammar_rule",
+      "school_stage": [
+        "secondary",
+        "primary"
+      ],
+      "grades": [
+        "secondary_1"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A1"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "grammar",
+        "writing",
+        "speaking"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [
+        "present_indicative",
+        "verbes_1er_groupe",
+        "etre_avoir"
+      ],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "difficulty": "beginner",
+      "duration_minutes": 45,
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Prim A1",
+        "DELF Junior A1"
+      ],
+      "prerequisites": null,
+      "related_to": [
+        "fr_gram_articles_definis_indefinis_a1"
+      ],
+      "wikiLinks": [
+        "être",
+        "avoir"
+      ]
+    },
+    "content": "# Le Présent de l'Indicatif des Verbes Réguliers et Usuels\n\n## 1. Descripteur Can-Do CECRL (A1)\nL'apprenant peut conjuguer au présent de l'indicatif les auxiliaires [[être]] et [[avoir]], les verbes réguliers en -er (parler, habiter, aimer) et les verbes fréquents (faire, aller) pour décrire son identité et ses actions immédiates.\n\n## 2. Règles Morphologiques\nTerminaisons des verbes en -er: -e, -es, -e, -ons, -ez, -ent (rappel: les terminaisons -e, -es, -ent sont muettes en prononciation).",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "c69545af16fd4457c0783a1905229dcaae86f59c99c37b1b2a00aa2b55b4b8f7",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "0f56899e-40a5-4132-abcc-ad75b2424705",
+    "document_id": "fr_gram_pronoms_cod_coi_y_en_b1",
+    "path": "knowledge/french/03_SKILLS/Grammaire/fr_gram_pronoms_cod_coi_y_en_b1.md",
+    "title": "Le Système des Pronoms Personnels et Adverbiaux : COD, COI, Y et EN",
+    "document_type": "grammar_rule",
+    "school_stage": [
+      "high_school"
+    ],
+    "grades": [
+      "high_school_1"
+    ],
+    "cefr": [
+      "B1"
+    ],
+    "skills": [
+      "grammar",
+      "speaking",
+      "writing"
+    ],
+    "metadata": {
+      "id": "fr_gram_pronoms_cod_coi_y_en_b1",
+      "title": "Le Système des Pronoms Personnels et Adverbiaux : COD, COI, Y et EN",
+      "type": "grammar_rule",
+      "school_stage": [
+        "high_school"
+      ],
+      "grades": [
+        "high_school_1"
+      ],
+      "age_band": [],
+      "cefr": [
+        "B1"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "grammar",
+        "speaking",
+        "writing"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior B1",
+        "DELF Tout Public B1"
+      ],
+      "prerequisites": [
+        "fr_gram_passe_compose_vs_imparfait_a2_b1"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Le Système des Pronoms Personnels et Adverbiaux : COD, COI, Y et EN\n\n## 1. Règles de Remplacement et d'Ordre des Pronoms\n- COD (le, la, les) remplace un nom direct d'objet ou de personne.\n- COI (lui, leur) remplace un nom de personne introduit par *à*.\n- Y remplace un lieu ou une chose introduite par *à, en, sur, dans*.\n- EN remplace une quantité, un partitif ou un nom introduit par *de*.",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "d50c9494ab154d3bc274c7494cd6b4ec0c03ae83a93d31bec2e6158ced2b3a37",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "65441766-dfc0-417e-bea2-2f289d280ec4",
+    "document_id": "fr_gram_subjonctif_present_b1_b2",
+    "path": "knowledge/french/03_SKILLS/Grammaire/fr_gram_subjonctif_present_b1_b2.md",
+    "title": "Le Subjonctif Présent : Expression de l'Obligation, du Sentiment et du Doute",
+    "document_type": "grammar_rule",
+    "school_stage": [
+      "high_school"
+    ],
+    "grades": [
+      "high_school_1",
+      "high_school_2"
+    ],
+    "cefr": [
+      "B1",
+      "B2"
+    ],
+    "skills": [
+      "grammar",
+      "writing",
+      "speaking"
+    ],
+    "metadata": {
+      "id": "fr_gram_subjonctif_present_b1_b2",
+      "title": "Le Subjonctif Présent : Expression de l'Obligation, du Sentiment et du Doute",
+      "type": "grammar_rule",
+      "school_stage": [
+        "high_school"
+      ],
+      "grades": [
+        "high_school_1",
+        "high_school_2"
+      ],
+      "age_band": [],
+      "cefr": [
+        "B1",
+        "B2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "grammar",
+        "writing",
+        "speaking"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024",
+        "dgb_sep_frances_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior B1",
+        "DELF Junior B2",
+        "DELF Tout Public B2"
+      ],
+      "prerequisites": [
+        "fr_gram_futur_simple_et_conditionnel_b1"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Le Subjonctif Présent : Expression de l'Obligation, du Sentiment et du Doute\n\n## 1. Déclencheurs Subjonctifs Clés\nObligation impersonnelle (*Il faut que...*), volonté (*Je veux que...*), sentiment (*Je suis heureux que...*), doute (*Je doute que...*).",
+    "source_ids": [
+      "france_education_international_2024",
+      "dgb_sep_frances_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "e608e10f65ace54e882500a28bd9227019be3fb52242271214aa46ebfa646a10",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "627b3633-451f-46c8-80f2-dffc15345cc2",
+    "document_id": "fr_phon_liaisons_fondamentales_a2",
+    "path": "knowledge/french/03_SKILLS/Phonetique/fr_phon_liaisons_fondamentales_a2.md",
+    "title": "Le Phénomène de la Liaison : Obligatoire, Facultative et Interdite",
+    "document_type": "phonetics_rule",
+    "school_stage": [
+      "secondary",
+      "high_school"
+    ],
+    "grades": [
+      "secondary_2",
+      "high_school_1"
+    ],
+    "cefr": [
+      "A2",
+      "B1"
+    ],
+    "skills": [
+      "pronunciation",
+      "speaking",
+      "listening"
+    ],
+    "metadata": {
+      "id": "fr_phon_liaisons_fondamentales_a2",
+      "title": "Le Phénomène de la Liaison : Obligatoire, Facultative et Interdite",
+      "type": "phonetics_rule",
+      "school_stage": [
+        "secondary",
+        "high_school"
+      ],
+      "grades": [
+        "secondary_2",
+        "high_school_1"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A2",
+        "B1"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "pronunciation",
+        "speaking",
+        "listening"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "prerequisites": [
+        "fr_phon_nasales_intro_a1"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Le Phénomène de la Liaison : Obligatoire, Facultative et Interdite\n\n## 1. Règles Cardinales de la Liaison\n- **Liaisons obligatoires :** Déterminant + Nom (*les_amis*), Pronom + Verbe (*ils_ont*), Adjectif + Nom (*un grand_arbre*).\n- **Liaisons interdites :** Après *et* (*et / alors*), Nom singulier + Adjectif (*un enfant / intelligent*), avant *h aspiré* (*les / héros*).",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "cba075a4430daaca7cbdea72f46c69dd8a72a357103ab41889af67d0c32f3940",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "ddd84829-5008-4ddb-8a7e-a4cae957b25c",
+    "document_id": "fr_phon_nasales_intro_a1",
+    "path": "knowledge/french/03_SKILLS/Phonetique/fr_phon_nasales_intro_a1.md",
+    "title": "Les Voyelles Nasales Françaises [ɑ̃], [ɛ̃], [ɔ̃] et [œ̃]",
+    "document_type": "phonetics_rule",
+    "school_stage": [
+      "secondary",
+      "primary"
+    ],
+    "grades": [
+      "secondary_1"
+    ],
+    "cefr": [
+      "A1"
+    ],
+    "skills": [
+      "pronunciation",
+      "speaking",
+      "listening"
+    ],
+    "metadata": {
+      "id": "fr_phon_nasales_intro_a1",
+      "title": "Les Voyelles Nasales Françaises [ɑ̃], [ɛ̃], [ɔ̃] et [œ̃]",
+      "type": "phonetics_rule",
+      "school_stage": [
+        "secondary",
+        "primary"
+      ],
+      "grades": [
+        "secondary_1"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A1"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "pronunciation",
+        "speaking",
+        "listening"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "prerequisites": null,
+      "wikiLinks": []
+    },
+    "content": "# Les Voyelles Nasales Françaises [ɑ̃], [ɛ̃], [ɔ̃] et [œ̃]\n\n## 1. Différenciation Auditive et Articulatoire\nEntraîner le passage de l'air par les fosses nasales sans occlusion consonantique finale (ex: *bon* vs *bonne*, *vent* vs *vanne*).",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "74a64555048e1940a432cbca90b034d48bb18e6de4af5743a3e7090b8725de52",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "1b377fc6-1263-45a2-9ba9-c07768ee4e9c",
+    "document_id": "fr_pe_courriel_amical_invitation_a2",
+    "path": "knowledge/french/03_SKILLS/ProductionEcrite/fr_pe_courriel_amical_invitation_a2.md",
+    "title": "Production Écrite : Courriel Informel, Récit de Vacances et Invitation",
+    "document_type": "productive_skill",
+    "school_stage": [
+      "secondary"
+    ],
+    "grades": [
+      "secondary_2",
+      "secondary_3"
+    ],
+    "cefr": [
+      "A2"
+    ],
+    "skills": [
+      "writing"
+    ],
+    "metadata": {
+      "id": "fr_pe_courriel_amical_invitation_a2",
+      "title": "Production Écrite : Courriel Informel, Récit de Vacances et Invitation",
+      "type": "productive_skill",
+      "school_stage": [
+        "secondary"
+      ],
+      "grades": [
+        "secondary_2",
+        "secondary_3"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "writing"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior A2"
+      ],
+      "prerequisites": [
+        "fr_gram_passe_compose_vs_imparfait_a2_b1"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Production Écrite : Courriel Informel, Récit de Vacances et Invitation\n\n## 1. Épreuve DELF A2 (60 à 80 mots)\nRédiger une lettre amicale ou un courriel pour raconter un événement récent, exprimer des remerciements ou formuler une proposition.",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "584ede75f261e732a421f5b2b60eaf9ba9844d52d58514e2bc45106a4b46718b",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "3aa0a58e-62ec-45e1-b5e0-0d35a4bd7657",
+    "document_id": "fr_pe_essai_argumentatif_lettre_formelle_b1_b2",
+    "path": "knowledge/french/03_SKILLS/ProductionEcrite/fr_pe_essai_argumentatif_lettre_formelle_b1_b2.md",
+    "title": "Production Écrite : Essai Argumentatif et Lettre de Réclamation Formelle",
+    "document_type": "productive_skill",
+    "school_stage": [
+      "high_school"
+    ],
+    "grades": [
+      "high_school_1"
+    ],
+    "cefr": [
+      "B1",
+      "B2"
+    ],
+    "skills": [
+      "writing"
+    ],
+    "metadata": {
+      "id": "fr_pe_essai_argumentatif_lettre_formelle_b1_b2",
+      "title": "Production Écrite : Essai Argumentatif et Lettre de Réclamation Formelle",
+      "type": "productive_skill",
+      "school_stage": [
+        "high_school"
+      ],
+      "grades": [
+        "high_school_1"
+      ],
+      "age_band": [],
+      "cefr": [
+        "B1",
+        "B2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "writing"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024",
+        "dgb_sep_frances_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior B1",
+        "DELF Junior B2",
+        "DELF Tout Public B2"
+      ],
+      "prerequisites": [
+        "fr_pe_courriel_amical_invitation_a2",
+        "fr_gram_connecteurs_logiques_argumentation_b2"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Production Écrite : Essai Argumentatif et Lettre de Réclamation Formelle\n\n## 1. Épreuves Clés DELF B1 / B2\n- DELF B1 (160 mots min) : Exprimer son point de vue sur un forum citoyen ou lettre à un responsable municipal.\n- DELF B2 (250 mots min) : Lettre formelle argumentée ou contribution construite défendant une position équilibrée face à une autorité.",
+    "source_ids": [
+      "france_education_international_2024",
+      "dgb_sep_frances_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "0dbd3c164e15d98047fc493cdca359eb0106757f3865fb63feff61b969ff6152",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "4e1ac139-ebc9-4ae8-8085-620f94d72075",
+    "document_id": "fr_po_expose_argumente_defense_b2",
+    "path": "knowledge/french/03_SKILLS/ProductionOrale/fr_po_expose_argumente_defense_b2.md",
+    "title": "Production Orale : Exposé Argumenté Structuré et Défense d'un Point de Vue",
+    "document_type": "productive_skill",
+    "school_stage": [
+      "high_school"
+    ],
+    "grades": [
+      "high_school_1",
+      "high_school_2"
+    ],
+    "cefr": [
+      "B2"
+    ],
+    "skills": [
+      "speaking"
+    ],
+    "metadata": {
+      "id": "fr_po_expose_argumente_defense_b2",
+      "title": "Production Orale : Exposé Argumenté Structuré et Défense d'un Point de Vue",
+      "type": "productive_skill",
+      "school_stage": [
+        "high_school"
+      ],
+      "grades": [
+        "high_school_1",
+        "high_school_2"
+      ],
+      "age_band": [],
+      "cefr": [
+        "B2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "speaking"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024",
+        "dgb_sep_frances_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior B2",
+        "DELF Tout Public B2"
+      ],
+      "prerequisites": [
+        "fr_po_expression_point_de_vue_debat_b1",
+        "fr_gram_connecteurs_logiques_argumentation_b2"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Production Orale : Exposé Argumenté Structuré et Défense d'un Point de Vue\n\n## 1. Épreuve DELF B2\nPrésentation d'une problématique dégagée d'un document déclencheur, structurée en introduction, plan équilibré, arguments illustrés et conclusion, suivie d'un débat contradictoire soutenu (20 min).",
+    "source_ids": [
+      "france_education_international_2024",
+      "dgb_sep_frances_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "9c2b46309c1a1c7581e3db57730fb1d92cb7aec51061167ce09cbc974317d553",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "99207c6d-cb82-4c79-af2e-5288f79732e2",
+    "document_id": "fr_po_expression_point_de_vue_debat_b1",
+    "path": "knowledge/french/03_SKILLS/ProductionOrale/fr_po_expression_point_de_vue_debat_b1.md",
+    "title": "Production Orale : Donner son Avis et Réagir dans une Discussion",
+    "document_type": "productive_skill",
+    "school_stage": [
+      "high_school"
+    ],
+    "grades": [
+      "high_school_1"
+    ],
+    "cefr": [
+      "B1"
+    ],
+    "skills": [
+      "speaking"
+    ],
+    "metadata": {
+      "id": "fr_po_expression_point_de_vue_debat_b1",
+      "title": "Production Orale : Donner son Avis et Réagir dans une Discussion",
+      "type": "productive_skill",
+      "school_stage": [
+        "high_school"
+      ],
+      "grades": [
+        "high_school_1"
+      ],
+      "age_band": [],
+      "cefr": [
+        "B1"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "speaking"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior B1",
+        "DELF Tout Public B1"
+      ],
+      "prerequisites": [
+        "fr_po_monologue_suivi_dialogue_simule_a2",
+        "fr_gram_futur_simple_et_conditionnel_b1"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Production Orale : Donner son Avis et Réagir dans une Discussion\n\n## 1. Épreuve DELF B1\nExpression d'un point de vue argumenté à partir d'un document déclencheur court, suivi d'un débat avec l'examinateur.",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "06e8a6ff3f3900f6c402fed43dca6133bb54079e13b9e20f6d4b193567b76722",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "12ed54cb-7dd8-4154-b6dd-e6e91ea81172",
+    "document_id": "fr_po_monologue_suivi_dialogue_simule_a2",
+    "path": "knowledge/french/03_SKILLS/ProductionOrale/fr_po_monologue_suivi_dialogue_simule_a2.md",
+    "title": "Production Orale : Monologue Suivi et Échange d'Informations Pratiques",
+    "document_type": "productive_skill",
+    "school_stage": [
+      "secondary"
+    ],
+    "grades": [
+      "secondary_2",
+      "secondary_3"
+    ],
+    "cefr": [
+      "A2"
+    ],
+    "skills": [
+      "speaking"
+    ],
+    "metadata": {
+      "id": "fr_po_monologue_suivi_dialogue_simule_a2",
+      "title": "Production Orale : Monologue Suivi et Échange d'Informations Pratiques",
+      "type": "productive_skill",
+      "school_stage": [
+        "secondary"
+      ],
+      "grades": [
+        "secondary_2",
+        "secondary_3"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "speaking"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior A2"
+      ],
+      "prerequisites": [
+        "fr_po_presentation_personnelle_a1"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Production Orale : Monologue Suivi et Échange d'Informations Pratiques\n\n## 1. Épreuve DELF A2\nMonologue continu (2 min) sur un thème tiré au sort et jeu de rôle en interaction transactionnelle.",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "5f3d5726b90fb3513d800518db407d5c22d0c19e409f8478ee4b6eb983cdac42",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "a8d94e3f-da00-4ccc-bc25-9ef9a36ff748",
+    "document_id": "fr_po_presentation_personnelle_a1",
+    "path": "knowledge/french/03_SKILLS/ProductionOrale/fr_po_presentation_personnelle_a1.md",
+    "title": "Production Orale : Se Présenter et Parler de son Environnement Immédiat",
+    "document_type": "productive_skill",
+    "school_stage": [
+      "secondary"
+    ],
+    "grades": [
+      "secondary_1"
+    ],
+    "cefr": [
+      "A1"
+    ],
+    "skills": [
+      "speaking"
+    ],
+    "metadata": {
+      "id": "fr_po_presentation_personnelle_a1",
+      "title": "Production Orale : Se Présenter et Parler de son Environnement Immédiat",
+      "type": "productive_skill",
+      "school_stage": [
+        "secondary"
+      ],
+      "grades": [
+        "secondary_1"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A1"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "speaking"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior A1"
+      ],
+      "prerequisites": [
+        "fr_gram_present_indicatif_a1"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Production Orale : Se Présenter et Parler de son Environnement Immédiat\n\n## 1. Épreuve DELF A1\nEntretien dirigé (1 min) : Nom, âge, nationalité, profession/études, goûts, famille.",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "336d08c1bb827bc725387926c5444a5c8f3fbe98eb69e74917abdfaf02fab8a5",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "d8554cf9-87fd-4658-a166-8acdf77b534f",
+    "document_id": "fr_topic_ecologie_developpement_durable_b1_b2",
+    "path": "knowledge/french/04_TOPICS/fr_topic_ecologie_developpement_durable_b1_b2.md",
+    "title": "Environnement, Transition Écologique et Développement Durable",
+    "document_type": "thematic_module",
+    "school_stage": [
+      "high_school"
+    ],
+    "grades": [
+      "high_school_1"
+    ],
+    "cefr": [
+      "B1",
+      "B2"
+    ],
+    "skills": [
+      "vocabulary",
+      "reading",
+      "speaking",
+      "writing"
+    ],
+    "metadata": {
+      "id": "fr_topic_ecologie_developpement_durable_b1_b2",
+      "title": "Environnement, Transition Écologique et Développement Durable",
+      "type": "thematic_module",
+      "school_stage": [
+        "high_school"
+      ],
+      "grades": [
+        "high_school_1"
+      ],
+      "age_band": [],
+      "cefr": [
+        "B1",
+        "B2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "vocabulary",
+        "reading",
+        "speaking",
+        "writing"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [
+        "environment",
+        "ecology",
+        "sustainability"
+      ],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024",
+        "dgb_sep_frances_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "prerequisites": [
+        "fr_topic_identite_diversite_a1_a2"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Environnement, Transition Écologique et Développement Durable\n\n## 1. Thématique Centrale des Examens DELF B1/B2\nL'écologie urbaine, les énergies renouvelables, la gestion des déchets, les circuits courts et l'empreinte carbone représentent plus de 30% des sujets d'évaluation au DELF.",
+    "source_ids": [
+      "france_education_international_2024",
+      "dgb_sep_frances_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "3ad3e9f4db7f88d3fa25842470f1ec6c76cb52ef7176137d832fec6eddb3d231",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "1fbd75b5-51fd-48ed-8c60-49b92db12eca",
+    "document_id": "fr_topic_identite_diversite_a1_a2",
+    "path": "knowledge/french/04_TOPICS/fr_topic_identite_diversite_a1_a2.md",
+    "title": "Identité, Famille, Relations Sociales et Diversité Culturelle",
+    "document_type": "thematic_module",
+    "school_stage": [
+      "secondary"
+    ],
+    "grades": [
+      "secondary_1",
+      "secondary_2"
+    ],
+    "cefr": [
+      "A1",
+      "A2"
+    ],
+    "skills": [
+      "vocabulary",
+      "speaking",
+      "writing"
+    ],
+    "metadata": {
+      "id": "fr_topic_identite_diversite_a1_a2",
+      "title": "Identité, Famille, Relations Sociales et Diversité Culturelle",
+      "type": "thematic_module",
+      "school_stage": [
+        "secondary"
+      ],
+      "grades": [
+        "secondary_1",
+        "secondary_2"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A1",
+        "A2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "vocabulary",
+        "speaking",
+        "writing"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [
+        "identity",
+        "family",
+        "daily_life"
+      ],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "prerequisites": null,
+      "wikiLinks": []
+    },
+    "content": "# Identité, Famille, Relations Sociales et Diversité Culturelle\n\n## 1. Champs Lexicaux et Actes de Parole\nLexique des liens de parenté, des traits de caractère, des émotions et des salutations formelles et informelles en milieu francophone.",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "69acbe5123664737935ec5cf28399fde97e876f21fb21dd5d54d6d65692d0f56",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "89e9241d-fed8-4f5a-9014-e5877f38d07d",
+    "document_id": "fr_topic_monde_du_travail_et_carrieres_b1_b2",
+    "path": "knowledge/french/04_TOPICS/fr_topic_monde_du_travail_et_carrieres_b1_b2.md",
+    "title": "Monde Professionnel, Études Supérieures et Nouvelles Carrières",
+    "document_type": "thematic_module",
+    "school_stage": [
+      "high_school"
+    ],
+    "grades": [
+      "high_school_1",
+      "high_school_2"
+    ],
+    "cefr": [
+      "B1",
+      "B2"
+    ],
+    "skills": [
+      "vocabulary",
+      "writing",
+      "speaking"
+    ],
+    "metadata": {
+      "id": "fr_topic_monde_du_travail_et_carrieres_b1_b2",
+      "title": "Monde Professionnel, Études Supérieures et Nouvelles Carrières",
+      "type": "thematic_module",
+      "school_stage": [
+        "high_school"
+      ],
+      "grades": [
+        "high_school_1",
+        "high_school_2"
+      ],
+      "age_band": [],
+      "cefr": [
+        "B1",
+        "B2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "vocabulary",
+        "writing",
+        "speaking"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [
+        "work",
+        "careers",
+        "education"
+      ],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "prerequisites": null,
+      "wikiLinks": []
+    },
+    "content": "# Monde Professionnel, Études Supérieures et Nouvelles Carrières\n\n## 1. Objectifs de Mobilité Académique\nRédaction de CV en format français, lettre de motivation pour universités francophones (Campus France) et simulation d'entretien d'embauche.",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "a958edbae3020a9df171b821a3597c4321759df0d9e4fe9a3aa89fe6a919c9c9",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "1f8ed1bf-4903-4bd5-bdcd-71815658fb35",
+    "document_id": "fr_pedagogy_perspective_actionnelle",
+    "path": "knowledge/french/05_PEDAGOGY/perspective_actionnelle_cecr.md",
+    "title": "La Perspective Actionnelle et la Pédagogie par Tâches dans iSkool",
+    "document_type": "pedagogical_model",
+    "school_stage": [
+      "primary",
+      "secondary",
+      "high_school"
+    ],
+    "grades": [
+      "primary_5",
+      "primary_6",
+      "secondary_1",
+      "secondary_2",
+      "secondary_3",
+      "high_school_1",
+      "high_school_2",
+      "high_school_3"
+    ],
+    "cefr": [
+      "A1",
+      "A2",
+      "B1",
+      "B2",
+      "C1"
+    ],
+    "skills": [
+      "speaking",
+      "writing",
+      "listening",
+      "reading"
+    ],
+    "metadata": {
+      "id": "fr_pedagogy_perspective_actionnelle",
+      "title": "La Perspective Actionnelle et la Pédagogie par Tâches dans iSkool",
+      "type": "pedagogical_model",
+      "school_stage": [
+        "primary",
+        "secondary",
+        "high_school"
+      ],
+      "grades": [
+        "primary_5",
+        "primary_6",
+        "secondary_1",
+        "secondary_2",
+        "secondary_3",
+        "high_school_1",
+        "high_school_2",
+        "high_school_3"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A1",
+        "A2",
+        "B1",
+        "B2",
+        "C1"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "speaking",
+        "writing",
+        "listening",
+        "reading"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "cecr_volume_complementaire_2020"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "wikiLinks": []
+    },
+    "content": "# La Perspective Actionnelle et la Pédagogie par Tâches dans iSkool\n\n## 1. Principes Clés\nL'apprenant est considéré comme un acteur social accomplissant des tâches authentiques en interaction avec son milieu. L'évaluation porte sur l'efficacité communicative et la réussite de l'action.",
+    "source_ids": [
+      "cecr_volume_complementaire_2020"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "d7600c7535b5e80cc28d0c9bf74875a1003129225eecc35b7e87f7282dd8d9f6",
+    "indexed_at": "2026-10-16T01:22:27.132Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "29eb314c-ad91-4d3f-bf00-e31457892873",
+    "document_id": "fr_pattern_simulation_delf",
+    "path": "knowledge/french/06_ACTIVITY_PATTERNS/fr_pattern_simulation_globale_tache_delf.md",
+    "title": "Modèle d'Activité : Simulation Globale et Tâche Communicative DELF",
+    "document_type": "activity_pattern",
+    "school_stage": [
+      "secondary",
+      "high_school"
+    ],
+    "grades": [
+      "secondary_1",
+      "secondary_2",
+      "secondary_3",
+      "high_school_1",
+      "high_school_2",
+      "high_school_3"
+    ],
+    "cefr": [
+      "A1",
+      "A2",
+      "B1",
+      "B2"
+    ],
+    "skills": [
+      "speaking",
+      "writing",
+      "listening",
+      "reading"
+    ],
+    "metadata": {
+      "id": "fr_pattern_simulation_delf",
+      "title": "Modèle d'Activité : Simulation Globale et Tâche Communicative DELF",
+      "type": "activity_pattern",
+      "school_stage": [
+        "secondary",
+        "high_school"
+      ],
+      "grades": [
+        "secondary_1",
+        "secondary_2",
+        "secondary_3",
+        "high_school_1",
+        "high_school_2",
+        "high_school_3"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A1",
+        "A2",
+        "B1",
+        "B2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "speaking",
+        "writing",
+        "listening",
+        "reading"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "wikiLinks": []
+    },
+    "content": "# Modèle d'Activité : Simulation Globale et Tâche Communicative DELF\n\n## 1. Déroulement Pédagogique en 4 Phases\n1. Mise en situation et écoute/lecture déclencheuse.\n2. Conceptualisation grammaticale et lexicale inductrice.\n3. Entraînement guidé avec rétroaction formative immédiate.\n4. Production finale en autonomie (Tâche DELF chronométrée).",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "15ac748bf6db24ae6f29cd641f521ada3fc8cef3b0f0253010cf242cc4e3183d",
+    "indexed_at": "2026-10-16T01:22:27.132Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "cb3e12f2-2818-4e19-9cae-9a52e1e9332d",
+    "document_id": "fr_assessment_grilles_delf_b1_b2",
+    "path": "knowledge/french/07_ASSESSMENT/grilles_officielles_delf_b1_b2.md",
+    "title": "Grilles Officielles et Critères d'Évaluation DELF B1 et B2",
+    "document_type": "assessment_rubric",
+    "school_stage": [
+      "high_school"
+    ],
+    "grades": [
+      "high_school_1"
+    ],
+    "cefr": [
+      "B1",
+      "B2"
+    ],
+    "skills": [
+      "speaking",
+      "writing"
+    ],
+    "metadata": {
+      "id": "fr_assessment_grilles_delf_b1_b2",
+      "title": "Grilles Officielles et Critères d'Évaluation DELF B1 et B2",
+      "type": "assessment_rubric",
+      "school_stage": [
+        "high_school"
+      ],
+      "grades": [
+        "high_school_1"
+      ],
+      "age_band": [],
+      "cefr": [
+        "B1",
+        "B2"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "speaking",
+        "writing"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "delf_alignment": [
+        "DELF Junior B1",
+        "DELF Junior B2",
+        "DELF Tout Public B2"
+      ],
+      "wikiLinks": []
+    },
+    "content": "# Grilles Officielles et Critères d'Évaluation DELF B1 et B2\n\n## 1. Critères de la Production Écrite (DELF B2)\n- Respect de la consigne et de la longueur : 0 à 2 pts\n- Capacité à argumenter et justifier un point de vue : 0 à 3 pts\n- Cohérence et cohésion (articulateurs, paragraphes) : 0 à 4 pts\n- Compétence lexicale (étendue et précision) : 0 à 4 pts\n- Compétence morphosyntaxique (structures complexes, modes) : 0 à 5 pts\n- Maîtrise de l'orthographe lexicale et grammaticale : 0 à 3 pts\n- Adaptation au registre de langue formel : 0 à 4 pts",
+    "source_ids": [
+      "france_education_international_2024"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "a523b9c5e3d78a4fcee7b4ed23945ba959b362282967ad4e4d559a8b46e7c75f",
+    "indexed_at": "2026-10-16T01:19:02.574Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "bac86dcd-b3c2-43f8-86b0-751782fa5e53",
+    "document_id": "cecr_volume_complementaire_2020",
+    "path": "knowledge/french/99_SOURCES/cecr_volume_complementaire_2020.md",
+    "title": "Cadre Européen Commun de Référence pour les Langues - Volume Complémentaire",
+    "document_type": "source_spec",
+    "school_stage": [],
+    "grades": [],
+    "cefr": [],
+    "skills": [],
+    "metadata": {
+      "id": "cecr_volume_complementaire_2020",
+      "title": "Cadre Européen Commun de Référence pour les Langues - Volume Complémentaire",
+      "type": "source_spec",
+      "school_stage": [],
+      "grades": [],
+      "age_band": [],
+      "cefr": [],
+      "cambridge_alignment": [],
+      "skills": [],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "publisher": "Conseil de l'Europe (Strasbourg)",
+      "year": 2020,
+      "wikiLinks": []
+    },
+    "content": "# Cadre Européen Commun de Référence pour les Langues : Apprendre, enseigner, évaluer – Volume complémentaire\n\n## Fiche Bibliographique et Cadre Institutionnel\n- **Auteur Institutionnel :** Conseil de l'Europe (Division des politiques linguistiques, Strasbourg).\n- **Année de Publication :** 2020.\n- **Accès :** Domaine public pour fins éducatives.\n- **Portée :** Nouveaux descripteurs illustratifs, médiation linguistique, compétences plurilingues/pluriculturelles, interaction en ligne et échelles de niveaux A1 à C2.\n- **Application dans iSkool :** Alignement pédagogique des descripteurs de tâches et grilles d'évaluation communicatives.",
+    "source_ids": [],
+    "status": "approved",
+    "version": 1,
+    "checksum": "768111a56c154985d5b7c857789c7da5004d42d734322f9d69a4e65d5c81b0cc",
+    "indexed_at": "2026-10-16T01:22:27.132Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "3dc9c33a-d8c7-4320-8e75-cbc0fda9f3d8",
+    "document_id": "dgb_sep_frances_2024",
+    "path": "knowledge/french/99_SOURCES/dgb_sep_frances_2024.md",
+    "title": "Programa de Estudio de Francés Lengua Adicional - SEP / DGB",
+    "document_type": "source_spec",
+    "school_stage": [],
+    "grades": [],
+    "cefr": [],
+    "skills": [],
+    "metadata": {
+      "id": "dgb_sep_frances_2024",
+      "title": "Programa de Estudio de Francés Lengua Adicional - SEP / DGB",
+      "type": "source_spec",
+      "school_stage": [],
+      "grades": [],
+      "age_band": [],
+      "cefr": [],
+      "cambridge_alignment": [],
+      "skills": [],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "publisher": "Secretaría de Educación Pública (SEP) / Dirección General del Bachillerato (DGB)",
+      "year": 2024,
+      "wikiLinks": []
+    },
+    "content": "# Programa de Estudio de Francés Lengua Adicional - SEP / DGB 2024\n\n## Ficha Institucional y Normativa\n- **Autor Institucional :** Secretaría de Educación Pública (SEP) - Subsecretaría de Educación Media Superior - DGB (México).\n- **Año :** 2024.\n- **Marco Curricular Común :** MCCEMS / Nueva Escuela Mexicana (NEM).\n- **Alcance :** Progresiones de aprendizaje, metas de aprendizaje y categorías socioformativas para la enseñanza del francés como lengua extranjera en niveles de Secundaria y Bachillerato.\n- **Aplicación en iSkool :** Vinculación binaria con el sistema educativo mexicano y CENNI.",
+    "source_ids": [],
+    "status": "approved",
+    "version": 1,
+    "checksum": "1d5379e011f7b1a1bbdd6d7b06389b15a0d50ce077b9d77a18a0f1389d653d3a",
+    "indexed_at": "2026-10-16T01:22:27.132Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "3018da9a-91da-42cd-97bc-fafaa652ff96",
+    "document_id": "france_education_international_2024",
+    "path": "knowledge/french/99_SOURCES/france_education_international_2024.md",
+    "title": "France Éducation International - Référentiel Officiel DELF-DALF",
+    "document_type": "source_spec",
+    "school_stage": [],
+    "grades": [],
+    "cefr": [],
+    "skills": [],
+    "metadata": {
+      "id": "france_education_international_2024",
+      "title": "France Éducation International - Référentiel Officiel DELF-DALF",
+      "type": "source_spec",
+      "school_stage": [],
+      "grades": [],
+      "age_band": [],
+      "cefr": [],
+      "cambridge_alignment": [],
+      "skills": [],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "publisher": "Ministère de l'Éducation Nationale et de la Jeunesse (France)",
+      "year": 2024,
+      "wikiLinks": []
+    },
+    "content": "# France Éducation International (FEI) - Référentiel DELF-DALF\n\n## Fiche Bibliographique et Cadre Institutionnel\n- **Émetteur Officiel :** France Éducation International (Centre international d'études pédagogiques - CIEP).\n- **Année d'actualisation :** 2024.\n- **Portée Pédagogique :** Épreuves, descripteurs de compétences et grilles d'évaluation pour le DELF Prim, DELF Junior/Scolaire et DELF Tout Public (A1 à B2).\n- **Application dans iSkool :** Alignement standard des descripteurs de performance orale et écrite et des tâches cibles.",
+    "source_ids": [],
+    "status": "approved",
+    "version": 1,
+    "checksum": "061b17ef015d63cea91cd7e49e961dca1d0b4791bea292a864f378da64725bf2",
+    "indexed_at": "2026-10-16T01:22:27.132Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "ab0ca324-51b7-4db3-a00c-2bd145fc7625",
+    "document_id": "fr_sources_references_officielles",
+    "path": "knowledge/french/99_SOURCES/references_officielles_francais.md",
+    "title": "Références Officielles de l'Enseignement du Français Langue Étrangère",
+    "document_type": "source_index",
+    "school_stage": [
+      "all"
+    ],
+    "grades": [
+      "all"
+    ],
+    "cefr": [
+      "A1",
+      "A2",
+      "B1",
+      "B2",
+      "C1"
+    ],
+    "skills": [
+      "grammar",
+      "vocabulary",
+      "listening",
+      "speaking",
+      "reading",
+      "writing"
+    ],
+    "metadata": {
+      "id": "fr_sources_references_officielles",
+      "title": "Références Officielles de l'Enseignement du Français Langue Étrangère",
+      "type": "source_index",
+      "school_stage": [
+        "all"
+      ],
+      "grades": [
+        "all"
+      ],
+      "age_band": [],
+      "cefr": [
+        "A1",
+        "A2",
+        "B1",
+        "B2",
+        "C1"
+      ],
+      "cambridge_alignment": [],
+      "skills": [
+        "grammar",
+        "vocabulary",
+        "listening",
+        "speaking",
+        "reading",
+        "writing"
+      ],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [
+        "france_education_international_2024",
+        "cecr_volume_complementaire_2020",
+        "dgb_sep_frances_2024",
+        "sep_cenni_mexico"
+      ],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "wikiLinks": []
+    },
+    "content": "# Références Officielles de l'Enseignement du Français Langue Étrangère\n\n## 1. Organismes Certificateurs\n- France Éducation International (FEI) - Ministère de l'Éducation Nationale (France).\n- Cadre européen commun de référence pour les langues (Conseil de l'Europe, Strasbourg).\n- Secretaría de Educación Pública (SEP) - Certificación Nacional de Nivel de Idioma (CENNI, México).\n- Institut Français d'Amérique Latine (IFAL / Ambassade de France au Mexique).",
+    "source_ids": [
+      "france_education_international_2024",
+      "cecr_volume_complementaire_2020",
+      "dgb_sep_frances_2024",
+      "sep_cenni_mexico"
+    ],
+    "status": "approved",
+    "version": 1,
+    "checksum": "740095011688e83f511ca59d922c8d9b719469de0be41f7fcacb59579bed28e8",
+    "indexed_at": "2026-10-16T01:22:27.132Z",
+    "missing_on_disk": false
+  },
+  {
+    "id": "b4623d13-563b-4d81-8541-29f89677a031",
+    "document_id": "sep_nem_lenguajes_2024",
+    "path": "knowledge/french/99_SOURCES/sep_nem_lenguajes_2024.md",
+    "title": "Marco Curricular Común y Planes de Estudio de Lenguas Extranjeras (SEP NEM)",
+    "document_type": "source_spec",
+    "school_stage": [],
+    "grades": [],
+    "cefr": [],
+    "skills": [],
+    "metadata": {
+      "id": "sep_nem_lenguajes_2024",
+      "title": "Marco Curricular Común y Planes de Estudio de Lenguas Extranjeras (SEP NEM)",
+      "type": "source_spec",
+      "school_stage": [],
+      "grades": [],
+      "age_band": [],
+      "cefr": [],
+      "cambridge_alignment": [],
+      "skills": [],
+      "subskills": [],
+      "language_functions": [],
+      "grammar": [],
+      "vocabulary": [],
+      "topics": [],
+      "pedagogy": [],
+      "activity_patterns": [],
+      "assessment": [],
+      "source_ids": [],
+      "status": "approved",
+      "version": 1,
+      "_has_frontmatter": true,
+      "language": "french",
+      "publisher": "Secretaría de Educación Pública (SEP), México",
+      "year": 2024,
+      "wikiLinks": []
+    },
+    "content": "# Marco Curricular Común y Planes de Estudio de Lenguas Extranjeras (SEP NEM)\n\n## Ficha Bibliográfica Institucional\n- **Autor Institucional:** Secretaría de Educación Pública (SEP) / Subsecretaría de Educación Media Superior (SEMS).\n- **Año:** 2024.\n- **Acceso:** Documentos normativos y curriculares oficiales de los Estados Unidos Mexicanos.\n- **Alcance Curricular:** Progresiones de aprendizaje del área de Lengua Extranjera en el Marco Curricular Común de la Educación Media Superior (MCCEMS) y Campo Formativo Lenguajes en Educación Básica.\n- **Uso en iSkool:** Asegura la validez y correspondencia oficial con los programas de estudio nacionales.",
+    "source_ids": [],
+    "status": "approved",
+    "version": 1,
+    "checksum": "227dec03c9667e99ad5560e4e0984ac1655f01136bb3bb990ffadfe5f611dee6",
+    "indexed_at": "2026-10-16T01:22:27.132Z",
+    "missing_on_disk": false
+  }
+]

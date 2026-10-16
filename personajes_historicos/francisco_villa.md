@@ -17,7 +17,7 @@ tags:
   - "[[francisco_villa]]"
   - "[[personajes_historicos]]"
   - "[[revolucion_mexicana_1910_1923]]"
-lastUpdated: "2026-10-14"
+lastUpdated: "2026-10-16"
 ---
 
 # Francisco Villa

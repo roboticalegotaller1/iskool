@@ -9,7 +9,7 @@ campo_formativo: "Ética, Naturaleza y Sociedades"
 tema: "� Proyecto de Codiseño Comunitario: Megadiversidad mexicana y patrimonio biocultural"
 duracion: "10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)"
 ejes_articuladores: ["Pensamiento Crítico", "Inclusión", "Vida Saludable", "Apropiación de las Culturas a través de la Lectura y la Escritura"]
-producto_integrador: "Montaje de la "Ofrenda Tradicional Viva de Nuestra Entidad" en el patio escolar, con módulos de elementos bioculturales (cempasúchil, gastronomía regional), exposición de tapetes artesanales, antología ilustrada de calaveritas literarias y tertulia de relatos con familias y adultos mayores."
+producto_integrador: "Montaje de la 'Ofrenda Tradicional Viva de Nuestra Entidad' en el patio escolar, con módulos de elementos bioculturales (cempasúchil, gastronomía regional), exposición de tapetes artesanales, antología ilustrada de calaveritas literarias y tertulia de relatos con familias y adultos mayores."
 fecha_elaboracion: "2 de septiembre de 2026"
 created_at: "2 de septiembre de 2026"
 updated_at: "2 de septiembre de 2026"

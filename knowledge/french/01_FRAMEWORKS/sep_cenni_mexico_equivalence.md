@@ -8,7 +8,13 @@ school_stage:
   - high_school
   - advanced
 grades:
-  - all
+  - secondary_1
+  - secondary_2
+  - secondary_3
+  - high_school_1
+  - high_school_2
+  - high_school_3
+  - advanced_specialized
 cefr:
   - A1
   - A2

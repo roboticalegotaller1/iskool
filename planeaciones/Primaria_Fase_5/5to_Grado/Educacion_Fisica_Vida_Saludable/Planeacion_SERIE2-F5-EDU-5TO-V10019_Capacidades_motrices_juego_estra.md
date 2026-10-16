@@ -9,7 +9,7 @@ campo_formativo: "De lo Humano y lo Comunitario"
 tema: "� Proyecto de Codiseño Comunitario: Capacidades motrices, juego estratégico y trabajo colaborativo"
 duracion: "10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)"
 ejes_articuladores: ["Pensamiento Crítico", "Inclusión", "Vida Saludable", "Apropiación de las Culturas a través de la Lectura y la Escritura"]
-producto_integrador: "Montaje de la "Feria de la Salud Escolar" con puestos de degustación de colaciones nutritivas locales, recetario escolar ilustrado, infografías del sistema digestivo/circulatorio y estación de toma de signos vitales guiada."
+producto_integrador: "Montaje de la 'Feria de la Salud Escolar' con puestos de degustación de colaciones nutritivas locales, recetario escolar ilustrado, infografías del sistema digestivo/circulatorio y estación de toma de signos vitales guiada."
 fecha_elaboracion: "2 de septiembre de 2026"
 created_at: "2 de septiembre de 2026"
 updated_at: "2 de septiembre de 2026"

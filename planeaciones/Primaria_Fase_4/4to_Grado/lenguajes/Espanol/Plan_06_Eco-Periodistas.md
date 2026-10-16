@@ -9,7 +9,7 @@ campo_formativo: "Lenguajes"
 tema: "Eco-Periodistas: Textos Expositivos de Problema-Solución en la Escuela"
 duracion: "10 sesiones de 50 minutos (Total: 500 min / 2 semanas lectivas)"
 ejes_articuladores: ["Pensamiento Crítico", "Inclusión", "Vida Saludable", "Apropiación de las Culturas a través de la Lectura y la Escritura"]
-producto_integrador: "Edición especial de la "Gaceta Escolar Comunitaria" con reportajes de campo, infografías ilustradas, entrevistas a personas de la localidad y artículos de divulgación elaborados por los alumnos."
+producto_integrador: "Edición especial de la 'Gaceta Escolar Comunitaria' con reportajes de campo, infografías ilustradas, entrevistas a personas de la localidad y artículos de divulgación elaborados por los alumnos."
 fecha_elaboracion: "2 de septiembre de 2026"
 created_at: "2 de septiembre de 2026"
 updated_at: "2 de septiembre de 2026"

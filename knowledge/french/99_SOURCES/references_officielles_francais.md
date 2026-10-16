@@ -25,6 +25,7 @@ version: 1
 source_ids:
   - france_education_international_2024
   - cecr_volume_complementaire_2020
+  - dgb_sep_frances_2024
   - sep_cenni_mexico
 ---
 

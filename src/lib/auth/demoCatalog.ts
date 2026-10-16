@@ -1,11 +1,5 @@
 import { UserProfile, UserRole } from '@/types';
-import {
-  SUPER_USERS_ISKOOL_SEED,
-  TEACHER_SEED,
-  PARENT_SEED,
-  STUDENTS_LIST_SEED,
-  STAFF_USERS_SEED
-} from '@/store/seeds';
+import { SUPER_USERS_ISKOOL_SEED } from '@/store/seeds';
 
 export type DemoCategory = 'docentes' | 'estudiantes' | 'gestion';
 
@@ -21,141 +15,7 @@ export interface DemoAccount {
   campusName?: string;
 }
 
-// Cuentas demo completas de la plataforma (Mostradas exclusivamente en Lcxad5iH8kGm3ZC)
-export const GENERAL_DEMO_ACCOUNTS: DemoAccount[] = [
-  // Docentes
-  {
-    name: "Prof. Israel López Ángeles",
-    role: "teacher",
-    grade: "Docente Titular (Primaria Laboratorio Demo)",
-    email: "israel.lopez@sandbox.iskool.edu.mx",
-    avatarColor: "bg-rose-500",
-    id: "usr-teacher-1",
-    defaultPass: "008805",
-    category: "docentes"
-  },
-  {
-    name: "Prof. Gabriel Montes",
-    role: "teacher",
-    grade: "Profesor Independiente (Física & Ciencias 3º)",
-    email: "gabriel.montes@independientes.iskool.edu.mx",
-    avatarColor: "bg-purple-600",
-    id: "usr-indep-1",
-    defaultPass: "008805",
-    category: "docentes"
-  },
-  {
-    name: "Profa. Sofía Albarrán",
-    role: "teacher",
-    grade: "Profesora Independiente (Historia 1º)",
-    email: "sofia.albarran@independientes.iskool.edu.mx",
-    avatarColor: "bg-indigo-600",
-    id: "usr-indep-2",
-    defaultPass: "008805",
-    category: "docentes"
-  },
-  // Estudiantes
-  {
-    name: "Lucas Skywalker",
-    role: "student",
-    grade: "Primaria Alta (4º Grado)",
-    email: "lucas@iskool.edu.mx",
-    avatarColor: "bg-emerald-500",
-    id: "std-pa",
-    category: "estudiantes"
-  },
-  {
-    name: "Elena Rostova",
-    role: "student",
-    grade: "Secundaria (2º Grado) - Gamificación",
-    email: "elena@iskool.edu.mx",
-    avatarColor: "bg-purple-500",
-    id: "std-sec",
-    category: "estudiantes"
-  },
-  {
-    name: "Santi Gómez",
-    role: "student",
-    grade: "Primaria Baja (1º Grado)",
-    email: "santi@iskool.edu.mx",
-    avatarColor: "bg-blue-500",
-    id: "std-pb",
-    category: "estudiantes"
-  },
-  {
-    name: "Mateo Díaz",
-    role: "student",
-    grade: "Preparatoria (4º Semestre)",
-    email: "mateo@iskool.edu.mx",
-    avatarColor: "bg-amber-500",
-    id: "std-prep",
-    category: "estudiantes"
-  },
-  {
-    name: "Familia López Mendoza",
-    role: "parent",
-    grade: "Tutor / Padre de Familia",
-    email: "israel.lopez@ejemplo.com",
-    avatarColor: "bg-amber-600",
-    id: "usr-parent-001",
-    defaultPass: "ISkoolPassword2026!",
-    category: "estudiantes"
-  },
-  // Gestión Institucional
-  {
-    name: "Lic. Roberto Garza",
-    role: "director",
-    grade: "Dirección de Plantel (Gobernanza)",
-    email: "director@iskool.edu.mx",
-    avatarColor: "bg-purple-600",
-    id: "usr-dir-1",
-    defaultPass: "DIR2026",
-    category: "gestion"
-  },
-  {
-    name: "Lic. Beatriz Morales",
-    role: "coordinator",
-    grade: "Coordinación y Control Escolar",
-    email: "coordinacion@iskool.edu.mx",
-    avatarColor: "bg-indigo-600",
-    id: "usr-coord-1",
-    defaultPass: "ISkoolPassword2026!",
-    category: "gestion"
-  },
-  {
-    name: "C.P. Mónica Suárez",
-    role: "billing",
-    grade: "Cobranza y Finanzas Escolares",
-    email: "cobranza@iskool.edu.mx",
-    avatarColor: "bg-emerald-600",
-    id: "usr-billing-1",
-    defaultPass: "COB2026",
-    category: "gestion"
-  },
-  {
-    name: "Don Alejandro Vargas",
-    role: "owner",
-    grade: "Dueño de Colegio (UP Juan Jacobo Rosseau - Aislado)",
-    email: "dueno@jjrosseau.edu.mx",
-    avatarColor: "bg-blue-600",
-    id: "usr-owner-1",
-    defaultPass: "DUE2026",
-    category: "gestion"
-  },
-  // CEO Corporativo B2B
-  {
-    name: "Dr. Maximilian Weber (CEO)",
-    role: "ceo",
-    grade: "CEO & Director General (BMW Group México)",
-    email: "ceo@bmw-corp.mx",
-    avatarColor: "bg-blue-700",
-    id: "usr-ceo-bmw",
-    defaultPass: "BMW2026!",
-    category: "gestion"
-  }
-];
-
-// Cuentas demo exclusivas del Instituto Bilingüe IBIME (Mostradas estrictamente en 02DJoUJSkwYQZjn)
+// Cuentas demo exclusivas del Instituto Bilingüe IBIME (Único tenant demo autorizado)
 export const IBIME_DEMO_ACCOUNTS: DemoAccount[] = [
   // Gestión Institucional IBIME
   {
@@ -312,31 +172,66 @@ export const IBIME_DEMO_ACCOUNTS: DemoAccount[] = [
   }
 ];
 
+// Alias para garantizar compatibilidad con componentes que consuman GENERAL_DEMO_ACCOUNTS
+export const GENERAL_DEMO_ACCOUNTS: DemoAccount[] = IBIME_DEMO_ACCOUNTS;
+
 /**
  * Resuelve de forma determinista y segura si un identificador o correo corresponde
- * a una identidad oficial del catálogo demo. Si es así, retorna el UserProfile con los
- * roles y permisos autorizados por el servidor (inmunes a inyecciones de cliente).
+ * a una identidad oficial del catálogo demo IBIME.
  */
 export function resolveCanonicalDemoUser(identifier: string): UserProfile | null {
   if (!identifier) return null;
   let emailLower = identifier.toLowerCase().trim();
 
-  // Alias para IBIME
+  if (emailLower === 'usr-teacher-1' || emailLower.includes('israel.lopez')) {
+    return {
+      id: 'usr-teacher-1',
+      school_id: 'sch-ibime',
+      campus_name: 'Campus Montes',
+      first_name: 'Profesor',
+      last_name: 'Docente IBIME',
+      role: 'teacher' as UserRole,
+      email: 'profesor.docente@ibime.edu.mx',
+      created_at: '2026-01-01T08:00:00.000Z',
+      updated_at: new Date().toISOString()
+    };
+  }
+  if (emailLower === 'std-pa' || emailLower.includes('lucas@iskool.edu.mx')) {
+    return {
+      id: 'std-pa',
+      school_id: 'sch-ibime',
+      campus_name: 'Campus Montes',
+      first_name: 'Lucas',
+      last_name: 'Estudiante IBIME',
+      role: 'student' as UserRole,
+      email: 'lucas.alumno@ibime.edu.mx',
+      created_at: '2026-01-01T08:00:00.000Z',
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  // Alias para roles directos mapeados a IBIME
   if (!emailLower.includes('@')) {
-    if (
-      emailLower.includes('ibime') ||
-      emailLower.startsWith('directora') ||
-      emailLower.startsWith('coordinacion') ||
-      emailLower.startsWith('finanzas') ||
-      emailLower.startsWith('dueno') ||
-      emailLower.startsWith('profesor') ||
-      emailLower.startsWith('profesora')
-    ) {
+    if (emailLower === 'director' || emailLower === 'directora' || emailLower.startsWith('directora')) {
+      emailLower = 'directora.general@ibime.edu.mx';
+    } else if (emailLower === 'coordinacion' || emailLower.startsWith('coordinacion')) {
+      emailLower = 'coordinacion.academica@ibime.edu.mx';
+    } else if (emailLower === 'finanzas' || emailLower === 'cobranza' || emailLower.startsWith('finanzas') || emailLower.startsWith('cobranza')) {
+      emailLower = 'finanzas@ibime.edu.mx';
+    } else if (emailLower === 'dueno' || emailLower === 'owner' || emailLower.startsWith('dueno')) {
+      emailLower = 'dueno@ibime.edu.mx';
+    } else if (emailLower === 'profesor' || emailLower === 'profesora' || emailLower === 'docente' || emailLower === 'teacher' || emailLower.startsWith('profesor') || emailLower.startsWith('profesora')) {
+      emailLower = 'alejandro.mendoza@ibime.edu.mx';
+    } else if (emailLower === 'estudiante' || emailLower === 'alumno' || emailLower === 'student') {
+      emailLower = 'iker.morales@ibime.edu.mx';
+    } else if (emailLower === 'padre' || emailLower === 'tutor' || emailLower === 'parent') {
+      emailLower = 'familia.morales@ibime.edu.mx';
+    } else if (emailLower.includes('ibime')) {
       emailLower = `${emailLower}@ibime.edu.mx`;
     }
   }
 
-  // 1. Catálogo IBIME
+  // 1. Catálogo IBIME (Única fuente de demo permitida)
   const matchedIbime = IBIME_DEMO_ACCOUNTS.find(
     d => d.email.toLowerCase() === emailLower || d.id.toLowerCase() === emailLower
   );
@@ -355,27 +250,7 @@ export function resolveCanonicalDemoUser(identifier: string): UserProfile | null
     };
   }
 
-  // 2. Catálogo General ISkool
-  const matchedGeneral = GENERAL_DEMO_ACCOUNTS.find(
-    d => d.email.toLowerCase() === emailLower || d.id.toLowerCase() === emailLower
-  );
-  if (matchedGeneral) {
-    const nameParts = matchedGeneral.name.split(' ');
-    const isIbime = matchedGeneral.email.includes('ibime');
-    const schoolId = isIbime ? 'sch-ibime' : matchedGeneral.role === 'owner' ? 'sch-jjrosseau' : matchedGeneral.role === 'ceo' ? 'emp-bmw' : 'sch-test-case';
-    return {
-      id: matchedGeneral.id,
-      school_id: schoolId,
-      first_name: nameParts[0] || 'Usuario',
-      last_name: nameParts.slice(1).join(' ') || 'Demo',
-      role: matchedGeneral.role as UserRole,
-      email: matchedGeneral.email,
-      created_at: '2026-01-01T08:00:00.000Z',
-      updated_at: new Date().toISOString()
-    };
-  }
-
-  // 3. Super Usuarios Globales de Plataforma ISkool
+  // 2. Super Usuarios Globales de Plataforma ISkool
   const matchedSuper = SUPER_USERS_ISKOOL_SEED.find(
     su => su.email?.toLowerCase() === emailLower || su.id.toLowerCase() === emailLower
   );
@@ -383,49 +258,6 @@ export function resolveCanonicalDemoUser(identifier: string): UserProfile | null
     return {
       ...matchedSuper,
       role: 'superadmin',
-      updated_at: new Date().toISOString()
-    };
-  }
-
-  // 4. Semillas de Alumnos de Laboratorio y Pruebas
-  const matchedStudentSeed = STUDENTS_LIST_SEED.find(
-    s => s.email?.toLowerCase() === emailLower || s.id.toLowerCase() === emailLower
-  );
-  if (matchedStudentSeed) {
-    return {
-      ...matchedStudentSeed,
-      role: 'student',
-      school_id: matchedStudentSeed.school_id || 'sch-test-case',
-      updated_at: new Date().toISOString()
-    };
-  }
-
-  // 5. Semilla de Docente Titular y Tutor
-  if (emailLower === TEACHER_SEED.email.toLowerCase() || emailLower === TEACHER_SEED.id.toLowerCase()) {
-    return {
-      ...TEACHER_SEED,
-      role: 'teacher',
-      school_id: 'sch-test-case',
-      updated_at: new Date().toISOString()
-    };
-  }
-
-  if (emailLower === PARENT_SEED.email.toLowerCase() || emailLower === PARENT_SEED.id.toLowerCase()) {
-    return {
-      ...PARENT_SEED,
-      role: 'parent',
-      school_id: 'sch-test-case',
-      updated_at: new Date().toISOString()
-    };
-  }
-
-  // 6. Personal de Planteles (Staff Seed)
-  const matchedStaff = STAFF_USERS_SEED.find(
-    st => st.email?.toLowerCase() === emailLower || st.id.toLowerCase() === emailLower
-  );
-  if (matchedStaff) {
-    return {
-      ...matchedStaff,
       updated_at: new Date().toISOString()
     };
   }
