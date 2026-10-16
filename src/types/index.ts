@@ -24,9 +24,17 @@ export const ROLE_HIERARCHY_LEVEL: Record<UserRole, number> = {
  * Solo aplica a las 3 cuentas de directivos de ISkool (superadmin / admin global).
  * Los dueños de escuela hacia abajo quedan estrictamente circunscritos a su propio sistema escolar.
  */
-export const isPlatformSuperUser = (userProfile?: { role?: string; email?: string } | null): boolean => {
+export const isPlatformSuperUser = (userProfile?: { role?: string; email?: string; id?: string } | null): boolean => {
   if (!userProfile) return false;
-  return userProfile.role === 'superadmin' || userProfile.role === 'admin';
+  const role = userProfile.role;
+  const email = userProfile.email?.toLowerCase();
+  const id = (userProfile as any).id;
+  return role === 'superadmin' || 
+         role === 'admin' || 
+         (typeof id === 'string' && id.startsWith('usr-superadmin')) ||
+         email === 'admin@iskool.edu.mx' ||
+         email === 'tecnologia@iskool.edu.mx' ||
+         email === 'pedagogia@iskool.edu.mx';
 };
 
 /**

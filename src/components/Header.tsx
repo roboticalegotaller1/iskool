@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useStudentStore, useCurrentStudentStats, useCurrentStudentAcademicLevel } from '../store/useStudentStore';
 import { useSchoolAdminStore, applyThemeCssVariables, resolveEffectiveSchoolId } from '../store/useSchoolAdminStore';
 import { getStudentAcademicLevelInfo } from '@/lib/academicLevels';
@@ -16,6 +16,7 @@ import { BackButton } from '@/components/navigation/BackButton';
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, logout } = useAuth();
   
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -29,6 +30,10 @@ export const Header: React.FC = () => {
   const rawSchoolSettings = useSchoolAdminStore(state => state.schoolSettings);
   const selectSchool = useSchoolAdminStore(state => state.selectSchool);
 
+  // Exclusividad: Solo las 3 cuentas oficiales de Super Usuario (Directivos de ISkool) tienen acceso global irrestricto
+  const isSuperUser = isPlatformSuperUser(user);
+  const canSwitchRoles = isSuperUser;
+
   // Marca Blanca Dinámica (Zustand)
   const whiteLabelLogo = useWhiteLabelStore(state => state.logoUrl);
   const whiteLabelPrimary = useWhiteLabelStore(state => state.primaryColor);
@@ -36,10 +41,12 @@ export const Header: React.FC = () => {
 
   // En el portal de alumno y padres, derivar el colegio del perfil o tenant activo
   const activeStudentProfile = detailedStudents?.find(s => s.id === activeStudentId);
-  const isIbimeActive = (typeof window !== 'undefined' && (document.documentElement.getAttribute('data-tenant') === 'ibime' || localStorage.getItem('tenant-id') === 'ibime')) ||
-                        user?.school_id === 'sch-ibime' || 
-                        activeStudentProfile?.school_id === 'sch-ibime' ||
-                        user?.email?.toLowerCase().includes('ibime');
+  const isIbimeActive = isSuperUser
+    ? activeSchoolId === 'sch-ibime'
+    : ((typeof window !== 'undefined' && (document.documentElement.getAttribute('data-tenant') === 'ibime' || localStorage.getItem('tenant-id') === 'ibime')) ||
+       user?.school_id === 'sch-ibime' || 
+       activeStudentProfile?.school_id === 'sch-ibime' ||
+       user?.email?.toLowerCase().includes('ibime'));
 
   const studentSchoolId = isIbimeActive ? 'sch-ibime' : ((user?.role === 'student' && user.school_id && user.school_id !== 'sch-jjrosseau')
     ? user.school_id
@@ -52,7 +59,11 @@ export const Header: React.FC = () => {
   const schoolSettings = currentInstitution?.settings || rawSchoolSettings;
 
   const effectiveLogoUrl = isIbimeActive ? '/brand/ibime_logo.webp' : (whiteLabelLogo || schoolSettings?.logoUrl);
-  const effectiveSchoolName = isIbimeActive ? 'Instituto Bilingüe IBIME' : (whiteLabelSchoolName || schoolSettings?.name || 'ISkool');
+  const effectiveSchoolName = isIbimeActive 
+    ? 'Instituto Bilingüe IBIME' 
+    : (isSuperUser && !activeSchoolId 
+        ? 'ISkool (Directorio Global)' 
+        : (whiteLabelSchoolName || schoolSettings?.name || 'ISkool'));
 
   useEffect(() => {
     if (schoolSettings?.themeColors) {
@@ -95,10 +106,6 @@ export const Header: React.FC = () => {
   };
 
   const currentRole = getRoleFromPath();
-
-  // Exclusividad: Solo las 3 cuentas oficiales de Super Usuario (Directivos de ISkool) tienen conmutación global de roles
-  const isSuperUser = isPlatformSuperUser(user);
-  const canSwitchRoles = isSuperUser;
 
   const getStudentLevelLabel = (id: string) => {
     const studentProfile = detailedStudents?.find(s => s.id === id);
@@ -391,6 +398,39 @@ export const Header: React.FC = () => {
                   Colegios
                 </Link>
               )}
+            </div>
+          )}
+
+          {/* Conmutador Rápido de Colegios (Exclusivo Super Usuario) */}
+          {isSuperUser && (
+            <div className="hidden lg:flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 px-2.5 py-1 rounded-xl text-xs">
+              <span className="text-[11px] font-bold text-zinc-500">Colegio:</span>
+              <select
+                aria-label="Conmutador de Colegio Super Usuario"
+                value={activeSchoolId || 'all'}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === 'all') {
+                    selectSchool(null);
+                    router.push('/admin');
+                  } else {
+                    selectSchool(val);
+                    if (val === 'sch-ibime') {
+                      router.push('/ibime/portal');
+                    } else if (pathname === '/login' || pathname.startsWith('/ibime')) {
+                      router.push('/admin');
+                    }
+                  }
+                }}
+                className="bg-transparent text-zinc-900 dark:text-zinc-100 font-bold outline-none cursor-pointer text-xs max-w-[150px] truncate"
+              >
+                <option value="all" className="bg-white text-zinc-900">🏢 Todos los Colegios</option>
+                {institutionsList.map(inst => (
+                  <option key={inst.id} value={inst.id} className="bg-white text-zinc-900">
+                    {inst.name} {inst.isTestCase ? '(Sandbox)' : ''}
+                  </option>
+                ))}
+              </select>
             </div>
           )}
 

@@ -2314,6 +2314,43 @@ export default function CEOExecutiveDashboard({
 
           {/* Acciones Rápidas del Header */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {/* Selector Rápido de Colegios (Exclusivo Super Usuario) */}
+            {isSuperUser && institutionsList.length > 0 && (
+              <div className="relative inline-flex items-center">
+                <select
+                  value={schoolId || activeSchoolId || ''}
+                  onChange={(e) => {
+                    const newId = e.target.value;
+                    if (!newId) {
+                      useSchoolAdminStore.getState().selectSchool(null as any);
+                      if (onBackToDirectory) {
+                        onBackToDirectory();
+                      } else {
+                        router.push('/admin');
+                      }
+                    } else {
+                      useSchoolAdminStore.getState().selectSchool(newId);
+                      if (newId === 'sch-ibime') {
+                        router.push('/ibime/portal');
+                      } else {
+                        router.push('/admin');
+                      }
+                    }
+                  }}
+                  className="appearance-none bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-900 text-[11px] sm:text-xs font-bold rounded-lg pl-2 sm:pl-2.5 pr-6 sm:pr-7 py-1 sm:py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer transition-colors max-w-[130px] sm:max-w-[170px] truncate"
+                  title="Conmutar de Colegio o Empresa (Super Usuario)"
+                >
+                  <option value="">🏢 Todos los Colegios</option>
+                  {institutionsList.map((inst) => (
+                    <option key={inst.id} value={inst.id}>
+                      {inst.isTestCase ? '🧪 ' : '🏫 '} {inst.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown size={13} className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 text-indigo-500 pointer-events-none" />
+              </div>
+            )}
+
             {/* Botón Volver al Directorio de Colegios (Exclusivo Super Usuario) */}
             {onBackToDirectory && (
               <button

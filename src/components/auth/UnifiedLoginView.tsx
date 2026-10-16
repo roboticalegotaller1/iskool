@@ -159,7 +159,39 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
   }, []);
 
   const routeUserByRole = async (userProfile: any) => {
-    // 0. Si hay un parámetro de redirección explícito en la URL (ej: /teacher/idiomas), priorizarlo
+    // 0. Super Usuario de Plataforma ISkool: NUNCA confinado a un solo colegio ni a vista de estudiante
+    if (isPlatformSuperUser(userProfile)) {
+      let targetSuperPath = '/admin';
+      if (typeof window !== 'undefined') {
+        const searchParams = new URLSearchParams(window.location.search);
+        const redirectParam = searchParams.get('redirect');
+        if (
+          redirectParam && 
+          redirectParam.startsWith('/') && 
+          !redirectParam.startsWith('//') &&
+          !redirectParam.startsWith('/student') && 
+          !redirectParam.startsWith('/parent')
+        ) {
+          targetSuperPath = redirectParam;
+        }
+
+        localStorage.removeItem('activeSchoolId');
+        localStorage.setItem('tenant-id', 'iskool');
+        document.cookie = 'tenant-id=iskool; path=/; max-age=31536000; SameSite=Lax';
+        document.documentElement.setAttribute('data-tenant', 'iskool');
+        sessionStorage.setItem('iskool_super_just_logged_in', 'true');
+      }
+      useSchoolAdminStore.getState().selectSchool(null as any);
+      router.replace(targetSuperPath);
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          window.location.replace(targetSuperPath);
+        }
+      }, 300);
+      return;
+    }
+
+    // 1. Si hay un parámetro de redirección explícito en la URL (ej: /teacher/idiomas), priorizarlo para roles regulares
     if (typeof window !== 'undefined') {
       const searchParams = new URLSearchParams(window.location.search);
       const redirectParam = searchParams.get('redirect');

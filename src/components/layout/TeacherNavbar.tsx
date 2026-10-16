@@ -38,6 +38,10 @@ export function TeacherNavbar() {
   const isManagementRole = isSuperUser || user?.role === 'owner' || user?.role === 'admin' || user?.role === 'director';
 
   const isIbime = useMemo(() => {
+    if (isSuperUser) {
+      const activeId = useSchoolAdminStore.getState().activeSchoolId;
+      return activeId === 'sch-ibime';
+    }
     if (user?.school_id === 'sch-ibime') return true;
     if ((schoolSettings as { id?: string } | null)?.id === 'sch-ibime') return true;
     if (whiteLabelSchoolName?.toLowerCase().includes('ibime')) return true;
@@ -51,7 +55,7 @@ export function TeacherNavbar() {
       if (window.location.hostname.includes('ibime')) return true;
     }
     return false;
-  }, [user, schoolSettings, whiteLabelSchoolName]);
+  }, [user, schoolSettings, whiteLabelSchoolName, isSuperUser]);
 
   const navLinks = [
     { href: '/teacher', label: 'Hub Docente', icon: BookOpen, exact: true },
@@ -207,15 +211,15 @@ export function TeacherNavbar() {
                 }
               }}
               className={`h-9 px-3 rounded-xl text-xs font-bold transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-98 shrink-0 leading-none ${
-                isIbime
+                isIbime && !isSuperUser
                   ? 'bg-[#17426D] hover:bg-[#1E5285] text-white border border-blue-700/80'
                   : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200'
               }`}
-              title={isIbime ? 'Ir al Portal Institucional / Presidencia IBIME' : 'Ir al Panel Institucional / Presidencia'}
+              title={isSuperUser ? 'Directorio General de Colegios (Super Usuario)' : (isIbime ? 'Ir al Portal Institucional / Presidencia IBIME' : 'Ir al Panel Institucional / Presidencia')}
             >
-              <ShieldCheck className={`h-4 w-4 shrink-0 ${isIbime ? 'text-[#E41B14]' : 'text-indigo-600 dark:text-indigo-400'}`} />
-              <span className="whitespace-nowrap">Administración</span>
-              <ChevronRight className={`h-3.5 w-3.5 shrink-0 ${isIbime ? 'text-blue-300' : 'text-slate-400'}`} />
+              <ShieldCheck className={`h-4 w-4 shrink-0 ${isIbime && !isSuperUser ? 'text-[#E41B14]' : 'text-indigo-600 dark:text-indigo-400'}`} />
+              <span className="whitespace-nowrap">{isSuperUser ? 'Directorio Colegios' : 'Administración'}</span>
+              <ChevronRight className={`h-3.5 w-3.5 shrink-0 ${isIbime && !isSuperUser ? 'text-blue-300' : 'text-slate-400'}`} />
             </Link>
           )}
 
@@ -357,14 +361,14 @@ export function TeacherNavbar() {
                 }
               }}
               className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold ${
-                isIbime
+                isIbime && !isSuperUser
                   ? 'text-white bg-[#17426D] border border-blue-700'
                   : 'text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200'
               }`}
             >
               <div className="flex items-center gap-2">
-                <ShieldCheck className={`h-4 w-4 ${isIbime ? 'text-[#E41B14]' : 'text-indigo-600'}`} />
-                <span>Panel Administrativo</span>
+                <ShieldCheck className={`h-4 w-4 ${isIbime && !isSuperUser ? 'text-[#E41B14]' : 'text-indigo-600'}`} />
+                <span>{isSuperUser ? 'Directorio de Colegios' : 'Panel Administrativo'}</span>
               </div>
               <ChevronRight className="h-4 w-4" />
             </Link>

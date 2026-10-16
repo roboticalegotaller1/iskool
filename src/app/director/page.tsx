@@ -58,7 +58,7 @@ import {
   generateRandomPassword,
   resolveEffectiveSchoolId
 } from '@/store/useSchoolAdminStore';
-import { DetailedStudent, Subject, Campus, Group, UserProfile, SchoolGovernanceSettings, RestrictedTopicItem, DirectorLimitsSettings } from '@/types';
+import { DetailedStudent, Subject, Campus, Group, UserProfile, SchoolGovernanceSettings, RestrictedTopicItem, DirectorLimitsSettings, isPlatformSuperUser } from '@/types';
 import { SchoolBooksManagerSection } from '@/components/books/SchoolBooksManagerSection';
 
 type DirectorTab = 'overview' | 'governance' | 'school_control' | 'vault' | 'finances';
@@ -92,19 +92,21 @@ export default function DirectorPortalPage() {
     registerTeacher
   } = useSchoolAdminStore();
 
+  const isSuperUser = useMemo(() => isPlatformSuperUser(user), [user]);
+
   // Control de Acceso: Rol Director, Dueño o Super Usuario en auditoría
   useEffect(() => {
     if (!authLoading) {
       if (!user) {
         router.replace('/login');
-      } else if (user.school_id === 'sch-ibime' || (user.email && user.email.toLowerCase().includes('ibime'))) {
+      } else if (!isSuperUser && (user.school_id === 'sch-ibime' || (user.email && user.email.toLowerCase().includes('ibime')))) {
         // Aislamiento Hermético: Los directores de IBIME operan exclusivamente en su sistema institucional
         router.replace('/ibime/portal');
       } else if (user.role !== 'director' && user.role !== 'admin' && user.role !== 'superadmin' && user.role !== 'owner') {
         router.replace('/login');
       }
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, isSuperUser]);
 
   // Determinar Colegio del Director:
   // Centralizado vía resolveEffectiveSchoolId para cero desincronización
@@ -510,6 +512,30 @@ export default function DirectorPortalPage() {
 
             {/* Selector de Campus del Plantel & Acciones Directivas */}
             <div className="flex flex-wrap items-center gap-3">
+              {isSuperUser && (
+                <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3.5 py-2 rounded-2xl shadow-xs">
+                  <Building2 className="h-4 w-4 text-indigo-600" />
+                  <span className="text-xs font-bold text-indigo-800">Colegio:</span>
+                  <select aria-label="Seleccionar colegio superusuario"
+                    value={activeSchoolId || directorSchoolId}
+                    onChange={(e) => {
+                      const newId = e.target.value;
+                      selectSchool(newId);
+                      if (newId === 'sch-ibime') {
+                        router.push('/ibime/portal');
+                      }
+                    }}
+                    className="bg-white border border-indigo-200 text-indigo-900 rounded-xl px-2.5 py-1 text-xs font-bold focus:outline-none focus:border-indigo-500 cursor-pointer"
+                  >
+                    {institutionsList.map(inst => (
+                      <option key={inst.id} value={inst.id}>
+                        {inst.isTestCase ? '🧪 ' : '🏫 '} {inst.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="flex items-center gap-2 bg-white border border-slate-200 px-3.5 py-2 rounded-2xl shadow-xs">
                 <Building2 className="h-4 w-4 text-purple-600" />
                 <span className="text-xs font-bold text-slate-700">Filtrar Plantel:</span>

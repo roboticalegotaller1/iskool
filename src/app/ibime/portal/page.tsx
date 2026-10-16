@@ -40,9 +40,10 @@ import {
   Globe,
   Heart
 } from 'lucide-react';
-import { DetailedStudent, Subject, Campus, UserProfile } from '@/types';
+import { DetailedStudent, Subject, Campus, UserProfile, isPlatformSuperUser } from '@/types';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { switchCanonicalStudent } from '@/lib/auth/multiTenantSession';
+import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 
 type IbimeTab = 'sedes' | 'alumnos' | 'docentes' | 'boveda' | 'finanzas';
 
@@ -228,12 +229,18 @@ function IbimePortalContent() {
   }
 
   const activeUser = user;
+  const isSuperUser = isPlatformSuperUser(user);
   const userName = `${activeUser.first_name || ''} ${activeUser.last_name || ''}`.trim() || 'Directivo IBIME';
   const userCampus = activeUser.campus_name || 'Dirección General (Campus Montes Sede Matriz & CCH)';
   const isDirector = activeUser.role === 'director' || activeUser.role === 'admin' || activeUser.role === 'superadmin' || activeUser.role === 'owner';
   const isTeacher = activeUser.role === 'teacher';
   const isCoordinator = activeUser.role === 'coordinator';
   const isBilling = activeUser.role === 'billing';
+
+  const handleBackToDirectory = () => {
+    useSchoolAdminStore.getState().selectSchool(null as any);
+    router.push('/admin');
+  };
 
   // Si está activo el modo Visión Ejecutiva CEO, renderizar el dashboard CEO integral de IBIME
   if (viewMode === 'ceo') {
@@ -261,6 +268,11 @@ function IbimePortalContent() {
                   <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-400 text-amber-950 border border-amber-300 shadow-xs font-bold whitespace-nowrap">
                     Visión Ejecutiva CEO
                   </span>
+                  {isSuperUser && (
+                    <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-600 text-white border border-indigo-400 shadow-xs whitespace-nowrap">
+                      Super Usuario
+                    </span>
+                  )}
                 </div>
                 <span className="text-[11px] text-blue-100 font-medium hidden 2xl:block truncate">
                   Red Bilingüe & Bachillerato CCH UNAM (4 Sedes: Montes, Lagos, San Cristóbal, Coacalco)
@@ -269,6 +281,18 @@ function IbimePortalContent() {
             </div>
 
             <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 flex-nowrap">
+              {isSuperUser && (
+                <button
+                  onClick={handleBackToDirectory}
+                  className="h-9 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-indigo-400 active:scale-98 shrink-0 leading-none"
+                  title="Volver al Directorio Institucional de Colegios (Acceso Superusuario)"
+                >
+                  <Building2 className="w-3.5 h-3.5 shrink-0" />
+                  <span className="hidden sm:inline whitespace-nowrap">Directorio Colegios</span>
+                  <span className="sm:hidden">Colegios</span>
+                </button>
+              )}
+
               <button
                 onClick={async () => {
                   await switchCanonicalStudent('std-ibime-montes-01');
@@ -318,7 +342,8 @@ function IbimePortalContent() {
           <CEOExecutiveDashboard
             holding={DEFAULT_IBIME_HOLDING}
             schoolId="sch-ibime"
-            isSuperUser={false}
+            isSuperUser={isSuperUser}
+            onBackToDirectory={handleBackToDirectory}
             onSwitchToOperational={() => setViewMode('operational')}
           />
         </main>
@@ -377,6 +402,19 @@ function IbimePortalContent() {
             <div className="w-9 h-9 rounded-xl bg-[#17426D] border border-blue-700 flex items-center justify-center font-bold text-sm text-white shadow-xs shrink-0">
               {userName[0] || 'I'}
             </div>
+
+            {/* Acceso directo al Directorio Institucional para Super Usuario */}
+            {isSuperUser && (
+              <button
+                onClick={handleBackToDirectory}
+                className="h-9 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-indigo-400 shrink-0 leading-none"
+                title="Volver al Directorio Institucional de Colegios (Acceso Superusuario)"
+              >
+                <Building2 className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline whitespace-nowrap">Directorio Colegios</span>
+                <span className="sm:hidden">Colegios</span>
+              </button>
+            )}
 
             {/* Acceso directo a Experiencias Alumno y Familia */}
             <button

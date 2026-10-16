@@ -392,17 +392,6 @@ export const getSchoolTuitionPricings = (pricingsList: TuitionPricing[], schoolI
 };
 
 export const getActiveSchoolIdFromState = (state: { activeSchoolId?: string | null }): string => {
-  try {
-    if (typeof localStorage !== 'undefined') {
-      const stored = localStorage.getItem('iskool_session_user') || localStorage.getItem('auth_current_user');
-      if (stored) {
-        const u = JSON.parse(stored);
-        if (u && !isPlatformSuperUser(u) && u.school_id) {
-          return u.school_id === 'sch-jjr' ? 'sch-jjrosseau' : u.school_id;
-        }
-      }
-    }
-  } catch (e) {}
   if (state.activeSchoolId) {
     return state.activeSchoolId === 'sch-jjr' ? 'sch-jjrosseau' : state.activeSchoolId;
   }
@@ -783,20 +772,6 @@ export const useSchoolAdminStore = create<SchoolAdminStoreState>()(
       },
 
       selectSchool: (schoolId) => {
-        // Aislamiento Multi-Tenant Estricto:
-        // Las cuentas de Dueño hacia abajo NUNCA pueden cambiar ni ver otros colegios ajenos a su school_id.
-        try {
-          if (typeof localStorage !== 'undefined') {
-            const stored = localStorage.getItem('iskool_session_user') || localStorage.getItem('auth_current_user');
-            if (stored) {
-              const parsed = JSON.parse(stored);
-              if (parsed && !isPlatformSuperUser(parsed) && parsed.school_id) {
-                schoolId = parsed.school_id === 'sch-jjr' ? 'sch-jjrosseau' : parsed.school_id;
-              }
-            }
-          }
-        } catch (e) {}
-
         // Sincronizar tenant-id y data-tenant de forma inmediata para aislamiento estricto
         if (typeof window !== 'undefined') {
           if (!schoolId) {

@@ -38,11 +38,11 @@ export function StudentHUD() {
   const isSuperUser = isPlatformSuperUser(user);
   const isManagementRole = isSuperUser || user?.role === 'owner' || user?.role === 'admin' || user?.role === 'director';
 
-  const isIbime = (typeof window !== 'undefined' && (document.documentElement.getAttribute('data-tenant') === 'ibime' || localStorage.getItem('tenant-id') === 'ibime')) ||
+  const isIbime = !isSuperUser && ((typeof window !== 'undefined' && (document.documentElement.getAttribute('data-tenant') === 'ibime' || localStorage.getItem('tenant-id') === 'ibime')) ||
                   activeStudent?.school_id === 'sch-ibime' ||
                   activeStudent?.id?.startsWith('std-ibime') ||
                   user?.school_id === 'sch-ibime' ||
-                  user?.email?.toLowerCase().includes('ibime');
+                  user?.email?.toLowerCase().includes('ibime'));
 
   const avatarUrl = getStudentAvatarUrl(activeStudent);
   const studentName = activeStudent 
@@ -194,10 +194,10 @@ export function StudentHUD() {
                 }
               }}
               className="hidden md:flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-indigo-500/40 text-indigo-300 text-xs font-bold transition-all shadow-xs"
-              title="Volver al Portal Administrativo"
+              title={isSuperUser ? "Directorio General de Colegios (Super Usuario)" : "Volver al Portal Administrativo"}
             >
               <ShieldCheck className="h-3.5 w-3.5 text-indigo-400" />
-              <span className="hidden xl:inline">Administración</span>
+              <span className="hidden xl:inline">{isSuperUser ? 'Directorio Colegios' : 'Administración'}</span>
             </Link>
           )}
 
