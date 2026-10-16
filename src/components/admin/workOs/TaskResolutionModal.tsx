@@ -7,6 +7,7 @@ import {
   WorkOsEvidenceDoc
 } from '@/lib/services/workOs/workOsTypes';
 import { WorkOsService } from '@/lib/services/workOs/workOsService';
+import { EvidencePreviewModal } from './EvidencePreviewModal';
 import {
   X,
   CheckCircle2,
@@ -99,6 +100,9 @@ export const TaskResolutionModal: React.FC<TaskResolutionModalProps> = ({
   const [newCollabName, setNewCollabName] = useState('');
   const [newCollabEmail, setNewCollabEmail] = useState('');
   const [newCollabRole, setNewCollabRole] = useState('Especialista de Apoyo');
+
+  // Estado para previsualización de documentos adjuntos
+  const [previewDoc, setPreviewDoc] = useState<WorkOsEvidenceDoc | null>(null);
 
   if (!isOpen) return null;
 
@@ -290,8 +294,14 @@ export const TaskResolutionModal: React.FC<TaskResolutionModalProps> = ({
               {task.title}
             </h2>
 
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
-              <span>Responsable: <strong className="text-slate-800 dark:text-slate-200">{task.primaryAssignee.name}</strong> ({task.primaryAssignee.email})</span>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400">
+              <span>Titular: <strong className="text-slate-800 dark:text-slate-200">{task.primaryAssignee.name}</strong></span>
+              {task.collaborators && task.collaborators.length > 0 && (
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800">
+                  <Users className="h-3 w-3" />
+                  <span>Co-delegados ({task.collaborators.length}): {task.collaborators.map(c => c.name).join(', ')}</span>
+                </span>
+              )}
               <span className={`font-mono font-bold ${countdown.isOverdue ? 'text-rose-600' : 'text-slate-700 dark:text-slate-300'}`}>
                 {countdown.remainingFormatted} (SLA: {task.slaHours}h)
               </span>
@@ -483,6 +493,38 @@ export const TaskResolutionModal: React.FC<TaskResolutionModalProps> = ({
                   </div>
                 </div>
 
+                {/* Evidencias ya aportadas en el expediente por co-delegados */}
+                {task.evidenceDocs.length > 0 && (
+                  <div className="p-3.5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 space-y-2">
+                    <span className="text-xs font-black text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5">
+                      <FileText className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                      <span>Documentos y Evidencias ya aportados en este caso ({task.evidenceDocs.length}):</span>
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {task.evidenceDocs.map((doc) => (
+                        <div key={doc.id} className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-indigo-100 dark:border-indigo-900 text-xs">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Paperclip className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                            <div className="min-w-0">
+                              <span className="font-bold truncate block text-slate-800 dark:text-slate-200">{doc.fileName}</span>
+                              <span className="text-[10px] text-slate-400 block">Subido por: {doc.uploadedBy}</span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setPreviewDoc(doc)}
+                            className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold text-[11px] flex items-center gap-1 cursor-pointer shrink-0"
+                            title="Vista previa del documento"
+                          >
+                            <Eye className="h-3 w-3" />
+                            <span>Ver</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Lista de archivos adjuntados en resolución */}
                 {resolutionDocs.length > 0 && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -648,6 +690,38 @@ export const TaskResolutionModal: React.FC<TaskResolutionModalProps> = ({
                     ))}
                   </div>
                 )}
+
+                {/* Evidencias ya aportadas en el expediente por co-delegados */}
+                {task.evidenceDocs.length > 0 && (
+                  <div className="p-3.5 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 space-y-2">
+                    <span className="text-xs font-black text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5">
+                      <FileText className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                      <span>Documentos y Evidencias ya aportados en este caso ({task.evidenceDocs.length}):</span>
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {task.evidenceDocs.map((doc) => (
+                        <div key={doc.id} className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-indigo-100 dark:border-indigo-900 text-xs">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Paperclip className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                            <div className="min-w-0">
+                              <span className="font-bold truncate block text-slate-800 dark:text-slate-200">{doc.fileName}</span>
+                              <span className="text-[10px] text-slate-400 block">Subido por: {doc.uploadedBy}</span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setPreviewDoc(doc)}
+                            className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold text-[11px] flex items-center gap-1 cursor-pointer shrink-0"
+                            title="Vista previa del documento"
+                          >
+                            <Eye className="h-3 w-3" />
+                            <span>Ver</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Botón Guardar Avance */}
@@ -727,20 +801,30 @@ export const TaskResolutionModal: React.FC<TaskResolutionModalProps> = ({
                             <span className="text-[10px] text-slate-400 block">Subido por {doc.uploadedBy}</span>
                           </div>
                         </div>
-                        {doc.dataUrl ? (
-                          <a
-                            href={doc.dataUrl}
-                            download={doc.fileName}
-                            className="p-1.5 rounded-xl bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-200 border border-slate-200 dark:border-slate-600 hover:text-indigo-600 transition-colors shrink-0"
-                            title="Descargar documento"
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setPreviewDoc(doc)}
+                            className="p-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition-colors cursor-pointer"
+                            title="Vista previa del documento"
                           >
-                            <Download className="h-4 w-4" />
-                          </a>
-                        ) : (
-                          <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                            Archivado
-                          </span>
-                        )}
+                            <Eye className="h-4 w-4" />
+                          </button>
+                          {doc.dataUrl ? (
+                            <a
+                              href={doc.dataUrl}
+                              download={doc.fileName}
+                              className="p-1.5 rounded-xl bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-200 border border-slate-200 dark:border-slate-600 hover:text-indigo-600 transition-colors shrink-0"
+                              title="Descargar documento"
+                            >
+                              <Download className="h-4 w-4" />
+                            </a>
+                          ) : (
+                            <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                              Archivado
+                            </span>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -900,6 +984,16 @@ export const TaskResolutionModal: React.FC<TaskResolutionModalProps> = ({
 
         </div>
       </div>
+
+      {/* Modal de Vista Previa de Evidencias */}
+      {previewDoc && (
+        <EvidencePreviewModal
+          isOpen={Boolean(previewDoc)}
+          onClose={() => setPreviewDoc(null)}
+          doc={previewDoc}
+          task={task}
+        />
+      )}
     </div>
   );
 };

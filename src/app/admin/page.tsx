@@ -88,8 +88,9 @@ import { IndependentTeachersSuperUserStudio } from '@/components/admin/Independe
 import { CorporateEnterprisesSuperUserStudio } from '@/components/admin/CorporateEnterprisesSuperUserStudio';
 import { CorporateOfficialLogo } from '@/components/brand/CorporateOfficialLogo';
 import { SchoolOfficialLogo } from '@/components/brand/SchoolOfficialLogo';
+import { SuperUserCommandCenter } from '@/components/admin/SuperUserCommandCenter';
 
-type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll' | 'analytics' | 'deletions' | 'books_compendium';
+type AdminTab = 'overview' | 'staff' | 'teachers' | 'students' | 'campuses' | 'subjects' | 'config' | 'payroll' | 'analytics' | 'deletions' | 'books_compendium' | 'command_center';
 
 export default function SuperUserAdminPage() {
   const { user, loading: authLoading } = useAuth();
@@ -1498,6 +1499,8 @@ export default function SuperUserAdminPage() {
       {/* VISTA ESPECIAL: ESTUDIO EJECUTIVO DE CONTROL ANALÍTICO (VOZ Y TEXTO - 0 TOKENS) */}
       {activeTab === 'analytics' ? (
         <ExecutiveAnalyticsStudio onBack={() => setActiveTab('overview')} />
+      ) : activeTab === 'command_center' ? (
+        <SuperUserCommandCenter onBackToDirectory={() => setActiveTab('overview')} />
       ) : activeTab === 'books_compendium' ? (
         <div className="flex-1 flex flex-col min-h-screen bg-slate-50 dark:bg-zinc-950">
           <header className="sticky top-0 z-40 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-zinc-800 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
@@ -1540,6 +1543,13 @@ export default function SuperUserAdminPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => setActiveTab('command_center')}
+                className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-black shadow-lg shadow-amber-500/25 hover:scale-102 transition-all cursor-pointer shrink-0"
+              >
+                <ShieldCheck className="h-4 w-4" /> <span>Centro de Mando Superusuario</span>
+              </button>
+
               <Link
                 href="/admin/ceo"
                 className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black shadow-lg shadow-slate-900/30 hover:scale-102 transition-all cursor-pointer shrink-0"

@@ -63,6 +63,18 @@ function isPublicOrAuthPath(pathname: string): boolean {
     pathname.startsWith('/auth') ||
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/_next') ||
+    pathname === '/privacidad' ||
+    pathname.startsWith('/privacidad/') ||
+    pathname === '/politica-de-privacidad' ||
+    pathname.startsWith('/politica-de-privacidad/') ||
+    pathname === '/terminos' ||
+    pathname.startsWith('/terminos/') ||
+    pathname === '/condiciones-del-servicio' ||
+    pathname.startsWith('/condiciones-del-servicio/') ||
+    pathname === '/privacy' ||
+    pathname.startsWith('/privacy/') ||
+    pathname === '/terms' ||
+    pathname.startsWith('/terms/') ||
     pathname.startsWith('/brand') ||
     pathname.startsWith('/favicon') ||
     pathname === '/404' ||
@@ -277,15 +289,16 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith('/coordinator') ||
       pathname.startsWith('/portal-ceo') ||
       pathname.startsWith('/superadmin') ||
+      pathname.startsWith('/superuser') ||
       pathname.startsWith('/ibime/admin') ||
       pathname.startsWith('/ibime/coordinacion')
     ) {
-      const studentLanding = userTenant === 'ibime' ? '/ibime/student' : '/student';
+      const studentLanding = '/student';
       return NextResponse.redirect(new URL(studentLanding, request.url));
     }
   }
 
-  if (pathname.startsWith('/superadmin') && userRole !== 'superadmin' && userRole !== 'admin') {
+  if ((pathname.startsWith('/superadmin') || pathname.startsWith('/superuser')) && userRole !== 'superadmin' && userRole !== 'admin' && userRole !== 'owner' && userRole !== 'ceo') {
     const fallbackUrl = userRole === 'teacher' ? '/teacher' : userRole === 'student' ? '/student' : '/admin';
     return NextResponse.redirect(new URL(fallbackUrl, request.url));
   }

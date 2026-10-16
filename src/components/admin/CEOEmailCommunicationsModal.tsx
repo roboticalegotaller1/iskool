@@ -6074,6 +6074,9 @@ Comité de Seguridad y Protección Escolar`
     }
   };
 
+  // Agrupación ejecutiva de incidencias y correos reincidentes / idénticos
+  const [groupIncidentMatters, setGroupIncidentMatters] = useState<boolean>(true);
+
   // Asuntos y correos delegados a Coordinaciones y Secciones de Plantel con SLA
   const delegatedMattersList = useMemo(() => {
     // 1. Asuntos explícitamente marcados como delegados en mattersList
@@ -6115,13 +6118,83 @@ Comité de Seguridad y Protección Escolar`
         };
       });
 
-    const map = new Map<string, MatterItem>();
-    [...fromMatters, ...fromRawEmails].forEach(item => {
-      const key = (item.title || item.id).toLowerCase().trim();
-      if (!map.has(key)) map.set(key, item);
+    const allItems = [...fromMatters, ...fromRawEmails];
+
+    if (!groupIncidentMatters) {
+      const map = new Map<string, MatterItem>();
+      allItems.forEach(item => {
+        const key = (item.title || item.id).toLowerCase().trim();
+        if (!map.has(key)) map.set(key, item);
+      });
+      return Array.from(map.values());
+    }
+
+    // Algoritmo Canónico de Agrupación Cognitiva de Incidentes y Reincidencias
+    const getCanonicalClusterKey = (subject: string, senderEmail?: string): { key: string; cleanTitle: string } => {
+      let clean = (subject || '').trim();
+      clean = clean.replace(/^(re|fwd|rv|enc):\s*/i, '').trim();
+
+      // 1. Alertas de integración, pipelines y sincronización CI/CD del repositorio
+      const ciMatch = clean.match(/\[([^\]]+)\]\s*Run failed:\s*([^\-]+?)(?:\s*-\s*[a-zA-Z0-9_\-\.\/]+)?(?:\s*\([a-f0-9]+\))?$/i);
+      if (ciMatch) {
+        const repo = ciMatch[1].trim();
+        const workflow = ciMatch[2].trim();
+        return {
+          key: `ci-failed::${repo.toLowerCase()}::${workflow.toLowerCase()}`,
+          cleanTitle: `[${repo}] Run failed: ${workflow}`
+        };
+      }
+
+      // 2. Notificaciones de entrega fallida (Mail Delivery Bounces)
+      if (/Delivery Status Notification|Mail Delivery Subsystem|Undelivered Mail/i.test(clean)) {
+        return {
+          key: 'bounce::delivery-status-failure',
+          cleanTitle: 'Delivery Status Notification (Failure) · Rebote de Correo'
+        };
+      }
+
+      // 3. Normalizador general para eliminar hashes de commit, números de corrida o referencias al final
+      const genericStripped = clean
+        .replace(/\s*[-–—]\s*[a-zA-Z0-9_\-\.\/]+\s*\([a-f0-9]{6,40}\)$/i, '')
+        .replace(/\s*\([a-f0-9]{6,40}\)$/i, '')
+        .replace(/\s*\(#?\d+\)$/i, '')
+        .replace(/\s*#\d+$/i, '')
+        .trim();
+
+      return {
+        key: `${(senderEmail || '').toLowerCase()}::${genericStripped.toLowerCase()}`,
+        cleanTitle: genericStripped || clean
+      };
+    };
+
+    const clusterMap = new Map<string, { matter: MatterItem; count: number; timestamps: string[] }>();
+
+    allItems.forEach(item => {
+      const { key, cleanTitle } = getCanonicalClusterKey(item.title || item.id, item.sender_email);
+
+      if (!clusterMap.has(key)) {
+        clusterMap.set(key, {
+          matter: {
+            ...item,
+            title: cleanTitle
+          },
+          count: item.reincidence_count || 1,
+          timestamps: [item.received_at || 'Hoy']
+        });
+      } else {
+        const entry = clusterMap.get(key)!;
+        entry.count += 1;
+        if (item.received_at) entry.timestamps.push(item.received_at);
+
+        entry.matter.reincidence_count = entry.count;
+        entry.matter.title = `${cleanTitle} (${entry.count} eventos agrupados)`;
+        entry.matter.summary = `Expediente unificado: Se han consolidado ${entry.count} notificaciones reincidentes de este asunto. Última incidencia: ${item.received_at || 'Reciente'}.`;
+        entry.matter.why_shown = `Patrón recurrente detectado (${entry.count} incidencias vinculadas). Se unifican en un solo expediente para evitar dispersión en la bandeja y resolver con un solo SLA.`;
+      }
     });
-    return Array.from(map.values());
-  }, [mattersList, rawEmailsList, isMatterOrEmailResolved, schoolSlug, campuses]);
+
+    return Array.from(clusterMap.values()).map(e => e.matter);
+  }, [mattersList, rawEmailsList, isMatterOrEmailResolved, schoolSlug, campuses, groupIncidentMatters]);
 
   // Filtrado de asuntos en pestaña Bandeja Inteligente (Atención CEO, Urgentes, SEP y Asuntos Delegados)
   const filteredMatters = useMemo(() => {
@@ -7076,6 +7149,7 @@ Comité de Seguridad y Protección Escolar`
                 currentUserEmail={user?.email}
                 schoolDomain={isIbime ? 'ibime.edu.mx' : 'colegio.edu.mx'}
                 onTriggerToast={onTriggerToast}
+                onNavigateTab={(tab) => setActiveTab(tab)}
               />
             </div>
           )}
@@ -7547,9 +7621,25 @@ Comité de Seguridad y Protección Escolar`
 
                     {/* Barra de Control de Densidad Visual */}
                     <div className="flex items-center justify-between px-1 pb-1">
-                      <span className={`text-[11px] font-bold ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                        {filteredMatters.length} Asunto(s) · Vista Compacta
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[11px] font-bold ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                          {filteredMatters.length} Asunto(s) · {groupIncidentMatters ? 'Agrupados por Incidencia' : 'Vista Compacta'}
+                        </span>
+                        {usableSubFilter === 'DELEGADOS' && (
+                          <button
+                            type="button"
+                            onClick={() => setGroupIncidentMatters(!groupIncidentMatters)}
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-colors cursor-pointer ${
+                              groupIncidentMatters
+                                ? 'bg-indigo-500/15 border-indigo-500/30 text-indigo-700 dark:text-indigo-300'
+                                : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'
+                            }`}
+                            title="Alternar entre agrupar correos iguales o verlos individualmente"
+                          >
+                            {groupIncidentMatters ? '✓ Casos Agrupados' : 'Desglosado (Individual)'}
+                          </button>
+                        )}
+                      </div>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"

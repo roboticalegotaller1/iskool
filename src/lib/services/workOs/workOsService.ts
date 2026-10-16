@@ -174,29 +174,17 @@ export class WorkOsService {
 
   public static getTasks(tenantId: string): WorkOsTask[] {
     const cleanTenant = tenantId || 'e1000000-0000-0000-0000-000000000001';
+    let tasks: WorkOsTask[] = [];
 
     if (tasksMemoryStore.has(cleanTenant)) {
-      const current = tasksMemoryStore.get(cleanTenant)!;
-      const deduplicated = this.deduplicateTasks(current);
-      if (deduplicated.length !== current.length) {
-        tasksMemoryStore.set(cleanTenant, deduplicated);
-        this.saveTasks(cleanTenant, deduplicated);
-      }
-      return [...deduplicated];
-    }
-
-    if (typeof window !== 'undefined') {
+      tasks = tasksMemoryStore.get(cleanTenant)!;
+    } else if (typeof window !== 'undefined') {
       try {
         const stored = localStorage.getItem(this.getTasksStorageKey(cleanTenant));
         if (stored) {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            const deduplicated = this.deduplicateTasks(parsed);
-            tasksMemoryStore.set(cleanTenant, deduplicated);
-            if (deduplicated.length !== parsed.length) {
-              this.saveTasks(cleanTenant, deduplicated);
-            }
-            return [...deduplicated];
+            tasks = parsed;
           }
         }
       } catch (err) {
@@ -204,9 +192,17 @@ export class WorkOsService {
       }
     }
 
-    // Inicializar con 3 tareas iniciales representativas si está vacío
-    const initialTasks = this.generateInitialDemoTasks(cleanTenant);
-    const deduplicated = this.deduplicateTasks(initialTasks);
+    if (tasks.length === 0) {
+      tasks = this.generateInitialDemoTasks(cleanTenant);
+    }
+
+    // Asegurar siempre la presencia activa del caso multi-delegado tripartita (más de 2 personas)
+    const hasMultiDelegated = tasks.some(t => t.matterCode === 'EXP-IBIME-2026-9901');
+    if (!hasMultiDelegated) {
+      tasks.unshift(this.createInterdisciplinaryMultiAssigneeTask(cleanTenant));
+    }
+
+    const deduplicated = this.deduplicateTasks(tasks);
     tasksMemoryStore.set(cleanTenant, deduplicated);
     this.saveTasks(cleanTenant, deduplicated);
     return [...deduplicated];
@@ -1145,9 +1141,95 @@ export class WorkOsService {
     };
   }
 
-  // ==========================================================================
-  // 11. TAREAS DEMO INICIALES
-  // ==========================================================================
+  /**
+   * Genera el caso interdisciplinario de delegación compartida (más de 2 personas)
+   * Titular: Dra. Andrea Palacios (Salud Escolar)
+   * Colaborador 1: Mtra. Sofía Villalpando (Coordinación Académica)
+   * Colaborador 2: Prof. Mario Alberto Torres (Prefectura y Transporte)
+   */
+  public static createInterdisciplinaryMultiAssigneeTask(tenantId: string): WorkOsTask {
+    const now = new Date();
+    const twoHoursAgo = new Date(now.getTime() - 2 * 3600 * 1000).toISOString();
+
+    return {
+      id: `task-multi-9901-${tenantId}`,
+      matterCode: 'EXP-IBIME-2026-9901',
+      title: 'Protocolo Interdisciplinario de Adecuación Curricular y Salud Escolar',
+      description: 'Caso prioritario derivado de diagnóstico de TDAH y asma inducida por esfuerzo en alumno de Secundaria. Requiere intervención coordinada y dictámenes oficiales de Salud Escolar (Dra. Andrea Palacios), Coordinación Académica (Mtra. Sofía Villalpando) y Prefectura/Transporte (Prof. Mario Torres) para ajuste en actividades de laboratorio y educación física.',
+      category: 'Comité Interdisciplinario (Salud, Académica y Prefectura)',
+      sectionKey: 'servicio_medico',
+      sectionName: 'Comité Interdisciplinario (Salud, Académica y Prefectura)',
+      status: 'EN_PROCESO',
+      priority: 'CRITICA',
+      primaryAssignee: {
+        name: 'Dra. Andrea Palacios',
+        email: 'enfermeria@ibime.edu.mx',
+        role: 'Médico Escolar (Titular del Caso)'
+      },
+      collaborators: [
+        {
+          name: 'Mtra. Sofía Villalpando',
+          email: 'academica@ibime.edu.mx',
+          role: 'Coordinadora Académica NEM',
+          joinedAt: twoHoursAgo,
+          assignedBy: 'Dirección General / CEO',
+          contributionPercent: 40
+        },
+        {
+          name: 'Prof. Mario Alberto Torres',
+          email: 'transporte@ibime.edu.mx',
+          role: 'Prefecto y Coordinador de Transporte',
+          joinedAt: twoHoursAgo,
+          assignedBy: 'Dirección General / CEO',
+          contributionPercent: 30
+        }
+      ],
+      createdAt: twoHoursAgo,
+      firstOpenedAt: twoHoursAgo,
+      slaHours: 24,
+      slaDeadline: new Date(now.getTime() + 22 * 3600 * 1000).toISOString(),
+      progressPercent: 45,
+      nextStepsOutline: '1. Dictamen clínico de resistencia física emitido por Dra. Andrea Palacios\n2. Ajuste curricular y tiempos en laboratorio por Mtra. Sofía Villalpando\n3. Ruta y protocolo de cuidado en patio por Prof. Mario Torres',
+      checklist: [
+        { id: 'c-9901-1', title: 'Valoración médica inicial en enfermería', completed: true, completedAt: twoHoursAgo, completedBy: 'Dra. Andrea Palacios' },
+        { id: 'c-9901-2', title: 'Diseño de plan pedagógico diversificado NEM', completed: false },
+        { id: 'c-9901-3', title: 'Acreditación y firma de directores de sección', completed: false }
+      ],
+      evidenceDocs: [
+        {
+          id: 'ev-9901-init',
+          taskId: `task-multi-9901-${tenantId}`,
+          fileName: 'Ficha_Ingreso_Clinico_Pedagogico.pdf',
+          fileSize: 198000,
+          fileType: 'pdf',
+          uploadedAt: twoHoursAgo,
+          uploadedBy: 'Dra. Andrea Palacios',
+          category: 'medica',
+          notes: 'Ficha diagnóstica preliminar con antecedentes médicos y de neurodesarrollo.'
+        }
+      ],
+      auditTrail: [
+        {
+          id: 'aud-9901-1',
+          timestamp: twoHoursAgo,
+          authorName: 'Dirección General / CEO',
+          authorEmail: 'direccion@ibime.edu.mx',
+          action: 'Apertura y Asignación Tripartita de Delegados',
+          type: 'status_change',
+          details: 'Se delega formalmente a Dra. Andrea Palacios (Titular), Mtra. Sofía Villalpando (Coordinación Académica) y Prof. Mario Torres (Prefectura).'
+        }
+      ],
+      isOverdue: false,
+      isNeglected: false,
+      isEscalatedToCeo: false,
+      aiAnalysis: {
+        riskScore: 78,
+        riskLevel: 'ALTO',
+        summary: 'Caso multidisciplinario sensible. Exige alineación estricta entre Salud Escolar y Académica para salvaguardar la integridad del alumno sin comprometer los aprendizajes clave.',
+        suggestedNextAction: 'Cargar dictamen clínico y minuta curricular acordada con docentes.'
+      }
+    };
+  }
 
   private static generateInitialDemoTasks(tenantId: string): WorkOsTask[] {
     const now = new Date();

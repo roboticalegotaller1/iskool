@@ -3,6 +3,7 @@
 import React from 'react';
 import { IbimeOfficialLogo } from './IbimeOfficialLogo';
 import { CorporateOfficialLogo } from './CorporateOfficialLogo';
+import { ISkoolOfficialLogo } from './ISkoolOfficialLogo';
 
 export interface SchoolOfficialLogoProps {
   schoolId?: string;
@@ -74,6 +75,18 @@ export const SchoolOfficialLogo: React.FC<SchoolOfficialLogoProps> = ({
         variant={variant === 'horizontal' ? 'horizontal' : 'shield_only'}
         size={pixelDim}
         showText={variant === 'horizontal'}
+        className={className}
+      />
+    );
+  }
+
+  // 2.1 iSkool Oficial
+  const isIskool = sId === 'sch-iskool' || sId === 'iskool' || sName.includes('iskool');
+  if (isIskool) {
+    return (
+      <ISkoolOfficialLogo
+        variant={variant === 'horizontal' ? 'horizontal' : 'emblem_only'}
+        size={pixelDim}
         className={className}
       />
     );

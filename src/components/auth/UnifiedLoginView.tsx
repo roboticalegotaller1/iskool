@@ -28,6 +28,7 @@ import { useSchoolAdminStore } from '@/store/useSchoolAdminStore';
 import { useNavigationStore } from '@/store/useNavigationStore';
 import { supabase } from '@/lib/supabaseClient';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
+import { ISkoolOfficialLogo } from '@/components/brand/ISkoolOfficialLogo';
 import { isPlatformSuperUser } from '@/types';
 
 export type LoginMode = 'public' | 'full_demo' | 'ibime_demo';
@@ -410,22 +411,22 @@ export default function UnifiedLoginView({ mode }: UnifiedLoginViewProps) {
         {/* Barra superior con Identidad */}
         <div className="flex items-center gap-3.5 z-10">
           {isIbimeMode ? (
-            <div className="p-1.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
-              <IbimeOfficialLogo variant="shield_only" size={38} />
-            </div>
+            <>
+              <div className="p-1.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
+                <IbimeOfficialLogo variant="shield_only" size={38} />
+              </div>
+              <div>
+                <span className="text-xl font-extrabold tracking-tight text-white block">
+                  Instituto Bilingüe Ibime
+                </span>
+                <span className="block text-[11px] text-blue-200/80 font-medium tracking-wide">
+                  https://ibime.edu.mx · Red Bilingüe & Bachillerato CCH UNAM
+                </span>
+              </div>
+            </>
           ) : (
-            <div className="w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg border bg-white/10 backdrop-blur-md border-white/20 text-blue-300 shadow-inner">
-              <GraduationCap className="h-6 w-6" />
-            </div>
+            <ISkoolOfficialLogo variant="horizontal" size={40} theme="dark" showTagline={true} />
           )}
-          <div>
-            <span className="text-xl font-extrabold tracking-tight text-white block">
-              {isIbimeMode ? 'Instituto Bilingüe Ibime' : 'ISkool'}
-            </span>
-            <span className="block text-[11px] text-blue-200/80 font-medium tracking-wide">
-              {isIbimeMode ? 'https://ibime.edu.mx · Red Bilingüe & Bachillerato CCH UNAM' : 'Ecosistema Pedagógico Integral'}
-            </span>
-          </div>
         </div>
 
         {/* Contenido Central: Mensaje de Alto Valor */}

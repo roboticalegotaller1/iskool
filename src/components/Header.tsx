@@ -8,7 +8,7 @@ import { useSchoolAdminStore, applyThemeCssVariables, resolveEffectiveSchoolId }
 import { getStudentAcademicLevelInfo } from '@/lib/academicLevels';
 import { useGamificationStore } from '../store/useGamificationStore';
 import { usePortfolioStore } from '../store/usePortfolioStore';
-import { Flame, Coins, Trophy, RefreshCw, GraduationCap, Users, User, ArrowRight, LogOut, HelpCircle, Menu, X } from 'lucide-react';
+import { Flame, Coins, Trophy, RefreshCw, GraduationCap, Users, User, ArrowRight, LogOut, HelpCircle, Menu, X, ShieldAlert } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { isPlatformSuperUser } from '@/types';
 import { useWhiteLabelStore } from '@/store/useWhiteLabelStore';
@@ -401,36 +401,46 @@ export const Header: React.FC = () => {
             </div>
           )}
 
-          {/* Conmutador Rápido de Colegios (Exclusivo Super Usuario) */}
+          {/* Conmutador Rápido de Colegios & Enlace a Centro de Mando (Exclusivo Super Usuario) */}
           {isSuperUser && (
-            <div className="hidden lg:flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 px-2.5 py-1 rounded-xl text-xs">
-              <span className="text-[11px] font-bold text-zinc-500">Colegio:</span>
-              <select
-                aria-label="Conmutador de Colegio Super Usuario"
-                value={activeSchoolId || 'all'}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === 'all') {
-                    selectSchool(null);
-                    router.push('/admin');
-                  } else {
-                    selectSchool(val);
-                    if (val === 'sch-ibime') {
-                      router.push('/ibime/portal');
-                    } else if (pathname === '/login' || pathname.startsWith('/ibime')) {
-                      router.push('/admin');
-                    }
-                  }
-                }}
-                className="bg-transparent text-zinc-900 dark:text-zinc-100 font-bold outline-none cursor-pointer text-xs max-w-[150px] truncate"
+            <div className="hidden lg:flex items-center gap-2">
+              <Link
+                href="/superuser"
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[11px] font-black transition-all cursor-pointer"
+                title="Abrir Centro de Mando Superusuario"
               >
-                <option value="all" className="bg-white text-zinc-900">🏢 Todos los Colegios</option>
-                {institutionsList.map(inst => (
-                  <option key={inst.id} value={inst.id} className="bg-white text-zinc-900">
-                    {inst.name} {inst.isTestCase ? '(Sandbox)' : ''}
-                  </option>
-                ))}
-              </select>
+                <ShieldAlert className="h-3.5 w-3.5" />
+                <span>Centro de Mando</span>
+              </Link>
+              <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 px-2.5 py-1 rounded-xl text-xs">
+                <span className="text-[11px] font-bold text-zinc-500">Colegio:</span>
+                <select
+                  aria-label="Conmutador de Colegio Super Usuario"
+                  value={activeSchoolId || 'all'}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === 'all') {
+                      selectSchool(null);
+                      router.push('/admin');
+                    } else {
+                      selectSchool(val);
+                      if (val === 'sch-ibime') {
+                        router.push('/ibime/portal');
+                      } else if (pathname === '/login' || pathname.startsWith('/ibime')) {
+                        router.push('/admin');
+                      }
+                    }
+                  }}
+                  className="bg-transparent text-zinc-900 dark:text-zinc-100 font-bold outline-none cursor-pointer text-xs max-w-[150px] truncate"
+                >
+                  <option value="all" className="bg-white text-zinc-900">🏢 Todos los Colegios</option>
+                  {institutionsList.map(inst => (
+                    <option key={inst.id} value={inst.id} className="bg-white text-zinc-900">
+                      {inst.name} {inst.isTestCase ? '(Sandbox)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           )}
 

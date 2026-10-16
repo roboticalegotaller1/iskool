@@ -33,6 +33,9 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "ISkool",
   },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+  },
   formatDetection: {
     telephone: false,
     address: false,
