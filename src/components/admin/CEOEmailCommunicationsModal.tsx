@@ -134,6 +134,9 @@ import {
   formatCdmxRelative,
   getRecentCdmxTimeStr
 } from '@/utils/timeZoneUtils';
+import { WorkOsBoard } from './workOs/WorkOsBoard';
+import { SeedAccountsConfigPanel } from './workOs/SeedAccountsConfigPanel';
+import { isPlatformSuperUser } from '@/types';
 
 interface CEOEmailCommunicationsModalProps {
   isOpen: boolean;
@@ -1259,8 +1262,8 @@ export function CEOEmailCommunicationsModal({
   // Control responsivo de Barra Lateral en dispositivos móviles y tabletas
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState<boolean>(false);
 
-  // Pestañas principales de la consola (Bandeja, Delegados, Calendario, Laboratorio, Google, Redactar, Directorio, Bitácora, Bandeja de Entrada, ROI, Ajustes)
-  const [activeTab, setActiveTab] = useState<'inbox' | 'delegados' | 'laboratorio' | 'google' | 'redactar' | 'calendario' | 'directorio' | 'bitacora' | 'raw_inbox' | 'roi' | 'ajustes'>('inbox');
+  // Pestañas principales de la consola (Bandeja, Work OS, Delegados, Calendario, Laboratorio, Google, Redactar, Directorio, Bitácora, Bandeja de Entrada, ROI, Ajustes)
+  const [activeTab, setActiveTab] = useState<'inbox' | 'work_os' | 'delegados' | 'laboratorio' | 'google' | 'redactar' | 'calendario' | 'directorio' | 'bitacora' | 'raw_inbox' | 'roi' | 'ajustes'>('inbox');
   
   // Filtro en Bandeja Inteligente: Atención Inmediata CEO y Asuntos Delegados a Secciones
   const [inboxFilter, setInboxFilter] = useState<'USABLE' | 'DISCARDED'>('USABLE');
@@ -6735,6 +6738,36 @@ Comité de Seguridad y Protección Escolar`
                 </span>
               </button>
 
+              {/* Work OS Institucional */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('work_os');
+                  setMobileSidebarOpen(false);
+                }}
+                style={getSidebarItemStyle(activeTab === 'work_os')}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl font-bold text-xs transition-all cursor-pointer text-left ${
+                  activeTab === 'work_os'
+                    ? 'bg-blue-600/15 text-blue-600 dark:text-blue-400 shadow-xs border border-blue-500/30 font-black'
+                    : `${currentTheme.isDark ? 'text-slate-300 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'} border border-transparent`
+                }`}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Layers 
+                    className={`h-4 w-4 shrink-0 ${activeTab === 'work_os' ? 'text-blue-500' : 'text-slate-400'}`} 
+                    style={themeMode === 'custom' && activeTab === 'work_os' && customTheme.buttonColor ? { color: customTheme.buttonColor } : undefined}
+                  />
+                  <span className="truncate">Work OS Institucional</span>
+                </div>
+                <span 
+                  className={`px-2 py-0.5 rounded-full text-[9px] font-black shrink-0 tracking-wider ${
+                    activeTab === 'work_os' ? 'bg-blue-600 text-white' : 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
+                  }`}
+                >
+                  WORK OS
+                </span>
+              </button>
+
               {/* 2. Calendario Escolar */}
               <button
                 type="button"
@@ -7031,6 +7064,21 @@ Comité de Seguridad y Protección Escolar`
             className={`flex-1 overflow-y-auto p-3 sm:p-5 lg:p-6 ${currentTheme.contentBg}`}
             style={themeMode === 'custom' && customTheme.backgroundColor ? { backgroundColor: customTheme.backgroundColor } : undefined}
           >
+
+          {/* ------------------------------------------------------- */}
+          {/* TAB: WORK OS INSTITUCIONAL & GESTIÓN COLABORATIVA DE EQUIPO */}
+          {/* ------------------------------------------------------- */}
+          {activeTab === 'work_os' && (
+            <div className="space-y-6">
+              <WorkOsBoard
+                tenantId={currentTenantId}
+                isCeo={isPlatformSuperUser(user) || user?.role === 'director' || user?.role === 'owner' || user?.role === 'admin' || user?.role === 'ceo'}
+                currentUserEmail={user?.email}
+                schoolDomain={isIbime ? 'ibime.edu.mx' : 'colegio.edu.mx'}
+                onTriggerToast={onTriggerToast}
+              />
+            </div>
+          )}
 
           {/* ------------------------------------------------------- */}
           {/* TAB 1: BANDEJA INTELIGENTE & CORREOS USABLES VS NO USABLES */}
@@ -7469,6 +7517,34 @@ Comité de Seguridad y Protección Escolar`
                 <div className="flex flex-col lg:flex-row gap-4 items-stretch">
                   {/* COLUMNA 1 (CENTRO): COLA DE ASUNTOS DE TRIAGE */}
                   <div className="w-full lg:w-5/12 xl:w-5/12 space-y-2.5 overflow-y-auto max-h-[calc(90vh-240px)] pr-1">
+                    {/* Banner de Salto a Work OS cuando se filtran Asuntos Delegados */}
+                    {usableSubFilter === 'DELEGADOS' && (
+                      <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-purple-600/10 border border-blue-500/30 flex items-center justify-between gap-3 shadow-xs">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black shadow-xs">
+                            <Layers className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h5 className="text-xs font-black text-slate-900 dark:text-white">Work OS Institucional Vinculado</h5>
+                              <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-600 dark:text-blue-300">CLOUD OS</span>
+                            </div>
+                            <p className="text-[11px] text-slate-600 dark:text-slate-300">
+                              Tableros, Kanban, Gantt, SLAs con cuenta regresiva, porcentajes de avance y auditoría.
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab('work_os')}
+                          className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs flex items-center gap-1.5 shrink-0 transition-transform active:scale-95 cursor-pointer"
+                        >
+                          <span>Abrir Work OS</span>
+                          <ArrowUpRight className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    )}
+
                     {/* Barra de Control de Densidad Visual */}
                     <div className="flex items-center justify-between px-1 pb-1">
                       <span className={`text-[11px] font-bold ${currentTheme.isDark ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -10940,111 +11016,17 @@ Comité de Seguridad y Protección Escolar`
                     </div>
                   )}
 
-                  {/* Grid de Secciones y Delegados */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {settingsData?.delegates?.map((del) => (
-                      <div
-                        key={del.id || del.sectionKey}
-                        className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-indigo-300 transition-all space-y-4"
-                      >
-                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                          <div className="flex items-center gap-2">
-                            <span className="w-3 h-3 rounded-full bg-amber-400" />
-                            <h4 className="font-black text-slate-900 text-sm">
-                              {del.sectionName}
-                            </h4>
-                          </div>
-                          <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                            SLA: {del.slaHours}h
-                          </span>
-                        </div>
-
-                        <div className="space-y-3 text-xs">
-                          <div>
-                            <label className="font-bold text-slate-700 block mb-1">
-                              Nombre del Responsable / Delegado(a):
-                            </label>
-                            <input
-                              type="text"
-                              defaultValue={del.delegateName}
-                              id={`del-name-${del.sectionKey}`}
-                              className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-semibold focus:outline-none focus:border-indigo-500"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="font-bold text-slate-700 block mb-1">
-                              Correo de Enrutamiento / Delegación:
-                            </label>
-                            <input
-                              type="email"
-                              defaultValue={del.delegateEmail}
-                              id={`del-email-${del.sectionKey}`}
-                              className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-mono text-xs focus:outline-none focus:border-indigo-500"
-                            />
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="font-bold text-slate-700 block mb-1">
-                                Plazo de Resolución (SLA):
-                              </label>
-                              <select
-                                defaultValue={del.slaHours}
-                                id={`del-sla-${del.sectionKey}`}
-                                className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 font-bold focus:outline-none focus:border-indigo-500"
-                              >
-                                <option value={12}>12 Horas (Urgente)</option>
-                                <option value={24}>24 Horas (Estándar)</option>
-                                <option value={48}>48 Horas (Trámites)</option>
-                                <option value={72}>72 Horas (Extendido)</option>
-                              </select>
-                            </div>
-
-                            <div className="flex flex-col justify-end">
-                              <span className="text-[10px] text-slate-400 block mb-1">Palabras clave:</span>
-                              <div className="truncate text-[10px] text-slate-500 font-mono bg-slate-50 p-2 rounded-lg border border-slate-100">
-                                {del.keywords.slice(0, 3).join(', ')}...
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="pt-2 flex items-center justify-between gap-2 border-t border-slate-100">
-                          <button
-                            type="button"
-                            onClick={() => handleRunLiveDelegateTest(del.sectionKey)}
-                            disabled={isTestingDelegate}
-                            className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                            title="Probar asignación con un correo de prueba"
-                          >
-                            <span>🧪</span>
-                            <span>Probar Enrutamiento</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const nameInput = document.getElementById(`del-name-${del.sectionKey}`) as HTMLInputElement;
-                              const emailInput = document.getElementById(`del-email-${del.sectionKey}`) as HTMLInputElement;
-                              const slaInput = document.getElementById(`del-sla-${del.sectionKey}`) as HTMLSelectElement;
-                              handleUpdateDelegateConfig(
-                                del.sectionKey,
-                                nameInput?.value || del.delegateName,
-                                emailInput?.value || del.delegateEmail,
-                                Number(slaInput?.value) || del.slaHours
-                              );
-                            }}
-                            disabled={isSavingSettings}
-                            className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 disabled:opacity-50"
-                          >
-                            <Save className="h-3.5 w-3.5" />
-                            <span>Guardar Cambios</span>
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  {/* Configuración de Cuentas Semilla y Delegados Work OS */}
+                  <SeedAccountsConfigPanel
+                    tenantId={currentTenantId}
+                    isCeo={isPlatformSuperUser(user) || user?.role === 'director' || user?.role === 'owner' || user?.role === 'admin' || user?.role === 'ceo'}
+                    currentUserEmail={user?.email}
+                    onScenarioInjected={() => {
+                      setActiveTab('work_os');
+                      onTriggerToast?.('Escenario inyectado con éxito en el Work OS.');
+                    }}
+                    onTriggerToast={onTriggerToast}
+                  />
                 </div>
               )}
 
