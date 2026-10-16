@@ -160,11 +160,29 @@ export class WorkOsService {
   // 2. GESTIÓN DE TAREAS Y EXPEDIENTES WORK OS
   // ==========================================================================
 
+  /**
+   * Garantiza la unicidad absoluta de tareas por identificador único (id)
+   */
+  private static deduplicateTasks(tasks: WorkOsTask[]): WorkOsTask[] {
+    const seen = new Set<string>();
+    return tasks.filter(t => {
+      if (!t || !t.id || seen.has(t.id)) return false;
+      seen.add(t.id);
+      return true;
+    });
+  }
+
   public static getTasks(tenantId: string): WorkOsTask[] {
     const cleanTenant = tenantId || 'e1000000-0000-0000-0000-000000000001';
 
     if (tasksMemoryStore.has(cleanTenant)) {
-      return tasksMemoryStore.get(cleanTenant)!;
+      const current = tasksMemoryStore.get(cleanTenant)!;
+      const deduplicated = this.deduplicateTasks(current);
+      if (deduplicated.length !== current.length) {
+        tasksMemoryStore.set(cleanTenant, deduplicated);
+        this.saveTasks(cleanTenant, deduplicated);
+      }
+      return [...deduplicated];
     }
 
     if (typeof window !== 'undefined') {
@@ -173,8 +191,12 @@ export class WorkOsService {
         if (stored) {
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            tasksMemoryStore.set(cleanTenant, parsed);
-            return parsed;
+            const deduplicated = this.deduplicateTasks(parsed);
+            tasksMemoryStore.set(cleanTenant, deduplicated);
+            if (deduplicated.length !== parsed.length) {
+              this.saveTasks(cleanTenant, deduplicated);
+            }
+            return [...deduplicated];
           }
         }
       } catch (err) {
@@ -184,17 +206,19 @@ export class WorkOsService {
 
     // Inicializar con 3 tareas iniciales representativas si está vacío
     const initialTasks = this.generateInitialDemoTasks(cleanTenant);
-    tasksMemoryStore.set(cleanTenant, initialTasks);
-    this.saveTasks(cleanTenant, initialTasks);
-    return initialTasks;
+    const deduplicated = this.deduplicateTasks(initialTasks);
+    tasksMemoryStore.set(cleanTenant, deduplicated);
+    this.saveTasks(cleanTenant, deduplicated);
+    return [...deduplicated];
   }
 
   public static saveTasks(tenantId: string, tasks: WorkOsTask[]): void {
     const cleanTenant = tenantId || 'e1000000-0000-0000-0000-000000000001';
-    tasksMemoryStore.set(cleanTenant, tasks);
+    const deduplicated = this.deduplicateTasks(tasks);
+    tasksMemoryStore.set(cleanTenant, deduplicated);
     if (typeof window !== 'undefined') {
       try {
-        localStorage.setItem(this.getTasksStorageKey(cleanTenant), JSON.stringify(tasks));
+        localStorage.setItem(this.getTasksStorageKey(cleanTenant), JSON.stringify(deduplicated));
       } catch (err) {
         console.warn('[WorkOsService] Error al persistir tareas en localStorage:', err);
       }
@@ -207,10 +231,10 @@ export class WorkOsService {
   }
 
   /**
-   * Crea una nueva tarea en el Work OS
+   * Crea una nueva tarea en el Work OS garantizando que no se duplique
    */
   public static createTask(tenantId: string, taskData: Partial<WorkOsTask>): WorkOsTask {
-    const tasks = this.getTasks(tenantId);
+    const currentTasks = this.getTasks(tenantId);
     const now = new Date().toISOString();
     const slaHours = taskData.slaHours || 24;
     const deadline = new Date(Date.now() + slaHours * 3600 * 1000).toISOString();
@@ -259,8 +283,10 @@ export class WorkOsService {
       sourceEmail: taskData.sourceEmail
     };
 
-    tasks.unshift(newTask);
-    this.saveTasks(tenantId, tasks);
+    // Filtrar cualquier coincidencia previa con el mismo ID y guardar
+    const withoutExisting = currentTasks.filter(t => t.id !== newTask.id);
+    const updated = [newTask, ...withoutExisting];
+    this.saveTasks(tenantId, updated);
     return newTask;
   }
 

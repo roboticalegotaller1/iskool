@@ -104,9 +104,13 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
     return () => clearInterval(interval);
   }, [tenantId]);
 
-  // Filtrado de tareas
+  // Filtrado de tareas con garantía estricta de unicidad de claves (id)
   const filteredTasks = useMemo(() => {
+    const seen = new Set<string>();
     return tasks.filter(t => {
+      if (!t || !t.id || seen.has(t.id)) return false;
+      seen.add(t.id);
+
       // Filtro por búsqueda
       const q = searchQuery.toLowerCase().trim();
       const matchesSearch = !q || 
@@ -141,7 +145,16 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
 
   // Actualizar una tarea localmente
   const handleTaskUpdated = (updated: WorkOsTask) => {
-    setTasks(prev => prev.map(t => t.id === updated.id ? updated : t));
+    setTasks(prev => {
+      const seen = new Set<string>();
+      return prev
+        .map(t => t.id === updated.id ? updated : t)
+        .filter(t => {
+          if (!t || !t.id || seen.has(t.id)) return false;
+          seen.add(t.id);
+          return true;
+        });
+    });
   };
 
   // Abrir tarea y registrar apertura
@@ -252,16 +265,22 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
     setReassigningTask(null);
   };
 
-  // Todas las evidencias recopiladas (Bóveda Central de Evidencias)
+  // Todas las evidencias recopiladas (Bóveda Central de Evidencias con claves únicas garantizadas)
   const allEvidenceDocs = useMemo(() => {
     const list: (WorkOsEvidenceDoc & { matterCode: string; taskTitle: string })[] = [];
+    const seen = new Set<string>();
     for (const t of tasks) {
       for (const ev of t.evidenceDocs) {
-        list.push({
-          ...ev,
-          matterCode: t.matterCode,
-          taskTitle: t.title
-        });
+        const uniqueKey = `${t.id}-${ev.id}`;
+        if (!seen.has(uniqueKey)) {
+          seen.add(uniqueKey);
+          list.push({
+            ...ev,
+            id: uniqueKey,
+            matterCode: t.matterCode,
+            taskTitle: t.title
+          });
+        }
       }
     }
     return list;
@@ -434,7 +453,7 @@ export const WorkOsBoard: React.FC<WorkOsBoardProps> = ({
                   const scen = WorkOsService.getTestScenarios()[Math.floor(Math.random() * 25)];
                   const t = WorkOsService.injectScenario(tenantId, scen.id);
                   if (t) {
-                    setTasks(prev => [t, ...prev]);
+                    setTasks(WorkOsService.getTasks(tenantId));
                     onTriggerToast(`🚀 Caso de prueba inyectado: "${scen.title}"`);
                   }
                 }}
