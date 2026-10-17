@@ -106,9 +106,9 @@ export function getTenantDraftPaths(tenantId?: string): { tenantDir: string; jso
   const jsonPath = path.join(tenantDir, 'borradores_redaccion.json');
   const draftsFolder = path.join(tenantDir, 'borradores');
 
-  if (!fs.existsSync(draftsFolder)) {
+  if (!fs.existsSync(/*turbopackIgnore: true*/ draftsFolder)) {
     try {
-      fs.mkdirSync(draftsFolder, { recursive: true });
+      fs.mkdirSync(/*turbopackIgnore: true*/ draftsFolder, { recursive: true });
     } catch {}
   }
 
@@ -121,8 +121,8 @@ export function getTenantDraftPaths(tenantId?: string): { tenantDir: string; jso
 export function getDraftsFromVault(tenantId?: string): WorkOsAiDraftRecord[] {
   try {
     const { jsonPath } = getTenantDraftPaths(tenantId);
-    if (fs.existsSync(jsonPath)) {
-      const raw = fs.readFileSync(jsonPath, 'utf8');
+    if (fs.existsSync(/*turbopackIgnore: true*/ jsonPath)) {
+      const raw = fs.readFileSync(/*turbopackIgnore: true*/ jsonPath, 'utf8');
       const list = JSON.parse(raw);
       if (Array.isArray(list)) return list;
     }
@@ -144,7 +144,7 @@ export function saveDraftToVault(record: WorkOsAiDraftRecord): boolean {
     const filtered = existing.filter(d => d.id !== record.id && d.folio !== record.folio);
     filtered.unshift(record);
 
-    fs.writeFileSync(jsonPath, JSON.stringify(filtered, null, 2), 'utf8');
+    fs.writeFileSync(/*turbopackIgnore: true*/ jsonPath, JSON.stringify(filtered, null, 2), 'utf8');
 
     // Persistir como archivo Markdown en la subcarpeta borradores/ de la Bóveda
     const mdPath = path.join(draftsFolder, `${record.folio}.md`);
@@ -173,7 +173,7 @@ fuente: "Motor de Inteligencia Artificial Pedagógica"
 
 ${record.content}
 `;
-    fs.writeFileSync(mdPath, mdContent, 'utf8');
+    fs.writeFileSync(/*turbopackIgnore: true*/ mdPath, mdContent, 'utf8');
     return true;
   } catch (err) {
     console.error('[WorkOsDraftVault] Error al guardar borrador en la Bóveda:', err);
