@@ -8,6 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Loader } from "@/components/Loader";
 import { useWhiteLabelStore } from "@/store/useWhiteLabelStore";
 import { ISkoolOfficialLogo } from "@/components/brand/ISkoolOfficialLogo";
+import { PublicLanding, PublicFooter } from "@/components/PublicLanding";
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -20,8 +21,8 @@ export default function Home() {
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        // Redirigir al login si no hay sesión activa
-        router.replace('/login');
+        // Sin sesión: se queda en la página pública (requisito de verificación de OAuth)
+        return;
       } else if (user.role !== 'admin') {
         // Redirigir a cada cuenta exclusivamente a su propio portal
         switch (user.role) {
@@ -45,8 +46,14 @@ export default function Home() {
     }
   }, [user, loading, router]);
 
-  // Si está comprobando sesión o el usuario no es Super Usuario, bloquear visualización
-  if (loading || !user || user.role !== 'admin') {
+  // Visitantes sin sesión (y la carga inicial): página de inicio pública con enlaces legales.
+  // La verificación de marca de OAuth exige que https://iskool.mx/ sea pública y enlace a /privacidad.
+  if (loading || !user) {
+    return <PublicLanding />;
+  }
+
+  // Usuarios con sesión que no son Super Usuario: se redirigen a su portal
+  if (user.role !== 'admin') {
     return <Loader message="Verificando permisos de super usuario..." />;
   }
   return (
@@ -239,9 +246,7 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full border-t border-zinc-200 dark:border-zinc-800 py-6 text-center text-xs text-zinc-400 dark:text-zinc-500">
-        © 2026 ISkool Academic. Todos los derechos reservados.
-      </footer>
+      <PublicFooter />
 
     </div>
   );
