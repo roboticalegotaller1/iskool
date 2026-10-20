@@ -4369,12 +4369,13 @@ ${schoolName}`
     const rawVal = appPasswordInput || '';
     const cleanAppPass = rawVal.replace(/\s+/g, '');
     if (cleanAppPass.length < 8) {
-      onTriggerToast('La contraseña de aplicación debe contener al menos 8 caracteres (recomendado 16).');
+      onTriggerToast('El token o contraseña de aplicación debe contener al menos 8 caracteres (típicamente 16 letras de Google).');
       return;
     }
-    const targetEmail = (connectedEmail || authUsername || '').trim().toLowerCase();
+    const rawTarget = (connectedEmail && connectedEmail !== 'DISCONNECTED') ? connectedEmail : (authUsername || '');
+    const targetEmail = rawTarget.trim().toLowerCase();
     if (!targetEmail) {
-      onTriggerToast('Por favor ingrese primero el correo institucional o cuenta de Google.');
+      onTriggerToast('Por favor escribe tu dirección de correo de Google antes de validar el token.');
       return;
     }
     setAuthPassword(cleanAppPass);
@@ -4383,7 +4384,7 @@ ${schoolName}`
     const portToUse = isGmail ? 993 : (Number(incomingPort) || 993);
     const secToUse: SecurityType = isGmail ? 'SSL_TLS' : incomingSecurity;
 
-    onTriggerToast(`🔑 Conectando con Google IMAP en tiempo real (${targetEmail})...`);
+    onTriggerToast(`🔑 Validando Token de 16 Dígitos con Google IMAP en tiempo real (${targetEmail})...`);
     
     if (typeof window !== 'undefined') {
       localStorage.setItem(`iskool_auth_pass_${currentTenantId}`, cleanAppPass);
@@ -4402,11 +4403,14 @@ ${schoolName}`
     );
 
     if (result.success) {
+      setConnectedEmail(targetEmail);
+      setAuthUsername(targetEmail);
+      setConnectionStatus('connected_verified');
       setShowAppPasswordHelper(false);
-      await persistVerifiedMailConnection(targetEmail, result.latencyMs || 24, result.serverBanner, 'Contraseña de Aplicación (16 letras)');
-      onTriggerToast(`✓ Contraseña de aplicación verificada (${result.latencyMs || 24}ms). Buzón conectado e integrado.`);
+      await persistVerifiedMailConnection(targetEmail, result.latencyMs || 24, result.serverBanner, 'Contraseña de Aplicación (Token 16 letras - Sin CASA)');
+      onTriggerToast(`✓ ¡Token de 16 dígitos verificado (${result.latencyMs || 24}ms)! Buzón conectado y exento de auditoría CASA.`);
     } else {
-      onTriggerToast(`❌ Falló la autenticación con contraseña de aplicación: ${result.error}`);
+      onTriggerToast(`❌ Falló la autenticación con el token de 16 dígitos: ${result.error}`);
     }
     await handleTriggerSync(false);
   };
@@ -4583,6 +4587,14 @@ ${schoolName}`
           setActiveTab(targetInboxTab);
         }
       }
+
+      // Recepción de mensaje de fallback cuando Google OAuth es cancelado, denegado o no se desea usar
+      if (event.data?.type === 'PROVIDER_OAUTH_FALLBACK_APP_PASSWORD') {
+        setShowAppPasswordHelper(true);
+        setIsEditingServerConfig(true);
+        setActiveTab('google');
+        onTriggerToast('🔑 Acceso OAuth no completado. Activando el asistente de Token de 16 Dígitos (Contraseña de Aplicación) para conectar sin auditoría CASA Tier.');
+      }
     };
 
     if (typeof window !== 'undefined') {
@@ -4622,6 +4634,16 @@ ${schoolName}`
         } else {
           popup.focus();
           onTriggerToast('🌐 Abriendo ventana oficial de Google: En la ventana emergente, marca "Seleccionar todo" y presiona "Continuar" al fondo...');
+          
+          // Vigilar cierre de la ventana: si el usuario la cierra sin autorizar, ofrecer el token de 16 dígitos
+          const checkClosedTimer = setInterval(() => {
+            if (popup.closed) {
+              clearInterval(checkClosedTimer);
+              setTimeout(() => {
+                setShowAppPasswordHelper(true);
+              }, 600);
+            }
+          }, 1000);
         }
       }
       return;
@@ -8562,6 +8584,20 @@ Comité de Seguridad y Protección Escolar`
                       <div className="flex items-center gap-2 shrink-0">
                         <button
                           type="button"
+                          onClick={() => setShowAppPasswordHelper(!showAppPasswordHelper)}
+                          className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 border shadow-xs ${
+                            showAppPasswordHelper
+                              ? 'bg-amber-600 text-white border-amber-600 shadow-amber-100'
+                              : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300'
+                          }`}
+                          title="Conectar o cambiar a Token de 16 dígitos de Google para saltar la auditoría CASA Tier"
+                        >
+                          <Key className="h-3.5 w-3.5 text-amber-600" />
+                          <span>{showAppPasswordHelper ? 'Ocultar Token 16 Letras' : 'Token 16 Dígitos (Saltar CASA)'}</span>
+                        </button>
+
+                        <button
+                          type="button"
                           onClick={() => setIsEditingServerConfig(!isEditingServerConfig)}
                           className={`px-3 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 border shadow-xs ${
                             isEditingServerConfig
@@ -8697,6 +8733,16 @@ Comité de Seguridad y Protección Escolar`
 
                         <button
                           type="button"
+                          onClick={() => setShowAppPasswordHelper(true)}
+                          className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                          title="Usar Token de 16 Dígitos para saltar la verificación de Google y CASA Tier"
+                        >
+                          <Key className="h-3.5 w-3.5 text-white" />
+                          <span>Token 16 Dígitos</span>
+                        </button>
+
+                        <button
+                          type="button"
                           onClick={() => setIsEditingServerConfig(true)}
                           className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
                         >
@@ -8743,6 +8789,16 @@ Comité de Seguridad y Protección Escolar`
                         >
                           <ExternalLink className="h-4 w-4" />
                           <span>Abrir Ventana Oficial de Google (Autorizar Correo y Calendario)</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setShowAppPasswordHelper(true)}
+                          className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-xs shadow-md shadow-amber-500/20 transition-all cursor-pointer flex items-center gap-2 active:scale-95"
+                          title="Usar Token de 16 Dígitos para saltar la verificación de Google y la auditoría CASA Tier"
+                        >
+                          <Key className="h-4 w-4" />
+                          <span>Saltar CASA con Token de 16 Dígitos</span>
                         </button>
                       </div>
                     </div>
@@ -8797,6 +8853,16 @@ Comité de Seguridad y Protección Escolar`
 
                       <button
                         type="button"
+                        onClick={() => setShowAppPasswordHelper(true)}
+                        className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-xs shadow-md shadow-amber-500/20 transition-all cursor-pointer inline-flex items-center gap-2 active:scale-95"
+                        title="Vincular mediante Token de 16 Dígitos de Google para saltar la auditoría CASA Tier"
+                      >
+                        <Key className="h-4 w-4 text-white" />
+                        <span>Token 16 Dígitos (Saltar CASA Tier)</span>
+                      </button>
+
+                      <button
+                        type="button"
                         onClick={() => setIsEditingServerConfig(!isEditingServerConfig)}
                         className="px-3.5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs border border-slate-200 shadow-xs transition-all cursor-pointer inline-flex items-center gap-1.5"
                       >
@@ -8807,6 +8873,128 @@ Comité de Seguridad y Protección Escolar`
                   </div>
                 )}
               </div>
+
+              {/* ======================================================== */}
+              {/* ASISTENTE OFICIAL: TOKEN DE 16 DÍGITOS (SALTAR CASA TIER) */}
+              {/* ======================================================== */}
+              {showAppPasswordHelper && (
+                <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-amber-50/95 via-orange-50/40 to-white border-2 border-amber-400 shadow-md space-y-4 animate-in fade-in duration-200">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-amber-200/80 pb-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+                        <Key className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="text-sm font-black text-slate-900 uppercase tracking-wider">
+                            Enlace con Token de 16 Dígitos (Contraseña de Aplicación)
+                          </h4>
+                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-black text-[10px] uppercase tracking-wide border border-emerald-300">
+                            ⚡ 100% Exento de Auditoría CASA Tier 2/3
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-600 font-medium mt-0.5">
+                          Omite las pantallas de advertencia de Google y conecta tu buzón directamente por IMAP 993 (SSL) / SMTP 587.
+                        </p>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowAppPasswordHelper(false)}
+                      className="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-amber-100 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>Cerrar</span>
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+                    {/* Paso a paso didáctico */}
+                    <div className="md:col-span-7 space-y-2.5 text-xs text-slate-700 bg-white/90 p-4 rounded-xl border border-amber-200 shadow-2xs">
+                      <span className="font-black text-amber-900 flex items-center gap-1.5 uppercase tracking-wide text-xs">
+                        <Sparkles className="h-4 w-4 text-amber-600" />
+                        Cómo obtener tu Token en Google en 4 pasos:
+                      </span>
+                      <ol className="space-y-2 list-decimal list-inside font-medium leading-relaxed text-xs text-slate-600">
+                        <li>
+                          Abre la página oficial de Contraseñas de aplicaciones de Google:
+                          <a
+                            href="https://myaccount.google.com/apppasswords"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ml-1 inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-bold hover:bg-blue-100 border border-blue-200"
+                          >
+                            <span>myaccount.google.com/apppasswords</span>
+                            <ExternalLink className="h-3 w-3 inline" />
+                          </a>
+                        </li>
+                        <li>
+                          Inicia sesión en tu cuenta de Google y confirma en tu celular si te solicita verificación en 2 pasos.
+                        </li>
+                        <li>
+                          En el campo <em>"Nombre de la app"</em> escribe <strong>ISkool</strong> y haz clic en el botón <strong>Crear</strong>.
+                        </li>
+                        <li>
+                          Google generará un recuadro amarillo con una clave de <strong>16 letras</strong> (ejemplo: <code className="bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded font-mono font-bold">abcd efgh ijkl mnop</code>). Cópiala y pégala aquí al lado.
+                        </li>
+                      </ol>
+                    </div>
+
+                    {/* Formulario de Ingreso del Token */}
+                    <div className="md:col-span-5 bg-white p-4 rounded-xl border-2 border-amber-400/80 shadow-xs space-y-3">
+                      <form onSubmit={handleApplyAppPassword} className="space-y-3">
+                        <div>
+                          <label className="text-[11px] font-black text-slate-700 uppercase tracking-wider block mb-1">
+                            Cuenta de Google:
+                          </label>
+                          <input
+                            type="email"
+                            value={connectedEmail && connectedEmail !== 'DISCONNECTED' ? connectedEmail : authUsername}
+                            onChange={(e) => {
+                              setConnectedEmail(e.target.value);
+                              setAuthUsername(e.target.value);
+                            }}
+                            placeholder="tu-correo@gmail.com"
+                            className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-xs font-medium text-slate-800 focus:outline-none focus:border-amber-600 focus:bg-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[11px] font-black text-slate-700 uppercase tracking-wider block mb-1">
+                            Token de 16 caracteres de Google:
+                          </label>
+                          <input
+                            type="text"
+                            value={appPasswordInput}
+                            onChange={(e) => setAppPasswordInput(e.target.value)}
+                            placeholder="xxxx yyyy zzzz wwww"
+                            className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border-2 border-amber-300 text-xs font-mono font-bold text-slate-900 tracking-widest focus:outline-none focus:border-amber-600 focus:bg-white focus:ring-2 focus:ring-amber-400/20"
+                          />
+                          <p className="text-[10px] text-slate-500 mt-1">
+                            Se conectará a <strong>imap.gmail.com:993</strong> y <strong>smtp.gmail.com:587</strong> de forma directa.
+                          </p>
+                        </div>
+
+                        {lastPingError && (
+                          <div className="p-2.5 rounded-lg bg-red-50 border border-red-200 text-[11px] text-red-700 leading-tight">
+                            {lastPingError}
+                          </div>
+                        )}
+
+                        <button
+                          type="submit"
+                          disabled={isLivePinging}
+                          className="w-full py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-black text-xs shadow-md shadow-amber-600/20 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+                        >
+                          <Zap className={`h-4 w-4 ${isLivePinging ? 'animate-spin' : ''}`} />
+                          <span>{isLivePinging ? 'Validando Token con Google...' : 'Validar Token y Enlazar Buzón'}</span>
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* ========================================================= */}
               {/* MENÚ DESPLEGABLE / ACORDEÓN DE CONFIGURACIÓN & PROTOCOLOS  */}

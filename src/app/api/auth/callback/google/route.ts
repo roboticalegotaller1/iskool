@@ -17,17 +17,60 @@ export async function GET(req: NextRequest) {
 
     if (error) {
       const safeError = escapeHtml(error);
+      const safeOrigin = JSON.stringify(origin);
       return new NextResponse(
         `<!DOCTYPE html>
         <html lang="es">
           <head>
             <meta charset="utf-8" />
-            <title>Autorización denegada</title>
+            <title>Autorización de Google - Alternativa con Token de 16 Dígitos</title>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f8fafc; color: #0f172a; padding: 20px; }
+              .card { background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 32px; max-width: 440px; text-align: center; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
+              .icon { width: 56px; height: 56px; border-radius: 50%; background: #fef3c7; color: #d97706; display: inline-flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 16px; }
+              h2 { margin: 0 0 8px 0; font-size: 18px; font-weight: 800; color: #1e293b; }
+              p { margin: 0 0 16px 0; font-size: 13px; color: #64748b; line-height: 1.5; }
+              .badge { display: inline-block; padding: 6px 12px; border-radius: 999px; background: #eff6ff; color: #2563eb; font-size: 11px; font-weight: 700; margin-bottom: 16px; }
+              .btn { display: inline-block; width: 100%; box-sizing: border-box; background: #2563eb; color: white; border: none; padding: 12px 18px; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; text-decoration: none; transition: background 0.2s; }
+              .btn:hover { background: #1d4ed8; }
+            </style>
           </head>
-          <body style="font-family:sans-serif; text-align:center; padding:50px; background:#f8fafc;">
-            <h2 style="color:#d93025;">Autorización denegada por Google</h2>
-            <p>${safeError}</p>
-            <script>setTimeout(function(){ if (window.opener) { window.close(); } else { window.location.href = '/login'; } }, 3000);</script>
+          <body>
+            <div class="card">
+              <div class="icon">🔑</div>
+              <div class="badge">Alternativa sin Auditoría CASA Tier</div>
+              <h2>Enlace por Token de 16 Dígitos</h2>
+              <p>Google OAuth devolvió: <em>${safeError}</em>.<br />Puedes conectar tu buzón de forma inmediata y 100% exenta de auditorías CASA usando tu <strong>Contraseña de Aplicación de 16 caracteres</strong>.</p>
+              <button class="btn" onclick="sendFallbackAndClose()">Continuar con Token de 16 Dígitos en ISkool ➔</button>
+            </div>
+            <script>
+              function sendFallbackAndClose() {
+                if (window.opener) {
+                  try {
+                    window.opener.postMessage({
+                      type: 'PROVIDER_OAUTH_FALLBACK_APP_PASSWORD',
+                      provider: 'google',
+                      error: ${JSON.stringify(safeError)},
+                      action: 'open_app_password_prompt'
+                    }, ${safeOrigin});
+                  } catch (e) {}
+                  window.close();
+                } else {
+                  window.location.href = '/admin?tab=google&fallback=app_password';
+                }
+              }
+              // Notificar al padre de inmediato
+              if (window.opener) {
+                try {
+                  window.opener.postMessage({
+                    type: 'PROVIDER_OAUTH_FALLBACK_APP_PASSWORD',
+                    provider: 'google',
+                    error: ${JSON.stringify(safeError)},
+                    action: 'open_app_password_prompt'
+                  }, ${safeOrigin});
+                } catch (e) {}
+              }
+            </script>
           </body>
         </html>`,
         { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
