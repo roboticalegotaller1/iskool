@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { getTenantCorreoDir } from './correoVaultService';
 import { EmailTriageTelemetryService } from './emailTriageTelemetry.service';
+import { getSupabaseClient } from '@/lib/supabaseClient';
 
 export interface WorkOsAiDraftRecord {
   id: string;
@@ -115,40 +116,138 @@ export function getTenantDraftPaths(tenantId?: string): { tenantDir: string; jso
   return { tenantDir, jsonPath, draftsFolder };
 }
 
+// Almacén seguro y persistente en memoria global para entornos Serverless como AWS Amplify
+const inMemoryDraftsStore: Map<string, WorkOsAiDraftRecord[]> =
+  (globalThis as any).__iskoolDraftsCache ||
+  ((globalThis as any).__iskoolDraftsCache = new Map());
+
 /**
  * Obtiene todos los borradores almacenados en la Bóveda Curricular
  */
 export function getDraftsFromVault(tenantId?: string): WorkOsAiDraftRecord[] {
+  const effectiveTenant = tenantId || 'e1000000-0000-0000-0000-000000000001';
+
+  // 1. Prioridad: Caché en memoria global (vital para Serverless / AWS Amplify)
+  if (inMemoryDraftsStore.has(effectiveTenant)) {
+    const cached = inMemoryDraftsStore.get(effectiveTenant);
+    if (cached && cached.length > 0) {
+      return cached;
+    }
+  }
+
+  // 2. Consulta y lectura de respaldo en disco local si está disponible
   try {
-    const { jsonPath } = getTenantDraftPaths(tenantId);
+    const { jsonPath } = getTenantDraftPaths(effectiveTenant);
     if (fs.existsSync(/*turbopackIgnore: true*/ jsonPath)) {
       const raw = fs.readFileSync(/*turbopackIgnore: true*/ jsonPath, 'utf8');
       const list = JSON.parse(raw);
-      if (Array.isArray(list)) return list;
+      if (Array.isArray(list)) {
+        inMemoryDraftsStore.set(effectiveTenant, list);
+        return list;
+      }
     }
   } catch (err) {
-    console.warn('[WorkOsDraftVault] Error al leer borradores de la Bóveda:', err);
+    console.warn('[WorkOsDraftVault] Nota: Almacén local en disco no accesible, operando en memoria:', err);
   }
-  return [];
+
+  return inMemoryDraftsStore.get(effectiveTenant) || [];
 }
 
 /**
- * Guarda un borrador en la Bóveda Curricular (JSON + archivo Markdown individual con Frontmatter)
+ * Persiste un borrador de forma asíncrona en la base de datos Supabase (email_drafts)
+ */
+export async function persistDraftToDatabase(record: WorkOsAiDraftRecord): Promise<void> {
+  try {
+    const supabase = getSupabaseClient();
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const safeTenantId = uuidRegex.test(record.tenantId)
+      ? record.tenantId
+      : 'e1000000-0000-0000-0000-000000000001';
+
+    await supabase.from('email_drafts').insert({
+      tenant_id: safeTenantId,
+      subject: record.subject,
+      body_text: record.content,
+      body_html: JSON.stringify(record),
+      draft_status: 'ready',
+      suggested_by_ai: true,
+      created_at: record.createdAt || new Date().toISOString()
+    });
+  } catch (err) {
+    console.warn('[WorkOsDraftVault] Aviso: No se pudo persistir en base de datos remota, resguardado en memoria:', err);
+  }
+}
+
+/**
+ * Hidrata y sincroniza los borradores pedagógicos desde la base de datos Supabase
+ */
+export async function syncDraftsFromDatabase(tenantId?: string): Promise<WorkOsAiDraftRecord[]> {
+  const effectiveTenant = tenantId || 'e1000000-0000-0000-0000-000000000001';
+  try {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('email_drafts')
+      .select('*')
+      .eq('suggested_by_ai', true)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (!error && Array.isArray(data) && data.length > 0) {
+      const existing = getDraftsFromVault(effectiveTenant);
+      const existingIds = new Set(existing.map(d => d.id || d.folio));
+
+      const recovered: WorkOsAiDraftRecord[] = [];
+      for (const row of data) {
+        if (row.body_html) {
+          try {
+            const parsed = JSON.parse(row.body_html);
+            if (parsed?.subject && parsed?.content) {
+              if (!existingIds.has(parsed.id) && !existingIds.has(parsed.folio)) {
+                recovered.push(parsed);
+                existingIds.add(parsed.id);
+              }
+            }
+          } catch {}
+        }
+      }
+
+      if (recovered.length > 0) {
+        const merged = [...existing, ...recovered];
+        inMemoryDraftsStore.set(effectiveTenant, merged);
+        return merged;
+      }
+    }
+  } catch (err) {
+    console.warn('[WorkOsDraftVault] Nota al sincronizar con base de datos:', err);
+  }
+  return getDraftsFromVault(effectiveTenant);
+}
+
+/**
+ * Guarda un borrador en la Bóveda Curricular (Memoria + DB Supabase + JSON/MD en disco si es escribible)
  */
 export function saveDraftToVault(record: WorkOsAiDraftRecord): boolean {
   try {
-    const { jsonPath, draftsFolder } = getTenantDraftPaths(record.tenantId);
-    const existing = getDraftsFromVault(record.tenantId);
+    const effectiveTenant = record.tenantId || 'e1000000-0000-0000-0000-000000000001';
+    const existing = getDraftsFromVault(effectiveTenant);
 
     // Evitar duplicados idénticos por ID o Folio
     const filtered = existing.filter(d => d.id !== record.id && d.folio !== record.folio);
     filtered.unshift(record);
 
-    fs.writeFileSync(/*turbopackIgnore: true*/ jsonPath, JSON.stringify(filtered, null, 2), 'utf8');
+    // 1. Persistir inmediatamente en memoria global (soporte Serverless AWS Amplify)
+    inMemoryDraftsStore.set(effectiveTenant, filtered);
 
-    // Persistir como archivo Markdown en la subcarpeta borradores/ de la Bóveda
-    const mdPath = path.join(draftsFolder, `${record.folio}.md`);
-    const mdContent = `---
+    // 2. Persistir en la base de datos Supabase en segundo plano
+    persistDraftToDatabase(record).catch(() => {});
+
+    // 3. Persistir en disco local como respaldo si el sistema de archivos lo permite
+    try {
+      const { jsonPath, draftsFolder } = getTenantDraftPaths(effectiveTenant);
+      fs.writeFileSync(/*turbopackIgnore: true*/ jsonPath, JSON.stringify(filtered, null, 2), 'utf8');
+
+      const mdPath = path.join(draftsFolder, `${record.folio}.md`);
+      const mdContent = `---
 folio: "${record.folio}"
 asunto: "${record.subject.replace(/"/g, '\\"')}"
 audiencia: "${record.audienceLabel}"
@@ -173,7 +272,11 @@ fuente: "Motor de Inteligencia Artificial Pedagógica"
 
 ${record.content}
 `;
-    fs.writeFileSync(/*turbopackIgnore: true*/ mdPath, mdContent, 'utf8');
+      fs.writeFileSync(/*turbopackIgnore: true*/ mdPath, mdContent, 'utf8');
+    } catch (diskErr) {
+      // En AWS Amplify, el disco puede ser de solo lectura. No arrojar error.
+    }
+
     return true;
   } catch (err) {
     console.error('[WorkOsDraftVault] Error al guardar borrador en la Bóveda:', err);

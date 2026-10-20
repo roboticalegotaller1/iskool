@@ -120,7 +120,15 @@ export async function middleware(request: NextRequest) {
   const isIbimeCookieActive = Boolean(ibimeCookie && !iskoolCookie);
 
   const isIbimeHost = host.startsWith('ibime.') || host.includes('ibime');
+  const isAppHost = host.startsWith('app.') || host.includes('app.iskool.mx');
   const isIbimePath = pathname.startsWith('/ibime') || pathname.startsWith('/api/v1/ibime') || pathname === '/02DJoUJSkwYQZjn' || pathname.startsWith('/02DJoUJSkwYQZjn/');
+
+  // En app.iskool.mx, la raíz abre directamente el login para usuarios sin sesión activa
+  if (isAppHost && pathname === '/') {
+    if (!iskoolCookie && !ibimeCookie && !bearerToken) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+  }
 
   // Si un usuario o directivo de IBIME navega a /director, transferirlo limpiamente a su portal institucional
   if (pathname === '/director' || pathname.startsWith('/director/')) {
@@ -152,7 +160,7 @@ export async function middleware(request: NextRequest) {
     });
     response.headers.set('x-resolved-tenant', targetTenantRequired);
     response.headers.set('x-resolved-tenant-id', targetTenantRequired);
-    applyDefensiveSecurityHeaders(response);
+    applyDefensiveSecurityHeaders(response, isAppHost);
     return response;
   }
 
@@ -322,16 +330,21 @@ export async function middleware(request: NextRequest) {
   // Cabecera de respuesta para trazabilidad perimetral
   response.headers.set('x-resolved-tenant', targetTenantRequired);
   response.headers.set('x-resolved-tenant-id', targetTenantRequired);
-  applyDefensiveSecurityHeaders(response);
+  applyDefensiveSecurityHeaders(response, isAppHost);
 
   return response;
 }
 
-function applyDefensiveSecurityHeaders(response: NextResponse) {
+function applyDefensiveSecurityHeaders(response: NextResponse, isAppHost = false) {
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('X-Permitted-Cross-Domain-Policies', 'none');
+
+  // Directiva de búsqueda: en app.iskool.mx se aplica noindex estricto para evitar indexación de portales escolares
+  if (isAppHost) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+  }
 }
 
 export const config = {

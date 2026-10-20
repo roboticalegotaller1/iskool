@@ -21,7 +21,14 @@ export default function Home() {
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        // Sin sesión: se queda en la página pública (requisito de verificación de OAuth)
+        // En app.iskool.mx abre directo al login; en iskool.mx se queda en la portada pública para Google OAuth
+        if (typeof window !== 'undefined') {
+          const host = window.location.hostname.toLowerCase();
+          if (host.startsWith('app.') || host.includes('app.iskool.mx')) {
+            router.replace('/login');
+            return;
+          }
+        }
         return;
       } else if (user.role !== 'admin') {
         // Redirigir a cada cuenta exclusivamente a su propio portal

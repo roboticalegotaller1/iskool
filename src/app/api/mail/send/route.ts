@@ -4,6 +4,7 @@ import { validateApiAuth } from '@/lib/authValidator';
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { markEmailAsResolvedServer } from '../raw-inbox/route';
 import { formatCdmxDate, formatCdmxTime } from '@/utils/timeZoneUtils';
+import { validateMailTarget } from '@/lib/security/ssrfValidator';
 
 export const runtime = 'nodejs';
 
@@ -42,6 +43,11 @@ function sendViaNativeTlsSmtp(options: {
   inReplyTo?: string;
 }): Promise<{ success: boolean; messageId?: string; error?: string }> {
   return new Promise((resolve) => {
+    const targetCheck = validateMailTarget(options.host, options.port);
+    if (!targetCheck.valid) {
+      return resolve({ success: false, error: targetCheck.reason || 'Servidor SMTP bloqueado por seguridad.' });
+    }
+
     const timeout = 12000;
     let isFinished = false;
 
@@ -63,7 +69,7 @@ function sendViaNativeTlsSmtp(options: {
       options.host || 'smtp.gmail.com',
       {
         servername: options.host || 'smtp.gmail.com',
-        rejectUnauthorized: false
+        rejectUnauthorized: process.env.NODE_ENV === 'production'
       },
       () => {
         // Conexión TLS establecida

@@ -30,11 +30,32 @@ import { fetchLiveImapEmails, getCachedInboxEmails } from '@/lib/services/imapCl
 import { InboundMailSpoolService } from '@/lib/services/inboundMailSpool';
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { isEmailResolvedServer } from '@/app/api/mail/raw-inbox/route';
+import { validateApiAuth } from '@/lib/authValidator';
+import { validateMailTarget } from '@/lib/security/ssrfValidator';
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
+    if (!auth.authenticated && process.env.NODE_ENV !== 'test') {
+      return NextResponse.json(
+        { success: false, error: 'Autenticación requerida para sincronizar buzones institucionales.' },
+        { status: 401 }
+      );
+    }
+
     const payload = (await req.json()) as SyncInboxPayload;
     const { email, host, port, protocol, password, tenantId, institutionName, schoolSlug, manualEmail } = payload;
+
+    if (host && port) {
+      const targetCheck = validateMailTarget(host, Number(port));
+      if (!targetCheck.valid) {
+        return NextResponse.json(
+          { success: false, error: targetCheck.reason || 'Servidor de correo no autorizado.' },
+          { status: 400 }
+        );
+      }
+    }
+
     const existingTitles: string[] = (payload.existingTitles || []).map(t => (t || '').trim().toLowerCase());
     const resolvedSet = new Set<string>([
       ...(payload.resolvedTitles || []).map(t => (t || '').trim().toLowerCase()),

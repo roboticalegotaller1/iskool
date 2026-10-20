@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 };
 
 export default function PrivacyPolicyPage() {
-  const lastUpdated = '16 de octubre de 2026';
+  const lastUpdated = '20 de octubre de 2026';
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans selection:bg-indigo-500 selection:text-white">
@@ -256,6 +256,14 @@ export default function PrivacyPolicyPage() {
                       </tr>
                     </tbody>
                   </table>
+                </div>
+                <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[10px] text-emerald-800 dark:text-emerald-300 space-y-1">
+                  <p className="font-bold">
+                    ✓ Exención de Alcances Restringidos y Auditoría CASA:
+                  </p>
+                  <p>
+                    ISkool no solicita de forma general permisos de lectura profunda sobre buzones personales (<code className="bg-emerald-100 dark:bg-emerald-900 px-1 py-0.5 rounded">gmail.readonly</code>), manteniendo la autenticación institucional exenta de auditorías de seguridad CASA Tier 2/3 y resguardando la total confidencialidad de las comunicaciones privadas escolares.
+                  </p>
                 </div>
                 <p className="text-[10px] text-slate-500 dark:text-slate-400 italic">
                   * Nota de Privacidad Absoluta: ISkool no transfiere, no cede, no utiliza para publicidad y no emplea datos de las APIs de Google para entrenar modelos de lenguaje generalizados.

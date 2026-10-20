@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { IskoolCore } from '@/lib/iskoolCore';
+import { validateApiAuth } from '@/lib/authValidator';
 
 export async function GET(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
+    if (!auth.authenticated) {
+      return NextResponse.json({ error: 'Autenticación requerida para acceder a métricas analíticas.' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const metricParam = searchParams.get('metric') || 'executive_summary';
     const scopeType = (searchParams.get('scopeType') || 'grade') as 'grade' | 'group' | 'course' | 'student';

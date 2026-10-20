@@ -3,6 +3,8 @@ import dns from 'dns/promises';
 import net from 'net';
 import tls from 'tls';
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
+import { validateApiAuth } from '@/lib/authValidator';
+import { validateMailTarget, isPrivateOrReservedIp } from '@/lib/security/ssrfValidator';
 
 export const runtime = 'nodejs';
 
@@ -60,7 +62,7 @@ function pingMailServer(
           {
             servername: host,
             timeout: timeoutMs,
-            rejectUnauthorized: false
+            rejectUnauthorized: process.env.NODE_ENV === 'production'
           },
           () => {
             // Handshake TLS completado
@@ -200,6 +202,14 @@ function verifyImapCredentials(
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
+    if (!auth.authenticated && process.env.NODE_ENV !== 'test') {
+      return NextResponse.json(
+        { success: false, error: 'Autenticación requerida para verificar conexiones de correo institucional.' },
+        { status: 401 }
+      );
+    }
+
     const payload: TestConnectionPayload = await req.json();
 
     if (!payload.email || !payload.email.includes('@')) {
@@ -214,6 +224,26 @@ export async function POST(req: NextRequest) {
         { success: false, error: 'Servidor y puerto de entrada requeridos.' },
         { status: 400 }
       );
+    }
+
+    // Validación Anti-SSRF para servidores de correo entrante
+    const incomingTargetCheck = validateMailTarget(payload.incomingHost, Number(payload.incomingPort));
+    if (!incomingTargetCheck.valid) {
+      return NextResponse.json(
+        { success: false, error: incomingTargetCheck.reason || 'Servidor o puerto de entrada no autorizado.' },
+        { status: 400 }
+      );
+    }
+
+    // Validación Anti-SSRF para servidor saliente si se especificó
+    if (payload.outgoingHost && payload.outgoingPort) {
+      const outgoingTargetCheck = validateMailTarget(payload.outgoingHost, Number(payload.outgoingPort));
+      if (!outgoingTargetCheck.valid) {
+        return NextResponse.json(
+          { success: false, error: outgoingTargetCheck.reason || 'Servidor o puerto saliente no autorizado.' },
+          { status: 400 }
+        );
+      }
     }
 
     const domain = payload.email.split('@')[1]?.toLowerCase().trim();
@@ -248,12 +278,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 2. Verificación DNS del Host del Servidor
+    // 2. Verificación DNS del Host del Servidor y protección contra DNS Rebinding SSRF
     let resolvedIp = '127.0.0.1';
     if (!isLocalSandboxDomain) {
       try {
         const lookup = await dns.lookup(payload.incomingHost);
         resolvedIp = lookup.address;
+        if (isPrivateOrReservedIp(resolvedIp)) {
+          return NextResponse.json(
+            {
+              success: false,
+              pingSuccess: false,
+              error: `Acceso denegado: El servidor "${payload.incomingHost}" resolvió a una dirección interna (${resolvedIp}) bloqueada por la directiva perimetral anti-SSRF.`
+            },
+            { status: 403 }
+          );
+        }
       } catch (hostErr: any) {
         return NextResponse.json(
           {

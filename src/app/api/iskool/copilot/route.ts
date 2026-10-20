@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { IskoolCore } from '@/lib/iskoolCore';
+import { validateApiAuth } from '@/lib/authValidator';
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
+    if (!auth.authenticated) {
+      return NextResponse.json({ error: 'Autenticación requerida para acceder al Copiloto Pedagógico.' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { teacherId, sessionId, query } = body;
 

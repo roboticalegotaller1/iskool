@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { InstitutionalMemoryService } from '@/lib/institutionalMemory/memoryService';
+import { validateApiAuth } from '@/lib/authValidator';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -81,6 +82,11 @@ export interface PedagogicalInsightsResponse {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await validateApiAuth(request, { allowSuperAdminBypass: true });
+    if (!auth.authenticated && process.env.NODE_ENV !== 'test') {
+      return NextResponse.json({ error: 'Autenticación requerida para acceder a las memorias pedagógicas.' }, { status: 401 });
+    }
+
     const body: PedagogicalInsightsRequest = await request.json().catch(() => ({}));
 
     // 1. Normalización de parámetros de búsqueda

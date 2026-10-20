@@ -1,18 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { escapeHtml } from '@/lib/security/htmlEscape';
 
 /**
  * Representación Impresa Oficial de Factura Fiscal SAT (CFDI 4.0)
  * GET /api/billing/invoice/pdf
  */
 export async function GET(req: NextRequest) {
-  const receiptId = req.nextUrl.searchParams.get('receipt_id') || 'REC-2026-08102';
-  const uuid = req.nextUrl.searchParams.get('uuid') || '4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D';
-  const rfcReceptor = req.nextUrl.searchParams.get('rfc') || 'XAXX010101000';
-  const taxName = req.nextUrl.searchParams.get('tax_name') || 'PÚBLICO EN GENERAL';
-  const amount = Number(req.nextUrl.searchParams.get('amount') || 4500).toFixed(2);
-  const concept = req.nextUrl.searchParams.get('concept') || 'Inscripción Anual Ciclo 2026-2027';
-  const paymentMethod = req.nextUrl.searchParams.get('payment_method') || 'Tarjeta de Crédito (Visa ***4012)';
-  const dateStr = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+  const rawReceiptId = req.nextUrl.searchParams.get('receipt_id') || 'REC-2026-08102';
+  const rawUuid = req.nextUrl.searchParams.get('uuid') || '4A8B9C1D-2E3F-4A5B-6C7D-8E9F0A1B2C3D';
+  const rawRfcReceptor = req.nextUrl.searchParams.get('rfc') || 'XAXX010101000';
+  const rawTaxName = req.nextUrl.searchParams.get('tax_name') || 'PÚBLICO EN GENERAL';
+  const rawAmount = Math.max(0, Number(req.nextUrl.searchParams.get('amount') || 4500) || 0).toFixed(2);
+  const rawConcept = req.nextUrl.searchParams.get('concept') || 'Inscripción Anual Ciclo 2026-2027';
+  const rawPaymentMethod = req.nextUrl.searchParams.get('payment_method') || 'Tarjeta de Crédito (Visa ***4012)';
+  const rawStudent = req.nextUrl.searchParams.get('student') || 'Mateo López Mendoza';
+  const rawCurp = req.nextUrl.searchParams.get('curp') || 'LOMA080912HDFZNS01';
+  const rawLevel = req.nextUrl.searchParams.get('level') || 'Secundaria';
+  const rawRvoe = req.nextUrl.searchParams.get('rvoe') || 'SEP-RVOE-2024-SEC-098 / DGEI-045-2024';
+
+  const receiptId = escapeHtml(rawReceiptId);
+  const uuid = escapeHtml(rawUuid);
+  const rfcReceptor = escapeHtml(rawRfcReceptor);
+  const taxName = escapeHtml(rawTaxName);
+  const amount = escapeHtml(rawAmount);
+  const concept = escapeHtml(rawConcept);
+  const paymentMethod = escapeHtml(rawPaymentMethod);
+  const student = escapeHtml(rawStudent);
+  const curp = escapeHtml(rawCurp);
+  const level = escapeHtml(rawLevel);
+  const rvoe = escapeHtml(rawRvoe);
+  const dateStr = escapeHtml(new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' }));
 
   const tenantParam = req.nextUrl.searchParams.get('tenant') || '';
   const cookieTenant = req.cookies.get('tenant-id')?.value || '';
@@ -141,10 +158,10 @@ export async function GET(req: NextRequest) {
   <div class="fiscal-box" style="background: #f0fdf4; border-color: #bbf7d0; margin-bottom: 15px;">
     <div class="box-title" style="color: #166534; border-bottom-color: #dcfce7;">Complemento Fiscal IEDU (Instituciones Educativas Privadas) — Decreto Beneficio Fiscal I.S.R.</div>
     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 9.5px;">
-      <div><span style="font-weight: 600; color: #15803d;">Alumno:</span> <span style="font-weight: bold; color: #0f172a;">${req.nextUrl.searchParams.get('student') || 'Mateo López Mendoza'}</span></div>
-      <div><span style="font-weight: 600; color: #15803d;">CURP Alumno:</span> <span style="font-family: monospace; font-weight: bold; color: #0f172a;">${req.nextUrl.searchParams.get('curp') || 'LOMA080912HDFZNS01'}</span></div>
-      <div><span style="font-weight: 600; color: #15803d;">Nivel Educativo:</span> <span style="font-weight: 600; color: #0f172a;">${req.nextUrl.searchParams.get('level') || 'Secundaria'}</span></div>
-      <div style="grid-column: span 3;"><span style="font-weight: 600; color: #15803d;">Acuerdo / Clave RVOE SEP:</span> <span style="font-family: monospace; color: #0f172a;">${req.nextUrl.searchParams.get('rvoe') || 'SEP-RVOE-2024-SEC-098 / DGEI-045-2024'}</span></div>
+      <div><span style="font-weight: 600; color: #15803d;">Alumno:</span> <span style="font-weight: bold; color: #0f172a;">${student}</span></div>
+      <div><span style="font-weight: 600; color: #15803d;">CURP Alumno:</span> <span style="font-family: monospace; font-weight: bold; color: #0f172a;">${curp}</span></div>
+      <div><span style="font-weight: 600; color: #15803d;">Nivel Educativo:</span> <span style="font-weight: 600; color: #0f172a;">${level}</span></div>
+      <div style="grid-column: span 3;"><span style="font-weight: 600; color: #15803d;">Acuerdo / Clave RVOE SEP:</span> <span style="font-family: monospace; color: #0f172a;">${rvoe}</span></div>
     </div>
   </div>
 

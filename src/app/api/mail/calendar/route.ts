@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
+import { validateApiAuth } from '@/lib/authValidator';
 
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
+    if (!auth.authenticated) {
+      return NextResponse.json(
+        { success: false, error: 'Autenticación requerida para sincronizar eventos de calendario.' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const { action = 'sync_event', tenantId, email, event } = body;
 

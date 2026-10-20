@@ -1,10 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CeoEmailSettingsService } from '@/lib/services/ceoEmailSettingsService';
+import { validateApiAuth } from '@/lib/authValidator';
 
 export const runtime = 'nodejs';
 
+const ALLOWED_STAFF_ROLES = ['admin', 'superadmin', 'director', 'coordinator', 'billing', 'owner', 'ceo'];
+
 export async function GET(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
+    if (!auth.authenticated || !auth.user || (auth.user.role && !ALLOWED_STAFF_ROLES.includes(auth.user.role))) {
+      return NextResponse.json(
+        { success: false, error: 'Acceso no autorizado a la configuración ejecutiva de correo.' },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const tenantId = searchParams.get('tenantId') || 'e1000000-0000-0000-0000-000000000001';
 
@@ -23,6 +34,14 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
+    if (!auth.authenticated || !auth.user || (auth.user.role && !ALLOWED_STAFF_ROLES.includes(auth.user.role))) {
+      return NextResponse.json(
+        { success: false, error: 'Acceso no autorizado para modificar ajustes ejecutivos de correo.' },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const { action, tenantId = 'e1000000-0000-0000-0000-000000000001' } = body;
 

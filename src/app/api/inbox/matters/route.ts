@@ -1,9 +1,20 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { validateApiAuth } from '@/lib/authValidator';
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
+  const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
+  if (!auth.authenticated || !auth.user) {
+    return NextResponse.json(
+      { error: 'Autenticación requerida para consultar asuntos directivos institucionales.' },
+      { status: 401 }
+    );
+  }
+
+  const isSuperUser = ['superadmin', 'admin', 'owner', 'ceo', 'director'].includes(auth.user.role || '');
   const { searchParams } = new URL(req.url);
-  const schoolId = searchParams.get('schoolId') || '938fa492-4ddc-4f6f-80d7-1bd054af8536';
+  const requestedSchoolId = searchParams.get('schoolId') || auth.user.school_id || '938fa492-4ddc-4f6f-80d7-1bd054af8536';
+  const schoolId = (isSuperUser || !auth.user.school_id) ? requestedSchoolId : auth.user.school_id;
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

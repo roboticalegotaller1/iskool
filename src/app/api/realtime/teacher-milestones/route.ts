@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { teacherMilestoneBroadcaster, TeacherMilestoneEvent } from '@/lib/teacherMilestoneBroadcaster';
+import { validateApiAuth } from '@/lib/authValidator';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,9 +10,26 @@ export const dynamic = 'force-dynamic';
  * por los alumnos al instante, con cero latencia y sin sobrecargar la BD con polling.
  */
 export async function GET(req: NextRequest) {
+  const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
+  if (!auth.authenticated || !auth.user) {
+    return new Response(JSON.stringify({ error: 'Autenticación requerida para acceder al flujo de hitos en tiempo real.' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  const isStaff = ['teacher', 'director', 'admin', 'superadmin', 'coordinator', 'owner', 'ceo'].includes(auth.user.role || '');
+  if (!isStaff) {
+    return new Response(JSON.stringify({ error: 'Acceso denegado: Se requiere rol docente o directivo.' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
   const { searchParams } = new URL(req.url);
-  const teacherId = searchParams.get('teacherId') || 'usr-teacher-1';
-  const schoolId = searchParams.get('schoolId');
+  const isSuperUser = ['director', 'admin', 'superadmin', 'owner', 'ceo'].includes(auth.user.role || '');
+  const teacherId = isSuperUser ? (searchParams.get('teacherId') || auth.user.id) : auth.user.id;
+  const schoolId = auth.user.school_id || searchParams.get('schoolId');
 
   const encoder = new TextEncoder();
 

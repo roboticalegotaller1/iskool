@@ -3,6 +3,7 @@ import {
   generateDraftWithRealTokens,
   searchSimilarDraftInVault,
   getDraftsFromVault,
+  syncDraftsFromDatabase,
   WorkOsAiDraftRecord
 } from '@/lib/services/workOsAiDraftVault.service';
 import { EmailTriageTelemetryService } from '@/lib/services/emailTriageTelemetry.service';
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
     const listAll = searchParams.get('all') === 'true';
 
     if (listAll) {
-      const all = getDraftsFromVault(tenantId);
+      const all = await syncDraftsFromDatabase(tenantId);
       return NextResponse.json({
         success: true,
         total: all.length,

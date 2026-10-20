@@ -4,9 +4,15 @@ import {
   saveDelegatedMatterToCorreoVault,
   CorreoDelegatedMatter
 } from '@/lib/services/correoVaultService';
+import { validateApiAuth } from '@/lib/authValidator';
 
 export async function GET(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
+    if (!auth.authenticated) {
+      return NextResponse.json({ success: false, error: 'Autenticación requerida para consultar asuntos delegados.' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const tenantId = searchParams.get('tenantId') || 'IBIME';
     const matters = getDelegatedMattersFromCorreoVault(tenantId);
@@ -18,6 +24,11 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
+    if (!auth.authenticated) {
+      return NextResponse.json({ success: false, error: 'Autenticación requerida para delegar asuntos.' }, { status: 401 });
+    }
+
     const body = await req.json();
     const { tenantId = 'IBIME', matter } = body as { tenantId: string; matter: CorreoDelegatedMatter };
 

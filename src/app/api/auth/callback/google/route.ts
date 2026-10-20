@@ -3,6 +3,8 @@ import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { injectEmailIntoCache } from '@/lib/services/imapClientService';
 import { signSessionToken } from '@/lib/sessionToken';
 import { resolveCanonicalDemoUser } from '@/lib/auth/demoCatalog';
+import { escapeHtml, sanitizeInternalRedirectUrl } from '@/lib/security/htmlEscape';
+import { verifyOAuthState } from '@/lib/security/oauthState';
 
 export const runtime = 'nodejs';
 
@@ -14,6 +16,7 @@ export async function GET(req: NextRequest) {
     const origin = req.nextUrl.origin || 'http://localhost:3000';
 
     if (error) {
+      const safeError = escapeHtml(error);
       return new NextResponse(
         `<!DOCTYPE html>
         <html lang="es">
@@ -23,7 +26,7 @@ export async function GET(req: NextRequest) {
           </head>
           <body style="font-family:sans-serif; text-align:center; padding:50px; background:#f8fafc;">
             <h2 style="color:#d93025;">Autorización denegada por Google</h2>
-            <p>${error}</p>
+            <p>${safeError}</p>
             <script>setTimeout(function(){ if (window.opener) { window.close(); } else { window.location.href = '/login'; } }, 3000);</script>
           </body>
         </html>`,
@@ -35,25 +38,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Código de autorización faltante' }, { status: 400 });
     }
 
-    // 1. Parsear el estado enviado a Google
+    // 1. Validar y parsear criptográficamente el estado enviado a Google (Anti-CSRF)
     const stateRaw = searchParams.get('state');
+    const stateVerification = verifyOAuthState(stateRaw);
     let targetTenantId = 'e1000000-0000-0000-0000-000000000001';
     let flow: 'login' | 'workspace_connect' = 'login';
     let redirectUrl = '';
 
-    if (stateRaw) {
-      try {
-        const parsed = JSON.parse(stateRaw);
-        if (parsed.tenantId) targetTenantId = parsed.tenantId;
-        if (parsed.flow) flow = parsed.flow;
-        if (parsed.redirect) redirectUrl = parsed.redirect;
-      } catch {
-        if (stateRaw === 'admin_inbox') {
-          flow = 'workspace_connect';
-        } else {
-          targetTenantId = stateRaw;
-        }
-      }
+    if (stateVerification.valid && stateVerification.payload) {
+      if (stateVerification.payload.tenantId) targetTenantId = stateVerification.payload.tenantId;
+      if (stateVerification.payload.flow) flow = stateVerification.payload.flow;
+      if (stateVerification.payload.redirect) redirectUrl = sanitizeInternalRedirectUrl(stateVerification.payload.redirect, '');
     }
 
     // 2. Intercambiar código por tokens de Google
@@ -112,7 +107,7 @@ export async function GET(req: NextRequest) {
   <div class="card">
     <div class="icon">✓</div>
     <h2>Cuenta de Google Conectada</h2>
-    <p>Se vinculó exitosamente <strong>${tokens.email}</strong> para la gestión institucional y comunicados de dirección.</p>
+    <p>Se vinculó exitosamente <strong>${escapeHtml(tokens.email)}</strong> para la gestión institucional y comunicados de dirección.</p>
     <div class="badge">Conexión completada</div>
   </div>
   <script>
@@ -156,22 +151,11 @@ export async function GET(req: NextRequest) {
     // Resolver usuario canónico institucional si existe en catálogo
     const canonicalUser = resolveCanonicalDemoUser(userEmail);
 
-    let resolvedRole = canonicalUser?.role || 'student';
-    if (!canonicalUser) {
-      if (userEmail.includes('profesor') || userEmail.includes('docente') || userEmail.includes('teacher')) {
-        resolvedRole = 'teacher';
-      } else if (userEmail.includes('director') || userEmail.includes('directora')) {
-        resolvedRole = 'director';
-      } else if (userEmail.includes('coordinacion') || userEmail.includes('coord')) {
-        resolvedRole = 'coordinator';
-      } else if (userEmail.includes('cobranza') || userEmail.includes('finanzas')) {
-        resolvedRole = 'billing';
-      } else if (userEmail.includes('admin') || userEmail.includes('superadmin')) {
-        resolvedRole = 'admin';
-      } else if (userEmail.includes('padre') || userEmail.includes('tutor') || userEmail.includes('familia')) {
-        resolvedRole = 'parent';
-      }
-    }
+    // DEFENSA ESTRICTA ANTI-ESCALAMIENTO DE PRIVILEGIOS:
+    // Cuentas externas arbitrarias no pueden obtener roles elevados (admin, director, billing)
+    // por mero matching de subcadenas. Solo las cuentas verificadas del catálogo institucional
+    // obtienen roles de gestión; usuarios externos inician estrictamente con rol 'student'.
+    const resolvedRole = canonicalUser?.role || 'student';
 
     const nameParts = (tokens.name || 'Usuario').trim().split(' ');
     const firstName = canonicalUser?.first_name || nameParts[0] || 'Usuario';
@@ -190,44 +174,44 @@ export async function GET(req: NextRequest) {
       last_name: lastName
     });
 
-    // Determinar ruta de destino
-    let targetPath = '/student';
-    if (redirectUrl && redirectUrl.startsWith('/') && !redirectUrl.startsWith('//')) {
-      targetPath = redirectUrl;
-    } else {
-      switch (resolvedRole) {
-        case 'superadmin':
-        case 'admin':
-        case 'owner':
-        case 'ceo':
-          targetPath = '/admin';
-          break;
-        case 'director':
-          targetPath = isIbimeUser ? '/ibime/portal?view=ceo' : '/director';
-          break;
-        case 'coordinator':
-          targetPath = isIbimeUser ? '/ibime/portal?tab=sedes' : '/coordinator';
-          break;
-        case 'billing':
-          targetPath = isIbimeUser ? '/ibime/portal?tab=finanzas' : '/coordinator/billing';
-          break;
-        case 'teacher':
-          targetPath = isIbimeUser ? '/ibime/portal?tab=docentes' : '/teacher';
-          break;
-        case 'parent':
-          targetPath = '/parent';
-          break;
-        case 'student':
-        default:
-          targetPath = '/student';
-          break;
-      }
+    // Determinar ruta de destino segura con validación anti Open-Redirect
+    let defaultTargetPath = '/student';
+    switch (resolvedRole) {
+      case 'superadmin':
+      case 'admin':
+      case 'owner':
+      case 'ceo':
+        defaultTargetPath = '/admin';
+        break;
+      case 'director':
+        defaultTargetPath = isIbimeUser ? '/ibime/portal?view=ceo' : '/director';
+        break;
+      case 'coordinator':
+        defaultTargetPath = isIbimeUser ? '/ibime/portal?tab=sedes' : '/coordinator';
+        break;
+      case 'billing':
+        defaultTargetPath = isIbimeUser ? '/ibime/portal?tab=finanzas' : '/coordinator/billing';
+        break;
+      case 'teacher':
+        defaultTargetPath = isIbimeUser ? '/ibime/portal?tab=docentes' : '/teacher';
+        break;
+      case 'parent':
+        defaultTargetPath = '/parent';
+        break;
+      case 'student':
+      default:
+        defaultTargetPath = '/student';
+        break;
     }
+    const targetPath = sanitizeInternalRedirectUrl(redirectUrl, defaultTargetPath);
 
     const isProduction = process.env.NODE_ENV === 'production';
     const cookieName = resolvedTenant === 'ibime' ? 'ibime_session' : 'iskool_session';
     const safeTarget = JSON.stringify(targetPath);
     const safeOrigin = JSON.stringify(origin);
+
+    const safeFirstName = escapeHtml(firstName);
+    const safeLastName = escapeHtml(lastName);
 
     const loginHtml = `<!DOCTYPE html>
 <html lang="es">
@@ -248,7 +232,7 @@ export async function GET(req: NextRequest) {
   <div class="card">
     <div class="icon">✨</div>
     <h2>Sesión Iniciada</h2>
-    <p>Bienvenido, <strong>${firstName} ${lastName}</strong>. Ingresando a tu portal institucional...</p>
+    <p>Bienvenido, <strong>${safeFirstName} ${safeLastName}</strong>. Ingresando a tu portal institucional...</p>
     <div class="spinner"></div>
   </div>
   <script>
@@ -297,6 +281,7 @@ export async function GET(req: NextRequest) {
     return response;
   } catch (error: any) {
     console.error('Error en Google OAuth Callback:', error);
+    const safeErrorMsg = escapeHtml(error?.message || 'Error interno procesando Google OAuth');
     return new NextResponse(
       `<!DOCTYPE html>
       <html lang="es">
@@ -306,7 +291,7 @@ export async function GET(req: NextRequest) {
         </head>
         <body style="font-family:sans-serif; text-align:center; padding:50px;">
           <h2 style="color:#d93025;">Error de Autenticación</h2>
-          <p>${error.message || 'Error interno procesando Google OAuth'}</p>
+          <p>${safeErrorMsg}</p>
           <a href="/login" style="color:#1a73e8; font-weight:bold;">Volver al Inicio</a>
         </body>
       </html>`,

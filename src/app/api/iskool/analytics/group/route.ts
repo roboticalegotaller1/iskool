@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { IskoolCore } from '@/lib/iskoolCore';
+import { validateApiAuth } from '@/lib/authValidator';
 
 /**
  * @route GET /api/iskool/analytics/group
@@ -10,6 +11,11 @@ import { IskoolCore } from '@/lib/iskoolCore';
  */
 export async function GET(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
+    if (!auth.authenticated) {
+      return NextResponse.json({ error: 'Autenticación requerida para acceder a la radiografía de grupo.' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const groupId = searchParams.get('groupId') || 'group_hs1_a';
     const grade = searchParams.get('grade') || 'high_school_1';

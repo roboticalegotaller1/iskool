@@ -2,6 +2,7 @@ import tls from 'tls';
 import { RawGmailItem } from '@/app/api/mail/raw-inbox/route';
 import { formatCdmxDate, formatCdmxTime } from '@/utils/timeZoneUtils';
 import { HermeticEmailBrainService } from './hermetic-email-brain.service';
+import { validateMailTarget } from '@/lib/security/ssrfValidator';
 
 /**
  * ============================================================================
@@ -247,13 +248,26 @@ export async function fetchLiveImapEmails(
     };
 
     try {
+      const targetCheck = validateMailTarget(host, port);
+      if (!targetCheck.valid) {
+        finish({
+          success: false,
+          authenticated: false,
+          error: targetCheck.reason || 'Host o puerto de correo bloqueado por política de seguridad.',
+          emails: [],
+          lastSyncTime: 'Bloqueado por seguridad',
+          connectedEmail: cleanUser
+        });
+        return;
+      }
+
       socket = tls.connect(
         port,
         host,
         {
           servername: host,
           minVersion: 'TLSv1.2',
-          rejectUnauthorized: false
+          rejectUnauthorized: process.env.NODE_ENV === 'production'
         },
         () => {
           // Handshake completado
