@@ -4603,7 +4603,7 @@ ${schoolName}`
       handleSelectProviderPreset('google');
       const targetEmail = (authUsername || connectedEmail || 'roboticalegotaller1@gmail.com').trim();
       setConnectedEmail(targetEmail);
-      const popupUrl = `/api/auth/google/login?tenantId=${encodeURIComponent(currentTenantId)}&email=${encodeURIComponent(targetEmail)}`;
+      const popupUrl = `/api/auth/google/connect?tenantId=${encodeURIComponent(currentTenantId)}&email=${encodeURIComponent(targetEmail)}`;
       const width = 560;
       const height = 720;
 

@@ -222,6 +222,45 @@ export default function PrivacyPolicyPage() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Subsección transparente sobre el Módulo Opcional de Directivos */}
+              <div className="mt-4 p-4 rounded-xl bg-indigo-100/40 dark:bg-indigo-950/50 border border-indigo-200/80 dark:border-indigo-800/80 space-y-2.5">
+                <h4 className="font-bold text-xs sm:text-sm text-indigo-950 dark:text-indigo-200 flex items-center gap-1.5">
+                  <span>Módulo Opcional Exclusivo para Personal Directivo (Autorización Incremental):</span>
+                </h4>
+                <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                  Para alumnos, padres de familia y docentes en general, ISkool <strong>NUNCA</strong> solicita permisos sobre el correo electrónico o calendarios personales. Únicamente si una autoridad escolar (Director o Administrador de Plantel) decide voluntariamente vincular su cuenta en la Consola de Dirección para despachar comunicados y coordinar la agenda escolar, se solicita de forma separada:
+                </p>
+                <div className="overflow-x-auto rounded-lg border border-indigo-200/50 dark:border-indigo-800/50">
+                  <table className="w-full text-left text-[11px]">
+                    <thead className="bg-indigo-100/60 dark:bg-indigo-900/40 font-bold text-indigo-950 dark:text-indigo-200">
+                      <tr>
+                        <th className="p-2">Alcance Específico</th>
+                        <th className="p-2">¿Qué se procesa?</th>
+                        <th className="p-2">Finalidad Institucional</th>
+                        <th className="p-2">Retención y Supresión</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-indigo-100 dark:divide-indigo-900/40 text-slate-600 dark:text-slate-300">
+                      <tr>
+                        <td className="p-2 font-mono text-[10px] text-indigo-700 dark:text-indigo-300">.../auth/gmail.send</td>
+                        <td className="p-2">Contenido de circulares y comunicados redactados por la Dirección</td>
+                        <td className="p-2">Envío de avisos oficiales, estados de cuenta y reportes académicos a tutores</td>
+                        <td className="p-2">Transmisión inmediata cifrada; no se almacenan copias comerciales. Revocable al instante.</td>
+                      </tr>
+                      <tr>
+                        <td className="p-2 font-mono text-[10px] text-indigo-700 dark:text-indigo-300">.../auth/calendar.events</td>
+                        <td className="p-2">Fechas, títulos y horarios de juntas de Consejo Técnico y eventos cívicos</td>
+                        <td className="p-2">Coordinación de la agenda institucional escolar y citas con familias</td>
+                        <td className="p-2">Sincronización en tiempo real durante el ciclo escolar; eliminación al desvincular.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 italic">
+                  * Nota de Privacidad Absoluta: ISkool no transfiere, no cede, no utiliza para publicidad y no emplea datos de las APIs de Google para entrenar modelos de lenguaje generalizados.
+                </p>
+              </div>
             </div>
 
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 space-y-2">

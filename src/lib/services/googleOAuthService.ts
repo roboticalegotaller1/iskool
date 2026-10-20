@@ -89,6 +89,34 @@ const gmailFetchCache: Map<string, { emails: RawGmailItem[]; timestamp: number }
   (globalThis as any).__iskoolGmailFetchCache ||
   ((globalThis as any).__iskoolGmailFetchCache = new Map());
 
+/**
+ * Scopes oficiales no sensibles para Inicio de Sesión Institucional (SSO).
+ * No requieren auditoría de seguridad externa (CASA) ni provocan pantallas de advertencia.
+ */
+export const GOOGLE_LOGIN_SCOPES = [
+  'openid',
+  'email',
+  'profile'
+];
+
+/**
+ * Scopes para Conexión de Correo y Calendario de Personal Directivo (Incremental Authorization).
+ * Exclusivo para directores y autoridades escolares (envío de comunicados y agenda escolar).
+ */
+export const GOOGLE_DIRECTOR_WORKSPACE_SCOPES = [
+  'openid',
+  'email',
+  'profile',
+  'https://www.googleapis.com/auth/gmail.send',
+  'https://www.googleapis.com/auth/calendar.events'
+];
+
+/**
+ * Scope restringido para lectura profunda de Gmail.
+ * Requiere auditoría anual CASA Tier 2/3. Se mantiene configurable y desactivado por defecto.
+ */
+export const GOOGLE_RESTRICTED_READONLY_SCOPE = 'https://www.googleapis.com/auth/gmail.readonly';
+
 export class GoogleOAuthService {
   private static cachedClientId = '';
   private static cachedClientSecret = '';
@@ -219,20 +247,34 @@ export class GoogleOAuthService {
   }
 
   /**
-   * Genera la URL oficial de Google OAuth 2.0 para redireccionar al usuario
+   * Genera la URL oficial de Google OAuth 2.0.
+   * Por defecto genera una URL con scopes no sensibles (openid, email, profile) para el login general.
+   * Para directivos que conectan su correo, se utiliza scopeType 'workspace' (incremental authorization).
    */
-  static getAuthUrl(origin: string, state?: string, loginHint?: string): string {
+  static getAuthUrl(
+    origin: string,
+    state?: string,
+    loginHint?: string,
+    options?: {
+      scopeType?: 'login' | 'workspace';
+      includeReadonly?: boolean;
+    }
+  ): string {
     const clientId = this.getClientId();
     const redirectUri = `${origin}/api/auth/callback/google`;
-    const scopes = [
-      'openid',
-      'email',
-      'profile',
-      'https://www.googleapis.com/auth/gmail.readonly',
-      'https://www.googleapis.com/auth/gmail.send',
-      'https://www.googleapis.com/auth/calendar',
-      'https://www.googleapis.com/auth/calendar.events'
-    ].join(' ');
+    const scopeType = options?.scopeType || 'login';
+
+    let scopeList: string[];
+    if (scopeType === 'workspace') {
+      scopeList = [...GOOGLE_DIRECTOR_WORKSPACE_SCOPES];
+      if (options?.includeReadonly) {
+        scopeList.push(GOOGLE_RESTRICTED_READONLY_SCOPE);
+      }
+    } else {
+      scopeList = [...GOOGLE_LOGIN_SCOPES];
+    }
+
+    const scopes = scopeList.join(' ');
 
     const params = new URLSearchParams({
       client_id: clientId,
@@ -240,9 +282,14 @@ export class GoogleOAuthService {
       response_type: 'code',
       scope: scopes,
       access_type: 'offline',
-      prompt: 'consent',
       include_granted_scopes: 'true'
     });
+
+    if (scopeType === 'workspace') {
+      params.set('prompt', 'consent');
+    } else {
+      params.set('prompt', 'select_account');
+    }
 
     if (state) {
       params.set('state', state);
@@ -252,6 +299,28 @@ export class GoogleOAuthService {
     }
 
     return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+  }
+
+  /**
+   * Helper oficial para login institucional limpio (openid, email, profile)
+   */
+  static getLoginAuthUrl(origin: string, state?: string, loginHint?: string): string {
+    return this.getAuthUrl(origin, state, loginHint, { scopeType: 'login' });
+  }
+
+  /**
+   * Helper oficial para conexión de correo y calendario directivo (incremental authorization)
+   */
+  static getWorkspaceConnectUrl(
+    origin: string,
+    state?: string,
+    loginHint?: string,
+    includeReadonly = false
+  ): string {
+    return this.getAuthUrl(origin, state, loginHint, {
+      scopeType: 'workspace',
+      includeReadonly
+    });
   }
 
   /**
