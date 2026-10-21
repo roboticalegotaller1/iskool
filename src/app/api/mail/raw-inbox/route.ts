@@ -218,7 +218,13 @@ export async function GET(request: NextRequest) {
         ? 'roboticalegotaller1@gmail.com'
         : rawEmail;
 
-    const password = searchParams.get('password') || '';
+    // CASA ASVS V3.1.1 & V8.3.1: Prohibición estricta de transmisión de contraseñas en la Query String (URL)
+    const rawQueryPassword = searchParams.get('password');
+    if (rawQueryPassword) {
+      console.warn('[CASA Auditoría ASVS V3.1.1]: Bloqueado parámetro sensible "password" en Query String de método GET.');
+    }
+    // En producción se rechaza el uso de contraseñas por URL; se resuelve mediante el almacén cifrado del servidor
+    const password = process.env.NODE_ENV === 'production' ? '' : (rawQueryPassword || '');
     const host = searchParams.get('host') || 'imap.gmail.com';
     const port = Number(searchParams.get('port')) || 993;
 

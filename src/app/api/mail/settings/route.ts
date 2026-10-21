@@ -17,7 +17,18 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const tenantId = searchParams.get('tenantId') || 'e1000000-0000-0000-0000-000000000001';
+    const tenantId = searchParams.get('tenantId') || auth.user.tenant_id || 'e1000000-0000-0000-0000-000000000001';
+
+    // Aislamiento Hermético Multi-Tenant (Anti-BOLA)
+    const userRole = (auth.user.role || '').toLowerCase();
+    const isSuperAdmin = userRole === 'superadmin' || userRole === 'admin' || userRole === 'owner';
+    const userTenant = auth.user.tenant_id;
+    if (!isSuperAdmin && userTenant && tenantId !== userTenant && !tenantId.includes(userTenant)) {
+      return NextResponse.json(
+        { success: false, error: 'Acceso denegado: No tiene autorización para consultar ajustes de otro plantel escolar.' },
+        { status: 403 }
+      );
+    }
 
     const settings = CeoEmailSettingsService.getSettings(tenantId);
     return NextResponse.json({
@@ -43,7 +54,19 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { action, tenantId = 'e1000000-0000-0000-0000-000000000001' } = body;
+    const { action } = body;
+    const tenantId = body.tenantId || auth.user.tenant_id || 'e1000000-0000-0000-0000-000000000001';
+
+    // Aislamiento Hermético Multi-Tenant (Anti-BOLA)
+    const userRole = (auth.user.role || '').toLowerCase();
+    const isSuperAdmin = userRole === 'superadmin' || userRole === 'admin' || userRole === 'owner';
+    const userTenant = auth.user.tenant_id;
+    if (!isSuperAdmin && userTenant && tenantId !== userTenant && !tenantId.includes(userTenant)) {
+      return NextResponse.json(
+        { success: false, error: 'Acceso denegado: No tiene autorización para modificar ajustes de otro plantel escolar.' },
+        { status: 403 }
+      );
+    }
 
     if (!action) {
       return NextResponse.json({ success: false, error: 'Acción no especificada' }, { status: 400 });

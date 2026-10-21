@@ -5,6 +5,7 @@
  */
 
 import net from 'net';
+import dns from 'dns/promises';
 
 export const ALLOWED_MAIL_PORTS = new Set([25, 465, 587, 993, 995, 110, 143]);
 
@@ -95,6 +96,43 @@ export function validateMailTarget(
     return {
       valid: false,
       reason: `Puerto ${numericPort} no admitido para servicios de correo institucional. Solo se admiten puertos estándar: ${Array.from(ALLOWED_MAIL_PORTS).join(', ')}.`
+    };
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Validador estricto asíncrono con resolución DNS preventiva anti-DNS Rebinding
+ */
+export async function validateMailTargetAsync(
+  host: string,
+  port: number
+): Promise<{ valid: boolean; reason?: string }> {
+  const syncCheck = validateMailTarget(host, port);
+  if (!syncCheck.valid) {
+    return syncCheck;
+  }
+
+  const cleanHost = host.trim().toLowerCase();
+
+  // Si ya es IP directa, syncCheck ya la validó
+  if (net.isIP(cleanHost)) {
+    return { valid: true };
+  }
+
+  try {
+    const lookup = await dns.lookup(cleanHost);
+    if (isPrivateOrReservedIp(lookup.address)) {
+      return {
+        valid: false,
+        reason: `Bloqueado por política anti-SSRF: La dirección IP resuelta (${lookup.address}) para el host "${cleanHost}" pertenece a una red interna o reservada.`
+      };
+    }
+  } catch (err: any) {
+    return {
+      valid: false,
+      reason: `No se pudo resolver el nombre de host de correo "${cleanHost}" en DNS.`
     };
   }
 

@@ -12,8 +12,14 @@ import { POST as postTTS } from '../src/app/api/ai/tts/route';
 import { GET as getGoogleCallback } from '../src/app/api/auth/callback/google/route';
 import { POST as postGoogleRevoke } from '../src/app/api/auth/google/revoke/route';
 import { POST as postDataDeletion } from '../src/app/api/user/data-deletion/route';
+import { GET as getWorkOsDraft, POST as postWorkOsDraft } from '../src/app/api/admin/workos/draft/route';
+import { POST as postSendMail } from '../src/app/api/mail/send/route';
+import { GET as getMailSettings, POST as postMailSettings } from '../src/app/api/mail/settings/route';
+import { POST as postVerifyResource } from '../src/app/api/verify-resource/route';
 import { encryptToken, decryptToken } from '../src/lib/security/tokenCipher';
 import { signOAuthState, verifyOAuthState } from '../src/lib/security/oauthState';
+import { getSecuritySecret } from '../src/lib/security/secretManager';
+import { validateMailTarget, isPrivateOrReservedIp } from '../src/lib/security/ssrfValidator';
 
 describe('🛡️ AUDITORÍA DE SEGURIDAD INTEGRAL — VERIFICACIÓN AUTOMATIZADA DE VULNERABILIDADES', () => {
 
@@ -251,5 +257,113 @@ describe('🛡️ AUDITORÍA DE SEGURIDAD INTEGRAL — VERIFICACIÓN AUTOMATIZAD
     });
   });
 
+  // VULN-10: Blindaje contra Secretos Hardcodeados (CWE-798 / OWASP ASVS V6.4)
+  describe('VULN-10: Eliminación Total de Claves Criptográficas Hardcodeadas (CWE-798)', () => {
+    it('Debe generar o recuperar claves con entropía suficiente (>= 32 caracteres) mediante secretManager', () => {
+      const secret = getSecuritySecret('SESSION_SECRET');
+      expect(secret).toBeDefined();
+      expect(typeof secret).toBe('string');
+      expect(secret.length).toBeGreaterThanOrEqual(32);
+    });
+  });
+
+  // VULN-11: Prevención de Impersonación y Control de Acceso en Despacho de Correo (/api/mail/send)
+  describe('VULN-11: Control de Acceso y Prevención de Suplantación de Remitente (/api/mail/send)', () => {
+    it('Debe RECHAZAR con 401 a clientes no autenticados en producción', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      try {
+        (process.env as any).NODE_ENV = 'production';
+        const req = new NextRequest('http://localhost:3000/api/mail/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipientEmail: 'padre@colegio.edu.mx',
+            subject: 'Aviso urgente',
+            bodyText: 'Mensaje de prueba'
+          })
+        });
+        const res = await postSendMail(req);
+        expect(res.status).toBe(401);
+      } finally {
+        (process.env as any).NODE_ENV = originalEnv;
+      }
+    });
+
+    it('Debe RECHAZAR peticiones con destinatario vacío con error 400', async () => {
+      const req = new NextRequest('http://localhost:3000/api/mail/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientEmail: '',
+          subject: 'Aviso',
+          bodyText: 'Texto'
+        })
+      });
+      const res = await postSendMail(req);
+      const data = await res.json();
+      expect(res.status).toBe(400);
+      expect(data.error).toContain('Destinatario no especificado');
+    });
+  });
+
+  // VULN-12: Aislamiento Hermético Multi-Tenant (Anti-BOLA) en Ajustes de Correo (/api/mail/settings)
+  describe('VULN-12: Aislamiento Hermético Anti-BOLA en /api/mail/settings', () => {
+    it('Debe RECHAZAR con 403 a usuarios no autenticados o con rol no autorizado', async () => {
+      const req = new NextRequest('http://localhost:3000/api/mail/settings?tenantId=e1000000-0000-0000-0000-000000000001');
+      const res = await getMailSettings(req);
+      expect(res.status).toBe(403);
+    });
+  });
+
+  // VULN-13: Protección de Endpoints Administrativos (/api/admin/workos/draft)
+  describe('VULN-13: Protección Perimetral de Endpoints Administrativos de IA (/api/admin/workos/draft)', () => {
+    it('Debe RECHAZAR con 401 en producción consultas no autenticadas a GET /api/admin/workos/draft', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      try {
+        (process.env as any).NODE_ENV = 'production';
+        const req = new NextRequest('http://localhost:3000/api/admin/workos/draft?all=true');
+        const res = await getWorkOsDraft(req);
+        expect(res.status).toBe(401);
+      } finally {
+        (process.env as any).NODE_ENV = originalEnv;
+      }
+    });
+
+    it('Debe RECHAZAR con 401 en producción generaciones no autenticadas a POST /api/admin/workos/draft', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      try {
+        (process.env as any).NODE_ENV = 'production';
+        const req = new NextRequest('http://localhost:3000/api/admin/workos/draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subject: 'Circular general' })
+        });
+        const res = await postWorkOsDraft(req);
+        expect(res.status).toBe(401);
+      } finally {
+        (process.env as any).NODE_ENV = originalEnv;
+      }
+    });
+  });
+
+  // VULN-14: Blindaje contra Server-Side Request Forgery (SSRF) en Verificación de Recursos y Correo
+  describe('VULN-14: Blindaje Defensivo contra SSRF y Redes Reservadas', () => {
+    it('Debe bloquear hosts prohibidos y direcciones de loopback o metadatos cloud en validateMailTarget', () => {
+      expect(validateMailTarget('localhost', 993).valid).toBe(false);
+      expect(validateMailTarget('127.0.0.1', 993).valid).toBe(false);
+      expect(validateMailTarget('169.254.169.254', 993).valid).toBe(false);
+      expect(validateMailTarget('metadata.google.internal', 993).valid).toBe(false);
+    });
+
+    it('Debe detectar correctamente IPs privadas o de metadatos RFC 1918', () => {
+      expect(isPrivateOrReservedIp('10.0.0.1')).toBe(true);
+      expect(isPrivateOrReservedIp('172.16.0.1')).toBe(true);
+      expect(isPrivateOrReservedIp('192.168.1.1')).toBe(true);
+      expect(isPrivateOrReservedIp('169.254.169.254')).toBe(true);
+      expect(isPrivateOrReservedIp('8.8.8.8')).toBe(false);
+    });
+  });
+
 });
+
 

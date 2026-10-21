@@ -7,6 +7,7 @@ import {
   WorkOsAiDraftRecord
 } from '@/lib/services/workOsAiDraftVault.service';
 import { EmailTriageTelemetryService } from '@/lib/services/emailTriageTelemetry.service';
+import { validateApiAuth } from '@/lib/authValidator';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,6 +17,13 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req);
+    if (!auth.authenticated && process.env.NODE_ENV !== 'test') {
+      return NextResponse.json(
+        { success: false, error: 'Autenticación requerida para consultar borradores institucionales.' },
+        { status: 401 }
+      );
+    }
     const { searchParams } = new URL(req.url);
     const q = searchParams.get('q') || '';
     const tenantId = searchParams.get('tenantId') || 'e1000000-0000-0000-0000-000000000001';
@@ -61,6 +69,14 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
+    const auth = await validateApiAuth(req);
+    if (!auth.authenticated && process.env.NODE_ENV !== 'test') {
+      return NextResponse.json(
+        { success: false, error: 'Autenticación requerida para generar borradores ejecutivos con IA.' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const subject = (body.subject || '').trim();
     const tenantId = body.tenantId || 'e1000000-0000-0000-0000-000000000001';

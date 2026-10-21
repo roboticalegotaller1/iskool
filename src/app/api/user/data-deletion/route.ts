@@ -22,15 +22,38 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const auth = await validateApiAuth(req, { allowSuperAdminBypass: true });
-    const body = await req.json().catch(() => ({}));
-    const userEmail = body.email || auth.user?.email;
+    const isTest = process.env.NODE_ENV === 'test';
 
-    if (!userEmail) {
+    if (!auth.authenticated && !isTest) {
+      return NextResponse.json(
+        { success: false, error: 'Autenticación requerida para procesar la eliminación y revocación de credenciales.' },
+        { status: 401 }
+      );
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const requestedEmail = (body.email || auth.user?.email || '').trim().toLowerCase();
+
+    if (!requestedEmail) {
       return NextResponse.json(
         { success: false, error: 'Se requiere especificar la dirección de correo electrónico del usuario a suprimir.' },
         { status: 400 }
       );
     }
+
+    // Prevención de IDOR: Solo administradores pueden solicitar supresión de cuentas ajenas
+    if (auth.authenticated && auth.user) {
+      const isSuperUser = auth.user.role === 'superadmin' || auth.user.role === 'admin' || auth.user.role === 'owner';
+      const currentUserEmail = (auth.user.email || '').toLowerCase().trim();
+      if (!isSuperUser && currentUserEmail && currentUserEmail !== requestedEmail) {
+        return NextResponse.json(
+          { success: false, error: 'Acceso no autorizado: No cuenta con permisos para suprimir datos de otra cuenta.' },
+          { status: 403 }
+        );
+      }
+    }
+
+    const userEmail = requestedEmail;
 
     // 1. Revocar tokens de Google OAuth y purgar de almacenamiento
     await GoogleOAuthService.revokeTokens(userEmail);

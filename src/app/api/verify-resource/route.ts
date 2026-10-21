@@ -169,6 +169,7 @@ export async function POST(req: NextRequest) {
 
           const res = await fetch(url, {
             method: 'HEAD',
+            redirect: 'manual',
             signal: controller.signal,
             headers: {
               'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ISkoolVerifier/1.0',
@@ -190,6 +191,7 @@ export async function POST(req: NextRequest) {
             const timeoutId = setTimeout(() => controller.abort(), 4000);
             const getRes = await fetch(url, {
               method: 'GET',
+              redirect: 'manual',
               signal: controller.signal,
               headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ISkoolVerifier/1.0',

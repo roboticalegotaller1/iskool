@@ -156,9 +156,10 @@ export const MultiTenantPayloadSchema = z.object({
 // CRIPTOGRAFÍA WEB CON HMAC-SHA256 (EDGE / NODE COMPATIBLE)
 // ============================================================================
 
+import { getSecuritySecret } from '@/lib/security/secretManager';
+
 function getSessionSecret(): string {
-  const secret = process.env.SESSION_SECRET || process.env.SUPABASE_JWT_SECRET || 'e7b4c91a02f83d6520b174ac5d893e214fa0c6791b84e3d5029a1f7c8b36d0e4';
-  return secret;
+  return getSecuritySecret('SESSION_SECRET');
 }
 
 function toBase64Url(bytes: Uint8Array): string {

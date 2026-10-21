@@ -69,7 +69,7 @@ function sendViaNativeTlsSmtp(options: {
       options.host || 'smtp.gmail.com',
       {
         servername: options.host || 'smtp.gmail.com',
-        rejectUnauthorized: process.env.NODE_ENV === 'production'
+        rejectUnauthorized: true
       },
       () => {
         // Conexión TLS establecida
@@ -148,13 +148,27 @@ function sendViaNativeTlsSmtp(options: {
 
 export async function POST(req: NextRequest) {
   try {
-    // Verificación perimetral de autenticación Zero-Trust (Solo sesiones demo oficiales o usuarios autenticados)
+    // Verificación perimetral de autenticación Zero-Trust (Solo sesiones autorizadas)
     const auth = await validateApiAuth(req);
-    if (!auth.authenticated && process.env.NODE_ENV !== 'test') {
+    const isTest = process.env.NODE_ENV === 'test';
+
+    if (!auth.authenticated && !isTest) {
       return NextResponse.json(
         { success: false, error: 'Autenticación requerida para despachar correos institucionales.' },
         { status: 401 }
       );
+    }
+
+    // Prevención de Impersonación y Control de Roles (CASA ASVS V4)
+    if (auth.authenticated && auth.user) {
+      const allowedRoles = ['admin', 'superadmin', 'director', 'coordinator', 'billing', 'owner', 'ceo', 'teacher'];
+      const userRole = (auth.user.role || '').toLowerCase();
+      if (!allowedRoles.includes(userRole)) {
+        return NextResponse.json(
+          { success: false, error: 'Acceso denegado: El rol de su cuenta no tiene autorización para enviar correos institucionales.' },
+          { status: 403 }
+        );
+      }
     }
 
     const payload: SendMailRequest = await req.json();
@@ -178,7 +192,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'El contenido del correo no puede estar vacío' }, { status: 400 });
     }
 
-    const effectiveSender = (senderEmail || 'roboticalegotaller1@gmail.com').trim().toLowerCase();
+    // Si el usuario es un docente o rol no directivo, forzar que el remitente sea su propio correo verificado
+    let effectiveSender = (senderEmail || 'roboticalegotaller1@gmail.com').trim().toLowerCase();
+    if (auth.authenticated && auth.user) {
+      const userRole = (auth.user.role || '').toLowerCase();
+      const isDirectorOrAdmin = ['admin', 'superadmin', 'director', 'ceo', 'owner'].includes(userRole);
+      if (!isDirectorOrAdmin && auth.user.email) {
+        effectiveSender = auth.user.email.trim().toLowerCase();
+      }
+    }
 
     // 1. Intentar despacho primario oficial vía Google Mail API (OAuth 2.0)
     let dispatchResult = await GoogleOAuthService.sendEmailViaGmailApi({

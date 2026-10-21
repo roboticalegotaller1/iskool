@@ -522,6 +522,7 @@ export async function fetchLiveImapEmails(
     }
   }
 
+  return firstAttempt;
 }
 
 /**

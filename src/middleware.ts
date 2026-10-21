@@ -24,6 +24,7 @@ import {
 // Rutas protegidas de iSkool Core
 const ISKOOL_PROTECTED_PREFIXES = [
   '/admin',
+  '/api/admin',
   '/teacher',
   '/student',
   '/director',

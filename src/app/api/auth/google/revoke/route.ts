@@ -20,8 +20,21 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const targetEmail = body.email || auth.user?.email || 'roboticalegotaller1@gmail.com';
+    const requestedEmail = (body.email || auth.user?.email || 'roboticalegotaller1@gmail.com').trim().toLowerCase();
 
+    // Verificación de propiedad (Anti-IDOR)
+    if (auth.authenticated && auth.user) {
+      const isSuperUser = auth.user.role === 'superadmin' || auth.user.role === 'admin' || auth.user.role === 'director' || auth.user.role === 'owner';
+      const currentUserEmail = (auth.user.email || '').toLowerCase().trim();
+      if (!isSuperUser && currentUserEmail && currentUserEmail !== requestedEmail) {
+        return NextResponse.json(
+          { success: false, error: 'Acceso no autorizado: No cuenta con permisos para revocar credenciales de otra cuenta.' },
+          { status: 403 }
+        );
+      }
+    }
+
+    const targetEmail = requestedEmail;
     const revokeResult = await GoogleOAuthService.revokeTokens(targetEmail);
 
     if (!revokeResult.success) {

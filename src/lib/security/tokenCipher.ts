@@ -7,18 +7,15 @@
 
 import crypto from 'crypto';
 
+import { getSecuritySecret } from './secretManager';
+
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 12; // 96 bits recomendado para GCM
 const AUTH_TAG_LENGTH = 16; // 128 bits
 const PREFIX = 'enc:v1:';
 
 function getEncryptionKey(): Buffer {
-  const rawKey =
-    process.env.TOKEN_ENCRYPTION_SECRET ||
-    process.env.SESSION_SECRET ||
-    process.env.SUPABASE_JWT_SECRET ||
-    'e7b4c91a02f83d6520b174ac5d893e214fa0c6791b84e3d5029a1f7c8b36d0e4';
-
+  const rawKey = getSecuritySecret('TOKEN_ENCRYPTION_SECRET');
   return crypto.createHash('sha256').update(rawKey).digest();
 }
 
