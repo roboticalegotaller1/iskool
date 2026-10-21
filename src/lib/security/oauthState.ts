@@ -39,19 +39,7 @@ export function verifyOAuthState(stateRaw?: string | null): { valid: boolean; pa
 
   const parts = stateRaw.split('.');
   if (parts.length !== 2) {
-    // Manejo de compatibilidad para flujos heredados de prueba (e.g. 'admin_inbox')
-    if (stateRaw === 'admin_inbox') {
-      return {
-        valid: true,
-        payload: { flow: 'workspace_connect', tenantId: 'e1000000-0000-0000-0000-000000000001' }
-      };
-    }
-    try {
-      const parsed = JSON.parse(stateRaw);
-      return { valid: true, payload: parsed };
-    } catch {
-      return { valid: false };
-    }
+    return { valid: false };
   }
 
   const [base64Data, signature] = parts;
@@ -69,8 +57,8 @@ export function verifyOAuthState(stateRaw?: string | null): { valid: boolean; pa
     const jsonStr = Buffer.from(base64Data, 'base64url').toString('utf-8');
     const payload: OAuthStatePayload = JSON.parse(jsonStr);
 
-    // Expiración de 15 minutos para el estado de login
-    if (payload.ts && Date.now() - payload.ts > 15 * 60 * 1000) {
+    // Expiración mandatoria de 15 minutos para el estado de login (anti-replay)
+    if (!payload.ts || Date.now() - payload.ts > 15 * 60 * 1000 || payload.ts > Date.now() + 60000) {
       return { valid: false };
     }
 

@@ -7,6 +7,7 @@ import { HermeticEmailBrainService } from './hermetic-email-brain.service';
 import { CognitiveAIEmailTriageService } from './geminiEmailTriage.service';
 import { injectEmailsBatchIntoCache } from './imapClientService';
 import { formatCdmxDate, formatCdmxTime } from '@/utils/timeZoneUtils';
+import { encryptToken, decryptToken } from '@/lib/security/tokenCipher';
 
 export interface GoogleTokens {
   accessToken: string;
@@ -38,7 +39,11 @@ function loadTokensFromFile(): Map<string, GoogleTokens> {
       if (Array.isArray(data)) {
         for (const item of data) {
           if (item?.email) {
-            map.set(item.email.toLowerCase().trim(), item);
+            map.set(item.email.toLowerCase().trim(), {
+              ...item,
+              accessToken: decryptToken(item.accessToken),
+              refreshToken: item.refreshToken ? decryptToken(item.refreshToken) : undefined
+            });
           }
         }
       }
@@ -72,7 +77,11 @@ function saveTokensToFile(map: Map<string, GoogleTokens>) {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    const arr = Array.from(map.values());
+    const arr = Array.from(map.values()).map(item => ({
+      ...item,
+      accessToken: encryptToken(item.accessToken),
+      refreshToken: item.refreshToken ? encryptToken(item.refreshToken) : undefined
+    }));
     fs.writeFileSync(TOKENS_FILE, JSON.stringify(arr, null, 2), 'utf8');
   } catch (e) {
     // Entorno serverless donde el disco local es de solo lectura
@@ -205,8 +214,8 @@ export class GoogleOAuthService {
             const em = row.email_address.toLowerCase().trim();
             const existing = tokenStore.get(em);
             const tokens: GoogleTokens = {
-              accessToken: row.access_token_encrypted || existing?.accessToken || '',
-              refreshToken: row.refresh_token_encrypted || existing?.refreshToken || '',
+              accessToken: decryptToken(row.access_token_encrypted) || existing?.accessToken || '',
+              refreshToken: (row.refresh_token_encrypted ? decryptToken(row.refresh_token_encrypted) : '') || existing?.refreshToken || '',
               expiresAt: row.token_expires_at
                 ? new Date(row.token_expires_at).getTime()
                 : existing?.expiresAt || Date.now() + 3600000,
@@ -225,6 +234,7 @@ export class GoogleOAuthService {
 
   /**
    * Persiste un token actualizado de forma permanente en la base de datos Supabase
+   * aplicando cifrado simétrico autenticado AES-256-GCM (CASA Tier 2/3 ASVS V6.2).
    */
   static async persistTokensToDb(tokens: GoogleTokens): Promise<void> {
     try {
@@ -233,8 +243,8 @@ export class GoogleOAuthService {
         {
           email_address: tokens.email.toLowerCase().trim(),
           provider: 'google_workspace',
-          access_token_encrypted: tokens.accessToken,
-          refresh_token_encrypted: tokens.refreshToken,
+          access_token_encrypted: encryptToken(tokens.accessToken),
+          refresh_token_encrypted: tokens.refreshToken ? encryptToken(tokens.refreshToken) : null,
           token_expires_at: new Date(tokens.expiresAt).toISOString(),
           is_active: true,
           updated_at: new Date().toISOString()
@@ -457,8 +467,7 @@ export class GoogleOAuthService {
             client_secret: clientSecret,
             refresh_token: tokens.refreshToken,
             grant_type: 'refresh_token'
-          }).toString(),
-          signal: AbortSignal.timeout(8000)
+          }).toString()
         });
 
         if (res.ok) {
@@ -583,13 +592,16 @@ export class GoogleOAuthService {
       const settledDetails = await Promise.allSettled(
         messages.map(async (msgRef) => {
           try {
+            const msgController = new AbortController();
+            const msgTimeout = setTimeout(() => msgController.abort(), 8000);
             const detailRes = await fetch(
               `https://gmail.googleapis.com/gmail/v1/users/me/messages/${msgRef.id}?format=full`,
               {
                 headers: { Authorization: `Bearer ${effectiveToken}` },
-                signal: AbortSignal.timeout(8000)
+                signal: msgController.signal
               }
             );
+            clearTimeout(msgTimeout);
             if (!detailRes.ok) return null;
             return await detailRes.json();
           } catch {
@@ -979,4 +991,63 @@ export class GoogleOAuthService {
       };
     }
   }
+
+  /**
+   * Revoca permanentemente los tokens OAuth con Google (RFC 7009) y purga los registros
+   * de memoria, disco local y base de datos Supabase (CASA Tier 2/3 y Google API User Data Policy).
+   */
+  static async revokeTokens(emailOrToken: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      let tokenToRevoke = emailOrToken;
+      const clean = emailOrToken.toLowerCase().trim();
+      const effectiveEmail =
+        clean.includes('directora.general') || clean.includes('patricia') || clean.includes('ibime.edu.mx')
+          ? 'roboticalegotaller1@gmail.com'
+          : clean;
+
+      const stored = tokenStore.get(effectiveEmail) || tokenStore.get(clean);
+      if (stored) {
+        tokenToRevoke = stored.refreshToken || stored.accessToken || emailOrToken;
+      }
+
+      // Si tenemos un token válido (accessToken o refreshToken), revocarlo directamente en Google
+      if (tokenToRevoke && (tokenToRevoke.startsWith('ya29.') || tokenToRevoke.startsWith('1//') || tokenToRevoke.length > 20)) {
+        try {
+          await fetch(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(tokenToRevoke)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+          });
+        } catch (revokeErr) {
+          console.warn('Advertencia al invocar revocación remota en Google:', revokeErr);
+        }
+      }
+
+      // Purgar de memoria y cachés locales
+      tokenStore.delete(effectiveEmail);
+      tokenStore.delete(clean);
+      saveTokensToFile(tokenStore);
+
+      // Desactivar y limpiar en Supabase
+      try {
+        const supabase = getSupabaseClient();
+        await supabase
+          .from('email_accounts')
+          .update({
+            is_active: false,
+            access_token_encrypted: null,
+            refresh_token_encrypted: null,
+            updated_at: new Date().toISOString()
+          })
+          .in('email_address', [effectiveEmail, clean]);
+      } catch (dbErr) {
+        console.warn('Advertencia actualizando email_accounts tras revocación:', dbErr);
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      console.error('Error en revokeTokens:', err);
+      return { success: false, error: err.message || 'Error al revocar tokens' };
+    }
+  }
 }
+

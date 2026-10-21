@@ -437,6 +437,9 @@ export default function PrivacyPolicyPage() {
                 <Mail className="h-4 w-4 text-indigo-600" />
                 <span className="font-bold text-indigo-700 dark:text-indigo-300">privacidad@iskool.mx</span>
               </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Asimismo, la plataforma cuenta con el endpoint técnico automatizado de supresión de datos conforme a los requerimientos de Google Cloud y CASA Tier 2/3 en <code className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono text-[10px] text-indigo-600 dark:text-indigo-400">https://iskool.mx/api/user/data-deletion</code> y revocación OAuth en <code className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono text-[10px] text-indigo-600 dark:text-indigo-400">https://iskool.mx/api/auth/google/revoke</code>.
+              </p>
               <p className="text-[11px] text-slate-400">
                 Tu solicitud será atendida y confirmada en un plazo máximo de <strong>48 a 72 horas hábiles</strong>, eliminando los identificadores de cuenta y registros asociados de nuestras bases de datos activas.
               </p>

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import dns from 'dns/promises';
 import { validateApiAuth } from '@/lib/authValidator';
+import { isPrivateOrReservedIp } from '@/lib/security/ssrfValidator';
 
 export const runtime = 'nodejs';
 
@@ -94,6 +96,28 @@ export async function POST(req: NextRequest) {
             checkedAt: now
           };
           return;
+        }
+
+        // Blindaje contra DNS Rebinding: Resolver IP y validar que no pertenezca a redes privadas/internas
+        if (safetyCheck.parsed?.hostname) {
+          try {
+            const lookup = await dns.lookup(safetyCheck.parsed.hostname);
+            if (isPrivateOrReservedIp(lookup.address)) {
+              results[url] = {
+                isValid: false,
+                error: `Bloqueado por política anti-SSRF: Dirección IP resuelta (${lookup.address}) es privada o reservada`,
+                checkedAt: now
+              };
+              return;
+            }
+          } catch {
+            results[url] = {
+              isValid: false,
+              error: 'No se pudo resolver el nombre de host en DNS',
+              checkedAt: now
+            };
+            return;
+          }
         }
 
         // 1. Caso: Video de YouTube

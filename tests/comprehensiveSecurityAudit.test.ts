@@ -9,6 +9,11 @@ import { GET as getInvoiceDownload } from '../src/app/api/billing/invoice/downlo
 import { POST as postHistoricalFigure } from '../src/app/api/ai/historical-figure/route';
 import { POST as postSTT } from '../src/app/api/ai/stt/route';
 import { POST as postTTS } from '../src/app/api/ai/tts/route';
+import { GET as getGoogleCallback } from '../src/app/api/auth/callback/google/route';
+import { POST as postGoogleRevoke } from '../src/app/api/auth/google/revoke/route';
+import { POST as postDataDeletion } from '../src/app/api/user/data-deletion/route';
+import { encryptToken, decryptToken } from '../src/lib/security/tokenCipher';
+import { signOAuthState, verifyOAuthState } from '../src/lib/security/oauthState';
 
 describe('🛡️ AUDITORÍA DE SEGURIDAD INTEGRAL — VERIFICACIÓN AUTOMATIZADA DE VULNERABILIDADES', () => {
 
@@ -167,4 +172,84 @@ describe('🛡️ AUDITORÍA DE SEGURIDAD INTEGRAL — VERIFICACIÓN AUTOMATIZAD
     });
   });
 
+  // VULN-07: Blindaje OAuth 2.0 State Anti-CSRF (CASA ASVS 3.7.1)
+  describe('VULN-07: Validación Estricta Anti-CSRF en Callback de Google OAuth', () => {
+    it('Debe RECHAZAR con 403 peticiones de callback con estado manipulado o sin firma válida', async () => {
+      const req = new NextRequest('http://localhost:3000/api/auth/callback/google?code=fake_code&state=fake_unsigned_state');
+      const res = await getGoogleCallback(req);
+      const html = await res.text();
+
+      expect(res.status).toBe(403);
+      expect(html).toContain('Fallo de Seguridad Anti-CSRF');
+    });
+
+    it('Debe RECHAZAR con 403 peticiones de callback sin parámetro de estado', async () => {
+      const req = new NextRequest('http://localhost:3000/api/auth/callback/google?code=fake_code');
+      const res = await getGoogleCallback(req);
+      const html = await res.text();
+
+      expect(res.status).toBe(403);
+      expect(html).toContain('Fallo de Seguridad Anti-CSRF');
+    });
+  });
+
+  // VULN-08: Cifrado Autenticado AES-256-GCM de Tokens OAuth en Reposo (CASA ASVS 6.2.1)
+  describe('VULN-08: Cifrado Autenticado AES-256-GCM para Tokens en Reposo', () => {
+    it('Debe cifrar tokens con prefijo enc:v1: y descifrarlos de forma determinista', () => {
+      const plainToken = 'ya29.a0ARrdaM_secret_token_1234567890';
+      const encrypted = encryptToken(plainToken);
+
+      expect(encrypted).toMatch(/^enc:v1:[0-9a-f]{24}:[0-9a-f]{32}:[0-9a-f]+$/);
+      expect(encrypted).not.toContain(plainToken);
+
+      const decrypted = decryptToken(encrypted);
+      expect(decrypted).toBe(plainToken);
+    });
+
+    it('Debe rechazar o devolver cadena vacía ante manipulación del payload o authentication tag GCM', () => {
+      const plainToken = 'ya29.sample_refresh_token_xyz';
+      const encrypted = encryptToken(plainToken);
+      const parts = encrypted.split(':');
+      // Alterar el auth tag (tag de autenticación GCM)
+      parts[3] = 'ffffffffffffffffffffffffffffffff';
+      const tampered = parts.join(':');
+
+      const decrypted = decryptToken(tampered);
+      expect(decrypted).toBe('');
+    });
+  });
+
+  // VULN-09: Revocación Activa de Tokens y Supresión de Datos (Google Limited Use & RFC 7009)
+  describe('VULN-09: Revocación Activa de Tokens RFC 7009 y Supresión de Datos', () => {
+    it('Debe permitir revocar credenciales institucionales y purgar el almacenamiento en /api/auth/google/revoke', async () => {
+      const req = new NextRequest('http://localhost:3000/api/auth/google/revoke', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'test-revoke@ibime.edu.mx' })
+      });
+      const res = await postGoogleRevoke(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.message).toContain('revocadas exitosamente');
+    });
+
+    it('Debe responder informativamente en el endpoint de eliminación de datos /api/user/data-deletion', async () => {
+      const req = new NextRequest('http://localhost:3000/api/user/data-deletion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'usuario-eliminacion@ibime.edu.mx' })
+      });
+      const res = await postDataDeletion(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(data.success).toBe(true);
+      expect(data.status).toBe('PURGED_AND_QUEUED');
+      expect(data.confirmation_code).toMatch(/^DEL-/);
+    });
+  });
+
 });
+

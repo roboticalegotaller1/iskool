@@ -23,6 +23,8 @@ const nextConfig: NextConfig = {
   },
   // Habilitar compresión HTTP gzip / brotli para respuestas estáticas y dinámicas
   compress: true,
+  // Deshabilitar cabecera X-Powered-By para blindaje anti-fingerprinting (OWASP ASVS 14.4.1 / CASA)
+  poweredByHeader: false,
   experimental: {
     optimizePackageImports: [
       "lucide-react",

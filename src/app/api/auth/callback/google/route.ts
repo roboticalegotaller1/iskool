@@ -84,15 +84,29 @@ export async function GET(req: NextRequest) {
     // 1. Validar y parsear criptográficamente el estado enviado a Google (Anti-CSRF)
     const stateRaw = searchParams.get('state');
     const stateVerification = verifyOAuthState(stateRaw);
-    let targetTenantId = 'e1000000-0000-0000-0000-000000000001';
-    let flow: 'login' | 'workspace_connect' = 'login';
-    let redirectUrl = '';
 
-    if (stateVerification.valid && stateVerification.payload) {
-      if (stateVerification.payload.tenantId) targetTenantId = stateVerification.payload.tenantId;
-      if (stateVerification.payload.flow) flow = stateVerification.payload.flow;
-      if (stateVerification.payload.redirect) redirectUrl = sanitizeInternalRedirectUrl(stateVerification.payload.redirect, '');
+    if (!stateVerification.valid || !stateVerification.payload) {
+      console.warn('OAuth State verification failed for callback:', stateRaw);
+      return new NextResponse(
+        `<!DOCTYPE html>
+        <html lang="es">
+          <head>
+            <meta charset="utf-8" />
+            <title>Error de Validación de Seguridad (CASA Anti-CSRF)</title>
+          </head>
+          <body style="font-family:sans-serif; text-align:center; padding:50px;">
+            <h2 style="color:#d93025;">Fallo de Seguridad Anti-CSRF</h2>
+            <p>El token de estado OAuth (Anti-CSRF) es inválido, manipulado o ha expirado. Por seguridad institucional, la petición fue rechazada.</p>
+            <a href="/login" style="color:#1a73e8; font-weight:bold;">Volver a Intentar</a>
+          </body>
+        </html>`,
+        { status: 403, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+      );
     }
+
+    const targetTenantId = stateVerification.payload.tenantId || 'e1000000-0000-0000-0000-000000000001';
+    const flow: 'login' | 'workspace_connect' = stateVerification.payload.flow || 'login';
+    const redirectUrl = sanitizeInternalRedirectUrl(stateVerification.payload.redirect || '', '');
 
     // 2. Intercambiar código por tokens de Google
     const tokens = await GoogleOAuthService.exchangeCodeForTokens(code, origin);

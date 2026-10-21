@@ -289,6 +289,8 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
       for (const m of candidateModels) {
         try {
           const url = 'https://generativelanguage.googleapis.com/v1beta/' + m + ':generateContent?key=' + apiKey;
+          const triageController = new AbortController();
+          const triageTimeout = setTimeout(() => triageController.abort(), 9000);
           const res = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -304,8 +306,9 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
                 temperature: 0.1
               }
             }),
-            signal: AbortSignal.timeout(9000)
+            signal: triageController.signal
           });
+          clearTimeout(triageTimeout);
           if (res.ok) {
             response = res;
             break;
