@@ -1259,6 +1259,21 @@ export function CEOEmailCommunicationsModal({
   // Sub-vista de Apariencia: 'custom' (Estudio Libre) vs 'presets' (Catálogo de 8 Temas)
   const [appearanceSubView, setAppearanceSubView] = useState<'custom' | 'presets'>('custom');
 
+  // Menú desplegable para temas ejecutivos en el Header (ahorro horizontal de espacio)
+  const [isThemeMenuOpen, setIsThemeMenuOpen] = useState<boolean>(false);
+  const themeMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isThemeMenuOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (themeMenuRef.current && !themeMenuRef.current.contains(event.target as Node)) {
+        setIsThemeMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isThemeMenuOpen]);
+
   // Estados para guardado asíncrono y feedback visual del Estudio de Color
   const [isSavingCustomTheme, setIsSavingCustomTheme] = useState<boolean>(false);
   const [saveCustomSuccess, setSaveCustomSuccess] = useState<boolean>(false);
@@ -6583,9 +6598,9 @@ Comité de Seguridad y Protección Escolar`
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-1 sm:p-3 lg:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in select-none">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-2 md:p-3 lg:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in select-none">
       <div 
-        className={`${currentTheme.modalBg} ${currentTheme.modalBorder} rounded-3xl shadow-2xl border w-full max-w-[98vw] 2xl:max-w-[1980px] max-h-[97vh] sm:max-h-[94vh] h-[95vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 relative`}
+        className={`${currentTheme.modalBg} ${currentTheme.modalBorder} rounded-none sm:rounded-2xl lg:rounded-3xl shadow-2xl border-0 sm:border w-full max-w-[100vw] sm:max-w-[98vw] 2xl:max-w-[1980px] h-[100dvh] sm:h-[95vh] max-h-[100dvh] sm:max-h-[95vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 relative`}
         style={themeMode === 'custom' ? {
           backgroundColor: customTheme.backgroundColor,
           borderColor: customTheme.cardBorderColor || (isColorLight(customTheme.backgroundColor) ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)'),
@@ -6616,70 +6631,72 @@ Comité de Seguridad y Protección Escolar`
         {/* 1. HEADER DE LA SUITE INTELIGENTE DE EMAIL CEO            */}
         {/* ========================================================= */}
         <div 
-          className={`px-3 sm:px-6 py-2.5 sm:py-3.5 ${currentTheme.headerBg} ${currentTheme.headerText} flex items-center justify-between shrink-0 border-b ${currentTheme.headerBorder} gap-3 flex-wrap lg:flex-nowrap`}
+          className={`px-2.5 sm:px-4 lg:px-5 py-2 sm:py-2.5 ${currentTheme.headerBg} ${currentTheme.headerText} flex items-center justify-between shrink-0 border-b ${currentTheme.headerBorder} gap-2 flex-nowrap overflow-hidden select-none`}
           style={themeMode === 'custom' && customTheme.headerColor ? { 
             backgroundColor: customTheme.headerColor,
             borderColor: isColorLight(customTheme.headerColor) ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)'
           } : undefined}
         >
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 shrink">
             {/* Botón de Menú Móvil para Desplegar Módulos Ejecutivos */}
             <button
               type="button"
               onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-              className="md:hidden p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer shrink-0"
+              className="md:hidden p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer shrink-0"
               aria-label="Abrir módulos ejecutivos"
               title="Módulos Ejecutivos"
             >
               <Menu className="h-4 w-4" />
             </button>
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-[#E41B14] via-[#C01D0C] to-[#17426D] text-white flex items-center justify-center shadow-lg shadow-red-950/50 border border-red-400/30 shrink-0">
-              <Mail className="h-4.5 w-4.5 sm:h-5 sm:w-5 text-white" />
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-[#E41B14] via-[#C01D0C] to-[#17426D] text-white flex items-center justify-center shadow-md shadow-red-950/50 border border-red-400/30 shrink-0">
+              <Mail className="h-4 w-4 text-white" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap truncate">
                 <h3 
-                  className="text-sm sm:text-base font-black tracking-tight flex items-center gap-1.5 truncate"
+                  className="text-xs sm:text-sm font-black tracking-tight flex items-center gap-1.5 truncate"
                   style={themeMode === 'custom' && customTheme.headerColor ? { color: getContrastTextColor(customTheme.headerColor) } : { color: '#FFFFFF' }}
                 >
-                  <span>Consola de Correo Inteligente & Triage Cognitivo CEO</span>
+                  <span className="hidden xl:inline">Consola de Correo Inteligente & Triage Cognitivo CEO</span>
+                  <span className="hidden sm:inline xl:hidden">Consola de Correo CEO</span>
+                  <span className="sm:hidden">Correo CEO</span>
                 </h3>
-                <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                <span className="hidden 2xl:inline-flex text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 items-center gap-1 shrink-0">
                   <ShieldCheck className="h-3 w-3" /> Bóveda 100% Hermética
                 </span>
-                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/30 flex items-center gap-1">
+                <span className="hidden 3xl:inline-flex text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-200 border border-blue-400/30 items-center gap-1 shrink-0">
                   <Zap className="h-3 w-3 text-amber-300" /> 15 Fases Activas
                 </span>
               </div>
               <p 
-                className="text-[11px] font-medium mt-0.5 flex items-center gap-2 truncate"
+                className="text-[10px] sm:text-[11px] font-medium mt-0.5 flex items-center gap-1.5 truncate"
                 style={themeMode === 'custom' && customTheme.headerColor ? { color: getContrastSubtextColor(customTheme.headerColor) } : { color: '#CBD5E1' }}
               >
-                <span>{schoolName} ({campuses.length} Sedes)</span>
-                <span>•</span>
+                <span className="truncate max-w-[130px] sm:max-w-[200px] md:max-w-[260px] lg:max-w-none">{schoolName} ({campuses.length} Sedes)</span>
+                <span className="hidden sm:inline text-slate-400">•</span>
                 {connectionStatus === 'connected_verified' && connectedEmail ? (
-                  <span className="text-emerald-300 font-semibold flex items-center gap-1 truncate">
-                    <KeyRound className="h-3 w-3 text-emerald-400 shrink-0" /> Cuenta Activa: {connectedEmail}
+                  <span className="text-emerald-300 font-semibold hidden sm:flex items-center gap-1 truncate max-w-[150px] md:max-w-[220px] lg:max-w-[280px]">
+                    <KeyRound className="h-3 w-3 text-emerald-400 shrink-0" /> Cuenta: {connectedEmail}
                   </span>
                 ) : isLivePinging && connectedEmail ? (
-                  <span className="text-cyan-300 font-semibold flex items-center gap-1 truncate">
-                    <RefreshCw className="h-3 w-3 text-cyan-400 animate-spin shrink-0" /> Verificando Ping: {connectedEmail}
+                  <span className="text-cyan-300 font-semibold hidden sm:flex items-center gap-1 truncate max-w-[150px] md:max-w-[220px] lg:max-w-[280px]">
+                    <RefreshCw className="h-3 w-3 text-cyan-400 animate-spin shrink-0" /> Verificando: {connectedEmail}
                   </span>
                 ) : connectedEmail && connectionStatus === 'failed' ? (
                   <button
                     type="button"
                     onClick={() => handleOpenProviderOAuth('google')}
-                    className="text-amber-200 font-semibold flex items-center gap-1.5 bg-amber-950/70 hover:bg-amber-900/80 px-2 py-0.5 rounded-lg border border-amber-500/40 text-[10px] cursor-pointer transition-colors"
+                    className="text-amber-200 font-semibold hidden sm:flex items-center gap-1 bg-amber-950/70 hover:bg-amber-900/80 px-2 py-0.5 rounded-lg border border-amber-500/40 text-[10px] cursor-pointer transition-colors shrink-0"
                     title="Haz clic para autorizar tu cuenta con Google"
                   >
                     <KeyRound className="h-3 w-3 text-amber-400 shrink-0" /> Autorizar: {connectedEmail}
                   </button>
                 ) : connectedEmail ? (
-                  <span className="text-slate-300 font-medium flex items-center gap-1 truncate">
+                  <span className="text-slate-300 font-medium hidden sm:flex items-center gap-1 truncate max-w-[150px] md:max-w-[220px] lg:max-w-[280px]">
                     <KeyRound className="h-3 w-3 text-slate-400 shrink-0" /> {connectedEmail}
                   </span>
                 ) : (
-                  <span className="text-slate-400 font-medium flex items-center gap-1">
+                  <span className="text-slate-400 font-medium hidden sm:flex items-center gap-1 shrink-0">
                     <KeyRound className="h-3 w-3" /> Sin cuenta
                   </span>
                 )}
@@ -6688,35 +6705,36 @@ Comité de Seguridad y Protección Escolar`
           </div>
 
           {/* BARRA MODELO C: BRIEFING 60s, INTERCEPTOR Y RADAR DE INCIDENCIAS */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-nowrap shrink-0 ml-auto">
             {/* Cápsula de Audio Digest 60s con ecualizador animado */}
-            <div className="flex items-center gap-2 bg-slate-900/85 hover:bg-slate-900 px-2.5 py-1.5 rounded-xl border border-indigo-500/40 text-xs shadow-xs transition-all relative group">
+            <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-900/85 hover:bg-slate-900 px-2 sm:px-2.5 py-1.5 rounded-xl border border-indigo-500/40 text-xs shadow-xs transition-all shrink-0 relative group">
               <button
                 type="button"
                 onClick={handleTogglePlayBriefing}
-                className="flex items-center gap-1.5 text-amber-300 hover:text-amber-200 font-black cursor-pointer"
+                className="flex items-center gap-1 sm:gap-1.5 text-amber-300 hover:text-amber-200 font-black cursor-pointer shrink-0"
                 title={isAudioDigestFresh ? `Audio Digest al día (${lastAudioUpdateTime || 'revisión cada 30s'}). Clic para reproducir.` : "Reproducir Briefing Ejecutivo de 60 segundos"}
               >
                 {isPlayingAudio ? (
                   <>
-                    <span className="relative flex h-2 w-2">
+                    <span className="relative flex h-2 w-2 shrink-0">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400"></span>
                     </span>
-                    <Pause className="h-3.5 w-3.5 text-amber-300" />
+                    <Pause className="h-3.5 w-3.5 text-amber-300 shrink-0" />
                   </>
                 ) : (
                   <>
-                    <span className="relative flex h-2 w-2" title="Sincronizado cada 30 segundos con nuevos correos">
+                    <span className="relative flex h-2 w-2 shrink-0" title="Sincronizado cada 30 segundos con nuevos correos">
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
                     </span>
-                    <Play className="h-3.5 w-3.5 fill-amber-300 text-amber-300" />
+                    <Play className="h-3.5 w-3.5 fill-amber-300 text-amber-300 shrink-0" />
                   </>
                 )}
-                <span className="text-[11px] font-bold text-white tracking-wide">Audio Digest 60s</span>
+                <span className="hidden sm:inline text-[11px] font-bold text-white tracking-wide">Audio Digest 60s</span>
+                <span className="sm:hidden text-[10px] font-bold text-white">Digest</span>
               </button>
               {/* Barras de ecualizador simulado */}
-              <div className="flex items-end gap-0.5 h-3.5 px-0.5">
+              <div className="hidden 2xl:flex items-end gap-0.5 h-3.5 px-0.5">
                 {[40, 75, 50, 90, 60, 85].map((height, i) => (
                   <span
                     key={i}
@@ -6725,13 +6743,13 @@ Comité de Seguridad y Protección Escolar`
                   />
                 ))}
               </div>
-              <span className="text-[10px] font-mono text-slate-300">
+              <span className="hidden md:inline text-[10px] font-mono text-slate-300 shrink-0">
                 0:{audioProgress.toString().padStart(2, '0')}/1:00
               </span>
             </div>
 
             {/* Pastilla Interceptor de Patrones Colectivos */}
-            <div className="hidden xl:flex items-center gap-1.5 bg-amber-950/70 border border-amber-500/50 px-2.5 py-1.5 rounded-xl text-xs">
+            <div className="hidden 3xl:flex items-center gap-1.5 bg-amber-950/70 border border-amber-500/50 px-2.5 py-1.5 rounded-xl text-xs shrink-0">
               <span className="text-amber-300 text-[11px] font-bold flex items-center gap-1">
                 <Zap className="h-3 w-3 text-amber-400" /> 5 reportes Ruta 4
               </span>
@@ -6751,114 +6769,166 @@ Comité de Seguridad y Protección Escolar`
 
             {/* Pastilla Radar SLA */}
             <div 
-              className="hidden lg:flex items-center gap-1 bg-rose-950/70 border border-rose-500/50 px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-rose-200"
+              className="hidden 2xl:flex items-center gap-1 bg-rose-950/70 border border-rose-500/50 px-2.5 py-1.5 rounded-xl text-[11px] font-bold text-rose-200 shrink-0"
               style={themeMode === 'custom' && customTheme.signalColor ? { borderColor: `${customTheme.signalColor}80` } : undefined}
             >
               <Clock 
-                className="h-3 w-3 animate-pulse" 
+                className="h-3 w-3 animate-pulse shrink-0" 
                 style={{ color: themeMode === 'custom' && customTheme.signalColor ? customTheme.signalColor : '#FB7185' }} 
               />
-              <span>SEP: <strong>11h 20m</strong></span>
+              <span className="whitespace-nowrap">SEP: <strong>11h 20m</strong></span>
             </div>
 
-            {/* Selector Rápido de Temas Ejecutivos */}
-            <div className="hidden 2xl:flex items-center gap-1 bg-slate-900/70 p-1 rounded-xl border border-white/10">
+            {/* Selector Desplegable Compacto de Temas Ejecutivos */}
+            <div className="relative shrink-0" ref={themeMenuRef}>
               <button
                 type="button"
-                onClick={() => handleSelectTheme('ivory')}
-                className={`px-2 py-0.5 rounded-lg text-[10px] font-black cursor-pointer transition-colors ${themeMode === 'ivory' ? 'bg-[#FDFBF7] text-[#1E293B] shadow-xs' : 'text-slate-300 hover:text-white'}`}
-                title="Tema Marfil Institucional (Predeterminado)"
+                onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
+                className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-900 text-white border border-white/10 text-xs font-bold transition-all cursor-pointer shadow-xs shrink-0"
+                title="Seleccionar tema visual o abrir Estudio"
               >
-                🏛️ Marfil
+                <Palette className="h-3.5 w-3.5 text-amber-300 shrink-0" />
+                <span className="hidden lg:inline text-[11px] font-black">
+                  {themeMode === 'ivory' ? '🏛️ Marfil' :
+                   themeMode === 'slate' ? '⬛ Pizarra' :
+                   themeMode === 'navy' ? '🔷 Azul' :
+                   themeMode === 'emerald' ? '🌲 Verde' :
+                   themeMode === 'burgundy' ? '🍷 Borgoña' :
+                   themeMode === 'custom' ? '🎨 Estudio' : 'Tema'}
+                </span>
+                <ChevronDown className={`h-3 w-3 text-slate-400 shrink-0 transition-transform ${isThemeMenuOpen ? 'rotate-180' : ''}`} />
               </button>
-              <button
-                type="button"
-                onClick={() => handleSelectTheme('slate')}
-                className={`px-2 py-0.5 rounded-lg text-[10px] font-black cursor-pointer transition-colors ${themeMode === 'slate' ? 'bg-slate-800 text-white shadow-xs' : 'text-slate-300 hover:text-white'}`}
-                title="Tema Pizarra Ejecutiva"
-              >
-                ⬛ Pizarra
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSelectTheme('navy')}
-                className={`px-2 py-0.5 rounded-lg text-[10px] font-black cursor-pointer transition-colors ${themeMode === 'navy' ? 'bg-blue-900 text-white shadow-xs' : 'text-slate-300 hover:text-white'}`}
-                title="Tema Azul Real Académico"
-              >
-                🔷 Azul
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSelectTheme('emerald')}
-                className={`px-2 py-0.5 rounded-lg text-[10px] font-black cursor-pointer transition-colors ${themeMode === 'emerald' ? 'bg-emerald-800 text-white shadow-xs' : 'text-slate-300 hover:text-white'}`}
-                title="Tema Verde Esmeralda Institucional"
-              >
-                🌲 Verde
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSelectTheme('burgundy')}
-                className={`px-2 py-0.5 rounded-lg text-[10px] font-black cursor-pointer transition-colors ${themeMode === 'burgundy' ? 'bg-[#8B1E3F] text-white shadow-xs' : 'text-slate-300 hover:text-white'}`}
-                title="Tema Borgoña Soberano"
-              >
-                🍷 Borgoña
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const targetTab: typeof activeTab = 'ajustes';
-                  setActiveTab(targetTab);
-                  setSettingsSubTab('apariencia');
-                  setAppearanceSubView('custom');
-                }}
-                className={`px-2 py-0.5 rounded-lg text-[10px] font-black cursor-pointer transition-all flex items-center gap-1 ${
-                  themeMode === 'custom'
-                    ? 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-xs ring-1 ring-amber-300'
-                    : 'text-slate-300 hover:text-white hover:bg-white/10'
-                }`}
-                title="Abrir Estudio de Personalización Libre"
-              >
-                <Palette className="h-3 w-3 text-amber-300" />
-                <span>Estudio</span>
-              </button>
+
+              {isThemeMenuOpen && (
+                <div className="absolute right-0 top-full mt-1.5 w-56 bg-slate-950/95 backdrop-blur-md rounded-2xl border border-white/15 p-2 shadow-2xl z-[120] space-y-1 animate-in fade-in zoom-in-95 text-xs select-none">
+                  <div className="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                    <span>Temas Ejecutivos</span>
+                    <span className="text-[9px] text-amber-300 font-bold">En Vivo</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => { handleSelectTheme('ivory'); setIsThemeMenuOpen(false); }}
+                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer text-left ${
+                      themeMode === 'ivory' ? 'bg-[#FDFBF7] text-[#1E293B] font-black shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <span>🏛️ Marfil Institucional</span>
+                    {themeMode === 'ivory' && <Check className="h-3.5 w-3.5 text-slate-800" />}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => { handleSelectTheme('slate'); setIsThemeMenuOpen(false); }}
+                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer text-left ${
+                      themeMode === 'slate' ? 'bg-slate-800 text-white font-black shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <span>⬛ Pizarra Ejecutiva</span>
+                    {themeMode === 'slate' && <Check className="h-3.5 w-3.5 text-white" />}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => { handleSelectTheme('navy'); setIsThemeMenuOpen(false); }}
+                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer text-left ${
+                      themeMode === 'navy' ? 'bg-blue-900 text-white font-black shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <span>🔷 Azul Real Académico</span>
+                    {themeMode === 'navy' && <Check className="h-3.5 w-3.5 text-white" />}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => { handleSelectTheme('emerald'); setIsThemeMenuOpen(false); }}
+                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer text-left ${
+                      themeMode === 'emerald' ? 'bg-emerald-800 text-white font-black shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <span>🌲 Verde Esmeralda</span>
+                    {themeMode === 'emerald' && <Check className="h-3.5 w-3.5 text-white" />}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => { handleSelectTheme('burgundy'); setIsThemeMenuOpen(false); }}
+                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer text-left ${
+                      themeMode === 'burgundy' ? 'bg-[#8B1E3F] text-white font-black shadow-xs' : 'text-slate-300 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <span>🍷 Borgoña Soberano</span>
+                    {themeMode === 'burgundy' && <Check className="h-3.5 w-3.5 text-white" />}
+                  </button>
+
+                  <div className="border-t border-white/10 my-1" />
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const targetTab: typeof activeTab = 'ajustes';
+                      setActiveTab(targetTab);
+                      setSettingsSubTab('apariencia');
+                      setAppearanceSubView('custom');
+                      setIsThemeMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                      themeMode === 'custom'
+                        ? 'bg-gradient-to-r from-amber-500 to-indigo-600 text-white shadow-xs'
+                        : 'text-amber-300 hover:bg-white/10'
+                    }`}
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Palette className="h-3.5 w-3.5" />
+                      <span>Estudio de Color Libre</span>
+                    </span>
+                    <span className="text-[9px] bg-amber-500/20 px-1.5 py-0.5 rounded text-amber-300 uppercase">
+                      Libre
+                    </span>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Botón de Expansión del Radar Cockpit */}
             <button
               type="button"
               onClick={() => setShowModelCPanel(!showModelCPanel)}
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
                 showModelCPanel ? 'bg-indigo-600 text-white shadow-md' : 'bg-white/10 text-white hover:bg-white/20'
               }`}
               title="Abrir o colapsar Cabina de Radar Ejecutivo (Modelo C)"
             >
-              <Sparkles className="h-3.5 w-3.5 text-amber-300" />
-              <span className="hidden sm:inline">Radar Cockpit</span>
-              {showModelCPanel ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              <Sparkles className="h-3.5 w-3.5 text-amber-300 shrink-0" />
+              <span className="hidden md:inline">Radar Cockpit</span>
+              <span className="hidden sm:inline md:hidden">Radar</span>
+              {showModelCPanel ? <ChevronUp className="h-3.5 w-3.5 shrink-0" /> : <ChevronDown className="h-3.5 w-3.5 shrink-0" />}
             </button>
 
             {/* Ponte al día conmigo diálogo matutino */}
             <button
+              type="button"
               onClick={() => setShowCatchupModal(true)}
-              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-white font-bold text-xs shadow-md transition-all cursor-pointer active:scale-95 border"
+              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 md:px-3 py-1.5 rounded-xl text-white font-bold text-xs shadow-md transition-all cursor-pointer active:scale-95 border shrink-0"
               style={{
                 background: themeMode === 'custom' && customTheme.buttonColor ? customTheme.buttonColor : 'linear-gradient(to right, #4F46E5, #9333EA)',
                 borderColor: themeMode === 'custom' && customTheme.buttonColor ? `${customTheme.buttonColor}99` : 'rgba(255,255,255,0.2)',
                 color: themeMode === 'custom' && customTheme.buttonColor ? (isColorLight(customTheme.buttonColor) ? '#0F172A' : '#FFFFFF') : '#FFFFFF'
               }}
-              title="Resumen ejecutivo silencioso de 30 segundos"
+              title="Resumen ejecutivo silencioso (Ponte al día)"
             >
-              <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
-              <span>Ponte al día</span>
+              <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse shrink-0" />
+              <span className="hidden sm:inline whitespace-nowrap">Ponte al día</span>
             </button>
 
             {/* Cerrar modal */}
             <button
+              type="button"
               onClick={onClose}
-              className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0"
               aria-label="Cerrar modal"
             >
-              <X className="h-5 w-5" />
+              <X className="h-5 w-5 shrink-0" />
             </button>
           </div>
         </div>
@@ -11159,7 +11229,7 @@ Comité de Seguridad y Protección Escolar`
                               </button>
 
                               {/* Remitente */}
-                              <div className="w-40 sm:w-48 shrink-0 truncate">
+                              <div className="w-24 sm:w-36 md:w-48 shrink-0 truncate">
                                 <span className={`text-xs truncate ${item.is_unread ? 'font-black text-slate-900' : 'font-medium text-slate-700'}`}>
                                   {item.sender_name}
                                 </span>
@@ -11233,7 +11303,7 @@ Comité de Seguridad y Protección Escolar`
                               </div>
 
                               {/* Timestamp / Hora */}
-                              <div className="w-28 sm:w-32 text-right shrink-0 whitespace-nowrap">
+                              <div className="w-20 sm:w-28 md:w-32 text-right shrink-0 whitespace-nowrap">
                                 <span
                                   title={item.date_iso ? formatCdmxFull(item.date_iso) : (item.date_ms ? formatCdmxFull(item.date_ms) : (item.received_at || item.timestamp))}
                                   className={`text-[11px] cursor-help ${item.is_unread ? 'font-black text-slate-900' : 'text-slate-400 font-medium'}`}
@@ -13047,14 +13117,33 @@ Comité de Seguridad y Protección Escolar`
         {/* ========================================================= */}
         {/* 4. FOOTER GENERAL                                         */}
         {/* ========================================================= */}
-        <div className="px-6 py-3 bg-white border-t border-slate-200 flex items-center justify-between text-xs text-slate-500 shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span>Encriptación Institucional · Bitácora Inmutable de Entrada y Salida</span>
+        <div 
+          className={`px-3 sm:px-6 py-2 sm:py-2.5 border-t flex items-center justify-between text-[11px] sm:text-xs shrink-0 transition-colors ${
+            currentTheme.isDark 
+              ? 'bg-slate-900/90 border-white/10 text-slate-400' 
+              : 'bg-white border-slate-200 text-slate-500'
+          }`}
+          style={themeMode === 'custom' && customTheme.headerColor ? {
+            backgroundColor: customTheme.headerColor,
+            borderColor: isColorLight(customTheme.headerColor) ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+            color: getContrastSubtextColor(customTheme.headerColor)
+          } : undefined}
+        >
+          <div className="flex items-center gap-2 truncate">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+            <span className="truncate">
+              <span className="hidden sm:inline">Encriptación Institucional · </span>
+              <span>Bitácora Inmutable de Entrada y Salida</span>
+            </span>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold transition-colors cursor-pointer"
+            className={`px-3 py-1 sm:px-4 sm:py-1.5 rounded-xl font-bold text-xs transition-colors cursor-pointer shrink-0 ml-2 ${
+              currentTheme.isDark
+                ? 'bg-white/10 hover:bg-white/20 text-white'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+            }`}
           >
             Cerrar Consola
           </button>
@@ -13412,8 +13501,8 @@ Comité de Seguridad y Protección Escolar`
       {/* 6. MODAL DE CATCHUP: "PONTE AL DÍA CONMIGO"               */}
       {/* ========================================================= */}
       {showCatchupModal && (
-        <div className="fixed inset-0 z-70 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 text-xs animate-in zoom-in-95 max-h-[92vh] flex flex-col overflow-hidden">
+        <div className="fixed inset-0 z-70 bg-black/70 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 space-y-4 text-xs animate-in zoom-in-95 max-h-[92vh] flex flex-col overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
               <div className="flex items-center gap-2.5">

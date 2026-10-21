@@ -161,7 +161,7 @@ describe('📬 COBERTURA TOTAL DE CORREO INSTITUCIONAL CEO — MULTI-TENANT UNIV
         { id: '3', date_ms: 3000, timestamp: '18 oct 12:00 hrs', subject: 'C', from: 'c@test.com', snippet: '', quadrant: 'informativo' as any }
       ];
 
-      const sorted = sortEmailsDescending(unsorted);
+      const sorted = sortEmailsDescending(unsorted as any);
       expect(sorted[0].id).toBe('2');
       expect(sorted[1].id).toBe('3');
       expect(sorted[2].id).toBe('1');
@@ -176,11 +176,53 @@ describe('📬 COBERTURA TOTAL DE CORREO INSTITUCIONAL CEO — MULTI-TENANT UNIV
         { id: 'n1', date_ms: 4000, timestamp: '20 oct 10:00 hrs', subject: 'Nuevo', from: 'b@test.com', snippet: '', quadrant: 'informativo' as any }
       ];
 
-      const merged = mergeAndSortEmails(existing, incoming);
+      const merged = mergeAndSortEmails(existing as any, incoming as any);
       expect(merged.length).toBe(2);
       expect(merged[0].id).toBe('n1');
       expect(merged[1].id).toBe('e1');
     });
   });
 
+  describe('📱 ADAPTACIÓN RESPONSIVA TOTAL Y AJUSTE VISUAL (PC, LAPTOP, TABLET Y CELULAR)', () => {
+    const modalPath = path.join(process.cwd(), 'src', 'components', 'admin', 'CEOEmailCommunicationsModal.tsx');
+    const modalContent = fs.readFileSync(modalPath, 'utf-8');
+
+    it('el contenedor del modal debe adaptarse dinámicamente a celulares (100dvh) y pantallas mayores sin desbordar', () => {
+      expect(modalContent).toContain('h-[100dvh] sm:h-[95vh]');
+      expect(modalContent).toContain('max-h-[100dvh] sm:max-h-[95vh]');
+      expect(modalContent).toContain('rounded-none sm:rounded-2xl lg:rounded-3xl');
+      expect(modalContent).toContain('p-0 sm:p-2 md:p-3 lg:p-4');
+    });
+
+    it('el header de la consola de correo debe usar flex-nowrap estricto para evitar que los controles se pasen a la parte baja', () => {
+      expect(modalContent).toMatch(/flex items-center justify-between shrink-0 border-b.*flex-nowrap/);
+      expect(modalContent).toContain('flex items-center gap-1.5 sm:gap-2 flex-nowrap shrink-0 ml-auto');
+    });
+
+    it('los temas deben desplegarse en un selector compacto con popover para no saturar horizontalmente la barra', () => {
+      expect(modalContent).toContain('isThemeMenuOpen');
+      expect(modalContent).toContain('setIsThemeMenuOpen');
+      expect(modalContent).toContain('themeMenuRef');
+      expect(modalContent).toContain('🏛️ Marfil Institucional');
+      expect(modalContent).toContain('⬛ Pizarra Ejecutiva');
+      expect(modalContent).toContain('🔷 Azul Real Académico');
+      expect(modalContent).toContain('🌲 Verde Esmeralda');
+      expect(modalContent).toContain('🍷 Borgoña Soberano');
+      expect(modalContent).toContain('Estudio de Color Libre');
+    });
+
+    it('el título debe colapsar ordenadamente en resoluciones compactas (xl, sm, mobile)', () => {
+      expect(modalContent).toContain('hidden xl:inline');
+      expect(modalContent).toContain('hidden sm:inline xl:hidden');
+      expect(modalContent).toContain('sm:hidden');
+      expect(modalContent).toContain('Correo CEO');
+    });
+
+    it('el botón "Ponte al día" y el botón de cerrar deben permanecer anclados en la misma fila sin saltar a línea 2', () => {
+      expect(modalContent).toContain('Ponte al día');
+      expect(modalContent).toContain('aria-label="Cerrar modal"');
+    });
+  });
+
 });
+
