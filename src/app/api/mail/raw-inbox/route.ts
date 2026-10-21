@@ -3,7 +3,7 @@ import { InboundMailSpoolService } from '@/lib/services/inboundMailSpool';
 import { fetchLiveImapEmails, getCachedInboxEmails, injectEmailIntoCache, injectEmailsBatchIntoCache } from '@/lib/services/imapClientService';
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { HermeticEmailBrainService } from '@/lib/services/hermetic-email-brain.service';
-import { formatCdmxTime, formatCdmxDate, formatCdmxSmartBadge, parseEmailDateMs } from '@/utils/timeZoneUtils';
+import { formatCdmxTime, formatCdmxDate, formatCdmxSmartBadge, parseEmailDateMs, sanitizeCommercialTrademarks } from '@/utils/timeZoneUtils';
 import { validateApiAuth } from '@/lib/authValidator';
 
 export const runtime = 'nodejs';
@@ -230,7 +230,9 @@ export async function GET(request: NextRequest) {
     const tenantId = searchParams.get('tenantId') || 'e1000000-0000-0000-0000-000000000001';
     let rawEmail = (searchParams.get('email') || '').trim();
     if (!rawEmail || rawEmail === 'DISCONNECTED') {
-      rawEmail = 'roboticalegotaller1@gmail.com';
+      if (tenantId === 'e1000000-0000-0000-0000-000000000001' || tenantId.includes('ibime')) {
+        rawEmail = 'roboticalegotaller1@gmail.com';
+      }
     }
     // Mapeo canónico: En IBIME la cuenta Google Workspace oficial de la Dirección General / Patricia Sandoval es roboticalegotaller1@gmail.com
     const email =
@@ -551,8 +553,15 @@ export async function GET(request: NextRequest) {
       return item;
     });
 
-    // Filtrar correos eliminados por la Dirección General (tombstones de servidor)
-    sanitizedEmails = sanitizedEmails.filter((e: RawGmailItem) => !isEmailDeletedServer(tenantId, e.id));
+    // Filtrar correos eliminados por la Dirección General (tombstones de servidor) y sanitizar marcas comerciales (Regla 1)
+    sanitizedEmails = sanitizedEmails
+      .filter((e: RawGmailItem) => !isEmailDeletedServer(tenantId, e.id))
+      .map((e: RawGmailItem) => ({
+        ...e,
+        sender_name: sanitizeCommercialTrademarks(e.sender_name),
+        subject: sanitizeCommercialTrademarks(e.subject),
+        snippet: sanitizeCommercialTrademarks(e.snippet)
+      }));
 
     // REGLA FUNDAMENTAL DE ORDEN: Orden cronológico estricto descendente (los más recientes con hora exacta arriba)
     sanitizedEmails.sort((a, b) => {
@@ -934,8 +943,15 @@ export async function POST(request: NextRequest) {
       return item;
     });
 
-    // Filtrar correos eliminados por la Dirección General (tombstones de servidor)
-    sanitizedEmails = sanitizedEmails.filter((e: RawGmailItem) => !isEmailDeletedServer(tenantId, e.id));
+    // Filtrar correos eliminados por la Dirección General (tombstones de servidor) y sanitizar marcas comerciales (Regla 1)
+    sanitizedEmails = sanitizedEmails
+      .filter((e: RawGmailItem) => !isEmailDeletedServer(tenantId, e.id))
+      .map((e: RawGmailItem) => ({
+        ...e,
+        sender_name: sanitizeCommercialTrademarks(e.sender_name),
+        subject: sanitizeCommercialTrademarks(e.subject),
+        snippet: sanitizeCommercialTrademarks(e.snippet)
+      }));
 
     // Orden cronológico estricto descendente en POST
     sanitizedEmails.sort((a, b) => {

@@ -212,8 +212,106 @@ export function formatCdmxFull(
   }
 }
 
+const SPANISH_MONTH_MAP: Record<string, number> = {
+  ene: 0, jan: 0, enero: 0, january: 0,
+  feb: 1, febrero: 1, february: 1,
+  mar: 2, marzo: 2, march: 2,
+  abr: 3, apr: 3, abril: 3, april: 3,
+  may: 4, mayo: 4,
+  jun: 5, junio: 5, june: 5,
+  jul: 6, julio: 6, july: 6,
+  ago: 7, aug: 7, agosto: 7, august: 7,
+  sep: 8, sept: 8, septiembre: 8, september: 8,
+  oct: 9, octubre: 9, october: 9,
+  nov: 10, noviembre: 10, november: 10,
+  dic: 11, dec: 11, diciembre: 11, december: 11,
+};
+
 /**
- * Resuelve y extrae el timestamp unix en milisegundos de un correo de forma robusta y determinista
+ * Parsea cualquier formato textual (español o estándar) a milisegundos unix de forma exhaustiva.
+ */
+export function parseDateStringToEpochMs(str?: string | null): number | null {
+  if (!str || typeof str !== 'string') return null;
+  const trimmed = str.trim();
+  if (!trimmed) return null;
+
+  // 1. Número unix en string
+  if (/^\d{12,14}$/.test(trimmed)) {
+    const n = parseInt(trimmed, 10);
+    if (!isNaN(n) && n > 946684800000) return n;
+  }
+
+  // 2. Intento nativo de Date (ISO 8601 o RFC 2822)
+  const native = new Date(trimmed).getTime();
+  if (!isNaN(native) && native > 946684800000) {
+    return native;
+  }
+
+  // 3. Extracción de horas y minutos si están presentes
+  let hours = 12;
+  let minutes = 0;
+  let seconds = 0;
+  const timeMatch = trimmed.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if (timeMatch) {
+    hours = parseInt(timeMatch[1], 10);
+    minutes = parseInt(timeMatch[2], 10);
+    if (timeMatch[3]) seconds = parseInt(timeMatch[3], 10);
+  }
+
+  const strLower = trimmed.toLowerCase();
+  const now = new Date();
+  const currentYear = now.getFullYear();
+
+  // 4. Casos relativos directos
+  if (strLower.includes('hoy') || strLower.includes('ahora')) {
+    const d = new Date(now);
+    d.setHours(hours, minutes, seconds, 0);
+    return d.getTime();
+  }
+  if (strLower.includes('ayer')) {
+    const d = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    d.setHours(hours, minutes, seconds, 0);
+    return d.getTime();
+  }
+  if (strLower.includes('antier') || strLower.includes('anteayer')) {
+    const d = new Date(now.getTime() - 48 * 60 * 60 * 1000);
+    d.setHours(hours, minutes, seconds, 0);
+    return d.getTime();
+  }
+
+  // 5. Patrón español: "16 oct", "16 oct 09:22 hrs", "16 de octubre de 2026", "16 oct 2026"
+  const spanishDateMatch = strLower.match(/(\d{1,2})\s*(?:de\s*)?([a-záéíóúñ]{3,10})(?:\s*(?:de\s*)?(\d{4}))?/i);
+  if (spanishDateMatch) {
+    const day = parseInt(spanishDateMatch[1], 10);
+    const monthKey = spanishDateMatch[2].normalize('NFD').replace(/[\u0300-\u036f]/g, '').slice(0, 3);
+    const monthIndex = SPANISH_MONTH_MAP[monthKey] ?? SPANISH_MONTH_MAP[spanishDateMatch[2]];
+    if (monthIndex !== undefined && day >= 1 && day <= 31) {
+      const year = spanishDateMatch[3] ? parseInt(spanishDateMatch[3], 10) : currentYear;
+      const d = new Date(year, monthIndex, day, hours, minutes, seconds, 0);
+      return d.getTime();
+    }
+  }
+
+  // 6. Patrón numérico DD/MM/YYYY o DD-MM-YYYY
+  const slashMatch = trimmed.match(/(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?/);
+  if (slashMatch) {
+    const day = parseInt(slashMatch[1], 10);
+    const month = parseInt(slashMatch[2], 10) - 1;
+    let year = currentYear;
+    if (slashMatch[3]) {
+      year = parseInt(slashMatch[3], 10);
+      if (year < 100) year += 2000;
+    }
+    const d = new Date(year, month, day, hours, minutes, seconds, 0);
+    return d.getTime();
+  }
+
+  return null;
+}
+
+/**
+ * Resuelve y extrae el timestamp unix en milisegundos de un correo de forma robusta y determinista,
+ * reconciliando cualquier discrepancia entre date_ms y el texto visible del timestamp.
  */
 export function parseEmailDateMs(item: {
   date_ms?: number;
@@ -221,39 +319,59 @@ export function parseEmailDateMs(item: {
   received_at?: string;
   timestamp?: string;
 }): number {
-  if (typeof item.date_ms === 'number' && !isNaN(item.date_ms) && item.date_ms > 0) {
+  if (!item) return Date.now();
+
+  const fromTimestamp = parseDateStringToEpochMs(item.timestamp);
+  const fromReceivedAt = parseDateStringToEpochMs(item.received_at);
+
+  // Si date_ms existe y es válido
+  if (typeof item.date_ms === 'number' && !isNaN(item.date_ms) && item.date_ms > 946684800000) {
+    // Si fromTimestamp tiene una fecha explícita (ej. 16 oct), verificar concordancia
+    if (fromTimestamp) {
+      const dtMs = new Date(item.date_ms);
+      const dtExplicit = new Date(fromTimestamp);
+      // Si difieren en más de 20 horas (ej. date_ms guardado erróneamente en otro día), confiar en la fecha explícita
+      if (Math.abs(dtMs.getTime() - dtExplicit.getTime()) > 20 * 60 * 60 * 1000) {
+        return fromTimestamp;
+      }
+    }
     return item.date_ms;
   }
+
   if (item.date_iso) {
     const t = new Date(item.date_iso).getTime();
-    if (!isNaN(t) && t > 0) return t;
-  }
-  if (item.received_at) {
-    const t = new Date(item.received_at).getTime();
-    if (!isNaN(t) && t > 0) return t;
-  }
-
-  // Parsear strings heurísticos de timestamp ("18:24 hrs", "06:41")
-  const timeStr = item.timestamp || '';
-  const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})/);
-  const hours = timeMatch ? parseInt(timeMatch[1], 10) : 12;
-  const minutes = timeMatch ? parseInt(timeMatch[2], 10) : 0;
-
-  const targetDate = new Date();
-  targetDate.setHours(hours, minutes, 0, 0);
-
-  const recLower = (item.received_at || '').toLowerCase();
-  if (recLower.includes('ayer')) {
-    targetDate.setDate(targetDate.getDate() - 1);
-  } else if (recLower.includes('justo ahora') || recLower.includes('hoy') || recLower.includes('ahora')) {
-    // Mantener la fecha de hoy con las horas parseadas
-  } else if (item.received_at && item.received_at.length >= 3) {
-    const parsed = new Date(item.received_at);
-    if (!isNaN(parsed.getTime())) {
-      parsed.setHours(hours, minutes, 0, 0);
-      return parsed.getTime();
+    if (!isNaN(t) && t > 946684800000) {
+      if (fromTimestamp) {
+        const dtIso = new Date(t);
+        const dtExplicit = new Date(fromTimestamp);
+        if (Math.abs(dtIso.getTime() - dtExplicit.getTime()) > 20 * 60 * 60 * 1000) {
+          return fromTimestamp;
+        }
+      }
+      return t;
     }
   }
 
-  return targetDate.getTime();
+  if (fromTimestamp) return fromTimestamp;
+  if (fromReceivedAt) return fromReceivedAt;
+
+  return Date.now();
 }
+
+/**
+ * REGLA NO NEGOCIABLE 1: Sustitución de marcas comerciales externas por denominaciones institucionales canónicas.
+ */
+export function sanitizeCommercialTrademarks(text?: string | null): string {
+  if (!text || typeof text !== 'string') return '';
+  return text
+    .replace(/google\s*ai\s*studio/gi, 'Centro de Innovación y Motor IA')
+    .replace(/google\s*ai/gi, 'Inteligencia Artificial Pedagógica')
+    .replace(/gemini\s*(?:\d+(?:\.\d+)?\s*(?:flash|pro|ultra|argon)?|advanced)?/gi, 'Motor Pedagógico IA')
+    .replace(/chatgpt/gi, 'Asistente Digital')
+    .replace(/openai/gi, 'Laboratorio de Inteligencia Artificial')
+    .replace(/obsidian/gi, 'Bóveda Curricular')
+    .replace(/github/gi, 'Repositorio Central')
+    .replace(/canvas\s*lms/gi, 'Lienzo Digital')
+    .replace(/\bcanvas\b/gi, 'Lienzo Digital');
+}
+

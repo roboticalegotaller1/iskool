@@ -135,7 +135,8 @@ import {
   getRecentCdmxTimeStr,
   formatCdmxSmartBadge,
   formatCdmxFull,
-  parseEmailDateMs
+  parseEmailDateMs,
+  sanitizeCommercialTrademarks
 } from '@/utils/timeZoneUtils';
 import { WorkOsBoard } from './workOs/WorkOsBoard';
 import { SeedAccountsConfigPanel } from './workOs/SeedAccountsConfigPanel';
@@ -1158,8 +1159,8 @@ export function buildDynamicAudioDigestText(
  */
 export function sortEmailsDescending(emails: RawGmailItem[]): RawGmailItem[] {
   return [...emails].sort((a, b) => {
-    const timeA = typeof a.date_ms === 'number' && !isNaN(a.date_ms) && a.date_ms > 0 ? a.date_ms : parseEmailDateMs(a);
-    const timeB = typeof b.date_ms === 'number' && !isNaN(b.date_ms) && b.date_ms > 0 ? b.date_ms : parseEmailDateMs(b);
+    const timeA = parseEmailDateMs(a);
+    const timeB = parseEmailDateMs(b);
     return timeB - timeA;
   });
 }
@@ -2407,18 +2408,20 @@ export function CEOEmailCommunicationsModal({
 
   // Normalizador mandatorio de reglas CEO para correos recibidos (Reglas VIP + Supervisión + 4 Cuadrantes Zero-Tokens)
   const normalizeRawEmailCeoRules = useCallback((item: RawGmailItem): RawGmailItem => {
-    // Normalización mandatoria y coherente de fecha/hora (CDMX)
-    const parsedMs = (typeof item.date_ms === 'number' && !isNaN(item.date_ms) && item.date_ms > 0)
-      ? item.date_ms
-      : parseEmailDateMs(item);
-    const isoDate = item.date_iso || (parsedMs ? new Date(parsedMs).toISOString() : new Date().toISOString());
-    const smartTimestamp = formatCdmxSmartBadge(parsedMs || isoDate || item.timestamp);
+    // Normalización mandatoria y coherente de fecha/hora (CDMX) reconciliando date_ms con texto visible
+    const parsedMs = parseEmailDateMs(item);
+    const isoDate = item.date_iso && !isNaN(new Date(item.date_iso).getTime()) ? item.date_iso : new Date(parsedMs).toISOString();
+    const smartTimestamp = formatCdmxSmartBadge(parsedMs);
     const fullReceivedAt = item.received_at && item.received_at.length > 15
       ? item.received_at
-      : formatCdmxFull(parsedMs || isoDate);
+      : formatCdmxFull(parsedMs);
 
     const baseItem: RawGmailItem = {
       ...item,
+      sender_name: sanitizeCommercialTrademarks(item.sender_name),
+      subject: sanitizeCommercialTrademarks(item.subject),
+      snippet: sanitizeCommercialTrademarks(item.snippet),
+      body_text: sanitizeCommercialTrademarks(item.body_text),
       date_ms: parsedMs,
       date_iso: isoDate,
       timestamp: smartTimestamp || item.timestamp,
@@ -2631,7 +2634,7 @@ export function CEOEmailCommunicationsModal({
 
     const targetEmail = (connectedEmail || authUsername || (isIbime ? 'roboticalegotaller1@gmail.com' : '')).trim();
     const effectiveEmail =
-      targetEmail.includes('directora.general') || targetEmail.includes('patricia') || targetEmail.includes('ibime.edu.mx') || !targetEmail
+      targetEmail.includes('directora.general') || targetEmail.includes('patricia') || targetEmail.includes('ibime.edu.mx') || (!targetEmail && isIbime)
         ? 'roboticalegotaller1@gmail.com'
         : targetEmail;
 
