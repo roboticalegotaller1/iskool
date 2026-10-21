@@ -3,7 +3,7 @@ import { InboundMailSpoolService } from '@/lib/services/inboundMailSpool';
 import { fetchLiveImapEmails, getCachedInboxEmails, injectEmailIntoCache, injectEmailsBatchIntoCache } from '@/lib/services/imapClientService';
 import { GoogleOAuthService } from '@/lib/services/googleOAuthService';
 import { HermeticEmailBrainService } from '@/lib/services/hermetic-email-brain.service';
-import { formatCdmxTime } from '@/utils/timeZoneUtils';
+import { formatCdmxTime, formatCdmxDate, formatCdmxSmartBadge, parseEmailDateMs } from '@/utils/timeZoneUtils';
 import { validateApiAuth } from '@/lib/authValidator';
 
 export const runtime = 'nodejs';
@@ -18,6 +18,8 @@ export interface RawGmailItem {
   body_text: string;
   received_at: string;
   timestamp: string;
+  date_ms?: number;
+  date_iso?: string;
   is_unread: boolean;
   is_starred: boolean;
   is_important: boolean;
@@ -355,6 +357,8 @@ export async function GET(request: NextRequest) {
             undefined,
             tenantId
           );
+          const enqueuedMs = item.enqueued_at ? new Date(item.enqueued_at).getTime() : Date.now();
+          const dateMs = isNaN(enqueuedMs) ? Date.now() : enqueuedMs;
           const isCeo = triage.quadrant === 'ATENCION_CEO';
           const isSpam = triage.quadrant === 'SPAM_DESCARTADO';
           const spoolItem: RawGmailItem = {
@@ -365,8 +369,10 @@ export async function GET(request: NextRequest) {
             subject: item.subject,
             snippet: (item.body_text || item.subject || '').slice(0, 110) + '...',
             body_text: item.body_text || 'Sin contenido de mensaje',
-            received_at: 'Justo ahora',
-            timestamp: formatCdmxTime(new Date()),
+            date_ms: dateMs,
+            date_iso: item.enqueued_at || new Date(dateMs).toISOString(),
+            received_at: formatCdmxDate(dateMs),
+            timestamp: formatCdmxSmartBadge(dateMs),
             is_unread: true,
             is_starred: false,
             is_important: isCeo,
@@ -383,7 +389,18 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const allEmails = [...additionalFromSpool, ...emails];
+    // Deduplicación estricta y consolidación preservando existencia de mensajes
+    const emailMap = new Map<string, RawGmailItem>();
+    for (const item of [...additionalFromSpool, ...emails]) {
+      if (!item || !item.id) continue;
+      const existing = emailMap.get(item.id);
+      if (!existing) {
+        emailMap.set(item.id, item);
+      } else {
+        emailMap.set(item.id, { ...existing, ...item });
+      }
+    }
+    const allEmails = Array.from(emailMap.values());
 
     const sanitizedEmails = allEmails.map((item: RawGmailItem) => {
       const isResolved = isEmailResolvedServer(tenantId, item.id, item.subject);
@@ -516,6 +533,13 @@ export async function GET(request: NextRequest) {
       return item;
     });
 
+    // REGLA FUNDAMENTAL DE ORDEN: Orden cronológico estricto descendente (los más recientes con hora exacta arriba)
+    sanitizedEmails.sort((a, b) => {
+      const timeA = parseEmailDateMs(a);
+      const timeB = parseEmailDateMs(b);
+      return timeB - timeA;
+    });
+
     return NextResponse.json({
       success: true,
       authenticated,
@@ -526,7 +550,7 @@ export async function GET(request: NextRequest) {
       total: sanitizedEmails.length,
       unreadCount: sanitizedEmails.filter((e: RawGmailItem) => e.is_unread).length,
       connectedEmail: resolvedEmail,
-      lastSyncTime: formatCdmxTime(new Date())
+      lastSyncTime: formatCdmxSmartBadge(new Date())
     });
   } catch (error: any) {
     return NextResponse.json({
@@ -604,16 +628,19 @@ export async function POST(request: NextRequest) {
 
     // Si se envía correo manual para inyección directa
     if (body.injectEmail) {
+      const nowMs = Date.now();
       const injected: RawGmailItem = {
-        id: `inj-${Date.now()}`,
+        id: `inj-${nowMs}`,
         sender_name: body.injectEmail.sender_name || 'Remitente de Prueba',
         sender_email: body.injectEmail.sender_email || email,
         recipient_email: email,
         subject: body.injectEmail.subject || 'Correo de Prueba en Vivo',
         snippet: (body.injectEmail.body_text || '').slice(0, 110) + '...',
         body_text: body.injectEmail.body_text || 'Mensaje de prueba inyectado en tiempo real.',
+        date_ms: nowMs,
+        date_iso: new Date(nowMs).toISOString(),
         received_at: 'Justo ahora',
-        timestamp: formatCdmxTime(new Date()),
+        timestamp: formatCdmxSmartBadge(nowMs),
         is_unread: true,
         is_starred: false,
         is_important: true,
@@ -745,6 +772,8 @@ export async function POST(request: NextRequest) {
           );
           const isCeo = triage.quadrant === 'ATENCION_CEO';
           const isSpam = triage.quadrant === 'SPAM_DESCARTADO';
+          const enqueuedMs = item.enqueued_at ? new Date(item.enqueued_at).getTime() : Date.now();
+          const dateMs = isNaN(enqueuedMs) ? Date.now() : enqueuedMs;
           emails.unshift({
             id: item.id,
             sender_name: item.sender_name || 'Remitente Institucional',
@@ -753,8 +782,10 @@ export async function POST(request: NextRequest) {
             subject: item.subject,
             snippet: (item.body_text || '').slice(0, 110) + '...',
             body_text: item.body_text || 'Sin contenido de mensaje',
-            received_at: 'Justo ahora',
-            timestamp: formatCdmxTime(new Date()),
+            date_ms: dateMs,
+            date_iso: item.enqueued_at || new Date(dateMs).toISOString(),
+            received_at: formatCdmxDate(dateMs),
+            timestamp: formatCdmxSmartBadge(dateMs),
             is_unread: true,
             is_starred: false,
             is_important: isCeo,
@@ -862,6 +893,13 @@ export async function POST(request: NextRequest) {
       return item;
     });
 
+    // Orden cronológico estricto descendente en POST
+    sanitizedEmails.sort((a, b) => {
+      const timeA = parseEmailDateMs(a);
+      const timeB = parseEmailDateMs(b);
+      return timeB - timeA;
+    });
+
     return NextResponse.json({
       success: true,
       authenticated,
@@ -872,7 +910,7 @@ export async function POST(request: NextRequest) {
       total: sanitizedEmails.length,
       unreadCount: sanitizedEmails.filter((e: RawGmailItem) => e.is_unread).length,
       connectedEmail: resolvedPostEmail,
-      lastSyncTime: formatCdmxTime(new Date())
+      lastSyncTime: formatCdmxSmartBadge(new Date())
     });
   } catch (error: any) {
     return NextResponse.json({

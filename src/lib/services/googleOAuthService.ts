@@ -6,7 +6,7 @@ import { InboundMailSpoolService } from './inboundMailSpool';
 import { HermeticEmailBrainService } from './hermetic-email-brain.service';
 import { CognitiveAIEmailTriageService } from './geminiEmailTriage.service';
 import { injectEmailsBatchIntoCache } from './imapClientService';
-import { formatCdmxDate, formatCdmxTime } from '@/utils/timeZoneUtils';
+import { formatCdmxDate, formatCdmxTime, formatCdmxSmartBadge } from '@/utils/timeZoneUtils';
 import { encryptToken, decryptToken } from '@/lib/security/tokenCipher';
 
 export interface GoogleTokens {
@@ -617,6 +617,8 @@ export class GoogleOAuthService {
         senderEmail: string;
         subject: string;
         dateHeader: string;
+        dateMs: number;
+        dateIso: string;
         bodyText: string;
         snippet: string;
         isUnread: boolean;
@@ -704,12 +706,29 @@ export class GoogleOAuthService {
           const isUnread = (detail.labelIds || []).includes('UNREAD');
           const isStarred = (detail.labelIds || []).includes('STARRED');
 
+          // Parseo de timestamp exacto de llegada: internalDate es el unix epoch en ms de Gmail
+          let emailDateMs = Date.now();
+          if (detail.internalDate) {
+            const parsedInternal = parseInt(detail.internalDate, 10);
+            if (!isNaN(parsedInternal) && parsedInternal > 0) {
+              emailDateMs = parsedInternal;
+            }
+          } else if (dateHeader) {
+            const parsedHeader = new Date(dateHeader).getTime();
+            if (!isNaN(parsedHeader) && parsedHeader > 0) {
+              emailDateMs = parsedHeader;
+            }
+          }
+          const emailDateIso = new Date(emailDateMs).toISOString();
+
           candidates.push({
             detailId: detail.id,
             senderName,
             senderEmail,
             subject,
             dateHeader,
+            dateMs: emailDateMs,
+            dateIso: emailDateIso,
             bodyText: bodyText || detail.snippet || '',
             snippet: detail.snippet || (bodyText ? bodyText.slice(0, 110) + '...' : ''),
             isUnread,
@@ -742,8 +761,10 @@ export class GoogleOAuthService {
             subject: c.subject,
             snippet: c.snippet || c.bodyText.slice(0, 110) + '...',
             body_text: c.bodyText || 'Sin contenido',
-            received_at: c.dateHeader ? formatCdmxDate(c.dateHeader) : 'Hoy',
-            timestamp: c.dateHeader ? formatCdmxTime(c.dateHeader) : 'Ahora',
+            date_ms: c.dateMs,
+            date_iso: c.dateIso,
+            received_at: formatCdmxDate(c.dateMs),
+            timestamp: formatCdmxSmartBadge(c.dateMs),
             is_unread: c.isUnread,
             is_starred: c.isStarred,
             is_important: isCeo,
@@ -780,6 +801,9 @@ export class GoogleOAuthService {
           return rawItem;
         })
       );
+
+      // 4.1 Orden estricto descendente: el correo más reciente en la cima absoluta
+      emailItems.sort((a, b) => (b.date_ms || 0) - (a.date_ms || 0));
 
       // 5. Inyección atómica en lote al caché del buzón (O(N) sin cuellos de botella)
       injectEmailsBatchIntoCache(tenantId, emailItems, targetAccount);

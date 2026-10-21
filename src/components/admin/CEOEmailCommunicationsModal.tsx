@@ -132,7 +132,10 @@ import {
   formatCdmxDate,
   formatCdmxDateTime,
   formatCdmxRelative,
-  getRecentCdmxTimeStr
+  getRecentCdmxTimeStr,
+  formatCdmxSmartBadge,
+  formatCdmxFull,
+  parseEmailDateMs
 } from '@/utils/timeZoneUtils';
 import { WorkOsBoard } from './workOs/WorkOsBoard';
 import { SeedAccountsConfigPanel } from './workOs/SeedAccountsConfigPanel';
@@ -1147,6 +1150,54 @@ export function buildDynamicAudioDigestText(
 
   parts.push('Bóveda curricular sincronizada y bajo control.');
   return parts.join('\n\n');
+}
+
+/**
+ * Ordenador canónico cronológico descendente para correos (más recientes primero).
+ * Garantiza orden estricto basado en date_ms, date_iso, cabeceras o análisis de fecha.
+ */
+export function sortEmailsDescending(emails: RawGmailItem[]): RawGmailItem[] {
+  return [...emails].sort((a, b) => {
+    const timeA = typeof a.date_ms === 'number' && !isNaN(a.date_ms) && a.date_ms > 0 ? a.date_ms : parseEmailDateMs(a);
+    const timeB = typeof b.date_ms === 'number' && !isNaN(b.date_ms) && b.date_ms > 0 ? b.date_ms : parseEmailDateMs(b);
+    return timeB - timeA;
+  });
+}
+
+/**
+ * Estrategia de fusión no destructiva (Upsert Merge) para la bandeja de correos.
+ * Evita desaparición de correos al sincronizar o navegar entre pestañas.
+ * Combina la lista previa con los elementos nuevos/actualizados y los ordena cronológicamente.
+ */
+export function mergeAndSortEmails(existing: RawGmailItem[], incoming: RawGmailItem[]): RawGmailItem[] {
+  const map = new Map<string, RawGmailItem>();
+
+  for (const item of existing) {
+    if (!item || !item.id) continue;
+    map.set(item.id, item);
+  }
+
+  for (const item of incoming) {
+    if (!item || !item.id) continue;
+    const prev = map.get(item.id);
+    if (prev) {
+      map.set(item.id, {
+        ...prev,
+        ...item,
+        is_unread: item.is_unread !== undefined ? item.is_unread : prev.is_unread,
+        is_starred: item.is_starred !== undefined ? item.is_starred : prev.is_starred,
+        is_resolved: item.is_resolved !== undefined ? item.is_resolved : prev.is_resolved,
+        is_replied: item.reply_status ? true : (item.is_replied !== undefined ? item.is_replied : prev.is_replied),
+        reply_status: item.reply_status || prev.reply_status,
+        date_ms: item.date_ms || prev.date_ms,
+        date_iso: item.date_iso || prev.date_iso,
+      });
+    } else {
+      map.set(item.id, item);
+    }
+  }
+
+  return sortEmailsDescending(Array.from(map.values()));
 }
 
 export function CEOEmailCommunicationsModal({
@@ -2321,6 +2372,24 @@ export function CEOEmailCommunicationsModal({
 
   // Normalizador mandatorio de reglas CEO para correos recibidos (Reglas VIP + Supervisión + 4 Cuadrantes Zero-Tokens)
   const normalizeRawEmailCeoRules = useCallback((item: RawGmailItem): RawGmailItem => {
+    // Normalización mandatoria y coherente de fecha/hora (CDMX)
+    const parsedMs = (typeof item.date_ms === 'number' && !isNaN(item.date_ms) && item.date_ms > 0)
+      ? item.date_ms
+      : parseEmailDateMs(item);
+    const isoDate = item.date_iso || (parsedMs ? new Date(parsedMs).toISOString() : new Date().toISOString());
+    const smartTimestamp = formatCdmxSmartBadge(parsedMs || isoDate || item.timestamp);
+    const fullReceivedAt = item.received_at && item.received_at.length > 15
+      ? item.received_at
+      : formatCdmxFull(parsedMs || isoDate);
+
+    const baseItem: RawGmailItem = {
+      ...item,
+      date_ms: parsedMs,
+      date_iso: isoDate,
+      timestamp: smartTimestamp || item.timestamp,
+      received_at: fullReceivedAt,
+    };
+
     // 0. AUTORIDAD SOBERANA DEL CEO: ANULACIÓN EJECUTIVA MANUAL (EXECUTIVE OVERRIDE)
     // Las decisiones explícitas tomadas por el CEO en la interfaz prevalecen de forma absoluta sobre cualquier IA, heurística o backend.
     const override = getExecutiveOverrideForItem(item.id, item.subject, item.sender_email);
@@ -2331,7 +2400,7 @@ export function CEOEmailCommunicationsModal({
       const isSpam = override === 'SPAM_DESCARTADO';
 
       return {
-        ...item,
+        ...baseItem,
         is_important: isCeo,
         category: isCeo ? 'principal' : (isDelegado || isInfo ? 'actualizaciones' : 'promociones'),
         triage_badge: {
@@ -2357,7 +2426,7 @@ export function CEOEmailCommunicationsModal({
     // 1. Respetar clasificaciones previas delegadas, informativas o de spam en su badge
     if (item.triage_badge?.quadrant === 'DELEGADO_CON_PLAZO' || (item.triage_badge?.quadrant as any) === 'DELEGADO_CON_SLA') {
       return {
-        ...item,
+        ...baseItem,
         is_important: false,
         category: 'actualizaciones',
         triage_badge: {
@@ -2370,7 +2439,7 @@ export function CEOEmailCommunicationsModal({
 
     if (item.triage_badge?.quadrant === 'INFORMATIVO') {
       return {
-        ...item,
+        ...baseItem,
         is_important: false,
         category: 'actualizaciones',
         triage_badge: {
@@ -2383,7 +2452,7 @@ export function CEOEmailCommunicationsModal({
 
     if (item.triage_badge?.quadrant === 'SPAM_DESCARTADO') {
       return {
-        ...item,
+        ...baseItem,
         is_important: false,
         category: 'promociones',
         triage_badge: {
@@ -2397,7 +2466,7 @@ export function CEOEmailCommunicationsModal({
     // 2. Si el correo viene clasificado por el backend como ATENCION_CEO, respetarlo
     if (item.triage_badge?.quadrant === 'ATENCION_CEO') {
       return {
-        ...item,
+        ...baseItem,
         is_important: true,
         category: 'principal',
         triage_badge: {
@@ -2450,7 +2519,7 @@ export function CEOEmailCommunicationsModal({
     const isDelegado = !isCeo && (triage.quadrant === 'DELEGADO_CON_SLA' || isDelegatedKeyword);
 
     return {
-      ...item,
+      ...baseItem,
       is_important: isCeo,
       category: isCeo ? 'principal' : (isDelegado ? 'actualizaciones' : triage.gmailCategory),
       triage_badge: isCeo
@@ -2473,7 +2542,7 @@ export function CEOEmailCommunicationsModal({
                     color: triage.badge.color
                   }))
     };
-  }, [settingsData?.vipEmails, currentTenantId]);
+  }, [settingsData?.vipEmails, currentTenantId, getExecutiveOverrideForItem]);
 
   // =========================================================================
   // BANDEJA DE ENTRADA (VISTA GMAIL EN TIEMPO REAL & CARGA BRUTA DE CORREOS)
@@ -2489,7 +2558,7 @@ export function CEOEmailCommunicationsModal({
               const id = String(item.id || '');
               return !id.startsWith('raw-msg-');
             });
-            return clean.map(normalizeRawEmailCeoRules);
+            return sortEmailsDescending(clean.map(normalizeRawEmailCeoRules));
           }
         } catch {}
       }
@@ -2511,10 +2580,13 @@ export function CEOEmailCommunicationsModal({
             });
             if (clean.length > 0) {
               const normalized = clean.map(normalizeRawEmailCeoRules);
-              setRawEmailsList(normalized);
-              try {
-                localStorage.setItem(rawEmailsStorageKey, JSON.stringify(normalized));
-              } catch {}
+              setRawEmailsList(prev => {
+                const merged = mergeAndSortEmails(prev, normalized);
+                try {
+                  localStorage.setItem(rawEmailsStorageKey, JSON.stringify(merged));
+                } catch {}
+                return merged;
+              });
             }
           }
         } catch {}
@@ -2543,7 +2615,15 @@ export function CEOEmailCommunicationsModal({
             const cleanEmails = data.emails.filter((e: any) => !String(e.id || '').startsWith('raw-msg-'));
             if (cleanEmails.length > 0) {
               const normalized = cleanEmails.map(normalizeRawEmailCeoRules);
-              setRawEmailsList(normalized);
+              setRawEmailsList(prev => {
+                const merged = mergeAndSortEmails(prev, normalized);
+                if (typeof window !== 'undefined') {
+                  try {
+                    localStorage.setItem(rawEmailsStorageKey, JSON.stringify(merged));
+                  } catch {}
+                }
+                return merged;
+              });
               if (data.connectedEmail && data.connectedEmail !== effectiveEmail) {
                 setConnectedEmail(data.connectedEmail);
                 setAuthUsername(data.connectedEmail);
@@ -2551,9 +2631,6 @@ export function CEOEmailCommunicationsModal({
                   localStorage.setItem(emailStorageKey, data.connectedEmail);
                   localStorage.setItem('iskool_last_connected_email', data.connectedEmail);
                 }
-              }
-              if (typeof window !== 'undefined') {
-                localStorage.setItem(rawEmailsStorageKey, JSON.stringify(normalized));
               }
             }
           }
@@ -2564,7 +2641,8 @@ export function CEOEmailCommunicationsModal({
 
   // Optimización de rendimiento: Normalización y conteos en un único paso memoizado O(N) para fluidez de UI
   const normalizedRawEmails = useMemo(() => {
-    return rawEmailsList.map(item => normalizeRawEmailCeoRules(item));
+    const list = rawEmailsList.map(item => normalizeRawEmailCeoRules(item));
+    return sortEmailsDescending(list);
   }, [rawEmailsList, normalizeRawEmailCeoRules]);
 
   const rawEmailCounts = useMemo(() => {
@@ -2640,6 +2718,8 @@ export function CEOEmailCommunicationsModal({
     if (senderMatches.length > 0) return senderMatches;
 
     // 4. Fallback sintético fiel: asegura visualización inmediata de los datos originales recibidos
+    const matterMs = (matter as any).date_ms || Date.now();
+    const matterIso = (matter as any).date_iso || new Date(matterMs).toISOString();
     return [{
       id: cleanId,
       sender_name: matter.sender_name || 'Remitente Institucional',
@@ -2648,8 +2728,10 @@ export function CEOEmailCommunicationsModal({
       subject: matter.title || 'Asunto Institucional',
       snippet: matter.summary || '',
       body_text: matter.summary || '',
-      received_at: matter.received_at || 'Fecha no disponible',
-      timestamp: matter.received_at || 'Fecha no disponible',
+      received_at: matter.received_at || formatCdmxFull(matterIso),
+      timestamp: formatCdmxSmartBadge(matterMs),
+      date_ms: matterMs,
+      date_iso: matterIso,
       is_unread: false,
       is_starred: false,
       is_important: true,
@@ -2669,8 +2751,7 @@ export function CEOEmailCommunicationsModal({
     const targetEmail = origEmails[0];
     if (targetEmail) {
       setRawEmailsList(prev => {
-        const exists = prev.some(e => e.id === targetEmail.id);
-        const nextList = exists ? prev : [targetEmail, ...prev];
+        const nextList = mergeAndSortEmails(prev, [normalizeRawEmailCeoRules(targetEmail)]);
         if (typeof window !== 'undefined') {
           try {
             localStorage.setItem(rawEmailsStorageKey, JSON.stringify(nextList));
@@ -3019,10 +3100,7 @@ Favor de atender y dar seguimiento directo al remitente dentro del plazo institu
       };
 
       setRawEmailsList(prev => {
-        const next = prev.map(e => e.id === targetEmailItem.id ? updatedEmail : e);
-        if (!next.some(e => e.id === targetEmailItem.id)) {
-          next.unshift(updatedEmail);
-        }
+        const next = mergeAndSortEmails(prev, [updatedEmail]);
         if (typeof window !== 'undefined') {
           localStorage.setItem(rawEmailsStorageKey, JSON.stringify(next));
         }
@@ -4322,10 +4400,15 @@ ${schoolName}`
       if (inboxData.success && Array.isArray(inboxData.emails)) {
         const cleanEmails = inboxData.emails.filter((e: any) => !String(e.id || '').startsWith('raw-msg-'));
         const normalized = cleanEmails.map(normalizeRawEmailCeoRules);
-        setRawEmailsList(normalized);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(rawEmailsStorageKey, JSON.stringify(normalized));
-        }
+        setRawEmailsList(prev => {
+          const merged = mergeAndSortEmails(prev, normalized);
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem(rawEmailsStorageKey, JSON.stringify(merged));
+            } catch {}
+          }
+          return merged;
+        });
       }
     } catch {}
   };
@@ -4600,11 +4683,17 @@ ${schoolName}`
             const rawRes = await fetch(`/api/mail/raw-inbox?tenantId=${encodeURIComponent(currentTenantId)}&email=${encodeURIComponent(cleanEmail)}`);
             const rawData = await rawRes.json();
             if (rawData.success && Array.isArray(rawData.emails) && rawData.emails.length > 0) {
-              const normalized = rawData.emails.map(normalizeRawEmailCeoRules);
-              setRawEmailsList(normalized);
-              if (typeof window !== 'undefined') {
-                localStorage.setItem(rawEmailsStorageKey, JSON.stringify(normalized));
-              }
+              const cleanEmails = rawData.emails.filter((e: any) => !String(e.id || '').startsWith('raw-msg-'));
+              const normalized = cleanEmails.map(normalizeRawEmailCeoRules);
+              setRawEmailsList(prev => {
+                const merged = mergeAndSortEmails(prev, normalized);
+                if (typeof window !== 'undefined') {
+                  try {
+                    localStorage.setItem(rawEmailsStorageKey, JSON.stringify(merged));
+                  } catch {}
+                }
+                return merged;
+              });
             }
           } catch {}
 
@@ -5226,7 +5315,15 @@ ${schoolName}`
         if (rawData?.success && Array.isArray(rawData.emails) && rawData.emails.length > 0) {
           const cleanEmails = rawData.emails.filter((e: any) => !String(e.id || '').startsWith('raw-msg-'));
           const normalized = cleanEmails.map((item: any) => normalizeRawEmailCeoRules(item));
-          setRawEmailsList(normalized);
+          setRawEmailsList(prev => {
+            const merged = mergeAndSortEmails(prev, normalized);
+            if (typeof window !== 'undefined') {
+              try {
+                localStorage.setItem(rawEmailsStorageKey, JSON.stringify(merged));
+              } catch {}
+            }
+            return merged;
+          });
           if (rawData.connectedEmail && rawData.connectedEmail !== targetEmail) {
             setConnectedEmail(rawData.connectedEmail);
             setAuthUsername(rawData.connectedEmail);
@@ -5234,9 +5331,6 @@ ${schoolName}`
               localStorage.setItem(emailStorageKey, rawData.connectedEmail);
               localStorage.setItem('iskool_last_connected_email', rawData.connectedEmail);
             }
-          }
-          if (typeof window !== 'undefined') {
-            localStorage.setItem(rawEmailsStorageKey, JSON.stringify(normalized));
           }
           if (rawData.authenticated) {
             setShowAppPasswordHelper(false);
@@ -5439,10 +5533,17 @@ ${schoolName}`
 
       const rawData = await rawRes.json();
       if (rawData.success && Array.isArray(rawData.emails)) {
-        setRawEmailsList(rawData.emails);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(rawEmailsStorageKey, JSON.stringify(rawData.emails));
-        }
+        const cleanEmails = rawData.emails.filter((e: any) => !String(e.id || '').startsWith('raw-msg-'));
+        const normalized = cleanEmails.map(normalizeRawEmailCeoRules);
+        setRawEmailsList(prev => {
+          const merged = mergeAndSortEmails(prev, normalized);
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem(rawEmailsStorageKey, JSON.stringify(merged));
+            } catch {}
+          }
+          return merged;
+        });
       }
 
       // 2. Ejecutar Triage Cognitivo en Bandeja Inteligente (sync-inbox)
@@ -10499,8 +10600,11 @@ Comité de Seguridad y Protección Escolar`
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-semibold text-slate-500">
-                          {currentEmail.received_at}
+                        <span
+                          title="Fecha y hora oficial CDMX"
+                          className="text-[11px] font-semibold text-slate-500"
+                        >
+                          {currentEmail.received_at || (currentEmail.date_iso ? formatCdmxFull(currentEmail.date_iso) : currentEmail.timestamp)}
                         </span>
                       </div>
                     </div>
@@ -10668,7 +10772,10 @@ Comité de Seguridad y Protección Escolar`
                             </p>
                           </div>
                         </div>
-                        <span className="text-xs text-slate-500 font-semibold shrink-0">
+                        <span
+                          title={currentEmail.received_at || (currentEmail.date_iso ? formatCdmxFull(currentEmail.date_iso) : undefined)}
+                          className="text-xs text-slate-500 font-semibold shrink-0 cursor-help"
+                        >
                           {currentEmail.timestamp}
                         </span>
                       </div>
@@ -10732,7 +10839,7 @@ Comité de Seguridad y Protección Escolar`
                 );
               })() : (() => {
                 // Filtrado instantáneo sobre la lista memoizada sin recálculos redundantes
-                const filteredRawEmails = normalizedRawEmails.filter((email) => {
+                const filteredRawEmails = sortEmailsDescending(normalizedRawEmails.filter((email) => {
                   const qdr = email.triage_badge?.quadrant;
                   if (rawEmailCategory === 'principal' && qdr !== 'ATENCION_CEO') {
                     return false;
@@ -10757,7 +10864,7 @@ Comité de Seguridad y Protección Escolar`
                     return matchesSender || matchesSubject || matchesBody;
                   }
                   return true;
-                });
+                }));
 
                 const allFilteredIds = filteredRawEmails.map(e => e.id);
                 const isAllSelected = allFilteredIds.length > 0 && selectedRawEmailIds.length === allFilteredIds.length;
@@ -11059,8 +11166,11 @@ Comité de Seguridad y Protección Escolar`
                               </div>
 
                               {/* Timestamp / Hora */}
-                              <div className="w-16 text-right shrink-0">
-                                <span className={`text-[11px] ${item.is_unread ? 'font-black text-slate-900' : 'text-slate-400 font-medium'}`}>
+                              <div className="w-28 sm:w-32 text-right shrink-0 whitespace-nowrap">
+                                <span
+                                  title={item.date_iso ? formatCdmxFull(item.date_iso) : (item.date_ms ? formatCdmxFull(item.date_ms) : (item.received_at || item.timestamp))}
+                                  className={`text-[11px] cursor-help ${item.is_unread ? 'font-black text-slate-900' : 'text-slate-400 font-medium'}`}
+                                >
                                   {item.timestamp}
                                 </span>
                               </div>
@@ -12997,10 +13107,7 @@ Comité de Seguridad y Protección Escolar`
                               type="button"
                               onClick={() => {
                                 setSelectedMatter(null);
-                                setRawEmailsList(prev => {
-                                  if (prev.some(e => e.id === email.id)) return prev;
-                                  return [email, ...prev];
-                                });
+                                setRawEmailsList(prev => mergeAndSortEmails(prev, [normalizeRawEmailCeoRules(email)]));
                                 setSelectedRawEmailId(email.id);
                                 setEmailReaderReturnTab('inbox');
                                 setActiveTab('raw_inbox');

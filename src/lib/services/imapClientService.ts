@@ -1,6 +1,6 @@
 import tls from 'tls';
 import { RawGmailItem } from '@/app/api/mail/raw-inbox/route';
-import { formatCdmxDate, formatCdmxTime } from '@/utils/timeZoneUtils';
+import { formatCdmxDate, formatCdmxTime, formatCdmxSmartBadge, parseEmailDateMs } from '@/utils/timeZoneUtils';
 import { HermeticEmailBrainService } from './hermetic-email-brain.service';
 import { validateMailTarget } from '@/lib/security/ssrfValidator';
 
@@ -412,18 +412,17 @@ function attemptSingleLiveImap(
           // Clasificación y Cuadrante Cognitivo
           const triage = classifyEmailTriage(decodedSubject, cleanBody, senderEmail, senderName);
 
-          // Formateo de fecha y hora
-          let formattedDate = 'Hoy';
-          let timeDisplay = formatCdmxTime(new Date());
-          if (dateMatch) {
-            try {
-              const d = new Date(dateMatch[1].trim());
-              if (!isNaN(d.getTime())) {
-                formattedDate = formatCdmxDate(d);
-                timeDisplay = formatCdmxTime(d);
-              }
-            } catch {}
+          // Parseo de timestamp exacto de llegada (INTERNALDATE o Date Header)
+          let emailDateMs = Date.now();
+          const internalDateMatch = block.match(/INTERNALDATE\s+"([^"]+)"/i);
+          if (internalDateMatch) {
+            const p = new Date(internalDateMatch[1]).getTime();
+            if (!isNaN(p) && p > 0) emailDateMs = p;
+          } else if (dateMatch) {
+            const p = new Date(dateMatch[1].trim()).getTime();
+            if (!isNaN(p) && p > 0) emailDateMs = p;
           }
+          const emailDateIso = new Date(emailDateMs).toISOString();
 
           emails.push({
             id: `imap-${uid}`,
@@ -433,8 +432,10 @@ function attemptSingleLiveImap(
             subject: decodedSubject,
             snippet,
             body_text: cleanBody,
-            received_at: formattedDate,
-            timestamp: timeDisplay,
+            date_ms: emailDateMs,
+            date_iso: emailDateIso,
+            received_at: formatCdmxDate(emailDateMs),
+            timestamp: formatCdmxSmartBadge(emailDateMs),
             is_unread: isUnread,
             is_starred: false,
             is_important: triage.triage_badge?.quadrant === 'ATENCION_CEO',
@@ -443,8 +444,8 @@ function attemptSingleLiveImap(
           });
         }
 
-        // Ordenar en orden cronológico inverso (el más reciente arriba)
-        emails.reverse();
+        // Orden cronológico estricto descendente (el más reciente arriba)
+        emails.sort((a, b) => (b.date_ms || 0) - (a.date_ms || 0));
 
         step = 'DONE';
         finish({
@@ -452,7 +453,7 @@ function attemptSingleLiveImap(
           authenticated: true,
           totalInBox: existsCount,
           emails,
-          lastSyncTime: formatCdmxTime(new Date()),
+          lastSyncTime: formatCdmxSmartBadge(new Date()),
           connectedEmail: cleanUser
         });
         return;
@@ -559,8 +560,13 @@ export function injectEmailIntoCache(tenantId: string, email: RawGmailItem): voi
   const current = globalInboxCache.get(tenantKey)?.emails || [];
   const exists = current.some(e => e.id === email.id || e.subject.trim().toLowerCase() === email.subject.trim().toLowerCase());
   if (!exists) {
+    const nextList = [email, ...current].sort((a, b) => {
+      const timeA = parseEmailDateMs(a);
+      const timeB = parseEmailDateMs(b);
+      return timeB - timeA;
+    });
     globalInboxCache.set(tenantKey, {
-      emails: [email, ...current],
+      emails: nextList,
       lastSync: Date.now()
     });
   }
@@ -590,8 +596,13 @@ export function injectEmailsBatchIntoCache(tenantId: string, emails: RawGmailIte
   }
 
   if (newItems.length > 0 || !globalInboxCache.has(tenantKey)) {
+    const mergedSorted = [...newItems, ...current].sort((a, b) => {
+      const timeA = parseEmailDateMs(a);
+      const timeB = parseEmailDateMs(b);
+      return timeB - timeA;
+    });
     globalInboxCache.set(tenantKey, {
-      emails: [...newItems, ...current],
+      emails: mergedSorted,
       lastSync: Date.now()
     });
   }

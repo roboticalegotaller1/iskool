@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { InboundMailSpoolService } from '@/lib/services/inboundMailSpool';
 import { HermeticEmailBrainService, InboundEmailDTO, HermeticAuthSession } from '@/lib/services/hermetic-email-brain.service';
-import { formatCdmxTime } from '@/utils/timeZoneUtils';
+import { formatCdmxTime, formatCdmxDate, formatCdmxSmartBadge } from '@/utils/timeZoneUtils';
 
 export const runtime = 'nodejs';
 
@@ -110,16 +110,19 @@ export async function POST(req: NextRequest) {
       const isSpam = triageResult ? triageResult.quadrant === 'SPAM_DESCARTADO' : false;
       const rawCategory = isSpam ? 'promociones' : 'principal';
 
+      const nowMs = Date.now();
       const rawItem = {
-        id: queuedItem?.id || `inb-${Date.now()}`,
+        id: queuedItem?.id || `inb-${nowMs}`,
         sender_name: emailDto.sender_name || 'Remitente Institucional',
         sender_email: emailDto.sender_email,
         recipient_email: emailDto.recipient_email || 'direccion@iskool.edu.mx',
         subject: emailDto.subject,
         snippet: emailDto.body_text.slice(0, 110) + '...',
         body_text: emailDto.body_text,
-        received_at: 'Justo ahora',
-        timestamp: formatCdmxTime(new Date()),
+        date_ms: nowMs,
+        date_iso: new Date(nowMs).toISOString(),
+        received_at: formatCdmxDate(nowMs),
+        timestamp: formatCdmxSmartBadge(nowMs),
         is_unread: true,
         is_starred: false,
         is_important: isCeo,
