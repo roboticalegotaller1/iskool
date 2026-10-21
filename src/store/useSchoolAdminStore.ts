@@ -392,10 +392,23 @@ export const getSchoolTuitionPricings = (pricingsList: TuitionPricing[], schoolI
 };
 
 export const getActiveSchoolIdFromState = (state: { activeSchoolId?: string | null }): string => {
-  if (state.activeSchoolId) {
-    return state.activeSchoolId === 'sch-jjr' ? 'sch-jjrosseau' : state.activeSchoolId;
+  let currentUser: any = null;
+  try {
+    if (typeof window !== 'undefined' && (window as any).localStorage) {
+      const stored = window.localStorage.getItem('iskool_session_user') || window.localStorage.getItem('auth_current_user');
+      if (stored) {
+        currentUser = JSON.parse(stored);
+      }
+    } else if (typeof global !== 'undefined' && (global as any).localStorage) {
+      const stored = (global as any).localStorage.getItem('iskool_session_user') || (global as any).localStorage.getItem('auth_current_user');
+      if (stored) {
+        currentUser = JSON.parse(stored);
+      }
+    }
+  } catch {
+    // Ignorar errores de parseo en SSR o entornos de prueba
   }
-  return 'sch-jjrosseau';
+  return resolveEffectiveSchoolId(currentUser, state.activeSchoolId, 'sch-jjrosseau');
 };
 
 export const getSchoolParentMessages = (messagesList: ParentMessage[], schoolId: string | null, schoolStudents?: DetailedStudent[]): ParentMessage[] => {

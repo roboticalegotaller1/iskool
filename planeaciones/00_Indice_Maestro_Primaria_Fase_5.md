@@ -19,9 +19,9 @@ actualizado: "25 de agosto de 2026"
 
 | Asignatura | Grado / Nivel | Título del Proyecto Didáctico | Campo Formativo | Enlace Directo |
 | :--- | :--- | :--- | :--- | :--- |
-| **Ciencias / Saberes y Pensamiento Cientifico** | 1er Grado | Biodigestor de residuos organicos y biogas | Saberes y Pensamiento Científico | [[Planeacion_Biodigestor_Residuos_Organicos|Consultar Planeación]] |
-| **Matematicas** | 1er Grado | Fracciones Equivalentes con Arte | Saberes y Pensamiento Científico | [[Planeacion_Fracciones_Equivalentes_con_Arte_1785940866590|Consultar Planeación]] |
-| **Matemáticas** | No especificado | Cuidado del agua y biodigestores — Primaria Alta (4º a 6º Grado) | Saberes y Pensamiento Científico | [[Planeacion_Proyecto_didáctico_Cuidado_del_agua_y_biodigestores_Primaria_Alta_4_a_6_Grado_1787024160760|Consultar Planeación]] |
+| **Ciencias Naturales** | 6º de Primaria | Guardianes del Clima: Efecto Invernadero, Huella de Carbono y Restauración Ecológica | Saberes y Pensamiento Científico | [[Plan_17_Guardianes_del_Clima_Efecto_Invernadero_Huella_de_Carbono_y_Restauracion_Ecologica|Consultar Planeación]] |
+| **Matemáticas** | 6º de Primaria | Operaciones con decimales y fracciones | Saberes y Pensamiento Científico | [[Planeacion_F5-MAT-6TO-V00027_Operaciones_con_decimales_y_fraccio|Consultar Planeación]] |
+| **Ciencias Naturales** | 6º de Primaria | Escudo Inmunológico: La Ciencia de los Glóbulos Blancos y las Vacunas | Saberes y Pensamiento Científico | [[Plan_16_Escudo_Inmunologico_La_Ciencia_de_los_Globulos_Blancos_las_Vacunas_y_la_Cartilla_Nacional|Consultar Planeación]] |
 | **Artes** | 1º de Primaria | Apreciación de canciones, rondas infantiles y juegos sonoros (1º de Primaria) | Lenguajes | [[Planeacion_F3-ART-1ER-V00015_Apreciacion_de_canciones_rondas_infantiles_y_juegos_sonoros|Consultar Planeación]] |
 | **Conocimiento_del_Medio** | 1º de Primaria | Exploración de la diversidad natural, plantas y animales locales (1º de Primaria) | Saberes y Pensamiento Científico | [[Planeacion_F3-CON-1ER-V00006_Exploracion_de_la_diversidad_natural_plantas_y_animales_locales|Consultar Planeación]] |
 | **Formacion_Civica_y_Etica** | 1º de Primaria | La comunidad escolar como espacio seguro y acuerdos de convivencia (1º de Primaria) | Ética, Naturaleza y Sociedades | [[Planeacion_F3-FOR-1ER-V00016_La_comunidad_escolar_como_espacio_seguro_y_acuerdos_de_convivencia|Consultar Planeación]] |

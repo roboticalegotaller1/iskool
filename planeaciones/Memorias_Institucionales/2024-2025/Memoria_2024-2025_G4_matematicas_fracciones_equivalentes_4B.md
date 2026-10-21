@@ -8,7 +8,7 @@ phase_nem: "fase_4"
 grade: 4
 subject: "matematicas"
 topic: "fracciones_equivalentes"
-activity_source: "[[planeaciones/Primaria_Fase_4/4to_Grado/Matematicas/Planeacion_F4-MAT-4TO-V00038_Estudio_de_numeros_naturales_hasta_cinco_cifras_y_decimales_hasta_centesimos.md]]"
+activity_source: "[[Planeacion_F4-MAT-4TO-V00038_Estudio_de_numeros_naturales_hasta_cinco_cifras_y_decimales_hasta_centesimos]]"
 created_by_teacher_ref: "teacher_usr_123"
 author_display_name: "Prof. Ana Martinez"
 adaptation_of: null
@@ -45,7 +45,7 @@ Diagnóstico formativo trimestral aplicado a la cohorte 4B tras 4 semanas de tra
 - **Grado y Asignatura:** Grado 4 • matematicas
 - **Cohorte / Grupo:** Grupo 4B
 - **Docente Titular:** Prof. Ana Martinez
-- **Planeación Didáctica Origen:** [[planeaciones/Primaria_Fase_4/4to_Grado/Matematicas/Planeacion_F4-MAT-4TO-V00038_Estudio_de_numeros_naturales_hasta_cinco_cifras_y_decimales_hasta_centesimos.md]]
+- **Planeación Didáctica Origen:** [[Planeacion_F4-MAT-4TO-V00038_Estudio_de_numeros_naturales_hasta_cinco_cifras_y_decimales_hasta_centesimos]]
 - **Linaje Pedagógico:** Diseño original para la cohorte institucional.
 
 ---

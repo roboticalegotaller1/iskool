@@ -19,8 +19,8 @@ actualizado: "25 de agosto de 2026"
 
 | Asignatura | Grado / Nivel | Título del Proyecto Didáctico | Campo Formativo | Enlace Directo |
 | :--- | :--- | :--- | :--- | :--- |
-| **Matemáticas** | No especificado | Narración de sucesos del pasado y del presente | Saberes y Pensamiento Científico | [[Planeacion_Narración_de_sucesos_del_pasado_y_del_presente_1787603253496|Consultar Planeación]] |
-| **Español** | No especificado | Carta — Primaria Baja (Fase 3: 1º y 2º Grado) | Lenguajes | [[Planeacion_Proyecto_didáctico_Revolución_Mexicana_Primaria_Baja_Fase_3_1_y_2_Grado_1788238100979|Consultar Planeación]] |
+| **Matemáticas** | No especificado | Narración de sucesos del pasado y del presente | Saberes y Pensamiento Científico | [[Planeacion_F4-ESP-3ER-V00001_Narracion_de_sucesos_del_pasado_y_del_presente|Consultar Planeación]] |
+| **Español** | 2º de Primaria | Producción e interpretación de instructivos y recetas ilustradas | Lenguajes | [[Planeacion_F3-ESP-2DO-V00009_Produccion_e_interpretacion_de_instructivos_y_recetas_ilustradas|Consultar Planeación]] |
 | **Artes** | 1º de Primaria | Expresión de emociones a través del color, la textura y el modelado (1º de Primaria) | Lenguajes | [[Planeacion_F3-ART-1ER-V00014_Expresion_de_emociones_a_traves_del_color_la_textura_y_el_modelado|Consultar Planeación]] |
 | **Espanol** | 1º de Primaria | Uso del dibujo y la escritura colectiva por dictado al docente (1º de Primaria) | Lenguajes | [[Planeacion_F3-ESP-1ER-V00013_Uso_del_dibujo_y_la_escritura_colectiva_por_dictado_al_docente|Consultar Planeación]] |
 | **Matematicas** | 1º de Primaria | Cuerpos geométricos y figuras planas con el tangram (1º de Primaria) | Saberes y Pensamiento Científico | [[Planeacion_F3-MAT-1ER-V00003_Cuerpos_geometricos_y_figuras_planas_con_el_tangram|Consultar Planeación]] |

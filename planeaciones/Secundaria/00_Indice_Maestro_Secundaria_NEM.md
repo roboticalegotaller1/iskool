@@ -464,7 +464,7 @@ Este nodo actúa como el **Centro de Enlace (Map of Content - MOC)** y Segundo C
 
 ---
 ## 🌐 Conexiones en el Grafo del Segundo Cerebro
-- [[Planeacion_Modelado_y_Exploración_Geométrica_de_Funciones_Cuadráticas_y_Parábolas_y_ax_bx_c_1787024824495|Planeación: Parábolas y Funciones Cuadráticas (3º Secundaria)]]
+- [[Planeacion_F6-MAT-3ER-V00018_Funciones_y_variacion_cuadratica_en|Planeación: Parábolas y Funciones Cuadráticas (3º Secundaria)]]
 - Tags Globales: #fase6_secundaria #iskool #planeacion_nem #segundo_cerebro
 
 *Estructura validada y sincronizada para el portal docente de ISkool & Bóveda Curricular Vault.*

@@ -16,7 +16,7 @@ created_at: "2026-10-21T11:03:29.298Z"
 
 # 📚 Water Filtration and Eco-Engineering (IBIME Sovereign Overlay)
 
-> **Docente Titular:** [[Prof. Gabriela Morales]]  
+> **Docente Titular:** [[Prof_Gabriela_Morales]]  
 > **Institución:** IBIME (CCT: 09PPR1492Z)  
 > **Asignatura y Grado:** CIENCIAS • Grado 4  
 > **Marco Curricular:** BICULTURAL_IBIME  

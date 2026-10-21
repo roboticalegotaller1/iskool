@@ -8,7 +8,7 @@ phase_nem: "fase_4"
 grade: 4
 subject: "matematicas"
 topic: "fracciones_equivalentes"
-activity_source: "[[planeaciones/matematicas/Planeacion_fracciones_equivalentes.md]]"
+activity_source: "[[Memoria_2024-2025_G4_matematicas_fracciones_equivalentes_4B]]"
 created_by_teacher_ref: "teacher_titular_04"
 author_display_name: "Prof. Israel López Ángeles"
 adaptation_of: null
@@ -47,7 +47,7 @@ Evaluación formativa del Grupo 4E en el tema "fracciones_equivalentes". Aplicac
 - **Grado y Asignatura:** Grado 4 • matematicas
 - **Cohorte / Grupo:** Grupo 4E
 - **Docente Titular:** Prof. Israel López Ángeles
-- **Planeación Didáctica Origen:** [[planeaciones/matematicas/Planeacion_fracciones_equivalentes.md]]
+- **Planeación Didáctica Origen:** [[Memoria_2024-2025_G4_matematicas_fracciones_equivalentes_4B]]
 - **Linaje Pedagógico:** Diseño original para la cohorte institucional.
 
 ---

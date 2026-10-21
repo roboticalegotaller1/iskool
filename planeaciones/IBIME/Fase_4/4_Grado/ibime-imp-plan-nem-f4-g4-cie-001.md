@@ -16,7 +16,7 @@ created_at: "2026-10-14T19:28:41.543Z"
 
 # 📚 Water Filtration and Eco-Engineering (Adaptación Bicultural IBIME)
 
-> **Docente Titular:** [[Prof. Ana Sofía Martínez]]  
+> **Docente Titular:** [[Prof_Ana_Sofia_Martinez]]  
 > **Institución:** IBIME (CCT: 09PPR1492Z)  
 > **Asignatura y Grado:** CIENCIAS • Grado 4  
 > **Marco Curricular:** BICULTURAL_IBIME  

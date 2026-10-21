@@ -16,7 +16,7 @@ created_at: "2026-10-21T11:03:28.756Z"
 
 # 📚 Fracciones Equivalentes y Representación en la Recta Numérica
 
-> **Docente Titular:** [[Prof. Ana Sofía Martínez]]  
+> **Docente Titular:** [[Prof_Ana_Sofia_Martinez]]  
 > **Institución:** IBIME (CCT: 09PPR1492Z)  
 > **Asignatura y Grado:** MATEMATICAS • Grado 5  
 > **Marco Curricular:** NEM 2024  

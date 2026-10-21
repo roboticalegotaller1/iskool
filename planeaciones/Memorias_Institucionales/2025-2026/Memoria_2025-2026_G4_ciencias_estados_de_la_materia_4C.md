@@ -43,7 +43,7 @@ Actualización posterior a segunda ronda de laboratorio con condensación.
 - **Grado y Asignatura:** Grado 4 • ciencias
 - **Cohorte / Grupo:** Grupo 4C
 - **Docente Titular:** Prof. Laura Gomez
-- **Planeación Didáctica Origen:** [[planeaciones/General/Planeacion_estados_de_la_materia.md]]
+- **Planeación Didáctica Origen:** [[Memoria_2025-2026_G4_ciencias_estados_de_la_materia_4C]]
 - **Linaje Pedagógico:** Diseño original para la cohorte institucional.
 
 ---
