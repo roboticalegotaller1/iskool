@@ -6631,7 +6631,7 @@ Comité de Seguridad y Protección Escolar`
         {/* 1. HEADER DE LA SUITE INTELIGENTE DE EMAIL CEO            */}
         {/* ========================================================= */}
         <div 
-          className={`px-2.5 sm:px-4 lg:px-5 py-2 sm:py-2.5 ${currentTheme.headerBg} ${currentTheme.headerText} flex items-center justify-between shrink-0 border-b ${currentTheme.headerBorder} gap-2 flex-nowrap overflow-hidden select-none`}
+          className={`px-2.5 sm:px-4 lg:px-5 py-2 sm:py-2.5 ${currentTheme.headerBg} ${currentTheme.headerText} flex items-center justify-between shrink-0 border-b ${currentTheme.headerBorder} gap-2 flex-nowrap relative z-40 overflow-visible select-none`}
           style={themeMode === 'custom' && customTheme.headerColor ? { 
             backgroundColor: customTheme.headerColor,
             borderColor: isColorLight(customTheme.headerColor) ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)'
@@ -6780,7 +6780,7 @@ Comité de Seguridad y Protección Escolar`
             </div>
 
             {/* Selector Desplegable Compacto de Temas Ejecutivos */}
-            <div className="relative shrink-0" ref={themeMenuRef}>
+            <div className="relative shrink-0 z-50" ref={themeMenuRef}>
               <button
                 type="button"
                 onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
@@ -6800,7 +6800,7 @@ Comité de Seguridad y Protección Escolar`
               </button>
 
               {isThemeMenuOpen && (
-                <div className="absolute right-0 top-full mt-1.5 w-56 bg-slate-950/95 backdrop-blur-md rounded-2xl border border-white/15 p-2 shadow-2xl z-[120] space-y-1 animate-in fade-in zoom-in-95 text-xs select-none">
+                <div className="absolute right-0 top-full mt-2 w-56 bg-slate-950/98 backdrop-blur-xl rounded-2xl border border-white/20 p-2 shadow-2xl z-[999] space-y-1 animate-in fade-in zoom-in-95 text-xs select-none">
                   <div className="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center justify-between">
                     <span>Temas Ejecutivos</span>
                     <span className="text-[9px] text-amber-300 font-bold">En Vivo</span>
