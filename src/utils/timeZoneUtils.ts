@@ -313,13 +313,19 @@ export function parseDateStringToEpochMs(str?: string | null): number | null {
  * Resuelve y extrae el timestamp unix en milisegundos de un correo de forma robusta y determinista,
  * reconciliando cualquier discrepancia entre date_ms y el texto visible del timestamp.
  */
-export function parseEmailDateMs(item: {
+export function parseEmailDateMs(itemOrStr?: {
   date_ms?: number;
   date_iso?: string;
   received_at?: string;
   timestamp?: string;
-}): number {
-  if (!item) return Date.now();
+} | string | null): number {
+  if (!itemOrStr) return Date.now();
+
+  if (typeof itemOrStr === 'string') {
+    return parseDateStringToEpochMs(itemOrStr) || Date.now();
+  }
+
+  const item = itemOrStr;
 
   const fromTimestamp = parseDateStringToEpochMs(item.timestamp);
   const fromReceivedAt = parseDateStringToEpochMs(item.received_at);

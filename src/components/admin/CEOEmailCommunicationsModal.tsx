@@ -145,10 +145,10 @@ import { isPlatformSuperUser } from '@/types';
 interface CEOEmailCommunicationsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  holding: OrganizationHolding;
+  holding?: OrganizationHolding;
   schoolId?: string;
   selectedCampusId?: string;
-  onTriggerToast: (msg: string) => void;
+  onTriggerToast?: (msg: string) => void;
 }
 
 export interface MatterItem {
@@ -260,13 +260,13 @@ export function getTenantId(
 }
 
 export function generateDefaultMattersForSchool(
-  schoolName: string,
-  domain: string,
-  campuses: any[],
-  tenantId: string
+  schoolName: string = 'Colegio',
+  domain: string = 'colegio.edu.mx',
+  campuses: any[] = [],
+  tenantId: string = 'sch-default'
 ): MatterItem[] {
-  const primaryCampus = campuses[0]?.name || `${schoolName} · Plantel Central`;
-  const secondaryCampus = campuses[1]?.name || campuses[0]?.name || `${schoolName} · Campus Norte`;
+  const primaryCampus = (campuses && campuses[0]?.name) || `${schoolName} · Plantel Central`;
+  const secondaryCampus = (campuses && (campuses[1]?.name || campuses[0]?.name)) || `${schoolName} · Campus Norte`;
   const slug = domain.split('.')[0] || 'colegio';
   const prefix = slug.toUpperCase().slice(0, 5);
 
@@ -1213,7 +1213,7 @@ export function CEOEmailCommunicationsModal({
   holding,
   schoolId = 'sch-ibime',
   selectedCampusId = 'all',
-  onTriggerToast
+  onTriggerToast = () => {}
 }: CEOEmailCommunicationsModalProps) {
   const { user } = useAuth();
 

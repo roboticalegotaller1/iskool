@@ -85,10 +85,10 @@ describe('📬 CONSOLA DE CORREO INSTITUCIONAL & SUITE EJECUTIVA 360° (CEOEmail
     expect(content).toContain('interface CEOEmailCommunicationsModalProps');
     expect(content).toContain('isOpen: boolean;');
     expect(content).toContain('onClose: () => void;');
-    expect(content).toContain('holding: OrganizationHolding;');
+    expect(content).toMatch(/holding\??:\s*OrganizationHolding;/);
     expect(content).toContain('schoolId?: string;');
     expect(content).toContain('selectedCampusId?: string;');
-    expect(content).toContain('onTriggerToast: (msg: string) => void;');
+    expect(content).toMatch(/onTriggerToast\??:\s*\(msg:\s*string\)\s*=>\s*void;/);
   });
 
   it('debe cumplir de forma rigurosa con la Regla No Negociable 1 (Marca Blanca e Imposibilidad de Exponer Marcas Comerciales)', () => {

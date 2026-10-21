@@ -43,6 +43,7 @@ import {
 import { DetailedStudent, Subject, Campus, UserProfile, isPlatformSuperUser } from '@/types';
 import { IbimeOfficialLogo } from '@/components/brand/IbimeOfficialLogo';
 import { switchCanonicalStudent, resetCanonicalSelectedSchool } from '@/lib/auth/multiTenantSession';
+import { CEOEmailCommunicationsModal } from '@/components/admin/CEOEmailCommunicationsModal';
 
 type IbimeTab = 'sedes' | 'alumnos' | 'docentes' | 'boveda' | 'finanzas';
 
@@ -69,6 +70,7 @@ function IbimePortalContent() {
 
   // Estado para alternar entre Visión Ejecutiva CEO y Tablero Operativo Clásico
   const [viewMode, setViewMode] = useState<'ceo' | 'operational'>('operational');
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
 
   // Forzar síncronamente los atributos del DOM para el tenant IBIME
   useEffect(() => {
@@ -439,16 +441,28 @@ function IbimePortalContent() {
               <span className="sm:hidden">Familia</span>
             </button>
 
-            {/* Acceso directo a Visión CEO para Directores y Dueños */}
+            {/* Acceso directo a Visión CEO y Correo Institucional para Directores y Dueños */}
             {(isDirector || activeUser.role === 'owner') && (
-              <button
-                onClick={() => setViewMode('ceo')}
-                className="h-9 px-3 rounded-xl bg-[#0B1E36] hover:bg-[#17426D] text-blue-100 font-extrabold text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-blue-800 shrink-0 leading-none"
-                title="Abrir Visión Ejecutiva CEO"
-              >
-                <Layers className="w-3.5 h-3.5 text-blue-300 shrink-0" />
-                <span className="hidden sm:inline whitespace-nowrap">Visión CEO</span>
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsEmailModalOpen(true)}
+                  className="h-9 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-blue-400 shrink-0 leading-none"
+                  title="Bandeja de Correo Institucional, Triage Cognitivo y Conexión Directiva"
+                >
+                  <Mail className="w-3.5 h-3.5 text-white shrink-0" />
+                  <span className="hidden sm:inline whitespace-nowrap">Email & Triage</span>
+                </button>
+
+                <button
+                  onClick={() => setViewMode('ceo')}
+                  className="h-9 px-3 rounded-xl bg-[#0B1E36] hover:bg-[#17426D] text-blue-100 font-extrabold text-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs border border-blue-800 shrink-0 leading-none"
+                  title="Abrir Visión Ejecutiva CEO"
+                >
+                  <Layers className="w-3.5 h-3.5 text-blue-300 shrink-0" />
+                  <span className="hidden sm:inline whitespace-nowrap">Visión CEO</span>
+                </button>
+              </>
             )}
 
             <button
@@ -1236,6 +1250,17 @@ function IbimePortalContent() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal de Correo Institucional & Triage Cognitivo CEO IBIME */}
+      {isEmailModalOpen && (
+        <CEOEmailCommunicationsModal
+          key="sch-ibime"
+          isOpen={isEmailModalOpen}
+          onClose={() => setIsEmailModalOpen(false)}
+          holding={DEFAULT_IBIME_HOLDING}
+          schoolId="sch-ibime"
+        />
       )}
 
     </div>

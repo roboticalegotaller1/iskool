@@ -7577,6 +7577,10 @@ export default function SuperUserAdminPage() {
           selectSchool(enterpriseId);
           setOverviewMode('executive');
         }}
+        onOpenEmail={(enterpriseId) => {
+          selectSchool(enterpriseId);
+          setIsAdminEmailModalOpen(true);
+        }}
         onTriggerToast={(msg) => setDeletionFeedback(msg)}
       />
 

@@ -60,6 +60,8 @@ import {
 } from '@/store/useSchoolAdminStore';
 import { DetailedStudent, Subject, Campus, Group, UserProfile, SchoolGovernanceSettings, RestrictedTopicItem, DirectorLimitsSettings, isPlatformSuperUser } from '@/types';
 import { SchoolBooksManagerSection } from '@/components/books/SchoolBooksManagerSection';
+import { CEOEmailCommunicationsModal } from '@/components/admin/CEOEmailCommunicationsModal';
+import { buildHoldingForInstitution, DEFAULT_IBIME_HOLDING } from '@/components/admin/CEOExecutiveDashboard';
 
 type DirectorTab = 'overview' | 'governance' | 'school_control' | 'vault' | 'finances';
 
@@ -138,6 +140,15 @@ export default function DirectorPortalPage() {
   const [activeTab, setActiveTab] = useState<DirectorTab>('overview');
   const [selectedCampusFilter, setSelectedCampusFilter] = useState<string>('all');
   const [controlSubTab, setControlSubTab] = useState<'students' | 'groups' | 'teachers' | 'schedules'>('students');
+
+  // Estado y holding dinámico para Suite de Correo Institucional & Triage CEO
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const directorHolding = useMemo(() => {
+    if (schoolInfo) {
+      return buildHoldingForInstitution(schoolInfo, campusesList, detailedStudents, teachersList);
+    }
+    return DEFAULT_IBIME_HOLDING;
+  }, [schoolInfo, campusesList, detailedStudents, teachersList]);
 
   // Gobernanza actual del colegio
   const currentGovernance = useMemo(() => {
@@ -551,6 +562,25 @@ export default function DirectorPortalPage() {
                 </select>
               </div>
 
+              <button
+                type="button"
+                onClick={() => setIsEmailModalOpen(true)}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs transition-all cursor-pointer shadow-md shadow-blue-500/20 hover:scale-102 shrink-0"
+                title="Bandeja de Correo Institucional, Triage Cognitivo y Conexión Directiva"
+              >
+                <Mail className="h-4 w-4 text-white" />
+                <span>Email Institucional & Triage</span>
+              </button>
+
+              <Link
+                href={`/admin/ceo?schoolId=${directorSchoolId}`}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-300 text-xs font-black transition-all cursor-pointer shadow-xs"
+                title="Abrir Visión Ejecutiva CEO Consolidada"
+              >
+                <Crown className="h-4 w-4 text-amber-500" />
+                <span>Visión CEO</span>
+              </Link>
+
               <Link
                 href="/coordinator/billing"
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-black transition-all cursor-pointer shadow-xs"
@@ -711,6 +741,14 @@ export default function DirectorPortalPage() {
               }`}
             >
               <DollarSign className="h-4 w-4 text-emerald-500" /> Finanzas & Cobranza
+            </button>
+
+            <button
+              onClick={() => setIsEmailModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-black transition-all cursor-pointer shrink-0 whitespace-nowrap text-blue-700 hover:text-blue-900 bg-blue-50/80 hover:bg-blue-100 border border-blue-200 shadow-2xs"
+              title="Abrir Bandeja de Correo Institucional, Triage Cognitivo y Conexión Directiva"
+            >
+              <Mail className="h-4 w-4 text-blue-600" /> Correo Institucional & Triage
             </button>
           </nav>
         </div>
@@ -2104,6 +2142,19 @@ export default function DirectorPortalPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Modal de Correo Institucional & Triage Cognitivo CEO */}
+      {isEmailModalOpen && (
+        <CEOEmailCommunicationsModal
+          key={directorSchoolId || 'sch-default'}
+          isOpen={isEmailModalOpen}
+          onClose={() => setIsEmailModalOpen(false)}
+          holding={directorHolding}
+          schoolId={directorSchoolId || 'sch-default'}
+          selectedCampusId={selectedCampusFilter === 'all' ? undefined : schoolCampuses.find(c => c.name === selectedCampusFilter)?.id}
+          onTriggerToast={(msg) => showToast(msg)}
+        />
       )}
     </div>
   );

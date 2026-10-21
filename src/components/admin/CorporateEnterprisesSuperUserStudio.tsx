@@ -42,6 +42,7 @@ interface CorporateEnterprisesSuperUserStudioProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectEnterprise: (enterpriseId: string) => void;
+  onOpenEmail?: (enterpriseId: string) => void;
   onTriggerToast?: (message: string) => void;
 }
 
@@ -49,6 +50,7 @@ export const CorporateEnterprisesSuperUserStudio: React.FC<CorporateEnterprisesS
   isOpen,
   onClose,
   onSelectEnterprise,
+  onOpenEmail,
   onTriggerToast
 }) => {
   const [activeTab, setActiveTab] = useState<'enterprises' | 'metrics' | 'payroll_overview'>('enterprises');
@@ -529,6 +531,20 @@ export const CorporateEnterprisesSuperUserStudio: React.FC<CorporateEnterprisesS
                         <span>Abrir Portal CEO</span>
                         <ChevronRight size={14} />
                       </button>
+
+                      {onOpenEmail && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onOpenEmail(emp.id);
+                            onClose();
+                          }}
+                          className="p-2.5 rounded-xl border border-blue-200 dark:border-blue-900/40 hover:border-blue-400 bg-white dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-950/30 text-blue-600 hover:text-blue-700 text-xs font-black transition-all flex items-center justify-center cursor-pointer shadow-xs shrink-0"
+                          title={`Bandeja de Correo Institucional & Triage para ${emp.name}`}
+                        >
+                          <Mail size={15} />
+                        </button>
+                      )}
 
                       <button
                         onClick={() => {
