@@ -65,6 +65,24 @@ export function isEmailResolvedServer(tenantId: string, emailId?: string, subjec
   return false;
 }
 
+const serverDeletedRegistry: Set<string> =
+  (globalThis as any).__iskoolDeletedEmails ||
+  ((globalThis as any).__iskoolDeletedEmails = new Set<string>());
+
+export function markEmailAsDeletedServer(tenantId: string, emailId: string): void {
+  if (emailId) {
+    serverDeletedRegistry.add(`${tenantId}:${emailId}`);
+    serverDeletedRegistry.add(emailId);
+  }
+}
+
+export function isEmailDeletedServer(tenantId: string, emailId: string): boolean {
+  if (emailId && (serverDeletedRegistry.has(`${tenantId}:${emailId}`) || serverDeletedRegistry.has(emailId))) {
+    return true;
+  }
+  return false;
+}
+
 // Semilla canónica de respaldo exclusivamente para sandboxes de prueba aislada
 function getFallbackRawEmails(accountEmail: string): RawGmailItem[] {
   const targetEmail = (accountEmail || '').trim().toLowerCase();
@@ -402,7 +420,7 @@ export async function GET(request: NextRequest) {
     }
     const allEmails = Array.from(emailMap.values());
 
-    const sanitizedEmails = allEmails.map((item: RawGmailItem) => {
+    let sanitizedEmails = allEmails.map((item: RawGmailItem) => {
       const isResolved = isEmailResolvedServer(tenantId, item.id, item.subject);
       if (isResolved) {
         return {
@@ -533,6 +551,9 @@ export async function GET(request: NextRequest) {
       return item;
     });
 
+    // Filtrar correos eliminados por la Dirección General (tombstones de servidor)
+    sanitizedEmails = sanitizedEmails.filter((e: RawGmailItem) => !isEmailDeletedServer(tenantId, e.id));
+
     // REGLA FUNDAMENTAL DE ORDEN: Orden cronológico estricto descendente (los más recientes con hora exacta arriba)
     sanitizedEmails.sort((a, b) => {
       const timeA = parseEmailDateMs(a);
@@ -582,6 +603,26 @@ export async function POST(request: NextRequest) {
         message: 'Expediente marcado como atendido y resuelto por Dirección General.',
         resolvedId: emailId,
         subject
+      });
+    }
+
+    // Acción directa de eliminación de correos de la bandeja por Dirección General
+    if (body.action === 'delete_emails' || body.action === 'delete_email') {
+      const authResult = await validateApiAuth(request, { allowSuperAdminBypass: true });
+      if (!authResult.authenticated) {
+        return NextResponse.json(
+          { success: false, error: 'Autenticación requerida para operar en el buzón institucional.' },
+          { status: 401 }
+        );
+      }
+      const ids: string[] = Array.isArray(body.ids) ? body.ids : (body.id ? [body.id] : (body.emailId ? [body.emailId] : []));
+      for (const id of ids) {
+        markEmailAsDeletedServer(tenantId, id);
+      }
+      return NextResponse.json({
+        success: true,
+        message: `${ids.length} correo(s) eliminado(s) de la bandeja institucional.`,
+        deletedIds: ids
       });
     }
 
@@ -800,7 +841,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const sanitizedEmails = emails.map((item: RawGmailItem) => {
+    let sanitizedEmails = emails.map((item: RawGmailItem) => {
       const isResolved = isEmailResolvedServer(tenantId, item.id, item.subject);
       if (isResolved) {
         return {
@@ -893,6 +934,9 @@ export async function POST(request: NextRequest) {
       return item;
     });
 
+    // Filtrar correos eliminados por la Dirección General (tombstones de servidor)
+    sanitizedEmails = sanitizedEmails.filter((e: RawGmailItem) => !isEmailDeletedServer(tenantId, e.id));
+
     // Orden cronológico estricto descendente en POST
     sanitizedEmails.sort((a, b) => {
       const timeA = parseEmailDateMs(a);
@@ -916,6 +960,39 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: false,
       error: error.message || 'Error al sincronizar bandeja de entrada'
+    }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const authResult = await validateApiAuth(request, { allowSuperAdminBypass: true });
+    if (!authResult.authenticated) {
+      return NextResponse.json(
+        { success: false, error: 'Autenticación requerida para operar en el buzón institucional.' },
+        { status: 401 }
+      );
+    }
+    const body = await request.json().catch(() => ({}));
+    const { searchParams } = new URL(request.url);
+    const tenantId = body.tenantId || searchParams.get('tenantId') || 'e1000000-0000-0000-0000-000000000001';
+    const ids: string[] = Array.isArray(body.ids)
+      ? body.ids
+      : (body.id ? [body.id] : (searchParams.get('id') ? [searchParams.get('id')!] : []));
+
+    for (const id of ids) {
+      markEmailAsDeletedServer(tenantId, id);
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: `${ids.length} correo(s) eliminado(s) de la bandeja institucional.`,
+      deletedIds: ids
+    });
+  } catch (error: any) {
+    return NextResponse.json({
+      success: false,
+      error: error.message || 'Error al eliminar correo(s)'
     }, { status: 500 });
   }
 }

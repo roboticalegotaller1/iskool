@@ -1166,19 +1166,25 @@ export function sortEmailsDescending(emails: RawGmailItem[]): RawGmailItem[] {
 
 /**
  * Estrategia de fusión no destructiva (Upsert Merge) para la bandeja de correos.
- * Evita desaparición de correos al sincronizar o navegar entre pestañas.
- * Combina la lista previa con los elementos nuevos/actualizados y los ordena cronológicamente.
+ * Evita desaparición de correos al sincronizar o navegar entre pestañas,
+ * omitiendo de manera estricta cualquier ID registrado en la lista de eliminados.
  */
-export function mergeAndSortEmails(existing: RawGmailItem[], incoming: RawGmailItem[]): RawGmailItem[] {
+export function mergeAndSortEmails(
+  existing: RawGmailItem[],
+  incoming: RawGmailItem[],
+  deletedIds?: Set<string>
+): RawGmailItem[] {
   const map = new Map<string, RawGmailItem>();
 
   for (const item of existing) {
     if (!item || !item.id) continue;
+    if (deletedIds && deletedIds.has(item.id)) continue;
     map.set(item.id, item);
   }
 
   for (const item of incoming) {
     if (!item || !item.id) continue;
+    if (deletedIds && deletedIds.has(item.id)) continue;
     const prev = map.get(item.id);
     if (prev) {
       map.set(item.id, {
@@ -1325,6 +1331,7 @@ export function CEOEmailCommunicationsModal({
   const mailVerifiedStorageKey = `iskool_mail_verified_${currentTenantId}`;
   const mailConfigStorageKey = `iskool_mail_config_${currentTenantId}`;
   const rawEmailsStorageKey = `iskool_raw_emails_v3_${currentTenantId}`;
+  const deletedEmailsStorageKey = `iskool_ceo_deleted_emails_${currentTenantId}`;
   const legacyMattersKey = `iskool_matters_${currentTenantId}`;
   const mattersStorageKey = `iskool_matters_v3_${currentTenantId}`;
   const resolvedMattersStorageKey = `iskool_resolved_matters_v3_${currentTenantId}`;
@@ -1332,6 +1339,34 @@ export function CEOEmailCommunicationsModal({
   const discardedStorageKey = `iskool_discarded_${currentTenantId}`;
   const globalConnectedEmailKey = 'iskool_last_connected_email';
   const globalMailVerifiedKey = 'iskool_last_mail_verified';
+
+  // Registro persistente de correos eliminados por Dirección General (Tombstones anti-resurrección)
+  const [deletedEmailIds, setDeletedEmailIds] = useState<Set<string>>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(`iskool_ceo_deleted_emails_${currentTenantId}`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) return new Set<string>(parsed);
+        }
+      } catch {}
+    }
+    return new Set<string>();
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(deletedEmailsStorageKey);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) setDeletedEmailIds(new Set<string>(parsed));
+        } else {
+          setDeletedEmailIds(new Set<string>());
+        }
+      } catch {}
+    }
+  }, [deletedEmailsStorageKey]);
 
   // Registro persistente de expedientes atendidos y resueltos por Dirección General
   const [resolvedMatterIds, setResolvedMatterIds] = useState<string[]>(() => {
@@ -2556,7 +2591,7 @@ export function CEOEmailCommunicationsModal({
           if (Array.isArray(parsed) && parsed.length > 0) {
             const clean = parsed.filter((item: any) => {
               const id = String(item.id || '');
-              return !id.startsWith('raw-msg-');
+              return !id.startsWith('raw-msg-') && !deletedEmailIds.has(id);
             });
             return sortEmailsDescending(clean.map(normalizeRawEmailCeoRules));
           }
@@ -2576,12 +2611,12 @@ export function CEOEmailCommunicationsModal({
           if (Array.isArray(parsed) && parsed.length > 0) {
             const clean = parsed.filter((item: any) => {
               const id = String(item.id || '');
-              return !id.startsWith('raw-msg-');
+              return !id.startsWith('raw-msg-') && !deletedEmailIds.has(id);
             });
             if (clean.length > 0) {
               const normalized = clean.map(normalizeRawEmailCeoRules);
               setRawEmailsList(prev => {
-                const merged = mergeAndSortEmails(prev, normalized);
+                const merged = mergeAndSortEmails(prev, normalized, deletedEmailIds);
                 try {
                   localStorage.setItem(rawEmailsStorageKey, JSON.stringify(merged));
                 } catch {}
@@ -2612,11 +2647,11 @@ export function CEOEmailCommunicationsModal({
         .then(res => res.json())
         .then(data => {
           if (data.success && Array.isArray(data.emails)) {
-            const cleanEmails = data.emails.filter((e: any) => !String(e.id || '').startsWith('raw-msg-'));
+            const cleanEmails = data.emails.filter((e: any) => !String(e.id || '').startsWith('raw-msg-') && !deletedEmailIds.has(String(e.id || '')));
             if (cleanEmails.length > 0) {
               const normalized = cleanEmails.map(normalizeRawEmailCeoRules);
               setRawEmailsList(prev => {
-                const merged = mergeAndSortEmails(prev, normalized);
+                const merged = mergeAndSortEmails(prev, normalized, deletedEmailIds);
                 if (typeof window !== 'undefined') {
                   try {
                     localStorage.setItem(rawEmailsStorageKey, JSON.stringify(merged));
@@ -2637,13 +2672,15 @@ export function CEOEmailCommunicationsModal({
         })
         .catch(err => console.warn('Auto fetch raw inbox failed:', err));
     }
-  }, [rawEmailsStorageKey, currentTenantId, isOpen, activeTab, connectedEmail, authUsername, isIbime, authPassword, appPasswordInput]);
+  }, [rawEmailsStorageKey, currentTenantId, isOpen, activeTab, connectedEmail, authUsername, isIbime, authPassword, appPasswordInput, deletedEmailIds]);
 
   // Optimización de rendimiento: Normalización y conteos en un único paso memoizado O(N) para fluidez de UI
   const normalizedRawEmails = useMemo(() => {
-    const list = rawEmailsList.map(item => normalizeRawEmailCeoRules(item));
+    const list = rawEmailsList
+      .filter(item => !deletedEmailIds.has(item.id))
+      .map(item => normalizeRawEmailCeoRules(item));
     return sortEmailsDescending(list);
-  }, [rawEmailsList, normalizeRawEmailCeoRules]);
+  }, [rawEmailsList, deletedEmailIds, normalizeRawEmailCeoRules]);
 
   const rawEmailCounts = useMemo(() => {
     let ceo = 0;
@@ -2817,18 +2854,45 @@ export function CEOEmailCommunicationsModal({
   };
 
   const handleDeleteRawEmails = (ids: string[]) => {
+    if (!ids || ids.length === 0) return;
     const idSet = new Set(ids);
+
+    // 1. Registrar IDs en el conjunto de borrados persistentes (tombstones de sesión y cliente)
+    setDeletedEmailIds(prev => {
+      const next = new Set(prev);
+      ids.forEach(id => next.add(id));
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(deletedEmailsStorageKey, JSON.stringify(Array.from(next)));
+        } catch {}
+      }
+      return next;
+    });
+
+    // 2. Filtrar de inmediato la lista de correos en memoria y en localStorage
     setRawEmailsList((prev) => {
       const updated = prev.filter((item) => !idSet.has(item.id));
       if (typeof window !== 'undefined') {
-        localStorage.setItem(rawEmailsStorageKey, JSON.stringify(updated));
+        try {
+          localStorage.setItem(rawEmailsStorageKey, JSON.stringify(updated));
+        } catch {}
       }
       return updated;
     });
+
+    // 3. Si el correo actualmente abierto en el visor es uno de los eliminados, cerrarlo
     if (selectedRawEmailId && idSet.has(selectedRawEmailId)) {
       setSelectedRawEmailId(null);
     }
     setSelectedRawEmailIds([]);
+
+    // 4. Notificar al servidor institucional para persistir la eliminación
+    fetch('/api/mail/raw-inbox', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tenantId: currentTenantId, ids })
+    }).catch(err => console.warn('Error sincronizando eliminación con el servidor:', err));
+
     onTriggerToast(`✓ ${ids.length} correo(s) eliminado(s) de la Bandeja.`);
   };
 
@@ -5313,10 +5377,10 @@ ${schoolName}`
           }
         }
         if (rawData?.success && Array.isArray(rawData.emails) && rawData.emails.length > 0) {
-          const cleanEmails = rawData.emails.filter((e: any) => !String(e.id || '').startsWith('raw-msg-'));
+          const cleanEmails = rawData.emails.filter((e: any) => !String(e.id || '').startsWith('raw-msg-') && !deletedEmailIds.has(String(e.id || '')));
           const normalized = cleanEmails.map((item: any) => normalizeRawEmailCeoRules(item));
           setRawEmailsList(prev => {
-            const merged = mergeAndSortEmails(prev, normalized);
+            const merged = mergeAndSortEmails(prev, normalized, deletedEmailIds);
             if (typeof window !== 'undefined') {
               try {
                 localStorage.setItem(rawEmailsStorageKey, JSON.stringify(merged));
