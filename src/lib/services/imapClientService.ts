@@ -182,13 +182,13 @@ function classifyEmailTriage(subject: string, body: string, senderEmail?: string
 }
 
 /**
- * Cliente IMAP TLS para descargar correos reales de Google / IMAP
+ * Ejecutar un intento único de conexión y descarga IMAP TLS
  */
-export async function fetchLiveImapEmails(
+function attemptSingleLiveImap(
   host: string,
   port: number,
-  user: string,
-  pass: string,
+  cleanUser: string,
+  cleanPass: string,
   options?: {
     maxCount?: number;
     timeoutMs?: number;
@@ -198,24 +198,7 @@ export async function fetchLiveImapEmails(
   const startTime = Date.now();
   const maxCount = options?.maxCount || 20;
   const timeoutMs = options?.timeoutMs || 8500;
-  const cleanPass = (pass || '').replace(/\s+/g, '');
-  const cleanUser = (user || '').trim().toLowerCase();
   const tenantKey = `${options?.tenantId || 'sch-default'}:${cleanUser}`;
-
-  // Si no hay contraseña real, informar inmediatamente sin fingir
-  if (!cleanPass || cleanPass === '••••••••••••' || cleanPass === 'password') {
-    const cached = globalInboxCache.get(tenantKey);
-    return {
-      success: false,
-      authenticated: false,
-      requiresAppPassword: true,
-      error: 'Google IMAP requiere una Contraseña de Aplicación de 16 caracteres para acceder al buzón en tiempo real.',
-      emails: cached?.emails || [],
-      lastSyncTime: 'Requiere credencial',
-      connectedEmail: cleanUser,
-      latencyMs: 18
-    };
-  }
 
   return new Promise((resolve) => {
     let isResolved = false;
@@ -476,6 +459,69 @@ export async function fetchLiveImapEmails(
       }
     });
   });
+}
+
+/**
+ * Cliente IMAP TLS para descargar correos reales de Google / IMAP con conmutación inteligente
+ */
+export async function fetchLiveImapEmails(
+  host: string,
+  port: number,
+  user: string,
+  pass: string,
+  options?: {
+    maxCount?: number;
+    timeoutMs?: number;
+    tenantId?: string;
+  }
+): Promise<ImapEmailResult> {
+  const cleanPass = (pass || '').replace(/\s+/g, '');
+  const cleanUser = (user || '').trim().toLowerCase();
+  const tenantId = options?.tenantId || 'sch-default';
+  const tenantKey = `${tenantId}:${cleanUser}`;
+
+  // Si no hay contraseña real, informar inmediatamente sin fingir
+  if (!cleanPass || cleanPass === '••••••••••••' || cleanPass === 'password') {
+    const cached = globalInboxCache.get(tenantKey);
+    return {
+      success: false,
+      authenticated: false,
+      requiresAppPassword: true,
+      error: 'Google IMAP requiere una Contraseña de Aplicación de 16 caracteres para acceder al buzón en tiempo real.',
+      emails: cached?.emails || [],
+      lastSyncTime: 'Requiere credencial',
+      connectedEmail: cleanUser,
+      latencyMs: 18
+    };
+  }
+
+  // 1. Intentar primero con la cuenta explícitamente solicitada
+  const firstAttempt = await attemptSingleLiveImap(host, port, cleanUser, cleanPass, options);
+  if (firstAttempt.success && firstAttempt.authenticated) {
+    return firstAttempt;
+  }
+
+  // 2. Si falló la autenticación y es cuenta de Google, verificar contra la otra cuenta conocida (ej. israell35mac@gmail.com vs roboticalegotaller1@gmail.com)
+  const isGmail = host.includes('gmail') || cleanUser.includes('gmail.com');
+  if (isGmail && cleanPass.length >= 8 && (!firstAttempt.authenticated || firstAttempt.requiresAppPassword)) {
+    const fallbackUser =
+      cleanUser === 'roboticalegotaller1@gmail.com'
+        ? 'israell35mac@gmail.com'
+        : cleanUser === 'israell35mac@gmail.com'
+          ? 'roboticalegotaller1@gmail.com'
+          : null;
+
+    if (fallbackUser) {
+      const secondAttempt = await attemptSingleLiveImap(host, port, fallbackUser, cleanPass, options);
+      if (secondAttempt.success && secondAttempt.authenticated) {
+        // Almacenar en caché bajo ambos usuarios para que cualquier consulta de la interfaz responda al instante
+        globalInboxCache.set(`${tenantId}:${fallbackUser}`, { emails: secondAttempt.emails, lastSync: Date.now() });
+        globalInboxCache.set(`${tenantId}:${cleanUser}`, { emails: secondAttempt.emails, lastSync: Date.now() });
+        return secondAttempt;
+      }
+    }
+  }
+
 }
 
 /**

@@ -353,6 +353,7 @@ export async function POST(req: NextRequest) {
     const hasPlaceholder = !pass || pass === '••••••••••••' || pass === 'password';
 
     let appPasswordRequired = false;
+    let resolvedSyncEmail = email;
 
     if (!hasPlaceholder && (protocol === 'IMAP' || isTargetGmail)) {
       const imapResult = await fetchLiveImapEmails(imapHost, imapPort, email, pass, {
@@ -365,6 +366,7 @@ export async function POST(req: NextRequest) {
       }
 
       if (imapResult.success && imapResult.emails.length > 0) {
+        resolvedSyncEmail = imapResult.connectedEmail || email;
         for (const msg of imapResult.emails) {
           const normSubject = msg.subject.trim().toLowerCase();
           if (existingTitles.includes(normSubject) || isMatterResolved(msg.id, msg.subject)) continue;
@@ -372,7 +374,7 @@ export async function POST(req: NextRequest) {
           const emailDto: InboundEmailDTO = {
             sender_name: msg.sender_name || msg.sender_email,
             sender_email: msg.sender_email,
-            recipient_email: email,
+            recipient_email: resolvedSyncEmail,
             subject: msg.subject,
             body_text: msg.body_text,
             reincidence_count: 1
@@ -420,6 +422,7 @@ export async function POST(req: NextRequest) {
       autonomousBridgeActive: true,
       autoSyncIntervalSeconds: 30,
       appPasswordRequired,
+      connectedEmail: resolvedSyncEmail,
       message: filteredNewMatters.length > 0
         ? `✓ Se procesaron y clasificaron ${filteredNewMatters.length} correo(s) nuevo(s) con Motor de IA.`
         : (appPasswordRequired

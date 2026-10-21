@@ -2528,8 +2528,15 @@ export function CEOEmailCommunicationsModal({
         ? 'roboticalegotaller1@gmail.com'
         : targetEmail;
 
+    const rawVal = appPasswordInput || '';
+    const effectivePass = (
+      (rawVal.trim().length >= 8 ? rawVal : '') ||
+      (authPassword && authPassword !== '••••••••••••' ? authPassword : '')
+    ).replace(/\s+/g, '');
+    const passParam = effectivePass ? `&password=${encodeURIComponent(effectivePass)}` : '';
+
     if (isOpen && effectiveEmail && effectiveEmail !== 'DISCONNECTED') {
-      fetch(`/api/mail/raw-inbox?tenantId=${encodeURIComponent(currentTenantId)}&email=${encodeURIComponent(effectiveEmail)}`)
+      fetch(`/api/mail/raw-inbox?tenantId=${encodeURIComponent(currentTenantId)}&email=${encodeURIComponent(effectiveEmail)}${passParam}`)
         .then(res => res.json())
         .then(data => {
           if (data.success && Array.isArray(data.emails)) {
@@ -2537,6 +2544,14 @@ export function CEOEmailCommunicationsModal({
             if (cleanEmails.length > 0) {
               const normalized = cleanEmails.map(normalizeRawEmailCeoRules);
               setRawEmailsList(normalized);
+              if (data.connectedEmail && data.connectedEmail !== effectiveEmail) {
+                setConnectedEmail(data.connectedEmail);
+                setAuthUsername(data.connectedEmail);
+                if (typeof window !== 'undefined') {
+                  localStorage.setItem(emailStorageKey, data.connectedEmail);
+                  localStorage.setItem('iskool_last_connected_email', data.connectedEmail);
+                }
+              }
               if (typeof window !== 'undefined') {
                 localStorage.setItem(rawEmailsStorageKey, JSON.stringify(normalized));
               }
@@ -2545,7 +2560,7 @@ export function CEOEmailCommunicationsModal({
         })
         .catch(err => console.warn('Auto fetch raw inbox failed:', err));
     }
-  }, [rawEmailsStorageKey, currentTenantId, isOpen, activeTab, connectedEmail, authUsername, isIbime]);
+  }, [rawEmailsStorageKey, currentTenantId, isOpen, activeTab, connectedEmail, authUsername, isIbime, authPassword, appPasswordInput]);
 
   // Optimización de rendimiento: Normalización y conteos en un único paso memoizado O(N) para fluidez de UI
   const normalizedRawEmails = useMemo(() => {
@@ -4141,6 +4156,7 @@ ${schoolName}`
     serverBanner?: string;
     requires2FA?: boolean;
     deviceChallenge?: any;
+    matchedEmail?: string;
   }> => {
     const isAlreadyVerified = connectionStatus === 'connected_verified' || 
       (typeof window !== 'undefined' && Boolean(localStorage.getItem(mailVerifiedStorageKey)));
@@ -4178,17 +4194,19 @@ ${schoolName}`
 
       const data = await res.json();
       if (data.success && data.pingSuccess && data.authenticated) {
+        const finalEmail = data.matchedEmail || targetEmail;
         setConnectionStatus('connected_verified');
         setVerifiedLatency(data.latencyMs);
         setLastPingBanner(data.serverBanner);
         setLastPingError(null);
         setDevice2FAChallenge(null);
         if (typeof window !== 'undefined') {
-          localStorage.setItem(emailStorageKey, targetEmail);
+          localStorage.setItem(emailStorageKey, finalEmail);
+          localStorage.setItem('iskool_last_connected_email', finalEmail);
           localStorage.setItem(
             mailVerifiedStorageKey,
             JSON.stringify({
-              email: targetEmail,
+              email: finalEmail,
               verified: true,
               latencyMs: data.latencyMs,
               verifiedAt: new Date().toISOString(),
@@ -4196,7 +4214,7 @@ ${schoolName}`
             })
           );
         }
-        return { success: true, latencyMs: data.latencyMs, serverBanner: data.serverBanner };
+        return { success: true, latencyMs: data.latencyMs, serverBanner: data.serverBanner, matchedEmail: data.matchedEmail };
       } else {
         setConnectionStatus('failed');
         const errDetail = data.error || 'Se requieren credenciales de acceso válidas (Contraseña de Aplicación) para autenticar el buzón.';
@@ -4399,16 +4417,24 @@ ${schoolName}`
       secToUse,
       selectedProtocol,
       cleanAppPass,
-      { mode: 'sync', deviceConfirmed: true }
+      { mode: 'app_password', deviceConfirmed: true }
     );
 
+    const verifiedTarget = result.matchedEmail || targetEmail;
+
     if (result.success) {
-      setConnectedEmail(targetEmail);
-      setAuthUsername(targetEmail);
+      setConnectedEmail(verifiedTarget);
+      setAuthUsername(verifiedTarget);
       setConnectionStatus('connected_verified');
       setShowAppPasswordHelper(false);
-      await persistVerifiedMailConnection(targetEmail, result.latencyMs || 24, result.serverBanner, 'Contraseña de Aplicación (Token 16 letras - Sin CASA)');
-      onTriggerToast(`✓ ¡Token de 16 dígitos verificado (${result.latencyMs || 24}ms)! Buzón conectado y exento de auditoría CASA.`);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`iskool_auth_pass_${currentTenantId}`, cleanAppPass);
+        localStorage.setItem(`iskool_app_pass_input_${currentTenantId}`, rawVal);
+        localStorage.setItem(emailStorageKey, verifiedTarget);
+        localStorage.setItem('iskool_last_connected_email', verifiedTarget);
+      }
+      await persistVerifiedMailConnection(verifiedTarget, result.latencyMs || 24, result.serverBanner, 'Contraseña de Aplicación (Token 16 letras - Sin CASA)');
+      onTriggerToast(`✓ ¡Token de 16 dígitos verificado para ${verifiedTarget} (${result.latencyMs || 24}ms)! Sincronizando correos reales...`);
     } else {
       onTriggerToast(`❌ Falló la autenticación con el token de 16 dígitos: ${result.error}`);
     }
@@ -5175,7 +5201,8 @@ ${schoolName}`
       // 2.1 Sincronización reactiva de la Bandeja de Entrada con Gmail API oficial e IMAP
       try {
         let rawData: any = null;
-        const getRes = await fetch(`/api/mail/raw-inbox?tenantId=${encodeURIComponent(currentTenantId)}&email=${encodeURIComponent(targetEmail)}`);
+        const passParam = effectivePass ? `&password=${encodeURIComponent(effectivePass)}` : '';
+        const getRes = await fetch(`/api/mail/raw-inbox?tenantId=${encodeURIComponent(currentTenantId)}&email=${encodeURIComponent(targetEmail)}${passParam}`);
         if (getRes.ok) {
           rawData = await getRes.json();
         }
@@ -5200,6 +5227,14 @@ ${schoolName}`
           const cleanEmails = rawData.emails.filter((e: any) => !String(e.id || '').startsWith('raw-msg-'));
           const normalized = cleanEmails.map((item: any) => normalizeRawEmailCeoRules(item));
           setRawEmailsList(normalized);
+          if (rawData.connectedEmail && rawData.connectedEmail !== targetEmail) {
+            setConnectedEmail(rawData.connectedEmail);
+            setAuthUsername(rawData.connectedEmail);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(emailStorageKey, rawData.connectedEmail);
+              localStorage.setItem('iskool_last_connected_email', rawData.connectedEmail);
+            }
+          }
           if (typeof window !== 'undefined') {
             localStorage.setItem(rawEmailsStorageKey, JSON.stringify(normalized));
           }
@@ -5234,6 +5269,14 @@ ${schoolName}`
         });
 
         const syncData = await syncRes.json();
+        if (syncData.connectedEmail && syncData.connectedEmail !== targetEmail) {
+          setConnectedEmail(syncData.connectedEmail);
+          setAuthUsername(syncData.connectedEmail);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(emailStorageKey, syncData.connectedEmail);
+            localStorage.setItem('iskool_last_connected_email', syncData.connectedEmail);
+          }
+        }
         if (syncData.success && syncData.newMatters && syncData.newMatters.length > 0) {
           setMattersList((prev) => {
             const seen = new Set<string>(
@@ -8945,9 +8988,43 @@ Comité de Seguridad y Protección Escolar`
                     <div className="md:col-span-5 bg-white p-4 rounded-xl border-2 border-amber-400/80 shadow-xs space-y-3">
                       <form onSubmit={handleApplyAppPassword} className="space-y-3">
                         <div>
-                          <label className="text-[11px] font-black text-slate-700 uppercase tracking-wider block mb-1">
-                            Cuenta de Google:
-                          </label>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="text-[11px] font-black text-slate-700 uppercase tracking-wider block">
+                              Cuenta de Google:
+                            </label>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setConnectedEmail('israell35mac@gmail.com');
+                                  setAuthUsername('israell35mac@gmail.com');
+                                  if (typeof window !== 'undefined') localStorage.setItem(emailStorageKey, 'israell35mac@gmail.com');
+                                }}
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-all ${
+                                  (connectedEmail || authUsername) === 'israell35mac@gmail.com'
+                                    ? 'bg-amber-600 text-white shadow-xs'
+                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                }`}
+                              >
+                                israell35mac
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setConnectedEmail('roboticalegotaller1@gmail.com');
+                                  setAuthUsername('roboticalegotaller1@gmail.com');
+                                  if (typeof window !== 'undefined') localStorage.setItem(emailStorageKey, 'roboticalegotaller1@gmail.com');
+                                }}
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-all ${
+                                  (connectedEmail || authUsername) === 'roboticalegotaller1@gmail.com'
+                                    ? 'bg-amber-600 text-white shadow-xs'
+                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                }`}
+                              >
+                                roboticalego
+                              </button>
+                            </div>
+                          </div>
                           <input
                             type="email"
                             value={connectedEmail && connectedEmail !== 'DISCONNECTED' ? connectedEmail : authUsername}
@@ -8958,6 +9035,9 @@ Comité de Seguridad y Protección Escolar`
                             placeholder="tu-correo@gmail.com"
                             className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-xs font-medium text-slate-800 focus:outline-none focus:border-amber-600 focus:bg-white"
                           />
+                          <p className="text-[10px] text-slate-500 mt-1">
+                            Elige la cuenta exacta donde generaste la clave de 16 letras en Google.
+                          </p>
                         </div>
 
                         <div>
@@ -10242,6 +10322,53 @@ Comité de Seguridad y Protección Escolar`
                     <div className="md:col-span-5 bg-white p-4 rounded-xl border border-amber-200/90 shadow-xs space-y-3">
                       <form onSubmit={handleApplyAppPassword} className="space-y-3">
                         <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="text-[11px] font-black text-slate-700 uppercase tracking-wider block">
+                              Cuenta de Google:
+                            </label>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setConnectedEmail('israell35mac@gmail.com');
+                                  setAuthUsername('israell35mac@gmail.com');
+                                  if (typeof window !== 'undefined') localStorage.setItem(emailStorageKey, 'israell35mac@gmail.com');
+                                }}
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-all ${
+                                  (connectedEmail || authUsername) === 'israell35mac@gmail.com'
+                                    ? 'bg-amber-600 text-white shadow-xs'
+                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                }`}
+                              >
+                                israell35mac
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setConnectedEmail('roboticalegotaller1@gmail.com');
+                                  setAuthUsername('roboticalegotaller1@gmail.com');
+                                  if (typeof window !== 'undefined') localStorage.setItem(emailStorageKey, 'roboticalegotaller1@gmail.com');
+                                }}
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-all ${
+                                  (connectedEmail || authUsername) === 'roboticalegotaller1@gmail.com'
+                                    ? 'bg-amber-600 text-white shadow-xs'
+                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                }`}
+                              >
+                                roboticalego
+                              </button>
+                            </div>
+                          </div>
+                          <input
+                            type="email"
+                            value={connectedEmail && connectedEmail !== 'DISCONNECTED' ? connectedEmail : authUsername}
+                            onChange={(e) => {
+                              setConnectedEmail(e.target.value);
+                              setAuthUsername(e.target.value);
+                            }}
+                            placeholder="tu-correo@gmail.com"
+                            className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 text-xs font-medium text-slate-800 focus:outline-none focus:border-amber-600 focus:bg-white mb-2"
+                          />
                           <label className="text-[11px] font-black text-slate-700 uppercase tracking-wider block mb-1">
                             Contraseña de Aplicación de 16 caracteres:
                           </label>

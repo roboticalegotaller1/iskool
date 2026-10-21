@@ -272,6 +272,7 @@ export async function GET(request: NextRequest) {
     const isTargetGmail = email.toLowerCase().includes('gmail.com');
     const targetHost = isTargetGmail ? 'imap.gmail.com' : (host || 'imap.gmail.com');
     const targetPort = isTargetGmail ? 993 : (Number(port) || 993);
+    let resolvedEmail = email;
 
     if (!authenticated && cleanPass && cleanPass !== '••••••••••••' && cleanPass !== 'password') {
       const imapRes = await fetchLiveImapEmails(targetHost, targetPort, email, cleanPass, { tenantId });
@@ -281,6 +282,9 @@ export async function GET(request: NextRequest) {
         authenticated = true;
         requiresAppPassword = false;
         emails = imapRes.emails;
+        if (imapRes.connectedEmail) {
+          resolvedEmail = imapRes.connectedEmail;
+        }
       } else {
         authenticated = false;
         requiresAppPassword = imapRes.requiresAppPassword || false;
@@ -515,7 +519,7 @@ export async function GET(request: NextRequest) {
       emails: sanitizedEmails,
       total: sanitizedEmails.length,
       unreadCount: sanitizedEmails.filter((e: RawGmailItem) => e.is_unread).length,
-      connectedEmail: email,
+      connectedEmail: resolvedEmail,
       lastSyncTime: formatCdmxTime(new Date())
     });
   } catch (error: any) {
@@ -655,6 +659,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Consulta en vivo por IMAP si se cuenta con credenciales
+    let resolvedPostEmail = email;
     if (!authenticated && cleanPass && cleanPass !== '••••••••••••' && cleanPass !== 'password') {
       const imapRes = await fetchLiveImapEmails(targetHost, targetPort, email, cleanPass, { tenantId });
       latencyMs = imapRes.latencyMs || latencyMs;
@@ -663,6 +668,9 @@ export async function POST(request: NextRequest) {
         authenticated = true;
         requiresAppPassword = false;
         emails = imapRes.emails;
+        if (imapRes.connectedEmail) {
+          resolvedPostEmail = imapRes.connectedEmail;
+        }
       } else {
         authenticated = false;
         requiresAppPassword = imapRes.requiresAppPassword || false;
@@ -857,7 +865,7 @@ export async function POST(request: NextRequest) {
       emails: sanitizedEmails,
       total: sanitizedEmails.length,
       unreadCount: sanitizedEmails.filter((e: RawGmailItem) => e.is_unread).length,
-      connectedEmail: email,
+      connectedEmail: resolvedPostEmail,
       lastSyncTime: formatCdmxTime(new Date())
     });
   } catch (error: any) {
