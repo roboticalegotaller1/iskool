@@ -327,39 +327,54 @@ export function parseEmailDateMs(itemOrStr?: {
 
   const item = itemOrStr;
 
-  const fromTimestamp = parseDateStringToEpochMs(item.timestamp);
-  const fromReceivedAt = parseDateStringToEpochMs(item.received_at);
-
-  // Si date_ms existe y es válido
+  // 1. Si date_ms existe y es un timestamp unix válido (> 946684800000 = año 2000)
   if (typeof item.date_ms === 'number' && !isNaN(item.date_ms) && item.date_ms > 946684800000) {
-    // Si fromTimestamp tiene una fecha explícita (ej. 16 oct), verificar concordancia
-    if (fromTimestamp) {
-      const dtMs = new Date(item.date_ms);
-      const dtExplicit = new Date(fromTimestamp);
-      // Si difieren en más de 20 horas (ej. date_ms guardado erróneamente en otro día), confiar en la fecha explícita
-      if (Math.abs(dtMs.getTime() - dtExplicit.getTime()) > 20 * 60 * 60 * 1000) {
-        return fromTimestamp;
+    // Si date_ms cayó en medianoche exacta (00:00:00) y timestamp tiene hora y minutos específicos (ej. 21:04 hrs),
+    // enriquecer la hora respetando el día exacto de date_ms
+    const dMs = new Date(item.date_ms);
+    const isMidnight = (dMs.getUTCHours() === 0 && dMs.getUTCMinutes() === 0) || 
+                       (dMs.getUTCHours() === 6 && dMs.getUTCMinutes() === 0) || 
+                       (dMs.getHours() === 0 && dMs.getMinutes() === 0);
+    
+    if (isMidnight && item.timestamp) {
+      const timeMatch = item.timestamp.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+      if (timeMatch) {
+        const h = parseInt(timeMatch[1], 10);
+        const m = parseInt(timeMatch[2], 10);
+        const s = timeMatch[3] ? parseInt(timeMatch[3], 10) : 0;
+        if (h !== 0 || m !== 0) {
+          const enriched = new Date(item.date_ms);
+          enriched.setHours(h, m, s, 0);
+          return enriched.getTime();
+        }
       }
     }
     return item.date_ms;
   }
 
+  // 2. Si date_iso existe y es un ISO válido
   if (item.date_iso) {
     const t = new Date(item.date_iso).getTime();
     if (!isNaN(t) && t > 946684800000) {
-      if (fromTimestamp) {
-        const dtIso = new Date(t);
-        const dtExplicit = new Date(fromTimestamp);
-        if (Math.abs(dtIso.getTime() - dtExplicit.getTime()) > 20 * 60 * 60 * 1000) {
-          return fromTimestamp;
-        }
-      }
       return t;
     }
   }
 
-  if (fromTimestamp) return fromTimestamp;
-  if (fromReceivedAt) return fromReceivedAt;
+  // 3. Fallback: Parsear received_at primero (suele ser fecha completa con año)
+  if (item.received_at) {
+    const fromReceivedAt = parseDateStringToEpochMs(item.received_at);
+    if (fromReceivedAt && fromReceivedAt > 946684800000) {
+      return fromReceivedAt;
+    }
+  }
+
+  // 4. Fallback: Parsear timestamp visible
+  if (item.timestamp) {
+    const fromTimestamp = parseDateStringToEpochMs(item.timestamp);
+    if (fromTimestamp && fromTimestamp > 946684800000) {
+      return fromTimestamp;
+    }
+  }
 
   return Date.now();
 }

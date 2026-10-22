@@ -1155,20 +1155,31 @@ export function buildDynamicAudioDigestText(
 
 /**
  * Ordenador canónico cronológico descendente para correos (más recientes primero).
- * Garantiza orden estricto basado en date_ms, date_iso, cabeceras o análisis de fecha.
+ * Garantiza orden estricto basado en date_ms, date_iso, cabeceras o análisis de fecha,
+ * con desempate determinista por UID / orden de llegada.
  */
 export function sortEmailsDescending(emails: RawGmailItem[]): RawGmailItem[] {
   return [...emails].sort((a, b) => {
     const timeA = parseEmailDateMs(a);
     const timeB = parseEmailDateMs(b);
-    return timeB - timeA;
+    if (timeB !== timeA) {
+      return timeB - timeA;
+    }
+    // Desempate canónico por orden de llegada (UID o ID numérico descendente: mayor UID llegó después)
+    const numA = parseInt(String(a.id || '').replace(/\D+/g, ''), 10) || 0;
+    const numB = parseInt(String(b.id || '').replace(/\D+/g, ''), 10) || 0;
+    if (numB !== numA) {
+      return numB - numA;
+    }
+    return String(b.id || '').localeCompare(String(a.id || ''));
   });
 }
 
 /**
  * Estrategia de fusión no destructiva (Upsert Merge) para la bandeja de correos.
  * Evita desaparición de correos al sincronizar o navegar entre pestañas,
- * omitiendo de manera estricta cualquier ID registrado en la lista de eliminados.
+ * omitiendo de manera estricta cualquier ID registrado en la lista de eliminados
+ * y deduplicando por ID y firma semántica de asunto y remitente.
  */
 export function mergeAndSortEmails(
   existing: RawGmailItem[],
@@ -1176,32 +1187,60 @@ export function mergeAndSortEmails(
   deletedIds?: Set<string>
 ): RawGmailItem[] {
   const map = new Map<string, RawGmailItem>();
+  const semanticMap = new Map<string, string>(); // semanticKey -> canonicalId
 
-  for (const item of existing) {
-    if (!item || !item.id) continue;
-    if (deletedIds && deletedIds.has(item.id)) continue;
-    map.set(item.id, item);
-  }
+  const getSemanticKey = (item: RawGmailItem): string => {
+    const normSub = (item.subject || '').trim().toLowerCase().replace(/^(re:|fwd:)\s*/i, '').replace(/[\s\-_#]+/g, ' ');
+    const sender = (item.sender_email || item.sender_name || '').trim().toLowerCase();
+    return `${normSub}__${sender}`;
+  };
 
-  for (const item of incoming) {
-    if (!item || !item.id) continue;
-    if (deletedIds && deletedIds.has(item.id)) continue;
-    const prev = map.get(item.id);
+  const processItem = (item: RawGmailItem) => {
+    if (!item || !item.id) return;
+    if (deletedIds && deletedIds.has(item.id)) return;
+
+    let targetId = item.id;
+    const semKey = getSemanticKey(item);
+    if (!map.has(targetId) && semKey) {
+      const existingId = semanticMap.get(semKey);
+      if (existingId && map.has(existingId)) {
+        targetId = existingId;
+      }
+    }
+
+    const prev = map.get(targetId);
     if (prev) {
-      map.set(item.id, {
+      const prevMs = parseEmailDateMs(prev);
+      const itemMs = parseEmailDateMs(item);
+      const isPrevMidnight = prevMs % (24 * 3600 * 1000) === 0 || new Date(prevMs).getUTCHours() === 6;
+      const isItemMidnight = itemMs % (24 * 3600 * 1000) === 0 || new Date(itemMs).getUTCHours() === 6;
+      const bestMs = (isPrevMidnight && !isItemMidnight) ? itemMs : (prevMs || itemMs);
+      const bestIso = (!isPrevMidnight && isItemMidnight) ? prev.date_iso : (item.date_iso || prev.date_iso || new Date(bestMs).toISOString());
+
+      map.set(targetId, {
         ...prev,
         ...item,
+        id: targetId,
+        date_ms: bestMs,
+        date_iso: bestIso,
         is_unread: item.is_unread !== undefined ? item.is_unread : prev.is_unread,
         is_starred: item.is_starred !== undefined ? item.is_starred : prev.is_starred,
         is_resolved: item.is_resolved !== undefined ? item.is_resolved : prev.is_resolved,
         is_replied: item.reply_status ? true : (item.is_replied !== undefined ? item.is_replied : prev.is_replied),
         reply_status: item.reply_status || prev.reply_status,
-        date_ms: item.date_ms || prev.date_ms,
-        date_iso: item.date_iso || prev.date_iso,
       });
     } else {
-      map.set(item.id, item);
+      map.set(targetId, item);
+      if (semKey) semanticMap.set(semKey, targetId);
     }
+  };
+
+  for (const item of existing) {
+    processItem(item);
+  }
+
+  for (const item of incoming) {
+    processItem(item);
   }
 
   return sortEmailsDescending(Array.from(map.values()));
@@ -2647,7 +2686,8 @@ export function CEOEmailCommunicationsModal({
     }
     // REGLA CRÍTICA: Jamás vaciar rawEmailsList a [] al cambiar de pestaña; mantener los correos en memoria
 
-    const targetEmail = (connectedEmail || authUsername || (isIbime ? 'roboticalegotaller1@gmail.com' : '')).trim();
+    const rawTarget = (connectedEmail || authUsername || (isIbime ? 'roboticalegotaller1@gmail.com' : '')).trim();
+    const targetEmail = rawTarget.replace(/israel135mac/i, 'israell35mac');
     const effectiveEmail =
       targetEmail.includes('directora.general') || targetEmail.includes('patricia') || targetEmail.includes('ibime.edu.mx') || (!targetEmail && isIbime)
         ? 'roboticalegotaller1@gmail.com'
@@ -2816,7 +2856,7 @@ export function CEOEmailCommunicationsModal({
       });
       setSelectedRawEmailId(targetEmail.id);
       setEmailReaderReturnTab('inbox');
-      const directInboxTab: 'raw_inbox' = 'raw_inbox';
+      const directInboxTab = 'raw_inbox' as const;
       setActiveTab(directInboxTab);
     }
   };

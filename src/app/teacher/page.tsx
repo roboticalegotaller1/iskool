@@ -23,6 +23,7 @@ import { FormattedDate } from '@/components/FormattedDate';
 import dynamic from 'next/dynamic';
 import { DetailedStudent, AttendanceStatus, Attendance, ParentMessage, Quest, QuizQuestion, UserProfile, Group } from '@/types';
 import { TeacherHubCards } from '@/components/TeacherHubCards';
+import { TeacherMasterCopilot } from '@/components/teacher/TeacherMasterCopilot';
 import { RowActionMenu } from '@/components/ui';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useIsSuperUser } from '@/hooks/useIsSuperUser';
@@ -300,6 +301,8 @@ function TeacherDashboardContent() {
 
   // Navegación principal del portal del profesor (Por defecto: 'hub' - Regla de los 3 Clics de Apple)
   const [currentMenuTab, setCurrentMenuTab] = useState<'hub' | 'classroom' | 'evaluation' | 'attendance' | 'tasks' | 'design' | 'planning' | 'canvas' | 'community'>('hub');
+  // Modo de visualización del Hub: 'copilot' (ISkool Copilot Docente 2.0) o 'classic' (Bento Cards clásicas)
+  const [hubViewMode, setHubViewMode] = useState<'copilot' | 'classic'>('copilot');
 
   // Estados para búsqueda optimizada con debounce en tablas
   const [attendanceSearch, setAttendanceSearch] = useState('');
@@ -982,23 +985,95 @@ function TeacherDashboardContent() {
           </div>
         )}
         
-        {/* VISTA 1: HUB CENTRAL (DISEÑO INSTITUCIONAL IBIME - SISTEMA BENTO 2.0) */}
+        {/* VISTA 1: ISKOOL COPILOT DOCENTE (REDiseño MAESTRO 2.0) O HUB BENTO CLÁSICO */}
         {currentMenuTab === 'hub' && (
-          <TeacherHubCards
-            teacherName={`${currentTeacher.first_name || 'Profesor(a)'} ${currentTeacher.last_name || ''}`}
-            totalStudents={detailedStudents.length || 184}
-            pendingReviews={pendingItems.length || 12}
-            vaultPlans={38}
-            onSelectAction={(action) => {
-              if (action === 'classroom') setCurrentMenuTab('classroom');
-              if (action === 'classes') setCurrentMenuTab('evaluation');
-              if (action === 'studio') router.push('/teacher/studio');
-              if (action === 'community') router.push('/teacher/community');
-              if (action === 'planning') setCurrentMenuTab('planning');
-              if (action === 'attendance') setCurrentMenuTab('attendance');
-              if (action === 'idiomas') router.push('/teacher/idiomas');
-            }}
-          />
+          <div className="space-y-4">
+            {/* Barra de alternancia rápida entre Copilot Maestro y Hub Bento */}
+            <div className="flex items-center justify-between px-1 flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Modo de Operación:
+                </span>
+                <div className="inline-flex p-0.5 rounded-xl bg-zinc-200 dark:bg-zinc-800 text-xs font-bold shadow-inner">
+                  <button
+                    type="button"
+                    onClick={() => setHubViewMode('copilot')}
+                    className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                      hubViewMode === 'copilot'
+                        ? 'bg-cyan-500 text-slate-950 font-black shadow-sm'
+                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                    }`}
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Copilot Docente (Timeline & Aula)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHubViewMode('classic')}
+                    className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                      hubViewMode === 'classic'
+                        ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white font-black shadow-sm'
+                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                    }`}
+                  >
+                    <span>Hub Bento Clásico</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Badges de los 2 Pilares de Infraestructura */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => router.push('/teacher/idiomas')}
+                  className="px-3 py-1.5 rounded-xl bg-red-950/40 hover:bg-red-900/60 text-red-300 border border-red-800/50 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  title="Pilar 1: Centro de Idiomas & Fonética Avanzada"
+                >
+                  <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
+                  <span>Centro de Idiomas & Fonética</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => router.push('/teacher/studio')}
+                  className="px-3 py-1.5 rounded-xl bg-purple-950/40 hover:bg-purple-900/60 text-purple-300 border border-purple-800/50 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  title="Pilar 2: Lienzo de Bloques / Estudio ISkool"
+                >
+                  <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+                  <span>Lienzo Studio</span>
+                </button>
+              </div>
+            </div>
+
+            {hubViewMode === 'copilot' ? (
+              <div className="w-full rounded-3xl overflow-hidden shadow-2xl border border-slate-800/80">
+                <TeacherMasterCopilot
+                  teacher={currentTeacher}
+                  students={detailedStudents}
+                  groups={availableTeacherGroups}
+                  portfolioItems={portfolioItems}
+                  onOpenClassicHub={() => setHubViewMode('classic')}
+                  onOpenPlanning={() => setCurrentMenuTab('planning')}
+                  onOpenEmergency={() => setIsEmergencyModalOpen(true)}
+                />
+              </div>
+            ) : (
+              <TeacherHubCards
+                teacherName={`${currentTeacher.first_name || 'Profesor(a)'} ${currentTeacher.last_name || ''}`}
+                totalStudents={detailedStudents.length || 184}
+                pendingReviews={pendingItems.length || 12}
+                vaultPlans={38}
+                onSelectAction={(action) => {
+                  if (action === 'classroom') setCurrentMenuTab('classroom');
+                  if (action === 'classes') setCurrentMenuTab('evaluation');
+                  if (action === 'studio') router.push('/teacher/studio');
+                  if (action === 'community') router.push('/teacher/community');
+                  if (action === 'planning') setCurrentMenuTab('planning');
+                  if (action === 'attendance') setCurrentMenuTab('attendance');
+                  if (action === 'idiomas') router.push('/teacher/idiomas');
+                }}
+              />
+            )}
+          </div>
         )}
 
         {/* VISTAS SECUNDARIAS / SUBMÓDULOS DE TRABAJO */}

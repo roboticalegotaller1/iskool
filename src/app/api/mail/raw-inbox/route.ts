@@ -567,7 +567,11 @@ export async function GET(request: NextRequest) {
     sanitizedEmails.sort((a, b) => {
       const timeA = parseEmailDateMs(a);
       const timeB = parseEmailDateMs(b);
-      return timeB - timeA;
+      if (timeB !== timeA) return timeB - timeA;
+      const numA = parseInt(String(a.id || '').replace(/\D+/g, ''), 10) || 0;
+      const numB = parseInt(String(b.id || '').replace(/\D+/g, ''), 10) || 0;
+      if (numB !== numA) return numB - numA;
+      return String(b.id || '').localeCompare(String(a.id || ''));
     });
 
     return NextResponse.json({
@@ -953,11 +957,15 @@ export async function POST(request: NextRequest) {
         snippet: sanitizeCommercialTrademarks(e.snippet)
       }));
 
-    // Orden cronológico estricto descendente en POST
+    // Orden cronológico estricto descendente en POST con desempate por orden de llegada
     sanitizedEmails.sort((a, b) => {
       const timeA = parseEmailDateMs(a);
       const timeB = parseEmailDateMs(b);
-      return timeB - timeA;
+      if (timeB !== timeA) return timeB - timeA;
+      const numA = parseInt(String(a.id || '').replace(/\D+/g, ''), 10) || 0;
+      const numB = parseInt(String(b.id || '').replace(/\D+/g, ''), 10) || 0;
+      if (numB !== numA) return numB - numA;
+      return String(b.id || '').localeCompare(String(a.id || ''));
     });
 
     return NextResponse.json({

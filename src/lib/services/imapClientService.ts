@@ -412,16 +412,41 @@ function attemptSingleLiveImap(
           // Clasificación y Cuadrante Cognitivo
           const triage = classifyEmailTriage(decodedSubject, cleanBody, senderEmail, senderName);
 
-          // Parseo de timestamp exacto de llegada (INTERNALDATE o Date Header)
+          // Parseo de timestamp exacto de llegada (RFC 822 Date Header o INTERNALDATE)
           let emailDateMs = Date.now();
+          let dateHeaderMs = 0;
+          if (dateMatch) {
+            const p = new Date(dateMatch[1].trim()).getTime();
+            if (!isNaN(p) && p > 946684800000) dateHeaderMs = p;
+          }
+          let internalDateMs = 0;
           const internalDateMatch = block.match(/INTERNALDATE\s+"([^"]+)"/i);
           if (internalDateMatch) {
             const p = new Date(internalDateMatch[1]).getTime();
-            if (!isNaN(p) && p > 0) emailDateMs = p;
-          } else if (dateMatch) {
-            const p = new Date(dateMatch[1].trim()).getTime();
-            if (!isNaN(p) && p > 0) emailDateMs = p;
+            if (!isNaN(p) && p > 946684800000) internalDateMs = p;
           }
+
+          if (dateHeaderMs > 0 && internalDateMs > 0) {
+            const dInternal = new Date(internalDateMs);
+            const isInternalMidnight = (dInternal.getUTCHours() === 0 && dInternal.getUTCMinutes() === 0) ||
+                                       (dInternal.getUTCHours() === 6 && dInternal.getUTCMinutes() === 0) ||
+                                       (dInternal.getHours() === 0 && dInternal.getMinutes() === 0);
+            const dHeader = new Date(dateHeaderMs);
+            const isHeaderMidnight = (dHeader.getHours() === 0 && dHeader.getMinutes() === 0);
+
+            if (isInternalMidnight && !isHeaderMidnight) {
+              emailDateMs = dateHeaderMs;
+            } else if (!isInternalMidnight) {
+              emailDateMs = internalDateMs;
+            } else {
+              emailDateMs = dateHeaderMs || internalDateMs;
+            }
+          } else if (dateHeaderMs > 0) {
+            emailDateMs = dateHeaderMs;
+          } else if (internalDateMs > 0) {
+            emailDateMs = internalDateMs;
+          }
+
           const emailDateIso = new Date(emailDateMs).toISOString();
 
           emails.push({
@@ -444,8 +469,16 @@ function attemptSingleLiveImap(
           });
         }
 
-        // Orden cronológico estricto descendente (el más reciente arriba)
-        emails.sort((a, b) => (b.date_ms || 0) - (a.date_ms || 0));
+        // Orden cronológico estricto descendente (el más reciente arriba) con desempate canónico por UID de llegada
+        emails.sort((a, b) => {
+          const timeA = a.date_ms || 0;
+          const timeB = b.date_ms || 0;
+          if (timeB !== timeA) return timeB - timeA;
+          const numA = parseInt(String(a.id || '').replace(/\D+/g, ''), 10) || 0;
+          const numB = parseInt(String(b.id || '').replace(/\D+/g, ''), 10) || 0;
+          if (numB !== numA) return numB - numA;
+          return String(b.id || '').localeCompare(String(a.id || ''));
+        });
 
         step = 'DONE';
         finish({
