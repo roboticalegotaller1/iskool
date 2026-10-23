@@ -30,7 +30,8 @@ import {
   COLEGIO_MONTESSORI_METRICS,
   SEP_ANNUAL_PLAN_2026,
   StoreItem,
-  InteractiveTask
+  InteractiveTask,
+  formatCoins
 } from '@/lib/redisenosSandboxData';
 
 import { gamificationAudio } from '@/lib/redisenosAudio';
@@ -253,7 +254,7 @@ export default function RedisenosGamificadosPage() {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 font-bold text-xs">
               <span>🪙</span>
-              <span>{activeStudent.coins.toLocaleString()} Monedas</span>
+              <span suppressHydrationWarning>{formatCoins(activeStudent.coins)} Monedas</span>
             </div>
 
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 font-semibold text-xs">

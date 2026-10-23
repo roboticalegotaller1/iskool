@@ -2,6 +2,11 @@
 // Datos mock, semillas y estructuras aisladas para la suite de rediseños gamificados de ISkool
 // Totalmente desacoplado de la base de datos de producción; seguro y de fácil eliminación.
 
+export function formatCoins(amount: number): string {
+  if (typeof amount !== 'number') return '0';
+  return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
 export interface StudentProfile {
   id: string;
   name: string;

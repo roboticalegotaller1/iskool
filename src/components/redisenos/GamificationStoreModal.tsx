@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { X, Sparkles, Check, ShoppingBag, Shield, Zap, Award, Heart } from 'lucide-react';
-import { STORE_CATALOG, StoreItem, StudentProfile } from '@/lib/redisenosSandboxData';
+import { STORE_CATALOG, StoreItem, StudentProfile, formatCoins } from '@/lib/redisenosSandboxData';
 import { gamificationAudio } from '@/lib/redisenosAudio';
 
 interface Props {
@@ -70,7 +70,7 @@ export function GamificationStoreModal({ isOpen, onClose, student, onPurchaseIte
             {/* Saldo de monedas */}
             <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 font-bold shadow-inner">
               <span className="text-lg">🪙</span>
-              <span className="text-base tracking-wide">{student.coins.toLocaleString()} Monedas</span>
+              <span suppressHydrationWarning className="text-base tracking-wide">{formatCoins(student.coins)} Monedas</span>
             </div>
             
             {/* Estrellas */}
