@@ -20,7 +20,8 @@ const OPTIMAL_QUALITY = 82; // 82% calidad perceptual óptima
 
 const TARGET_DIRS = [
   path.join(process.cwd(), 'public', 'images'),
-  path.join(process.cwd(), 'presentation_screenshots')
+  path.join(process.cwd(), 'presentation_screenshots'),
+  path.join(process.cwd(), 'public', 'redisenos_assets')
 ];
 
 const stats = {
