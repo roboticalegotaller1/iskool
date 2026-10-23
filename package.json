@@ -22,6 +22,7 @@
     "test:insights": "vitest run tests/pedagogicalInsights.test.tsx",
     "test:vault": "vitest run __tests__/vault-lifecycle.e2e.test.ts",
     "test:hermetic": "vitest run tests/e2eHermeticIntegration.test.ts",
+    "test:casa": "vitest run tests/casaTier3Verification.test.ts",
     "test:e2e": "playwright test tests/e2e/ibime-hermetic-isolation.spec.ts",
     "lint:boundaries": "tsx scripts/verify_hermetic_boundaries.ts",
     "compress:assets": "node scripts/batch_image_compressor.js",

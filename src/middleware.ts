@@ -96,7 +96,9 @@ export async function middleware(request: NextRequest) {
 
   // Excluir el CRM de Admisiones para demostración y evaluación sin fricción
   if (pathname === '/admin/crm' || pathname.startsWith('/admin/crm') || pathname === '/crm' || pathname.startsWith('/crm')) {
-    return NextResponse.next();
+    const res = NextResponse.next();
+    applyDefensiveSecurityHeaders(res);
+    return res;
   }
   const host = (request.headers.get('x-forwarded-host') || request.headers.get('host') || '').toLowerCase();
   const acceptHeader = (request.headers.get('accept') || '').toLowerCase();
@@ -127,14 +129,18 @@ export async function middleware(request: NextRequest) {
   // En app.iskool.mx, la raíz abre directamente el login para usuarios sin sesión activa
   if (isAppHost && pathname === '/') {
     if (!iskoolCookie && !ibimeCookie && !bearerToken) {
-      return NextResponse.redirect(new URL('/login', request.url));
+      const res = NextResponse.redirect(new URL('/login', request.url));
+      applyDefensiveSecurityHeaders(res, isAppHost);
+      return res;
     }
   }
 
   // Si un usuario o directivo de IBIME navega a /director, transferirlo limpiamente a su portal institucional
   if (pathname === '/director' || pathname.startsWith('/director/')) {
     if (ibimeCookie || isIbimeSchool || isIbimeHost) {
-      return NextResponse.redirect(new URL('/ibime/portal', request.url));
+      const res = NextResponse.redirect(new URL('/ibime/portal', request.url));
+      applyDefensiveSecurityHeaders(res, isAppHost);
+      return res;
     }
   }
 
@@ -183,7 +189,7 @@ export async function middleware(request: NextRequest) {
 
   // Helper para generar respuesta 404 JSON estructurada con cabeceras anti-caché y Vary
   function createCrossTenantNotFoundResponse() {
-    return NextResponse.json(
+    const response = NextResponse.json(
       { error: 'Not Found', code: 'NOT_FOUND', message: 'Resource not found' },
       {
         status: 404,
@@ -194,6 +200,8 @@ export async function middleware(request: NextRequest) {
         }
       }
     );
+    applyDefensiveSecurityHeaders(response, isAppHost);
+    return response;
   }
 
   // Helper para reescribir a /404 con cabeceras anti-caché y Vary (para navegaciones HTML y RSC de página)
@@ -201,6 +209,7 @@ export async function middleware(request: NextRequest) {
     const response = NextResponse.rewrite(new URL('/404', request.url), { status: 404 });
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
     response.headers.set('Vary', 'Accept, Next-Action, RSC, Cookie, x-tenant-id');
+    applyDefensiveSecurityHeaders(response, isAppHost);
     return response;
   }
 
@@ -216,19 +225,23 @@ export async function middleware(request: NextRequest) {
 
   if (!candidateToken) {
     if (isApiRequest) {
-      return NextResponse.json(
+      const res = NextResponse.json(
         {
           error: 'Autenticación requerida. No se detectó una sesión válida para este recurso.',
           code: 'UNAUTHENTICATED'
         },
         { status: 401 }
       );
+      applyDefensiveSecurityHeaders(res, isAppHost);
+      return res;
     }
 
     const loginUrl = new URL(targetTenantRequired === 'ibime' ? '/ibime/login' : '/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     loginUrl.searchParams.set('tenant', targetTenantRequired);
-    return NextResponse.redirect(loginUrl);
+    const res = NextResponse.redirect(loginUrl);
+    applyDefensiveSecurityHeaders(res, isAppHost);
+    return res;
   }
 
   // 3. Verificación Criptográfica Estricta de la Carga Útil
@@ -245,17 +258,21 @@ export async function middleware(request: NextRequest) {
       userTenant = (fallbackVerified.tenant_id as TenantId) || 'iskool';
     } else {
       if (isApiRequest) {
-        return NextResponse.json(
+        const res = NextResponse.json(
           {
             error: 'Firma criptográfica de sesión inválida o token expirado.',
             code: 'INVALID_SESSION_SIGNATURE'
           },
           { status: 401 }
         );
+        applyDefensiveSecurityHeaders(res, isAppHost);
+        return res;
       }
       const loginUrl = new URL(targetTenantRequired === 'ibime' ? '/ibime/login' : '/login', request.url);
       loginUrl.searchParams.set('error', 'invalid_session');
-      return NextResponse.redirect(loginUrl);
+      const res = NextResponse.redirect(loginUrl);
+      applyDefensiveSecurityHeaders(res, isAppHost);
+      return res;
     }
   }
 
@@ -279,7 +296,9 @@ export async function middleware(request: NextRequest) {
 
   if (targetTenantRequired === 'iskool' && (isIskoolProtected || isIntegrationApi) && userTenant !== 'iskool') {
     if (pathname === '/director' || pathname.startsWith('/director/')) {
-      return NextResponse.redirect(new URL('/ibime/portal', request.url));
+      const res = NextResponse.redirect(new URL('/ibime/portal', request.url));
+      applyDefensiveSecurityHeaders(res, isAppHost);
+      return res;
     }
     if (!isSuperUser) {
       if (isJsonExpected) {
@@ -303,13 +322,17 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith('/ibime/coordinacion')
     ) {
       const studentLanding = '/student';
-      return NextResponse.redirect(new URL(studentLanding, request.url));
+      const res = NextResponse.redirect(new URL(studentLanding, request.url));
+      applyDefensiveSecurityHeaders(res, isAppHost);
+      return res;
     }
   }
 
   if ((pathname.startsWith('/superadmin') || pathname.startsWith('/superuser')) && userRole !== 'superadmin' && userRole !== 'admin' && userRole !== 'owner' && userRole !== 'ceo') {
     const fallbackUrl = userRole === 'teacher' ? '/teacher' : userRole === 'student' ? '/student' : '/admin';
-    return NextResponse.redirect(new URL(fallbackUrl, request.url));
+    const res = NextResponse.redirect(new URL(fallbackUrl, request.url));
+    applyDefensiveSecurityHeaders(res, isAppHost);
+    return res;
   }
 
   // 6. Inyección de Headers Confiables hacia Server Components
@@ -341,6 +364,31 @@ function applyDefensiveSecurityHeaders(response: NextResponse, isAppHost = false
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('X-Permitted-Cross-Domain-Policies', 'none');
+  response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  response.headers.set('Permissions-Policy', 'camera=(self), microphone=(self), geolocation=(), browsing-topics=()');
+  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+  response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+
+  // CSP perimetral de máxima robustez según OWASP ASVS V14.4 / CASA Tier 3
+  if (!response.headers.has('Content-Security-Policy')) {
+    response.headers.set(
+      'Content-Security-Policy',
+      [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com https://www.google.com https://www.gstatic.com",
+        "style-src 'self' 'unsafe-inline' https:",
+        "font-src 'self' data: https:",
+        "img-src 'self' data: blob: https:",
+        "media-src 'self' data: blob: https:",
+        "connect-src 'self' https: wss:",
+        "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://phet.colorado.edu https://www.geogebra.org https://www.desmos.com blob:",
+        "frame-ancestors 'self'",
+        "object-src 'none'",
+        "base-uri 'self'"
+      ].join('; ')
+    );
+  }
 
   // Directiva de búsqueda: en app.iskool.mx se aplica noindex estricto para evitar indexación de portales escolares
   if (isAppHost) {
