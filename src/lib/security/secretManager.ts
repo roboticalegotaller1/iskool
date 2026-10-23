@@ -5,10 +5,22 @@
  * En entornos de producción exige estrictamente la presencia de variables de entorno seguras.
  */
 
-import crypto from 'crypto';
-
 // Búfer en memoria para entornos de prueba/desarrollo temporal sin romper suites CI
 let ephemeralDevSecret: string | null = null;
+
+function generateSecureEphemeralSecret(): string {
+  if (typeof globalThis.crypto !== 'undefined' && typeof globalThis.crypto.getRandomValues === 'function') {
+    const array = new Uint8Array(32);
+    globalThis.crypto.getRandomValues(array);
+    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  }
+  let result = '';
+  const chars = '0123456789abcdef';
+  for (let i = 0; i < 64; i++) {
+    result += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return result;
+}
 
 export function getSecuritySecret(keyName: 'SESSION_SECRET' | 'TOKEN_ENCRYPTION_SECRET' | 'OAUTH_SECRET' = 'SESSION_SECRET'): string {
   // 1. Intentar obtener de variables de entorno configuradas
@@ -33,7 +45,7 @@ export function getSecuritySecret(keyName: 'SESSION_SECRET' | 'TOKEN_ENCRYPTION_
   // generar una clave criptográfica aleatoria efímera por ciclo de vida del proceso
   // evitando estrictamente cualquier cadena estática hardcodeada (CWE-798).
   if (!ephemeralDevSecret) {
-    ephemeralDevSecret = crypto.randomBytes(32).toString('hex');
+    ephemeralDevSecret = generateSecureEphemeralSecret();
     if (process.env.NODE_ENV !== 'test') {
       console.warn(
         `[DevSecOps Aviso]: Variable '${keyName}' no detectada en entorno de desarrollo. Utilizando clave efímera de memoria de alta entropía.`

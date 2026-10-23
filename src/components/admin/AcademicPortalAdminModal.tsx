@@ -111,7 +111,15 @@ export function AcademicPortalAdminModal({
       return IBIME_CAMPUSES;
     }
     const storeCampuses = campusesList.filter(c => !schoolId || c.school_id === schoolId);
-    return storeCampuses.length > 0 ? storeCampuses : (holding.campuses as any[]) || [];
+    if (storeCampuses.length > 0) return storeCampuses;
+    if (holding?.campuses && (holding.campuses as any[]).length > 0) return holding.campuses as any[];
+    return [{
+      id: `${schoolId || 'sch-default'}-matriz`,
+      name: `${holding?.name || 'Colegio'} · Plantel Central`,
+      school_id: schoolId || 'sch-default',
+      studentCount: 0,
+      status: 'active'
+    }] as any[];
   }, [holding, schoolId, campusesList]);
 
   // Lista de Alumnos disponibles (Filtrados por campus y holding)

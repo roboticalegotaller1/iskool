@@ -76,6 +76,9 @@ forensic_audit_results.json
 /scratch/
 /.data/
 /scripts/screenshots/
-.generations/
 *.jsonl
 /Correo/**/borradores/
+/public/preview-botones.html
+/public/images/button_redesign_options.jpg
+/public/images/buttons_closeup_preview.jpg
+/public/images/sidebar_updated_preview.png

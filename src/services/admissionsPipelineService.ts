@@ -109,7 +109,7 @@ export const IBIME_CAMPUS_CAPACITY_TARGETS: Record<string, CampusCapacityTarget>
   },
   all: {
     campusId: 'all',
-    name: 'Consolidado IBIME (4 Sedes)',
+    name: 'Consolidado Multisede',
     totalCapacity: 3900,
     baseEnrolled: 3620,
     targetSeats: 3740,

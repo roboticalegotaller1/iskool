@@ -2,11 +2,14 @@
 
 /**
  * @module BentoAdmissionsKanban
- * @description Tablero Kanban de 5 Fases con diseño Bento oscuro de alto impacto para la Vista de CEO.
- *   Integra tanto el pipeline de Admisiones Escolares (IBIME) como el pipeline de
- *   Reclutamiento & Onboarding Corporativo B2B (BMW Group México, Vanguardia Retail, Innovasoft Tech).
- *   Soporta reactividad multi-sede, drag & drop fluido, avance atómico de etapas, contacto vía WhatsApp,
- *   y expediente digital 360°.
+ * @description Tablero Work OS de Admisiones & Crecimiento Institucional (Pipeline 360° de 5 Fases Corresponsables).
+ *   Surgicamente alineado con la arquitectura, diseño visual y experiencia de usuario del Work OS
+ *   de Correo Inteligente & Triage Cognitivo CEO (V3.2 Cloud Work OS).
+ *   Integra vistas múltiples (Tablero Kanban, Tabla Visual, Cronograma Gantt, Línea de Tiempo,
+ *   Automatizaciones, Embudo Funnel 360°, Bóveda Documental SEP y Asistente Pedagógico IA),
+ *   filtro unificado, cálculo de Lead Score / Probabilidad en barra de progreso, botón de inyección
+ *   de casos de prueba en caliente, drag & drop atómico, selector rápido "Mover: Transferir a...",
+ *   avance guiado y expediente familiar 360°.
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
@@ -14,7 +17,11 @@ import {
   Search, Phone, Building2, CheckCircle2, ArrowRight, Clock,
   Eye, MessageCircle, ChevronDown, School, ExternalLink,
   Layers, Sparkles, Filter, X, Users, Award, Calendar, FileText,
-  Briefcase, DollarSign, BadgeCheck, UserCheck
+  Briefcase, DollarSign, BadgeCheck, UserCheck, GripVertical,
+  Check, Plus, RefreshCw, BarChart3, Table as TableIcon,
+  ShieldCheck, TrendingUp, AlertTriangle, ArrowUpRight,
+  GraduationCap, Flame, Wand2, Info, BookOpen, Zap, Paperclip,
+  CheckCircle, Sliders, ChevronRight
 } from 'lucide-react';
 import { useCrmStore, getLeadCandidates } from '@/store/useCrmStore';
 import type { CrmLead, CrmStageKey, LeadPriority } from '@/types/crm';
@@ -53,10 +60,11 @@ interface PhaseConfig {
   badgeText: string;
   dotColor: string;
   glowColor: string;
+  headerIcon: string;
 }
 
 // ============================================================
-// 1. FASES EDUCATIVAS INSTITUCIONALES (Colegios / IBIME)
+// 1. FASES EDUCATIVAS INSTITUCIONALES (Colegios / K-12)
 // ============================================================
 const INSTITUTIONAL_PHASES: PhaseConfig[] = [
   {
@@ -69,12 +77,13 @@ const INSTITUTIONAL_PHASES: PhaseConfig[] = [
     stages: ['registered', 'contacted', 'census'],
     primaryDropStage: 'registered',
     nextStage: 'tour_scheduled',
-    colorName: 'purple',
-    accentBorder: 'border-purple-200 hover:border-purple-400',
-    badgeBg: 'bg-purple-50',
-    badgeText: 'text-purple-700 border-purple-200',
-    dotColor: 'bg-purple-600',
-    glowColor: 'from-purple-50/70 to-transparent'
+    colorName: 'rose',
+    accentBorder: 'border-rose-200 hover:border-rose-400',
+    badgeBg: 'bg-rose-50',
+    badgeText: 'text-rose-700 border-rose-200',
+    dotColor: 'bg-rose-600',
+    glowColor: 'from-rose-50/80 to-transparent',
+    headerIcon: '🔥'
   },
   {
     num: 2,
@@ -91,7 +100,8 @@ const INSTITUTIONAL_PHASES: PhaseConfig[] = [
     badgeBg: 'bg-indigo-50',
     badgeText: 'text-indigo-700 border-indigo-200',
     dotColor: 'bg-indigo-600',
-    glowColor: 'from-indigo-50/70 to-transparent'
+    glowColor: 'from-indigo-50/80 to-transparent',
+    headerIcon: '📍'
   },
   {
     num: 3,
@@ -108,7 +118,8 @@ const INSTITUTIONAL_PHASES: PhaseConfig[] = [
     badgeBg: 'bg-sky-50',
     badgeText: 'text-sky-700 border-sky-200',
     dotColor: 'bg-sky-600',
-    glowColor: 'from-sky-50/70 to-transparent'
+    glowColor: 'from-sky-50/80 to-transparent',
+    headerIcon: '🧠'
   },
   {
     num: 4,
@@ -125,7 +136,8 @@ const INSTITUTIONAL_PHASES: PhaseConfig[] = [
     badgeBg: 'bg-teal-50',
     badgeText: 'text-teal-700 border-teal-200',
     dotColor: 'bg-teal-600',
-    glowColor: 'from-teal-50/70 to-transparent'
+    glowColor: 'from-teal-50/80 to-transparent',
+    headerIcon: '📜'
   },
   {
     num: 5,
@@ -142,7 +154,8 @@ const INSTITUTIONAL_PHASES: PhaseConfig[] = [
     badgeBg: 'bg-emerald-50',
     badgeText: 'text-emerald-700 border-emerald-200',
     dotColor: 'bg-emerald-600',
-    glowColor: 'from-emerald-50/70 to-transparent'
+    glowColor: 'from-emerald-50/80 to-transparent',
+    headerIcon: '🎓'
   }
 ];
 
@@ -160,12 +173,13 @@ const CORPORATE_RECRUITMENT_PHASES: PhaseConfig[] = [
     stages: ['registered', 'contacted', 'census'],
     primaryDropStage: 'registered',
     nextStage: 'tour_scheduled',
-    colorName: 'purple',
-    accentBorder: 'border-purple-200 hover:border-purple-400',
-    badgeBg: 'bg-purple-50',
-    badgeText: 'text-purple-700 border-purple-200',
-    dotColor: 'bg-purple-600',
-    glowColor: 'from-purple-50/70 to-transparent'
+    colorName: 'rose',
+    accentBorder: 'border-rose-200 hover:border-rose-400',
+    badgeBg: 'bg-rose-50',
+    badgeText: 'text-rose-700 border-rose-200',
+    dotColor: 'bg-rose-600',
+    glowColor: 'from-rose-50/80 to-transparent',
+    headerIcon: '🔍'
   },
   {
     num: 2,
@@ -182,7 +196,8 @@ const CORPORATE_RECRUITMENT_PHASES: PhaseConfig[] = [
     badgeBg: 'bg-indigo-50',
     badgeText: 'text-indigo-700 border-indigo-200',
     dotColor: 'bg-indigo-600',
-    glowColor: 'from-indigo-50/70 to-transparent'
+    glowColor: 'from-indigo-50/80 to-transparent',
+    headerIcon: '💼'
   },
   {
     num: 3,
@@ -199,7 +214,8 @@ const CORPORATE_RECRUITMENT_PHASES: PhaseConfig[] = [
     badgeBg: 'bg-sky-50',
     badgeText: 'text-sky-700 border-sky-200',
     dotColor: 'bg-sky-600',
-    glowColor: 'from-sky-50/70 to-transparent'
+    glowColor: 'from-sky-50/80 to-transparent',
+    headerIcon: '⚙️'
   },
   {
     num: 4,
@@ -216,7 +232,8 @@ const CORPORATE_RECRUITMENT_PHASES: PhaseConfig[] = [
     badgeBg: 'bg-teal-50',
     badgeText: 'text-teal-700 border-teal-200',
     dotColor: 'bg-teal-600',
-    glowColor: 'from-teal-50/70 to-transparent'
+    glowColor: 'from-teal-50/80 to-transparent',
+    headerIcon: '📝'
   },
   {
     num: 5,
@@ -233,9 +250,12 @@ const CORPORATE_RECRUITMENT_PHASES: PhaseConfig[] = [
     badgeBg: 'bg-emerald-50',
     badgeText: 'text-emerald-700 border-emerald-200',
     dotColor: 'bg-emerald-600',
-    glowColor: 'from-emerald-50/70 to-transparent'
+    glowColor: 'from-emerald-50/80 to-transparent',
+    headerIcon: '🤝'
   }
 ];
+
+type AdmissionsViewTab = 'kanban' | 'table' | 'gantt' | 'timeline' | 'automations' | 'funnel' | 'vault' | 'ai_assistant';
 
 export default function BentoAdmissionsKanban({
   selectedCampusId,
@@ -249,7 +269,10 @@ export default function BentoAdmissionsKanban({
   onTriggerToast
 }: BentoAdmissionsKanbanProps) {
   const store = useCrmStore();
-  const { leads, candidates, changeLeadStage, updateLead } = store;
+  const { leads, candidates, changeLeadStage, updateLead, createLead, addCandidate } = store;
+
+  // Vista activa dentro del Work OS de Admisiones
+  const [activeTab, setActiveTab] = useState<AdmissionsViewTab>('kanban');
 
   // Selección de fases activas según el modo (Educativo vs Corporativo B2B)
   const activePhases = useMemo(() => {
@@ -258,7 +281,9 @@ export default function BentoAdmissionsKanban({
 
   // Filtros locales dentro del tablero
   const [searchQuery, setSearchQuery] = useState('');
+  const [stageFilter, setStageFilter] = useState<string>('ALL');
   const [priorityFilter, setPriorityFilter] = useState<'all' | LeadPriority>('all');
+  const [sectionFilter, setSectionFilter] = useState<string>('all');
   const [dragOverPhase, setDragOverPhase] = useState<number | null>(null);
   const [selectedDetailLead, setSelectedDetailLead] = useState<CrmLead | null>(null);
 
@@ -274,73 +299,83 @@ export default function BentoAdmissionsKanban({
     return isCorporate ? 'emp-bmw' : 'sch-ibime';
   }, [corporateEnterpriseId, schoolId, isCorporate]);
 
-  // Filtrado reactivo de leads por empresa/colegio, sede, prioridad y texto
-  const filteredLeads = useMemo(() => {
-    return leads.filter(lead => {
-      // 1. Filtro estricto por institución (Aislamiento Multi-Tenant)
-      if (isCorporate) {
-        // En modo corporativo, aislar por la empresa activa
-        if (lead.school_id !== effectiveSchoolId) return false;
-      } else {
-        // En modo escolar regular, evitar mezclar candidatos de empresas B2B
-        if (lead.school_id?.startsWith('emp-') || lead.pipeline_type === 'corporate_recruitment') {
-          return false;
-        }
-        if (schoolId && lead.school_id !== schoolId) {
-          return false;
-        }
-      }
+  // 1. Obtención de leads con fallback a semillas para cualquier colegio nuevo o en demostración
+  const baseLeads = useMemo(() => {
+    if (isCorporate) {
+      const corp = leads.filter(l => l.school_id === effectiveSchoolId);
+      return corp.length > 0 ? corp : leads.filter(l => l.school_id === 'emp-bmw');
+    }
+    const schoolMatches = leads.filter(l => l.school_id === effectiveSchoolId && !l.school_id?.startsWith('emp-'));
+    return schoolMatches.length > 0 ? schoolMatches : leads.filter(l => !l.school_id?.startsWith('emp-') && l.pipeline_type !== 'corporate_recruitment');
+  }, [leads, isCorporate, effectiveSchoolId]);
 
-      // 2. Filtro reactivo por campus / planta
+  // 2. Filtrado reactivo de leads por campus, prioridad, sección, fase y texto
+  const filteredLeads = useMemo(() => {
+    return baseLeads.filter(lead => {
+      // Filtro reactivo por campus / planta
       if (normalizedSelectedCampus !== 'all') {
         const leadCampusNorm = normalizeCampusKey(lead.campus_id);
         if (leadCampusNorm !== normalizedSelectedCampus) return false;
       }
 
-      // 3. Filtro por prioridad
+      // Filtro por fase seleccionada en dropdown
+      if (stageFilter !== 'ALL') {
+        const phaseNum = parseInt(stageFilter.replace('fase-', ''), 10);
+        const targetPhase = activePhases.find(p => p.num === phaseNum);
+        if (targetPhase && !targetPhase.stages.includes(lead.stage)) {
+          return false;
+        }
+      }
+
+      // Filtro por prioridad / temperatura
       if (priorityFilter !== 'all' && lead.priority !== priorityFilter) {
         return false;
       }
 
-      // 4. Filtro por texto de búsqueda
+      // Filtro por sección / nivel educativo
+      if (sectionFilter !== 'all') {
+        const candList = getLeadCandidates(candidates, lead.id);
+        const matchSec = candList.some(c => (c.target_level || '').toLowerCase().includes(sectionFilter.toLowerCase()));
+        if (!matchSec) return false;
+      }
+
+      // Filtro por texto de búsqueda
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const personName = `${lead.tutor_first_name} ${lead.tutor_last_name || ''}`.toLowerCase();
         const phone = (lead.tutor_phone || '').toLowerCase();
         const candList = getLeadCandidates(candidates, lead.id);
-        const candNames = candList.map(c => `${c.first_name} ${c.last_name_1 || ''} ${c.position_title || ''}`).join(' ').toLowerCase();
+        const candNames = candList.map(c => `${c.first_name} ${c.last_name_1 || ''} ${c.position_title || ''} ${c.target_level || ''} ${c.target_grade || ''}`).join(' ').toLowerCase();
         const dept = (lead.department || '').toLowerCase();
+        const leadId = (lead.id || '').toLowerCase();
 
-        if (!personName.includes(q) && !phone.includes(q) && !candNames.includes(q) && !dept.includes(q)) {
+        if (!personName.includes(q) && !phone.includes(q) && !candNames.includes(q) && !dept.includes(q) && !leadId.includes(q)) {
           return false;
         }
       }
 
       return true;
     });
-  }, [leads, candidates, isCorporate, effectiveSchoolId, schoolId, normalizedSelectedCampus, priorityFilter, searchQuery]);
+  }, [baseLeads, candidates, normalizedSelectedCampus, stageFilter, priorityFilter, sectionFilter, searchQuery, activePhases]);
 
   // Agrupación de leads por las 5 fases canónicas
   const leadsByPhase = useMemo(() => {
     const map = new Map<number, CrmLead[]>();
-    for (let i = 1; i <= 5; i++) {
-      map.set(i, []);
-    }
+    activePhases.forEach(p => map.set(p.num, []));
 
     filteredLeads.forEach(lead => {
-      const phaseObj = activePhases.find(p => p.stages.includes(lead.stage));
-      const phaseNum = phaseObj ? phaseObj.num : 1;
-      const list = map.get(phaseNum) || [];
-      list.push(lead);
-      map.set(phaseNum, list);
+      const phase = activePhases.find(p => p.stages.includes(lead.stage));
+      if (phase) {
+        const list = map.get(phase.num) || [];
+        list.push(lead);
+        map.set(phase.num, list);
+      } else {
+        // Fallback a Fase 1 si no coincide
+        const list = map.get(1) || [];
+        list.push(lead);
+        map.set(1, list);
+      }
     });
-
-    // Ordenar cada lista por score descendente
-    for (let i = 1; i <= 5; i++) {
-      const list = map.get(i) || [];
-      list.sort((a, b) => (b.lead_score || 0) - (a.lead_score || 0));
-      map.set(i, list);
-    }
 
     return map;
   }, [filteredLeads, activePhases]);
@@ -355,7 +390,6 @@ export default function BentoAdmissionsKanban({
 
     changeLeadStage(lead.id, nextStage);
 
-    // Si avanza a Fase 5 (Matrícula / Contratado), se ejecuta el puente de inscripción y sincronización
     if (nextPhaseConfig?.num === 5) {
       executeEnrollmentBridge({ leadId: lead.id, paymentMethod: 'SPEI', cfdiRequested: true });
       if (isCorporate) {
@@ -367,6 +401,79 @@ export default function BentoAdmissionsKanban({
       onTriggerToast(`✓ ${formatTutorName(lead)} avanzado a "${nextPhaseConfig?.phaseLabel}: ${nextPhaseConfig?.title}".`);
     }
   }, [activePhases, changeLeadStage, isCorporate, onTriggerToast]);
+
+  // Mover arbitrariamente de fase
+  const handleDropCustom = useCallback((leadId: string, targetPhaseNum: number) => {
+    const lead = leads.find(l => l.id === leadId);
+    if (!lead) return;
+
+    const targetPhase = activePhases.find(p => p.num === targetPhaseNum);
+    if (!targetPhase) return;
+
+    changeLeadStage(leadId, targetPhase.primaryDropStage);
+
+    if (targetPhaseNum === 5) {
+      executeEnrollmentBridge({ leadId: lead.id, paymentMethod: 'SPEI', cfdiRequested: true });
+      if (isCorporate) {
+        onTriggerToast(`💼 ¡Contratación Exitosa! ${formatTutorName(lead)} ubicado en Fase 5 (Alta Patronal & Onboarding).`);
+      } else {
+        onTriggerToast(`🎓 ¡Matrícula Completada! ${formatTutorName(lead)} ubicado en Fase 5 (Inscripción Pagada).`);
+      }
+    } else {
+      onTriggerToast(`✓ ${formatTutorName(lead)} movido a "${targetPhase.phaseLabel}: ${targetPhase.title}".`);
+    }
+  }, [leads, activePhases, changeLeadStage, isCorporate, onTriggerToast]);
+
+  // Inyección de Caso de Prueba en Caliente (Exacto al Work OS)
+  const handleInjectTestCase = useCallback(() => {
+    const randomId = Math.floor(1000 + Math.random() * 9000);
+    const mockNames: Array<{ tutor: string; student: string; grade: string; phone: string; level: 'primaria' | 'secundaria' | 'preparatoria' | 'maternal' | 'preescolar' | 'corporativo' | 'especialidad' }> = [
+      { tutor: 'Arq. Fernando Valenzuela', student: 'Camila Valenzuela Ríos', grade: 'Primaria 3º', phone: '55 4192 8841', level: 'primaria' },
+      { tutor: 'Dra. Marcela Godínez', student: 'Santiago Godínez Castro', grade: 'Secundaria 1º', phone: '55 8320 1194', level: 'secundaria' },
+      { tutor: 'Ing. Rodrigo Alcocer', student: 'Mateo Alcocer Cantú', grade: 'Secundaria 2º', phone: '55 8312 3409', level: 'secundaria' },
+      { tutor: 'Lic. Claudia Nava Navarro', student: 'Regina Nava Navarrete', grade: 'Preescolar 3º', phone: '55 3301 6992', level: 'preescolar' },
+      { tutor: 'Dr. Leonardo Morales', student: 'Leonardo Morales Del Río', grade: 'Secundaria 1º', phone: '55 6478 9012', level: 'secundaria' }
+    ];
+    const pick = mockNames[Math.floor(Math.random() * mockNames.length)];
+    const [tFirst, ...tLast] = pick.tutor.split(' ');
+    const [sFirst, ...sLast] = pick.student.split(' ');
+
+    const newLeadId = createLead({
+      school_id: effectiveSchoolId,
+      campus_id: selectedCampusId === 'all' ? 'sch-ibime-montes' : selectedCampusId,
+      campus_name: selectedCampusName || 'Campus Montes',
+      pipeline_type: isCorporate ? 'corporate_recruitment' : 'new_enrollment',
+      stage: 'registered',
+      tutor_first_name: tFirst,
+      tutor_last_name: tLast.join(' ') || tFirst,
+      tutor_last_name_1: tLast[0] || tFirst,
+      tutor_email: `familia.test${randomId}@ejemplo.edu.mx`,
+      tutor_phone: pick.phone,
+      tutor_relationship: 'Padre / Tutor',
+      source_channel: 'referral',
+      priority: 'hot',
+      referral_incentive_applied: false,
+      outcome: null,
+      notes: `Aspirante inyectado para prueba en vivo #${randomId}. Interés prioritario en modelo pedagógico integral bilingüe.`,
+      target_academic_year: '2026-2027'
+    });
+
+    if (newLeadId) {
+      addCandidate({
+        lead_id: newLeadId,
+        first_name: sFirst,
+        last_name: sLast.join(' ') || sFirst,
+        last_name_1: sLast[0] || sFirst,
+        target_level: pick.level,
+        target_grade: pick.grade,
+        evaluation_status: 'pending',
+        scholarship_percent: 0,
+        status: 'active'
+      });
+    }
+
+    onTriggerToast(`✨ ¡Caso de Prueba (${pick.student}) inyectado exitosamente en Fase 1!`);
+  }, [createLead, addCandidate, selectedCampusId, selectedCampusName, effectiveSchoolId, onTriggerToast]);
 
   // Cambio de prioridad interactivo
   const handlePriorityChange = useCallback((leadId: string, tutorName: string, newPriority: LeadPriority) => {
@@ -399,281 +506,363 @@ export default function BentoAdmissionsKanban({
     setDragOverPhase(null);
     const leadId = e.dataTransfer.getData('crmLeadId');
     if (!leadId) return;
-
-    const lead = leads.find(l => l.id === leadId);
-    if (!lead) return;
-
-    const targetPhase = activePhases.find(p => p.num === targetPhaseNum);
-    if (!targetPhase) return;
-
-    changeLeadStage(leadId, targetPhase.primaryDropStage);
-
-    if (targetPhaseNum === 5) {
-      executeEnrollmentBridge({ leadId: lead.id, paymentMethod: 'SPEI', cfdiRequested: true });
-      if (isCorporate) {
-        onTriggerToast(`💼 ¡Contratación Exitosa! ${formatTutorName(lead)} ubicado en Fase 5 (Alta Patronal & Onboarding).`);
-      } else {
-        onTriggerToast(`🎓 ¡Matrícula Completada! ${formatTutorName(lead)} ubicado en Fase 5 (Inscripción Pagada).`);
-      }
-    } else {
-      onTriggerToast(`✓ ${formatTutorName(lead)} movido a "${targetPhase.phaseLabel}: ${targetPhase.title}".`);
-    }
+    handleDropCustom(leadId, targetPhaseNum);
   };
 
   return (
     <div className="space-y-4">
-      {/* BARRA SUPERIOR DE HERRAMIENTAS DEL KANBAN (MODO CLARO LUMÍNICO) */}
-      <div className="bg-white/95 backdrop-blur-md p-4 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 text-slate-900">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-2xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 shadow-xs">
-            {isCorporate ? <Briefcase size={18} /> : <Layers size={18} />}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-sm font-black text-slate-900 tracking-wide">
-                {isCorporate
-                  ? 'Tablero Ágil de Reclutamiento & Onboarding Corporativo'
-                  : 'Tablero Kanban Ágil de 5 Fases Corresponsables'}
-              </h3>
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-full shadow-2xs">
-                {filteredLeads.length} {isCorporate ? 'Candidatos en Pipeline' : 'Aspirantes en Pipeline'}
-              </span>
+      {/* ========================================================= */}
+      {/* 1. BARRA SUPERIOR DE CONTROL WORK OS (ESTILO IMAGEN 1)     */}
+      {/* ========================================================= */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shadow-xl border border-indigo-900/50 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="p-2 rounded-2xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              <Layers className="h-5 w-5 text-indigo-400" />
             </div>
-            <p className="text-[11px] text-slate-500">
-              {isCorporate ? 'Planta / Sede activa:' : 'Sede activa:'}{' '}
-              <strong className="text-purple-700">{selectedCampusName}</strong> • Arrastra las tarjetas o pulsa "Avanzar" para transiciones de fase atómicas.
-            </p>
+            <h2 className="text-lg sm:text-xl font-black tracking-tight text-white">
+              {isCorporate
+                ? 'Work OS de Reclutamiento & Headhunting Corporativo'
+                : 'Work OS de Admisiones · Ecosistema de Crecimiento Institucional'}
+            </h2>
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-indigo-500/30 text-indigo-200 border border-indigo-400/40">
+              v3.2 Cloud Work OS
+            </span>
           </div>
+          <p className="text-xs text-indigo-200/80 max-w-2xl leading-relaxed">
+            {isCorporate
+              ? 'Plataforma visual para planificar, ejecutar y supervisar postulaciones, pruebas técnicas, ofertas económicas y altas patronales con trazabilidad de minutos y SLAs en tiempo real.'
+              : 'Plataforma visual para captar aspirantes, coordinar visitas de campus, diagnósticos psicopedagógicos y conciliación de matrícula SEP con trazabilidad en minutos y SLAs en tiempo real.'}
+          </p>
         </div>
 
-        {/* CONTROLES DE FILTRADO Y BÚSQUEDA RÁPIDA */}
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <div className="relative">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={isCorporate ? "Buscar candidato, puesto o tel..." : "Buscar aspirante, tutor o tel..."}
-              className="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-white focus:ring-2 focus:ring-purple-100 transition-all w-44 sm:w-56 shadow-2xs"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              >
-                <X size={12} />
-              </button>
-            )}
+        {/* Controles del Lado Derecho: Sede Operativa + Inyección de Caso de Prueba + Registro */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-2xl border border-white/10 text-xs">
+            <span className="text-[11px] text-indigo-200 font-bold">Vista de Operación:</span>
+            <span className="bg-slate-900 text-white rounded-xl px-2.5 py-1 text-xs font-bold border border-indigo-500/40 flex items-center gap-1.5">
+              🏫 {selectedCampusName || 'Dirección General / CEO (Global)'}
+            </span>
           </div>
 
-          <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200">
-            <span className="text-[10px] text-slate-500 px-1.5 font-bold uppercase">Prioridad:</span>
-            {(['all', 'hot', 'warm', 'normal'] as const).map(p => (
-              <button
-                key={p}
-                onClick={() => setPriorityFilter(p)}
-                className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${
-                  priorityFilter === p
-                    ? 'bg-purple-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
-                }`}
-              >
-                {p === 'all' ? 'Todas' : p === 'hot' ? '🔴 Caliente' : p === 'warm' ? '🟡 Tibio' : '🔵 Normal'}
-              </button>
-            ))}
-          </div>
+          <button
+            onClick={handleInjectTestCase}
+            className="px-3.5 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs bg-white/10 hover:bg-white/20 text-white border border-white/20 active:scale-95"
+            title="Inyectar caso de prueba realista en el pipeline"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+            <span>+ Inyectar Caso de Prueba</span>
+          </button>
 
           {onOpenRegisterModal && (
             <button
               onClick={onOpenRegisterModal}
-              className="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 hover:from-blue-600 hover:to-blue-400 text-white rounded-2xl text-xs font-black shadow-md shadow-blue-600/30 transition-all flex items-center gap-1.5 cursor-pointer border border-blue-400/40 active:scale-95"
             >
-              <span>{isCorporate ? '+ Registrar Candidato' : '+ Nuevo Aspirante'}</span>
+              <Plus size={14} />
+              <span>{isCorporate ? 'Registrar Candidato' : 'Nuevo Aspirante'}</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* REJILLA DE 5 COLUMNAS KANBAN (BENTO GRID EN MODO CLARO) */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-3.5 items-start">
-        {activePhases.map((phase) => {
-          const stageLeads = leadsByPhase.get(phase.num) || [];
-          const isDropActive = dragOverPhase === phase.num;
+      {/* ========================================================= */}
+      {/* 2. SELECTOR DE VISTAS (PILLS WORK OS ESTILO IMAGEN 1)     */}
+      {/* ========================================================= */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-2 rounded-2xl bg-slate-100 border border-slate-200 shadow-2xs">
+        <div className="flex flex-wrap items-center gap-1">
+          {[
+            { id: 'kanban', label: 'Tablero Kanban', icon: Layers },
+            { id: 'table', label: 'Tabla Visual', icon: TableIcon },
+            { id: 'gantt', label: 'Cronograma Gantt', icon: Calendar },
+            { id: 'timeline', label: 'Línea de Tiempo', icon: Clock },
+            { id: 'automations', label: 'Automatizaciones', icon: Zap },
+            { id: 'funnel', label: 'Embudo Funnel 360°', icon: TrendingUp },
+            { id: 'vault', label: 'Bóveda Expedientes (SEP)', icon: ShieldCheck },
+            { id: 'ai_assistant', label: 'Asistente Pedagógico IA', icon: Wand2 }
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as AdmissionsViewTab)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  isActive
+                    ? 'bg-white text-indigo-700 shadow-xs border border-slate-200 font-black ring-1 ring-indigo-500/20'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                }`}
+              >
+                <Icon size={14} className={isActive ? 'text-indigo-600' : 'text-slate-500'} />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
 
-          return (
-            <div
-              key={phase.id}
-              onDragOver={(e) => handleDragOver(e, phase.num)}
-              onDragLeave={handleDragLeave}
-              onDrop={(e) => handleDrop(e, phase.num)}
-              className={`rounded-3xl border transition-all duration-200 flex flex-col min-h-[580px] max-h-[820px] overflow-hidden ${
-                isDropActive
-                  ? 'bg-purple-50/70 border-purple-400 ring-2 ring-purple-400/40 shadow-xl scale-[1.01]'
-                  : 'bg-slate-50/70 border-slate-200/80 shadow-xs hover:border-slate-300'
-              }`}
+        {/* Contador de casos activos */}
+        <div className="flex items-center gap-2 pr-2 text-xs font-mono text-slate-500">
+          <span className="font-black text-slate-800">{filteredLeads.length}</span>
+          <span>expedientes en pipeline</span>
+        </div>
+      </div>
+
+      {/* ========================================================= */}
+      {/* 3. FILTROS Y BÚSQUEDA UNIFICADA (ESTILO IMAGEN 1)          */}
+      {/* ========================================================= */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white rounded-2xl border border-slate-200 shadow-xs">
+        <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
+          {/* Buscador */}
+          <div className="relative flex-1 min-w-[220px] max-w-md">
+            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder={isCorporate ? "Buscar por código, candidato, puesto, teléfono..." : "Buscar por código, aspirante, tutor, grado o teléfono..."}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white shadow-2xs"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+              >
+                <X size={13} />
+              </button>
+            )}
+          </div>
+
+          {/* Filtro Fases / Estados */}
+          <select
+            value={stageFilter}
+            onChange={(e) => setStageFilter(e.target.value)}
+            className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 font-bold focus:outline-none cursor-pointer"
+          >
+            <option value="ALL">Todas las Fases</option>
+            <option value="fase-1">Fase 1: {activePhases[0]?.title}</option>
+            <option value="fase-2">Fase 2: {activePhases[1]?.title}</option>
+            <option value="fase-3">Fase 3: {activePhases[2]?.title}</option>
+            <option value="fase-4">Fase 4: {activePhases[3]?.title}</option>
+            <option value="fase-5">Fase 5: {activePhases[4]?.title}</option>
+          </select>
+
+          {/* Filtro Secciones Escolares */}
+          {!isCorporate && (
+            <select
+              value={sectionFilter}
+              onChange={(e) => setSectionFilter(e.target.value)}
+              className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 font-bold focus:outline-none cursor-pointer"
             >
-              {/* CABECERA DE LA COLUMNA BENTO */}
-              <div className={`p-4 border-b border-slate-200/80 bg-gradient-to-b ${phase.glowColor}`}>
-                <div className="flex items-center justify-between gap-1 mb-1.5">
-                  <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${phase.badgeBg} ${phase.badgeText} shadow-2xs`}>
-                    {phase.phaseLabel}
-                  </span>
-                  <span className="w-6 h-6 rounded-full bg-white border border-slate-200 text-slate-700 font-mono font-black text-xs flex items-center justify-center shadow-xs">
-                    {stageLeads.length}
-                  </span>
+              <option value="all">Todas las Secciones</option>
+              <option value="maternal">Maternal & Lactantes</option>
+              <option value="preescolar">Preescolar / Kinder</option>
+              <option value="primaria">Primaria Oficial</option>
+              <option value="secundaria">Secundaria Oficial</option>
+              <option value="preparatoria">Preparatoria / Bachillerato</option>
+            </select>
+          )}
+
+          {/* Filtro Prioridad / Temperatura */}
+          <select
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value as any)}
+            className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 font-bold focus:outline-none cursor-pointer"
+          >
+            <option value="all">Todas las Temperaturas</option>
+            <option value="hot">🔴 Caliente (Alta Intención)</option>
+            <option value="warm">🟡 Tibio (En Seguimiento)</option>
+            <option value="normal">🔵 Normal (Exploratorio)</option>
+            <option value="cold">⚪ Frío (Postergado)</option>
+          </select>
+        </div>
+
+        {/* Botón rápido para inyectar caso de prueba directamente en el filtro */}
+        <div className="flex items-center gap-2">
+          {onOpenDirectory && (
+            <button
+              onClick={onOpenDirectory}
+              className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
+            >
+              <BookOpen size={13} className="text-slate-500" />
+              <span>Ver Padrón Completo</span>
+            </button>
+          )}
+
+          <button
+            onClick={handleInjectTestCase}
+            className="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-black text-xs rounded-xl border border-indigo-200 flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-2xs"
+          >
+            <Plus size={13} className="text-indigo-600 font-black" />
+            <span>Inyectar Caso de Prueba</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ========================================================= */}
+      {/* 4. CONTENIDO SEGÚN LA PESTAÑA SELECCIONADA                */}
+      {/* ========================================================= */}
+
+      {/* VISTA 1: TABLERO KANBAN DE 5 FASES CORRESPONSABLES */}
+      {activeTab === 'kanban' && (
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3.5 items-start">
+          {activePhases.map((phase) => {
+            const stageLeads = leadsByPhase.get(phase.num) || [];
+            const isDropActive = dragOverPhase === phase.num;
+
+            return (
+              <div
+                key={phase.id}
+                onDragOver={(e) => handleDragOver(e, phase.num)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, phase.num)}
+                className={`rounded-3xl border transition-all duration-200 flex flex-col min-h-[600px] max-h-[880px] overflow-hidden ${
+                  isDropActive
+                    ? 'bg-indigo-50/70 border-indigo-400 ring-2 ring-indigo-400/40 shadow-xl scale-[1.01]'
+                    : 'bg-slate-50/70 border-slate-200 shadow-xs hover:border-slate-300'
+                }`}
+              >
+                {/* CABECERA DE LA COLUMNA WORK OS (PILL ELEGANTE ESTILO IMAGEN 1) */}
+                <div className={`p-3.5 border-b border-slate-200 bg-gradient-to-b ${phase.glowColor}`}>
+                  <div className="flex items-center justify-between gap-1 mb-1">
+                    <span className={`text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${phase.badgeBg} ${phase.badgeText} shadow-2xs flex items-center gap-1.5`}>
+                      <span>{phase.headerIcon}</span>
+                      <span>{phase.title}</span>
+                    </span>
+                    <span className="w-6 h-6 rounded-full bg-white border border-slate-200 text-slate-800 font-mono font-black text-xs flex items-center justify-center shadow-xs">
+                      {stageLeads.length}
+                    </span>
+                  </div>
+
+                  <div className="mt-1 text-[10px] text-slate-500 flex flex-col gap-0.5">
+                    <span className="text-slate-700 font-bold">{phase.phaseLabel} · {phase.dept}</span>
+                    <span className="text-slate-400 truncate" title={phase.location}>📍 {phase.location}</span>
+                  </div>
                 </div>
 
-                <h4 className="text-sm font-black text-slate-900 tracking-tight flex items-center gap-1.5">
-                  <span className={`w-2 h-2 rounded-full ${phase.dotColor}`} />
-                  {phase.title}
-                </h4>
+                {/* LISTA DE TARJETAS DE ASPIRANTES / EXPEDIENTES */}
+                <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
+                  {stageLeads.map((lead) => {
+                    const leadCandidates = getLeadCandidates(candidates, lead.id);
+                    const firstCand = leadCandidates[0];
+                    const daysInStage = calculateDaysInStage(lead);
+                    const isStalled = daysInStage > 7;
+                    const sourceChannel = SOURCE_CHANNELS.find(c => c.key === lead.source_channel);
 
-                <div className="mt-1 text-[10px] text-slate-500 flex flex-col gap-0.5">
-                  <span className="text-slate-700 font-semibold">{phase.dept}</span>
-                  <span className="text-slate-400 truncate" title={phase.location}>📍 {phase.location}</span>
-                </div>
-              </div>
+                    // Formateo de Teléfono para WhatsApp
+                    const rawPhone = (lead.tutor_phone || '').replace(/\D/g, '');
+                    const cleanPhone = rawPhone.length === 10 ? `52${rawPhone}` : rawPhone;
+                    const waMessage = isCorporate
+                      ? `Estimado(a) ${firstCand ? firstCand.first_name : lead.tutor_first_name}, te contactamos del equipo de Atracción de Talento de ${corporateEnterpriseName || 'ISkool Enterprise'} respecto a tu postulación.`
+                      : `Estimada familia ${formatTutorName(lead)}, nos comunicamos de Admisiones respecto al proceso de ingreso para el ciclo 2026-2027.`;
 
-              {/* LISTA DE TARJETAS DE ASPIRANTES / CANDIDATOS */}
-              <div className="flex-1 overflow-y-auto p-3 space-y-3">
-                {stageLeads.map((lead) => {
-                  const leadCandidates = getLeadCandidates(candidates, lead.id);
-                  const firstCand = leadCandidates[0];
-                  const daysInStage = calculateDaysInStage(lead);
-                  const isStalled = daysInStage > 7;
-                  const sourceChannel = SOURCE_CHANNELS.find(c => c.key === lead.source_channel);
+                    // Cálculo visual del Lead Score / Probabilidad (0 - 100%)
+                    const leadScore = Math.min(100, Math.max(10, (lead.lead_score || 5) * 10));
 
-                  // Teléfono limpio para WhatsApp
-                  const rawPhone = (lead.tutor_phone || '').replace(/\D/g, '');
-                  const cleanPhone = rawPhone.length === 10 ? `52${rawPhone}` : rawPhone;
-                  const waMessage = isCorporate
-                    ? `Estimado(a) ${firstCand ? firstCand.first_name : lead.tutor_first_name}, te contactamos del equipo de Atracción de Talento de ${corporateEnterpriseName || 'ISkool Enterprise'} respecto a tu postulación.`
-                    : `Estimada familia ${formatTutorName(lead)}, nos comunicamos del Departamento de Admisiones respecto al proceso de ingreso.`;
-
-                  return (
-                    <div
-                      key={lead.id}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, lead.id)}
-                      onClick={() => setSelectedDetailLead(lead)}
-                      className="bg-white rounded-2xl border border-slate-200/90 p-3.5 space-y-2.5 cursor-grab active:cursor-grabbing hover:border-purple-300 hover:shadow-md transition-all text-slate-900 group select-none relative overflow-hidden shadow-xs"
-                    >
-                      {/* Borde sutil lateral de prioridad */}
+                    return (
                       <div
-                        className={`absolute left-0 top-0 bottom-0 w-1 ${
-                          lead.priority === 'hot' ? 'bg-red-500' :
-                          lead.priority === 'warm' ? 'bg-amber-400' :
-                          lead.priority === 'cold' ? 'bg-slate-300' : 'bg-blue-500'
-                        }`}
-                      />
-
-                      {/* Header de la tarjeta: Prioridad + Días en etapa */}
-                      <div className="flex items-center justify-between gap-1 pl-1">
-                        <div onClick={e => e.stopPropagation()}>
-                          <select
-                            value={lead.priority}
-                            onChange={(e) => handlePriorityChange(lead.id, formatTutorName(lead), e.target.value as LeadPriority)}
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-md border cursor-pointer focus:outline-none transition-all shadow-2xs ${
-                              lead.priority === 'hot' ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' :
-                              lead.priority === 'warm' ? 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100' :
-                              lead.priority === 'cold' ? 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100' :
-                              'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
-                            }`}
-                            title="Cambiar prioridad"
-                          >
-                            <option value="hot">🔴 Caliente</option>
-                            <option value="warm">🟡 Tibio</option>
-                            <option value="normal">🔵 Normal</option>
-                            <option value="cold">⚪ Frío</option>
-                          </select>
-                        </div>
-
-                        <span
-                          className={`text-[11px] font-mono flex items-center gap-1 ${
-                            isStalled ? 'text-red-600 font-bold' : 'text-slate-400'
+                        key={lead.id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, lead.id)}
+                        onClick={() => setSelectedDetailLead(lead)}
+                        className="p-3.5 rounded-2xl bg-white border border-slate-200 hover:border-indigo-400 shadow-xs hover:shadow-md transition-all cursor-grab active:cursor-grabbing space-y-2.5 group select-none relative overflow-hidden text-slate-900"
+                      >
+                        {/* Borde lateral de temperatura / prioridad */}
+                        <div
+                          className={`absolute left-0 top-0 bottom-0 w-1 ${
+                            lead.priority === 'hot' ? 'bg-red-500' :
+                            lead.priority === 'warm' ? 'bg-amber-400' :
+                            lead.priority === 'cold' ? 'bg-slate-300' : 'bg-blue-500'
                           }`}
-                          title={`Lleva ${daysInStage} días en esta etapa`}
-                        >
-                          <Clock size={11} />
-                          {daysInStage}d
-                        </span>
-                      </div>
+                        />
 
-                      {/* Nombre y Puesto / Nivel */}
-                      <div className="pl-1">
-                        {isCorporate ? (
-                          <>
-                            {/* Insignia del puesto corporativo */}
-                            <div className="mb-1">
-                              <span className="inline-block px-2 py-0.5 bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-black rounded-md tracking-tight truncate max-w-full">
-                                {firstCand?.position_title || lead.department || 'Puesto Técnico Solicitado'}
-                              </span>
-                            </div>
-                            <h5 className="text-xs font-black text-slate-900 group-hover:text-purple-600 transition-colors truncate">
-                              {formatTutorName(lead)}
-                            </h5>
-                            <div className="flex items-center justify-between gap-1.5 mt-1">
-                              <span className="text-[10px] text-slate-500 truncate max-w-[130px]" title={lead.campus_name}>
-                                📍 {lead.campus_name?.replace('Planta ', '').replace('CEDIS ', '').replace('Corporativo ', '') || 'Sede'}
-                              </span>
-                              {(lead.proposed_salary || firstCand?.proposed_salary) && (
-                                <span className="px-1.5 py-0.2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-mono text-[9px] font-bold">
-                                  {lead.proposed_salary || firstCand?.proposed_salary}
-                                </span>
-                              )}
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="flex items-center justify-between gap-1">
-                              <h5 className="text-xs font-black text-slate-900 group-hover:text-purple-600 transition-colors truncate">
-                                {firstCand ? formatCandidateName(firstCand) : (lead.notes?.slice(0, 24) || 'Aspirante IBIME')}
-                              </h5>
-                              {leadCandidates.length > 1 && (
-                                <span className="text-[9px] bg-purple-50 text-purple-700 border border-purple-200 px-1.5 py-0.2 rounded-full font-bold">
-                                  +{leadCandidates.length - 1} hnos
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="px-1.5 py-0.2 bg-slate-100 text-slate-700 border border-slate-200/60 rounded text-[10px] font-semibold">
-                                {firstCand ? `${firstCand.target_level} ${firstCand.target_grade}` : 'Grado Solicitado'}
-                              </span>
-                              {lead.campus_name && (
-                                <span className="text-[10px] text-slate-400 truncate max-w-[110px]" title={lead.campus_name}>
-                                  {lead.campus_name.replace('Campus ', '').split('(')[0]}
-                                </span>
-                              )}
-                            </div>
-                          </>
-                        )}
-                      </div>
-
-                      {/* Contacto / Reclutador & WhatsApp */}
-                      <div className="pt-2 border-t border-slate-100 text-[11px] space-y-1 pl-1">
-                        <div className="text-slate-700 font-medium flex items-center justify-between">
-                          <span className="truncate text-[10px]">
-                            {isCorporate ? (
-                              lead.recruiter_name ? `HR: ${lead.recruiter_name.split(' ')[0]} ${lead.recruiter_name.split(' ')[1] || ''}` : 'HR Industrial'
-                            ) : (
-                              formatTutorName(lead)
-                            )}
-                          </span>
-                          {isCorporate ? (
-                            <span className="text-[9px] text-cyan-600 font-mono font-bold">
-                              {firstCand?.technical_score ? `Score: ${firstCand.technical_score}/100` : 'Score: Pend.'}
+                        {/* Fila 1: Grip + Folio oficial + SLA / Tiempo en etapa */}
+                        <div className="flex items-center justify-between text-[10px] pl-1">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <GripVertical className="h-3.5 w-3.5 text-slate-300 group-hover:text-indigo-500 transition-colors shrink-0" />
+                            <span className="font-mono font-black text-indigo-600 truncate">
+                              {lead.id?.startsWith('EXP-') ? lead.id : `EXP-ADM-2026-${lead.id.slice(-4).toUpperCase()}`}
                             </span>
-                          ) : (
-                            lead.tutor_relationship && (
-                              <span className="text-[9px] text-slate-400 uppercase font-semibold">{lead.tutor_relationship}</span>
-                            )
-                          )}
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            <span className={`font-mono font-bold px-1.5 py-0.5 rounded text-[10px] flex items-center gap-1 ${
+                              isStalled
+                                ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                : 'bg-slate-100 text-slate-600'
+                            }`}>
+                              {isStalled ? <AlertTriangle size={10} /> : <Clock size={10} />}
+                              {isStalled ? `Vencido >${daysInStage}d` : `${daysInStage}d`}
+                            </span>
+
+                            <div onClick={e => e.stopPropagation()}>
+                              <select
+                                value={lead.priority}
+                                onChange={(e) => handlePriorityChange(lead.id, formatTutorName(lead), e.target.value as LeadPriority)}
+                                className={`text-[9px] font-bold px-1.5 py-0.2 rounded border cursor-pointer focus:outline-none transition-all ${
+                                  lead.priority === 'hot' ? 'bg-red-50 text-red-700 border-red-200' :
+                                  lead.priority === 'warm' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                  lead.priority === 'cold' ? 'bg-slate-50 text-slate-600 border-slate-200' :
+                                  'bg-blue-50 text-blue-700 border-blue-200'
+                                }`}
+                                title="Cambiar prioridad"
+                              >
+                                <option value="hot">🔴 Caliente</option>
+                                <option value="warm">🟡 Tibio</option>
+                                <option value="normal">🔵 Normal</option>
+                                <option value="cold">⚪ Frío</option>
+                              </select>
+                            </div>
+                          </div>
                         </div>
 
-                        <div className="flex items-center justify-between text-slate-500 text-[10px]">
-                          <span className="flex items-center gap-1">
-                            <Phone size={11} className="text-slate-400" />
+                        {/* Fila 2: Nombre del Alumno / Aspirante en Negrita + Nivel */}
+                        <div className="pl-1">
+                          <h4 className="font-bold text-xs text-slate-900 group-hover:text-indigo-600 truncate">
+                            {firstCand 
+                              ? `${firstCand.first_name} ${firstCand.last_name_1 || ''}`
+                              : (lead.tutor_last_name ? `Aspirante Fam. ${lead.tutor_last_name}` : (lead.notes?.slice(0, 24) || 'Aspirante'))}
+                          </h4>
+                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap text-[10px]">
+                            <span className="px-1.5 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-200/80 rounded font-bold flex items-center gap-1">
+                              <GraduationCap size={10} />
+                              {firstCand ? `${firstCand.target_level} ${firstCand.target_grade}` : 'Grado 1º (Por Definir)'}
+                            </span>
+                            {lead.campus_name && (
+                              <span className="text-slate-400 truncate max-w-[120px]" title={lead.campus_name}>
+                                {lead.campus_name.replace('Campus ', '').split('(')[0]}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Fila 3: Barra de Progreso / Probabilidad de Cierre */}
+                        <div className="pl-1 space-y-1">
+                          <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden border border-slate-200/60">
+                            <div
+                              className={`h-full transition-all duration-300 ${
+                                leadScore >= 75 ? 'bg-gradient-to-r from-emerald-500 to-teal-500' :
+                                leadScore >= 45 ? 'bg-gradient-to-r from-amber-400 to-orange-400' :
+                                'bg-gradient-to-r from-slate-400 to-indigo-400'
+                              }`}
+                              style={{ width: `${leadScore}%` }}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between text-[10px]">
+                            <span className="text-slate-400 font-semibold truncate max-w-[130px]" title={formatTutorName(lead)}>
+                              👤 {formatTutorName(lead)}
+                            </span>
+                            <span className={`font-mono font-black ${
+                              leadScore >= 75 ? 'text-emerald-700' : leadScore >= 45 ? 'text-amber-700' : 'text-slate-600'
+                            }`}>
+                              ({leadScore}%)
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Fila 4: Contacto Familiar & WhatsApp Directo */}
+                        <div className="pl-1 pt-1 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500">
+                          <span className="flex items-center gap-1 font-mono">
+                            <Phone size={10} className="text-slate-400" />
                             {lead.tutor_phone || 'Sin tel.'}
                           </span>
                           {cleanPhone && (
@@ -682,7 +871,7 @@ export default function BentoAdmissionsKanban({
                               target="_blank"
                               rel="noreferrer"
                               onClick={e => e.stopPropagation()}
-                              className="text-emerald-700 hover:text-emerald-800 flex items-center gap-1 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 font-semibold"
+                              className="text-emerald-700 hover:text-emerald-800 flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-lg border border-emerald-200 font-bold transition-colors"
                               title="Contactar vía WhatsApp Directo"
                             >
                               <MessageCircle size={10} />
@@ -690,213 +879,504 @@ export default function BentoAdmissionsKanban({
                             </a>
                           )}
                         </div>
-                      </div>
 
-                      {/* Canal de Origen y Lead Score */}
-                      <div className="pt-1.5 flex items-center justify-between text-[10px] text-slate-500 pl-1">
-                        <span className="text-purple-700 font-medium truncate max-w-[130px]" title={sourceChannel?.label}>
-                          {sourceChannel?.icon} {sourceChannel?.label || lead.source_channel}
-                        </span>
-                        <span className="font-mono text-slate-700 font-bold">
-                          {lead.lead_score || 5} pts
-                        </span>
-                      </div>
-
-                      {/* Botón de Acción de Avance Rápido */}
-                      <div className="pt-2 pl-1" onClick={e => e.stopPropagation()}>
-                        {phase.nextStage ? (
-                          <button
-                            onClick={() => handleQuickAdvance(lead, phase.num)}
-                            className="w-full py-1.5 bg-slate-100 hover:bg-purple-600 text-slate-700 hover:text-white rounded-xl font-bold text-[10px] flex items-center justify-center gap-1 transition-all active:scale-95 border border-slate-200 cursor-pointer shadow-2xs"
+                        {/* Fila 5: Selector Rápido "Mover: Transferir a..." (Exacto a Imagen 1) */}
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          className="pl-1 pt-1 flex items-center justify-between gap-1 text-[10px]"
+                        >
+                          <span className="text-slate-400 font-semibold flex items-center gap-0.5">
+                            <ArrowRight className="h-3 w-3 text-slate-400" /> Mover:
+                          </span>
+                          <select
+                            value=""
+                            onChange={(e) => {
+                              const targetPhaseNum = parseInt(e.target.value, 10);
+                              if (targetPhaseNum) {
+                                handleDropCustom(lead.id, targetPhaseNum);
+                              }
+                            }}
+                            className="px-1.5 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold border border-slate-200 cursor-pointer text-[10px]"
                           >
-                            <span>Avanzar a Fase {phase.num + 1}</span>
-                            <ArrowRight size={11} />
-                          </button>
-                        ) : (
-                          <div className="w-full py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-black text-[10px] flex items-center justify-center gap-1">
-                            <CheckCircle2 size={12} />
-                            <span>{isCorporate ? '✓ Alta IMSS & Contratado' : '✓ Matrícula Pagada'}</span>
-                          </div>
-                        )}
+                            <option value="">Transferir a...</option>
+                            <option value="1">🔥 Fase 1 · Captación</option>
+                            <option value="2">📍 Fase 2 · Visita</option>
+                            <option value="3">🧠 Fase 3 · Diagnóstico</option>
+                            <option value="4">📜 Fase 4 · Reserva</option>
+                            <option value="5">🎓 Fase 5 · Matrícula (100%)</option>
+                          </select>
+                        </div>
+
+                        {/* Fila 6: Botón de Acción Principal (Option 4 Royal Blue) */}
+                        <div className="pl-1 pt-1" onClick={e => e.stopPropagation()}>
+                          {phase.nextStage ? (
+                            <button
+                              onClick={() => handleQuickAdvance(lead, phase.num)}
+                              className="w-full py-1.5 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 hover:from-blue-600 hover:to-blue-400 text-white rounded-xl font-black text-[10px] flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs border border-blue-400/40 cursor-pointer"
+                            >
+                              <span>Avanzar a Fase {phase.num + 1}</span>
+                              <ArrowRight size={11} />
+                            </button>
+                          ) : (
+                            <div className="w-full py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl font-black text-[10px] flex items-center justify-center gap-1 shadow-2xs">
+                              <CheckCircle2 size={12} className="text-emerald-600" />
+                              <span>{isCorporate ? '✓ Alta IMSS & Contratado' : '✓ Matrícula Pagada SEP'}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
+                    );
+                  })}
+
+                  {/* Estado Vacío de la Columna (Exacto a Imagen 1) */}
+                  {stageLeads.length === 0 && (
+                    <div className="h-36 border-2 border-dashed border-slate-200/90 rounded-2xl flex flex-col items-center justify-center p-3 text-center text-slate-400 text-[11px] space-y-1.5 bg-white/60">
+                      <span className="text-xl opacity-60">📥</span>
+                      <span className="text-slate-600 font-semibold">{isCorporate ? 'Sin candidatos en este segmento' : 'Sin expedientes en este segmento'}</span>
+                      <span className="text-[10px] text-slate-400">Arrastre una tarjeta aquí para cambiar estado y porcentaje.</span>
                     </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* VISTA 2: TABLA VISUAL EJECUTIVA */}
+      {activeTab === 'table' && (
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden text-xs">
+          <div className="p-4 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
+            <h4 className="font-black text-slate-900 text-sm">Padrón Consolidado del Pipeline de Admisiones ({filteredLeads.length} Registros)</h4>
+            <span className="text-[11px] text-slate-500">Ordenado por prioridad y probabilidad de cierre</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-slate-100/70 border-b border-slate-200 text-slate-600 text-[11px] font-bold">
+                <tr>
+                  <th className="py-2.5 px-4">Folio</th>
+                  <th className="py-2.5 px-4">Aspirante / Alumno</th>
+                  <th className="py-2.5 px-4">Tutor Principal</th>
+                  <th className="py-2.5 px-4">Grado y Sede</th>
+                  <th className="py-2.5 px-4">Fase Actual</th>
+                  <th className="py-2.5 px-4">Prioridad</th>
+                  <th className="py-2.5 px-4">Probabilidad</th>
+                  <th className="py-2.5 px-4 text-right">Acción</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredLeads.map(lead => {
+                  const leadCandidates = getLeadCandidates(candidates, lead.id);
+                  const firstCand = leadCandidates[0];
+                  const phaseObj = activePhases.find(p => p.stages.includes(lead.stage));
+                  const leadScore = Math.min(100, Math.max(10, (lead.lead_score || 5) * 10));
+
+                  return (
+                    <tr
+                      key={lead.id}
+                      onClick={() => setSelectedDetailLead(lead)}
+                      className="hover:bg-blue-50/40 cursor-pointer transition-colors"
+                    >
+                      <td className="py-3 px-4 font-mono font-bold text-slate-500 text-[11px]">
+                        {lead.id?.startsWith('EXP-') ? lead.id : `EXP-ADM-2026-${lead.id.slice(-4).toUpperCase()}`}
+                      </td>
+                      <td className="py-3 px-4 font-bold text-slate-900">{firstCand ? formatCandidateName(firstCand) : 'Aspirante'}</td>
+                      <td className="py-3 px-4 text-slate-700">{formatTutorName(lead)} ({lead.tutor_phone || 'S/N'})</td>
+                      <td className="py-3 px-4 text-slate-600">{firstCand ? `${firstCand.target_level} ${firstCand.target_grade}` : 'Por definir'} • {lead.campus_name?.split('(')[0] || 'Sede'}</td>
+                      <td className="py-3 px-4">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${phaseObj?.badgeBg || 'bg-slate-100'} ${phaseObj?.badgeText || 'text-slate-700'}`}>
+                          {phaseObj?.title || 'Fase'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                          lead.priority === 'hot' ? 'bg-red-50 text-red-700' :
+                          lead.priority === 'warm' ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'
+                        }`}>
+                          {PRIORITY_CONFIG[lead.priority].label}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 font-mono font-bold text-slate-800">
+                        {leadScore}%
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedDetailLead(lead);
+                          }}
+                          className="px-2.5 py-1 bg-slate-100 hover:bg-blue-600 hover:text-white rounded-lg font-bold text-[10px] transition-all cursor-pointer"
+                        >
+                          Ver 360°
+                        </button>
+                      </td>
+                    </tr>
                   );
                 })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
-                {/* Estado Vacío de la Columna */}
-                {stageLeads.length === 0 && (
-                  <div className="h-32 border border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center p-3 text-center text-slate-400 text-[11px] space-y-1 bg-white/60">
-                    <span className="text-xl opacity-60">📥</span>
-                    <span className="text-slate-500">{isCorporate ? 'Sin candidatos en esta fase' : 'Sin aspirantes en esta fase'}</span>
-                    <span className="text-[10px] text-slate-400">Arrastra una tarjeta aquí</span>
+      {/* VISTA 3: CRONOGRAMA GANTT INTERACTIVO */}
+      {activeTab === 'gantt' && (
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h4 className="font-black text-slate-900 text-sm">Cronograma Gantt de Plazos y Admisiones</h4>
+              <p className="text-xs text-slate-500 mt-0.5">Seguimiento temporal por fase y proyección de conversión al ciclo escolar 2026-2027.</p>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-mono text-slate-500">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Matrícula
+              <span className="w-2.5 h-2.5 rounded-full bg-indigo-500" /> Tours
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500" /> Captación
+            </div>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            {filteredLeads.slice(0, 10).map((lead) => {
+              const leadCandidates = getLeadCandidates(candidates, lead.id);
+              const firstCand = leadCandidates[0];
+              const daysInStage = calculateDaysInStage(lead);
+              const leadScore = Math.min(100, Math.max(10, (lead.lead_score || 5) * 10));
+
+              return (
+                <div key={lead.id} className="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-900 truncate max-w-md">
+                      {firstCand ? formatCandidateName(firstCand) : formatTutorName(lead)} · {firstCand ? `${firstCand.target_level} ${firstCand.target_grade}` : 'Aspirante'}
+                    </span>
+                    <span className="font-mono text-[10px] text-slate-500">
+                      En etapa: {daysInStage}d · Tutor: {formatTutorName(lead)}
+                    </span>
                   </div>
-                )}
+                  <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        leadScore >= 75 ? 'bg-gradient-to-r from-emerald-500 to-teal-500' :
+                        leadScore >= 45 ? 'bg-gradient-to-r from-indigo-500 to-blue-500' :
+                        'bg-gradient-to-r from-rose-500 to-amber-500'
+                      }`}
+                      style={{ width: `${leadScore}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* VISTA 4: LÍNEA DE TIEMPO */}
+      {activeTab === 'timeline' && (
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h4 className="font-black text-slate-900 text-sm">Línea de Tiempo de Interacciones</h4>
+              <p className="text-xs text-slate-500 mt-0.5">Bitácora de contactos, recorridos de campus y evaluaciones psicopedagógicas.</p>
+            </div>
+            <span className="text-xs font-bold bg-indigo-50 text-indigo-700 px-3 py-1 rounded-xl border border-indigo-200">
+              ⏱ Trazabilidad en Minutos
+            </span>
+          </div>
+
+          <div className="space-y-4 pt-2">
+            {filteredLeads.slice(0, 6).map((lead, idx) => {
+              const leadCandidates = getLeadCandidates(candidates, lead.id);
+              const firstCand = leadCandidates[0];
+
+              return (
+                <div key={lead.id} className="flex items-start gap-3 pl-2">
+                  <div className="flex flex-col items-center">
+                    <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center border border-indigo-300">
+                      {idx + 1}
+                    </div>
+                    {idx < 5 && <div className="w-0.5 h-12 bg-slate-200 my-1" />}
+                  </div>
+                  <div className="flex-1 p-3 bg-slate-50 rounded-2xl border border-slate-200">
+                    <div className="flex items-center justify-between">
+                      <strong className="text-xs text-slate-900">{firstCand ? formatCandidateName(firstCand) : formatTutorName(lead)}</strong>
+                      <span className="text-[10px] font-mono text-slate-400">Ciclo 2026-2027</span>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-0.5 leading-snug">
+                      {lead.notes || 'Aspirante registrado y validado en el pipeline directivo.'}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* VISTA 5: AUTOMATIZACIONES */}
+      {activeTab === 'automations' && (
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h4 className="font-black text-slate-900 text-sm">Automatizaciones del Pipeline de Admisiones</h4>
+              <p className="text-xs text-slate-500 mt-0.5">Reglas automáticas de notificación, escalamiento SLA y sincronización interdepartamental.</p>
+            </div>
+            <span className="text-xs font-bold bg-amber-50 text-amber-800 px-3 py-1 rounded-xl border border-amber-200">
+              ⚡ 4 Reglas Activas
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            {[
+              { title: 'Recordatorio WhatsApp Automático', desc: 'Envía mensaje 24 horas antes del recorrido de campus programado con ubicación GPS de la sede.', active: true },
+              { title: 'Alerta de Estancamiento >7 días', desc: 'Notifica a la Dirección de Admisiones cuando un aspirante con alta prioridad no avanza de fase.', active: true },
+              { title: 'Puente Financiero SPEI & Matrícula', desc: 'Al pasar a Fase 5, concilia automáticamente la ficha bancaria y habilita el padrón SEP.', active: true },
+              { title: 'Sincronización con Expediente SEP', desc: 'Valida CURP y acta de nacimiento contra el padrón escolar de la Dirección General.', active: true }
+            ].map((rule, idx) => (
+              <div key={idx} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <strong className="text-xs text-slate-900 flex items-center gap-1.5">
+                    <Zap size={14} className="text-amber-500" />
+                    {rule.title}
+                  </strong>
+                  <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full">
+                    Activa
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 leading-snug">{rule.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* VISTA 6: EMBUDO FUNNEL 360° */}
+      {activeTab === 'funnel' && (
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h4 className="text-base font-black text-slate-900">Embudo Gráfico de Conversión & Proyección 360°</h4>
+              <p className="text-xs text-slate-500">Métricas acumuladas del pipeline de admisiones para {selectedCampusName}.</p>
+            </div>
+            <span className="text-xs font-mono font-bold bg-blue-50 text-blue-700 px-3 py-1 rounded-xl border border-blue-200">
+              Total: {filteredLeads.length} Aspirantes
+            </span>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            {activePhases.map((phase) => {
+              const count = (leadsByPhase.get(phase.num) || []).length;
+              const pct = filteredLeads.length > 0 ? Math.round((count / filteredLeads.length) * 100) : 0;
+
+              return (
+                <div key={phase.id} className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center font-mono">
+                        {phase.num}
+                      </span>
+                      <strong className="text-slate-900 text-sm">{phase.title}</strong>
+                      <span className="text-xs text-slate-400">({phase.dept})</span>
+                    </div>
+                    <div className="text-right font-mono">
+                      <span className="text-sm font-black text-slate-900">{count} expedientes</span>
+                      <span className="text-xs text-slate-500 block">({pct}% del volumen total)</span>
+                    </div>
+                  </div>
+                  <div className="w-full bg-slate-200/70 h-2.5 rounded-full overflow-hidden">
+                    <div
+                      className="bg-gradient-to-r from-blue-600 to-indigo-600 h-full rounded-full transition-all duration-500"
+                      style={{ width: `${Math.max(5, pct)}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* VISTA 7: BÓVEDA EXPEDIENTES (SEP) */}
+      {activeTab === 'vault' && (
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h4 className="text-base font-black text-slate-900">Bóveda de Expedientes Digitales & Control SEP</h4>
+              <p className="text-xs text-slate-500">Checklist normativo de documentación oficial requerida para validación de matrícula.</p>
+            </div>
+            <span className="text-xs font-bold bg-emerald-50 text-emerald-700 px-3 py-1 rounded-xl border border-emerald-200">
+              ✓ Estándar SEP NEM 2024
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            {[
+              { doc: 'Acta de Nacimiento (Certificada)', req: 'Obligatorio', desc: 'Validación en RENAPO para cotejo de identidad oficial.' },
+              { doc: 'CURP Certificada Oficial', req: 'Obligatorio', desc: 'Clave única para expediente del Sistema de Información SEP.' },
+              { doc: 'Cartilla de Vacunación Actualizada', req: 'Salud Escolar', desc: 'Registro médico para botiquín y seguros de accidentes escolares.' },
+              { doc: 'Boleta de Grado Anterior & Carta No Adeudo', req: 'Académico', desc: 'Acreditación del ciclo escolar precedente y estatus financiero.' },
+              { doc: 'Comprobante de Domicilio Vigente', req: 'Administrativo', desc: 'Validación de residencia familiar para logística de rutas.' },
+              { doc: 'Dictamen Psicopedagógico de Admisión', req: 'Institucional', desc: 'Evaluación de habilidades y recomendaciones curriculares.' },
+            ].map((item, idx) => (
+              <div key={idx} className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <strong className="text-slate-900 text-xs">{item.doc}</strong>
+                  <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded">
+                    {item.req}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 leading-snug">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* VISTA 8: ASISTENTE PEDAGÓGICO IA */}
+      {activeTab === 'ai_assistant' && (
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-purple-50 border border-purple-200 text-purple-600 flex items-center justify-center">
+                <Wand2 size={20} />
+              </div>
+              <div>
+                <h4 className="text-base font-black text-slate-900">Asistente Pedagógico IA de Admisiones & Conversión</h4>
+                <p className="text-xs text-slate-500">Sugerencias pedagógicas y guiones de contacto personalizados para aumentar la tasa de matrícula.</p>
               </div>
             </div>
-          );
-        })}
-      </div>
+            <span className="text-xs font-mono font-bold bg-purple-50 text-purple-700 border border-purple-200 px-3 py-1 rounded-xl">
+              Motor de IA Hermético (0 Tokens Comerciales)
+            </span>
+          </div>
 
-      {/* DRAWER / MODAL DE DETALLE DEL EXPEDIENTE DIGITAL (MODO CLARO) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+            <div className="p-4 bg-purple-50/50 rounded-2xl border border-purple-200/80 space-y-2">
+              <span className="text-xs font-bold text-purple-900 flex items-center gap-1.5">
+                <Sparkles size={14} className="text-purple-600" />
+                Guion de Seguimiento WhatsApp
+              </span>
+              <p className="text-xs text-slate-600 leading-snug">
+                "Buen día Familia [Apellido], con gusto le compartimos los horarios disponibles para el recorrido guiado en [Campus] y conocer nuestras aulas Maker y laboratorio de ciencias."
+              </p>
+            </div>
+
+            <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-200/80 space-y-2">
+              <span className="text-xs font-bold text-indigo-900 flex items-center gap-1.5">
+                <ShieldCheck size={14} className="text-indigo-600" />
+                Manejo de Objeción de Aranceles
+              </span>
+              <p className="text-xs text-slate-600 leading-snug">
+                "Enfatizar que la colegiatura incluye seguro escolar, plataforma digital gamificada, certificación bilingüe y talleres extracurriculares sin cobros sorpresa."
+              </p>
+            </div>
+
+            <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-200/80 space-y-2">
+              <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                <TrendingUp size={14} className="text-blue-600" />
+                Alerta de Estancamiento SLA
+              </span>
+              <p className="text-xs text-slate-600 leading-snug">
+                "Los aspirantes con más de 7 días en Fase 3 (Diagnóstico) tienen 3.2x más riesgo de enfriamiento. Se recomienda llamada telefónica directa de la Dirección Académica."
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* 5. DRAWER / MODAL DE DETALLE DEL EXPEDIENTE DIGITAL 360°  */}
+      {/* ========================================================= */}
       {selectedDetailLead && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
           <div className="bg-white border border-slate-200 rounded-3xl max-w-2xl w-full shadow-2xl text-slate-900 overflow-hidden">
             {/* Header del Drawer */}
             <div className="p-6 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-purple-50 border border-purple-200 text-purple-600 flex items-center justify-center shadow-xs">
-                  {isCorporate ? <Briefcase size={20} /> : <Users size={20} />}
+                <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center text-xl font-bold font-mono">
+                  {selectedDetailLead.id?.slice(0, 2).toUpperCase() || 'EX'}
                 </div>
                 <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-bold text-slate-400">
+                      {selectedDetailLead.id?.startsWith('EXP-') ? selectedDetailLead.id : `EXP-ADM-2026-${selectedDetailLead.id.slice(-4).toUpperCase()}`}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800">
+                      Pipeline Activo
+                    </span>
+                  </div>
                   <h3 className="text-base font-black text-slate-900">
-                    {isCorporate
-                      ? `Expediente Profesional & Selección 360° • ${formatTutorName(selectedDetailLead)}`
-                      : `Expediente Familiar 360° • ${formatTutorName(selectedDetailLead)}`}
+                    Expediente Familiar: {formatTutorName(selectedDetailLead)}
                   </h3>
-                  <p className="text-xs text-slate-500">
-                    Folio: <span className="font-mono text-purple-700 font-bold">{selectedDetailLead.id}</span> •{' '}
-                    {isCorporate ? 'Planta/Sede' : 'Sede'}: {selectedDetailLead.campus_name || selectedCampusName}
-                  </p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedDetailLead(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-200/60 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
             {/* Contenido del Drawer */}
-            <div className="p-6 space-y-4 text-xs max-h-[75vh] overflow-y-auto">
-              {/* Información Personal o Corporativa */}
-              <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200 space-y-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 block">
-                  {isCorporate ? 'Datos del Candidato & Puesto de Interés' : 'Datos del Tutor Principal'}
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <span className="text-slate-500 text-[10px] block">
-                      {isCorporate ? 'Candidato:' : 'Nombre Completo:'}
-                    </span>
-                    <strong className="text-slate-900 text-xs">{formatTutorName(selectedDetailLead)}</strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 text-[10px] block">
-                      {isCorporate ? 'Departamento / Área:' : 'Parentesco:'}
-                    </span>
-                    <strong className="text-slate-900 text-xs">
-                      {selectedDetailLead.department || (isCorporate ? 'Operaciones Técnicas' : (selectedDetailLead.tutor_relationship || 'Tutor'))}
-                    </strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 text-[10px] block">Teléfono / WhatsApp:</span>
-                    <strong className="text-slate-900 text-xs">{selectedDetailLead.tutor_phone || 'Sin registrar'}</strong>
-                  </div>
+            <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+              {/* Información Familiar & Contacto */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase">Tutor Principal</span>
+                  <div className="font-bold text-slate-900">{formatTutorName(selectedDetailLead)}</div>
+                  <div className="text-slate-500">{selectedDetailLead.tutor_relationship || 'Padre de Familia'}</div>
+                </div>
+
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase">Contacto Directo</span>
+                  <div className="font-bold text-slate-900 font-mono">{selectedDetailLead.tutor_phone || 'Sin teléfono'}</div>
+                  <div className="text-slate-500 truncate">{selectedDetailLead.tutor_email || 'Sin correo registrado'}</div>
                 </div>
               </div>
 
-              {/* Aspirantes / Hijos Asociados o Perfil Técnico del Candidato */}
-              <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200 space-y-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 block">
-                  {isCorporate
-                    ? 'Evaluación Técnica, Salario & Competencias'
-                    : `Aspirantes Registrados (${getLeadCandidates(candidates, selectedDetailLead.id).length})`}
-                </span>
+              {/* Lista de Hijos / Aspirantes Asociados */}
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  Aspirantes Registrados en esta Familia
+                </h4>
                 <div className="space-y-2">
                   {getLeadCandidates(candidates, selectedDetailLead.id).map(cand => (
-                    <div key={cand.id} className="p-3 bg-white rounded-xl border border-slate-200 space-y-2 shadow-2xs">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                    <div key={cand.id} className="p-3 rounded-xl border border-slate-200 bg-slate-50/50 flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <GraduationCap size={16} className="text-blue-600" />
                         <div>
-                          <strong className="text-slate-900 text-xs block">
-                            {isCorporate ? (cand.position_title || formatCandidateName(cand)) : formatCandidateName(cand)}
-                          </strong>
-                          <span className="text-[11px] text-slate-500">
-                            {isCorporate ? (
-                              <>
-                                Salario Propuesto: <strong className="text-emerald-600 font-mono">{cand.proposed_salary || selectedDetailLead.proposed_salary || '$45,000 MXN / mes'}</strong> • Nivel: {cand.target_grade || 'Senior'}
-                              </>
-                            ) : (
-                              <>
-                                Grado Solicitado: <strong className="text-purple-700">{cand.target_level} {cand.target_grade}</strong> • Ciclo: {selectedDetailLead.target_academic_year || '2026-2027'}
-                              </>
-                            )}
-                          </span>
+                          <strong className="text-xs text-slate-900">{formatCandidateName(cand)}</strong>
+                          <span className="text-[11px] text-slate-500 block">Grado: {cand.target_level} {cand.target_grade}</span>
                         </div>
-                        <span className="px-2 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-lg text-[10px] font-bold self-start sm:self-auto">
-                          {isCorporate
-                            ? (cand.technical_score ? `Score Técnico: ${cand.technical_score}/100` : cand.evaluation_status === 'approved' ? 'Aprobado ✓' : 'En Evaluación')
-                            : (cand.evaluation_result ? `Dictamen: ${cand.evaluation_result}` : cand.evaluation_status === 'approved' ? 'Aprobado ✓' : 'En Diagnóstico')}
-                        </span>
                       </div>
-
-                      {/* Certificaciones técnicas en modo corporativo */}
-                      {isCorporate && cand.certifications && cand.certifications.length > 0 && (
-                        <div className="pt-2 border-t border-slate-100 flex flex-wrap gap-1.5">
-                          {cand.certifications.map((cert, cidx) => (
-                            <span key={cidx} className="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded text-[9px] font-semibold flex items-center gap-1">
-                              <BadgeCheck size={10} className="text-blue-500" />
-                              {cert}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Dictamen del evaluador */}
-                      {cand.evaluation_result && (
-                        <p className="text-[11px] text-slate-600 italic bg-slate-50 p-2 rounded border border-slate-200">
-                          "{cand.evaluation_result}"
-                        </p>
-                      )}
+                      <span className="text-[10px] font-bold px-2 py-0.5 bg-blue-100 text-blue-800 rounded">
+                        Ciclo 2026-2027
+                      </span>
                     </div>
                   ))}
-
                   {getLeadCandidates(candidates, selectedDetailLead.id).length === 0 && (
-                    <div className="text-slate-400 text-[11px] italic">
-                      {isCorporate ? 'Perfil técnico en proceso de carga.' : 'Aspirante en proceso de perfilado inicial.'}
+                    <div className="p-3 text-center text-xs text-slate-400 border border-dashed rounded-xl">
+                      No hay candidatos específicos vinculados.
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Bitácora y Observaciones */}
-              <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200 space-y-1.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 block">
-                  Notas y Bitácora del Caso
-                </span>
-                <p className="text-slate-700 text-xs bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
-                  {selectedDetailLead.notes || 'Sin observaciones registradas.'}
-                </p>
-              </div>
+              {/* Notas del Expediente */}
+              {selectedDetailLead.notes && (
+                <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-200/60 text-xs">
+                  <span className="text-[10px] font-bold text-indigo-700 uppercase block mb-1">Notas de Admisiones</span>
+                  <p className="text-slate-700 leading-relaxed">{selectedDetailLead.notes}</p>
+                </div>
+              )}
             </div>
 
             {/* Footer con Acciones */}
-            <div className="p-4 bg-slate-50/80 border-t border-slate-200 flex items-center justify-between text-xs">
-              <span className="text-slate-500 text-[11px]">
-                Prioridad actual: <strong className="text-slate-900">{PRIORITY_CONFIG[selectedDetailLead.priority].label}</strong>
-              </span>
-              <div className="flex items-center gap-2">
-                {isCorporate && selectedDetailLead.stage !== 'enrolled' && (
-                  <button
-                    onClick={() => {
-                      changeLeadStage(selectedDetailLead.id, 'enrolled');
-                      executeEnrollmentBridge({ leadId: selectedDetailLead.id, paymentMethod: 'SPEI', cfdiRequested: true });
-                      onTriggerToast(`💼 ¡Contratación Formalizada! ${formatTutorName(selectedDetailLead)} dado de alta en nómina e IMSS.`);
-                      setSelectedDetailLead(null);
-                    }}
-                    className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl shadow-xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <UserCheck size={14} />
-                    <span>Contratar & Alta en Nómina</span>
-                  </button>
-                )}
-                <button
-                  onClick={() => setSelectedDetailLead(null)}
-                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl cursor-pointer"
-                >
-                  Cerrar Expediente
-                </button>
-              </div>
+            <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
+              <button
+                onClick={() => setSelectedDetailLead(null)}
+                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+              >
+                Cerrar
+              </button>
             </div>
           </div>
         </div>

@@ -2321,6 +2321,15 @@ export default function SuperUserAdminPage() {
                 <span>Email Institucional</span>
               </button>
 
+              <button
+                onClick={() => setOverviewMode('executive')}
+                className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-black shadow-md shadow-amber-500/20 transition-all hover:scale-102 cursor-pointer shrink-0"
+                title="Conmutar a Visión Ejecutiva CEO"
+              >
+                <TrendingUp className="h-4 w-4 text-slate-950" />
+                <span>Visión CEO</span>
+              </button>
+
               <Link
                 href="/teacher"
                 className="flex items-center gap-1 px-3 sm:px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shadow-lg shadow-indigo-500/25 transition-all hover:scale-102 shrink-0"
