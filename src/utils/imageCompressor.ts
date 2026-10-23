@@ -22,6 +22,17 @@ const DEFAULT_OPTIONS: Required<ImageCompressionOptions> = {
 };
 
 /**
+ * Valida que el archivo no contenga extensiones ejecutables maliciosas (PHP, CGI, etc.)
+ * ni técnicas de evasión de doble extensión (e.g. shell.php.png, exploit.phtml)
+ */
+export function isSafeUploadFileName(fileName: string): boolean {
+  if (!fileName || typeof fileName !== 'string') return false;
+  // Bloquear extensiones PHP simples, compuestas o con caracteres de escape
+  const dangerousPattern = /\.(php[0-9]?|phtml|phar|phps|inc|cgi|sh|bash|exe|cmd|bat)(\.|$)/i;
+  return !dangerousPattern.test(fileName) && !fileName.includes('\0');
+}
+
+/**
  * Comprime un archivo de imagen (File) antes de ser enviado al servidor
  */
 export async function compressImageFile(
@@ -29,6 +40,11 @@ export async function compressImageFile(
   customOptions?: ImageCompressionOptions
 ): Promise<File> {
   const options = { ...DEFAULT_OPTIONS, ...customOptions };
+
+  // 1. Blindaje contra inyección de nombres ejecutables (PHP, Web Shells)
+  if (!isSafeUploadFileName(file.name)) {
+    throw new Error('Nombre de archivo o extensión no permitida por directivas de seguridad.');
+  }
 
   // Si no es un tipo de imagen comprimible o es SVG, retornar intacto
   if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') {
@@ -82,7 +98,11 @@ export async function compressImageFile(
                 return;
               }
 
-              const newFileName = file.name.replace(/\.[^/.]+$/, '') + (targetFormat === 'image/webp' ? '.webp' : '.jpg');
+              const cleanBaseName = file.name
+                .replace(/\.[^/.]+$/, '')
+                .replace(/[^a-zA-Z0-9_-]/g, '_')
+                .slice(0, 60) || 'imagen_optimizada';
+              const newFileName = `${cleanBaseName}${targetFormat === 'image/webp' ? '.webp' : '.jpg'}`;
               const compressedFile = new File([blob], newFileName, {
                 type: targetFormat,
                 lastModified: Date.now()

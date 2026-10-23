@@ -83,7 +83,93 @@ function isPublicOrAuthPath(pathname: string): boolean {
   );
 }
 
+/**
+ * ============================================================================
+ * BLINDAJE PERIMETRAL ANTI-PHP (PHP ZERO-TOLERANCE SHIELD)
+ * ============================================================================
+ * iSkool opera 100% sobre arquitectura moderna Next.js / TypeScript / React.
+ * No utiliza, no ejecuta y no expone ningún entorno ni intérprete PHP en el servidor.
+ * Este filtro intercepta y neutraliza de forma inmediata y en O(1) cualquier sondeo
+ * automatizado de botnets, escaneo de CMS vulnerables (.php, .phtml, .phar) o
+ * inyección de argumentos CGI (CVE-2024-4577), protegiendo la CPU y memoria del sistema.
+ */
+function isPhpAttackVector(pathname: string, search: string): boolean {
+  const lowerPath = pathname.toLowerCase();
+  
+  // 1. Extensiones PHP ejecutables y formatos afines
+  if (/\.(php[0-9]?|phtml|phar|phps|inc|cgi)$/i.test(lowerPath)) {
+    return true;
+  }
+
+  // 2. Rutas clásicas de sondeo de escáneres automáticos de vulnerabilidades PHP
+  if (
+    lowerPath.includes('/wp-login') ||
+    lowerPath.includes('/wp-admin') ||
+    lowerPath.includes('/xmlrpc') ||
+    lowerPath.includes('/phpmyadmin') ||
+    lowerPath.includes('/pma') ||
+    lowerPath.includes('/adminer') ||
+    lowerPath.includes('/eval-stdin') ||
+    lowerPath.includes('/phpinfo') ||
+    lowerPath.includes('/cgi-bin') ||
+    lowerPath.includes('/phpunit') ||
+    lowerPath.includes('/vendor/phpunit') ||
+    lowerPath.includes('/alfa.php') ||
+    lowerPath.includes('/c99.php') ||
+    lowerPath.includes('/r57.php') ||
+    lowerPath.includes('/wso.php') ||
+    lowerPath.includes('/shell.php')
+  ) {
+    return true;
+  }
+
+  // 3. Inyección de argumentos PHP CGI (CVE-2024-4577) y directivas de inclusión remota
+  const lowerSearch = search.toLowerCase();
+  if (
+    lowerSearch.includes('allow_url_include') ||
+    lowerSearch.includes('auto_prepend_file') ||
+    lowerSearch.includes('auto_append_file') ||
+    lowerSearch.includes('php://input') ||
+    lowerSearch.includes('php://filter') ||
+    lowerSearch.includes('php-cgi') ||
+    lowerSearch.includes('-d+allow_url_include') ||
+    lowerSearch.includes('-d+auto_prepend_file')
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+function createBlockedPhpResponse(): NextResponse {
+  return new NextResponse(
+    JSON.stringify({
+      error: 'Not Found',
+      code: 'RESOURCE_NOT_FOUND',
+      message: 'El recurso solicitado no existe en la plataforma educativa.'
+    }),
+    {
+      status: 404,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Robots-Tag': 'noindex, nofollow, noarchive',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'Cache-Control': 'public, max-age=86400, s-maxage=86400',
+        'X-Shield': 'ISKOOL-DEFENSE-PERIMETER'
+      }
+    }
+  );
+}
+
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Intercepción Inmediata: Blindaje Perimetral Anti-PHP
+  if (isPhpAttackVector(pathname, request.nextUrl.search)) {
+    return createBlockedPhpResponse();
+  }
+
   // 0. Sanitización Perimetral Zero-Trust: Eliminar cualquier cabecera x-resolved-tenant spoofed del cliente entrante
   try {
     request.headers.delete('x-resolved-tenant');
@@ -91,8 +177,6 @@ export async function middleware(request: NextRequest) {
   } catch {
     // Si los headers son inmutables en tiempo de ejecución, se garantiza su purga en requestHeaders abajo
   }
-
-  const { pathname } = request.nextUrl;
 
   // Excluir el CRM de Admisiones para demostración y evaluación sin fricción
   if (pathname === '/admin/crm' || pathname.startsWith('/admin/crm') || pathname === '/crm' || pathname.startsWith('/crm')) {
