@@ -3,6 +3,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   Sparkles, 
   Play, 
@@ -19,7 +20,8 @@ import {
   ExternalLink,
   ChevronRight,
   CheckCircle2,
-  FileText
+  FileText,
+  Globe
 } from 'lucide-react';
 
 import { 
@@ -34,6 +36,7 @@ import {
   formatCoins
 } from '@/lib/redisenosSandboxData';
 
+import { REDESIGNS_EXECUTIVE_SPECS } from '@/lib/redisenosComprehensiveData';
 import { gamificationAudio } from '@/lib/redisenosAudio';
 import { GamificationStoreModal } from '@/components/redisenos/GamificationStoreModal';
 import { GamificationCombatArena } from '@/components/redisenos/GamificationCombatArena';
@@ -42,8 +45,11 @@ import { TeacherPerspectiveModal } from '@/components/redisenos/TeacherPerspecti
 import { CeoMontessoriBridgeModal } from '@/components/redisenos/CeoMontessoriBridgeModal';
 import { RedesignDocViewerModal } from '@/components/redisenos/RedesignDocViewerModal';
 import { InteractiveTasksModal } from '@/components/redisenos/InteractiveTasksModal';
+import { LiveRedesignPlayerModal } from '@/components/redisenos/LiveRedesignPlayerModal';
 
 export default function RedisenosGamificadosPage() {
+  const router = useRouter();
+
   // Estado del Estudiante Activo (Mateo, Sofía o Rodrigo)
   const [students, setStudents] = useState<StudentProfile[]>(INITIAL_STUDENTS);
   const [selectedStudentId, setSelectedStudentId] = useState<string>(INITIAL_STUDENTS[0].id);
@@ -62,6 +68,8 @@ export default function RedisenosGamificadosPage() {
 
   // Modo Prueba en Vivo Activado
   const [isTestModeActive, setIsTestModeActive] = useState(false);
+  const [isLivePlayerOpen, setIsLivePlayerOpen] = useState(false);
+  const [livePlayerRedesign, setLivePlayerRedesign] = useState<RedesignDetail | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
 
   const activeStudent = students.find(s => s.id === selectedStudentId) || students[0];
@@ -146,6 +154,32 @@ export default function RedisenosGamificadosPage() {
     setIsDocViewerOpen(true);
   };
 
+  // Ejecutar Entorno en Vivo Dedicado
+  const handleLaunchLive = (redesign: RedesignDetail) => {
+    gamificationAudio.playLevelUpSound();
+    if (redesign.key === '01') {
+      router.push('/redisenos_gamificados/el_reino_de_las_huellitas');
+      return;
+    }
+    if (redesign.key === '02') {
+      router.push('/redisenos_gamificados/la_isla_de_los_juguetes_magicos');
+      return;
+    }
+    if (redesign.key === '03') {
+      router.push('/redisenos_gamificados/Guardianes_Elementales');
+      return;
+    }
+    const spec = REDESIGNS_EXECUTIVE_SPECS[redesign.key];
+    if (spec && spec.liveDemoUrl) {
+      router.push(spec.liveDemoUrl);
+      return;
+    }
+    setLivePlayerRedesign(redesign);
+    setIsLivePlayerOpen(true);
+    setIsTestModeActive(true);
+    showNotification(`¡Simulador en Vivo Activado: ${redesign.title}!`);
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-purple-500 selection:text-white">
       
@@ -175,17 +209,13 @@ export default function RedisenosGamificadosPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => {
-                gamificationAudio.playLevelUpSound();
-                setIsTestModeActive(prev => !prev);
+                const target = selectedRedesign || REDESIGNS_LIST[0];
+                handleLaunchLive(target);
               }}
-              className={`px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-xl ${
-                isTestModeActive
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-emerald-500/30 ring-2 ring-emerald-300 scale-105'
-                  : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-purple-600/30 hover:scale-105'
-              }`}
+              className="px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-purple-600 hover:from-emerald-400 hover:to-purple-500 text-slate-950 hover:text-white shadow-emerald-500/30 hover:scale-105 active:scale-95 ring-2 ring-emerald-400/50"
             >
-              <Play className={`w-4 h-4 ${isTestModeActive ? 'fill-slate-950' : 'fill-white'}`} />
-              {isTestModeActive ? 'Modo Prueba Activo' : 'Prueba'}
+              <Play className="w-4 h-4 fill-current animate-pulse" />
+              Probar en Vivo (Prueba)
             </button>
 
             {/* Acceso a Métricas CEO del Colegio Montessori */}
@@ -354,41 +384,86 @@ export default function RedisenosGamificadosPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {REDESIGNS_LIST.map((r, idx) => (
-              <button
-                key={r.key}
-                onClick={() => handleOpenDoc(r)}
-                className="group relative p-4 rounded-3xl bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-purple-500/80 text-left transition-all duration-200 flex flex-col justify-between shadow-lg hover:shadow-purple-500/10 hover:-translate-y-1"
-              >
-                <div>
-                  <div className="relative w-full h-32 rounded-2xl overflow-hidden mb-3 bg-slate-950 border border-slate-800">
-                    <img
-                      src={r.hubImage}
-                      alt={r.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-black/70 backdrop-blur-md text-[10px] font-bold text-white border border-white/10">
-                      #{r.key}
+            {REDESIGNS_LIST.map((r) => {
+              const spec = REDESIGNS_EXECUTIVE_SPECS[r.key];
+              return (
+                <div
+                  key={r.key}
+                  onClick={() => handleOpenDoc(r)}
+                  className="group relative p-4 rounded-3xl bg-slate-900/90 hover:bg-slate-800/95 border border-slate-800 hover:border-purple-500/80 text-left transition-all duration-200 flex flex-col justify-between shadow-xl hover:shadow-purple-500/10 hover:-translate-y-1 cursor-pointer"
+                >
+                  <div>
+                    {/* Imagen Maestra Preservada Exacta */}
+                    <div className="relative w-full h-36 rounded-2xl overflow-hidden mb-3 bg-slate-950 border border-slate-800 shadow-inner">
+                      <img
+                        src={r.hubImage}
+                        alt={r.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-black/75 backdrop-blur-md text-[10px] font-black text-amber-300 border border-white/10 shadow-md">
+                        #{r.key}
+                      </div>
+                      <div className="absolute bottom-1.5 left-1.5 right-1.5 px-2 py-1 rounded-xl bg-black/75 backdrop-blur-md text-[9px] font-bold text-slate-200 border border-white/10 truncate flex items-center gap-1">
+                        <Globe className="w-3 h-3 text-cyan-400 shrink-0" />
+                        <span className="truncate">{spec?.worldBenchmarkSummary || r.worldBenchmark}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-1 mb-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-purple-400">
+                        {r.level}
+                      </span>
+                      <span className="text-[9px] font-bold text-slate-400">
+                        {spec?.ages || 'SEP 2026'}
+                      </span>
+                    </div>
+
+                    <h3 className="font-extrabold text-white text-sm leading-snug mb-1.5 group-hover:text-purple-300 transition-colors">
+                      {r.title.replace(/^\d+\s*/, '')}
+                    </h3>
+
+                    {/* Resumen pedagógico del archivo .md */}
+                    <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed mb-2.5">
+                      {r.tagline}
+                    </p>
+
+                    {/* Metáfora y Mecánica Forense del .md */}
+                    <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800/80 mb-3 space-y-1">
+                      <div className="text-[10px] text-slate-400 leading-tight">
+                        <strong className="text-slate-300">Metáfora:</strong> {spec?.identity.gameMetaphor ? spec.identity.gameMetaphor.slice(0, 75) + '...' : 'Entorno gamificado curricular'}
+                      </div>
+                      <div className="text-[10px] text-slate-400 leading-tight">
+                        <strong className="text-purple-300">Mecánica:</strong> {spec?.identity.coreLevelMechanic ? spec.identity.coreLevelMechanic.slice(0, 65) + '...' : 'Progresión por logros formativos'}
+                      </div>
                     </div>
                   </div>
 
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400 block mb-1">
-                    {r.level}
-                  </span>
-                  <h3 className="font-extrabold text-white text-sm leading-snug mb-1 group-hover:text-purple-300 transition-colors">
-                    {r.title.replace(/^\d+\s*/, '')}
-                  </h3>
-                  <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed mb-3">
-                    {r.tagline}
-                  </p>
-                </div>
+                  <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-bold gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenDoc(r);
+                      }}
+                      className="text-purple-400 hover:text-purple-300 flex items-center gap-1 text-[11px] font-black"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      <span>Ficha</span>
+                    </button>
 
-                <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-purple-400 font-bold">
-                  <span>Abrir Documento</span>
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleLaunchLive(r);
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-[11px] flex items-center gap-1 shadow-md transition-all hover:scale-105 active:scale-95 ring-1 ring-emerald-300/40"
+                    >
+                      <Play className="w-3 h-3 fill-slate-950" />
+                      Probar en Vivo
+                    </button>
+                  </div>
                 </div>
-              </button>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -535,11 +610,58 @@ export default function RedisenosGamificadosPage() {
         isOpen={isDocViewerOpen}
         onClose={() => setIsDocViewerOpen(false)}
         onLaunchTestMode={(key) => {
+          const target = REDESIGNS_LIST.find(r => r.key === key) || selectedRedesign || REDESIGNS_LIST[0];
+          setLivePlayerRedesign(target);
+          setIsLivePlayerOpen(true);
           setIsTestModeActive(true);
-          showNotification(`Activaste el Modo Prueba para el Rediseño #${key}`);
+          showNotification(`¡Simulador en Vivo Activado: ${target.title}!`);
         }}
         onOpenTeacherView={(key) => {
           setTeacherModalRedesignKey(key);
+        }}
+      />
+
+      <LiveRedesignPlayerModal
+        isOpen={isLivePlayerOpen}
+        onClose={() => setIsLivePlayerOpen(false)}
+        redesign={livePlayerRedesign}
+        allRedesigns={REDESIGNS_LIST}
+        onSelectRedesign={(r) => setLivePlayerRedesign(r)}
+        student={activeStudent}
+        onRewardStudent={(coins, xp, stars) => {
+          setStudents(prev => prev.map(s => {
+            if (s.id !== activeStudent.id) return s;
+            const newXp = s.xp + xp;
+            const didLevelUp = newXp >= s.maxXp;
+            return {
+              ...s,
+              coins: s.coins + coins,
+              xp: didLevelUp ? newXp - s.maxXp : newXp,
+              stars: s.stars + stars,
+              stats: {
+                ...s.stats,
+                tasksCompleted: s.stats.tasksCompleted + 1
+              }
+            };
+          }));
+          showNotification(`¡Recompensa ganada en simulación! +${coins} 🪙 y +${xp} XP`);
+        }}
+        onOpenStore={() => {
+          setIsLivePlayerOpen(false);
+          setIsStoreOpen(true);
+        }}
+        onOpenCombat={() => {
+          setIsLivePlayerOpen(false);
+          setIsCombatOpen(true);
+        }}
+        onOpenTeacherStudio={() => {
+          setIsLivePlayerOpen(false);
+          setIsTeacherStudioOpen(true);
+        }}
+        onOpenDocViewer={(r) => {
+          setIsLivePlayerOpen(false);
+          setSelectedRedesign(r);
+          setIsDocViewerOpen(true);
         }}
       />
 

@@ -109,6 +109,11 @@ class GamificationAudioManager {
     });
   }
 
+  // Sonido de victoria en batalla / Fanfarria de victoria didáctica
+  playVictorySound() {
+    this.playLevelUpSound();
+  }
+
   // Sonido de error pedagógico amable
   playErrorSound() {
     const ctx = this.getContext();
