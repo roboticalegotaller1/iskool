@@ -133,7 +133,7 @@ class CognitiveAIEmailTriageServiceSingleton {
   }
 
   /**
-   * Extrae texto JSON de la respuesta de Gemini tolerando thought blocks
+   * Extrae texto JSON de la respuesta del Motor de IA Pedagógica tolerando thought blocks
    */
   private extractTextFromGeminiResponse(data: any): string {
     const parts = data.candidates?.[0]?.content?.parts || [];
@@ -362,7 +362,7 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
       try {
         parsed = JSON.parse(rawText);
       } catch (pErr) {
-        console.warn('No se pudo parsear el JSON de Gemini, usando fallback:', pErr);
+        console.warn('No se pudo parsear el JSON del Motor de IA Pedagógica, usando fallback:', pErr);
       }
 
       const cognitiveQuadrant = this.normalizeQuadrant(parsed.quadrant);
@@ -435,7 +435,7 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
         }
       };
     } catch (err: any) {
-      console.warn('Error en la llamada a Gemini Email Triage:', err.message);
+      console.warn('Error en la llamada al Motor de IA Pedagógica para Email Triage:', err.message);
       this.evaluatedEmailIds.add(emailKey);
       this.saveEvaluatedIdsToDisk();
       return {

@@ -11,12 +11,12 @@ fase: "4"
 marco_curricular: "BICULTURAL_IBIME"
 pda_code: "PDA-CIE-F4-4TO-035"
 signature_sha256: "26ce80fb54f8614ee7614fcd5b3928126fcbd862be48e9c60e4beff2cb033c25"
-created_at: "2026-10-21T11:03:28.754Z"
+created_at: "2026-10-23T01:57:09.257Z"
 ---
 
 # 📚 Water Filtration and Eco-Engineering (Adaptación Bicultural IBIME)
 
-> **Docente Titular:** [[Prof_Ana_Sofia_Martinez]]  
+> **Docente Titular:** [[Prof. Ana Sofía Martínez]]  
 > **Institución:** IBIME (CCT: 09PPR1492Z)  
 > **Asignatura y Grado:** CIENCIAS • Grado 4  
 > **Marco Curricular:** BICULTURAL_IBIME  

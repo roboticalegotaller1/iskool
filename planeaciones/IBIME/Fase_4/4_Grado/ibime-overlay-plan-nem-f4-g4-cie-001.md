@@ -11,12 +11,12 @@ fase: "4"
 marco_curricular: "BICULTURAL_IBIME"
 pda_code: "PDA-CIE-F4-4TO-035"
 signature_sha256: "847b7aee46bd3fcfff3ae014175a18a36e9d9f7ba0d786f1c9cad9ced41f7c91"
-created_at: "2026-10-21T11:03:29.298Z"
+created_at: "2026-10-23T01:57:40.850Z"
 ---
 
 # 📚 Water Filtration and Eco-Engineering (IBIME Sovereign Overlay)
 
-> **Docente Titular:** [[Prof_Gabriela_Morales]]  
+> **Docente Titular:** [[Prof. Gabriela Morales]]  
 > **Institución:** IBIME (CCT: 09PPR1492Z)  
 > **Asignatura y Grado:** CIENCIAS • Grado 4  
 > **Marco Curricular:** BICULTURAL_IBIME  

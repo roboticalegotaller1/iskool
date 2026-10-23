@@ -11,12 +11,12 @@ fase: "5"
 marco_curricular: "NEM 2024"
 pda_code: "PDA-MAT-F5-5TO-012"
 signature_sha256: "d83d576356fb91c19b3aebe18ecfb1ef2a96986841584775caec7bc00d39033f"
-created_at: "2026-10-21T11:03:28.756Z"
+created_at: "2026-10-23T01:57:09.258Z"
 ---
 
 # 📚 Fracciones Equivalentes y Representación en la Recta Numérica
 
-> **Docente Titular:** [[Prof_Ana_Sofia_Martinez]]  
+> **Docente Titular:** [[Prof. Ana Sofía Martínez]]  
 > **Institución:** IBIME (CCT: 09PPR1492Z)  
 > **Asignatura y Grado:** MATEMATICAS • Grado 5  
 > **Marco Curricular:** NEM 2024  
