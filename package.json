@@ -23,7 +23,7 @@
     "test:vault": "vitest run __tests__/vault-lifecycle.e2e.test.ts",
     "test:hermetic": "vitest run tests/e2eHermeticIntegration.test.ts",
     "test:casa": "vitest run tests/casaTier3Verification.test.ts",
-    "test:e2e": "playwright test tests/e2e/ibime-hermetic-isolation.spec.ts",
+    "test:e2e": "cross-env SESSION_SECRET=\"e7b4c91a02f83d6520b174ac5d893e214fa0c6791b84e3d5029a1f7c8b36d0e4\" playwright test tests/e2e/ibime-hermetic-isolation.spec.ts",
     "lint:boundaries": "tsx scripts/verify_hermetic_boundaries.ts",
     "compress:assets": "node scripts/batch_image_compressor.js",
     "guard:push": "node scripts/pre_push_guard.js"
