@@ -806,7 +806,7 @@ export default function RedisenosGamificadosPage() {
                 <tr>
                   <td className="py-3 px-4 font-bold text-white">Módulo Docente</td>
                   <td className="py-3 px-4 text-rose-300">Creación aislada sin previsualización multi-edad.</td>
-                  <td className="py-3 px-4 text-emerald-300">Universal Challenge Studio con transfiguración por IA.</td>
+                  <td className="py-3 px-4 text-emerald-300">Estudio de Actividades con transfiguración por Motor de IA Pedagógica.</td>
                   <td className="py-3 px-4">Ahorro del 70% de tiempo en la planeación didáctica del maestro.</td>
                 </tr>
                 <tr>
@@ -818,7 +818,7 @@ export default function RedisenosGamificadosPage() {
                 <tr>
                   <td className="py-3 px-4 font-bold text-white">Integración Cloud Institucional</td>
                   <td className="py-3 px-4 text-rose-300">Subida estándar sin compresión sistemática.</td>
-                  <td className="py-3 px-4 text-emerald-300">SSO con Google Workspace y WebP &lt;300KB forzoso.</td>
+                  <td className="py-3 px-4 text-emerald-300">Acceso Único Institucional y compresión WebP &lt;300KB forzosa.</td>
                   <td className="py-3 px-4">Cumplimiento del 100% de la Regla No Negociable 3 en todos los flujos.</td>
                 </tr>
               </tbody>

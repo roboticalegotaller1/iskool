@@ -38,10 +38,11 @@ import {
   Users
 } from 'lucide-react';
 import { gamificationAudio } from '@/lib/redisenosAudio';
+import { speakNaturalFemaleSpanish, stopNaturalFemaleVoice } from '@/lib/redisenosVoiceTTS';
 import { AnimeAvatarSprite } from '@/components/AnimeAvatarSprite';
 
 // =========================================================================
-// 1. MODELOS DE DATOS: INVESTIGADORES & THINK TANK GLOBAL (FASE 6 SEP)
+// 1. MODELOS DE DATOS: INVESTIGADORES & CENTRO DE INVESTIGACIÓN GLOBAL (FASE 6 SEP)
 // =========================================================================
 
 interface ResearcherStudent {
@@ -70,7 +71,7 @@ const INITIAL_RESEARCHERS: ResearcherStudent[] = [
     id: 'res-elena',
     name: 'Elena Rostova',
     semester: '6º Semestre · Bachillerato Internacional',
-    fellowshipTitle: 'Senior Fellow en Diplomacia Científica & Cuántica',
+    fellowshipTitle: 'Investigadora Titular en Diplomacia Científica y Cuántica',
     avatarIcon: '🌐',
     publishedPapers: 5,
     hIndex: 4,
@@ -78,10 +79,10 @@ const INITIAL_RESEARCHERS: ResearcherStudent[] = [
     computeHours: 120,
     activeTesis: 'Modelado Estocástico de Sequías en Cuencas del Norte de México',
     unlockedMasteryNodes: 14,
-    rankTitle: 'Nova Researcher',
+    rankTitle: 'Investigadora Nova',
     rankLevel: 14,
     equippedCredential: {
-      badge: 'Beca de Publicación Open-Access Q1',
+      badge: 'Beca de Publicación Acceso Abierto Q1',
       clearanceLevel: 'Nivel 5 · Cuántico'
     },
     activeRenderKey: 'capa'
@@ -90,7 +91,7 @@ const INITIAL_RESEARCHERS: ResearcherStudent[] = [
     id: 'res-julian',
     name: 'Julián Carvajal',
     semester: '5º Semestre · Bachillerato Tecnológico',
-    fellowshipTitle: 'Investigador Asociado de Física Cuántica & Grafeno',
+    fellowshipTitle: 'Investigador Asociado de Física Cuántica y Grafeno',
     avatarIcon: '⚛️',
     publishedPapers: 3,
     hIndex: 2,
@@ -98,7 +99,7 @@ const INITIAL_RESEARCHERS: ResearcherStudent[] = [
     computeHours: 85,
     activeTesis: 'Cálculo de Densidad de Estados en Materiales 2D Grafeno',
     unlockedMasteryNodes: 11,
-    rankTitle: 'Associate Fellow',
+    rankTitle: 'Investigador Asociado',
     rankLevel: 11,
     equippedCredential: {
       badge: 'Acceso a Supercómputo Paralelo',
@@ -110,7 +111,7 @@ const INITIAL_RESEARCHERS: ResearcherStudent[] = [
     id: 'res-andrea',
     name: 'Andrea Morales',
     semester: '4º Semestre · Bachillerato General',
-    fellowshipTitle: 'Analista de Políticas Geopolíticas & Filosofía Ética',
+    fellowshipTitle: 'Analista de Políticas Geopolíticas y Filosofía Ética',
     avatarIcon: '📜',
     publishedPapers: 2,
     hIndex: 2,
@@ -118,7 +119,7 @@ const INITIAL_RESEARCHERS: ResearcherStudent[] = [
     computeHours: 40,
     activeTesis: 'Impacto Ético de la Automatización en el Empleo Juvenil',
     unlockedMasteryNodes: 8,
-    rankTitle: 'Junior Analyst',
+    rankTitle: 'Analista Júnior',
     rankLevel: 8,
     equippedCredential: {
       badge: 'Acreditación de Laboratorio Social',
@@ -136,7 +137,7 @@ interface ResearcherGear {
   stats: string;
   description: string;
   image: string;
-  rarity: 'Investigador' | 'Magíster' | 'Senior Fellow' | 'Singularidad';
+  rarity: 'Investigador' | 'Magíster' | 'Catedrático' | 'Singularidad';
   badgeColor: string;
 }
 
@@ -165,10 +166,10 @@ const RESEARCHER_CATALOG: ResearcherGear[] = [
     id: 'band',
     name: 'Diadema Neural Violeta de Constelaciones',
     category: 'Óptica Neural',
-    stats: '+30% Enfoque en Tensores & Cálculo',
+    stats: '+30% Enfoque en Tensores y Cálculo',
     description: 'Corona de sincronización bioeléctrica con sensores EEG que monitorea la fatiga cognitiva y optimiza las horas de supercómputo.',
     image: '/redisenos_assets/nexus_guild/investigador_neural_band.jpg',
-    rarity: 'Senior Fellow',
+    rarity: 'Catedrático',
     badgeColor: 'from-purple-600 to-fuchsia-800'
   },
   {
@@ -281,8 +282,10 @@ export default function NexusProtocolResearchGuildPage() {
   const [customizerMode, setCustomizerMode] = useState<'3d_renders' | 'anime_sprite'>('3d_renders');
   const [selectedResearcherItem, setSelectedResearcherItem] = useState<'base' | 'capa' | 'band' | 'relicario'>('capa');
   const [spriteAnimation, setSpriteAnimation] = useState<'idle' | 'cast' | 'cheer'>('idle');
+  const [masteryNodes, setMasteryNodes] = useState<MasteryNode[]>(MASTERY_TREE_NODES);
+  const [newNodeTitle, setNewNodeTitle] = useState<string>('Criptografía Poscuántica y Gobernanza Algorítmica');
 
-  // Estado de Votos del Proyecto Destacado (Aethernet Redesign)
+  // Estado de Votos del Proyecto Destacado (Rediseño Aethernet)
   const [projectVotes, setProjectVotes] = useState<number>(345);
   const [hasVotedProject, setHasVotedProject] = useState<boolean>(false);
 
@@ -295,36 +298,24 @@ export default function NexusProtocolResearchGuildPage() {
   };
 
   // =========================================================================
-  // 2. SÍNTESIS DE VOZ Y CANON EN PRIMERA PERSONA ESTRICTA (REGLA 2)
+  // 2. SÍNTESIS DE VOZ NEURONAL FEMENINA Y CANON EN PRIMERA PERSONA (REGLA 2)
   // =========================================================================
 
   const speakText = (text: string, isDebater = false) => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    try {
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'es-MX';
-      if (isDebater) {
-        utter.rate = 0.93;
-        utter.pitch = activeDebater === 'juarez' ? 0.85 : 1.05;
-        setIsSpeakingDebater(true);
-        utter.onend = () => setIsSpeakingDebater(false);
-        utter.onerror = () => setIsSpeakingDebater(false);
-      } else {
-        utter.rate = 1.04;
-        utter.pitch = 1.05;
-      }
-      window.speechSynthesis.speak(utter);
-    } catch {
-      // Ignorar bloqueo sin gesto del usuario
+    if (isDebater) {
+      setIsSpeakingDebater(true);
     }
+    speakNaturalFemaleSpanish(text, {
+      rate: isDebater ? 0.96 : 1.02,
+      pitch: isDebater ? 1.02 : 1.05,
+      onEnd: () => setIsSpeakingDebater(false),
+      onError: () => setIsSpeakingDebater(false)
+    });
   };
 
   const stopSpeech = () => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      setIsSpeakingDebater(false);
-    }
+    stopNaturalFemaleVoice();
+    setIsSpeakingDebater(false);
   };
 
   // Discursos en Primera Persona Estricta de Próceres y Científicos (Regla 2)
@@ -372,7 +363,7 @@ export default function NexusProtocolResearchGuildPage() {
         "¡Defensa de tesis aprobada por unanimidad! La triangulación con estaciones terrestres oficiales, " +
         "la validación cruzada y los estimadores bayesianos garantizan la reproducibilidad científica internacional.";
       speakText(explanation, false);
-      showToast("¡Tesis aprobada con honores! +300 Puntos de Diplomacia y nuevo Paper indexado 🎓");
+      showToast("¡Tesis aprobada con honores! +300 Puntos de Diplomacia y nuevo Artículo indexado 🎓");
     } else {
       gamificationAudio.playErrorSound();
       showToast("El comité doctoral rechaza la propuesta. Ignorar anomalías o delegar sin contraste empírico vulnera el método científico.");
@@ -385,7 +376,7 @@ export default function NexusProtocolResearchGuildPage() {
     gamificationAudio.playMagicCastSound();
     setProjectVotes(prev => prev + 1);
     setHasVotedProject(true);
-    showToast("¡Voto registrado en el registro distribuido! Proyecto Aethernet +1 Upvote 🚀");
+    showToast("¡Voto registrado en el registro distribuido! Proyecto Aethernet +1 Voto de Reconocimiento 🚀");
   };
 
   const handleEquipItem = (gearId: 'base' | 'capa' | 'band' | 'relicario') => {
@@ -427,11 +418,11 @@ export default function NexusProtocolResearchGuildPage() {
                 <h1 className="text-sm sm:text-base font-black tracking-tight text-white flex items-center gap-2">
                   <span>Nexus Protocol Research Guild</span>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black border border-emerald-500/40">
-                    Think Tank Global · Preparatoria
+                    Centro de Investigación Global · Preparatoria
                   </span>
                 </h1>
                 <p className="text-[11px] text-emerald-200/70 font-medium">
-                  Árbol de Maestría, Diplomacia Científica & Supercómputo · Fase 6 SEP
+                  Árbol de Maestría, Diplomacia Científica y Supercómputo · Fase 6 SEP
                 </p>
               </div>
             </div>
@@ -465,9 +456,9 @@ export default function NexusProtocolResearchGuildPage() {
 
             {/* Métricas Científicas en Vivo */}
             <div className="hidden lg:flex items-center gap-3 px-3 py-1.5 rounded-xl bg-slate-900 border border-emerald-900/40 text-xs font-bold">
-              <span className="flex items-center gap-1 text-emerald-300" title="Papers Publicados con Índice H">
+              <span className="flex items-center gap-1 text-emerald-300" title="Artículos Publicados con Índice H">
                 <FileText className="w-3.5 h-3.5 text-emerald-400" />
-                {activeStudent.publishedPapers} Papers (h-{activeStudent.hIndex})
+                {activeStudent.publishedPapers} Artículos (h-{activeStudent.hIndex})
               </span>
               <span className="flex items-center gap-1 text-teal-300" title="Puntos de Diplomacia Científica">
                 <Globe2 className="w-3.5 h-3.5 text-teal-400" />
@@ -480,7 +471,7 @@ export default function NexusProtocolResearchGuildPage() {
             </div>
 
             {/* Botones de Acción de Pantalla */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
               <button
                 onClick={() => {
                   gamificationAudio.playClickSound();
@@ -489,7 +480,18 @@ export default function NexusProtocolResearchGuildPage() {
                 className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-md shadow-emerald-500/20"
               >
                 <GitBranch className="w-3.5 h-3.5" />
-                <span>Roadmap</span>
+                <span>Ruta</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  gamificationAudio.playClickSound();
+                  setActiveModal('thesisDefense');
+                }}
+                className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-700/50 text-xs font-bold flex items-center gap-1.5 shadow-sm"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Tesis</span>
               </button>
 
               <button
@@ -500,7 +502,7 @@ export default function NexusProtocolResearchGuildPage() {
                 className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-emerald-700/50 text-xs font-bold flex items-center gap-1.5 shadow-sm"
               >
                 <Activity className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Heatmap</span>
+                <span className="hidden sm:inline">Actividad</span>
               </button>
 
               <button
@@ -517,10 +519,22 @@ export default function NexusProtocolResearchGuildPage() {
               <button
                 onClick={() => {
                   gamificationAudio.playClickSound();
+                  setActiveModal('store');
+                }}
+                className="px-2.5 py-1.5 rounded-xl bg-teal-950/80 hover:bg-teal-900 border border-teal-700 text-teal-300 text-xs font-bold flex items-center gap-1"
+                title="Acreditaciones Científicas y Becas de Supercómputo"
+              >
+                <ShoppingBag className="w-3.5 h-3.5 text-teal-400" />
+                <span className="hidden xl:inline">Becas</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  gamificationAudio.playClickSound();
                   setActiveModal('locker');
                 }}
                 className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-amber-300 text-xs font-bold"
-                title="Pedestal de Investigación 3D & Reliquias"
+                title="Pedestal de Investigación 3D y Reliquias"
               >
                 <Award className="w-4 h-4 text-amber-400" />
               </button>
@@ -531,7 +545,7 @@ export default function NexusProtocolResearchGuildPage() {
                   setActiveModal('teacherStudio');
                 }}
                 className="p-2 rounded-xl bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700 text-indigo-300 text-xs font-bold"
-                title="Universal Challenge Studio (Vista Docente)"
+                title="Estudio de Desafíos Universales (Vista Docente)"
               >
                 <GraduationCap className="w-4 h-4 text-indigo-400" />
               </button>
@@ -541,7 +555,7 @@ export default function NexusProtocolResearchGuildPage() {
       </header>
 
       {/* ========================================================================= */}
-      {/* CUERPO PRINCIPAL DEL THINK TANK */}
+      {/* CUERPO PRINCIPAL DEL CENTRO DE INVESTIGACIÓN */}
       {/* ========================================================================= */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
         
@@ -555,8 +569,8 @@ export default function NexusProtocolResearchGuildPage() {
               <span className="text-xs text-slate-400 font-medium">{activeStudent.semester}</span>
             </div>
             <h2 className="text-lg sm:text-2xl font-black text-white flex items-center gap-2">
-              <span>{activeStudent.avatarIcon} Think Tank de {activeStudent.name}</span>
-              <span className="text-xs text-slate-400 font-normal">({activeStudent.rankTitle} L-{activeStudent.rankLevel})</span>
+              <span>{activeStudent.avatarIcon} Centro de Investigación de {activeStudent.name}</span>
+              <span className="text-xs text-slate-400 font-normal">({activeStudent.rankTitle} N-{activeStudent.rankLevel})</span>
             </h2>
             <p className="text-xs text-slate-300 mt-1">
               Tesis Doctoral: <strong className="text-emerald-400">{activeStudent.activeTesis}</strong> · {activeStudent.unlockedMasteryNodes} Nodos Curriculares Dominados
@@ -569,7 +583,7 @@ export default function NexusProtocolResearchGuildPage() {
                 onClick={() => {
                   gamificationAudio.playClickSound();
                   setActiveViewMode('canvas169');
-                  showToast("Modo: Terminal Científica 16:9 Nexus Guild Dashboard");
+                  showToast("Modo: Terminal Científica 16:9 Gremio de Investigación Nexus");
                 }}
                 className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${
                   activeViewMode === 'canvas169'
@@ -585,7 +599,7 @@ export default function NexusProtocolResearchGuildPage() {
                 onClick={() => {
                   gamificationAudio.playClickSound();
                   setActiveViewMode('knowledgeGraph');
-                  showToast("Modo: Grafo de Maestría & Nodos Curriculares");
+                  showToast("Modo: Grafo de Maestría y Nodos Curriculares");
                 }}
                 className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${
                   activeViewMode === 'knowledgeGraph'
@@ -626,7 +640,7 @@ export default function NexusProtocolResearchGuildPage() {
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
                   <span className="text-[11px] font-black uppercase text-emerald-300 tracking-wider">
-                    Think Tank de Investigación Global
+                    Centro de Investigación Global
                   </span>
                 </div>
                 <span className="text-slate-500">|</span>
@@ -637,7 +651,7 @@ export default function NexusProtocolResearchGuildPage() {
                 <span className="text-slate-500">|</span>
                 <span className="text-xs font-black text-teal-300 flex items-center gap-1">
                   <Activity className="w-3 h-3 text-teal-400" />
-                  542 Commits
+                  542 Entregas
                 </span>
                 <span className="text-slate-500">|</span>
                 <span className="text-xs font-black text-cyan-300 flex items-center gap-1">
@@ -667,34 +681,34 @@ export default function NexusProtocolResearchGuildPage() {
             {/* HOTSPOTS TRANSPARENTES MILIMÉTRICOS (NANO BANANA GRID) */}
             {/* ========================================================================= */}
 
-            {/* 1. GUILD COMMIT HEATMAP (ARRIBA IZQUIERDA) */}
+            {/* 1. MAPA DE CALOR DE ENTREGAS DEL GREMIO (ARRIBA IZQUIERDA) */}
             <div 
               onClick={() => {
                 gamificationAudio.playClickSound();
                 setActiveModal('commitHeatmap');
               }}
               className="absolute top-[13%] left-[7%] w-[36%] h-[42%] cursor-pointer group/hotspot rounded-2xl border-2 border-dashed border-emerald-400/50 hover:border-emerald-300 hover:bg-emerald-500/15 transition-all flex items-center justify-center"
-              title="Guild Commit Heatmap: 542 Commits y Racha de 21 Días"
+              title="Mapa de Calor de Investigación: 542 Entregas y Racha de 21 Días"
             >
               <div className="absolute -top-3 px-2 py-0.5 rounded-full bg-emerald-400 text-slate-950 text-[9px] font-black opacity-0 group-hover/hotspot:opacity-100 transition-opacity shadow-lg whitespace-nowrap">
-                📊 Commit Heatmap (542 Commits)
+                📊 Mapa de Calor (542 Entregas)
               </div>
               <div className="w-3.5 h-3.5 rounded-full bg-emerald-400/70 animate-ping" />
             </div>
 
-            {/* 2. PROJECT SHOWCASE: AETHERNET REDESIGN (CENTRO ARRIBA) */}
+            {/* 2. VITRINA DE PROYECTOS: REDISEÑO AETHERNET (CENTRO ARRIBA) */}
             <div 
               onClick={() => {
                 gamificationAudio.playClickSound();
                 setInspectedHotspot({
-                  title: 'Project Showcase: Aethernet Redesign (Team Cypher)',
-                  description: 'Plataforma descentralizada de intercambio científico desarrollada con React, ciberseguridad avanzada y machine learning para auditoría de papers.',
+                  title: 'Vitrina de Proyectos: Rediseño Aethernet (Equipo Cypher)',
+                  description: 'Plataforma descentralizada de intercambio científico desarrollada con React, ciberseguridad avanzada y aprendizaje automático para auditoría de artículos científicos.',
                   specs: [
-                    'Equipo: Team Cypher (4 Investigadores)',
-                    `Impacto Comunitario: 1.2k Vistas · ${projectVotes} Upvotes`,
-                    'Categoría: Web Dev / IA / Seguridad Criptográfica'
+                    'Equipo: Equipo Cypher (4 Investigadores)',
+                    `Impacto Comunitario: 1.2k Vistas · ${projectVotes} Votos a Favor`,
+                    'Categoría: Desarrollo Web / IA / Seguridad Criptográfica'
                   ],
-                  actionName: hasVotedProject ? 'Voto Registrado ✓' : 'Emitir Voto de Reconocimiento (+1 Upvote)',
+                  actionName: hasVotedProject ? 'Voto Registrado ✓' : 'Emitir Voto de Reconocimiento (+1 Voto)',
                   onAction: () => {
                     handleVoteProject();
                   }
@@ -702,39 +716,39 @@ export default function NexusProtocolResearchGuildPage() {
                 setActiveModal('telemetryHotspot');
               }}
               className="absolute top-[13%] left-[44%] w-[33%] h-[46%] cursor-pointer group/hotspot rounded-2xl border-2 border-dashed border-teal-400/50 hover:border-teal-300 hover:bg-teal-500/15 transition-all flex items-center justify-center"
-              title="Project Showcase: Aethernet Redesign (Web Dev / AI)"
+              title="Vitrina de Proyectos: Rediseño Aethernet (Desarrollo Web / IA)"
             >
               <div className="absolute -top-3 px-2 py-0.5 rounded-full bg-teal-400 text-slate-950 text-[9px] font-black opacity-0 group-hover/hotspot:opacity-100 transition-opacity shadow-lg whitespace-nowrap">
-                🚀 Aethernet Project ({projectVotes} Upvotes)
+                🚀 Proyecto Aethernet ({projectVotes} Votos)
               </div>
               <div className="w-3.5 h-3.5 rounded-full bg-teal-400/70 animate-ping" />
             </div>
 
-            {/* 3. CAREER PATHWAYS ROADMAP (DERECHA ARRIBA) */}
+            {/* 3. RUTA DE TRAYECTORIA CIENTÍFICA (DERECHA ARRIBA) */}
             <div 
               onClick={() => {
                 gamificationAudio.playClickSound();
                 setActiveModal('careerRoadmap');
               }}
               className="absolute top-[13%] left-[78%] w-[19%] h-[53%] cursor-pointer group/hotspot rounded-2xl border-2 border-dashed border-indigo-400/50 hover:border-indigo-300 hover:bg-indigo-500/15 transition-all flex items-center justify-center"
-              title="Career Pathways Roadmap: Start → Data Science → AI → Research Scientist"
+              title="Ruta de Trayectoria Científica: Inicio → Ciencia de Datos → IA → Científico Titular"
             >
               <div className="absolute -top-3 px-2 py-0.5 rounded-full bg-indigo-500 text-white text-[9px] font-black opacity-0 group-hover/hotspot:opacity-100 transition-opacity shadow-lg whitespace-nowrap">
-                🧭 Career Pathways (L-14)
+                🧭 Ruta Científica (N-14)
               </div>
               <div className="w-3.5 h-3.5 rounded-full bg-indigo-400/70 animate-ping" />
             </div>
 
-            {/* 4. ACADEMIC BADGES: BLOCKCHAIN VERIFIED (ABAJO IZQUIERDA) */}
+            {/* 4. DISTINTIVOS ACADÉMICOS: VERIFICACIÓN CRIPTOGRÁFICA (ABAJO IZQUIERDA) */}
             <div 
               onClick={() => {
                 gamificationAudio.playClickSound();
                 setInspectedHotspot({
-                  title: 'Academic Badges: Verificación Criptográfica en Cadena',
-                  description: 'Credenciales emitidas con clave institucional HMAC-SHA256 que avalan el dominio de estándares internacionales (Cambridge C1/C2, Python, Computación Cuántica y Ética de IA).',
+                  title: 'Distintivos Académicos: Verificación Criptográfica en Cadena',
+                  description: 'Credenciales emitidas con clave institucional HMAC-SHA256 que avalan el dominio de estándares internacionales (MCER C1/C2, Python, Computación Cuántica y Ética de IA).',
                   specs: [
                     'ID de Verificación: NP_BC_ALEXR001',
-                    'Acreditaciones Activas: 5 Badges de Excelencia',
+                    'Acreditaciones Activas: 5 Distintivos de Excelencia',
                     'Validez: Reconocimiento Internacional Universitario'
                   ],
                   actionName: 'Verificar en Bóveda Curricular',
@@ -746,52 +760,53 @@ export default function NexusProtocolResearchGuildPage() {
                 setActiveModal('telemetryHotspot');
               }}
               className="absolute top-[57%] left-[7%] w-[36%] h-[37%] cursor-pointer group/hotspot rounded-2xl border-2 border-dashed border-cyan-400/50 hover:border-cyan-300 hover:bg-cyan-500/15 transition-all flex items-center justify-center"
-              title="Academic Badges (Blockchain Verified)"
+              title="Distintivos Académicos (Verificación Criptográfica)"
             >
               <div className="absolute bottom-2 px-2.5 py-1 rounded-xl bg-slate-950/90 text-cyan-300 text-[10px] font-black border border-cyan-500/40 shadow-lg whitespace-nowrap">
-                🛡️ Badges Criptográficos (C1, C2, Python, Quantum)
+                🛡️ Distintivos Criptográficos (C1, C2, Python, Cuántica)
               </div>
             </div>
 
-            {/* 5. QUANTUM SIMULATION & ROBOTIC SWARM (ABAJO CENTRO) */}
+            {/* 5. SIMULACIÓN CUÁNTICA Y ENJAMBRE ROBÓTICO (ABAJO CENTRO) */}
             <div 
               onClick={() => {
                 gamificationAudio.playClickSound();
                 setActiveModal('thesisDefense');
               }}
               className="absolute top-[61%] left-[44%] w-[33%] h-[33%] cursor-pointer group/hotspot rounded-2xl border-2 border-dashed border-emerald-500/40 hover:border-emerald-300 hover:bg-emerald-500/15 transition-all flex items-center justify-center"
-              title="Laboratorios Experimentales: Simulación Cuántica & Enjambre Robótico"
+              title="Laboratorios Experimentales: Simulación Cuántica y Enjambre Robótico"
             >
               <div className="absolute bottom-2 px-2.5 py-1 rounded-xl bg-slate-950/90 text-emerald-300 text-[10px] font-black border border-emerald-500/40 shadow-lg whitespace-nowrap">
-                ⚛️ Lab Cuántico & Robótica Autónoma
+                ⚛️ Lab Cuántico y Robótica Autónoma
               </div>
             </div>
 
-            {/* 6. GUILD NEWS & TASKS (ABAJO DERECHA) */}
+            {/* 6. NOTICIAS DEL GREMIO Y CONVOCATORIAS (ABAJO DERECHA) */}
             <div 
               onClick={() => {
                 gamificationAudio.playClickSound();
                 setInspectedHotspot({
-                  title: 'Guild News & Convocatorias de Investigación',
-                  description: 'Boletín científico y convocatorias abiertas a hackathones internacionales, becas de supercómputo y comités de bioética.',
+                  title: 'Noticias del Gremio y Convocatorias de Investigación',
+                  description: 'Boletín científico y convocatorias abiertas a maratones tecnológicos internacionales, becas de supercómputo y comités de bioética.',
                   specs: [
-                    'Hackathon: Registro Abierto para el Desafío Climático',
-                    'Nuevos Cursos: Pre-Engineering Research Institute',
+                    'Maratón Tecnológico: Registro Abierto para el Desafío Climático',
+                    'Nuevos Seminarios: Instituto de Investigación en Ingeniería',
                     'Sesiones: Debate sobre Soberanía Constitucional con Próceres'
                   ],
-                  actionName: 'Postular a Convocatoria de Hackathon',
+                  actionName: 'Postular a Convocatoria Científica',
                   onAction: () => {
                     gamificationAudio.playVictorySound();
-                    showToast("¡Inscripción a Hackathon confirmada! +100 Horas de Cómputo otorgadas 🚀");
+                    setActiveStudent(prev => ({ ...prev, computeHours: prev.computeHours + 100 }));
+                    showToast("¡Inscripción a Convocatoria confirmada! +100 Horas de Cómputo otorgadas 🚀");
                   }
                 });
                 setActiveModal('telemetryHotspot');
               }}
               className="absolute top-[68%] left-[78%] w-[19%] h-[26%] cursor-pointer group/hotspot rounded-2xl border-2 border-dashed border-teal-500/40 hover:border-teal-300 hover:bg-teal-500/15 transition-all flex items-center justify-center"
-              title="Guild News & Tasks: Convocatorias y Hackathones"
+              title="Noticias del Gremio y Convocatorias"
             >
               <div className="absolute bottom-2 px-2.5 py-1 rounded-xl bg-slate-950/90 text-teal-300 text-[10px] font-black border border-teal-500/40 shadow-lg whitespace-nowrap">
-                📰 Noticias & Hackathones
+                📰 Noticias y Convocatorias
               </div>
             </div>
 
@@ -799,7 +814,7 @@ export default function NexusProtocolResearchGuildPage() {
             <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[11px] text-slate-300 bg-slate-950/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 pointer-events-none">
               <span className="flex items-center gap-1.5">
                 <Compass className="w-3.5 h-3.5 text-emerald-400" />
-                Haz clic en cualquier cuadrante del dashboard para acceder al árbol de maestría, heatmap de investigación o debate constitucional.
+                Haz clic en cualquier cuadrante del panel para acceder al árbol de maestría, mapa de calor de investigación o debate constitucional.
               </span>
               <span className="font-bold text-emerald-300 hidden md:inline">
                 Fase 6 SEP · Preparatoria / Bachillerato
@@ -815,7 +830,7 @@ export default function NexusProtocolResearchGuildPage() {
         {activeViewMode === 'knowledgeGraph' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {MASTERY_TREE_NODES.map(node => (
+              {masteryNodes.map(node => (
                 <div 
                   key={node.id}
                   className="p-5 rounded-3xl bg-slate-900 border border-emerald-900/40 hover:border-emerald-500/40 transition-all shadow-xl flex flex-col justify-between space-y-4"
@@ -844,17 +859,34 @@ export default function NexusProtocolResearchGuildPage() {
                     )}
                   </div>
 
-                  <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
-                    <span className="text-slate-400">Bóveda Curricular:</span>
+                  <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-2 text-xs">
                     <button
                       onClick={() => {
                         gamificationAudio.playClickSound();
                         showToast(`Enlace a [${node.vaultLink}] persistido en la Bóveda Curricular 📚`);
                       }}
-                      className="px-3 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 font-bold"
+                      className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 font-bold"
                     >
                       Ver Nodo .md
                     </button>
+
+                    {node.status !== 'dominado' && (
+                      <button
+                        onClick={() => {
+                          gamificationAudio.playVictorySound();
+                          setMasteryNodes(prev => prev.map(n => n.id === node.id ? { ...n, status: 'dominado' } : n));
+                          setActiveStudent(prev => ({
+                            ...prev,
+                            unlockedMasteryNodes: prev.unlockedMasteryNodes + 1,
+                            diplomacyPoints: prev.diplomacyPoints + 250
+                          }));
+                          showToast(`¡Nodo "${node.title}" dominado! +250 Puntos de Diplomacia 🧬`);
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black"
+                      >
+                        Dominar Nodo (+250 Pts)
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -865,7 +897,7 @@ export default function NexusProtocolResearchGuildPage() {
       </main>
 
       {/* ========================================================================= */}
-      {/* MODAL 1: CAREER PATHWAYS ROADMAP (ÁRBOL VERTICAL DE MAESTRÍA) */}
+      {/* MODAL 1: RUTA DE TRAYECTORIA CIENTÍFICA (ÁRBOL VERTICAL DE MAESTRÍA) */}
       {/* ========================================================================= */}
       {activeModal === 'careerRoadmap' && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in">
@@ -878,10 +910,10 @@ export default function NexusProtocolResearchGuildPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-white">
-                    Career Pathways Roadmap | Progresión de Maestría Científica
+                    Ruta de Trayectoria Científica | Progresión de Maestría
                   </h3>
                   <p className="text-xs text-slate-400">
-                    Nivel Actual: Level {activeStudent.rankLevel} ({activeStudent.rankTitle})
+                    Nivel Actual: Nivel {activeStudent.rankLevel} ({activeStudent.rankTitle})
                   </p>
                 </div>
               </div>
@@ -900,11 +932,11 @@ export default function NexusProtocolResearchGuildPage() {
             {/* Árbol Vertical de 5 Niveles */}
             <div className="space-y-3">
               {[
-                { lvl: 'START', title: 'Fundamentos de Metodología de la Ciencia', status: 'Aprobado', desc: 'Dominio de epistemología, diseño de experimentos y formulación de hipótesis falseables.' },
-                { lvl: 'Data Science (L1)', title: 'Inferencia Estadística & Análisis Multivariable', status: 'Aprobado', desc: 'Tratamiento de datasets masivos, cálculo tensorial y modelos estocásticos.' },
-                { lvl: 'AI Specialist (L2)', title: 'Redes Neuronales Profundas & Ética de Algoritmos', status: 'Activo', desc: 'Entrenamiento de modelos con supervisión y marcos de responsabilidad algorítmica.' },
-                { lvl: 'RESEARCH SCIENTIST (L4)', title: 'Investigación Independiente & Publicación Q1', status: 'En Progreso', desc: 'Redacción de artículos bajo revisión por pares y defensa ante comités académicos.' },
-                { lvl: 'LEAD TECH ANALYST (L6)', title: 'Liderazgo en Think Tanks Globales & Diplomacia', status: 'Bloqueado', desc: 'Asesoría a organismos internacionales y dirección de laboratorios interdisciplinarios.' }
+                { lvl: 'INICIO', title: 'Fundamentos de Metodología de la Ciencia', status: 'Aprobado', desc: 'Dominio de epistemología, diseño de experimentos y formulación de hipótesis falseables.' },
+                { lvl: 'Ciencia de Datos (N1)', title: 'Inferencia Estadística y Análisis Multivariable', status: 'Aprobado', desc: 'Tratamiento de conjuntos de datos masivos, cálculo tensorial y modelos estocásticos.' },
+                { lvl: 'Especialista IA (N2)', title: 'Redes Neuronales Profundas y Ética de Algoritmos', status: 'Activo', desc: 'Entrenamiento de modelos con supervisión y marcos de responsabilidad algorítmica.' },
+                { lvl: 'CIENTÍFICO DE INVESTIGACIÓN (N4)', title: 'Investigación Independiente y Publicación Q1', status: 'En Progreso', desc: 'Redacción de artículos bajo revisión por pares y defensa ante comités académicos.' },
+                { lvl: 'DIRECTOR CIENTÍFICO (N6)', title: 'Liderazgo en Centros de Investigación y Diplomacia', status: 'Bloqueado', desc: 'Asesoría a organismos internacionales y dirección de laboratorios interdisciplinarios.' }
               ].map((step, idx) => (
                 <div 
                   key={idx}
@@ -953,7 +985,7 @@ export default function NexusProtocolResearchGuildPage() {
                 }}
                 className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black shadow-lg shadow-emerald-500/20"
               >
-                Cerrar Roadmap
+                Cerrar Ruta Científica
               </button>
             </div>
 
@@ -962,7 +994,7 @@ export default function NexusProtocolResearchGuildPage() {
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 2: GUILD COMMIT HEATMAP & BADGES VERIFICADOS */}
+      {/* MODAL 2: MAPA DE CALOR DE INVESTIGACIÓN & DISTINTIVOS VERIFICADOS */}
       {/* ========================================================================= */}
       {activeModal === 'commitHeatmap' && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in">
@@ -975,10 +1007,10 @@ export default function NexusProtocolResearchGuildPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-white">
-                    Guild Commit Heatmap & Registro de Actividad
+                    Mapa de Calor de Investigación y Registro de Actividad
                   </h3>
                   <p className="text-xs text-slate-400">
-                    542 Commits Totales · Racha Activa de 21 Días · Categorías SEP
+                    542 Entregas Totales · Racha Activa de 21 Días · Categorías SEP
                   </p>
                 </div>
               </div>
@@ -999,10 +1031,10 @@ export default function NexusProtocolResearchGuildPage() {
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3 text-xs">
                 <div className="flex items-center gap-3">
                   <span className="font-bold text-white">Distribución de Aprendizaje:</span>
-                  <span className="flex items-center gap-1 text-emerald-400"><div className="w-2.5 h-2.5 rounded-sm bg-emerald-500" /> Research (45%)</span>
-                  <span className="flex items-center gap-1 text-cyan-400"><div className="w-2.5 h-2.5 rounded-sm bg-cyan-500" /> Coding (30%)</span>
+                  <span className="flex items-center gap-1 text-emerald-400"><div className="w-2.5 h-2.5 rounded-sm bg-emerald-500" /> Investigación (45%)</span>
+                  <span className="flex items-center gap-1 text-cyan-400"><div className="w-2.5 h-2.5 rounded-sm bg-cyan-500" /> Programación (30%)</span>
                   <span className="flex items-center gap-1 text-amber-400"><div className="w-2.5 h-2.5 rounded-sm bg-amber-500" /> STEM (15%)</span>
-                  <span className="flex items-center gap-1 text-purple-400"><div className="w-2.5 h-2.5 rounded-sm bg-purple-500" /> English (10%)</span>
+                  <span className="flex items-center gap-1 text-purple-400"><div className="w-2.5 h-2.5 rounded-sm bg-purple-500" /> Inglés C1/C2 (10%)</span>
                 </div>
                 <span className="text-emerald-400 font-black">🔥 21 Días de Racha Continua</span>
               </div>
@@ -1019,7 +1051,7 @@ export default function NexusProtocolResearchGuildPage() {
                     <div 
                       key={i}
                       className={`w-2.5 h-2.5 rounded-sm ${bg} hover:scale-125 transition-transform cursor-pointer`}
-                      title={`Commit académico #${i + 1}: Tesis y laboratorio`}
+                      title={`Entrega académica #${i + 1}: Tesis y laboratorio`}
                     />
                   );
                 })}
@@ -1040,7 +1072,7 @@ export default function NexusProtocolResearchGuildPage() {
                 }}
                 className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black shadow-lg shadow-emerald-500/20"
               >
-                Cerrar Heatmap
+                Cerrar Mapa de Calor
               </button>
             </div>
 
@@ -1521,9 +1553,9 @@ export default function NexusProtocolResearchGuildPage() {
 
               <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-4">
                 <div>
-                  <h4 className="text-xs font-black text-cyan-300">Publicación Open-Access en Revista Q1</h4>
+                  <h4 className="text-xs font-black text-cyan-300">Publicación de Acceso Abierto en Revista Q1</h4>
                   <p className="text-[11px] text-slate-400 leading-snug">
-                    Financiamiento de APC (Article Processing Charges) para divulgar tu tesis en repositorios internacionales.
+                    Financiamiento de cargos de procesamiento editorial para divulgar tu tesis en repositorios internacionales.
                   </p>
                 </div>
                 <button
@@ -1534,7 +1566,7 @@ export default function NexusProtocolResearchGuildPage() {
                       diplomacyPoints: Math.max(0, prev.diplomacyPoints - 2000),
                       publishedPapers: prev.publishedPapers + 1
                     }));
-                    showToast("¡Financiamiento de APC aprobado! Paper enviado a revisión por pares Q1 📚");
+                    showToast("¡Financiamiento editorial aprobado! Artículo enviado a revisión por pares Q1 📚");
                   }}
                   className="px-3.5 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-black shrink-0 shadow-md"
                 >
@@ -1557,7 +1589,7 @@ export default function NexusProtocolResearchGuildPage() {
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 7: UNIVERSAL CHALLENGE STUDIO (VISTA DOCENTE · REGLA 1 CUMPLIDA) */}
+      {/* MODAL 7: ESTUDIO DE DESAFÍOS UNIVERSALES (VISTA DOCENTE · REGLA 1 CUMPLIDA) */}
       {/* ========================================================================= */}
       {activeModal === 'teacherStudio' && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in">
@@ -1570,7 +1602,7 @@ export default function NexusProtocolResearchGuildPage() {
                 </div>
                 <div>
                   <span className="text-[10px] font-black uppercase text-emerald-400">
-                    Universal Challenge Studio · Panel Docente
+                    Estudio de Desafíos Universales · Panel Docente
                   </span>
                   <h3 className="text-base font-extrabold text-white">
                     Diseño de Retos Basados en Problemas (ABP) para Preparatoria
@@ -1608,13 +1640,42 @@ export default function NexusProtocolResearchGuildPage() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
-                <span className="font-black text-indigo-400 block text-sm">
-                  3. Debate Constitucional y Ético con Próceres en 1ª Persona
+              <div className="p-4 rounded-2xl bg-slate-950 border border-emerald-500/40 space-y-3">
+                <span className="font-black text-emerald-300 block text-sm">
+                  3. Publicar Nuevo Nodo de Investigación en Bóveda Curricular (`planeaciones/fase6/`)
                 </span>
-                <p>
-                  Los estudiantes contrastan sus conclusiones con figuras históricas que hablan con estricto rigor oratorio en primera persona, consolidando la argumentación cívica y científica.
-                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="text"
+                    value={newNodeTitle}
+                    onChange={(e) => setNewNodeTitle(e.target.value)}
+                    className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    placeholder="Título del Nodo de Investigación Doctoral..."
+                  />
+                  <button
+                    onClick={() => {
+                      if (!newNodeTitle.trim()) return;
+                      gamificationAudio.playVictorySound();
+                      setMasteryNodes(prev => [
+                        ...prev,
+                        {
+                          id: `node-${Date.now()}`,
+                          title: newNodeTitle.trim(),
+                          discipline: 'Ciencias Interdisciplinarias',
+                          status: 'investigando',
+                          level: 'Nivel 4',
+                          vaultLink: `planeaciones/fase6/investigacion/${newNodeTitle.trim().toLowerCase().replace(/\s+/g, '_')}.md`
+                        }
+                      ]);
+                      showToast(`¡Nodo "${newNodeTitle}" indexado en el Grafo y Bóveda Curricular! 🌐`);
+                      setActiveViewMode('knowledgeGraph');
+                      setActiveModal('none');
+                    }}
+                    className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black shrink-0"
+                  >
+                    Publicar Nodo (.md)
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -1662,7 +1723,7 @@ export default function NexusProtocolResearchGuildPage() {
 
             <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
               <span className="text-[11px] font-black uppercase text-emerald-400 block">
-                Métricas del Dashboard:
+                Métricas del Panel:
               </span>
               <ul className="text-xs text-slate-300 space-y-1">
                 {inspectedHotspot.specs.map((spec, i) => (

@@ -35,6 +35,7 @@ import {
   Eye
 } from 'lucide-react';
 import { gamificationAudio } from '@/lib/redisenosAudio';
+import { speakNaturalFemaleSpanish, stopNaturalFemaleVoice } from '@/lib/redisenosVoiceTTS';
 import { AnimeAvatarSprite } from '@/components/AnimeAvatarSprite';
 
 // =========================================================================
@@ -332,8 +333,12 @@ export default function MetropolisDeInventoresPage() {
 
   // Modales interactivos
   const [activeModal, setActiveModal] = useState<
-    'none' | 'teslaLab' | 'locker' | 'patents' | 'teacherStudio' | 'telemetryHotspot'
+    'none' | 'teslaLab' | 'locker' | 'patents' | 'teacherStudio' | 'telemetryHotspot' | 'store'
   >('none');
+  const [patentsList, setPatentsList] = useState<InventorPatent[]>(PATENTS_DATA);
+  const [newPatentTitle, setNewPatentTitle] = useState<string>('Condensador Termoeléctrico de Cobre para Alumbrado Escolar');
+  const [metropolisTeacherPrompt, setMetropolisTeacherPrompt] = useState<string>('Circuitos en paralelo, Ley de Ohm y eficiencia termodinámica en turbinas de vapor');
+  const [metropolisVaultSaved, setMetropolisVaultSaved] = useState<boolean>(false);
 
   // Estado del Hotspot inspeccionado
   const [inspectedHotspot, setInspectedHotspot] = useState<{
@@ -375,32 +380,17 @@ export default function MetropolisDeInventoresPage() {
   // =========================================================================
 
   const speakText = (text: string, isTesla = false) => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    try {
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'es-MX';
-      if (isTesla) {
-        utter.rate = 0.92;
-        utter.pitch = 0.90;
-        setTeslaSpeechActive(true);
-        utter.onend = () => setTeslaSpeechActive(false);
-        utter.onerror = () => setTeslaSpeechActive(false);
-      } else {
-        utter.rate = 1.02;
-        utter.pitch = 1.05;
-      }
-      window.speechSynthesis.speak(utter);
-    } catch {
-      // Ignorar bloqueo sin gesto del usuario
+    if (!soundEnabled) return;
+    if (isTesla) {
+      setTeslaSpeechActive(true);
+      setTimeout(() => setTeslaSpeechActive(false), 7000);
     }
+    speakNaturalFemaleSpanish(text, { rate: isTesla ? 0.96 : 1.0, pitch: 1.03 });
   };
 
   const stopSpeech = () => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      setTeslaSpeechActive(false);
-    }
+    stopNaturalFemaleVoice();
+    setTeslaSpeechActive(false);
   };
 
   // Discurso Canónico en Primera Persona de Nikola Tesla
@@ -593,7 +583,19 @@ export default function MetropolisDeInventoresPage() {
                 className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-sm"
               >
                 <BookOpen className="w-3.5 h-3.5 text-amber-400" />
-                <span className="hidden sm:inline">Patentes</span>
+                <span className="hidden sm:inline">Patentes ({patentsList.length})</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  gamificationAudio.playClickSound();
+                  setActiveModal('store');
+                  speakText("Bazar Municipal de Engranes y Bobinas abierto.");
+                }}
+                className="px-3 py-1.5 rounded-xl bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-600/50 text-xs font-bold flex items-center gap-1.5 shadow-sm"
+              >
+                <Coins className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Bazar</span>
               </button>
 
               <button
@@ -602,7 +604,7 @@ export default function MetropolisDeInventoresPage() {
                   setActiveModal('teacherStudio');
                 }}
                 className="p-2 rounded-xl bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700 text-indigo-300 text-xs font-bold"
-                title="Universal Challenge Studio (Vista Docente)"
+                title="Estudio de Ingeniería Docente (Vista Profesor)"
               >
                 <GraduationCap className="w-4 h-4 text-indigo-400" />
               </button>
@@ -750,37 +752,37 @@ export default function MetropolisDeInventoresPage() {
                 setActiveModal('telemetryHotspot');
               }}
               className="absolute top-[18%] left-[38%] w-[9%] h-[26%] cursor-pointer group/hotspot rounded-2xl border-2 border-dashed border-amber-400/40 hover:border-amber-300 hover:bg-amber-400/15 transition-all flex items-center justify-center"
-              title="Math Tower: Centro de Cálculo Matemático y Termodinámica"
+              title="Torre de Matemáticas: Centro de Cálculo Matemático y Termodinámica"
             >
               <div className="absolute -top-3 px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black opacity-0 group-hover/hotspot:opacity-100 transition-opacity shadow-lg whitespace-nowrap">
-                📐 Math Tower
+                📐 Torre de Matemáticas
               </div>
               <div className="w-3 h-3 rounded-full bg-amber-400/60 animate-ping group-hover/hotspot:bg-amber-300" />
             </div>
 
-            {/* 2. PHYSICS LAB (CÚPULA TESLA CON ENERGÍA AZUL) */}
+            {/* 2. LABORATORIO DE FÍSICA (CÚPULA TESLA CON ENERGÍA AZUL) */}
             <div 
               onClick={() => {
                 gamificationAudio.playClickSound();
                 setActiveModal('teslaLab');
               }}
               className="absolute top-[34%] left-[26%] w-[11%] h-[19%] cursor-pointer group/hotspot rounded-2xl border-2 border-dashed border-cyan-400/50 hover:border-cyan-300 hover:bg-cyan-500/20 transition-all flex items-center justify-center"
-              title="Physics Lab: Bobina de Tesla y Red Electromagnética"
+              title="Laboratorio de Física: Bobina de Tesla y Red Electromagnética"
             >
               <div className="absolute -top-3 px-2 py-0.5 rounded-full bg-cyan-400 text-slate-950 text-[9px] font-black opacity-0 group-hover/hotspot:opacity-100 transition-opacity shadow-lg whitespace-nowrap">
-                ⚡ Physics Lab (Tesla)
+                ⚡ Laboratorio de Física (Tesla)
               </div>
               <div className="w-3 h-3 rounded-full bg-cyan-400 animate-ping" />
             </div>
 
-            {/* 3. PHYSICS WORKSHOP (TALLER MECÁNICO Y ENGRANES) */}
+            {/* 3. TALLER MECÁNICO (ENGRANES) */}
             <div 
               onClick={() => {
                 gamificationAudio.playClickSound();
                 setActiveModal('locker');
               }}
               className="absolute top-[49%] left-[35%] w-[10%] h-[15%] cursor-pointer group/hotspot rounded-2xl border-2 border-dashed border-amber-500/40 hover:border-amber-300 hover:bg-amber-500/20 transition-all flex items-center justify-center"
-              title="Physics Workshop: Pedestal 3D y Ensamblaje de Mecanismos"
+              title="Taller Mecánico: Pedestal 3D y Ensamblaje de Mecanismos"
             >
               <div className="absolute -top-3 px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black opacity-0 group-hover/hotspot:opacity-100 transition-opacity shadow-lg whitespace-nowrap">
                 🔧 Taller Mecánico 3D
@@ -788,7 +790,7 @@ export default function MetropolisDeInventoresPage() {
               <div className="w-3 h-3 rounded-full bg-amber-400 animate-ping" />
             </div>
 
-            {/* 4. CHEMISTRY LAB (DESTILERÍA CUÁNTICA CON TUBOS VERDES) */}
+            {/* 4. LABORATORIO DE QUÍMICA (DESTILERÍA CUÁNTICA CON TUBOS VERDES) */}
             <div 
               onClick={() => {
                 gamificationAudio.playClickSound();
@@ -809,20 +811,20 @@ export default function MetropolisDeInventoresPage() {
                 setActiveModal('telemetryHotspot');
               }}
               className="absolute top-[32%] left-[71%] w-[12%] h-[20%] cursor-pointer group/hotspot rounded-2xl border-2 border-dashed border-emerald-400/50 hover:border-emerald-300 hover:bg-emerald-500/20 transition-all flex items-center justify-center"
-              title="Chemistry Lab: Celdas Electroquímicas e Hidrógeno"
+              title="Laboratorio de Química: Celdas Electroquímicas e Hidrógeno"
             >
               <div className="absolute -top-3 px-2 py-0.5 rounded-full bg-emerald-400 text-slate-950 text-[9px] font-black opacity-0 group-hover/hotspot:opacity-100 transition-opacity shadow-lg whitespace-nowrap">
-                🧪 Chemistry Lab
+                🧪 Laboratorio de Química
               </div>
               <div className="w-3 h-3 rounded-full bg-emerald-400 animate-ping" />
             </div>
 
-            {/* 5. ATROMITY REACTOR CENTRAL (HAZ DE LUZ VERTICAL) */}
+            {/* 5. REACTOR CUÁNTICO CENTRAL (HAZ DE LUZ VERTICAL) */}
             <div 
               onClick={() => {
                 gamificationAudio.playClickSound();
                 setInspectedHotspot({
-                  title: 'Atromity Quantum Reactor (Núcleo Central)',
+                  title: 'Reactor Cuántico Central (Núcleo Termodinámico)',
                   description: 'Corazón termodinámico de la ciudad. Fusiona el flujo de vapor a alta presión con campos electromagnéticos inducidos para abastecer 50 MW continuos sin emisiones fósiles.',
                   specs: [
                     `Potencia Generada: ${generatorVoltage === 380 ? '50 MW (ÓPTIMO)' : '24 MW (DÉFICIT)'}`,
@@ -838,20 +840,20 @@ export default function MetropolisDeInventoresPage() {
                 setActiveModal('telemetryHotspot');
               }}
               className="absolute top-[27%] left-[48%] w-[13%] h-[28%] cursor-pointer group/hotspot rounded-2xl border-2 border-dashed border-indigo-400/50 hover:border-indigo-300 hover:bg-indigo-500/20 transition-all flex items-center justify-center"
-              title="Atromity Level: Reactor Cuántico Central"
+              title="Reactor Cuántico Central"
             >
               <div className="absolute -top-3 px-2 py-0.5 rounded-full bg-indigo-400 text-slate-950 text-[9px] font-black opacity-0 group-hover/hotspot:opacity-100 transition-opacity shadow-lg whitespace-nowrap">
-                ⚛️ Atromity Reactor
+                ⚛️ Reactor Cuántico Central
               </div>
               <div className="w-3.5 h-3.5 rounded-full bg-indigo-300 animate-ping" />
             </div>
 
-            {/* 6. ENERGY GRID MANAGEMENT WIDGET (TUBERÍAS DE COBRE - ABAJO IZQUIERDA) */}
+            {/* 6. RED DE VÁLVULAS DE VAPOR (TUBERÍAS DE COBRE - ABAJO IZQUIERDA) */}
             <div 
               onClick={() => {
                 gamificationAudio.playClickSound();
                 setInspectedHotspot({
-                  title: 'Red Maestra de Válvulas y Tuberías de Vapor (Energy Grid)',
+                  title: 'Red Maestra de Válvulas y Tuberías de Vapor',
                   description: 'Matriz subterránea y aérea de conductos de cobre que transporta vapor saturado desde las calderas geotérmicas hacia los 4 distritos urbanos.',
                   specs: [
                     `Presión en el Colector Principal: ${steamPressure} PSI`,
@@ -868,24 +870,24 @@ export default function MetropolisDeInventoresPage() {
                 setActiveModal('telemetryHotspot');
               }}
               className="absolute top-[62%] left-[10%] w-[22%] h-[24%] cursor-pointer group/hotspot rounded-3xl border-2 border-dashed border-amber-600/40 hover:border-amber-400 hover:bg-amber-600/15 transition-all flex items-center justify-center"
-              title="Energy Grid Management Widget: Válvulas de Vapor y Presión"
+              title="Red de Válvulas de Vapor y Presión"
             >
               <div className="absolute bottom-2 px-2.5 py-1 rounded-xl bg-slate-950/90 text-amber-300 text-[10px] font-black border border-amber-500/40 shadow-lg whitespace-nowrap">
                 ⚙️ Red de Válvulas de Vapor ({steamPressure} PSI)
               </div>
             </div>
 
-            {/* 7. GUILD RESEARCH TREE (ÁRBOL COOPERATIVO DE PATENTES - ABAJO DERECHA) */}
+            {/* 7. ÁRBOL COOPERATIVO DE PATENTES (ABAJO DERECHA) */}
             <div 
               onClick={() => {
                 gamificationAudio.playClickSound();
                 setActiveModal('patents');
               }}
               className="absolute top-[58%] left-[70%] w-[24%] h-[28%] cursor-pointer group/hotspot rounded-3xl border-2 border-dashed border-purple-500/40 hover:border-purple-300 hover:bg-purple-500/15 transition-all flex items-center justify-center"
-              title="Guild Cooperative Research Tree: Patentes y Propulsión por Éter"
+              title="Árbol Cooperativo de Patentes y Propulsión por Éter"
             >
               <div className="absolute bottom-2 px-2.5 py-1 rounded-xl bg-slate-950/90 text-purple-300 text-[10px] font-black border border-purple-500/40 shadow-lg whitespace-nowrap">
-                📜 Árbol de Patentes & Éter ({PATENTS_DATA.length} Patentes)
+                📜 Árbol de Patentes & Éter ({patentsList.length} Patentes)
               </div>
             </div>
 
@@ -897,7 +899,7 @@ export default function MetropolisDeInventoresPage() {
                   title: 'Barómetro Socioemocional & Clima del Aula',
                   description: 'Indicador pedagógico en tiempo real que mide la cohesión del grupo, la resolución colaborativa de fallas de vapor y la sincronía socioemocional del salón.',
                   specs: [
-                    'Estado Anímico: Sunshine & Gears ☀️⚙️',
+                    'Estado Anímico: Sol y Engranes ☀️⚙️',
                     'Sincronía de Cuadrilla: 92% Colaboración',
                     'Pedagogía del Error: Pistas constructivas sin frustración'
                   ],
@@ -910,11 +912,11 @@ export default function MetropolisDeInventoresPage() {
                 setActiveModal('telemetryHotspot');
               }}
               className="absolute top-[75%] left-[38%] w-[24%] h-[18%] cursor-pointer group/hotspot rounded-3xl border-2 border-dashed border-emerald-400/40 hover:border-emerald-300 hover:bg-emerald-500/15 transition-all flex items-center justify-center"
-              title="Barómetro Socioemocional: Sunshine & Gears 92% Sync"
+              title="Barómetro Socioemocional: Sol y Engranes · 92% Sincronía"
             >
               <div className="px-2.5 py-1 rounded-xl bg-slate-950/90 text-emerald-300 text-[10px] font-black border border-emerald-500/40 shadow-lg whitespace-nowrap flex items-center gap-1.5">
                 <Smile className="w-3 h-3 text-emerald-400" />
-                <span>Sunshine & Gears · 92% Sync</span>
+                <span>Sol y Engranes · 92% Sincronía</span>
               </div>
             </div>
 
@@ -1431,9 +1433,47 @@ export default function MetropolisDeInventoresPage() {
               </button>
             </div>
 
+            {/* Registrar Nueva Patente */}
+            <div className="p-4 rounded-2xl bg-slate-950 border border-amber-500/40 space-y-2.5">
+              <span className="text-[10px] font-black uppercase text-amber-400">✍️ Registrar Nueva Patente Estudiantil en Bóveda Curricular</span>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  value={newPatentTitle}
+                  onChange={(e) => setNewPatentTitle(e.target.value)}
+                  className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white font-bold"
+                />
+                <button
+                  onClick={() => {
+                    if (!newPatentTitle.trim()) return;
+                    gamificationAudio.playLevelUpSound();
+                    const newCode = `PAT-STEM-08${patentsList.length + 1}`;
+                    setPatentsList(prev => [
+                      {
+                        id: `pat-${Date.now()}`,
+                        code: newCode,
+                        title: newPatentTitle,
+                        author: activeStudent.name,
+                        discipline: 'Ingeniería & Sustentabilidad',
+                        sepPDA: 'Diseña prototipos sustentables de transferencia de energía térmica y eléctrica.',
+                        status: 'Aprobada',
+                        powerGeneration: '+18 MW Suministro Limpio'
+                      },
+                      ...prev
+                    ]);
+                    speakText(`Patente ${newCode} registrada por ${activeStudent.name} y sincronizada en la Bóveda Curricular.`);
+                    showToast(`¡Patente ${newCode} aprobada y registrada!`);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shrink-0"
+                >
+                  + Registrar Patente
+                </button>
+              </div>
+            </div>
+
             {/* Listado de Patentes */}
             <div className="space-y-3">
-              {PATENTS_DATA.map(patent => (
+              {patentsList.map(patent => (
                 <div 
                   key={patent.id}
                   className="p-4 rounded-2xl bg-slate-950 border border-slate-800 hover:border-amber-500/40 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-3"
@@ -1492,7 +1532,65 @@ export default function MetropolisDeInventoresPage() {
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 4: UNIVERSAL CHALLENGE STUDIO (VISTA DOCENTE) */}
+      {/* MODAL 3B: BAZAR MUNICIPAL DE ENGRANES Y BOBINAS ('store') */}
+      {/* ========================================================================= */}
+      {activeModal === 'store' && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in">
+          <div className="bg-slate-900 border-2 border-amber-500/60 rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div>
+                <span className="text-[10px] font-black uppercase text-amber-400">⚙️ Suministros Municipales de Ingeniería</span>
+                <h3 className="text-lg font-black text-white">Bazar de Engranes, Bobinas y Turbinas</h3>
+              </div>
+              <button onClick={() => setActiveModal('none')} className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5">
+                <div className="text-2xl">⚡🧲</div>
+                <h4 className="text-sm font-black text-amber-300">Turbina Auxiliar de Vapor (+15% Energía en Red)</h4>
+                <p className="text-xs text-slate-400">Incrementa la iluminación de los 4 distritos urbanos y eleva la presión a 160 PSI.</p>
+                <button
+                  onClick={() => {
+                    gamificationAudio.playLevelUpSound();
+                    setDistricts(prev => prev.map(d => ({ ...d, energyPercent: Math.min(100, d.energyPercent + 15), status: 'Operativo' })));
+                    setSteamPressure(160);
+                    speakText("Turbina auxiliar instalada. Todos los distritos de la metrópolis operan a máxima capacidad.");
+                    showToast("¡Turbina instalada! +15% Energía en todos los distritos");
+                  }}
+                  className="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs"
+                >
+                  Instalar con Presupuesto ($1,200)
+                </button>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5">
+                <div className="text-2xl">🔋✨</div>
+                <h4 className="text-sm font-black text-cyan-300">Banco de Capacitores Tesla (380V Estables)</h4>
+                <p className="text-xs text-slate-400">Estabiliza el reactor central a 380V AC y cierra el interruptor de cuchilla automáticamente.</p>
+                <button
+                  onClick={() => {
+                    gamificationAudio.playVictorySound();
+                    setGeneratorVoltage(380);
+                    setIsBladeSwitchClosed(true);
+                    setChallengeSolved(true);
+                    speakText("Banco de capacitores Tesla conectado a 380 voltios.");
+                    showToast("¡Reactor estabilizado a 380V AC!");
+                  }}
+                  className="w-full py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs"
+                >
+                  Adquirir Capacitores ($1,500)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL 4: ESTUDIO DE INGENIERÍA DOCENTE (VISTA PROFESOR) */}
       {/* ========================================================================= */}
       {activeModal === 'teacherStudio' && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in">
@@ -1505,7 +1603,7 @@ export default function MetropolisDeInventoresPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-white">
-                    Universal Challenge Studio · Panel Docente
+                    Estudio de Ingeniería Docente · Bóveda Curricular
                   </h3>
                   <p className="text-xs text-indigo-300">
                     Configuración de Megaproyectos de Ingeniería y Articulación con PDA Oficiales SEP
@@ -1522,6 +1620,36 @@ export default function MetropolisDeInventoresPage() {
               >
                 <X className="w-5 h-5" />
               </button>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-slate-950 border border-indigo-500/40 space-y-3">
+              <label className="block text-xs font-black text-indigo-300">
+                Configurar PDA de Física, Química o Matemáticas para la Metrópolis:
+              </label>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  value={metropolisTeacherPrompt}
+                  onChange={(e) => setMetropolisTeacherPrompt(e.target.value)}
+                  className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white font-bold"
+                />
+                <button
+                  onClick={() => {
+                    gamificationAudio.playLevelUpSound();
+                    setMetropolisVaultSaved(true);
+                    speakText("Megaproyecto de ingeniería sincronizado en la Bóveda Curricular.");
+                    showToast("¡Planeación guardada en Bóveda Curricular!");
+                  }}
+                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs"
+                >
+                  💾 Sincronizar en Bóveda
+                </button>
+              </div>
+              {metropolisVaultSaved && (
+                <div className="text-xs text-emerald-400 font-bold">
+                  ✅ Guardado en <code>planeaciones/secundaria/metropolis_inventores_stem.md</code>
+                </div>
+              )}
             </div>
 
             {/* Tres Pilares Pedagógicos */}

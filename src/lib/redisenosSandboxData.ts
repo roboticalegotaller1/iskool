@@ -144,12 +144,12 @@ export const INITIAL_STUDENTS: StudentProfile[] = [
     xp: 2840,
     maxXp: 3000,
     streakDays: 32,
-    clanName: 'Clan Phoenix',
+    clanName: 'Escuadrón Fénix',
     equippedItems: {
       outfit: 'Chamarra Neo-Estilo (Racha 30 días)',
-      accessory: 'Gafas Hologen (100 PDA Completados)',
-      companion: 'Baby Robot Asistente',
-      badge: 'Coding Expert Badge'
+      accessory: 'Gafas Holográficas (100 PDA Completados)',
+      companion: 'Robot Asistente Mecatrónico',
+      badge: 'Insignia de Experta en Algoritmia'
     },
     stats: {
       tasksCompleted: 89,
@@ -161,8 +161,8 @@ export const INITIAL_STUDENTS: StudentProfile[] = [
     id: 'student-rodrigo',
     name: 'Rodrigo Fuentes',
     age: 17,
-    grade: '3º de Preparatoria (Senior)',
-    levelTitle: 'Nivel 42: Fellow Investigador',
+    grade: '3º de Preparatoria (Último Año)',
+    levelTitle: 'Nivel 42: Investigador Titular',
     subLevel: 'preparatoria',
     avatarImage: '/redisenos_assets/gamification_preparatoria_portfolio_radar_1792734730504.jpg',
     coins: 8200,
@@ -170,12 +170,12 @@ export const INITIAL_STUDENTS: StudentProfile[] = [
     xp: 6850,
     maxXp: 7000,
     streakDays: 124,
-    clanName: 'Nexus Tech Guild',
+    clanName: 'Gremio de Investigación Nexus',
     equippedItems: {
-      outfit: 'Executive Blazer & Smart Goggles',
-      accessory: 'Terminal Crypto Key',
-      companion: 'Drone de Análisis Cuántico',
-      badge: 'Ceneval Gold Medalist'
+      outfit: 'Saco Ejecutivo y Lentes de Realidad Aumentada',
+      accessory: 'Llave Criptográfica de Terminal',
+      companion: 'Dron de Análisis Cuántico',
+      badge: 'Medalla de Oro a la Excelencia Ceneval'
     },
     stats: {
       tasksCompleted: 156,
@@ -190,27 +190,27 @@ export const STORE_CATALOG: StoreItem[] = [
   // Mascotas
   {
     id: 'item-phoenix',
-    name: 'Phoenix Chick',
+    name: 'Polluelo Fénix Solar',
     category: 'companions',
     price: 500,
     icon: '🔥',
-    description: 'Polluelo fénix que vuela junto a tu avatar y otorga un +5% de bonus en multiplicador de racha.',
+    description: 'Polluelo fénix que vuela junto a tu avatar y otorga un +5% de bonificación en multiplicador de racha.',
     ageTier: 'all',
     badgeLabel: 'Mascota Mágica'
   },
   {
     id: 'item-baby-robot',
-    name: 'Baby Robot Asistente',
+    name: 'Robot Asistente Mecatrónico',
     category: 'companions',
     price: 450,
     icon: '🤖',
     description: 'Compañero mecatrónico que emite luces LED según tu precisión en cálculo y ciencias.',
     ageTier: 'secundaria',
-    badgeLabel: 'Tech Companion'
+    badgeLabel: 'Compañero Tecnológico'
   },
   {
     id: 'item-clay-panda',
-    name: 'Clay Panda Suavecito',
+    name: 'Pandita de Plastilina Suavecito',
     category: 'companions',
     price: 400,
     icon: '🐼',
@@ -232,11 +232,11 @@ export const STORE_CATALOG: StoreItem[] = [
   },
   {
     id: 'item-cyber-jacket',
-    name: 'Chamarra Cyber Anime Streetwear',
+    name: 'Chamarra Ciber-Urbana Neón',
     category: 'outfits',
     price: 650,
     icon: '🧥',
-    description: 'Chamarra neo-Tokyo con ribetes luminosos y emblema del clan bordado con fibra óptica.',
+    description: 'Chamarra futurista con ribetes luminosos y emblema del escuadrón bordado con fibra óptica.',
     ageTier: 'secundaria',
     badgeLabel: 'Épico 3D'
   },
@@ -248,7 +248,7 @@ export const STORE_CATALOG: StoreItem[] = [
     icon: '🥼',
     description: 'Bata formal de investigador con pines conmemorativos de ferias de ciencias internacionales.',
     ageTier: 'preparatoria',
-    badgeLabel: 'STEM Pro'
+    badgeLabel: 'Científico Pro'
   },
 
   // Pociones y Potenciadores
@@ -320,8 +320,8 @@ export const STORE_CATALOG: StoreItem[] = [
 export const BOSS_ENEMIES: BossEnemy[] = [
   {
     id: 'boss-golem',
-    name: 'Silvanus, The Forest Golem',
-    title: 'Guardián del Robledal Ancestral (Fantasía & Primaria)',
+    name: 'Silvano, El Gólem del Bosque',
+    title: 'Guardián del Robledal Ancestral (Fantasía y Primaria)',
     image: '/redisenos_assets/enemy_forest_golem_boss_1792738753735.jpg',
     maxHp: 80,
     currentHp: 80,
@@ -332,13 +332,13 @@ export const BOSS_ENEMIES: BossEnemy[] = [
   },
   {
     id: 'boss-cyber-dragon',
-    name: 'Nexus Void Drake',
-    title: 'El Dragón Glitch del Abismo Digital (Cyber & Secundaria/Prepa)',
+    name: 'Draco del Abismo Digital',
+    title: 'El Dragón de Interferencia del Abismo Digital (Secundaria y Preparatoria)',
     image: '/redisenos_assets/enemy_cyber_glitch_dragon_1792738786143.jpg',
     maxHp: 150,
     currentHp: 150,
     affinity: 'Ciber Fuego / Datos Corruptos',
-    abilities: ['Static Barrage', 'Void Overload', 'Ciber Garra Glitch'],
+    abilities: ['Ráfaga Estática', 'Sobrecarga del Vacío', 'Garra de Interferencia'],
     weakness: 'Pensamiento Crítico, Ecuaciones y Análisis de Fuentes',
     rewardCoins: 400
   }
@@ -480,7 +480,7 @@ export const TEACHERS_BY_REDESIGN: TeacherProfile[] = [
 
   // 07 Secundaria Gremio Esports
   { id: 't-07a', name: 'Prof. David Guzmán', role: 'Líder de Academia de Esports Educativos', subject: 'Historia de México y Universal', redesignKey: '07', schoolCct: '09PPR8800M', avatar: '🎮', activeStudentsCount: 30, tasksAssignedCount: 32 },
-  { id: 't-07b', name: 'Profra. Ximena Paredes', role: 'Docente de Lengua Extranjera', subject: 'Inglés Cambridge B2/C1', redesignKey: '07', schoolCct: '09PPR8800M', avatar: '🗣️', activeStudentsCount: 30, tasksAssignedCount: 28 },
+  { id: 't-07b', name: 'Profra. Ximena Paredes', role: 'Docente de Lengua Extranjera', subject: 'Inglés Avanzado MCER B2/C1', redesignKey: '07', schoolCct: '09PPR8800M', avatar: '🗣️', activeStudentsCount: 30, tasksAssignedCount: 28 },
 
   // 08 Secundaria Metrópolis STEM
   { id: 't-08a', name: 'Ing. Manuel Cárdenas', role: 'Director de Taller STEM y Robótica', subject: 'Física y Mecatrónica', redesignKey: '08', schoolCct: '09PPR8800M', avatar: '⚙️', activeStudentsCount: 28, tasksAssignedCount: 30 },
@@ -536,14 +536,14 @@ export const REDESIGNS_LIST: RedesignDetail[] = [
     title: '01 Preescolar · El Reino de las Huellitas',
     level: 'Preescolar (Fase 2 SEP)',
     ages: '3 a 5 Años',
-    tagline: 'Santuario táctil de plastilina con navegación por voz',
-    theme: 'Claymation & Amigos de Felpa',
+    tagline: 'Santuario táctil de plastilina con navegación por voz femenina natural',
+    theme: 'Plastilina Artesanal y Amigos de Felpa',
     hubImage: '/redisenos_assets/gamification_preescolar_huellitas_1792732717441.jpg',
     quizImage: '/redisenos_assets/gamification_quiz_preescolar_gameplay_1792734559505.jpg',
     avatarImage: '/redisenos_assets/gamification_avatar_preescolar_customizer_1792734577407.jpg',
-    summary: 'Diseñado sin necesidad de texto escrito; botones acolchados gigantes y sintetizador de voz natural guían al alumno en el cuidado de su granja de animalitos.',
-    worldBenchmark: 'Khan Academy Kids & Toca Boca World',
-    features: ['Navegación 100% por voz', 'Pedagogía del error amable sin pérdida de vidas', 'Botones táctiles gigantes con física de plastilina']
+    summary: 'Diseñado sin necesidad de texto escrito; botones acolchados gigantes y sintetizador de voz femenina natural guían al alumno en el cuidado de su granja de animalitos.',
+    worldBenchmark: 'Estándar Mundial de Aprendizaje Táctil Preescolar y Mundos Sensoriales',
+    features: ['Navegación 100% por voz femenina natural', 'Pedagogía del error amable sin pérdida de vidas', 'Botones táctiles gigantes con física de plastilina']
   },
   {
     key: '02',
@@ -551,13 +551,13 @@ export const REDESIGNS_LIST: RedesignDetail[] = [
     title: '02 Preescolar · La Isla de los Juguetes Mágicos',
     level: 'Preescolar (Fase 2 SEP)',
     ages: '3 a 5 Años',
-    tagline: 'Maqueta voxel tridimensional con bloques de construcción espacial',
-    theme: 'Voxel 3D & Juguetes Vivientes',
+    tagline: 'Maqueta tridimensional con bloques de construcción espacial',
+    theme: 'Bloques 3D y Juguetes Vivientes',
     hubImage: '/redisenos_assets/gamification_preescolar_isla_magica_1792732740102.jpg',
     quizImage: '/redisenos_assets/gamification_quiz_preescolar_gameplay_1792734559505.jpg',
     avatarImage: '/redisenos_assets/gamification_avatar_preescolar_customizer_1792734577407.jpg',
     summary: 'Cada respuesta correcta otorga un bloque mágico para construir puentes, faros y castillos flotantes que cobran vida en un entorno tridimensional relajante.',
-    worldBenchmark: 'LEGO DUPLO World & Nintendo Yoshi Crafted World',
+    worldBenchmark: 'Estándar Internacional de Construcción Espacial y Bloques Didácticos 3D',
     features: ['Construcción espacial isométrica', 'Compañero mecatrónico de juguete', 'Diploma de explorador automático']
   },
   {
@@ -566,29 +566,29 @@ export const REDESIGNS_LIST: RedesignDetail[] = [
     title: '03 Primaria Baja · Academia de Guardianes Elementales',
     level: '1º a 3º de Primaria (Fases 3 y 4 SEP)',
     ages: '6 a 8 Años',
-    tagline: 'Saga de rol al estilo Nintendo con mapa Overworld y combate de hechizos',
-    theme: 'Aventura RPG Nintendo & Mascotas Evolutivas',
+    tagline: 'Saga de aventura fantástica con mapa de biomas y duelos de hechizos',
+    theme: 'Aventura de Rol Fantástico y Mascotas Evolutivas',
     hubImage: '/redisenos_assets/gamification_primaria_baja_guardianes_1792732757751.jpg',
     quizImage: '/redisenos_assets/gamification_quiz_primaria_baja_battle_1792734597009.jpg',
     avatarImage: '/redisenos_assets/gamification_avatar_primaria_baja_album_1792734760601.jpg',
-    summary: 'Mapa sinuoso con 4 biomas elementales. El cálculo mental y la lectoescritura activan runas que restan vida al simpático Forest Golem con combos de racha.',
-    worldBenchmark: 'Prodigy Math Game & Super Mario RPG',
+    summary: 'Mapa sinuoso con 4 biomas elementales. El cálculo mental y la lectoescritura activan runas que restan vida al simpático Gólem del Bosque con combos de racha.',
+    worldBenchmark: 'Estándar Mundial de Rol Matemático por Turnos y Aventura Didáctica',
     features: ['Batalla por turnos didáctica', 'Mascota fénix que evoluciona', 'Cofres de recompensa por racha de estudio']
   },
   {
     key: '04',
     code: '04primaria_baja_libro_aventura',
-    title: '04 Primaria Baja · El Libro de Aventuras & Álbum',
+    title: '04 Primaria Baja · El Libro de Aventuras y Álbum',
     level: '1º a 3º de Primaria (Fases 3 y 4 SEP)',
     ages: '6 a 8 Años',
     tagline: 'Grimorio de pergamino con sobres de estampas holográficas coleccionables',
-    theme: 'Grimorio Iluminado & Coleccionismo Panini',
+    theme: 'Grimorio Iluminado y Álbum de Colección',
     hubImage: '/redisenos_assets/gamification_primaria_baja_libro_aventura_1792732777656.jpg',
     quizImage: '/redisenos_assets/gamification_quiz_primaria_baja_battle_1792734597009.jpg',
     avatarImage: '/redisenos_assets/gamification_avatar_primaria_baja_album_1792734760601.jpg',
     summary: 'Cada materia es un capítulo de un libro fantástico. Los aciertos desbloquean sobres de cromos con rarezas que se pegan en un álbum interactivo.',
-    worldBenchmark: 'Animal Crossing Museum & Kahoot Kids',
-    features: ['Efecto de brillo holográfico WebGL', 'Intercambio de estampas en el aula', 'Avatares de personajes históricos desbloqueables']
+    worldBenchmark: 'Estándar Internacional de Museos Interactivos y Álbumes Coleccionables',
+    features: ['Efecto de brillo holográfico interactivo', 'Intercambio de estampas en el aula', 'Avatares de personajes históricos desbloqueables']
   },
   {
     key: '05',
@@ -596,44 +596,44 @@ export const REDESIGNS_LIST: RedesignDetail[] = [
     title: '05 Primaria Alta · Crónicas de Exploradores',
     level: '4º a 6º de Primaria (Fase 5 SEP)',
     ages: '9 a 11 Años',
-    tagline: 'Archipiélago de hexágonos 3D tipo Catan con niebla de guerra y crafting STEM',
-    theme: 'Exploración Táctica & Proyectos Comunitarios',
+    tagline: 'Archipiélago de hexágonos 3D con niebla de exploración y creación científica',
+    theme: 'Exploración Táctica y Proyectos Comunitarios',
     hubImage: '/redisenos_assets/gamification_primaria_alta_cronicas_1792732799979.jpg',
     quizImage: '/redisenos_assets/gamification_quiz_primaria_alta_tcg_1792734618682.jpg',
     avatarImage: '/redisenos_assets/gamification_avatar_primaria_baja_album_1792734760601.jpg',
     summary: 'Estrategia territorial cooperativa. Al resolver preguntas de geografía, ciencias e historia se levanta la niebla y se consiguen recursos para proyectos reales de la NEM.',
-    worldBenchmark: 'Classcraft & Catan Boardgame',
-    features: ['Cuadrícula hexagonal infinita', 'Construcción de observatorios y laboratorios', 'Misiones de equipo sin rivalidades tóxicas']
+    worldBenchmark: 'Estándar Internacional de Estrategia Hexagonal y Cooperación de Gremios',
+    features: ['Cuadrícula hexagonal interactiva', 'Construcción de observatorios y laboratorios', 'Misiones de equipo sin rivalidades tóxicas']
   },
   {
     key: '06',
     code: '06primaria_alta_torneo_cartas',
-    title: '06 Primaria Alta · Torneo de Saberes & Cartas TCG',
+    title: '06 Primaria Alta · Torneo de Saberes y Cartas',
     level: '4º a 6º de Primaria (Fase 5 SEP)',
     ages: '9 a 11 Años',
     tagline: 'Estadio de duelos intelectuales con barajas de conocimiento coleccionables',
-    theme: 'Estrategia TCG (Trading Card Game) Curricular',
+    theme: 'Estrategia de Cartas Coleccionables Curriculares',
     hubImage: '/redisenos_assets/gamification_primaria_alta_torneo_cartas_1792732819565.jpg',
     quizImage: '/redisenos_assets/gamification_quiz_primaria_alta_tcg_1792734618682.jpg',
     avatarImage: '/redisenos_assets/gamification_avatar_primaria_baja_album_1792734760601.jpg',
     summary: 'Los conceptos aprendidos son cartas con poder de ataque de conocimiento. El alumno invoca a Isaac Newton o las Leyes de la Termodinámica con cristales de maná.',
-    worldBenchmark: 'Hearthstone & Magic: The Gathering Didáctico',
-    features: ['Constructor de barajas personalizable', 'Combos de sinergia entre ciencias y matemáticas', 'Importación de reactivos desde Google Forms']
+    worldBenchmark: 'Estándar Mundial de Estrategia de Cartas Coleccionables Didácticas',
+    features: ['Constructor de barajas personalizable', 'Combos de sinergia entre ciencias y matemáticas', 'Generación de cartas desde la Bóveda Curricular']
   },
   {
     key: '07',
     code: '07secundaria_gremio_esports',
-    title: '07 Secundaria · Gremio Cyber-Saga Esports',
+    title: '07 Secundaria · Gremio Ciber-Saga de Torneos',
     level: '1º a 3º de Secundaria (Fase 6 SEP)',
     ages: '12 a 14 Años',
-    tagline: 'Arena cyberpunk de Esports con Pase de Batalla de temporada y duelos de clanes',
-    theme: 'Synthwave / Cyberpunk & Clanes Escolares',
+    tagline: 'Arena futurista de competencias con Pase de Temporada y duelos de escuadrones',
+    theme: 'Neón Futurista y Escuadrones Escolares',
     hubImage: '/redisenos_assets/gamification_secundaria_gremio_esports_1792732846760.jpg',
     quizImage: '/redisenos_assets/gamification_quiz_secundaria_cyber_duel_1792734640480.jpg',
     avatarImage: '/redisenos_assets/gamification_avatar_secundaria_customizer_1792734666483.jpg',
-    summary: 'Adrenalina pura para adolescentes. Duelos de trivia síncronos en pedestales de neón con chat en vivo moderado y personalización anime streetwear por méritos.',
-    worldBenchmark: 'Guilded / Discord Académico & Kahoot Live Arena',
-    features: ['WebSockets en tiempo real <80ms', 'Pase de batalla con 50 niveles cosméticos', 'Guardarropa techwear sin micropagos reales']
+    summary: 'Adrenalina pura para adolescentes. Duelos de trivia síncronos en pedestales de neón con canal en vivo moderado y personalización urbana por méritos.',
+    worldBenchmark: 'Estándar Mundial de Arenas Competitivas Académicas en Tiempo Real',
+    features: ['Sincronización en tiempo real <80ms', 'Pase de temporada con 50 niveles cosméticos', 'Guardarropa tecnológico sin micropagos reales']
   },
   {
     key: '08',
@@ -641,43 +641,43 @@ export const REDESIGNS_LIST: RedesignDetail[] = [
     title: '08 Secundaria · Metrópolis de Inventores',
     level: '1º a 3º de Secundaria (Fase 6 SEP)',
     ages: '12 a 14 Años',
-    tagline: 'Simulador steampunk donde la resolución de problemas genera energía urbana',
-    theme: 'Steampunk Victoriano & Ingeniería STEM',
+    tagline: 'Simulador mecánico a vapor donde la resolución de problemas genera energía urbana',
+    theme: 'Ingeniería Victoriana a Vapor y Ciencias Aplicadas',
     hubImage: '/redisenos_assets/gamification_secundaria_metropolis_stem_1792732869540.jpg',
     quizImage: '/redisenos_assets/gamification_quiz_secundaria_cyber_duel_1792734640480.jpg',
     avatarImage: '/redisenos_assets/gamification_avatar_secundaria_customizer_1792734666483.jpg',
     summary: 'Cada circuito resuelto y ecuación equilibrada activa torres Tesla que iluminan los distritos de la ciudad. El Lienzo Digital archiva las patentes inventadas.',
-    worldBenchmark: 'SimCityEDU & Brilliant.org',
-    features: ['Gestión de energía y recursos urbanos', 'Patentes vinculadas a Google Drive', 'Atuendos de latón y monóculos térmicos']
+    worldBenchmark: 'Estándar Internacional de Simulación Urbana y Laboratorios Interactivos',
+    features: ['Gestión de energía y recursos urbanos', 'Patentes vinculadas a la Bóveda Curricular', 'Atuendos de latón y monóculos térmicos']
   },
   {
     key: '09',
     code: '09preparatoria_venture_studio',
-    title: '09 Preparatoria · Apex Academy Venture Studio',
+    title: '09 Preparatoria · Estudio de Innovación y Talento Apex',
     level: '1º a 3º de Preparatoria / Bachillerato',
     ages: '15 a 18 Años',
-    tagline: 'Aceleradora de proyectos estilo Silicon Valley con portafolio y código QR',
-    theme: 'Executive Dark Mode & Venture Capital Escolar',
+    tagline: 'Aceleradora de proyectos pre-universitarios con portafolio y código QR',
+    theme: 'Modo Ejecutivo de Alta Dirección e Incubadora Escolar',
     hubImage: '/redisenos_assets/gamification_preparatoria_venture_studio_1792732893154.jpg',
     quizImage: '/redisenos_assets/gamification_quiz_preparatoria_mastery_1792734699863.jpg',
     avatarImage: '/redisenos_assets/gamification_preparatoria_portfolio_radar_1792734730504.jpg',
-    summary: 'Gamificación de élite. Los estudiantes acumulan créditos de investigación, completan sprints y generan un portafolio profesional con radar de habilidades para universidades.',
-    worldBenchmark: 'Linear, Vercel & GitHub Education',
+    summary: 'Gamificación de élite. Los estudiantes acumulan créditos de investigación, completan ciclos ágiles y generan un portafolio profesional con radar de habilidades para universidades.',
+    worldBenchmark: 'Estándar Internacional de Incubadoras Tecnológicas y Portafolios Verificables',
     features: ['Predictor de admisión UNAM/Tec en tiempo real', 'Demostraciones formales en LaTeX', 'Credenciales criptográficas verificables con QR']
   },
   {
     key: '10',
     code: '10preparatoria_nexus_protocol',
-    title: '10 Preparatoria · Nexus Protocol Research Guild',
+    title: '10 Preparatoria · Gremio de Investigación Protocolo Nexus',
     level: '1º a 3º de Preparatoria / Bachillerato',
     ages: '15 a 18 Años',
     tagline: 'Terminal minimalista de alta ingeniería con grafos de constelación de maestría',
-    theme: 'Minimalismo OLED & Deep Tech Research',
+    theme: 'Minimalismo de Contraste Puro e Investigación Científica',
     hubImage: '/redisenos_assets/gamification_preparatoria_nexus_protocol_1792732922568.jpg',
     quizImage: '/redisenos_assets/gamification_quiz_preparatoria_mastery_1792734699863.jpg',
     avatarImage: '/redisenos_assets/gamification_preparatoria_portfolio_radar_1792734730504.jpg',
     summary: 'Árboles de maestría donde el conocimiento no se mide con números sino con dominio demostrado. Incluye revisión por pares y terminal interactiva de comandos.',
-    worldBenchmark: 'Roam Research, LeetCode & Kaggle',
-    features: ['Grafos curriculares de fuerza dirigida', 'Revisión por pares con reputación académica', 'Integración nativa con Google Colab y Drive']
+    worldBenchmark: 'Estándar Internacional de Grafos de Conocimiento y Ciencia de Datos',
+    features: ['Grafos curriculares de fuerza dirigida', 'Revisión por pares con reputación académica', 'Integración nativa con Bóveda Curricular y Supercómputo Institucional']
   }
 ];

@@ -38,6 +38,7 @@ import {
   Sparkle
 } from 'lucide-react';
 import { gamificationAudio } from '@/lib/redisenosAudio';
+import { speakNaturalFemaleSpanish } from '@/lib/redisenosVoiceTTS';
 import { AnimeAvatarSprite } from '@/components/AnimeAvatarSprite';
 
 // ==========================================
@@ -172,7 +173,7 @@ const GEAR_CATALOG: GearItem[] = [
     name: 'Auriculares RGB Tácticos',
     category: 'Auriculares',
     rarity: 'Épico',
-    bonus: 'Audio Binaural · Enlace Discord Salón',
+    bonus: 'Audio Binaural · Canal de Voz del Aula',
     image: '/redisenos_assets/gremio_cyber/cyber_gamer_auriculares_rgb.jpg',
     badgeColor: 'from-purple-500 to-pink-600',
     borderColor: 'border-purple-400',
@@ -297,6 +298,8 @@ export default function GremioCyberEsportsPage() {
     { sender: 'Prof_Mendoza', text: 'Excelente ritmo de argumentación jóvenes', team: 'teacher' }
   ]);
   const [chatInput, setChatInput] = useState<string>('');
+  const [cyberTeacherPrompt, setCyberTeacherPrompt] = useState<string>('Leyes de Newton, Revolución Mexicana y Ecuaciones Lineales en Duelo Relámpago');
+  const [cyberVaultSaved, setCyberVaultSaved] = useState<boolean>(false);
 
   const activeStudent = students.find(s => s.id === activeStudentId) || students[0];
 
@@ -346,27 +349,13 @@ export default function GremioCyberEsportsPage() {
     setTimeout(() => setConfettiActive(false), 3000);
   };
 
-  // Síntesis de Voz Oratoria en Primera Persona Estricta (Regla No Negociable 2)
+  // Síntesis de Voz Femenina Natural Humana en Primera Persona Estricta (Regla No Negociable 2)
   const speakText = (text: string, isCommentator = false) => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    try {
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'es-MX';
-      if (isCommentator) {
-        utter.rate = 0.92;
-        utter.pitch = 0.95;
-        setIsSpeakingCommentator(true);
-        utter.onend = () => setIsSpeakingCommentator(false);
-        utter.onerror = () => setIsSpeakingCommentator(false);
-      } else {
-        utter.rate = 1.05;
-        utter.pitch = 1.15;
-      }
-      window.speechSynthesis.speak(utter);
-    } catch {
-      // Ignorar fallas si el navegador bloquea la reproducción de voz sin gesto
+    if (isCommentator) {
+      setIsSpeakingCommentator(true);
+      setTimeout(() => setIsSpeakingCommentator(false), 6000);
     }
+    speakNaturalFemaleSpanish(text, { rate: isCommentator ? 0.96 : 1.0, pitch: 1.03 });
   };
 
   // Temporizador general de partida en la Arena
@@ -712,14 +701,14 @@ export default function GremioCyberEsportsPage() {
       {/* ======================================================== */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
         
-        {/* ESCENARIO MAESTRO 16:9 LIMPIO SIN CAJAS OPACAS QUE LO TAPEN */}
-        <div className="relative w-full aspect-[16/9] min-h-[540px] rounded-3xl overflow-hidden border-2 border-cyan-500/50 shadow-2xl shadow-cyan-950/40 bg-slate-950 group">
+        {/* ESCENARIO MAESTRO 1280:714 LIMPIO SIN RECORTE NI CAJAS OPACAS QUE LO TAPEN */}
+        <div className="relative w-full max-w-[calc(82vh*1.7927)] aspect-[1280/714] mx-auto rounded-3xl overflow-hidden border-2 border-cyan-500/50 shadow-2xl shadow-cyan-950/40 bg-slate-950 group">
           
-          {/* Fondo Oficial de Alta Resolución */}
+          {/* Fondo Oficial de Alta Resolución (1280x714) */}
           <img
             src="/redisenos_assets/gremio_cyber/cyber_master_hub_scene.jpg"
             alt="Gremio Cyber-Saga Escenario Maestro"
-            className="w-full h-full object-cover object-center pointer-events-none"
+            className="w-full h-full object-fill pointer-events-none select-none"
           />
 
           {/* ============================================================== */}
@@ -810,7 +799,7 @@ export default function GremioCyberEsportsPage() {
             <div className="absolute inset-0 rounded-2xl opacity-0 group-hover/arena:opacity-100 transition-opacity bg-rose-500/20 border-2 border-rose-400/90 flex flex-col items-center justify-center p-2 pointer-events-none">
               <span className="text-[11px] font-black text-rose-300 mb-1">⏱️ 00:34 · PARTIDA LISTA</span>
               <span className="bg-gradient-to-r from-rose-500 to-indigo-600 text-white font-black text-xs px-3 py-1 rounded-lg shadow-lg">
-                JOIN MATCH (UNIRSE) ⚔️
+                UNIRSE AL DUELO ⚔️
               </span>
             </div>
           </div>
@@ -824,14 +813,14 @@ export default function GremioCyberEsportsPage() {
             <div className="absolute inset-0 rounded-2xl opacity-0 group-hover/boss:opacity-100 transition-opacity bg-indigo-500/20 border-2 border-indigo-400/80 flex items-center justify-between p-4 pointer-events-none">
               <div className="text-left">
                 <span className="text-xs font-black text-rose-300 block">
-                  Chronos Overseer: {bossHp} / {bossMaxHp} HP
+                  Guardián Cronos: {bossHp} / {bossMaxHp} PV
                 </span>
                 <span className="text-[10px] text-slate-300">
                   {projectDeliveries} entregas de ciencias grupales registradas
                 </span>
               </div>
               <span className="bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs px-3.5 py-1.5 rounded-xl shadow-lg">
-                CONTRIBUTE PROJECT 🧪
+                APORTAR PROYECTO 🧪
               </span>
             </div>
           </div>
@@ -929,7 +918,7 @@ export default function GremioCyberEsportsPage() {
                   <div className="flex items-center justify-between text-xs font-black">
                     <span className="text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
                       <Target className="w-4 h-4 text-cyan-400" />
-                      SPEED BONUS BAR (PRECISIÓN TEMPORAL):
+                      BARRA DE BONIFICACIÓN DE VELOCIDAD (PRECISIÓN TEMPORAL):
                     </span>
                     <span className={`px-2 py-0.5 rounded-lg font-mono text-xs ${
                       questionSpeedTimer >= 7
@@ -1445,7 +1434,7 @@ export default function GremioCyberEsportsPage() {
       )}
 
       {/* ======================================================== */}
-      {/* MODAL 5: UNIVERSAL CHALLENGE STUDIO (DOCENTE)           */}
+      {/* MODAL 5: ESTUDIO DE TORNEOS DOCENTE (SECUNDARIA)          */}
       {/* ======================================================== */}
       {activeModal === 'teacherStudio' && (
         <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in">
@@ -1454,8 +1443,8 @@ export default function GremioCyberEsportsPage() {
               <div className="flex items-center gap-2">
                 <GraduationCap className="w-5 h-5 text-indigo-400" />
                 <div>
-                  <span className="text-[10px] font-black uppercase text-indigo-400">Universal Challenge Studio</span>
-                  <h3 className="text-base font-extrabold text-white">Panel Maestro del Educador (Secundaria)</h3>
+                  <span className="text-[10px] font-black uppercase text-indigo-400">Estudio de Torneos Docente · Bóveda Curricular</span>
+                  <h3 className="text-base font-extrabold text-white">Panel Maestro del Educador (Secundaria Fase 6 SEP)</h3>
                 </div>
               </div>
               <button
@@ -1467,14 +1456,55 @@ export default function GremioCyberEsportsPage() {
             </div>
 
             <div className="space-y-3 text-xs text-slate-300">
-              <div className="p-3.5 rounded-2xl bg-indigo-950/40 border border-indigo-800/50 space-y-1.5">
-                <span className="font-bold text-indigo-300 block">1. Modo Torneo Relámpago de Salón</span>
-                <p>El profesor proyecta la arena de combate con 1 clic en la pantalla interactiva del aula. Los estudiantes participan en vivo desde sus dispositivos en competencias de 10 minutos.</p>
+              <div className="p-3.5 rounded-2xl bg-indigo-950/40 border border-indigo-800/50 space-y-2">
+                <span className="font-bold text-indigo-300 block">1. Configurar PDA de Torneo Relámpago de Salón</span>
+                <input
+                  type="text"
+                  value={cyberTeacherPrompt}
+                  onChange={(e) => setCyberTeacherPrompt(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-indigo-500/40 text-xs text-white font-bold"
+                />
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <button
+                    onClick={() => {
+                      gamificationAudio.playLevelUpSound();
+                      setCyberVaultSaved(true);
+                      speakText("Banco de reactivos sincronizado en la Bóveda Curricular de Secundaria.");
+                      showToast("¡Torneo sincronizado en Bóveda Curricular!");
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs"
+                  >
+                    💾 Sincronizar en Bóveda Curricular
+                  </button>
+                  <button
+                    onClick={() => {
+                      gamificationAudio.playClickSound();
+                      setActiveModal('arena');
+                      speakText("Lanzando Torneo Relámpago en vivo para el salón.");
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs"
+                  >
+                    ⚔️ Lanzar Torneo en Vivo
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleContributeProject();
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-black text-xs"
+                  >
+                    🧪 Acreditar Proyecto Grupal (-80 PV Jefe)
+                  </button>
+                </div>
+                {cyberVaultSaved && (
+                  <div className="text-[11px] text-emerald-400 font-bold">
+                    ✅ Guardado en <code>planeaciones/secundaria/gremio_cyber_esports.md</code>
+                  </div>
+                )}
               </div>
 
               <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1.5">
                 <span className="font-bold text-cyan-300 block">2. Sincronización Automática con Bóveda Curricular</span>
-                <p>Las preguntas se nutren de los PDA SEP oficiales de Secundaria (Fase 6). Las entregas de proyectos otorgan daño directo al Boss Raid semanal.</p>
+                <p>Las preguntas se nutren de los PDA SEP oficiales de Secundaria (Fase 6). Las entregas de proyectos otorgan daño directo al Guardián Semanal.</p>
               </div>
 
               <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1.5">

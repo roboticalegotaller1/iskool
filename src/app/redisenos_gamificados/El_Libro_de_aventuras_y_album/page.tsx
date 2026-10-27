@@ -37,6 +37,7 @@ import {
   Users
 } from 'lucide-react';
 import { gamificationAudio } from '@/lib/redisenosAudio';
+import { speakNaturalFemaleSpanish } from '@/lib/redisenosVoiceTTS';
 
 // ==========================================
 // 1. MODELO DE DATOS Y PERFILES DE ESTUDIANTES
@@ -365,6 +366,13 @@ export default function LibroAventurasPage() {
   const [isStoriesModalOpen, setIsStoriesModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFamilyMissionModalOpen, setIsFamilyMissionModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isAchievementsModalOpen, setIsAchievementsModalOpen] = useState(false);
+  const [isTradeFairModalOpen, setIsTradeFairModalOpen] = useState(false);
+  const [isTeacherGrimoireOpen, setIsTeacherGrimoireOpen] = useState(false);
+  const [activeStoryChapter, setActiveStoryChapter] = useState<1 | 2 | 3>(1);
+  const [teacherGrimoirePrompt, setTeacherGrimoirePrompt] = useState<string>('Comprensión lectora de leyendas mexicanas y reparto de fracciones propias');
+  const [grimoireVaultSaved, setGrimoireVaultSaved] = useState<boolean>(false);
   
   // Notificaciones y Confetti
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -391,7 +399,12 @@ export default function LibroAventurasPage() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Sonidos
+  // Sonidos y Voz Femenina Natural en Español
+  const speakText = (text: string) => {
+    if (isSoundMuted) return;
+    speakNaturalFemaleSpanish(text, { rate: 0.96, pitch: 1.05 });
+  };
+
   const playSound = (type: 'click' | 'magic' | 'hit' | 'coin' | 'level') => {
     if (isSoundMuted) return;
     if (type === 'click') gamificationAudio.playClickSound();
@@ -419,6 +432,7 @@ export default function LibroAventurasPage() {
       speech = '¡Galletita deliciosa! +5% Felicidad';
     }
     setPipSpeech(speech);
+    speakText(speech);
 
     setProfiles(prev => prev.map(p => {
       if (p.id !== activeStudent.id) return p;
@@ -678,11 +692,39 @@ export default function LibroAventurasPage() {
               </button>
 
               <button
-                onClick={() => showToast(`Perfil de ${activeStudent.name}: Nivel ${activeStudent.level}`)}
+                onClick={() => {
+                  playSound('click');
+                  setIsProfileModalOpen(true);
+                  speakText(`Perfil estudiantil de ${activeStudent.name}, nivel ${activeStudent.level}.`);
+                }}
                 className="w-10 h-10 rounded-2xl bg-amber-400 hover:bg-amber-300 border-2 border-amber-600 flex items-center justify-center font-black text-slate-900 shadow-md transition-transform hover:scale-105"
                 title="Perfil del Alumno"
               >
                 👤
+              </button>
+
+              <button
+                onClick={() => {
+                  playSound('click');
+                  setIsTradeFairModalOpen(true);
+                  speakText("Feria de Saberes: intercambia estampas repetidas respondiendo acertijos.");
+                }}
+                className="px-3 h-10 rounded-2xl bg-purple-600 hover:bg-purple-500 border-2 border-purple-300 flex items-center justify-center font-black text-white text-xs shadow-md transition-transform hover:scale-105"
+                title="Feria de Saberes (Intercambio)"
+              >
+                🤝 Feria
+              </button>
+
+              <button
+                onClick={() => {
+                  playSound('click');
+                  setIsTeacherGrimoireOpen(true);
+                  speakText("Estudio Docente del Grimorio conectado a la Bóveda Curricular.");
+                }}
+                className="px-3 h-10 rounded-2xl bg-emerald-700 hover:bg-emerald-600 border-2 border-emerald-400 flex items-center justify-center font-black text-white text-xs shadow-md transition-transform hover:scale-105"
+                title="Estudio Docente del Grimorio"
+              >
+                👩‍🏫 Docente
               </button>
             </div>
 
@@ -696,6 +738,7 @@ export default function LibroAventurasPage() {
               onClick={() => {
                 playSound('click');
                 setIsStoriesModalOpen(true);
+                speakText("Abriendo el Gran Grimorio de historias y cartas históricas en primera persona.");
               }}
               className="p-3 rounded-2xl bg-gradient-to-b from-amber-600 via-amber-700 to-amber-900 hover:from-amber-500 hover:to-amber-800 text-amber-100 border-4 border-amber-950 shadow-lg flex items-center justify-center gap-2 font-black text-xs md:text-sm uppercase tracking-wide transition-transform hover:scale-105 active:scale-95 text-shadow"
             >
@@ -708,6 +751,7 @@ export default function LibroAventurasPage() {
               onClick={() => {
                 playSound('click');
                 setIsFamilyMissionModalOpen(true);
+                speakText("Misión familiar: explora la galaxia leyendo en casa.");
               }}
               className="p-3 rounded-2xl bg-gradient-to-b from-amber-600 via-amber-700 to-amber-900 hover:from-amber-500 hover:to-amber-800 text-amber-100 border-4 border-amber-950 shadow-lg flex items-center justify-center gap-2 font-black text-xs md:text-sm uppercase tracking-wide transition-transform hover:scale-105 active:scale-95 text-shadow"
             >
@@ -730,7 +774,8 @@ export default function LibroAventurasPage() {
             <button
               onClick={() => {
                 playSound('click');
-                showToast(`Logros de ${activeStudent.name}: ${activeStudent.collectedStickers.length} Estampas y 4 Insignias`);
+                setIsAchievementsModalOpen(true);
+                speakText(`Logros y medallas de ${activeStudent.name}.`);
               }}
               className="p-3 rounded-2xl bg-gradient-to-b from-amber-600 via-amber-700 to-amber-900 hover:from-amber-500 hover:to-amber-800 text-amber-100 border-4 border-amber-950 shadow-lg flex items-center justify-center gap-2 font-black text-xs md:text-sm uppercase tracking-wide transition-transform hover:scale-105 active:scale-95 text-shadow"
             >
@@ -882,12 +927,19 @@ export default function LibroAventurasPage() {
                 <div className="bg-gradient-to-b from-sky-300 via-indigo-200 to-emerald-200 rounded-2xl p-3 border-2 border-sky-400 relative overflow-hidden min-h-[170px] flex items-center justify-between">
                   
                   {/* Nodo 1: Árbol de Cuentos */}
-                  <div className="flex flex-col items-center gap-1 z-10">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-500 border-2 border-emerald-700 flex items-center justify-center text-2xl shadow-md transform hover:scale-110 transition-transform cursor-pointer">
+                  <div
+                    onClick={() => {
+                      playSound('click');
+                      setIsStoriesModalOpen(true);
+                      speakText("Árbol de Cuentos: elige un capítulo del Grimorio para escuchar su narración.");
+                    }}
+                    className="flex flex-col items-center gap-1 z-10 cursor-pointer"
+                  >
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-500 border-2 border-emerald-700 flex items-center justify-center text-2xl shadow-md transform hover:scale-110 transition-transform">
                       🌳
                     </div>
                     <span className="text-[10px] font-black text-slate-900 text-center">Árbol de Cuentos</span>
-                    <span className="text-[9px] font-bold text-emerald-800 bg-emerald-100 px-1.5 rounded-full">Superado</span>
+                    <span className="text-[9px] font-bold text-emerald-800 bg-emerald-100 px-1.5 rounded-full">Explorar</span>
                   </div>
 
                   {/* Conector */}
@@ -900,6 +952,7 @@ export default function LibroAventurasPage() {
                     onClick={() => {
                       playSound('magic');
                       setIsBattleOpen(true);
+                      speakText("Entrando a la Caverna de Cristal. ¡Resuelve la división para purificar al Gólem del Bosque!");
                     }}
                     className="flex flex-col items-center gap-1 z-10 cursor-pointer group"
                   >
@@ -916,12 +969,20 @@ export default function LibroAventurasPage() {
                   <div className="flex-1 h-2 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-full mx-1 z-0" />
 
                   {/* Nodo 3: Castillo Lunar */}
-                  <div className="flex flex-col items-center gap-1 z-10 opacity-75">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-700 border-2 border-indigo-900 flex items-center justify-center text-2xl shadow-md">
+                  <div
+                    onClick={() => {
+                      playSound('magic');
+                      speakText("¡Castillo Lunar! Has descubierto el observatorio astronómico y ganado 50 monedas.");
+                      setProfiles(prev => prev.map(p => p.id === activeStudent.id ? { ...p, coins: p.coins + 50, stars: p.stars + 2 } : p));
+                      showToast("🏰 ¡Castillo Lunar explorado! +50 Monedas y +2 Estrellas");
+                    }}
+                    className="flex flex-col items-center gap-1 z-10 cursor-pointer group"
+                  >
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-700 border-2 border-amber-300 flex items-center justify-center text-2xl shadow-md transform group-hover:scale-110 transition-transform">
                       🏰
                     </div>
                     <span className="text-[10px] font-black text-slate-900 text-center">Castillo Lunar</span>
-                    <span className="text-[9px] font-bold text-slate-600 bg-slate-200 px-1.5 rounded-full">Bloqueado</span>
+                    <span className="text-[9px] font-bold text-indigo-900 bg-indigo-200 px-1.5 rounded-full">Visitar (+50 🪙)</span>
                   </div>
 
                 </div>
@@ -1096,7 +1157,7 @@ export default function LibroAventurasPage() {
               <div>
                 <h2 className="text-xl md:text-2xl font-black text-amber-300 tracking-wide uppercase flex items-center gap-2">
                   <ShoppingBag className="w-6 h-6 text-amber-400" />
-                  Tienda de Recompensas (Reward Store)
+                  Tienda Real de Recompensas del Grimorio
                 </h2>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-xs font-bold text-amber-200/80 uppercase">
@@ -1126,7 +1187,7 @@ export default function LibroAventurasPage() {
               {/* Repisa 1: Compañeros Mágicos Flotantes */}
               <div className="space-y-3">
                 <h3 className="text-sm font-black text-amber-300 uppercase tracking-wider flex items-center gap-2">
-                  <span>✨</span> Compañeros Mágicos Flotantes (Magical Floating Companions)
+                  <span>✨</span> Compañeros Mágicos Flotantes
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {REWARD_STORE_ITEMS.filter(i => i.category === 'companions').map(item => {
@@ -1142,7 +1203,6 @@ export default function LibroAventurasPage() {
                             {item.icon}
                           </div>
                           <h4 className="font-black text-white text-sm">{item.name}</h4>
-                          <span className="text-[10px] text-amber-300/70 font-semibold">{item.englishName}</span>
                           <p className="text-xs text-amber-100/70 mt-1 line-clamp-2">{item.description}</p>
                           <span className="text-[10px] font-bold text-emerald-400 mt-1">{item.perk}</span>
                         </div>
@@ -1150,7 +1210,7 @@ export default function LibroAventurasPage() {
                         <div className="mt-4 pt-3 border-t border-amber-500/20 flex items-center justify-between">
                           <div className="flex items-center gap-1 text-amber-400 font-black text-xs">
                             <span>🪙</span>
-                            <span>{item.price} GC</span>
+                            <span>{item.price} Monedas</span>
                           </div>
 
                           <button
@@ -1175,7 +1235,7 @@ export default function LibroAventurasPage() {
               {/* Repisa 2: Atuendos Vestibles para Avatar */}
               <div className="space-y-3">
                 <h3 className="text-sm font-black text-amber-300 uppercase tracking-wider flex items-center gap-2">
-                  <span>👘</span> Atuendos Vestibles para Avatar (Wearable Avatar Skins)
+                  <span>👘</span> Atuendos Vestibles para Avatar
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {REWARD_STORE_ITEMS.filter(i => i.category === 'skins').map(item => {
@@ -1191,7 +1251,6 @@ export default function LibroAventurasPage() {
                             {item.icon}
                           </div>
                           <h4 className="font-black text-white text-sm">{item.name}</h4>
-                          <span className="text-[10px] text-amber-300/70 font-semibold">{item.englishName}</span>
                           <p className="text-xs text-amber-100/70 mt-1 line-clamp-2">{item.description}</p>
                           <span className="text-[10px] font-bold text-emerald-400 mt-1">{item.perk}</span>
                         </div>
@@ -1199,7 +1258,7 @@ export default function LibroAventurasPage() {
                         <div className="mt-4 pt-3 border-t border-amber-500/20 flex items-center justify-between">
                           <div className="flex items-center gap-1 text-amber-400 font-black text-xs">
                             <span>🪙</span>
-                            <span>{item.price} GC</span>
+                            <span>{item.price} Monedas</span>
                           </div>
 
                           <button
@@ -1224,7 +1283,7 @@ export default function LibroAventurasPage() {
               {/* Repisa 3: Potenciadores Tácticos */}
               <div className="space-y-3">
                 <h3 className="text-sm font-black text-amber-300 uppercase tracking-wider flex items-center gap-2">
-                  <span>⚡</span> Potenciadores Tácticos (Tactical Power-Ups)
+                  <span>⚡</span> Potenciadores Tácticos
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {REWARD_STORE_ITEMS.filter(i => i.category === 'powerups').map(item => {
@@ -1239,7 +1298,6 @@ export default function LibroAventurasPage() {
                             {item.icon}
                           </div>
                           <h4 className="font-black text-white text-sm">{item.name}</h4>
-                          <span className="text-[10px] text-amber-300/70 font-semibold">{item.englishName}</span>
                           <p className="text-xs text-amber-100/70 mt-1 line-clamp-2">{item.description}</p>
                           <span className="text-[10px] font-bold text-emerald-400 mt-1">{item.perk}</span>
                         </div>
@@ -1247,7 +1305,7 @@ export default function LibroAventurasPage() {
                         <div className="mt-4 pt-3 border-t border-amber-500/20 flex items-center justify-between">
                           <div className="flex items-center gap-1 text-amber-400 font-black text-xs">
                             <span>🪙</span>
-                            <span>{item.price} GC</span>
+                            <span>{item.price} Monedas</span>
                           </div>
 
                           <button
@@ -1270,7 +1328,7 @@ export default function LibroAventurasPage() {
               {/* Repisa 4: Insignias Holográficas de Logros */}
               <div className="space-y-3">
                 <h3 className="text-sm font-black text-amber-300 uppercase tracking-wider flex items-center gap-2">
-                  <span>🎖️</span> Insignias Holográficas de Logros (Holographic Badges)
+                  <span>🎖️</span> Insignias Holográficas de Logros
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {REWARD_STORE_ITEMS.filter(i => i.category === 'badges').map(item => {
@@ -1286,7 +1344,6 @@ export default function LibroAventurasPage() {
                             {item.icon}
                           </div>
                           <h4 className="font-black text-white text-sm">{item.name}</h4>
-                          <span className="text-[10px] text-amber-300/70 font-semibold">{item.englishName}</span>
                           <p className="text-xs text-amber-100/70 mt-1 line-clamp-2">{item.description}</p>
                           <span className="text-[10px] font-bold text-emerald-400 mt-1">{item.perk}</span>
                         </div>
@@ -1294,7 +1351,7 @@ export default function LibroAventurasPage() {
                         <div className="mt-4 pt-3 border-t border-amber-500/20 flex items-center justify-between">
                           <div className="flex items-center gap-1 text-amber-400 font-black text-xs">
                             <span>🪙</span>
-                            <span>{item.price} GC</span>
+                            <span>{item.price} Monedas</span>
                           </div>
 
                           <button
@@ -1396,10 +1453,10 @@ export default function LibroAventurasPage() {
                 {/* Barra de Vida del Forest Golem */}
                 <div className="bg-slate-950/80 border-2 border-emerald-500/60 p-3 rounded-2xl shadow-xl min-w-[220px]">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-black text-emerald-300">Forest Golem</span>
+                    <span className="text-xs font-black text-emerald-300">Gólem del Bosque</span>
                     <span className="text-xs font-bold text-white flex items-center gap-1">
                       <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />
-                      HP: {golemHp}
+                      PV: {golemHp}
                     </span>
                   </div>
                   <div className="w-full bg-slate-800 h-3.5 rounded-full overflow-hidden border border-slate-700 p-0.5">
@@ -1645,35 +1702,64 @@ export default function LibroAventurasPage() {
             </div>
 
             <div className="space-y-3">
-              <div className="p-4 rounded-2xl bg-amber-100/80 border border-amber-300 hover:bg-amber-200/80 transition-colors cursor-pointer">
+              <button
+                onClick={() => {
+                  playSound('click');
+                  setActiveStoryChapter(1);
+                  speakText("Capítulo 1: El Reino de las Fracciones. Descubre cómo los panaderos estelares reparten pasteles en mitades y cuartos perfectos para alimentar a los dragones bebés.");
+                }}
+                className={`w-full text-left p-4 rounded-2xl border-2 transition-all cursor-pointer ${
+                  activeStoryChapter === 1 ? 'bg-amber-200 border-amber-600 shadow-md' : 'bg-amber-100/80 border-amber-300 hover:bg-amber-200/80'
+                }`}
+              >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-black text-amber-900">Capítulo 1: El Reino de las Fracciones</span>
+                  <span className="text-xs font-black text-amber-900">Capítulo 1: El Reino de las Fracciones (🔊 Escuchar)</span>
                   <span className="text-[10px] font-bold bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full">Completado</span>
                 </div>
-                <p className="text-xs text-amber-900/80">
+                <p className="text-xs text-amber-900/90">
                   Descubre cómo los panaderos estelares reparten pasteles en mitades y cuartos perfectos para alimentar a los dragones bebés.
                 </p>
-              </div>
+              </button>
 
-              <div className="p-4 rounded-2xl bg-amber-100/80 border border-amber-300 hover:bg-amber-200/80 transition-colors cursor-pointer">
+              <button
+                onClick={() => {
+                  playSound('click');
+                  setActiveStoryChapter(2);
+                  speakText("Capítulo 2: Los Secretos de la Naturaleza. Acompaña a la Ballena Cósmica a través de los ecosistemas mexicanos y aprende sobre la fotosíntesis y el ciclo del agua.");
+                }}
+                className={`w-full text-left p-4 rounded-2xl border-2 transition-all cursor-pointer ${
+                  activeStoryChapter === 2 ? 'bg-amber-200 border-amber-600 shadow-md' : 'bg-amber-100/80 border-amber-300 hover:bg-amber-200/80'
+                }`}
+              >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-black text-amber-900">Capítulo 2: Los Secretos de la Naturaleza</span>
+                  <span className="text-xs font-black text-amber-900">Capítulo 2: Los Secretos de la Naturaleza (🔊 Escuchar)</span>
                   <span className="text-[10px] font-bold bg-amber-300 text-amber-900 px-2 py-0.5 rounded-full">En Curso</span>
                 </div>
-                <p className="text-xs text-amber-900/80">
+                <p className="text-xs text-amber-900/90">
                   Acompaña a la Ballena Cósmica a través de los ecosistemas mexicanos y aprende sobre la fotosíntesis y el ciclo del agua.
                 </p>
-              </div>
+              </button>
 
-              <div className="p-4 rounded-2xl bg-amber-100/80 border border-amber-300 opacity-60">
+              <button
+                onClick={() => {
+                  playSound('level');
+                  setActiveStoryChapter(3);
+                  speakText("Nací en Corralejo en 1753 y la madrugada del 16 de septiembre de 1810 en Dolores toqué la campana para convocar al pueblo a ser libre. Y yo nací en Valladolid en 1768; desde mi casa en Querétaro envié el aviso urgente a través del alcaide Ignacio Pérez para iniciar nuestra Independencia.");
+                  setProfiles(prev => prev.map(p => p.id === activeStudent.id ? { ...p, coins: p.coins + 50, stars: p.stars + 2 } : p));
+                  showToast("📜 ¡Capítulo 3 en 1ª Persona desbloqueado y escuchado! +50 🪙");
+                }}
+                className={`w-full text-left p-4 rounded-2xl border-2 transition-all cursor-pointer ${
+                  activeStoryChapter === 3 ? 'bg-amber-200 border-amber-600 shadow-md' : 'bg-amber-100/80 border-amber-300 hover:bg-amber-200/80'
+                }`}
+              >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-black text-amber-900">Capítulo 3: Héroes de la Historia</span>
-                  <span className="text-[10px] font-bold bg-slate-300 text-slate-700 px-2 py-0.5 rounded-full">Bloqueado</span>
+                  <span className="text-xs font-black text-amber-900">Capítulo 3: Cartas en 1ª Persona · Miguel Hidalgo y Josefa Ortiz (🔊 Escuchar)</span>
+                  <span className="text-[10px] font-bold bg-purple-200 text-purple-900 px-2 py-0.5 rounded-full">1ª Persona (+50 🪙)</span>
                 </div>
-                <p className="text-xs text-amber-900/80">
-                  Cartas epistolares en primera persona donde Don Miguel Hidalgo y Doña Josefa Ortiz narran sus ideales libertarios.
+                <p className="text-xs text-amber-900/90 italic">
+                  &ldquo;La madrugada del 16 de septiembre de 1810 en Dolores hice sonar la campana de mi parroquia...&rdquo; · &ldquo;Desde Querétaro logré avisar por la cerradura a Ignacio Pérez que nuestra causa por la libertad debía comenzar...&rdquo;
                 </p>
-              </div>
+              </button>
             </div>
 
             <div className="mt-6 text-center">
@@ -1788,6 +1874,166 @@ export default function LibroAventurasPage() {
             >
               Guardar Ajustes
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================
+          MODAL 7: PERFIL DEL ALUMNO
+         ========================================== */}
+      {isProfileModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
+          <div className="relative w-full max-w-md bg-amber-50 border-4 border-amber-600 rounded-3xl shadow-2xl p-6 text-slate-900 space-y-4">
+            <div className="flex items-center justify-between border-b border-amber-200 pb-2">
+              <span className="text-xs font-black text-amber-800 uppercase">👤 Expediente del Aprendiz</span>
+              <button onClick={() => setIsProfileModalOpen(false)} className="p-1 rounded-full bg-amber-200 text-amber-950">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="text-center space-y-1">
+              <div className="text-4xl">🧙‍♂️✨</div>
+              <h3 className="text-xl font-black text-slate-900">{activeStudent.name}</h3>
+              <p className="text-xs font-bold text-amber-800">{activeStudent.grade} · Nivel {activeStudent.level}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs font-bold">
+              <div className="p-3 rounded-2xl bg-white border border-amber-300">⭐ Estrellas: <strong>{activeStudent.stars}</strong></div>
+              <div className="p-3 rounded-2xl bg-white border border-amber-300">🪙 Monedas: <strong>{activeStudent.coins}</strong></div>
+              <div className="p-3 rounded-2xl bg-white border border-amber-300">🔥 Racha: <strong>{activeStudent.streakDays} días</strong></div>
+              <div className="p-3 rounded-2xl bg-white border border-amber-300">🐾 Pip: <strong>{activeStudent.pipHappiness}% feliz</strong></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================
+          MODAL 8: VITRINA DE LOGROS
+         ========================================== */}
+      {isAchievementsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
+          <div className="relative w-full max-w-lg bg-slate-900 border-4 border-amber-400 rounded-3xl shadow-2xl p-6 text-white space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <span className="text-xs font-black text-amber-300 uppercase">🏆 Logros y Medallas de {activeStudent.name}</span>
+              <button onClick={() => setIsAchievementsModalOpen(false)} className="p-1 rounded-full bg-slate-800 text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 rounded-2xl bg-slate-800 border border-amber-500/40">
+                <div className="text-2xl mb-1">🔍</div>
+                <div className="font-black text-amber-300">Explorador Curioso</div>
+                <div className="text-slate-300 text-[11px]">Descubrió las 4 estampas holográficas del Grimorio.</div>
+              </div>
+              <div className="p-3 rounded-2xl bg-slate-800 border border-amber-500/40">
+                <div className="text-2xl mb-1">📖</div>
+                <div className="font-black text-amber-300">Lector de Crónicas</div>
+                <div className="text-slate-300 text-[11px]">{activeStudent.storiesCompleted}/12 capítulos completados.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================
+          MODAL 9: FERIA DE SABERES (INTERCAMBIO DE ESTAMPAS)
+         ========================================== */}
+      {isTradeFairModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
+          <div className="relative w-full max-w-lg bg-purple-950 border-4 border-amber-400 rounded-3xl shadow-2xl p-6 text-white space-y-4">
+            <div className="flex items-center justify-between border-b border-purple-800 pb-2">
+              <span className="text-xs font-black text-amber-300 uppercase">🤝 Feria de Saberes · Intercambio Cooperativo</span>
+              <button onClick={() => setIsTradeFairModalOpen(false)} className="p-1 rounded-full bg-purple-800 text-white">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-xs text-purple-200 leading-relaxed">
+              Intercambia una estampa repetida con tus compañeros de salón resolviendo una pregunta cooperativa de Saberes y Pensamiento Científico.
+            </p>
+            <div className="p-4 rounded-2xl bg-purple-900/70 border border-purple-700 space-y-3">
+              <div className="text-xs font-black text-amber-300">Reto de Intercambio: ¿Cuántos cuartos forman un entero completo?</div>
+              <div className="grid grid-cols-3 gap-2">
+                {[2, 4, 6].map(val => (
+                  <button
+                    key={val}
+                    onClick={() => {
+                      if (val === 4) {
+                        playSound('level');
+                        speakText("¡Correcto! Cuatro cuartos forman un entero completo. Has intercambiado la estampa del Cristal Arcoíris y ganado 80 monedas.");
+                        setProfiles(prev => prev.map(p => p.id === activeStudent.id ? {
+                          ...p,
+                          coins: p.coins + 80,
+                          collectedStickers: Array.from(new Set([...p.collectedStickers, 'stk-crystal']))
+                        } : p));
+                        showToast("🤝 ¡Intercambio exitoso! Estampa Cristal Arcoíris +80 🪙");
+                      } else {
+                        playSound('click');
+                        speakText("Casi, recuerda que un cuarto es una de cuatro partes iguales.");
+                      }
+                    }}
+                    className="py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs"
+                  >
+                    {val} cuartos
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================
+          MODAL 10: ESTUDIO DOCENTE DEL GRIMORIO
+         ========================================== */}
+      {isTeacherGrimoireOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
+          <div className="relative w-full max-w-lg bg-white border-4 border-emerald-500 rounded-3xl shadow-2xl p-6 text-slate-900 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+              <div>
+                <span className="text-[10px] font-black text-emerald-700 uppercase">👩‍🏫 Bóveda Curricular · Fase 3 SEP</span>
+                <h3 className="text-base font-black text-slate-900">Estudio Docente del Grimorio y Álbum</h3>
+              </div>
+              <button onClick={() => setIsTeacherGrimoireOpen(false)} className="p-1 rounded-full bg-slate-100 text-slate-700">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 font-semibold">
+              <strong>Ruta Vault-First:</strong> <code>planeaciones/primaria_baja/libro_aventuras_album.md</code>
+            </div>
+            <div>
+              <label className="block text-xs font-black text-slate-700 mb-1">PDA de Lectura y Fracciones para {activeStudent.name}:</label>
+              <input
+                type="text"
+                value={teacherGrimoirePrompt}
+                onChange={(e) => setTeacherGrimoirePrompt(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border-2 border-emerald-300 text-xs font-bold text-slate-800"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                onClick={() => {
+                  playSound('level');
+                  setGrimoireVaultSaved(true);
+                  speakText("Capítulo y estampa sincronizados en la Bóveda Curricular.");
+                  showToast("¡Guardado en Bóveda Curricular!");
+                }}
+                className="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs"
+              >
+                💾 Guardar en Bóveda
+              </button>
+              <button
+                onClick={() => {
+                  setIsTeacherGrimoireOpen(false);
+                  setIsStoriesModalOpen(true);
+                }}
+                className="py-2.5 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs"
+              >
+                📖 Abrir Grimorio
+              </button>
+            </div>
+            {grimoireVaultSaved && (
+              <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-900 text-xs font-bold">
+                ✅ Sincronizado en <code>planeaciones/primaria_baja/libro_aventuras_album.md</code>.
+              </div>
+            )}
           </div>
         </div>
       )}

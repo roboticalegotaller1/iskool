@@ -21,6 +21,7 @@ import {
   Award
 } from 'lucide-react';
 import { gamificationAudio } from '@/lib/redisenosAudio';
+import { speakNaturalFemaleSpanish } from '@/lib/redisenosVoiceTTS';
 
 // 3 Perfiles de Estudiantes Únicos para Preescolar 2 (Fase 2 SEP · 3 a 5 Años)
 interface IslandStudent {
@@ -98,8 +99,11 @@ export default function LaIslaDeLosJuguetesMagicosPage() {
 
   // Modales interactivos
   const [activeModal, setActiveModal] = useState<
-    'none' | 'train_bridge' | 'sound_explorer' | 'colors_shapes' | 'abc_friends' | 'toy_workshop'
+    'none' | 'train_bridge' | 'sound_explorer' | 'colors_shapes' | 'abc_friends' | 'toy_workshop' | 'diploma' | 'historical_toys' | 'teacher_studio'
   >('none');
+  const [selectedHistoricalToyMaker, setSelectedHistoricalToyMaker] = useState<'camarena' | 'davinci'>('camarena');
+  const [islandTeacherPrompt, setIslandTeacherPrompt] = useState<string>('Clasificar bloques de madera por forma, tamaño y secuencia numérica 1 al 5');
+  const [islandVaultSaved, setIslandVaultSaved] = useState<boolean>(false);
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [confettiActive, setConfettiActive] = useState<boolean>(false);
@@ -124,19 +128,9 @@ export default function LaIslaDeLosJuguetesMagicosPage() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // Síntesis de voz infantil en español
+  // Síntesis de voz femenina neuronal humana en español
   const speakText = (text: string) => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    try {
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'es-MX';
-      utter.rate = 0.88;
-      utter.pitch = 1.25;
-      window.speechSynthesis.speak(utter);
-    } catch {
-      // Manejo seguro si el navegador restringe la síntesis
-    }
+    speakNaturalFemaleSpanish(text, { rate: 0.95, pitch: 1.06 });
   };
 
   // Renderizado dinámico del Robot de Madera con los ítems puestos (generados con Nano Banana)
@@ -301,6 +295,43 @@ export default function LaIslaDeLosJuguetesMagicosPage() {
               <ShoppingBag className="w-4 h-4" />
               <span className="hidden sm:inline">Taller</span>
             </button>
+
+            {/* Diploma de Explorador */}
+            <button
+              onClick={() => {
+                gamificationAudio.playLevelUpSound();
+                setActiveModal('diploma');
+                speakText(`¡Felicidades ${activeStudent.name.split(' ')[0]}! Aquí está tu Diploma de Explorador de la Isla.`);
+              }}
+              className="px-3 py-1.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-amber-950 font-black text-xs shadow-md flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95"
+            >
+              <Award className="w-4 h-4" />
+              <span className="hidden sm:inline">Diploma</span>
+            </button>
+
+            {/* Juguetes Ilustres en 1ª Persona */}
+            <button
+              onClick={() => {
+                gamificationAudio.playClickSound();
+                setActiveModal('historical_toys');
+                speakText("Conoce a los grandes inventores que construían juguetes cuando eran niños como tú.");
+              }}
+              className="px-3 py-1.5 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-black text-xs shadow-md flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95"
+            >
+              <span>🧸 Inventores (1ª Persona)</span>
+            </button>
+
+            {/* Estudio Docente */}
+            <button
+              onClick={() => {
+                gamificationAudio.playClickSound();
+                setActiveModal('teacher_studio');
+                speakText("Estudio Docente para Constructores conectado a la Bóveda Curricular.");
+              }}
+              className="px-3 py-1.5 rounded-2xl bg-sky-700 hover:bg-sky-600 text-white font-black text-xs shadow-md flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95"
+            >
+              <span>👩‍🏫 Educadora</span>
+            </button>
           </div>
         </div>
       </header>
@@ -308,14 +339,14 @@ export default function LaIslaDeLosJuguetesMagicosPage() {
       {/* 2. LIENZO CENTRAL: LA ISLA FLOTANTE DE PLASTILINA (IMAGEN 1) */}
       <main className="flex-1 max-w-6xl w-full mx-auto p-3 sm:p-6 flex flex-col items-center justify-center">
         
-        {/* Contenedor del Lienzo con Relación de Aspecto Fidedigna */}
-        <div className="relative w-full aspect-[16/9] max-h-[82vh] rounded-[36px] overflow-hidden shadow-2xl border-4 border-amber-300/80 bg-sky-200">
+        {/* Contenedor del Lienzo con Relación de Aspecto Fidedigna (1024:571 Sin Recorte) */}
+        <div className="relative w-full max-w-[calc(82vh*1.7933)] aspect-[1024/571] mx-auto rounded-[36px] overflow-hidden shadow-2xl border-4 border-amber-300/80 bg-sky-200">
           
           {/* Ilustración Maestra de la Isla Flotante (Imagen 1) */}
           <img 
             src="/redisenos_assets/isla_juguetes/hub_isla_juguetes.jpg" 
             alt="La Isla de los Juguetes Mágicos - Preescolar iSkool" 
-            className="w-full h-full object-cover"
+            className="w-full h-full object-fill select-none"
           />
 
           {/* ========================================================================= */}
@@ -929,12 +960,13 @@ export default function LaIslaDeLosJuguetesMagicosPage() {
                 Piezas y Accesorios de Madera y Plastilina
               </h4>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 {[
                   { key: 'propeller', name: 'Hélices Voladoras', cost: 0, label: 'GRATIS', icon: '🌀' },
                   { key: 'cape', name: 'Capa de Superhéroe', cost: 2, label: '2 Estrellas', icon: '🦸' },
                   { key: 'lightbulbs', name: 'Bombillas Mágicas', cost: 0, label: 'GRATIS', icon: '💡' },
-                  { key: 'trainWheels', name: 'Ruedas de Tren', cost: 2, label: '2 Estrellas', icon: '🚂' }
+                  { key: 'trainWheels', name: 'Ruedas de Tren', cost: 2, label: '2 Estrellas', icon: '🚂' },
+                  { key: 'blockCrown', name: 'Corona de Bloques', cost: 2, label: '2 Estrellas', icon: '👑' }
                 ].map((item) => {
                   const isEquipped = activeStudent.equippedToys[item.key as keyof typeof activeStudent.equippedToys];
                   return (
@@ -943,10 +975,17 @@ export default function LaIslaDeLosJuguetesMagicosPage() {
                       onClick={() => {
                         gamificationAudio.playClickSound();
                         const nextEquipped = !isEquipped;
+                        if (nextEquipped && item.cost > activeStudent.stars) {
+                          gamificationAudio.playErrorSound();
+                          showToast('¡Necesitas más estrellas para construir esta pieza!');
+                          speakText('¡Necesitas más estrellas mágicas! Juega en la isla para ganarlas.');
+                          return;
+                        }
                         setStudents(prev => prev.map(s => {
                           if (s.id !== activeStudent.id) return s;
                           return {
                             ...s,
+                            stars: nextEquipped && item.cost > 0 ? s.stars - item.cost : s.stars,
                             equippedToys: {
                               ...s.equippedToys,
                               [item.key]: nextEquipped
@@ -963,6 +1002,8 @@ export default function LaIslaDeLosJuguetesMagicosPage() {
                           feedback = nextEquipped ? '¡Hélices voladoras colocadas en la cabeza!' : 'Hélices guardadas';
                         } else if (item.key === 'lightbulbs') {
                           feedback = nextEquipped ? '¡Bombillas mágicas encendidas en las antenas!' : 'Bombillas apagadas';
+                        } else if (item.key === 'blockCrown') {
+                          feedback = nextEquipped ? '¡Corona de Bloques dorada colocada en el robot!' : 'Corona de bloques guardada';
                         }
 
                         showToast(feedback);
@@ -1001,6 +1042,202 @@ export default function LaIslaDeLosJuguetesMagicosPage() {
 
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 8. DIPLOMA DE EXPLORADOR AUTOMÁTICO DE FIN DE SEMANA */}
+      {/* ========================================================================= */}
+      {activeModal === 'diploma' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
+          <div className="w-full max-w-xl bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 text-slate-900 rounded-3xl p-6 border-8 border-amber-400 shadow-2xl text-center space-y-4">
+            <div className="flex items-center justify-between border-b-2 border-amber-200 pb-2">
+              <span className="text-xs font-black text-amber-800 uppercase tracking-wider">
+                🎓 Reconocimiento Oficial Preescolar · Fase 2 SEP
+              </span>
+              <button onClick={() => setActiveModal('none')} className="p-1 rounded-full bg-amber-200 text-amber-950">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="text-5xl">🏆🤖✨</div>
+            <h3 className="text-2xl font-black text-amber-950">
+              Diploma de Constructor Mágico
+            </h3>
+            <p className="text-sm font-bold text-slate-700">
+              Otorgado con mucho cariño a <span className="text-emerald-700 font-black underline">{activeStudent.name}</span> ({activeStudent.grade}) por construir puentes, reconocer formas y reunir <strong>{activeStudent.stars} Estrellas de Sabiduría</strong> junto a su Robot Guardián.
+            </p>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                onClick={() => {
+                  gamificationAudio.playLevelUpSound();
+                  speakText(`¡Muchas felicidades ${activeStudent.name}! Ganaste tu diploma de Constructor Mágico con ${activeStudent.stars} estrellas.`);
+                  showToast("¡Diploma leído con voz natural para la familia!");
+                }}
+                className="py-2.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-amber-950 font-black text-xs shadow-md flex items-center justify-center gap-2"
+              >
+                <Volume2 className="w-4 h-4" />
+                <span>Escuchar Diploma Familiar</span>
+              </button>
+              <button
+                onClick={() => {
+                  gamificationAudio.playVictorySound();
+                  setStudents(prev => prev.map(s => s.id === activeStudent.id ? { ...s, stars: s.stars + 2 } : s));
+                  showToast("¡Diploma enviado al Portal de Padres ISkool! +2 Estrellas");
+                }}
+                className="py-2.5 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-md"
+              >
+                📩 Enviar a Mamá y Papá (+2 ⭐)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 9. JUGUETES ILUSTRES HISTÓRICOS EN 1ª PERSONA (CAMARENA Y DA VINCI) */}
+      {/* ========================================================================= */}
+      {activeModal === 'historical_toys' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
+          <div className="w-full max-w-xl bg-sky-950 text-white rounded-3xl p-6 border-4 border-amber-400 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-sky-800 pb-2">
+              <span className="text-xs font-black text-amber-300 uppercase tracking-wider">
+                🧸 Juguetes Ilustres · Canon Histórico en 1ª Persona Estricta
+              </span>
+              <button onClick={() => setActiveModal('none')} className="p-1 rounded-full bg-sky-800 text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => {
+                  gamificationAudio.playClickSound();
+                  setSelectedHistoricalToyMaker('camarena');
+                  speakText("Nací en Guadalajara en 1917. Cuando era niño construía mis propios juguetes eléctricos con piezas de madera y discos de colores, hasta que inventé la televisión a color.");
+                }}
+                className={`p-3 rounded-2xl border-2 text-left transition-all ${
+                  selectedHistoricalToyMaker === 'camarena'
+                    ? 'bg-amber-500/20 border-amber-400'
+                    : 'bg-sky-900/60 border-sky-700'
+                }`}
+              >
+                <div className="text-2xl mb-1">📺🌈</div>
+                <div className="text-sm font-black text-white">Guillermo G. Camarena</div>
+                <div className="text-[11px] text-amber-300 font-bold">Niño Inventor Mexicano (1917)</div>
+              </button>
+
+              <button
+                onClick={() => {
+                  gamificationAudio.playClickSound();
+                  setSelectedHistoricalToyMaker('davinci');
+                  speakText("Nací en Vinci en 1452. De niño observaba las aves volar y tallaba pequeños juguetes con engranes y hélices de madera muy parecidos a tu robot guardián.");
+                }}
+                className={`p-3 rounded-2xl border-2 text-left transition-all ${
+                  selectedHistoricalToyMaker === 'davinci'
+                    ? 'bg-emerald-500/20 border-emerald-400'
+                    : 'bg-sky-900/60 border-sky-700'
+                }`}
+              >
+                <div className="text-2xl mb-1">🌀⚙️</div>
+                <div className="text-sm font-black text-white">Leonardo da Vinci</div>
+                <div className="text-[11px] text-emerald-300 font-bold">Maestro de Hélices y Juguetes (1452)</div>
+              </button>
+            </div>
+
+            <div className="bg-sky-900/80 p-4 rounded-2xl border border-sky-700 space-y-3">
+              <p className="text-sm text-sky-100 font-semibold italic leading-relaxed">
+                {selectedHistoricalToyMaker === 'camarena'
+                  ? '“Nací en Guadalajara el 17 de febrero de 1917. Desde pequeño armaba juguetes con cables, focos y ruedas de cartón en mi casa. Gracias a mi curiosidad con el rojo, verde y azul, en 1940 patenté el sistema tricromático para llenar las pantallas de colores.”'
+                  : '“Nací en 1452 en el pueblo de Vinci. Siempre amé construir leones mecánicos y hélices de madera que giraban hacia las nubes. Cada vez que pones una hélice o rueda en tu robot, estás pensando como un verdadero inventor.”'}
+              </p>
+              <button
+                onClick={() => {
+                  gamificationAudio.playLevelUpSound();
+                  speakText(
+                    selectedHistoricalToyMaker === 'camarena'
+                      ? "Nací en Guadalajara el 17 de febrero de 1917. Desde pequeño armaba juguetes con focos y ruedas de colores hasta inventar la televisión a color. ¡Toma dos estrellas para tu taller!"
+                      : "Nací en 1452 en Vinci. Construí juguetes mecánicos y hélices voladoras de madera. ¡Toma dos estrellas para seguir armando tu robot!"
+                  );
+                  setStudents(prev => prev.map(s => s.id === activeStudent.id ? { ...s, stars: s.stars + 2 } : s));
+                  showToast("¡Escuchaste al inventor en 1ª persona! +2 Estrellas 🌟");
+                }}
+                className="w-full py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs flex items-center justify-center gap-2 shadow-md"
+              >
+                <Volume2 className="w-4 h-4" />
+                <span>Escuchar Relato en 1ª Persona (+2 Estrellas)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 10. ESTUDIO DOCENTE PARA CONSTRUCTORES (BÓVEDA CURRICULAR) */}
+      {/* ========================================================================= */}
+      {activeModal === 'teacher_studio' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
+          <div className="w-full max-w-xl bg-white text-slate-900 rounded-3xl p-6 border-4 border-sky-400 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+              <div>
+                <span className="text-[11px] font-black text-sky-700 uppercase tracking-wider">
+                  👩‍🏫 Bóveda Curricular Preescolar · Fase 2 SEP
+                </span>
+                <h3 className="text-lg font-black text-slate-900">
+                  Estudio Docente para Constructores de Bloques
+                </h3>
+              </div>
+              <button onClick={() => setActiveModal('none')} className="p-1.5 rounded-full bg-slate-100 text-slate-700">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-left">
+              <div className="p-3 rounded-2xl bg-sky-50 border border-sky-200 text-xs font-semibold text-sky-950">
+                <strong>Nodo de Bóveda:</strong> <code>planeaciones/preescolar/isla_juguetes_bloques.md</code> · Convierte objetivos de conteo y motricidad fina en puentes de madera interactivos.
+              </div>
+              <div>
+                <label className="block text-xs font-black text-slate-700 mb-1">
+                  PDA de Construcción y Conteo para {activeStudent.name}:
+                </label>
+                <input
+                  type="text"
+                  value={islandTeacherPrompt}
+                  onChange={(e) => setIslandTeacherPrompt(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border-2 border-sky-300 text-xs font-bold text-slate-800"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                <button
+                  onClick={() => {
+                    gamificationAudio.playLevelUpSound();
+                    setIslandVaultSaved(true);
+                    speakText(`Planeación de bloques guardada en la Bóveda Curricular para ${activeStudent.name.split(' ')[0]}.`);
+                    showToast("¡Guardado en Bóveda Curricular Preescolar!");
+                  }}
+                  className="py-2.5 px-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-black text-xs shadow-md"
+                >
+                  💾 Guardar en Bóveda Curricular
+                </button>
+                <button
+                  onClick={() => {
+                    gamificationAudio.playClickSound();
+                    setActiveModal('train_bridge');
+                    speakText("Abriendo el puente del trenecito asignado por la educadora.");
+                  }}
+                  className="py-2.5 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs shadow-md"
+                >
+                  🚂 Probar Puente del Tren
+                </button>
+              </div>
+              {islandVaultSaved && (
+                <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-900 text-xs font-bold border border-emerald-300">
+                  ✅ Sincronizado con éxito en <code>planeaciones/preescolar/isla_juguetes_bloques.md</code>.
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

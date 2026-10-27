@@ -36,6 +36,7 @@ import {
   Users
 } from 'lucide-react';
 import { gamificationAudio } from '@/lib/redisenosAudio';
+import { speakNaturalFemaleSpanish, stopNaturalFemaleVoice } from '@/lib/redisenosVoiceTTS';
 import { AnimeAvatarSprite } from '@/components/AnimeAvatarSprite';
 
 // =========================================================================
@@ -83,7 +84,7 @@ const INITIAL_FOUNDERS: FounderStudent[] = [
     stage: 'Semilla',
     ventureCredits: 4250,
     gpa: 9.7,
-    cambridgeLevel: 'C1 Advanced',
+    cambridgeLevel: 'MCER C1 Avanzado',
     prioritySprint: 'Sprint 03: Validación de Fotobiorreactores',
     radarScores: { math: 95, stem: 89, writing: 85, leadership: 92, english: 91 },
     activeRenderKey: 'maletin'
@@ -102,7 +103,7 @@ const INITIAL_FOUNDERS: FounderStudent[] = [
     stage: 'Serie A Pre',
     ventureCredits: 5800,
     gpa: 9.9,
-    cambridgeLevel: 'C2 Proficiency',
+    cambridgeLevel: 'MCER C2 Dominio',
     prioritySprint: 'Sprint 05: Algoritmos de Atención EEG',
     radarScores: { math: 98, stem: 96, writing: 94, leadership: 95, english: 96 },
     activeRenderKey: 'lentes'
@@ -121,7 +122,7 @@ const INITIAL_FOUNDERS: FounderStudent[] = [
     stage: 'Idea',
     ventureCredits: 2600,
     gpa: 9.4,
-    cambridgeLevel: 'B2 Vantage',
+    cambridgeLevel: 'MCER B2 Intermedio Alto',
     prioritySprint: 'Sprint 02: Modelado CAD de Chasis Solar',
     radarScores: { math: 88, stem: 90, writing: 82, leadership: 86, english: 84 },
     activeRenderKey: 'pin'
@@ -274,6 +275,8 @@ export default function ApexAcademyVentureStudioPage() {
   const [customizerMode, setCustomizerMode] = useState<'3d_renders' | 'anime_sprite'>('3d_renders');
   const [selectedFounderItem, setSelectedFounderItem] = useState<'base' | 'lentes' | 'maletin' | 'pin'>('maletin');
   const [spriteAnimation, setSpriteAnimation] = useState<'idle' | 'cast' | 'cheer'>('idle');
+  const [sprintsList, setSprintsList] = useState<SprintTask[]>(SPRINT_PIPELINE);
+  const [newSprintTitle, setNewSprintTitle] = useState<string>('Sprint 06: Validación de Escalabilidad y Rúbrica NEM Fase 6');
 
   // Notificaciones y Audio
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -284,36 +287,24 @@ export default function ApexAcademyVentureStudioPage() {
   };
 
   // =========================================================================
-  // 2. SÍNTESIS DE VOZ Y CANON EN PRIMERA PERSONA ESTRICTA (REGLA 2)
+  // 2. SÍNTESIS DE VOZ NEURONAL FEMENINA Y CANON EN PRIMERA PERSONA (REGLA 2)
   // =========================================================================
 
   const speakText = (text: string, isMentor = false) => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    try {
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'es-MX';
-      if (isMentor) {
-        utter.rate = 0.94;
-        utter.pitch = activeMentor === 'curie' ? 1.05 : 0.88;
-        setIsSpeakingMentor(true);
-        utter.onend = () => setIsSpeakingMentor(false);
-        utter.onerror = () => setIsSpeakingMentor(false);
-      } else {
-        utter.rate = 1.05;
-        utter.pitch = 1.05;
-      }
-      window.speechSynthesis.speak(utter);
-    } catch {
-      // Ignorar si el navegador bloquea la reproducción de voz sin gesto
+    if (isMentor) {
+      setIsSpeakingMentor(true);
     }
+    speakNaturalFemaleSpanish(text, {
+      rate: isMentor ? 0.96 : 1.02,
+      pitch: isMentor ? 1.02 : 1.05,
+      onEnd: () => setIsSpeakingMentor(false),
+      onError: () => setIsSpeakingMentor(false)
+    });
   };
 
   const stopSpeech = () => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      setIsSpeakingMentor(false);
-    }
+    stopNaturalFemaleVoice();
+    setIsSpeakingMentor(false);
   };
 
   // Discursos en Primera Persona Estricta (Regla No Negociable 2)
@@ -507,9 +498,21 @@ export default function ApexAcademyVentureStudioPage() {
                   setActiveModal('locker');
                 }}
                 className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-amber-300 text-xs font-bold"
-                title="Pedestal Ejecutivo 3D & Vestuario"
+                title="Pedestal Ejecutivo 3D y Vestuario"
               >
                 <Briefcase className="w-4 h-4 text-amber-400" />
+              </button>
+
+              <button
+                onClick={() => {
+                  gamificationAudio.playClickSound();
+                  setActiveModal('store');
+                }}
+                className="px-2.5 py-1.5 rounded-xl bg-amber-950/80 hover:bg-amber-900 border border-amber-700/70 text-amber-300 text-xs font-bold flex items-center gap-1"
+                title="Servicios de Aceleración y Créditos VF"
+              >
+                <ShoppingBag className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden xl:inline">Fondo VF</span>
               </button>
 
               <button
@@ -518,7 +521,7 @@ export default function ApexAcademyVentureStudioPage() {
                   setActiveModal('teacherStudio');
                 }}
                 className="p-2 rounded-xl bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700 text-indigo-300 text-xs font-bold"
-                title="Universal Challenge Studio (Vista Docente)"
+                title="Estudio de Desafíos Universales (Vista Docente)"
               >
                 <GraduationCap className="w-4 h-4 text-indigo-400" />
               </button>
@@ -572,7 +575,7 @@ export default function ApexAcademyVentureStudioPage() {
                 onClick={() => {
                   gamificationAudio.playClickSound();
                   setActiveViewMode('kanban');
-                  showToast("Modo: Tablero de Sprints & Pipeline");
+                  showToast("Modo: Tablero de Sprints y Pipeline");
                 }}
                 className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${
                   activeViewMode === 'kanban'
@@ -649,13 +652,13 @@ export default function ApexAcademyVentureStudioPage() {
             {/* HOTSPOTS TRANSPARENTES MILIMÉTRICOS (NANO BANANA GRID) */}
             {/* ========================================================================= */}
 
-            {/* 1. PROJECT ACCELERATOR TRACK (ARRIBA IZQUIERDA) */}
+            {/* 1. RUTA DE ACELERACIÓN DE PROYECTOS (ARRIBA IZQUIERDA) */}
             <div 
               onClick={() => {
                 gamificationAudio.playClickSound();
                 setInspectedHotspot({
-                  title: 'Project Accelerator Track: Pipeline de Incubación',
-                  description: 'Monitoreo de hitos de desarrollo técnico, validación de mercado y entregables tangibles para la admisión en universidades de alta demanda (UNAM, Tec de Monterrey, Stanford).',
+                  title: 'Ruta de Aceleración de Proyectos: Pipeline de Incubación',
+                  description: 'Monitoreo de hitos de desarrollo técnico, validación de mercado y entregables tangibles para la admisión en universidades de alta demanda (UNAM, Tec de Monterrey, IPN).',
                   specs: [
                     'Nivel de Incubación: Nivel 3 de 5 (65% Progreso)',
                     'Proyecto Activo: BioAlgae Solutions (Impacto 8.5/10)',
@@ -670,69 +673,69 @@ export default function ApexAcademyVentureStudioPage() {
                 setActiveModal('telemetryHotspot');
               }}
               className="absolute top-[26%] left-[9%] w-[34%] h-[26%] cursor-pointer group/hotspot rounded-2xl border-2 border-dashed border-cyan-400/50 hover:border-cyan-300 hover:bg-cyan-500/15 transition-all flex items-center justify-center"
-              title="Project Accelerator Track: Nivel 3 de 5"
+              title="Ruta de Aceleración de Proyectos: Nivel 3 de 5"
             >
               <div className="absolute -top-3 px-2 py-0.5 rounded-full bg-cyan-500 text-slate-950 text-[9px] font-black opacity-0 group-hover/hotspot:opacity-100 transition-opacity shadow-lg whitespace-nowrap">
-                🚀 Accelerator Track (65%)
+                🚀 Ruta de Aceleración (65%)
               </div>
               <div className="w-3.5 h-3.5 rounded-full bg-cyan-400/70 animate-ping" />
             </div>
 
-            {/* 2. REAL-TIME AI HISTORICAL FIGURE MENTORSHIP (ARRIBA DERECHA) */}
+            {/* 2. MENTORÍA HISTÓRICA IA EN TIEMPO REAL (ARRIBA DERECHA) */}
             <div 
               onClick={() => {
                 gamificationAudio.playClickSound();
                 setActiveModal('mentorship');
               }}
               className="absolute top-[26%] left-[45%] w-[46%] h-[28%] cursor-pointer group/hotspot rounded-2xl border-2 border-dashed border-violet-400/50 hover:border-violet-300 hover:bg-violet-500/15 transition-all flex items-center justify-center"
-              title="Real-Time AI Historical Figure Mentorship: Marie Curie & Leonardo da Vinci"
+              title="Mentoría Histórica IA en Tiempo Real: Marie Curie y Leonardo da Vinci"
             >
               <div className="absolute -top-3 px-2 py-0.5 rounded-full bg-violet-500 text-white text-[9px] font-black opacity-0 group-hover/hotspot:opacity-100 transition-opacity shadow-lg whitespace-nowrap">
-                🧠 Mentoría Marie Curie & Da Vinci
+                🧠 Mentoría Marie Curie y Da Vinci
               </div>
               <div className="w-3.5 h-3.5 rounded-full bg-violet-400/70 animate-ping" />
             </div>
 
-            {/* 3. VERIFIED CREDENTIAL MASTERY MATRIX (ABAJO IZQUIERDA) */}
+            {/* 3. MATRIZ DE DOMINIO DE CREDENCIALES (ABAJO IZQUIERDA) */}
             <div 
               onClick={() => {
                 gamificationAudio.playClickSound();
                 setActiveModal('radarPortfolio');
               }}
               className="absolute top-[55%] left-[9%] w-[40%] h-[32%] cursor-pointer group/hotspot rounded-2xl border-2 border-dashed border-emerald-400/50 hover:border-emerald-300 hover:bg-emerald-500/15 transition-all flex items-center justify-center"
-              title="Verified Credential Mastery Matrix: 78% Total Mastery"
+              title="Matriz de Dominio de Credenciales Verificadas: 78% Dominio Total"
             >
               <div className="absolute bottom-2 px-2.5 py-1 rounded-xl bg-slate-950/90 text-emerald-300 text-[10px] font-black border border-emerald-500/40 shadow-lg whitespace-nowrap">
-                📊 Mastery Matrix (FinTech, IA/ML, Estrategia)
+                📊 Matriz de Dominio (FinTech, IA/ML, Estrategia)
               </div>
             </div>
 
-            {/* 4. UNIVERSITY PORTFOLIO READINESS SCORE (ABAJO DERECHA) */}
+            {/* 4. ÍNDICE DE PREPARACIÓN UNIVERSITARIA (ABAJO DERECHA) */}
             <div 
               onClick={() => {
                 gamificationAudio.playClickSound();
                 setActiveModal('uniMastery');
               }}
               className="absolute top-[57%] left-[51%] w-[40%] h-[30%] cursor-pointer group/hotspot rounded-2xl border-2 border-dashed border-indigo-400/50 hover:border-indigo-300 hover:bg-indigo-500/15 transition-all flex items-center justify-center"
-              title="University Portfolio Readiness Score: 96/100"
+              title="Índice de Preparación de Portafolio Universitario: 96/100"
             >
               <div className="absolute bottom-2 px-2.5 py-1 rounded-xl bg-slate-950/90 text-indigo-300 text-[10px] font-black border border-indigo-500/40 shadow-lg whitespace-nowrap flex items-center gap-1.5">
                 <Target className="w-3 h-3 text-indigo-400" />
-                <span>Readiness Score: 96/100 (Global Rank #14)</span>
+                <span>Índice Universitario: 96/100 (Rango Global #14)</span>
               </div>
             </div>
 
-            {/* 5. VENTURE FUNDING CREDITS COUNTER (ARRIBA DERECHA HEADER) */}
+            {/* 5. CONTADOR DE CRÉDITOS DE INVERSIÓN VF (ARRIBA DERECHA HEADER) */}
             <div 
               onClick={() => {
                 gamificationAudio.playClickSound();
                 setActiveModal('store');
               }}
               className="absolute top-[15%] left-[74%] w-[17%] h-[9%] cursor-pointer group/hotspot rounded-xl border-2 border-dashed border-amber-400/50 hover:border-amber-300 hover:bg-amber-500/15 transition-all flex items-center justify-center"
-              title="Venture Funding Credits Counter: $4,250 VF Credits"
+              title="Contador de Créditos de Capital Semilla: $4,250 Créditos VF"
             >
               <div className="px-2 py-0.5 rounded-lg bg-amber-500 text-slate-950 text-[9px] font-black shadow-md">
-                💰 VF Credits: ${activeStudent.ventureCredits.toLocaleString()}
+                💰 Créditos VF: ${activeStudent.ventureCredits.toLocaleString()}
               </div>
             </div>
 
@@ -757,7 +760,7 @@ export default function ApexAcademyVentureStudioPage() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {['Ideación', 'Validación', 'Prototipado', 'Lanzamiento'].map((colStage) => {
-                const tasksInCol = SPRINT_PIPELINE.filter(t => t.stage === colStage);
+                const tasksInCol = sprintsList.filter(t => t.stage === colStage);
                 return (
                   <div 
                     key={colStage}
@@ -799,6 +802,20 @@ export default function ApexAcademyVentureStudioPage() {
                             <span>Líder: <strong className="text-slate-300">{task.lead}</strong></span>
                             <span>{task.daysRemaining === 0 ? 'Entregado' : `${task.daysRemaining} días`}</span>
                           </div>
+
+                          {task.status !== 'Completado' && (
+                            <button
+                              onClick={() => {
+                                gamificationAudio.playVictorySound();
+                                setSprintsList(prev => prev.map(s => s.id === task.id ? { ...s, status: 'Completado', daysRemaining: 0 } : s));
+                                setActiveStudent(prev => ({ ...prev, ventureCredits: prev.ventureCredits + 1200 }));
+                                showToast(`¡Sprint "${task.title}" entregado en Bóveda Curricular! (+1,200 VF) 🚀`);
+                              }}
+                              className="w-full py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black transition-all"
+                            >
+                              Entregar Sprint (+VF)
+                            </button>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -826,7 +843,7 @@ export default function ApexAcademyVentureStudioPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-white flex items-center gap-2">
-                    <span>UniMastery Pro | University Entrance Challenge</span>
+                    <span>UniMastery Pro | Desafío de Admisión Universitaria</span>
                     {isCalculusSolved && (
                       <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black border border-emerald-500/40">
                         ✓ DEMOSTRACIÓN APROBADA
@@ -834,7 +851,7 @@ export default function ApexAcademyVentureStudioPage() {
                     )}
                   </h3>
                   <p className="text-xs text-slate-400">
-                    Cálculo Infinitesimal y Límites Notables · Estándar Ceneval / UNAM / Tec / MIT
+                    Cálculo Infinitesimal y Límites Notables · Estándar Ceneval / UNAM / Tec / IPN
                   </p>
                 </div>
               </div>
@@ -853,27 +870,27 @@ export default function ApexAcademyVentureStudioPage() {
             {/* Layout de 3 Columnas Oficial de UniMastery Pro */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
               
-              {/* Columna 1 (Lg: 4): Scratchpad & Reasoning (LaTeX Formal) */}
+              {/* Columna 1 (Lg: 4): Pizarrón y Razonamiento (LaTeX Formal) */}
               <div className="lg:col-span-4 p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3 font-mono text-xs">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                   <span className="text-[10px] font-black uppercase text-indigo-400 tracking-wider">
-                    Scratchpad & Reasoning
+                    Pizarrón y Razonamiento
                   </span>
                   <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">
-                    LaTeX Engine
+                    Motor LaTeX
                   </span>
                 </div>
 
                 <div className="space-y-2 text-slate-300 text-[11px] leading-relaxed">
                   <p>
-                    <strong className="text-indigo-300">STEP 1:</strong> Identify indeterminate form:
+                    <strong className="text-indigo-300">PASO 1:</strong> Identificar la forma indeterminada:
                   </p>
                   <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-amber-300 text-center">
                     {"\\lim_{x \\to 0} \\frac{\\sin(3x)}{x} = \\frac{0}{0}"}
                   </div>
 
                   <p>
-                    <strong className="text-indigo-300">STEP 2:</strong> Recall the standard fundamental limit:
+                    <strong className="text-indigo-300">PASO 2:</strong> Aplicar el límite fundamental notable:
                   </p>
                   <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-cyan-300 text-center">
                     {"\\lim_{\\theta \\to 0} \\frac{\\sin\\theta}{\\theta} = 1"}
@@ -883,14 +900,14 @@ export default function ApexAcademyVentureStudioPage() {
                   </p>
 
                   <p>
-                    <strong className="text-indigo-300">STEP 3:</strong> Multiply numerator and denominator by 3:
+                    <strong className="text-indigo-300">PASO 3:</strong> Multiplicar numerador y denominador por 3:
                   </p>
                   <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-emerald-300 text-center">
                     {"3 \\cdot \\lim_{x \\to 0} \\frac{\\sin(3x)}{3x} = 3(1) = 3"}
                   </div>
 
                   <div className="p-2 rounded-lg bg-indigo-950/60 border border-indigo-500/40 text-center font-black text-indigo-200">
-                    FINAL ANSWER: L = 3
+                    RESPUESTA FINAL: L = 3
                   </div>
                 </div>
               </div>
@@ -900,7 +917,7 @@ export default function ApexAcademyVentureStudioPage() {
                 <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                   <div className="flex items-center gap-2">
                     <Terminal className="w-4 h-4 text-emerald-400" />
-                    <span className="text-xs font-bold text-slate-300">Problem: Advanced Calculus</span>
+                    <span className="text-xs font-bold text-slate-300">Reactivo: Cálculo Superior</span>
                   </div>
                   <button
                     onClick={() => setIsCodeEditorOpen(prev => !prev)}
@@ -960,22 +977,22 @@ export default function ApexAcademyVentureStudioPage() {
                       </button>
                     </div>
                     <pre className="text-emerald-400 text-[10px] whitespace-pre-wrap leading-relaxed">
-                      {codeEditorOutput || "$ Click en 'Ejecutar Script' para verificar convergencia con math.sin(3*x)/x..."}
+                      {codeEditorOutput || "$ Haz clic en 'Ejecutar Script' para verificar convergencia con math.sin(3*x)/x..."}
                     </pre>
                   </div>
                 )}
               </div>
 
-              {/* Columna 3 (Lg: 3): Analytics & Progress (Predictor UNAM/Tec 94%) */}
+              {/* Columna 3 (Lg: 3): Analítica y Progreso (Predictor UNAM/Tec 94%) */}
               <div className="lg:col-span-3 p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
                 <span className="text-[10px] font-black uppercase text-indigo-400 tracking-wider block">
-                  Analytics & Progress
+                  Analítica y Progreso
                 </span>
 
                 {/* Gauge Semicircular de Admisión */}
                 <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-center space-y-1">
                   <span className="text-[10px] font-bold text-slate-400 uppercase block">
-                    UNAM / Tec Admission Predictor
+                    Predictor de Admisión UNAM / Tec
                   </span>
                   <div className="relative w-32 h-20 mx-auto flex items-center justify-center">
                     <svg className="w-full h-full" viewBox="0 0 160 90">
@@ -1004,19 +1021,19 @@ export default function ApexAcademyVentureStudioPage() {
                     </div>
                   </div>
                   <span className="text-[10px] text-emerald-400 font-bold block">
-                    PROBABILITY OF ACCEPTANCE
+                    PROBABILIDAD DE ACEPTACIÓN
                   </span>
                 </div>
 
                 {/* Métricas de Peer Benchmark */}
                 <div className="space-y-2 text-xs">
                   <div className="flex items-center justify-between text-slate-400">
-                    <span>Time Elapsed:</span>
+                    <span>Tiempo Transcurrido:</span>
                     <span className="font-mono text-white">04:18</span>
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-400">You (Percentil):</span>
+                      <span className="text-slate-400">Tú (Percentil):</span>
                       <span className="text-indigo-400 font-bold">{admissionProbability}%</span>
                     </div>
                     <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
@@ -1035,8 +1052,8 @@ export default function ApexAcademyVentureStudioPage() {
                 </div>
 
                 <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
-                  <span>Difficulty:</span>
-                  <span className="font-bold text-amber-400 uppercase">HARD</span>
+                  <span>Dificultad:</span>
+                  <span className="font-bold text-amber-400 uppercase">ALTA</span>
                 </div>
               </div>
 
@@ -1209,14 +1226,14 @@ export default function ApexAcademyVentureStudioPage() {
                   </div>
                 </div>
 
-                {/* Academic Heatmap (Actividad de 365 días) */}
+                {/* Mapa de Calor Académico (Actividad de 365 días) */}
                 <div className="p-4 rounded-3xl bg-slate-950 border border-slate-800 space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-slate-300">
                       Actividad Académica - Último Año (365 días de constancia)
                     </span>
                     <span className="text-[10px] text-slate-500">
-                      Academic commits and tasks completed
+                      Entregas académicas y proyectos completados
                     </span>
                   </div>
 
@@ -1267,13 +1284,13 @@ export default function ApexAcademyVentureStudioPage() {
                   Credenciales Criptográficas con QR Verificable:
                 </span>
 
-                {/* 1. Ceneval Gold Medalist */}
+                {/* 1. Medalla de Oro Ceneval */}
                 <div className="p-3.5 rounded-2xl bg-slate-950 border border-amber-500/40 flex items-center justify-between gap-3 shadow-lg">
                   <div className="space-y-1">
                     <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[9px] font-black border border-amber-500/40">
                       EXCELENCIA ACADÉMICA
                     </span>
-                    <h4 className="text-xs font-black text-white">Ceneval Gold Medalist</h4>
+                    <h4 className="text-xs font-black text-white">Medalla de Oro Ceneval</h4>
                     <p className="text-[10px] text-slate-400">Puntaje Sobresaliente Nacional (1,280 pts)</p>
                   </div>
                   <div className="w-14 h-14 bg-white p-1 rounded-xl shrink-0 flex items-center justify-center shadow-md">
@@ -1284,13 +1301,13 @@ export default function ApexAcademyVentureStudioPage() {
                   </div>
                 </div>
 
-                {/* 2. Cambridge C1 Certified */}
+                {/* 2. Certificación Internacional Inglés C1 */}
                 <div className="p-3.5 rounded-2xl bg-slate-950 border border-indigo-500/40 flex items-center justify-between gap-3 shadow-lg">
                   <div className="space-y-1">
                     <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 text-[9px] font-black border border-indigo-500/40">
-                      CEFR LEVEL C1
+                      NIVEL MCER C1
                     </span>
-                    <h4 className="text-xs font-black text-white">Cambridge English C1</h4>
+                    <h4 className="text-xs font-black text-white">Certificación Internacional Inglés C1</h4>
                     <p className="text-[10px] text-slate-400">Dominio Avanzado para Admisiones Globales</p>
                   </div>
                   <div className="w-14 h-14 bg-white p-1 rounded-xl shrink-0 flex items-center justify-center shadow-md">
@@ -1395,7 +1412,7 @@ export default function ApexAcademyVentureStudioPage() {
                   />
                   <div>
                     <span className="text-[10px] font-black uppercase text-indigo-400 block">
-                      Doble Premio Nobel (Física & Química)
+                      Doble Premio Nobel (Física y Química)
                     </span>
                     <h4 className="text-base font-black text-white">Marie Curie (1867-1934)</h4>
                     <span className="text-xs text-emerald-400 font-bold">En línea: Asesorando en Rigor Experimental</span>
@@ -1497,7 +1514,7 @@ export default function ApexAcademyVentureStudioPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-white">
-                    Pedestal Ejecutivo 3D & Vestuario de Fundador
+                    Pedestal Ejecutivo 3D y Vestuario de Fundador
                   </h3>
                   <p className="text-xs text-slate-400">
                     Personalización de Atuendos Ejecutivos de Élite y Motor de Avatares
@@ -1575,7 +1592,7 @@ export default function ApexAcademyVentureStudioPage() {
                   )}
 
                   <div className="absolute top-2 left-2 px-2.5 py-1 rounded-xl bg-black/75 backdrop-blur-md text-[10px] font-black text-indigo-300 border border-indigo-400/30">
-                    {customizerMode === '3d_renders' ? 'Render Fotorrealista Silicon Valley' : 'Sprite Modular SVG'}
+                    {customizerMode === '3d_renders' ? 'Render Fotorrealista Ejecutivo' : 'Sprite Modular SVG'}
                   </div>
 
                   <div className="absolute bottom-2 left-2 right-2 px-3 py-1.5 rounded-xl bg-black/80 backdrop-blur-md text-[11px] font-black text-white text-center border border-white/10">
@@ -1673,7 +1690,7 @@ export default function ApexAcademyVentureStudioPage() {
                   <ShoppingBag className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-white">Servicios de Aceleración Pro & Venture Credits</h3>
+                  <h3 className="text-base font-black text-white">Servicios de Aceleración Pro y Créditos VF</h3>
                   <p className="text-xs text-slate-400">Inversión de Créditos Académicos en Propiedad Intelectual</p>
                 </div>
               </div>
@@ -1713,7 +1730,7 @@ export default function ApexAcademyVentureStudioPage() {
 
               <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-4">
                 <div>
-                  <h4 className="text-xs font-black text-cyan-300">Auditoría ESG & Sostenibilidad Global</h4>
+                  <h4 className="text-xs font-black text-cyan-300">Auditoría ESG y Sostenibilidad Global</h4>
                   <p className="text-[11px] text-slate-400 leading-snug">
                     Aval internacional de sustentabilidad para postulaciones de pregrado en Europa y Norteamérica.
                   </p>
@@ -1745,7 +1762,7 @@ export default function ApexAcademyVentureStudioPage() {
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL 6: UNIVERSAL CHALLENGE STUDIO (VISTA DOCENTE · REGLA 1 CUMPLIDA) */}
+      {/* MODAL 6: ESTUDIO DE DESAFÍOS UNIVERSALES (VISTA DOCENTE · REGLA 1 CUMPLIDA) */}
       {/* ========================================================================= */}
       {activeModal === 'teacherStudio' && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in">
@@ -1758,7 +1775,7 @@ export default function ApexAcademyVentureStudioPage() {
                 </div>
                 <div>
                   <span className="text-[10px] font-black uppercase text-indigo-400">
-                    Universal Challenge Studio · Panel Docente
+                    Estudio de Desafíos Universales · Panel Docente
                   </span>
                   <h3 className="text-base font-extrabold text-white">
                     Rúbricas Analíticas Complejas para Preparatoria (Fase 6 SEP)
@@ -1796,13 +1813,44 @@ export default function ApexAcademyVentureStudioPage() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
+              <div className="p-4 rounded-2xl bg-slate-950 border border-indigo-500/40 space-y-3">
                 <span className="font-black text-cyan-400 block text-sm">
-                  3. Portafolio de Egreso Verificable con Firma Criptográfica
+                  3. Publicar Nuevo Sprint Ejecutivo en Bóveda Curricular (`planeaciones/`)
                 </span>
-                <p>
-                  Genera un enlace institucional seguro avalado con firma digital HMAC-SHA256 y código QR para comités de admisión de universidades internacionales y fondos de becas de excelencia.
-                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="text"
+                    value={newSprintTitle}
+                    onChange={(e) => setNewSprintTitle(e.target.value)}
+                    className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                    placeholder="Título del Sprint o Rúbrica NEM Fase 6..."
+                  />
+                  <button
+                    onClick={() => {
+                      if (!newSprintTitle.trim()) return;
+                      gamificationAudio.playVictorySound();
+                      setSprintsList(prev => [
+                        ...prev,
+                        {
+                          id: `sp-${Date.now()}`,
+                          stage: 'Prototipado',
+                          title: newSprintTitle.trim(),
+                          lead: activeStudent.name,
+                          daysRemaining: 7,
+                          status: 'En Proceso',
+                          deliverable: 'Rúbrica sincronizada en Bóveda Curricular',
+                          ventureFunding: '+$3,000 VF'
+                        }
+                      ]);
+                      showToast(`¡Sprint "${newSprintTitle}" publicado y sincronizado en Bóveda Curricular! 🏛️`);
+                      setActiveViewMode('kanban');
+                      setActiveModal('none');
+                    }}
+                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shrink-0"
+                  >
+                    Publicar Sprint (+3,000 VF)
+                  </button>
+                </div>
               </div>
             </div>
 

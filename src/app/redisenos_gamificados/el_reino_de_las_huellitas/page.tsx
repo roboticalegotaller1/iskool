@@ -18,6 +18,7 @@ import {
   Heart
 } from 'lucide-react';
 import { gamificationAudio } from '@/lib/redisenosAudio';
+import { speakNaturalFemaleSpanish } from '@/lib/redisenosVoiceTTS';
 
 // Perfiles de estudiantes exclusivos de Preescolar (Fase 2 SEP · 3 a 5 Años)
 interface PreschoolStudent {
@@ -110,8 +111,11 @@ export default function ElReinoDeLasHuellitasPage() {
   const [selectedStudentId, setSelectedStudentId] = useState<string>(PRESCHOOL_STUDENTS[0].id);
 
   // Modales
-  const [activeModal, setActiveModal] = useState<'none' | 'challenge_colors' | 'challenge_apples' | 'challenge_sounds' | 'shop'>('none');
+  const [activeModal, setActiveModal] = useState<'none' | 'challenge_colors' | 'challenge_apples' | 'challenge_sounds' | 'shop' | 'historical_stories' | 'teacher_studio'>('none');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [selectedHistoricalHero, setSelectedHistoricalHero] = useState<'sor_juana' | 'benito_juarez'>('sor_juana');
+  const [customEducatorPrompt, setCustomEducatorPrompt] = useState<string>('Reconocer figuras geométricas y colores primarios en el jardín sensorial');
+  const [educatorVaultSaved, setEducatorVaultSaved] = useState<boolean>(false);
 
   // Estados del Desafío Tablet "Colores Mágicos" (Imagen 4)
   const [selectedOption, setSelectedOption] = useState<'apple' | 'banana' | 'dice' | null>(null);
@@ -199,19 +203,9 @@ export default function ElReinoDeLasHuellitasPage() {
     return '/redisenos_assets/huellitas/oso_base_pedestal.jpg';
   };
 
-  // Síntesis de voz en español infantil amigable
+  // Síntesis de voz femenina neuronal humana en español
   const speakText = (text: string) => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    try {
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'es-MX';
-      utter.rate = 0.88;
-      utter.pitch = 1.25;
-      window.speechSynthesis.speak(utter);
-    } catch {
-      // Ignorar fallas si la síntesis de voz no está permitida por el navegador
-    }
+    speakNaturalFemaleSpanish(text, { rate: 0.95, pitch: 1.06 });
   };
 
   // Saludo inicial del dragón (Imagen 3)
@@ -396,6 +390,28 @@ export default function ElReinoDeLasHuellitasPage() {
             >
               <ShoppingBag className="w-4 h-4" />
               <span>¡Crea tu Compañero!</span>
+            </button>
+
+            <button
+              onClick={() => {
+                gamificationAudio.playClickSound();
+                setActiveModal('historical_stories');
+                speakText("¡Escucha a los héroes sabios contarte su historia en primera persona!");
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-white font-black text-xs shadow-md transition-transform hover:scale-105 active:scale-95"
+            >
+              <span>📖 Cuentos Históricos (1ª Persona)</span>
+            </button>
+
+            <button
+              onClick={() => {
+                gamificationAudio.playClickSound();
+                setActiveModal('teacher_studio');
+                speakText("Estudio de la educadora conectado a la Bóveda Curricular Preescolar.");
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-emerald-700 hover:bg-emerald-600 text-white font-black text-xs shadow-md transition-transform hover:scale-105 active:scale-95"
+            >
+              <span>👩‍🏫 Bóveda Educadora</span>
             </button>
           </div>
 
@@ -1169,6 +1185,181 @@ export default function ElReinoDeLasHuellitasPage() {
             >
               Volver al Reino
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 7. MODAL DE CUENTOS HISTÓRICOS EN 1ª PERSONA (SOR JUANA Y BENITO JUÁREZ) */}
+      {/* ========================================================================= */}
+      {activeModal === 'historical_stories' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
+          <div className="w-full max-w-xl bg-amber-50 p-6 rounded-3xl shadow-2xl border-4 border-amber-400 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b-2 border-amber-200">
+              <span className="text-xs font-black text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
+                📖 Héroes Sabios de Cuento · Canon en 1ª Persona Estricta
+              </span>
+              <button
+                onClick={() => setActiveModal('none')}
+                className="p-1.5 rounded-full bg-amber-200 text-amber-950 hover:bg-amber-300"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => {
+                  gamificationAudio.playClickSound();
+                  setSelectedHistoricalHero('sor_juana');
+                  speakText("Nací en San Miguel Nepantla en 1648. Cuando tenía tres años acompañé a mi hermana a la escuela de Las Amigas y aprendí a leer jugando con las letras.");
+                }}
+                className={`p-3 rounded-2xl border-2 text-left transition-all ${
+                  selectedHistoricalHero === 'sor_juana'
+                    ? 'bg-rose-100 border-rose-500 shadow-md'
+                    : 'bg-white border-amber-200 hover:bg-amber-100'
+                }`}
+              >
+                <div className="text-2xl mb-1">🪶📜</div>
+                <div className="text-sm font-black text-slate-900">Juana Inés de Asbaje</div>
+                <div className="text-[11px] text-rose-700 font-bold">Niña Poeta de Nepantla (1648)</div>
+              </button>
+
+              <button
+                onClick={() => {
+                  gamificationAudio.playClickSound();
+                  setSelectedHistoricalHero('benito_juarez');
+                  speakText("Nací el 21 de marzo de 1806 en San Pablo Guelatao, Oaxaca. De niño cuidé ovejas en la montaña y tocaba mi flauta de carrizo junto a la laguna encantada.");
+                }}
+                className={`p-3 rounded-2xl border-2 text-left transition-all ${
+                  selectedHistoricalHero === 'benito_juarez'
+                    ? 'bg-emerald-100 border-emerald-500 shadow-md'
+                    : 'bg-white border-amber-200 hover:bg-amber-100'
+                }`}
+              >
+                <div className="text-2xl mb-1">🐑🪈</div>
+                <div className="text-sm font-black text-slate-900">Benito Juárez García</div>
+                <div className="text-[11px] text-emerald-700 font-bold">Pastorcito de Guelatao (1806)</div>
+              </button>
+            </div>
+
+            <div className="bg-white rounded-2xl p-4 border-2 border-amber-200 shadow-inner space-y-3">
+              {selectedHistoricalHero === 'sor_juana' ? (
+                <>
+                  <p className="text-sm font-bold text-slate-800 leading-relaxed italic">
+                    &ldquo;Nací en San Miguel Nepantla en 1648. Cuando tenía tres años, igual que tú, seguí a mi hermana mayor a su clase y descubrí que las letras guardan canciones y estrellas. Dejé de comer queso porque pensaba que me quitaba la memoria para aprender más rápido.&rdquo;
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => {
+                        gamificationAudio.playLevelUpSound();
+                        speakText("Nací en San Miguel Nepantla en 1648. Cuando tenía tres años seguí a mi hermana mayor a su clase y descubrí que las letras guardan canciones y estrellas. ¡Ganaste dos estrellitas por escuchar mi historia!");
+                        setStudents(prev => prev.map(s => s.id === activeStudent.id ? { ...s, stars: s.stars + 2 } : s));
+                        showToast("¡Escuchaste a Juana Inés en 1ª persona! +2 Estrellitas 🌟");
+                      }}
+                      className="flex-1 py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md"
+                    >
+                      <Volume2 className="w-4 h-4" />
+                      <span>Escuchar Voz Natural (+2 Estrellitas)</span>
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-bold text-slate-800 leading-relaxed italic">
+                    &ldquo;Nací el 21 de marzo de 1806 en San Pablo Guelatao, Oaxaca. Cuando era pequeño hablaba zapoteco, cuidaba las ovejas de mi tío Bernardino y aprendí que cuidar a nuestros amigos y respetar a todos nos hace grandes guardianes.&rdquo;
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => {
+                        gamificationAudio.playLevelUpSound();
+                        speakText("Nací el 21 de marzo de 1806 en San Pablo Guelatao, Oaxaca. Cuando era pequeño hablaba zapoteco, cuidaba las ovejas de mi tío Bernardino y aprendí que respetar a todos nos hace grandes guardianes. ¡Ganaste dos estrellitas!");
+                        setStudents(prev => prev.map(s => s.id === activeStudent.id ? { ...s, stars: s.stars + 2 } : s));
+                        showToast("¡Escuchaste a Benito Juárez en 1ª persona! +2 Estrellitas 🌟");
+                      }}
+                      className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md"
+                    >
+                      <Volume2 className="w-4 h-4" />
+                      <span>Escuchar Voz Natural (+2 Estrellitas)</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 8. MODAL DE ESTUDIO DE LA EDUCADORA (BÓVEDA CURRICULAR PREESCOLAR) */}
+      {/* ========================================================================= */}
+      {activeModal === 'teacher_studio' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
+          <div className="w-full max-w-xl bg-white p-6 rounded-3xl shadow-2xl border-4 border-emerald-400 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b-2 border-emerald-100">
+              <div>
+                <span className="text-[11px] font-black text-emerald-700 uppercase tracking-wider">
+                  👩‍🏫 Bóveda Curricular Preescolar · Fase 2 SEP (NEM 2024)
+                </span>
+                <h3 className="text-lg font-black text-slate-900">
+                  Estudio de Actividades Sensoriales de la Educadora
+                </h3>
+              </div>
+              <button
+                onClick={() => setActiveModal('none')}
+                className="p-1.5 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-left">
+              <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 font-semibold">
+                <strong>Ruta Vault-First:</strong> <code>planeaciones/preescolar/fase2_saberes_sensoriales.md</code> · Sincronizado con el Motor de IA Pedagógica sin texto complejo para niños de 3 a 5 años.
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-slate-700 mb-1">
+                  PDA / Aprendizaje Sensorial para {activeStudent.name}:
+                </label>
+                <input
+                  type="text"
+                  value={customEducatorPrompt}
+                  onChange={(e) => setCustomEducatorPrompt(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border-2 border-emerald-300 text-xs font-bold text-slate-800 focus:outline-none focus:border-emerald-600"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5 pt-1">
+                <button
+                  onClick={() => {
+                    gamificationAudio.playLevelUpSound();
+                    setEducatorVaultSaved(true);
+                    speakText(`Misión sensorial sincronizada en la Bóveda Curricular para ${activeStudent.name.split(' ')[0]}.`);
+                    showToast("¡Planeación Preescolar sincronizada en Bóveda Curricular!");
+                  }}
+                  className="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-md"
+                >
+                  💾 Sincronizar en Bóveda Curricular
+                </button>
+                <button
+                  onClick={() => {
+                    gamificationAudio.playClickSound();
+                    setActiveModal('challenge_colors');
+                    speakText("Iniciando reto sensorial de colores mágicos asignado por la educadora.");
+                  }}
+                  className="py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-amber-950 font-black text-xs shadow-md"
+                >
+                  🚀 Lanzar Actividad en Tablet
+                </button>
+              </div>
+
+              {educatorVaultSaved && (
+                <div className="p-3 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-bold">
+                  ✅ Nodo guardado en <code>planeaciones/preescolar/huellitas_pda.md</code> y audio neuronal activado para {activeStudent.name}.
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

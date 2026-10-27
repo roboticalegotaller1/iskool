@@ -36,6 +36,7 @@ import {
   Play
 } from 'lucide-react';
 import { gamificationAudio } from '@/lib/redisenosAudio';
+import { speakNaturalFemaleSpanish } from '@/lib/redisenosVoiceTTS';
 
 // ==========================================
 // MODELO DE PERFILES ESTUDIANTILES (3 PERFILES INDEPENDIENTES)
@@ -169,8 +170,11 @@ export default function GuardianesElementalesPage() {
   const [students, setStudents] = useState<GuardianStudent[]>(INITIAL_GUARDIAN_STUDENTS);
   const [activeStudentId, setActiveStudentId] = useState<string>('liam');
 
-  // Vistas activas: 'map' (Imagen 3), 'customizer' (Imagen 1), 'store' (Imagen 4), 'battle' (Imagen 5)
-  const [currentView, setCurrentView] = useState<'map' | 'customizer' | 'store' | 'battle'>('map');
+  // Vistas activas: 'map' (Imagen 3), 'customizer' (Imagen 1), 'store' (Imagen 4), 'battle' (Imagen 5), 'teacher_studio'
+  const [currentView, setCurrentView] = useState<'map' | 'customizer' | 'store' | 'battle' | 'teacher_studio'>('map');
+  const [selectedHistoricalMentor, setSelectedHistoricalMentor] = useState<'pitagoras' | 'curie'>('pitagoras');
+  const [customRpgPrompt, setCustomRpgPrompt] = useState<string>('División exacta y reparto equitativo con números naturales de dos cifras');
+  const [rpgVaultSaved, setRpgVaultSaved] = useState<boolean>(false);
 
   // Sonido y accesibilidad
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
@@ -209,20 +213,10 @@ export default function GuardianesElementalesPage() {
     setTimeout(() => setNotification(null), 3500);
   };
 
-  // Reproductor de voz en español oficial
+  // Reproductor de voz femenina neuronal humana en español oficial
   const speakText = (text: string) => {
-    if (!soundEnabled || typeof window === 'undefined') return;
-    try {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'es-MX';
-        utterance.rate = 1.0;
-        window.speechSynthesis.speak(utterance);
-      }
-    } catch {
-      // Silencioso si no está disponible
-    }
+    if (!soundEnabled) return;
+    speakNaturalFemaleSpanish(text, { rate: 0.98, pitch: 1.04 });
   };
 
   // Mapeo dinámico del render de Liam generado en Nano Banana
@@ -509,7 +503,23 @@ export default function GuardianesElementalesPage() {
               }`}
             >
               <Swords className="w-3.5 h-3.5 text-rose-300" />
-              <span>4. Duelo Forest Golem (Imagen 5)</span>
+              <span>4. Duelo Gólem del Bosque (Imagen 5)</span>
+            </button>
+
+            <button
+              onClick={() => {
+                if (soundEnabled) gamificationAudio.playClickSound();
+                setCurrentView('teacher_studio');
+                speakText("Estudio Docente RPG y Mentores Históricos en primera persona.");
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all ${
+                currentView === 'teacher_studio'
+                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                  : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-indigo-300" />
+              <span>5. Estudio Docente & Mentor (1ª Persona)</span>
             </button>
           </div>
 
@@ -518,7 +528,7 @@ export default function GuardianesElementalesPage() {
               SEP Fases 3 y 4 · 6 a 8 años
             </span>
             <span className="px-2 py-0.5 rounded-md bg-indigo-950 text-indigo-300 border border-indigo-800">
-              Benchmark: Prodigy Math & Mario RPG
+              Estándar: RPG Táctico & Aritmética Mental
             </span>
           </div>
         </div>
@@ -660,7 +670,7 @@ export default function GuardianesElementalesPage() {
                       <Swords className="w-5 h-5 text-white" />
                     </div>
                     <div className="absolute top-12 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-lg bg-rose-950/90 backdrop-blur-md text-[10px] font-black text-rose-200 whitespace-nowrap border border-rose-500 shadow-lg">
-                      ¡Duelo con Forest Golem!
+                      ¡Duelo con Gólem del Bosque!
                     </div>
                   </div>
 
@@ -668,8 +678,10 @@ export default function GuardianesElementalesPage() {
                   <div className="absolute bottom-[22%] left-[36%] group cursor-pointer z-10">
                     <button
                       onClick={() => {
-                        if (soundEnabled) gamificationAudio.playClickSound();
-                        showToast("Nivel 1: Suma y Resta Inicial completado con 3 estrellas.");
+                        if (soundEnabled) gamificationAudio.playLevelUpSound();
+                        speakText("Nivel 1 en el Bosque Esmeralda: Suma y resta mental superada con tres estrellas. Ganaste 25 monedas de repaso.");
+                        setStudents(prev => prev.map(s => s.id === activeStudent.id ? { ...s, coins: s.coins + 25 } : s));
+                        showToast("Nivel 1: ¡Repaso de Suma y Resta completado! (+25 Monedas)");
                       }}
                       className="w-8 h-8 rounded-full border-2 border-emerald-400 bg-emerald-600 text-white font-black text-xs flex items-center justify-center hover:scale-110 shadow-md"
                     >
@@ -682,7 +694,15 @@ export default function GuardianesElementalesPage() {
                     <button
                       onClick={() => {
                         if (soundEnabled) gamificationAudio.playClickSound();
-                        showToast("Nivel 28: Requiere superar el Duelo de la Runa 24.");
+                        if (isGolemDefeated) {
+                          speakText("¡Cráter Volcánico desbloqueado! Ganaste 100 monedas por conquistar la cima elemental.");
+                          setStudents(prev => prev.map(s => s.id === activeStudent.id ? { ...s, coins: s.coins + 100 } : s));
+                          showToast("¡Cráter Volcánico Nivel 28 conquistado! (+100 Monedas)");
+                        } else {
+                          speakText("El Nivel 28 en el Cráter Volcánico requiere purificar primero al Gólem del Bosque en el Nodo 24.");
+                          setCurrentView('battle');
+                          showToast("¡Purifica primero al Gólem del Bosque para desbloquear el Nodo 28!");
+                        }
                       }}
                       className="w-8 h-8 rounded-full border-2 border-amber-400 bg-amber-700 text-white font-black text-xs flex items-center justify-center hover:scale-110 shadow-md"
                     >
@@ -700,7 +720,7 @@ export default function GuardianesElementalesPage() {
                       className="px-4 py-2 rounded-2xl bg-gradient-to-r from-rose-600 via-amber-600 to-rose-700 hover:from-rose-500 hover:to-amber-500 text-white font-black text-xs flex items-center gap-2 shadow-2xl border-2 border-amber-300 ring-2 ring-rose-500/40 hover:scale-105 active:scale-95 transition-all"
                     >
                       <Swords className="w-4 h-4 text-amber-300" />
-                      <span>¡Entrar al Duelo Didáctico (Forest Golem)!</span>
+                      <span>¡Entrar al Duelo Didáctico (Gólem del Bosque)!</span>
                     </button>
                   </div>
                 </div>
@@ -733,12 +753,32 @@ export default function GuardianesElementalesPage() {
                       <span>Progreso:</span>
                       <span>{activeStudent.missionsCompleted.math} / 5</span>
                     </div>
-                    <div className="w-full h-2.5 rounded-full bg-amber-200 overflow-hidden">
+                    <div className="w-full h-2.5 rounded-full bg-amber-200 overflow-hidden mb-2">
                       <div 
                         className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-500"
                         style={{ width: `${(activeStudent.missionsCompleted.math / 5) * 100}%` }}
                       ></div>
                     </div>
+                    <button
+                      onClick={() => {
+                        if (soundEnabled) gamificationAudio.playLevelUpSound();
+                        setStudents(prev => prev.map(s => {
+                          if (s.id !== activeStudent.id) return s;
+                          const nextMath = Math.min(5, s.missionsCompleted.math + 1);
+                          return {
+                            ...s,
+                            coins: s.coins + 50,
+                            stars: Math.min(100, s.stars + 2),
+                            missionsCompleted: { ...s.missionsCompleted, math: nextMath }
+                          };
+                        }));
+                        speakText("¡Excelente! Resolviste un reto de suma y resta en el bosque. Ganaste 50 monedas y 2 estrellas.");
+                        showToast("¡Misión de Matemáticas avanzada! +50 Monedas");
+                      }}
+                      className="w-full py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] shadow-sm transition-all active:scale-95"
+                    >
+                      {activeStudent.missionsCompleted.math >= 5 ? '✅ ¡Misión Completada! (+50 Monedas)' : '⚡ Resolver Reto Matemático (+50 Monedas)'}
+                    </button>
                   </div>
 
                   {/* Misión 2: NEM 2024 Español */}
@@ -756,12 +796,32 @@ export default function GuardianesElementalesPage() {
                       <span>Progreso:</span>
                       <span>{activeStudent.missionsCompleted.spanish} / 4</span>
                     </div>
-                    <div className="w-full h-2.5 rounded-full bg-amber-200 overflow-hidden">
+                    <div className="w-full h-2.5 rounded-full bg-amber-200 overflow-hidden mb-2">
                       <div 
                         className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-500"
                         style={{ width: `${(activeStudent.missionsCompleted.spanish / 4) * 100}%` }}
                       ></div>
                     </div>
+                    <button
+                      onClick={() => {
+                        if (soundEnabled) gamificationAudio.playLevelUpSound();
+                        setStudents(prev => prev.map(s => {
+                          if (s.id !== activeStudent.id) return s;
+                          const nextSpanish = Math.min(4, s.missionsCompleted.spanish + 1);
+                          return {
+                            ...s,
+                            coins: s.coins + 50,
+                            stars: Math.min(100, s.stars + 2),
+                            missionsCompleted: { ...s.missionsCompleted, spanish: nextSpanish }
+                          };
+                        }));
+                        speakText("¡Muy bien! Leíste un capítulo de la Leyenda del Dragón. Ganaste 50 monedas y 2 estrellas.");
+                        showToast("¡Lectura de Español completada! +50 Monedas");
+                      }}
+                      className="w-full py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-black text-[10px] shadow-sm transition-all active:scale-95"
+                    >
+                      {activeStudent.missionsCompleted.spanish >= 4 ? '✅ ¡Lectura Completada! (+50 Monedas)' : '📖 Leer Capítulo con Voz (+50 Monedas)'}
+                    </button>
                   </div>
 
                   {/* Botón a la Tienda de Recompensas */}
@@ -1386,9 +1446,9 @@ export default function GuardianesElementalesPage() {
                 <div className="flex items-center justify-between text-xs font-black text-white mb-1">
                   <span className="flex items-center gap-1.5 text-emerald-300">
                     <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
-                    Forest Golem
+                    Gólem del Bosque
                   </span>
-                  <span className="text-amber-300">{golemHp} / 80 HP</span>
+                  <span className="text-amber-300">{golemHp} / 80 PV</span>
                 </div>
                 <div className="w-full h-3 rounded-full bg-slate-800 overflow-hidden border border-white/20">
                   <div
@@ -1547,7 +1607,152 @@ export default function GuardianesElementalesPage() {
       )}
 
       {/* ============================================================ */}
-      {/* 7. TOAST NOTIFICACIÓN FLOTANTE                               */}
+      {/* 7. VISTA 5: ESTUDIO DOCENTE RPG & MENTOR EN 1ª PERSONA        */}
+      {/* ============================================================ */}
+      {currentView === 'teacher_studio' && (
+        <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:p-6 space-y-6 animate-fadeIn">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Estudio Docente RPG */}
+            <div className="bg-slate-900/95 border-2 border-indigo-500/50 rounded-3xl p-6 shadow-2xl space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                  <span className="text-[11px] font-black text-indigo-400 uppercase tracking-wider">
+                    👩‍🏫 Bóveda Curricular · Fase 3 SEP (1º y 2º Primaria)
+                  </span>
+                  <h2 className="text-xl font-black text-white">
+                    Estudio de Actividades RPG del Docente
+                  </h2>
+                </div>
+                <span className="px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-black">
+                  Vault-First Activo
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-indigo-950/60 border border-indigo-700/50 text-xs text-indigo-200 space-y-1">
+                <div><strong>Ruta en Bóveda:</strong> <code>planeaciones/primaria_baja/guardianes_elementales_pda.md</code></div>
+                <div>Convierte cualquier PDA de Saberes y Pensamiento Científico o Lenguajes en un duelo de hechizos por turnos sin alterar la mecánica RPG.</div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-slate-300 mb-1.5">
+                  Configurar PDA / Ecuación de Duelo para {activeStudent.name}:
+                </label>
+                <input
+                  type="text"
+                  value={customRpgPrompt}
+                  onChange={(e) => setCustomRpgPrompt(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-indigo-500/50 text-xs font-bold text-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => {
+                    if (soundEnabled) gamificationAudio.playLevelUpSound();
+                    setRpgVaultSaved(true);
+                    speakText(`Planeación RPG sincronizada en la Bóveda Curricular para ${activeStudent.name}.`);
+                    showToast("¡Planeación RPG guardada en Bóveda Curricular!");
+                  }}
+                  className="py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-lg"
+                >
+                  💾 Sincronizar en Bóveda Curricular
+                </button>
+                <button
+                  onClick={() => {
+                    if (soundEnabled) gamificationAudio.playClickSound();
+                    setCurrentView('battle');
+                    speakText("Iniciando duelo didáctico contra el Gólem del Bosque.");
+                  }}
+                  className="py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs shadow-lg"
+                >
+                  ⚔️ Lanzar Duelo en Arena
+                </button>
+              </div>
+
+              {rpgVaultSaved && (
+                <div className="p-3 rounded-xl bg-emerald-950/90 border border-emerald-500/60 text-emerald-300 text-xs font-bold">
+                  ✅ Nodo persistido en <code>planeaciones/primaria_baja/guardianes_elementales_pda.md</code> con rúbrica NEM 2024.
+                </div>
+              )}
+            </div>
+
+            {/* Mentores Históricos en 1ª Persona */}
+            <div className="bg-slate-900/95 border-2 border-amber-500/50 rounded-3xl p-6 shadow-2xl space-y-4">
+              <div className="border-b border-slate-800 pb-3">
+                <span className="text-[11px] font-black text-amber-400 uppercase tracking-wider">
+                  📜 Canon Histórico Inviolable · Voz en 1ª Persona Estricta
+                </span>
+                <h2 className="text-xl font-black text-white">
+                  Mentores Sabios de la Academia Elemental
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => {
+                    if (soundEnabled) gamificationAudio.playClickSound();
+                    setSelectedHistoricalMentor('pitagoras');
+                    speakText("Nací en la isla de Samos alrededor del año 570 antes de Cristo. Descubrí que los números gobiernan la armonía de la música y las proporciones de la naturaleza.");
+                  }}
+                  className={`p-3 rounded-2xl border-2 text-left transition-all ${
+                    selectedHistoricalMentor === 'pitagoras'
+                      ? 'bg-amber-500/20 border-amber-400'
+                      : 'bg-slate-950 border-slate-800'
+                  }`}
+                >
+                  <div className="text-2xl mb-1">📐🔢</div>
+                  <div className="text-sm font-black text-white">Pitágoras de Samos</div>
+                  <div className="text-[11px] text-amber-300 font-bold">Maestro de las Runas Numéricas</div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (soundEnabled) gamificationAudio.playClickSound();
+                    setSelectedHistoricalMentor('curie');
+                    speakText("Nací en Varsovia el 7 de noviembre de 1867. En mi laboratorio descubrí el radio y el polonio, demostrando que los elementos guardan energía luminosa extraordinaria.");
+                  }}
+                  className={`p-3 rounded-2xl border-2 text-left transition-all ${
+                    selectedHistoricalMentor === 'curie'
+                      ? 'bg-emerald-500/20 border-emerald-400'
+                      : 'bg-slate-950 border-slate-800'
+                  }`}
+                >
+                  <div className="text-2xl mb-1">🧪✨</div>
+                  <div className="text-sm font-black text-white">Marie Curie</div>
+                  <div className="text-[11px] text-emerald-300 font-bold">Guardiana de los Elementos</div>
+                </button>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                <p className="text-xs sm:text-sm text-slate-200 italic leading-relaxed">
+                  {selectedHistoricalMentor === 'pitagoras'
+                    ? '“Nací en la isla griega de Samos hacia el año 570 a.C. Fundé mi escuela en Crotona porque comprobé que cada número, cada reparto exacto como dividir 24 entre 4 para obtener 6, sostiene el equilibrio de los templos y de las estrellas.”'
+                    : '“Nací en Varsovia el 7 de noviembre de 1867 y estudié en París. Pasé años purificando minerales hasta descubrir dos nuevos elementos químicos: el polonio y el radio. La verdadera magia elemental nace de observar y medir con paciencia.”'}
+                </p>
+                <button
+                  onClick={() => {
+                    if (soundEnabled) gamificationAudio.playLevelUpSound();
+                    speakText(
+                      selectedHistoricalMentor === 'pitagoras'
+                        ? "Nací en la isla de Samos hacia el año 570 antes de Cristo. Comprobé que dividir 24 entre 4 nos da 6 con exactitud armónica. ¡Recibe 100 monedas para tu aventura!"
+                        : "Nací en Varsovia el 7 de noviembre de 1867. Descubrí el polonio y el radio estudiando la energía de los elementos. ¡Recibe 100 monedas para tu aventura!"
+                    );
+                    setStudents(prev => prev.map(s => s.id === activeStudent.id ? { ...s, coins: s.coins + 100 } : s));
+                    showToast("¡Sabiduría en 1ª persona recibida! +100 Monedas 🪙");
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-md"
+                >
+                  <Volume2 className="w-4 h-4" />
+                  <span>Escuchar Consejo en 1ª Persona (+100 Monedas)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      )}
+
+      {/* ============================================================ */}
+      {/* 8. TOAST NOTIFICACIÓN FLOTANTE                               */}
       {/* ============================================================ */}
       {notification && (
         <div className="fixed bottom-6 right-6 z-50 bg-slate-900/95 border-2 border-purple-500 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-slideUp backdrop-blur-md">

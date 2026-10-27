@@ -46,6 +46,7 @@ import {
   Swords
 } from 'lucide-react';
 import { gamificationAudio } from '@/lib/redisenosAudio';
+import { speakNaturalFemaleSpanish } from '@/lib/redisenosVoiceTTS';
 
 // ==========================================
 // 1. MODELOS DE DATOS Y PERFILES (3 ALUMNOS FASE 5 SEP)
@@ -304,6 +305,8 @@ export default function CronicasDeExploradoresPage() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [confettiActive, setConfettiActive] = useState<boolean>(false);
   const [isSoundMuted, setIsSoundMuted] = useState<boolean>(false);
+  const [teacherHexPrompt, setTeacherHexPrompt] = useState<string>('Biodiversidad endémica de México, placas tectónicas y sistema vigesimal maya');
+  const [teacherHexSaved, setTeacherHexSaved] = useState<boolean>(false);
 
   const activeStudent = students.find(s => s.id === activeStudentId) || students[0];
 
@@ -317,20 +320,10 @@ export default function CronicasDeExploradoresPage() {
     setTimeout(() => setConfettiActive(false), 3500);
   };
 
-  // Síntesis de voz viva en español
+  // Síntesis de voz femenina neuronal humana en español
   const speakText = (text: string) => {
     if (isSoundMuted) return;
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    try {
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'es-MX';
-      utter.rate = 0.95;
-      utter.pitch = 1.1;
-      window.speechSynthesis.speak(utter);
-    } catch {
-      // Ignorar restricciones si el navegador no permite audio automático
-    }
+    speakNaturalFemaleSpanish(text, { rate: 0.98, pitch: 1.04 });
   };
 
   // Temporizador para el Duelo TCG
@@ -616,10 +609,23 @@ export default function CronicasDeExploradoresPage() {
             <button
               onClick={() => {
                 gamificationAudio.playClickSound();
+                setActiveModal('store');
+                speakText("Abriendo el Almacén de Suministros de Expedición.");
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-950/80 hover:bg-amber-900 border border-amber-500/50 text-amber-300 text-xs font-black transition-transform hover:scale-105 active:scale-95"
+            >
+              <Coins className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden md:inline">Suministros</span>
+            </button>
+
+            <button
+              onClick={() => {
+                gamificationAudio.playClickSound();
                 setActiveModal('teacherStudio');
+                speakText("Estudio Cartográfico Docente y Mentor Histórico en primera persona.");
               }}
               className="p-2 rounded-xl bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-500/40 text-indigo-300 text-xs font-bold transition-transform hover:scale-105"
-              title="Universal Challenge Studio (Vista Docente)"
+              title="Estudio de Actividades Docente (Vista Profesor)"
             >
               <GraduationCap className="w-4 h-4 text-indigo-400" />
             </button>
@@ -641,14 +647,14 @@ export default function CronicasDeExploradoresPage() {
       {/* ========================================================================= */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 flex flex-col justify-center">
         
-        {/* LIENZO ENMARCADO CON MÁXIMA FIDELIDAD VISUAL */}
-        <div className="relative w-full aspect-[16/9] max-h-[82vh] rounded-[36px] overflow-hidden shadow-2xl border-4 border-amber-500/60 bg-slate-950 group">
+        {/* LIENZO ENMARCADO CON MÁXIMA FIDELIDAD VISUAL (1600:893 SIN RECORTE) */}
+        <div className="relative w-full max-w-[calc(82vh*1.7917)] aspect-[1600/893] mx-auto rounded-[36px] overflow-hidden shadow-2xl border-4 border-amber-500/60 bg-slate-950 group">
           
-          {/* Ilustración de Fondo Original (1600px Optimizado) */}
+          {/* Ilustración de Fondo Original (1600x893) */}
           <img 
             src="/redisenos_assets/cronicas/cronicas_main_hub_scene.jpg" 
             alt="Crónicas de Exploradores - Archipiélago Hexagonal"
-            className="w-full h-full object-cover select-none"
+            className="w-full h-full object-fill select-none"
           />
 
           {/* ========================================================= */}
@@ -748,6 +754,19 @@ export default function CronicasDeExploradoresPage() {
             <div className="absolute inset-0 rounded-full opacity-0 group-hover/maya:opacity-100 transition-opacity bg-amber-500/30 border-2 border-amber-400 flex items-center justify-center pointer-events-none">
               <span className="bg-amber-950/90 text-amber-200 text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg">
                 🏛️ Pirámide Maya
+              </span>
+            </div>
+          </button>
+
+          {/* 5b. Hotspot: Hexágono Metrópolis de Fracciones y Células */}
+          <button
+            onClick={() => handleLaunchHexExpedition(hexagons[3])}
+            className="absolute top-[30%] left-[60%] w-[12%] h-[21%] z-20 cursor-pointer rounded-full transition-transform hover:scale-105 active:scale-95 group/ciudad"
+            title="Explorar Metrópolis de Fracciones y Células"
+          >
+            <div className="absolute inset-0 rounded-full opacity-0 group-hover/ciudad:opacity-100 transition-opacity bg-cyan-500/30 border-2 border-cyan-400 flex items-center justify-center pointer-events-none">
+              <span className="bg-cyan-950/90 text-cyan-200 text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg">
+                🧬 Metrópolis Celular
               </span>
             </div>
           </button>
@@ -1232,26 +1251,42 @@ export default function CronicasDeExploradoresPage() {
             </div>
 
             <div className="space-y-3">
-              <div className="p-4 rounded-2xl bg-black/40 border border-amber-700/60 flex items-center justify-between">
+              <div className="p-4 rounded-2xl bg-black/40 border border-amber-700/60 flex items-center justify-between gap-3">
                 <div>
                   <span className="text-[10px] font-black uppercase text-amber-400">Misión 1 · Dificultad 50</span>
                   <h4 className="font-extrabold text-white text-sm">El Misterio de las Ruinas Mayas</h4>
                   <p className="text-xs text-amber-200/80">Investiga la correlación entre el sistema vigesimal maya y la alineación estelar.</p>
                 </div>
-                <span className="px-3 py-1 rounded-full bg-emerald-500 text-slate-950 font-black text-xs shrink-0">
-                  +50 XP
-                </span>
+                <button
+                  onClick={() => {
+                    gamificationAudio.playLevelUpSound();
+                    speakText("¡Contrato de las Ruinas Mayas completado! Recibes 50 puntos de proyecto comunitario y 100 monedas.");
+                    setStudents(prev => prev.map(s => s.id === activeStudent.id ? { ...s, communityPoints: s.communityPoints + 50, coins: s.coins + 100 } : s));
+                    showToast("¡Misión 1 completada! +50 Pts NEM y +100 Monedas");
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shrink-0 shadow-md"
+                >
+                  Completar (+50 Pts)
+                </button>
               </div>
 
-              <div className="p-4 rounded-2xl bg-black/40 border border-amber-700/60 flex items-center justify-between">
+              <div className="p-4 rounded-2xl bg-black/40 border border-amber-700/60 flex items-center justify-between gap-3">
                 <div>
                   <span className="text-[10px] font-black uppercase text-cyan-400">Misión 2 · Dificultad 30</span>
                   <h4 className="font-extrabold text-white text-sm">Ayuda al Pescador y Ciclo del Agua</h4>
                   <p className="text-xs text-amber-200/80">Recopila datos de precipitación pluvial en la cuenca del Río Usumacinta.</p>
                 </div>
-                <span className="px-3 py-1 rounded-full bg-emerald-500 text-slate-950 font-black text-xs shrink-0">
-                  +30 XP
-                </span>
+                <button
+                  onClick={() => {
+                    gamificationAudio.playLevelUpSound();
+                    speakText("¡Contrato del Ciclo del Agua completado! Recibes 30 puntos de proyecto comunitario y 80 monedas.");
+                    setStudents(prev => prev.map(s => s.id === activeStudent.id ? { ...s, communityPoints: s.communityPoints + 30, coins: s.coins + 80 } : s));
+                    showToast("¡Misión 2 completada! +30 Pts NEM y +80 Monedas");
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shrink-0 shadow-md"
+                >
+                  Completar (+30 Pts)
+                </button>
               </div>
             </div>
 
@@ -1269,47 +1304,164 @@ export default function CronicasDeExploradoresPage() {
       )}
 
       {/* ========================================================================= */}
-      {/* 9. MODAL PANTALLA 4: UNIVERSAL CHALLENGE STUDIO (VISTA DOCENTE) */}
+      {/* 8B. MODAL ALMACÉN DE SUMINISTROS DE EXPEDICIÓN ('store') */}
+      {/* ========================================================================= */}
+      {activeModal === 'store' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-2xl rounded-[36px] overflow-hidden shadow-2xl border-4 border-amber-500 bg-slate-950 p-6 space-y-4 text-white">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div>
+                <span className="text-[10px] font-black text-amber-400 uppercase">⛺ Intendencia del Archipiélago</span>
+                <h3 className="text-lg font-black text-white">Almacén de Suministros de Expedición</h3>
+              </div>
+              <button onClick={() => setActiveModal('none')} className="p-1.5 rounded-xl bg-slate-800 text-slate-300">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col justify-between gap-3">
+                <div>
+                  <div className="text-2xl mb-1">🌿🪨</div>
+                  <h4 className="font-black text-sm text-emerald-300">Lote Alquímico (+3 Hojas y +3 Rocas)</h4>
+                  <p className="text-xs text-slate-400">Insumos botánicos y geológicos para sintetizar más pociones de ciencia.</p>
+                </div>
+                <button
+                  onClick={() => {
+                    if (activeStudent.coins < 100) {
+                      showToast("Necesitas 100 Monedas para este lote.");
+                      return;
+                    }
+                    gamificationAudio.playCoinSound();
+                    setHerbCount(prev => prev + 3);
+                    setStoneCount(prev => prev + 3);
+                    setStudents(prev => prev.map(s => s.id === activeStudent.id ? { ...s, coins: s.coins - 100 } : s));
+                    speakText("Lote alquímico adquirido. Tienes tres nuevas hojas curativas y tres rocas de basalto.");
+                    showToast("¡+3 Hojas y +3 Rocas añadidas al Laboratorio!");
+                  }}
+                  className="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs"
+                >
+                  Adquirir por 100 Monedas
+                </button>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col justify-between gap-3">
+                <div>
+                  <div className="text-2xl mb-1">🧭✨</div>
+                  <h4 className="font-black text-sm text-cyan-300">Recarga de Maná Cartográfico (+5 Maná)</h4>
+                  <p className="text-xs text-slate-400">Aumenta la reserva de maná táctico para tus duelos de cartas en el Atlas.</p>
+                </div>
+                <button
+                  onClick={() => {
+                    if (activeStudent.coins < 120) {
+                      showToast("Necesitas 120 Monedas.");
+                      return;
+                    }
+                    gamificationAudio.playCoinSound();
+                    setManaAvailable(prev => prev + 5);
+                    setStudents(prev => prev.map(s => s.id === activeStudent.id ? { ...s, coins: s.coins - 120, crystals: s.crystals + 25 } : s));
+                    speakText("Reserva de maná cartográfico recargada con éxito.");
+                    showToast("¡+5 Maná Táctico y +25 Cristales!");
+                  }}
+                  className="w-full py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs"
+                >
+                  Adquirir por 120 Monedas
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 9. MODAL PANTALLA 4: ESTUDIO DE ACTIVIDADES DOCENTE & MENTOR 1ª PERSONA */}
       {/* ========================================================================= */}
       {activeModal === 'teacherStudio' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
           
-          <div className="relative w-full max-w-5xl rounded-[36px] overflow-hidden shadow-2xl border-4 border-indigo-500 bg-slate-950 flex flex-col justify-between max-h-[96vh]">
+          <div className="relative w-full max-w-5xl rounded-[36px] overflow-hidden shadow-2xl border-4 border-indigo-500 bg-slate-950 flex flex-col justify-between max-h-[96vh] overflow-y-auto">
             
-            <div className="absolute top-3 left-4 right-4 z-30 flex items-center justify-between pointer-events-none">
-              <div className="pointer-events-auto bg-slate-950/90 backdrop-blur-md px-4 py-1 rounded-full border border-indigo-500 text-xs font-black text-indigo-300">
-                🎓 Universal Challenge Studio · Creación Unificada de Retos ISkool
+            <div className="p-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+              <div className="bg-slate-950/90 px-4 py-1 rounded-full border border-indigo-500 text-xs font-black text-indigo-300">
+                🎓 Estudio Cartográfico Docente · Creación Unificada de Retos ISkool
               </div>
               <button
                 onClick={() => {
                   gamificationAudio.playClickSound();
                   setActiveModal('none');
                 }}
-                className="pointer-events-auto p-2 rounded-full bg-white text-slate-800 hover:bg-slate-100 shadow-xl"
+                className="p-2 rounded-full bg-white text-slate-800 hover:bg-slate-100 shadow-xl"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Lienzo del Estudio Docente (Mockup Optimizado) */}
-            <div className="relative w-full aspect-[16/9] overflow-hidden">
+            <div className="relative w-full aspect-[21/9] overflow-hidden">
               <img 
                 src="/redisenos_assets/cronicas/cronicas_teacher_studio_scene.jpg" 
-                alt="Universal Challenge Studio Docente"
+                alt="Estudio Cartográfico Docente"
                 className="w-full h-full object-cover"
               />
             </div>
 
-            <div className="p-3 bg-slate-900 border-t border-slate-800 flex items-center justify-between text-xs text-slate-300">
-              <span className="font-bold text-indigo-300">
-                La misma interfaz para todos los docentes de ISkool: autogeneración con Asistente Pedagógico IA y PDA de la Bóveda Curricular.
-              </span>
-              <button
-                onClick={() => setActiveModal('none')}
-                className="px-5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-md"
-              >
-                Cerrar Estudio Docente
-              </button>
+            <div className="p-5 bg-slate-900 border-t border-slate-800 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 rounded-2xl bg-slate-950 border border-indigo-500/40 space-y-2.5">
+                  <span className="text-[10px] font-black uppercase text-indigo-400">👩‍🏫 Bóveda Curricular · Fase 5 SEP</span>
+                  <h4 className="text-sm font-black text-white">Configurar Nuevo Hexágono de Expedición</h4>
+                  <input
+                    type="text"
+                    value={teacherHexPrompt}
+                    onChange={(e) => setTeacherHexPrompt(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white font-bold"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        gamificationAudio.playLevelUpSound();
+                        setTeacherHexSaved(true);
+                        speakText("Hexágono curricular guardado en la Bóveda Curricular para quinto y sexto de primaria.");
+                        showToast("¡Hexágono sincronizado en Bóveda Curricular!");
+                      }}
+                      className="flex-1 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs"
+                    >
+                      💾 Sincronizar en Bóveda
+                    </button>
+                    <button
+                      onClick={() => handleLaunchHexExpedition(hexagons[1])}
+                      className="py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs"
+                    >
+                      🧭 Probar Hexágono
+                    </button>
+                  </div>
+                  {teacherHexSaved && (
+                    <div className="text-[11px] text-emerald-400 font-bold">
+                      ✅ Guardado en <code>planeaciones/primaria_alta/cronicas_exploradores.md</code>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-950 border border-amber-500/40 space-y-2.5">
+                  <span className="text-[10px] font-black uppercase text-amber-400">📜 Mentor Histórico en 1ª Persona · Canon Inviolable</span>
+                  <h4 className="text-sm font-black text-white">Alexander von Humboldt (1769–1859)</h4>
+                  <p className="text-xs text-slate-300 italic">
+                    &ldquo;Nací en Berlín en 1769 y en 1803 recorrí las montañas, volcanes y selvas de México midiendo la presión barométrica, la flora y las pirámides antiguas para trazar el primer gran atlas científico de este territorio.&rdquo;
+                  </p>
+                  <button
+                    onClick={() => {
+                      gamificationAudio.playLevelUpSound();
+                      speakText("Nací en Berlín en 1769 y en 1803 recorrí los volcanes y selvas de México midiendo la altitud, la flora y la geografía para trazar mi atlas científico. ¡Toma 40 cristales para tu expedición!");
+                      setStudents(prev => prev.map(s => s.id === activeStudent.id ? { ...s, crystals: s.crystals + 40 } : s));
+                      showToast("🧭 ¡Escuchaste a Humboldt en 1ª persona! +40 Cristales");
+                    }}
+                    className="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5"
+                  >
+                    <Volume2 className="w-4 h-4" />
+                    <span>Escuchar Crónica en 1ª Persona (+40 Cristales)</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
           </div>
