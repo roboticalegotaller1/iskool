@@ -35,17 +35,27 @@ import {
   Wand2,
   Clock,
   Shirt,
-  GraduationCap
+  GraduationCap,
+  FlaskConical,
+  Scroll,
+  MessageSquare,
+  Crosshair,
+  Shield,
+  Droplets,
+  Wind,
+  Swords
 } from 'lucide-react';
 import { gamificationAudio } from '@/lib/redisenosAudio';
 
 // ==========================================
-// 1. MODELOS DE DATOS Y PERFILES INDEPENDIENTES (3 ALUMNOS)
+// 1. MODELOS DE DATOS Y PERFILES (3 ALUMNOS FASE 5 SEP)
 // ==========================================
 interface ExplorerStudent {
   id: string;
   name: string;
   grade: string;
+  age: number;
+  house: 'Ignis' | 'Aqua' | 'Terra' | 'Aer';
   level: number;
   rankTitle: string;
   avatarIcon: string;
@@ -53,13 +63,14 @@ interface ExplorerStudent {
   scrolls: number;
   coins: number;
   unlockedHexCount: number;
+  communityPoints: number;
   equippedGear: {
     tool: string;
     outfit: string;
     badge: string;
   };
   inventory: string[];
-  communityPoints: number;
+  alchemyCraftedCount: number;
 }
 
 const INITIAL_EXPLORERS: ExplorerStudent[] = [
@@ -67,6 +78,8 @@ const INITIAL_EXPLORERS: ExplorerStudent[] = [
     id: 'exp-mateo',
     name: 'Mateo Ramírez',
     grade: '5º de Primaria · Fase 5 SEP',
+    age: 10,
+    house: 'Ignis',
     level: 6,
     rankTitle: 'Cartógrafo Estelar',
     avatarIcon: '🧭',
@@ -74,18 +87,21 @@ const INITIAL_EXPLORERS: ExplorerStudent[] = [
     scrolls: 28,
     coins: 920,
     unlockedHexCount: 7,
+    communityPoints: 340,
     equippedGear: {
       tool: 'Telescopio Dorado de Precisión',
       outfit: 'Traje de Expedición de Jungla',
       badge: 'Naturalista Mayor'
     },
     inventory: ['item-telescopio', 'item-antorcha', 'item-brujula-bronce'],
-    communityPoints: 340
+    alchemyCraftedCount: 3
   },
   {
     id: 'exp-vale',
     name: 'Valentina Cruz',
     grade: '4º de Primaria · Fase 5 SEP',
+    age: 9,
+    house: 'Terra',
     level: 4,
     rankTitle: 'Naturalista Mayor',
     avatarIcon: '🌿',
@@ -93,18 +109,21 @@ const INITIAL_EXPLORERS: ExplorerStudent[] = [
     scrolls: 18,
     coins: 610,
     unlockedHexCount: 5,
+    communityPoints: 210,
     equippedGear: {
       tool: 'Lupa de Geología Cuántica',
       outfit: 'Bata con Pines de Física',
       badge: 'Botánica de Campo'
     },
     inventory: ['item-red-mariposas', 'item-lupa-geologia'],
-    communityPoints: 210
+    alchemyCraftedCount: 1
   },
   {
     id: 'exp-emiliano',
     name: 'Emiliano Soto',
     grade: '6º de Primaria · Fase 5 SEP',
+    age: 11,
+    house: 'Aqua',
     level: 8,
     rankTitle: 'Estratega de Ecuaciones',
     avatarIcon: '📐',
@@ -112,26 +131,28 @@ const INITIAL_EXPLORERS: ExplorerStudent[] = [
     scrolls: 45,
     coins: 1450,
     unlockedHexCount: 11,
+    communityPoints: 520,
     equippedGear: {
       tool: 'Astrolabio de Latón Marino',
       outfit: 'Capa Térmica de Volcán',
       badge: 'Maestro de la Brújula'
     },
     inventory: ['item-telescopio', 'item-pico-obsidiana', 'item-astrolabio'],
-    communityPoints: 520
+    alchemyCraftedCount: 5
   }
 ];
 
+// Nodos Territoriales del Mapa Hexagonal
 interface HexNode {
   id: string;
   title: string;
-  biome: 'volcan' | 'selva' | 'piramide' | 'ciudad';
+  biome: 'volcan' | 'selva' | 'piramide' | 'ciudad' | 'glaciar';
   subject: string;
   pda: string;
   status: 'conquistado' | 'desafiando' | 'bloqueado';
   question: string;
   options: string[];
-  correctIndex: number;
+  correctCardId: string;
   rewardCrystals: number;
   rewardCoins: number;
   explanation: string;
@@ -147,10 +168,10 @@ const HEX_MAP_DATA: HexNode[] = [
     status: 'conquistado',
     question: '¿Qué placa tectónica interactúa con la placa de Cocos generando la mayor sismicidad en las costas mexicanas?',
     options: ['Placa Norteamericana', 'Placa Pacífica', 'Placa Africana', 'Placa Euroasiática'],
-    correctIndex: 0,
+    correctCardId: 'card-termodinamica',
     rewardCrystals: 25,
     rewardCoins: 120,
-    explanation: 'La subducción de la Placa de Cocos debajo de la Placa Norteamericana es la principal causante de sismos en el sur y centro de México.'
+    explanation: 'La subducción de la Placa de Cocos debajo de la Placa Norteamericana es la causante directa de sismos y actividad volcánica en el eje neovolcánico de México.'
   },
   {
     id: 'hex-2',
@@ -159,17 +180,12 @@ const HEX_MAP_DATA: HexNode[] = [
     subject: 'Ética, Naturaleza y Sociedades',
     pda: 'Valora los ecosistemas de selva húmeda, el ciclo del agua y especies endémicas',
     status: 'desafiando',
-    question: '¿Cuál es la función principal de los árboles de dosel en el ciclo hidrológico de la selva húmeda?',
-    options: [
-      'Evapotranspiración masiva y condensación de nubes locales',
-      'Erosión deliberada del sustrato de arcilla',
-      'Absorción del 100% de la energía solar sin liberar humedad',
-      'Aceleración de corrientes eólicas destructivas'
-    ],
-    correctIndex: 0,
+    question: '¿Cuál es la ley que explica por qué los planetas orbitan alrededor del Sol y la materia se atrae?',
+    options: ['Ley de Gravitación Universal', 'Leyes de la Termodinámica', 'Teoría Celular', 'Cero y Astronomía Maya'],
+    correctCardId: 'card-newton',
     rewardCrystals: 30,
     rewardCoins: 150,
-    explanation: 'Los grandes árboles del dosel bombean cientos de litros de vapor de agua diarios a la atmósfera mediante evapotranspiración, originando ríos voladores.'
+    explanation: 'La Ley de Gravitación Universal formulada por Isaac Newton establece que los cuerpos se atraen con una fuerza proporcional al producto de sus masas e inversamente proporcional al cuadrado de su distancia.'
   },
   {
     id: 'hex-3',
@@ -179,30 +195,85 @@ const HEX_MAP_DATA: HexNode[] = [
     pda: 'Reconoce los sistemas vigesimales y observaciones celestes precolombinas',
     status: 'bloqueado',
     question: '¿Qué innovación matemática crucial incorporaron los sabios mayas en su sistema posicional vigesimal?',
-    options: [
-      'El concepto y símbolo gráfico del Cero (caracol/semilla)',
-      'El cálculo diferencial e infinitesimal',
-      'Las tablas de logaritmos neperianos',
-      'Los números complejos e imaginarios'
-    ],
-    correctIndex: 0,
+    options: ['El concepto y glifo del Cero (caracol/semilla)', 'El cálculo diferencial', 'Los números complejos', 'El sistema binario'],
+    correctCardId: 'card-maya',
     rewardCrystals: 35,
     rewardCoins: 180,
-    explanation: 'Los mayas fueron de las primeras civilizaciones en la historia de la humanidad en conceptualizar el cero como posición de valor nulo y completitud cósmica.'
+    explanation: 'Los mayas fueron de las primeras civilizaciones en la historia en conceptualizar el cero como posición de valor nulo y completitud cósmica, representado con un caracol marino.'
   },
   {
     id: 'hex-4',
-    title: 'Metrópolis de Fracciones y Razones',
+    title: 'Metrópolis de Fracciones y Células',
     biome: 'ciudad',
-    subject: 'Pensamiento Matemático',
-    pda: 'Aplica proporciones y fracciones equivalentes en problemas de reparto comunitario',
+    subject: 'Pensamiento Matemático & Biología',
+    pda: 'Aplica proporciones y reconoce la unidad estructural de la vida',
     status: 'bloqueado',
-    question: 'Si una expedición consume 3/8 de sus víveres en 3 días de travesía: ¿qué fracción de raciones le queda para el resto del viaje?',
-    options: ['5/8 de los víveres', '3/8 de los víveres', '1/2 de los víveres', '7/8 de los víveres'],
-    correctIndex: 0,
+    question: '¿Qué postulado científico establece que todos los organismos vivos están constituidos por una o más unidades básicas?',
+    options: ['Teoría Celular Moderna', 'Leyes de Mendel', 'Teoría Atómica de Bohr', 'Relatividad General'],
+    correctCardId: 'card-celular',
     rewardCrystals: 25,
     rewardCoins: 130,
-    explanation: 'El total de raciones representa 8/8. Al restar 3/8 consumidos, restan exactamente 5/8 para la siguiente etapa.'
+    explanation: 'La Teoría Celular postulada por Schleiden y Schwann demuestra que la célula es la unidad morfológica, fisiológica y genética de todos los seres vivos.'
+  }
+];
+
+// Cartas TCG Coleccionables
+interface TcgCard {
+  id: string;
+  name: string;
+  concept: string;
+  costMana: number;
+  attack: number;
+  health: number;
+  image: string;
+  rarity: 'Legendaria' | 'Épica' | 'Rara';
+  flavorText: string;
+}
+
+const TCG_DECK: TcgCard[] = [
+  {
+    id: 'card-newton',
+    name: 'Sir Isaac Newton',
+    concept: 'Ley de Gravitación Universal',
+    costMana: 1,
+    attack: 1,
+    health: 3,
+    image: '/redisenos_assets/cronicas/tcg_card_newton.jpg',
+    rarity: 'Legendaria',
+    flavorText: 'Toda partícula en el cosmos atrae a otra con una fuerza cósmica y matemática.'
+  },
+  {
+    id: 'card-termodinamica',
+    name: 'Leyes de la Termodinámica',
+    concept: 'Conservación de la Energía y Calor',
+    costMana: 2,
+    attack: 2,
+    health: 3,
+    image: '/redisenos_assets/cronicas/tcg_card_termodinamica.jpg',
+    rarity: 'Épica',
+    flavorText: 'La energía no se crea ni se destruye: se transforma en calor, vapor y movimiento.'
+  },
+  {
+    id: 'card-celular',
+    name: 'Teoría Celular',
+    concept: 'Unidad de la Vida y Microscopía',
+    costMana: 3,
+    attack: 2,
+    health: 3,
+    image: '/redisenos_assets/cronicas/tcg_card_celular.jpg',
+    rarity: 'Épica',
+    flavorText: 'Desde la bacteria más diminuta hasta la secuoya milenaria, la vida late en células.'
+  },
+  {
+    id: 'card-maya',
+    name: 'Cero y Astronomía Maya',
+    concept: 'Sistema Vigesimal Ancestral',
+    costMana: 2,
+    attack: 3,
+    health: 2,
+    image: '/redisenos_assets/cronicas/tcg_card_maya.jpg',
+    rarity: 'Legendaria',
+    flavorText: 'El caracol de jade que cuenta el infinito y alinea los templos con las estrellas.'
   }
 ];
 
@@ -210,16 +281,77 @@ export default function CronicasDeExploradoresPage() {
   const [students, setStudents] = useState<ExplorerStudent[]>(INITIAL_EXPLORERS);
   const [activeStudentId, setActiveStudentId] = useState<string>('exp-mateo');
   const [hexagons, setHexagons] = useState<HexNode[]>(HEX_MAP_DATA);
-  const [activeHex, setActiveHex] = useState<HexNode | null>(null);
+  const [activeHex, setActiveHex] = useState<HexNode>(HEX_MAP_DATA[1]);
   
-  // Modales interactivos
-  const [activeModal, setActiveModal] = useState<'none' | 'quiz' | 'store' | 'locker' | 'teacherStudio'>('none');
+  // Modales
+  const [activeModal, setActiveModal] = useState<'none' | 'tcgArena' | 'albumLocker' | 'alchemyLab' | 'teacherStudio' | 'store' | 'missions'>('none');
   const [selectedHeroItem, setSelectedHeroItem] = useState<'base' | 'brujula' | 'sombrero' | 'quetzal' | 'poncho'>('base');
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [feedback, setFeedback] = useState<{ message: string; success: boolean } | null>(null);
+  
+  // Estados de la Arena TCG
+  const [manaAvailable, setManaAvailable] = useState<number>(10);
+  const [timerSeconds, setTimerSeconds] = useState<number>(30);
+  const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
+  const [playedCardId, setPlayedCardId] = useState<string | null>(null);
+  const [cardFeedback, setCardFeedback] = useState<{ success: boolean; message: string } | null>(null);
+  
+  // Estados del Laboratorio de Artesanía Alquímica
+  const [herbCount, setHerbCount] = useState<number>(3);
+  const [stoneCount, setStoneCount] = useState<number>(5);
+  const [isBrewing, setIsBrewing] = useState<boolean>(false);
+  const [brewedPotion, setBrewedPotion] = useState<boolean>(false);
+
+  // Estados visuales y sonoros
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [confettiActive, setConfettiActive] = useState<boolean>(false);
+  const [isSoundMuted, setIsSoundMuted] = useState<boolean>(false);
 
+  const activeStudent = students.find(s => s.id === activeStudentId) || students[0];
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const triggerConfetti = () => {
+    setConfettiActive(true);
+    setTimeout(() => setConfettiActive(false), 3500);
+  };
+
+  // Síntesis de voz viva en español
+  const speakText = (text: string) => {
+    if (isSoundMuted) return;
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'es-MX';
+      utter.rate = 0.95;
+      utter.pitch = 1.1;
+      window.speechSynthesis.speak(utter);
+    } catch {
+      // Ignorar restricciones si el navegador no permite audio automático
+    }
+  };
+
+  // Temporizador para el Duelo TCG
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (activeModal === 'tcgArena' && isTimerRunning && timerSeconds > 0) {
+      interval = setInterval(() => {
+        setTimerSeconds(prev => prev - 1);
+      }, 1000);
+    } else if (timerSeconds === 0) {
+      setIsTimerRunning(false);
+      gamificationAudio.playHitSound();
+      setCardFeedback({
+        success: false,
+        message: '¡Tiempo agotado! Juega una carta de conocimiento antes de que acabe el turno.'
+      });
+    }
+    return () => clearInterval(interval);
+  }, [activeModal, isTimerRunning, timerSeconds]);
+
+  // Selección del render vivo del explorador en pedestal 3D
   const getExplorerRender = () => {
     switch (selectedHeroItem) {
       case 'brujula':
@@ -236,47 +368,66 @@ export default function CronicasDeExploradoresPage() {
     }
   };
 
-  const activeStudent = students.find(s => s.id === activeStudentId) || students[0];
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3200);
+  // 1. Interacción con la Heroína Exploradora
+  const handleExplorerHeroClick = () => {
+    gamificationAudio.playLevelUpSound();
+    speakText(`¡Saludos, explorador ${activeStudent.name.split(' ')[0]}! Soy Elena. Estamos cartografiando el archipiélago. ¡Toca la selva o el volcán para despejar la niebla de guerra!`);
+    showToast(`¡Elena la Exploradora te saluda con entusiasmo! 🧭✨`);
   };
 
-  const triggerConfetti = () => {
-    setConfettiActive(true);
-    setTimeout(() => setConfettiActive(false), 3000);
-  };
-
-  const handleSelectStudent = (id: string) => {
+  // 2. Selección de Bandera de Casa Elemental
+  const handleSelectHouse = (house: 'Ignis' | 'Aqua' | 'Terra' | 'Aer') => {
     gamificationAudio.playClickSound();
-    setActiveStudentId(id);
-    setActiveHex(null);
-    setFeedback(null);
-    showToast(`Perfil de expedición cambiado a ${students.find(s => s.id === id)?.name}`);
+    setStudents(prev => prev.map(s => s.id === activeStudent.id ? { ...s, house } : s));
+    const desc = {
+      Ignis: 'Casa del Fuego y Termodinámica 🔥',
+      Aqua: 'Casa del Agua y los Ciclos Naturales 💧',
+      Terra: 'Casa de la Tierra y la Geología 🌿',
+      Aer: 'Casa del Viento y la Atmósfera 💨'
+    }[house];
+    speakText(`¡Elegiste la ${desc}!`);
+    showToast(`Afinidad cambiada a ${desc}`);
   };
 
-  const handleOpenHexChallenge = (hex: HexNode) => {
+  // 3. Iniciar Expedición / Duelo TCG
+  const handleLaunchHexExpedition = (hex: HexNode) => {
     gamificationAudio.playClickSound();
     setActiveHex(hex);
-    setSelectedAnswer(null);
-    setFeedback(null);
-    setActiveModal('quiz');
+    setPlayedCardId(null);
+    setCardFeedback(null);
+    setManaAvailable(10);
+    setTimerSeconds(30);
+    setIsTimerRunning(true);
+    setActiveModal('tcgArena');
+    speakText(`Iniciando expedición en ${hex.title}. Consulta la pregunta y juega tu carta.`);
   };
 
-  const handleAnswerSubmit = (optionIndex: number) => {
-    if (!activeHex) return;
-    setSelectedAnswer(optionIndex);
-    if (optionIndex === activeHex.correctIndex) {
+  // 4. Jugar Carta TCG en la Arena
+  const handlePlayCard = (card: TcgCard) => {
+    if (manaAvailable < card.costMana) {
+      gamificationAudio.playHitSound();
+      showToast('¡Cristales de maná insuficientes!');
+      return;
+    }
+
+    gamificationAudio.playClickSound();
+    setManaAvailable(prev => prev - card.costMana);
+    setPlayedCardId(card.id);
+
+    if (card.id === activeHex.correctCardId) {
       gamificationAudio.playLevelUpSound();
       triggerConfetti();
-      setFeedback({
-        message: `¡EXPEDICIÓN EXITOSA! Has despejado la niebla en "${activeHex.title}". Ganaste +${activeHex.rewardCrystals} Cristales, +${activeHex.rewardCoins} Monedas y +50 Puntos de Proyecto Comunitario.`,
-        success: true
+      setIsTimerRunning(false);
+      setCardFeedback({
+        success: true,
+        message: `¡JUGADA MAESTRA! Has jugado "${card.name}" con éxito. Despejaste la niebla de "${activeHex.title}". Ganaste +${activeHex.rewardCrystals} Cristales y +50 Pts NEM.`
       });
-      // Actualizar estado del hexágono a conquistado
+      speakText(`¡Excelente jugada! La carta ${card.name} responde al enigma. ¡La niebla de guerra se disipa!`);
+
+      // Desbloquear hexágono
       setHexagons(prev => prev.map(h => h.id === activeHex.id ? { ...h, status: 'conquistado' } : h));
-      // Actualizar progreso del alumno activo
+
+      // Premiar al alumno
       setStudents(prev => prev.map(s => {
         if (s.id !== activeStudent.id) return s;
         return {
@@ -284,128 +435,146 @@ export default function CronicasDeExploradoresPage() {
           crystals: s.crystals + activeHex.rewardCrystals,
           coins: s.coins + activeHex.rewardCoins,
           communityPoints: s.communityPoints + 50,
-          unlockedHexCount: s.unlockedHexCount + 1
+          unlockedHexCount: Math.min(18, s.unlockedHexCount + 1)
         };
       }));
     } else {
       gamificationAudio.playHitSound();
-      setFeedback({
-        message: 'Respuesta inexacta. Consulta las fuentes primarias en la Bóveda Curricular y vuelve a intentarlo sin penalizaciones.',
-        success: false
+      setCardFeedback({
+        success: false,
+        message: `La carta "${card.name}" tiene gran valor didáctico, pero no responde la causa fundamental de este reto. Prueba otra carta antes de que acabe el tiempo.`
       });
+      speakText(`Casi, pero la carta ${card.name} no resuelve este enigma. ¡Revisa tu baraja!`);
     }
   };
 
-  const handleEquipItem = (category: 'tool' | 'outfit' | 'badge', itemName: string) => {
-    gamificationAudio.playClickSound();
-    setStudents(prev => prev.map(s => {
-      if (s.id !== activeStudent.id) return s;
-      return {
-        ...s,
-        equippedGear: {
-          ...s.equippedGear,
-          [category]: itemName
-        }
-      };
-    }));
-    showToast(`¡${itemName} equipado con éxito!`);
-  };
-
-  const handleBuyStoreItem = (itemName: string, costCoins: number, category: 'tool' | 'outfit' | 'badge') => {
-    if (activeStudent.coins < costCoins) {
+  // 5. Crafteo en el Laboratorio de Alquimia
+  const handleCraftPotion = () => {
+    if (herbCount < 1 || stoneCount < 1) {
       gamificationAudio.playHitSound();
-      showToast('Monedas insuficientes. Completa más expediciones curriculares para ganar monedas.');
+      showToast('Ingredientes insuficientes para la alquimia.');
       return;
     }
-    gamificationAudio.playCoinSound();
-    setStudents(prev => prev.map(s => {
-      if (s.id !== activeStudent.id) return s;
-      return {
-        ...s,
-        coins: s.coins - costCoins,
-        inventory: [...s.inventory, itemName],
-        equippedGear: {
-          ...s.equippedGear,
-          [category]: itemName
-        }
-      };
-    }));
-    showToast(`¡Compraste y equipaste "${itemName}" por ${costCoins} Monedas!`);
+
+    setIsBrewing(true);
+    gamificationAudio.playClickSound();
+    speakText('¡Mezclando ingredientes botánicos y minerales en el alambique de ciencias!');
+
+    setTimeout(() => {
+      setIsBrewing(false);
+      setBrewedPotion(true);
+      gamificationAudio.playLevelUpSound();
+      triggerConfetti();
+      setHerbCount(prev => prev - 1);
+      setStoneCount(prev => prev - 1);
+
+      setStudents(prev => prev.map(s => {
+        if (s.id !== activeStudent.id) return s;
+        return {
+          ...s,
+          crystals: s.crystals + 60,
+          communityPoints: s.communityPoints + 80,
+          alchemyCraftedCount: s.alchemyCraftedCount + 1
+        };
+      }));
+
+      speakText('¡Elixir de Maestría Científica creado! +60 Cristales y +80 Puntos para el Proyecto Comunitario.');
+      showToast('¡Poción de Ciencia creada con éxito! (+60 Cristales, +80 Pts NEM)');
+    }, 1500);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-black relative overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-emerald-950 text-slate-100 flex flex-col font-sans selection:bg-amber-400 selection:text-slate-950 relative overflow-x-hidden">
       
-      {/* EFECTO DE CONFETI EN DOM */}
+      {/* 1. EFECTO DE CONFETI EN DOM */}
       {confettiActive && (
         <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 bg-amber-500/10 backdrop-blur-[1px] animate-pulse" />
-          {[...Array(40)].map((_, i) => (
+          {[...Array(50)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-3 h-3 rounded-sm animate-bounce"
+              className="absolute w-3.5 h-3.5 rounded-sm animate-bounce"
               style={{
-                backgroundColor: ['#f59e0b', '#10b981', '#06b6d4', '#ec4899', '#8b5cf6'][i % 5],
-                top: `${(i * 7) % 95}%`,
-                left: `${(i * 13) % 98}%`,
+                backgroundColor: ['#f59e0b', '#10b981', '#06b6d4', '#ec4899', '#8b5cf6', '#eab308'][i % 6],
+                top: `${(i * 6.5) % 95}%`,
+                left: `${(i * 11.3) % 98}%`,
                 transform: `rotate(${i * 24}deg)`,
-                animationDuration: `${1.2 + (i % 5) * 0.3}s`
+                animationDuration: `${1.1 + (i % 5) * 0.25}s`
               }}
             />
           ))}
         </div>
       )}
 
-      {/* TOAST DE NOTIFICACIÓN */}
+      {/* 2. TOAST DE NOTIFICACIÓN INSTITUCIONAL */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 px-4 py-2.5 rounded-2xl bg-amber-500 text-slate-950 font-black text-xs shadow-2xl flex items-center gap-2 border border-amber-300 animate-in slide-in-from-top-4">
+        <div className="fixed top-20 right-6 z-50 px-5 py-2.5 rounded-2xl bg-amber-500 text-slate-950 font-black text-xs shadow-2xl flex items-center gap-2 border-2 border-amber-300 animate-in slide-in-from-top-4">
           <Sparkles className="w-4 h-4 fill-slate-950" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* HEADER DE EXPEDICIÓN */}
-      <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-amber-900/40 px-4 sm:px-6 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      {/* 3. HEADER SUPERIOR INSTITUCIONAL PRIMARIA ALTA */}
+      <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b-2 border-amber-500/40 shadow-xl px-4 sm:px-6 py-2.5">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+          
+          {/* Logo y Botón Volver */}
           <div className="flex items-center gap-3">
             <Link
               href="/redisenos_gamificados"
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors flex items-center gap-1.5 text-xs font-bold"
+              onClick={() => gamificationAudio.playClickSound()}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md transition-transform hover:scale-105 active:scale-95"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Volver a Rediseños</span>
+              <span>Volver a Rediseños</span>
             </Link>
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 bg-amber-950/70 px-2 py-0.5 rounded border border-amber-800/50">
-                05 Primaria Alta · Fase 5 SEP (9 a 11 Años)
-              </span>
-              <h1 className="text-sm sm:text-base font-extrabold text-white flex items-center gap-2">
-                <Compass className="w-4 h-4 text-amber-400 animate-spin-slow" />
-                Crónicas de Exploradores: El Atlas Hexagonal
-              </h1>
+
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🧭</span>
+              <div>
+                <h1 className="text-sm sm:text-base font-black text-white tracking-tight leading-tight flex items-center gap-2">
+                  Crónicas de Exploradores: El Atlas Hexagonal
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-950/80 text-amber-300 border border-amber-500/40 font-bold hidden sm:inline">
+                    Fase 5 SEP · 9 a 11 Años
+                  </span>
+                </h1>
+                <p className="text-[11px] text-slate-400 font-semibold line-clamp-1">
+                  Instituto Cumbres de Anáhuac · Exploración Científica y Proyectos Comunitarios NEM
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* PERFILES DE ALUMNOS & BOTONERA */}
-          <div className="flex items-center gap-2 sm:gap-4">
-            <div className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800">
+          {/* Conmutador de 3 Alumnos Reales */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-400 hidden md:inline">Alumno:</span>
+            <div className="flex items-center bg-slate-950/90 p-1 rounded-2xl border border-slate-800">
               {students.map(s => (
                 <button
                   key={s.id}
-                  onClick={() => handleSelectStudent(s.id)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
-                    s.id === activeStudent.id
-                      ? 'bg-amber-500 text-slate-950 shadow-md font-black scale-105'
+                  onClick={() => {
+                    gamificationAudio.playClickSound();
+                    setActiveStudentId(s.id);
+                    speakText(`¡Bienvenido explorador ${s.name.split(' ')[0]}! Tienes ${s.crystals} cristales de lógica.`);
+                    showToast(`Perfil cambiado a ${s.name} (${s.grade})`);
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black transition-all ${
+                    activeStudentId === s.id
+                      ? 'bg-amber-500 text-slate-950 shadow-md scale-105'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   <span>{s.avatarIcon}</span>
                   <span>{s.name.split(' ')[0]}</span>
+                  <span className="text-[10px] opacity-75 hidden lg:inline">({s.age}a)</span>
                 </button>
               ))}
             </div>
+          </div>
 
-            <div className="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs font-bold">
+          {/* Recursos de Explorador & Botonera de Acciones */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="hidden sm:flex items-center gap-3 px-3 py-1 rounded-xl bg-slate-950/80 border border-slate-800 text-xs font-black">
               <span className="flex items-center gap-1 text-cyan-300">
                 <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
                 {activeStudent.crystals} Cristales
@@ -414,518 +583,735 @@ export default function CronicasDeExploradoresPage() {
                 <Coins className="w-3.5 h-3.5 text-amber-400" />
                 {activeStudent.coins} Monedas
               </span>
+              <span className="flex items-center gap-1 text-emerald-300">
+                <Trophy className="w-3.5 h-3.5 text-emerald-400" />
+                +{activeStudent.communityPoints} Pts NEM
+              </span>
             </div>
 
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={() => {
-                  gamificationAudio.playClickSound();
-                  setActiveModal('locker');
-                }}
-                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 border border-slate-700"
-              >
-                <Shirt className="w-3.5 h-3.5 text-amber-400" />
-                <span className="hidden sm:inline">Vestidor</span>
-              </button>
+            <button
+              onClick={() => {
+                gamificationAudio.playClickSound();
+                setActiveModal('albumLocker');
+                speakText("¡Abriendo el Álbum de Logros y Vestidor de Héroe!");
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs font-black border border-amber-500/30 transition-transform hover:scale-105 active:scale-95"
+            >
+              <Shirt className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden md:inline">Álbum & Héroe</span>
+            </button>
 
-              <button
-                onClick={() => {
-                  gamificationAudio.playClickSound();
-                  setActiveModal('store');
-                }}
-                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/20"
-              >
-                <ShoppingBag className="w-3.5 h-3.5" />
-                <span>Bazar</span>
-              </button>
+            <button
+              onClick={() => {
+                gamificationAudio.playClickSound();
+                setActiveModal('alchemyLab');
+                speakText("¡Bienvenido al Laboratorio de Alquimia y Artesanía Científica!");
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-950/70 hover:bg-emerald-900 border border-emerald-500/50 text-emerald-300 text-xs font-black transition-transform hover:scale-105 active:scale-95"
+            >
+              <FlaskConical className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden md:inline">Alquimia</span>
+            </button>
 
-              <button
-                onClick={() => {
-                  gamificationAudio.playClickSound();
-                  setActiveModal('teacherStudio');
-                }}
-                className="p-2 rounded-xl bg-indigo-950/70 hover:bg-indigo-900 border border-indigo-700 text-indigo-300 text-xs font-bold"
-                title="Universal Challenge Studio (Vista Docente)"
-              >
-                <GraduationCap className="w-4 h-4 text-indigo-400" />
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                gamificationAudio.playClickSound();
+                setActiveModal('teacherStudio');
+              }}
+              className="p-2 rounded-xl bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-500/40 text-indigo-300 text-xs font-bold transition-transform hover:scale-105"
+              title="Universal Challenge Studio (Vista Docente)"
+            >
+              <GraduationCap className="w-4 h-4 text-indigo-400" />
+            </button>
+
+            <button
+              onClick={() => setIsSoundMuted(!isSoundMuted)}
+              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs"
+              title={isSoundMuted ? 'Activar voz y sonido' : 'Silenciar'}
+            >
+              {isSoundMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </button>
           </div>
+
         </div>
       </header>
 
-      {/* CONTENIDO PRINCIPAL: 4 PANTALLAS INTEGRADAS */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
+      {/* ========================================================================= */}
+      {/* 4. PANTALLA 1: LIENZO PRINCIPAL DEL ARCHIPIÉLAGO (16:9 FULL MOCKUP FIDELITY) */}
+      {/* ========================================================================= */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 flex flex-col justify-center">
         
-        {/* PANTALLA 1: HUB DEL MAPA HEXAGONAL & CAMPAMENTO BASE */}
-        <div className="p-5 md:p-6 rounded-3xl bg-gradient-to-r from-amber-950/30 via-slate-900 to-slate-950 border border-amber-800/40 shadow-2xl space-y-5">
+        {/* LIENZO ENMARCADO CON MÁXIMA FIDELIDAD VISUAL */}
+        <div className="relative w-full aspect-[16/9] max-h-[82vh] rounded-[36px] overflow-hidden shadow-2xl border-4 border-amber-500/60 bg-slate-950 group">
           
-          {/* Banner del Explorador Activo */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-            <div>
-              <div className="flex items-center gap-2 mb-1.5">
-                <span className="px-3 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-xs font-black border border-amber-500/40">
-                  {activeStudent.rankTitle}
-                </span>
-                <span className="text-xs text-slate-400">{activeStudent.grade}</span>
-              </div>
-              <h2 className="text-xl md:text-2xl font-black text-white flex items-center gap-2">
-                <span>{activeStudent.avatarIcon} Campamento Base de {activeStudent.name}</span>
-              </h2>
-              <p className="text-xs text-slate-300 mt-1">
-                Herramienta Activa: <strong className="text-amber-300">{activeStudent.equippedGear.tool}</strong> · {activeStudent.equippedGear.outfit} · Insignia: <em>{activeStudent.equippedGear.badge}</em>
-              </p>
-            </div>
+          {/* Ilustración de Fondo Original (1600px Optimizado) */}
+          <img 
+            src="/redisenos_assets/cronicas/cronicas_main_hub_scene.jpg" 
+            alt="Crónicas de Exploradores - Archipiélago Hexagonal"
+            className="w-full h-full object-cover select-none"
+          />
 
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-2xl bg-slate-950/90 border border-slate-800 text-center min-w-[110px]">
-                <span className="text-xl font-black text-emerald-400 block">{activeStudent.unlockedHexCount}/18</span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase">Territorios Libres</span>
-              </div>
-              <div className="p-3 rounded-2xl bg-slate-950/90 border border-slate-800 text-center min-w-[110px]">
-                <span className="text-xl font-black text-cyan-400 block">+{activeStudent.communityPoints}</span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase">Puntos Proyecto NEM</span>
-              </div>
+          {/* ========================================================= */}
+          {/* HOTSPOTS INTERACTIVOS MAESTROS DIRECTOS SOBRE EL LIENZO  */}
+          {/* ========================================================= */}
+
+          {/* 1. Hotspot: Banderas de Casas Elementales (Top-Left: Ignis, Aqua, Terra, Aer) */}
+          <div className="absolute top-[9%] left-[3.2%] w-[27%] h-[19%] z-20 grid grid-cols-4 gap-1">
+            {/* Ignis */}
+            <button
+              onClick={() => handleSelectHouse('Ignis')}
+              className={`rounded-xl transition-all cursor-pointer ${
+                activeStudent.house === 'Ignis'
+                  ? 'ring-2 ring-rose-400 bg-rose-500/20 shadow-lg'
+                  : 'hover:bg-white/10'
+              }`}
+              title="Casa Ignis (Fuego y Termodinámica)"
+            />
+            {/* Aqua */}
+            <button
+              onClick={() => handleSelectHouse('Aqua')}
+              className={`rounded-xl transition-all cursor-pointer ${
+                activeStudent.house === 'Aqua'
+                  ? 'ring-2 ring-sky-400 bg-sky-500/20 shadow-lg'
+                  : 'hover:bg-white/10'
+              }`}
+              title="Casa Aqua (Agua y Ciclos Naturales)"
+            />
+            {/* Terra */}
+            <button
+              onClick={() => handleSelectHouse('Terra')}
+              className={`rounded-xl transition-all cursor-pointer ${
+                activeStudent.house === 'Terra'
+                  ? 'ring-2 ring-emerald-400 bg-emerald-500/20 shadow-lg'
+                  : 'hover:bg-white/10'
+              }`}
+              title="Casa Terra (Tierra y Geología)"
+            />
+            {/* Aer */}
+            <button
+              onClick={() => handleSelectHouse('Aer')}
+              className={`rounded-xl transition-all cursor-pointer ${
+                activeStudent.house === 'Aer'
+                  ? 'ring-2 ring-cyan-400 bg-cyan-500/20 shadow-lg'
+                  : 'hover:bg-white/10'
+              }`}
+              title="Casa Aer (Viento y Atmósfera)"
+            />
+          </div>
+
+          {/* 2. Hotspot: Heroína Exploradora Viva (Left Column) */}
+          <div 
+            onClick={handleExplorerHeroClick}
+            className="absolute top-[30%] left-[5%] w-[19%] h-[65%] z-20 cursor-pointer group/hero rounded-3xl"
+            title="¡Toca a la Heroína Exploradora para conversar y recibir pistas!"
+          >
+            <div className="absolute inset-0 rounded-3xl opacity-0 group-hover/hero:opacity-100 transition-opacity bg-amber-400/20 border-2 border-amber-400/60 pointer-events-none flex items-center justify-center">
+              <span className="bg-amber-900/90 text-amber-200 text-[11px] font-black px-3 py-1 rounded-full shadow-xl flex items-center gap-1.5 animate-bounce">
+                <Volume2 className="w-3.5 h-3.5" />
+                ¡Elena te Saluda!
+              </span>
             </div>
           </div>
 
-          {/* Cuadrícula Hexagonal Táctica (Niebla de Guerra) */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-extrabold text-white flex items-center gap-2">
-                <Map className="w-4 h-4 text-amber-400" />
-                Archipiélago Inexplorado de Territorios Curriculares (Fase 5 SEP)
-              </h3>
-              <span className="text-xs text-slate-400">Toca un hexágono para iniciar la expedición científica</span>
+          {/* 3. Hotspot: Hexágono Central - Selva de la Biodiversidad Lacandona */}
+          <button
+            onClick={() => handleLaunchHexExpedition(hexagons[1])}
+            className="absolute top-[38%] left-[45%] w-[14%] h-[24%] z-20 cursor-pointer rounded-full transition-transform hover:scale-105 active:scale-95 group/selva"
+            title="Explorar Selva Lacandona (Saber y Duelo TCG)"
+          >
+            <div className="absolute inset-0 rounded-full opacity-0 group-hover/selva:opacity-100 transition-opacity bg-emerald-500/30 border-2 border-emerald-400 flex items-center justify-center pointer-events-none">
+              <span className="bg-emerald-950/90 text-emerald-200 text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg">
+                🌲 ¡Iniciar Expedición TCG!
+              </span>
             </div>
+          </button>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {hexagons.map((hex, idx) => {
-                const isConquered = hex.status === 'conquistado';
-                const isChallenging = hex.status === 'desafiando';
-                return (
-                  <div
-                    key={hex.id}
-                    onClick={() => handleOpenHexChallenge(hex)}
-                    className={`p-5 rounded-2xl border text-left transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between h-64 group ${
-                      isConquered
-                        ? 'bg-emerald-950/25 border-emerald-500/50 hover:border-emerald-400 shadow-lg shadow-emerald-950/20'
-                        : isChallenging
-                        ? 'bg-amber-950/30 border-amber-500/70 hover:border-amber-400 shadow-xl shadow-amber-950/30 ring-2 ring-amber-500/40'
-                        : 'bg-slate-950/60 border-slate-800 opacity-65 hover:opacity-95'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
-                          isConquered
-                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                            : isChallenging
-                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                            : 'bg-slate-800 text-slate-400'
-                        }`}>
-                          Bioma {hex.biome}
-                        </span>
-                        {isConquered ? (
-                          <span className="flex items-center gap-1 text-emerald-400 text-xs font-bold">
-                            <CheckCircle2 className="w-4 h-4" /> Despejado
-                          </span>
-                        ) : isChallenging ? (
-                          <span className="px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black animate-pulse">
-                            ¡Niebla Activa!
-                          </span>
-                        ) : (
-                          <span className="text-[10px] text-slate-500 font-bold">Por Explorar</span>
-                        )}
-                      </div>
+          {/* 4. Hotspot: Hexágono Volcán de Geología */}
+          <button
+            onClick={() => handleLaunchHexExpedition(hexagons[0])}
+            className="absolute top-[34%] left-[27%] w-[12%] h-[22%] z-20 cursor-pointer rounded-full transition-transform hover:scale-105 active:scale-95 group/volcan"
+            title="Explorar Volcán de Geología Tectónica"
+          >
+            <div className="absolute inset-0 rounded-full opacity-0 group-hover/volcan:opacity-100 transition-opacity bg-rose-500/30 border-2 border-rose-400 flex items-center justify-center pointer-events-none">
+              <span className="bg-rose-950/90 text-rose-200 text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg">
+                🌋 Volcán Activo
+              </span>
+            </div>
+          </button>
 
-                      <h4 className="font-extrabold text-white text-base leading-tight mb-1 group-hover:text-amber-300 transition-colors">
-                        {hex.title}
-                      </h4>
-                      <span className="text-[10px] text-amber-400/90 font-bold block mb-1.5">
-                        {hex.subject}
-                      </span>
-                      <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-3">
-                        {hex.pda}
-                      </p>
-                    </div>
+          {/* 5. Hotspot: Hexágono Pirámide de los Astrónomos Mayas */}
+          <button
+            onClick={() => handleLaunchHexExpedition(hexagons[2])}
+            className="absolute top-[52%] left-[36%] w-[12%] h-[20%] z-20 cursor-pointer rounded-full transition-transform hover:scale-105 active:scale-95 group/maya"
+            title="Explorar Pirámide Maya (Cero y Astronomía)"
+          >
+            <div className="absolute inset-0 rounded-full opacity-0 group-hover/maya:opacity-100 transition-opacity bg-amber-500/30 border-2 border-amber-400 flex items-center justify-center pointer-events-none">
+              <span className="bg-amber-950/90 text-amber-200 text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg">
+                🏛️ Pirámide Maya
+              </span>
+            </div>
+          </button>
 
-                    <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
-                      <span className="text-amber-400 font-black flex items-center gap-1">
-                        <Coins className="w-3.5 h-3.5" /> +{hex.rewardCoins}
-                      </span>
-                      <span className="text-cyan-400 font-black flex items-center gap-1">
-                        <Sparkles className="w-3.5 h-3.5" /> +{hex.rewardCrystals} Cristales
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
+          {/* 6. Hotspot: Laboratorio de Artesanía (Bottom-Center Alambique de Alquimia) */}
+          <div 
+            onClick={() => {
+              gamificationAudio.playClickSound();
+              setActiveModal('alchemyLab');
+              speakText("¡Mesa de Alquimia y Artesanía Científica lista para mezclar recursos!");
+            }}
+            className="absolute bottom-[4%] left-[36%] w-[30%] h-[24%] z-20 cursor-pointer group/lab rounded-2xl"
+            title="Abrir Laboratorio de Artesanía (Mezclar Hojas + Roca = Poción)"
+          >
+            <div className="absolute inset-0 rounded-2xl opacity-0 group-hover/lab:opacity-100 transition-opacity bg-amber-500/25 border-2 border-amber-400 pointer-events-none flex items-center justify-center">
+              <span className="bg-amber-950/90 text-amber-200 text-xs font-black px-3 py-1 rounded-full shadow-xl flex items-center gap-1.5 animate-pulse">
+                <FlaskConical className="w-4 h-4 text-emerald-400" />
+                Laboratorio de Alquimia (¡CREAR!)
+              </span>
             </div>
           </div>
 
+          {/* 7. Hotspot: Pergamino de Contratos de Misión (Bottom-Right) */}
+          <div 
+            onClick={() => {
+              gamificationAudio.playClickSound();
+              setActiveModal('missions');
+              speakText("¡Contratos de Misión y Proyectos Comunitarios NEM!");
+            }}
+            className="absolute bottom-[6%] right-[2%] w-[20%] h-[42%] z-20 cursor-pointer group/scroll rounded-2xl"
+            title="Abrir Contratos de Misión Curricular"
+          >
+            <div className="absolute inset-0 rounded-2xl opacity-0 group-hover/scroll:opacity-100 transition-opacity bg-amber-500/20 border-2 border-amber-400 pointer-events-none flex items-center justify-center">
+              <span className="bg-amber-950/90 text-amber-200 text-xs font-black px-2 py-1 rounded-full shadow-xl flex items-center gap-1">
+                <Scroll className="w-3.5 h-3.5 text-amber-400" />
+                Contratos de Misión
+              </span>
+            </div>
+          </div>
+
+          {/* 8. Hotspot: Radar y Minimapa de Exploración (Top-Right) */}
+          <div 
+            onClick={() => {
+              gamificationAudio.playClickSound();
+              showToast(`Minimapa del Sector 5: ${activeStudent.unlockedHexCount} de 18 hexágonos despejados`);
+              speakText(`Tu equipo lleva ${activeStudent.unlockedHexCount} de 18 hexágonos explorados sin niebla.`);
+            }}
+            className="absolute top-[6%] right-[2.5%] w-[19%] h-[32%] z-20 cursor-pointer group/radar rounded-2xl"
+            title="Minimapa Táctico de Exploración"
+          >
+            <div className="absolute inset-0 rounded-2xl opacity-0 group-hover/radar:opacity-100 transition-opacity bg-cyan-400/20 border-2 border-cyan-400 pointer-events-none flex items-center justify-center">
+              <span className="bg-slate-950/90 text-cyan-300 text-[10px] font-black px-2.5 py-1 rounded-full shadow-lg">
+                🧭 {activeStudent.unlockedHexCount}/18 Despejados
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+        {/* BARRA INFORMATIVA INFERIOR DE EXPEDICIÓN */}
+        <div className="mt-3 bg-slate-900/90 backdrop-blur-md rounded-2xl p-3 border border-amber-500/30 flex flex-wrap items-center justify-between text-xs text-slate-300 shadow-xl gap-2">
+          <div className="flex items-center gap-2">
+            <span className="font-extrabold text-amber-400">ISkool Atlas Hexagonal</span>
+            <span>·</span>
+            <span>Casa {activeStudent.house}</span>
+            <span>·</span>
+            <span className="text-[10px] bg-emerald-950 text-emerald-300 px-2.5 py-0.5 rounded-full font-bold border border-emerald-500/40">
+              Evaluación Formativa Colaborativa NEM
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => handleLaunchHexExpedition(hexagons[1])}
+              className="px-3 py-1 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md transition-transform hover:scale-105 active:scale-95 flex items-center gap-1.5"
+            >
+              <Swords className="w-3.5 h-3.5" />
+              <span>Duelo TCG en Vivo</span>
+            </button>
+            <button
+              onClick={() => setActiveModal('alchemyLab')}
+              className="px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-md transition-transform hover:scale-105 active:scale-95 flex items-center gap-1.5"
+            >
+              <FlaskConical className="w-3.5 h-3.5" />
+              <span>Laboratorio</span>
+            </button>
+          </div>
         </div>
 
       </main>
 
-      {/* PANTALLA 2: MODAL DE EXPEDICIÓN DIDÁCTICA & QUIZ */}
-      {activeModal === 'quiz' && activeHex && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in">
-          <div className="bg-slate-900 border border-amber-500/50 rounded-3xl max-w-2xl w-full p-6 space-y-5 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <Compass className="w-5 h-5 text-amber-400 animate-spin-slow" />
-                <div>
-                  <span className="text-[10px] font-black uppercase text-amber-400">Expedición Científica en Vivo</span>
-                  <h3 className="text-base font-extrabold text-white">{activeHex.title}</h3>
-                </div>
-              </div>
-              <button
-                onClick={() => setActiveModal('none')}
-                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-amber-300">Enigma Curricular de Expedición:</span>
-                <span className="text-[11px] text-cyan-300 font-bold">Temporizador de Agilidad: 30s</span>
-              </div>
-              <p className="text-sm font-bold text-white leading-relaxed">
-                {activeHex.question}
-              </p>
-
-              <div className="grid grid-cols-1 gap-2 pt-2">
-                {activeHex.options.map((opt, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleAnswerSubmit(idx)}
-                    className={`p-3.5 rounded-xl border text-left text-xs font-bold transition-all flex items-center justify-between ${
-                      selectedAnswer === idx
-                        ? idx === activeHex.correctIndex
-                          ? 'bg-emerald-950/90 border-emerald-500 text-emerald-200'
-                          : 'bg-rose-950/90 border-rose-500 text-rose-200'
-                        : 'bg-slate-900/90 border-slate-800 text-slate-200 hover:border-amber-500/60 hover:bg-slate-850'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-black text-amber-300">
-                        {['A', 'B', 'C', 'D'][idx]}
-                      </span>
-                      <span>{opt}</span>
-                    </div>
-                    {selectedAnswer === idx && idx === activeHex.correctIndex && (
-                      <Check className="w-4 h-4 text-emerald-400" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {feedback && (
-              <div className={`p-4 rounded-2xl border text-xs font-bold space-y-2 ${
-                feedback.success
-                  ? 'bg-emerald-950/60 border-emerald-500/70 text-emerald-300'
-                  : 'bg-rose-950/60 border-rose-500/70 text-rose-300'
-              }`}>
-                <div className="flex items-center justify-between">
-                  <span>{feedback.message}</span>
-                  <button
-                    onClick={() => {
-                      if (feedback.success) setActiveModal('none');
-                      setFeedback(null);
-                    }}
-                    className="px-3 py-1 rounded-lg bg-black/40 text-[11px] font-black"
-                  >
-                    {feedback.success ? 'Continuar Expedición' : 'Reintentar'}
-                  </button>
-                </div>
-                {feedback.success && (
-                  <p className="text-[11px] text-emerald-400/90 font-normal border-t border-emerald-800/40 pt-1.5">
-                    <strong>Fundamento Curricular:</strong> {activeHex.explanation}
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* PANTALLA 3: VESTIDOR Y PERSONALIZADOR DE AVATAR STEM */}
-      {activeModal === 'locker' && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in">
-          <div className="bg-slate-900 border border-amber-500/50 rounded-3xl max-w-4xl w-full p-6 space-y-5 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <Shirt className="w-5 h-5 text-amber-400" />
-                <h3 className="text-base font-extrabold text-white">Pedestal 3D & Vestidor de Expedición STEM</h3>
-              </div>
-              <button
-                onClick={() => setActiveModal('none')}
-                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-              
-              {/* Columna Izquierda: Viewport 3D del Explorador en Pedestal */}
-              <div className="md:col-span-5 flex flex-col items-center justify-center bg-slate-950 p-4 rounded-3xl border border-amber-500/30 shadow-inner">
-                <div className="relative w-full aspect-square rounded-2xl overflow-hidden border-2 border-amber-400/50 shadow-2xl">
-                  <img
-                    src={getExplorerRender()}
-                    alt="Explorador en Pedestal 3D"
-                    className="w-full h-full object-cover transition-all duration-300 hover:scale-105"
-                  />
-                  <div className="absolute top-2 left-2 px-2.5 py-1 rounded-xl bg-black/75 backdrop-blur-md text-[10px] font-black text-amber-300 border border-amber-400/30">
-                    Pedestal Maya 3D
-                  </div>
-                  <div className="absolute bottom-2 left-2 right-2 px-3 py-1.5 rounded-xl bg-black/80 backdrop-blur-md text-[11px] font-black text-white text-center border border-white/10">
-                    {selectedHeroItem === 'brujula' && '🧭 Brújula de Oro Ancestral Equipada'}
-                    {selectedHeroItem === 'sombrero' && '🤠 Sombrero Safari de Pith Equipado'}
-                    {selectedHeroItem === 'quetzal' && '🦜 Mascota Quetzal Sagrado en Hombro'}
-                    {selectedHeroItem === 'poncho' && '🧥 Poncho Andino Térmico Equipado'}
-                    {selectedHeroItem === 'base' && '🎒 Atuendo Base de Expedición'}
-                  </div>
-                </div>
-
-                <div className="mt-3 flex items-center justify-between w-full px-2 text-xs">
-                  <span className="text-slate-400 font-bold">Explorador:</span>
-                  <span className="text-amber-300 font-black">{activeStudent.name}</span>
-                </div>
-              </div>
-
-              {/* Columna Derecha: Catálogo de Ítems Equipables */}
-              <div className="md:col-span-7 space-y-3">
-                <span className="text-xs font-black uppercase tracking-wider text-amber-400 block mb-1">
-                  Selecciona el Ítem para el Pedestal 3D:
+      {/* ========================================================================= */}
+      {/* 5. PANTALLA 2: MODAL ARENA TCG DIDÁCTICA EN VIVO (TCG CARDS GAMEPLAY) */}
+      {/* ========================================================================= */}
+      {activeModal === 'tcgArena' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
+          
+          <div className="relative w-full max-w-5xl rounded-[36px] overflow-hidden shadow-2xl border-4 border-amber-500 bg-slate-950 flex flex-col justify-between max-h-[96vh]">
+            
+            {/* Header Flotante del Duelo */}
+            <div className="absolute top-3 left-4 right-4 z-30 flex items-center justify-between pointer-events-none">
+              <div className="pointer-events-auto bg-slate-950/90 backdrop-blur-md px-4 py-1.5 rounded-full shadow-xl border border-amber-500/50 text-xs font-black text-white flex items-center gap-3">
+                <span className="text-cyan-300 flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> Maná: {manaAvailable}/10
                 </span>
-
-                <div className="grid grid-cols-2 gap-2.5">
-                  <button
-                    onClick={() => {
-                      gamificationAudio.playClickSound();
-                      setSelectedHeroItem(prev => prev === 'brujula' ? 'base' : 'brujula');
-                      handleEquipItem('tool', 'Brújula Dorada Ancestral');
-                    }}
-                    className={`p-3 rounded-2xl border text-left transition-all ${
-                      selectedHeroItem === 'brujula'
-                        ? 'bg-amber-500 text-slate-950 border-amber-300 font-black shadow-lg shadow-amber-500/30 scale-[1.02]'
-                        : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-amber-400/50'
-                    }`}
-                  >
-                    <span className="text-base block mb-0.5">🧭</span>
-                    <strong className="text-xs block">Brújula de Oro</strong>
-                    <span className="text-[10px] opacity-80">+30% Percepción Niebla</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      gamificationAudio.playClickSound();
-                      setSelectedHeroItem(prev => prev === 'sombrero' ? 'base' : 'sombrero');
-                      handleEquipItem('outfit', 'Sombrero Safari de Pith');
-                    }}
-                    className={`p-3 rounded-2xl border text-left transition-all ${
-                      selectedHeroItem === 'sombrero'
-                        ? 'bg-amber-500 text-slate-950 border-amber-300 font-black shadow-lg shadow-amber-500/30 scale-[1.02]'
-                        : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-amber-400/50'
-                    }`}
-                  >
-                    <span className="text-base block mb-0.5">🤠</span>
-                    <strong className="text-xs block">Sombrero Safari</strong>
-                    <span className="text-[10px] opacity-80">+25% Protección Solar</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      gamificationAudio.playClickSound();
-                      setSelectedHeroItem(prev => prev === 'quetzal' ? 'base' : 'quetzal');
-                      handleEquipItem('badge', 'Amigo del Quetzal Sagrado');
-                    }}
-                    className={`p-3 rounded-2xl border text-left transition-all ${
-                      selectedHeroItem === 'quetzal'
-                        ? 'bg-amber-500 text-slate-950 border-amber-300 font-black shadow-lg shadow-amber-500/30 scale-[1.02]'
-                        : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-amber-400/50'
-                    }`}
-                  >
-                    <span className="text-base block mb-0.5">🦜</span>
-                    <strong className="text-xs block">Mascota Quetzal</strong>
-                    <span className="text-[10px] opacity-80">+40% Hallazgo de Gemas</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      gamificationAudio.playClickSound();
-                      setSelectedHeroItem(prev => prev === 'poncho' ? 'base' : 'poncho');
-                      handleEquipItem('outfit', 'Poncho Andino Térmico');
-                    }}
-                    className={`p-3 rounded-2xl border text-left transition-all ${
-                      selectedHeroItem === 'poncho'
-                        ? 'bg-amber-500 text-slate-950 border-amber-300 font-black shadow-lg shadow-amber-500/30 scale-[1.02]'
-                        : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-amber-400/50'
-                    }`}
-                  >
-                    <span className="text-base block mb-0.5">🧥</span>
-                    <strong className="text-xs block">Poncho Térmico</strong>
-                    <span className="text-[10px] opacity-80">+35% Resistencia Clima</span>
-                  </button>
-                </div>
-
-                <div className="pt-2">
-                  <button
-                    onClick={() => {
-                      gamificationAudio.playClickSound();
-                      setSelectedHeroItem('base');
-                      handleEquipItem('outfit', 'Traje de Expedición Base');
-                    }}
-                    className="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700 text-center"
-                  >
-                    Restablecer a Atuendo Base de Expedición
-                  </button>
-                </div>
+                <span className="text-slate-600">|</span>
+                <span className="text-amber-300 flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5 text-amber-400" /> {timerSeconds}s restantes
+                </span>
               </div>
 
-            </div>
-
-            <div className="pt-3 border-t border-slate-800 flex justify-end">
               <button
                 onClick={() => {
-                  gamificationAudio.playLevelUpSound();
+                  gamificationAudio.playClickSound();
                   setActiveModal('none');
-                  showToast('¡Equipo de expedición 3D actualizado con éxito!');
                 }}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20"
+                className="pointer-events-auto p-2 rounded-full bg-white text-slate-800 hover:bg-slate-100 shadow-xl transition-transform active:scale-95"
+                title="Cerrar Duelo TCG"
               >
-                Confirmar y Equipar en Pedestal 3D
+                <X className="w-4 h-4" />
               </button>
             </div>
+
+            {/* LIENZO DE LA ARENA TCG (FONDO MOCKUP OPTIMIZADO) */}
+            <div className="relative w-full aspect-[16/9] overflow-hidden group">
+              
+              <img 
+                src="/redisenos_assets/cronicas/cronicas_tcg_arena_scene.jpg" 
+                alt="Arena TCG - Duelo de Cartas Didáctico"
+                className="w-full h-full object-cover"
+              />
+
+              {/* Pregunta Holográfica Flotante en el Círculo de Invocación */}
+              <div className="absolute top-[16%] left-[30%] w-[40%] h-[32%] z-20 flex flex-col items-center justify-center p-3 text-center pointer-events-none">
+                <span className="text-[10px] font-black uppercase tracking-wider text-cyan-300 bg-black/70 px-2 py-0.5 rounded-full mb-1 border border-cyan-400/40">
+                  Enigma Curricular del Archipiélago
+                </span>
+                <p className="text-xs sm:text-sm font-extrabold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] leading-snug">
+                  {activeHex.question}
+                </p>
+                <span className="text-[10px] text-amber-300 mt-1 font-bold">
+                  Selecciona la carta correcta de tu mano para responder (+{activeHex.rewardCrystals} Cristales)
+                </span>
+              </div>
+
+              {/* 4 CARTAS TCG JUGABLES EN LA MANO DEL ALUMNO (INFERIOR) */}
+              <div className="absolute bottom-[2%] left-[24%] right-[16%] z-20 grid grid-cols-4 gap-2.5 sm:gap-3 px-2">
+                {TCG_DECK.map(card => {
+                  const isSelected = playedCardId === card.id;
+                  const canAfford = manaAvailable >= card.costMana;
+                  return (
+                    <div
+                      key={card.id}
+                      onClick={() => handlePlayCard(card)}
+                      className={`relative aspect-[2/3] rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 shadow-2xl border-2 group/card ${
+                        isSelected
+                          ? 'ring-4 ring-amber-400 scale-110 -translate-y-4 shadow-amber-500/50 z-30'
+                          : canAfford
+                          ? 'border-amber-400/60 hover:scale-105 hover:-translate-y-2 hover:border-amber-300'
+                          : 'border-slate-700 opacity-60'
+                      }`}
+                      title={`Jugar ${card.name} (${card.costMana} Maná)`}
+                    >
+                      <img 
+                        src={card.image} 
+                        alt={card.name} 
+                        className="w-full h-full object-cover transition-transform group-hover/card:scale-105"
+                      />
+                      {isSelected && (
+                        <div className="absolute inset-0 bg-amber-500/20 backdrop-blur-[1px] flex items-center justify-center pointer-events-none">
+                          <Check className="w-8 h-8 text-amber-300 animate-bounce" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Botón de Terminar Turno (Esquina Inferior Derecha) */}
+              <button
+                onClick={() => {
+                  gamificationAudio.playClickSound();
+                  setTimerSeconds(30);
+                  setManaAvailable(10);
+                  showToast('Turno reiniciado: Cristales de Maná al 100%');
+                }}
+                className="absolute bottom-[5%] right-[2%] w-[12%] h-[9%] z-20 rounded-xl hover:ring-2 hover:ring-cyan-400 transition-all cursor-pointer"
+                title="Terminar Turno y Recargar Maná"
+              />
+
+              {/* Banner de Feedback Didáctico */}
+              {cardFeedback && (
+                <div className="absolute bottom-[28%] left-1/2 -translate-x-1/2 z-30 w-[85%] max-w-xl">
+                  <div className={`p-4 rounded-2xl text-xs sm:text-sm font-black text-center shadow-2xl border-2 flex items-center justify-between gap-3 animate-in fade-in ${
+                    cardFeedback.success
+                      ? 'bg-emerald-950/95 border-emerald-400 text-emerald-200'
+                      : 'bg-rose-950/95 border-rose-400 text-rose-200'
+                  }`}>
+                    <span>{cardFeedback.message}</span>
+                    {cardFeedback.success && (
+                      <button
+                        onClick={() => setActiveModal('none')}
+                        className="px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-black text-xs shrink-0 shadow-md"
+                      >
+                        Continuar
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+            </div>
+
+            {/* Barra Inferior del Duelo */}
+            <div className="p-3 bg-slate-900 border-t border-slate-800 flex items-center justify-between text-xs text-slate-300">
+              <span className="font-bold flex items-center gap-1.5 text-amber-300">
+                <Trophy className="w-4 h-4 text-amber-400" /> Duelo Curricular NEM: Pensamiento Científico y Matemático
+              </span>
+              <button
+                onClick={() => {
+                  gamificationAudio.playClickSound();
+                  setActiveModal('none');
+                }}
+                className="px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold"
+              >
+                Volver al Archipiélago
+              </button>
+            </div>
+
           </div>
         </div>
       )}
 
-      {/* BAZAR DE EXPEDICIÓN (TIENDA DE RECOMPENSAS) */}
-      {activeModal === 'store' && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in">
-          <div className="bg-slate-900 border border-amber-500/50 rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <ShoppingBag className="w-5 h-5 text-amber-400" />
-                <h3 className="text-base font-extrabold text-white">Bazar del Explorador de Primaria Alta</h3>
+      {/* ========================================================================= */}
+      {/* 6. PANTALLA 3: ÁLBUM DE LOGROS Y PERSONALIZADOR DE HÉROE (MOCKUP REAL) */}
+      {/* ========================================================================= */}
+      {activeModal === 'albumLocker' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
+          
+          <div className="relative w-full max-w-5xl rounded-[36px] overflow-hidden shadow-2xl border-4 border-amber-500 bg-slate-950 flex flex-col justify-between max-h-[96vh]">
+            
+            {/* Header del Álbum */}
+            <div className="absolute top-3 left-4 right-4 z-30 flex items-center justify-between pointer-events-none">
+              <div className="pointer-events-auto bg-slate-950/90 backdrop-blur-md px-4 py-1 rounded-full border border-amber-500/40 text-xs font-black text-amber-300">
+                📖 Álbum de Logros STEM & Personalizador 3D
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-black text-amber-300 bg-slate-950 px-3 py-1 rounded-xl border border-slate-800">
-                  Saldo: {activeStudent.coins} Monedas
-                </span>
+              <button
+                onClick={() => {
+                  gamificationAudio.playClickSound();
+                  setActiveModal('none');
+                }}
+                className="pointer-events-auto p-2 rounded-full bg-white text-slate-800 hover:bg-slate-100 shadow-xl"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* LIENZO DEL ÁLBUM Y HÉROE (FONDO MOCKUP OPTIMIZADO) */}
+            <div className="relative w-full aspect-[16/9] overflow-hidden group">
+              
+              <img 
+                src="/redisenos_assets/cronicas/cronicas_album_customizer_scene.jpg" 
+                alt="Álbum de Logros y Personalizador"
+                className="w-full h-full object-cover"
+              />
+
+              {/* RENDER VIVO DEL EXPLORADOR EN EL PEDESTAL 3D (DERECHA) */}
+              <div className="absolute top-[24%] right-[24%] w-[22%] h-[54%] z-20 pointer-events-none flex flex-col items-center justify-center p-1">
+                <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl border-2 border-amber-400/80 bg-slate-950 relative">
+                  <img 
+                    src={getExplorerRender()} 
+                    alt="Explorador en Pedestal 3D"
+                    className="w-full h-full object-cover animate-in fade-in duration-200"
+                  />
+                  <div className="absolute bottom-1 left-1 right-1 bg-black/75 rounded-lg py-0.5 text-center text-white text-[9px] font-black">
+                    {selectedHeroItem === 'brujula' && '🧭 Brújula Ancestral'}
+                    {selectedHeroItem === 'sombrero' && '🤠 Sombrero Safari'}
+                    {selectedHeroItem === 'quetzal' && '🦜 Quetzal Sagrado'}
+                    {selectedHeroItem === 'poncho' && '🧥 Poncho Andino'}
+                    {selectedHeroItem === 'base' && '🎒 Atuendo Base'}
+                  </div>
+                </div>
+              </div>
+
+              {/* BOTONES FLOTANTES PARA EQUIPAR ACCESORIOS (DERECHA) */}
+              <div className="absolute top-[26%] right-[3.5%] w-[18%] h-[52%] z-20 grid grid-rows-4 gap-2">
+                {/* 1. Capa / Poncho */}
                 <button
-                  onClick={() => setActiveModal('none')}
-                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                  onClick={() => {
+                    gamificationAudio.playClickSound();
+                    setSelectedHeroItem(prev => prev === 'poncho' ? 'base' : 'poncho');
+                    showToast('Poncho Andino Térmico equipado');
+                  }}
+                  className={`rounded-xl transition-all cursor-pointer ${
+                    selectedHeroItem === 'poncho' ? 'ring-2 ring-emerald-400 bg-emerald-400/20' : 'hover:bg-white/10'
+                  }`}
+                  title="Equipar Poncho Andino Térmico"
+                />
+                {/* 2. Báculo / Brújula */}
+                <button
+                  onClick={() => {
+                    gamificationAudio.playClickSound();
+                    setSelectedHeroItem(prev => prev === 'brujula' ? 'base' : 'brujula');
+                    showToast('Brújula de Oro Ancestral equipada');
+                  }}
+                  className={`rounded-xl transition-all cursor-pointer ${
+                    selectedHeroItem === 'brujula' ? 'ring-2 ring-amber-400 bg-amber-400/20' : 'hover:bg-white/10'
+                  }`}
+                  title="Equipar Brújula de Oro Ancestral"
+                />
+                {/* 3. Mascota Fénix / Quetzal */}
+                <button
+                  onClick={() => {
+                    gamificationAudio.playClickSound();
+                    setSelectedHeroItem(prev => prev === 'quetzal' ? 'base' : 'quetzal');
+                    showToast('Mascota Quetzal Sagrado equipada en hombro');
+                  }}
+                  className={`rounded-xl transition-all cursor-pointer ${
+                    selectedHeroItem === 'quetzal' ? 'ring-2 ring-cyan-400 bg-cyan-400/20' : 'hover:bg-white/10'
+                  }`}
+                  title="Equipar Mascota Quetzal Sagrado"
+                />
+                {/* 4. Corona / Sombrero */}
+                <button
+                  onClick={() => {
+                    gamificationAudio.playClickSound();
+                    setSelectedHeroItem(prev => prev === 'sombrero' ? 'base' : 'sombrero');
+                    showToast('Sombrero Safari de Pith equipado');
+                  }}
+                  className={`rounded-xl transition-all cursor-pointer ${
+                    selectedHeroItem === 'sombrero' ? 'ring-2 ring-yellow-400 bg-yellow-400/20' : 'hover:bg-white/10'
+                  }`}
+                  title="Equipar Sombrero Safari"
+                />
               </div>
+
+              {/* SELLOS DE LOGROS EN EL GRIMORIO ABIERTO (IZQUIERDA) */}
+              <div className="absolute top-[32%] left-[12%] w-[27%] h-[40%] z-20 grid grid-cols-3 gap-2">
+                <button
+                  onClick={() => {
+                    gamificationAudio.playClickSound();
+                    speakText("¡Sello Maestro de Ciencias Químicas! Dominaste las soluciones y reacciones.");
+                    showToast("Sello: Maestro de Ciencias ⭐⭐⭐");
+                  }}
+                  className="rounded-xl hover:bg-amber-400/20 transition-all cursor-pointer"
+                  title="Maestro de Ciencias Químicas"
+                />
+                <button
+                  onClick={() => {
+                    gamificationAudio.playClickSound();
+                    speakText("¡Sello de Ingeniería Mecánica! Dominaste los engranajes y poleas.");
+                    showToast("Sello: Ingeniería Mecánica ⭐⭐⭐");
+                  }}
+                  className="rounded-xl hover:bg-amber-400/20 transition-all cursor-pointer"
+                  title="Ingeniería Mecánica"
+                />
+                <button
+                  onClick={() => {
+                    gamificationAudio.playClickSound();
+                    speakText("¡Sello de Física Molecular! Dominaste los enlaces y átomos.");
+                    showToast("Sello: Física Molecular ⭐⭐⭐");
+                  }}
+                  className="rounded-xl hover:bg-amber-400/20 transition-all cursor-pointer"
+                  title="Física Molecular"
+                />
+              </div>
+
+            </div>
+
+            {/* Barra Inferior del Álbum */}
+            <div className="p-3 bg-slate-900 border-t border-slate-800 flex items-center justify-between text-xs text-slate-300">
+              <span className="font-bold">
+                Alumno Activo: <strong className="text-amber-300">{activeStudent.name}</strong> ({activeStudent.rankTitle})
+              </span>
+              <button
+                onClick={() => {
+                  gamificationAudio.playCoinSound();
+                  showToast('¡Configuración de Héroe Guardada con Éxito!');
+                  setActiveModal('none');
+                }}
+                className="px-5 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-black text-xs shadow-md"
+              >
+                Guardar Héroe y Volver
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 7. MODAL LABORATORIO DE ARTESANÍA Y ALQUIMIA CIENTÍFICA */}
+      {/* ========================================================================= */}
+      {activeModal === 'alchemyLab' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-3xl rounded-[36px] overflow-hidden shadow-2xl border-4 border-amber-600 bg-amber-950 p-6 space-y-6 text-amber-100">
+            
+            <div className="flex items-center justify-between border-b border-amber-800/80 pb-3">
+              <div className="flex items-center gap-2">
+                <FlaskConical className="w-6 h-6 text-emerald-400 animate-pulse" />
+                <div>
+                  <h3 className="text-lg font-black text-white">Laboratorio de Artesanía Alquímica</h3>
+                  <p className="text-xs text-amber-300/80">Combina recursos botánicos y minerales para proyectos comunitarios de la NEM</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveModal('none')}
+                className="p-1.5 rounded-xl bg-amber-900 hover:bg-amber-800 text-amber-200"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* MESA DE CRAFTEO DIDÁCTICA */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center bg-black/50 p-4 rounded-3xl border border-amber-800">
+              
+              {/* Ingrediente 1: Hierba Lacandona */}
+              <div className="flex flex-col items-center p-3 rounded-2xl bg-amber-900/40 border border-amber-700/60 text-center">
+                <div className="w-24 h-24 rounded-2xl overflow-hidden shadow-lg border-2 border-emerald-400 mb-2">
+                  <img src="/redisenos_assets/cronicas/alquimia_hierba.jpg" alt="Hierba Lacandona" className="w-full h-full object-cover" />
+                </div>
+                <strong className="text-xs text-white">Hierba Lacandona</strong>
+                <span className="text-[10px] text-emerald-300">Disponible: {herbCount}x</span>
+              </div>
+
+              {/* Signo Más e Ingrediente 2: Roca Basalto */}
+              <div className="flex flex-col items-center text-center">
+                <span className="text-3xl font-black text-amber-400 mb-2">+</span>
+                <div className="w-24 h-24 rounded-2xl overflow-hidden shadow-lg border-2 border-rose-400 mb-2">
+                  <img src="/redisenos_assets/cronicas/alquimia_roca.jpg" alt="Roca de Basalto" className="w-full h-full object-cover" />
+                </div>
+                <strong className="text-xs text-white">Roca de Basalto</strong>
+                <span className="text-[10px] text-rose-300">Disponible: {stoneCount}x</span>
+              </div>
+
+              {/* Resultado: Poción de Ciencia */}
+              <div className="flex flex-col items-center p-3 rounded-2xl bg-amber-900/40 border border-amber-700/60 text-center">
+                <span className="text-2xl font-black text-amber-400 mb-1">=</span>
+                <div className={`w-24 h-24 rounded-2xl overflow-hidden shadow-lg border-2 border-amber-400 mb-2 ${isBrewing ? 'animate-spin' : ''}`}>
+                  <img src="/redisenos_assets/cronicas/alquimia_pocion.jpg" alt="Poción de Ciencia" className="w-full h-full object-cover" />
+                </div>
+                <strong className="text-xs text-amber-300">Poción de Ciencia</strong>
+                <span className="text-[10px] text-amber-400 font-bold">+60 Cristales · +80 Pts NEM</span>
+              </div>
+
+            </div>
+
+            {/* Botón de Crafteo */}
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-xs text-amber-300">
+                Pociones sintetizadas por {activeStudent.name.split(' ')[0]}: <strong>{activeStudent.alchemyCraftedCount}</strong>
+              </span>
+
+              <button
+                onClick={handleCraftPotion}
+                disabled={isBrewing || herbCount < 1 || stoneCount < 1}
+                className="px-8 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-700 hover:from-emerald-400 hover:to-teal-600 text-slate-950 font-black text-sm shadow-xl shadow-emerald-900/50 transition-transform hover:scale-105 active:scale-95 disabled:opacity-50"
+              >
+                {isBrewing ? 'Sintetizando Alquimia...' : '¡CREAR POCIÓN DE CIENCIA!'}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 8. MODAL CONTRATOS DE MISIÓN CURRICULAR (PAPIRO NEM) */}
+      {/* ========================================================================= */}
+      {activeModal === 'missions' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-2xl rounded-[36px] overflow-hidden shadow-2xl border-4 border-amber-600 bg-amber-950 p-6 space-y-4 text-amber-100">
+            
+            <div className="flex items-center justify-between border-b border-amber-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Scroll className="w-6 h-6 text-amber-400" />
+                <h3 className="text-base font-black text-white">Contratos de Misión Curricular (Fase 5 SEP)</h3>
+              </div>
+              <button onClick={() => setActiveModal('none')} className="p-1 rounded-xl bg-amber-900 text-amber-200">
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             <div className="space-y-3">
-              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-4">
+              <div className="p-4 rounded-2xl bg-black/40 border border-amber-700/60 flex items-center justify-between">
                 <div>
-                  <h4 className="text-xs font-black text-amber-300">Telescopio de Latón Astronómico</h4>
-                  <p className="text-[11px] text-slate-400 leading-snug">Despeja la niebla de guerra en 2 hexágonos adyacentes de forma automática.</p>
+                  <span className="text-[10px] font-black uppercase text-amber-400">Misión 1 · Dificultad 50</span>
+                  <h4 className="font-extrabold text-white text-sm">El Misterio de las Ruinas Mayas</h4>
+                  <p className="text-xs text-amber-200/80">Investiga la correlación entre el sistema vigesimal maya y la alineación estelar.</p>
                 </div>
-                <button
-                  onClick={() => handleBuyStoreItem('Telescopio de Latón Astronómico', 350, 'tool')}
-                  className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black shrink-0"
-                >
-                  350 Monedas
-                </button>
+                <span className="px-3 py-1 rounded-full bg-emerald-500 text-slate-950 font-black text-xs shrink-0">
+                  +50 XP
+                </span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-4">
+              <div className="p-4 rounded-2xl bg-black/40 border border-amber-700/60 flex items-center justify-between">
                 <div>
-                  <h4 className="text-xs font-black text-cyan-300">Brújula Náutica de Precisión</h4>
-                  <p className="text-[11px] text-slate-400 leading-snug">Otorga pistas automáticas del Motor de IA Pedagógica sin costo en acertijos de ciencias.</p>
+                  <span className="text-[10px] font-black uppercase text-cyan-400">Misión 2 · Dificultad 30</span>
+                  <h4 className="font-extrabold text-white text-sm">Ayuda al Pescador y Ciclo del Agua</h4>
+                  <p className="text-xs text-amber-200/80">Recopila datos de precipitación pluvial en la cuenca del Río Usumacinta.</p>
                 </div>
-                <button
-                  onClick={() => handleBuyStoreItem('Brújula Náutica de Precisión', 450, 'tool')}
-                  className="px-3.5 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-black shrink-0"
-                >
-                  450 Monedas
-                </button>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-4">
-                <div>
-                  <h4 className="text-xs font-black text-emerald-300">Chaqueta Térmica de Montaña</h4>
-                  <p className="text-[11px] text-slate-400 leading-snug">Resiste biomas volcánicos y otorga bonificador de +20% XP en desafíos de geología.</p>
-                </div>
-                <button
-                  onClick={() => handleBuyStoreItem('Chaqueta Térmica de Montaña', 500, 'outfit')}
-                  className="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black shrink-0"
-                >
-                  500 Monedas
-                </button>
+                <span className="px-3 py-1 rounded-full bg-emerald-500 text-slate-950 font-black text-xs shrink-0">
+                  +30 XP
+                </span>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-slate-800 flex justify-end">
+            <div className="pt-2 text-right">
               <button
                 onClick={() => setActiveModal('none')}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white"
+                className="px-5 py-2 rounded-xl bg-amber-500 text-slate-950 font-black text-xs shadow-md"
               >
-                Cerrar Bazar
+                Cerrar Contratos
               </button>
             </div>
+
           </div>
         </div>
       )}
 
-      {/* PANTALLA 4: UNIVERSAL CHALLENGE STUDIO (VISTA DOCENTE) */}
+      {/* ========================================================================= */}
+      {/* 9. MODAL PANTALLA 4: UNIVERSAL CHALLENGE STUDIO (VISTA DOCENTE) */}
+      {/* ========================================================================= */}
       {activeModal === 'teacherStudio' && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in">
-          <div className="bg-slate-900 border border-indigo-500/50 rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <GraduationCap className="w-5 h-5 text-indigo-400" />
-                <div>
-                  <span className="text-[10px] font-black uppercase text-indigo-400">Universal Challenge Studio</span>
-                  <h3 className="text-base font-extrabold text-white">Panel Docente: Gestión de Expediciones Colaborativas</h3>
-                </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
+          
+          <div className="relative w-full max-w-5xl rounded-[36px] overflow-hidden shadow-2xl border-4 border-indigo-500 bg-slate-950 flex flex-col justify-between max-h-[96vh]">
+            
+            <div className="absolute top-3 left-4 right-4 z-30 flex items-center justify-between pointer-events-none">
+              <div className="pointer-events-auto bg-slate-950/90 backdrop-blur-md px-4 py-1 rounded-full border border-indigo-500 text-xs font-black text-indigo-300">
+                🎓 Universal Challenge Studio · Creación Unificada de Retos ISkool
               </div>
               <button
-                onClick={() => setActiveModal('none')}
-                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white"
+                onClick={() => {
+                  gamificationAudio.playClickSound();
+                  setActiveModal('none');
+                }}
+                className="pointer-events-auto p-2 rounded-full bg-white text-slate-800 hover:bg-slate-100 shadow-xl"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-3 text-xs text-slate-300">
-              <div className="p-3.5 rounded-2xl bg-indigo-950/40 border border-indigo-800/50 space-y-1.5">
-                <span className="font-bold text-indigo-300 block">1. Asignación de Territorio Trimestral</span>
-                <p>El profesor configura un archipiélago de 18 hexágonos vinculados a los PDA de la Fase 5 SEP (Geología, Selvas, Proporciones y Civilizaciones).</p>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
-                <span className="font-bold text-emerald-300 block">2. Proyectos Comunitarios y Almacenamiento en la Nube</span>
-                <p>Al resolver una expedición, el alumno entrega su reporte en un documento institucional vinculado a Google Drive, sumando puntos al proyecto comunitario de la clase.</p>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
-                <span className="font-bold text-amber-300 block">3. Mapa de Calor de Comprensión Grupal</span>
-                <p>La visualización de calor identifica que el 82% del grupo domina "Placas Tectónicas", mientras que "Sistemas Vigesimales" requiere una sesión de repaso en clase.</p>
-              </div>
+            {/* Lienzo del Estudio Docente (Mockup Optimizado) */}
+            <div className="relative w-full aspect-[16/9] overflow-hidden">
+              <img 
+                src="/redisenos_assets/cronicas/cronicas_teacher_studio_scene.jpg" 
+                alt="Universal Challenge Studio Docente"
+                className="w-full h-full object-cover"
+              />
             </div>
 
-            <div className="pt-3 border-t border-slate-800 flex justify-end">
+            <div className="p-3 bg-slate-900 border-t border-slate-800 flex items-center justify-between text-xs text-slate-300">
+              <span className="font-bold text-indigo-300">
+                La misma interfaz para todos los docentes de ISkool: autogeneración con Asistente Pedagógico IA y PDA de la Bóveda Curricular.
+              </span>
               <button
                 onClick={() => setActiveModal('none')}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white"
+                className="px-5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-md"
               >
-                Cerrar Panel Docente
+                Cerrar Estudio Docente
               </button>
             </div>
+
           </div>
         </div>
       )}
