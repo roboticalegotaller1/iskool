@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=\"--max-old-space-size=32768\" next dev",
     "dev:https": "cross-env NODE_OPTIONS=\"--max-old-space-size=32768\" next dev --experimental-https -H 0.0.0.0",
-    "build": "next build",
+    "build": "cross-env NODE_OPTIONS=\"--max-old-space-size=6144\" next build",
     "start": "next start",
     "lint": "eslint",
     "sync-vault": "node sync-obsidian.js",
@@ -16,7 +16,7 @@
     "vault:rebuild": "tsx scripts/rebuild-vault-manifest.ts",
     "test:knowledge": "tsx scripts/test_knowledge_vault.ts",
     "test": "vitest run",
-    "type-check": "tsc --noEmit",
+    "type-check": "cross-env NODE_OPTIONS=\"--max-old-space-size=6144\" tsc --noEmit",
     "test:vitest": "vitest run",
     "test:unit": "vitest run tests/multiTenantAuth.test.ts tests/curriculumFederation.test.ts tests/whiteLabelTheming.test.tsx",
     "test:insights": "vitest run tests/pedagogicalInsights.test.tsx",

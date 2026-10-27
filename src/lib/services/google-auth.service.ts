@@ -1,4 +1,6 @@
-import { google } from 'googleapis';
+import { OAuth2Client } from 'googleapis-common';
+import { oauth2 as googleOauth2 } from 'googleapis/build/src/apis/oauth2';
+import { gmail as googleGmail } from 'googleapis/build/src/apis/gmail';
 import { createClient } from '@supabase/supabase-js';
 import { encryptToken, decryptToken } from '@/lib/security/tokenCipher';
 import { signOAuthState, verifyOAuthState } from '@/lib/security/oauthState';
@@ -9,7 +11,7 @@ const SCOPES = [...GOOGLE_DIRECTOR_WORKSPACE_SCOPES];
 export class GoogleAuthService {
   private static getOAuth2Client() {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.iskool.mx';
-    return new google.auth.OAuth2(
+    return new OAuth2Client(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
       `${baseUrl}/api/integrations/google/callback`
@@ -45,7 +47,7 @@ export class GoogleAuthService {
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
 
-    const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
+    const oauth2 = googleOauth2({ version: 'v2', auth: oauth2Client });
     const userInfo = await oauth2.userinfo.get();
     const emailAddress = userInfo.data.email;
 
@@ -111,6 +113,6 @@ export class GoogleAuthService {
       }).eq('id', accountId);
     });
 
-    return google.gmail({ version: 'v1', auth: oauth2Client });
+    return googleGmail({ version: 'v1', auth: oauth2Client });
   }
 }

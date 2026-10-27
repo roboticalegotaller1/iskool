@@ -1,0 +1,6 @@
+{
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 500,
+  "window.confirmBeforeClose": "never",
+  "files.hotExit": "onExitAndWindowClose"
+}
