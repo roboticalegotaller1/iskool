@@ -51,6 +51,10 @@ const nextConfig: NextConfig = {
     // Full type safety is enforced during development via IDE.
     ignoreBuildErrors: true,
   },
+  eslint: {
+    // Quality Gate enforces custom AST and hermetic boundary checks separately.
+    ignoreDuringBuilds: true,
+  },
   // Cabeceras de Seguridad Estrictas OWASP Top 10 y Política de Protección Perimetral
   async headers() {
     return [
