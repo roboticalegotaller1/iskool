@@ -106,12 +106,16 @@ export function RedesignDocViewerModal({ redesign, isOpen, onClose, onLaunchTest
   const handleLaunchLive = () => {
     gamificationAudio.playLevelUpSound();
     onClose();
-    if (spec.liveDemoUrl) {
-      router.push(spec.liveDemoUrl);
-    } else if (spec.key === '01') {
+    if (spec.key === '01') {
       router.push('/redisenos_gamificados/el_reino_de_las_huellitas');
     } else if (spec.key === '02') {
       router.push('/redisenos_gamificados/la_isla_de_los_juguetes_magicos');
+    } else if (spec.key === '03') {
+      router.push('/redisenos_gamificados/Guardianes_Elementales');
+    } else if (spec.key === '04') {
+      router.push('/redisenos_gamificados/El_Libro_de_aventuras_y_album');
+    } else if (spec.liveDemoUrl) {
+      router.push(spec.liveDemoUrl);
     } else {
       onLaunchTestMode(spec.key);
     }
@@ -242,6 +246,37 @@ export function RedesignDocViewerModal({ redesign, isOpen, onClose, onLaunchTest
                     <div key={idx} className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-300 flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                       <span>{comp}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Benchmarks Mundiales y Ventaja Exclusiva ISkool (del .md) */}
+              <div className="p-5 rounded-2xl bg-slate-800/40 border border-slate-700/60 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-extrabold text-white text-sm flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-cyan-400" />
+                    Benchmarks Mundiales y Ventaja Exclusiva ISkool (Fidelidad 100% .md)
+                  </h4>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                    Estándares Globales
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                  {spec.globalBenchmarks?.map((gb, idx) => (
+                    <div key={idx} className="p-3 rounded-xl bg-slate-900/80 border border-slate-700/80 space-y-1.5 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-black text-cyan-300">{gb.name}</span>
+                        <span className="text-[10px] font-bold text-slate-400 px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700">
+                          {gb.origin}
+                        </span>
+                      </div>
+                      <p className="text-slate-300 text-[11px] leading-relaxed">
+                        {gb.description}
+                      </p>
+                      <div className="p-2 rounded-lg bg-emerald-950/40 border border-emerald-900/40 text-[11px] text-emerald-300">
+                        <strong>Ventaja Exclusiva ISkool:</strong> {gb.iskoolAdvantage}
+                      </div>
                     </div>
                   ))}
                 </div>

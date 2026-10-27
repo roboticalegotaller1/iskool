@@ -21,7 +21,12 @@ import {
   ChevronRight,
   CheckCircle2,
   FileText,
-  Globe
+  Globe,
+  ChevronDown,
+  ChevronUp,
+  Zap,
+  Clock,
+  Cloud
 } from 'lucide-react';
 
 import { 
@@ -71,6 +76,17 @@ export default function RedisenosGamificadosPage() {
   const [isLivePlayerOpen, setIsLivePlayerOpen] = useState(false);
   const [livePlayerRedesign, setLivePlayerRedesign] = useState<RedesignDetail | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
+
+  // Modo de visualización para Dirección General / CEO Educativo
+  const [viewMode, setViewMode] = useState<'ceo_detailed' | 'compact'>('ceo_detailed');
+  const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({
+    '04': true
+  });
+
+  const toggleCard = (key: string) => {
+    gamificationAudio.playClickSound();
+    setExpandedCards(prev => ({ ...prev, [key]: !prev[key] }));
+  };
 
   const activeStudent = students.find(s => s.id === selectedStudentId) || students[0];
 
@@ -169,9 +185,32 @@ export default function RedisenosGamificadosPage() {
       router.push('/redisenos_gamificados/Guardianes_Elementales');
       return;
     }
-    const spec = REDESIGNS_EXECUTIVE_SPECS[redesign.key];
-    if (spec && spec.liveDemoUrl) {
-      router.push(spec.liveDemoUrl);
+    if (redesign.key === '04') {
+      router.push('/redisenos_gamificados/El_Libro_de_aventuras_y_album');
+      return;
+    }
+    if (redesign.key === '05') {
+      router.push('/redisenos_gamificados/cronicas_de_exploradores');
+      return;
+    }
+    if (redesign.key === '06') {
+      router.push('/redisenos_gamificados/torneo_de_saberes_tcg');
+      return;
+    }
+    if (redesign.key === '07') {
+      router.push('/redisenos_gamificados/gremio_cyber_esports');
+      return;
+    }
+    if (redesign.key === '08') {
+      router.push('/redisenos_gamificados/metropolis_de_inventores');
+      return;
+    }
+    if (redesign.key === '09') {
+      router.push('/redisenos_gamificados/apex_academy_venture_studio');
+      return;
+    }
+    if (redesign.key === '10') {
+      router.push('/redisenos_gamificados/nexus_protocol_research_guild');
       return;
     }
     setLivePlayerRedesign(redesign);
@@ -366,105 +405,325 @@ export default function RedisenosGamificadosPage() {
           </div>
         </div>
 
-        {/* Sección de los 10 Botones de Rediseño */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
+        {/* Sección de Modelos Gamificados y Selector de Modo de Visualización */}
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 p-4 rounded-2xl bg-slate-900 border border-slate-800">
             <div>
-              <h2 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+              <h2 className="text-lg md:text-xl font-extrabold text-white flex items-center gap-2">
                 <Layers className="w-5 h-5 text-purple-400" />
-                Los 10 Modelos de Rediseño Gamificado
+                Los 10 Modelos de Rediseño Gamificado (Fidelidad 100% Bóveda Curricular)
               </h2>
-              <p className="text-xs text-slate-400">
-                Selecciona un modelo para desplegar su documento técnico forense, bucles de juego y pantallas
+              <p className="text-xs text-slate-400 mt-0.5">
+                Evaluación forense integral adaptada a estándares de Dirección General: benchmarks mundiales, metáforas completas, 4 pantallas operativas y desafíos cloud.
               </p>
             </div>
-            <span className="text-xs text-purple-300 font-semibold px-3 py-1 rounded-xl bg-purple-950/80 border border-purple-800">
-              10 Documentos Completos
-            </span>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => {
+                  gamificationAudio.playClickSound();
+                  setViewMode('ceo_detailed');
+                }}
+                className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${
+                  viewMode === 'ceo_detailed'
+                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30 border border-purple-400'
+                    : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span>Vista Forense CEO (Detalle 100% .md)</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  gamificationAudio.playClickSound();
+                  setViewMode('compact');
+                }}
+                className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${
+                  viewMode === 'compact'
+                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30 border border-purple-400'
+                    : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                }`}
+              >
+                <Layers className="w-4 h-4" />
+                <span>Vista Compacta</span>
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {REDESIGNS_LIST.map((r) => {
-              const spec = REDESIGNS_EXECUTIVE_SPECS[r.key];
-              return (
-                <div
-                  key={r.key}
-                  onClick={() => handleOpenDoc(r)}
-                  className="group relative p-4 rounded-3xl bg-slate-900/90 hover:bg-slate-800/95 border border-slate-800 hover:border-purple-500/80 text-left transition-all duration-200 flex flex-col justify-between shadow-xl hover:shadow-purple-500/10 hover:-translate-y-1 cursor-pointer"
-                >
-                  <div>
-                    {/* Imagen Maestra Preservada Exacta */}
-                    <div className="relative w-full h-36 rounded-2xl overflow-hidden mb-3 bg-slate-950 border border-slate-800 shadow-inner">
-                      <img
-                        src={r.hubImage}
-                        alt={r.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-black/75 backdrop-blur-md text-[10px] font-black text-amber-300 border border-white/10 shadow-md">
-                        #{r.key}
+          {/* VISTA 1: VISTA FORENSE CEO (DETALLE COMPLETO Y EXHAUSTIVO DEL .MD) */}
+          {viewMode === 'ceo_detailed' ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {REDESIGNS_LIST.map((r) => {
+                const spec = REDESIGNS_EXECUTIVE_SPECS[r.key];
+                const isExpanded = !!expandedCards[r.key];
+
+                return (
+                  <div
+                    key={r.key}
+                    className="p-5 md:p-6 rounded-3xl bg-slate-900 border border-slate-800 hover:border-purple-500/80 transition-all duration-300 shadow-2xl flex flex-col justify-between space-y-5 relative group"
+                  >
+                    <div className="space-y-4">
+                      
+                      {/* Imagen Maestra Preservada Exacta */}
+                      <div className="relative w-full h-52 md:h-60 rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-inner group">
+                        <img
+                          src={r.hubImage}
+                          alt={r.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute top-3 left-3 px-3 py-1 rounded-xl bg-black/80 backdrop-blur-md text-xs font-black text-amber-300 border border-white/20 shadow-lg">
+                          Propuesta #{r.key}
+                        </div>
+                        <div className="absolute top-3 right-3 px-3 py-1 rounded-xl bg-purple-950/80 backdrop-blur-md text-[11px] font-bold text-purple-200 border border-purple-500/40 shadow-lg">
+                          {r.level} · {spec?.ages || r.ages}
+                        </div>
+                        <div className="absolute bottom-3 left-3 right-3 px-3 py-1.5 rounded-xl bg-black/85 backdrop-blur-md text-xs font-bold text-slate-200 border border-white/20 flex items-center justify-between">
+                          <div className="flex items-center gap-1.5 truncate">
+                            <Globe className="w-4 h-4 text-cyan-400 shrink-0" />
+                            <span className="truncate">{spec?.worldBenchmarkSummary || r.worldBenchmark}</span>
+                          </div>
+                          <span className="text-[10px] text-emerald-400 font-black uppercase shrink-0 ml-2">
+                            {r.theme}
+                          </span>
+                        </div>
                       </div>
-                      <div className="absolute bottom-1.5 left-1.5 right-1.5 px-2 py-1 rounded-xl bg-black/75 backdrop-blur-md text-[9px] font-bold text-slate-200 border border-white/10 truncate flex items-center gap-1">
-                        <Globe className="w-3 h-3 text-cyan-400 shrink-0" />
-                        <span className="truncate">{spec?.worldBenchmarkSummary || r.worldBenchmark}</span>
+
+                      {/* Título y Tagline Curricular */}
+                      <div>
+                        <h3 className="text-lg md:text-xl font-extrabold text-white group-hover:text-purple-300 transition-colors">
+                          {r.title}
+                        </h3>
+                        <p className="text-xs md:text-sm text-slate-300 mt-1 font-semibold leading-relaxed">
+                          {r.tagline}
+                        </p>
+                      </div>
+
+                      {/* Benchmarks Mundiales Exhaustivos del Archivo .md */}
+                      <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-extrabold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <Globe className="w-4 h-4 text-cyan-400" />
+                            Benchmarks Mundiales del Documento .md:
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-bold">
+                            {spec?.globalBenchmarks?.length || 1} Referentes Analizados
+                          </span>
+                        </div>
+
+                        <div className="space-y-2">
+                          {spec?.globalBenchmarks?.map((gb, idx) => (
+                            <div key={idx} className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800/90 space-y-1 text-xs">
+                              <div className="flex items-center justify-between">
+                                <span className="font-extrabold text-amber-300">{gb.name}</span>
+                                <span className="text-[10px] font-bold text-slate-400 px-2 py-0.5 rounded-md bg-slate-800">
+                                  {gb.origin}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-slate-300 leading-snug">
+                                {gb.description}
+                              </p>
+                              <div className="text-[10px] text-emerald-300 bg-emerald-950/40 p-1.5 rounded-lg border border-emerald-900/40">
+                                <strong>Ventaja Exclusiva ISkool:</strong> {gb.iskoolAdvantage}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Identidad y Metáfora Completa (Sin Truncamiento) */}
+                      <div className="p-4 rounded-2xl bg-purple-950/20 border border-purple-500/30 space-y-2">
+                        <div className="text-xs text-slate-300 leading-relaxed">
+                          <strong className="text-purple-300 block mb-0.5">1. Metáfora Lúdica e Identidad:</strong>
+                          {spec?.identity.gameMetaphor || r.summary}
+                        </div>
+                        <div className="text-xs text-slate-300 leading-relaxed pt-2 border-t border-purple-500/20">
+                          <strong className="text-emerald-300 block mb-0.5">2. Mecánica Central de Nivel:</strong>
+                          {spec?.identity.coreLevelMechanic || r.tagline}
+                        </div>
+                      </div>
+
+                      {/* Acordeón de Desglose Avanzado de Pantallas y Viabilidad Cloud */}
+                      <div className="space-y-2">
+                        <button
+                          onClick={() => toggleCard(r.key)}
+                          className="w-full py-2 px-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-bold flex items-center justify-between transition-colors border border-slate-700/60"
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <FileText className="w-3.5 h-3.5 text-purple-400" />
+                            {isExpanded ? 'Ocultar Desglose de 4 Pantallas y Viabilidad Cloud' : 'Ver Desglose de 4 Pantallas, Bóveda y Viabilidad Cloud'}
+                          </span>
+                          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        </button>
+
+                        {isExpanded && (
+                          <div className="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-3 animate-in fade-in duration-200 text-xs">
+                            
+                            {/* 4 Pantallas Operativas */}
+                            <div>
+                              <strong className="text-white block mb-1.5 uppercase text-[11px] tracking-wider text-purple-300">
+                                3. Componentes Operativos de las 4 Pantallas:
+                              </strong>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                                <div className="p-2 rounded-xl bg-slate-900 border border-slate-800">
+                                  <span className="font-bold text-sky-400 block mb-0.5">Pantalla 1: Hub</span>
+                                  <p className="text-slate-300">{spec?.screens.hub.title}</p>
+                                </div>
+                                <div className="p-2 rounded-xl bg-slate-900 border border-slate-800">
+                                  <span className="font-bold text-emerald-400 block mb-0.5">Pantalla 2: Quiz / Desafío</span>
+                                  <p className="text-slate-300">{spec?.screens.quiz.title}</p>
+                                </div>
+                                <div className="p-2 rounded-xl bg-slate-900 border border-slate-800">
+                                  <span className="font-bold text-amber-400 block mb-0.5">Pantalla 3: Personalizador</span>
+                                  <p className="text-slate-300">{spec?.screens.avatar.title}</p>
+                                </div>
+                                <div className="p-2 rounded-xl bg-slate-900 border border-slate-800">
+                                  <span className="font-bold text-purple-400 block mb-0.5">Pantalla 4: Universal Studio</span>
+                                  <p className="text-slate-300">{spec?.screens.teacherStudio.title}</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Integración con Bóveda Curricular */}
+                            <div className="pt-2 border-t border-slate-800 text-[11px] space-y-1">
+                              <strong className="text-white block uppercase text-[10px] tracking-wider text-emerald-300">
+                                4. Integración Ecosistema & Bóveda Curricular:
+                              </strong>
+                              <p className="text-slate-300">
+                                • <strong>Bóveda:</strong> {spec?.iskoolIntegration.vaultIntegration}
+                              </p>
+                              <p className="text-slate-300">
+                                • <strong>Personajes Históricos:</strong> {spec?.iskoolIntegration.historicalAvatarsFirstPerson}
+                              </p>
+                            </div>
+
+                            {/* Desafío Técnico & Cloud */}
+                            <div className="pt-2 border-t border-slate-800 text-[11px] space-y-1">
+                              <strong className="text-white block uppercase text-[10px] tracking-wider text-amber-300">
+                                5. Desafío Técnico & Viabilidad Cloud:
+                              </strong>
+                              <p className="text-slate-300">
+                                • <strong>Desafío:</strong> {spec?.technicalChallenges[0]?.challenge} ({spec?.technicalChallenges[0]?.severity}) — {spec?.technicalChallenges[0]?.solution}
+                              </p>
+                              <p className="text-slate-300">
+                                • <strong>Cloud:</strong> {spec?.cloudViability.cloudStorage}
+                              </p>
+                              <p className="text-slate-300">
+                                • <strong>Capacitación:</strong> {spec?.trainingAndAdoption.trainingHours} ({spec?.trainingAndAdoption.learningCurve})
+                              </p>
+                            </div>
+
+                          </div>
+                        )}
+                      </div>
+
+                    </div>
+
+                    {/* Botonera de Acción de la Tarjeta */}
+                    <div className="pt-4 border-t border-slate-800 flex items-center justify-between gap-3">
+                      <button
+                        onClick={() => handleOpenDoc(r)}
+                        className="px-4 py-2 rounded-2xl bg-slate-800 hover:bg-slate-700 text-purple-300 hover:text-white font-bold text-xs flex items-center gap-1.5 transition-colors border border-slate-700"
+                      >
+                        <FileText className="w-4 h-4 text-purple-400" />
+                        <span>Abrir Documento Forense (.md)</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleLaunchLive(r)}
+                        className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-purple-600 hover:from-emerald-400 hover:to-purple-500 text-slate-950 hover:text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 flex items-center gap-2 transition-all hover:scale-105 active:scale-95 ring-2 ring-emerald-400/40"
+                      >
+                        <Play className="w-4 h-4 fill-current animate-pulse" />
+                        <span>Probar en Vivo (Prueba)</span>
+                      </button>
+                    </div>
+
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            /* VISTA 2: VISTA COMPACTA */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              {REDESIGNS_LIST.map((r) => {
+                const spec = REDESIGNS_EXECUTIVE_SPECS[r.key];
+                return (
+                  <div
+                    key={r.key}
+                    onClick={() => handleOpenDoc(r)}
+                    className="group relative p-4 rounded-3xl bg-slate-900/90 hover:bg-slate-800/95 border border-slate-800 hover:border-purple-500/80 text-left transition-all duration-200 flex flex-col justify-between shadow-xl hover:shadow-purple-500/10 hover:-translate-y-1 cursor-pointer"
+                  >
+                    <div>
+                      <div className="relative w-full h-36 rounded-2xl overflow-hidden mb-3 bg-slate-950 border border-slate-800 shadow-inner">
+                        <img
+                          src={r.hubImage}
+                          alt={r.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-black/75 backdrop-blur-md text-[10px] font-black text-amber-300 border border-white/10 shadow-md">
+                          #{r.key}
+                        </div>
+                        <div className="absolute bottom-1.5 left-1.5 right-1.5 px-2 py-1 rounded-xl bg-black/75 backdrop-blur-md text-[9px] font-bold text-slate-200 border border-white/10 truncate flex items-center gap-1">
+                          <Globe className="w-3 h-3 text-cyan-400 shrink-0" />
+                          <span className="truncate">{spec?.worldBenchmarkSummary || r.worldBenchmark}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-purple-400">
+                          {r.level}
+                        </span>
+                        <span className="text-[9px] font-bold text-slate-400">
+                          {spec?.ages || r.ages}
+                        </span>
+                      </div>
+
+                      <h3 className="font-extrabold text-white text-sm leading-snug mb-1.5 group-hover:text-purple-300 transition-colors">
+                        {r.title.replace(/^\d+\s*/, '')}
+                      </h3>
+
+                      <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed mb-2.5">
+                        {r.tagline}
+                      </p>
+
+                      <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800/80 mb-3 space-y-1">
+                        <div className="text-[10px] text-slate-400 leading-tight">
+                          <strong className="text-slate-300">Metáfora:</strong> {spec?.identity.gameMetaphor ? spec.identity.gameMetaphor.slice(0, 100) + '...' : r.summary}
+                        </div>
+                        <div className="text-[10px] text-slate-400 leading-tight">
+                          <strong className="text-purple-300">Mecánica:</strong> {spec?.identity.coreLevelMechanic ? spec.identity.coreLevelMechanic.slice(0, 85) + '...' : r.tagline}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between gap-1 mb-1">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-purple-400">
-                        {r.level}
-                      </span>
-                      <span className="text-[9px] font-bold text-slate-400">
-                        {spec?.ages || 'SEP 2026'}
-                      </span>
-                    </div>
+                    <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-bold gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenDoc(r);
+                        }}
+                        className="text-purple-400 hover:text-purple-300 flex items-center gap-1 text-[11px] font-black"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>Ficha</span>
+                      </button>
 
-                    <h3 className="font-extrabold text-white text-sm leading-snug mb-1.5 group-hover:text-purple-300 transition-colors">
-                      {r.title.replace(/^\d+\s*/, '')}
-                    </h3>
-
-                    {/* Resumen pedagógico del archivo .md */}
-                    <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed mb-2.5">
-                      {r.tagline}
-                    </p>
-
-                    {/* Metáfora y Mecánica Forense del .md */}
-                    <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800/80 mb-3 space-y-1">
-                      <div className="text-[10px] text-slate-400 leading-tight">
-                        <strong className="text-slate-300">Metáfora:</strong> {spec?.identity.gameMetaphor ? spec.identity.gameMetaphor.slice(0, 75) + '...' : 'Entorno gamificado curricular'}
-                      </div>
-                      <div className="text-[10px] text-slate-400 leading-tight">
-                        <strong className="text-purple-300">Mecánica:</strong> {spec?.identity.coreLevelMechanic ? spec.identity.coreLevelMechanic.slice(0, 65) + '...' : 'Progresión por logros formativos'}
-                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLaunchLive(r);
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-[11px] flex items-center gap-1 shadow-md transition-all hover:scale-105 active:scale-95 ring-1 ring-emerald-300/40"
+                      >
+                        <Play className="w-3 h-3 fill-slate-950" />
+                        <span>Probar en Vivo</span>
+                      </button>
                     </div>
                   </div>
-
-                  <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-bold gap-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenDoc(r);
-                      }}
-                      className="text-purple-400 hover:text-purple-300 flex items-center gap-1 text-[11px] font-black"
-                    >
-                      <FileText className="w-3.5 h-3.5" />
-                      <span>Ficha</span>
-                    </button>
-
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleLaunchLive(r);
-                      }}
-                      className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-[11px] flex items-center gap-1 shadow-md transition-all hover:scale-105 active:scale-95 ring-1 ring-emerald-300/40"
-                    >
-                      <Play className="w-3 h-3 fill-slate-950" />
-                      Probar en Vivo
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* 4. CALENDARIO ANUAL SEP 2026-2027 (PROGRESO HASTA LA FECHA DE HOY) */}

@@ -335,62 +335,79 @@ export const REDESIGNS_EXECUTIVE_SPECS: Record<string, RedesignExecutiveSpec> = 
     title: '04 Primaria Baja · El Libro de Aventuras & Álbum',
     level: '1º a 3º de Primaria (Fases 3 y 4 SEP)',
     ages: '6 a 8 Años',
-    liveDemoUrl: '/redisenos_gamificados/el_libro_de_aventuras',
+    liveDemoUrl: '/redisenos_gamificados/El_Libro_de_aventuras_y_album',
     tagline: 'Grimorio de pergamino con sobres de estampas holográficas coleccionables e intercambio de aula',
-    worldBenchmarkSummary: 'Animal Crossing Museum (Japón) & Álbum Panini Didáctico',
+    worldBenchmarkSummary: 'Animal Crossing Museum (Japón), Álbum Panini Didáctico & Kahoot Kids',
     hubImage: '/redisenos_assets/gamification_primaria_baja_libro_aventura_1792732777656.jpg',
     quizImage: '/redisenos_assets/gamification_quiz_primaria_baja_battle_1792734597009.jpg',
     avatarImage: '/redisenos_assets/gamification_avatar_primaria_baja_album_1792734760601.jpg',
     identity: {
       educationalLevel: '1º a 3º de Primaria (Fases 3 y 4 SEP · 6 a 8 años)',
-      gameMetaphor: 'Un gran libro ilustrado de cuentos y enciclopedias vivas donde cada lección superada otorga cromos coleccionables con brillo holográfico.',
-      coreLevelMechanic: 'Coleccionismo y fomento a la lectura. Los alumnos completan capítulos temáticos y pegan cromos en su álbum digital.'
+      gameMetaphor: 'Un gran grimorio encuadernado en cuero y oro donde cada materia escolar es un "Capítulo Iluminado" y cada logro desbloquea sobres de estampas coleccionables holográficas.',
+      coreLevelMechanic: 'Fomentar el hábito de lectura y resolución diaria mediante la emoción del coleccionismo físico-digital (estilo álbum Panini interactivo con brillo cromado y efectos de sonido al despegar y pegar estampas).'
     },
     screens: {
       hub: {
-        title: 'El Gran Grimorio Escolar',
-        visualStructure: 'Páginas de pergamino iluminado que se pasan con animación 3D suave.',
-        keyComponents: ['Capítulo de la Semana', 'Álbum de Estampas', 'Mesa de Intercambio', 'Biblioteca Comunitaria']
+        title: 'El Gran Grimorio Escolar (Hub de Aventura)',
+        visualStructure: 'Vista de libro abierto con textura de pergamino iluminado y animaciones de páginas que pasan en 3D.',
+        keyComponents: [
+          'Índice de Capítulos: Capítulo 1: El Reino de las Fracciones, Capítulo 2: Los Secretos de la Naturaleza, Capítulo 3: Héroes de la Historia.',
+          'Sobres de Estampas Pendientes de Abrir: Con animación de rasgado que revela estampas comunes, raras y legendarias de oro.',
+          'Contador de Páginas Completadas: Barra de progreso que otorga un trofeo de salón al llenar un capítulo completo.',
+          'Compañero Mascota Pip con medidor de felicidad (85%) y reacciones hápticas táctiles.'
+        ]
       },
       quiz: {
-        title: 'Acertijo del Capítulo',
-        mechanic: 'Preguntas de ortografía y comprensión textual que abren un sobre sellado con cera roja.',
-        optionsStyle: 'Sellos de tinta sobre pergamino con caligrafía infantil amigable.',
-        positiveReinforcement: 'Animación de apertura del sobre con efecto dorado y revelación de estampa ultra-rara.',
-        errorPedagogy: 'La pluma del libro sugiere releer el párrafo subrayando la idea clave.'
+        title: 'Videojuego de Preguntas & Desafío Lúdico (El Acertijo del Grimorio / Arena Gólem)',
+        mechanic: 'El libro plantea un acertijo interactivo o combate didáctico. Al responder correctamente 5 preguntas consecutivas, el alumno gana un "Sobre Dorado de Estampas" y derrota al Gólem del Bosque.',
+        optionsStyle: 'Gemas elementales táctiles (Púrpura, Esmeralda, Rubí, Zafiro) con selector de maná y cálculo mental sin estrés.',
+        positiveReinforcement: 'Animación de ataque mágico luminoso, caída del jefe, fanfarria de nivel, lluvia de confeti 3D y gemas estelares.',
+        errorPedagogy: 'La pluma mágica sugiere releer la pista o repasar las tablas de multiplicar guiadas sin penalización punitiva.'
       },
       avatar: {
-        title: 'Perfil del Explorador de Libros',
-        customizationFeatures: ['Exlibris personalizado', 'Marcapáginas dorados', 'Tinta mágica', 'Marcos de estampas'],
-        economyModel: 'Estampas ganadas por lectura y asistencia.',
-        gameplayIntegration: 'Visualización comunitaria en el museo escolar de la clase.'
+        title: 'Álbum de Estampas & Personalización del Estudiante',
+        customizationFeatures: [
+          'Interacción táctil de pegar estampas arrastrándolas hacia su silueta en la página del libro.',
+          'Estampas que cobran vida con animación 3D y narran un dato curioso curricular al completarse.',
+          'Mesa de intercambio ("Feria de Saberes") para canjear cromos duplicados con compañeros de aula.',
+          'Guardarropa de explorador estelar con capas místicas, báculos y mascotas mágicas.'
+        ],
+        economyModel: 'Economía protegida basada en mérito lector y constancia: 1,250 monedas ganadas por misiones familiares y lectura diaria.',
+        gameplayIntegration: 'Visualización inmediata de atuendos y mascotas en el Hub principal y salón escolar.'
       },
       teacherStudio: {
-        title: 'Universal Studio Cuentacuentos',
-        flowSteps: ['Cargar fragmento de lectura', 'Generar 3 preguntas de comprensión', 'Asignar estampas temáticas'],
-        polymorphicOutput: 'Capítulo interactivo listo para impresión o lectura digital.'
+        title: 'Módulo Universal del Profesor (Universal Challenge Studio)',
+        flowSteps: [
+          'El profesor programa qué estampas se liberan en cada semana según el calendario de planeación bimestral registrado en la Bóveda Curricular.',
+          'Genera reactivos de comprensión lectora y cálculo mental con autocompletado pedagógico de la NEM.',
+          'Previsualización en tiempo real de cómo luce el capítulo en la pantalla del alumno.'
+        ],
+        polymorphicOutput: 'Capítulo interactivo listo para aplicación digital o exportación a PDF didáctico.'
       }
     },
     iskoolIntegration: {
-      storeConnection: 'Registro de cromos desbloqueados en el almacén de portafolios usePortfolioStore.',
-      vaultIntegration: 'Textos clásicos y leyendas mexicanas vinculadas en Bóveda Curricular.',
-      historicalAvatarsFirstPerson: 'Biografías narradas por los propios próceres en cartas epistolares en primera persona.'
+      storeConnection: 'Registro de cromos desbloqueados y monedas en useStudentStore y useGamificationStore.',
+      vaultIntegration: 'Cada estampa del álbum contiene en sus metadatos el enlace directo al nodo Markdown de la Bóveda Curricular correspondiente.',
+      historicalAvatarsFirstPerson: 'Próceres y próceres de la patria narran sus hazañas en estricta primera persona dentro de las fichas de los cromos históricos.'
     },
     technicalChallenges: [
-      { challenge: 'Efecto de Brillo Holográfico en Dispositivos Lentos', severity: 'Media', solution: 'Shaders WebGL ultra-ligeros con fallback CSS si no hay soporte GPU.' }
+      { challenge: 'Física y Efectos Shaders de Brillo Holográfico', severity: 'Media', solution: 'Implementados con CSS WebGL Shaders ligeros para simular el brillo arcoíris sin sobrecalentar los dispositivos escolares.' },
+      { challenge: 'Arrastre y Pegado Táctil Preciso en Tablets', severity: 'Media', solution: 'Zonas magnéticas de ajuste automático (snapping) para dedos de 6 a 8 años.' }
     ],
     trainingAndAdoption: {
-      trainingHours: '4 horas.',
-      learningCurve: '15 minutos para crear un sobre temático.',
-      parentAdoption: 'Alta empatía con padres gracias a la nostalgia de los álbumes coleccionables.'
+      trainingHours: '5 horas totales.',
+      learningCurve: '15 minutos para programar un sobre semanal temático.',
+      parentAdoption: 'Alta vinculación familiar mediante las "Misiones Familiares" de recolección de gemas en casa.'
     },
     cloudViability: {
-      ssoAuth: 'Cuentas institucionales @colegio.edu.mx.',
-      cloudStorage: 'Álbum respaldado en Google Drive en formato PDF/WebP.',
-      classroomIntegration: 'Asignación de lecturas ligada a Classroom.'
+      ssoAuth: 'Google Workspace institucional con acceso directo sin contraseñas complicadas.',
+      cloudStorage: 'Los álbumes digitales completos pueden exportarse a un PDF interactivo de recuerdo de fin de curso guardado en Drive (<300KB).',
+      classroomIntegration: 'Las tareas entregadas a tiempo otorgan automáticamente un sobre de estampas en ISkool mediante webhook seguro.'
     },
     globalBenchmarks: [
-      { name: 'Animal Crossing Museum', origin: 'Japón', description: 'Referente en coleccionismo educativo de fósiles y arte.', iskoolAdvantage: 'Alineación completa a la historia y biodiversidad de México.' }
+      { name: 'Animal Crossing (Nintendo)', origin: 'Japón', description: 'Mecánica de museo y coleccionismo de especies e hitos que despierta el orgullo de los niños.', iskoolAdvantage: 'Alineación 100% curricular a la historia, geografía y biodiversidad de la NEM.' },
+      { name: 'Álbum Panini Didáctico', origin: 'Italia / Global', description: 'Emoción táctil del coleccionismo físico de cromos intercambiables con sobre rasgable.', iskoolAdvantage: 'Cero costo para las familias; los cromos se obtienen exclusivamente con lectura y esfuerzo escolar.' },
+      { name: 'Kahoot Kids', origin: 'Noruega', description: 'Cuestionarios interactivos de alta energía adaptados al ritmo individual de aprendizaje.', iskoolAdvantage: 'Evaluación formativa continua sin estrés ni clasificaciones humillantes.' }
     ]
   },
 

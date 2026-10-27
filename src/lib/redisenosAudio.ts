@@ -130,6 +130,16 @@ class GamificationAudioManager {
     osc.start();
     osc.stop(ctx.currentTime + 0.15);
   }
+
+  // Alias de impacto
+  playHitSound() {
+    this.playEnemyHitSound();
+  }
+
+  // Alias de lanzamiento mágico
+  playMagicSound() {
+    this.playMagicCastSound();
+  }
 }
 
 export const gamificationAudio = new GamificationAudioManager();
