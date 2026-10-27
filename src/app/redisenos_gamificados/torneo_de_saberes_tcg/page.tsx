@@ -1,7 +1,7 @@
 // src/app/redisenos_gamificados/torneo_de_saberes_tcg/page.tsx
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Award, 
@@ -25,27 +25,33 @@ import {
   GraduationCap,
   Check,
   Trophy,
-  Users
+  Users,
+  Volume2,
+  VolumeX,
+  Eye,
+  Heart,
+  BookOpen
 } from 'lucide-react';
 import { gamificationAudio } from '@/lib/redisenosAudio';
 
 // ==========================================
-// 1. MODELOS DE DATOS Y PERFILES (3 ALUMNOS)
+// 1. MODELOS DE DATOS Y PERFILES (3 ALUMNOS FASE 5 SEP)
 // ==========================================
 interface TcgStudent {
   id: string;
   name: string;
   grade: string;
+  age: number;
   rank: string;
   avatarIcon: string;
   manaCrystals: number;
   totalCards: number;
   wins: number;
-  coins: number;
+  gems: number;
   activeDeck: string;
   equippedSleeve: string;
   equippedRobes: string;
-  inventory: string[];
+  inventoryCards: string[];
 }
 
 const INITIAL_TCG_STUDENTS: TcgStudent[] = [
@@ -53,116 +59,245 @@ const INITIAL_TCG_STUDENTS: TcgStudent[] = [
     id: 'tcg-diego',
     name: 'Diego Morales',
     grade: '5º de Primaria · Fase 5 SEP',
+    age: 10,
     rank: 'Duelista de Oro',
     avatarIcon: '⚡',
-    manaCrystals: 5,
+    manaCrystals: 7,
     totalCards: 34,
     wins: 19,
-    coins: 1100,
+    gems: 1250,
     activeDeck: 'Mazo de Astrofísica & Ciencias Naturales',
     equippedSleeve: 'Reverso Holográfico Galaxia',
     equippedRobes: 'Bata de Científico con Pines Cuánticos',
-    inventory: ['card-newton', 'card-termo', 'card-celular']
+    inventoryCards: ['newton', 'curie', 'einstein', 'davinci']
   },
   {
     id: 'tcg-lucia',
     name: 'Lucía Méndez',
     grade: '4º de Primaria · Fase 5 SEP',
+    age: 9,
     rank: 'Estratega de Plata',
     avatarIcon: '🔮',
-    manaCrystals: 4,
+    manaCrystals: 5,
     totalCards: 26,
     wins: 12,
-    coins: 740,
+    gems: 740,
     activeDeck: 'Mazo de Historia & Civilizaciones',
     equippedSleeve: 'Reverso Calendario Solar',
     equippedRobes: 'Túnica de Estratega con Auriculares',
-    inventory: ['card-juarez', 'card-hidalgo']
+    inventoryCards: ['galileo', 'tesla', 'darwin', 'hypatia']
   },
   {
     id: 'tcg-carlos',
     name: 'Carlos Vela',
     grade: '6º de Primaria · Fase 5 SEP',
+    age: 11,
     rank: 'Gran Maestro de Conocimiento',
     avatarIcon: '👑',
-    manaCrystals: 6,
+    manaCrystals: 8,
     totalCards: 48,
     wins: 31,
-    coins: 1850,
+    gems: 1850,
     activeDeck: 'Mazo Universal de Matemáticas y Lógica',
     equippedSleeve: 'Reverso Dorado Institucional',
     equippedRobes: 'Armadura Ligera de Duelista Tech',
-    inventory: ['card-euler', 'card-pitagoras']
+    inventoryCards: ['newton', 'einstein', 'tesla', 'hypatia']
   }
 ];
 
-interface CardItem {
+// Las 8 Cartas Legendarias del Archivador de Sabios
+interface ThinkerCard {
   id: string;
   name: string;
-  type: 'Personaje Histórico' | 'Ley Científica' | 'Teoría Universal';
-  manaCost: number;
-  power: number;
-  description: string;
-  color: string;
-  firstPersonNarrative?: string;
-  image?: string;
+  discovery: string;
+  costMana: number;
+  blueStat: number;
+  greenStat: number;
+  redStat: number;
+  hp: number;
+  image: string;
+  voiceQuote: string;
+  rarity: 'Legendaria' | 'Épica';
 }
 
-const DECK_CARDS: CardItem[] = [
+const THINKER_CARDS: ThinkerCard[] = [
   {
-    id: 'c-newton',
-    name: 'Isaac Newton: Gravitación Universal',
-    type: 'Ley Científica',
-    manaCost: 2,
-    power: 95,
-    description: 'Explica con rigor físico por qué los planetas orbitan alrededor del Sol mediante la fuerza de atracción mutua.',
-    color: 'from-amber-600 via-yellow-600 to-amber-700',
-    image: '/redisenos_assets/torneo_tcg/carta_newton_holografica.jpg'
+    id: 'newton',
+    name: 'Sir Isaac Newton',
+    discovery: 'Descubrió la Gravitación Universal',
+    costMana: 1,
+    blueStat: 8,
+    greenStat: 7,
+    redStat: 3,
+    hp: 3,
+    image: '/redisenos_assets/torneo_tcg/tcg_card_isaac_newton.jpg',
+    voiceQuote: 'Formulé la ley de gravitación universal al observar cómo todos los cuerpos celestes y terrenales se atraen mutuamente.',
+    rarity: 'Legendaria'
   },
   {
-    id: 'c-termo',
-    name: 'Leyes de la Termodinámica',
-    type: 'Ley Científica',
-    manaCost: 3,
-    power: 75,
-    description: 'La energía del universo no se crea ni se destruye, solo sufre transformaciones.',
-    color: 'from-rose-600 via-orange-600 to-red-700'
+    id: 'curie',
+    name: 'Marie Curie',
+    discovery: 'Descubrió el Radio y el Polonio',
+    costMana: 2,
+    blueStat: 9,
+    greenStat: 6,
+    redStat: 4,
+    hp: 4,
+    image: '/redisenos_assets/torneo_tcg/tcg_card_marie_curie.jpg',
+    voiceQuote: 'Aislé en mi laboratorio el radio y el polonio, abriendo la era de la física nuclear y la medicina radiológica.',
+    rarity: 'Legendaria'
   },
   {
-    id: 'c-celular',
-    name: 'Teoría Celular Moderna',
-    type: 'Teoría Universal',
-    manaCost: 1,
-    power: 65,
-    description: 'Todos los organismos vivos están formados por una o más unidades celulares autónomas.',
-    color: 'from-emerald-600 via-teal-600 to-green-700'
+    id: 'einstein',
+    name: 'Albert Einstein',
+    discovery: 'Teoría de la Relatividad General',
+    costMana: 3,
+    blueStat: 10,
+    greenStat: 9,
+    redStat: 2,
+    hp: 2,
+    image: '/redisenos_assets/torneo_tcg/tcg_card_albert_einstein.jpg',
+    voiceQuote: 'Demostré que el espacio y el tiempo forman un tejido continuo que la gravedad curva con la energía.',
+    rarity: 'Legendaria'
   },
   {
-    id: 'c-mendel',
-    name: 'Gregor Mendel: Leyes de la Herencia',
-    type: 'Teoría Universal',
-    manaCost: 2,
-    power: 80,
-    description: 'Descubrimiento de los factores hereditarios dominantes y recesivos mediante guisantes.',
-    color: 'from-cyan-600 via-blue-600 to-indigo-700'
+    id: 'davinci',
+    name: 'Leonardo da Vinci',
+    discovery: 'Polímata: Vuelo, Arte y Anatomía',
+    costMana: 4,
+    blueStat: 7,
+    greenStat: 8,
+    redStat: 9,
+    hp: 9,
+    image: '/redisenos_assets/torneo_tcg/tcg_card_leonardo_davinci.jpg',
+    voiceQuote: 'Combiné la observación de la naturaleza, el dibujo anatómico y los engranajes para proyectar el vuelo humano.',
+    rarity: 'Épica'
+  },
+  {
+    id: 'galileo',
+    name: 'Galileo Galilei',
+    discovery: 'Telescopio y Heliocentrismo',
+    costMana: 5,
+    blueStat: 7,
+    greenStat: 8,
+    redStat: 5,
+    hp: 5,
+    image: '/redisenos_assets/torneo_tcg/tcg_card_galileo_galilei.jpg',
+    voiceQuote: 'Apunté mi telescopio hacia el firmamento y descubrí las lunas de Júpiter, confirmando que la Tierra gira alrededor del Sol.',
+    rarity: 'Épica'
+  },
+  {
+    id: 'tesla',
+    name: 'Nikola Tesla',
+    discovery: 'Corriente Alterna y Bobinas Electromagnéticas',
+    costMana: 6,
+    blueStat: 9,
+    greenStat: 7,
+    redStat: 3,
+    hp: 3,
+    image: '/redisenos_assets/torneo_tcg/tcg_card_nikola_tesla.jpg',
+    voiceQuote: 'Ideé los generadores de corriente alterna y las bobinas de inducción que electrifican el mundo moderno.',
+    rarity: 'Legendaria'
+  },
+  {
+    id: 'darwin',
+    name: 'Charles Darwin',
+    discovery: 'Evolución por Selección Natural',
+    costMana: 7,
+    blueStat: 8,
+    greenStat: 5,
+    redStat: 6,
+    hp: 6,
+    image: '/redisenos_assets/torneo_tcg/tcg_card_charles_darwin.jpg',
+    voiceQuote: 'Navegué en el HMS Beagle observando a las especies en Galápagos para comprender cómo la vida se adapta y evoluciona.',
+    rarity: 'Épica'
+  },
+  {
+    id: 'hypatia',
+    name: 'Hypatia de Alejandría',
+    discovery: 'Matemáticas, Álgebra y Astrolabio',
+    costMana: 8,
+    blueStat: 6,
+    greenStat: 8,
+    redStat: 7,
+    hp: 7,
+    image: '/redisenos_assets/torneo_tcg/tcg_card_hypatia_alexandria.jpg',
+    voiceQuote: 'Enseñé matemáticas y astronomía en el Museo de Alejandría, trazando secciones cónicas y perfeccionando el astrolabio.',
+    rarity: 'Legendaria'
   }
 ];
 
 export default function TorneoDeSaberesTcgPage() {
   const [students, setStudents] = useState<TcgStudent[]>(INITIAL_TCG_STUDENTS);
   const [activeStudentId, setActiveStudentId] = useState<string>('tcg-diego');
-  const [hand, setHand] = useState<CardItem[]>(DECK_CARDS);
-  const [playedCard, setPlayedCard] = useState<CardItem | null>(null);
-  const [bossHp, setBossHp] = useState<number>(100);
-  const [feedback, setFeedback] = useState<string | null>(null);
-  const [comboMultiplier, setComboMultiplier] = useState<number>(1);
-  const [timeLeft, setTimeLeft] = useState<number>(30);
   
-  // Modales interactivos
-  const [activeModal, setActiveModal] = useState<'none' | 'store' | 'deckBuilder' | 'teacherStudio'>('none');
+  // Modales
+  const [activeModal, setActiveModal] = useState<'none' | 'tcgArena' | 'cardDetail' | 'albumCustomizer' | 'teacherStudio' | 'store'>('none');
+  const [inspectedCard, setInspectedCard] = useState<ThinkerCard | null>(null);
+  
+  // Estados de la Arena del Conocimiento (Enigma Dual en Vivo)
+  const [playerHp, setPlayerHp] = useState<number>(30);
+  const [rivalHp, setRivalHp] = useState<number>(30);
+  const [arenaAnswerState, setArenaAnswerState] = useState<'idle' | 'correct' | 'wrong'>('idle');
+  const [manaGoldCrystals, setManaGoldCrystals] = useState<number>(7);
+  
+  // Estados de la Arena de Duelo Holográfica (Pantalla 2)
+  const [arenaMana, setArenaMana] = useState<number>(10);
+  const [arenaTime, setArenaTime] = useState<number>(30);
+  const [isArenaTimerRunning, setIsArenaTimerRunning] = useState<boolean>(false);
+  const [playedArenaCardId, setPlayedArenaCardId] = useState<string | null>(null);
+  const [arenaFeedback, setArenaFeedback] = useState<string | null>(null);
+
+  // Estados del Vestidor y Álbum (Pantalla 3)
   const [selectedDuelistItem, setSelectedDuelistItem] = useState<'base' | 'capa' | 'visor' | 'guante'>('base');
+
+  // Notificaciones y Sonido
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [confettiActive, setConfettiActive] = useState<boolean>(false);
+  const [isSoundMuted, setIsSoundMuted] = useState<boolean>(false);
+
+  const activeStudent = students.find(s => s.id === activeStudentId) || students[0];
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const triggerConfetti = () => {
+    setConfettiActive(true);
+    setTimeout(() => setConfettiActive(false), 3500);
+  };
+
+  // Síntesis de voz en primera persona estricta (Regla No Negociable 2)
+  const speakText = (text: string) => {
+    if (isSoundMuted) return;
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'es-MX';
+      utter.rate = 0.95;
+      utter.pitch = 1.05;
+      window.speechSynthesis.speak(utter);
+    } catch {
+      // Manejo de restricciones de audio en navegador
+    }
+  };
+
+  // Temporizador para la Arena Holográfica TCG
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (activeModal === 'tcgArena' && isArenaTimerRunning && arenaTime > 0) {
+      interval = setInterval(() => {
+        setArenaTime(prev => prev - 1);
+      }, 1000);
+    } else if (arenaTime === 0 && isArenaTimerRunning) {
+      setIsArenaTimerRunning(false);
+      gamificationAudio.playHitSound();
+      setArenaFeedback('¡Tiempo concluido! Consulta la Bóveda Curricular y selecciona tu carta.');
+    }
+    return () => clearInterval(interval);
+  }, [activeModal, isArenaTimerRunning, arenaTime]);
 
   const getDuelistRender = () => {
     switch (selectedDuelistItem) {
@@ -178,163 +313,172 @@ export default function TorneoDeSaberesTcgPage() {
     }
   };
 
-  const activeStudent = students.find(s => s.id === activeStudentId) || students[0];
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3200);
-  };
-
-  const triggerConfetti = () => {
-    setConfettiActive(true);
-    setTimeout(() => setConfettiActive(false), 3000);
-  };
-
-  const handleSelectStudent = (id: string) => {
+  // 1. Abrir detalle de una carta del archivador
+  const handleInspectCard = (card: ThinkerCard) => {
     gamificationAudio.playClickSound();
-    setActiveStudentId(id);
-    handleResetDuel();
-    showToast(`Duelista cambiado a ${students.find(s => s.id === id)?.name}`);
+    setInspectedCard(card);
+    setActiveModal('cardDetail');
+    speakText(card.voiceQuote);
   };
 
-  const handlePlayCard = (card: CardItem) => {
-    gamificationAudio.playMagicCastSound();
-    setPlayedCard(card);
+  // 2. Responder al Enigma Dual en la Arena del Conocimiento (Pantalla 1)
+  const handleAnswerArenaDual = (choice: 'A' | 'B' | 'C') => {
+    gamificationAudio.playClickSound();
 
-    if (card.id === 'c-newton') {
+    if (choice === 'A') {
+      // Roma / 84 es la respuesta correcta (Capital de Italia: Roma; 14 x 6 = 84)
       gamificationAudio.playLevelUpSound();
       triggerConfetti();
-      setBossHp(0);
-      setComboMultiplier(3);
-      setFeedback('¡COMBO DIDÁCTICO PERFECTO! La Gravitación Universal de Newton responde con exactitud al enigma de las órbitas planetarias. ¡Jefe de Sabiduría superado con Sinergia x3!');
+      setRivalHp(0);
+      setArenaAnswerState('correct');
+      speakText('¡Golpe didáctico perfecto! La capital de Italia es Roma y 14 por 6 es 84. ¡Rival superado en la Arena del Conocimiento!');
+
+      setStudents(prev => prev.map(s => {
+        if (s.id !== activeStudent.id) return s;
+        return {
+          ...s,
+          wins: s.wins + 1,
+          gems: s.gems + 350
+        };
+      }));
+
+      showToast('¡Victoria en la Arena del Conocimiento! +350 Gemas');
+    } else {
+      gamificationAudio.playHitSound();
+      setArenaAnswerState('wrong');
+      speakText('Respuesta inexacta. Recuerda que 14 por 6 es 84 y la capital de Italia es Roma. ¡Vuelve a intentarlo!');
+      showToast('Respuesta incorrecta. ¡Analiza con calma!');
+    }
+  };
+
+  // 3. Jugar Carta en la Arena Holográfica de Ciencias (Pantalla 2)
+  const handlePlayArenaCard = (card: ThinkerCard) => {
+    if (arenaMana < card.costMana) {
+      gamificationAudio.playHitSound();
+      showToast('¡Cristales de maná insuficientes!');
+      return;
+    }
+
+    gamificationAudio.playClickSound();
+    setArenaMana(prev => prev - card.costMana);
+    setPlayedArenaCardId(card.id);
+
+    if (card.id === 'newton') {
+      gamificationAudio.playLevelUpSound();
+      triggerConfetti();
+      setIsArenaTimerRunning(false);
+      setArenaFeedback('¡IMPACTO GRAVITACIONAL! La Ley de Gravitación Universal de Sir Isaac Newton demuestra cómo la masa solar curva y guía las órbitas elípticas.');
+      speakText('¡Excelente! Mi ley de gravitación universal explica por qué los planetas orbitan alrededor del Sol.');
       
       setStudents(prev => prev.map(s => {
         if (s.id !== activeStudent.id) return s;
         return {
           ...s,
           wins: s.wins + 1,
-          coins: s.coins + 350
+          gems: s.gems + 400
         };
       }));
     } else {
-      gamificationAudio.playEnemyHitSound();
-      setComboMultiplier(1);
-      setFeedback(`Jugaste "${card.name}". Esta carta posee alto poder conceptual, pero no fundamenta la mecánica de traslación gravitatoria. ¡Selecciona la ley correspondiente!`);
+      gamificationAudio.playHitSound();
+      setArenaFeedback(`Has jugado a ${card.name}. Este prócer de la ciencia realizó descubrimientos invaluables, pero este enigma requiere la ley gravitacional de Newton.`);
+      speakText(`Mi nombre es ${card.name}, pero para las órbitas solares necesitas a Isaac Newton.`);
     }
-  };
-
-  const handleResetDuel = () => {
-    gamificationAudio.playClickSound();
-    setPlayedCard(null);
-    setFeedback(null);
-    setBossHp(100);
-    setComboMultiplier(1);
-    setTimeLeft(30);
-  };
-
-  const handleBuyPack = (packName: string, cost: number) => {
-    if (activeStudent.coins < cost) {
-      gamificationAudio.playEnemyHitSound();
-      showToast('Gemas de Conocimiento insuficientes.');
-      return;
-    }
-    gamificationAudio.playCoinSound();
-    setStudents(prev => prev.map(s => {
-      if (s.id !== activeStudent.id) return s;
-      return {
-        ...s,
-        coins: s.coins - cost,
-        totalCards: s.totalCards + 3
-      };
-    }));
-    showToast(`¡Sobre "${packName}" abierto con éxito! +3 cartas didácticas añadidas a tu colección.`);
-  };
-
-  const handleEquipSleeve = (sleeveName: string) => {
-    gamificationAudio.playClickSound();
-    setStudents(prev => prev.map(s => {
-      if (s.id !== activeStudent.id) return s;
-      return { ...s, equippedSleeve: sleeveName };
-    }));
-    showToast(`Reverso "${sleeveName}" equipado.`);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white relative overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white relative overflow-x-hidden">
       
-      {/* CONFETI ANIMADO */}
+      {/* 1. CONFETI ANIMADO EN DOM */}
       {confettiActive && (
         <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 bg-indigo-500/10 backdrop-blur-[1px] animate-pulse" />
-          {[...Array(40)].map((_, i) => (
+          {[...Array(50)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-3 h-3 rounded-sm animate-bounce"
+              className="absolute w-3.5 h-3.5 rounded-sm animate-bounce"
               style={{
                 backgroundColor: ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#38bdf8'][i % 5],
-                top: `${(i * 7) % 95}%`,
-                left: `${(i * 13) % 98}%`,
+                top: `${(i * 6.5) % 95}%`,
+                left: `${(i * 11.3) % 98}%`,
                 transform: `rotate(${i * 24}deg)`,
-                animationDuration: `${1.2 + (i % 5) * 0.3}s`
+                animationDuration: `${1.1 + (i % 5) * 0.25}s`
               }}
             />
           ))}
         </div>
       )}
 
-      {/* TOAST NOTIFICACIÓN */}
+      {/* 2. TOAST NOTIFICACIÓN */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 z-50 px-4 py-2.5 rounded-2xl bg-indigo-600 text-white font-black text-xs shadow-2xl flex items-center gap-2 border border-indigo-400 animate-in slide-in-from-top-4">
+        <div className="fixed top-20 right-6 z-50 px-5 py-2.5 rounded-2xl bg-indigo-600 text-white font-black text-xs shadow-2xl flex items-center gap-2 border-2 border-indigo-400 animate-in slide-in-from-top-4">
           <Sparkles className="w-4 h-4 fill-white" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* HEADER DE DUELO */}
-      <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-indigo-900/40 px-4 sm:px-6 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      {/* 3. HEADER SUPERIOR INSTITUCIONAL TCG */}
+      <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b-2 border-indigo-500/40 shadow-xl px-4 sm:px-6 py-2.5">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+          
           <div className="flex items-center gap-3">
             <Link
               href="/redisenos_gamificados"
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors flex items-center gap-1.5 text-xs font-bold"
+              onClick={() => gamificationAudio.playClickSound()}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-md transition-transform hover:scale-105 active:scale-95"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Volver a Rediseños</span>
+              <span>Volver a Rediseños</span>
             </Link>
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-indigo-400 bg-indigo-950/70 px-2 py-0.5 rounded border border-indigo-800/50">
-                06 Primaria Alta · TCG Didáctico (9 a 11 Años)
-              </span>
-              <h1 className="text-sm sm:text-base font-extrabold text-white flex items-center gap-2">
-                <Swords className="w-4 h-4 text-indigo-400" />
-                Torneo de Saberes & Cartas del Conocimiento
-              </h1>
+
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">⚔️</span>
+              <div>
+                <h1 className="text-sm sm:text-base font-black text-white tracking-tight leading-tight flex items-center gap-2">
+                  Torneo de Saberes: Cartas del Conocimiento
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-950/80 text-indigo-300 border border-indigo-500/40 font-bold hidden sm:inline">
+                    Primaria Alta · 9 a 11 Años
+                  </span>
+                </h1>
+                <p className="text-[11px] text-slate-400 font-semibold line-clamp-1">
+                  Colegio Anglo Mexicano de Coyoacán · Torneo Táctico Escolar y Deckbuilding Curricular
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* PERFILES & BOTONERA */}
-          <div className="flex items-center gap-2 sm:gap-4">
-            <div className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800">
+          {/* Conmutador de 3 Alumnos Reales */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-400 hidden md:inline">Duelista:</span>
+            <div className="flex items-center bg-slate-950/90 p-1 rounded-2xl border border-slate-800">
               {students.map(s => (
                 <button
                   key={s.id}
-                  onClick={() => handleSelectStudent(s.id)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
-                    s.id === activeStudent.id
-                      ? 'bg-indigo-600 text-white shadow-md font-black scale-105'
+                  onClick={() => {
+                    gamificationAudio.playClickSound();
+                    setActiveStudentId(s.id);
+                    speakText(`¡Bienvenido al torneo duelista ${s.name.split(' ')[0]}! Tienes ${s.gems} gemas de conocimiento.`);
+                    showToast(`Duelista cambiado a ${s.name} (${s.grade})`);
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black transition-all ${
+                    activeStudentId === s.id
+                      ? 'bg-indigo-600 text-white shadow-md scale-105'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   <span>{s.avatarIcon}</span>
                   <span>{s.name.split(' ')[0]}</span>
+                  <span className="text-[10px] opacity-75 hidden lg:inline">({s.age}a)</span>
                 </button>
               ))}
             </div>
+          </div>
 
-            <div className="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs font-bold">
+          {/* Recursos & Botonera */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="hidden sm:flex items-center gap-3 px-3 py-1 rounded-xl bg-slate-950/80 border border-slate-800 text-xs font-black">
               <span className="flex items-center gap-1 text-cyan-300">
                 <Coins className="w-3.5 h-3.5 text-cyan-400" />
-                {activeStudent.coins} Gemas
+                {activeStudent.gems} Gemas
               </span>
               <span className="flex items-center gap-1 text-amber-300">
                 <Trophy className="w-3.5 h-3.5 text-amber-400" />
@@ -342,463 +486,494 @@ export default function TorneoDeSaberesTcgPage() {
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={() => {
-                  gamificationAudio.playClickSound();
-                  setActiveModal('deckBuilder');
-                }}
-                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 border border-slate-700"
-              >
-                <Layers className="w-3.5 h-3.5 text-indigo-400" />
-                <span className="hidden sm:inline">Constructor</span>
-              </button>
+            <button
+              onClick={() => {
+                gamificationAudio.playClickSound();
+                setActiveModal('albumCustomizer');
+                speakText("¡Abriendo el Vestidor de Duelista y Álbum de Maestría!");
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-300 text-xs font-black border border-indigo-500/30 transition-transform hover:scale-105 active:scale-95"
+            >
+              <Shirt className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="hidden md:inline">Duelista 3D</span>
+            </button>
 
-              <button
-                onClick={() => {
-                  gamificationAudio.playClickSound();
-                  setActiveModal('store');
-                }}
-                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-black text-xs flex items-center gap-1.5 shadow-md shadow-indigo-500/20"
-              >
-                <ShoppingBag className="w-3.5 h-3.5" />
-                <span>Sobres</span>
-              </button>
+            <button
+              onClick={() => {
+                gamificationAudio.playClickSound();
+                setActiveModal('teacherStudio');
+              }}
+              className="p-2 rounded-xl bg-purple-950/80 hover:bg-purple-900 border border-purple-500/40 text-purple-300 text-xs font-bold transition-transform hover:scale-105"
+              title="Universal Challenge Studio (Vista Docente)"
+            >
+              <GraduationCap className="w-4 h-4 text-purple-400" />
+            </button>
 
-              <button
-                onClick={() => {
-                  gamificationAudio.playClickSound();
-                  setActiveModal('teacherStudio');
-                }}
-                className="p-2 rounded-xl bg-purple-950/70 hover:bg-purple-900 border border-purple-700 text-purple-300 text-xs font-bold"
-                title="Universal Challenge Studio (Vista Docente)"
-              >
-                <GraduationCap className="w-4 h-4 text-purple-400" />
-              </button>
-            </div>
+            <button
+              onClick={() => setIsSoundMuted(!isSoundMuted)}
+              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs"
+              title={isSoundMuted ? 'Activar sonido' : 'Silenciar'}
+            >
+              {isSoundMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </button>
           </div>
+
         </div>
       </header>
 
-      {/* CONTENIDO PRINCIPAL: ESTADIO DE DUELOS & MESA HOLOGRÁFICA */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
+      {/* ========================================================================= */}
+      {/* 4. PANTALLA 1: LIENZO PRINCIPAL DEL ESTADIO DE DUELOS (16:9 FULL MOCKUP) */}
+      {/* ========================================================================= */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 flex flex-col justify-center">
         
-        {/* PANTALLA 1: HUD DEL ESTADIO DE DUELOS */}
-        <div className="p-5 md:p-6 rounded-3xl bg-slate-900 border border-indigo-800/40 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="px-3 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-black border border-indigo-500/40">
-                {activeStudent.rank}
-              </span>
-              <span className="text-xs text-slate-400">{activeStudent.grade}</span>
-            </div>
-            <h2 className="text-xl md:text-2xl font-black text-white flex items-center gap-2">
-              <span>{activeStudent.avatarIcon} Duelo Didáctico de {activeStudent.name}</span>
-            </h2>
-            <p className="text-xs text-slate-300 mt-1">
-              Baraja Activa: <strong className="text-indigo-300">{activeStudent.activeDeck}</strong> · Reverso: <em>{activeStudent.equippedSleeve}</em> ({activeStudent.totalCards} cartas registradas)
-            </p>
+        {/* LIENZO ENMARCADO CON MÁXIMA FIDELIDAD VISUAL */}
+        <div className="relative w-full aspect-[16/9] max-h-[82vh] rounded-[36px] overflow-hidden shadow-2xl border-4 border-indigo-500/60 bg-slate-950 group">
+          
+          {/* Ilustración de Fondo Original (1600px Optimizado) */}
+          <img 
+            src="/redisenos_assets/torneo_tcg/torneo_hub_master_scene.jpg" 
+            alt="Torneo de Saberes - Estadio de Duelos y Archivador de Cartas"
+            className="w-full h-full object-cover select-none"
+          />
+
+          {/* ========================================================= */}
+          {/* HOTSPOTS INTERACTIVOS MAESTROS DIRECTOS SOBRE EL LIENZO  */}
+          {/* ========================================================= */}
+
+          {/* 1. ARCHIVADOR DE 8 CARTAS DE SABIOS (LADO IZQUIERDO: 2 FILAS x 4 COLUMNAS) */}
+          <div className="absolute top-[21%] left-[2.2%] w-[46.5%] h-[58%] z-20 grid grid-cols-4 grid-rows-2 gap-1.5 p-1">
+            {THINKER_CARDS.map(card => (
+              <button
+                key={card.id}
+                onClick={() => handleInspectCard(card)}
+                className="rounded-xl transition-all cursor-pointer hover:ring-2 hover:ring-indigo-400 hover:scale-105 active:scale-95 group/card relative"
+                title={`Ver detalles de ${card.name}`}
+              >
+                <div className="absolute inset-0 bg-indigo-500/10 opacity-0 group-hover/card:opacity-100 rounded-xl transition-opacity pointer-events-none" />
+              </button>
+            ))}
+          </div>
+
+          {/* 2. BOTONES DEL COLISEO SUPERIOR DERECHO (JUGAR, MAZOS, TIENDA) */}
+          <div className="absolute top-[37%] right-[2.2%] w-[33%] h-[7%] z-20 grid grid-cols-3 gap-2">
+            {/* Botón JUGAR */}
+            <button
+              onClick={() => {
+                gamificationAudio.playClickSound();
+                setArenaMana(10);
+                setArenaTime(30);
+                setIsArenaTimerRunning(true);
+                setPlayedArenaCardId(null);
+                setArenaFeedback(null);
+                setActiveModal('tcgArena');
+                speakText("¡Entrando a la Mesa de Duelo Holográfica!");
+              }}
+              className="rounded-2xl transition-all cursor-pointer hover:ring-2 hover:ring-purple-400 hover:scale-105 active:scale-95"
+              title="Iniciar Duelo Holográfico TCG"
+            />
+            {/* Botón MAZOS */}
+            <button
+              onClick={() => {
+                gamificationAudio.playClickSound();
+                showToast(`Constructor de Mazos: 4 de 20 cartas equipadas`);
+                speakText("Tu mazo activo tiene cuatro cartas didácticas listas para el combate.");
+              }}
+              className="rounded-2xl transition-all cursor-pointer hover:ring-2 hover:ring-cyan-400 hover:scale-105 active:scale-95"
+              title="Organizar Mazo de Cartas"
+            />
+            {/* Botón TIENDA */}
+            <button
+              onClick={() => {
+                gamificationAudio.playClickSound();
+                showToast(`Bazar de Sobres: Sobres de Historia, Física y Matemáticas`);
+                speakText("¡Bienvenido a la tienda de sobres coleccionables!");
+              }}
+              className="rounded-2xl transition-all cursor-pointer hover:ring-2 hover:ring-amber-400 hover:scale-105 active:scale-95"
+              title="Bazar de Sobres TCG"
+            />
+          </div>
+
+          {/* 3. ARENA DEL CONOCIMIENTO (ENIGMA DUAL EN VIVO: CAPITAL DE ITALIA + 14 x 6) */}
+          <div className="absolute bottom-[23.5%] right-[11.5%] w-[28.5%] h-[6%] z-20 grid grid-cols-3 gap-2">
+            {/* Opción A: Roma / 84 (CORRECTA) */}
+            <button
+              onClick={() => handleAnswerArenaDual('A')}
+              className="rounded-xl transition-all cursor-pointer hover:ring-2 hover:ring-emerald-400 hover:scale-105 active:scale-95"
+              title="Opción A: Roma / 84 (Respuesta Correcta)"
+            />
+            {/* Opción B: París / 72 */}
+            <button
+              onClick={() => handleAnswerArenaDual('B')}
+              className="rounded-xl transition-all cursor-pointer hover:ring-2 hover:ring-rose-400 hover:scale-105 active:scale-95"
+              title="Opción B: París / 72"
+            />
+            {/* Opción C: Madrid / 60 */}
+            <button
+              onClick={() => handleAnswerArenaDual('C')}
+              className="rounded-xl transition-all cursor-pointer hover:ring-2 hover:ring-rose-400 hover:scale-105 active:scale-95"
+              title="Opción C: Madrid / 60"
+            />
+          </div>
+
+          {/* 4. BOTONERA INFERIOR DEL TABLERO (JUGAR, MAZOS, TIENDA, MENÚ) */}
+          <div className="absolute bottom-[2%] right-[1.5%] w-[48%] h-[6.5%] z-20 grid grid-cols-4 gap-2">
+            <button
+              onClick={() => {
+                gamificationAudio.playClickSound();
+                setArenaMana(10);
+                setArenaTime(30);
+                setIsArenaTimerRunning(true);
+                setActiveModal('tcgArena');
+              }}
+              className="rounded-xl hover:ring-2 hover:ring-purple-400 transition-all cursor-pointer"
+              title="Jugar Duelo Holográfico"
+            />
+            <button
+              onClick={() => showToast('Mazo: 4 cartas listas')}
+              className="rounded-xl hover:ring-2 hover:ring-cyan-400 transition-all cursor-pointer"
+              title="Mazos"
+            />
+            <button
+              onClick={() => showToast('Tienda de Sobres Abierta')}
+              className="rounded-xl hover:ring-2 hover:ring-amber-400 transition-all cursor-pointer"
+              title="Tienda"
+            />
+            <button
+              onClick={() => {
+                gamificationAudio.playClickSound();
+                setActiveModal('albumCustomizer');
+              }}
+              className="rounded-xl hover:ring-2 hover:ring-indigo-400 transition-all cursor-pointer"
+              title="Menú y Personalizador"
+            />
+          </div>
+
+        </div>
+
+        {/* BARRA INFORMATIVA INFERIOR DE DUELO */}
+        <div className="mt-3 bg-slate-900/90 backdrop-blur-md rounded-2xl p-3 border border-indigo-500/30 flex flex-wrap items-center justify-between text-xs text-slate-300 shadow-xl gap-2">
+          <div className="flex items-center gap-2">
+            <span className="font-extrabold text-indigo-400">ISkool TCG Master</span>
+            <span>·</span>
+            <span>Rango: {activeStudent.rank}</span>
+            <span>·</span>
+            <span className="text-[10px] bg-indigo-950 text-indigo-300 px-2.5 py-0.5 rounded-full font-bold border border-indigo-500/40">
+              Evaluación Lúdica de Pensamiento Crítico
+            </span>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-slate-950/90 border border-slate-800 text-center min-w-[110px]">
-              <span className="text-xl font-black text-amber-400 block">{activeStudent.wins}</span>
-              <span className="text-[10px] text-slate-400 font-bold uppercase">Triunfos en Torneo</span>
-            </div>
-            <div className="p-3 rounded-2xl bg-slate-950/90 border border-slate-800 text-center min-w-[110px]">
-              <span className="text-xl font-black text-cyan-400 block">{activeStudent.manaCrystals}</span>
-              <span className="text-[10px] text-slate-400 font-bold uppercase">Cristales de Maná</span>
-            </div>
+            <button
+              onClick={() => {
+                gamificationAudio.playClickSound();
+                setArenaMana(10);
+                setArenaTime(30);
+                setIsArenaTimerRunning(true);
+                setActiveModal('tcgArena');
+              }}
+              className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-md transition-transform hover:scale-105 active:scale-95 flex items-center gap-1.5"
+            >
+              <Swords className="w-3.5 h-3.5" />
+              <span>Duelo Holográfico en Vivo</span>
+            </button>
           </div>
-        </div>
-
-        {/* PANTALLA 2: MESA DE DUELO HOLOGRÁFICA & JEFE DE SABIDURÍA */}
-        <div className="p-6 rounded-3xl bg-gradient-to-b from-indigo-950/30 via-slate-900 to-slate-950 border border-indigo-500/30 space-y-6 shadow-2xl">
-          
-          {/* Tarjeta del Oponente */}
-          <div className="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-black text-rose-400 uppercase tracking-wider px-2 py-0.5 rounded bg-rose-950/60 border border-rose-800/50">
-                  Jefe de Sabiduría
-                </span>
-                <span className="text-xs text-amber-300 font-bold flex items-center gap-1">
-                  <Zap className="w-3 h-3 text-amber-400" /> Sinergia {comboMultiplier}x
-                </span>
-              </div>
-              <h3 className="text-base font-black text-white">Guardián de la Astrofísica Curricular</h3>
-              <p className="text-xs text-slate-300 mt-0.5">
-                Desafío en Mesa: <em>"¿Cuál es la ley que explica por qué los planetas orbitan alrededor del Sol?"</em>
-              </p>
-            </div>
-
-            <div className="text-right w-full sm:w-auto">
-              <div className="flex items-center justify-between sm:justify-end gap-2 text-xs font-bold text-slate-300 mb-1">
-                <span>Resistencia del Enigma:</span>
-                <span className={bossHp === 0 ? 'text-emerald-400 font-black' : 'text-rose-400'}>
-                  {bossHp}/100 HP
-                </span>
-              </div>
-              <div className="w-full sm:w-48 h-3.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
-                <div 
-                  className="h-full bg-gradient-to-r from-rose-500 to-amber-500 transition-all duration-500"
-                  style={{ width: `${bossHp}%` }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Banner de Retroalimentación Didáctica */}
-          {feedback && (
-            <div className={`p-4 rounded-2xl border text-xs font-bold flex items-center justify-between ${
-              bossHp === 0
-                ? 'bg-emerald-950/70 border-emerald-500 text-emerald-200'
-                : 'bg-amber-950/70 border-amber-500 text-amber-200'
-            }`}>
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 shrink-0" />
-                <span>{feedback}</span>
-              </div>
-              <button
-                onClick={handleResetDuel}
-                className="px-3 py-1.5 rounded-xl bg-black/50 text-[11px] font-black flex items-center gap-1 shrink-0 ml-3"
-              >
-                <RotateCcw className="w-3 h-3" /> Reiniciar Duelo
-              </button>
-            </div>
-          )}
-
-          {/* Cartas en Mano del Estudiante */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                <Layers className="w-4 h-4 text-indigo-400" />
-                Cartas en Mano (Selecciona una carta para jugarla al centro de la mesa)
-              </span>
-              <span className="text-xs font-bold text-cyan-300 flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-cyan-400" /> Maná: {activeStudent.manaCrystals} Cristales
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {hand.map(card => (
-                <div
-                  key={card.id}
-                  onClick={() => handlePlayCard(card)}
-                  className={`p-4 rounded-2xl bg-gradient-to-br ${card.color} text-slate-950 shadow-2xl cursor-pointer hover:scale-105 active:scale-95 transition-all flex flex-col justify-between h-64 border-2 border-white/20 group relative overflow-hidden`}
-                >
-                  <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full blur-xl pointer-events-none" />
-                  
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="px-2 py-0.5 rounded-full bg-black/40 text-white text-[10px] font-black uppercase tracking-wider">
-                        {card.type}
-                      </span>
-                      <span className="px-2 py-0.5 rounded-full bg-black/50 text-cyan-200 text-xs font-black">
-                        ⚡ {card.manaCost} Maná
-                      </span>
-                    </div>
-
-                    <h4 className="font-black text-white text-base leading-tight mb-2 group-hover:text-amber-200 transition-colors">
-                      {card.name}
-                    </h4>
-                    <p className="text-[11px] text-white/95 leading-relaxed">
-                      {card.description}
-                    </p>
-                  </div>
-
-                  <div className="pt-2 border-t border-black/20 flex items-center justify-between text-white text-xs font-black">
-                    <span>Poder: {card.power}</span>
-                    <span className="bg-black/40 px-2.5 py-1 rounded-lg text-[10px] tracking-wider uppercase group-hover:bg-white group-hover:text-slate-950 transition-colors">
-                      JUGAR CARTA
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
         </div>
 
       </main>
 
-      {/* PANTALLA 3: VESTIDOR Y CONSTRUCTOR DE BARAJAS */}
-      {activeModal === 'deckBuilder' && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in">
-          <div className="bg-slate-900 border border-indigo-500/50 rounded-3xl max-w-4xl w-full p-6 space-y-5 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+      {/* ========================================================================= */}
+      {/* 5. MODAL DE DETALLE DE CARTA DEL ARCHIVADOR (BIOGRAFÍA EN 1ª PERSONA) */}
+      {/* ========================================================================= */}
+      {activeModal === 'cardDetail' && inspectedCard && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-2xl rounded-[36px] overflow-hidden shadow-2xl border-4 border-indigo-500 bg-slate-950 p-6 space-y-5 text-slate-100">
+            
+            <div className="flex items-center justify-between border-b border-indigo-900/60 pb-3">
               <div className="flex items-center gap-2">
-                <Layers className="w-5 h-5 text-indigo-400" />
-                <h3 className="text-base font-extrabold text-white">Pedestal Holográfico 3D & Constructor de Barajas</h3>
+                <Sparkles className="w-5 h-5 text-indigo-400" />
+                <h3 className="text-base font-black text-white">{inspectedCard.name}</h3>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-500/40 font-bold">
+                  {inspectedCard.rarity}
+                </span>
               </div>
+              <button onClick={() => setActiveModal('none')} className="p-1 rounded-xl bg-slate-800 text-slate-300">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-5 items-center">
+              
+              {/* Carta Full-Art Renderizada por Nano Banana */}
+              <div className="sm:col-span-5 flex justify-center">
+                <div className="w-52 aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl border-2 border-indigo-400">
+                  <img src={inspectedCard.image} alt={inspectedCard.name} className="w-full h-full object-cover" />
+                </div>
+              </div>
+
+              {/* Atributos y Voz en 1ª Persona */}
+              <div className="sm:col-span-7 space-y-3">
+                <div className="p-3.5 rounded-2xl bg-slate-900 border border-indigo-500/30">
+                  <span className="text-[10px] font-black uppercase text-indigo-400 block mb-1">
+                    Voz Inviolable del Sabio (Primera Persona):
+                  </span>
+                  <p className="text-xs text-indigo-100 italic leading-relaxed">
+                    "{inspectedCard.voiceQuote}"
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="p-2 rounded-xl bg-slate-900 border border-slate-800">
+                    <span className="text-[10px] text-slate-400 block">Coste Maná</span>
+                    <strong className="text-sm text-cyan-300">{inspectedCard.costMana} ⚡</strong>
+                  </div>
+                  <div className="p-2 rounded-xl bg-slate-900 border border-slate-800">
+                    <span className="text-[10px] text-slate-400 block">Ataque</span>
+                    <strong className="text-sm text-rose-300">{inspectedCard.blueStat} ⚔️</strong>
+                  </div>
+                  <div className="p-2 rounded-xl bg-slate-900 border border-slate-800">
+                    <span className="text-[10px] text-slate-400 block">Vida</span>
+                    <strong className="text-sm text-emerald-300">{inspectedCard.hp} 🛡️</strong>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex items-center justify-between">
+                  <button
+                    onClick={() => {
+                      gamificationAudio.playCoinSound();
+                      showToast(`¡${inspectedCard.name} añadida a tu mazo de torneo!`);
+                      setActiveModal('none');
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-md"
+                  >
+                    Equipar en Mazo Activo
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 6. PANTALLA 2: ARENA DE DUELO HOLOGRÁFICA EN EL AULA (TCG BATTLE) */}
+      {/* ========================================================================= */}
+      {activeModal === 'tcgArena' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
+          
+          <div className="relative w-full max-w-5xl rounded-[36px] overflow-hidden shadow-2xl border-4 border-indigo-500 bg-slate-950 flex flex-col justify-between max-h-[96vh]">
+            
+            <div className="absolute top-3 left-4 right-4 z-30 flex items-center justify-between pointer-events-none">
+              <div className="pointer-events-auto bg-slate-950/90 backdrop-blur-md px-4 py-1.5 rounded-full border border-indigo-500/50 text-xs font-black text-white flex items-center gap-3">
+                <span className="text-cyan-300 flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> Maná: {arenaMana}/10
+                </span>
+                <span className="text-slate-600">|</span>
+                <span className="text-amber-300 flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5 text-amber-400" /> {arenaTime}s restantes
+                </span>
+              </div>
+
               <button
                 onClick={() => setActiveModal('none')}
-                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white"
+                className="pointer-events-auto p-2 rounded-full bg-white text-slate-800 hover:bg-slate-100 shadow-xl"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-              
-              {/* Columna Izquierda: Viewport 3D del Duelista */}
-              <div className="md:col-span-5 flex flex-col items-center justify-center bg-slate-950 p-4 rounded-3xl border border-indigo-500/30 shadow-inner">
-                <div className="relative w-full aspect-square rounded-2xl overflow-hidden border-2 border-indigo-400/50 shadow-2xl">
-                  <img
-                    src={getDuelistRender()}
-                    alt="Duelista TCG 3D"
-                    className="w-full h-full object-cover transition-all duration-300 hover:scale-105"
-                  />
-                  <div className="absolute top-2 left-2 px-2.5 py-1 rounded-xl bg-black/75 backdrop-blur-md text-[10px] font-black text-cyan-300 border border-cyan-400/30">
-                    Holo-Pedestal TCG
-                  </div>
-                  <div className="absolute bottom-2 left-2 right-2 px-3 py-1.5 rounded-xl bg-black/80 backdrop-blur-md text-[11px] font-black text-white text-center border border-white/10">
-                    {selectedDuelistItem === 'capa' && '👑 Capa de Campeón Imperial Equipada'}
-                    {selectedDuelistItem === 'visor' && '🥽 Visor Scouter Táctico (+250 Análisis)'}
-                    {selectedDuelistItem === 'guante' && '🐉 Guante Dragón Dorado (+300 Maná)'}
-                    {selectedDuelistItem === 'base' && '⚡ Atuendo Base de Torneo'}
+            {/* LIENZO DE LA ARENA TCG (MOCKUP REAL EN 16:9) */}
+            <div className="relative w-full aspect-[16/9] overflow-hidden group">
+              <img 
+                src="/redisenos_assets/torneo_tcg/torneo_tcg_battle_arena.jpg" 
+                alt="Arena TCG - Mesa Holográfica"
+                className="w-full h-full object-cover"
+              />
+
+              {/* Pregunta Holográfica Flotante */}
+              <div className="absolute top-[16%] left-[30%] w-[40%] h-[32%] z-20 flex flex-col items-center justify-center p-3 text-center pointer-events-none">
+                <span className="text-[10px] font-black uppercase tracking-wider text-cyan-300 bg-black/70 px-2 py-0.5 rounded-full mb-1 border border-cyan-400/40">
+                  Desafío de Astrofísica Curricular
+                </span>
+                <p className="text-xs sm:text-sm font-extrabold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] leading-snug">
+                  "¿Cuál es la ley que explica por qué los planetas orbitan alrededor del Sol?"
+                </p>
+                <span className="text-[10px] text-amber-300 mt-1 font-bold">
+                  Juega la carta de Isaac Newton para activar la órbita dorada (+400 Gemas)
+                </span>
+              </div>
+
+              {/* 4 CARTAS TCG EN LA MANO DEL ALUMNO (INFERIOR) */}
+              <div className="absolute bottom-[2%] left-[24%] right-[16%] z-20 grid grid-cols-4 gap-2.5 sm:gap-3 px-2">
+                {[THINKER_CARDS[0], THINKER_CARDS[1], THINKER_CARDS[2], THINKER_CARDS[3]].map(card => {
+                  const isSelected = playedArenaCardId === card.id;
+                  return (
+                    <div
+                      key={card.id}
+                      onClick={() => handlePlayArenaCard(card)}
+                      className={`relative aspect-[2/3] rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 shadow-2xl border-2 group/card ${
+                        isSelected
+                          ? 'ring-4 ring-amber-400 scale-110 -translate-y-4 shadow-amber-500/50 z-30'
+                          : 'border-indigo-400/60 hover:scale-105 hover:-translate-y-2 hover:border-amber-300'
+                      }`}
+                      title={`Jugar ${card.name} (${card.costMana} Maná)`}
+                    >
+                      <img src={card.image} alt={card.name} className="w-full h-full object-cover" />
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Banner de Feedback */}
+              {arenaFeedback && (
+                <div className="absolute bottom-[28%] left-1/2 -translate-x-1/2 z-30 w-[85%] max-w-xl">
+                  <div className="p-4 rounded-2xl text-xs sm:text-sm font-black text-center shadow-2xl border-2 bg-indigo-950/95 border-indigo-400 text-indigo-100 flex items-center justify-between gap-3 animate-in fade-in">
+                    <span>{arenaFeedback}</span>
+                    <button
+                      onClick={() => setActiveModal('none')}
+                      className="px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-black text-xs shrink-0 shadow-md"
+                    >
+                      Continuar
+                    </button>
                   </div>
                 </div>
+              )}
 
-                <div className="mt-3 flex items-center justify-between w-full px-2 text-xs">
-                  <span className="text-slate-400 font-bold">Duelista:</span>
-                  <span className="text-cyan-300 font-black">{activeStudent.name}</span>
+            </div>
+
+            <div className="p-3 bg-slate-900 border-t border-slate-800 flex items-center justify-between text-xs text-slate-300">
+              <span className="font-bold text-indigo-300">
+                Torneo de Duelos TCG · Combos didácticos por sinergia conceptual
+              </span>
+              <button onClick={() => setActiveModal('none')} className="px-4 py-1.5 rounded-xl bg-slate-800 text-white font-bold">
+                Volver al Estadio
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 7. PANTALLA 3: ÁLBUM Y VESTIDOR DE DUELISTA (MOCKUP REAL 16:9) */}
+      {/* ========================================================================= */}
+      {activeModal === 'albumCustomizer' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-5xl rounded-[36px] overflow-hidden shadow-2xl border-4 border-indigo-500 bg-slate-950 flex flex-col justify-between max-h-[96vh]">
+            
+            <div className="absolute top-3 left-4 right-4 z-30 flex items-center justify-between pointer-events-none">
+              <div className="pointer-events-auto bg-slate-950/90 backdrop-blur-md px-4 py-1 rounded-full border border-indigo-500 text-xs font-black text-indigo-300">
+                📖 Grimorio de Maestría & Vestidor de Duelista 3D
+              </div>
+              <button onClick={() => setActiveModal('none')} className="pointer-events-auto p-2 rounded-full bg-white text-slate-800 shadow-xl">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Lienzo del Álbum y Duelista */}
+            <div className="relative w-full aspect-[16/9] overflow-hidden">
+              <img 
+                src="/redisenos_assets/torneo_tcg/torneo_album_duelist_custom.jpg" 
+                alt="Álbum y Personalizador de Duelista"
+                className="w-full h-full object-cover"
+              />
+
+              {/* RENDER VIVO DEL DUELISTA EN EL PEDESTAL 3D (DERECHA) */}
+              <div className="absolute top-[24%] right-[24%] w-[22%] h-[54%] z-20 pointer-events-none flex flex-col items-center justify-center p-1">
+                <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl border-2 border-indigo-400 bg-slate-950 relative">
+                  <img src={getDuelistRender()} alt="Duelista 3D" className="w-full h-full object-cover animate-in fade-in duration-200" />
+                  <div className="absolute bottom-1 left-1 right-1 bg-black/75 rounded-lg py-0.5 text-center text-white text-[9px] font-black">
+                    {selectedDuelistItem === 'capa' && '🏆 Capa de Campeón del Torneo'}
+                    {selectedDuelistItem === 'visor' && '🔍 Visor Táctico Scouter'}
+                    {selectedDuelistItem === 'guante' && '🐉 Guantelete Dragón de Duelo'}
+                    {selectedDuelistItem === 'base' && '⚡ Techwear Base de Duelista'}
+                  </div>
                 </div>
               </div>
 
-              {/* Columna Derecha: Catálogo de Ítems */}
-              <div className="md:col-span-7 space-y-4">
-                <div>
-                  <span className="text-xs font-black uppercase tracking-wider text-indigo-400 block mb-2">
-                    Equipamiento Táctico de Duelo:
-                  </span>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <button
-                      onClick={() => {
-                        gamificationAudio.playClickSound();
-                        setSelectedDuelistItem(prev => prev === 'capa' ? 'base' : 'capa');
-                      }}
-                      className={`p-3 rounded-2xl border text-left transition-all ${
-                        selectedDuelistItem === 'capa'
-                          ? 'bg-indigo-600 text-white border-indigo-300 font-black shadow-lg shadow-indigo-500/30 scale-[1.02]'
-                          : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-indigo-400/50'
-                      }`}
-                    >
-                      <span className="text-base block mb-0.5">👑</span>
-                      <strong className="text-xs block">Capa de Campeón</strong>
-                      <span className="text-[10px] opacity-80">+15% Multiplicador Combo</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        gamificationAudio.playClickSound();
-                        setSelectedDuelistItem(prev => prev === 'visor' ? 'base' : 'visor');
-                      }}
-                      className={`p-3 rounded-2xl border text-left transition-all ${
-                        selectedDuelistItem === 'visor'
-                          ? 'bg-indigo-600 text-white border-indigo-300 font-black shadow-lg shadow-indigo-500/30 scale-[1.02]'
-                          : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-indigo-400/50'
-                      }`}
-                    >
-                      <span className="text-base block mb-0.5">🥽</span>
-                      <strong className="text-xs block">Visor Scouter</strong>
-                      <span className="text-[10px] opacity-80">+250 Poder de Análisis</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        gamificationAudio.playClickSound();
-                        setSelectedDuelistItem(prev => prev === 'guante' ? 'base' : 'guante');
-                      }}
-                      className={`p-3 rounded-2xl border text-left transition-all ${
-                        selectedDuelistItem === 'guante'
-                          ? 'bg-indigo-600 text-white border-indigo-300 font-black shadow-lg shadow-indigo-500/30 scale-[1.02]'
-                          : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-indigo-400/50'
-                      }`}
-                    >
-                      <span className="text-base block mb-0.5">🐉</span>
-                      <strong className="text-xs block">Guante Dragón</strong>
-                      <span className="text-[10px] opacity-80">+300 Maná Máximo</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        gamificationAudio.playClickSound();
-                        setSelectedDuelistItem('base');
-                      }}
-                      className={`p-3 rounded-2xl border text-left transition-all ${
-                        selectedDuelistItem === 'base'
-                          ? 'bg-slate-800 text-white border-slate-700 font-black'
-                          : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-indigo-400/50'
-                      }`}
-                    >
-                      <span className="text-base block mb-0.5">⚡</span>
-                      <strong className="text-xs block">Atuendo Base</strong>
-                      <span className="text-[10px] opacity-80">Por Defecto</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Reversos de Cartas */}
-                <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
-                  <span className="text-xs font-black text-indigo-300 block">Reversos Holográficos de Cartas</span>
-                  <div className="grid grid-cols-3 gap-2">
-                    {['Reverso Holográfico Galaxia', 'Reverso Calendario Solar', 'Reverso Dorado Institucional'].map(sleeve => (
-                      <button
-                        key={sleeve}
-                        onClick={() => handleEquipSleeve(sleeve)}
-                        className={`p-2 rounded-xl border text-center text-[10px] font-bold transition-all ${
-                          activeStudent.equippedSleeve === sleeve
-                            ? 'bg-indigo-600 text-white border-indigo-400 font-black'
-                            : 'bg-slate-900 text-slate-300 border-slate-800 hover:border-indigo-500/40'
-                        }`}
-                      >
-                        {sleeve}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
+              {/* BOTONES FLOTANTES DE ACCESORIOS */}
+              <div className="absolute top-[26%] right-[3.5%] w-[18%] h-[52%] z-20 grid grid-rows-4 gap-2">
+                <button
+                  onClick={() => {
+                    gamificationAudio.playClickSound();
+                    setSelectedDuelistItem(prev => prev === 'capa' ? 'base' : 'capa');
+                    showToast('Capa de Campeón equipada');
+                  }}
+                  className={`rounded-xl transition-all cursor-pointer ${selectedDuelistItem === 'capa' ? 'ring-2 ring-amber-400 bg-amber-400/20' : 'hover:bg-white/10'}`}
+                  title="Equipar Capa de Campeón"
+                />
+                <button
+                  onClick={() => {
+                    gamificationAudio.playClickSound();
+                    setSelectedDuelistItem(prev => prev === 'visor' ? 'base' : 'visor');
+                    showToast('Visor Táctico Scouter equipado');
+                  }}
+                  className={`rounded-xl transition-all cursor-pointer ${selectedDuelistItem === 'visor' ? 'ring-2 ring-cyan-400 bg-cyan-400/20' : 'hover:bg-white/10'}`}
+                  title="Equipar Visor Scouter"
+                />
+                <button
+                  onClick={() => {
+                    gamificationAudio.playClickSound();
+                    setSelectedDuelistItem(prev => prev === 'guante' ? 'base' : 'guante');
+                    showToast('Guantelete Dragón equipado');
+                  }}
+                  className={`rounded-xl transition-all cursor-pointer ${selectedDuelistItem === 'guante' ? 'ring-2 ring-indigo-400 bg-indigo-400/20' : 'hover:bg-white/10'}`}
+                  title="Equipar Guantelete Dragón"
+                />
               </div>
 
             </div>
 
-            <div className="pt-3 border-t border-slate-800 flex justify-end">
+            <div className="p-3 bg-slate-900 border-t border-slate-800 flex items-center justify-between text-xs text-slate-300">
+              <span className="font-bold">
+                Duelista Activo: <strong className="text-indigo-300">{activeStudent.name}</strong> ({activeStudent.rank})
+              </span>
               <button
                 onClick={() => {
-                  gamificationAudio.playLevelUpSound();
+                  gamificationAudio.playCoinSound();
+                  showToast('¡Equipamiento guardado con éxito!');
                   setActiveModal('none');
-                  showToast('¡Personalización y Baraja TCG guardadas!');
                 }}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-cyan-400 hover:from-indigo-400 hover:to-cyan-300 text-slate-950 font-black text-xs shadow-lg shadow-indigo-500/20"
+                className="px-5 py-1.5 rounded-xl bg-indigo-600 text-white font-black text-xs shadow-md"
               >
-                Confirmar y Equipar en Pedestal 3D
+                Guardar y Volver
               </button>
             </div>
+
           </div>
         </div>
       )}
 
-      {/* BOUTIQUE DE SOBRES DE CARTAS (TIENDA DE RECOMPENSAS) */}
-      {activeModal === 'store' && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in">
-          <div className="bg-slate-900 border border-indigo-500/50 rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <ShoppingBag className="w-5 h-5 text-indigo-400" />
-                <h3 className="text-base font-extrabold text-white">Boutique de Sobres TCG de Primaria Alta</h3>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-black text-cyan-300 bg-slate-950 px-3 py-1 rounded-xl border border-slate-800">
-                  Saldo: {activeStudent.coins} Gemas
-                </span>
-                <button
-                  onClick={() => setActiveModal('none')}
-                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-4">
-                <div>
-                  <h4 className="text-xs font-black text-indigo-300">Sobre Holográfico: Héroes de la Independencia</h4>
-                  <p className="text-[11px] text-slate-400 leading-snug">Contiene 3 cartas narradas en primera persona estricta (Hidalgo, Morelos, Josefa Ortiz).</p>
-                </div>
-                <button
-                  onClick={() => handleBuyPack('Héroes de la Independencia', 300)}
-                  className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shrink-0"
-                >
-                  300 Gemas
-                </button>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-4">
-                <div>
-                  <h4 className="text-xs font-black text-amber-300">Sobre Místico: Pioneros de la Física</h4>
-                  <p className="text-[11px] text-slate-400 leading-snug">Incluye a Galileo Galilei, Isaac Newton y Marie Curie con efectos especiales de laboratorio.</p>
-                </div>
-                <button
-                  onClick={() => handleBuyPack('Pioneros de la Física', 450)}
-                  className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black shrink-0"
-                >
-                  450 Gemas
-                </button>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-4">
-                <div>
-                  <h4 className="text-xs font-black text-emerald-300">Sobre Ancestral: Sabios de Mesoamérica</h4>
-                  <p className="text-[11px] text-slate-400 leading-snug">Cartas de astronomía maya, arquitectura mexica y botánica tradicional de la NEM.</p>
-                </div>
-                <button
-                  onClick={() => handleBuyPack('Sabios de Mesoamérica', 400)}
-                  className="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black shrink-0"
-                >
-                  400 Gemas
-                </button>
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-slate-800 flex justify-end">
-              <button
-                onClick={() => setActiveModal('none')}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white"
-              >
-                Cerrar Tienda
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* PANTALLA 4: UNIVERSAL CHALLENGE STUDIO (VISTA DOCENTE) */}
+      {/* ========================================================================= */}
+      {/* 8. PANTALLA 4: UNIVERSAL CHALLENGE STUDIO (VISTA DOCENTE) */}
+      {/* ========================================================================= */}
       {activeModal === 'teacherStudio' && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in">
-          <div className="bg-slate-900 border border-purple-500/50 rounded-3xl max-w-2xl w-full p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <GraduationCap className="w-5 h-5 text-purple-400" />
-                <div>
-                  <span className="text-[10px] font-black uppercase text-purple-400">Universal Challenge Studio</span>
-                  <h3 className="text-base font-extrabold text-white">Generación Automática de Cartas Didácticas</h3>
-                </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-5xl rounded-[36px] overflow-hidden shadow-2xl border-4 border-purple-500 bg-slate-950 flex flex-col justify-between max-h-[96vh]">
+            
+            <div className="absolute top-3 left-4 right-4 z-30 flex items-center justify-between pointer-events-none">
+              <div className="pointer-events-auto bg-slate-950/90 backdrop-blur-md px-4 py-1 rounded-full border border-purple-500 text-xs font-black text-purple-300">
+                🎓 Universal Challenge Studio · Generador Automático de Cartas TCG
               </div>
-              <button
-                onClick={() => setActiveModal('none')}
-                className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white"
-              >
+              <button onClick={() => setActiveModal('none')} className="pointer-events-auto p-2 rounded-full bg-white text-slate-800 shadow-xl">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-3 text-xs text-slate-300">
-              <div className="p-3.5 rounded-2xl bg-purple-950/40 border border-purple-800/50 space-y-1.5">
-                <span className="font-bold text-purple-300 block">1. Creación Polimórfica de Cartas con IA Pedagógica</span>
-                <p>El docente ingresa los reactivos del examen trimestral; el Motor de IA genera automáticamente las cartas ilustradas con atributos de Ataque de Conocimiento y Defensa de Lógica.</p>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
-                <span className="font-bold text-emerald-300 block">2. Modo Repaso en Proyector de Aula</span>
-                <p>Permite proyectar la mesa de duelo holográfica en pantalla gigante para competencias amistosas en equipos antes de los exámenes bimestrales.</p>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
-                <span className="font-bold text-cyan-300 block">3. Vinculación con Rúbricas Oficiales SEP</span>
-                <p>Cada victoria en duelo actualiza directamente el porcentaje de dominio de PDA en las boletas oficiales del colegio sin captura manual.</p>
-              </div>
+            <div className="relative w-full aspect-[16/9] overflow-hidden">
+              <img src="/redisenos_assets/torneo_tcg/torneo_teacher_studio.jpg" alt="Universal Challenge Studio" className="w-full h-full object-cover" />
             </div>
 
-            <div className="pt-3 border-t border-slate-800 flex justify-end">
-              <button
-                onClick={() => setActiveModal('none')}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white"
-              >
-                Cerrar Panel Docente
+            <div className="p-3 bg-slate-900 border-t border-slate-800 flex items-center justify-between text-xs text-slate-300">
+              <span className="font-bold text-purple-300">
+                El profesor ingresa un banco de preguntas y el Motor de IA Pedagógica diseña las cartas correspondientes con atributos didácticos.
+              </span>
+              <button onClick={() => setActiveModal('none')} className="px-5 py-1.5 rounded-xl bg-purple-600 text-white font-black text-xs shadow-md">
+                Cerrar Estudio Docente
               </button>
             </div>
+
           </div>
         </div>
       )}
