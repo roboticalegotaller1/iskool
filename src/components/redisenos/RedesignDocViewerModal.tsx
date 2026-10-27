@@ -478,12 +478,12 @@ export function RedesignDocViewerModal({ redesign, isOpen, onClose, onLaunchTest
                 <div className="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/60 space-y-2">
                   <h4 className="font-bold text-white text-sm flex items-center gap-1.5">
                     <Cloud className="w-4 h-4 text-cyan-400" />
-                    Viabilidad Google Workspace & Drive
+                    Viabilidad Nube & Suite Institucional
                   </h4>
                   <ul className="space-y-1.5 text-slate-300">
                     <li>• <strong>SSO Institucional:</strong> {spec.cloudViability.ssoAuth}</li>
                     <li>• <strong>Almacenamiento Cloud:</strong> {spec.cloudViability.cloudStorage}</li>
-                    <li>• <strong>Google Classroom:</strong> {spec.cloudViability.classroomIntegration}</li>
+                    <li>• <strong>Aula Digital / LMS:</strong> {spec.cloudViability.classroomIntegration}</li>
                   </ul>
                 </div>
 
